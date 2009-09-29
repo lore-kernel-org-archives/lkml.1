@@ -1,93 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbZI2Rql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbZI2R4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753615AbZI2Rql (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZI2Rqk
+	id S1753628AbZI2R4n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZI2R4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:46:40 -0400
-Received: from mga11.intel.com ([192.55.52.93]:9029 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752903AbZI2Rqk convert rfc822-to-8bit (ORCPT
+	Tue, 29 Sep 2009 13:56:42 -0400
+Received: from mail-pz0-f191.google.com ([209.85.222.191]:39111 "EHLO
+	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751609AbZI2R4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:46:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,474,1249282800"; 
-   d="scan'208";a="731281664"
-From: "Kay, Allen M" <allen.m.kay@intel.com>
-To: Chris Wright <chrisw@sous-sol.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>
-Date: Tue, 29 Sep 2009 10:46:42 -0700
-Subject: RE: [PATCH ACS v3 1/1]
-Thread-Topic: [PATCH ACS v3 1/1]
-Thread-Index: AcpAl+ZcNbaqbj7HTXGFivwZE4Z1WAAAtKbA
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E2EA3B70@orsmsx505.amr.corp.intel.com>
-References: <1253231193-5753-1-git-send-email-allen.m.kay@intel.com>
- <20090929000041.GB3958@sequoia.sous-sol.org>
-In-Reply-To: <20090929000041.GB3958@sequoia.sous-sol.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 29 Sep 2009 13:56:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=s/pPBP5JcGgX0YVxpUDk1ANoEStYljSF6h3TmHfnkOSWMxpi+6l/peaFlsG1IZbq9V
+         e38JuQcij17wiwQlndpD5FyaxvTA2BTjlHpTCXVcwrQuBzVPZ7ZM7QjuSkuO3Pdml0ZK
+         mHzD0bWpCgSIQcsUx3IdFhe5k4oFDt706BSt4=
+Message-ID: <4AC24A69.7050702@gmail.com>
+Date: Tue, 29 Sep 2009 10:56:57 -0700
+From: Bruce Jones <brucej97223@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
+To: gregkh@suse.de
+CC: wfp5@virginia.edu, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] staging: comedi: adl_pci7432 coding style cleanup
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
->This may negatively impact p2p traffic throughput for devices that don't
->need it.  Have you considered this impact or attempted to measure it?
->
+Correct coding style problems in this file.
 
-As far as I know, there is no existing PCIe devices that have ACS capable PCIe switches.  This means this patch will not impact existing P2P devices.  On the NHM platform I tested this patch on, only root ports support ACS which has no material impact on PCIe transactions since whatever upstream traffic root port sees is already forwarded to the root complex anyways.
+Signed-off-by: Bruce Jones <brucej@linux.com>
+---
+ drivers/staging/comedi/drivers/adl_pci7432.c |   32 ++++++++++++-------------
+ 1 files changed, 15 insertions(+), 17 deletions(-)
 
-As for future devices that does have ACS capable PCIe switches, this patch can cause potential P2P performance issue as you indicated.  Although PCI IOV SIG has yet to make a decision on this issue, it would be reasonable to expect this problem can be mitigated with ATS capable devices.  For example, it would be reasonable to expect translated addresses can be routed directly to the peer device while un-translated addresses would have to be routed to the root complex.
-
-By the way, PLX technology announced first such switch on 8/26.  We will be take a look at these devices as soon as we get hold of these in our lab.
-
->
->An alternative approach would be to enable this during device assignment.
->
-
-I have indeed spent some time playing around with a patch that does this.  There are some potential drawbacks. Given that PCI is already enabled at the time of device assignment, enabling P2P upstream forwarding might disrupt in flight PCIe transactions.  In addition, this means we need separate patches for enabling ACS for KVM and Xen as device assignment for KVM and Xen do not share code paths.
-
->
->Also, there is no checking that the relevant path through the topology has
->the right capabilties.  Is there any reason you left that out?  It would
->certainly simplify the filtering logic, for example.  
->
-
-Do you mean enable p2p forwarding on all upstream PCIe switches only if all of them are ACS capable?  I can see this can potentially simplify filtering software to just check the lowest level PCIe switch.
-
-This appears to be a trade-off between whether we want put the complexity in Linux PCI driver or in the user mode filtering code.  In my mind, if we take the view that the device filtering software is the ultimate authority in determining whether a device is assignable, it probably should not trust the host to always do the right thing from virtualization standpoint.  If a paranoid filtering software always checks the entire path from the device to the root complex anyways, it might be reasonable to simplify the code in the kernel.
-
->
->And given some states result in undefined behavior, perhaps it makes sense to check
->while enabling ACS.
->
-
-By "undefined behavior", do you mean when there a mix of ACS and non-ACS capable PCIe switches and P2P upstream forwarding is enabled in ACS capable PCIe switches?  I would expect the aggregate behavior is the same as no P2P upstream forwarding.
-
-Let's say we have a configuration where the lowest PCIe switch is ACS capable and it has P2P upstream forwarding enabled.  However, the PCIe switch just above it is not ACS capable.
-
-I would expect the following behavior:
-
-1) P2P transaction is forwarded upstream by the ACS capable PCIe switch
-2) non-ACS capable switch sends the transaction back
-3) ACS capable switch sends the transaction to the peer device.
-
-The aggregate result is the transaction behaved as if all the switches are not ACS capable.
-
->
-> I'd call it pci_enable_acs...in fact, the kdoc above tries something close to that ;-)
->
-
-No problem, I can change the code to incorporate this once we have an agreement on other items.
-
-
-Allen  
+diff --git a/drivers/staging/comedi/drivers/adl_pci7432.c b/drivers/staging/comedi/drivers/adl_pci7432.c
+index e0844c6..b5a9499 100644
+--- a/drivers/staging/comedi/drivers/adl_pci7432.c
++++ b/drivers/staging/comedi/drivers/adl_pci7432.c
+@@ -90,8 +90,7 @@ static int adl_pci7432_attach(struct comedi_device *dev,
+ 	struct comedi_subdevice *s;
+ 	int bus, slot;
+ 
+-	printk("comedi: attempt to attach...\n");
+-	printk("comedi%d: adl_pci7432\n", dev->minor);
++	printk(KERN_INFO "comedi%d: attach adl_pci7432\n", dev->minor);
+ 
+ 	dev->board_name = "pci7432";
+ 	bus = it->options[0];
+@@ -118,13 +117,13 @@ static int adl_pci7432_attach(struct comedi_device *dev,
+ 			}
+ 			devpriv->pci_dev = pcidev;
+ 			if (comedi_pci_enable(pcidev, "adl_pci7432") < 0) {
+-				printk
+-				    ("comedi%d: Failed to enable PCI device and request regions\n",
++				printk(KERN_ERR "comedi%d: Failed to enable PCI device and request regions\n",
+ 				     dev->minor);
+ 				return -EIO;
+ 			}
+ 			dev->iobase = pci_resource_start(pcidev, 2);
+-			printk("comedi: base addr %4lx\n", dev->iobase);
++			printk(KERN_INFO "comedi: base addr %4lx\n",
++				dev->iobase);
+ 
+ 			s = dev->subdevices + 0;
+ 			s->type = COMEDI_SUBD_DI;
+@@ -148,25 +147,24 @@ static int adl_pci7432_attach(struct comedi_device *dev,
+ 			s->range_table = &range_digital;
+ 			s->insn_bits = adl_pci7432_do_insn_bits;
+ 
+-			printk("comedi: attached\n");
+-
++			printk(KERN_DEBUG "comedi%d: adl_pci7432 attached\n",
++				dev->minor);
+ 			return 1;
+ 		}
+ 	}
+ 
+-	printk("comedi%d: no supported board found! (req. bus/slot : %d/%d)\n",
++	printk(KERN_ERR "comedi%d: no supported board found! (req. bus/slot : %d/%d)\n",
+ 	       dev->minor, bus, slot);
+ 	return -EIO;
+ }
+ 
+ static int adl_pci7432_detach(struct comedi_device *dev)
+ {
+-	printk("comedi%d: pci7432: remove\n", dev->minor);
++	printk(KERN_INFO "comedi%d: pci7432: remove\n", dev->minor);
+ 
+ 	if (devpriv && devpriv->pci_dev) {
+-		if (dev->iobase) {
++		if (dev->iobase)
+ 			comedi_pci_disable(devpriv->pci_dev);
+-		}
+ 		pci_dev_put(devpriv->pci_dev);
+ 	}
+ 
+@@ -178,8 +176,8 @@ static int adl_pci7432_do_insn_bits(struct comedi_device *dev,
+ 				    struct comedi_insn *insn,
+ 				    unsigned int *data)
+ {
+-	printk("comedi: pci7432_do_insn_bits called\n");
+-	printk("comedi: data0: %8x data1: %8x\n", data[0], data[1]);
++	printk(KERN_DEBUG "comedi: pci7432_do_insn_bits called\n");
++	printk(KERN_DEBUG "comedi: data0: %8x data1: %8x\n", data[0], data[1]);
+ 
+ 	if (insn->n != 2)
+ 		return -EINVAL;
+@@ -188,7 +186,7 @@ static int adl_pci7432_do_insn_bits(struct comedi_device *dev,
+ 		s->state &= ~data[0];
+ 		s->state |= (data[0] & data[1]);
+ 
+-		printk("comedi: out: %8x on iobase %4lx\n", s->state,
++		printk(KERN_DEBUG "comedi: out: %8x on iobase %4lx\n", s->state,
+ 		       dev->iobase + PCI7432_DO);
+ 		outl(s->state & 0xffffffff, dev->iobase + PCI7432_DO);
+ 	}
+@@ -200,14 +198,14 @@ static int adl_pci7432_di_insn_bits(struct comedi_device *dev,
+ 				    struct comedi_insn *insn,
+ 				    unsigned int *data)
+ {
+-	printk("comedi: pci7432_di_insn_bits called\n");
+-	printk("comedi: data0: %8x data1: %8x\n", data[0], data[1]);
++	printk(KERN_DEBUG "comedi: pci7432_di_insn_bits called\n");
++	printk(KERN_DEBUG "comedi: data0: %8x data1: %8x\n", data[0], data[1]);
+ 
+ 	if (insn->n != 2)
+ 		return -EINVAL;
+ 
+ 	data[1] = inl(dev->iobase + PCI7432_DI) & 0xffffffff;
+-	printk("comedi: data1 %8x\n", data[1]);
++	printk(KERN_DEBUG "comedi: data1 %8x\n", data[1]);
+ 
+ 	return 2;
+ }
+-- 
+1.6.5.rc2
