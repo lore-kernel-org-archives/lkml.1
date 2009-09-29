@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZI2TYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbZI2TZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854AbZI2TYc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 15:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZI2TYb
+	id S1753914AbZI2TZn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 15:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZI2TZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 15:24:31 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:40956 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753494AbZI2TYb convert rfc822-to-8bit (ORCPT
+	Tue, 29 Sep 2009 15:25:43 -0400
+Received: from hosting.visp.net.lb ([194.146.153.11]:60429 "EHLO
+	hosting.visp.net.lb" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753762AbZI2TZm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 15:24:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=IH7t6rIg+fwyRHuBNiwN1LZVER4lujRF4932lRJNxv3ynSiI4eWBZHfSYUhVdHFd5A
-         Y1jUfxewImCktozTt5n/IvTwuNyrtRu0gyovfjcTHglQUDlErD0pwtW85x/vdWbKoY3A
-         DyB45VQTQk1rbp5Z9H4SRO1EPq56dBmJ0F1tU=
-From: Volker Armin Hemmann <volkerarmin@googlemail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: amd64 + mtrr: only 3.1gb of 8gb are covered, kernel 2.6.30 and earlier.
-Date: Tue, 29 Sep 2009 21:24:29 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31.1r4; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200908211814.56800.volkerarmin@googlemail.com> <200909291932.17282.volkerarmin@googlemail.com> <86802c440909291223n717894e3xdcd5ad4cdc8a6d28@mail.gmail.com>
-In-Reply-To: <86802c440909291223n717894e3xdcd5ad4cdc8a6d28@mail.gmail.com>
+	Tue, 29 Sep 2009 15:25:42 -0400
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Eric.Moore@lsi.com
+Subject: MPT Fusion SAS 2.6.31 regression, crash on heavy load
+Content-Disposition: inline
+From: Denys Fedoryschenko <denys@visp.net.lb>
+Organization: VISP
+Date: Tue, 29 Sep 2009 22:25:09 +0300
 MIME-Version: 1.0
-Content-Type: Text/Plain;
+Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200909292124.29796.volkerarmin@googlemail.com>
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909292225.09188.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dienstag 29 September 2009, Yinghai Lu wrote:
-> On Tue, Sep 29, 2009 at 10:32 AM, Volker Armin Hemmann
-> 
-> <volkerarmin@googlemail.com> wrote:
-> > On Sonntag 20 September 2009, Yinghai Lu wrote:
-> >> your looks ok, because you got new CPU, and HW will set WB for [4G,
-> >> TOM2)
-> >
-> > so the memory beyond 4gb is covered but the coverage is not shown in
-> > /proc/mtrr?
-> 
-> right.
-> 
-> YH
-> 
+Filled a bugzilla entry, no answer for 3 days, and at same time it is clear 
+regression.
+http://bugzilla.kernel.org/show_bug.cgi?id=14242
 
-ok,
- thank you
+While on 2.6.30.5 MPT SAS controller worked fine, on 2.6.31 it fails on heavy
+operations and start spitting errors to dmesg (they vary). Failsystems also
+stopped, and i am unable to reboot box properly (only over sysrq or 
+hardreset). 
 
-Glück Auf,
-Volker
+x86, Sun Fire X4100, 8 GB RAM, PAE kernel enabled, module loaded with default
+options
+
+I upgrade BIOS, LSI controller BIOS to latest version, it didn't fix the bug.
+I cannot do bisection, because this is loaded server and semi-embedded system.
+But i can do tests of patches or reverse specific commits, if you point me to
+exact commit.
+
+http://www.nuclearcat.com/files/dmesg.ok from 2.6.30.5 kernel
+http://www.nuclearcat.com/files/dmesg.fail from 2.6.31.1 kernel
+http://www.nuclearcat.com/files/config.gz config from 2.6.31.1 kernel
+
+Let me know if you need any additional information.
+
+Additionally - i have few other similar units (X4100), but with less amount of 
+RAM (4GB),HDD's(2 only), less load (but still enough heavy at some moments) 
+working ok. I dont think it is hardware issue, since it works on 2.6.30 very 
+stable, and worked on other (older) kernels for 1 year and more. It is clear 
+regression and i guess dangerous regression (causing data loss on high 
+loads). I will try to bisect some changes on mpt driver today. 
+
+Please CC me on answers, i am not subscribed at any SCSI/LSI list.
+
+Crossposting to linux-kernel, since there is no mails about issue from 
+linux-scsi.
+
+Here is some technical info about controller over lsiutil
+Current active firmware version is 01102800 (1.16.40)
+Firmware image's version is MPTFW-01.16.40.00-IE
+  LSI Logic
+x86 BIOS image's version is MPTBIOS-6.14.04.00 (2007.02.27)
+
+SAS1064's links are 3.0 G, 3.0 G, 3.0 G, 3.0 G
+
+ B___T     SASAddress     PhyNum  Handle  Parent  Type
+        50003ba0000003ba           0001           SAS Initiator
+        50003ba0000003bb           0002           SAS Initiator
+        50003ba0000003bc           0003           SAS Initiator
+        50003ba0000003bd           0004           SAS Initiator
+ 0   0  500000e01277abd2     0     0005    0001   SAS Target
+ 0   1  500000e011e3b602     1     0006    0001   SAS Target
+ 0   2  500000e012779792     2     0007    0001   SAS Target
+ 0   3  500000e0120efb42     3     0008    0001   SAS Target
+
+Type      NumPhys    PhyNum  Handle     PhyNum  Handle  Port  Speed
+Adapter      4          0     0001  -->    0     0005     0    3.0
+                        1     0001  -->    0     0006     1    3.0
+                        2     0001  -->    0     0007     2    3.0
+                        3     0001  -->    0     0008     3    3.0
+
+Enclosure Handle   Slots       SASAddress       B___T (SEP)
+           0001      4      50003ba0000003ba
