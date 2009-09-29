@@ -1,103 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbZI2R0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbZI2Rab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753476AbZI2R0O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZI2R0N
+	id S1753544AbZI2Rab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZI2Raa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:26:13 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:50975 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752830AbZI2R0M (ORCPT
+	Tue, 29 Sep 2009 13:30:30 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41035 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753010AbZI2Raa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:26:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=J+pSPR7Cvd+OydnFAuGvYaJTsnCyIg6brj8zY1lpJmG5w4Y4Nnt8nWqELwxbg8/xYj
-         dtUuqxXq5XmgxYNBumACqgVFp1WeOhLdbWWSOmO4iHGBVAfS94AtHluRobr8akHJuD6V
-         L/rOputA2LKolXFkg3y5tPMJj2e06saOZPXG8=
-Message-ID: <4AC24345.20809@gmail.com>
-Date: Tue, 29 Sep 2009 10:26:29 -0700
-From: Bruce Jones <brucej97223@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 29 Sep 2009 13:30:30 -0400
+Message-ID: <4AC24396.4080402@zytor.com>
+Date: Tue, 29 Sep 2009 10:27:50 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>, gregkh@suse.de
-CC: wfp5@virginia.edu, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Updated: [PATCH] staging: comedi: CodingStyle cleanup for drivers/acl7225b.c
-References: <4AC1343D.3040606@gmail.com> <1254176318.28232.388.camel@Joe-Laptop.home>
-In-Reply-To: <1254176318.28232.388.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8
+To: akataria@vmware.com
+CC: Chris Wright <chrisw@sous-sol.org>, Gerd Hoffmann <kraxel@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Paravirtualization on VMware's Platform [VMI].
+References: <1253233028.19731.63.camel@ank32.eng.vmware.com>	 <20090919224430.GB9567@kroah.com>	 <1253419185.3253.21.camel@ank32.eng.vmware.com>	 <20090920074247.GA5733@elte.hu>	 <1253647845.10565.20.camel@ank32.eng.vmware.com>	 <4AB9CE66.1030504@redhat.com>	 <1254185107.13456.32.camel@ank32.eng.vmware.com>	 <4AC17018.4040600@zytor.com>	 <1254193238.13456.48.camel@ank32.eng.vmware.com>	 <20090929090130.GD3958@sequoia.sous-sol.org> <1254245124.7803.34.camel@ank32.eng.vmware.com>
+In-Reply-To: <1254245124.7803.34.camel@ank32.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Mon, 2009-09-28 at 15:10 -0700, Bruce Jones wrote:
->> Cleanup the printk's in this driver to use KERN_foo log
->> levels.
->> +	printk(KERN_INFO "comedi%d: acl7225b: board=%s 0x%04x\n", dev->minor,
->>  	       this_board->name, iobase);
->>  	if (!request_region(iobase, iorange, "acl7225b")) {
->> -		printk("I/O port conflict\n");
->> +		printk(KERN_CONT "I/O port conflict\n");
+On 09/29/2009 10:25 AM, Alok Kataria wrote:
+> diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
+> index 31e6f6c..d430e4c 100644
+> --- a/arch/x86/kernel/vmi_32.c
+> +++ b/arch/x86/kernel/vmi_32.c
+> @@ -648,7 +648,7 @@ static inline int __init activate_vmi(void)
+>  
+>  	pv_info.paravirt_enabled = 1;
+>  	pv_info.kernel_rpl = kernel_cs & SEGMENT_RPL_MASK;
+> -	pv_info.name = "vmi";
+> +	pv_info.name = "vmi [deprecated]";
+>  
+>  	pv_init_ops.patch = vmi_patch;
+>  
 > 
-> This should not be KERN_CONT but KERN_INFO or KERN_ERR
-> and should probably have a "comedi%d:" leader.
 > 
-> Maybe:
-> 	printk(KERN_ERR "comedi%d: request_region failed - I/O port conflict\n");
-> 
-> cheers, Joe
 
-Joe, thanks!  Greg, here's an updated patch.
+Where is this string used, and could this break something?
 
-	-- brucej
+	-hpa
 
-------------------
-
-Clean up the printk's in this driver.
-
-Signed-off-by: Bruce Jones <brucej@linux.com>
----
- drivers/staging/comedi/drivers/acl7225b.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/staging/comedi/drivers/acl7225b.c b/drivers/staging/comedi/drivers/acl7225b.c
-index c3652ef..e20c354 100644
---- a/drivers/staging/comedi/drivers/acl7225b.c
-+++ b/drivers/staging/comedi/drivers/acl7225b.c
-@@ -94,10 +94,11 @@ static int acl7225b_attach(struct comedi_device *dev,
- 
- 	iobase = it->options[0];
- 	iorange = this_board->io_range;
--	printk("comedi%d: acl7225b: board=%s 0x%04x ", dev->minor,
-+	printk(KERN_INFO "comedi%d: acl7225b: board=%s 0x%04x\n", dev->minor,
- 	       this_board->name, iobase);
- 	if (!request_region(iobase, iorange, "acl7225b")) {
--		printk("I/O port conflict\n");
-+		printk(KERN_ERR "comedi%d: request_region failed - I/O port conflict\n",
-+			dev->minor);
- 		return -EIO;
- 	}
- 	dev->board_name = this_board->name;
-@@ -137,14 +138,12 @@ static int acl7225b_attach(struct comedi_device *dev,
- 	s->range_table = &range_digital;
- 	s->private = (void *)ACL7225_DI_LO;
- 
--	printk("\n");
--
- 	return 0;
- }
- 
- static int acl7225b_detach(struct comedi_device *dev)
- {
--	printk("comedi%d: acl7225b: remove\n", dev->minor);
-+	printk(KERN_INFO "comedi%d: acl7225b: remove\n", dev->minor);
- 
- 	if (dev->iobase)
- 		release_region(dev->iobase, this_board->io_range);
--- 
-1.6.5.rc2
