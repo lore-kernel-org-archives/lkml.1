@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbZI2Rab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbZI2RWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753544AbZI2Rab (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 13:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZI2Raa
+	id S1753462AbZI2RWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 13:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZI2RWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 13:30:30 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41035 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753010AbZI2Raa (ORCPT
+	Tue, 29 Sep 2009 13:22:20 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:65344 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753046AbZI2RWT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 13:30:30 -0400
-Message-ID: <4AC24396.4080402@zytor.com>
-Date: Tue, 29 Sep 2009 10:27:50 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 29 Sep 2009 13:22:19 -0400
+Date: Tue, 29 Sep 2009 19:29:25 +0200
+From: Heinz Diehl <htd@fancy-poultry.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.32-rc1 vs 2.6.32-rc2?
+Message-ID: <20090929172925.GA6216@fancy-poultry.org>
+References: <4AC23F3A.1010808@freemail.hu>
 MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Chris Wright <chrisw@sous-sol.org>, Gerd Hoffmann <kraxel@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com>	 <20090919224430.GB9567@kroah.com>	 <1253419185.3253.21.camel@ank32.eng.vmware.com>	 <20090920074247.GA5733@elte.hu>	 <1253647845.10565.20.camel@ank32.eng.vmware.com>	 <4AB9CE66.1030504@redhat.com>	 <1254185107.13456.32.camel@ank32.eng.vmware.com>	 <4AC17018.4040600@zytor.com>	 <1254193238.13456.48.camel@ank32.eng.vmware.com>	 <20090929090130.GD3958@sequoia.sous-sol.org> <1254245124.7803.34.camel@ank32.eng.vmware.com>
-In-Reply-To: <1254245124.7803.34.camel@ank32.eng.vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <4AC23F3A.1010808@freemail.hu>
+Organization: private site
+X-OpenPGP-KeyID: 0x3FAF957D
+X-OpenPGP-Fingerprint: 0BAE BB83 8B8A 3DE4 08F3  CEB9 DA0F CCBB 3FAF 957D
+X-OpenPGP-URL: http://www.fritha.org/htd.asc
+User-Agent: Mutt/1.5.20+20090822 (GNU/Linux 2.6.31.1 x86_64)
+Content-Transfer-Encoding: 8BIT
+X-Provags-ID: V01U2FsdGVkX1+nkkJcC09sH16bynPkSOy+S3q1lTijraQ9o+v
+ yqIUWjP/uYRnN1/rIq7A68s63mqEW7pFdXtANdIDly3wYcqZRr
+ nK399IRncYr2OX3tvkLQA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/29/2009 10:25 AM, Alok Kataria wrote:
-> diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-> index 31e6f6c..d430e4c 100644
-> --- a/arch/x86/kernel/vmi_32.c
-> +++ b/arch/x86/kernel/vmi_32.c
-> @@ -648,7 +648,7 @@ static inline int __init activate_vmi(void)
->  
->  	pv_info.paravirt_enabled = 1;
->  	pv_info.kernel_rpl = kernel_cs & SEGMENT_RPL_MASK;
-> -	pv_info.name = "vmi";
-> +	pv_info.name = "vmi [deprecated]";
->  
->  	pv_init_ops.patch = vmi_patch;
->  
-> 
-> 
+On 29.09.2009, Németh Márton wrote: 
 
-Where is this string used, and could this break something?
+> it seems that there is a little typo in EXTRAVERSION: the title is
+> Linux 2.6.32-rc1 and the version in the EXTRAVERSION in Makefile is -rc2
 
-	-hpa
+See message <alpine.LFD.2.01.0909271650480.3349@localhost.localdomain>
+in this list.
 
