@@ -1,29 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751224AbZI2EGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751689AbZI2EGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751224AbZI2EGo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 00:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbZI2EGn
+	id S1751689AbZI2EGv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 00:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbZI2EGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 00:06:43 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:17158 "EHLO mx1.redhat.com"
+	Tue, 29 Sep 2009 00:06:48 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1026 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750743AbZI2EGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 00:06:43 -0400
+	id S1750762AbZI2EGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 00:06:45 -0400
 From: Zachary Amsden <zamsden@redhat.com>
 To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Hotplug / TSC cleanup and fixing
-Date: Mon, 28 Sep 2009 18:04:28 -1000
-Message-Id: <1254197072-889-1-git-send-email-zamsden@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Zachary Amsden <zamsden@redhat.com>,
+       Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+Subject: [PATCH v2: kvm 1/4] Code motion.  Separate timer intialization into an indepedent function.
+Date: Mon, 28 Sep 2009 18:04:29 -1000
+Message-Id: <1254197072-889-2-git-send-email-zamsden@redhat.com>
+In-Reply-To: <1254197072-889-1-git-send-email-zamsden@redhat.com>
+References: <1254197072-889-1-git-send-email-zamsden@redhat.com>
+Organization: Frobozz Magic Timekeeping Company
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greatly simplified version of the patches; allocate and dealloc
-all required structs at module load and unload time.
+Signed-off-by: Zachary Amsden <zamsden@redhat.com>
+---
+ arch/x86/kvm/x86.c |   23 +++++++++++++++--------
+ 1 files changed, 15 insertions(+), 8 deletions(-)
 
-Clarification: per_cpu(var, cpu) does indeed work for not-present CPUs;
-  the allocations for module specific per-cpu variables are done at module
-  load and unload time, while the per_cpu chunks are setup for all possible
-  CPUs at boot time.
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index fedac9d..15d2ace 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -3116,9 +3116,22 @@ static struct notifier_block kvmclock_cpufreq_notifier_block = {
+         .notifier_call  = kvmclock_cpufreq_notifier
+ };
+ 
++static void kvm_timer_init(void)
++{
++	int cpu;
++
++	for_each_possible_cpu(cpu)
++		per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
++	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
++		tsc_khz_ref = tsc_khz;
++		cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
++					  CPUFREQ_TRANSITION_NOTIFIER);
++	}
++}
++
+ int kvm_arch_init(void *opaque)
+ {
+-	int r, cpu;
++	int r;
+ 	struct kvm_x86_ops *ops = (struct kvm_x86_ops *)opaque;
+ 
+ 	if (kvm_x86_ops) {
+@@ -3150,13 +3163,7 @@ int kvm_arch_init(void *opaque)
+ 	kvm_mmu_set_mask_ptes(PT_USER_MASK, PT_ACCESSED_MASK,
+ 			PT_DIRTY_MASK, PT64_NX_MASK, 0);
+ 
+-	for_each_possible_cpu(cpu)
+-		per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
+-	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
+-		tsc_khz_ref = tsc_khz;
+-		cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
+-					  CPUFREQ_TRANSITION_NOTIFIER);
+-	}
++	kvm_timer_init();
+ 
+ 	return 0;
+ 
+-- 
+1.6.4.4
 
