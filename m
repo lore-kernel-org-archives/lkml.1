@@ -1,256 +1,420 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbZI2DXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbZI2Dw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753168AbZI2DXn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Sep 2009 23:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZI2DXn
+	id S1753255AbZI2Dw1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Sep 2009 23:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbZI2Dw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Sep 2009 23:23:43 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:40253 "EHLO mx1.redhat.com"
+	Mon, 28 Sep 2009 23:52:26 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:54220 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753010AbZI2DXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Sep 2009 23:23:42 -0400
-Date: Mon, 28 Sep 2009 23:22:55 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
-       yoshikawa.takuya@oss.ntt.co.jp
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20090929032255.GA10664@redhat.com>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <e98e18940909281737q142c788dpd20b8bdc05dd0eff@mail.gmail.com>
+	id S1753205AbZI2DwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Sep 2009 23:52:25 -0400
+Date: Tue, 29 Sep 2009 04:52:31 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Message-ID: <alpine.DEB.2.00.0909290444250.31099@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e98e18940909281737q142c788dpd20b8bdc05dd0eff@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 05:37:28PM -0700, Nauman Rafique wrote:
-> Hi Vivek,
-> Me, Divyesh, Fernando and Yoshikawa had a chance to have a chat with
-> Jens about IO controller during Linux Plumbers Conference '09. Jens
-> expressed his concerns about the size and complexity of the patches. I
-> believe that is a reasonable concern. We talked about things that
-> could be done to reduce the size of the patches. The requirement that
-> the "solution has to work with all IO schedulers" seems like a
-> secondary concern at this point; and it came out as one thing that can
-> help to reduce the size of the patch set.
 
-Initially doing cgroup based IO control only for CFQ should help a lot in
-reducing the patchset size.
+Hi Linus,
 
-> Another possibility is to
-> use a simpler scheduling algorithm e.g. weighted round robin, instead
-> of BFQ scheduler. BFQ indeed has great properties, but we cannot deny
-> the fact that it is complex to understand, and might be cumbersome to
-> maintain.
+Please pull the 'drm-next' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-next
 
-Core of the BFQ I have gotten rid of already. The remaining part is idle tree
-and data structures. I will see how can I simplify it further.
+This might seem a bit big and I did mean to get it to you last week,
+but got distracted by X things. However its been fairly well tested.
 
-> Also, hierarchical scheduling is something that could be
-> unnecessary in the first set of patches, even though cgroups are
-> hierarchical in nature.
+The only new feature which I feel is important enough to let in now
+as it shouldn't disrupt much, is to allow kms to resepct video= on the
+cmdline and set the initial mode and turn individual connectors on/off.
+(it contains one patch to fb to allow this, which I've sent past the
+fbdev list already)
+There are also some fixes for the EDID parser.
 
-Sure. Though I don't think that a lot of code is there because of
-hierarchical nature. If we solve the issue at CFQ layer, we have to
-maintain atleast two levels. One for queue and other for groups. So even
-the simplest solution becomes almost hierarchical in nature. But I will
-still see how to get rid of some code here too...
-> 
-> We are starting from a point where there is no cgroup based IO
-> scheduling in the kernel. And it is probably not reasonable to satisfy
-> all IO scheduling related requirements in one patch set. We can start
-> with something simple, and build on top of that. So a very simple
-> patch set that enables cgroup based proportional scheduling for CFQ
-> seems like the way to go at this point.
+Otherwise its mostly radeon related:
+radeon kms fixups and reogranising
+r600 non-kms bug fixes.
+radeon large kmalloc avoidance, we sometimes could try and do
+a 64k kmalloc if the userspace submitted a large enough packet,
+this could fail, I've avoided this by using 2 separate pages
+to cache parts of the userspace buffer.
 
-Sure, we can start with CFQ only. But a bigger question we need to answer
-is that is CFQ the right place to solve the issue? Jens, do you think 
-that CFQ is the right place to solve the problem?
+Dave.
 
-Andrew seems to favor a high level approach so that IO schedulers are less
-complex and we can provide fairness at high level logical devices also. 
+ drivers/gpu/drm/drm_crtc.c                 |    1 +
+ drivers/gpu/drm/drm_crtc_helper.c          |   88 ++++++-
+ drivers/gpu/drm/drm_edid.c                 |   46 +++-
+ drivers/gpu/drm/drm_fb_helper.c            |  235 +++++++++++++++++-
+ drivers/gpu/drm/drm_modes.c                |    3 +-
+ drivers/gpu/drm/i915/intel_fb.c            |    5 +-
+ drivers/gpu/drm/radeon/.gitignore          |    3 +
+ drivers/gpu/drm/radeon/avivod.h            |    9 -
+ drivers/gpu/drm/radeon/r100.c              |  197 ++++++---------
+ drivers/gpu/drm/radeon/r100_track.h        |   69 +++++-
+ drivers/gpu/drm/radeon/r200.c              |   79 +++---
+ drivers/gpu/drm/radeon/r300.c              |  137 ++++-------
+ drivers/gpu/drm/radeon/r500_reg.h          |    3 +
+ drivers/gpu/drm/radeon/r520.c              |  276 ++++++++++++--------
+ drivers/gpu/drm/radeon/r520d.h             |  187 ++++++++++++++
+ drivers/gpu/drm/radeon/r600.c              |   11 +-
+ drivers/gpu/drm/radeon/r600_cs.c           |  186 +++++++++++---
+ drivers/gpu/drm/radeon/radeon.h            |   76 ++++++-
+ drivers/gpu/drm/radeon/radeon_asic.h       |   80 +++---
+ drivers/gpu/drm/radeon/radeon_atombios.c   |    9 +-
+ drivers/gpu/drm/radeon/radeon_connectors.c |   79 +++++--
+ drivers/gpu/drm/radeon/radeon_cs.c         |  103 +++++++-
+ drivers/gpu/drm/radeon/radeon_device.c     |   11 +-
+ drivers/gpu/drm/radeon/radeon_drv.c        |    5 -
+ drivers/gpu/drm/radeon/radeon_fb.c         |   26 ++-
+ drivers/gpu/drm/radeon/radeon_kms.c        |   49 ----
+ drivers/gpu/drm/radeon/radeon_reg.h        |    1 +
+ drivers/gpu/drm/radeon/radeon_ttm.c        |    7 +-
+ drivers/gpu/drm/radeon/rs600.c             |   20 +--
+ drivers/gpu/drm/radeon/rs690.c             |    3 +-
+ drivers/gpu/drm/radeon/rv515.c             |  364 +++++++++++++++++++--------
+ drivers/gpu/drm/radeon/rv515d.h            |  385 +++++++++++++++++++++++++++-
+ drivers/gpu/drm/radeon/rv770.c             |   11 +-
+ drivers/video/fbmem.c                      |    2 +-
+ include/drm/drm_crtc.h                     |   14 +-
+ include/drm/drm_crtc_helper.h              |    4 +-
+ include/drm/drm_fb_helper.h                |   24 ++
+ 37 files changed, 2117 insertions(+), 691 deletions(-)
+ create mode 100644 drivers/gpu/drm/radeon/.gitignore
+ create mode 100644 drivers/gpu/drm/radeon/r520d.h
 
-I will again try to summarize my understanding so far about the pros/cons
-of each approach and then we can take the discussion forward.
+commit f0ed1f655aa0375e2abba84cc4e8e6c853d48555
+Author: Jerome Glisse <jglisse@redhat.com>
+Date:   Mon Sep 28 20:39:19 2009 +0200
 
-Fairness in terms of size of IO or disk time used
-=================================================
-On a seeky media, fairness in terms of disk time can get us better results
-instead fairness interms of size of IO or number of IO.
+    drm/radeon/kms: Convert R520 to new init path and associated cleanup
+    
+    Convert the r520 asic support to new init path, change are smaller than
+    previous one as most of the architecture is now in place and more code
+    sharing can happen btw various asics.
+    
+    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-If we implement some kind of time based solution at higher layer, then 
-that higher layer should know who used how much of time each group used. We
-can probably do some kind of timestamping in bio to get a sense when did it
-get into disk and when did it finish. But on a multi queue hardware there
-can be multiple requests in the disk either from same queue or from differnet
-queues and with pure timestamping based apparoch, so far I could not think
-how at high level we will get an idea who used how much of time.
+commit d39c3b895876427c5083a936e00f3f5b7f0fc1b3
+Author: Jerome Glisse <jglisse@redhat.com>
+Date:   Mon Sep 28 18:34:43 2009 +0200
 
-So this is the first point of contention that how do we want to provide
-fairness. In terms of disk time used or in terms of size of IO/number of
-IO.
+    drm/radeon/kms: Convert RV515 to new init path and associated cleanup
+    
+    Convert the rv515 asic support to new init path also add an explanation
+    in radeon.h about the new init path. There is also few cleanups
+    associated with this change (others asic calling rv515 helper
+    functions).
+    
+    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-Max bandwidth Controller or Proportional bandwidth controller
-=============================================================
-What is our primary requirement here? A weight based proportional
-bandwidth controller where we can use the resources optimally and any
-kind of throttling kicks in only if there is contention for the disk.
+commit f4e45d02e4135043fe98bc21be38527c516ad990
+Author: Mikael Pettersson <mikpe@it.uu.se>
+Date:   Mon Sep 28 18:27:23 2009 +0200
 
-Or we want max bandwidth control where a group is not allowed to use the
-disk even if disk is free. 
+    drm: fix radeon DRM warnings when !CONFIG_DEBUG_FS
+    
+    Compiling the radeon DRM driver with !CONFIG_DEBUG_FS
+    throws the following warnings:
+    
+    drivers/gpu/drm/radeon/radeon_ttm.c: In function 'radeon_ttm_debugfs_init':
+    drivers/gpu/drm/radeon/radeon_ttm.c:714: warning: unused variable 'i'
+    drivers/gpu/drm/radeon/radeon_ttm.c: At top level:
+    drivers/gpu/drm/radeon/radeon_ttm.c:692: warning: 'radeon_mem_types_list' defined but not used
+    drivers/gpu/drm/radeon/radeon_ttm.c:693: warning: 'radeon_mem_types_names' defined but not used
+    
+    Fix: move these variables inside the #if defined(CONFIG_DEBUG_FS)
+    block in radeon_ttm_debugsfs_init(), which is the only place using them.
+    
+    Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-Or we need both? I would think that at some point of time we will need
-both but we can start with proportional bandwidth control first.
+commit bea1d35b8e1533ac493305b3efe04a4b7def8a7f
+Author: Mikael Pettersson <mikpe@it.uu.se>
+Date:   Mon Sep 28 18:26:25 2009 +0200
 
-Fairness for higher level logical devices
-=========================================
-Do we want good fairness numbers for higher level logical devices also
-or it is sufficient to provide fairness at leaf nodes. Providing fairness
-at leaf nodes can help us use the resources optimally and in the process
-we can get fairness at higher level also in many of the cases.
+    drm: fix drm_fb_helper warning when !CONFIG_MAGIC_SYSRQ
+    
+    Compiling DRM throws the following warning if MAGIC_SYSRQ is disabled:
+    
+    drivers/gpu/drm/drm_fb_helper.c:101: warning: 'sysrq_drm_fb_helper_restore_op' defined but not used
+    
+    Fix: place sysrq_drm_fb_helper_restore_op and associated
+    definitions inside #ifdef CONFIG_MAGIC_SYSRQ.
+    
+    Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-But do we want strict fairness numbers on higher level logical devices
-even if it means sub-optimal usage of unerlying phsical devices?
+commit 4c57edba4588ddba40017fbde3cd356e600bdf80
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Mon Sep 28 15:37:25 2009 +1000
 
-I think that for proportinal bandwidth control, it should be ok to provide
-fairness at higher level logical device but for max bandwidth control it
-might make more sense to provide fairness at higher level. Consider a
-case where from a striped device a customer wants to limit a group to
-30MB/s and in case of leaf node control, if every leaf node provides
-30MB/s, it might accumulate to much more than specified rate at logical
-device.
+    drm/r600: fix memory leak introduced with 64k malloc avoidance fix.
+    
+    The legacy r600 path shares code, but doesn't share quite enough
+    to get the freeing correct. Free the pages here also.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-Latency Control and strong isolation between groups
-===================================================
-Do we want a good isolation between groups and better latencies and
-stronger isolation between groups?
+commit 74bf2ad508efa93db4254c9da9c7238da44e2c58
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Mon Sep 28 15:31:10 2009 +1000
 
-I think if problem is solved at IO scheduler level, we can achieve better
-latency control and hence stronger isolation between groups.
+    drm/kms: make fb helper work for all drivers.
+    
+    This initialises the fb helper with the connector helper,
+    so that the fb cmdline code works for intel as well.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-Higher level solutions should find it hard to provide same kind of latency
-control and isolation between groups as IO scheduler based solution.
+commit 210bed8f827471e271f894fb99ee879a5d27cf30
+Author: Alex Deucher <alexdeucher@gmail.com>
+Date:   Fri Sep 25 18:33:08 2009 -0400
 
-Fairness for buffered writes
-============================
-Doing io control at any place below page cache has disadvantage that page
-cache might not dispatch more writes from higher weight group hence higher
-weight group might not see more IO done. Andrew says that we don't have
-a solution to this problem in kernel and he would like to see it handled
-properly.
+    drm/radeon/r600: fix offset handling in CS parser
+    
+    Need add reloc offset to the offset in the actual
+    packet.  Fixes use of the DRAW_INDEX packet by the 3D
+    driver.
+    
+    [airlied: modified first one where idx_value == ib[idx+0]
+    
+    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-Only way to solve this seems to be to slow down the writers before they
-write into page cache. IO throttling patch handled it by slowing down 
-writer if it crossed max specified rate. Other suggestions have come in
-the form of dirty_ratio per memory cgroup or a separate cgroup controller
-al-together where some kind of per group write limit can be specified.
+commit 2b5d6c538b48772ba3351b8a8eed096f7af8de5d
+Author: Alex Deucher <alexdeucher@gmail.com>
+Date:   Fri Sep 25 17:32:14 2009 -0400
 
-So if solution is implemented at IO scheduler layer or at device mapper
-layer, both shall have to rely on another controller to be co-mounted
-to handle buffered writes properly.
+    drm/radeon/kms/r600: fix forcing pci mode on agp cards
+    
+    All we need to do on r6xx/r7xx is clear the RADEON_IS_AGP
+    flag; the rest is handled in r600.c
+    
+    fixes fdo bug 23990:
+    http://bugs.freedesktop.org/show_bug.cgi?id=23990
+    
+    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-Fairness with-in group
-======================
-One of the issues with higher level controller is that how to do fair
-throttling so that fairness with-in group is not impacted. Especially
-the case of making sure that we don't break the notion of ioprio of the
-processes with-in group.
+commit c5e617e2f84225a28823a3e19951273b9f59eb27
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Sat Sep 26 09:03:39 2009 +1000
 
-Especially io throttling patch was very bad in terms of prio with-in 
-group where throttling treated everyone equally and difference between
-process prio disappeared.
+    drm/radeon/kms: fix for the extra pages copying.
+    
+    Thanks to Michel for pointing this out to me, this is
+    why I need to get more sleep, over complicate this a bit.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-Reads Vs Writes
-===============
-A higher level control most likely will change the ratio in which reads
-and writes are dispatched to disk with-in group. It used to be decided
-by IO scheduler so far but with higher level groups doing throttling and
-possibly buffering the bios and releasing them later, they will have to
-come up with their own policy on in what proportion reads and writes
-should be dispatched. In case of IO scheduler based control, all the
-queuing takes place at IO scheduler and it still retains control of
-in what ration reads and writes should be dispatched.
+commit 2f67c6e0220e5311bb14895d32852250b2d9652b
+Author: Alex Deucher <alexdeucher@gmail.com>
+Date:   Fri Sep 25 16:35:11 2009 -0400
 
+    drm/radeon/kms/r600: add support for vline relocs
+    
+    Provides support for anti-tearing functionality
+    in the ddx.
+    
+    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-Summary
-=======
+commit 90ebd0655ac1a19e591f2fe8b9a871cc03cc3989
+Author: Alex Deucher <alexdeucher@gmail.com>
+Date:   Fri Sep 25 16:39:24 2009 -0400
 
-- An io scheduler based io controller can provide better latencies,
-  stronger isolation between groups, time based fairness and will not
-  interfere with io schedulers policies like class, ioprio and
-  reader vs writer issues.
+    drm/radeon/kms: fix some bugs in vline reloc
+    
+    - fix offset of NOP packet for parsing
+    - fix p->idx increments
+    - fix bad mask when updating crtc vline info
+    
+    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-  But it can gunrantee fairness at higher logical level devices.
-  Especially in case of max bw control, leaf node control does not sound
-  to be the most appropriate thing.
+commit 974b16e33ea626c9854f0f34fa5455a18822e159
+Author: Alex Deucher <alexdeucher@gmail.com>
+Date:   Fri Sep 25 10:06:39 2009 -0400
 
-- IO throttling provides max bw control in terms of absolute rate. It has
-  the advantage that it can provide control at higher level logical device
-  and also control buffered writes without need of additional controller
-  co-mounted.
+    drm/radeon/kms/r600: clamp vram to aperture size
+    
+    r6xx and r7xx was missing this.  We don't support
+    non-CPU accessible vram yet.
+    
+    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-  But it does only max bw control and not proportion control so one might
-  not be using resources optimally. It looses sense of task prio and class
-  with-in group as any of the task can be throttled with-in group. Because
-  throttling does not kick in till you hit the max bw limit, it should find
-  it hard to provide same latencies as io scheduler based control.
+commit 8ef8678c8f6131ca5941fa387cd3939c68c4f36d
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Sat Sep 26 06:39:00 2009 +1000
 
-- dm-ioband also has the advantage that it can provide fairness at higher
-  level logical devices.
+    drm/kms: protect against fb helper not being created.
+    
+    If drivers don't init the fb helper on the connector, the cmdline
+    code won't work, but it shouldn't crash either.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-  But, fairness is provided only in terms of size of IO or number of IO.
-  No time based fairness. It is very throughput oriented and does not 
-  throttle high speed group if other group is running slow random reader.
-  This results in bad latnecies for random reader group and weaker
-  isolation between groups.
+commit adea4796cfb9b74d340f9e32ba523fb61305d0b7
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Fri Sep 25 14:23:47 2009 +1000
 
-  Also it does not provide fairness if a group is not continuously
-  backlogged. So if one is running 1-2 dd/sequential readers in the group,
-  one does not get fairness until workload is increased to a point where
-  group becomes continuously backlogged. This also results in poor
-  latencies and limited fairness.
+    drm/r600: get values from the passed in IB not the copy.
+    
+    this avoids reading back the IB on AGP, also it avoids
+    the race where since we haven't fetched the page from the main IB
+    and written it to the gpu one, reading back fetches 0.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-At this point of time it does not look like a single IO controller all
-the scenarios/requirements. This means few things to me.
+commit 31edd4824ec42e7cba26498fbd35df6c66b098ba
+Author: Amerigo Wang <amwang@redhat.com>
+Date:   Wed Sep 23 04:24:05 2009 -0400
 
-- Drop some of the requirements and go with one implementation which meets
-  those reduced set of requirements.
+    drm: create gitignore file for radeon
+    
+    Got lots of untracked files after compiling.
+    These files are generated, thus should be ignored by git.
+    
+    Signed-off-by: WANG Cong <amwang@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-- Have more than one IO controller implementation in kenrel. One for lower
-  level control for better latencies, stronger isolation and optimal resource
-  usage and other one for fairness at higher level logical devices and max
-  bandwidth control. 
+commit e3590096f7563c6e75b77336ab8775f9a168b0f6
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Sep 23 15:49:20 2009 +1000
 
-  And let user decide which one to use based on his/her needs. 
+    drm/radeon/kms: remove unneeded master create/destroy functions.
+    
+    We shouldn't need these at all in radeon kms mode.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-- Come up with more intelligent way of doing IO control where single
-  controller covers all the cases.
+commit d50ba256b5f1478e15accfcfda9b72fd7a661364
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Wed Sep 23 14:44:08 2009 +1000
 
-At this point of time, I am more inclined towards option 2 of having more
-than one implementation in kernel. :-) (Until and unless we can brainstrom
-and come up with ideas to make option 3 happen).
+    drm/kms: start adding command line interface using fb.
+    
+    [note this requires an fb patch posted to linux-fbdev-devel already]
+    
+    This uses the normal video= command line option to control the kms
+    output setup at boot time. It is used to override the autodetection
+    done by kms.
+    
+    video= normally takes a framebuffer as the first parameter, in kms
+    it will take a connector name, DVI-I-1, or LVDS-1 etc. If no output
+    connector is specified the mode string will apply to all connectors.
+    
+    The mode specification used will match down the probed modes, and if
+    no mode is found it will add a CVT mode that matches.
+    
+    video=1024x768 - all connectors match a 1024x768 mode or add a CVT on
+    video=VGA-1:1024x768, VGA-1 connector gets mode only.
+    
+    The same strings as used in current fb modedb.c are used, except I've
+    added three more letters, e, D, d, e = enable, D = enable Digital,
+    d = disable, which allow a connector to be forced into a certain state.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-> 
-> It would be great if we discuss our plans on the mailing list, so we
-> can get early feedback from everyone.
- 
-This is what comes to my mind so far. Please add to the list if I have missed
-some points. Also correct me if I am wrong about the pros/cons of the
-approaches.
+commit f80330357284c908e1f67cc8b4d8e56a3e2f6fc6
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Wed Sep 16 20:45:09 2009 +1000
 
-Thoughts/ideas/opinions are welcome...
+    fb: change rules for global rules match.
+    
+    Having a : should be enough 'fb:' isn't really useful
+    if the fb wants to a kms output ID.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
 
-Thanks
-Vivek
+commit 513bcb4655e68706594e45dfa1d4b181500110ba
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Wed Sep 23 16:56:27 2009 +1000
+
+    drm/radeon/kms: don't require up to 64k allocations. (v2)
+    
+    This avoids needing to do a kmalloc > PAGE_SIZE for the main
+    indirect buffer chunk, it adds an accessor for all reads from
+    the chunk and caches a single page at a time for subsequent
+    reads.
+    
+    changes since v1:
+    Use a two page pool which should be the most common case
+    a single packet spanning > PAGE_SIZE will be hit, but I'm
+    having trouble seeing anywhere we currently generate anything like that.
+    hopefully proper short page copying at end
+    added parser_error flag to set deep errors instead of having to test
+    every ib value fetch.
+    fixed bug in patch that went to list.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 35e4b7af21d77933abda3d41d1672589eb6c960c
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Fri Sep 25 11:56:50 2009 +1000
+
+    drm/radeon/kms: enable dac load detection by default.
+    
+    when I added the property I forgot to enable it.
+    
+    Thanks to soreau on #radeon for tracking it down.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 4bbd4973703bf8a5f00f05eff30a99cd9814f37f
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Fri Sep 25 08:56:12 2009 +1000
+
+    drm/radeon/kms: enable r600 tv outputs.
+    
+    I never changed this back when I wrote tv-out support.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit f066a17d9f8d0a20d01d1aa9badce7f43c7bd6ad
+Author: Adam Jackson <ajax@redhat.com>
+Date:   Wed Sep 23 17:31:21 2009 -0400
+
+    drm/edid: Fix standard timing parse for EDID <= 1.2
+    
+    Aspect ratio code of 0 means 1:1 before EDID 1.3.
+    
+    Signed-off-by: Adam Jackson <ajax@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 93dc6c2b0d97a55508144073838e041140b206cd
+Author: Adam Jackson <ajax@redhat.com>
+Date:   Wed Sep 23 17:31:09 2009 -0400
+
+    drm/edid: Detailed standard timing blocks have six timings, not five.
+    
+    Signed-off-by: Adam Jackson <ajax@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 23425caeebc2e06629ef04f6197543cfe3f7d7b2
+Author: Adam Jackson <ajax@redhat.com>
+Date:   Wed Sep 23 17:30:58 2009 -0400
+
+    drm/edid: Ignore bad standard timings.
+    
+    Signed-off-by: Adam Jackson <ajax@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 083ae0560ab53b039aaa897b77458cbadf19050d
+Author: Adam Jackson <ajax@redhat.com>
+Date:   Wed Sep 23 17:30:45 2009 -0400
+
+    drm/edid: const cleanup
+    
+    Signed-off-by: Adam Jackson <ajax@redhat.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
