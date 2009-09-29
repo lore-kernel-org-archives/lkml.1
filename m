@@ -1,162 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbZI2H76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbZI2IG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753324AbZI2H76 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 03:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbZI2H75
+	id S1753386AbZI2IG4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 04:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZI2IGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 03:59:57 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:44874 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752720AbZI2H74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 03:59:56 -0400
-Message-ID: <4AC1BE68.2080504@atmel.com>
-Date: Tue, 29 Sep 2009 09:59:36 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 29 Sep 2009 04:06:55 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:36930 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753097AbZI2IGx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 04:06:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=I6XXcXQds6ADPn3iWNCNY8vsqATE9dxfOYzlt+pNgDKnLMEe0d6p6a4CrkzYvIG0ZA
+         ScN0ZNnaxeOz2oxlb5XOvl6Gi2swLCH17/GS++1GIgylBRmpawVki3iqp4IDYaHl4npt
+         6eQpAwTt03MWelYu7yTf5gWtaLEYxdD/V4RD8=
+Date: Tue, 29 Sep 2009 10:06:57 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: John Kacur <jkacur@redhat.com>
+Cc: mingo@elte.hu, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org
+Subject: Re: [PATCH] Put common histogram functions for perf in their own
+	file
+Message-ID: <20090929080654.GC5233@nowhere>
+References: <alpine.LFD.2.00.0909281457530.8316@localhost.localdomain> <20090928140158.GA6178@nowhere> <alpine.LFD.2.00.0909281652001.10299@localhost.localdomain>
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>, Greg Kroah-Hartman <gregkh@suse.de>
-CC: linux-usb@vger.kernel.org, avictor.za@gmail.com,
-       linux-arm-kernel@lists.infradead.org, patrice.vilchez@atmel.com,
-       linux-kernel@vger.kernel.org, Hong Xu <hong.xu@atmel.com>
-Subject: Re: [PATCH 4/5] at91/USB: USB drivers modifications for at91sam9g10
-References: <1245341772-1689-1-git-send-email-nicolas.ferre@atmel.com> <4AB0D325.9080407@atmel.com> <4ABC9A4C.8000702@atmel.com> <200909251051.34916.david-b@pacbell.net>
-In-Reply-To: <200909251051.34916.david-b@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0909281652001.10299@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell :
-> On Friday 25 September 2009, Nicolas Ferre wrote:
->> Greg,
->>
->> Please, can you consider the inclusion of this patch. I have no news
->> about it for a long time...
+On Mon, Sep 28, 2009 at 05:04:07PM +0200, John Kacur wrote:
+> perf annotate still will not sort the entries with these changes.
+> because callchain will be equal to zero.
+
+
+
+The sorting does not only applies to callchains but also on
+histogram entries.
+
+
+ 
+> Calling output__resort(total) will be harmless because the calculation
+> will be thrown away in output__insert_entry() here:
+> if (callchain)
+> 		callchain_param.sort(&he->sorted_chain, &he->callchain,
+> 				      min_callchain_hits, &callchain_param);
+
+
+
+Hmm, but the histogram entries will still be sorted, I might be wrong
+but it doesn't seem to be needed.
+
+That said it's not something introduced by your patch, it was
+already there, but I guess it would be a nice separate cleanup patch.
+
+
+> From 7c6a2035c32d17db0e566a36c7e345ec2182f722 Mon Sep 17 00:00:00 2001
+> From: John Kacur <jkacur@redhat.com>
+> Date: Mon, 28 Sep 2009 14:53:08 +0200
+> Subject: [PATCH] Put common histogram functions for perf in their own file
 > 
-> ISTR either acking this or suggesting it go with the rest
-> of the G10 patches ... regardless, seems OK to me now that
-> its precursors have merged.
-
-Good.
-
-Greg, can you handle this for inclusion in mainline soon ?
-
-Thanks, Bye.
-
->> Here is a link to its patchwork entry:
->> http://patchwork.kernel.org/patch/31173/
->>
->> Thanks for your help.
->>
->> Nicolas Ferre :
->>> Hi,
->>>
->>> Here is a little "ping" about integration of this patch.
->>>
->>> Nicolas Ferre :
->>>> From: Hong Xu <hong.xu@atmel.com>
->>>>
->>>> Modify both host and gadget USB drivers for at91sam9g10.
->>>> This add a clock management equivalent to at91sam9261 on usb drivers.
->>>> It also add the way of handling gadget pull-ups (like the at91sam9261).
->>> I wonder if we can consider its inclusion as at91sam9g10 is now
->>> integrated in mainline.
->>> Do you want me to split this in several pieces for host/gadget split.
->>>
->>> Thanks.
->>>
->>>> Signed-off-by: Hong Xu <hong.xu@atmel.com>
->>>> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
->>>> ---
->>>>  drivers/usb/gadget/at91_udc.c |    6 +++---
->>>>  drivers/usb/host/ohci-at91.c  |   10 +++++-----
->>>>  2 files changed, 8 insertions(+), 8 deletions(-)
->>>>
->>>> diff --git a/drivers/usb/gadget/at91_udc.c b/drivers/usb/gadget/at91_udc.c
->>>> index 0b2bb8f..bfed3d9 100644
->>>> --- a/drivers/usb/gadget/at91_udc.c
->>>> +++ b/drivers/usb/gadget/at91_udc.c
->>>> @@ -892,7 +892,7 @@ static void pullup(struct at91_udc *udc, int is_on)
->>>>  
->>>>  			txvc |= AT91_UDP_TXVC_PUON;
->>>>  			at91_udp_write(udc, AT91_UDP_TXVC, txvc);
->>>> -		} else if (cpu_is_at91sam9261()) {
->>>> +		} else if (cpu_is_at91sam9261() || cpu_is_at91sam9g10()) {
->>>>  			u32	usbpucr;
->>>>  
->>>>  			usbpucr = at91_sys_read(AT91_MATRIX_USBPUCR);
->>>> @@ -910,7 +910,7 @@ static void pullup(struct at91_udc *udc, int is_on)
->>>>  
->>>>  			txvc &= ~AT91_UDP_TXVC_PUON;
->>>>  			at91_udp_write(udc, AT91_UDP_TXVC, txvc);
->>>> -		} else if (cpu_is_at91sam9261()) {
->>>> +		} else if (cpu_is_at91sam9261() || cpu_is_at91sam9g10()) {
->>>>  			u32	usbpucr;
->>>>  
->>>>  			usbpucr = at91_sys_read(AT91_MATRIX_USBPUCR);
->>>> @@ -1692,7 +1692,7 @@ static int __init at91udc_probe(struct platform_device *pdev)
->>>>  		udc->ep[3].maxpacket = 64;
->>>>  		udc->ep[4].maxpacket = 512;
->>>>  		udc->ep[5].maxpacket = 512;
->>>> -	} else if (cpu_is_at91sam9261()) {
->>>> +	} else if (cpu_is_at91sam9261() || cpu_is_at91sam9g10()) {
->>>>  		udc->ep[3].maxpacket = 64;
->>>>  	} else if (cpu_is_at91sam9263()) {
->>>>  		udc->ep[0].maxpacket = 64;
->>>> diff --git a/drivers/usb/host/ohci-at91.c b/drivers/usb/host/ohci-at91.c
->>>> index b29b0fe..fb64def 100644
->>>> --- a/drivers/usb/host/ohci-at91.c
->>>> +++ b/drivers/usb/host/ohci-at91.c
->>>> @@ -35,7 +35,7 @@ extern int usb_disabled(void);
->>>>  
->>>>  static void at91_start_clock(void)
->>>>  {
->>>> -	if (cpu_is_at91sam9261())
->>>> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10())
->>>>  		clk_enable(hclk);
->>>>  	clk_enable(iclk);
->>>>  	clk_enable(fclk);
->>>> @@ -46,7 +46,7 @@ static void at91_stop_clock(void)
->>>>  {
->>>>  	clk_disable(fclk);
->>>>  	clk_disable(iclk);
->>>> -	if (cpu_is_at91sam9261())
->>>> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10())
->>>>  		clk_disable(hclk);
->>>>  	clocked = 0;
->>>>  }
->>>> @@ -142,7 +142,7 @@ static int usb_hcd_at91_probe(const struct hc_driver *driver,
->>>>  
->>>>  	iclk = clk_get(&pdev->dev, "ohci_clk");
->>>>  	fclk = clk_get(&pdev->dev, "uhpck");
->>>> -	if (cpu_is_at91sam9261())
->>>> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10())
->>>>  		hclk = clk_get(&pdev->dev, "hck0");
->>>>  
->>>>  	at91_start_hc(pdev);
->>>> @@ -156,7 +156,7 @@ static int usb_hcd_at91_probe(const struct hc_driver *driver,
->>>>  	/* Error handling */
->>>>  	at91_stop_hc(pdev);
->>>>  
->>>> -	if (cpu_is_at91sam9261())
->>>> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10())
->>>>  		clk_put(hclk);
->>>>  	clk_put(fclk);
->>>>  	clk_put(iclk);
->>>> @@ -193,7 +193,7 @@ static void usb_hcd_at91_remove(struct usb_hcd *hcd,
->>>>  	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
->>>>  	usb_put_hcd(hcd);
->>>>  
->>>> -	if (cpu_is_at91sam9261())
->>>> +	if (cpu_is_at91sam9261() || cpu_is_at91sam9g10())
->>>>  		clk_put(hclk);
->>>>  	clk_put(fclk);
->>>>  	clk_put(iclk);
+> Move histogram related functions into their own files (hist.c and hist.h)
+> and make use of them in builtin-annotate.c and builtin-report.c
+> 
+> Signed-off-by: John Kacur <jkacur@redhat.com>
 
 
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
--- 
-Nicolas Ferre
+Thanks!
 
