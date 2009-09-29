@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZI2IaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbZI2IlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbZI2IaK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 04:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZI2IaK
+	id S1753496AbZI2IlX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 04:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbZI2IlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 04:30:10 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:55353 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752830AbZI2IaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 04:30:09 -0400
-Message-ID: <4AC1C59F.6010703@redhat.com>
-Date: Tue, 29 Sep 2009 10:30:23 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 29 Sep 2009 04:41:22 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59385 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751146AbZI2IlW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 04:41:22 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AC1C80F.8010904@jp.fujitsu.com>
+Date: Tue, 29 Sep 2009 17:40:47 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Zachary Amsden <zamsden@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [PATCH v2: kvm 4/4] Fix hotplug of CPUs for KVM.
-References: <1254197072-889-1-git-send-email-zamsden@redhat.com> <1254197072-889-2-git-send-email-zamsden@redhat.com> <1254197072-889-3-git-send-email-zamsden@redhat.com> <1254197072-889-4-git-send-email-zamsden@redhat.com> <1254197072-889-5-git-send-email-zamsden@redhat.com>
-In-Reply-To: <1254197072-889-5-git-send-email-zamsden@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <ak@linux.intel.com>
+CC: Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/5] x86, mce: rename finished to valid in struct mce
+References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com> <4AC05BBF.3010102@jp.fujitsu.com> <4AC05CFC.4020702@jp.fujitsu.com> <4AC0FF58.5040302@linux.intel.com>
+In-Reply-To: <4AC0FF58.5040302@linux.intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/29/2009 06:04 AM, Zachary Amsden wrote:
-> Both VMX and SVM require per-cpu memory allocation, which is done at module
-> init time, for only online cpus.
->
-> Backend was not allocating enough structure for all possible CPUs, so
-> new CPUs coming online could not be hardware enabled.
->
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index e27b7a9..2cd8bc2 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -1716,9 +1716,6 @@ static int kvm_cpu_hotplug(struct notifier_block *notifier, unsigned long val,
->   {
->   	int cpu = (long)v;
->
-> -	if (!kvm_usage_count)
-> -		return NOTIFY_OK;
-> -
->   	val&= ~CPU_TASKS_FROZEN;
->   	switch (val) {
->   	case CPU_DYING:
->    
+Andi Kleen wrote:
+> struct mce is exported to user space. I don't think it's a good idea
+> to rename fields in exported structures like this.  That just causes confusion.
 
-I still don't see how this bit can work.  Maybe if we move the 
-notification registration to the point where kvm_usage_count is bumped.
+I don't know any other real user of this struct than the mcelog and the
+mce test suite.  In other words, I expected that you (Huang and Andi) are
+only users who may be confused by this kind of change.
 
--- 
-error compiling committee.c: too many arguments to function
+I believe this exported struct is not well defined.
+At least I could not figure out why we need to pass the value of .finished
+from/to user space.
+
+However, this change is not urgent thing.  I'll put aside this for now.
+
+
+Thanks,
+H.Seto
 
