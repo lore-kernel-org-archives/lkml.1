@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbZI2N6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbZI2OEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752294AbZI2N6G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 09:58:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZI2N6F
+	id S1752594AbZI2OEX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 10:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZI2OEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 09:58:05 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:39702 "EHLO gir.skynet.ie"
+	Tue, 29 Sep 2009 10:04:22 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:35086 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751434AbZI2N6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 09:58:04 -0400
-Date: Tue, 29 Sep 2009 14:58:11 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, david.graham@intel.com,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG 2.6.30+] e100 sometimes causes oops during resume
-Message-ID: <20090929135810.GB14911@csn.ul.ie>
-References: <20090915120538.GA26806@bizet.domek.prywatny> <200909170118.53965.rjw@sisk.pl> <4AB29F4A.3030102@intel.com> <200909180027.37387.rjw@sisk.pl> <20090922233531.GA3198@bizet.domek.prywatny>
+	id S1750698AbZI2OEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 10:04:21 -0400
+Date: Tue, 29 Sep 2009 15:59:59 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Evgeny Polyakov <johnpol@2ka.mipt.ru>,
+       Scott James Remnant <scott@ubuntu.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Matt Helsley <matthltc@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Evgeniy Polyakov <zbr@ioremap.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH] connector: Fix sid connector (was: Badness at
+	kernel/softirq.c:143...)
+Message-ID: <20090929135959.GA6806@redhat.com>
+References: <200909251123.03482.borntraeger@de.ibm.com> <fbbbe0a028fa.4ac1f1c0@2ka.mipt.ru> <20090929132415.GB4538@redhat.com> <200909291547.21528.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090922233531.GA3198@bizet.domek.prywatny>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200909291547.21528.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 01:35:31AM +0200, Karol Lewandowski wrote:
-> On Fri, Sep 18, 2009 at 12:27:37AM +0200, Rafael J. Wysocki wrote:
-> > On Thursday 17 September 2009, Graham, David wrote:
-> > > Rafael J. Wysocki wrote:
-> > > > I guess the driver releases its DMA buffer during suspend and attempts to
-> > > > allocate it back on resume, which is not really smart (if that really is the
-> > > > case).
-> 
-> > > Yes, we free a 70KB block (0x80 by 0x230 bytes) on suspend and 
-> > > reallocate on resume, and so that's an Order 5 request. It looks 
-> > > symmetric, and hasn't changed for years. I don't think we are leaking 
-> > > memory, which points back to that the memory is too fragmented to 
-> > > satisfy the request.
-> > > 
-> > > I also concur that Rafael's commit 6905b1f1 shouldn't change the logic 
-> > > in the driver for systems with e100 (like yours Karol) that could 
-> > > already sleep, and I don't see anything else in the driver that looks to 
-> > > be relevant. I'm expecting that your test result without commit 6905b1f1 
-> > > will still show the problem.
-> > > 
-> > > So I wonder if this new issue may be triggered by some other change in 
-> > > the memory subsystem ?
-> 
-> > I think so.  There have been reports about order 2 allocations failing for
-> > 2.6.31, so it looks like newer kernels are more likely to expose such problems.
-> > 
-> > Adding linux-mm to the CC list.
-> 
-> I've hit this bug 2 times since my last email.  Is there anything I
-> could do?
-> 
-> Maybe I should revert following commits (chosen somewhat randomly)?
-> 
-> 1. 49255c619fbd482d704289b5eb2795f8e3b7ff2e
-> 
-> 2. dd5d241ea955006122d76af88af87de73fec25b4 - alters changes made by
-> commit above
-> 
-> Any ideas?
-> 
+On 09/29, Christian Borntraeger wrote:
+>
+> --- linux-2.6.orig/kernel/sys.c
+> +++ linux-2.6/kernel/sys.c
+> @@ -1110,6 +1110,8 @@ SYSCALL_DEFINE0(setsid)
+>  	err = session;
+>  out:
+>  	write_unlock_irq(&tasklist_lock);
+> +	if (!err)
+> +		proc_sid_connector(sid);
 
-Those commits should only make a difference on small-memory machines.
-The exact value of "small" varies but on 32 bit x86 without PAE, it would
-be 20MB of RAM. The fact reverting the two patches makes any difference at
-all is a surprise and likely a co-incidence.
+sys_setsid() returns the session nr on success, not zero.
 
-If you have a reliable reproduction case, would it be possible to bisect
-between the points
-d239171e4f6efd58d7e423853056b1b6a74f1446..b70d94ee438b3fd9c15c7691d7a932a135c18101
-to see if the problem is in there anywhere?
+	if (err > 0)
+		proc_sid_connector(sid);
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Otherwize I think the patch is fine. Not only it should fix the problem,
+imho it makes the code cleaner.
+
+If Scott still thinks daemonize() should report too, we can change it.
+
+(I'd suggest you to CC Andrew if you are going to re-send)
+
+Oleg.
+
