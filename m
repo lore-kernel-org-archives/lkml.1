@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbZI2Ety@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbZI2FBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752055AbZI2Ety (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 00:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbZI2Etx
+	id S1752751AbZI2FBL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 01:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZI2FBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 00:49:53 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:44883 "EHLO e3.ny.us.ibm.com"
+	Tue, 29 Sep 2009 01:01:10 -0400
+Received: from mail.perches.com ([173.55.12.10]:1263 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbZI2Etx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 00:49:53 -0400
-Date: Mon, 28 Sep 2009 21:49:55 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+	id S1752188AbZI2FBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 01:01:10 -0400
+From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: [PATCH tip/core/rcu 0/3] rcu: simplify rcu_barrier() interaction
-	with CPU hotplug
-Message-ID: <20090929044955.GA12486@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Cc: Adrian Hunter <adrian.hunter@nokia.com>, Alex Elder <aelder@sgi.com>,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       Christoph Hellwig <hch@lst.de>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>,
+       Matt Mackall <mpm@selenic.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Neil Brown <neilb@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
+       xfs-masters@oss.sgi.com
+Subject: [PATCH 0/9] Add vsprintf extension %pU to print UUID/GUIDs and use it
+Date: Mon, 28 Sep 2009 22:01:02 -0700
+Message-Id: <cover.1254193019.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset simplifies the interaction of rcu_barrier() with CPU
-hotplug operations.  The main point of this patchset is to impose an
-invariant: offline CPUs never have any RCU callbacks queued.  However,
-rcutiny doesn't permit CPU hotplug (yes, I have worked in environments
-where the last CPU could be offlined, but Linux is thankfully not one of
-them), so the patchset goes as follows:
+It makes an x86 defconfig smaller compiled with gcc 4.4 smaller too
 
-o	Replace the rcu_barrier enum with a pointer to the relevant
-	call_rcu() function, thus eliminating any confusion about
-	which .h file this enum should reside in.
+old:
+$ size vmlinux
+   text	   data	    bss	    dec	    hex	filename
+6981105	 678300	1359668	9019073	 899ec1	vmlinux
 
-o	Move the rcu_barrier() code to rcutree, and create a lightweight
-	variant of rcu_barrier() that is suitable for rcutiny.  This
-	lightweight variant is identical to rcutree's implementation of
-	synchronize_rcu() and friends.
+new:
+$ size vmlinux
+   text	   data	    bss	    dec	    hex	filename
+6980770	 678380	1359668	9018818	 899dc2	vmlinux
 
-o	Create a list in the rcu_state structure that holds RCU
-	callbacks that were "orphaned" by CPUs that just went offline.
-	The CPU_DYING notifier moves all RCU callbacks from the outgoing
-	CPU to the rcu_state lists, and the CPU_DEAD notifier and
-	_rcu_barrier() function "adopt" these orphans.
+Joe Perches (9):
+  lib/vsprintf.c: Add %pU to print UUID/GUIDs
+  efi.h: Use %pUr to print UUIDs
+  random.c: Use %pU to print UUIDs
+  drivers/firmware/dmi_scan.c: Use %pUX to print UUIDs
+  drivers/md/md.c: Use %pU to print UUIDs
+  drivers/media/video/uvc: Use %pUr to print UUIDs
+  fs/gfs2/sys.c: Use %pUX to print UUIDs
+  fs/ubifs: Use %pUX to print UUIDs
+  fs/xfs/xfs_log_recover.c: Use %pU to print UUIDs
 
- b/kernel/rcupdate.c       |   33 +++-------
- b/kernel/rcutiny.c        |   36 ++++++++++
- b/kernel/rcutree.c        |  120 ++++++++++++++++++++++++++++++++++++
- b/kernel/rcutree.h        |   11 +++
- b/kernel/rcutree_plugin.h |   34 ++++++++++
- b/kernel/rcutree_trace.c  |    5 -
- kernel/rcupdate.c         |  120 ------------------------------------
- kernel/rcutree.c          |  151 ++++++++++++++++++++++++----------------------
- 8 files changed, 291 insertions(+), 219 deletions(-)
+ drivers/char/random.c                |   10 +---
+ drivers/firmware/dmi_scan.c          |    5 +--
+ drivers/md/md.c                      |   16 ++------
+ drivers/media/video/uvc/uvc_ctrl.c   |   69 ++++++++++++++++------------------
+ drivers/media/video/uvc/uvc_driver.c |    7 +--
+ drivers/media/video/uvc/uvcvideo.h   |   10 -----
+ fs/gfs2/sys.c                        |   16 +------
+ fs/ubifs/debug.c                     |    9 +---
+ fs/ubifs/super.c                     |    7 +---
+ fs/xfs/xfs_log_recover.c             |   14 ++-----
+ include/linux/efi.h                  |    6 +--
+ lib/vsprintf.c                       |   58 ++++++++++++++++++++++++++++-
+ 12 files changed, 111 insertions(+), 116 deletions(-)
+
