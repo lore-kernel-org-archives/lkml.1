@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbZI2N33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752286AbZI2NbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360AbZI2N33 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 09:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbZI2N33
+	id S1752286AbZI2NbX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 09:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZI2NbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 09:29:29 -0400
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:48736 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751643AbZI2N32 (ORCPT
+	Tue, 29 Sep 2009 09:31:22 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:42321 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbZI2NbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 09:29:28 -0400
-Message-ID: <4AC20BB8.4070509@free.fr>
-Date: Tue, 29 Sep 2009 15:29:28 +0200
-From: Daniel Lezcano <daniel.lezcano@free.fr>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 29 Sep 2009 09:31:21 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: Amit Shah <amit.shah@redhat.com>
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for generic guest and host communication
+Date: Tue, 29 Sep 2009 15:31:23 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-release; KDE/4.3.1; i686; ; )
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Alan Cox <alan@linux.intel.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <200909291456.56723.borntraeger@de.ibm.com> <20090929130950.GA23395@amit-x200.redhat.com>
+In-Reply-To: <20090929130950.GA23395@amit-x200.redhat.com>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, mingo@elte.hu, torvalds@linux-foundation.org,
-       xemul@openvz.org
-Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
-References: <1253749920-18673-1-git-send-email-orenl@librato.com>	<20090924154139.2a7dd5ec.akpm@linux-foundation.org> <20090928163704.GA3327@us.ibm.com>
-In-Reply-To: <20090928163704.GA3327@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909291531.23389.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn wrote:
-> Quoting Andrew Morton (akpm@linux-foundation.org):
->   
->> On Wed, 23 Sep 2009 19:50:40 -0400
->> Oren Laadan <orenl@librato.com> wrote:
->>     
->>> Q: What about namespaces ?
->>> A: Currrently, UTS and IPC namespaces are restored. They demonstrate
->>>    how namespaces are handled. More to come.
->>>       
->> Will this new code muck up the kernel?
->>     
+Am Dienstag 29 September 2009 15:09:50 schrieb Amit Shah:
+> Great, thanks. However I was thinking of moving this init to the probe()
+> routine instead of in the init_conosle routine just because multiple
+> consoles can be added and we don't want to init this each time.. just
+> once in probe is fine.
 
-[ cut ]
-> For network namespaces i think it's clearer that a wrapper
-> program should set up the network for the restarted init task,
-> while the usrspace code should recreate any private network
-> namespaces and veth's which were created by the application.
-> But it still needs discussion.
->   
-Ok for the restart, but for the checkpoint, how do you access the 
-network setup from a process which belongs to another namespace context ?
+If you have new patch CC me and I can give it a spin.
 
+
+> > I am a bit reluctant to Ack the whole change, since my preference would
+> > have been to not merge virtio serial/console and instead keeping both
+> > separate. We have already managed to clutter all other virtio drivers
+> > with tons of configuration stuff and feature bits - and every driver uses
+> > a different model for configuration and commands (feature bits, config
+> > space, config_change indication, extra config virtqueue, commands
+> > embedded into the data....). Using a different device ID for a different
+> > use seem like a better way to me.
+> 
+> Well, Anthony described your objection as a comment in passing and that
+> you weren't strongly against merging the two drivers when I brought up
+> your argument sometime back.
+> 
+> Also, it was difficult to make progress and just keep fighting about
+> these issues. So even though I didn't like merging the stuff, I had to.
+
+Sure, you were caught between two stools... I have to admit that I dropped of 
+this discussion and did not follow up - I simply considered my wedding and 
+honeymoon more important ;-)
+
+I still belive that I am right and Anthony is wrong about this  8-), but if 
+merging is the way to go - so be it. 
