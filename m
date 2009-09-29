@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbZI2XkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbZI2Xrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbZI2XkJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 19:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbZI2XkI
+	id S1753345AbZI2Xrn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 19:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZI2Xrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 19:40:08 -0400
-Received: from bld-mail12.adl6.internode.on.net ([150.101.137.97]:48173 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752830AbZI2XkI (ORCPT
+	Tue, 29 Sep 2009 19:47:42 -0400
+Received: from mail-pz0-f191.google.com ([209.85.222.191]:58220 "EHLO
+	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752039AbZI2Xrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 19:40:08 -0400
-Date: Wed, 30 Sep 2009 09:39:36 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Chris Mason <chris.mason@oracle.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: regression in page writeback
-Message-ID: <20090929233936.GG9464@discord.disaster>
-References: <20090923022622.GB11918@localhost> <20090922193622.42c00012.akpm@linux-foundation.org> <20090923140058.GA2794@think> <20090924031508.GD6456@localhost> <20090925001117.GA9464@discord.disaster> <20090925003820.GK2662@think> <20090925050413.GC9464@discord.disaster> <20090925064503.GA30450@localhost> <20090928010700.GE9464@discord.disaster> <20090928142524.GC6405@think>
+	Tue, 29 Sep 2009 19:47:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=mC4suecGCbYh/qBCdLOjuIwk/mfVK3naqpNbozCkTnEgDP+ap/qAE4z/uT6XowDoEA
+         TzCXrnlQcWb/h1hhg2zGxdNV83YK8ELlWflymnigmm4u11HRBhBpeU6hdXYDA3N0Ekb+
+         Vyk7Gbuyh+GRCMTT/9mBg1rfHr4G7Hin+EmZk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090928142524.GC6405@think>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Tue, 29 Sep 2009 16:47:45 -0700
+Message-ID: <90201b70909291647j1a1ebf4do12c1495ad3aa76e4@mail.gmail.com>
+Subject: In PAE enabled kernel, ioremap cannot handle physical address > 32bit
+From: Sean Brandenburger <seanbrandenburger@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 10:25:24AM -0400, Chris Mason wrote:
-> On Mon, Sep 28, 2009 at 11:07:00AM +1000, Dave Chinner wrote:
-> > In the context of the setup I was talking about, I meant is that sync
-> > IO _should_ be unthrottled because it is self-throttling by it's
-> > very nature. The current code makes no differentiation between the
-> > two.
-> 
-> This isn't entirely true anymore.  WB_SYNC_ALL is turned into a sync
-> bio, which is sent down with higher priority.  There may be a few spots
-> that still need to be changed for it, but it is much better than it was.
+   I have a PAE enabled kernel. I am trying to ioremap a physical address
+which is above 4GB area. It is noticed that the ioremap maps to the 32bit
+truncated physical address.
 
-Oh, I didn't realise that had changed - when did WRITE_SYNC_PLUG get
-introduced? FWIW, I notice that __block_write_full_page(), gfs2, btrfs
-and jdb use WRITE_SYNC_PLUG to implement this, but it appears that
-filesystems that have their own writeback code (e.g. XFS) have not
-been converted (gfs2 and btrfs being the exceptions).
+   Even though __ioremap_caller takes in phys_addr of size
+resource_size_t, the macro PAGE_SHIFT, PAGE_MASK truncates the
+size to 32bit on the physical address operand it works on (for e.g. pfn,
+phys_addr, last_addr, etc. below)
 
-Oh well, something else that needs tweaking in XFS...
+         /*
+          * Don't allow anybody to remap normal RAM that we're using..
+          */
+         for (pfn = phys_addr >> PAGE_SHIFT;
+                                 (pfn << PAGE_SHIFT) < (last_addr & PAGE_MASK);
+                                 pfn++) {
 
-Cheers,
+   Even after fixing the above lines, still the issue is there. Looks
+like there
+is lot more places fixes to handle greater than 32bit need to be done.
+I searched the past mailing list and did not find any fixes. I did come across
+suggestions not to use PAGE_MASK on Physical address but to use
+PHYSICAL_PAGE_MASK. I did come cross other fixes related to handling
+physical address greater than 32bit but not any fixes for ioremap.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+   Does any of you know if this issue has been fixed? If not, I will spend
+time to fix it.
+
+Thanks
+Sean
