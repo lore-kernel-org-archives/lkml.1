@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZI2MoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZI2MqD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118AbZI2MoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 08:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZI2Mn7
+	id S1754107AbZI2MqD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 08:46:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbZI2MqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 08:43:59 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:45854 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754038AbZI2Mnv convert rfc822-to-8bit (ORCPT
+	Tue, 29 Sep 2009 08:46:03 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:55929 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754007AbZI2MqB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 08:43:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YkgG9gu7yanhZQ3znOEs0r1tpxFnkuCwjBXrrSyf7/VF5866k04rr1GjBfPJHtcmfg
-         IDcQY40y6bzL4FPy7cTHkxKw41nWaXJTmI89uKA0VKQlerloINsW/X2+eLM93nCDt3rj
-         7HhBNv2pRng0NwAjbZMx3/l6MA6aJnYXpEk9Y=
-MIME-Version: 1.0
-In-Reply-To: <20090929143729.5af8e1f8@infradead.org>
-References: <f22d86810909290425s46406fe5ib00bcfc9673f70df@mail.gmail.com>
-	 <20090929135925.50ac88bf@infradead.org>
-	 <f22d86810909290516l4cdda2bav3588cc5f7d1f2f65@mail.gmail.com>
-	 <20090929143729.5af8e1f8@infradead.org>
-Date: Tue, 29 Sep 2009 18:13:55 +0530
-Message-ID: <f22d86810909290543j587076c6if97696259f482268@mail.gmail.com>
-Subject: Re: GFP_NOWAIT and GFP_NOMEMALLOC
-From: "Leonidas ." <leonidas137@gmail.com>
+	Tue, 29 Sep 2009 08:46:01 -0400
+From: Arnd Bergmann <arnd@arndb.de>
 To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [PATCH] x86: Use __builtin_memset and __builtin_memcpy for memset/memcpy
+Date: Tue, 29 Sep 2009 14:44:06 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de, hpa@zytor.com,
+       torvalds@linux-foundation.org
+References: <20090928113433.5e9b8ea7@infradead.org>
+In-Reply-To: <20090928113433.5e9b8ea7@infradead.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909291444.06422.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/Xz/hMmZ14xaf+gmV4WUAVfAbSLl8dK6N/HBN
+ ZfzloNCrW66SwGfN8jCNmq6VBvDHZgmZAcsSrGTY/vOqsiKZYP
+ ydxWlMlyZKHp6urf6ESug==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 6:07 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Tue, 29 Sep 2009 17:46:35 +0530
-> "Leonidas ." <leonidas137@gmail.com> wrote:
->>
->> The module is going to be a profiling module and the user module which
->> is under profiling
->> will call the apis which I am exporting. My apis will collect certain
->> data from point
->
-> (I assume you are aware of 'perf' and such)
->
->
->> But frankly, I am not very familiar with Linux kernel apis yet hence
->> have resorted to
->> using a tree data structure for the first cut where I allocate memory
->> as needed depending on the context I am executing in. To optimize a
->> bit, I do not free my memory
->> till some threshold is reached.
->>
->> Some questions here:
->>
->> 1. GFP_NOWAIT as in kmalloc(size, GFP_KERNEL | GFPNOWAIT)?
->>
->> or
->>
->> kmalloc(size, GFP_NOWAIT), I know this one is a dumb one.
->
-> don't do GFP_KERNEL |
->
-> because that makes it basically equivalent to GFP_KERNEL, which is a
-> sleeping version.
->
->>
->> 2. Any reference for the mempool kind of implementation mentioned
->> above?
->
-> there's mm/mempool.c..
->
-> as a general suggestion I would say "look at perf, and see if you can
-> build on that, or borrow from it"...
->
->
-> --
-> Arjan van de Ven        Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
+On Monday 28 September 2009, Arjan van de Ven wrote:
+> 
+> GCC provides reasonable memset/memcpy functions itself, with __builtin_memset
+> and __builtin_memcpy. For the "unknown" cases, it'll fall back to our
+> current existing functions, but for fixed size versions it'll inline
+> something smart. Quite often that will be the same as we have now,
+> but sometimes it can do something smarter (for example, if the code
+> then sets the first member of a struct, it can do a shorter memset).
+> 
+> In addition, and this is more important, gcc knows which registers and
+> such are not clobbered (while for our asm version it pretty much
+> acts like a compiler barrier), so for various cases it can avoid reloading
+> values.
+> 
+> The effect on codesize is shown below on my typical laptop .config:
+> 
+>    text	   data	    bss	    dec	    hex	filename
+> 5605675	2041100	6525148	14171923	 d83f13	vmlinux.before
+> 5595849	2041668	6525148	14162665	 d81ae9	vmlinux.after
+> 
 
-I will have a look at perf. Thanks for the inputs.
+The patch looks good, but is there a reason to keep it architecture
+specific? I would guess that the same logic applies to all architectures
+with gcc-4.x and could be put into include/linux/compiler-gcc4.h.
 
--Leo.
+	Arnd <><
