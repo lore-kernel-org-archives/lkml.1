@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZI2M0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbZI2M31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbZI2M0v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 08:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbZI2M0u
+	id S1754050AbZI2M31 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 08:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbZI2M30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 08:26:50 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:60306 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbZI2M0t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 08:26:49 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Johan Hovold <jhovold@gmail.com>
-Subject: Re: [PATCH] USB: digi_acceleport: Fix broken unthrottle.
-Date: Tue, 29 Sep 2009 14:28:33 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc9-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Peter Berger <pberger@brimson.com>,
-       Al Borchers <alborchers@steinerpoint.com>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20090929103923.GA2866@localhost> <200909291320.46815.oliver@neukum.org> <20090929113518.GE2152@localhost>
-In-Reply-To: <20090929113518.GE2152@localhost>
+	Tue, 29 Sep 2009 08:29:26 -0400
+Received: from khc.piap.pl ([195.187.100.11]:55811 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751585AbZI2M30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 08:29:26 -0400
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Lennart Baruschka" <FunFlyer@gmx.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Disabling DMA with ICH10?
+References: <1254173481.4454.32.camel@goodbyte.homelinux.com>
+	<20090928234025.6dc4e3f7@lxorguk.ukuu.org.uk>
+	<20090929075416.77960@gmx.net> <20090929101114.1712314b@infradead.org>
+Date: Tue, 29 Sep 2009 14:29:27 +0200
+In-Reply-To: <20090929101114.1712314b@infradead.org> (Arjan van de Ven's
+	message of "Tue, 29 Sep 2009 10:11:14 +0200")
+Message-ID: <m3bpku3peg.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909291428.33937.oliver@neukum.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 29. September 2009 13:35:18 schrieb Johan Hovold:
-> On Tue, Sep 29, 2009 at 01:20:44PM +0200, Oliver Neukum wrote:
-> > Am Dienstag, 29. September 2009 12:39:23 schrieb Johan Hovold:
-> > > This patch is untested as I haven't got the hardware, but seems
-> > > straight-forward to me.
-> > >
-> > > Can you verify, Oliver?
-> >
-> > I would prefer to see a check in usb-serial.c::serial_unthrottle()
->
-> This is completely unrelated to the unthrottle issue discussed elsewhere.
-> :)
->
-> The digi_acceleport unthrottle code should (and used to) check
-> priv->dp_throttle_restart to determine whether to resubmit and then
-> cleared the flag. The commit mentioned mistakenly, I assume, reversed this.
-> Plain bug. Right?
+Arjan van de Ven <arjan@infradead.org> writes:
 
-Eek. Yes, sorry. Unthrotteling as I currently made it cannot work.
-Your fix is completely correct.
+> a single PIO instruction will NOT be interrupted by an interrupt.
+> And can easily take several microseconds (remember: 8Mhz bus
+> emulation)
 
-	Regards
-		Oliver
+Not that long, there is no emulation there (except for port #80 (hex?)
+and similar). Normal 33 MHz access. But it's still slow, of course -
+every access takes at least 4(?) bus cycles (IIRC: address, initiator
+ready, device selected, target ready). No bursts (at least on typical
+x86 hw).
 
-Acked-by: Oliver Neukum <oliver@neukum.org>
+Of course ICH10 AHCI isn't connected with PCI 33/32 bus.
 
+Anyway: PIO = bad idea.
+-- 
+Krzysztof Halasa
