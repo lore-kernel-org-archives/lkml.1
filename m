@@ -1,54 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbZI2MhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752067AbZI2NMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbZI2MhX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 08:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022AbZI2MhW
+	id S1752067AbZI2NMJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 09:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbZI2NMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 08:37:22 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:21125 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753605AbZI2MhV (ORCPT
+	Tue, 29 Sep 2009 09:12:08 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:51614 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbZI2NMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 08:37:21 -0400
-Message-ID: <4AC1FE67.7070001@gmail.com>
-Date: Tue, 29 Sep 2009 15:32:39 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 29 Sep 2009 09:12:06 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=subject:to:from:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding;
+	b=jo9kDKy+IjbDSLb0cOsIaXQVlajyRVRuwm2gkOrRt0iu6/72RZsUiEqcKk7NnuAwU
+	1LfBVuhGC5L+waib8BB4w==
+Subject: [PATCH v2 0/4] IPVS full NAT support + netfilter 'ipvs' match support
+To: lvs-devel@vger.kernel.org
+From: Hannes Eder <heder@google.com>
+Cc: Wensong Zhang <wensong@linux-vs.org>, Julius Volz <julius.volz@gmail.com>,
+       lvs-users@linuxvirtualserver.org,
+       Laurent Grawet <laurent.grawet@uclouvain.be>,
+       Jean-Luc Fortemaison <jl.fortemaison@uclouvain.be>,
+       linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@medozas.de>,
+       Julian Anastasov <ja@ssi.bg>, Simon Horman <horms@verge.net.au>,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       =?ISO-8859-1?Q?Fabien_Duch=EAne?= <mad_fab@skynet.be>,
+       Joseph Mack NA3T <jmack@wm7d.net>, Patrick McHardy <kaber@trash.net>
+Date: Tue, 29 Sep 2009 14:35:15 +0200
+Message-ID: <20090929123501.13798.84004.stgit@jazzy.zrh.corp.google.com>
+User-Agent: StGit/0.15-rc2-7-gba5c-dirty
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: linux-kernel@vger.kernel.org, Adrian Hunter <adrian.hunter@nokia.com>,
-       Alex Elder <aelder@sgi.com>, Artem Bityutskiy <dedekind@infradead.org>,
-       Christoph Hellwig <hch@lst.de>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>,
-       Matt Mackall <mpm@selenic.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Neil Brown <neilb@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       xfs-masters@oss.sgi.com, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 8/9] fs/ubifs: Use %pUX to print UUIDs
-References: <cover.1254193019.git.joe@perches.com> <5cf449befe715a79ad0bfaf41ad74f65892134f5.1254193019.git.joe@perches.com>
-In-Reply-To: <5cf449befe715a79ad0bfaf41ad74f65892134f5.1254193019.git.joe@perches.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 29 Sep 2009 12:36:26.0337 (UTC) FILETIME=[75F6ED10:01CA4101]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/29/2009 08:01 AM, Joe Perches wrote:
-> Signed-off-by: Joe Perches<joe@perches.com>
-> ---
->   fs/ubifs/debug.c |    9 ++-------
->   fs/ubifs/super.c |    7 +------
->   2 files changed, 3 insertions(+), 13 deletions(-)
+The following series implements full NAT support for IPVS.  The
+approach is via a minimal change to IPVS (make friends with
+nf_conntrack) and adding a netfilter matcher, kernel- and user-space
+part, i.e. xt_ipvs and libxt_ipvs.
 
-Looks OK,
+Example usage:
 
-Acked-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+% ipvsadm -A -t 192.168.100.30:80 -s rr
+% ipvsadm -a -t 192.168.100.30:80 -r 192.168.10.20:80 -m
+# ...
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+# Source NAT for VIP 192.168.100.30:80
+% iptables -t nat -A POSTROUTING -m ipvs --vaddr 192.168.100.30/32 \
+> --vport 80 -j SNAT --to-source 192.168.10.10
+
+or SNAT-ing only a specific real server:
+
+% iptables -t nat -A POSTROUTING --dst 192.168.11.20 \
+> -m ipvs --vaddr 192.168.100.30/32 -j SNAT --to-source 192.168.10.10
+
+
+First of all, thanks for all the feedback.  This is the changelog for v2:
+
+- Make ip_vs_ftp work again.  Setup nf_conntrack expectations for
+  related data connections (based on Julian's patch see
+  http://www.ssi.bg/~ja/nfct/) and let nf_conntrack/nf_nat do the
+  packet mangling and the TCP sequence adjusting.
+
+  This change rises the question how to deal with ip_vs_sync?  Does it
+  work together with conntrackd?  Wild idea: what about getting rid of
+  ip_vs_sync and piggy packing all on nf_conntrack and use conntrackd?
+
+  Any comments on this?
+
+- xt_ipvs: add new rule '--vportctl port' to match the VIP port of the
+  controlling connection, e.g. port 21 for FTP.  Can be used to match
+  a related data connection for FTP:
+
+  # SNAT FTP control connection
+  % iptables -t nat -A POSTROUTING -m ipvs --vaddr 192.168.100.30/32 \
+  > --vport 21 -j SNAT --to-source 192.168.10.10
+  
+  # SNAT FTP passive data connection
+  % iptables -t nat -A POSTROUTING -m ipvs --vaddr 192.168.100.30/32 \
+  > --vportctl 21 -j SNAT --to-source 192.168.10.10
+
+- xt_ipvs: use 'par->family' instead of 'skb->protocol'
+
+- xt_ipvs: add ipvs_mt_check and restrict to NFPROTO_IPV4 and NFPROTO_IPV6
+
+- Call nf_conntrack_alter_reply(), so helper lookup is performed based
+  on the changed tuple.
+
+Changes to the linux kernel (rebased to next-20090925):
+
+Hannes Eder (3):
+      netfilter: xt_ipvs (netfilter matcher for IPVS)
+      IPVS: make friends with nf_conntrack
+      IPVS: make FTP work with full NAT support
+
+
+ include/linux/netfilter/xt_ipvs.h |   25 +++++
+ include/net/ip_vs.h               |    2 
+ net/netfilter/Kconfig             |    9 ++
+ net/netfilter/Makefile            |    1 
+ net/netfilter/ipvs/Kconfig        |    4 -
+ net/netfilter/ipvs/ip_vs_app.c    |   43 ---------
+ net/netfilter/ipvs/ip_vs_core.c   |   37 -------
+ net/netfilter/ipvs/ip_vs_ftp.c    |  178 ++++++++++++++++++++++++++++++++---
+ net/netfilter/ipvs/ip_vs_proto.c  |    1 
+ net/netfilter/ipvs/ip_vs_xmit.c   |   30 ++++++
+ net/netfilter/xt_ipvs.c           |  187 +++++++++++++++++++++++++++++++++++++
+ 11 files changed, 418 insertions(+), 99 deletions(-)
+ create mode 100644 include/linux/netfilter/xt_ipvs.h
+ create mode 100644 net/netfilter/xt_ipvs.c
+
+
+Changes to iptables (relative to 1.4.5):
+
+Hannes Eder (1):
+      libxt_ipvs: user-space lib for netfilter matcher xt_ipvs
+
+ configure.ac                      |   11 +
+ extensions/libxt_ipvs.c           |  365 +++++++++++++++++++++++++++++++++++++
+ extensions/libxt_ipvs.man         |   24 ++
+ include/linux/netfilter/xt_ipvs.h |   25 +++
+ 4 files changed, 422 insertions(+), 3 deletions(-)
+ create mode 100644 extensions/libxt_ipvs.c
+ create mode 100644 extensions/libxt_ipvs.man
+ create mode 100644 include/linux/netfilter/xt_ipvs.h
