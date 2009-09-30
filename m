@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZI3RYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZI3RcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbZI3RYe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 13:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbZI3RYd
+	id S1754832AbZI3RcX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 13:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbZI3RcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 13:24:33 -0400
-Received: from elasmtp-masked.atl.sa.earthlink.net ([209.86.89.68]:58363 "EHLO
-	elasmtp-masked.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752802AbZI3RYd (ORCPT
+	Wed, 30 Sep 2009 13:32:23 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:48631 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754516AbZI3RcW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 13:24:33 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=CjC8gHlOm5cgH6w5Mx81F4oYmc8SGE1QLOyokb3c5vRslCLUEG/5ajAKxfEjEIp3;
-  h=Message-ID:Date:From:Reply-To:To:Subject:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Mailer:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <12591585.1254331476737.JavaMail.root@elwamui-rubis.atl.sa.earthlink.net>
-Date: Wed, 30 Sep 2009 13:24:36 -0400 (EDT)
-From: "Steven A. DuChene" <linux-clusters@mindspring.com>
-Reply-To: "Steven A. DuChene" <linux-clusters@mindspring.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Warning: unable to open an initial console
+	Wed, 30 Sep 2009 13:32:22 -0400
+Date: Wed, 30 Sep 2009 10:31:13 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH v3 2/3] cpu: Offline state Framework.
+Message-Id: <20090930103113.4361619d.randy.dunlap@oracle.com>
+In-Reply-To: <20090915120706.20523.95464.stgit@sofia.in.ibm.com>
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+	<20090915120706.20523.95464.stgit@sofia.in.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: EarthLink Zoo Mail 1.0
-X-ELNK-Trace: ea4808abc3da2865808dd114cae72f675e89bb4777695beb00ff6c36d42eb1faa8c7f237ba6df29433c387c9bad7bd09350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 209.86.224.47
+X-Source-IP: abhmt006.oracle.com [141.146.116.15]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4AC395E5.014D:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, according to the research I did looking for my initial
-console error message on google it seems it is not a kernel
-compile issue but rather an issue with the kernel needing to
-find /dev/console before udev is run to create the various
-device entries in /dev
+On Tue, 15 Sep 2009 17:37:06 +0530 Gautham R Shenoy wrote:
 
-To work around this I created an initrd file for my kernel
-even though I have all the needed disk device drivers and
-filesystems drivers in my kernel. Once I did that and put
-it into place my new kernel booted up just fine.
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> ---
+>  Documentation/cpu-hotplug.txt |   22 +++++
+>  drivers/base/cpu.c            |  181 +++++++++++++++++++++++++++++++++++++++--
+>  include/linux/cpu.h           |   10 ++
+>  3 files changed, 204 insertions(+), 9 deletions(-)
+> 
+> diff --git a/Documentation/cpu-hotplug.txt b/Documentation/cpu-hotplug.txt
+> index 9d620c1..dcec06d 100644
+> --- a/Documentation/cpu-hotplug.txt
+> +++ b/Documentation/cpu-hotplug.txt
+> @@ -115,6 +115,28 @@ Just remember the critical section cannot call any
+>  function that can sleep or schedule this process away. The preempt_disable()
+>  will work as long as stop_machine_run() is used to take a cpu down.
+>  
+> +CPU-offline states
+> +--------------------------------------
+> +On architectures which allow the more than one valid state when
 
------Original Message-----
->From: "Steven A. DuChene" <linux-clusters@mindspring.com>
->Sent: Sep 30, 2009 1:05 PM
->To: linux-kernel@vger.kernel.org
->Subject: Warning: unable to open an initial console
->
->Hmm, I tried various combonations of turning off the framebuffer
->support all together and then turning it back on with various
->drivers (nvidia or vesa vga) but still I get the same message
->about "Warning: unable to open an initial console."
->
->Anything else I should be looking at besides the graphics support
->part of the drivers section of the kernel config?
->
->Again this is a fairly standard PCChips A13G motherboard with
->NVidia chipset and AMD Athlon 3600+ CPU that works fine with the
->regular distro supplied FC9 kernel (2.6.25-14.fc9.x86_64) and
->I have the x86_64 version of FC9 installed.
->
+                                ^drop "the"
+
+> +the CPU goes offline, the system administrator can decide
+> +the state the CPU needs to go to when it is offlined.
+
+s/needs to/should/
+
+> +
+> +If the architecture has implemented a cpu-offline driver exposing these
+> +multiple offline states, the system administrator can use the following sysfs
+> +interfaces to query the available hotplug states and also query and set the
+> +current hotplug state for a given cpu:
+> +
+> +To query the hotplug states, on needs to perform a read on:
+
+                                one
+
+> +/sys/devices/system/cpu/cpu<number>/available_hotplug_states
+> +
+> +To query or set the current state for a particular CPU,
+> +one needs to use the sysfs interface
+> +
+> +/sys/devices/system/cpu/cpu<number>/current_hotplug_state
+> +
+> +Writes to the "online" sysfs files are serialized against the writes to the
+> +"current_hotplug_state" file.
+> +
+>  CPU Hotplug - Frequently Asked Questions.
+>  
+>  Q: How to enable my kernel to support CPU hotplug?
 
 
-
+---
+~Randy
