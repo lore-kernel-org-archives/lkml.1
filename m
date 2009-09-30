@@ -1,86 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbZI3Tp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbZI3T65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755268AbZI3Tp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 15:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbZI3Tp3
+	id S1754353AbZI3T65 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 15:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZI3T65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 15:45:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:1030 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755139AbZI3Tp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 15:45:28 -0400
-Message-ID: <4AC3B553.7070704@redhat.com>
-Date: Wed, 30 Sep 2009 12:45:23 -0700
-From: Josh Stone <jistone@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext4: Add a stub for mpage_da_data in the trace header
-References: <1254260407-14276-1-git-send-email-jistone@redhat.com> <20090930133335.GA14585@infradead.org> <20090930142049.GH24383@mit.edu>
-In-Reply-To: <20090930142049.GH24383@mit.edu>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 30 Sep 2009 15:58:57 -0400
+Received: from mail.gmx.net ([213.165.64.20]:39237 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752012AbZI3T64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 15:58:56 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19fkpVhyRNfVg9ShOnOToBHy6GJPI+HLOZUBewDmi
+	XVDLE7ShYGjp0k
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+In-Reply-To: <20090927164235.GA23126@kernel.dk>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
+	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
+	 <1253976676.7005.40.camel@marge.simson.net>
+	 <1254034500.7933.6.camel@marge.simson.net>
+	 <20090927164235.GA23126@kernel.dk>
+Content-Type: text/plain
+Date: Wed, 30 Sep 2009 21:58:50 +0200
+Message-Id: <1254340730.7695.32.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/30/2009 07:20 AM, Theodore Tso wrote:
-> On Wed, Sep 30, 2009 at 09:33:35AM -0400, Christoph Hellwig wrote:
->> On Tue, Sep 29, 2009 at 02:40:07PM -0700, Josh Stone wrote:
->>> The tracepoint ext4_da_write_pages has a struct mpage_da_data*
->>> parameter, but that struct is only defined in fs/ext4/ext4.h.  This
->>> patch adds a forward declaration for that struct, so this tracepoint
->>> header can still be used by tools like SystemTap.
->>
->> That's not what the tracepoints are for anyway.  No hacks for out of
->> tree crap like this please - just use the trace buffer directly like
->> ftrace and then you don't actually need any data types.
+On Sun, 2009-09-27 at 18:42 +0200, Jens Axboe wrote:
 
-If you just want the data in the trace buffer, then SystemTap is not the
-tool for you.  By all means, just write yourself a perl script or
-something that parses the trace buffer however you like.
+> It's a given that not merging will provide better latency. We can't
+> disable that or performance will suffer A LOT on some systems. There are
+> ways to make it better, though. One would be to make the max request
+> size smaller, but that would also hurt for streamed workloads. Can you
+> try whether the below patch makes a difference? It will basically
+> disallow merges to a request that isn't the last one.
 
-On the other hand, stap is useful to do some processing/inspection
-*live*, at the moment the event happens.  For that, we register our own
-tracepoint handler that can do something different than ftrace.
+Thoughts about something like the below?
 
-Anyway, I don't think it's a hack to add a simple struct declaration.
-It's wrong to have an include/... header that requires definitions from
-some subsystem internals, and that's the core thing I'm fixing here.
+The problem with the dd vs konsole -e exit type load seems to be
+kjournald overloading the disk between reads.  When userland is blocked,
+kjournald is free to stuff 4*quantum into the queue instantly.
 
-> Josh, you do realize that SystemTap can pull stuff out of the trace
-> buffer by examining information found in 
-> 
-> 	/sys/kernel/debug/tracing/events/*/*/format
-> 
-> right?
+Taking the hint from Vivek's fairness tweakable patch, I stamped the
+queue when a seeker was last seen, and disallowed overload within
+CIC_SEEK_THR of that time.  Worked well.
 
-Sure, but we want to be able to do more than just post-process the trace
-buffer, so we hook up directly to the tracepoints.
+dd competing against perf stat -- konsole -e exec timings, 5 back to back runs
+                                                           Avg
+before         9.15    14.51     9.39    15.06     9.90   11.6
+after          1.76     1.54     1.93     1.88     1.56    1.7
 
-> No need to for users to download gigabytes and gigabytes of DWARF
-> crapola (and for developers to grow old waiting for a kernel compile
-> with -g enabled to complete); SystemTap can just get what it needs
-> straight out of /sys/kernel/debug/tracing/events, and then reading
-> what it needs out of the ring buffer.
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index e2a9b92..4a00129 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -174,6 +174,8 @@ struct cfq_data {
+ 	unsigned int cfq_slice_async_rq;
+ 	unsigned int cfq_slice_idle;
+ 
++	unsigned long last_seeker;
++
+ 	struct list_head cic_list;
+ 
+ 	/*
+@@ -1326,6 +1328,12 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
+ 			return 0;
+ 
+ 		/*
++		 * We may have seeky queues, don't throttle up just yet.
++		 */
++		if (time_before(jiffies, cfqd->last_seeker + CIC_SEEK_THR))
++			return 0;
++
++		/*
+ 		 * we are the only queue, allow up to 4 times of 'quantum'
+ 		 */
+ 		if (cfqq->dispatched >= 4 * max_dispatch)
+@@ -1941,7 +1949,7 @@ static void
+ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		       struct cfq_io_context *cic)
+ {
+-	int old_idle, enable_idle;
++	int old_idle, enable_idle, seeky = 0;
+ 
+ 	/*
+ 	 * Don't idle for async or idle io prio class
+@@ -1951,8 +1959,12 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 
+ 	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
+ 
+-	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
+-	    (cfqd->hw_tag && CIC_SEEKY(cic)))
++	if (cfqd->hw_tag && CIC_SEEKY(cic)) {
++		cfqd->last_seeker = jiffies;
++		seeky = 1;
++	}
++
++	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle || seeky)
+ 		enable_idle = 0;
+ 	else if (sample_valid(cic->ttime_samples)) {
+ 		if (cic->ttime_mean > cfqd->cfq_slice_idle)
+@@ -2482,6 +2494,7 @@ static void *cfq_init_queue(struct request_queue *q)
+ 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
+ 	cfqd->cfq_slice_idle = cfq_slice_idle;
+ 	cfqd->hw_tag = 1;
++	cfqd->last_seeker = jiffies;
+ 
+ 	return cfqd;
+ }
 
-FWIW, Fedora rawhide's x86_64 kernel-debuginfo is a ~140MB package,
-which installs to ~1.1GB, so that situation is not quite so bad.  The
-compile time is of course still a beast.
 
-However, SystemTap does *not* require the kernel debuginfo for using
-tracepoints, even when reading parameters.  It should work in the
-complete absence of CONFIG_DEBUGINFO, so if you find otherwise, please
-let me know and I will fix it.
-
-> In any case I've added the blind structure pointer to
-> include/trace/events/ext4.h, but in the long term you're *much* better
-> off pulling the information you need from the ftrace ring buffer and
-> getting the information you need to interpret it out of
-> /sys/kernel/debug/tracing.
-
-Thank you for including it.
-
-Josh
