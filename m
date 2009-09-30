@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbZI3S1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbZI3S2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbZI3S1u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 14:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbZI3S1t
+	id S1755087AbZI3S2i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 14:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbZI3S2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 14:27:49 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:22431 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754526AbZI3S1s (ORCPT
+	Wed, 30 Sep 2009 14:28:37 -0400
+Received: from gw0.danplanet.com ([71.245.107.82]:54648 "EHLO
+	mail.danplanet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755054AbZI3S2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 14:27:48 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: Re: [PATCH] cmpc_acpi: Added support for Classmate PC ACPI devices.
-Date: Wed, 30 Sep 2009 12:27:48 -0600
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, len.brown@intel.com, don@syst.com.br,
-       linux-acpi@vger.kernel.org
-References: <1254188280-29155-1-git-send-email-cascardo@holoscopio.com> <200909300950.39332.bjorn.helgaas@hp.com> <20090930175141.GG17475@vespa.holoscopio.com>
-In-Reply-To: <20090930175141.GG17475@vespa.holoscopio.com>
+	Wed, 30 Sep 2009 14:28:36 -0400
+To: Daniel Lezcano <daniel.lezcano@free.fr>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, mingo@elte.hu, xemul@openvz.org
+Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
+References: <1253749920-18673-1-git-send-email-orenl@librato.com>
+	<20090924154139.2a7dd5ec.akpm@linux-foundation.org>
+	<20090928163704.GA3327@us.ibm.com> <4AC20BB8.4070509@free.fr>
+	<87iqf0o5sf.fsf@caffeine.danplanet.com> <4AC38477.4070007@free.fr>
+	<87eipoo0po.fsf@caffeine.danplanet.com> <4AC39CE5.9080908@free.fr>
+From: Dan Smith <danms@us.ibm.com>
+Date: Wed, 30 Sep 2009 11:28:36 -0700
+In-Reply-To: <4AC39CE5.9080908@free.fr> (Daniel Lezcano's message of "Wed\, 30 Sep 2009 20\:01\:09 +0200")
+Message-ID: <877hvgnv6z.fsf@caffeine.danplanet.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909301227.49916.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 September 2009 11:51:43 am Thadeu Lima de Souza Cascardo wrote:
-> On Wed, Sep 30, 2009 at 09:50:38AM -0600, Bjorn Helgaas wrote:
-> > On Monday 28 September 2009 07:38:00 pm Thadeu Lima de Souza Cascardo wrote:
-> > > This add supports for devices like keyboard, backlight, tablet and
-> > > accelerometer.
-> > 
-> > Something about the PNP IDs bothered me yesterday, but I couldn't
-> > figure out what.  You're using:
-> > 
-> >   ACCE0000
-> >   TBLT0000
-> >   IPML200
-> >   FnBT0000
-> > 
-> > Normally these OEM-specific ACPI drivers claim PNP IDs like ATK0100,
-> > TOS6200, FUJ02B1, etc., that are obviously OEM-specific.
-> > 
-> > But the ones you're claiming seem pretty generic, like things
-> > we could imagine appearing on machines other than the Classmate.
-> > 
-> > So I guess my question is, "Are these really generic?  If so, should
-> > this be split into separate, non-Classmate named drivers, such as
-> > 'accelerometer', 'tablet', etc.?"
-> > 
-> 
-> Although I agree that {ATK,TOS,FUJ,IBM}* give pretty much a certainty
-> these are OEM-specific, I think we'd need some evidence that
-> {ACCE,TBLT,IPML,FnBT}* are generic enough to grant them a non-classmate
-> driver.
-> 
-> What I mean is that we should push this driver forward and turn these
-> into a generic driver if we get some evidence these are not
-> Classmate-specific. And that will happen when we hit some other system
-> with these devices.
+DL> Yep, I agree. But you didn't answer the question, what are the
+DL> network resources you plan to checkpoint / restart ?  eg. you let
+DL> the container to setup your network, will you restore netdev
+DL> statistics ? the mac address ? ipv4 ? ipv6 ?
 
-Yep, I agree with you that it's not worth splitting things up until
-we find these devices on more systems.  Just out of curiosity, where
-did you find specs for these devices?  If there's a public spec, it'd
-be nice to have a pointer to it in the driver.
+Yes, Yes, Yes, and Yes.  I'm making the assumption that the common
+case will be with a veth device in the container and that all of the
+aforementioned attributes should be copied over.  In the future case
+where we could potentially have a real device in the container, it
+probably doesn't make sense to copy the mac address.
 
-Bjorn
+DL> Is it possible to do a detailed list of network resources you plan
+DL> to CR with the different items you will address from userspace and
+DL> kernel space ?
+
+I'm sure it's possible, but no, I haven't planned out everything for
+the next year.  If you have strong feelings about what should be done
+in user and kernel space, feel free to share :)
+
+DL> Argh ! I was hoping there was something else than the source code
+
+The header file makes it pretty clear what is going on, but maybe the
+Documentation/checkpoint/readme.txt will help.  Putting all the
+details in such a documentation file would be rather silly at the
+moment, given that new things are being added at a rapid rate and it
+would duplicate the only description that matters, which is the
+header file.
+
+-- 
+Dan Smith
+IBM Linux Technology Center
+email: danms@us.ibm.com
