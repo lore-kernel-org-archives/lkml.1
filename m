@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZI3XxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZJAADI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbZI3XxW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 19:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbZI3XxV
+	id S1755168AbZJAADI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 20:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbZJAADH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 19:53:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39425 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754454AbZI3XxU (ORCPT
+	Wed, 30 Sep 2009 20:03:07 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58451 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754925AbZJAADG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 19:53:20 -0400
-Date: Wed, 30 Sep 2009 16:52:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: spi-devel-general@lists.sourceforge.net, dbrownell@users.sourceforge.net,
-       s.hauer@pengutronix.de, g.liakhovetski@gmx.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Updates for spi-imx
-Message-Id: <20090930165241.ecb2a83e.akpm@linux-foundation.org>
-In-Reply-To: <20090930194211.GB1881@pengutronix.de>
-References: <20090930194211.GB1881@pengutronix.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Sep 2009 20:03:06 -0400
+Message-id: <isapiwc.34aac0fd.3bb4.4ac3f042.11536.9@mail.jp.nec.com>
+In-Reply-To: <20091001083133.429f373b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090930190417.8823fa44.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090930190943.8f19c48b.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091001083133.429f373b.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 1 Oct 2009 08:56:50 +0900
+From: nishimura@mxp.nes.nec.co.jp
+Subject: Re: [RFC][PATCH 1/2] percpu array counter like vmstat
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009 21:42:11 +0200
-Uwe Kleine-K__nig <u.kleine-koenig@pengutronix.de> wrote:
+> On Wed, 30 Sep 2009 19:09:43 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+>> +int array_counter_init(struct array_counter *ac, int size)
+>> +{
+>> +	ac->v.elements = size;
+>> +	ac->v.counters = alloc_percpu(s8);
+> This is a bug, of course...
+Yes, I was confused at that point and about to pointing it out :)
 
-> as a followup to this mail I'll send some updates for the spi-imx
-> driver for review.
+> should be
+> ac->v.counters = __alloc_percpu(size, __alignof__(char));
+> 
+__alloc_pecpu(size * sizeof(s8), __alignof__(s8)) would be better ?
+There is no actual difference, though.
 
-Several of these patches were unchangelogged but afaict they all fix
-bugs and hence should be in 2.6.32, yes?
 
-Renaming the entire source file after -rc1 was probably a bit naughty,
-but we'll survive.
-
+Thanks,
+Daisuke Nishimura.
