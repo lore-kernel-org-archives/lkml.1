@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755040AbZI3Xu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbZI3Xqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755040AbZI3Xu7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 19:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbZI3Xu7
+	id S1754956AbZI3Xqd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 19:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbZI3Xqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 19:50:59 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:45330 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754771AbZI3Xu6 (ORCPT
+	Wed, 30 Sep 2009 19:46:33 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58975 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754632AbZI3Xqc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 19:50:58 -0400
-Date: Wed, 30 Sep 2009 19:45:22 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] slqb: Record what node is local to a
- kmem_cache_cpu
-In-Reply-To: <20090930220541.GA31530@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0909301941570.11850@gentwo.org>
-References: <1253624054-10882-1-git-send-email-mel@csn.ul.ie> <1253624054-10882-3-git-send-email-mel@csn.ul.ie> <84144f020909220638l79329905sf9a35286130e88d0@mail.gmail.com> <20090922135453.GF25965@csn.ul.ie> <84144f020909221154x820b287r2996480225692fad@mail.gmail.com>
- <20090922185608.GH25965@csn.ul.ie> <20090930144117.GA17906@csn.ul.ie> <alpine.DEB.1.10.0909301053550.9450@gentwo.org> <20090930220541.GA31530@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 30 Sep 2009 19:46:32 -0400
+Message-ID: <4AC3ED9D.6030701@zytor.com>
+Date: Wed, 30 Sep 2009 16:45:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Miller <davem@davemloft.net>
+CC: akpm@linux-foundation.org, samuel.thibault@ens-lyon.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       andi@firstfloor.org, netdev@vger.kernel.org
+Subject: Re: [PATCH,TRIVIAL] Fix csum_ipv6_magic asm memory clobber
+References: <4AC3DF7B.5060407@zytor.com>	<20090930230138.GZ6451@const.famille.thibault.fr>	<20090930161939.8c6d140a.akpm@linux-foundation.org> <20090930.162233.208543104.davem@davemloft.net>
+In-Reply-To: <20090930.162233.208543104.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009, Mel Gorman wrote:
+On 09/30/2009 04:22 PM, David Miller wrote:
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Wed, 30 Sep 2009 16:19:39 -0700
+> 
+>> From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+>>
+>> Just like ip_fast_csum, the assembly snippet in csum_ipv6_magic needs a
+>> memory clobber, as it is only passed the address of the buffer, not a
+>> memory reference to the buffer itself.
+>>
+>> This caused failures in Hurd's pfinetv4 when we tried to compile it with
+>> gcc-4.3 (bogus checksums).
+>>
+>> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> 
+> I'm happy to see this go in via the x86 tree, and thus:
+> 
+> Acked-by: David S. Miller <davem@davemloft.net>
 
-> > SLUB avoids that issue by having a "current" page for a processor. It
-> > allocates from the current page until its exhausted. It can use fast path
-> > logic both for allocations and frees regardless of the pages origin. The
-> > node fallback is handled by the page allocator and that one is only
-> > involved when a new slab page is needed.
-> >
->
-> This is essentially the "unqueued" nature of SLUB. It's objective "I have this
-> page here which I'm going to use until I can't use it no more and will depend
-> on the page allocator to sort my stuff out". I have to read up on SLUB up
-> more to see if it's compatible with SLQB or not though. In particular, how
-> does SLUB deal with frees from pages that are not the "current" page? SLQB
-> does not care what page the object belongs to as long as it's node-local
-> as the object is just shoved onto a LIFO for maximum hotness.
+I'll put it in x86/urgent tonight or early tomorrow morning (just about
+to leave for the airport.)
 
-Frees are done directly to the target slab page if they are not to the
-current active slab page. No centralized locks. Concurrent frees from
-processors on the same node to multiple other nodes (or different pages
-on the same node) can occur.
+	-hpa
 
-> > SLAB deals with it in fallback_alloc(). It scans the nodes in zonelist
-> > order for free objects of the kmem_cache and then picks up from the
-> > nearest node. Ugly but it works. SLQB would have to do something similar
-> > since it also has the per node object bins that SLAB has.
-> >
->
-> In a real sense, this is what the patch ends up doing. When it fails to
-> get something locally but sees that the local node is memoryless, it
-> will check the remote node lists in zonelist order. I think that's
-> reasonable behaviour but I'm biased because I just want the damn machine
-> to boot again. What do you think? Pekka, Nick?
-
-Look at fallback_alloc() in slab. You can likely copy much of it. It
-considers memory policies and cpuset constraints.
