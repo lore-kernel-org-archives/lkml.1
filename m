@@ -1,85 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbZI3BfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbZI3Bjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753959AbZI3BfW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 21:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbZI3BfW
+	id S1753971AbZI3Bjn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 21:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbZI3Bjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 21:35:22 -0400
-Received: from mail1.radix.net ([207.192.128.31]:47165 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753821AbZI3BfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 21:35:21 -0400
-Subject: What is the near term future for kfifo?
-From: Andy Walls <awalls@radix.net>
-To: linux-kernel@vger.kernel.org
-Cc: linux-media@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>
-In-Reply-To: <1254096732.22211.9.camel@morgan.walls.org>
-References: <1254023141.6346.46.camel@palomino.walls.org>
-	 <4ABF6BA9.8000906@gmail.com> <1254060600.3152.20.camel@palomino.walls.org>
-	 <4ABF99B6.5090200@kernellabs.com>
-	 <1254075277.3554.8.camel@morgan.walls.org>
-	 <1254081645.3554.15.camel@morgan.walls.org>
-	 <1254096732.22211.9.camel@morgan.walls.org>
-Content-Type: text/plain
-Date: Tue, 29 Sep 2009 21:38:09 -0400
-Message-Id: <1254274689.5510.20.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	Tue, 29 Sep 2009 21:39:42 -0400
+Received: from hosting.visp.net.lb ([194.146.153.11]:43320 "EHLO
+	hosting.visp.net.lb" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753883AbZI3Bjm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 21:39:42 -0400
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Eric.Moore@lsi.com
+Subject: MPT Fusion SAS 2.6.31 regression, crash on heavy load
+Content-Disposition: inline
+From: Denys Fedoryschenko <denys@visp.net.lb>
+Organization: VISP
+Date: Wed, 30 Sep 2009 04:39:05 +0300
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909300439.05885.denys@visp.net.lb>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LKML,
+Most probably this commit fixes my issue. Very strange that this error didn't 
+appear before, it seems it exists at 2.6.30 even?
 
-What's the status of the recently proposed kfifo changes?
+commit	c55b89fba9872ebcd5ac15cdfdad29ffb89329f0
 
-This change set of mine, for implementing IR receiver support for the
-CX23888 chip:
+[SCSI] mptsas : PAE Kernel more than 4 GB kernel panic
 
-On Sun, 2009-09-27 at 20:12 -0400, Andy Walls wrote:
-> Mauro,
-> 
-> Please pull from http://linuxtv.org/hg/~awalls/cx23888-ir-part2
-> 
-> for the following 5 changesets:
-> 
-> 01/05: v4l2-subdev: Add v4l2_subdev_ir_ops and IR notify defines for v4l2_device
-> http://linuxtv.org/hg/~awalls/cx23888-ir-part2?cmd=changeset;node=8cbb951bbb9f
-> 
-> 02/05: cx23885: Complete CX23888 IR subdev implementation for Rx & almost for Tx
-> http://linuxtv.org/hg/~awalls/cx23888-ir-part2?cmd=changeset;node=a2d8d3d88c6d
-> 
-> 03/05: cx23885: Add integrated IR subdevice interrupt and notification handling
-> http://linuxtv.org/hg/~awalls/cx23888-ir-part2?cmd=changeset;node=1eb199665dbc
-> 
-> 04/05: ir-functions: Export ir_rc5_decode() for use by the cx23885 module
-> http://linuxtv.org/hg/~awalls/cx23888-ir-part2?cmd=changeset;node=55a1e2e8128f
-> 
-> 05/05: cx23885: Add IR input keypress handling and enable for the HVR-1850
-> http://linuxtv.org/hg/~awalls/cx23888-ir-part2?cmd=changeset;node=b05a093688a2
-
-
-relies on the current implementation
-
-http://git.kernel.org/?p=linux/kernel/git/next/linux-next.git;a=blob;f=include/linux/kfifo.h;h=ad6bdf5a5970c5fdbceb6b5c440a196b7a620b22;hb=HEAD
-
-that still requires a spinlock.  Fortunately, I happen to need a
-spinlock.
-
-
-I'd like this changeset to move forward, and I don't want to have a
-problem with unfortuante timing of any kfifo changes.
-
-Should I plan to
-
-1. leave my code alone and use the current kfifo API,
-2. update my use of kfifo to the new proposal I saw on the LKML
-recently, or
-3.  just write my own fifo implementation and port to the new kfifo
-later?
-
-
-Regards,
-Andy
+This patch is solving problem for PAE kernel DMA operation.
+On PAE system dma_addr and unsigned long will have different
+values.
+Now dma_addr is not type casted using unsigned long.
 
