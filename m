@@ -1,108 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbZI3M5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbZI3M60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbZI3M5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbZI3M5R
+	id S1753946AbZI3M60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 08:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbZI3M6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:57:17 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:44666 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752764AbZI3M5Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:57:16 -0400
-Date: Wed, 30 Sep 2009 18:25:40 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: [RFC v2 PATCH 8/8] sched: Hard limits documentation
-Message-ID: <20090930125540.GI19951@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090930124919.GA19951@in.ibm.com>
+	Wed, 30 Sep 2009 08:58:25 -0400
+Received: from www.tglx.de ([62.245.132.106]:54399 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752764AbZI3M6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 08:58:25 -0400
+Date: Wed, 30 Sep 2009 14:57:25 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Remy Bohmer <linux@bohmer.net>
+cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31-rt11 freeze on userland start on ARM
+In-Reply-To: <3efb10970909211136g4e74c8b3vc339d548cdd0959f@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0909301448030.2518@nanos>
+References: <3efb10970909211136g4e74c8b3vc339d548cdd0959f@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090930124919.GA19951@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched: Hard limits documentation
+On Mon, 21 Sep 2009, Remy Bohmer wrote:
+> So, as workaround/test I made this change:
+> 
+> Index: linux-2.6.31/drivers/serial/atmel_serial.c
+> ===================================================================
+> --- linux-2.6.31.orig/drivers/serial/atmel_serial.c	2009-09-21
+> 19:44:48.000000000 +0200
+> +++ linux-2.6.31/drivers/serial/atmel_serial.c	2009-09-21
+> 19:45:15.000000000 +0200
+> @@ -808,7 +808,8 @@ static int atmel_startup(struct uart_por
+>  	/*
+>  	 * Allocate the IRQ
+>  	 */
+> -	retval = request_irq(port->irq, atmel_interrupt, IRQF_SHARED,
+> +	retval = request_irq(port->irq, atmel_interrupt,
+> +			IRQF_SHARED | IRQF_NODELAY,
+>  			tty ? tty->name : "atmel_serial", port);
+>  	if (retval) {
+>  		printk("atmel_serial: atmel_startup - Can't get irq\n");
 
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+The serial irq cannot run in hard irq context.
 
-Documentation for hard limits feature.
+There are two solutions to this problem:
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
----
- Documentation/scheduler/sched-cfs-hard-limits.txt |   52 +++++++++++++++++++++
- 1 files changed, 52 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/scheduler/sched-cfs-hard-limits.txt
+1) Use the other timer which is available on AT91.
 
-diff --git a/Documentation/scheduler/sched-cfs-hard-limits.txt b/Documentation/scheduler/sched-cfs-hard-limits.txt
-new file mode 100644
-index 0000000..bf3859f
---- /dev/null
-+++ b/Documentation/scheduler/sched-cfs-hard-limits.txt
-@@ -0,0 +1,52 @@
-+CPU HARD LIMITS FOR CFS GROUPS
-+==============================
-+
-+1. Overview
-+2. Interface
-+3. Examples
-+
-+1. Overview
-+-----------
-+
-+CFS is a proportional share scheduler which tries to divide the CPU time
-+proportionately between tasks or groups of tasks (task group/cgroup) depending
-+on the priority/weight of the task or shares assigned to groups of tasks.
-+In CFS, a task/task group can get more than its share of CPU if there are
-+enough idle CPU cycles available in the system, due to the work conserving
-+nature of the scheduler. However in certain scenarios (like pay-per-use),
-+it is desirable not to provide extra time to a group even in the presence
-+of idle CPU cycles. This is where hard limiting can be of use.
-+
-+Hard limits for task groups can be set by specifying how much CPU runtime a
-+group can consume within a given period. If the group consumes more CPU time
-+than the runtime in a given period, it gets throttled. None of the tasks of
-+the throttled group gets to run until the runtime of the group gets refreshed
-+at the beginning of the next period.
-+
-+2. Interface
-+------------
-+
-+Hard limit feature adds 3 cgroup files for CFS group scheduler:
-+
-+cfs_runtime_us: Hard limit for the group in microseconds.
-+
-+cfs_period_us: Time period in microseconds within which hard limits is
-+enforced.
-+
-+cfs_hard_limit: The control file to enable or disable hard limiting for the
-+group.
-+
-+A group gets created with default values for runtime and period and with
-+hard limit disabled. Each group can set its own values for runtime and period
-+independent of other groups in the system.
-+
-+3. Examples
-+-----------
-+
-+# mount -t cgroup -ocpu none /cgroups/
-+# cd /cgroups
-+# mkdir 1
-+# cd 1/
-+# echo 250000 > cfs_runtime_us /* set a 250ms runtime or limit */
-+# echo 500000 > cfs_period_us /* set a 500ms period */
-+# echo 1 > cfs_hard_limit /* enable hard limiting for group 1/ */
+2) Make the serial driver explicitely threaded and check in the
+hardirq handler whether the irq originated from the serial driver. If
+yes, disable it in the serial device and return IRQ_WAKE_THREAD
+otherwise return IRQ_NONE.
+
+Thanks,
+
+	tglx
