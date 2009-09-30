@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZI3TiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbZI3TjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbZI3TiX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 15:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZI3TiV
+	id S1755210AbZI3TjM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 15:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbZI3TjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 15:38:21 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:46060 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755169AbZI3TiU (ORCPT
+	Wed, 30 Sep 2009 15:39:11 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38234 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbZI3TjK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 15:38:20 -0400
-Date: Wed, 30 Sep 2009 12:38:23 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: hard lockup, followed by ext4_lookup: deleted inode referenced: 524788
-Message-ID: <20090930193823.GA15892@hexapodia.org>
-References: <20090928191644.GR12922@hexapodia.org> <20090928202507.GB22733@mit.edu> <20090928212838.GS12922@hexapodia.org> <20090929031308.GB24383@mit.edu> <20090929161250.GX12922@hexapodia.org>
-Mime-Version: 1.0
+	Wed, 30 Sep 2009 15:39:10 -0400
+Date: Wed, 30 Sep 2009 15:39:11 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] block updates for 2.6.32-rc
+Message-ID: <20090930193911.GA14391@infradead.org>
+References: <20090930174109.GD14918@kernel.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090929161250.GX12922@hexapodia.org>
-User-Agent: Mutt/1.4.2.3i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+In-Reply-To: <20090930174109.GD14918@kernel.dk>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 09:12:50AM -0700, Andy Isaacson wrote:
-> I'll run memtest86 and check SMART.
-
-The host ran memtest86+ for 8 hours with no errors and the disk isn't
-reporting any problems via SMART.
-
-> I would like to get as close to root cause as possible.  I have a
-> filesystem image copied away and I'll be attempting to repro the
-> failure; this is a test system for a large deployment, so I don't want
-> any issues lurking. :)
+On Wed, Sep 30, 2009 at 07:41:10PM +0200, Jens Axboe wrote:
+> Hi Linus,
 > 
-> Let me know what debug commands you'd like to run.  dumpe2fs output is
-> at http://web.hexapodia.org/~adi/tmp/dumpe2fs.out
+> This looks huge, but it's mostly a cciss driver update and the addition
+> of drbd. I would have submitted this before -rc1, but Plumbers got in
+> the way.
 
-I'm going to try to reproduce the failure today.  To my untutored eye
-the dumpe2fs output looks OK around group 48.
+And DRBD is defintively not ready.  Even if people want to merge another
+duplicate RAID driver including another crappy user interface it has
+tracing stuff of a form that would let Ingo go beserk and also uses the
+stupid connector.
 
-Thanks for any further suggestions,
--andy
