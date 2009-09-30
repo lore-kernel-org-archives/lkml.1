@@ -1,77 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbZI3Rlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbZI3Rly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbZI3Rlr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 13:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbZI3Rlq
+	id S1754924AbZI3Rly (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 13:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbZI3Rlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 13:41:46 -0400
-Received: from smtp161.iad.emailsrvr.com ([207.97.245.161]:52769 "EHLO
-	smtp161.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754812AbZI3Rlp (ORCPT
+	Wed, 30 Sep 2009 13:41:53 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:55071 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754906AbZI3Rlv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 13:41:45 -0400
-Message-ID: <4AC39859.3090703@librato.com>
-Date: Wed, 30 Sep 2009 13:41:45 -0400
-From: Oren Laadan <orenl@librato.com>
-Organization: Librato
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 30 Sep 2009 13:41:51 -0400
+Date: Wed, 30 Sep 2009 10:41:55 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       yehuda@newdream.net
+Subject: Re: [PATCH 03/21] ceph: client types
+In-Reply-To: <20090929165758.1b7df6c9.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0909301040250.16283@cobra.newdream.net>
+References: <1253641129-28434-1-git-send-email-sage@newdream.net>
+ <1253641129-28434-2-git-send-email-sage@newdream.net>
+ <1253641129-28434-3-git-send-email-sage@newdream.net>
+ <1253641129-28434-4-git-send-email-sage@newdream.net>
+ <20090929165758.1b7df6c9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-       mingo@elte.hu, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       torvalds@linux-foundation.org, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v7][PATCH 0/9] Implement clone2() system call
-References: <20090924165548.GA16586@us.ibm.com> <20090924175542.GA27678@x200>	<20090924183556.GA31356@us.ibm.com> <20090930053443.GA1010@x200>
-In-Reply-To: <20090930053443.GA1010@x200>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 29 Sep 2009, Andrew Morton wrote:
 
-
-Alexey Dobriyan wrote:
-> On Thu, Sep 24, 2009 at 01:35:56PM -0500, Serge E. Hallyn wrote:
->> Quoting Alexey Dobriyan (adobriyan@gmail.com):
->>> I don't like this even more.
->>>
->>> Pid namespaces are hierarchical _and_ anonymous, so simply
->>> set of numbers doesn't describe the final object.
->>>
->>> struct pid isn't special, it's just another invariant if you like
->>> as far as C/R is concerned, but system call is made special wrt pids.
->>>
->>> What will be in an image? I hope "struct kstate_image_pid" with several
->> Sure pid namespaces are anonymous, but we will give each an 'objref'
->> valid only for a checkpoint image, and store the relationship between
->> pid namespaces based on those objrefs.  Basically the same way that user
->> structs and hierarchical user namespaces are handled right now.
+> On Tue, 22 Sep 2009 10:38:31 -0700
+> Sage Weil <sage@newdream.net> wrote:
 > 
-> OK, that's certainly doable.
+> > We first define constants, types, and prototypes for the kernel client
+> > proper.
+> > 
+> > A few subsystems are defined separately later: the MDS, OSD, and
+> > monitor clients, and the messaging layer.
+> > 
+> >
+> > ...
+> >
+> > +static inline bool ceph_i_test(struct inode *inode, unsigned mask)
+> > +{
+> > +	struct ceph_inode_info *ci = ceph_inode(inode);
+> > +	bool r;
+> > +
+> > +	spin_lock(&inode->i_lock);
+> > +	r = (ci->i_ceph_flags & mask) == mask;
+> > +	spin_unlock(&inode->i_lock);
+> > +	return r;
+> > +}
 > 
-> You're commiting yourself to creation of tasks in userspace if this goes in. :-\
-> Which can let you into putting wrong kind of relations into image.
+> I'm not sure that the locking in ceph_i_test() makes much sense.  The
+> condition we just checked could change one femtosecond after we dropped
+> the lock, so why take the lock?
 
-A malicious user can put "wrong" king of relations into the image,
-regardless of whether the tasks are created in the kernel or in
-userspace. As long as the creation follows the "instructions" in
-the image, the result would be the same.
+Right.  Would I need an smb_mb() or something in it's place?
 
-> IIRC, clone_flags were in image (still?), but tomorrow kernel will get
-> new way to acquire, say, uts_ns, which, in theory, can't be described by
-> a set of consecutive clones, so, you'll have to fixup something in kernel.
 
-The only thing enforced in user space is task relations, threads
-and (as a by-product) session id's.  The rest are refined in the
-kernel. This includes uts_ns, for example.
 
-(FWIW, _any_ clone relationships can be described by a set of
-clones. In particular because that's how they were constructed
-in the first place).
+> > +
+> > +/* find a specific frag @f */
+> > +static inline struct ceph_inode_frag *
+> > +__ceph_find_frag(struct ceph_inode_info *ci, u32 f)
+> > +{
+> > +	struct rb_node *n = ci->i_fragtree.rb_node;
+> > +
+> > +	while (n) {
+> > +		struct ceph_inode_frag *frag =
+> > +			rb_entry(n, struct ceph_inode_frag, node);
+> > +		int c = frag_compare(f, frag->frag);
+> > +		if (c < 0)
+> > +			n = n->rb_left;
+> > +		else if (c > 0)
+> > +			n = n->rb_right;
+> > +		else
+> > +			return frag;
+> > +	}
+> > +	return NULL;
+> > +}
+> 
+> Please review the entire fs and verify that all inlining decisions were
+> appropriate.  Unless this function has a single call site, this
+> decision wasn't appropriate.
+>
+> And if it _does_ have a single callsite, it should be defined in the
+> relevant .c file, not in .h
 
-Oren.
+Yep!
 
+> > +/*
+> > + * choose fragment for value @v.  copy frag content to pfrag, if leaf
+> > + * exists
+> > + */
+> > +extern u32 ceph_choose_frag(struct ceph_inode_info *ci, u32 v,
+> > +			    struct ceph_inode_frag *pfrag,
+> > +			    int *found);
+> > +
+> >
+> > ...
+> >
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
