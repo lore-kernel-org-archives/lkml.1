@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbZI3MSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbZI3MVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754356AbZI3MSE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZI3MSD
+	id S1754278AbZI3MVx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 08:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZI3MVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:18:03 -0400
-Received: from [195.41.46.236] ([195.41.46.236]:57510 "EHLO pfepb.post.tele.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752638AbZI3MSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:18:01 -0400
-Date: Wed, 30 Sep 2009 14:17:59 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mulyadi Santosa <mulyadi.santosa@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] generate-cmdlist.sh should be either executable or run
-	as parameter of "."
-Message-ID: <20090930121759.GA14467@merkur.ravnborg.org>
-References: <f284c33d0909251201w422e9687x8cd3a784e85adf7d@mail.gmail.com> <20090930120822.GC7618@elte.hu>
+	Wed, 30 Sep 2009 08:21:52 -0400
+Received: from khc.piap.pl ([195.187.100.11]:53025 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752913AbZI3MVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 08:21:52 -0400
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "Lennart Baruschka" <FunFlyer@gmx.net>, linux-kernel@vger.kernel.org
+Subject: Re: Disabling DMA with ICH10?
+References: <1254173481.4454.32.camel@goodbyte.homelinux.com>
+	<20090928234025.6dc4e3f7@lxorguk.ukuu.org.uk>
+	<20090929075416.77960@gmx.net> <20090929101114.1712314b@infradead.org>
+	<m3bpku3peg.fsf@intrepid.localdomain>
+	<20090929180555.3c4a7259@lxorguk.ukuu.org.uk>
+	<m3k4zh32vp.fsf@intrepid.localdomain>
+	<20090929233505.7ff11cad@lxorguk.ukuu.org.uk>
+Date: Wed, 30 Sep 2009 14:21:53 +0200
+In-Reply-To: <20090929233505.7ff11cad@lxorguk.ukuu.org.uk> (Alan Cox's message
+	of "Tue, 29 Sep 2009 23:35:05 +0100")
+Message-ID: <m3hbukfwri.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090930120822.GC7618@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 02:08:22PM +0200, Ingo Molnar wrote:
-> 
-> * Mulyadi Santosa <mulyadi.santosa@gmail.com> wrote:
-> 
-> > I believe this is just a small glitch. generate-cmdlist.sh by default 
-> > should be made as executable. But since one might forgot to do it, we 
-> > could simply call it as an argument "." or "source" or even "sh -c". I 
-> > pick "."
-> > 
-> > Tested in 2.6.31
-> > 
-> > Signed-off-by: Mulyadi Santosa <mulyadi.santosa@gmail.com>
-> 
-> hm, generate-cmdlist.sh is executable in the upstream kernel repo. It 
-> apparently isnt executable on your box - why?
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-Whatever - we should try to avoid relying on executable bit being set.
-umask can prevent this is tree is checkout as one user and build as another user.
+> INB foo
+>
+> 	CPU -> PCI device		read this register
+> 	PCI device -> Disk
+> 			trundle whirr whirrr
+> 			clunk clunk thud
+> 	Disk -> PCI device
+> 	PCI device -> CPU... "5"
+>
+> INB completes
+>
+> The INB is not interruptible mid instruction and stalls the CPU for the
+> full period of the message passing back and forth across the bus. So PIO
+> 0 on PCI stalls the bus for the equivalent of an ISA access, and PIO4
+> while a good deal faster is still a very long stall in hard real time
+> terms.
 
-	Sam
+Sure :-)
+
+That's why I wrote it's a bad idea. I just wanted to correct the
+statement about ISA speed - it's not (necessarily) ISA speed, though
+it's slow and uses 100% CPU (core) time. (And PIO on PCI* in general
+is not much faster, though usually faster than ISA).
+-- 
+Krzysztof Halasa
