@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbZI3Ow4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZI3O5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754617AbZI3Ow4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 10:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZI3Ow4
+	id S1754610AbZI3O5K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 10:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZI3O5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 10:52:56 -0400
-Received: from mail.perches.com ([173.55.12.10]:1447 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754498AbZI3Owz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 10:52:55 -0400
-Subject: Re: [RFC] move #define pr_fmt KBUILD_MODNAME and KMSG_COMPONENT to
- Makefiles?
-From: Joe Perches <joe@perches.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090930112023.4fbb3da0@mschwide.boeblingen.de.ibm.com>
-References: <1254248104.28232.447.camel@Joe-Laptop.home>
-	 <20090930065533.GB13850@merkur.ravnborg.org>
-	 <1254297299.2960.55.camel@Joe-Laptop.home>
-	 <20090930112023.4fbb3da0@mschwide.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Sep 2009 07:52:58 -0700
-Message-Id: <1254322378.2960.86.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Wed, 30 Sep 2009 10:57:09 -0400
+Received: from kcmailp01.birch.net ([216.212.0.96]:61779 "EHLO mx01.birch.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751977AbZI3O5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 10:57:08 -0400
+Message-ID: <4AC371C6.3050104@softplc.com>
+Date: Wed, 30 Sep 2009 09:57:10 -0500
+From: Dick Hollenbeck <dick@softplc.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: 2.6.31.1 boot crash, compiled with ftrace
+References: <4AC22613.4090803@softplc.com>  <1254297804.2963.14.camel@frodo> <1254301761.7286.4.camel@frodo>
+In-Reply-To: <1254301761.7286.4.camel@frodo>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-30 at 11:20 +0200, Martin Schwidefsky wrote:
-> On Wed, 30 Sep 2009 00:54:59 -0700
-> Joe Perches <joe@perches.com> wrote:
-> > If something like were added to a module Makefile:
-> > 	ccflags-y += -D "pr_fmt(fmt)=KBUILD_MODNAME \": \" fmt"
-> 
-> Where is the difference between the definition of the macro in the 
-> source file? It's still one additional line, no?
+Steven Rostedt wrote:
+> On Wed, 2009-09-30 at 04:03 -0400, Steven Rostedt wrote:
+>   
+>> On Tue, 2009-09-29 at 10:21 -0500, Dick Hollenbeck wrote:
+>>     
+>>> Please help with a kernel boot crash.  This is happening with ftrace 
+>>> enabled.   (I have yet to try without ftrace.)  This same box runs 
+>>> kernel 2.6.26 fine.
+>>>
+>>> While running 'make oldconfig' coming up from 2.6.26, the three most 
+>>> significant changes were:
+>>>
+>>> 1) changed CPU from 486 to Pentium-Classic
+>>>
+>>> 2) Added "High Memory Support" 4 GB
+>>>
+>>> 3) Enabled various ftrace options, because I am on the hunt for some 
+>>> insane latency problems.
+>>>
+>>>       
+>> Hi Dick,
+>>
+>> Thanks for reporting this. Peter and I have been taking some look at it.
+>> We are not sure that it is ftrace related. have you tried booting the
+>> kernel without adding ftrace?
+>>     
+>
+> Hi,
+>
+> I just booted your config a couple of times without any issues. How
+> reproducible is this?
+>
+> Thanks,
+>
+> -- Steve
+>   
 
-Look at net/netfilter/ipvs for instance.
+Steve,
 
-It would have been possible to add:
+Thank you *very* much for your help.  *This* is what makes linux great, 
+not just the code, and you are part of it.
 
-	ccflags-y += -D "KMSG_COMPONENT=IPVS"
-	ccflags-y += -D "pr_fmt(fmt)=KMSG_COMPONENT \": \" fmt"
+The target is an embedded industrial box, and I'm booting from CF card 
+via IDE.  I switched build computers, target box stayed the same and the 
+CF card stayed the same.  With the switch, the compiler changed and the 
+USB CF writer changed (used to create the root fs on the CF card before 
+it is moved), as did some configuration options.  I am now booting.  I 
+am most suspicious of the original CF card writer device at this point.  
+Please do not spend any more time on it unless I come back for another 
+plea for help, such as if its the config options change.  I need more 
+time to narrow down the explanation for the failure to boot.
 
-to net/netfilter/ipvs/Makefile instead of adding it
-to 23 files.
+My real pursuit here is to find the reason for a nearly 1 second latency 
+when running a SCHED_RR userspace process.  The filesystem is ext3 off 
+the flash card via IDE. Linux is yanking the machine away from this 
+process sporadically for up to 1 second, no disk file calls in this 
+proces, only some serial port and networking (epoll) userspace calls in 
+a loop.  It is insane.  So I have to get either LTT or FTRACE enabled, 
+never used either before.  Its been a tough 2 weeks.  Just getting the 
+LTT patches in sync with a decent kernel has been nearly unbearable.
 
-Same sort of thing for drivers/s390/char/Makefile,
-though it's less beneficial there.
+Thanks again,
 
-Multiple
-	CFLAGS_foo.o += -D "KMSG_COMPONENT=foo"
-and a single
-	ccflags-y += -D "pr_fmt(fmt)=KMSG_COMPONENT \": \" fmt"
+Dick
 
-> And if you are dreaming of converting all source files
-> to the pr_fmt mechanism, this is a big effort ..
-
-I think it could be a useful mechanism to define pr_fmt
-for individual module Makefiles and there's no rush...
-
-cheers, Joe
 
