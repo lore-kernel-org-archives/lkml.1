@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbZI3WAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZI3V76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754677AbZI3WAY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 18:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZI3WAX
+	id S1754621AbZI3V76 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 17:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZI3V75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 18:00:23 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:34601 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751657AbZI3WAV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 18:00:21 -0400
-X-Sasl-enc: x+w7xpoVH6/foYTb58hjSa6PWwtxaX1txJTcxG9wj1Ks 1254348025
-Message-ID: <4AC3D4EB.1060301@imap.cc>
-Date: Thu, 01 Oct 2009 00:00:11 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 30 Sep 2009 17:59:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50347 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753106AbZI3V75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 17:59:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kelly Bowa <kbpm@tuxedu.org>
+Subject: Re: __pm_runtime_idle() returns -11!
+Date: Thu, 1 Oct 2009 00:01:23 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>,
+       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mundt <lethal@linux-sh.org>
+References: <20090930074650.GA2300@box.home>
+In-Reply-To: <20090930074650.GA2300@box.home>
 MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Alan Cox <alan@linux.intel.com>
-Subject: Re: N_PPP_SYNC ldisc BUG: sleeping function called from invalid context
-References: <4AC37032.4030901@imap.cc> <20090930174704.796b24b9@lxorguk.ukuu.org.uk> <4AC3A986.4080808@imap.cc> <4AC3BF62.9020706@gmail.com>
-In-Reply-To: <4AC3BF62.9020706@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4BF63BA4072024B7D88C2FAB"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910010001.23869.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4BF63BA4072024B7D88C2FAB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 30 September 2009, Kelly Bowa wrote:
+> Hi Rafael,
+> 
+> I get the following error messages in dmesg:
+> 
+> [    0.488758] ACPI: Enumerating devices from [\]
+> [    0.489673] PM: Adding info for acpi:LNXSYSTM:00
+> [    0.489856] acpi LNXSYSTM:00: __pm_runtime_idle()!
+> [    0.489862] acpi LNXSYSTM:00: __pm_runtime_idle() returns -11!
+> [    0.490952] PM: Adding info for acpi:LNXCPU:00
+> [    0.491154] acpi LNXCPU:00: __pm_runtime_idle()!
+> [    0.491161] acpi LNXCPU:00: __pm_runtime_idle() returns -11!
+> ....
+> 
+> full dmesg: www.tuxedu.org/kbpm/dmesg2.txt
+> 
+> __pm_runtime_idle() returns -11 which could be that it is waiting for other 
+> suspend running in parallel or that pm_runtime_cancel() fails to suspend the 
+> given device ?.. this causes a noticeable delay in boot time. I get this on 
+> 2.6.31-mm1 and ill soon test against 2.6.32-rc1..
 
-Jarek Poplawski schrieb:
-> Tilman Schmidt wrote, On 09/30/2009 08:55 PM:
-> ...
->> Why then does mutex_lock() complain?
->=20
->=20
-> Maybe it doesn't matter here, but this:=20
->=20
->> INFO: lockdep is turned off.
-> suggests there was some lockdep issue/warning earlier.
+This is a result of a debug message which is not supposed to be enabled on
+production systems.  What debug options are enabled in your kernel config?
 
-That's just because some <deleted> decided that tainted kernels don't des=
-erve lockdep.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig4BF63BA4072024B7D88C2FAB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFKw9T1Q3+did9BuFsRAjH0AJ9jgFQ7hHEoyv1QsH7HMbOFuQTyugCfbeZX
-oa6MFIzFkqgto8Qh6ktAiJk=
-=nbSo
------END PGP SIGNATURE-----
-
---------------enig4BF63BA4072024B7D88C2FAB--
+Rafael
