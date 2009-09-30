@@ -1,100 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbZI3Md3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbZI3MYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbZI3Md3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZI3Md2
+	id S1754309AbZI3MYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 08:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZI3MYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:33:28 -0400
-Received: from mastodon.hardc0re.org.uk ([77.240.12.146]:44322 "EHLO
-	mastodon.hardc0re.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbZI3Md2 (ORCPT
+	Wed, 30 Sep 2009 08:24:40 -0400
+Received: from mail-ausfall.charite.de ([193.175.70.131]:39377 "EHLO
+	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863AbZI3MYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:33:28 -0400
-X-Greylist: delayed 576 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Sep 2009 08:33:27 EDT
-Message-ID: <0b59b7dd4a320d3be58bc74455932cc0.squirrel@www.hardc0re.org.uk>
-In-Reply-To: <4AC2A300.1040001@gmail.com>
-References: <4AC2604C.2060803@hardc0re.org.uk> <4AC2A300.1040001@gmail.com>
-Date: Wed, 30 Sep 2009 13:23:37 +0100 (BST)
-Subject: Re: VIA VT6330 PCI-E Combo Controller not fully supported
-From: chrisfu@mastodon.hardc0re.org.uk
+	Wed, 30 Sep 2009 08:24:40 -0400
+Date: Wed, 30 Sep 2009 14:24:41 +0200
+From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
 To: linux-kernel@vger.kernel.org
-Cc: "Chris M" <chrisfu@hardc0re.org.uk>,
-       "Robert Hancock" <hancockrwd@gmail.com>
-User-Agent: SquirrelMail/1.4.15
+Subject: 2.6.31: WARNING: at net/ipv4/af_inet.c:154
+ inet_sock_destruct+0x164/0x1c0()
+Message-ID: <20090930122441.GB17974@charite.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On 09/29/2009 01:30 PM, Chris M wrote:
->> Hi everyone!  I'll quickly introduce myself before I get to the crux of
->> my reason for posting to the mailing list. My name is Chris Merrett and
->> although I'm not a subscriber to the list (my mail server would likely
->> cry), I check a well-known archive quite regularly just to try and keep
->> on top of developments in the community.
->>
->> The reason I'm mailing is due to a partially-supported VIA chip present
->> on a small handful of motherboards currently on sale. I mailed the
->> maintainer (Jeff Garzik) to bring this to his attention quite some time
->> ago, but I'd imagine he's not found the time to reply to me yet which is
->> understandable. I figured that it'd be a good idea to make a post here
->> with the info I've gathered, so that people affected by this same issue
->> are aware that this particular chip isn't yet fully supported in the
->> kernel.
->>
->> The VT6330 is a combo controller chip that handles both Firewire and
->> PATA, and is present on my Asrock N7AD-SLI. I'm also aware of it being
->> present on other Asrock boards, and presumably other boards from
->> different manufacturers. The Firewire functionality is supported
->> perfectly and without issue, but unfortunately the PATA support is
->> lacking at the moment. VIA have some information on this at the
->> following URL:
->> http://www.via.com.tw/en/products/peripherals/1394/vt6330/
->>
->>  From the info on the URL above, it appears that the PATA functionality
->> is identical to that of the VT6415 PATA controller, support for which
->> was added in 2.6.28. The mailing list post made regarding the patch that
->> was submitted can be found here:
->> http://lkml.indiana.edu/hypermail/linux/kernel/0902.2/01428.html
->
-> If it is similar enough to the existing controllers then you may be able
-> to just add the device ID into pata_via in a similar fashion..
->
+This machine runs openvpn:
 
-Thanks for your feedback Robert.  I went to do exactly that yesterday
-evening,
-and found some interesting stuff.  The PATA functionality of the VT6330
-identifies itself as the VT6415 and uses the exact same pci_id, meaning that
-support was already added in the mailing list post I quoted in my original
-mail.
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259235] ------------[ cut here ]------------
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259246] WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct+0x164/0x1c0()
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259249] Hardware name: ProLiant DL360 G4p
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259251] Modules linked in: ipt_REJECT ipt_LOG xt_multiport tun xt_tcpudp xt_state iptable_nat nf_nat iptable_filter ip_tables x_tables nf_conntrack_ipv4 nf_defrag_ipv4 ipv6 psmouse nf_conntrack_ftp nf_conntrack tg3 libphy
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259274] Pid: 2286, comm: openvpn Not tainted 2.6.31 #1
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259276] Call Trace:
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259282]  [<c126d154>] ? inet_sock_destruct+0x164/0x1c0
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259288]  [<c10326fb>] ? warn_slowpath_common+0x6f/0xcd
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259292]  [<c126d154>] ? inet_sock_destruct+0x164/0x1c0
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259296]  [<c1032779>] ? warn_slowpath_null+0x20/0x3c
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259300]  [<c126d154>] ? inet_sock_destruct+0x164/0x1c0
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259305]  [<c128bdcb>] ? _spin_lock_bh+0x16/0x40
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259309]  [<c128bdcb>] ? _spin_lock_bh+0x16/0x40
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259314]  [<c121bc78>] ? __sk_free+0x21/0xd6
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259318]  [<c121be41>] ? sk_common_release+0x5b/0x97
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259321]  [<c126cc05>] ? inet_release+0x39/0x66
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259325]  [<c1218eaa>] ? sock_release+0x22/0x8d
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259329]  [<c1218f31>] ? sock_close+0x1c/0x42
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259334]  [<c10a125c>] ? __fput+0xd6/0x1e0
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259338]  [<c109dd34>] ? filp_close+0x41/0x72
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259342]  [<c109ddda>] ? sys_close+0x75/0xc0
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259347]  [<c1002ecf>] ? sysenter_do_call+0x12/0x26
+Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259350] ---[ end trace 4715d461fc27d993 ]---
 
-The perplexing thing is that the device is unclaimed even though that by all
-accounts, it should be picked up.
-
-A snippet from dmesg:
-
-[    4.970261] pata_via 0000:01:00.1: version 0.3.3
-[    4.970637] ACPI: PCI Interrupt Link [LN6A] enabled at IRQ 19
-[    4.970643] pata_via 0000:01:00.1: PCI INT A -> Link[LN6A] -> GSI 19
-(level,
-low) -> IRQ 19
-[    4.970709] pata_via 0000:01:00.1: PCI INT A disabled
-[    4.970774] pata_acpi 0000:01:00.1: PCI INT A -> Link[LN6A] -> GSI 19
-(level,
-low) -> IRQ 19
-[    4.970799] pata_acpi 0000:01:00.1: setting latency timer to 64
-[    4.970809] pata_acpi 0000:01:00.1: PCI INT A disabled
-
-I guess I'll just keep probing and see what I can come up with.  The next
-step
-is trying to find out if the changes to support the VT6415 worked for
-*anyone*. :)
-
-Warm regards,
-
-Chris M
-
+-- 
+Ralf Hildebrandt
+  Geschäftsbereich IT | Abteilung Netzwerk
+  Charité - Universitätsmedizin Berlin
+  Campus Benjamin Franklin
+  Hindenburgdamm 30 | D-12203 Berlin
+  Tel. +49 30 450 570 155 | Fax: +49 30 450 570 962
+  ralf.hildebrandt@charite.de | http://www.charite.de
+	    
