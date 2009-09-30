@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZI3ISc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZI3IVD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbZI3ISc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 04:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbZI3ISb
+	id S1754087AbZI3IVD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 04:21:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZI3IVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 04:18:31 -0400
-Received: from mx01.bfk.de ([193.227.124.2]:50312 "EHLO mx01.bfk.de"
+	Wed, 30 Sep 2009 04:21:02 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:35116 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752153AbZI3IS3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 04:18:29 -0400
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, Valdis.Kletnieks@vt.edu,
-       linux@treblig.org, agruen@suse.de, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vfs: new O_NODE open flag
-References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu>
-	<200909250223.58664.agruen@suse.de>
-	<E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu>
-	<20090925123747.GA31228@gallifrey>
-	<9988.1253899252@turing-police.cc.vt.edu>
-	<20090925183523.GA6065@gallifrey>
-	<19645.1253913514@turing-police.cc.vt.edu>
-	<E1MsDQ6-0001cY-92@pomaz-ex.szeredi.hu>
-	<20090928132845.GC19778@shareable.org>
-From: Florian Weimer <fweimer@bfk.de>
-Date: Wed, 30 Sep 2009 08:18:21 +0000
-In-Reply-To: <20090928132845.GC19778@shareable.org> (Jamie Lokier's message of "Mon\, 28 Sep 2009 14\:28\:45 +0100")
-Message-ID: <82d4589776.fsf@mid.bfk.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1753511AbZI3IVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 04:21:01 -0400
+Date: Wed, 30 Sep 2009 10:20:37 +0200
+From: Michal Schmidt <mschmidt@redhat.com>
+To: Yong Zhang <yong.zhang0@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, clemens@ladisch.de,
+       venkatesh.pallipadi@intel.com, gregkh@suse.de
+Subject: Re: [2.6.31-git17] WARNING: at kernel/hrtimer.c:648 
+ hres_timers_resume+0x40/0x50()/WARNING: at drivers/base/sys.c:353 
+ __sysdev_resume+0xc3/0xe0()
+Message-ID: <20090930102037.55db07ed@hammerfall>
+In-Reply-To: <2674af740909300101x2ef4bbdewc12d52e703bdadf@mail.gmail.com>
+References: <8db1092f0909270105x4b49daf8k268e453d2379020c@mail.gmail.com>
+	<2674af740909270127s464a3cb2xef5e7f4cd61b0eb7@mail.gmail.com>
+	<20090929072454.GA11414@elte.hu>
+	<2674af740909290231m5af0fbc6t5fba0b127c63bd9f@mail.gmail.com>
+	<20090930095043.48e7081f@hammerfall>
+	<2674af740909300101x2ef4bbdewc12d52e703bdadf@mail.gmail.com>
+Organization: Red Hat Czech
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jamie Lokier:
+Dne Wed, 30 Sep 2009 16:01:40 +0800
+Yong Zhang <yong.zhang0@gmail.com> napsal(a):
+> From my previous mail, I have ask Maciej to test the blow patch:
+> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+> index fb0f46f..4a00a1a 100644
+> --- a/kernel/time/timekeeping.c
+> +++ b/kernel/time/timekeeping.c
+> @@ -569,6 +569,9 @@ static int timekeeping_resume(struct sys_device
+> *dev) unsigned long flags;
+>        struct timespec ts;
+> 
+> +       WARN_ONCE(!irqs_disabled(),
+> +               KERN_INFO "timekeeping_resume() called with IRQs
+> enabled!"); +
+>        read_persistent_clock(&ts);
+> 
+>        clocksource_resume();
+> 
+> And indeed, the warning is showed.
 
-> I hope the above cannot convert O_NOACCESS to O_RDWR without checking
-> that you have access to the file.
+Is it? After Maciej tested it, he said:
+> no "timekeeping_resume() called with IRQs enabled!".
+which I read as: no such message was shown.
 
-It doesn't.
-
-Here's what I did to reproduce:
-
-$ mkdir /tmp/xyz
-$ touch /tmp/xyz/123
-$ tail -f /tmp/xyz/123
-
-And in another terminal:
-
-$ chmod 000 /tmp/xyz
-$ echo foo > /tmp/xyz/123
-bash: /tmp/xyz/123: Permission denied
-$ $ echo foo > /proc/$pid_of_tail/fd/5
-
-And the first terminal prints "foo".  It fails if the file it self is
-not writeable, only the access check on the path is bypassed.  I still
-think this is wrong.
-
-FWIW, fcntl(F_SETFL) is documented to ignore O_RDWR etc. flags.  For
-/proc/PID/fd, it probably makes sense to check the current access
-flags on the object, and the original open mode.  Rechecking the path
-seems impossible because it has unclear semantics.
-
-The whole thing is a bit worrisome because it may turn file descriptor
-information leaks into something worse.
-
--- 
-Florian Weimer                <fweimer@bfk.de>
-BFK edv-consulting GmbH       http://www.bfk.de/
-Kriegsstraﬂe 100              tel: +49-721-96201-1
-D-76133 Karlsruhe             fax: +49-721-96201-99
+Michal
