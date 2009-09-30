@@ -1,148 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbZI3ACj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbZI3AJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753496AbZI3ACj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 20:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbZI3ACj
+	id S1753521AbZI3AJk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 20:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbZI3AJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 20:02:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50252 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752144AbZI3ACi (ORCPT
+	Tue, 29 Sep 2009 20:09:40 -0400
+Received: from exprod6og102.obsmtp.com ([64.18.1.183]:55339 "HELO
+	exprod6og102.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752047AbZI3AJj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 20:02:38 -0400
-Date: Tue, 29 Sep 2009 17:02:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sage Weil <sage@newdream.net>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       yehuda@newdream.net, sage@newdream.net
-Subject: Re: [PATCH 04/21] ceph: ref counted buffer
-Message-Id: <20090929170240.ce93d637.akpm@linux-foundation.org>
-In-Reply-To: <1253641129-28434-5-git-send-email-sage@newdream.net>
-References: <1253641129-28434-1-git-send-email-sage@newdream.net>
-	<1253641129-28434-2-git-send-email-sage@newdream.net>
-	<1253641129-28434-3-git-send-email-sage@newdream.net>
-	<1253641129-28434-4-git-send-email-sage@newdream.net>
-	<1253641129-28434-5-git-send-email-sage@newdream.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Tue, 29 Sep 2009 20:09:39 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] libfs: move EXPORT_SYMBOL for d_alloc_name
+Date: Tue, 29 Sep 2009 20:09:42 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901D42AFF@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] libfs: move EXPORT_SYMBOL for d_alloc_name
+Thread-Index: AcpBYk9B2ylJ7Oi3Qveknd0LTzLelA==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: <linux-fsdevel@vger.kernel.org>
+X-OriginalArrivalTime: 30 Sep 2009 00:09:42.0114 (UTC) FILETIME=[4EFACC20:01CA4162]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Sep 2009 10:38:32 -0700
-Sage Weil <sage@newdream.net> wrote:
+The EXPORT_SYMBOL for d_alloc_name is in fs/libfs.c but the function
+is in fs/dcache.c.  Move the EXPORT_SYMBOL to the line immediately
+after the closing function brace line in fs/dcache.c as mentioned
+in Documentation/CodingStyle.
 
-> struct ceph_buffer is a simple ref-counted buffer.  We transparently
-> choose between kmalloc for small buffers and vmalloc for large ones.
-> 
-> This is used for allocating memory for xattr data, among other things.
-> 
-> Signed-off-by: Sage Weil <sage@newdream.net>
-> ---
->  fs/ceph/buffer.h |   83 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 83 insertions(+), 0 deletions(-)
->  create mode 100644 fs/ceph/buffer.h
-> 
-> diff --git a/fs/ceph/buffer.h b/fs/ceph/buffer.h
-> new file mode 100644
-> index 0000000..128593d
-> --- /dev/null
-> +++ b/fs/ceph/buffer.h
-> @@ -0,0 +1,83 @@
-> +#ifndef __FS_CEPH_BUFFER_H
-> +#define __FS_CEPH_BUFFER_H
-> +
-> +#include <linux/mm.h>
-> +#include <linux/types.h>
-> +#include <linux/vmalloc.h>
-> +
-> +#include "ceph_debug.h"
-> +
-> +/*
-> + * a simple reference counted buffer.
-> + *
-> + * use kmalloc for small sizes (<= one page), vmalloc for larger
-> + * sizes.
-> + */
-> +struct ceph_buffer {
-> +	atomic_t nref;
-> +	struct kvec vec;
-> +	size_t alloc_len;
-> +	bool is_vmalloc;
-> +};
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-vmalloc is a concern.  It is vulnerable to (and can cause) internal
-fragmentation.  One that occurs, it's as good as a full machine
-failure.
+---
 
-> +static inline struct ceph_buffer *ceph_buffer_new(gfp_t gfp)
-> +{
-> +	struct ceph_buffer *b;
-> +
-> +	b = kmalloc(sizeof(*b), gfp);
-> +	if (!b)
-> +		return NULL;
-> +	atomic_set(&b->nref, 1);
-> +	b->vec.iov_base = NULL;
-> +	b->vec.iov_len = 0;
-> +	b->alloc_len = 0;
-> +	return b;
-> +}
-
-I was going to stop commenting on all the nutty inlining decisions but gee.
-
-> +static inline int ceph_buffer_alloc(struct ceph_buffer *b, int len, gfp_t gfp)
-> +{
-> +	if (len <= PAGE_SIZE) {
-> +		b->vec.iov_base = kmalloc(len, gfp);
-> +		b->is_vmalloc = false;
-> +	} else {
-> +		b->vec.iov_base = __vmalloc(len, gfp, PAGE_KERNEL);
-> +		b->is_vmalloc = true;
-> +	}
-> +	if (!b->vec.iov_base)
-> +		return -ENOMEM;
-> +	b->alloc_len = len;
-> +	b->vec.iov_len = len;
-> +	return 0;
-> +}
-
-Do we *really* need vmalloc here?  It much be one humongous vector! 
-How large can it really get?
-
-A still-lame-but-less-lame option here would be to attempt the kmalloc
-(with __GFP_NOWARN) and if it failed, fall back to vmalloc.
-
-
->
-> ...
->
-> +static inline void ceph_buffer_put(struct ceph_buffer *b)
-> +{
-> +	if (b && atomic_dec_and_test(&b->nref)) {
-> +		if (b->vec.iov_base) {
-> +			if (b->is_vmalloc)
-> +				vfree(b->vec.iov_base);
-> +			else
-> +				kfree(b->vec.iov_base);
-> +		}
-> +		kfree(b);
-> +	}
-> +}
-> +
-> +static inline struct ceph_buffer *ceph_buffer_new_alloc(int len, gfp_t gfp)
-> +{
-> +	struct ceph_buffer *b = ceph_buffer_new(gfp);
-> +
-> +	if (b && ceph_buffer_alloc(b, len, gfp) < 0) {
-> +		ceph_buffer_put(b);
-> +		b = NULL;
-> +	}
-> +	return b;
-> +}
-
-Do we really need to test for b==NULL here?  Is that test potentially
-hiding bugs in calling code?
-
+diff --git a/fs/dcache.c b/fs/dcache.c
+index a100fa3..953173a 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -978,6 +978,7 @@ struct dentry *d_alloc_name(struct dentry *parent, const char *name)
+ 	q.hash = full_name_hash(q.name, q.len);
+ 	return d_alloc(parent, &q);
+ }
++EXPORT_SYMBOL(d_alloc_name);
+ 
+ /* the caller must hold dcache_lock */
+ static void __d_instantiate(struct dentry *dentry, struct inode *inode)
+diff --git a/fs/libfs.c b/fs/libfs.c
+index 219576c..6e8d17e 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -848,7 +848,6 @@ EXPORT_SYMBOL(simple_write_end);
+ EXPORT_SYMBOL(simple_dir_inode_operations);
+ EXPORT_SYMBOL(simple_dir_operations);
+ EXPORT_SYMBOL(simple_empty);
+-EXPORT_SYMBOL(d_alloc_name);
+ EXPORT_SYMBOL(simple_fill_super);
+ EXPORT_SYMBOL(simple_getattr);
+ EXPORT_SYMBOL(simple_link); 
