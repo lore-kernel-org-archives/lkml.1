@@ -1,121 +1,353 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbZI3QCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZI3QDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984AbZI3QCu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 12:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbZI3QCu
+	id S1754995AbZI3QDy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 12:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbZI3QDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 12:02:50 -0400
-Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:42227 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754557AbZI3QCt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 12:02:49 -0400
-Date: Wed, 30 Sep 2009 10:02:32 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+	Wed, 30 Sep 2009 12:03:54 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:59455 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754679AbZI3QDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 12:03:53 -0400
+Date: Wed, 30 Sep 2009 11:02:59 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Roland Dreier <rdreier@cisco.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-rdma@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Anton Blanchard <anton@samba.org>, general@lists.openfabrics.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       Jeff Squyres <jsquyres@cisco.com>
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
-Message-ID: <20090930160232.GZ22310@obsidianresearch.com>
-References: <aday6omhz9d.fsf@cisco.com> <1253187028.8439.2.camel@twins> <adafxalejiq.fsf@cisco.com> <adaab0tej5c.fsf@cisco.com> <1253198976.14935.27.camel@laptop> <adazl8td35u.fsf@cisco.com> <adatyz1d17q.fsf@cisco.com> <20090929171332.GD14405@elf.ucw.cz> <20090930094456.GD24621@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: SGU UV Fix irq affinity for hub based interrupts
+Message-ID: <20090930160259.GA7822@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090930094456.GD24621@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 11:44:56AM +0200, Ingo Molnar wrote:
-> > > OK.  It would be nice to tie into something more general, but I 
-> > > think I agree -- perf counters are missing the filtering and the "no 
-> > > lost events" that ummunotify does have. [...]
-> 
-> Performance events filtering is being worked on and now with the proper 
-> non-DoS limit you've added you can lose events too, dont you? So it's 
-> all a question of how much buffering to add - and with perf events too 
-> you can buffer arbitrary large amount of events.
+This patch fixes handling of uv hub irq affinity.  IRQs with ALL or
+NODE affinity can be routed to cpus other than their originally assigned
+cpu.  Those with CPU affinity cannot be rerouted.
 
-No, the ummunotify does not loose events, that is the fundamental
-difference between it and all tracing schemes.
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
-Every call to ibv_reg_mr is paired with a call to ummunotify to create
-a matching watcher. Both calls allocate some kernel memory, if one
-fails the entire operation fails and userspace can do whatever it does
-on memory allocation failure.
+---
 
-After that point the scheme is perfectly lossless.
+More specific handling for NODE affinity will be added once the patch for
+limiting irq affinity is in place.
 
-Performance event filtering would use the same kind of kernel memory,
-call ibv_reg_mr, then install a filter, both allocate kernel memory,
-if one fails the op fails. But then when the ring buffer overflows
-you've lost events.
+ arch/x86/include/asm/uv/uv_irq.h |   15 +++-
+ arch/x86/kernel/apic/io_apic.c   |   49 ++++++++++++-
+ arch/x86/kernel/uv_irq.c         |  128 ++++++++++++++++++++++++++++++++---
+ drivers/misc/sgi-xp/xpc_uv.c     |    5 -
+ 4 files changed, 180 insertions(+), 17 deletions(-)
 
-All the tracing schemes are lossy - since they loose events when the
-ring buffer fills up. So to do that we either need to make a recovery
-scheme of some sort, or make trace points that are blocking..
-
-So, here is a concrete proposal how ummunotify could be absorbed by
-perf events tracing, with filters.
-- The filter expression must be able to trigger on a MMU event,
-  triggering on the intersection of the MMU event address range and
-  filter expression address range.
-- The traces must be choosen so that there is exactly one filter
-  expression per ibv_reg_mr region
-- Each filter has a clearable saturating counter that increments every
-  time the filter matches an event
-- Each filter has a 64 bit user space assigned tag.
-- An API similar to ummunotify exists:
-     struct perf_filter_tag foo[100]
-     int rc = perf_filters_read_and_clear_non_zero_counters(foo,100);
-- Optionally - the mmap ring would contain only 64 bit user space
-  filter tags, not trace events.
-
-This would then duplicate the functions of ummunotify, including the
-lossless collection of events. The flow would more or less be the
-same:
-
- struct my_data *ptr = calloc()
- ptr->reg_handle = ibv_reg_mr(base,len)
- ptr->filter_handle = perf_filter_register("string matching base->len",ptr)
-
- [..]
- // fast path
- if (atomically(perf_map->head) != last_perf_map_head) {
-     struct perf_filter_tag foo[100]
-     int rc = perf_filters_read_and_clear_non_zero_counters(foo,100);
-     for (unsigned int i = 0; i != rc; i++)
-         ((struct my_data *)foo[i])->invalid = 1;
-
-     perf_empty_mmap_ring(perf_map);
+Index: linux/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux.orig/arch/x86/kernel/apic/io_apic.c	2009-09-29 21:23:53.000000000 -0500
++++ linux/arch/x86/kernel/apic/io_apic.c	2009-09-30 08:01:10.000000000 -0500
+@@ -3748,9 +3748,10 @@ int arch_setup_ht_irq(unsigned int irq, 
+  * on the specified blade to allow the sending of MSIs to the specified CPU.
+  */
+ int arch_enable_uv_irq(char *irq_name, unsigned int irq, int cpu, int mmr_blade,
+-		       unsigned long mmr_offset)
++		       unsigned long mmr_offset, int restrict)
+ {
+ 	const struct cpumask *eligible_cpu = cpumask_of(cpu);
++	struct irq_desc *desc = irq_to_desc(irq);
+ 	struct irq_cfg *cfg;
+ 	int mmr_pnode;
+ 	unsigned long mmr_value;
+@@ -3766,6 +3767,11 @@ int arch_enable_uv_irq(char *irq_name, u
+ 	if (err != 0)
+ 		return err;
+ 
++	if (restrict == UV_AFFINITY_CPU)
++		desc->status |= IRQ_NO_BALANCING;
++	else
++		desc->status |= IRQ_MOVE_PCNTXT;
++
+ 	spin_lock_irqsave(&vector_lock, flags);
+ 	set_irq_chip_and_handler_name(irq, &uv_irq_chip, handle_percpu_irq,
+ 				      irq_name);
+@@ -3794,11 +3800,10 @@ int arch_enable_uv_irq(char *irq_name, u
+  * Disable the specified MMR located on the specified blade so that MSIs are
+  * longer allowed to be sent.
+  */
+-void arch_disable_uv_irq(int mmr_blade, unsigned long mmr_offset)
++void arch_disable_uv_irq(int mmr_pnode, unsigned long mmr_offset)
+ {
+ 	unsigned long mmr_value;
+ 	struct uv_IO_APIC_route_entry *entry;
+-	int mmr_pnode;
+ 
+ 	BUILD_BUG_ON(sizeof(struct uv_IO_APIC_route_entry) != sizeof(unsigned long));
+ 
+@@ -3806,9 +3811,45 @@ void arch_disable_uv_irq(int mmr_blade, 
+ 	entry = (struct uv_IO_APIC_route_entry *)&mmr_value;
+ 	entry->mask = 1;
+ 
+-	mmr_pnode = uv_blade_to_pnode(mmr_blade);
+ 	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
  }
-
-If 'optionally' is done then the app can trundle through the mmap
-and only use the above syscall loop if the mmap overflows. That would
-be quite ideal.
-
-It also must be guarenteed that when a trace point is hit the mmap
-atomics are updated and visible to another user space thread before
-the trace point returns - otherwise it is not synchronous enough and
-will be racey.
-
-> A question: what is the typical size/scope of the rbtree of the watched 
-> regions of memory in practical (test) deployments of the ummunofity 
-> code?
-
-Jeff can you comment?
-
-IIRC it is many tens (hundreds?) of thousands of watches.
-
-> Per tracepoint filtering is possible via the perf event patches Li Zefan 
-> has posted to lkml recently, under this subject:
-
-Performance of the filter add is probably a bit of a concern..
-
-Regards,
-Jason
++
++int uv_set_irq_affinity(unsigned int irq, const struct cpumask *mask)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++	struct irq_cfg *cfg = desc->chip_data;
++	unsigned int dest;
++	unsigned long mmr_value;
++	struct uv_IO_APIC_route_entry *entry;
++	unsigned long mmr_offset;
++	unsigned mmr_pnode;
++
++	dest = set_desc_affinity(desc, mask);
++	if (dest == BAD_APICID)
++		return -1;
++
++	mmr_value = 0;
++	entry = (struct uv_IO_APIC_route_entry *)&mmr_value;
++
++	entry->vector = cfg->vector;
++	entry->delivery_mode = apic->irq_delivery_mode;
++	entry->dest_mode = apic->irq_dest_mode;
++	entry->polarity = 0;
++	entry->trigger = 0;
++	entry->mask = 0;
++	entry->dest = dest;
++
++	/* Get previously stored MMR and pnode of hub sourcing interrupts */
++	if (uv_irq_2_mmr_info(irq, &mmr_offset, &mmr_pnode))
++		return -1;
++
++	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
++
++	if (cfg->move_in_progress)
++		send_cleanup_vector(cfg);
++
++	return 0;
++}
+ #endif /* CONFIG_X86_64 */
+ 
+ int __init io_apic_get_redir_entries (int ioapic)
+Index: linux/drivers/misc/sgi-xp/xpc_uv.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-xp/xpc_uv.c	2009-09-29 21:23:53.000000000 -0500
++++ linux/drivers/misc/sgi-xp/xpc_uv.c	2009-09-29 21:23:55.000000000 -0500
+@@ -106,7 +106,8 @@ xpc_get_gru_mq_irq_uv(struct xpc_gru_mq_
+ 	int mmr_pnode = uv_blade_to_pnode(mq->mmr_blade);
+ 
+ #if defined CONFIG_X86_64
+-	mq->irq = uv_setup_irq(irq_name, cpu, mq->mmr_blade, mq->mmr_offset);
++	mq->irq = uv_setup_irq(irq_name, cpu, mq->mmr_blade, mq->mmr_offset,
++			UV_AFFINITY_CPU);
+ 	if (mq->irq < 0) {
+ 		dev_err(xpc_part, "uv_setup_irq() returned error=%d\n",
+ 			-mq->irq);
+@@ -136,7 +137,7 @@ static void
+ xpc_release_gru_mq_irq_uv(struct xpc_gru_mq_uv *mq)
+ {
+ #if defined CONFIG_X86_64
+-	uv_teardown_irq(mq->irq, mq->mmr_blade, mq->mmr_offset);
++	uv_teardown_irq(mq->irq);
+ 
+ #elif defined CONFIG_IA64_GENERIC || defined CONFIG_IA64_SGI_UV
+ 	int mmr_pnode;
+Index: linux/arch/x86/include/asm/uv/uv_irq.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/uv/uv_irq.h	2009-09-29 21:23:53.000000000 -0500
++++ linux/arch/x86/include/asm/uv/uv_irq.h	2009-09-29 21:23:55.000000000 -0500
+@@ -25,12 +25,21 @@ struct uv_IO_APIC_route_entry {
+ 		dest		: 32;
+ };
+ 
++enum {
++	UV_AFFINITY_ALL,
++	UV_AFFINITY_NODE,
++	UV_AFFINITY_CPU
++};
++
+ extern struct irq_chip uv_irq_chip;
+ 
+-extern int arch_enable_uv_irq(char *, unsigned int, int, int, unsigned long);
++extern int
++arch_enable_uv_irq(char *, unsigned int, int, int, unsigned long, int);
+ extern void arch_disable_uv_irq(int, unsigned long);
++extern int uv_set_irq_affinity(unsigned int, const struct cpumask *);
+ 
+-extern int uv_setup_irq(char *, int, int, unsigned long);
+-extern void uv_teardown_irq(unsigned int, int, unsigned long);
++extern int uv_irq_2_mmr_info(int, unsigned long *, int *);
++extern int uv_setup_irq(char *, int, int, unsigned long, int);
++extern void uv_teardown_irq(unsigned int);
+ 
+ #endif /* _ASM_X86_UV_UV_IRQ_H */
+Index: linux/arch/x86/kernel/uv_irq.c
+===================================================================
+--- linux.orig/arch/x86/kernel/uv_irq.c	2009-09-29 21:23:53.000000000 -0500
++++ linux/arch/x86/kernel/uv_irq.c	2009-09-30 07:56:44.000000000 -0500
+@@ -9,10 +9,22 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/rbtree.h>
+ #include <linux/irq.h>
+ 
+ #include <asm/apic.h>
+ #include <asm/uv/uv_irq.h>
++#include <asm/uv/uv_hub.h>
++
++/* MMR offset and pnode of hub sourcing interrupts for a given irq */
++struct uv_irq_2_mmr_pnode{
++	struct rb_node list;
++	unsigned long offset;
++	int pnode;
++	int irq;
++};
++static spinlock_t uv_irq_lock;
++static struct rb_root uv_irq_root;
+ 
+ static void uv_noop(unsigned int irq)
+ {
+@@ -39,25 +51,106 @@ struct irq_chip uv_irq_chip = {
+ 	.unmask		= uv_noop,
+ 	.eoi		= uv_ack_apic,
+ 	.end		= uv_noop,
++	.set_affinity	= uv_set_irq_affinity,
+ };
+ 
+ /*
++ * Add offset and pnode information of the hub sourcing interrupts to the
++ * rb tree for a specific irq.
++ */
++static int uv_set_irq_2_mmr_info(int irq, unsigned long offset, unsigned blade)
++{
++	struct rb_node **link = &uv_irq_root.rb_node;
++	struct rb_node *parent = NULL;
++	struct uv_irq_2_mmr_pnode *n;
++	struct uv_irq_2_mmr_pnode *e;
++	unsigned long irqflags;
++
++	n = kmalloc_node(sizeof(struct uv_irq_2_mmr_pnode), GFP_KERNEL,
++				uv_blade_to_memory_nid(blade));
++	if (!n)
++		return -ENOMEM;
++
++	n->irq = irq;
++	n->offset = offset;
++	n->pnode = uv_blade_to_pnode(blade);
++	spin_lock_irqsave(&uv_irq_lock, irqflags);
++	/* Find the right place in the rbtree: */
++	while (*link) {
++		parent = *link;
++		e = rb_entry(parent, struct uv_irq_2_mmr_pnode, list);
++
++		if (unlikely(irq == e->irq)) {
++			/* irq entry exists */
++			e->pnode = uv_blade_to_pnode(blade);
++			e->offset = offset;
++			spin_unlock_irqrestore(&uv_irq_lock, irqflags);
++			kfree(n);
++			return 0;
++		}
++
++		if (irq < e->irq)
++			link = &(*link)->rb_left;
++		else
++			link = &(*link)->rb_right;
++	}
++
++	/* Insert the node into the rbtree. */
++	rb_link_node(&n->list, parent, link);
++	rb_insert_color(&n->list, &uv_irq_root);
++
++	spin_unlock_irqrestore(&uv_irq_lock, irqflags);
++	return 0;
++}
++
++/* Retrieve offset and pnode information from the rb tree for a specific irq */
++int uv_irq_2_mmr_info(int irq, unsigned long *offset, int *pnode)
++{
++	struct uv_irq_2_mmr_pnode *e;
++	struct rb_node *n;
++	unsigned long irqflags;
++
++	spin_lock_irqsave(&uv_irq_lock, irqflags);
++	n = uv_irq_root.rb_node;
++	while (n) {
++		e = rb_entry(n, struct uv_irq_2_mmr_pnode, list);
++
++		if (e->irq == irq) {
++			*offset = e->offset;
++			*pnode = e->pnode;
++			spin_unlock_irqrestore(&uv_irq_lock, irqflags);
++			return 0;
++		}
++
++		if (irq < e->irq)
++			n = n->rb_left;
++		else
++			n = n->rb_right;
++	}
++	spin_unlock_irqrestore(&uv_irq_lock, irqflags);
++	return -1;
++}
++
++/*
+  * Set up a mapping of an available irq and vector, and enable the specified
+  * MMR that defines the MSI that is to be sent to the specified CPU when an
+  * interrupt is raised.
+  */
+ int uv_setup_irq(char *irq_name, int cpu, int mmr_blade,
+-		 unsigned long mmr_offset)
++		 unsigned long mmr_offset, int restrict)
+ {
+-	int irq;
+-	int ret;
++	int irq, ret;
++
++	irq = create_irq_nr(NR_IRQS_LEGACY, uv_blade_to_memory_nid(mmr_blade));
+ 
+-	irq = create_irq();
+ 	if (irq <= 0)
+ 		return -EBUSY;
+ 
+-	ret = arch_enable_uv_irq(irq_name, irq, cpu, mmr_blade, mmr_offset);
+-	if (ret != irq)
++	ret = arch_enable_uv_irq(irq_name, irq, cpu, mmr_blade, mmr_offset,
++		restrict);
++	if (ret == irq)
++		uv_set_irq_2_mmr_info(irq, mmr_offset, mmr_blade);
++	else
+ 		destroy_irq(irq);
+ 
+ 	return ret;
+@@ -71,9 +164,28 @@ EXPORT_SYMBOL_GPL(uv_setup_irq);
+  *
+  * Set mmr_blade and mmr_offset to what was passed in on uv_setup_irq().
+  */
+-void uv_teardown_irq(unsigned int irq, int mmr_blade, unsigned long mmr_offset)
++void uv_teardown_irq(unsigned int irq)
+ {
+-	arch_disable_uv_irq(mmr_blade, mmr_offset);
++	struct uv_irq_2_mmr_pnode *e;
++	struct rb_node *n;
++	unsigned long irqflags;
++
++	spin_lock_irqsave(&uv_irq_lock, irqflags);
++	n = uv_irq_root.rb_node;
++	while (n) {
++		e = rb_entry(n, struct uv_irq_2_mmr_pnode, list);
++		if (e->irq == irq) {
++			arch_disable_uv_irq(e->pnode, e->offset);
++			rb_erase(n, &uv_irq_root);
++			kfree(e);
++			break;
++		}
++		if (irq < e->irq)
++			n = n->rb_left;
++		else
++			n = n->rb_right;
++	}
++	spin_unlock_irqrestore(&uv_irq_lock, irqflags);
+ 	destroy_irq(irq);
+ }
+ EXPORT_SYMBOL_GPL(uv_teardown_irq);
