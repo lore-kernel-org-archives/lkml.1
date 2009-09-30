@@ -1,129 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbZI3T65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbZI3UAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbZI3T65 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 15:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZI3T65
+	id S1755178AbZI3UAa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 16:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZI3UA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 15:58:57 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39237 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752012AbZI3T64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 15:58:56 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19fkpVhyRNfVg9ShOnOToBHy6GJPI+HLOZUBewDmi
-	XVDLE7ShYGjp0k
-Subject: Re: IO scheduler based IO controller V10
-From: Mike Galbraith <efault@gmx.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-In-Reply-To: <20090927164235.GA23126@kernel.dk>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
-	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
-	 <1253976676.7005.40.camel@marge.simson.net>
-	 <1254034500.7933.6.camel@marge.simson.net>
-	 <20090927164235.GA23126@kernel.dk>
+	Wed, 30 Sep 2009 16:00:29 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:33133 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752320AbZI3UA3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 16:00:29 -0400
+Subject: Re: [PATCH] ima: ecryptfs fix imbalance message
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       Dustin Kirkland <kirkland@canonical.com>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, stable@kernel.org,
+       Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <4AC3AC33.1020907@linux.vnet.ibm.com>
+References: <1254258535-18894-1-git-send-email-zohar@linux.vnet.ibm.com>
+	 <4AC3AC33.1020907@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Wed, 30 Sep 2009 21:58:50 +0200
-Message-Id: <1254340730.7695.32.camel@marge.simson.net>
+Date: Wed, 30 Sep 2009 16:00:21 -0400
+Message-Id: <1254340821.3544.12.camel@dyn9002018117.watson.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-09-27 at 18:42 +0200, Jens Axboe wrote:
+On Wed, 2009-09-30 at 14:06 -0500, Tyler Hicks wrote:
+> On 09/29/2009 04:08 PM, Mimi Zohar wrote:
+> > The underlying files are measured. Update the counters to get rid of
+> > the ecryptfs imbalance message. (http://bugzilla.redhat.com/519737)
+> > 
+> > Reported-by: Sachin Garg <ascii79@gmail.com>
+> > Cc: stable@kernel.org
+> > Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> > ---
+> >  fs/ecryptfs/main.c |    4 +++-
+> >  1 files changed, 3 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
+> > index 9f0aa98..177e61e 100644
+> > --- a/fs/ecryptfs/main.c
+> > +++ b/fs/ecryptfs/main.c
+> > @@ -35,6 +35,7 @@
+> >  #include <linux/key.h>
+> >  #include <linux/parser.h>
+> >  #include <linux/fs_stack.h>
+> > +#include <linux/ima.h>
+> >  #include "ecryptfs_kernel.h"
+> > 
+> >  /**
+> > @@ -135,7 +136,8 @@ int ecryptfs_init_persistent_file(struct dentry *ecryptfs_dentry)
+> >  			       "rc = [%d]\n", lower_dentry, lower_mnt, rc);
+> >  			rc = PTR_ERR(inode_info->lower_file);
+> >  			inode_info->lower_file = NULL;
+> > -		}
+> > +		} else
+> > +			ima_counts_get(inode_info->lower_file);
+> >  	}
+> >  	mutex_unlock(&inode_info->lower_file_mutex);
+> >  	return rc;
+> 
+> Hi Mimi - I can't think of why we would want to measure the underlying
+> files.  The file contents are encrypted with a randomly generated key
+> and there is eCryptfs metadata stored in the first 8K of the underlying
+> file.  If you have two eCryptfs mounts, using the same key, and copy the
+> same file into both mount points, you'll end up with two entirely
+> different underlying files.
+> 
+> Taking a closer look at IMA is still on my TODO list, so I could be
+> missing something obvious.  The upper (decrypted) file is being
+> measured, right?
+> 
+> For performance and the reason mentioned above, it seems like the proper
+> fix is to only measure the upper file.  What do you think?
+> 
+> Tyler
 
-> It's a given that not merging will provide better latency. We can't
-> disable that or performance will suffer A LOT on some systems. There are
-> ways to make it better, though. One would be to make the max request
-> size smaller, but that would also hurt for streamed workloads. Can you
-> try whether the below patch makes a difference? It will basically
-> disallow merges to a request that isn't the last one.
+Yes, the terminology 'underlying files are measured' was incorrect. It
+is measuring the decrypted files.
 
-Thoughts about something like the below?
+Thanks!
 
-The problem with the dd vs konsole -e exit type load seems to be
-kjournald overloading the disk between reads.  When userland is blocked,
-kjournald is free to stuff 4*quantum into the queue instantly.
-
-Taking the hint from Vivek's fairness tweakable patch, I stamped the
-queue when a seeker was last seen, and disallowed overload within
-CIC_SEEK_THR of that time.  Worked well.
-
-dd competing against perf stat -- konsole -e exec timings, 5 back to back runs
-                                                           Avg
-before         9.15    14.51     9.39    15.06     9.90   11.6
-after          1.76     1.54     1.93     1.88     1.56    1.7
-
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index e2a9b92..4a00129 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -174,6 +174,8 @@ struct cfq_data {
- 	unsigned int cfq_slice_async_rq;
- 	unsigned int cfq_slice_idle;
- 
-+	unsigned long last_seeker;
-+
- 	struct list_head cic_list;
- 
- 	/*
-@@ -1326,6 +1328,12 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
- 			return 0;
- 
- 		/*
-+		 * We may have seeky queues, don't throttle up just yet.
-+		 */
-+		if (time_before(jiffies, cfqd->last_seeker + CIC_SEEK_THR))
-+			return 0;
-+
-+		/*
- 		 * we are the only queue, allow up to 4 times of 'quantum'
- 		 */
- 		if (cfqq->dispatched >= 4 * max_dispatch)
-@@ -1941,7 +1949,7 @@ static void
- cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 		       struct cfq_io_context *cic)
- {
--	int old_idle, enable_idle;
-+	int old_idle, enable_idle, seeky = 0;
- 
- 	/*
- 	 * Don't idle for async or idle io prio class
-@@ -1951,8 +1959,12 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 
- 	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
- 
--	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
--	    (cfqd->hw_tag && CIC_SEEKY(cic)))
-+	if (cfqd->hw_tag && CIC_SEEKY(cic)) {
-+		cfqd->last_seeker = jiffies;
-+		seeky = 1;
-+	}
-+
-+	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle || seeky)
- 		enable_idle = 0;
- 	else if (sample_valid(cic->ttime_samples)) {
- 		if (cic->ttime_mean > cfqd->cfq_slice_idle)
-@@ -2482,6 +2494,7 @@ static void *cfq_init_queue(struct request_queue *q)
- 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
- 	cfqd->cfq_slice_idle = cfq_slice_idle;
- 	cfqd->hw_tag = 1;
-+	cfqd->last_seeker = jiffies;
- 
- 	return cfqd;
- }
-
+Mimi
 
