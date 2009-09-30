@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZI3WFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZI3WId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbZI3WFp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 18:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZI3WFn
+	id S1754858AbZI3WId (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 18:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbZI3WIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 18:05:43 -0400
-Received: from mga02.intel.com ([134.134.136.20]:60117 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754361AbZI3WFm convert rfc822-to-8bit (ORCPT
+	Wed, 30 Sep 2009 18:08:32 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:41768 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754087AbZI3WIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 18:05:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,482,1249282800"; 
-   d="scan'208";a="555530520"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Tejun Heo <teheo@suse.de>, Nick Piggin <npiggin@suse.de>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 30 Sep 2009 15:05:43 -0700
-Subject: RE: [PATCHSET percpu#for-next] percpu: convert ia64 to dynamic
- percpu and drop the old one, take#2
-Thread-Topic: [PATCHSET percpu#for-next] percpu: convert ia64 to dynamic
- percpu and drop the old one, take#2
-Thread-Index: AcpCD+et5X0AeNm2RLa4hdwXyo2iqwACTD8w
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E2F03FDC@orsmsx505.amr.corp.intel.com>
-References: <1253682382-24740-1-git-send-email-tj@kernel.org>
- <4AC153EA.2050007@suse.de>
- <57C9024A16AD2D4C97DC78E552063EA3E2F03E58@orsmsx505.amr.corp.intel.com>
- <alpine.DEB.1.10.0909301644460.9271@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0909301644460.9271@gentwo.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 30 Sep 2009 18:08:31 -0400
+Message-ID: <4AC3D6DC.9010500@free.fr>
+Date: Thu, 01 Oct 2009 00:08:28 +0200
+From: Daniel Lezcano <daniel.lezcano@free.fr>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
+To: Dan Smith <danms@us.ibm.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, mingo@elte.hu, xemul@openvz.org
+Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
+References: <1253749920-18673-1-git-send-email-orenl@librato.com>	<20090924154139.2a7dd5ec.akpm@linux-foundation.org>	<20090928163704.GA3327@us.ibm.com> <4AC20BB8.4070509@free.fr>	<87iqf0o5sf.fsf@caffeine.danplanet.com> <4AC38477.4070007@free.fr>	<87eipoo0po.fsf@caffeine.danplanet.com> <4AC39CE5.9080908@free.fr> <877hvgnv6z.fsf@caffeine.danplanet.com>
+In-Reply-To: <877hvgnv6z.fsf@caffeine.danplanet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Tony: Could we use a global register for the per cpu address? That would
-> make IA64 work similar to sparc.
+Dan Smith wrote:
+> DL> Yep, I agree. But you didn't answer the question, what are the
+> DL> network resources you plan to checkpoint / restart ?  eg. you let
+> DL> the container to setup your network, will you restore netdev
+> DL> statistics ? the mac address ? ipv4 ? ipv6 ?
+>
+> Yes, Yes, Yes, and Yes.  I'm making the assumption that the common
+> case will be with a veth device in the container and that all of the
+> aforementioned attributes should be copied over.  In the future case
+> where we could potentially have a real device in the container, it
+> probably doesn't make sense to copy the mac address.
+>   
 
-Would that be a useful trade of resources for convenience?  We've already
-hard-wired r13 for "current". Grabbing another one would require fixing
-(since user code will have clobbered it).  Possibly re-working any existing
-code that already uses whatever register you choose.
+Be careful with the assumptions ;)
+> DL> Is it possible to do a detailed list of network resources you plan
+> DL> to CR with the different items you will address from userspace and
+> DL> kernel space ?
+>
+> I'm sure it's possible, but no, I haven't planned out everything for
+> the next year.  If you have strong feelings about what should be done
+> in user and kernel space, feel free to share :)
+>   
 
-How would that compare with using [r13]?
+Dan,
 
-We might have a krN free ... but kregs are a lot slower than real registers.
+I just want to understand what is your plan. If you say "yes I will 
+checkpoint / restart" ipv4, ipv6, netdev statistics, etc ...  you should 
+be able to give at least a small list of network resources you will 
+checkpoint and how you will restart them, no ?
 
--Tony
+> DL> Argh ! I was hoping there was something else than the source code
+>
+> The header file makes it pretty clear what is going on, 
+Certainly for you.
+We are a little far away of the sys_checkpoint / sys_restart simple 
+syscalls we talked about at the cr-minisummit in 2008.
+
+Regards,
+     -- Daniel
+
+
+
