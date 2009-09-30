@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZI3U4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbZI3U62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbZI3U4F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 16:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbZI3U4E
+	id S1754089AbZI3U62 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 16:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZI3U62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 16:56:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43101 "EHLO hera.kernel.org"
+	Wed, 30 Sep 2009 16:58:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48153 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754153AbZI3U4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 16:56:03 -0400
-Date: Wed, 30 Sep 2009 20:55:21 GMT
-From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       eric.dumazet@gmail.com, a.p.zijlstra@chello.nl, johnstul@us.ibm.com,
-       torvalds@linux-foundation.org, arjan@linux.intel.com,
-       schwidefsky@de.ibm.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+	id S1752034AbZI3U61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 16:58:27 -0400
+Date: Wed, 30 Sep 2009 22:58:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        eric.dumazet@gmail.com, arjan@linux.intel.com,
        torvalds@linux-foundation.org, johnstul@us.ibm.com,
-       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090930170754.0886ff2e@infradead.org>
-References: <20090930170754.0886ff2e@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched_clock: Fix atomicity/continuity bug by using cmpxchg64()
-Message-ID: <tip-c7eca501d2ac092f2f58452a6f962249e2ab5dbe@git.kernel.org>
-Git-Commit-ID: c7eca501d2ac092f2f58452a6f962249e2ab5dbe
-X-Mailer: tip-git-log-daemon
+       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com, arjan@infradead.org,
+       tglx@linutronix.de
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:sched/urgent] x86: Provide an alternative() based
+	cmpxchg64()
+Message-ID: <20090930205808.GC24862@elte.hu>
+References: <20090930170754.0886ff2e@infradead.org> <tip-e87aaa7b6d80474ec07a2d2be3f50ef574ffe36c@git.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 30 Sep 2009 20:55:22 +0000 (UTC)
+In-Reply-To: <tip-e87aaa7b6d80474ec07a2d2be3f50ef574ffe36c@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c7eca501d2ac092f2f58452a6f962249e2ab5dbe
-Gitweb:     http://git.kernel.org/tip/c7eca501d2ac092f2f58452a6f962249e2ab5dbe
-Author:     Eric Dumazet <eric.dumazet@gmail.com>
-AuthorDate: Wed, 30 Sep 2009 20:36:19 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 30 Sep 2009 22:51:51 +0200
 
-sched_clock: Fix atomicity/continuity bug by using cmpxchg64()
+* tip-bot for Arjan van de Ven <arjan@infradead.org> wrote:
 
-Commit def0a9b2573 (sched_clock: Make it NMI safe) assumed
-cmpxchg() of 64bit values was available on X86_32.
+> Commit-ID:  e87aaa7b6d80474ec07a2d2be3f50ef574ffe36c
+> Gitweb:     http://git.kernel.org/tip/e87aaa7b6d80474ec07a2d2be3f50ef574ffe36c
+> Author:     Arjan van de Ven <arjan@infradead.org>
+> AuthorDate: Wed, 30 Sep 2009 17:07:54 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 30 Sep 2009 22:35:44 +0200
+> 
+> x86: Provide an alternative() based cmpxchg64()
+> 
+> cmpxchg64() today generates, to quote Linus, "barf bag" code.
+> 
+> cmpxchg64() is about to get used in the scheduler to a bug there,
+> but it's a prerequisite that cmpxchg64() first be made non-sucking.
+> 
+> This patch turns cmpxchg64() into an efficient implementation that
+> uses the alternative() mechanism to just use the raw instruction on
+> all modern systens
 
-That is not so - and causes some subtle scheduler misbehavior due
-to incorrect timestamps off to up by ~4 seconds.
+The changelog above has 3 typos so i fixed that. The push will generate 
+the hopefully-final version of these patches.
 
-Two symptoms are known right now:
+Note, i slightly updated Linus's version of the old-CPU emu code with 
+Eric's micro-optimization.
 
- - interactivity problems seen by Arjan: up to 600 msecs
-   latencies instead of the expected 20-40 msecs. These
-   latencies are very visible on the desktop.
-
- - incorrect CPU stats: occasionally too high percentages in 'top',
-   and crazy CPU usage stats.
-
-Reported-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: John Stultz <johnstul@us.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090930170754.0886ff2e@infradead.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/sched_clock.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index ac2e1dc..479ce56 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -127,7 +127,7 @@ again:
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
- 
--	if (cmpxchg(&scd->clock, old_clock, clock) != old_clock)
-+	if (cmpxchg64(&scd->clock, old_clock, clock) != old_clock)
- 		goto again;
- 
- 	return clock;
-@@ -163,7 +163,7 @@ again:
- 		val = remote_clock;
- 	}
- 
--	if (cmpxchg(ptr, old_val, val) != old_val)
-+	if (cmpxchg64(ptr, old_val, val) != old_val)
- 		goto again;
- 
- 	return val;
+	Ingo
