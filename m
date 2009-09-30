@@ -1,88 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZI3WVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZI3WUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbZI3WVE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 18:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZI3WVD
+	id S1754880AbZI3WUc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 18:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbZI3WUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 18:21:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45251 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752001AbZI3WVC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 18:21:02 -0400
-Date: Wed, 30 Sep 2009 15:20:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, mingo@elte.hu,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 8/9] Add explicit bound checks in mm/migrate.c
-Message-Id: <20090930152011.18c2cf82.akpm@linux-foundation.org>
-In-Reply-To: <20090926205406.30d55b08@infradead.org>
-References: <20090926204951.424e567e@infradead.org>
-	<20090926205406.30d55b08@infradead.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Sep 2009 18:20:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50430 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754361AbZI3WUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 18:20:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Subject: Re: suspend vs usb and PS/2 ports
+Date: Thu, 1 Oct 2009 00:21:34 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: "Linux-kernel" <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <4AC35F86.20405@msgid.tls.msk.ru> <200909302354.55673.rjw@sisk.pl> <4AC3D5B1.3030708@msgid.tls.msk.ru>
+In-Reply-To: <4AC3D5B1.3030708@msgid.tls.msk.ru>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910010021.34811.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Sep 2009 20:54:06 +0200
-Arjan van de Ven <arjan@infradead.org> wrote:
-
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Subject: [PATCH 8/9] Add explicit bound checks in mm/migrate.c
-> CC: akpm@linux-foundation.org
+On Thursday 01 October 2009, Michael Tokarev wrote:
+> Rafael J. Wysocki wrote:
+> > On Wednesday 30 September 2009, Michael Tokarev wrote:
+> >> Hello.
+> >>
+> >> I've several PCs here which are able to wakeup -
+> >> among others - from PS/2 and/or USB keyboard.
+> >> Here for testing I'm using PS/2 keyboard and
+> >> Asus M3A78-EM motherboard.
+> >>
+> >> When I do poweroff from linux, the keyboard
+> >> stays powered up as it should (according to
+> >> the BIOS settings).  But when I do suspend,
+> >> keyboard is NOT powered anymore, and hence
+> >> the system can't be woken up from it but only
+> >> by using the power button.
+> >>
+> >> This happens consistently for many kernel
+> >> versions.  To be fair, I don't even know if
+> >> there was any kernel which does not show this
+> >> behaviour: old versions was unable to do
+> >> suspend/resume cycle on this platform at all.
+> >>
+> >> Any hints for this please?
+> > 
+> > With USB, I think keyboard wake-up is off by default as it causes some
+> > systems to wake up immediately after suspending.  Alan and Oliver can provide
+> > more info about that.
 > 
-> The memory migration code has some curious copy_from_user bounds,
-> that are likely ok, but are not immediately obvious to me or to GCC.
+> Actually I wasn't able to get any machine to resume based on
+> USB devices - notable keyboard, be it sleep/power button (on
+> the keyboards that have it) or any other combination of keys
+> configured in the BIOS.  Most motherboards I tried are from
+> Asus, one or two from Gigabyte and one more from Biostar.
 > 
-> This patch adds a simple explicit bound check; this allows GCC
-> and me to be more assured that the copy_from_user will never overwrite
-> its destination buffer.
-
-I don't really see what's being fixed here.  The original code seems
-straightforward and safe enough?
-
-The identifier `chunk_nr' is a bit ambiguous.  Is it "number of chunks" or
-is it "index of this chunk"?
-
+> That's why I use PS/2=>USB adaptor, to connect an USB keyboard
+> to a PS/2 port - this one works just fine, with all the mobos
+> I tried (provided the appropriate BIOS settings are turned on
+> and ever exists, to start with).
 > 
-> diff --git a/mm/migrate.c b/mm/migrate.c
-> index 1a4bf48..5b9ebc5 100644
-> --- a/mm/migrate.c
-> +++ b/mm/migrate.c
-> @@ -1044,11 +1044,15 @@ static int do_pages_stat(struct mm_struct *mm, unsigned long nr_pages,
->  	int err;
->  
->  	for (i = 0; i < nr_pages; i += chunk_nr) {
-> +		unsigned int copy;
->  		if (chunk_nr + i > nr_pages)
->  			chunk_nr = nr_pages - i;
+> > I don't know about PS/2.
+> > 
+> > Can you post the contents of /proc/acpi/wakeup from one of these systems,
+> > please?
+> 
+> Hm.  That's.. curious.  Here we go, my home machine whihc I turn
+> on every day from a PS/2-connected keyboard:
+> 
+> Device	S-state	  Status   Sysfs node
+> PCE2	  S4	 disabled
+> PCE3	  S4	 disabled
+> PCE4	  S4	 disabled
+> PCE5	  S4	 disabled
+> PCE6	  S4	 disabled  pci:0000:00:06.0
+> RLAN	  S4	 disabled  pci:0000:02:00.0
+> PCE7	  S4	 disabled
+> PCE9	  S4	 disabled
+> PCEA	  S4	 disabled
+> PCEB	  S4	 disabled
+> PCEC	  S4	 disabled
+> SBAZ	  S4	 disabled  pci:0000:00:14.2
+> PS2K	  S4	 disabled  pnp:00:09
+> UAR1	  S4	 disabled  pnp:00:0a
+> P0PC	  S4	 disabled  pci:0000:00:14.4
+> UHC1	  S4	 disabled  pci:0000:00:12.0
+> UHC2	  S4	 disabled  pci:0000:00:12.1
+> UHC3	  S4	 disabled  pci:0000:00:12.2
+> USB4	  S4	 disabled  pci:0000:00:13.0
+> UHC5	  S4	 disabled  pci:0000:00:13.1
+> UHC6	  S4	 disabled  pci:0000:00:13.2
+> UHC7	  S4	 disabled  pci:0000:00:14.5
+> 
+> It's all disabled!
 
-A newline after end-of-locals is conventional.
+Thanks.  In fact, the 'disabled' column doesn't really mean totally disabled.
+It means one of the mechanisms one can use is disabled.
 
-`i' and `chunk_nr' have type `unsigned long' and you're mixing that up
-with `unsigned int'.
+For PCI, 'disabled' in this column shouldn't really matter any more. 
 
-> -		err = copy_from_user(chunk_pages, &pages[i],
-> -				     chunk_nr * sizeof(*chunk_pages));
+> But I *know* it wakes up
+> from network and from ps/2 keyboard at least!
+> In the corresponding BIOS menu almost everything
+> is enabled (excluding RTC alarm, but including
+> USB events).  This is an Asus motherboard, M3A-78EM,
+> with latest BIOS.
+> 
+> Here's another one, Gigabyte's GA-MA74GM-S2H,
+> which definitely wakes on network:
+> 
+> Device	S-state	  Status   Sysfs node
+> PCI0	  S5	 disabled  no-bus:pci0000:00
+> USB0	  S3	 disabled  pci:0000:00:12.0
+> USB1	  S3	 disabled  pci:0000:00:12.1
+> USB2	  S3	 disabled  pci:0000:00:12.2
+> USB3	  S3	 disabled  pci:0000:00:13.0
+> USB4	  S3	 disabled  pci:0000:00:13.1
+> USB5	  S3	 disabled  pci:0000:00:13.2
+> USB6	  S3	 disabled  pci:0000:00:14.5
+> SBAZ	  S4	 disabled  pci:0000:00:14.2
+> P2P	  S5	 disabled  pci:0000:00:14.4
+> PCE2	  S4	 disabled
+> PCE3	  S4	 disabled
+> PCE4	  S4	 disabled
+> PCE5	  S4	 disabled
+> PCE6	  S4	 disabled  pci:0000:00:06.0
+> PCE7	  S4	 disabled
+> PCE8	  S4	 disabled
+> 
+> hmm.  Blaming BIOS, as usual? :)
 
-And we mix it up with size_t as well.
+Nope.  For the majority of devices we disable wake-up by default.
 
-The type choices are a bit confused and sloppy.  Converting it all to
-`unsigned int' should be OK.
+> But even if that's the case, why there's a difference
+> between "just" power-off and power-off when suspending?
 
-> +		copy = chunk_nr * sizeof(*chunk_pages);
-> +		if (copy > DO_PAGES_STAT_CHUNK_NR)
-> +			return -EFAULT;
-> +
-> +		err = copy_from_user(chunk_pages, &pages[i], copy);
->  		if (err) {
->  			err = -EFAULT;
->  			goto out;
+These two cases are handled differently by BIOSes.
 
+Can you please check if /sys/devices/.../power/wakeup contains
+'enabled' for the PCI devices called USB0 - USB6 above?
 
+> The kernel is 2.6.31 vanilla.
+
+Better use 2.6.32-rc for debugging this.
+
+Thanks,
+Rafael
