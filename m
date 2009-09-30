@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbZI3Tic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZI3Tij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbZI3Tic (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 15:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbZI3Tia
+	id S1755218AbZI3Tij (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 15:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbZI3Tii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 15:38:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56802 "EHLO hera.kernel.org"
+	Wed, 30 Sep 2009 15:38:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56806 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755191AbZI3Ti2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 15:38:28 -0400
-Date: Wed, 30 Sep 2009 19:37:13 GMT
+	id S1755136AbZI3Tig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 15:38:36 -0400
+Date: Wed, 30 Sep 2009 19:37:27 GMT
 From: tip-bot for Arjan van de Ven <arjan@infradead.org>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        eric.dumazet@gmail.com, a.p.zijlstra@chello.nl, johnstul@us.ibm.com,
@@ -24,44 +24,46 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
 In-Reply-To: <20090930170754.0886ff2e@infradead.org>
 References: <20090930170754.0886ff2e@infradead.org>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] x86: Provide an alternative() based cmpxchg64()
-Message-ID: <tip-8da752098d4e584fbcc149046e5c716f5d356db4@git.kernel.org>
-Git-Commit-ID: 8da752098d4e584fbcc149046e5c716f5d356db4
+Subject: [tip:sched/urgent] sched_clock: Fix atomicity/continuity bug by using cmpxchg64()
+Message-ID: <tip-1cb9955464ad248c79c48e9c8be6669020fe178c@git.kernel.org>
+Git-Commit-ID: 1cb9955464ad248c79c48e9c8be6669020fe178c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 30 Sep 2009 19:37:14 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 30 Sep 2009 19:37:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8da752098d4e584fbcc149046e5c716f5d356db4
-Gitweb:     http://git.kernel.org/tip/8da752098d4e584fbcc149046e5c716f5d356db4
+Commit-ID:  1cb9955464ad248c79c48e9c8be6669020fe178c
+Gitweb:     http://git.kernel.org/tip/1cb9955464ad248c79c48e9c8be6669020fe178c
 Author:     Arjan van de Ven <arjan@infradead.org>
-AuthorDate: Wed, 30 Sep 2009 17:07:54 +0200
+AuthorDate: Wed, 30 Sep 2009 20:36:19 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 30 Sep 2009 20:58:26 +0200
+CommitDate: Wed, 30 Sep 2009 20:58:27 +0200
 
-x86: Provide an alternative() based cmpxchg64()
+sched_clock: Fix atomicity/continuity bug by using cmpxchg64()
 
-cmpxchg64() today generates, to quote Linus, "barf bag" code.
+Commit def0a9b2573 (sched_clock: Make it NMI safe) assumed
+cmpxchg() of 64bit values was available on X86_32.
 
-cmpxchg64() is about to get used in the scheduler to a bug there,
-but it's a prerequisite that cmpxchg64() first be made non-sucking.
+That is not so - and causes some subtle scheduler misbehavior due
+to incorrect timestamps off to up by ~4 seconds.
 
-This patch turns cmpxchg64() into an efficient implementation that
-uses the alternative() mechanism to just use the raw instruction on
-all modern systens
+Two symptoms are known right now:
 
-Note: the fallback is NOT smp safe, just like the current fallback
-is not SMP safe. (Interested parties with i486 based SMP systems
-are welcome to submit fix patches for that.)
+ - interactivity problems seen by Arjan: up to 600 msecs
+   latencies instead of the expected 20-40 msecs. These
+   latencies are very visible on the desktop.
 
+ - incorrect CPU stats: occasionally too high percentages in 'top',
+   and crazy CPU usage stats.
+
+Reported-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Cc: John Stultz <johnstul@us.ibm.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <20090930170754.0886ff2e@infradead.org>
@@ -69,148 +71,28 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/cmpxchg_32.h |   29 ++++++++++--------
- arch/x86/kernel/i386_ksyms_32.c   |    8 +++++
- arch/x86/lib/Makefile             |    2 +-
- arch/x86/lib/cmpxchg8b_emu.S      |   61 +++++++++++++++++++++++++++++++++++++
- 4 files changed, 86 insertions(+), 14 deletions(-)
+ kernel/sched_clock.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/cmpxchg_32.h b/arch/x86/include/asm/cmpxchg_32.h
-index 82ceb78..3b21afa 100644
---- a/arch/x86/include/asm/cmpxchg_32.h
-+++ b/arch/x86/include/asm/cmpxchg_32.h
-@@ -312,19 +312,22 @@ static inline unsigned long cmpxchg_386(volatile void *ptr, unsigned long old,
+diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
+index ac2e1dc..479ce56 100644
+--- a/kernel/sched_clock.c
++++ b/kernel/sched_clock.c
+@@ -127,7 +127,7 @@ again:
+ 	clock = wrap_max(clock, min_clock);
+ 	clock = wrap_min(clock, max_clock);
  
- extern unsigned long long cmpxchg_486_u64(volatile void *, u64, u64);
+-	if (cmpxchg(&scd->clock, old_clock, clock) != old_clock)
++	if (cmpxchg64(&scd->clock, old_clock, clock) != old_clock)
+ 		goto again;
  
--#define cmpxchg64(ptr, o, n)						\
--({									\
--	__typeof__(*(ptr)) __ret;					\
--	if (likely(boot_cpu_data.x86 > 4))				\
--		__ret = (__typeof__(*(ptr)))__cmpxchg64((ptr),		\
--				(unsigned long long)(o),		\
--				(unsigned long long)(n));		\
--	else								\
--		__ret = (__typeof__(*(ptr)))cmpxchg_486_u64((ptr),	\
--				(unsigned long long)(o),		\
--				(unsigned long long)(n));		\
--	__ret;								\
--})
-+#define cmpxchg64(ptr, o, n)					\
-+({								\
-+	__typeof__(*(ptr)) __ret;				\
-+	__typeof__(*(ptr)) __old = (o);				\
-+	__typeof__(*(ptr)) __new = (n);				\
-+	alternative_io("call cmpxchg8b_emu",			\
-+			"lock; cmpxchg8b (%%esi)" ,		\
-+		       X86_FEATURE_CX8,				\
-+		       "=A" (__ret),				\
-+		       "S" ((ptr)), "0" (__old),		\
-+		       "b" ((unsigned int)__new),		\
-+		       "c" ((unsigned int)(__new>>32)));	\
-+	__ret; })
-+
-+
-+
- #define cmpxchg64_local(ptr, o, n)					\
- ({									\
- 	__typeof__(*(ptr)) __ret;					\
-diff --git a/arch/x86/kernel/i386_ksyms_32.c b/arch/x86/kernel/i386_ksyms_32.c
-index 43cec6b..1736c5a 100644
---- a/arch/x86/kernel/i386_ksyms_32.c
-+++ b/arch/x86/kernel/i386_ksyms_32.c
-@@ -10,6 +10,14 @@
- EXPORT_SYMBOL(mcount);
- #endif
+ 	return clock;
+@@ -163,7 +163,7 @@ again:
+ 		val = remote_clock;
+ 	}
  
-+/*
-+ * Note, this is a prototype to get at the symbol for
-+ * the export, but dont use it from C code, it is used
-+ * by assembly code and is not using C calling convention!
-+ */
-+extern void cmpxchg8b_emu(void);
-+EXPORT_SYMBOL(cmpxchg8b_emu);
-+
- /* Networking helper routines. */
- EXPORT_SYMBOL(csum_partial_copy_generic);
+-	if (cmpxchg(ptr, old_val, val) != old_val)
++	if (cmpxchg64(ptr, old_val, val) != old_val)
+ 		goto again;
  
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index 9e60920..3e549b8 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -15,7 +15,7 @@ ifeq ($(CONFIG_X86_32),y)
-         obj-y += atomic64_32.o
-         lib-y += checksum_32.o
-         lib-y += strstr_32.o
--        lib-y += semaphore_32.o string_32.o
-+        lib-y += semaphore_32.o string_32.o cmpxchg8b_emu.o
- 
-         lib-$(CONFIG_X86_USE_3DNOW) += mmx_32.o
- else
-diff --git a/arch/x86/lib/cmpxchg8b_emu.S b/arch/x86/lib/cmpxchg8b_emu.S
-new file mode 100644
-index 0000000..b8af4c7
---- /dev/null
-+++ b/arch/x86/lib/cmpxchg8b_emu.S
-@@ -0,0 +1,61 @@
-+/*
-+ *	This program is free software; you can redistribute it and/or
-+ *	modify it under the terms of the GNU General Public License
-+ *	as published by the Free Software Foundation; version 2
-+ *	of the License.
-+ *
-+ */
-+
-+#include <linux/linkage.h>
-+#include <asm/alternative-asm.h>
-+#include <asm/frame.h>
-+#include <asm/dwarf2.h>
-+
-+
-+.text
-+
-+/*
-+ * Inputs:
-+ * %esi : memory location to compare
-+ * %eax : low 32 bits of old value
-+ * %edx : high 32 bits of old value
-+ * %ebx : low 32 bits of new value
-+ * %ecx : high 32 bits of new value
-+ */
-+ENTRY(cmpxchg8b_emu)
-+	CFI_STARTPROC
-+
-+	push %edi
-+	push %ebx
-+	push %ecx
-+	/* disable interrupts */
-+	pushf
-+	pop %edi
-+	cli
-+
-+	cmpl %edx, 4(%esi)
-+	jne 1f
-+	cmpl %eax, (%esi)
-+	jne 1f
-+
-+	xchg (%esi), %ebx
-+	xchg 4(%esi), %ecx
-+	mov %ebx, %eax
-+	mov %ecx, %edx
-+
-+2:
-+	/* restore interrupts */
-+	push %edi
-+	popf
-+
-+	pop %ecx
-+	pop %ebx
-+	pop %edi
-+	ret
-+1:
-+	mov (%esi), %eax
-+	mov 4(%esi), %edx
-+	jmp 2b
-+	CFI_ENDPROC
-+ENDPROC(cmpxchg8b_emu)
-+
+ 	return val;
