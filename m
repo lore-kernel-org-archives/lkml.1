@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752215AbZI3F1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752441AbZI3Fcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752215AbZI3F1a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 01:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZI3F13
+	id S1752441AbZI3Fcw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 01:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZI3Fcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 01:27:29 -0400
-Received: from mga03.intel.com ([143.182.124.21]:51899 "EHLO mga03.intel.com"
+	Wed, 30 Sep 2009 01:32:51 -0400
+Received: from mga14.intel.com ([143.182.124.37]:56971 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888AbZI3F12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 01:27:28 -0400
+	id S1750792AbZI3Fcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 01:32:50 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,478,1249282800"; 
-   d="scan'208";a="193314929"
-Date: Wed, 30 Sep 2009 13:26:57 +0800
+   d="scan'208";a="193316214"
+Date: Wed, 30 Sep 2009 13:32:23 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
        Dave Chinner <david@fromorbit.com>,
@@ -22,232 +22,26 @@ To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
        "Li, Shaohua" <shaohua.li@intel.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Jan Kara <jack@suse.cz>
 Subject: Re: regression in page writeback
-Message-ID: <20090930052657.GA17268@localhost>
-References: <20090923140058.GA2794@think> <20090924031508.GD6456@localhost> <20090925001117.GA9464@discord.disaster> <20090925003820.GK2662@think> <20090925050413.GC9464@discord.disaster> <20090925064503.GA30450@localhost> <20090928010700.GE9464@discord.disaster> <20090928071507.GA20068@localhost> <20090928130804.GA25880@infradead.org> <20090928140756.GC17514@mit.edu>
+Message-ID: <20090930053223.GA14368@localhost>
+References: <20090924031508.GD6456@localhost> <20090925001117.GA9464@discord.disaster> <20090925003820.GK2662@think> <20090925050413.GC9464@discord.disaster> <20090925064503.GA30450@localhost> <20090928010700.GE9464@discord.disaster> <20090928071507.GA20068@localhost> <20090928130804.GA25880@infradead.org> <20090928140756.GC17514@mit.edu> <20090930052657.GA17268@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090928140756.GC17514@mit.edu>
+In-Reply-To: <20090930052657.GA17268@localhost>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ted,
+On Wed, Sep 30, 2009 at 01:26:57PM +0800, Wu Fengguang wrote:
 
-On Mon, Sep 28, 2009 at 10:07:57PM +0800, Theodore Ts'o wrote:
-> On Mon, Sep 28, 2009 at 09:08:04AM -0400, Christoph Hellwig wrote:
-> > This should help a bit for XFS as it historically does multi-page
-> > writeouts from ->writepages (and apprently btrfs that added some
-> > write-around recently?) but not those brave filesystems only
-> > implementing the multi-page writeout from writepages as designed.
-> 
-> Here's the hack which I'm currently working on to work around the
-> writeback code limiting writebacks to 1024 pages.  I'm assuming this
-> is going to be short-term hack assuming the writeback code gets more
-> intelligent, but I thought I would throw this into the mix....
+> +#define MAX_WRITEBACK_PAGES     (128 * (20 - PAGE_CACHE_SHIFT))
 
-> ext4: Adjust ext4_da_writepages() to write out larger contiguous chunks
-> 
-> Work around problems in the writeback code to force out writebacks in
-> larger chunks than just 4mb, which is just too small.  This also works
-> around limitations in the ext4 block allocator, which can't allocate
-> more than 2048 blocks at a time.  So we need to defeat the round-robin
-> characteristics of the writeback code and try to write out as many
-> blocks in one inode before allowing the writeback code to move on to
-> another inode.  We add a a new per-filesystem tunable,
-> max_contig_writeback_mb, which caps this to a default of 128mb per
-> inode.
+Sorry for the silly mistake!
 
-It's good to increase MAX_WRITEBACK_PAGES, however I'm afraid
-max_contig_writeback_mb may be a burden in future: either it is not
-necessary, or a per-bdi counterpart must be introduced for all
-filesystems.
-
-And it's preferred to automatically handle slow devices well with the
-increased chunk size, instead of adding another parameter.
-
-I scratched up a patch to demo the ideas collected in recent discussions.
-Can you check if it serves your needs? Thanks.
-
-> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-> ---
->  fs/ext4/ext4.h              |    1 +
->  fs/ext4/inode.c             |  100 +++++++++++++++++++++++++++++++++++++-----
->  fs/ext4/super.c             |    3 +
->  include/trace/events/ext4.h |   14 ++++--
->  4 files changed, 102 insertions(+), 16 deletions(-)
-> 
-> diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-> index e227eea..9f99427 100644
-> --- a/fs/ext4/ext4.h
-> +++ b/fs/ext4/ext4.h
-> @@ -942,6 +942,7 @@ struct ext4_sb_info {
->  	unsigned int s_mb_stats;
->  	unsigned int s_mb_order2_reqs;
->  	unsigned int s_mb_group_prealloc;
-> +	unsigned int s_max_contig_writeback_mb;
->  	/* where last allocation was done - for stream allocation */
->  	unsigned long s_mb_last_group;
->  	unsigned long s_mb_last_start;
-> diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-> index 5fb72a9..9e0acb7 100644
-> --- a/fs/ext4/inode.c
-> +++ b/fs/ext4/inode.c
-> @@ -1145,6 +1145,60 @@ static int check_block_validity(struct inode *inode, const char *msg,
->  }
->  
->  /*
-> + * Return the number of dirty pages in the given inode starting at
-> + * page frame idx.
-> + */
-> +static pgoff_t ext4_num_dirty_pages(struct inode *inode, pgoff_t idx)
-> +{
-
-ext4_num_dirty_pages() may be improved to take a "max_pages" parameter
-to avoid unnecessary work.
-
-> +	struct address_space *mapping = inode->i_mapping;
-> +	pgoff_t	index;
-> +	struct pagevec pvec;
-> +	pgoff_t num = 0;
-> +	int i, nr_pages, done = 0;
-> +
-> +	pagevec_init(&pvec, 0);
-> +
-> +	while (!done) {
-> +		index = idx;
-> +		nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
-> +					      PAGECACHE_TAG_DIRTY,
-> +					      (pgoff_t)PAGEVEC_SIZE);
-> +		if (nr_pages == 0)
-> +			break;
-> +		for (i = 0; i < nr_pages; i++) {
-> +			struct page *page = pvec.pages[i];
-> +			struct buffer_head *bh, *head;
-> +
-> +			lock_page(page);
-> +			if (unlikely(page->mapping != mapping) ||
-> +			    !PageDirty(page) ||
-> +			    PageWriteback(page) ||
-> +			    page->index != idx) {
-> +				done = 1;
-> +				unlock_page(page);
-> +				break;
-> +			}
-> +			head = page_buffers(page);
-> +			bh = head;
-> +			do {
-> +				if (!buffer_delay(bh) &&
-> +				    !buffer_unwritten(bh)) {
-> +					done = 1;
-> +					break;
-> +				}
-> +			} while ((bh = bh->b_this_page) != head);
-> +			unlock_page(page);
-
-I guess a rough estimation will suffice, hehe.
-There are no guarantee anyway.
-
-> +			if (done)
-> +				break;
-> +			idx++;
-> +			num++;
-> +		}
-> +		pagevec_release(&pvec);
-> +	}
-> +	return num;
-> +}
-> +
-> +/*
->   * The ext4_get_blocks() function tries to look up the requested blocks,
->   * and returns if the blocks are already mapped.
->   *
-> @@ -2744,7 +2798,8 @@ static int ext4_da_writepages(struct address_space *mapping,
->  	int pages_written = 0;
->  	long pages_skipped;
->  	int range_cyclic, cycled = 1, io_done = 0;
-> -	int needed_blocks, ret = 0, nr_to_writebump = 0;
-> +	int needed_blocks, ret = 0;
-> +	long desired_nr_to_write, nr_to_writebump = 0;
->  	loff_t range_start = wbc->range_start;
->  	struct ext4_sb_info *sbi = EXT4_SB(mapping->host->i_sb);
->  
-> @@ -2771,16 +2826,6 @@ static int ext4_da_writepages(struct address_space *mapping,
->  	if (unlikely(sbi->s_mount_flags & EXT4_MF_FS_ABORTED))
->  		return -EROFS;
->  
-> -	/*
-> -	 * Make sure nr_to_write is >= sbi->s_mb_stream_request
-> -	 * This make sure small files blocks are allocated in
-> -	 * single attempt. This ensure that small files
-> -	 * get less fragmented.
-> -	 */
-> -	if (wbc->nr_to_write < sbi->s_mb_stream_request) {
-> -		nr_to_writebump = sbi->s_mb_stream_request - wbc->nr_to_write;
-> -		wbc->nr_to_write = sbi->s_mb_stream_request;
-> -	}
->  	if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
->  		range_whole = 1;
->  
-> @@ -2795,6 +2840,36 @@ static int ext4_da_writepages(struct address_space *mapping,
->  	} else
->  		index = wbc->range_start >> PAGE_CACHE_SHIFT;
->  
-> +	/*
-> +	 * This works around two forms of stupidity.  The first is in
-> +	 * the writeback code, which caps the maximum number of pages
-> +	 * written to be 1024 pages.  This is wrong on multiple
-> +	 * levels; different architectues have a different page size,
-> +	 * which changes the maximum amount of data which gets
-
-Good point.
-
-> +	 * written.  Secondly, 4 megabytes is way too small.  XFS
-> +	 * forces this value to be 16 megabytes by multiplying
-> +	 * nr_to_write parameter by four, and then relies on its
-> +	 * allocator to allocate larger extents to make them
-> +	 * contiguous.  Unfortunately this brings us to the second
-
-Hopefully we can make these hacks unnecessary :)
-
-> +	 * stupidity, which is that ext4's mballoc code only allocates
-> +	 * at most 2048 blocks.  So we force contiguous writes up to
-> +	 * the number of dirty blocks in the inode, or
-> +	 * sbi->max_contig_writeback_mb whichever is smaller.
-> +	 */
-> +	if (!range_cyclic && range_whole)
-> +		desired_nr_to_write = wbc->nr_to_write * 8;
-> +	else
-> +		desired_nr_to_write = ext4_num_dirty_pages(inode, index);
-> +	if (desired_nr_to_write > (sbi->s_max_contig_writeback_mb << 
-> +				   (20 - PAGE_CACHE_SHIFT)))
-> +		desired_nr_to_write = (sbi->s_max_contig_writeback_mb << 
-> +				       (20 - PAGE_CACHE_SHIFT));
-> +
-> +	if (wbc->nr_to_write < desired_nr_to_write) {
-> +		nr_to_writebump = desired_nr_to_write - wbc->nr_to_write;
-> +		wbc->nr_to_write = desired_nr_to_write;
-> +	}
-> +
->  	mpd.wbc = wbc;
->  	mpd.inode = mapping->host;
->  
-> @@ -2914,7 +2989,8 @@ retry:
->  out_writepages:
->  	if (!no_nrwrite_index_update)
->  		wbc->no_nrwrite_index_update = 0;
-> -	wbc->nr_to_write -= nr_to_writebump;
-> +	if (wbc->nr_to_write > nr_to_writebump)
-> +		wbc->nr_to_write -= nr_to_writebump;
->  	wbc->range_start = range_start;
->  	trace_ext4_da_writepages_result(inode, wbc, ret, pages_written);
->  	return ret;
-
-Thanks,
-Fengguang
 ---
 writeback: bump up writeback chunk size to 128MB
 
@@ -299,7 +93,7 @@ Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
  6 files changed, 67 insertions(+), 25 deletions(-)
 
 --- linux.orig/fs/fs-writeback.c	2009-09-30 12:17:15.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-09-30 12:17:17.000000000 +0800
++++ linux/fs/fs-writeback.c	2009-09-30 13:29:24.000000000 +0800
 @@ -31,6 +31,15 @@
  #define inode_to_bdi(inode)	((inode)->i_mapping->backing_dev_info)
  
@@ -310,7 +104,7 @@ Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 + * been forced to throttle against that inode.  Also, the code reevaluates
 + * the dirty each time it has written this many pages.
 + */
-+#define MAX_WRITEBACK_PAGES     (128 * (20 - PAGE_CACHE_SHIFT))
++#define MAX_WRITEBACK_PAGES     (128 << (20 - PAGE_CACHE_SHIFT))
 +
 +/*
   * We don't actually have pdflush, but this one is exported though /proc...
