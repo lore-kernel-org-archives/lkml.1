@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZI3RoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbZI3RpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbZI3RoS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 13:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZI3RoS
+	id S1754863AbZI3RpW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 13:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZI3RpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 13:44:18 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36952 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbZI3RoR (ORCPT
+	Wed, 30 Sep 2009 13:45:21 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:33226 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752361AbZI3RpU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 13:44:17 -0400
-Date: Wed, 30 Sep 2009 19:44:47 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Steven A. DuChene" <linux-clusters@mindspring.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Warning: unable to open an initial console
-Message-ID: <20090930194447.016e66c3@infradead.org>
-In-Reply-To: <31532395.1254330324879.JavaMail.root@elwamui-rubis.atl.sa.earthlink.net>
-References: <31532395.1254330324879.JavaMail.root@elwamui-rubis.atl.sa.earthlink.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 30 Sep 2009 13:45:20 -0400
+Date: Wed, 30 Sep 2009 10:45:25 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       yehuda@newdream.net
+Subject: Re: [PATCH 06/21] ceph: inode operations
+In-Reply-To: <20090929171511.29836c82.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0909301042530.16283@cobra.newdream.net>
+References: <1253641129-28434-1-git-send-email-sage@newdream.net>
+ <1253641129-28434-2-git-send-email-sage@newdream.net>
+ <1253641129-28434-3-git-send-email-sage@newdream.net>
+ <1253641129-28434-4-git-send-email-sage@newdream.net>
+ <1253641129-28434-5-git-send-email-sage@newdream.net>
+ <1253641129-28434-6-git-send-email-sage@newdream.net>
+ <1253641129-28434-7-git-send-email-sage@newdream.net>
+ <20090929171511.29836c82.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009 13:05:24 -0400 (EDT)
-"Steven A. DuChene" <linux-clusters@mindspring.com> wrote:
+On Tue, 29 Sep 2009, Andrew Morton wrote:
 
-> Hmm, I tried various combonations of turning off the framebuffer
-> support all together and then turning it back on with various
-> drivers (nvidia or vesa vga) but still I get the same message
-> about "Warning: unable to open an initial console."
+> On Tue, 22 Sep 2009 10:38:34 -0700
+> Sage Weil <sage@newdream.net> wrote:
 > 
-> Anything else I should be looking at besides the graphics support
-> part of the drivers section of the kernel config?
+> > Inode cache and inode operations.
 > 
-> Again this is a fairly standard PCChips A13G motherboard with
-> NVidia chipset and AMD Athlon 3600+ CPU that works fine with the
-> regular distro supplied FC9 kernel (2.6.25-14.fc9.x86_64) and
-> I have the x86_64 version of FC9 installed.
+> Attention span expired.  Please take previous comments and apply them
+> to all the other patches ;)
 
+Will do.
 
-on FC9 ....
-here's what to do on a successful boot
+> The code looks reasonable to me.  Unless others emit convincing
+> squeaks, please ask Stephen to include your git tree into linux-next
+> sometime within the next month, then send Linus a pull request for
+> 2.6.33.
 
-mkdir /tmp/mnt2
-mount /dev/sdaX /tmp/mnt  
-(where the X is your root device, if you use lvm, mount the lvm thing
-there)
-cp -a /dev/console /tmp/mnt/dev/console
-umount /tmp/mnt2
+Wonderful.  Thanks for your time!  I'll send out the full set one last 
+time after I finish this set of revisions.
 
+sage
