@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZI3P0D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZI3P1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbZI3P0D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 11:26:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZI3P0C
+	id S1754741AbZI3P1R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 11:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbZI3P1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 11:26:02 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:52174 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754665AbZI3P0B (ORCPT
+	Wed, 30 Sep 2009 11:27:15 -0400
+Received: from e24smtp01.br.ibm.com ([32.104.18.85]:45995 "EHLO
+	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754733AbZI3P1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 11:26:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=rnFjvzrKcXkRufYPfG+UCXSJ1GXXk52Y7v/vLFapicwuiBL1TCov0JyZxJtkh0enA7
-         rk0AyvsYivtr2XZ3AVNruMEv7tSPo/RQ8EZ8KoI1mTm36sZebkgrfMq6xOGaMA80lJbh
-         e8cimvsRw2IpdemKLt3nRuBKw8tHedRIqB9QE=
-Date: Wed, 30 Sep 2009 19:26:01 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: add show_lapic=
-Message-ID: <20090930152601.GB5235@lenovo>
-References: <4ABF0DE0.1030400@kernel.org> <20090927080605.GA4984@lenovo> <4ABF2262.3090905@kernel.org> <20090927085406.GB4984@lenovo> <20090927102805.GC4984@lenovo> <20090927144008.GD4984@lenovo> <20090927174219.GA14280@lenovo> <20090928160757.GD5264@lenovo> <86802c440909281046o5fa0032do3497087d173cbf82@mail.gmail.com> <20090928180201.GH5264@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090928180201.GH5264@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 30 Sep 2009 11:27:14 -0400
+Subject: [PATCH] TPM: fix pcrread
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       debora@linux.vnet.ibm.com, m.selhorst@sirrix.com,
+       akpm@linux-foundation.org, tpmdd-devel@lists.sourceforge.net
+Content-Type: text/plain
+Date: Wed, 30 Sep 2009 12:26:55 -0300
+Message-Id: <1254324415.13475.24.camel@blackbox>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Mon, Sep 28, 2009 at 10:02:01PM +0400]
-| [Yinghai Lu - Mon, Sep 28, 2009 at 10:46:54AM -0700]
-| | On Mon, Sep 28, 2009 at 9:07 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| ...
-| | >
-| | > -__apicdebuginit(int) print_all_ICs(void)
-| | > +static int __initdata show_lapic = 1;
-| | > +static __init int setup_show_lapic(char *arg)
-| | > +{
-| | > +       int num = -1;
-| | > +
-| | > +       if (strcmp(arg, "all") == 0) {
-| | > +               show_lapic = CONFIG_NR_CPUS;
-| | 
-| | NR_CPUS or nr_cpu_ids?
-| 
-| NR_CPUS as far as I can tell -- maximal to not exit for() loop until end.
-| nr_cpu_ids safe here as well, but constant is better :)
-| 
-| | 
-| | YH
-| | 
-| 	-- Cyrill
+The previously sent patch:
 
-Yinghai, any news here? I would like to know your conclusion
-on this patch.
+http://marc.info/?l=tpmdd-devel&m=125208945007834&w=2
 
-	-- Cyrill
+Had its first hunk cropped when merged, submitting only this first hunk
+again.
+
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Cc: Debora Velarde <debora@linux.vnet.ibm.com>
+Cc: Marcel Selhorst <m.selhorst@sirrix.com>
+Cc: James Morris <jmorris@namei.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+---
+ drivers/char/tpm/tpm.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
+index 45d5800..47c2d27 100644
+--- a/drivers/char/tpm/tpm.c
++++ b/drivers/char/tpm/tpm.c
+@@ -696,8 +696,7 @@ int __tpm_pcr_read(struct tpm_chip *chip, int pcr_idx, u8 *res_buf)
+ 
+ 	cmd.header.in = pcrread_header;
+ 	cmd.params.pcrread_in.pcr_idx = cpu_to_be32(pcr_idx);
+-	BUG_ON(cmd.header.in.length > READ_PCR_RESULT_SIZE);
+-	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
++	rc = transmit_cmd(chip, &cmd, READ_PCR_RESULT_SIZE,
+ 			  "attempting to read a pcr value");
+ 
+ 	if (rc == 0)
+-- 
+1.6.3.1
+
+
+
