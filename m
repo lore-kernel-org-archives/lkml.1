@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZI3TAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbZI3TAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755094AbZI3TAF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 15:00:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbZI3TAF
+	id S1755146AbZI3TAS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 15:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbZI3TAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 15:00:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41955 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754265AbZI3TAE (ORCPT
+	Wed, 30 Sep 2009 15:00:15 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:49961 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755128AbZI3TAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 15:00:04 -0400
-Date: Wed, 30 Sep 2009 11:59:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, herton@mandriva.com.br,
-       linux-kernel@vger.kernel.org, david-b@pacbell.net
-Subject: Re: [rtc-linux] Re: rtc_cmos oops in cmos_rtc_ioctl
-Message-Id: <20090930115937.b6af1326.akpm@linux-foundation.org>
-In-Reply-To: <20090922211546.44c0cf56@i1501.lan.towertech.it>
-References: <200909211553.38409.herton@mandriva.com.br>
-	<20090922124041.62abee25@i1501.lan.towertech.it>
-	<200909221515.26777.herton@mandriva.com.br>
-	<20090922211546.44c0cf56@i1501.lan.towertech.it>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Sep 2009 15:00:11 -0400
+Date: Wed, 30 Sep 2009 15:00:14 -0400
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Andy <genanr@emsphone.com>, linux-kernel@vger.kernel.org
+Subject: Re: How can I download a git commit as a diff patch?
+Message-ID: <20090930190014.GA22161@csclub.uwaterloo.ca>
+References: <20090930154410.GA31502@thumper2> <20090930085500.a5856301.rdunlap@xenotime.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090930085500.a5856301.rdunlap@xenotime.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Sep 2009 21:15:46 +0200
-Alessandro Zummo <alessandro.zummo@towertech.it> wrote:
-
-> On Tue, 22 Sep 2009 15:15:26 -0300
-> Herton Ronaldo Krzesinski <herton@mandriva.com.br> wrote:
+On Wed, Sep 30, 2009 at 08:55:00AM -0700, Randy Dunlap wrote:
+> On Wed, 30 Sep 2009 10:44:10 -0500 Andy wrote:
 > 
-> > 
-> > Something like this?:
-> > 
-> > From a94365843ab40a1904c4bc244af4e551f2f2aca9 Mon Sep 17 00:00:00 2001
-> > From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-> > Date: Tue, 22 Sep 2009 13:46:00 -0300
-> > Subject: [PATCH] rtc-cmos: convert RTC_AIE/RTC_UIE to rtc irq API
-> > 
-> > Drop ioctl function that handles RTC_AIE/RTC_UIE, and use instead the
-> > rtc subsystem API (alarm_irq_enable/update_irq_enable callbacks).
-> > 
-> > Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+> > I just want to down a particular git commit as a patch, not a git commit or
+> > anything.  Yes, I can see the diffs on the web, but unless I am missing
+> > something all are in unless html formats for me.  And cut and past from the
+> > web page does not help either because some lines get mangled.  Is there some
+> > site, or git itself, that would allow be to get the git commit as a simple
+> > patch?
 > 
->  Looks nice. David?
-> 
+> Look at the commitdiff using the web interface, then click on "raw" near
+> the upper left corner.
 
-I couldn't bear the suspense, so in a spirit of brave curiosity, I
-applied the patch!
+Of course some git diff's are not in a format that patch will like as
+far as I can tell.
 
+For example commit 6cdee2f96a97f6da26bd3759c3f8823332fbb438 which has
+stuff like:
+diff --cc drivers/net/ixp2000/ixpdev.c
+index 588b44d,92fb823..1272434
+--- a/drivers/net/ixp2000/ixpdev.c
++++ b/drivers/net/ixp2000/ixpdev.c
+@@@ -67,9 -68,9 +68,9 @@@ static int ixpdev_xmit(struct sk_buff *
+        ip->tx_queue_entries++;
+        if (ip->tx_queue_entries == TX_BUF_COUNT_PER_CHAN)
+                netif_stop_queue(dev);
+-       local_irq_enable();
++       local_irq_restore(flags);
+
+ -      return 0;
+ +      return NETDEV_TX_OK;
+  }
+
+
+
+Ehm, what does that mean?  patch doesn't like it.
+
+Do git merges cause weird diffs?
+
+-- 
+Len Sorensen
