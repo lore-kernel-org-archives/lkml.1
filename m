@@ -1,217 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbZI3BDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbZI3BDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbZI3BDJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 21:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbZI3BDJ
+	id S1753861AbZI3BDL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 21:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbZI3BDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 21:03:09 -0400
-Received: from mail1.radix.net ([207.192.128.31]:46569 "EHLO mail1.radix.net"
+	Tue, 29 Sep 2009 21:03:10 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59682 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752080AbZI3BDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753442AbZI3BDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 29 Sep 2009 21:03:07 -0400
-Subject: Re: [PATCH] media/video:  adding __init/__exit macros to various
- drivers
-From: Andy Walls <awalls@radix.net>
-To: Peter Huewe <PeterHuewe@gmx.de>
-Cc: Jiri Kosina <trivial@kernel.org>, kernel-janitors@vger.kernel.org,
-       Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Steven Toth <stoth@kernellabs.com>,
-       Michael Krufky <mkrufky@kernellabs.com>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>,
-       Muralidharan Karicheri <m-karicheri2@ti.com>,
-       Martin Dauskardt <martin.dauskardt@gmx.de>,
-       "Beholder Intl. Ltd. Dmitry Belimov" <d.belimov@gmail.com>,
-       ivtv-devel@ivtvdriver.org, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200909290219.01623.PeterHuewe@gmx.de>
-References: <200909290219.01623.PeterHuewe@gmx.de>
-Content-Type: text/plain
-Date: Tue, 29 Sep 2009 21:05:45 -0400
-Message-Id: <1254272745.5510.1.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Message-ID: <4AC2AF01.9090202@redhat.com>
+Date: Tue, 29 Sep 2009 21:06:09 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [RFC PATCH tracing/kprobes 0/5] tracing/kprobes, 	perf: perf
+ kprobe support
+References: <20090925191424.12939.91503.stgit@omoto>
+In-Reply-To: <20090925191424.12939.91503.stgit@omoto>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-29 at 02:19 +0200, Peter Huewe wrote:
-> From: Peter Huewe <peterhuewe@gmx.de>
-> 
-> Trivial patch which adds the __init/__exit macros to the module_init/
-> module_exit functions of the following drivers in media video:
->     drivers/media/video/ivtv/ivtv-driver.c
->     drivers/media/video/cx18/cx18-driver.c
->     drivers/media/video/davinci/dm355_ccdc.c
->     drivers/media/video/davinci/dm644x_ccdc.c
->     drivers/media/video/saa7164/saa7164-core.c
->     drivers/media/video/saa7134/saa7134-core.c
->     drivers/media/video/cx23885/cx23885-core.c
-> 
-> Please have a look at the small patch and either pull it through
-> your tree, or please ack' it so Jiri can pull it through the trivial tree.
-> 
-> linux version v2.6.32-rc1 - linus git tree, Di 29. Sep 01:10:18 CEST 2009
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Masami Hiramatsu wrote:
+>
+> Hi,
+>
+> These patches introduce perf kprobe command and update kprobe-tracer.
+> perf kprobe command allows you to add new probe points by C line number
+> and local variable names.
 
-For ivtv-driver.c and cx18-driver.c:
+Last week, Arnaldo and I talked about this command, and he suggested that
+the command would be better 'perf probe', because it would be able to
+cover both of kernel space (by kprobes) and user space (by uprobes).
 
-Acked-by: Andy Walls <awalls@radix.net>
+Basically, I agree with his idea. But I think we may need to consider
+more flexible syntax for that purpose before we support uprobes.
+In this area, SystemTap has done big advance, we can see how many
+varieties of syntax it has by 'man stapprobes'.
 
-> ---
-> diff --git a/drivers/media/video/cx18/cx18-driver.c b/drivers/media/video/cx18/cx18-driver.c
-> index 6dd51e2..e12082b 100644
-> --- a/drivers/media/video/cx18/cx18-driver.c
-> +++ b/drivers/media/video/cx18/cx18-driver.c
-> @@ -1200,7 +1200,7 @@ static struct pci_driver cx18_pci_driver = {
->        .remove =   cx18_remove,
->  };
->  
-> -static int module_start(void)
-> +static int __init module_start(void)
->  {
->  	printk(KERN_INFO "cx18:  Start initialization, version %s\n", CX18_VERSION);
->  
-> @@ -1224,7 +1224,7 @@ static int module_start(void)
->  	return 0;
->  }
->  
-> -static void module_cleanup(void)
-> +static void __exit module_cleanup(void)
->  {
->  	pci_unregister_driver(&cx18_pci_driver);
->  }
-> diff --git a/drivers/media/video/cx23885/cx23885-core.c b/drivers/media/video/cx23885/cx23885-core.c
-> index c31284b..fa2d350 100644
-> --- a/drivers/media/video/cx23885/cx23885-core.c
-> +++ b/drivers/media/video/cx23885/cx23885-core.c
-> @@ -1957,7 +1957,7 @@ static struct pci_driver cx23885_pci_driver = {
->  	.resume   = NULL,
->  };
->  
-> -static int cx23885_init(void)
-> +static int __init cx23885_init(void)
->  {
->  	printk(KERN_INFO "cx23885 driver version %d.%d.%d loaded\n",
->  	       (CX23885_VERSION_CODE >> 16) & 0xff,
-> @@ -1970,7 +1970,7 @@ static int cx23885_init(void)
->  	return pci_register_driver(&cx23885_pci_driver);
->  }
->  
-> -static void cx23885_fini(void)
-> +static void __exit cx23885_fini(void)
->  {
->  	pci_unregister_driver(&cx23885_pci_driver);
->  }
-> diff --git a/drivers/media/video/davinci/dm355_ccdc.c b/drivers/media/video/davinci/dm355_ccdc.c
-> index 4629cab..56fbefe 100644
-> --- a/drivers/media/video/davinci/dm355_ccdc.c
-> +++ b/drivers/media/video/davinci/dm355_ccdc.c
-> @@ -959,7 +959,7 @@ static struct ccdc_hw_device ccdc_hw_dev = {
->  	},
->  };
->  
-> -static int dm355_ccdc_init(void)
-> +static int __init dm355_ccdc_init(void)
->  {
->  	printk(KERN_NOTICE "dm355_ccdc_init\n");
->  	if (vpfe_register_ccdc_device(&ccdc_hw_dev) < 0)
-> @@ -969,7 +969,7 @@ static int dm355_ccdc_init(void)
->  	return 0;
->  }
->  
-> -static void dm355_ccdc_exit(void)
-> +static void __exit dm355_ccdc_exit(void)
->  {
->  	vpfe_unregister_ccdc_device(&ccdc_hw_dev);
->  }
-> diff --git a/drivers/media/video/davinci/dm644x_ccdc.c b/drivers/media/video/davinci/dm644x_ccdc.c
-> index 2f19a91..d5fa193 100644
-> --- a/drivers/media/video/davinci/dm644x_ccdc.c
-> +++ b/drivers/media/video/davinci/dm644x_ccdc.c
-> @@ -859,7 +859,7 @@ static struct ccdc_hw_device ccdc_hw_dev = {
->  	},
->  };
->  
-> -static int dm644x_ccdc_init(void)
-> +static int __init dm644x_ccdc_init(void)
->  {
->  	printk(KERN_NOTICE "dm644x_ccdc_init\n");
->  	if (vpfe_register_ccdc_device(&ccdc_hw_dev) < 0)
-> @@ -869,7 +869,7 @@ static int dm644x_ccdc_init(void)
->  	return 0;
->  }
->  
-> -static void dm644x_ccdc_exit(void)
-> +static void __exit dm644x_ccdc_exit(void)
->  {
->  	vpfe_unregister_ccdc_device(&ccdc_hw_dev);
->  }
-> diff --git a/drivers/media/video/ivtv/ivtv-driver.c b/drivers/media/video/ivtv/ivtv-driver.c
-> index 463ec34..7cdbc1a 100644
-> --- a/drivers/media/video/ivtv/ivtv-driver.c
-> +++ b/drivers/media/video/ivtv/ivtv-driver.c
-> @@ -1361,7 +1361,7 @@ static struct pci_driver ivtv_pci_driver = {
->        .remove =   ivtv_remove,
->  };
->  
-> -static int module_start(void)
-> +static int __init module_start(void)
->  {
->  	printk(KERN_INFO "ivtv: Start initialization, version %s\n", IVTV_VERSION);
->  
-> @@ -1385,7 +1385,7 @@ static int module_start(void)
->  	return 0;
->  }
->  
-> -static void module_cleanup(void)
-> +static void __exit module_cleanup(void)
->  {
->  	pci_unregister_driver(&ivtv_pci_driver);
->  }
-> diff --git a/drivers/media/video/saa7134/saa7134-core.c b/drivers/media/video/saa7134/saa7134-core.c
-> index f87757f..c673901 100644
-> --- a/drivers/media/video/saa7134/saa7134-core.c
-> +++ b/drivers/media/video/saa7134/saa7134-core.c
-> @@ -1319,7 +1319,7 @@ static struct pci_driver saa7134_pci_driver = {
->  #endif
->  };
->  
-> -static int saa7134_init(void)
-> +static int __init saa7134_init(void)
->  {
->  	INIT_LIST_HEAD(&saa7134_devlist);
->  	printk(KERN_INFO "saa7130/34: v4l2 driver version %d.%d.%d loaded\n",
-> @@ -1333,7 +1333,7 @@ static int saa7134_init(void)
->  	return pci_register_driver(&saa7134_pci_driver);
->  }
->  
-> -static void saa7134_fini(void)
-> +static void __exit saa7134_fini(void)
->  {
->  	pci_unregister_driver(&saa7134_pci_driver);
->  }
-> diff --git a/drivers/media/video/saa7164/saa7164-core.c b/drivers/media/video/saa7164/saa7164-core.c
-> index 709affc..e6aa0fb 100644
-> --- a/drivers/media/video/saa7164/saa7164-core.c
-> +++ b/drivers/media/video/saa7164/saa7164-core.c
-> @@ -724,13 +724,13 @@ static struct pci_driver saa7164_pci_driver = {
->  	.resume   = NULL,
->  };
->  
-> -static int saa7164_init(void)
-> +static int __init saa7164_init(void)
->  {
->  	printk(KERN_INFO "saa7164 driver loaded\n");
->  	return pci_register_driver(&saa7164_pci_driver);
->  }
->  
-> -static void saa7164_fini(void)
-> +static void __exit saa7164_fini(void)
->  {
->  	pci_unregister_driver(&saa7164_pci_driver);
->  }
-> 
+And also, it's hard to decide it without real uprobe-tracer (and uprobes
+too!) implementation on ftrace. So, I think it is better to continue
+using 'perf kprobe' in this time.
+
+But it's worth to add to todo list. :)
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
