@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbZI3Vxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZI3Vxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754593AbZI3Vxe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 17:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbZI3Vxd
+	id S1754713AbZI3Vxw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 17:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZI3Vxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 17:53:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52070
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752878AbZI3Vxd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 17:53:33 -0400
-Date: Wed, 30 Sep 2009 14:53:52 -0700 (PDT)
-Message-Id: <20090930.145352.258928266.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: eric.dumazet@gmail.com, arjan@infradead.org, schwidefsky@de.ibm.com,
-       tglx@linutronix.de, johnstul@us.ibm.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, mingo@elte.hu
-Subject: Re: Linux 2.6.32-rc1
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.01.0909301339080.6996@localhost.localdomain>
-References: <alpine.LFD.2.01.0909301304310.6996@localhost.localdomain>
-	<4AC3BE89.3040708@gmail.com>
-	<alpine.LFD.2.01.0909301339080.6996@localhost.localdomain>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 30 Sep 2009 17:53:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50333 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753114AbZI3Vxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 17:53:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Subject: Re: suspend vs usb and PS/2 ports
+Date: Wed, 30 Sep 2009 23:54:55 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: "Linux-kernel" <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <4AC35F86.20405@msgid.tls.msk.ru>
+In-Reply-To: <4AC35F86.20405@msgid.tls.msk.ru>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909302354.55673.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 30 Sep 2009 13:41:26 -0700 (PDT)
+On Wednesday 30 September 2009, Michael Tokarev wrote:
+> Hello.
+> 
+> I've several PCs here which are able to wakeup -
+> among others - from PS/2 and/or USB keyboard.
+> Here for testing I'm using PS/2 keyboard and
+> Asus M3A78-EM motherboard.
+> 
+> When I do poweroff from linux, the keyboard
+> stays powered up as it should (according to
+> the BIOS settings).  But when I do suspend,
+> keyboard is NOT powered anymore, and hence
+> the system can't be woken up from it but only
+> by using the power button.
+> 
+> This happens consistently for many kernel
+> versions.  To be fair, I don't even know if
+> there was any kernel which does not show this
+> behaviour: old versions was unable to do
+> suspend/resume cycle on this platform at all.
+> 
+> Any hints for this please?
 
-> Please spend the time to edit quoting levels, because otherwise people 
-> won't spend the time to look at your new text.
+With USB, I think keyboard wake-up is off by default as it causes some
+systems to wake up immediately after suspending.  Alan and Oliver can provide
+more info about that.
 
-Indeed, Eric, please do.  This has been bugging me in networking land
-for quite some time as well.
+I don't know about PS/2.
 
-If you notice, when I comment on patches I kill all of the patch from
-the reply except for the specific hunks I want to comment on.
+Can you post the contents of /proc/acpi/wakeup from one of these systems,
+please?
 
-If one has to scroll multiple screens just to see what you have to
-say, that's a burdon on every person who you might get feedback
-from.
+Best,
+Rafael
