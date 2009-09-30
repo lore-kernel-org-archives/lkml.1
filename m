@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbZI3VNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbZI3VUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbZI3VNo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 17:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbZI3VNo
+	id S1754242AbZI3VUk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 17:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbZI3VUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 17:13:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42085 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754626AbZI3VNn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 17:13:43 -0400
-Date: Wed, 30 Sep 2009 14:12:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, gregkh@suse.de,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH] serial-core: resume serial hardware with
- no_console_suspend
-Message-Id: <20090930141255.49b6caa0.akpm@linux-foundation.org>
-In-Reply-To: <1253872547.13257.18.camel@hammer.suse.cz>
-References: <1253021938.6597.16.camel@hammer.suse.cz>
-	<20090924170503.37cbe4ed.akpm@linux-foundation.org>
-	<20090925073617.GA5856@n2100.arm.linux.org.uk>
-	<1253872547.13257.18.camel@hammer.suse.cz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Sep 2009 17:20:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50219 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751307AbZI3VUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 17:20:37 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kevin Hilman <khilman@deeprootsystems.com>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] CPUidle: always return with interrupts enabled
+Date: Wed, 30 Sep 2009 23:21:33 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+References: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
+In-Reply-To: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909302321.33088.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 25 Sep 2009 11:55:47 +0200
-Stanislav Brabec <utx@penguin.cz> wrote:
+On Wednesday 30 September 2009, Kevin Hilman wrote:
+> In the case where cpuidle_idle_call() returns before changing state
+> due to a need_resched(), it was returning with IRQs disabled.
+> 
+> This patch ensures IRQs are (re)enabled before returning.
 
-> Russell King - ARM Linux wrote:
-> > On Thu, Sep 24, 2009 at 05:05:03PM -0700, Andrew Morton wrote:
-> > > On Tue, 15 Sep 2009 15:38:58 +0200
-> > > Stanislav Brabec <utx@penguin.cz> wrote:
-> > > 
-> > > > Hardware may need re-initialization to get serial port working after
-> > > > resume. It does not happen with no_console_suspend. Attached patch
-> > > > attempts to fix it.
-> > > > 
-> > > > The patch attempts to keep hardware running before suspend and run
-> > > > hardware re-initialization after resume. Maybe simpler approach is
-> > > > possible.
-> > > 
-> > > The patch doesn't apply any more and seems like a rather hacky thing to do.
-> 
-> Yes, but no_console_suspend itself is a bit hacky. You need to save
-> console state but keep it running as long as possible afterwards and
-> resume it after return from the sleep.
-> 
-> I was not sure, what exactly should be skipped and what must be run, so
-> I experimented a bit.
-> 
-> Not calling hardware suspend/resume (current implementation) breaks
-> serial port in hardware that need resume.
-> 
-> Calling of resume without suspend seems to be dangerous. Not calling
-> suspend at all and standard initialization on resume would probably
-> reset the port setting and maybe cause memory leak.
-> 
-> > > It appears that you have specific serial hardware which doesn't resume
-> > > correctly?  If so, that's a bug, so how about we start with a bug
-> > > report/description?
-> 
-> The hardware resumes correctly. But no_console_suspend breaks its
-> resume.
-> 
-> > It's something that I did point out when the no_console_suspend patch
-> > appeared, but I was overruled/ignored.
-> > 
-> > The problem is that on ARM hardware, there is no BIOS to re-initialize
-> > hardware.  The kernel has to do restore the entire system hardware
-> > state upon resume.  Unfortunately, no_console_suspend not only prevents
-> > the console from being suspended but _also_ resumed.
-> > 
-> > The result of that is the console UART is left in a totally uninitialized
-> > state.
-> 
-> Exactly, my ARM hardware is PXA270 on Zaurus SL-C3200.
+Venki, any comments on this?
 
-hm, ho hum.
+> Reported-by: Hemanth V <hemanthv@ti.com>
+> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+> ---
+>  drivers/cpuidle/cpuidle.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index ad41f19..12fdd39 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -76,8 +76,11 @@ static void cpuidle_idle_call(void)
+>  #endif
+>  	/* ask the governor for the next state */
+>  	next_state = cpuidle_curr_governor->select(dev);
+> -	if (need_resched())
+> +	if (need_resched()) {
+> +		local_irq_enable();
+>  		return;
+> +	}
+> +
+>  	target_state = &dev->states[next_state];
+>  
+>  	/* enter the state and update stats */
 
-Could you please redo/retest/resend the patch against the current
-kernel?  Someone went and renamed everything and it doesn't apply at
-all any more.
-
+Best,
+Rafael
