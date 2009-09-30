@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbZI3Q3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbZI3Q3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754778AbZI3Q3g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 12:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZI3Q3e
+	id S1754584AbZI3Q3Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 12:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbZI3Q3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 12:29:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35802 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753088AbZI3Q3Z (ORCPT
+	Wed, 30 Sep 2009 12:29:23 -0400
+Received: from gw0.danplanet.com ([71.245.107.82]:54407 "EHLO
+	mail.danplanet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752475AbZI3Q3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 12:29:25 -0400
-Date: Wed, 30 Sep 2009 09:27:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Arnd Bergmann <arnd@arndb.de>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Arjan van de Ven <arjan@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-api@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
-In-Reply-To: <200909301815.45211.arnd@arndb.de>
-Message-ID: <alpine.LFD.2.01.0909300925170.6996@localhost.localdomain>
-References: <20090924165548.GA16586@us.ibm.com> <alpine.LFD.2.01.0909291501530.6996@localhost.localdomain> <4AC287F2.8060603@zytor.com> <200909301815.45211.arnd@arndb.de>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 30 Sep 2009 12:29:23 -0400
+To: Daniel Lezcano <daniel.lezcano@free.fr>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, mingo@elte.hu, xemul@openvz.org
+Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
+References: <1253749920-18673-1-git-send-email-orenl@librato.com>
+	<20090924154139.2a7dd5ec.akpm@linux-foundation.org>
+	<20090928163704.GA3327@us.ibm.com> <4AC20BB8.4070509@free.fr>
+	<87iqf0o5sf.fsf@caffeine.danplanet.com> <4AC38477.4070007@free.fr>
+From: Dan Smith <danms@us.ibm.com>
+Date: Wed, 30 Sep 2009 09:29:23 -0700
+In-Reply-To: <4AC38477.4070007@free.fr> (Daniel Lezcano's message of "Wed\, 30 Sep 2009 18\:16\:55 +0200")
+Message-ID: <87eipoo0po.fsf@caffeine.danplanet.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+DL> If the checkpoint is done from the kernel, why the restart
+DL> wouldn't be in the kernel too ?
 
+I think thus far we have taken the approach of "if it can be done
+reasonably in userspace, then do it there" right?  Setup of the
+network devices is easy to do in userspace, allows more flexibility
+from a policy standpoint, and ensures that all existing security
+checks are performed.  Also, migration may be easier if the userspace
+bits can call custom hooks allowing for routing changes and other
+infrastructure-specific operations.
 
-On Wed, 30 Sep 2009, Arnd Bergmann wrote:
-> 
-> One more argument for this is that the new code is architecture independent
-> using user_stack_pointer(), while the original sys_clone is highly
-> architecture specific, which is a source for bugs when trying to
-> extend it.
+DL> Is there any documentation about the statefile format I can use if
+DL> I want to implement myself an userspace CR solution based on this
+DL> kernel patchset ?
 
-Umm. I don't think that is possible.
+See linux-cr/include/linux/checkpoint_hdr.h and user-cr/restart.c.
 
-You need architecture-specific code to even get access to all registers to 
-copy and get a signal-handler-compatible stack frame. See for example 
-arch/alpha/kernel/entry.S with the switch-stack thing etc.  I don't think 
-there is any way to make that even remotely architecture-neutral.
-
-			Linus
+-- 
+Dan Smith
+IBM Linux Technology Center
+email: danms@us.ibm.com
