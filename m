@@ -1,71 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZI3SBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbZI3SM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978AbZI3SBk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 14:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZI3SBj
+	id S1755048AbZI3SM4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 14:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbZI3SMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 14:01:39 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:45225 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbZI3SBi (ORCPT
+	Wed, 30 Sep 2009 14:12:55 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:48961 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754516AbZI3SMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 14:01:38 -0400
-Message-ID: <4AC39CE5.9080908@free.fr>
-Date: Wed, 30 Sep 2009 20:01:09 +0200
-From: Daniel Lezcano <daniel.lezcano@free.fr>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 30 Sep 2009 14:12:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=O+dcnczXUiHrFnH27/cUUdlOf39aFhDlkVjZiwg8H+tIRulA0i/y6VE8cEC7YU+/9U
+         v2PNoj9Y98bs/DrSoacKCMJ8QgKwsmMiDJCR5Y6R2EWO89dnkxZlmsf9//bl98mBWVI4
+         69o4QDXdpKnpzYjYv/DWAf2pNpnjNoF8DpoJM=
+Message-ID: <4AC39FA7.8000204@gmail.com>
+Date: Wed, 30 Sep 2009 22:12:55 +0400
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Dan Smith <danms@us.ibm.com>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, mingo@elte.hu, xemul@openvz.org
-Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
-References: <1253749920-18673-1-git-send-email-orenl@librato.com>	<20090924154139.2a7dd5ec.akpm@linux-foundation.org>	<20090928163704.GA3327@us.ibm.com> <4AC20BB8.4070509@free.fr>	<87iqf0o5sf.fsf@caffeine.danplanet.com> <4AC38477.4070007@free.fr> <87eipoo0po.fsf@caffeine.danplanet.com>
-In-Reply-To: <87eipoo0po.fsf@caffeine.danplanet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Ike Panhc <ike.pan@canonical.com>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPI: Add EC event managerment functions into header
+ file
+References: <1254173448-18362-1-git-send-email-ike.pan@canonical.com> <4AC135AC.2010407@gmail.com> <4AC170DA.3000907@canonical.com>
+In-Reply-To: <4AC170DA.3000907@canonical.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Smith wrote:
-> DL> If the checkpoint is done from the kernel, why the restart
-> DL> wouldn't be in the kernel too ?
+Ike Panhc пишет:
+> I had sent a new driver for Lenovo SL series laptops [1], and it uses those
+> functions to detect hotkeys. Since it has been exported for other modules,
+> I think it is reasonable to write in header file to make sure everyone has
+> the same definition.
 >
-> I think thus far we have taken the approach of "if it can be done
-> reasonably in userspace, then do it there" right?  
-Well I am a little lost :)
-The tty CR can be "reasonably" done in userspace I think. But it was 
-done in the kernel, no ?
-
-> Setup of the
-> network devices is easy to do in userspace, allows more flexibility
-> from a policy standpoint, and ensures that all existing security
-> checks are performed. 
-Yep, I agree. But you didn't answer the question, what are the network 
-resources you plan to checkpoint / restart ?
-eg. you let the container to setup your network, will you restore netdev 
-statistics ? the mac address ? ipv4 ? ipv6 ?
-
-Is it possible to do a detailed list of network resources you plan to CR 
-with the different items you will address from userspace and kernel space ?
-
-> Also, migration may be easier if the userspace
-> bits can call custom hooks allowing for routing changes and other
-> infrastructure-specific operations.
+> [1] http://patchwork.kernel.org/patch/49912/
 >   
-You may have some problems with the connected sockets you will restore 
-in this case.
+If you need these functions to be visible, you should mention that in 
+patch description.
+You should also add a comment that if someone adds notification handler, 
+the original one
+is not going to be executed until handler is un-registered. This was not 
+needed while it was internal interface,
+but with it becoming public, it needs some warnings/descriptions.
 
-> DL> Is there any documentation about the statefile format I can use if
-> DL> I want to implement myself an userspace CR solution based on this
-> DL> kernel patchset ?
+Regards,
+Alex.
+
+BTW, what is wrong with default hotkey handlers?
+> Alexey Starikovskiy wrote:
+>   
+>> These functions are never used anywhere, but sbshc.c.
+>> What is the reason to make them known to the whole kernel?
+>>
+>> Ike Panhc пишет:
+>>     
+>>> There are two functions for add/remove EC query handler functions, which
+>>> exported without any definition in header files
+>>>
+>>> Patch against current checkout of linux-acpi 2.6.31 is below.
+>>>
+>>> In this patch, the following definitions has been added into
+>>> include/linux/acpi.h
+>>>  - typedef: acpi_ec_query_func
+>>>  - struct: acpi_ec
+>>>  - fucntions: acpi_ec_add_query_handler, acpi_ec_remove_query_handler
+>>>
+>>> And the following definitions has been removed from driver/acpi/ec.c
+>>>  - typedef: acpi_ec_query_func
+>>>  - struct: acpi_ec
+>>>
+>>> So that, the following externs and typedef could be remove from
+>>> drivers/acpi/sbshc.c
+>>>  - typedef: acpi_ec_query_func
+>>>  - externs: acpi_ec_add_query_handler, acpi_ec_remove_query_handler
+>>>
+>>> Signed-off-by: Ike Panhc <ike.pan@canonical.com>
+>>> ---
+>>>  drivers/acpi/ec.c    |   22 +++++-----------------
+>>>  drivers/acpi/sbshc.c |    8 --------
+>>>  include/linux/acpi.h |   21 +++++++++++++++++++++
+>>>  3 files changed, 26 insertions(+), 25 deletions(-)
+>>>
+>>> diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+>>> index f707960..8950c4f 100644
+>>> --- a/drivers/acpi/ec.c
+>>> +++ b/drivers/acpi/ec.c
+>>> @@ -43,6 +43,7 @@
+>>>  #include <acpi/acpi_bus.h>
+>>>  #include <acpi/acpi_drivers.h>
+>>>  #include <linux/dmi.h>
+>>> +#include <linux/acpi.h>
+>>>  
+>>>  #define ACPI_EC_CLASS            "embedded_controller"
+>>>  #define ACPI_EC_DEVICE_NAME        "Embedded Controller"
+>>> @@ -80,10 +81,6 @@ enum {
+>>>                       * OpReg are installed */
+>>>  };
+>>>  
+>>> -/* If we find an EC via the ECDT, we need to keep a ptr to its
+>>> context */
+>>> -/* External interfaces use first EC only, so remember */
+>>> -typedef int (*acpi_ec_query_func) (void *data);
+>>> -
+>>>  struct acpi_ec_query_handler {
+>>>      struct list_head node;
+>>>      acpi_ec_query_func func;
+>>> @@ -104,19 +101,10 @@ struct transaction {
+>>>      bool done;
+>>>  };
+>>>  
+>>> -static struct acpi_ec {
+>>> -    acpi_handle handle;
+>>> -    unsigned long gpe;
+>>> -    unsigned long command_addr;
+>>> -    unsigned long data_addr;
+>>> -    unsigned long global_lock;
+>>> -    unsigned long flags;
+>>> -    struct mutex lock;
+>>> -    wait_queue_head_t wait;
+>>> -    struct list_head list;
+>>> -    struct transaction *curr;
+>>> -    spinlock_t curr_lock;
+>>> -} *boot_ec, *first_ec;
+>>> +/* If we find an EC via the ECDT, we need to keep a ptr to its
+>>> context */
+>>> +/* External interfaces use first EC only, so remember */
+>>> +static struct acpi_ec *boot_ec;
+>>> +static struct acpi_ec *first_ec;
+>>>  
+>>>  static int EC_FLAGS_MSI; /* Out-of-spec MSI controller */
+>>>  
+>>> diff --git a/drivers/acpi/sbshc.c b/drivers/acpi/sbshc.c
+>>> index d933980..d5550a5 100644
+>>> --- a/drivers/acpi/sbshc.c
+>>> +++ b/drivers/acpi/sbshc.c
+>>> @@ -250,12 +250,6 @@ static int smbus_alarm(void *context)
+>>>      return 0;
+>>>  }
+>>>  
+>>> -typedef int (*acpi_ec_query_func) (void *data);
+>>> -
+>>> -extern int acpi_ec_add_query_handler(struct acpi_ec *ec, u8 query_bit,
+>>> -                  acpi_handle handle, acpi_ec_query_func func,
+>>> -                  void *data);
+>>> -
+>>>  static int acpi_smbus_hc_add(struct acpi_device *device)
+>>>  {
+>>>      int status;
+>>> @@ -292,8 +286,6 @@ static int acpi_smbus_hc_add(struct acpi_device
+>>> *device)
+>>>      return 0;
+>>>  }
+>>>  
+>>> -extern void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8
+>>> query_bit);
+>>> -
+>>>  static int acpi_smbus_hc_remove(struct acpi_device *device, int type)
+>>>  {
+>>>      struct acpi_smb_hc *hc;
+>>> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+>>> index dfcd920..259eacb 100644
+>>> --- a/include/linux/acpi.h
+>>> +++ b/include/linux/acpi.h
+>>> @@ -145,12 +145,33 @@ struct acpi_pci_driver {
+>>>  int acpi_pci_register_driver(struct acpi_pci_driver *driver);
+>>>  void acpi_pci_unregister_driver(struct acpi_pci_driver *driver);
+>>>  
+>>> +typedef int (*acpi_ec_query_func) (void *data);
+>>> +
+>>> +struct acpi_ec {
+>>> +    acpi_handle handle;
+>>> +    unsigned long gpe;
+>>> +    unsigned long command_addr;
+>>> +    unsigned long data_addr;
+>>> +    unsigned long global_lock;
+>>> +    unsigned long flags;
+>>> +    struct mutex lock;
+>>> +    wait_queue_head_t wait;
+>>> +    struct list_head list;
+>>> +    struct transaction *curr;
+>>> +    spinlock_t curr_lock;
+>>> +};
+>>> +
+>>>  extern int ec_read(u8 addr, u8 *val);
+>>>  extern int ec_write(u8 addr, u8 val);
+>>>  extern int ec_transaction(u8 command,
+>>>                            const u8 *wdata, unsigned wdata_len,
+>>>                            u8 *rdata, unsigned rdata_len,
+>>>                int force_poll);
+>>> +extern int acpi_ec_add_query_handler(struct acpi_ec *ec, u8 query_bit,
+>>> +                      acpi_handle handle,
+>>> +                      acpi_ec_query_func func, void *data);
+>>> +extern void acpi_ec_remove_query_handler(struct acpi_ec *ec, u8
+>>> query_bit);
+>>> +
+>>>  
+>>>  #if defined(CONFIG_ACPI_WMI) || defined(CONFIG_ACPI_WMI_MODULE)
+>>>  
+>>>   
+>>>       
+>>     
 >
-> See linux-cr/include/linux/checkpoint_hdr.h and user-cr/restart.c.
+>
 >   
-Argh ! I was hoping there was something else than the source code :)
-
-Thanks
-  -- Daniel
 
