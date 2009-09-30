@@ -1,234 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbZI3WEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZI3WFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbZI3WEL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 18:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbZI3WEK
+	id S1754773AbZI3WFg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 18:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZI3WFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 18:04:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50440 "EHLO mx3.mail.elte.hu"
+	Wed, 30 Sep 2009 18:05:36 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:44593 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751657AbZI3WEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 18:04:09 -0400
-Date: Thu, 1 Oct 2009 00:03:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [GIT PULL] scheduler fixes
-Message-ID: <20090930220342.GA2118@elte.hu>
-References: <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com> <4AC10365.7090802@gmail.com> <4AC2712C.4080901@gmail.com> <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain> <20090929232248.735bf4df@infradead.org> <alpine.LFD.2.01.0909291429570.6996@localhost.localdomain> <20090930170754.0886ff2e@infradead.org> <4AC37FE5.7020200@gmail.com> <alpine.LFD.2.01.0909300909460.6996@localhost.localdomain> <20090930185315.GA9716@elte.hu>
+	id S1751897AbZI3WFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 18:05:35 -0400
+Date: Wed, 30 Sep 2009 23:05:42 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
+       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/4] slqb: Record what node is local to a kmem_cache_cpu
+Message-ID: <20090930220541.GA31530@csn.ul.ie>
+References: <1253624054-10882-1-git-send-email-mel@csn.ul.ie> <1253624054-10882-3-git-send-email-mel@csn.ul.ie> <84144f020909220638l79329905sf9a35286130e88d0@mail.gmail.com> <20090922135453.GF25965@csn.ul.ie> <84144f020909221154x820b287r2996480225692fad@mail.gmail.com> <20090922185608.GH25965@csn.ul.ie> <20090930144117.GA17906@csn.ul.ie> <alpine.DEB.1.10.0909301053550.9450@gentwo.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090930185315.GA9716@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <alpine.DEB.1.10.0909301053550.9450@gentwo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Wed, Sep 30, 2009 at 11:06:04AM -0400, Christoph Lameter wrote:
+> On Wed, 30 Sep 2009, Mel Gorman wrote:
 > 
-> > Ingo - I suspect both those patches should just go through you. You 
-> > do both x86 and scheduler, so I'll happily pull the end result.
+> > Ok, so I spent today looking at this again. The problem is not with faulty
+> > drain logic as such. As frees always place an object on a remote list
+> > and the allocation side is often (but not always) allocating a new page,
+> > a significant number of objects in the free list are the only object
+> > in a page. SLQB drains based on the number of objects on the free list,
+> > not the number of pages. With many of the pages having only one object,
+> > the freelists are pinning a lot more memory than expected.  For example,
+> > a watermark to drain of 512 could be pinning 2MB of pages.
 > 
-> Yeah - working on it - just got back from a trip. It's two risky 
-> patches and if that place breaks everyone will be affected so i'll 
-> probably send the pull request tomorrow.
+> No good. So we are allocating new pages from somewhere allocating a
+> single object and putting them on the freelist where we do not find them
+> again.
 
-Ok, it now looks good in all tests here so Linus please pull the latest 
-sched-fixes-for-linus git tree from:
+Yes
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+> This is bad caching behavior as well.
+> 
 
- Thanks,
+Yes, I suppose it would be as it's not using the hottest object. The
+fact it OOM storms is a bit more important than poor caching behaviour
+but hey :/
 
-	Ingo
+> > The drain logic could be extended to track not only the number of objects on
+> > the free list but also the number of pages but I really don't think that is
+> > desirable behaviour. I'm somewhat running out of sensible ideas for dealing
+> > with this but here is another go anyway that might be more palatable than
+> > tracking what a "local" node is within the slab.
+> 
+> SLUB avoids that issue by having a "current" page for a processor. It
+> allocates from the current page until its exhausted. It can use fast path
+> logic both for allocations and frees regardless of the pages origin. The
+> node fallback is handled by the page allocator and that one is only
+> involved when a new slab page is needed.
+> 
 
------------------->
-Arjan van de Ven (1):
-      x86: Provide an alternative() based cmpxchg64()
+This is essentially the "unqueued" nature of SLUB. It's objective "I have this
+page here which I'm going to use until I can't use it no more and will depend
+on the page allocator to sort my stuff out". I have to read up on SLUB up
+more to see if it's compatible with SLQB or not though. In particular, how
+does SLUB deal with frees from pages that are not the "current" page? SLQB
+does not care what page the object belongs to as long as it's node-local
+as the object is just shoved onto a LIFO for maximum hotness.
 
-Eric Dumazet (1):
-      sched_clock: Fix atomicity/continuity bug by using cmpxchg64()
+> SLAB deals with it in fallback_alloc(). It scans the nodes in zonelist
+> order for free objects of the kmem_cache and then picks up from the
+> nearest node. Ugly but it works. SLQB would have to do something similar
+> since it also has the per node object bins that SLAB has.
+> 
 
+In a real sense, this is what the patch ends up doing. When it fails to
+get something locally but sees that the local node is memoryless, it
+will check the remote node lists in zonelist order. I think that's
+reasonable behaviour but I'm biased because I just want the damn machine
+to boot again. What do you think? Pekka, Nick?
 
- arch/x86/include/asm/cmpxchg_32.h |   30 +++++++++++--------
- arch/x86/kernel/i386_ksyms_32.c   |    8 +++++
- arch/x86/lib/Makefile             |    2 +-
- arch/x86/lib/cmpxchg8b_emu.S      |   57 +++++++++++++++++++++++++++++++++++++
- kernel/sched_clock.c              |    4 +-
- 5 files changed, 85 insertions(+), 16 deletions(-)
- create mode 100644 arch/x86/lib/cmpxchg8b_emu.S
+> The local node for a memoryless node may not exist at all since there may
+> be multiple nodes at the same distance to the memoryless node. So at
+> mininum you would have to manage a set of local nodes. If you have the set
+> then you also would need to consider memory policies. During bootup you
+> would have to simulate the interleave mode in effect. After bootup you
+> would have to use the tasks policy.
+> 
 
-diff --git a/arch/x86/include/asm/cmpxchg_32.h b/arch/x86/include/asm/cmpxchg_32.h
-index 82ceb78..ee1931b 100644
---- a/arch/x86/include/asm/cmpxchg_32.h
-+++ b/arch/x86/include/asm/cmpxchg_32.h
-@@ -312,19 +312,23 @@ static inline unsigned long cmpxchg_386(volatile void *ptr, unsigned long old,
- 
- extern unsigned long long cmpxchg_486_u64(volatile void *, u64, u64);
- 
--#define cmpxchg64(ptr, o, n)						\
--({									\
--	__typeof__(*(ptr)) __ret;					\
--	if (likely(boot_cpu_data.x86 > 4))				\
--		__ret = (__typeof__(*(ptr)))__cmpxchg64((ptr),		\
--				(unsigned long long)(o),		\
--				(unsigned long long)(n));		\
--	else								\
--		__ret = (__typeof__(*(ptr)))cmpxchg_486_u64((ptr),	\
--				(unsigned long long)(o),		\
--				(unsigned long long)(n));		\
--	__ret;								\
--})
-+#define cmpxchg64(ptr, o, n)					\
-+({								\
-+	__typeof__(*(ptr)) __ret;				\
-+	__typeof__(*(ptr)) __old = (o);				\
-+	__typeof__(*(ptr)) __new = (n);				\
-+	alternative_io("call cmpxchg8b_emu",			\
-+			"lock; cmpxchg8b (%%esi)" ,		\
-+		       X86_FEATURE_CX8,				\
-+		       "=A" (__ret),				\
-+		       "S" ((ptr)), "0" (__old),		\
-+		       "b" ((unsigned int)__new),		\
-+		       "c" ((unsigned int)(__new>>32))		\
-+		       : "memory");				\
-+	__ret; })
-+
-+
-+
- #define cmpxchg64_local(ptr, o, n)					\
- ({									\
- 	__typeof__(*(ptr)) __ret;					\
-diff --git a/arch/x86/kernel/i386_ksyms_32.c b/arch/x86/kernel/i386_ksyms_32.c
-index 43cec6b..1736c5a 100644
---- a/arch/x86/kernel/i386_ksyms_32.c
-+++ b/arch/x86/kernel/i386_ksyms_32.c
-@@ -10,6 +10,14 @@
- EXPORT_SYMBOL(mcount);
- #endif
- 
-+/*
-+ * Note, this is a prototype to get at the symbol for
-+ * the export, but dont use it from C code, it is used
-+ * by assembly code and is not using C calling convention!
-+ */
-+extern void cmpxchg8b_emu(void);
-+EXPORT_SYMBOL(cmpxchg8b_emu);
-+
- /* Networking helper routines. */
- EXPORT_SYMBOL(csum_partial_copy_generic);
- 
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index 9e60920..3e549b8 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -15,7 +15,7 @@ ifeq ($(CONFIG_X86_32),y)
-         obj-y += atomic64_32.o
-         lib-y += checksum_32.o
-         lib-y += strstr_32.o
--        lib-y += semaphore_32.o string_32.o
-+        lib-y += semaphore_32.o string_32.o cmpxchg8b_emu.o
- 
-         lib-$(CONFIG_X86_USE_3DNOW) += mmx_32.o
- else
-diff --git a/arch/x86/lib/cmpxchg8b_emu.S b/arch/x86/lib/cmpxchg8b_emu.S
-new file mode 100644
-index 0000000..828cb71
---- /dev/null
-+++ b/arch/x86/lib/cmpxchg8b_emu.S
-@@ -0,0 +1,57 @@
-+/*
-+ *	This program is free software; you can redistribute it and/or
-+ *	modify it under the terms of the GNU General Public License
-+ *	as published by the Free Software Foundation; version 2
-+ *	of the License.
-+ *
-+ */
-+
-+#include <linux/linkage.h>
-+#include <asm/alternative-asm.h>
-+#include <asm/frame.h>
-+#include <asm/dwarf2.h>
-+
-+
-+.text
-+
-+/*
-+ * Inputs:
-+ * %esi : memory location to compare
-+ * %eax : low 32 bits of old value
-+ * %edx : high 32 bits of old value
-+ * %ebx : low 32 bits of new value
-+ * %ecx : high 32 bits of new value
-+ */
-+ENTRY(cmpxchg8b_emu)
-+CFI_STARTPROC
-+
-+#
-+# Emulate 'cmpxchg8b (%esi)' on UP except we don't
-+# set the whole ZF thing (caller will just compare
-+# eax:edx with the expected value)
-+#
-+cmpxchg8b_emu:
-+	pushfl
-+	cli
-+
-+	cmpl  (%esi), %eax
-+	jne not_same
-+	cmpl 4(%esi), %edx
-+	jne half_same
-+
-+	movl %ebx,  (%esi)
-+	movl %ecx, 4(%esi)
-+
-+	popfl
-+	ret
-+
-+ not_same:
-+	movl  (%esi), %eax
-+ half_same:
-+	movl 4(%esi), %edx
-+
-+	popfl
-+	ret
-+
-+CFI_ENDPROC
-+ENDPROC(cmpxchg8b_emu)
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index ac2e1dc..479ce56 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -127,7 +127,7 @@ again:
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
- 
--	if (cmpxchg(&scd->clock, old_clock, clock) != old_clock)
-+	if (cmpxchg64(&scd->clock, old_clock, clock) != old_clock)
- 		goto again;
- 
- 	return clock;
-@@ -163,7 +163,7 @@ again:
- 		val = remote_clock;
- 	}
- 
--	if (cmpxchg(ptr, old_val, val) != old_val)
-+	if (cmpxchg64(ptr, old_val, val) != old_val)
- 		goto again;
- 
- 	return val;
+I think SLQBs treatment of memory policies needs to be handled as a separate
+problem. It's less than perfect at the moment, more of that below.
+
+> This all points to major NUMA issues in SLQB. This is not arch specific.
+> SLQB cannot handle memoryless nodes at this point.
+> 
+> > This patch alters the allocation path. If the allocation from local
+> > lists fails and the local node is memoryless, an attempt will be made to
+> > allocate from the remote lists before going to the page allocator.
+> 
+> Are the allocation attempts from the remote lists governed by memory
+> policies?
+
+It does to some extent. When selecting a node zonelist, it takes the
+current memory policy into account but at a glance, it does not appear
+to obey a policy that restricts the available nodes.
+
+> Otherwise you may create imbalances on neighboring nodes.
+> 
+
+I haven't thought about this aspect of things a whole lot to be honest.
+It's not the problem at hand.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
