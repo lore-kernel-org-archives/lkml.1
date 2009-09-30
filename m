@@ -1,52 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbZI3L1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZI3LgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214AbZI3L1o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 07:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbZI3L1n
+	id S1754209AbZI3LgD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 07:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZI3LgC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 07:27:43 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43856 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751405AbZI3L1n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 07:27:43 -0400
-Date: Wed, 30 Sep 2009 12:28:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Howells <dhowells@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, dhowells@redhat.com,
-       akpm@linux-foundation.org, gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove pty_ops_bsd and pty_bsd_ioctl() as they're not
- used
-Message-ID: <20090930122823.685d4e7e@lxorguk.ukuu.org.uk>
-In-Reply-To: <29895.1254306000@redhat.com>
-References: <alpine.LFD.2.01.0909290909280.6996@localhost.localdomain>
-	<alpine.LFD.2.01.0909280743310.3349@localhost.localdomain>
-	<20090928135332.4300.56046.stgit@warthog.procyon.org.uk>
-	<20090928151628.62955233@lxorguk.ukuu.org.uk>
-	<395.1254239745@redhat.com>
-	<29895.1254306000@redhat.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Sep 2009 07:36:02 -0400
+Received: from ozlabs.org ([203.10.76.45]:57556 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752588AbZI3LgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 07:36:01 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: [PATCH] virtio_ids: let virtio header files include virtio_ids.h and export it
+Date: Wed, 30 Sep 2009 21:06:01 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <200909301117.21964.borntraeger@de.ibm.com>
+In-Reply-To: <200909301117.21964.borntraeger@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909302106.02490.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> Also, does it matter if someone issues TIOCGPTN on a legacy pty master?  There
-> is a number in tty->index that can be returned.  If it can, then
+On Wed, 30 Sep 2009 06:47:21 pm Christian Borntraeger wrote:
+> [PATCH] virtio_ids: let header files include virtio_ids.h
 
-Not a lot - providing someone isn't using it as a way to tell pty types
-apart (which I have seen done in example code)
+Thanks, applied.
 
-> pty_bsd_ioctl() can be merged with pty_unix98_ioctl(), and possibly both
-> ioctls can be given to the generic tty ioctl handling 
-
-I would keep 
-
-	if (type == FOO)
-
-as far away from the generic tty ioctl code as possible. It's already
-convoluted and complex with zillions of ioctl calls. Separating out lots
-of the console and other ioctls properly cleaned it up no end and going
-backwards would be a bad mistake.
+Rusty.
