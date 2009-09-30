@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbZI3Vj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZI3Vlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754335AbZI3Vj1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 17:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZI3Vj1
+	id S1754463AbZI3Vlz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 17:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZI3Vlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 17:39:27 -0400
-Received: from [195.41.46.235] ([195.41.46.235]:52562 "EHLO pfepa.post.tele.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752995AbZI3Vj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 17:39:27 -0400
-Date: Wed, 30 Sep 2009 23:39:25 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Nelson Elhage <nelhage@ksplice.com>
-Subject: Re: [PATCH 2/2] arm: Clean up linker script using new linker
-	script macros.
-Message-ID: <20090930213924.GB15732@merkur.ravnborg.org>
-References: <1254345935-15958-1-git-send-email-tabbott@ksplice.com> <1254345935-15958-3-git-send-email-tabbott@ksplice.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254345935-15958-3-git-send-email-tabbott@ksplice.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 30 Sep 2009 17:41:55 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:40098 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751697AbZI3Vly (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 17:41:54 -0400
+X-IronPort-AV: E=McAfee;i="5300,2777,5757"; a="24372674"
+From: David Brown <davidb@codeaurora.org>
+To: linux-arm-kernel@lists.infradead.org
+Cc: David Brown <davidb@quicinc.com>, Russell King <linux@arm.linux.org.uk>,
+       Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ARM: allow empty ATAG_CORE
+Date: Wed, 30 Sep 2009 14:44:31 -0700
+Message-Id: <1254347072-27932-1-git-send-email-davidb@codeaurora.org>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 05:25:35PM -0400, Tim Abbott wrote:
-> From: Nelson Elhage <nelhage@ksplice.com>
-> 
-> This patch is mostly a straightforward translation. The primary side
-> effect to the resulting vmlinux should be to increase the alignment on
-> the initramfs to the standard PAGE_SIZE from 32 bytes.
-> 
-> Signed-off-by: Nelson Elhage <nelhage@ksplice.com>
-> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-> ---
->  arch/arm/kernel/vmlinux.lds.S |   75 +++++++++++-----------------------------
->  1 files changed, 21 insertions(+), 54 deletions(-)
-> 
->  
-> -	.bss : {
-> -		__bss_start = .;	/* BSS				*/
-> -		*(.bss)
-> -		*(COMMON)
-> -		__bss_stop = .;
-> -		_end = .;
+From: David Brown <davidb@quicinc.com>
 
-Where is _end in the new layout?
-I think we lost it.
+The ATAG_CORE is allowed to be empty.  Although this is handled
+by parse_tag_core(), __vet_atags during startup rejects this tag
+unless it contains data.  Allow the initial tag to be either the
+full size, or empty.
 
-> -	}
-> -					/* Stabs debugging sections.	*/
-> -	.stab 0 : { *(.stab) }
-> -	.stabstr 0 : { *(.stabstr) }
-> -	.stab.excl 0 : { *(.stab.excl) }
-> -	.stab.exclstr 0 : { *(.stab.exclstr) }
-> -	.stab.index 0 : { *(.stab.index) }
-> -	.stab.indexstr 0 : { *(.stab.indexstr) }
-> +	BSS_SECTION(0, 0, 0)
-> +	STABS_DEBUG
->  	.comment 0 : { *(.comment) }
->  }
+Signed-off-by: David Brown <davidb@quicinc.com>
+---
+Currently, some configurations of the Android bootloader use an empty
+ATAG_CORE.
 
-Other than that.
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+ arch/arm/kernel/head-common.S |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-	Sam
+diff --git a/arch/arm/kernel/head-common.S b/arch/arm/kernel/head-common.S
+index 93ad576..1e8f0d6 100644
+--- a/arch/arm/kernel/head-common.S
++++ b/arch/arm/kernel/head-common.S
+@@ -13,6 +13,7 @@
+ 
+ #define ATAG_CORE 0x54410001
+ #define ATAG_CORE_SIZE ((2*4 + 3*4) >> 2)
++#define ATAG_CORE_SIZE_EMPTY ((2*4 + 3*4) >> 2)
+ 
+ 	.align	2
+ 	.type	__switch_data, %object
+@@ -251,7 +252,8 @@ __vet_atags:
+ 	bne	1f
+ 
+ 	ldr	r5, [r2, #0]			@ is first tag ATAG_CORE?
+-	subs	r5, r5, #ATAG_CORE_SIZE
++	cmp	r5, #ATAG_CORE_SIZE
++	cmpne	r5, #ATAG_CORE_SIZE_EMPTY
+ 	bne	1f
+ 	ldr	r5, [r2, #4]
+ 	ldr	r6, =ATAG_CORE
+-- 
+1.6.2.3
+
