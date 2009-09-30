@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZI3G3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbZI3Gey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbZI3G3k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 02:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZI3G3j
+	id S1752612AbZI3Gey (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 02:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZI3Gex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 02:29:39 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:50495 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750873AbZI3G3i convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;6:2>);
-	Wed, 30 Sep 2009 02:29:38 -0400
-Message-Id: <4AC316F2020000780001734C@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 30 Sep 2009 07:29:38 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "roel kluin" <roel.kluin@gmail.com>
-Cc: <sfr@canb.auug.org.au>, <akpm@linux-foundation.org>,
-       <linuxppc-dev@lists.ozlabs.org>, <hollisb@us.ibm.com>,
-       <kvm-ppc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <linux-next@vger.kernel.org>
-Subject: Re: linux-next: tree build failure
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
- <25e057c00909290251h55c0dc25o4ab1f2e84c920dca@mail.gmail.com>
-In-Reply-To: <25e057c00909290251h55c0dc25o4ab1f2e84c920dca@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 30 Sep 2009 02:34:53 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:49527 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751120AbZI3Gex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 02:34:53 -0400
+Message-ID: <4AC2FBBA.9070307@gandalf.sssup.it>
+Date: Wed, 30 Sep 2009 08:33:30 +0200
+From: Michael Trimarchi <trimarchi@gandalf.sssup.it>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Johan Hovold <jhovold@gmail.com>, Oliver Neukum <oliver@neukum.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
+References: <20090924154023.GA27480@localhost>	<200909242103.48562.oliver@neukum.org>	<20090924202107.4730f2af@lxorguk.ukuu.org.uk>	<20090924211459.GB27963@localhost>	<4ABD020B.4040901@gandalf.sssup.it>	<20090929145514.GF2152@localhost> <20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> roel kluin <roel.kluin@gmail.com> 29.09.09 11:51 >>>
->On Tue, Sep 29, 2009 at 11:28 AM, Jan Beulich <jbeulich@novell.com> wrote:
->>>>> Hollis Blanchard  09/29/09 2:00 AM >>>
->>>First, I think there is a real bug here, and the code should read like
->>>this (to match the comment):
->>>    /* type has to be known at build time for optimization */
->>>-    BUILD_BUG_ON(__builtin_constant_p(type));
->>>+    BUILD_BUG_ON(!__builtin_constant_p(type));
->>>
->>>However, I get the same build error *both* ways, i.e.
->>>__builtin_constant_p(type) evaluates to both 0 and 1? Either that, or
->>>the new BUILD_BUG_ON() macro isn't working...
->>
->> No, at this point of the compilation process it's neither zero nor one,
->> it's simply considered non-constant by the compiler at that stage
->> (this builtin is used for optimization, not during parsing, and the
->> error gets generated when the body of the function gets parsed,
->> not when code gets generated from it).
->>
->> Jan
+Alan Cox wrote:
+>> As it stands today ftdi_sio does indeed call tty_flip_buffer_push from
+>> interrupt context with low_latency set and that is obviously incorrect,
+>> right?
+>>     
 >
->then maybe
+> It seems to do it from a work queue - or did I miss a case ?
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 >
->if(__builtin_constant_p(type))
->        BUILD_BUG_ON(1);
->
->would work?
+>   
+  usb_fill_bulk_urb(port->read_urb, dev,
+                        usb_rcvbulkpipe(dev, port->bulk_in_endpointAddress),
+                        port->read_urb->transfer_buffer,
+                                port->read_urb->transfer_buffer_length,
+                        ftdi_read_bulk_callback, port);
 
-Definitely not - this would result in the compiler *always* generating an
-error.
+  (can be call in the interrupt context)
+  ftdi_read_bulk_callback--->
+                            ftdi_process_read-->      
+                                                tty_flip_buffer_push(tty);
+                                               
+                                               
 
-Jan
-
+Michael
