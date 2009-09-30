@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbZI3P65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbZI3QAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754593AbZI3P65 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 11:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZI3P65
+	id S1754974AbZI3QAG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 12:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbZI3QAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 11:58:57 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:56145 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754647AbZI3P64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 11:58:56 -0400
-Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
-From: Raistlin <raistlin@linux.it>
-To: roel kluin <roel.kluin@gmail.com>
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, claudio@evidence.eu.com,
-       michael@evidence.eu.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, johan.eker@ericsson.com, p.faure@akatech.ch,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-In-Reply-To: <25e057c00909291115t63c36ddm657f9359d1ae34f4@mail.gmail.com>
-References: <1253615424.20345.76.camel@Palantir>
-	 <63386a3d0909230533o7ab835ecubc8d074fea97642f@mail.gmail.com>
-	 <1253712627.5631.478.camel@Palantir>
-	 <25e057c00909291115t63c36ddm657f9359d1ae34f4@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-ct8sEWJAu8/LcM9Da+Fc"
-Date: Wed, 30 Sep 2009 17:59:02 +0200
-Message-Id: <1254326342.11233.149.camel@Palantir>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 30 Sep 2009 12:00:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45848 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754910AbZI3QAE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 12:00:04 -0400
+Date: Wed, 30 Sep 2009 12:00:01 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Philipp Reisner <philipp.reisner@linbit.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>, drbd-dev@lists.linbit.com,
+       mingo@elte.hu, rostedt@goodmis.org
+Subject: Re: [Drbd-dev] [PATCH -next] drbd: trace depends on TRACING
+Message-ID: <20090930160001.GA3765@infradead.org>
+References: <20090925133830.1ba29584.sfr@canb.auug.org.au> <4ABD4C28.9070202@oracle.com> <200909291732.51383.philipp.reisner@linbit.com> <20090929153747.GA29621@infradead.org> <20090930080221.GA8032@barkeeper1-xen.linbit>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090930080221.GA8032@barkeeper1-xen.linbit>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 30, 2009 at 10:02:21AM +0200, Lars Ellenberg wrote:
+> TRACE_EVENT macros depend on, and use TRACE_POINTS.
+> And those trace points are what compiles away if !CONFIG_TRACEPOINTS, no?
 
---=-ct8sEWJAu8/LcM9Da+Fc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Everything compiles away when the right options are not selected.
 
-On Tue, 2009-09-29 at 20:15 +0200, roel kluin wrote:
-> shouldn't the NULL test be moved upwards, to prevent a dereference of
-> a NULL pointer?=20
-I definitely think you _do_ are right, many thanks! :-P
+> If using tracepoints directly, not using the (admittedly elegant)
+> trace-events macro system, is in fact not wanted anymore, then
+> Documentation/trace/* should be changed accordingly.
 
-> Also I notice that `timespec_to_ns(&param_ex->sched_period)'
-> is called twice, maybe gcc does this but can't we do something like
->=20
->         if (edf_policy(policy)) {
->                 if (param_ex =3D=3D NULL || param_ex->sched_priority !=3D=
- 0)
->                         return -EINVAL;
->                 s64 psp =3D timespec_to_ns(&param_ex->sched_period);
->                 if (psp =3D=3D 0 || psp < timespec_to_ns(&param_ex->sched=
-_runtime))
->                         return -EINVAL;
->         }
->=20
-Well, don't know... I guess the compiler do _something_ (also since
-timespec_to_ns is 'static inline') but, to be sincere, I've not looked
-at the assembly yet... But I may check it out, at least for x86, and
-then consider this. :)
+I could not find anything actively suggesting to use them.  And if you
+look at current mainline there is in fact no user of raw tracepoints
+left and none should be introduced.  If you add fancy new tracing it
+might be a good idea to run it past Ingo and Steve, btw.
 
-Thanks very much for your comments and suggestions,
-Dario
+Ingo, now that we killed all raw tracepoints users, what do you think
+about removing Documentation/trace/tracepoints.txt and
+samples/tracepoints so that people have no easy way to use them?
 
---=20
-<<This happens because I choose it to happen!>> (Raistlin Majere)
-----------------------------------------------------------------------
-Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+Even better would be making their use really hard, which is not too easy
+as they are used by TRACE_EVENT underneath.
 
-http://blog.linux.it/raistlin / raistlin@ekiga.net /
-dario.faggioli@jabber.org
+> So what is the plan, going forward?
 
---=-ct8sEWJAu8/LcM9Da+Fc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkrDgEYACgkQk4XaBE3IOsSkqQCgrCN5GvlT4XQO4BDrR9IxwxzP
-jeEAoI77kXq+0hVyqOqct4Ts0GMIciDT
-=LTU0
------END PGP SIGNATURE-----
-
---=-ct8sEWJAu8/LcM9Da+Fc--
+The plan is that all new tracing should use TRACE_EVENT.  If that
+doesn't work for some reason bring it up with the tracing people
+for discussion.
 
