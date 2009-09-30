@@ -1,142 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZI3WD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbZI3WEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbZI3WD2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 18:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZI3WD1
+	id S1754733AbZI3WEL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 18:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbZI3WEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 18:03:27 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:60610 "EHLO isrv.corpit.ru"
+	Wed, 30 Sep 2009 18:04:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50440 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751226AbZI3WD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 18:03:27 -0400
-Message-ID: <4AC3D5B1.3030708@msgid.tls.msk.ru>
-Date: Thu, 01 Oct 2009 02:03:29 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	id S1751657AbZI3WEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 18:04:09 -0400
+Date: Thu, 1 Oct 2009 00:03:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [GIT PULL] scheduler fixes
+Message-ID: <20090930220342.GA2118@elte.hu>
+References: <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com> <4AC10365.7090802@gmail.com> <4AC2712C.4080901@gmail.com> <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain> <20090929232248.735bf4df@infradead.org> <alpine.LFD.2.01.0909291429570.6996@localhost.localdomain> <20090930170754.0886ff2e@infradead.org> <4AC37FE5.7020200@gmail.com> <alpine.LFD.2.01.0909300909460.6996@localhost.localdomain> <20090930185315.GA9716@elte.hu>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: suspend vs usb and PS/2 ports
-References: <4AC35F86.20405@msgid.tls.msk.ru> <200909302354.55673.rjw@sisk.pl>
-In-Reply-To: <200909302354.55673.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090930185315.GA9716@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Wednesday 30 September 2009, Michael Tokarev wrote:
->> Hello.
->>
->> I've several PCs here which are able to wakeup -
->> among others - from PS/2 and/or USB keyboard.
->> Here for testing I'm using PS/2 keyboard and
->> Asus M3A78-EM motherboard.
->>
->> When I do poweroff from linux, the keyboard
->> stays powered up as it should (according to
->> the BIOS settings).  But when I do suspend,
->> keyboard is NOT powered anymore, and hence
->> the system can't be woken up from it but only
->> by using the power button.
->>
->> This happens consistently for many kernel
->> versions.  To be fair, I don't even know if
->> there was any kernel which does not show this
->> behaviour: old versions was unable to do
->> suspend/resume cycle on this platform at all.
->>
->> Any hints for this please?
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> With USB, I think keyboard wake-up is off by default as it causes some
-> systems to wake up immediately after suspending.  Alan and Oliver can provide
-> more info about that.
-
-Actually I wasn't able to get any machine to resume based on
-USB devices - notable keyboard, be it sleep/power button (on
-the keyboards that have it) or any other combination of keys
-configured in the BIOS.  Most motherboards I tried are from
-Asus, one or two from Gigabyte and one more from Biostar.
-
-That's why I use PS/2=>USB adaptor, to connect an USB keyboard
-to a PS/2 port - this one works just fine, with all the mobos
-I tried (provided the appropriate BIOS settings are turned on
-and ever exists, to start with).
-
-> I don't know about PS/2.
+> > Ingo - I suspect both those patches should just go through you. You 
+> > do both x86 and scheduler, so I'll happily pull the end result.
 > 
-> Can you post the contents of /proc/acpi/wakeup from one of these systems,
-> please?
+> Yeah - working on it - just got back from a trip. It's two risky 
+> patches and if that place breaks everyone will be affected so i'll 
+> probably send the pull request tomorrow.
 
-Hm.  That's.. curious.  Here we go, my home machine whihc I turn
-on every day from a PS/2-connected keyboard:
+Ok, it now looks good in all tests here so Linus please pull the latest 
+sched-fixes-for-linus git tree from:
 
-Device	S-state	  Status   Sysfs node
-PCE2	  S4	 disabled
-PCE3	  S4	 disabled
-PCE4	  S4	 disabled
-PCE5	  S4	 disabled
-PCE6	  S4	 disabled  pci:0000:00:06.0
-RLAN	  S4	 disabled  pci:0000:02:00.0
-PCE7	  S4	 disabled
-PCE9	  S4	 disabled
-PCEA	  S4	 disabled
-PCEB	  S4	 disabled
-PCEC	  S4	 disabled
-SBAZ	  S4	 disabled  pci:0000:00:14.2
-PS2K	  S4	 disabled  pnp:00:09
-UAR1	  S4	 disabled  pnp:00:0a
-P0PC	  S4	 disabled  pci:0000:00:14.4
-UHC1	  S4	 disabled  pci:0000:00:12.0
-UHC2	  S4	 disabled  pci:0000:00:12.1
-UHC3	  S4	 disabled  pci:0000:00:12.2
-USB4	  S4	 disabled  pci:0000:00:13.0
-UHC5	  S4	 disabled  pci:0000:00:13.1
-UHC6	  S4	 disabled  pci:0000:00:13.2
-UHC7	  S4	 disabled  pci:0000:00:14.5
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
 
-It's all disabled!  But I *know* it wakes up
-from network and from ps/2 keyboard at least!
-In the corresponding BIOS menu almost everything
-is enabled (excluding RTC alarm, but including
-USB events).  This is an Asus motherboard, M3A-78EM,
-with latest BIOS.
+ Thanks,
 
-Here's another one, Gigabyte's GA-MA74GM-S2H,
-which definitely wakes on network:
+	Ingo
 
-Device	S-state	  Status   Sysfs node
-PCI0	  S5	 disabled  no-bus:pci0000:00
-USB0	  S3	 disabled  pci:0000:00:12.0
-USB1	  S3	 disabled  pci:0000:00:12.1
-USB2	  S3	 disabled  pci:0000:00:12.2
-USB3	  S3	 disabled  pci:0000:00:13.0
-USB4	  S3	 disabled  pci:0000:00:13.1
-USB5	  S3	 disabled  pci:0000:00:13.2
-USB6	  S3	 disabled  pci:0000:00:14.5
-SBAZ	  S4	 disabled  pci:0000:00:14.2
-P2P	  S5	 disabled  pci:0000:00:14.4
-PCE2	  S4	 disabled
-PCE3	  S4	 disabled
-PCE4	  S4	 disabled
-PCE5	  S4	 disabled
-PCE6	  S4	 disabled  pci:0000:00:06.0
-PCE7	  S4	 disabled
-PCE8	  S4	 disabled
+------------------>
+Arjan van de Ven (1):
+      x86: Provide an alternative() based cmpxchg64()
 
-hmm.  Blaming BIOS, as usual? :)
+Eric Dumazet (1):
+      sched_clock: Fix atomicity/continuity bug by using cmpxchg64()
 
-But even if that's the case, why there's a difference
-between "just" power-off and power-off when suspending?
 
-The kernel is 2.6.31 vanilla.
+ arch/x86/include/asm/cmpxchg_32.h |   30 +++++++++++--------
+ arch/x86/kernel/i386_ksyms_32.c   |    8 +++++
+ arch/x86/lib/Makefile             |    2 +-
+ arch/x86/lib/cmpxchg8b_emu.S      |   57 +++++++++++++++++++++++++++++++++++++
+ kernel/sched_clock.c              |    4 +-
+ 5 files changed, 85 insertions(+), 16 deletions(-)
+ create mode 100644 arch/x86/lib/cmpxchg8b_emu.S
 
-Thanks!
-
-/mjt
+diff --git a/arch/x86/include/asm/cmpxchg_32.h b/arch/x86/include/asm/cmpxchg_32.h
+index 82ceb78..ee1931b 100644
+--- a/arch/x86/include/asm/cmpxchg_32.h
++++ b/arch/x86/include/asm/cmpxchg_32.h
+@@ -312,19 +312,23 @@ static inline unsigned long cmpxchg_386(volatile void *ptr, unsigned long old,
+ 
+ extern unsigned long long cmpxchg_486_u64(volatile void *, u64, u64);
+ 
+-#define cmpxchg64(ptr, o, n)						\
+-({									\
+-	__typeof__(*(ptr)) __ret;					\
+-	if (likely(boot_cpu_data.x86 > 4))				\
+-		__ret = (__typeof__(*(ptr)))__cmpxchg64((ptr),		\
+-				(unsigned long long)(o),		\
+-				(unsigned long long)(n));		\
+-	else								\
+-		__ret = (__typeof__(*(ptr)))cmpxchg_486_u64((ptr),	\
+-				(unsigned long long)(o),		\
+-				(unsigned long long)(n));		\
+-	__ret;								\
+-})
++#define cmpxchg64(ptr, o, n)					\
++({								\
++	__typeof__(*(ptr)) __ret;				\
++	__typeof__(*(ptr)) __old = (o);				\
++	__typeof__(*(ptr)) __new = (n);				\
++	alternative_io("call cmpxchg8b_emu",			\
++			"lock; cmpxchg8b (%%esi)" ,		\
++		       X86_FEATURE_CX8,				\
++		       "=A" (__ret),				\
++		       "S" ((ptr)), "0" (__old),		\
++		       "b" ((unsigned int)__new),		\
++		       "c" ((unsigned int)(__new>>32))		\
++		       : "memory");				\
++	__ret; })
++
++
++
+ #define cmpxchg64_local(ptr, o, n)					\
+ ({									\
+ 	__typeof__(*(ptr)) __ret;					\
+diff --git a/arch/x86/kernel/i386_ksyms_32.c b/arch/x86/kernel/i386_ksyms_32.c
+index 43cec6b..1736c5a 100644
+--- a/arch/x86/kernel/i386_ksyms_32.c
++++ b/arch/x86/kernel/i386_ksyms_32.c
+@@ -10,6 +10,14 @@
+ EXPORT_SYMBOL(mcount);
+ #endif
+ 
++/*
++ * Note, this is a prototype to get at the symbol for
++ * the export, but dont use it from C code, it is used
++ * by assembly code and is not using C calling convention!
++ */
++extern void cmpxchg8b_emu(void);
++EXPORT_SYMBOL(cmpxchg8b_emu);
++
+ /* Networking helper routines. */
+ EXPORT_SYMBOL(csum_partial_copy_generic);
+ 
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index 9e60920..3e549b8 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -15,7 +15,7 @@ ifeq ($(CONFIG_X86_32),y)
+         obj-y += atomic64_32.o
+         lib-y += checksum_32.o
+         lib-y += strstr_32.o
+-        lib-y += semaphore_32.o string_32.o
++        lib-y += semaphore_32.o string_32.o cmpxchg8b_emu.o
+ 
+         lib-$(CONFIG_X86_USE_3DNOW) += mmx_32.o
+ else
+diff --git a/arch/x86/lib/cmpxchg8b_emu.S b/arch/x86/lib/cmpxchg8b_emu.S
+new file mode 100644
+index 0000000..828cb71
+--- /dev/null
++++ b/arch/x86/lib/cmpxchg8b_emu.S
+@@ -0,0 +1,57 @@
++/*
++ *	This program is free software; you can redistribute it and/or
++ *	modify it under the terms of the GNU General Public License
++ *	as published by the Free Software Foundation; version 2
++ *	of the License.
++ *
++ */
++
++#include <linux/linkage.h>
++#include <asm/alternative-asm.h>
++#include <asm/frame.h>
++#include <asm/dwarf2.h>
++
++
++.text
++
++/*
++ * Inputs:
++ * %esi : memory location to compare
++ * %eax : low 32 bits of old value
++ * %edx : high 32 bits of old value
++ * %ebx : low 32 bits of new value
++ * %ecx : high 32 bits of new value
++ */
++ENTRY(cmpxchg8b_emu)
++CFI_STARTPROC
++
++#
++# Emulate 'cmpxchg8b (%esi)' on UP except we don't
++# set the whole ZF thing (caller will just compare
++# eax:edx with the expected value)
++#
++cmpxchg8b_emu:
++	pushfl
++	cli
++
++	cmpl  (%esi), %eax
++	jne not_same
++	cmpl 4(%esi), %edx
++	jne half_same
++
++	movl %ebx,  (%esi)
++	movl %ecx, 4(%esi)
++
++	popfl
++	ret
++
++ not_same:
++	movl  (%esi), %eax
++ half_same:
++	movl 4(%esi), %edx
++
++	popfl
++	ret
++
++CFI_ENDPROC
++ENDPROC(cmpxchg8b_emu)
+diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
+index ac2e1dc..479ce56 100644
+--- a/kernel/sched_clock.c
++++ b/kernel/sched_clock.c
+@@ -127,7 +127,7 @@ again:
+ 	clock = wrap_max(clock, min_clock);
+ 	clock = wrap_min(clock, max_clock);
+ 
+-	if (cmpxchg(&scd->clock, old_clock, clock) != old_clock)
++	if (cmpxchg64(&scd->clock, old_clock, clock) != old_clock)
+ 		goto again;
+ 
+ 	return clock;
+@@ -163,7 +163,7 @@ again:
+ 		val = remote_clock;
+ 	}
+ 
+-	if (cmpxchg(ptr, old_val, val) != old_val)
++	if (cmpxchg64(ptr, old_val, val) != old_val)
+ 		goto again;
+ 
+ 	return val;
