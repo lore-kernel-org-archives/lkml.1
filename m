@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZI3QP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbZI3QSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbZI3QP7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 12:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZI3QP7
+	id S1754604AbZI3QSw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 12:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbZI3QSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 12:15:59 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:52529 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752157AbZI3QP6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 12:15:58 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
-Date: Wed, 30 Sep 2009 18:15:44 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-api@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com
-References: <20090924165548.GA16586@us.ibm.com> <alpine.LFD.2.01.0909291501530.6996@localhost.localdomain> <4AC287F2.8060603@zytor.com>
-In-Reply-To: <4AC287F2.8060603@zytor.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 30 Sep 2009 12:18:52 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:51723 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752329AbZI3QSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 12:18:51 -0400
+Message-ID: <4AC38467.2060406@redhat.com>
+Date: Wed, 30 Sep 2009 06:16:39 -1000
+From: Zachary Amsden <zamsden@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [PATCH v4: kvm 1/4] Code motion.  Separate timer intialization
+ into an indepedent function.
+References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com> <4AC31AA5.4060609@redhat.com> <4AC37E81.8080104@redhat.com> <4AC37F92.2090502@redhat.com> <4AC3821D.2050900@redhat.com> <4AC38340.4000305@redhat.com>
+In-Reply-To: <4AC38340.4000305@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909301815.45211.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX196rVl4yh4hoRg1HWr3q3fdsIbTtu+7WWho0xV
- 7bf1MKaLhlbxbTPXivO1rScb8gR4rxrnTKGv2wO6SgGaljAqyF
- cino5DyZ7EhTi6+fRpzVA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 September 2009, H. Peter Anvin wrote:
-> Let's just make it another system call.  It doesn't have any downside
-> that I can see, might prevent problems, and avoids setting a bad
-> precedent that someone can misinterpret.
+On 09/30/2009 06:11 AM, Avi Kivity wrote:
+> On 09/30/2009 06:06 PM, Zachary Amsden wrote:
+>> On 09/30/2009 05:56 AM, Avi Kivity wrote:
+>>> On 09/30/2009 05:51 PM, Zachary Amsden wrote:
+>>>
+>>> If the API allows us to query the tsc frequency, it would simply 
+>>> return the same values in all cases, which we'd ignore.
+>>
+>> The API only allows querying the processor frequency.  In the 
+>> constant_tsc case, the highest processor frequency is likely going to 
+>> be the actual TSC frequency, but I don't think it's a guarantee; 
+>> theoretically, it could be faster on normal hardware ... or slower on 
+>> overclocked hardware with an externally clocked TSC.
+>
+> Well we could add a new API then (or a new tscfreq notifier).  Those 
+> conditionals don't belong in client code.
 
-One more argument for this is that the new code is architecture independent
-using user_stack_pointer(), while the original sys_clone is highly
-architecture specific, which is a source for bugs when trying to
-extend it.
+It's possible... but it's also possible to run without cpufreq enabled, 
+which won't work properly unless the cpufreq code is aware of the 
+measured tsc_khz...  this could be a little ugly architecture wise given 
+the big melting pot of generic code and vendor / arch specific code here.
 
-	Arnd <><
+Since we're already very hardware dependent and one of the few clients 
+who care, it seems okay to leave it as is for now.
+
+Zach
