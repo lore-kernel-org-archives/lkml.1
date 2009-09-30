@@ -1,69 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbZI3TAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbZI3TF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbZI3TAS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 15:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbZI3TAP
+	id S1755083AbZI3TF4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 15:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZI3TFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 15:00:15 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:49961 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755128AbZI3TAL (ORCPT
+	Wed, 30 Sep 2009 15:05:55 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:63183 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754201AbZI3TFy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 15:00:11 -0400
-Date: Wed, 30 Sep 2009 15:00:14 -0400
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Andy <genanr@emsphone.com>, linux-kernel@vger.kernel.org
-Subject: Re: How can I download a git commit as a diff patch?
-Message-ID: <20090930190014.GA22161@csclub.uwaterloo.ca>
-References: <20090930154410.GA31502@thumper2> <20090930085500.a5856301.rdunlap@xenotime.net>
+	Wed, 30 Sep 2009 15:05:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=O+CuaiohODz7EFyi0UyUBuHiQXnZXBr3lEQIRCEY/5P15Omk4nQwuaKH56TgmcYsdJ
+         V4yrtJ/ao4OCaCxYYQgppqmzfL4af2gh7avRQ3scLyBVfJSQAAwtgU4Klh73Tr4LsLY0
+         VN0ALmWMoHM9AvE++Yc1fs/LUofyfXBWTVTms=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090930085500.a5856301.rdunlap@xenotime.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <20090928142903.GD17514@mit.edu>
+References: <a769871e0909270527j5d4a6a51ycb5627ebe94704be@mail.gmail.com>
+	 <20090928142903.GD17514@mit.edu>
+Date: Wed, 30 Sep 2009 21:05:57 +0200
+Message-ID: <a769871e0909301205x771e1fc3y62a25790e1728754@mail.gmail.com>
+Subject: Re: ext4/reiser3/btr directory create/read perf
+From: wbrana@gmail.com
+To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 08:55:00AM -0700, Randy Dunlap wrote:
-> On Wed, 30 Sep 2009 10:44:10 -0500 Andy wrote:
-> 
-> > I just want to down a particular git commit as a patch, not a git commit or
-> > anything.  Yes, I can see the diffs on the web, but unless I am missing
-> > something all are in unless html formats for me.  And cut and past from the
-> > web page does not help either because some lines get mangled.  Is there some
-> > site, or git itself, that would allow be to get the git commit as a simple
-> > patch?
-> 
-> Look at the commitdiff using the web interface, then click on "raw" near
-> the upper left corner.
+On Mon, Sep 28, 2009 at 4:29 PM, Theodore Tso <tytso@mit.edu> wrote:
+> On Sun, Sep 27, 2009 at 02:27:55PM +0200, wbrana@gmail.com wrote:
+>> Hello,
+>>
+>> I executed benchmark which creates and reads 10000 directories.
+>> It is much slower with ext4 than with reiser3 or btrfs.
+>
+> What precisely is your benchmark doing/measuring?  What are the times
+> if you enable dir_index?
+>
+>                                        - Ted
+>
 
-Of course some git diff's are not in a format that patch will like as
-far as I can tell.
+I reduced benchmark to 10 directories and executed with strace
 
-For example commit 6cdee2f96a97f6da26bd3759c3f8823332fbb438 which has
-stuff like:
-diff --cc drivers/net/ixp2000/ixpdev.c
-index 588b44d,92fb823..1272434
---- a/drivers/net/ixp2000/ixpdev.c
-+++ b/drivers/net/ixp2000/ixpdev.c
-@@@ -67,9 -68,9 +68,9 @@@ static int ixpdev_xmit(struct sk_buff *
-        ip->tx_queue_entries++;
-        if (ip->tx_queue_entries == TX_BUF_COUNT_PER_CHAN)
-                netif_stop_queue(dev);
--       local_irq_enable();
-+       local_irq_restore(flags);
+ext4
+void cfs::vdirs_create(): 1047 msec
+void cfs::vdirs_read(): 123 msec
 
- -      return 0;
- +      return NETDEV_TX_OK;
-  }
+vdirs_create():
+
+mkdir("/mnt/md8/4", 0777)               = 0
+mkdir("/mnt/md8/3", 0777)               = 0
+mkdir("/mnt/md8/2", 0777)               = 0
+mkdir("/mnt/md8/1", 0777)               = 0
+mkdir("/mnt/md8/0", 0777)               = 0
+sync()                                  = 0
 
 
+vdirs_read():
+QDir::entryInfoList() measured
 
-Ehm, what does that mean?  patch doesn't like it.
+stat("/mnt/md8", {st_dev=makedev(9, 8), st_ino=2,
+st_mode=S_IFDIR|0755, st_nlink=8, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:29,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+lstat("/mnt/md8", {st_dev=makedev(9, 8), st_ino=2,
+st_mode=S_IFDIR|0755, st_nlink=8, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:29,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+open("/mnt/md8", O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC) = 10
+fstat(10, {st_dev=makedev(9, 8), st_ino=2, st_mode=S_IFDIR|0755,
+st_nlink=8, st_uid=0, st_gid=0, st_blksize=4096, st_blocks=8,
+st_size=4096, st_atime=2009/09/30-20:42:29,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+fcntl(10, F_GETFD)                      = 0x1 (flags FD_CLOEXEC)
+statfs("/mnt/md8", {f_type="EXT2_SUPER_MAGIC", f_bsize=4096,
+f_blocks=15484285, f_bfree=15438246, f_bavail=14651667,
+f_files=3940352, f_ffree=3940336, f_fsid={-1324527978, -609145826},
+f_namelen=255, f_frsize=4096}) = 0
+getdents(10, {{d_ino=16386, d_off=399366477, d_reclen=24, d_name="1"}
+{d_ino=8194, d_off=770605380, d_reclen=24, d_name="3"} {d_ino=11,
+d_off=783174169, d_reclen=32, d_name="lost+found"} {d_ino=2,
+d_off=1078596639, d_reclen=24, d_name="."} {d_ino=2, d_off=1358450504,
+d_reclen=24, d_name=".."} {d_ino=8193, d_off=174337
+5275, d_reclen=24, d_name="4"} {d_ino=16385, d_off=1786832028,
+d_reclen=24, d_name="2"} {d_ino=24577, d_off=2147483647, d_reclen=24,
+d_name="0"}}, 4096) = 200
+stat("/mnt/md8/1", {st_dev=makedev(9, 8), st_ino=16386,
+st_mode=S_IFDIR|0755, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:45,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+stat("/mnt/md8/1", {st_dev=makedev(9, 8), st_ino=16386,
+st_mode=S_IFDIR|0755, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:45,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+stat("/mnt/md8/3", {st_dev=makedev(9, 8), st_ino=8194,
+st_mode=S_IFDIR|0755, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:45,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+stat("/mnt/md8/3", {st_dev=makedev(9, 8), st_ino=8194,
+st_mode=S_IFDIR|0755, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:45,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+stat("/mnt/md8/lost+found", {st_dev=makedev(9, 8), st_ino=11,
+st_mode=S_IFDIR|0700, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=32, st_size=16384, st_atime=2009/09/30-20:42:29,
+st_mtime=2009/09/30-20:42:29, st_ctime=2009/09/30-20:42:29}) = 0
+stat("/mnt/md8/lost+found", {st_dev=makedev(9, 8), st_ino=11,
+st_mode=S_IFDIR|0700, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=32, st_size=16384, st_atime=2009/09/30-20:42:29,
+st_mtime=2009/09/30-20:42:29, st_ctime=2009/09/30-20:42:29}) = 0
+stat("/mnt/md8/.", {st_dev=makedev(9, 8), st_ino=2,
+st_mode=S_IFDIR|0755, st_nlink=8, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:29,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+stat("/mnt/md8/.", {st_dev=makedev(9, 8), st_ino=2,
+st_mode=S_IFDIR|0755, st_nlink=8, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:29,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+stat("/mnt/md8/..", {st_dev=makedev(9, 2), st_ino=16,
+st_mode=S_IFDIR|0755, st_nlink=36, st_uid=0, st_gid=0,
+st_blksize=4096, st_blocks=1, st_size=952,
+st_atime=2008/09/14-18:00:33, st_mtime=2009/09/19-17:44:10,
+st_ctime=2009/09/19-17:44:10}) = 0
+stat("/mnt/md8/..", {st_dev=makedev(9, 2), st_ino=16,
+st_mode=S_IFDIR|0755, st_nlink=36, st_uid=0, st_gid=0,
+st_blksize=4096, st_blocks=1, st_size=952,
+st_atime=2008/09/14-18:00:33, st_mtime=2009/09/19-17:44:10,
+st_ctime=2009/09/19-17:44:10}) = 0
+stat("/mnt/md8/4", {st_dev=makedev(9, 8), st_ino=8193,
+st_mode=S_IFDIR|0755, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:45,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+stat("/mnt/md8/4", {st_dev=makedev(9, 8), st_ino=8193,
+st_mode=S_IFDIR|0755, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:45,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+stat("/mnt/md8/2", {st_dev=makedev(9, 8), st_ino=16385,
+st_mode=S_IFDIR|0755, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:45,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+getdents(10, {}, 4096)                  = 0
+close(10)                               = 0
+stat("/mnt/md8/2", {st_dev=makedev(9, 8), st_ino=16385,
+st_mode=S_IFDIR|0755, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:45,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
+stat("/mnt/md8/0", {st_dev=makedev(9, 8), st_ino=24577,
+st_mode=S_IFDIR|0755, st_nlink=2, st_uid=0, st_gid=0, st_blksize=4096,
+st_blocks=8, st_size=4096, st_atime=2009/09/30-20:42:45,
+st_mtime=2009/09/30-20:42:45, st_ctime=2009/09/30-20:42:45}) = 0
 
-Do git merges cause weird diffs?
 
--- 
-Len Sorensen
+Times with 10000 directories and dir_index enabled
+
+/mnt/md8: 64 kB chunks
+ext4
+void cfs::vdirs_create(): 4996 msec
+void cfs::vdirs_read(): 5100 msec
+
+
+Times with 10000 files and dir_index enabled
+
+/mnt/md8: 64 kB chunks
+reiser3
+void cfs::vfiles_create(): 1239 msec
+void cfs::vdirs_read(): 409 msec
+ext4
+void cfs::vfiles_create(): 1464 msec
+void cfs::vdirs_read(): 501 msec
+btrfs
+void cfs::vfiles_create(): 1295 msec
+void cfs::vdirs_read(): 585 msec
