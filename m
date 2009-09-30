@@ -1,39 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZI3Ni6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbZI3OVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbZI3Ni6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 09:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZI3Ni5
+	id S1754539AbZI3OVQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 10:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZI3OVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 09:38:57 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:11213 "EHLO mx1.redhat.com"
+	Wed, 30 Sep 2009 10:21:16 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:34770 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751863AbZI3Ni4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 09:38:56 -0400
-Date: Wed, 30 Sep 2009 10:35:42 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Zachary Amsden <zamsden@redhat.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH v4: kvm 4/4] Fix hotplug of CPUs for KVM.
-Message-ID: <20090930133542.GA15312@amt.cnet>
-References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com> <1254260317-3490-2-git-send-email-zamsden@redhat.com> <1254260317-3490-3-git-send-email-zamsden@redhat.com> <1254260317-3490-4-git-send-email-zamsden@redhat.com>
+	id S1752034AbZI3OVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 10:21:15 -0400
+X-Greylist: delayed 2678 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Sep 2009 10:21:14 EDT
+Message-ID: <4AC35EDD.1080902@openvz.org>
+Date: Wed, 30 Sep 2009 17:36:29 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254260317-3490-4-git-send-email-zamsden@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: bharata@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
+References: <20090930124919.GA19951@in.ibm.com>
+In-Reply-To: <20090930124919.GA19951@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 11:38:37AM -1000, Zachary Amsden wrote:
-> Both VMX and SVM require per-cpu memory allocation, which is done at module
-> init time, for only online cpus.
+Bharata B Rao wrote:
+> Hi,
 > 
-> Backend was not allocating enough structure for all possible CPUs, so
-> new CPUs coming online could not be hardware enabled.
+> Here is the v2 post of hard limits feature for CFS group scheduler. This
+> RFC post mainly adds runtime borrowing feature and has a new locking scheme
+> to protect CFS runtime related fields.
 > 
-> Signed-off-by: Zachary Amsden <zamsden@redhat.com>
+> It would be nice to have some comments on this set!
 
-Applied all, thanks.
-
+I have a question I'd like to ask before diving into the code.
+Consider I'm a user, that has a 4CPUs box 2GHz each and I'd like
+to create a container with 2CPUs 1GHz each. Can I achieve this
+after your patches?
