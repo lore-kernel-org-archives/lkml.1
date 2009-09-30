@@ -1,153 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbZI3OlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZI3Ou2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583AbZI3OlM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 10:41:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZI3OlM
+	id S1754613AbZI3Ou2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 10:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbZI3Ou1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 10:41:12 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37134 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754016AbZI3OlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 10:41:11 -0400
-Date: Wed, 30 Sep 2009 15:41:17 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Nick Piggin <npiggin@suse.de>, Christoph Lameter <cl@linux-foundation.org>,
-       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] slqb: Record what node is local to a kmem_cache_cpu
-Message-ID: <20090930144117.GA17906@csn.ul.ie>
-References: <1253624054-10882-1-git-send-email-mel@csn.ul.ie> <1253624054-10882-3-git-send-email-mel@csn.ul.ie> <84144f020909220638l79329905sf9a35286130e88d0@mail.gmail.com> <20090922135453.GF25965@csn.ul.ie> <84144f020909221154x820b287r2996480225692fad@mail.gmail.com> <20090922185608.GH25965@csn.ul.ie>
+	Wed, 30 Sep 2009 10:50:27 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45597 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754585AbZI3Ou0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 10:50:26 -0400
+X-Sasl-enc: SWv0ItBB6Cw8OFaZygfxscs4N7YRIlj2thqG3rpIQWJ5 1254322229
+Message-ID: <4AC37032.4030901@imap.cc>
+Date: Wed, 30 Sep 2009 16:50:26 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090922185608.GH25965@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+CC: Alan Cox <alan@linux.intel.com>
+Subject: N_PPP_SYNC ldisc BUG: sleeping function called from invalid context
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 07:56:08PM +0100, Mel Gorman wrote:
-> On Tue, Sep 22, 2009 at 09:54:33PM +0300, Pekka Enberg wrote:
-> > Hi Mel,
-> > 
-> > On Tue, Sep 22, 2009 at 4:54 PM, Mel Gorman <mel@csn.ul.ie> wrote:
-> > >> I don't understand how the memory leak happens from the above
-> > >> description (or reading the code). page_to_nid() returns some crazy
-> > >> value at free time?
-> > >
-> > > Nope, it isn't a leak as such, the allocator knows where the memory is.
-> > > The problem is that is always frees remote but on allocation, it sees
-> > > the per-cpu list is empty and calls the page allocator again. The remote
-> > > lists just grow.
-> > >
-> > >> The remote list isn't drained properly?
-> > >
-> > > That is another way of looking at it. When the remote lists get to a
-> > > watermark, they should drain. However, it's worth pointing out if it's
-> > > repaired in this fashion, the performance of SLQB will suffer as it'll
-> > > never reuse the local list of pages and instead always get cold pages
-> > > from the allocator.
-> > 
-> > I worry about setting c->local_nid to the node of the allocated struct
-> > kmem_cache_cpu. It seems like an arbitrary policy decision that's not
-> > necessarily the best option and I'm not totally convinced it's correct
-> > when cpusets are configured. SLUB seems to do the sane thing here by
-> > using page allocator fallback (which respects cpusets AFAICT) and
-> > recycling one slab slab at a time.
-> > 
-> > Can I persuade you into sending me a patch that fixes remote list
-> > draining to get things working on PPC? I'd much rather wait for Nick's
-> > input on the allocation policy and performance.
-> > 
-> 
-> It'll be at least next week before I can revisit this again. I'm afraid
-> I'm going offline from tomorrow until Tuesday.
-> 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Ok, so I spent today looking at this again. The problem is not with faulty
-drain logic as such. As frees always place an object on a remote list
-and the allocation side is often (but not always) allocating a new page,
-a significant number of objects in the free list are the only object
-in a page. SLQB drains based on the number of objects on the free list,
-not the number of pages. With many of the pages having only one object,
-the freelists are pinning a lot more memory than expected.  For example,
-a watermark to drain of 512 could be pinning 2MB of pages.
+While testing pppd with capiplugin on kernel 2.6.31 (plus my CAPI and
+Gigaset patches) I came across this BUG message. (Please ignore the
+Tainted flag, it's from the Nvidia driver and doesn't influence what's
+following.)
 
-The drain logic could be extended to track not only the number of objects on
-the free list but also the number of pages but I really don't think that is
-desirable behaviour. I'm somewhat running out of sensible ideas for dealing
-with this but here is another go anyway that might be more palatable than
-tracking what a "local" node is within the slab.
+BUG: sleeping function called from invalid context at kernel/mutex.c:280
+in_atomic(): 1, irqs_disabled(): 1, pid: 10, name: events/0
+INFO: lockdep is turned off.
+irq event stamp: 2034
+hardirqs last  enabled at (2033): [<c0347b07>]
+_spin_unlock_irqrestore+0x3c/0x6c
+hardirqs last disabled at (2034): [<c03475d0>] _spin_lock_irq+0x11/0x3f
+softirqs last  enabled at (2008): [<c012f598>] __do_softirq+0x114/0x11c
+softirqs last disabled at (1971): [<c010593a>] do_softirq+0x69/0xc7
+Pid: 10, comm: events/0 Tainted: P           2.6.31-vanilla #1
+Call Trace:
+ [<c0124a3c>] __might_sleep+0x10e/0x116
+ [<c0346bdd>] mutex_lock_nested+0x18/0x31
+ [<c026d39b>] tty_unthrottle+0x10/0x38
+ [<f8dcc31f>] ppp_sync_receive+0x168/0x170 [ppp_synctty]
+ [<f8fbb9ce>] handle_minor_recv+0x187/0x1cd [capi]
+ [<f8fbc19b>] capi_recv_message+0x1d9/0x24e [capi]
+ [<fa5be461>] recv_handler+0x56/0x6f [kernelcapi]
+ [<c0138cba>] worker_thread+0x14a/0x21d
+ [<c0138c9e>] ? worker_thread+0x12e/0x21d
+ [<fa5be40b>] ? recv_handler+0x0/0x6f [kernelcapi]
+ [<c013b375>] ? autoremove_wake_function+0x0/0x30
+ [<c013b201>] kthread+0x64/0x69
+ [<c0138b70>] ? worker_thread+0x0/0x21d
+ [<c013b19d>] ? kthread+0x0/0x69
+ [<c0103f33>] kernel_thread_helper+0x7/0x10
 
-This boots on 2.6.32-rc1 with the latest slqb-core git tree with
-Kconfig modified to allow SLQB to be set on ppc64.
+Turns out the ppp_sync_receive() function (drivers/net/ppp_synctty.c
+line 385ff.) has a comment in front stating:
 
-==== CUT HERE ====
-SLQB: Allocate from the remote lists when the local node is memoryless and has no free objects
+/*
+ * This can now be called from hard interrupt level as well
+ * as soft interrupt level or mainline.
+ */
 
-When SLQB is freeing an object, it checks if the object belongs to a
-page within the local node. If it is not, the object is freed to a
-remote list. When the remote list has too many objects, the list is
-drained.
+but calls tty_unthrottle() which in turn calls mutex_lock() which of
+course can sleep.
 
-On allocation, the remote list is only used if a specific node is specified
-and that node is not the local node. On memoryless nodes, there is a problem
-in that the specified node will often not be the local node. The impact is
-that many objects on the free list are the only object in the page. This
-bloats SLQB's memory requirements and causes OOM to trigger.
+That tty_unthrottle() call was already removed once by
 
-This patch alters the allocation path. If the allocation from local
-lists fails and the local node is memoryless, an attempt will be made to
-allocate from the remote lists before going to the page allocator.
+commit a6540f731d506d9e82444cf0020e716613d4c46c
+Author: Alan Cox <alan@linux.intel.com>
+Date:   Mon Jun 22 18:42:29 2009 +0100
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- mm/slqb.c |   30 ++++++++++++++++++++++--------
- 1 file changed, 22 insertions(+), 8 deletions(-)
+    ppp: Fix throttling bugs
 
-diff --git a/mm/slqb.c b/mm/slqb.c
-index 4d72be2..b73e7d0 100644
---- a/mm/slqb.c
-+++ b/mm/slqb.c
-@@ -1513,16 +1513,30 @@ try_remote:
- 	l = &c->list;
- 	object = __cache_list_get_object(s, l);
- 	if (unlikely(!object)) {
--		object = cache_list_get_page(s, l);
--		if (unlikely(!object)) {
--			object = __slab_alloc_page(s, gfpflags, node);
--#ifdef CONFIG_NUMA
-+		int thisnode = numa_node_id();
-+
-+		/*
-+		 * If the local node is memoryless, try remote alloc before
-+		 * trying the page allocator. Otherwise, what happens is
-+		 * objects are always freed to remote lists but the allocation
-+		 * side always allocates a new page with only one object
-+		 * used in each page
-+		 */
-+		if (unlikely(!node_state(thisnode, N_HIGH_MEMORY)))
-+			object = __remote_slab_alloc(s, gfpflags, thisnode);
-+
-+		if (!object) {
-+			object = cache_list_get_page(s, l);
- 			if (unlikely(!object)) {
--				node = numa_node_id();
--				goto try_remote;
--			}
-+				object = __slab_alloc_page(s, gfpflags, node);
-+#ifdef CONFIG_NUMA
-+				if (unlikely(!object)) {
-+					node = numa_node_id();
-+					goto try_remote;
-+				}
- #endif
--			return object;
-+				return object;
-+			}
- 		}
- 	}
- 	if (likely(object))
+but re-added by
+
+commit 4a21b8cb3550f19f838f7c48345fbbf6a0e8536b
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Thu Jul 16 09:14:23 2009 -0700
+
+    Revert "ppp: Fix throttling bugs"
+
+    This reverts commit a6540f731d506d9e82444cf0020e716613d4c46c, as
+    requested by Alan:
+
+      "... as it was wrong, the pty code is now fixed and the fact this
+       isn't reverted is breaking pptp setups."
+
+Opinions?
+
+Thanks,
+Tilman
+
+- --
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFKw3AyQ3+did9BuFsRAiZXAKCGaos/qZNTlStEP4SE90PA0ZoMAQCdFtvf
+U9chE7at35y8c6CGGS1IGg0=
+=Vpq4
+-----END PGP SIGNATURE-----
