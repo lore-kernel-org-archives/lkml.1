@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbZI3WqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZI3Wqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754310AbZI3WqI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 18:46:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZI3WqG
+	id S1754528AbZI3Wqr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 18:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbZI3Wqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 18:46:06 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34122 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbZI3WqG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 18:46:06 -0400
-Message-ID: <4AC3DF7B.5060407@zytor.com>
-Date: Wed, 30 Sep 2009 15:45:15 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 30 Sep 2009 18:46:46 -0400
+Received: from borg.medozas.de ([188.40.89.202]:51699 "EHLO borg.medozas.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753022AbZI3Wqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 18:46:45 -0400
+Date: Thu, 1 Oct 2009 00:46:48 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Joe Perches <joe@perches.com>
+cc: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>,
+       Simon Horman <horms@verge.net.au>, Julian Anastasov <ja@ssi.bg>,
+       netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       lvs-devel@vger.kernel.org
+Subject: Re: [PATCH 1/2] net/netfilter/ipvs: Move #define KMSG_COMPONENT to
+ Makefile
+In-Reply-To: <0026bcf5aad9ae5036e68fc2dcda9c778d30dc47.1254349375.git.joe@perches.com>
+Message-ID: <alpine.LSU.2.00.0910010042540.782@obet.zrqbmnf.qr>
+References: <cover.1254349374.git.joe@perches.com> <0026bcf5aad9ae5036e68fc2dcda9c778d30dc47.1254349375.git.joe@perches.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH,TRIVIAL] Fix csum_ipv6_magic asm memory clobber
-References: <20090926192748.GX7681@const.famille.thibault.fr> <20090930154044.0c7ace16.akpm@linux-foundation.org>
-In-Reply-To: <20090930154044.0c7ace16.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/30/2009 03:40 PM, Andrew Morton wrote:
-> 
-> You describe it as "trivial" and also cc stable@kernel.org.  These things
-> are contradictory!
-> 
-> Maybe backporting it is a good idea from a sleep-soundly-at-night POV. 
-> I don't know..
-> 
 
-/me suspects it was supposed to mean "trivially correct", which isn't
-really what "trivial" means.  This is a potentially serious bug and
-should be treated as such.
+On Thursday 2009-10-01 00:37, Joe Perches wrote:
 
-	-hpa
+>This centralizes the definition and removes the
+>replicated #defines from all files
+
+And increases the length of the command line. Not that Linux does not
+support long command lines (in fact, configure often determines huge
+possible values on the max length test), but sometimes, developers
+have to inspect the command lines anyway for bugs, or something. It
+is already pretty long due to all the compiler flags. Oh what were
+the days of DOS programs that allowed to pass in arguments in a
+so-called "response file", wish we had that in gcc.
+
+>+ccflags-y += -D "KMSG_COMPONENT=\"IPVS\""
+>+ccflags-y += -D "pr_fmt(fmt)=KMSG_COMPONENT \": \" fmt"
+>+
+> # IPVS transport protocol load balancing support
+> ip_vs_proto-objs-y :=
+> ip_vs_proto-objs-$(CONFIG_IP_VS_PROTO_TCP) += ip_vs_proto_tcp.o
+>diff --git a/net/netfilter/ipvs/ip_vs_app.c b/net/netfilter/ipvs/ip_vs_app.c
+>index 3c7e427..a5283d8 100644
+>--- a/net/netfilter/ipvs/ip_vs_app.c
+>+++ b/net/netfilter/ipvs/ip_vs_app.c
+>@@ -18,9 +18,6 @@
+>  *
+>  */
+> 
+>-#define KMSG_COMPONENT "IPVS"
+>-#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
+
+How about an #include file for the ipvs private things?
