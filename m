@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZI3O5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZI3O6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbZI3O5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 10:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZI3O5J
+	id S1754621AbZI3O6h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 10:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbZI3O6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 10:57:09 -0400
-Received: from kcmailp01.birch.net ([216.212.0.96]:61779 "EHLO mx01.birch.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751977AbZI3O5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 10:57:08 -0400
-Message-ID: <4AC371C6.3050104@softplc.com>
-Date: Wed, 30 Sep 2009 09:57:10 -0500
-From: Dick Hollenbeck <dick@softplc.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 30 Sep 2009 10:58:37 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:36742 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754557AbZI3O6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 10:58:36 -0400
+Date: Wed, 30 Sep 2009 11:57:58 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [RFC PATCH tracing/kprobes 0/5] tracing/kprobes,  perf: perf
+	kprobe support
+Message-ID: <20090930145758.GL3361@ghostprotocols.net>
+References: <20090925191424.12939.91503.stgit@omoto> <4AC2AF01.9090202@redhat.com> <20090930120418.GB7618@elte.hu>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: 2.6.31.1 boot crash, compiled with ftrace
-References: <4AC22613.4090803@softplc.com>  <1254297804.2963.14.camel@frodo> <1254301761.7286.4.camel@frodo>
-In-Reply-To: <1254301761.7286.4.camel@frodo>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090930120418.GB7618@elte.hu>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Wed, 2009-09-30 at 04:03 -0400, Steven Rostedt wrote:
->   
->> On Tue, 2009-09-29 at 10:21 -0500, Dick Hollenbeck wrote:
->>     
->>> Please help with a kernel boot crash.  This is happening with ftrace 
->>> enabled.   (I have yet to try without ftrace.)  This same box runs 
->>> kernel 2.6.26 fine.
->>>
->>> While running 'make oldconfig' coming up from 2.6.26, the three most 
->>> significant changes were:
->>>
->>> 1) changed CPU from 486 to Pentium-Classic
->>>
->>> 2) Added "High Memory Support" 4 GB
->>>
->>> 3) Enabled various ftrace options, because I am on the hunt for some 
->>> insane latency problems.
->>>
->>>       
->> Hi Dick,
->>
->> Thanks for reporting this. Peter and I have been taking some look at it.
->> We are not sure that it is ftrace related. have you tried booting the
->> kernel without adding ftrace?
->>     
->
-> Hi,
->
-> I just booted your config a couple of times without any issues. How
-> reproducible is this?
->
-> Thanks,
->
-> -- Steve
->   
+Em Wed, Sep 30, 2009 at 02:04:18PM +0200, Ingo Molnar escreveu:
+> 
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> 
+> > Masami Hiramatsu wrote:
+> >>
+> >> Hi,
+> >>
+> >> These patches introduce perf kprobe command and update kprobe-tracer.
+> >> perf kprobe command allows you to add new probe points by C line number
+> >> and local variable names.
+> >
+> > Last week, Arnaldo and I talked about this command, and he suggested 
+> > that the command would be better 'perf probe', because it would be 
+> > able to cover both of kernel space (by kprobes) and user space (by 
+> > uprobes).
+> 
+> Agreed.
+> 
+> > Basically, I agree with his idea. But I think we may need to consider 
+> > more flexible syntax for that purpose before we support uprobes. In 
+> > this area, SystemTap has done big advance, we can see how many 
+> > varieties of syntax it has by 'man stapprobes'.
+> >
+> > And also, it's hard to decide it without real uprobe-tracer (and 
+> > uprobes too!) implementation on ftrace. So, I think it is better to 
+> > continue using 'perf kprobe' in this time.
+> >
+> > But it's worth to add to todo list. :)
+> 
+> I'd still name it 'perf probe', even if initially it supports kprobes.
 
-Steve,
+Agreed.
 
-Thank you *very* much for your help.  *This* is what makes linux great, 
-not just the code, and you are part of it.
-
-The target is an embedded industrial box, and I'm booting from CF card 
-via IDE.  I switched build computers, target box stayed the same and the 
-CF card stayed the same.  With the switch, the compiler changed and the 
-USB CF writer changed (used to create the root fs on the CF card before 
-it is moved), as did some configuration options.  I am now booting.  I 
-am most suspicious of the original CF card writer device at this point.  
-Please do not spend any more time on it unless I come back for another 
-plea for help, such as if its the config options change.  I need more 
-time to narrow down the explanation for the failure to boot.
-
-My real pursuit here is to find the reason for a nearly 1 second latency 
-when running a SCHED_RR userspace process.  The filesystem is ext3 off 
-the flash card via IDE. Linux is yanking the machine away from this 
-process sporadically for up to 1 second, no disk file calls in this 
-proces, only some serial port and networking (epoll) userspace calls in 
-a loop.  It is insane.  So I have to get either LTT or FTRACE enabled, 
-never used either before.  Its been a tough 2 weeks.  Just getting the 
-LTT patches in sync with a decent kernel has been nearly unbearable.
-
-Thanks again,
-
-Dick
-
-
+- Arnaldo
