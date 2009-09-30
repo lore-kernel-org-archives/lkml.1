@@ -1,97 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZI3Ula@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbZI3Ukf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754060AbZI3Ula (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 16:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZI3Ul3
+	id S1753947AbZI3Ukf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 16:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZI3Uke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 16:41:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56034 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752531AbZI3Ul2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 16:41:28 -0400
-Date: Wed, 30 Sep 2009 20:40:15 GMT
-From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       eric.dumazet@gmail.com, a.p.zijlstra@chello.nl, johnstul@us.ibm.com,
-       torvalds@linux-foundation.org, arjan@linux.intel.com,
-       schwidefsky@de.ibm.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       eric.dumazet@gmail.com, arjan@linux.intel.com,
-       torvalds@linux-foundation.org, johnstul@us.ibm.com,
-       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090930170754.0886ff2e@infradead.org>
-References: <20090930170754.0886ff2e@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched_clock: Fix atomicity/continuity bug by using cmpxchg64()
-Message-ID: <tip-623c4f89c47cca0088014388211d8bc0a5358f0a@git.kernel.org>
-Git-Commit-ID: 623c4f89c47cca0088014388211d8bc0a5358f0a
-X-Mailer: tip-git-log-daemon
+	Wed, 30 Sep 2009 16:40:34 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:65312 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751629AbZI3Ukd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 16:40:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=GLKdyGSKW7F8dC6irxZ3wwYm/WI7zHl/vvtfz1igO6WwFpE4vfyczftpFzLKvTSMYW
+         dP0S685A8QkZPgbxBDY/wANpd3q8PUlMiNyroBUa8lCZhzHU/4Sa2tZlBw17rxBcVH1R
+         +RfMNE3xBcAujTeFbq/ZOwPywbGB0D1DmTatU=
+From: Jakub Narebski <jnareb@gmail.com>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: How can I download a git commit as a diff patch?
+Date: Wed, 30 Sep 2009 22:40:16 +0200
+User-Agent: KMail/1.9.3
+Cc: Alejandro Riveira =?iso-8859-1?q?Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>, Andy <genanr@emsphone.com>,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org
+References: <20090930154410.GA31502@thumper2> <m3tyyk9ost.fsf@localhost.localdomain> <20090930202527.GB22159@csclub.uwaterloo.ca>
+In-Reply-To: <20090930202527.GB22159@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 30 Sep 2009 20:40:16 +0000 (UTC)
+Message-Id: <200909302240.17729.jnareb@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  623c4f89c47cca0088014388211d8bc0a5358f0a
-Gitweb:     http://git.kernel.org/tip/623c4f89c47cca0088014388211d8bc0a5358f0a
-Author:     Eric Dumazet <eric.dumazet@gmail.com>
-AuthorDate: Wed, 30 Sep 2009 20:36:19 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 30 Sep 2009 22:36:12 +0200
+On Wed, 30 Sep 2009, Lennart Sorensen wrote:
+> On Wed, Sep 30, 2009 at 01:10:51PM -0700, Jakub Narebski wrote:
 
-sched_clock: Fix atomicity/continuity bug by using cmpxchg64()
+> > Or better yet, if given installation of gitweb supports it, on the
+> > 'patch' link just on the right of 'raw' view.  Such patch can be
+> > applied better by git-am (but both should work for GNU patch or
+> > git-apply).
+> > 
+> > Yes, by default for merges the 'commitdiff' view (and the 'raw'
+> > version, i.e. 'commitdiff_plain' view) shows **combined** diff of
+> > changes brought by merge (see git-diff manpage for details on this
+> > format).
+> > 
+> > For merge commit you have to choose which of parents you want to have
+> > diff from.  Go to 'commit' view, there in the header would be two or
+> > more parents.  Click on the 'diff' link beside chosen parent, check if
+> > it is the diff you want to get, and then click on 'patch' (or 'raw')
+> > link.
+> 
+> Is there a git command to show me a diff I can use with patch if I want to
+> select a given patch as long as I can tell it which tree I want to follow?
+> I don't care to use gitweb if I can do it with the command line git.
 
-Commit def0a9b2573 (sched_clock: Make it NMI safe) assumed
-cmpxchg() of 64bit values was available on X86_32.
+You can specify parent explicitely: "git diff <rev>^1 <rev>" for diff
+to first parent, e.g. "git diff HEAD^ HEAD".
 
-That is not so - and causes some subtle scheduler misbehavior due
-to incorrect timestamps off to up by ~4 seconds.
+> 
+> git show obviously shows the git combined diff format, at least by default.
+> 
+> Or is the idea of trying to use the diff from the merge commit just
+> silly in the first place?
 
-Two symptoms are known right now:
-
- - interactivity problems seen by Arjan: up to 600 msecs
-   latencies instead of the expected 20-40 msecs. These
-   latencies are very visible on the desktop.
-
- - incorrect CPU stats: occasionally too high percentages in 'top',
-   and crazy CPU usage stats.
-
-Reported-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: John Stultz <johnstul@us.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090930170754.0886ff2e@infradead.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Just so you know that this single diff is not enough to redo a merge.
+It is only partial information.
 
 
----
- kernel/sched_clock.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+BTW. there is also "git diff-tree -m <rev>") to show diff to *all*
+parents at once:
 
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index ac2e1dc..479ce56 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -127,7 +127,7 @@ again:
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
- 
--	if (cmpxchg(&scd->clock, old_clock, clock) != old_clock)
-+	if (cmpxchg64(&scd->clock, old_clock, clock) != old_clock)
- 		goto again;
- 
- 	return clock;
-@@ -163,7 +163,7 @@ again:
- 		val = remote_clock;
- 	}
- 
--	if (cmpxchg(ptr, old_val, val) != old_val)
-+	if (cmpxchg64(ptr, old_val, val) != old_val)
- 		goto again;
- 
- 	return val;
+    -m    By default, `git-diff-tree --stdin` does not show differences for
+          merge commits. With this flag, it shows differences to that commit
+          from all of its parents. See also `-c`.
+
+-- 
+Jakub Narebski
+Poland
