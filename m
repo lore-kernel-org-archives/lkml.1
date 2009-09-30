@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbZI3WmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbZI3WqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbZI3WmK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 18:42:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZI3WmI
+	id S1754310AbZI3WqI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 18:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZI3WqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 18:42:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37946 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754258AbZI3WmH (ORCPT
+	Wed, 30 Sep 2009 18:46:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:34122 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbZI3WqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 18:42:07 -0400
-Date: Wed, 30 Sep 2009 15:40:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+	Wed, 30 Sep 2009 18:46:06 -0400
+Message-ID: <4AC3DF7B.5060407@zytor.com>
+Date: Wed, 30 Sep 2009 15:45:15 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
        "David S. Miller" <davem@davemloft.net>,
        Andi Kleen <andi@firstfloor.org>
 Subject: Re: [PATCH,TRIVIAL] Fix csum_ipv6_magic asm memory clobber
-Message-Id: <20090930154044.0c7ace16.akpm@linux-foundation.org>
-In-Reply-To: <20090926192748.GX7681@const.famille.thibault.fr>
-References: <20090926192748.GX7681@const.famille.thibault.fr>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <20090926192748.GX7681@const.famille.thibault.fr> <20090930154044.0c7ace16.akpm@linux-foundation.org>
+In-Reply-To: <20090930154044.0c7ace16.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 26 Sep 2009 21:27:48 +0200
-Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
-
-> Just like ip_fast_csum, the assembly snippet in csum_ipv6_magic needs a
-> memory clobber, as it is only passed the address of the buffer, not a
-> memory reference to the buffer itself.
+On 09/30/2009 03:40 PM, Andrew Morton wrote:
 > 
-> Signed-Off-By: Samuel Thibault <samuel.thibault@ens-lyon.org>
-> Cc: stable@kernel.org
+> You describe it as "trivial" and also cc stable@kernel.org.  These things
+> are contradictory!
 > 
-> diff --git a/arch/x86/include/asm/checksum_32.h b/arch/x86/include/asm/checksum_32.h
-> index 7c5ef8b..46fc474 100644
-> --- a/arch/x86/include/asm/checksum_32.h
-> +++ b/arch/x86/include/asm/checksum_32.h
-> @@ -161,7 +161,8 @@ static inline __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
->  	    "adcl $0, %0	;\n"
->  	    : "=&r" (sum)
->  	    : "r" (saddr), "r" (daddr),
-> -	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum));
-> +	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum)
-> +	    : "memory");
->  
->  	return csum_fold(sum);
->  }
+> Maybe backporting it is a good idea from a sleep-soundly-at-night POV. 
+> I don't know..
+> 
 
-You describe it as "trivial" and also cc stable@kernel.org.  These things
-are contradictory!
+/me suspects it was supposed to mean "trivially correct", which isn't
+really what "trivial" means.  This is a potentially serious bug and
+should be treated as such.
 
-Maybe backporting it is a good idea from a sleep-soundly-at-night POV. 
-I don't know..
-
+	-hpa
