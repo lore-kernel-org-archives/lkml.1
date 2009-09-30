@@ -1,145 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZI3KWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbZI3KWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbZI3KWL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 06:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbZI3KWL
+	id S1754146AbZI3KWk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 06:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbZI3KWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 06:22:11 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:17233 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbZI3KWK convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;3:1>);
-	Wed, 30 Sep 2009 06:22:10 -0400
-Message-Id: <4AC34D73020000780001744A@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 30 Sep 2009 11:22:11 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86-64: don't leak kernel register values to 32-bit
-	 processes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 30 Sep 2009 06:22:40 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52793 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753086AbZI3KWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 06:22:39 -0400
+Message-ID: <4AC3316F.4080200@pobox.com>
+Date: Wed, 30 Sep 2009 06:22:39 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+CC: linux-ide@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: WARNING: at drivers/ata/libata-core.c:5027 ata_qc_complete+0x200/0x210()
+References: <c4e36d110909170213v61c61c94m3b4b3270333dafcc@mail.gmail.com> <c4e36d110909300233u6f949058j82a28b05644fe265@mail.gmail.com>
+In-Reply-To: <c4e36d110909300233u6f949058j82a28b05644fe265@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While 32-bit processes can't directly access R8...R15, they can gain
-access to these registers by temporarily switching themselves into
-64-bit mode. Therefore, registers not preserved anyway by called C
-functions (i.e. R8...R11) must be cleared prior to returning to user
-mode.
+On 09/30/2009 05:33 AM, Zdenek Kabelac wrote:
+> 2009/9/17 Zdenek Kabelac<zdenek.kabelac@gmail.com>:
+>> Hi
+>>
+>> Somewhere during recent merge commits this message started to appear
+>> in my qemu kvm guest
+>> (already present with some 2.6.31-040xxx commit)
+>>
+>> Is this fault of kvm emulation ?
+>>
+>>
+>> WARNING: at drivers/ata/libata-core.c:5027 ata_qc_complete+0x200/0x210()
+>> Hardware name:
+>> Modules linked in:
+>> Pid: 167, comm: ata/0 Not tainted 2.6.31-05317-ged0ecd1 #42
+>> Call Trace:
+>>   [<ffffffff81051ddb>] warn_slowpath_common+0x7b/0xc0
+>>   [<ffffffff81051e34>] warn_slowpath_null+0x14/0x20
+>>   [<ffffffff81323690>] ata_qc_complete+0x200/0x210
+>>   [<ffffffff81330243>] ata_do_link_abort+0xf3/0x110
+>>   [<ffffffff81330270>] ata_port_abort+0x10/0x20
+>>   [<ffffffff813302af>] ata_port_freeze+0x2f/0x50
+>>   [<ffffffff81334101>] ata_hsm_qc_complete+0x131/0x140
+>>   [<ffffffff81335347>] ata_sff_hsm_move+0x197/0x760
+>>   [<ffffffff8125891a>] ? delay_tsc+0x8a/0xe0
+>>   [<ffffffff81335ca0>] ? ata_pio_task+0x0/0x120
+>>   [<ffffffff81335ca0>] ? ata_pio_task+0x0/0x120
+>>   [<ffffffff81335cd7>] ata_pio_task+0x37/0x120
+>>   [<ffffffff8106f88a>] worker_thread+0x21a/0x400
+>>   [<ffffffff8106f839>] ? worker_thread+0x1c9/0x400
+>>   [<ffffffff81075a20>] ? autoremove_wake_function+0x0/0x40
+>>   [<ffffffff8106f670>] ? worker_thread+0x0/0x400
+>>   [<ffffffff810755f6>] kthread+0x96/0xa0
+>>   [<ffffffff8100d29a>] child_rip+0xa/0x20
+>>   [<ffffffff81041574>] ? finish_task_switch+0x74/0xf0
+>>   [<ffffffff8140d14b>] ? _spin_unlock_irq+0x3b/0x60
+>>   [<ffffffff8100cc00>] ? restore_args+0x0/0x30
+>>   [<ffffffff81075560>] ? kthread+0x0/0xa0
+>>   [<ffffffff8100d290>] ? child_rip+0x0/0x20
+>>
+>>
+>
+> Just confirmation that WARNING trace is still present with 2.6.32-rc1.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+hrm, I thought we'd fixed that with 4dc738ed2adf28f62f46dd53ef700a51603777f7
 
----
- arch/x86/ia32/ia32entry.S |   36 +++++++++++++++++++++++-------------
- 1 file changed, 23 insertions(+), 13 deletions(-)
-
---- linux-2.6.32-rc1/arch/x86/ia32/ia32entry.S	2009-09-30 11:48:25.000000000 +0200
-+++ 2.6.32-rc1-x86_64-ia32-syscall-reg-leak/arch/x86/ia32/ia32entry.S	2009-09-28 16:16:44.000000000 +0200
-@@ -21,8 +21,8 @@
- #define __AUDIT_ARCH_LE	   0x40000000
- 
- #ifndef CONFIG_AUDITSYSCALL
--#define sysexit_audit int_ret_from_sys_call
--#define sysretl_audit int_ret_from_sys_call
-+#define sysexit_audit ia32_ret_from_sys_call
-+#define sysretl_audit ia32_ret_from_sys_call
- #endif
- 
- #define IA32_NR_syscalls ((ia32_syscall_end - ia32_sys_call_table)/8)
-@@ -39,12 +39,12 @@
- 	.endm 
- 
- 	/* clobbers %eax */	
--	.macro  CLEAR_RREGS _r9=rax
-+	.macro  CLEAR_RREGS offset=0, _r9=rax
- 	xorl 	%eax,%eax
--	movq	%rax,R11(%rsp)
--	movq	%rax,R10(%rsp)
--	movq	%\_r9,R9(%rsp)
--	movq	%rax,R8(%rsp)
-+	movq	%rax,\offset+R11(%rsp)
-+	movq	%rax,\offset+R10(%rsp)
-+	movq	%\_r9,\offset+R9(%rsp)
-+	movq	%rax,\offset+R8(%rsp)
- 	.endm
- 
- 	/*
-@@ -172,6 +172,10 @@ sysexit_from_sys_call:
- 	movl	RIP-R11(%rsp),%edx		/* User %eip */
- 	CFI_REGISTER rip,rdx
- 	RESTORE_ARGS 1,24,1,1,1,1
-+	xorq	%r8,%r8
-+	xorq	%r9,%r9
-+	xorq	%r10,%r10
-+	xorq	%r11,%r11
- 	popfq
- 	CFI_ADJUST_CFA_OFFSET -8
- 	/*CFI_RESTORE rflags*/
-@@ -202,7 +206,7 @@ sysexit_from_sys_call:
- 
- 	.macro auditsys_exit exit,ebpsave=RBP
- 	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),TI_flags(%r10)
--	jnz int_ret_from_sys_call
-+	jnz ia32_ret_from_sys_call
- 	TRACE_IRQS_ON
- 	sti
- 	movl %eax,%esi		/* second arg, syscall return value */
-@@ -218,8 +222,9 @@ sysexit_from_sys_call:
- 	cli
- 	TRACE_IRQS_OFF
- 	testl %edi,TI_flags(%r10)
--	jnz int_with_check
--	jmp \exit
-+	jz \exit
-+	CLEAR_RREGS -ARGOFFSET
-+	jmp int_with_check
- 	.endm
- 
- sysenter_auditsys:
-@@ -329,6 +334,9 @@ sysretl_from_sys_call:
- 	CFI_REGISTER rip,rcx
- 	movl EFLAGS-ARGOFFSET(%rsp),%r11d	
- 	/*CFI_REGISTER rflags,r11*/
-+	xorq	%r10,%r10
-+	xorq	%r9,%r9
-+	xorq	%r8,%r8
- 	TRACE_IRQS_ON
- 	movl RSP-ARGOFFSET(%rsp),%esp
- 	CFI_RESTORE rsp
-@@ -353,7 +361,7 @@ cstar_tracesys:
- #endif
- 	xchgl %r9d,%ebp
- 	SAVE_REST
--	CLEAR_RREGS r9
-+	CLEAR_RREGS 0, r9
- 	movq $-ENOSYS,RAX(%rsp)	/* ptrace can change this for a bad syscall */
- 	movq %rsp,%rdi        /* &pt_regs -> arg1 */
- 	call syscall_trace_enter
-@@ -425,6 +433,8 @@ ia32_do_call:
- 	call *ia32_sys_call_table(,%rax,8) # xxx: rip relative
- ia32_sysret:
- 	movq %rax,RAX-ARGOFFSET(%rsp)
-+ia32_ret_from_sys_call:
-+	CLEAR_RREGS -ARGOFFSET
- 	jmp int_ret_from_sys_call 
- 
- ia32_tracesys:			 
-@@ -442,8 +452,8 @@ END(ia32_syscall)
- 
- ia32_badsys:
- 	movq $0,ORIG_RAX-ARGOFFSET(%rsp)
--	movq $-ENOSYS,RAX-ARGOFFSET(%rsp)
--	jmp int_ret_from_sys_call
-+	movq $-ENOSYS,%rax
-+	jmp ia32_sysret
- 
- quiet_ni_syscall:
- 	movq $-ENOSYS,%rax
+	Jeff
 
 
 
