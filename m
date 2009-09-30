@@ -1,2129 +1,717 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbZI3ILs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbZI3IQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947AbZI3ILs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 04:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZI3ILp
+	id S1754046AbZI3IQY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 04:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbZI3IQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 04:11:45 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:20360 "EHLO mx1.redhat.com"
+	Wed, 30 Sep 2009 04:16:23 -0400
+Received: from mail.agmk.net ([91.192.224.71]:49743 "EHLO mail.agmk.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752277AbZI3ILi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 04:11:38 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <817ecb6f0909101810u7774ca93u40a0a4b99f9fb6ba@mail.gmail.com>
-References: <817ecb6f0909101810u7774ca93u40a0a4b99f9fb6ba@mail.gmail.com>
-To: Siarhei Liakh <sliakh.lkml@gmail.com>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH V4] x86: NX protection for kernel data
-Date: Wed, 30 Sep 2009 09:10:32 +0100
-Message-ID: <25138.1254298232@redhat.com>
+	id S1753502AbZI3IQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 04:16:20 -0400
+From: =?utf-8?q?Pawe=C5=82_Sikora?= <pluto@agmk.net>
+To: Jean Delvare <khali@linux-fr.org>
+Subject: Re: [2.6.31] ir-kbd-i2c oops.
+Date: Wed, 30 Sep 2009 10:16:15 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.31-0.4; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+       LMML <linux-media@vger.kernel.org>
+References: <200909160300.28382.pluto@agmk.net> <200909161003.33090.pluto@agmk.net> <20090929161629.2a5c8d30@hyperion.delvare>
+In-Reply-To: <20090929161629.2a5c8d30@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_PPxwKa03B9Ea8uP"
+Message-Id: <200909301016.15327.pluto@agmk.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Boundary-00=_PPxwKa03B9Ea8uP
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
-
-> This patch expands functionality of CONFIG_DEBUG_RODATA to set main
-> (static) kernel data area as NX.
-> The following steps are taken to achieve this:
-> 1. Linker script is adjusted so .text always starts and ends on a page boundary
-> 2. Linker script is adjusted so .rodata and .data always start and
-> end on a page boundary
-> 3. void mark_nxdata_nx(void) added to arch/x86/mm/init.c with actual
-> functionality: NX is set for all pages from _etext through _end.
-> 4. mark_nxdata_nx() called from free_initmem() (after init has been released)
-> 5. free_init_pages() sets released memory NX in arch/x86/mm/init.c
+On Tuesday 29 September 2009 16:16:29 Jean Delvare wrote:
+> On Wed, 16 Sep 2009 10:03:32 +0200, Paweł Sikora wrote:
+> > On Wednesday 16 September 2009 08:57:01 Jean Delvare wrote:
+> > > Hi Pawel,
+> > >
+> > > I think this would be fixed by the following patch:
+> > > http://patchwork.kernel.org/patch/45707/
+> >
+> > still oopses. this time i've attached full dmesg.
 > 
-> The patch have been developed for Linux 2.6.31-rc7 x86 by Siarhei Liakh
-> <sliakh.lkml@gmail.com> and Xuxian Jiang <jiang@cs.ncsu.edu>.
-> 
-> V1:  initial patch for 2.6.30
-> V2:  patch for 2.6.31-rc7
-> V3:  moved all code into arch/x86, adjusted credits
-> V4:  fixed ifdef, removed credits from CREDITS
-
-This patch makes my test box throw a BUG when applied to Linus's latest tree
-(2.6.32-rc1 by GIT tag, if not by Makefile) and also to 2.6.31.  I've included
-the kernel config below the kernel log output.
-
-David
----
-BUG: unable to handle kernel paging request at ffff880001543000
-IP: [<ffffffff811b0587>] clear_page_c+0x7/0x10
-PGD 1002063 PUD 1006063 PMD 80000000014001e1 
-Oops: 0003 [#2] SMP 
-last sysfs file: /sys/block/sdb/dev
-CPU 1 
-Modules linked in:
-Pid: 991, comm: sh Tainted: G      D    2.6.31-cachefs #12         
-RIP: 0010:[<ffffffff811b0587>]  [<ffffffff811b0587>] clear_page_c+0x7/0x10
-RSP: 0000:ffff88003e1e5cc0  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000200
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff880001543000
-RBP: ffff88003e1e5d88 R08: 0000000000000000 R09: 0000000000000040
-R10: 00000000000004d1 R11: 000000000003882d R12: ffffea000004a6a8
-R13: 000000000004a6a8 R14: ffff880000000000 R15: 0000000000000000
-FS:  00007f02105b66f0(0000) GS:ffff880001da1000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: ffff880001543000 CR3: 000000003cffa000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process sh (pid: 991, threadinfo ffff88003e1e4000, task ffff88003cffc040)
-Stack:
- ffffffff81084b16 0000000000000000 00000000000200da 0000000000000001
-<0> 0000000100000000 0000000000000001 00000000ffffffff 0000000000000002
-<0> 0000000300000246 0000000000000000 ffffffff814e11c8 ffffffff814dff00
-Call Trace:
- [<ffffffff81084b16>] ? get_page_from_freelist+0x3e1/0x4ae
- [<ffffffff8107f94b>] ? find_get_page+0x0/0xc7
- [<ffffffff81084d01>] __alloc_pages_nodemask+0x11e/0x584
- [<ffffffff8130deb0>] ? _spin_unlock+0x26/0x2b
- [<ffffffff810932ea>] handle_mm_fault+0x1cd/0x643
- [<ffffffff8102440a>] ? do_page_fault+0xd0/0x1f8
- [<ffffffff8104bcc8>] ? down_read_trylock+0x3f/0x4b
- [<ffffffff8102440a>] ? do_page_fault+0xd0/0x1f8
- [<ffffffff8102451d>] do_page_fault+0x1e3/0x1f8
- [<ffffffff8130e54f>] page_fault+0x1f/0x30
-Code: 11 48 ff c7 e8 77 ff ff ff 85 c0 75 0a 48 f7 1b eb 05 e8 69 ff ff ff 5b c9 c3 90 90 90 90 90 90 90 90 90 90 b9 00 02 00 00 31 c0 <f3> 48 ab c3 0f 1f 44 00 00 eb ee 0f 1f 84 00 00 00 00 00 0f 1f 
-RIP  [<ffffffff811b0587>] clear_page_c+0x7/0x10
- RSP <ffff88003e1e5cc0>
-CR2: ffff880001543000
----[ end trace b12ab63f5ac61c59 ]---
-note: sh[991] exited with preempt_count 1
-/bin/sh: line 2:   991 Killed                  /etc/rc.d/rc.sysinit
-init: rcS main process (989) terminated with status 137
-BUG: unable to handle kernel paging request at ffff880001536000
-IP: [<ffffffff811b05d5>] copy_page_c+0x5/0x10
-PGD 1002063 PUD 1006063 PMD 80000000014001e1 
-Oops: 0003 [#3] SMP 
-last sysfs file: /sys/block/sdb/dev
-CPU 0 
-Modules linked in:
-Pid: 992, comm: sh Tainted: G      D    2.6.31-cachefs #12         
-RIP: 0010:[<ffffffff811b05d5>]  [<ffffffff811b05d5>] copy_page_c+0x5/0x10
-RSP: 0000:ffff88003e1e5de0  EFLAGS: 00010286
-RAX: ffff880000000000 RBX: ffff88003e22cb08 RCX: 0000000000000200
-RDX: 6db6db6db6db6db7 RSI: ffff88003c715000 RDI: ffff880001536000
-RBP: ffff88003e1e5e68 R08: 0000000000000010 R09: 0000000000000000
-R10: ffffffff814dff00 R11: ffffffff814dff50 R12: ffffea0000d38c98
-R13: ffff88003e20f9a8 R14: ffffea000004a3d0 R15: ffff88003cd29018
-FS:  00007feaed80f6f0(0000) GS:ffff880001d89000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: ffff880001536000 CR3: 000000003cd3f000 CR4: 00000000000006f0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process sh (pid: 992, threadinfo ffff88003e1e4000, task ffff88003e09b040)
-Stack:
- ffffffff81091ef4 ffff88003cd68620 ffff880000000000 01000000006c4b48
-<0> 800000003c715065 00000000006c4b48 ffff88003cd68620 ffff88003e20fa70
-<0> ffff88003cd68620 ffff88003e20f9a8 00000000006c4b48 ffff88003e1e5e68
-Call Trace:
- [<ffffffff81091ef4>] ? do_wp_page+0x433/0x631
- [<ffffffff81093708>] handle_mm_fault+0x5eb/0x643
- [<ffffffff8102440a>] ? do_page_fault+0xd0/0x1f8
- [<ffffffff8102440a>] ? do_page_fault+0xd0/0x1f8
- [<ffffffff8102451d>] do_page_fault+0x1e3/0x1f8
- [<ffffffff8130e54f>] page_fault+0x1f/0x30
-Code: 0f 1f 84 00 00 00 00 00 0f 1f 84 00 00 00 00 00 0f 1f 84 00 00 00 00 00 0f 1f 80 00 00 00 00 90 90 90 90 90 90 90 b9 00 02 00 00 <f3> 48 a5 c3 0f 1f 80 00 00 00 00 eb ee 0f 1f 84 00 00 00 00 00 
-RIP  [<ffffffff811b05d5>] copy_page_c+0x5/0x10
- RSP <ffff88003e1e5de0>
-CR2: ffff880001536000
----[ end trace b12ab63f5ac61c5a ]---
-BUG: unable to handle kernel paging request at ffff880001542000
-IP: [<ffffffff811b05d5>] copy_page_c+0x5/0x10
-PGD 1002063 PUD 1006063 PMD 80000000014001e1 
-Oops: 0003 [#4] SMP 
-last sysfs file: /sys/block/sdb/dev
-CPU 1 
-Modules linked in:
-Pid: 994, comm: sh Tainted: G      D    2.6.31-cachefs #12         
-RIP: 0010:[<ffffffff811b05d5>]  [<ffffffff811b05d5>] copy_page_c+0x5/0x10
-RSP: 0000:ffff88003cfa3de0  EFLAGS: 00010286
-RAX: ffff880000000000 RBX: ffff88003e27d388 RCX: 0000000000000200
-RDX: 6db6db6db6db6db7 RSI: ffff88003c7f2000 RDI: ffff880001542000
-RBP: ffff88003cfa3e68 R08: 0000000000000000 R09: 0000000000000040
-R10: 00000000000004d1 R11: 0000000000038852 R12: ffffea0000d3bcf0
-R13: ffff88003e20e8c8 R14: ffffea000004a670 R15: ffff88003cd85b60
-FS:  00007feaed80f6f0(0000) GS:ffff880001da1000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: ffff880001542000 CR3: 000000003cd2e000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process sh (pid: 994, threadinfo ffff88003cfa2000, task ffff88003cffc040)
-Stack:
- ffffffff81091ef4 ffff88003cd34080 ffff880000000000 01007feaed810315
-<0> 800000003c7f2065 00007feaed810315 ffff88003cd34080 ffff88003e20e990
-<0> ffff88003cd34080 ffff88003e20e8c8 00007feaed810315 ffff88003cfa3e68
-Call Trace:
- [<ffffffff81091ef4>] ? do_wp_page+0x433/0x631
- [<ffffffff81093708>] handle_mm_fault+0x5eb/0x643
- [<ffffffff8102440a>] ? do_page_fault+0xd0/0x1f8
- [<ffffffff8102440a>] ? do_page_fault+0xd0/0x1f8
- [<ffffffff8102451d>] do_page_fault+0x1e3/0x1f8
- [<ffffffff8130e54f>] page_fault+0x1f/0x30
-Code: 0f 1f 84 00 00 00 00 00 0f 1f 84 00 00 00 00 00 0f 1f 84 00 00 00 00 00 0f 1f 80 00 00 00 00 90 90 90 90 90 90 90 b9 00 02 00 00 <f3> 48 a5 c3 0f 1f 80 00 00 00 00 eb ee 0f 1f 84 00 00 00 00 00 
-RIP  [<ffffffff811b05d5>] copy_page_c+0x5/0x10
- RSP <ffff88003cfa3de0>
-CR2: ffff880001542000
----[ end trace b12ab63f5ac61c5b ]---
-note: sh[994] exited with preempt_count 2
-BUG: scheduling while atomic: sh/994/0x10000002
-INFO: lockdep is turned off.
-Modules linked in:
-Pid: 994, comm: sh Tainted: G      D    2.6.31-cachefs #12
-Call Trace:
- [<ffffffff810540be>] ? __debug_show_held_locks+0x1b/0x24
- [<ffffffff81030228>] __schedule_bug+0x6d/0x72
- [<ffffffff8130b613>] schedule+0xcd/0x86a
- [<ffffffff810a2a81>] ? kfree_debugcheck+0x11/0x2c
- [<ffffffff81032188>] __cond_resched+0x2d/0x56
- [<ffffffff8130bf7f>] _cond_resched+0x27/0x32
- [<ffffffff8103708d>] put_files_struct+0x6a/0xb3
- [<ffffffff8103711c>] exit_files+0x46/0x4f
- [<ffffffff8103898f>] do_exit+0x1de/0x679
- [<ffffffff8100edff>] oops_end+0x89/0x8e
- [<ffffffff81023ff8>] no_context+0x1f1/0x200
- [<ffffffff810241ad>] __bad_area_nosemaphore+0x1a6/0x1cc
- [<ffffffff81054c9c>] ? trace_hardirqs_on+0xd/0xf
- [<ffffffff810241e1>] bad_area_nosemaphore+0xe/0x10
- [<ffffffff81024433>] do_page_fault+0xf9/0x1f8
- [<ffffffff8130e54f>] page_fault+0x1f/0x30
- [<ffffffff811b05d5>] ? copy_page_c+0x5/0x10
- [<ffffffff81091ef4>] ? do_wp_page+0x433/0x631
- [<ffffffff81093708>] handle_mm_fault+0x5eb/0x643
- [<ffffffff8102440a>] ? do_page_fault+0xd0/0x1f8
- [<ffffffff8102440a>] ? do_page_fault+0xd0/0x1f8
- [<ffffffff8102451d>] do_page_fault+0x1e3/0x1f8
- [<ffffffff8130e54f>] page_fault+0x1f/0x30
-note: sh[992] exited with preempt_count 2
-init: rcS post-stop process (992) killed by KILL signal
----
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.32-rc2
-# Wed Sep 30 08:51:30 2009
-#
-CONFIG_64BIT=y
-# CONFIG_X86_32 is not set
-CONFIG_X86_64=y
-CONFIG_X86=y
-CONFIG_OUTPUT_FORMAT="elf64-x86-64"
-CONFIG_ARCH_DEFCONFIG="arch/x86/configs/x86_64_defconfig"
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CMOS_UPDATE=y
-CONFIG_CLOCKSOURCE_WATCHDOG=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
-CONFIG_LOCKDEP_SUPPORT=y
-CONFIG_STACKTRACE_SUPPORT=y
-CONFIG_HAVE_LATENCYTOP_SUPPORT=y
-CONFIG_FAST_CMPXCHG_LOCAL=y
-CONFIG_MMU=y
-CONFIG_ZONE_DMA=y
-CONFIG_GENERIC_ISA_DMA=y
-CONFIG_GENERIC_IOMAP=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_BUG_RELATIVE_POINTERS=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-CONFIG_RWSEM_GENERIC_SPINLOCK=y
-# CONFIG_RWSEM_XCHGADD_ALGORITHM is not set
-CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_GENERIC_TIME_VSYSCALL=y
-CONFIG_ARCH_HAS_CPU_RELAX=y
-CONFIG_ARCH_HAS_DEFAULT_IDLE=y
-CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
-CONFIG_HAVE_SETUP_PER_CPU_AREA=y
-CONFIG_NEED_PER_CPU_EMBED_FIRST_CHUNK=y
-CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK=y
-CONFIG_HAVE_CPUMASK_OF_CPU_MAP=y
-CONFIG_ARCH_HIBERNATION_POSSIBLE=y
-CONFIG_ARCH_SUSPEND_POSSIBLE=y
-CONFIG_ZONE_DMA32=y
-CONFIG_ARCH_POPULATES_NODE_MAP=y
-CONFIG_AUDIT_ARCH=y
-CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
-CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
-CONFIG_HAVE_INTEL_TXT=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_GENERIC_PENDING_IRQ=y
-CONFIG_USE_GENERIC_SMP_HELPERS=y
-CONFIG_X86_64_SMP=y
-CONFIG_X86_HT=y
-CONFIG_X86_TRAMPOLINE=y
-# CONFIG_KTIME_SCALAR is not set
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_CONSTRUCTORS=y
-
-#
-# General setup
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_LOCK_KERNEL=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION="-cachefs"
-# CONFIG_LOCALVERSION_AUTO is not set
-CONFIG_HAVE_KERNEL_GZIP=y
-CONFIG_HAVE_KERNEL_BZIP2=y
-CONFIG_HAVE_KERNEL_LZMA=y
-CONFIG_KERNEL_GZIP=y
-# CONFIG_KERNEL_BZIP2 is not set
-# CONFIG_KERNEL_LZMA is not set
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_POSIX_MQUEUE_SYSCTL=y
-CONFIG_BSD_PROCESS_ACCT=y
-CONFIG_BSD_PROCESS_ACCT_V3=y
-CONFIG_TASKSTATS=y
-CONFIG_TASK_DELAY_ACCT=y
-CONFIG_TASK_XACCT=y
-CONFIG_TASK_IO_ACCOUNTING=y
-CONFIG_AUDIT=y
-CONFIG_AUDITSYSCALL=y
-CONFIG_AUDIT_TREE=y
-
-#
-# RCU Subsystem
-#
-CONFIG_TREE_RCU=y
-# CONFIG_TREE_PREEMPT_RCU is not set
-# CONFIG_RCU_TRACE is not set
-CONFIG_RCU_FANOUT=64
-# CONFIG_RCU_FANOUT_EXACT is not set
-# CONFIG_TREE_RCU_TRACE is not set
-# CONFIG_IKCONFIG is not set
-CONFIG_LOG_BUF_SHIFT=15
-CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
-CONFIG_GROUP_SCHED=y
-CONFIG_FAIR_GROUP_SCHED=y
-# CONFIG_RT_GROUP_SCHED is not set
-CONFIG_USER_SCHED=y
-# CONFIG_CGROUP_SCHED is not set
-CONFIG_CGROUPS=y
-CONFIG_CGROUP_DEBUG=y
-CONFIG_CGROUP_NS=y
-# CONFIG_CGROUP_FREEZER is not set
-CONFIG_CGROUP_DEVICE=y
-CONFIG_CPUSETS=y
-CONFIG_PROC_PID_CPUSET=y
-# CONFIG_CGROUP_CPUACCT is not set
-# CONFIG_RESOURCE_COUNTERS is not set
-CONFIG_SYSFS_DEPRECATED=y
-CONFIG_SYSFS_DEPRECATED_V2=y
-# CONFIG_RELAY is not set
-CONFIG_NAMESPACES=y
-# CONFIG_UTS_NS is not set
-# CONFIG_IPC_NS is not set
-CONFIG_USER_NS=y
-# CONFIG_PID_NS is not set
-# CONFIG_NET_NS is not set
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_INITRAMFS_SOURCE=""
-CONFIG_RD_GZIP=y
-CONFIG_RD_BZIP2=y
-CONFIG_RD_LZMA=y
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_ANON_INODES=y
-# CONFIG_EMBEDDED is not set
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-# CONFIG_KALLSYMS_EXTRA_PASS is not set
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_PCSPKR_PLATFORM=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_TIMERFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_AIO=y
-CONFIG_HAVE_PERF_EVENTS=y
-
-#
-# Kernel Performance Events And Counters
-#
-# CONFIG_PERF_EVENTS is not set
-# CONFIG_PERF_COUNTERS is not set
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_PCI_QUIRKS=y
-CONFIG_COMPAT_BRK=y
-CONFIG_SLAB=y
-# CONFIG_SLUB is not set
-# CONFIG_SLOB is not set
-# CONFIG_PROFILING is not set
-CONFIG_HAVE_OPROFILE=y
-# CONFIG_KPROBES is not set
-CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
-CONFIG_HAVE_IOREMAP_PROT=y
-CONFIG_HAVE_KPROBES=y
-CONFIG_HAVE_KRETPROBES=y
-CONFIG_HAVE_ARCH_TRACEHOOK=y
-CONFIG_HAVE_DMA_ATTRS=y
-CONFIG_HAVE_DMA_API_DEBUG=y
-
-#
-# GCOV-based kernel profiling
-#
-# CONFIG_GCOV_KERNEL is not set
-CONFIG_SLOW_WORK=y
-# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
-CONFIG_SLABINFO=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_MODULES=y
-# CONFIG_MODULE_FORCE_LOAD is not set
-CONFIG_MODULE_UNLOAD=y
-# CONFIG_MODULE_FORCE_UNLOAD is not set
-# CONFIG_MODVERSIONS is not set
-# CONFIG_MODULE_SRCVERSION_ALL is not set
-CONFIG_STOP_MACHINE=y
-CONFIG_BLOCK=y
-CONFIG_BLK_DEV_BSG=y
-# CONFIG_BLK_DEV_INTEGRITY is not set
-CONFIG_BLOCK_COMPAT=y
-
-#
-# IO Schedulers
-#
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_AS=y
-# CONFIG_DEFAULT_DEADLINE is not set
-# CONFIG_DEFAULT_CFQ is not set
-# CONFIG_DEFAULT_NOOP is not set
-CONFIG_DEFAULT_IOSCHED="anticipatory"
-CONFIG_FREEZER=y
-
-#
-# Processor type and features
-#
-# CONFIG_NO_HZ is not set
-# CONFIG_HIGH_RES_TIMERS is not set
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-CONFIG_SMP=y
-CONFIG_X86_X2APIC=y
-# CONFIG_SPARSE_IRQ is not set
-CONFIG_X86_MPPARSE=y
-# CONFIG_X86_EXTENDED_PLATFORM is not set
-CONFIG_X86_SUPPORTS_MEMORY_FAILURE=y
-# CONFIG_SCHED_OMIT_FRAME_POINTER is not set
-# CONFIG_PARAVIRT_GUEST is not set
-# CONFIG_MEMTEST is not set
-# CONFIG_M386 is not set
-# CONFIG_M486 is not set
-# CONFIG_M586 is not set
-# CONFIG_M586TSC is not set
-# CONFIG_M586MMX is not set
-# CONFIG_M686 is not set
-# CONFIG_MPENTIUMII is not set
-# CONFIG_MPENTIUMIII is not set
-# CONFIG_MPENTIUMM is not set
-# CONFIG_MPENTIUM4 is not set
-# CONFIG_MK6 is not set
-# CONFIG_MK7 is not set
-# CONFIG_MK8 is not set
-# CONFIG_MCRUSOE is not set
-# CONFIG_MEFFICEON is not set
-# CONFIG_MWINCHIPC6 is not set
-# CONFIG_MWINCHIP3D is not set
-# CONFIG_MGEODEGX1 is not set
-# CONFIG_MGEODE_LX is not set
-# CONFIG_MCYRIXIII is not set
-# CONFIG_MVIAC3_2 is not set
-# CONFIG_MVIAC7 is not set
-# CONFIG_MPSC is not set
-CONFIG_MCORE2=y
-# CONFIG_MATOM is not set
-# CONFIG_GENERIC_CPU is not set
-CONFIG_X86_CPU=y
-CONFIG_X86_L1_CACHE_BYTES=64
-CONFIG_X86_INTERNODE_CACHE_BYTES=64
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=6
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INTEL_USERCOPY=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_P6_NOP=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMPXCHG64=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=64
-CONFIG_X86_DEBUGCTLMSR=y
-CONFIG_CPU_SUP_INTEL=y
-CONFIG_CPU_SUP_AMD=y
-CONFIG_CPU_SUP_CENTAUR=y
-# CONFIG_X86_DS is not set
-CONFIG_HPET_TIMER=y
-CONFIG_HPET_EMULATE_RTC=y
-CONFIG_DMI=y
-CONFIG_GART_IOMMU=y
-# CONFIG_CALGARY_IOMMU is not set
-# CONFIG_AMD_IOMMU is not set
-CONFIG_SWIOTLB=y
-CONFIG_IOMMU_HELPER=y
-CONFIG_IOMMU_API=y
-# CONFIG_MAXSMP is not set
-CONFIG_NR_CPUS=2
-# CONFIG_SCHED_SMT is not set
-# CONFIG_SCHED_MC is not set
-CONFIG_PREEMPT_NONE=y
-# CONFIG_PREEMPT_VOLUNTARY is not set
-# CONFIG_PREEMPT is not set
-CONFIG_X86_LOCAL_APIC=y
-CONFIG_X86_IO_APIC=y
-# CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS is not set
-CONFIG_X86_MCE=y
-CONFIG_X86_MCE_INTEL=y
-# CONFIG_X86_MCE_AMD is not set
-CONFIG_X86_MCE_THRESHOLD=y
-# CONFIG_X86_MCE_INJECT is not set
-CONFIG_X86_THERMAL_VECTOR=y
-# CONFIG_I8K is not set
-# CONFIG_MICROCODE is not set
-CONFIG_X86_MSR=y
-CONFIG_X86_CPUID=y
-# CONFIG_X86_CPU_DEBUG is not set
-CONFIG_ARCH_PHYS_ADDR_T_64BIT=y
-CONFIG_DIRECT_GBPAGES=y
-# CONFIG_NUMA is not set
-CONFIG_ARCH_PROC_KCORE_TEXT=y
-CONFIG_ARCH_SPARSEMEM_DEFAULT=y
-CONFIG_ARCH_SPARSEMEM_ENABLE=y
-CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-CONFIG_SELECT_MEMORY_MODEL=y
-# CONFIG_FLATMEM_MANUAL is not set
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-CONFIG_SPARSEMEM_MANUAL=y
-CONFIG_SPARSEMEM=y
-CONFIG_HAVE_MEMORY_PRESENT=y
-CONFIG_SPARSEMEM_EXTREME=y
-CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
-CONFIG_SPARSEMEM_VMEMMAP=y
-
-#
-# Memory hotplug is currently incompatible with Software Suspend
-#
-CONFIG_PAGEFLAGS_EXTENDED=y
-CONFIG_SPLIT_PTLOCK_CPUS=4
-CONFIG_PHYS_ADDR_T_64BIT=y
-CONFIG_ZONE_DMA_FLAG=1
-CONFIG_BOUNCE=y
-CONFIG_VIRT_TO_BUS=y
-CONFIG_HAVE_MLOCK=y
-CONFIG_HAVE_MLOCKED_PAGE_BIT=y
-# CONFIG_KSM is not set
-CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
-CONFIG_ARCH_SUPPORTS_MEMORY_FAILURE=y
-# CONFIG_MEMORY_FAILURE is not set
-# CONFIG_X86_CHECK_BIOS_CORRUPTION is not set
-# CONFIG_X86_RESERVE_LOW_64K is not set
-CONFIG_MTRR=y
-# CONFIG_MTRR_SANITIZER is not set
-CONFIG_X86_PAT=y
-CONFIG_ARCH_USES_PG_UNCACHED=y
-# CONFIG_EFI is not set
-CONFIG_SECCOMP=y
-# CONFIG_CC_STACKPROTECTOR is not set
-# CONFIG_HZ_100 is not set
-CONFIG_HZ_250=y
-# CONFIG_HZ_300 is not set
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=250
-# CONFIG_SCHED_HRTICK is not set
-# CONFIG_KEXEC is not set
-# CONFIG_CRASH_DUMP is not set
-CONFIG_PHYSICAL_START=0x1000000
-# CONFIG_RELOCATABLE is not set
-CONFIG_PHYSICAL_ALIGN=0x1000000
-CONFIG_HOTPLUG_CPU=y
-CONFIG_COMPAT_VDSO=y
-# CONFIG_CMDLINE_BOOL is not set
-CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-
-#
-# Power management and ACPI options
-#
-CONFIG_ARCH_HIBERNATION_HEADER=y
-CONFIG_PM=y
-# CONFIG_PM_DEBUG is not set
-CONFIG_PM_SLEEP_SMP=y
-CONFIG_PM_SLEEP=y
-CONFIG_SUSPEND=y
-CONFIG_SUSPEND_FREEZER=y
-CONFIG_HIBERNATION_NVS=y
-CONFIG_HIBERNATION=y
-CONFIG_PM_STD_PARTITION=""
-# CONFIG_PM_RUNTIME is not set
-CONFIG_ACPI=y
-CONFIG_ACPI_SLEEP=y
-# CONFIG_ACPI_PROCFS is not set
-CONFIG_ACPI_PROCFS_POWER=y
-CONFIG_ACPI_POWER_METER=y
-CONFIG_ACPI_SYSFS_POWER=y
-# CONFIG_ACPI_PROC_EVENT is not set
-CONFIG_ACPI_AC=y
-# CONFIG_ACPI_BATTERY is not set
-CONFIG_ACPI_BUTTON=y
-# CONFIG_ACPI_FAN is not set
-CONFIG_ACPI_DOCK=y
-CONFIG_ACPI_PROCESSOR=y
-CONFIG_ACPI_HOTPLUG_CPU=y
-CONFIG_ACPI_THERMAL=y
-# CONFIG_ACPI_CUSTOM_DSDT is not set
-CONFIG_ACPI_BLACKLIST_YEAR=0
-CONFIG_ACPI_DEBUG=y
-# CONFIG_ACPI_DEBUG_FUNC_TRACE is not set
-# CONFIG_ACPI_PCI_SLOT is not set
-CONFIG_X86_PM_TIMER=y
-CONFIG_ACPI_CONTAINER=y
-# CONFIG_ACPI_SBS is not set
-# CONFIG_SFI is not set
-
-#
-# CPU Frequency scaling
-#
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-# CONFIG_CPU_FREQ_DEBUG is not set
-CONFIG_CPU_FREQ_STAT=y
-# CONFIG_CPU_FREQ_STAT_DETAILS is not set
-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-# CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-# CONFIG_CPU_FREQ_GOV_POWERSAVE is not set
-# CONFIG_CPU_FREQ_GOV_USERSPACE is not set
-# CONFIG_CPU_FREQ_GOV_ONDEMAND is not set
-# CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set
-
-#
-# CPUFreq processor drivers
-#
-# CONFIG_X86_ACPI_CPUFREQ is not set
-# CONFIG_X86_POWERNOW_K8 is not set
-CONFIG_X86_SPEEDSTEP_CENTRINO=y
-# CONFIG_X86_P4_CLOCKMOD is not set
-
-#
-# shared options
-#
-# CONFIG_X86_SPEEDSTEP_LIB is not set
-CONFIG_CPU_IDLE=y
-CONFIG_CPU_IDLE_GOV_LADDER=y
-
-#
-# Memory power savings
-#
-# CONFIG_I7300_IDLE is not set
-
-#
-# Bus options (PCI etc.)
-#
-CONFIG_PCI=y
-CONFIG_PCI_DIRECT=y
-CONFIG_PCI_MMCONFIG=y
-CONFIG_PCI_DOMAINS=y
-CONFIG_DMAR=y
-CONFIG_DMAR_DEFAULT_ON=y
-CONFIG_DMAR_FLOPPY_WA=y
-CONFIG_INTR_REMAP=y
-CONFIG_PCIEPORTBUS=y
-CONFIG_PCIEAER=y
-# CONFIG_PCIE_ECRC is not set
-# CONFIG_PCIEAER_INJECT is not set
-# CONFIG_PCIEASPM is not set
-CONFIG_ARCH_SUPPORTS_MSI=y
-CONFIG_PCI_MSI=y
-CONFIG_PCI_LEGACY=y
-# CONFIG_PCI_DEBUG is not set
-# CONFIG_PCI_STUB is not set
-# CONFIG_HT_IRQ is not set
-# CONFIG_PCI_IOV is not set
-CONFIG_ISA_DMA_API=y
-CONFIG_K8_NB=y
-# CONFIG_PCCARD is not set
-# CONFIG_HOTPLUG_PCI is not set
-
-#
-# Executable file formats / Emulations
-#
-CONFIG_BINFMT_ELF=y
-CONFIG_COMPAT_BINFMT_ELF=y
-# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
-# CONFIG_HAVE_AOUT is not set
-CONFIG_BINFMT_MISC=y
-CONFIG_IA32_EMULATION=y
-# CONFIG_IA32_AOUT is not set
-CONFIG_COMPAT=y
-CONFIG_COMPAT_FOR_U64_ALIGNMENT=y
-CONFIG_SYSVIPC_COMPAT=y
-CONFIG_NET=y
-
-#
-# Networking options
-#
-CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-CONFIG_XFRM_USER=m
-CONFIG_XFRM_SUB_POLICY=y
-CONFIG_XFRM_MIGRATE=y
-CONFIG_XFRM_STATISTICS=y
-CONFIG_NET_KEY=m
-CONFIG_NET_KEY_MIGRATE=y
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_FIB_HASH=y
-# CONFIG_IP_PNP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_IP_MROUTE is not set
-# CONFIG_ARPD is not set
-# CONFIG_SYN_COOKIES is not set
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-# CONFIG_INET_XFRM_MODE_BEET is not set
-# CONFIG_INET_LRO is not set
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IPV6 is not set
-CONFIG_NETLABEL=y
-CONFIG_NETWORK_SECMARK=y
-CONFIG_NETFILTER=y
-# CONFIG_NETFILTER_DEBUG is not set
-CONFIG_NETFILTER_ADVANCED=y
-
-#
-# Core Netfilter Configuration
-#
-# CONFIG_NETFILTER_NETLINK_QUEUE is not set
-# CONFIG_NETFILTER_NETLINK_LOG is not set
-# CONFIG_NF_CONNTRACK is not set
-CONFIG_NETFILTER_XTABLES=y
-# CONFIG_NETFILTER_XT_TARGET_CLASSIFY is not set
-# CONFIG_NETFILTER_XT_TARGET_MARK is not set
-# CONFIG_NETFILTER_XT_TARGET_NFLOG is not set
-# CONFIG_NETFILTER_XT_TARGET_NFQUEUE is not set
-# CONFIG_NETFILTER_XT_TARGET_RATEEST is not set
-# CONFIG_NETFILTER_XT_TARGET_SECMARK is not set
-# CONFIG_NETFILTER_XT_TARGET_TCPMSS is not set
-# CONFIG_NETFILTER_XT_MATCH_COMMENT is not set
-# CONFIG_NETFILTER_XT_MATCH_DCCP is not set
-# CONFIG_NETFILTER_XT_MATCH_DSCP is not set
-# CONFIG_NETFILTER_XT_MATCH_ESP is not set
-# CONFIG_NETFILTER_XT_MATCH_HASHLIMIT is not set
-# CONFIG_NETFILTER_XT_MATCH_HL is not set
-# CONFIG_NETFILTER_XT_MATCH_IPRANGE is not set
-# CONFIG_NETFILTER_XT_MATCH_LENGTH is not set
-# CONFIG_NETFILTER_XT_MATCH_LIMIT is not set
-# CONFIG_NETFILTER_XT_MATCH_MAC is not set
-# CONFIG_NETFILTER_XT_MATCH_MARK is not set
-# CONFIG_NETFILTER_XT_MATCH_MULTIPORT is not set
-# CONFIG_NETFILTER_XT_MATCH_OWNER is not set
-# CONFIG_NETFILTER_XT_MATCH_POLICY is not set
-# CONFIG_NETFILTER_XT_MATCH_PKTTYPE is not set
-# CONFIG_NETFILTER_XT_MATCH_QUOTA is not set
-# CONFIG_NETFILTER_XT_MATCH_RATEEST is not set
-# CONFIG_NETFILTER_XT_MATCH_REALM is not set
-# CONFIG_NETFILTER_XT_MATCH_RECENT is not set
-# CONFIG_NETFILTER_XT_MATCH_SCTP is not set
-# CONFIG_NETFILTER_XT_MATCH_STATISTIC is not set
-# CONFIG_NETFILTER_XT_MATCH_STRING is not set
-# CONFIG_NETFILTER_XT_MATCH_TCPMSS is not set
-# CONFIG_NETFILTER_XT_MATCH_TIME is not set
-# CONFIG_NETFILTER_XT_MATCH_U32 is not set
-# CONFIG_IP_VS is not set
-
-#
-# IP: Netfilter Configuration
-#
-# CONFIG_NF_DEFRAG_IPV4 is not set
-CONFIG_IP_NF_QUEUE=y
-CONFIG_IP_NF_IPTABLES=y
-# CONFIG_IP_NF_MATCH_ADDRTYPE is not set
-# CONFIG_IP_NF_MATCH_AH is not set
-# CONFIG_IP_NF_MATCH_ECN is not set
-# CONFIG_IP_NF_MATCH_TTL is not set
-CONFIG_IP_NF_FILTER=y
-CONFIG_IP_NF_TARGET_REJECT=y
-# CONFIG_IP_NF_TARGET_LOG is not set
-# CONFIG_IP_NF_TARGET_ULOG is not set
-# CONFIG_IP_NF_MANGLE is not set
-# CONFIG_IP_NF_TARGET_TTL is not set
-# CONFIG_IP_NF_RAW is not set
-# CONFIG_IP_NF_SECURITY is not set
-# CONFIG_IP_NF_ARPTABLES is not set
-# CONFIG_IP_DCCP is not set
-# CONFIG_IP_SCTP is not set
-# CONFIG_RDS is not set
-# CONFIG_TIPC is not set
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-# CONFIG_NET_DSA is not set
-# CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
-# CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-# CONFIG_PHONET is not set
-# CONFIG_IEEE802154 is not set
-# CONFIG_NET_SCHED is not set
-# CONFIG_DCB is not set
-
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_HAMRADIO is not set
-# CONFIG_CAN is not set
-# CONFIG_IRDA is not set
-# CONFIG_BT is not set
-CONFIG_AF_RXRPC=m
-CONFIG_AF_RXRPC_DEBUG=y
-CONFIG_RXKAD=m
-# CONFIG_WIRELESS is not set
-# CONFIG_WIMAX is not set
-# CONFIG_RFKILL is not set
-# CONFIG_NET_9P is not set
-
-#
-# Device Drivers
-#
-
-#
-# Generic Driver Options
-#
-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-# CONFIG_DEVTMPFS is not set
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_FW_LOADER=y
-# CONFIG_FIRMWARE_IN_KERNEL is not set
-CONFIG_EXTRA_FIRMWARE=""
-# CONFIG_DEBUG_DRIVER is not set
-# CONFIG_DEBUG_DEVRES is not set
-# CONFIG_SYS_HYPERVISOR is not set
-# CONFIG_CONNECTOR is not set
-# CONFIG_MTD is not set
-# CONFIG_PARPORT is not set
-CONFIG_PNP=y
-# CONFIG_PNP_DEBUG_MESSAGES is not set
-
-#
-# Protocols
-#
-CONFIG_PNPACPI=y
-CONFIG_BLK_DEV=y
-# CONFIG_BLK_DEV_FD is not set
-# CONFIG_BLK_CPQ_DA is not set
-# CONFIG_BLK_CPQ_CISS_DA is not set
-# CONFIG_BLK_DEV_DAC960 is not set
-# CONFIG_BLK_DEV_UMEM is not set
-# CONFIG_BLK_DEV_COW_COMMON is not set
-CONFIG_BLK_DEV_LOOP=y
-# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-# CONFIG_BLK_DEV_NBD is not set
-# CONFIG_BLK_DEV_SX8 is not set
-# CONFIG_BLK_DEV_UB is not set
-# CONFIG_BLK_DEV_RAM is not set
-# CONFIG_CDROM_PKTCDVD is not set
-# CONFIG_ATA_OVER_ETH is not set
-# CONFIG_BLK_DEV_HD is not set
-CONFIG_MISC_DEVICES=y
-# CONFIG_IBM_ASM is not set
-# CONFIG_PHANTOM is not set
-# CONFIG_SGI_IOC4 is not set
-# CONFIG_TIFM_CORE is not set
-# CONFIG_ICS932S401 is not set
-# CONFIG_ENCLOSURE_SERVICES is not set
-# CONFIG_HP_ILO is not set
-# CONFIG_ISL29003 is not set
-# CONFIG_C2PORT is not set
-
-#
-# EEPROM support
-#
-# CONFIG_EEPROM_AT24 is not set
-# CONFIG_EEPROM_LEGACY is not set
-# CONFIG_EEPROM_MAX6875 is not set
-# CONFIG_EEPROM_93CX6 is not set
-# CONFIG_CB710_CORE is not set
-CONFIG_HAVE_IDE=y
-# CONFIG_IDE is not set
-
-#
-# SCSI device support
-#
-# CONFIG_RAID_ATTRS is not set
-CONFIG_SCSI=y
-CONFIG_SCSI_DMA=y
-# CONFIG_SCSI_TGT is not set
-# CONFIG_SCSI_NETLINK is not set
-CONFIG_SCSI_PROC_FS=y
-
-#
-# SCSI support type (disk, tape, CD-ROM)
-#
-CONFIG_BLK_DEV_SD=y
-# CONFIG_CHR_DEV_ST is not set
-# CONFIG_CHR_DEV_OSST is not set
-# CONFIG_BLK_DEV_SR is not set
-# CONFIG_CHR_DEV_SG is not set
-# CONFIG_CHR_DEV_SCH is not set
-# CONFIG_SCSI_MULTI_LUN is not set
-CONFIG_SCSI_CONSTANTS=y
-# CONFIG_SCSI_LOGGING is not set
-# CONFIG_SCSI_SCAN_ASYNC is not set
-CONFIG_SCSI_WAIT_SCAN=m
-
-#
-# SCSI Transports
-#
-# CONFIG_SCSI_SPI_ATTRS is not set
-# CONFIG_SCSI_FC_ATTRS is not set
-# CONFIG_SCSI_ISCSI_ATTRS is not set
-# CONFIG_SCSI_SAS_ATTRS is not set
-# CONFIG_SCSI_SAS_LIBSAS is not set
-# CONFIG_SCSI_SRP_ATTRS is not set
-CONFIG_SCSI_LOWLEVEL=y
-# CONFIG_ISCSI_TCP is not set
-# CONFIG_SCSI_BNX2_ISCSI is not set
-# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
-# CONFIG_SCSI_3W_9XXX is not set
-# CONFIG_SCSI_ACARD is not set
-# CONFIG_SCSI_AACRAID is not set
-# CONFIG_SCSI_AIC7XXX is not set
-# CONFIG_SCSI_AIC7XXX_OLD is not set
-# CONFIG_SCSI_AIC79XX is not set
-# CONFIG_SCSI_AIC94XX is not set
-# CONFIG_SCSI_MVSAS is not set
-# CONFIG_SCSI_DPT_I2O is not set
-# CONFIG_SCSI_ADVANSYS is not set
-# CONFIG_SCSI_ARCMSR is not set
-# CONFIG_MEGARAID_NEWGEN is not set
-# CONFIG_MEGARAID_LEGACY is not set
-# CONFIG_MEGARAID_SAS is not set
-# CONFIG_SCSI_MPT2SAS is not set
-# CONFIG_SCSI_HPTIOP is not set
-# CONFIG_SCSI_BUSLOGIC is not set
-# CONFIG_LIBFC is not set
-# CONFIG_LIBFCOE is not set
-# CONFIG_FCOE is not set
-# CONFIG_FCOE_FNIC is not set
-# CONFIG_SCSI_DMX3191D is not set
-# CONFIG_SCSI_EATA is not set
-# CONFIG_SCSI_FUTURE_DOMAIN is not set
-# CONFIG_SCSI_GDTH is not set
-# CONFIG_SCSI_IPS is not set
-# CONFIG_SCSI_INITIO is not set
-# CONFIG_SCSI_INIA100 is not set
-# CONFIG_SCSI_STEX is not set
-# CONFIG_SCSI_SYM53C8XX_2 is not set
-# CONFIG_SCSI_IPR is not set
-# CONFIG_SCSI_QLOGIC_1280 is not set
-# CONFIG_SCSI_QLA_FC is not set
-# CONFIG_SCSI_QLA_ISCSI is not set
-# CONFIG_SCSI_LPFC is not set
-# CONFIG_SCSI_DC395x is not set
-# CONFIG_SCSI_DC390T is not set
-# CONFIG_SCSI_DEBUG is not set
-# CONFIG_SCSI_PMCRAID is not set
-# CONFIG_SCSI_SRP is not set
-# CONFIG_SCSI_DH is not set
-# CONFIG_SCSI_OSD_INITIATOR is not set
-CONFIG_ATA=y
-# CONFIG_ATA_NONSTANDARD is not set
-CONFIG_ATA_VERBOSE_ERROR=y
-CONFIG_ATA_ACPI=y
-# CONFIG_SATA_PMP is not set
-CONFIG_SATA_AHCI=y
-# CONFIG_SATA_SIL24 is not set
-# CONFIG_ATA_SFF is not set
-# CONFIG_MD is not set
-# CONFIG_FUSION is not set
-
-#
-# IEEE 1394 (FireWire) support
-#
-
-#
-# You can enable one or both FireWire driver stacks.
-#
-
-#
-# See the help texts for more information.
-#
-# CONFIG_FIREWIRE is not set
-# CONFIG_IEEE1394 is not set
-# CONFIG_I2O is not set
-# CONFIG_MACINTOSH_DRIVERS is not set
-CONFIG_NETDEVICES=y
-# CONFIG_DUMMY is not set
-# CONFIG_BONDING is not set
-# CONFIG_MACVLAN is not set
-# CONFIG_EQUALIZER is not set
-# CONFIG_TUN is not set
-# CONFIG_VETH is not set
-# CONFIG_NET_SB1000 is not set
-# CONFIG_ARCNET is not set
-# CONFIG_NET_ETHERNET is not set
-CONFIG_NETDEV_1000=y
-# CONFIG_ACENIC is not set
-# CONFIG_DL2K is not set
-# CONFIG_E1000 is not set
-CONFIG_E1000E=y
-# CONFIG_IP1000 is not set
-# CONFIG_IGB is not set
-# CONFIG_IGBVF is not set
-# CONFIG_NS83820 is not set
-# CONFIG_HAMACHI is not set
-# CONFIG_YELLOWFIN is not set
-# CONFIG_R8169 is not set
-# CONFIG_SIS190 is not set
-# CONFIG_SKGE is not set
-# CONFIG_SKY2 is not set
-# CONFIG_VIA_VELOCITY is not set
-# CONFIG_TIGON3 is not set
-# CONFIG_BNX2 is not set
-# CONFIG_CNIC is not set
-# CONFIG_QLA3XXX is not set
-# CONFIG_ATL1 is not set
-# CONFIG_ATL1E is not set
-# CONFIG_ATL1C is not set
-# CONFIG_JME is not set
-# CONFIG_NETDEV_10000 is not set
-# CONFIG_TR is not set
-# CONFIG_WLAN is not set
-
-#
-# Enable WiMAX (Networking options) to see the WiMAX drivers
-#
-
-#
-# USB Network Adapters
-#
-# CONFIG_USB_CATC is not set
-# CONFIG_USB_KAWETH is not set
-# CONFIG_USB_PEGASUS is not set
-# CONFIG_USB_RTL8150 is not set
-# CONFIG_USB_USBNET is not set
-# CONFIG_WAN is not set
-# CONFIG_FDDI is not set
-# CONFIG_HIPPI is not set
-# CONFIG_PPP is not set
-# CONFIG_SLIP is not set
-# CONFIG_NET_FC is not set
-# CONFIG_NETCONSOLE is not set
-# CONFIG_NETPOLL is not set
-# CONFIG_NET_POLL_CONTROLLER is not set
-# CONFIG_ISDN is not set
-# CONFIG_PHONE is not set
-
-#
-# Input device support
-#
-CONFIG_INPUT=y
-# CONFIG_INPUT_FF_MEMLESS is not set
-# CONFIG_INPUT_POLLDEV is not set
-
-#
-# Userland interfaces
-#
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_PSAUX=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-# CONFIG_INPUT_JOYDEV is not set
-# CONFIG_INPUT_EVDEV is not set
-# CONFIG_INPUT_EVBUG is not set
-
-#
-# Input Device Drivers
-#
-CONFIG_INPUT_KEYBOARD=y
-# CONFIG_KEYBOARD_ADP5588 is not set
-CONFIG_KEYBOARD_ATKBD=y
-# CONFIG_QT2160 is not set
-# CONFIG_KEYBOARD_LKKBD is not set
-# CONFIG_KEYBOARD_MAX7359 is not set
-# CONFIG_KEYBOARD_NEWTON is not set
-# CONFIG_KEYBOARD_OPENCORES is not set
-# CONFIG_KEYBOARD_STOWAWAY is not set
-# CONFIG_KEYBOARD_SUNKBD is not set
-# CONFIG_KEYBOARD_XTKBD is not set
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-CONFIG_MOUSE_PS2_ALPS=y
-CONFIG_MOUSE_PS2_LOGIPS2PP=y
-CONFIG_MOUSE_PS2_SYNAPTICS=y
-CONFIG_MOUSE_PS2_LIFEBOOK=y
-CONFIG_MOUSE_PS2_TRACKPOINT=y
-# CONFIG_MOUSE_PS2_ELANTECH is not set
-# CONFIG_MOUSE_PS2_SENTELIC is not set
-# CONFIG_MOUSE_PS2_TOUCHKIT is not set
-# CONFIG_MOUSE_SERIAL is not set
-# CONFIG_MOUSE_APPLETOUCH is not set
-# CONFIG_MOUSE_BCM5974 is not set
-# CONFIG_MOUSE_VSXXXAA is not set
-# CONFIG_MOUSE_SYNAPTICS_I2C is not set
-# CONFIG_INPUT_JOYSTICK is not set
-# CONFIG_INPUT_TABLET is not set
-# CONFIG_INPUT_TOUCHSCREEN is not set
-# CONFIG_INPUT_MISC is not set
-
-#
-# Hardware I/O ports
-#
-CONFIG_SERIO=y
-CONFIG_SERIO_I8042=y
-# CONFIG_SERIO_SERPORT is not set
-# CONFIG_SERIO_CT82C710 is not set
-# CONFIG_SERIO_PCIPS2 is not set
-CONFIG_SERIO_LIBPS2=y
-# CONFIG_SERIO_RAW is not set
-# CONFIG_GAMEPORT is not set
-
-#
-# Character devices
-#
-CONFIG_VT=y
-CONFIG_CONSOLE_TRANSLATIONS=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-# CONFIG_VT_HW_CONSOLE_BINDING is not set
-CONFIG_DEVKMEM=y
-# CONFIG_SERIAL_NONSTANDARD is not set
-# CONFIG_NOZOMI is not set
-
-#
-# Serial drivers
-#
-CONFIG_SERIAL_8250=y
-CONFIG_SERIAL_8250_CONSOLE=y
-CONFIG_FIX_EARLYCON_MEM=y
-CONFIG_SERIAL_8250_PCI=y
-CONFIG_SERIAL_8250_PNP=y
-CONFIG_SERIAL_8250_NR_UARTS=4
-CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-CONFIG_SERIAL_8250_EXTENDED=y
-# CONFIG_SERIAL_8250_MANY_PORTS is not set
-CONFIG_SERIAL_8250_SHARE_IRQ=y
-# CONFIG_SERIAL_8250_DETECT_IRQ is not set
-# CONFIG_SERIAL_8250_RSA is not set
-
-#
-# Non-8250 serial port support
-#
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-# CONFIG_SERIAL_JSM is not set
-CONFIG_UNIX98_PTYS=y
-# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
-CONFIG_LEGACY_PTYS=y
-CONFIG_LEGACY_PTY_COUNT=256
-# CONFIG_IPMI_HANDLER is not set
-# CONFIG_HW_RANDOM is not set
-# CONFIG_NVRAM is not set
-# CONFIG_R3964 is not set
-# CONFIG_APPLICOM is not set
-# CONFIG_MWAVE is not set
-# CONFIG_PC8736x_GPIO is not set
-# CONFIG_RAW_DRIVER is not set
-# CONFIG_HPET is not set
-# CONFIG_HANGCHECK_TIMER is not set
-# CONFIG_TCG_TPM is not set
-# CONFIG_TELCLOCK is not set
-CONFIG_DEVPORT=y
-CONFIG_I2C=y
-CONFIG_I2C_BOARDINFO=y
-CONFIG_I2C_COMPAT=y
-CONFIG_I2C_CHARDEV=y
-CONFIG_I2C_HELPER_AUTO=y
-
-#
-# I2C Hardware Bus support
-#
-
-#
-# PC SMBus host controller drivers
-#
-# CONFIG_I2C_ALI1535 is not set
-# CONFIG_I2C_ALI1563 is not set
-# CONFIG_I2C_ALI15X3 is not set
-# CONFIG_I2C_AMD756 is not set
-# CONFIG_I2C_AMD8111 is not set
-CONFIG_I2C_I801=y
-# CONFIG_I2C_ISCH is not set
-# CONFIG_I2C_PIIX4 is not set
-# CONFIG_I2C_NFORCE2 is not set
-# CONFIG_I2C_SIS5595 is not set
-# CONFIG_I2C_SIS630 is not set
-# CONFIG_I2C_SIS96X is not set
-# CONFIG_I2C_VIA is not set
-# CONFIG_I2C_VIAPRO is not set
-
-#
-# ACPI drivers
-#
-CONFIG_I2C_SCMI=y
-
-#
-# I2C system bus drivers (mostly embedded / system-on-chip)
-#
-# CONFIG_I2C_OCORES is not set
-# CONFIG_I2C_SIMTEC is not set
-
-#
-# External I2C/SMBus adapter drivers
-#
-# CONFIG_I2C_PARPORT_LIGHT is not set
-# CONFIG_I2C_TAOS_EVM is not set
-# CONFIG_I2C_TINY_USB is not set
-
-#
-# Graphics adapter I2C/DDC channel drivers
-#
-# CONFIG_I2C_VOODOO3 is not set
-
-#
-# Other I2C/SMBus bus drivers
-#
-# CONFIG_I2C_PCA_PLATFORM is not set
-# CONFIG_I2C_STUB is not set
-
-#
-# Miscellaneous I2C Chip support
-#
-# CONFIG_DS1682 is not set
-# CONFIG_SENSORS_TSL2550 is not set
-# CONFIG_I2C_DEBUG_CORE is not set
-# CONFIG_I2C_DEBUG_ALGO is not set
-# CONFIG_I2C_DEBUG_BUS is not set
-# CONFIG_I2C_DEBUG_CHIP is not set
-# CONFIG_SPI is not set
-
-#
-# PPS support
-#
-# CONFIG_PPS is not set
-CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
-# CONFIG_GPIOLIB is not set
-# CONFIG_W1 is not set
-CONFIG_POWER_SUPPLY=y
-# CONFIG_POWER_SUPPLY_DEBUG is not set
-# CONFIG_PDA_POWER is not set
-# CONFIG_BATTERY_DS2760 is not set
-# CONFIG_BATTERY_DS2782 is not set
-# CONFIG_BATTERY_BQ27x00 is not set
-# CONFIG_BATTERY_MAX17040 is not set
-CONFIG_HWMON=y
-# CONFIG_HWMON_VID is not set
-# CONFIG_HWMON_DEBUG_CHIP is not set
-
-#
-# Native drivers
-#
-# CONFIG_SENSORS_ABITUGURU is not set
-# CONFIG_SENSORS_ABITUGURU3 is not set
-# CONFIG_SENSORS_AD7414 is not set
-# CONFIG_SENSORS_AD7418 is not set
-# CONFIG_SENSORS_ADM1021 is not set
-# CONFIG_SENSORS_ADM1025 is not set
-# CONFIG_SENSORS_ADM1026 is not set
-# CONFIG_SENSORS_ADM1029 is not set
-# CONFIG_SENSORS_ADM1031 is not set
-# CONFIG_SENSORS_ADM9240 is not set
-# CONFIG_SENSORS_ADT7462 is not set
-# CONFIG_SENSORS_ADT7470 is not set
-# CONFIG_SENSORS_ADT7473 is not set
-# CONFIG_SENSORS_ADT7475 is not set
-# CONFIG_SENSORS_K8TEMP is not set
-# CONFIG_SENSORS_ASB100 is not set
-# CONFIG_SENSORS_ATXP1 is not set
-# CONFIG_SENSORS_DS1621 is not set
-# CONFIG_SENSORS_I5K_AMB is not set
-# CONFIG_SENSORS_F71805F is not set
-# CONFIG_SENSORS_F71882FG is not set
-# CONFIG_SENSORS_F75375S is not set
-# CONFIG_SENSORS_FSCHMD is not set
-# CONFIG_SENSORS_G760A is not set
-# CONFIG_SENSORS_GL518SM is not set
-# CONFIG_SENSORS_GL520SM is not set
-CONFIG_SENSORS_CORETEMP=y
-# CONFIG_SENSORS_IT87 is not set
-# CONFIG_SENSORS_LM63 is not set
-# CONFIG_SENSORS_LM75 is not set
-# CONFIG_SENSORS_LM77 is not set
-# CONFIG_SENSORS_LM78 is not set
-# CONFIG_SENSORS_LM80 is not set
-# CONFIG_SENSORS_LM83 is not set
-# CONFIG_SENSORS_LM85 is not set
-# CONFIG_SENSORS_LM87 is not set
-# CONFIG_SENSORS_LM90 is not set
-# CONFIG_SENSORS_LM92 is not set
-# CONFIG_SENSORS_LM93 is not set
-# CONFIG_SENSORS_LTC4215 is not set
-# CONFIG_SENSORS_LTC4245 is not set
-# CONFIG_SENSORS_LM95241 is not set
-# CONFIG_SENSORS_MAX1619 is not set
-# CONFIG_SENSORS_MAX6650 is not set
-# CONFIG_SENSORS_PC87360 is not set
-# CONFIG_SENSORS_PC87427 is not set
-# CONFIG_SENSORS_PCF8591 is not set
-# CONFIG_SENSORS_SIS5595 is not set
-# CONFIG_SENSORS_DME1737 is not set
-# CONFIG_SENSORS_SMSC47M1 is not set
-# CONFIG_SENSORS_SMSC47M192 is not set
-# CONFIG_SENSORS_SMSC47B397 is not set
-# CONFIG_SENSORS_ADS7828 is not set
-# CONFIG_SENSORS_THMC50 is not set
-# CONFIG_SENSORS_TMP401 is not set
-# CONFIG_SENSORS_TMP421 is not set
-# CONFIG_SENSORS_VIA686A is not set
-# CONFIG_SENSORS_VT1211 is not set
-# CONFIG_SENSORS_VT8231 is not set
-# CONFIG_SENSORS_W83781D is not set
-# CONFIG_SENSORS_W83791D is not set
-# CONFIG_SENSORS_W83792D is not set
-# CONFIG_SENSORS_W83793 is not set
-# CONFIG_SENSORS_W83L785TS is not set
-# CONFIG_SENSORS_W83L786NG is not set
-# CONFIG_SENSORS_W83627HF is not set
-# CONFIG_SENSORS_W83627EHF is not set
-# CONFIG_SENSORS_HDAPS is not set
-# CONFIG_SENSORS_APPLESMC is not set
-
-#
-# ACPI drivers
-#
-# CONFIG_SENSORS_ATK0110 is not set
-# CONFIG_SENSORS_LIS3LV02D is not set
-CONFIG_THERMAL=y
-CONFIG_THERMAL_HWMON=y
-# CONFIG_WATCHDOG is not set
-CONFIG_SSB_POSSIBLE=y
-
-#
-# Sonics Silicon Backplane
-#
-# CONFIG_SSB is not set
-
-#
-# Multifunction device drivers
-#
-# CONFIG_MFD_CORE is not set
-# CONFIG_MFD_SM501 is not set
-# CONFIG_HTC_PASIC3 is not set
-# CONFIG_TWL4030_CORE is not set
-# CONFIG_MFD_TMIO is not set
-# CONFIG_PMIC_DA903X is not set
-# CONFIG_MFD_WM8400 is not set
-# CONFIG_MFD_WM831X is not set
-# CONFIG_MFD_WM8350_I2C is not set
-# CONFIG_MFD_PCF50633 is not set
-# CONFIG_AB3100_CORE is not set
-# CONFIG_REGULATOR is not set
-# CONFIG_MEDIA_SUPPORT is not set
-
-#
-# Graphics support
-#
-CONFIG_AGP=y
-CONFIG_AGP_AMD64=y
-CONFIG_AGP_INTEL=y
-# CONFIG_AGP_SIS is not set
-# CONFIG_AGP_VIA is not set
-CONFIG_VGA_ARB=y
-# CONFIG_DRM is not set
-# CONFIG_VGASTATE is not set
-CONFIG_VIDEO_OUTPUT_CONTROL=y
-CONFIG_FB=y
-CONFIG_FIRMWARE_EDID=y
-# CONFIG_FB_DDC is not set
-# CONFIG_FB_BOOT_VESA_SUPPORT is not set
-# CONFIG_FB_CFB_FILLRECT is not set
-# CONFIG_FB_CFB_COPYAREA is not set
-# CONFIG_FB_CFB_IMAGEBLIT is not set
-# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
-# CONFIG_FB_SYS_FILLRECT is not set
-# CONFIG_FB_SYS_COPYAREA is not set
-# CONFIG_FB_SYS_IMAGEBLIT is not set
-# CONFIG_FB_FOREIGN_ENDIAN is not set
-# CONFIG_FB_SYS_FOPS is not set
-# CONFIG_FB_SVGALIB is not set
-# CONFIG_FB_MACMODES is not set
-# CONFIG_FB_BACKLIGHT is not set
-CONFIG_FB_MODE_HELPERS=y
-# CONFIG_FB_TILEBLITTING is not set
-
-#
-# Frame buffer hardware drivers
-#
-# CONFIG_FB_CIRRUS is not set
-# CONFIG_FB_PM2 is not set
-# CONFIG_FB_CYBER2000 is not set
-# CONFIG_FB_ARC is not set
-# CONFIG_FB_ASILIANT is not set
-# CONFIG_FB_IMSTT is not set
-# CONFIG_FB_VGA16 is not set
-# CONFIG_FB_VESA is not set
-# CONFIG_FB_N411 is not set
-# CONFIG_FB_HGA is not set
-# CONFIG_FB_S1D13XXX is not set
-# CONFIG_FB_NVIDIA is not set
-# CONFIG_FB_RIVA is not set
-# CONFIG_FB_LE80578 is not set
-# CONFIG_FB_MATROX is not set
-# CONFIG_FB_RADEON is not set
-# CONFIG_FB_ATY128 is not set
-# CONFIG_FB_ATY is not set
-# CONFIG_FB_S3 is not set
-# CONFIG_FB_SAVAGE is not set
-# CONFIG_FB_SIS is not set
-# CONFIG_FB_VIA is not set
-# CONFIG_FB_NEOMAGIC is not set
-# CONFIG_FB_KYRO is not set
-# CONFIG_FB_3DFX is not set
-# CONFIG_FB_VOODOO1 is not set
-# CONFIG_FB_VT8623 is not set
-# CONFIG_FB_TRIDENT is not set
-# CONFIG_FB_ARK is not set
-# CONFIG_FB_PM3 is not set
-# CONFIG_FB_CARMINE is not set
-# CONFIG_FB_GEODE is not set
-# CONFIG_FB_VIRTUAL is not set
-# CONFIG_FB_METRONOME is not set
-# CONFIG_FB_MB862XX is not set
-# CONFIG_FB_BROADSHEET is not set
-# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-
-#
-# Display device support
-#
-# CONFIG_DISPLAY_SUPPORT is not set
-
-#
-# Console display driver support
-#
-CONFIG_VGA_CONSOLE=y
-# CONFIG_VGACON_SOFT_SCROLLBACK is not set
-CONFIG_DUMMY_CONSOLE=y
-# CONFIG_FRAMEBUFFER_CONSOLE is not set
-# CONFIG_LOGO is not set
-# CONFIG_SOUND is not set
-CONFIG_HID_SUPPORT=y
-CONFIG_HID=m
-# CONFIG_HIDRAW is not set
-
-#
-# USB Input Devices
-#
-CONFIG_USB_HID=m
-# CONFIG_HID_PID is not set
-# CONFIG_USB_HIDDEV is not set
-
-#
-# Special HID drivers
-#
-CONFIG_HID_A4TECH=m
-CONFIG_HID_APPLE=m
-CONFIG_HID_BELKIN=m
-CONFIG_HID_CHERRY=m
-CONFIG_HID_CHICONY=m
-CONFIG_HID_CYPRESS=m
-CONFIG_HID_DRAGONRISE=m
-# CONFIG_DRAGONRISE_FF is not set
-CONFIG_HID_EZKEY=m
-CONFIG_HID_KYE=m
-CONFIG_HID_GYRATION=m
-CONFIG_HID_TWINHAN=m
-CONFIG_HID_KENSINGTON=m
-CONFIG_HID_LOGITECH=m
-# CONFIG_LOGITECH_FF is not set
-# CONFIG_LOGIRUMBLEPAD2_FF is not set
-CONFIG_HID_MICROSOFT=m
-CONFIG_HID_MONTEREY=m
-CONFIG_HID_NTRIG=m
-CONFIG_HID_PANTHERLORD=m
-# CONFIG_PANTHERLORD_FF is not set
-CONFIG_HID_PETALYNX=m
-CONFIG_HID_SAMSUNG=m
-CONFIG_HID_SONY=m
-CONFIG_HID_SUNPLUS=m
-CONFIG_HID_GREENASIA=m
-# CONFIG_GREENASIA_FF is not set
-CONFIG_HID_SMARTJOYPLUS=m
-# CONFIG_SMARTJOYPLUS_FF is not set
-CONFIG_HID_TOPSEED=m
-CONFIG_HID_THRUSTMASTER=m
-# CONFIG_THRUSTMASTER_FF is not set
-CONFIG_HID_ZEROPLUS=m
-# CONFIG_ZEROPLUS_FF is not set
-CONFIG_USB_SUPPORT=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_USB_ARCH_HAS_OHCI=y
-CONFIG_USB_ARCH_HAS_EHCI=y
-CONFIG_USB=m
-# CONFIG_USB_DEBUG is not set
-# CONFIG_USB_ANNOUNCE_NEW_DEVICES is not set
-
-#
-# Miscellaneous USB options
-#
-# CONFIG_USB_DEVICEFS is not set
-CONFIG_USB_DEVICE_CLASS=y
-# CONFIG_USB_DYNAMIC_MINORS is not set
-# CONFIG_USB_SUSPEND is not set
-# CONFIG_USB_OTG is not set
-# CONFIG_USB_MON is not set
-# CONFIG_USB_WUSB is not set
-# CONFIG_USB_WUSB_CBAF is not set
-
-#
-# USB Host Controller Drivers
-#
-# CONFIG_USB_C67X00_HCD is not set
-# CONFIG_USB_XHCI_HCD is not set
-# CONFIG_USB_EHCI_HCD is not set
-# CONFIG_USB_OXU210HP_HCD is not set
-# CONFIG_USB_ISP116X_HCD is not set
-# CONFIG_USB_ISP1760_HCD is not set
-# CONFIG_USB_ISP1362_HCD is not set
-# CONFIG_USB_OHCI_HCD is not set
-# CONFIG_USB_UHCI_HCD is not set
-# CONFIG_USB_SL811_HCD is not set
-# CONFIG_USB_R8A66597_HCD is not set
-# CONFIG_USB_WHCI_HCD is not set
-# CONFIG_USB_HWA_HCD is not set
-
-#
-# Enable Host or Gadget support to see Inventra options
-#
-
-#
-# USB Device Class drivers
-#
-# CONFIG_USB_ACM is not set
-# CONFIG_USB_PRINTER is not set
-# CONFIG_USB_WDM is not set
-# CONFIG_USB_TMC is not set
-
-#
-# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may
-#
-
-#
-# also be needed; see USB_STORAGE Help for more info
-#
-# CONFIG_USB_STORAGE is not set
-# CONFIG_USB_LIBUSUAL is not set
-
-#
-# USB Imaging devices
-#
-# CONFIG_USB_MDC800 is not set
-# CONFIG_USB_MICROTEK is not set
-
-#
-# USB port drivers
-#
-# CONFIG_USB_SERIAL is not set
-
-#
-# USB Miscellaneous drivers
-#
-# CONFIG_USB_EMI62 is not set
-# CONFIG_USB_EMI26 is not set
-# CONFIG_USB_ADUTUX is not set
-# CONFIG_USB_SEVSEG is not set
-# CONFIG_USB_RIO500 is not set
-# CONFIG_USB_LEGOTOWER is not set
-# CONFIG_USB_LCD is not set
-# CONFIG_USB_BERRY_CHARGE is not set
-# CONFIG_USB_LED is not set
-# CONFIG_USB_CYPRESS_CY7C63 is not set
-# CONFIG_USB_CYTHERM is not set
-# CONFIG_USB_IDMOUSE is not set
-# CONFIG_USB_FTDI_ELAN is not set
-# CONFIG_USB_APPLEDISPLAY is not set
-# CONFIG_USB_LD is not set
-# CONFIG_USB_TRANCEVIBRATOR is not set
-# CONFIG_USB_IOWARRIOR is not set
-# CONFIG_USB_TEST is not set
-# CONFIG_USB_ISIGHTFW is not set
-# CONFIG_USB_VST is not set
-# CONFIG_USB_GADGET is not set
-
-#
-# OTG and related infrastructure
-#
-# CONFIG_NOP_USB_XCEIV is not set
-# CONFIG_UWB is not set
-# CONFIG_MMC is not set
-# CONFIG_MEMSTICK is not set
-# CONFIG_NEW_LEDS is not set
-# CONFIG_ACCESSIBILITY is not set
-# CONFIG_INFINIBAND is not set
-# CONFIG_EDAC is not set
-CONFIG_RTC_LIB=y
-CONFIG_RTC_CLASS=y
-CONFIG_RTC_HCTOSYS=y
-CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-# CONFIG_RTC_DEBUG is not set
-
-#
-# RTC interfaces
-#
-CONFIG_RTC_INTF_SYSFS=y
-CONFIG_RTC_INTF_PROC=y
-CONFIG_RTC_INTF_DEV=y
-# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
-# CONFIG_RTC_DRV_TEST is not set
-
-#
-# I2C RTC drivers
-#
-# CONFIG_RTC_DRV_DS1307 is not set
-# CONFIG_RTC_DRV_DS1374 is not set
-# CONFIG_RTC_DRV_DS1672 is not set
-# CONFIG_RTC_DRV_MAX6900 is not set
-# CONFIG_RTC_DRV_RS5C372 is not set
-# CONFIG_RTC_DRV_ISL1208 is not set
-# CONFIG_RTC_DRV_X1205 is not set
-# CONFIG_RTC_DRV_PCF8563 is not set
-# CONFIG_RTC_DRV_PCF8583 is not set
-# CONFIG_RTC_DRV_M41T80 is not set
-# CONFIG_RTC_DRV_S35390A is not set
-# CONFIG_RTC_DRV_FM3130 is not set
-# CONFIG_RTC_DRV_RX8581 is not set
-# CONFIG_RTC_DRV_RX8025 is not set
-
-#
-# SPI RTC drivers
-#
-
-#
-# Platform RTC drivers
-#
-CONFIG_RTC_DRV_CMOS=y
-# CONFIG_RTC_DRV_DS1286 is not set
-# CONFIG_RTC_DRV_DS1511 is not set
-# CONFIG_RTC_DRV_DS1553 is not set
-# CONFIG_RTC_DRV_DS1742 is not set
-# CONFIG_RTC_DRV_STK17TA8 is not set
-# CONFIG_RTC_DRV_M48T86 is not set
-# CONFIG_RTC_DRV_M48T35 is not set
-# CONFIG_RTC_DRV_M48T59 is not set
-# CONFIG_RTC_DRV_BQ4802 is not set
-# CONFIG_RTC_DRV_V3020 is not set
-
-#
-# on-CPU RTC drivers
-#
-# CONFIG_DMADEVICES is not set
-# CONFIG_AUXDISPLAY is not set
-# CONFIG_UIO is not set
-
-#
-# TI VLYNQ
-#
-# CONFIG_STAGING is not set
-CONFIG_X86_PLATFORM_DEVICES=y
-# CONFIG_ACERHDF is not set
-# CONFIG_ASUS_LAPTOP is not set
-# CONFIG_THINKPAD_ACPI is not set
-# CONFIG_INTEL_MENLOW is not set
-# CONFIG_ACPI_WMI is not set
-# CONFIG_ACPI_ASUS is not set
-# CONFIG_TOPSTAR_LAPTOP is not set
-# CONFIG_ACPI_TOSHIBA is not set
-
-#
-# Firmware Drivers
-#
-# CONFIG_EDD is not set
-CONFIG_FIRMWARE_MEMMAP=y
-# CONFIG_DELL_RBU is not set
-# CONFIG_DCDBAS is not set
-CONFIG_DMIID=y
-# CONFIG_ISCSI_IBFT_FIND is not set
-
-#
-# File systems
-#
-# CONFIG_EXT2_FS is not set
-CONFIG_EXT3_FS=y
-# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
-CONFIG_EXT3_FS_XATTR=y
-CONFIG_EXT3_FS_POSIX_ACL=y
-CONFIG_EXT3_FS_SECURITY=y
-# CONFIG_EXT4_FS is not set
-CONFIG_JBD=y
-# CONFIG_JBD_DEBUG is not set
-CONFIG_FS_MBCACHE=y
-# CONFIG_REISERFS_FS is not set
-# CONFIG_JFS_FS is not set
-CONFIG_FS_POSIX_ACL=y
-CONFIG_XFS_FS=y
-# CONFIG_XFS_QUOTA is not set
-CONFIG_XFS_POSIX_ACL=y
-# CONFIG_XFS_RT is not set
-# CONFIG_XFS_DEBUG is not set
-# CONFIG_GFS2_FS is not set
-# CONFIG_OCFS2_FS is not set
-# CONFIG_BTRFS_FS is not set
-# CONFIG_NILFS2_FS is not set
-CONFIG_FILE_LOCKING=y
-CONFIG_FSNOTIFY=y
-CONFIG_DNOTIFY=y
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-CONFIG_QUOTA=y
-# CONFIG_QUOTA_NETLINK_INTERFACE is not set
-CONFIG_PRINT_QUOTA_WARNING=y
-CONFIG_QUOTA_TREE=y
-# CONFIG_QFMT_V1 is not set
-CONFIG_QFMT_V2=y
-CONFIG_QUOTACTL=y
-# CONFIG_AUTOFS_FS is not set
-# CONFIG_AUTOFS4_FS is not set
-# CONFIG_FUSE_FS is not set
-CONFIG_GENERIC_ACL=y
-
-#
-# Caches
-#
-CONFIG_FSCACHE=m
-CONFIG_FSCACHE_STATS=y
-CONFIG_FSCACHE_HISTOGRAM=y
-CONFIG_FSCACHE_DEBUG=y
-CONFIG_FSCACHE_OBJECT_LIST=y
-CONFIG_CACHEFILES=m
-CONFIG_CACHEFILES_DEBUG=y
-CONFIG_CACHEFILES_HISTOGRAM=y
-
-#
-# CD-ROM/DVD Filesystems
-#
-# CONFIG_ISO9660_FS is not set
-# CONFIG_UDF_FS is not set
-
-#
-# DOS/FAT/NT Filesystems
-#
-# CONFIG_MSDOS_FS is not set
-# CONFIG_VFAT_FS is not set
-# CONFIG_NTFS_FS is not set
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_PROC_PAGE_MONITOR=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_TMPFS_POSIX_ACL=y
-# CONFIG_HUGETLBFS is not set
-# CONFIG_HUGETLB_PAGE is not set
-CONFIG_CONFIGFS_FS=m
-CONFIG_MISC_FILESYSTEMS=y
-# CONFIG_ADFS_FS is not set
-# CONFIG_AFFS_FS is not set
-# CONFIG_ECRYPT_FS is not set
-# CONFIG_HFS_FS is not set
-# CONFIG_HFSPLUS_FS is not set
-# CONFIG_BEFS_FS is not set
-# CONFIG_BFS_FS is not set
-# CONFIG_EFS_FS is not set
-# CONFIG_CRAMFS is not set
-# CONFIG_SQUASHFS is not set
-# CONFIG_VXFS_FS is not set
-# CONFIG_MINIX_FS is not set
-# CONFIG_OMFS_FS is not set
-# CONFIG_HPFS_FS is not set
-# CONFIG_QNX4FS_FS is not set
-# CONFIG_ROMFS_FS is not set
-# CONFIG_SYSV_FS is not set
-# CONFIG_UFS_FS is not set
-CONFIG_NETWORK_FILESYSTEMS=y
-CONFIG_NFS_FS=m
-CONFIG_NFS_V3=y
-CONFIG_NFS_V3_ACL=y
-CONFIG_NFS_V4=y
-# CONFIG_NFS_V4_1 is not set
-CONFIG_NFS_FSCACHE=y
-CONFIG_NFSD=m
-CONFIG_NFSD_V2_ACL=y
-CONFIG_NFSD_V3=y
-CONFIG_NFSD_V3_ACL=y
-CONFIG_NFSD_V4=y
-CONFIG_LOCKD=m
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=y
-CONFIG_NFS_ACL_SUPPORT=m
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=m
-CONFIG_SUNRPC_GSS=m
-CONFIG_RPCSEC_GSS_KRB5=m
-CONFIG_RPCSEC_GSS_SPKM3=m
-# CONFIG_SMB_FS is not set
-# CONFIG_CIFS is not set
-# CONFIG_NCP_FS is not set
-# CONFIG_CODA_FS is not set
-CONFIG_AFS_FS=m
-CONFIG_AFS_DEBUG=y
-CONFIG_AFS_FSCACHE=y
-
-#
-# Partition Types
-#
-# CONFIG_PARTITION_ADVANCED is not set
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-CONFIG_NLS_CODEPAGE_437=m
-# CONFIG_NLS_CODEPAGE_737 is not set
-# CONFIG_NLS_CODEPAGE_775 is not set
-# CONFIG_NLS_CODEPAGE_850 is not set
-# CONFIG_NLS_CODEPAGE_852 is not set
-# CONFIG_NLS_CODEPAGE_855 is not set
-# CONFIG_NLS_CODEPAGE_857 is not set
-# CONFIG_NLS_CODEPAGE_860 is not set
-# CONFIG_NLS_CODEPAGE_861 is not set
-# CONFIG_NLS_CODEPAGE_862 is not set
-# CONFIG_NLS_CODEPAGE_863 is not set
-# CONFIG_NLS_CODEPAGE_864 is not set
-# CONFIG_NLS_CODEPAGE_865 is not set
-# CONFIG_NLS_CODEPAGE_866 is not set
-# CONFIG_NLS_CODEPAGE_869 is not set
-# CONFIG_NLS_CODEPAGE_936 is not set
-# CONFIG_NLS_CODEPAGE_950 is not set
-# CONFIG_NLS_CODEPAGE_932 is not set
-# CONFIG_NLS_CODEPAGE_949 is not set
-# CONFIG_NLS_CODEPAGE_874 is not set
-# CONFIG_NLS_ISO8859_8 is not set
-# CONFIG_NLS_CODEPAGE_1250 is not set
-# CONFIG_NLS_CODEPAGE_1251 is not set
-# CONFIG_NLS_ASCII is not set
-CONFIG_NLS_ISO8859_1=m
-# CONFIG_NLS_ISO8859_2 is not set
-# CONFIG_NLS_ISO8859_3 is not set
-# CONFIG_NLS_ISO8859_4 is not set
-# CONFIG_NLS_ISO8859_5 is not set
-# CONFIG_NLS_ISO8859_6 is not set
-# CONFIG_NLS_ISO8859_7 is not set
-# CONFIG_NLS_ISO8859_9 is not set
-# CONFIG_NLS_ISO8859_13 is not set
-# CONFIG_NLS_ISO8859_14 is not set
-# CONFIG_NLS_ISO8859_15 is not set
-# CONFIG_NLS_KOI8_R is not set
-# CONFIG_NLS_KOI8_U is not set
-CONFIG_NLS_UTF8=m
-# CONFIG_DLM is not set
-
-#
-# Kernel hacking
-#
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-# CONFIG_PRINTK_TIME is not set
-# CONFIG_ENABLE_WARN_DEPRECATED is not set
-# CONFIG_ENABLE_MUST_CHECK is not set
-CONFIG_FRAME_WARN=2048
-CONFIG_MAGIC_SYSRQ=y
-# CONFIG_STRIP_ASM_SYMS is not set
-CONFIG_UNUSED_SYMBOLS=y
-CONFIG_DEBUG_FS=y
-# CONFIG_HEADERS_CHECK is not set
-CONFIG_DEBUG_KERNEL=y
-# CONFIG_DEBUG_SHIRQ is not set
-CONFIG_DETECT_SOFTLOCKUP=y
-# CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
-CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
-CONFIG_DETECT_HUNG_TASK=y
-# CONFIG_BOOTPARAM_HUNG_TASK_PANIC is not set
-CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=0
-# CONFIG_SCHED_DEBUG is not set
-# CONFIG_SCHEDSTATS is not set
-# CONFIG_TIMER_STATS is not set
-# CONFIG_DEBUG_POISONED_PUT is not set
-# CONFIG_DEBUG_OBJECTS is not set
-CONFIG_DEBUG_SLAB=y
-CONFIG_DEBUG_SLAB_LEAK=y
-# CONFIG_DEBUG_KMEMLEAK is not set
-# CONFIG_DEBUG_RT_MUTEXES is not set
-# CONFIG_RT_MUTEX_TESTER is not set
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_PROVE_LOCKING=y
-CONFIG_LOCKDEP=y
-# CONFIG_LOCK_STAT is not set
-# CONFIG_DEBUG_LOCKDEP is not set
-CONFIG_TRACE_IRQFLAGS=y
-CONFIG_DEBUG_SPINLOCK_SLEEP=y
-# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-CONFIG_STACKTRACE=y
-# CONFIG_DEBUG_KOBJECT is not set
-CONFIG_DEBUG_BUGVERBOSE=y
-# CONFIG_DEBUG_INFO is not set
-# CONFIG_DEBUG_VM is not set
-# CONFIG_DEBUG_VIRTUAL is not set
-# CONFIG_DEBUG_WRITECOUNT is not set
-CONFIG_DEBUG_MEMORY_INIT=y
-# CONFIG_DEBUG_LIST is not set
-# CONFIG_DEBUG_SG is not set
-# CONFIG_DEBUG_NOTIFIERS is not set
-# CONFIG_DEBUG_CREDENTIALS is not set
-CONFIG_ARCH_WANT_FRAME_POINTERS=y
-CONFIG_FRAME_POINTER=y
-# CONFIG_BOOT_PRINTK_DELAY is not set
-# CONFIG_RCU_TORTURE_TEST is not set
-# CONFIG_RCU_CPU_STALL_DETECTOR is not set
-# CONFIG_BACKTRACE_SELF_TEST is not set
-# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
-# CONFIG_DEBUG_FORCE_WEAK_PER_CPU is not set
-# CONFIG_FAULT_INJECTION is not set
-# CONFIG_LATENCYTOP is not set
-CONFIG_SYSCTL_SYSCALL_CHECK=y
-# CONFIG_DEBUG_PAGEALLOC is not set
-CONFIG_USER_STACKTRACE_SUPPORT=y
-CONFIG_HAVE_FUNCTION_TRACER=y
-CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
-CONFIG_HAVE_FUNCTION_GRAPH_FP_TEST=y
-CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
-CONFIG_HAVE_DYNAMIC_FTRACE=y
-CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
-CONFIG_HAVE_SYSCALL_TRACEPOINTS=y
-CONFIG_TRACING_SUPPORT=y
-# CONFIG_FTRACE is not set
-# CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set
-# CONFIG_DYNAMIC_DEBUG is not set
-# CONFIG_DMA_API_DEBUG is not set
-# CONFIG_SAMPLES is not set
-CONFIG_HAVE_ARCH_KGDB=y
-# CONFIG_KGDB is not set
-CONFIG_HAVE_ARCH_KMEMCHECK=y
-# CONFIG_STRICT_DEVMEM is not set
-CONFIG_X86_VERBOSE_BOOTUP=y
-CONFIG_EARLY_PRINTK=y
-# CONFIG_EARLY_PRINTK_DBGP is not set
-# CONFIG_DEBUG_STACKOVERFLOW is not set
-# CONFIG_DEBUG_STACK_USAGE is not set
-# CONFIG_DEBUG_PER_CPU_MAPS is not set
-# CONFIG_X86_PTDUMP is not set
-CONFIG_DEBUG_RODATA=y
-# CONFIG_DEBUG_RODATA_TEST is not set
-# CONFIG_DEBUG_NX_TEST is not set
-# CONFIG_IOMMU_DEBUG is not set
-# CONFIG_IOMMU_STRESS is not set
-CONFIG_HAVE_MMIOTRACE_SUPPORT=y
-CONFIG_IO_DELAY_TYPE_0X80=0
-CONFIG_IO_DELAY_TYPE_0XED=1
-CONFIG_IO_DELAY_TYPE_UDELAY=2
-CONFIG_IO_DELAY_TYPE_NONE=3
-CONFIG_IO_DELAY_0X80=y
-# CONFIG_IO_DELAY_0XED is not set
-# CONFIG_IO_DELAY_UDELAY is not set
-# CONFIG_IO_DELAY_NONE is not set
-CONFIG_DEFAULT_IO_DELAY_TYPE=0
-# CONFIG_DEBUG_BOOT_PARAMS is not set
-# CONFIG_CPA_DEBUG is not set
-# CONFIG_OPTIMIZE_INLINING is not set
-
-#
-# Security options
-#
-CONFIG_KEYS=y
-CONFIG_KEYS_DEBUG_PROC_KEYS=y
-CONFIG_SECURITY=y
-CONFIG_SECURITYFS=y
-CONFIG_SECURITY_NETWORK=y
-CONFIG_SECURITY_NETWORK_XFRM=y
-# CONFIG_SECURITY_PATH is not set
-CONFIG_SECURITY_FILE_CAPABILITIES=y
-# CONFIG_INTEL_TXT is not set
-CONFIG_LSM_MMAP_MIN_ADDR=65536
-CONFIG_SECURITY_SELINUX=y
-CONFIG_SECURITY_SELINUX_BOOTPARAM=y
-CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=1
-CONFIG_SECURITY_SELINUX_DISABLE=y
-CONFIG_SECURITY_SELINUX_DEVELOP=y
-CONFIG_SECURITY_SELINUX_AVC_STATS=y
-CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=1
-# CONFIG_SECURITY_SELINUX_POLICYDB_VERSION_MAX is not set
-CONFIG_SECURITY_SMACK=y
-# CONFIG_SECURITY_TOMOYO is not set
-# CONFIG_IMA is not set
-CONFIG_CRYPTO=y
-
-#
-# Crypto core or helper
-#
-CONFIG_CRYPTO_ALGAPI=y
-CONFIG_CRYPTO_ALGAPI2=y
-CONFIG_CRYPTO_AEAD2=y
-CONFIG_CRYPTO_BLKCIPHER=y
-CONFIG_CRYPTO_BLKCIPHER2=y
-CONFIG_CRYPTO_HASH=y
-CONFIG_CRYPTO_HASH2=y
-CONFIG_CRYPTO_RNG2=y
-CONFIG_CRYPTO_PCOMP=y
-CONFIG_CRYPTO_MANAGER=y
-CONFIG_CRYPTO_MANAGER2=y
-# CONFIG_CRYPTO_GF128MUL is not set
-# CONFIG_CRYPTO_NULL is not set
-CONFIG_CRYPTO_WORKQUEUE=y
-# CONFIG_CRYPTO_CRYPTD is not set
-# CONFIG_CRYPTO_AUTHENC is not set
-# CONFIG_CRYPTO_TEST is not set
-
-#
-# Authenticated Encryption with Associated Data
-#
-# CONFIG_CRYPTO_CCM is not set
-# CONFIG_CRYPTO_GCM is not set
-# CONFIG_CRYPTO_SEQIV is not set
-
-#
-# Block modes
-#
-CONFIG_CRYPTO_CBC=y
-# CONFIG_CRYPTO_CTR is not set
-# CONFIG_CRYPTO_CTS is not set
-# CONFIG_CRYPTO_ECB is not set
-# CONFIG_CRYPTO_LRW is not set
-CONFIG_CRYPTO_PCBC=y
-# CONFIG_CRYPTO_XTS is not set
-
-#
-# Hash modes
-#
-# CONFIG_CRYPTO_HMAC is not set
-# CONFIG_CRYPTO_XCBC is not set
-# CONFIG_CRYPTO_VMAC is not set
-
-#
-# Digest
-#
-# CONFIG_CRYPTO_CRC32C is not set
-# CONFIG_CRYPTO_CRC32C_INTEL is not set
-# CONFIG_CRYPTO_GHASH is not set
-# CONFIG_CRYPTO_MD4 is not set
-CONFIG_CRYPTO_MD5=y
-# CONFIG_CRYPTO_MICHAEL_MIC is not set
-# CONFIG_CRYPTO_RMD128 is not set
-# CONFIG_CRYPTO_RMD160 is not set
-# CONFIG_CRYPTO_RMD256 is not set
-# CONFIG_CRYPTO_RMD320 is not set
-# CONFIG_CRYPTO_SHA1 is not set
-# CONFIG_CRYPTO_SHA256 is not set
-# CONFIG_CRYPTO_SHA512 is not set
-# CONFIG_CRYPTO_TGR192 is not set
-# CONFIG_CRYPTO_WP512 is not set
-
-#
-# Ciphers
-#
-# CONFIG_CRYPTO_AES is not set
-# CONFIG_CRYPTO_AES_X86_64 is not set
-# CONFIG_CRYPTO_AES_NI_INTEL is not set
-# CONFIG_CRYPTO_ANUBIS is not set
-# CONFIG_CRYPTO_ARC4 is not set
-# CONFIG_CRYPTO_BLOWFISH is not set
-# CONFIG_CRYPTO_CAMELLIA is not set
-CONFIG_CRYPTO_CAST5=m
-# CONFIG_CRYPTO_CAST6 is not set
-CONFIG_CRYPTO_DES=y
-CONFIG_CRYPTO_FCRYPT=y
-# CONFIG_CRYPTO_KHAZAD is not set
-# CONFIG_CRYPTO_SALSA20 is not set
-# CONFIG_CRYPTO_SALSA20_X86_64 is not set
-# CONFIG_CRYPTO_SEED is not set
-# CONFIG_CRYPTO_SERPENT is not set
-# CONFIG_CRYPTO_TEA is not set
-# CONFIG_CRYPTO_TWOFISH is not set
-# CONFIG_CRYPTO_TWOFISH_X86_64 is not set
-
-#
-# Compression
-#
-# CONFIG_CRYPTO_DEFLATE is not set
-# CONFIG_CRYPTO_ZLIB is not set
-# CONFIG_CRYPTO_LZO is not set
-
-#
-# Random Number Generation
-#
-# CONFIG_CRYPTO_ANSI_CPRNG is not set
-# CONFIG_CRYPTO_HW is not set
-CONFIG_HAVE_KVM=y
-# CONFIG_VIRTUALIZATION is not set
-# CONFIG_BINARY_PRINTF is not set
-
-#
-# Library routines
-#
-CONFIG_BITREVERSE=m
-CONFIG_GENERIC_FIND_FIRST_BIT=y
-CONFIG_GENERIC_FIND_NEXT_BIT=y
-CONFIG_GENERIC_FIND_LAST_BIT=y
-# CONFIG_CRC_CCITT is not set
-CONFIG_CRC16=m
-CONFIG_CRC_T10DIF=y
-CONFIG_CRC_ITU_T=m
-CONFIG_CRC32=m
-# CONFIG_CRC7 is not set
-# CONFIG_LIBCRC32C is not set
-CONFIG_ZLIB_INFLATE=y
-CONFIG_DECOMPRESS_GZIP=y
-CONFIG_DECOMPRESS_BZIP2=y
-CONFIG_DECOMPRESS_LZMA=y
-CONFIG_HAS_IOMEM=y
-CONFIG_HAS_IOPORT=y
-CONFIG_HAS_DMA=y
-CONFIG_NLATTR=y
+> Any news on this? Do you have a refined list of kernels which have the
+> bug and kernels which do not?
+
+afaics in the 2.6.2{7,8}, the remote sends some noises to pc.
+effect: random characters on terminal and unusable login prompt.
+
+now in the 2.6.31, the kernel module oopses during udev loading.
+so i've renamed the .ko to prevent loading.
+
+> Tried 2.6.32-rc1? Tried the v4l-dvb repository?
+
+no.
+
+> I am also skeptical about the +0x64/0x1a52, ir_input_init() is a rather
+> small function and I fail to see how it could be 6738 bytes in binary size.
+
+i've attached asm dump of ir-common.ko
+i found the '41 c7 80 cc ...' code in dump at adress 0x83e.
+
+--Boundary-00=_PPxwKa03B9Ea8uP
+Content-Type: text/plain;
+  charset="utf-8";
+  name="ir-common.asm"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="ir-common.asm"
+
+
+ir-common.ko:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <ir_extract_bits>:
+   0:	31 c0                	xor    %eax,%eax
+   2:	ba 01 00 00 00       	mov    $0x1,%edx
+   7:	eb 09                	jmp    12 <ir_extract_bits+0x12>
+   9:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+  10:	d1 ef                	shr    %edi
+  12:	40 f6 c6 01          	test   $0x1,%sil
+  16:	74 0d                	je     25 <ir_extract_bits+0x25>
+  18:	89 c1                	mov    %eax,%ecx
+  1a:	09 d1                	or     %edx,%ecx
+  1c:	40 f6 c7 01          	test   $0x1,%dil
+  20:	0f 45 c1             	cmovne %ecx,%eax
+  23:	01 d2                	add    %edx,%edx
+  25:	d1 ee                	shr    %esi
+  27:	75 e7                	jne    10 <ir_extract_bits+0x10>
+  29:	f3 c3                	repz retq 
+  2b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+
+0000000000000030 <ir_decode_pulsedistance>:
+  30:	41 55                	push   %r13
+  32:	c1 e6 05             	shl    $0x5,%esi
+  35:	85 f6                	test   %esi,%esi
+  37:	41 54                	push   %r12
+  39:	55                   	push   %rbp
+  3a:	53                   	push   %rbx
+  3b:	89 cb                	mov    %ecx,%ebx
+  3d:	7e 58                	jle    97 <ir_decode_pulsedistance+0x67>
+  3f:	31 c0                	xor    %eax,%eax
+  41:	45 31 c0             	xor    %r8d,%r8d
+  44:	41 bb 1f 00 00 00    	mov    $0x1f,%r11d
+  4a:	41 ba 01 00 00 00    	mov    $0x1,%r10d
+  50:	eb 12                	jmp    64 <ir_decode_pulsedistance+0x34>
+  52:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+  58:	41 83 c0 01          	add    $0x1,%r8d
+  5c:	83 c0 01             	add    $0x1,%eax
+  5f:	41 39 f0             	cmp    %esi,%r8d
+  62:	7d 33                	jge    97 <ir_decode_pulsedistance+0x67>
+  64:	44 89 c1             	mov    %r8d,%ecx
+  67:	45 89 c1             	mov    %r8d,%r9d
+  6a:	44 89 dd             	mov    %r11d,%ebp
+  6d:	83 e1 1f             	and    $0x1f,%ecx
+  70:	41 c1 f9 05          	sar    $0x5,%r9d
+  74:	45 89 d5             	mov    %r10d,%r13d
+  77:	29 cd                	sub    %ecx,%ebp
+  79:	4d 63 c9             	movslq %r9d,%r9
+  7c:	89 e9                	mov    %ebp,%ecx
+  7e:	41 d3 e5             	shl    %cl,%r13d
+  81:	46 85 2c 8f          	test   %r13d,(%rdi,%r9,4)
+  85:	75 d1                	jne    58 <ir_decode_pulsedistance+0x28>
+  87:	83 f8 1c             	cmp    $0x1c,%eax
+  8a:	7f 1c                	jg     a8 <ir_decode_pulsedistance+0x78>
+  8c:	41 83 c0 01          	add    $0x1,%r8d
+  90:	31 c0                	xor    %eax,%eax
+  92:	41 39 f0             	cmp    %esi,%r8d
+  95:	7c cd                	jl     64 <ir_decode_pulsedistance+0x34>
+  97:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+  9c:	5b                   	pop    %rbx
+  9d:	5d                   	pop    %rbp
+  9e:	41 5c                	pop    %r12
+  a0:	41 5d                	pop    %r13
+  a2:	c3                   	retq   
+  a3:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+  a8:	41 39 f0             	cmp    %esi,%r8d
+  ab:	7d ea                	jge    97 <ir_decode_pulsedistance+0x67>
+  ad:	31 c0                	xor    %eax,%eax
+  af:	41 bb 1f 00 00 00    	mov    $0x1f,%r11d
+  b5:	41 ba 01 00 00 00    	mov    $0x1,%r10d
+  bb:	eb 26                	jmp    e3 <ir_decode_pulsedistance+0xb3>
+  bd:	0f 1f 00             	nopl   (%rax)
+  c0:	44 89 c1             	mov    %r8d,%ecx
+  c3:	45 89 c1             	mov    %r8d,%r9d
+  c6:	44 89 dd             	mov    %r11d,%ebp
+  c9:	83 e1 1f             	and    $0x1f,%ecx
+  cc:	41 c1 f9 05          	sar    $0x5,%r9d
+  d0:	45 89 d5             	mov    %r10d,%r13d
+  d3:	29 cd                	sub    %ecx,%ebp
+  d5:	4d 63 c9             	movslq %r9d,%r9
+  d8:	89 e9                	mov    %ebp,%ecx
+  da:	41 d3 e5             	shl    %cl,%r13d
+  dd:	46 85 2c 8f          	test   %r13d,(%rdi,%r9,4)
+  e1:	75 0c                	jne    ef <ir_decode_pulsedistance+0xbf>
+  e3:	41 83 c0 01          	add    $0x1,%r8d
+  e7:	83 c0 01             	add    $0x1,%eax
+  ea:	41 39 f0             	cmp    %esi,%r8d
+  ed:	7c d1                	jl     c0 <ir_decode_pulsedistance+0x90>
+  ef:	83 f8 06             	cmp    $0x6,%eax
+  f2:	7e a3                	jle    97 <ir_decode_pulsedistance+0x67>
+  f4:	31 c0                	xor    %eax,%eax
+  f6:	41 39 f0             	cmp    %esi,%r8d
+  f9:	7d a1                	jge    9c <ir_decode_pulsedistance+0x6c>
+  fb:	8d 14 13             	lea    (%rbx,%rdx,1),%edx
+  fe:	31 ed                	xor    %ebp,%ebp
+ 100:	41 bb 01 00 00 00    	mov    $0x1,%r11d
+ 106:	45 31 d2             	xor    %r10d,%r10d
+ 109:	41 b9 1f 00 00 00    	mov    $0x1f,%r9d
+ 10f:	bb 01 00 00 00       	mov    $0x1,%ebx
+ 114:	41 89 d4             	mov    %edx,%r12d
+ 117:	41 c1 ec 1f          	shr    $0x1f,%r12d
+ 11b:	41 01 d4             	add    %edx,%r12d
+ 11e:	ba 01 00 00 00       	mov    $0x1,%edx
+ 123:	41 d1 fc             	sar    %r12d
+ 126:	eb 1d                	jmp    145 <ir_decode_pulsedistance+0x115>
+ 128:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+ 12f:	00 
+ 130:	85 c0                	test   %eax,%eax
+ 132:	75 54                	jne    188 <ir_decode_pulsedistance+0x158>
+ 134:	41 ba 01 00 00 00    	mov    $0x1,%r10d
+ 13a:	31 d2                	xor    %edx,%edx
+ 13c:	41 83 c0 01          	add    $0x1,%r8d
+ 140:	41 39 f0             	cmp    %esi,%r8d
+ 143:	7d 50                	jge    195 <ir_decode_pulsedistance+0x165>
+ 145:	44 89 c1             	mov    %r8d,%ecx
+ 148:	44 89 c0             	mov    %r8d,%eax
+ 14b:	45 89 cd             	mov    %r9d,%r13d
+ 14e:	83 e1 1f             	and    $0x1f,%ecx
+ 151:	c1 f8 05             	sar    $0x5,%eax
+ 154:	41 29 cd             	sub    %ecx,%r13d
+ 157:	48 98                	cltq   
+ 159:	44 89 e9             	mov    %r13d,%ecx
+ 15c:	41 89 dd             	mov    %ebx,%r13d
+ 15f:	41 d3 e5             	shl    %cl,%r13d
+ 162:	44 85 2c 87          	test   %r13d,(%rdi,%rax,4)
+ 166:	0f 95 c0             	setne  %al
+ 169:	85 d2                	test   %edx,%edx
+ 16b:	0f b6 c0             	movzbl %al,%eax
+ 16e:	75 c0                	jne    130 <ir_decode_pulsedistance+0x100>
+ 170:	85 c0                	test   %eax,%eax
+ 172:	74 1b                	je     18f <ir_decode_pulsedistance+0x15f>
+ 174:	89 e8                	mov    %ebp,%eax
+ 176:	44 09 d8             	or     %r11d,%eax
+ 179:	45 39 d4             	cmp    %r10d,%r12d
+ 17c:	0f 4c e8             	cmovl  %eax,%ebp
+ 17f:	45 01 db             	add    %r11d,%r11d
+ 182:	41 83 fb 01          	cmp    $0x1,%r11d
+ 186:	74 0d                	je     195 <ir_decode_pulsedistance+0x165>
+ 188:	ba 01 00 00 00       	mov    $0x1,%edx
+ 18d:	eb ad                	jmp    13c <ir_decode_pulsedistance+0x10c>
+ 18f:	41 83 c2 01          	add    $0x1,%r10d
+ 193:	eb a7                	jmp    13c <ir_decode_pulsedistance+0x10c>
+ 195:	89 e8                	mov    %ebp,%eax
+ 197:	e9 00 ff ff ff       	jmpq   9c <ir_decode_pulsedistance+0x6c>
+ 19c:	0f 1f 40 00          	nopl   0x0(%rax)
+
+00000000000001a0 <ir_decode_biphase>:
+ 1a0:	41 56                	push   %r14
+ 1a2:	44 8b 0f             	mov    (%rdi),%r9d
+ 1a5:	45 31 c0             	xor    %r8d,%r8d
+ 1a8:	b8 01 00 00 00       	mov    $0x1,%eax
+ 1ad:	41 55                	push   %r13
+ 1af:	41 54                	push   %r12
+ 1b1:	55                   	push   %rbp
+ 1b2:	89 cd                	mov    %ecx,%ebp
+ 1b4:	53                   	push   %rbx
+ 1b5:	bb 1f 00 00 00       	mov    $0x1f,%ebx
+ 1ba:	eb 12                	jmp    1ce <ir_decode_biphase+0x2e>
+ 1bc:	0f 1f 40 00          	nopl   0x0(%rax)
+ 1c0:	41 83 c0 01          	add    $0x1,%r8d
+ 1c4:	41 83 f8 20          	cmp    $0x20,%r8d
+ 1c8:	0f 84 f2 00 00 00    	je     2c0 <ir_decode_biphase+0x120>
+ 1ce:	44 89 c1             	mov    %r8d,%ecx
+ 1d1:	41 89 da             	mov    %ebx,%r10d
+ 1d4:	41 89 c6             	mov    %eax,%r14d
+ 1d7:	83 e1 1f             	and    $0x1f,%ecx
+ 1da:	41 29 ca             	sub    %ecx,%r10d
+ 1dd:	44 89 d1             	mov    %r10d,%ecx
+ 1e0:	41 d3 e6             	shl    %cl,%r14d
+ 1e3:	45 85 ce             	test   %r9d,%r14d
+ 1e6:	74 d8                	je     1c0 <ir_decode_biphase+0x20>
+ 1e8:	41 bb 01 00 00 00    	mov    $0x1,%r11d
+ 1ee:	c1 e6 05             	shl    $0x5,%esi
+ 1f1:	44 39 c6             	cmp    %r8d,%esi
+ 1f4:	0f 8e ce 00 00 00    	jle    2c8 <ir_decode_biphase+0x128>
+ 1fa:	85 ed                	test   %ebp,%ebp
+ 1fc:	0f 88 c6 00 00 00    	js     2c8 <ir_decode_biphase+0x128>
+ 202:	b8 01 00 00 00       	mov    $0x1,%eax
+ 207:	45 31 d2             	xor    %r10d,%r10d
+ 20a:	45 31 c9             	xor    %r9d,%r9d
+ 20d:	41 bd 1f 00 00 00    	mov    $0x1f,%r13d
+ 213:	41 bc 01 00 00 00    	mov    $0x1,%r12d
+ 219:	eb 24                	jmp    23f <ir_decode_biphase+0x9f>
+ 21b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+ 220:	41 83 c1 01          	add    $0x1,%r9d
+ 224:	41 83 c2 01          	add    $0x1,%r10d
+ 228:	41 83 c0 01          	add    $0x1,%r8d
+ 22c:	44 39 c6             	cmp    %r8d,%esi
+ 22f:	7e 6f                	jle    2a0 <ir_decode_biphase+0x100>
+ 231:	41 39 e9             	cmp    %ebp,%r9d
+ 234:	7f 6a                	jg     2a0 <ir_decode_biphase+0x100>
+ 236:	41 83 fa 01          	cmp    $0x1,%r10d
+ 23a:	7f 64                	jg     2a0 <ir_decode_biphase+0x100>
+ 23c:	41 89 cb             	mov    %ecx,%r11d
+ 23f:	41 8d 58 1f          	lea    0x1f(%r8),%ebx
+ 243:	45 85 c0             	test   %r8d,%r8d
+ 246:	45 89 c6             	mov    %r8d,%r14d
+ 249:	41 0f 49 d8          	cmovns %r8d,%ebx
+ 24d:	41 c1 fe 1f          	sar    $0x1f,%r14d
+ 251:	41 c1 ee 1b          	shr    $0x1b,%r14d
+ 255:	c1 fb 05             	sar    $0x5,%ebx
+ 258:	43 8d 0c 30          	lea    (%r8,%r14,1),%ecx
+ 25c:	48 63 db             	movslq %ebx,%rbx
+ 25f:	83 e1 1f             	and    $0x1f,%ecx
+ 262:	44 29 f1             	sub    %r14d,%ecx
+ 265:	45 89 ee             	mov    %r13d,%r14d
+ 268:	41 29 ce             	sub    %ecx,%r14d
+ 26b:	44 89 f1             	mov    %r14d,%ecx
+ 26e:	45 89 e6             	mov    %r12d,%r14d
+ 271:	41 d3 e6             	shl    %cl,%r14d
+ 274:	44 85 34 9f          	test   %r14d,(%rdi,%rbx,4)
+ 278:	0f 95 c1             	setne  %cl
+ 27b:	0f b6 c9             	movzbl %cl,%ecx
+ 27e:	41 39 cb             	cmp    %ecx,%r11d
+ 281:	74 2d                	je     2b0 <ir_decode_biphase+0x110>
+ 283:	44 39 ca             	cmp    %r9d,%edx
+ 286:	7f 98                	jg     220 <ir_decode_biphase+0x80>
+ 288:	01 c0                	add    %eax,%eax
+ 28a:	41 83 c0 01          	add    $0x1,%r8d
+ 28e:	45 31 d2             	xor    %r10d,%r10d
+ 291:	09 c8                	or     %ecx,%eax
+ 293:	44 39 c6             	cmp    %r8d,%esi
+ 296:	41 b9 01 00 00 00    	mov    $0x1,%r9d
+ 29c:	7f 93                	jg     231 <ir_decode_biphase+0x91>
+ 29e:	66 90                	xchg   %ax,%ax
+ 2a0:	5b                   	pop    %rbx
+ 2a1:	5d                   	pop    %rbp
+ 2a2:	41 5c                	pop    %r12
+ 2a4:	41 5d                	pop    %r13
+ 2a6:	41 5e                	pop    %r14
+ 2a8:	c3                   	retq   
+ 2a9:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+ 2b0:	41 83 c1 01          	add    $0x1,%r9d
+ 2b4:	e9 6f ff ff ff       	jmpq   228 <ir_decode_biphase+0x88>
+ 2b9:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+ 2c0:	45 31 db             	xor    %r11d,%r11d
+ 2c3:	e9 26 ff ff ff       	jmpq   1ee <ir_decode_biphase+0x4e>
+ 2c8:	b8 01 00 00 00       	mov    $0x1,%eax
+ 2cd:	0f 1f 00             	nopl   (%rax)
+ 2d0:	eb ce                	jmp    2a0 <ir_decode_biphase+0x100>
+ 2d2:	66 66 66 66 66 2e 0f 	nopw   %cs:0x0(%rax,%rax,1)
+ 2d9:	1f 84 00 00 00 00 00 
+
+00000000000002e0 <ir_dump_samples>:
+ 2e0:	41 56                	push   %r14
+ 2e2:	31 c0                	xor    %eax,%eax
+ 2e4:	41 55                	push   %r13
+ 2e6:	41 54                	push   %r12
+ 2e8:	49 89 fc             	mov    %rdi,%r12
+ 2eb:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 2f2:	55                   	push   %rbp
+ 2f3:	89 f5                	mov    %esi,%ebp
+ 2f5:	c1 e5 05             	shl    $0x5,%ebp
+ 2f8:	53                   	push   %rbx
+ 2f9:	e8 00 00 00 00       	callq  2fe <ir_dump_samples+0x1e>
+ 2fe:	85 ed                	test   %ebp,%ebp
+ 300:	7e 5d                	jle    35f <ir_dump_samples+0x7f>
+ 302:	31 d2                	xor    %edx,%edx
+ 304:	31 db                	xor    %ebx,%ebx
+ 306:	41 be 1f 00 00 00    	mov    $0x1f,%r14d
+ 30c:	41 bd 01 00 00 00    	mov    $0x1,%r13d
+ 312:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+ 318:	89 d9                	mov    %ebx,%ecx
+ 31a:	44 89 f6             	mov    %r14d,%esi
+ 31d:	89 d8                	mov    %ebx,%eax
+ 31f:	83 e1 1f             	and    $0x1f,%ecx
+ 322:	c1 f8 05             	sar    $0x5,%eax
+ 325:	29 ce                	sub    %ecx,%esi
+ 327:	48 98                	cltq   
+ 329:	89 f1                	mov    %esi,%ecx
+ 32b:	44 89 ee             	mov    %r13d,%esi
+ 32e:	d3 e6                	shl    %cl,%esi
+ 330:	89 f1                	mov    %esi,%ecx
+ 332:	41 85 0c 84          	test   %ecx,(%r12,%rax,4)
+ 336:	48 c7 c6 00 00 00 00 	mov    $0x0,%rsi
+ 33d:	74 41                	je     380 <ir_dump_samples+0xa0>
+ 33f:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 346:	31 c0                	xor    %eax,%eax
+ 348:	e8 00 00 00 00       	callq  34d <ir_dump_samples+0x6d>
+ 34d:	ba 01 00 00 00       	mov    $0x1,%edx
+ 352:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+ 358:	83 c3 01             	add    $0x1,%ebx
+ 35b:	39 eb                	cmp    %ebp,%ebx
+ 35d:	7c b9                	jl     318 <ir_dump_samples+0x38>
+ 35f:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 366:	31 c0                	xor    %eax,%eax
+ 368:	e8 00 00 00 00       	callq  36d <ir_dump_samples+0x8d>
+ 36d:	5b                   	pop    %rbx
+ 36e:	5d                   	pop    %rbp
+ 36f:	41 5c                	pop    %r12
+ 371:	41 5d                	pop    %r13
+ 373:	31 c0                	xor    %eax,%eax
+ 375:	41 5e                	pop    %r14
+ 377:	c3                   	retq   
+ 378:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+ 37f:	00 
+ 380:	85 d2                	test   %edx,%edx
+ 382:	74 d4                	je     358 <ir_dump_samples+0x78>
+ 384:	48 c7 c6 00 00 00 00 	mov    $0x0,%rsi
+ 38b:	eb b2                	jmp    33f <ir_dump_samples+0x5f>
+ 38d:	0f 1f 00             	nopl   (%rax)
+ 390:	55                   	push   %rbp
+ 391:	48 89 f5             	mov    %rsi,%rbp
+ 394:	53                   	push   %rbx
+ 395:	48 89 fb             	mov    %rdi,%rbx
+ 398:	48 83 ec 08          	sub    $0x8,%rsp
+ 39c:	8b 96 0c 02 00 00    	mov    0x20c(%rsi),%edx
+ 3a2:	85 d2                	test   %edx,%edx
+ 3a4:	74 37                	je     3dd <ir_dump_samples+0xfd>
+ 3a6:	8b 05 00 00 00 00    	mov    0x0(%rip),%eax        # 3ac <ir_dump_samples+0xcc>
+ 3ac:	85 c0                	test   %eax,%eax
+ 3ae:	7f 54                	jg     404 <ir_dump_samples+0x124>
+ 3b0:	31 c9                	xor    %ecx,%ecx
+ 3b2:	83 bd 10 02 00 00 00 	cmpl   $0x0,0x210(%rbp)
+ 3b9:	48 89 df             	mov    %rbx,%rdi
+ 3bc:	be 01 00 00 00       	mov    $0x1,%esi
+ 3c1:	0f 95 c1             	setne  %cl
+ 3c4:	e8 00 00 00 00       	callq  3c9 <ir_dump_samples+0xe9>
+ 3c9:	48 83 c4 08          	add    $0x8,%rsp
+ 3cd:	48 89 df             	mov    %rbx,%rdi
+ 3d0:	31 c9                	xor    %ecx,%ecx
+ 3d2:	5b                   	pop    %rbx
+ 3d3:	5d                   	pop    %rbp
+ 3d4:	31 d2                	xor    %edx,%edx
+ 3d6:	31 f6                	xor    %esi,%esi
+ 3d8:	e9 00 00 00 00       	jmpq   3dd <ir_dump_samples+0xfd>
+ 3dd:	8b 8e 04 02 00 00    	mov    0x204(%rsi),%ecx
+ 3e3:	8b 96 08 02 00 00    	mov    0x208(%rsi),%edx
+ 3e9:	31 c0                	xor    %eax,%eax
+ 3eb:	44 8b 86 10 02 00 00 	mov    0x210(%rsi),%r8d
+ 3f2:	48 8b 37             	mov    (%rdi),%rsi
+ 3f5:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 3fc:	5b                   	pop    %rbx
+ 3fd:	5b                   	pop    %rbx
+ 3fe:	5d                   	pop    %rbp
+ 3ff:	e9 00 00 00 00       	jmpq   404 <ir_dump_samples+0x124>
+ 404:	8b 8e 10 02 00 00    	mov    0x210(%rsi),%ecx
+ 40a:	48 8b 37             	mov    (%rdi),%rsi
+ 40d:	31 c0                	xor    %eax,%eax
+ 40f:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 416:	e8 00 00 00 00       	callq  41b <ir_dump_samples+0x13b>
+ 41b:	8b 95 0c 02 00 00    	mov    0x20c(%rbp),%edx
+ 421:	eb 8d                	jmp    3b0 <ir_dump_samples+0xd0>
+ 423:	66 66 66 66 2e 0f 1f 	nopw   %cs:0x0(%rax,%rax,1)
+ 42a:	84 00 00 00 00 00 
+
+0000000000000430 <ir_input_keydown>:
+ 430:	48 83 ec 28          	sub    $0x28,%rsp
+ 434:	4c 89 64 24 20       	mov    %r12,0x20(%rsp)
+ 439:	45 31 e4             	xor    %r12d,%r12d
+ 43c:	83 fa 7f             	cmp    $0x7f,%edx
+ 43f:	48 89 5c 24 10       	mov    %rbx,0x10(%rsp)
+ 444:	48 89 6c 24 18       	mov    %rbp,0x18(%rsp)
+ 449:	48 89 f3             	mov    %rsi,%rbx
+ 44c:	48 89 fd             	mov    %rdi,%rbp
+ 44f:	77 07                	ja     458 <ir_input_keydown+0x28>
+ 451:	89 d0                	mov    %edx,%eax
+ 453:	44 8b 64 86 04       	mov    0x4(%rsi,%rax,4),%r12d
+ 458:	8b bb 10 02 00 00    	mov    0x210(%rbx),%edi
+ 45e:	85 ff                	test   %edi,%edi
+ 460:	75 3e                	jne    4a0 <ir_input_keydown+0x70>
+ 462:	89 93 08 02 00 00    	mov    %edx,0x208(%rbx)
+ 468:	89 8b 04 02 00 00    	mov    %ecx,0x204(%rbx)
+ 46e:	48 89 de             	mov    %rbx,%rsi
+ 471:	44 89 a3 0c 02 00 00 	mov    %r12d,0x20c(%rbx)
+ 478:	c7 83 10 02 00 00 01 	movl   $0x1,0x210(%rbx)
+ 47f:	00 00 00 
+ 482:	48 89 ef             	mov    %rbp,%rdi
+ 485:	48 8b 5c 24 10       	mov    0x10(%rsp),%rbx
+ 48a:	48 8b 6c 24 18       	mov    0x18(%rsp),%rbp
+ 48f:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
+ 494:	48 83 c4 28          	add    $0x28,%rsp
+ 498:	e9 f3 fe ff ff       	jmpq   390 <ir_dump_samples+0xb0>
+ 49d:	0f 1f 00             	nopl   (%rax)
+ 4a0:	44 3b a3 0c 02 00 00 	cmp    0x20c(%rbx),%r12d
+ 4a7:	74 2d                	je     4d6 <ir_input_keydown+0xa6>
+ 4a9:	c7 83 10 02 00 00 00 	movl   $0x0,0x210(%rbx)
+ 4b0:	00 00 00 
+ 4b3:	48 89 de             	mov    %rbx,%rsi
+ 4b6:	48 89 ef             	mov    %rbp,%rdi
+ 4b9:	89 54 24 08          	mov    %edx,0x8(%rsp)
+ 4bd:	89 0c 24             	mov    %ecx,(%rsp)
+ 4c0:	e8 cb fe ff ff       	callq  390 <ir_dump_samples+0xb0>
+ 4c5:	8b b3 10 02 00 00    	mov    0x210(%rbx),%esi
+ 4cb:	8b 54 24 08          	mov    0x8(%rsp),%edx
+ 4cf:	8b 0c 24             	mov    (%rsp),%ecx
+ 4d2:	85 f6                	test   %esi,%esi
+ 4d4:	74 8c                	je     462 <ir_input_keydown+0x32>
+ 4d6:	48 8b 5c 24 10       	mov    0x10(%rsp),%rbx
+ 4db:	48 8b 6c 24 18       	mov    0x18(%rsp),%rbp
+ 4e0:	4c 8b 64 24 20       	mov    0x20(%rsp),%r12
+ 4e5:	48 83 c4 28          	add    $0x28,%rsp
+ 4e9:	c3                   	retq   
+ 4ea:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+
+00000000000004f0 <ir_input_nokey>:
+ 4f0:	48 83 ec 08          	sub    $0x8,%rsp
+ 4f4:	44 8b 86 10 02 00 00 	mov    0x210(%rsi),%r8d
+ 4fb:	45 85 c0             	test   %r8d,%r8d
+ 4fe:	75 08                	jne    508 <ir_input_nokey+0x18>
+ 500:	48 83 c4 08          	add    $0x8,%rsp
+ 504:	c3                   	retq   
+ 505:	0f 1f 00             	nopl   (%rax)
+ 508:	c7 86 10 02 00 00 00 	movl   $0x0,0x210(%rsi)
+ 50f:	00 00 00 
+ 512:	48 83 c4 08          	add    $0x8,%rsp
+ 516:	e9 75 fe ff ff       	jmpq   390 <ir_dump_samples+0xb0>
+ 51b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+
+0000000000000520 <ir_rc5_timer_keyup>:
+ 520:	44 8b 0d 00 00 00 00 	mov    0x0(%rip),%r9d        # 527 <ir_rc5_timer_keyup+0x7>
+ 527:	53                   	push   %rbx
+ 528:	48 89 fb             	mov    %rdi,%rbx
+ 52b:	45 85 c9             	test   %r9d,%r9d
+ 52e:	7f 0d                	jg     53d <ir_rc5_timer_keyup+0x1d>
+ 530:	48 8d 73 08          	lea    0x8(%rbx),%rsi
+ 534:	48 8b 3b             	mov    (%rbx),%rdi
+ 537:	5b                   	pop    %rbx
+ 538:	e9 00 00 00 00       	jmpq   53d <ir_rc5_timer_keyup+0x1d>
+ 53d:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 544:	31 c0                	xor    %eax,%eax
+ 546:	e8 00 00 00 00       	callq  54b <ir_rc5_timer_keyup+0x2b>
+ 54b:	eb e3                	jmp    530 <ir_rc5_timer_keyup+0x10>
+ 54d:	0f 1f 00             	nopl   (%rax)
+
+0000000000000550 <ir_rc5_timer_end>:
+ 550:	48 83 ec 48          	sub    $0x48,%rsp
+ 554:	48 89 5c 24 20       	mov    %rbx,0x20(%rsp)
+ 559:	48 89 fb             	mov    %rdi,%rbx
+ 55c:	48 8d 7c 24 10       	lea    0x10(%rsp),%rdi
+ 561:	4c 89 64 24 30       	mov    %r12,0x30(%rsp)
+ 566:	48 89 6c 24 28       	mov    %rbp,0x28(%rsp)
+ 56b:	4c 89 6c 24 38       	mov    %r13,0x38(%rsp)
+ 570:	4c 89 74 24 40       	mov    %r14,0x40(%rsp)
+ 575:	4c 8b 25 00 00 00 00 	mov    0x0(%rip),%r12        # 57c <ir_rc5_timer_end+0x2c>
+ 57c:	e8 00 00 00 00       	callq  581 <ir_rc5_timer_end+0x31>
+ 581:	48 8b 44 24 10       	mov    0x10(%rsp),%rax
+ 586:	48 2b 83 b0 03 00 00 	sub    0x3b0(%rbx),%rax
+ 58d:	48 83 f8 01          	cmp    $0x1,%rax
+ 591:	0f 8e a9 00 00 00    	jle    640 <ir_rc5_timer_end+0xf0>
+ 597:	c7 83 c0 03 00 00 00 	movl   $0x0,0x3c0(%rbx)
+ 59e:	00 00 00 
+ 5a1:	83 bb a4 03 00 00 13 	cmpl   $0x13,0x3a4(%rbx)
+ 5a8:	76 66                	jbe    610 <ir_rc5_timer_end+0xc0>
+ 5aa:	8b 93 a8 03 00 00    	mov    0x3a8(%rbx),%edx
+ 5b0:	8b 8b 70 02 00 00    	mov    0x270(%rbx),%ecx
+ 5b6:	31 f6                	xor    %esi,%esi
+ 5b8:	31 ed                	xor    %ebp,%ebp
+ 5ba:	d3 e2                	shl    %cl,%edx
+ 5bc:	83 ca 01             	or     $0x1,%edx
+ 5bf:	89 93 a8 03 00 00    	mov    %edx,0x3a8(%rbx)
+ 5c5:	89 d0                	mov    %edx,%eax
+ 5c7:	89 c1                	mov    %eax,%ecx
+ 5c9:	01 ed                	add    %ebp,%ebp
+ 5cb:	c1 e8 02             	shr    $0x2,%eax
+ 5ce:	83 e1 03             	and    $0x3,%ecx
+ 5d1:	83 f9 01             	cmp    $0x1,%ecx
+ 5d4:	0f 84 f6 00 00 00    	je     6d0 <ir_rc5_timer_end+0x180>
+ 5da:	83 f9 03             	cmp    $0x3,%ecx
+ 5dd:	0f 84 a5 00 00 00    	je     688 <ir_rc5_timer_end+0x138>
+ 5e3:	83 c6 01             	add    $0x1,%esi
+ 5e6:	83 fe 0e             	cmp    $0xe,%esi
+ 5e9:	75 dc                	jne    5c7 <ir_rc5_timer_end+0x77>
+ 5eb:	44 8b 2d 00 00 00 00 	mov    0x0(%rip),%r13d        # 5f2 <ir_rc5_timer_end+0xa2>
+ 5f2:	45 85 ed             	test   %r13d,%r13d
+ 5f5:	0f 8f bb 01 00 00    	jg     7b6 <ir_rc5_timer_end+0x266>
+ 5fb:	41 89 ed             	mov    %ebp,%r13d
+ 5fe:	41 c1 ed 0c          	shr    $0xc,%r13d
+ 602:	41 83 e5 03          	and    $0x3,%r13d
+ 606:	e9 92 00 00 00       	jmpq   69d <ir_rc5_timer_end+0x14d>
+ 60b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+ 610:	8b 05 00 00 00 00    	mov    0x0(%rip),%eax        # 616 <ir_rc5_timer_end+0xc6>
+ 616:	85 c0                	test   %eax,%eax
+ 618:	0f 8f 54 01 00 00    	jg     772 <ir_rc5_timer_end+0x222>
+ 61e:	48 8b 5c 24 20       	mov    0x20(%rsp),%rbx
+ 623:	48 8b 6c 24 28       	mov    0x28(%rsp),%rbp
+ 628:	4c 8b 64 24 30       	mov    0x30(%rsp),%r12
+ 62d:	4c 8b 6c 24 38       	mov    0x38(%rsp),%r13
+ 632:	4c 8b 74 24 40       	mov    0x40(%rsp),%r14
+ 637:	48 83 c4 48          	add    $0x48,%rsp
+ 63b:	c3                   	retq   
+ 63c:	0f 1f 40 00          	nopl   0x0(%rax)
+ 640:	48 8b 54 24 18       	mov    0x18(%rsp),%rdx
+ 645:	2b 93 b8 03 00 00    	sub    0x3b8(%rbx),%edx
+ 64b:	69 c0 40 42 0f 00    	imul   $0xf4240,%eax,%eax
+ 651:	c7 83 c0 03 00 00 00 	movl   $0x0,0x3c0(%rbx)
+ 658:	00 00 00 
+ 65b:	8d 04 02             	lea    (%rdx,%rax,1),%eax
+ 65e:	3d 5f 6d 00 00       	cmp    $0x6d5f,%eax
+ 663:	0f 87 38 ff ff ff    	ja     5a1 <ir_rc5_timer_end+0x51>
+ 669:	8b 15 00 00 00 00    	mov    0x0(%rip),%edx        # 66f <ir_rc5_timer_end+0x11f>
+ 66f:	85 d2                	test   %edx,%edx
+ 671:	7e ab                	jle    61e <ir_rc5_timer_end+0xce>
+ 673:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 67a:	31 c0                	xor    %eax,%eax
+ 67c:	e8 00 00 00 00       	callq  681 <ir_rc5_timer_end+0x131>
+ 681:	eb 9b                	jmp    61e <ir_rc5_timer_end+0xce>
+ 683:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+ 688:	44 8b 35 00 00 00 00 	mov    0x0(%rip),%r14d        # 68f <ir_rc5_timer_end+0x13f>
+ 68f:	45 85 f6             	test   %r14d,%r14d
+ 692:	0f 8f f3 00 00 00    	jg     78b <ir_rc5_timer_end+0x23b>
+ 698:	45 31 ed             	xor    %r13d,%r13d
+ 69b:	31 ed                	xor    %ebp,%ebp
+ 69d:	44 39 ab 74 02 00 00 	cmp    %r13d,0x274(%rbx)
+ 6a4:	74 3a                	je     6e0 <ir_rc5_timer_end+0x190>
+ 6a6:	44 8b 1d 00 00 00 00 	mov    0x0(%rip),%r11d        # 6ad <ir_rc5_timer_end+0x15d>
+ 6ad:	45 85 db             	test   %r11d,%r11d
+ 6b0:	0f 8e 68 ff ff ff    	jle    61e <ir_rc5_timer_end+0xce>
+ 6b6:	44 89 ee             	mov    %r13d,%esi
+ 6b9:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 6c0:	31 c0                	xor    %eax,%eax
+ 6c2:	e8 00 00 00 00       	callq  6c7 <ir_rc5_timer_end+0x177>
+ 6c7:	e9 52 ff ff ff       	jmpq   61e <ir_rc5_timer_end+0xce>
+ 6cc:	0f 1f 40 00          	nopl   0x0(%rax)
+ 6d0:	83 cd 01             	or     $0x1,%ebp
+ 6d3:	e9 0b ff ff ff       	jmpq   5e3 <ir_rc5_timer_end+0x93>
+ 6d8:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+ 6df:	00 
+ 6e0:	89 e8                	mov    %ebp,%eax
+ 6e2:	c1 e8 06             	shr    $0x6,%eax
+ 6e5:	83 e0 1f             	and    $0x1f,%eax
+ 6e8:	3b 83 78 02 00 00    	cmp    0x278(%rbx),%eax
+ 6ee:	0f 85 2a ff ff ff    	jne    61e <ir_rc5_timer_end+0xce>
+ 6f4:	8b 8b a0 03 00 00    	mov    0x3a0(%rbx),%ecx
+ 6fa:	89 ea                	mov    %ebp,%edx
+ 6fc:	41 89 ed             	mov    %ebp,%r13d
+ 6ff:	c1 ea 0b             	shr    $0xb,%edx
+ 702:	41 83 e5 3f          	and    $0x3f,%r13d
+ 706:	83 e2 01             	and    $0x1,%edx
+ 709:	89 c8                	mov    %ecx,%eax
+ 70b:	c1 e8 0b             	shr    $0xb,%eax
+ 70e:	83 e0 01             	and    $0x1,%eax
+ 711:	39 d0                	cmp    %edx,%eax
+ 713:	74 52                	je     767 <ir_rc5_timer_end+0x217>
+ 715:	44 8b 15 00 00 00 00 	mov    0x0(%rip),%r10d        # 71c <ir_rc5_timer_end+0x1cc>
+ 71c:	45 85 d2             	test   %r10d,%r10d
+ 71f:	7f 7f                	jg     7a0 <ir_rc5_timer_end+0x250>
+ 721:	4c 8d 73 08          	lea    0x8(%rbx),%r14
+ 725:	48 8b 3b             	mov    (%rbx),%rdi
+ 728:	4c 89 f6             	mov    %r14,%rsi
+ 72b:	e8 00 00 00 00       	callq  730 <ir_rc5_timer_end+0x1e0>
+ 730:	48 8b 3b             	mov    (%rbx),%rdi
+ 733:	44 89 e9             	mov    %r13d,%ecx
+ 736:	44 89 ea             	mov    %r13d,%edx
+ 739:	4c 89 f6             	mov    %r14,%rsi
+ 73c:	e8 00 00 00 00       	callq  741 <ir_rc5_timer_end+0x1f1>
+ 741:	8b bb 7c 02 00 00    	mov    0x27c(%rbx),%edi
+ 747:	e8 00 00 00 00       	callq  74c <ir_rc5_timer_end+0x1fc>
+ 74c:	48 8d bb 50 03 00 00 	lea    0x350(%rbx),%rdi
+ 753:	4a 8d 34 20          	lea    (%rax,%r12,1),%rsi
+ 757:	e8 00 00 00 00       	callq  75c <ir_rc5_timer_end+0x20c>
+ 75c:	89 ab a0 03 00 00    	mov    %ebp,0x3a0(%rbx)
+ 762:	e9 b7 fe ff ff       	jmpq   61e <ir_rc5_timer_end+0xce>
+ 767:	83 e1 3f             	and    $0x3f,%ecx
+ 76a:	44 39 e9             	cmp    %r13d,%ecx
+ 76d:	75 a6                	jne    715 <ir_rc5_timer_end+0x1c5>
+ 76f:	90                   	nop
+ 770:	eb cf                	jmp    741 <ir_rc5_timer_end+0x1f1>
+ 772:	8b b3 a8 03 00 00    	mov    0x3a8(%rbx),%esi
+ 778:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 77f:	31 c0                	xor    %eax,%eax
+ 781:	e8 00 00 00 00       	callq  786 <ir_rc5_timer_end+0x236>
+ 786:	e9 93 fe ff ff       	jmpq   61e <ir_rc5_timer_end+0xce>
+ 78b:	89 d6                	mov    %edx,%esi
+ 78d:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 794:	31 c0                	xor    %eax,%eax
+ 796:	e8 00 00 00 00       	callq  79b <ir_rc5_timer_end+0x24b>
+ 79b:	e9 f8 fe ff ff       	jmpq   698 <ir_rc5_timer_end+0x148>
+ 7a0:	44 89 ee             	mov    %r13d,%esi
+ 7a3:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 7aa:	31 c0                	xor    %eax,%eax
+ 7ac:	e8 00 00 00 00       	callq  7b1 <ir_rc5_timer_end+0x261>
+ 7b1:	e9 6b ff ff ff       	jmpq   721 <ir_rc5_timer_end+0x1d1>
+ 7b6:	41 89 ed             	mov    %ebp,%r13d
+ 7b9:	41 89 e9             	mov    %ebp,%r9d
+ 7bc:	41 89 e8             	mov    %ebp,%r8d
+ 7bf:	41 c1 ed 0c          	shr    $0xc,%r13d
+ 7c3:	89 e8                	mov    %ebp,%eax
+ 7c5:	41 c1 e9 06          	shr    $0x6,%r9d
+ 7c9:	83 e0 3f             	and    $0x3f,%eax
+ 7cc:	41 83 e5 03          	and    $0x3,%r13d
+ 7d0:	41 c1 e8 0b          	shr    $0xb,%r8d
+ 7d4:	89 04 24             	mov    %eax,(%rsp)
+ 7d7:	41 83 e1 1f          	and    $0x1f,%r9d
+ 7db:	41 83 e0 01          	and    $0x1,%r8d
+ 7df:	44 89 e9             	mov    %r13d,%ecx
+ 7e2:	89 ee                	mov    %ebp,%esi
+ 7e4:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+ 7eb:	31 c0                	xor    %eax,%eax
+ 7ed:	e8 00 00 00 00       	callq  7f2 <ir_rc5_timer_end+0x2a2>
+ 7f2:	e9 a6 fe ff ff       	jmpq   69d <ir_rc5_timer_end+0x14d>
+ 7f7:	66 0f 1f 84 00 00 00 	nopw   0x0(%rax,%rax,1)
+ 7fe:	00 00 
+
+0000000000000800 <ir_input_init>:
+ 800:	48 85 c9             	test   %rcx,%rcx
+ 803:	89 16                	mov    %edx,(%rsi)
+ 805:	49 89 f8             	mov    %rdi,%r8
+ 808:	48 89 f0             	mov    %rsi,%rax
+ 80b:	48 8d 56 04          	lea    0x4(%rsi),%rdx
+ 80f:	74 22                	je     833 <ir_input_init+0x33>
+ 811:	f6 c2 04             	test   $0x4,%dl
+ 814:	48 89 d7             	mov    %rdx,%rdi
+ 817:	48 89 ce             	mov    %rcx,%rsi
+ 81a:	41 b9 00 02 00 00    	mov    $0x200,%r9d
+ 820:	75 77                	jne    899 <ir_input_init+0x99>
+ 822:	44 89 c9             	mov    %r9d,%ecx
+ 825:	c1 e9 03             	shr    $0x3,%ecx
+ 828:	41 83 e1 04          	and    $0x4,%r9d
+ 82c:	89 c9                	mov    %ecx,%ecx
+ 82e:	f3 48 a5             	rep movsq %ds:(%rsi),%es:(%rdi)
+ 831:	75 60                	jne    893 <ir_input_init+0x93>
+ 833:	49 8d 48 28          	lea    0x28(%r8),%rcx
+ 837:	49 89 90 d0 00 00 00 	mov    %rdx,0xd0(%r8)
+ 83e:	41 c7 80 cc 00 00 00 	movl   $0x4,0xcc(%r8)
+ 845:	04 00 00 00 
+ 849:	41 c7 80 c8 00 00 00 	movl   $0x80,0xc8(%r8)
+ 850:	80 00 00 00 
+ 854:	31 d2                	xor    %edx,%edx
+ 856:	66 2e 0f 1f 84 00 00 	nopw   %cs:0x0(%rax,%rax,1)
+ 85d:	00 00 00 
+ 860:	8b 74 10 04          	mov    0x4(%rax,%rdx,1),%esi
+ 864:	f0 0f ab 31          	lock bts %esi,(%rcx)
+ 868:	48 83 c2 04          	add    $0x4,%rdx
+ 86c:	48 81 fa 00 02 00 00 	cmp    $0x200,%rdx
+ 873:	75 eb                	jne    860 <ir_input_init+0x60>
+ 875:	f0 41 80 60 28 fe    	lock andb $0xfe,0x28(%r8)
+ 87b:	f0 41 80 48 20 02    	lock orb $0x2,0x20(%r8)
+ 881:	8b 0d 00 00 00 00    	mov    0x0(%rip),%ecx        # 887 <ir_input_init+0x87>
+ 887:	85 c9                	test   %ecx,%ecx
+ 889:	74 06                	je     891 <ir_input_init+0x91>
+ 88b:	f0 41 80 48 22 10    	lock orb $0x10,0x22(%r8)
+ 891:	f3 c3                	repz retq 
+ 893:	8b 0e                	mov    (%rsi),%ecx
+ 895:	89 0f                	mov    %ecx,(%rdi)
+ 897:	eb 9a                	jmp    833 <ir_input_init+0x33>
+ 899:	8b 09                	mov    (%rcx),%ecx
+ 89b:	48 8d 78 08          	lea    0x8(%rax),%rdi
+ 89f:	48 83 c6 04          	add    $0x4,%rsi
+ 8a3:	66 41 b9 fc 01       	mov    $0x1fc,%r9w
+ 8a8:	89 48 04             	mov    %ecx,0x4(%rax)
+ 8ab:	e9 72 ff ff ff       	jmpq   822 <ir_input_init+0x22>
+
+--Boundary-00=_PPxwKa03B9Ea8uP--
