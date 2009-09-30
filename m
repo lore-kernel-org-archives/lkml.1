@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZI3WId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZI3WUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbZI3WId (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 18:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbZI3WIc
+	id S1754743AbZI3WUE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 18:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZI3WUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 18:08:32 -0400
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:41768 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754087AbZI3WIb (ORCPT
+	Wed, 30 Sep 2009 18:20:03 -0400
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:51925 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751629AbZI3WUB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 18:08:31 -0400
-Message-ID: <4AC3D6DC.9010500@free.fr>
-Date: Thu, 01 Oct 2009 00:08:28 +0200
-From: Daniel Lezcano <daniel.lezcano@free.fr>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 30 Sep 2009 18:20:01 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAEJ1w0rCTtAn/2dsb2JhbACBUdZ4hCcE
+Date: Thu, 1 Oct 2009 00:19:58 +0200
+From: Philippe De Muyter <phdm@macqel.be>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] vfat and
+	Simon_&_Garfunkel-Wednesday_Morning,_3_a.m.
+Message-ID: <20090930221957.GA31007@frolo.macqel>
+References: <20090319181120.GA18034@frolo.macqel> <20090323085024.GA8897@frolo.macqel> <20090323140005.GB25840@frolo.macqel> <20090925194636.GA15700@frolo.macqel> <87vdj2ysk8.fsf@devron.myhome.or.jp> <20090929102559.GA4590@frolo.macqel> <20090929224340.GA9730@frolo.macqel> <87ljjwzoeu.fsf@devron.myhome.or.jp>
 MIME-Version: 1.0
-To: Dan Smith <danms@us.ibm.com>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, mingo@elte.hu, xemul@openvz.org
-Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
-References: <1253749920-18673-1-git-send-email-orenl@librato.com>	<20090924154139.2a7dd5ec.akpm@linux-foundation.org>	<20090928163704.GA3327@us.ibm.com> <4AC20BB8.4070509@free.fr>	<87iqf0o5sf.fsf@caffeine.danplanet.com> <4AC38477.4070007@free.fr>	<87eipoo0po.fsf@caffeine.danplanet.com> <4AC39CE5.9080908@free.fr> <877hvgnv6z.fsf@caffeine.danplanet.com>
-In-Reply-To: <877hvgnv6z.fsf@caffeine.danplanet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87ljjwzoeu.fsf@devron.myhome.or.jp>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Smith wrote:
-> DL> Yep, I agree. But you didn't answer the question, what are the
-> DL> network resources you plan to checkpoint / restart ?  eg. you let
-> DL> the container to setup your network, will you restore netdev
-> DL> statistics ? the mac address ? ipv4 ? ipv6 ?
->
-> Yes, Yes, Yes, and Yes.  I'm making the assumption that the common
-> case will be with a veth device in the container and that all of the
-> aforementioned attributes should be copied over.  In the future case
-> where we could potentially have a real device in the container, it
-> probably doesn't make sense to copy the mac address.
->   
+On Wed, Sep 30, 2009 at 08:02:01PM +0900, OGAWA Hirofumi wrote:
+> Philippe De Muyter <phdm@macqel.be> writes:
+> 
+> >> > IIRC, Windows stripped the trailing ".". That filename can be read/used on
+> >> > Windows?
+> >> 
+> >> Sorry I don't use MS-Windows.  I'll try to find someone who does.
+> >
+> > MS-Windows (XP SP3) lists correctly the names with their trailing dots.
+> 
+> Ok. Is it meaning you could read the file correctly? I guess so, and
+> I'll review deeply about dcache issues for it.
 
-Be careful with the assumptions ;)
-> DL> Is it possible to do a detailed list of network resources you plan
-> DL> to CR with the different items you will address from userspace and
-> DL> kernel space ?
->
-> I'm sure it's possible, but no, I haven't planned out everything for
-> the next year.  If you have strong feelings about what should be done
-> in user and kernel space, feel free to share :)
->   
+Sorry. I did not test enough yesterday. It was late  :/
 
-Dan,
+on MS-Windows XP SP#, the files and directories are listed with their
+real name, including the trailing dots, but if one tries to open such a
+file or go into such a directory, that fails with an error message.
 
-I just want to understand what is your plan. If you say "yes I will 
-checkpoint / restart" ipv4, ipv6, netdev statistics, etc ...  you should 
-be able to give at least a small list of network resources you will 
-checkpoint and how you will restart them, no ?
+With a "123456789." file :
+Cannot find the E:\PUBLIC\trailing_dots\123456789. file.
+Do you want to create a new file?
+		Yes		No		Cancel
 
-> DL> Argh ! I was hoping there was something else than the source code
->
-> The header file makes it pretty clear what is going on, 
-Certainly for you.
-We are a little far away of the sys_checkpoint / sys_restart simple 
-syscalls we talked about at the cr-minisummit in 2008.
+With a "directoryname." directory :
+E\PUBLIC\trailing_dots\directoryname. refers to a location that is unavailable.
+It could be on a hard drive on this computer, or on a network. Check to make
+sure that the disk is properly inserted, or that you are connected to the
+Internet or your network, and then try again.  If it still cannot be located,
+the information might have been moved to a different location.
+				OK
 
-Regards,
-     -- Daniel
+I don't think we want linux to remain compatible with this bug.  So perhaps
+not removing the trailing dots for a lookup is all what is needed.
 
+Best regards
 
-
+Philippe
