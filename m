@@ -1,182 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbZI3InR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbZI3Ip0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753199AbZI3InR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 04:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbZI3InQ
+	id S1753541AbZI3Ip0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 04:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZI3IpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 04:43:16 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:50206 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751679AbZI3InP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 04:43:15 -0400
-Date: Wed, 30 Sep 2009 17:43:19 +0900 (JST)
-Message-Id: <20090930.174319.183036386.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: nauman@google.com, linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
-       yoshikawa.takuya@oss.ntt.co.jp
-Subject: Re: IO scheduler based IO controller V10
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090929141049.GA12141@redhat.com>
-References: <20090929032255.GA10664@redhat.com>
-	<20090929.185653.183056711.ryov@valinux.co.jp>
-	<20090929141049.GA12141@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 30 Sep 2009 04:45:25 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:17299 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752658AbZI3IpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 04:45:25 -0400
+Message-ID: <4AC31AA5.4060609@redhat.com>
+Date: Wed, 30 Sep 2009 10:45:25 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Zachary Amsden <zamsden@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [PATCH v4: kvm 1/4] Code motion.  Separate timer intialization
+ into an indepedent function.
+References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com>
+In-Reply-To: <1254260317-3490-1-git-send-email-zamsden@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+On 09/29/2009 11:38 PM, Zachary Amsden wrote:
+> Signed-off-by: Zachary Amsden<zamsden@redhat.com>
+>    
 
-Vivek Goyal <vgoyal@redhat.com> wrote:
-> I was thinking that elevator layer will do the merge of bios. So IO
-> scheduler/elevator can time stamp the first bio in the request as it goes
-> into the disk and again timestamp with finish time once request finishes.
-> 
-> This way higher layer can get an idea how much disk time a group of bios
-> used. But on multi queue, if we dispatch say 4 requests from same queue,
-> then time accounting becomes an issue.
-> 
-> Consider following where four requests rq1, rq2, rq3 and rq4 are
-> dispatched to disk at time t0, t1, t2 and t3 respectively and these
-> requests finish at time t4, t5, t6 and t7. For sake of simlicity assume
-> time elapsed between each of milestones is t. Also assume that all these
-> requests are from same queue/group.
-> 
->         t0   t1   t2   t3  t4   t5   t6   t7
->         rq1  rq2  rq3 rq4  rq1  rq2  rq3 rq4
-> 
-> Now higher layer will think that time consumed by group is:
-> 
-> (t4-t0) + (t5-t1) + (t6-t2) + (t7-t3) = 16t
-> 
-> But the time elapsed is only 7t.
 
-IO controller can know how many requests are issued and still in
-progress. Is it not enough to accumulate the time while in-flight IOs
-exist?
+Looks good.
 
-> Secondly if a different group is running only single sequential reader,
-> there CFQ will be driving queue depth of 1 and time will not be running
-> faster and this inaccuracy in accounting will lead to unfair share between
-> groups.
->
-> So we need something better to get a sense which group used how much of
-> disk time.
+Is anything preventing us from unifying the constant_tsc and !same 
+paths?  We could just do a quick check in the notifier, see the tsc 
+frequency hasn't changed, and return.
 
-It could be solved by implementing the way to pass on such information
-from IO scheduler to higher layer controller.
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-> > How about making throttling policy be user selectable like the IO
-> > scheduler and putting it in the higher layer? So we could support
-> > all of policies (time-based, size-based and rate limiting). There
-> > seems not to only one solution which satisfies all users. But I agree
-> > with starting with proportional bandwidth control first. 
-> > 
-> 
-> What are the cases where time based policy does not work and size based
-> policy works better and user would choose size based policy and not timed
-> based one?
-
-I think that disk time is not simply proportional to IO size. If there
-are two groups whose wights are equally assigned and they issue
-different sized IOs repsectively, the bandwidth of each group would
-not distributed equally as expected. 
-
-> I am not against implementing things in higher layer as long as we can
-> ensure tight control on latencies, strong isolation between groups and
-> not break CFQ's class and ioprio model with-in group.
-> 
-> > BTW, I will start to reimplement dm-ioband into block layer.
-> 
-> Can you elaborate little bit on this?
-
-bio is grabbed in generic_make_request() and throttled as well as
-dm-ioband's mechanism. dmsetup command is not necessary any longer.
-
-> > > Fairness for higher level logical devices
-> > > =========================================
-> > > Do we want good fairness numbers for higher level logical devices also
-> > > or it is sufficient to provide fairness at leaf nodes. Providing fairness
-> > > at leaf nodes can help us use the resources optimally and in the process
-> > > we can get fairness at higher level also in many of the cases.
-> > 
-> > We should also take care of block devices which provide their own
-> > make_request_fn() and not use a IO scheduler. We can't use the leaf
-> > nodes approach to such devices.
-> > 
-> 
-> I am not sure how big an issue is this. This can be easily solved by
-> making use of NOOP scheduler by these devices. What are the reasons for
-> these devices to not use even noop? 
-
-I'm not sure why the developers of the device driver choose their own
-way, and the driver is provided in binary form, so we can't modify it.
-
-> > > Fairness with-in group
-> > > ======================
-> > > One of the issues with higher level controller is that how to do fair
-> > > throttling so that fairness with-in group is not impacted. Especially
-> > > the case of making sure that we don't break the notion of ioprio of the
-> > > processes with-in group.
-> > 
-> > I ran your test script to confirm that the notion of ioprio was not
-> > broken by dm-ioband. Here is the results of the test.
-> > https://lists.linux-foundation.org/pipermail/containers/2009-May/017834.html
-> > 
-> > I think that the time period during which dm-ioband holds IO requests
-> > for throttling would be too short to break the notion of ioprio.
-> 
-> Ok, I re-ran that test. Previously default io_limit value was 192 and now
-
-The default value of io_limit on the previous test was 128 (not 192)
-which is equall to the default value of nr_request.
-
-> I set it up to 256 as you suggested. I still see writer starving reader. I
-> have removed "conv=fdatasync" from writer so that a writer is pure buffered
-> writes.
-
-O.K. You removed "conv=fdatasync", the new dm-ioband handles
-sync/async requests separately, and it solves this
-buffered-write-starves-read problem. I would like to post it soon
-after doing some more test.
-
-> On top of that can you please give some details how increasing the
-> buffered queue length reduces the impact of writers?
-
-When the number of in-flight IOs exceeds io_limit, processes which are
-going to issue IOs are made sleep by dm-ioband until all the in-flight
-IOs are finished. But IO scheduler layer can accept IO requests more
-than the value of io_limit, so it was a bottleneck of the throughput.
-
-> IO Prio issue
-> --------------
-> I ran another test where two ioband devices were created of weight 100 
-> each on two partitions. In first group 4 readers were launched. Three
-> readers are of class BE and prio 7, fourth one is of class BE prio 0. In
-> group2, I launched a buffered writer.
-> 
-> One would expect that prio0 reader gets more bandwidth as compared to
-> prio 4 readers and prio 7 readers will get more or less same bw. Looks like
-> that is not happening. Look how vanilla CFQ provides much more bandwidth
-> to prio0 reader as compared to prio7 reader and how putting them in the
-> group reduces the difference betweej prio0 and prio7 readers.
-> 
-> Following are the results.
-
-O.K. I'll try to do more test with dm-ioband according to your
-comments especially working with CFQ. Thanks for pointing out.
-
-Thanks,
-Ryo Tsuruta
