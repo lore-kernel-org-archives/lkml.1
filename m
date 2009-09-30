@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbZI3KA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbZI3KCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493AbZI3KA5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 06:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZI3KA4
+	id S1753668AbZI3KCA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 06:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbZI3KCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 06:00:56 -0400
-Received: from 8bytes.org ([88.198.83.132]:52316 "EHLO 8bytes.org"
+	Wed, 30 Sep 2009 06:02:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:35718 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751987AbZI3KA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 06:00:56 -0400
-Date: Wed, 30 Sep 2009 12:00:59 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Cc: linux-kernel@vger.kernel.org, bhavna.sarathy@amd.com, davej@redhat.com
-Subject: Re: [PATCH] Option to synchronize P-states for  AMD family 0xf
-Message-ID: <20090930100059.GG29634@8bytes.org>
-References: <200909291623.56130.mark.langsdorf@amd.com>
+	id S1752588AbZI3KB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 06:01:59 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Make pty_driver and pty_slave_driver local vars in legacy BSD
+	pty code
+To: torvalds@osdl.org, akpm@linux-foundation.org, gregkh@suse.de
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
+Date: Wed, 30 Sep 2009 11:01:47 +0100
+Message-ID: <20090930100147.28440.87231.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909291623.56130.mark.langsdorf@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 04:23:55PM -0500, Mark Langsdorf wrote:
+Make the pty_driver and pty_slave_driver global variables into local vars of
+legacy_pty_init() as that's the only thing that ever accesses the values.
 
-> AMD Family 0xf processors (Athlon 64s and Opterons) do not
-> have P-State or C-State invariant TSCs.  Instead, the TSC
-> increments at the current processor frequency, which makes
-> it unstable and unreliable if cpufreq is enabled.
-> 
-> This patch introduces a new command parameter for the
-> PowerNow! driver called "tscsync".  When tscsync is
-> set to 1, the driver forces all processors in the system
-> to change frequency as the same time to the same frequency.
-> This unified change means that all the TSCs in the system
-> increment at the same rate.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Cool feature. Does Linux consider the TSC as stable on these machines
-even after a longer uptime (say after a week)?
+ drivers/char/pty.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-	Joerg
+
+diff --git a/drivers/char/pty.c b/drivers/char/pty.c
+index 53761ce..6fe1f07 100644
+--- a/drivers/char/pty.c
++++ b/drivers/char/pty.c
+@@ -326,8 +326,6 @@ static const struct tty_operations pty_ops = {
+ 
+ /* Traditional BSD devices */
+ #ifdef CONFIG_LEGACY_PTYS
+-static struct tty_driver *pty_driver, *pty_slave_driver;
+-
+ static int pty_bsd_ioctl(struct tty_struct *tty, struct file *file,
+ 			 unsigned int cmd, unsigned long arg)
+ {
+@@ -356,6 +354,8 @@ static const struct tty_operations pty_ops_bsd = {
+ 
+ static void __init legacy_pty_init(void)
+ {
++	struct tty_driver *pty_driver, *pty_slave_driver;
++
+ 	if (legacy_count <= 0)
+ 		return;
+ 
 
