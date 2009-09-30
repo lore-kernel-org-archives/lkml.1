@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbZI3QLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbZI3QNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbZI3QLn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 12:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZI3QLn
+	id S1754687AbZI3QNr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 12:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZI3QNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 12:11:43 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:29728 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751804AbZI3QLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 12:11:42 -0400
-Message-ID: <4AC38340.4000305@redhat.com>
-Date: Wed, 30 Sep 2009 18:11:44 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Zachary Amsden <zamsden@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [PATCH v4: kvm 1/4] Code motion.  Separate timer intialization
- into an indepedent function.
-References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com> <4AC31AA5.4060609@redhat.com> <4AC37E81.8080104@redhat.com> <4AC37F92.2090502@redhat.com> <4AC3821D.2050900@redhat.com>
-In-Reply-To: <4AC3821D.2050900@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 30 Sep 2009 12:13:47 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42667 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbZI3QNq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 12:13:46 -0400
+Date: Wed, 30 Sep 2009 18:13:57 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Linux 2.6.32-rc1
+Message-ID: <20090930181357.637bf8ec@infradead.org>
+In-Reply-To: <4AC37FE5.7020200@gmail.com>
+References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain>
+	<4AC060AE.1090401@gmail.com>
+	<alpine.LFD.2.01.0909280829100.3349@localhost.localdomain>
+	<20090928191506.40b61793@mschwide.boeblingen.de.ibm.com>
+	<4AC10365.7090802@gmail.com>
+	<4AC2712C.4080901@gmail.com>
+	<alpine.LFD.2.01.0909291410440.6996@localhost.localdomain>
+	<20090929232248.735bf4df@infradead.org>
+	<alpine.LFD.2.01.0909291429570.6996@localhost.localdomain>
+	<20090930170754.0886ff2e@infradead.org>
+	<4AC37FE5.7020200@gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/30/2009 06:06 PM, Zachary Amsden wrote:
-> On 09/30/2009 05:56 AM, Avi Kivity wrote:
->> On 09/30/2009 05:51 PM, Zachary Amsden wrote:
->>
->> If the API allows us to query the tsc frequency, it would simply 
->> return the same values in all cases, which we'd ignore.
->
-> The API only allows querying the processor frequency.  In the 
-> constant_tsc case, the highest processor frequency is likely going to 
-> be the actual TSC frequency, but I don't think it's a guarantee; 
-> theoretically, it could be faster on normal hardware ... or slower on 
-> overclocked hardware with an externally clocked TSC.
+On Wed, 30 Sep 2009 17:57:25 +0200
+Eric Dumazet <eric.dumazet@gmail.com> wrote:
+> 
+> Note:
+> 
+> lock; cmpxchg8b (%%esi)
+> 
+> gives 4 bytes opcode : f0 0f c7 0e
+> Because alternative (call cmpxchg8b_emu) uses 5 bytes, a nop will be
+> added.
+> 
+> Choosing ".byte 0xf0, 0x0f, 0xc7, 0x4e, 0x00"  aka "lock cmpxchg8b
+> 0x0(%esi)" is a litle bit better ?
 
-Well we could add a new API then (or a new tscfreq notifier).  Those 
-conditionals don't belong in client code.
+doesn't matter normally.. nops fall out quickly in the execution path ;)
+
+
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
