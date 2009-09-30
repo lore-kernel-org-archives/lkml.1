@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbZI3TGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZI3TPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755116AbZI3TGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 15:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZI3TGi
+	id S1755117AbZI3TPk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 15:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZI3TPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 15:06:38 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:57053 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752012AbZI3TGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 15:06:37 -0400
-Message-ID: <4AC3AC33.1020907@linux.vnet.ibm.com>
-Date: Wed, 30 Sep 2009 14:06:27 -0500
-From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 30 Sep 2009 15:15:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37132 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754686AbZI3TPi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 15:15:38 -0400
+Date: Wed, 30 Sep 2009 12:14:23 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Arnd Bergmann <arnd@arndb.de>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Arjan van de Ven <arjan@infradead.org>,
+       Roland McGrath <roland@redhat.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-api@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
+In-Reply-To: <200909301959.41706.arnd@arndb.de>
+Message-ID: <alpine.LFD.2.01.0909301208410.6996@localhost.localdomain>
+References: <20090924165548.GA16586@us.ibm.com> <200909301815.45211.arnd@arndb.de> <alpine.LFD.2.01.0909300925170.6996@localhost.localdomain> <200909301959.41706.arnd@arndb.de>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       Dustin Kirkland <kirkland@canonical.com>,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>, stable@kernel.org,
-       Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH] ima: ecryptfs fix imbalance message
-References: <1254258535-18894-1-git-send-email-zohar@linux.vnet.ibm.com>
-In-Reply-To: <1254258535-18894-1-git-send-email-zohar@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.97a
-OpenPGP: id=5D35E502
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/29/2009 04:08 PM, Mimi Zohar wrote:
-> The underlying files are measured. Update the counters to get rid of
-> the ecryptfs imbalance message. (http://bugzilla.redhat.com/519737)
+
+
+On Wed, 30 Sep 2009, Arnd Bergmann wrote:
 > 
-> Reported-by: Sachin Garg <ascii79@gmail.com>
-> Cc: stable@kernel.org
-> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-> ---
->  fs/ecryptfs/main.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
+> Right, you still need to save all the registers from the entry code.
+> I was under the wrong assumption that task_pt_regs(current)
+> would give the full register set on all architectures.
 > 
-> diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-> index 9f0aa98..177e61e 100644
-> --- a/fs/ecryptfs/main.c
-> +++ b/fs/ecryptfs/main.c
-> @@ -35,6 +35,7 @@
->  #include <linux/key.h>
->  #include <linux/parser.h>
->  #include <linux/fs_stack.h>
-> +#include <linux/ima.h>
->  #include "ecryptfs_kernel.h"
-> 
->  /**
-> @@ -135,7 +136,8 @@ int ecryptfs_init_persistent_file(struct dentry *ecryptfs_dentry)
->  			       "rc = [%d]\n", lower_dentry, lower_mnt, rc);
->  			rc = PTR_ERR(inode_info->lower_file);
->  			inode_info->lower_file = NULL;
-> -		}
-> +		} else
-> +			ima_counts_get(inode_info->lower_file);
->  	}
->  	mutex_unlock(&inode_info->lower_file_mutex);
->  	return rc;
+> However, I'd still hope that a new system call can be defined in
+> a way that you only need to have an assembly wrapper to save
+> the full pt_regs, but no arch specific code to get the syscall arguments
+> out of that again. In do_clone(), you need a pointer to pt_regs and
+> the user stack pointer, but that can be generated from
+> user_stack_pointer(regs).
 
-Hi Mimi - I can't think of why we would want to measure the underlying
-files.  The file contents are encrypted with a randomly generated key
-and there is eCryptfs metadata stored in the first 8K of the underlying
-file.  If you have two eCryptfs mounts, using the same key, and copy the
-same file into both mount points, you'll end up with two entirely
-different underlying files.
+I don't think it can. You don't know what the system call stack layout is. 
 
-Taking a closer look at IMA is still on my TODO list, so I could be
-missing something obvious.  The upper (decrypted) file is being
-measured, right?
+> Does task_pt_regs(current) give the right pointer on all architectures
+> or do we also need to pass the regs into the syscall?
 
-For performance and the reason mentioned above, it seems like the proper
-fix is to only measure the upper file.  What do you think?
+I do not believe that it gives the right pointer in general. In fact, I 
+can guarantee it doesn't. Even on x86 it only works for certain contexts 
+(non-vm86 mode at a minimum), and on architectures like alpha it's not at 
+all sufficient, because even if you can locate the 'pt_regs' structure, 
+you _also_ need the extra guarantees of the pt_regs being next to the 
+extended signal state register structure - and that only happens for magic 
+sequences like signal handling and explicit setups like fork/clone.
 
-Tyler
+So I do repeat: if you think you can do all of this in generic code, then 
+you're sadly and totally mistaken. Don't even try. It may work on some 
+architectures, but it's simply fundamentally _wrong_.
+
+		Linus
