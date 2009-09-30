@@ -1,113 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbZI3Gni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbZI3Gt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752989AbZI3Gni (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 02:43:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbZI3Gnh
+	id S1753052AbZI3Gt3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 02:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZI3Gt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 02:43:37 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:55237 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750873AbZI3Gng (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 02:43:36 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Organization: IBM
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] connector: Fix regression introduced by sid connector
-Date: Wed, 30 Sep 2009 08:43:11 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-release; KDE/4.3.1; i686; ; )
-Cc: Oleg Nesterov <oleg@redhat.com>, Scott James Remnant <scott@ubuntu.com>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Matt Helsley <matthltc@us.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-References: <200909251123.03482.borntraeger@de.ibm.com> <200909291712.33099.borntraeger@de.ibm.com> <20090929162855.GA15319@redhat.com>
-In-Reply-To: <20090929162855.GA15319@redhat.com>
+	Wed, 30 Sep 2009 02:49:28 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:23524 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751654AbZI3Gt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 02:49:27 -0400
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909300843.11208.borntraeger@de.ibm.com>
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Arjan van de Ven <arjan@infradead.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Arnd Bergmann <arnd@arndb.de>,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-api@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
+In-Reply-To: Linus Torvalds's message of  Tuesday, 29 September 2009 15:11:03 -0700 <alpine.LFD.2.01.0909291501530.6996@localhost.localdomain>
+X-Fcc: ~/Mail/linus
+References: <20090924165548.GA16586@us.ibm.com>
+	<20090924170308.GH16989@us.ibm.com>
+	<200909242343.59903.arnd@arndb.de>
+	<20090925082346.GB4436@localdomain>
+	<20090925105632.GG12824@hawkmoon.kerlabs.com>
+	<20090929180537.GD4625@us.ibm.com>
+	<20090929184023.532DF34@magilla.sf.frob.com>
+	<4AC255A4.4030002@zytor.com>
+	<20090929210207.247b94df@infradead.org>
+	<alpine.LFD.2.01.0909291207410.6996@localhost.localdomain>
+	<4AC267C7.4070300@zytor.com>
+	<alpine.LFD.2.01.0909291501530.6996@localhost.localdomain>
+X-Shopping-List: (1) Jubilant ring cheater-hawks
+   (2) Pharmaceutical heterogeneous cards
+   (3) Maternity affluent secretions
+   (4) Expectant snooze riots
+Message-Id: <20090930064839.AB188A3@magilla.sf.frob.com>
+Date: Tue, 29 Sep 2009 23:48:39 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+The glibc prototype for clone uses ... and is not a direct map to the
+syscall args anyway.  So that would not change for adding more optional
+args enabled by certain flags, as it did not change to add the tid pointer
+arguments before.  But indeed the library function would have to change to
+pass on additional or different args to the existing syscall.
 
-since commit 02b51df1b07b4e9ca823c89284e704cadb323cd1 (proc connector: add event 
-for process becoming session leader) we have the following warning:
-Badness at kernel/softirq.c:143
-[...]
-Krnl PSW : 0404c00180000000 00000000001481d4 (local_bh_enable+0xb0/0xe0)
-[...]
-Call Trace:
-([<000000013fe04100>] 0x13fe04100)
- [<000000000048a946>] sk_filter+0x9a/0xd0
- [<000000000049d938>] netlink_broadcast+0x2c0/0x53c
- [<00000000003ba9ae>] cn_netlink_send+0x272/0x2b0
- [<00000000003baef0>] proc_sid_connector+0xc4/0xd4
- [<0000000000142604>] __set_special_pids+0x58/0x90
- [<0000000000159938>] sys_setsid+0xb4/0xd8
- [<00000000001187fe>] sysc_noemu+0x10/0x16
- [<00000041616cb266>] 0x41616cb266
 
-The warning is
---->    WARN_ON_ONCE(in_irq() || irqs_disabled());
-
-The network code must not be called with disabled interrupts but
-sys_setsid holds the tasklist_lock with spinlock_irq while calling
-the connector. 
-After a discussion we agreed that we can move proc_sid_connector
-from __set_special_pids to sys_setsid.
-We also agreed that it is sufficient to change the check from
-task_session(curr) != pid into err > 0, since if we don't change the
-session, this means we were already the leader and return -EPERM.
-
-One last thing:
-There is also daemonize(), and some people might want to get a
-notification in that case. Since daemonize() is only needed if a user
-space does kernel_thread this does not look important (and there seems
-to be no consensus if this connector should be called in daemonize). If
-we really want this, we can add proc_sid_connector to daemonize() in an
-additional patch (Scott?)
-
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-CCed: Scott James Remnant <scott@ubuntu.com>
-CCed: Matt Helsley <matthltc@us.ibm.com>
-CCed: David S. Miller <davem@davemloft.net>
-Acked-by: Oleg Nesterov <oleg@redhat.com>
-Acked-by: Evgeniy Polyakov <zbr@ioremap.net>
----
- kernel/exit.c |    4 +---
- kernel/sys.c  |    2 ++
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/kernel/exit.c
-===================================================================
---- linux-2.6.orig/kernel/exit.c
-+++ linux-2.6/kernel/exit.c
-@@ -359,10 +359,8 @@ void __set_special_pids(struct pid *pid)
- {
- 	struct task_struct *curr = current->group_leader;
- 
--	if (task_session(curr) != pid) {
-+	if (task_session(curr) != pid)
- 		change_pid(curr, PIDTYPE_SID, pid);
--		proc_sid_connector(curr);
--	}
- 
- 	if (task_pgrp(curr) != pid)
- 		change_pid(curr, PIDTYPE_PGID, pid);
-Index: linux-2.6/kernel/sys.c
-===================================================================
---- linux-2.6.orig/kernel/sys.c
-+++ linux-2.6/kernel/sys.c
-@@ -1110,6 +1110,8 @@ SYSCALL_DEFINE0(setsid)
- 	err = session;
- out:
- 	write_unlock_irq(&tasklist_lock);
-+	if (err > 0)
-+		proc_sid_connector(sid);
- 	return err;
- }
- 
+Thanks,
+Roland
