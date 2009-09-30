@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbZI3VKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbZI3VKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbZI3VKg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 17:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbZI3VKf
+	id S1754617AbZI3VKr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 17:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbZI3VKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 17:10:35 -0400
-Received: from cmpxchg.org ([85.214.51.133]:56401 "EHLO cmpxchg.org"
+	Wed, 30 Sep 2009 17:10:36 -0400
+Received: from cmpxchg.org ([85.214.51.133]:56404 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751939AbZI3VKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752083AbZI3VKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 30 Sep 2009 17:10:34 -0400
 From: Johannes Weiner <hannes@cmpxchg.org>
 To: linux-mm@kvack.org
@@ -16,9 +16,9 @@ Cc: linux-kernel@vger.kernel.org,
        Hugh Dickins <hugh.dickins@tiscali.co.uk>, Mel Gorman <mel@csn.ul.ie>,
        Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [rfc patch 2/3] mm: serialize truncation unmap against try_to_unmap()
-Date: Wed, 30 Sep 2009 23:09:23 +0200
-Message-Id: <1254344964-8124-2-git-send-email-hannes@cmpxchg.org>
+Subject: [rfc patch 3/3] mm: munlock COW pages on truncation unmap
+Date: Wed, 30 Sep 2009 23:09:24 +0200
+Message-Id: <1254344964-8124-3-git-send-email-hannes@cmpxchg.org>
 X-Mailer: git-send-email 1.6.5.rc2
 In-Reply-To: <1254344964-8124-1-git-send-email-hannes@cmpxchg.org>
 References: <1254344964-8124-1-git-send-email-hannes@cmpxchg.org>
@@ -26,17 +26,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To munlock private COW pages on truncating unmap, we must serialize
-against concurrent reclaimers doing try_to_unmap() so they don't
-re-mlock the page before we free it.
+When truncating, VMAs are not explicitely munlocked before unmap.  The
+truncation code munlocks page cache pages only and we can end up
+freeing mlocked private COW pages.
 
-Grabbing the page lock is not possible when zapping the page table
-entries, so prevent lazy mlock in the reclaimer by holding onto the
-anon_vma lock while unmapping a VMA.
+This patch makes sure we munlock and move them from the unevictable
+list before dropping the page table reference.  We know they are going
+away with the last reference, so simply clearing the mlock (and
+accounting for it) is okay.
 
-The anon_vma can show up only after we tried locking it.  Pass it down
-in zap_details so that the zapping loops can check for whether we
-acquired the lock or not.
+We can not grab the page lock from the unmapping context, so this
+tries to move the page to the evictable list optimistically and makes
+sure a racing reclaimer moves the page instead if we fail.
+
+Rare case: the anon_vma is unlocked when encountering private pages
+because the first one in the VMA was faulted in only after we tried
+locking the anon_vma.  But we can handle it: on the second unmapping
+iteration, page cache will be truncated and vma->anon_vma will be
+stable, so just skip the page on non-present anon_vma.
 
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
 Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
@@ -45,54 +52,105 @@ Cc: Mel Gorman <mel@csn.ul.ie>
 Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/mm.h |    1 +
- mm/memory.c        |   11 +++++++++--
- 2 files changed, 10 insertions(+), 2 deletions(-)
+ mm/memory.c |   47 +++++++++++++++++++++++++++++++++++++++++------
+ mm/vmscan.c |    7 +++++++
+ 2 files changed, 48 insertions(+), 6 deletions(-)
 
 --- a/mm/memory.c
 +++ b/mm/memory.c
-@@ -999,6 +999,7 @@ unsigned long unmap_vmas(struct mmu_gath
- 	int tlb_start_valid = 0;
- 	unsigned long start = start_addr;
- 	spinlock_t *i_mmap_lock = details? details->i_mmap_lock: NULL;
-+	struct anon_vma *anon_vma = details? details->anon_vma: NULL;
- 	int fullmm = (*tlbp)->fullmm;
- 	struct mm_struct *mm = vma->vm_mm;
+@@ -819,13 +819,13 @@ static unsigned long zap_pte_range(struc
  
-@@ -1056,8 +1057,9 @@ unsigned long unmap_vmas(struct mmu_gath
- 			tlb_finish_mmu(*tlbp, tlb_start, start);
+ 			page = vm_normal_page(vma, addr, ptent);
+ 			if (unlikely(details) && page) {
++				int private = details->mapping != page->mapping;
+ 				/*
+ 				 * unmap_shared_mapping_pages() wants to
+ 				 * invalidate cache without truncating:
+ 				 * unmap shared but keep private pages.
+ 				 */
+-				if (details->keep_private &&
+-				    details->mapping != page->mapping)
++				if (details->keep_private && private)
+ 					continue;
+ 				/*
+ 				 * Each page->index must be checked when
+@@ -835,6 +835,43 @@ static unsigned long zap_pte_range(struc
+ 				    (page->index < details->first_index ||
+ 				     page->index > details->last_index))
+ 					continue;
++				/*
++				 * When truncating, private COW pages may be
++				 * mlocked in VM_LOCKED VMAs, so they need
++				 * munlocking here before getting freed.
++				 *
++				 * Skip them completely if we don't have the
++				 * anon_vma locked.  We will get it the second
++				 * time.  When page cache is truncated, no more
++				 * private pages can show up against this VMA
++				 * and the anon_vma is either present or will
++				 * never be.
++				 *
++				 * Otherwise, we still have to synchronize
++				 * against concurrent reclaimers.  We can not
++				 * grab the page lock, but with correct
++				 * ordering of page flag accesses we can get
++				 * away without it.
++				 *
++				 * A concurrent isolator may add the page to
++				 * the unevictable list, set PG_lru and then
++				 * recheck PG_mlocked to verify it chose the
++				 * right list and conditionally move it again.
++				 *
++				 * TestClearPageMlocked() provides one half of
++				 * the barrier: when we do not see the page on
++				 * the LRU and fail isolation, the isolator
++				 * must see PG_mlocked cleared and move the
++				 * page on its own back to the evictable list.
++				 */
++				if (private && !details->anon_vma)
++					continue;
++				if (private && TestClearPageMlocked(page)) {
++					dec_zone_page_state(page, NR_MLOCK);
++					count_vm_event(UNEVICTABLE_PGCLEARED);
++					if (!isolate_lru_page(page))
++						putback_lru_page(page);
++				}
+ 			}
+ 			ptent = ptep_get_and_clear_full(mm, addr, pte,
+ 							tlb->fullmm);
+@@ -866,7 +903,8 @@ static unsigned long zap_pte_range(struc
+ 		 * If details->keep_private, we leave swap entries;
+ 		 * if details->nonlinear_vma, we leave file entries.
+ 		 */
+-		if (unlikely(details))
++		if (unlikely(details && (details->keep_private ||
++					 details->nonlinear_vma)))
+ 			continue;
+ 		if (pte_file(ptent)) {
+ 			if (unlikely(!(vma->vm_flags & VM_NONLINEAR)))
+@@ -936,9 +974,6 @@ static unsigned long unmap_page_range(st
+ 	pgd_t *pgd;
+ 	unsigned long next;
  
- 			if (need_resched() ||
--				(i_mmap_lock && spin_needbreak(i_mmap_lock))) {
--				if (i_mmap_lock) {
-+			    (i_mmap_lock && spin_needbreak(i_mmap_lock)) ||
-+			    (anon_vma && spin_needbreak(&anon_vma->lock))) {
-+				if (i_mmap_lock || anon_vma) {
- 					*tlbp = NULL;
- 					goto out;
- 				}
-@@ -2327,9 +2329,14 @@ again:
- 		}
+-	if (details && !details->keep_private && !details->nonlinear_vma)
+-		details = NULL;
+-
+ 	BUG_ON(addr >= end);
+ 	tlb_start_vma(tlb, vma);
+ 	pgd = pgd_offset(vma->vm_mm, addr);
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -544,6 +544,13 @@ redo:
+ 		 */
+ 		lru = LRU_UNEVICTABLE;
+ 		add_page_to_unevictable_list(page);
++		/*
++		 * See the TestClearPageMlocked() in zap_pte_range():
++		 * if a racing unmapper did not see the above setting
++		 * of PG_lru, we must see its clearing of PG_locked
++		 * and move the page back to the evictable list.
++		 */
++		smp_mb();
  	}
  
-+	details->anon_vma = vma->anon_vma;
-+	if (details->anon_vma)
-+		spin_lock(&details->anon_vma->lock);
- 	restart_addr = zap_page_range(vma, start_addr,
- 					end_addr - start_addr, details);
- 	need_break = need_resched() || spin_needbreak(details->i_mmap_lock);
-+	if (details->anon_vma)
-+		spin_unlock(&details->anon_vma->lock);
- 
- 	if (restart_addr >= end_addr) {
- 		/* We have now completed this vma: mark it so */
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -733,6 +733,7 @@ extern void user_shm_unlock(size_t, stru
- struct zap_details {
- 	struct vm_area_struct *nonlinear_vma;	/* Check page->index if set */
- 	struct address_space *mapping;		/* Backing address space */
-+	struct anon_vma *anon_vma;		/* Rmap for private COW pages */
- 	bool keep_private;			/* Do not touch private pages */
- 	pgoff_t	first_index;			/* Lowest page->index to unmap */
- 	pgoff_t last_index;			/* Highest page->index to unmap */
+ 	/*
