@@ -1,85 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbZI3MQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZI3MQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754329AbZI3MQl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbZI3MQl
+	id S1754428AbZI3MQs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 08:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbZI3MQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:16:41 -0400
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:44945 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbZI3MQk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:16:40 -0400
-Date: Wed, 30 Sep 2009 14:16:41 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       sfr@canb.auug.org.au, heiko.carstens@de.ibm.com,
-       linux-s390@vger.kernel.org
-Subject: Re: linux-next: Tree for September 30
-Message-ID: <20090930141641.3652fc99@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20090930095254.GB5416@linux.vnet.ibm.com>
-References: <20090930133745.36a6beea.sfr@canb.auug.org.au>
-	<20090930095254.GB5416@linux.vnet.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Sep 2009 08:16:47 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46422 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753186AbZI3MQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 08:16:44 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/+IXYbGon+ocgo29eduPQeF2Y5XvnayUJv6immvK
+	uex3y7LdOurzy8
+Date: Wed, 30 Sep 2009 14:16:56 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Eric Miao <eric.y.miao@gmail.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Robert Jarzmik <robert.jarzmik@free.fr>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: arm tree in broken state (was Re: What's inside the pxa tree
+ for this merge window)
+In-Reply-To: <20090930120920.GH1412@ucw.cz>
+Message-ID: <Pine.LNX.4.64.0909301415300.4330@axis700.grange>
+References: <f17812d70909100446h17a1903fy74941945dbfc6943@mail.gmail.com>
+ <1253256227.4407.7.camel@pc-matejk> <20090918074551.GA26058@n2100.arm.linux.org.uk>
+ <Pine.LNX.4.64.0909212111490.17328@axis700.grange>
+ <20090921200923.GF30821@n2100.arm.linux.org.uk> <20090930120920.GH1412@ucw.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009 15:22:54 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Hi Pavel
 
-> 	next-20090930 randconfig build breaks, character driver
+On Wed, 30 Sep 2009, Pavel Machek wrote:
+
+> > > > I discarded them _because_ Eric handled them, which is what I said in the
+> > > > comments when I discarded them.
+> > > 
+> > > Ok, I did do my best to get patches in the right order in the mainline, 
+> > > but it all failed. AFAICS, v4l and sh are already in the mainline with a 
+> > > _wrongly_ resolved mefge conflict, which, most likely, breaks the 
+> > > sh_mobile_ceu_camera.c driver, and the three PXA platforms, patches for 
+> > > which should have been applied before both those trees and still haven't 
+> > > been applied are broken until the patches do get in and the later those 
+> > > patches get applied the longer the interval with the broken for them 
+> > > bisection is going to be.
+> > 
+> > Meanwhile I have to consider that we have several bug fixes outstanding,
+> > and since I can't send Linus a pull request every day (max once a week)
+> > I have to be very careful about when I send stuff.
+> > 
+> > So I only get _two_ opportunities during a merge window to send a pull
+> > request.
 > 
-> ERROR: "ccw_device_force_console" [drivers/s390/char/raw3270.ko] undefined!
-> make[1]: *** [__modpost] Error 1
+> Well, you should certainly try to keep your tree  unbroken, but when
+> it breaks, fixing it asap should be a priority. I don't know where you
+> got the 'once a week' rule, but it seems stupid.
+> 
+> > I'm going to wait until tomorrow before sending my final pull for this
+> > window, which is the penultimate day before the window closes.
+> > 
+> > Don't blame me for these delays - it's not my choice to impose such
+> > delays.  I'd really like to fix those broken platforms right now.  I
+> > just can't do so without causing additional delays for other issues.
+> > Blame Linus for imposing the "max one pull a week" rule on me.
+> 
+> Do you have maillist reference? Not even Linus should slow down
+> development like that.
+> 
+> If Linus really insists on that, perhaps possible solution would be to
+> make subarch maintainers send pull requests for simple fixes directly
+> to Linus?
 
-This patch should fix the build breakage:
---
-Subject: [PATCH] 3270 console build fix
+Thanks for your concern, but the patches are long in mainline, no reason 
+to worry any more.
 
-From: Sebastian Ott <sebott@linux.vnet.ibm.com>
-
-Fix this build failure:
-drivers/s390/built-in.o: In function `raw3270_pm_unfreeze':
-(.text+0x3ac04): undefined reference to `ccw_device_force_console'
-with:
-CONFIG_TN3270=y
-CONFIG_TN3270_CONSOLE=n
-CONFIG_TN3215_CONSOLE=n
-
-Reported-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Signed-off-by: Sebastian Ott <sebott@linux.vnet.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Thanks
+Guennadi
 ---
-
- drivers/s390/char/raw3270.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff -urpN linux-2.6/drivers/s390/char/raw3270.c linux-2.6-patched/drivers/s390/char/raw3270.c
---- linux-2.6/drivers/s390/char/raw3270.c	2009-09-10 00:13:59.000000000 +0200
-+++ linux-2.6-patched/drivers/s390/char/raw3270.c	2009-09-30 14:14:44.000000000 +0200
-@@ -1361,11 +1361,13 @@ static int raw3270_pm_start(struct ccw_d
- 
- void raw3270_pm_unfreeze(struct raw3270_view *view)
- {
-+#ifdef CONFIG_TN3270_CONSOLE
- 	struct raw3270 *rp;
- 
- 	rp = view->dev;
- 	if (rp && test_bit(RAW3270_FLAGS_FROZEN, &rp->flags))
- 		ccw_device_force_console();
-+#endif
- }
- 
- static struct ccw_device_id raw3270_id[] = {
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
