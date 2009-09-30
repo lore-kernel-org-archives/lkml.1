@@ -1,80 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbZI3VtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZI3VuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbZI3VtF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 17:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZI3VtE
+	id S1754686AbZI3VuB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 17:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZI3VuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 17:49:04 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:55527 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752083AbZI3VtD (ORCPT
+	Wed, 30 Sep 2009 17:50:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41526 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754040AbZI3Vt7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 17:49:03 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Bob Copeland <me@bobcopeland.com>
-Subject: Re: [.32-rc1/2] ath5k: has become unreliable with .32-rc1
-Date: Wed, 30 Sep 2009 23:49:04 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200909300952.29106.elendil@planet.nl> <20090930122451.GA17280@hash.localnet>
-In-Reply-To: <20090930122451.GA17280@hash.localnet>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 30 Sep 2009 17:49:59 -0400
+Date: Wed, 30 Sep 2009 14:49:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: dougthompson@xmission.com
+Cc: nils.carlson@ludd.ltu.se, bluesmoke-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] edac: i5100 add scrubbing
+Message-Id: <20090930144942.615ea092.akpm@linux-foundation.org>
+In-Reply-To: <4abd45c5.eiiiPyYLP3Q0wh5h%dougthompson@xmission.com>
+References: <4abd45c5.eiiiPyYLP3Q0wh5h%dougthompson@xmission.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909302349.05614.elendil@planet.nl>
-X-OriginalArrivalTime: 30 Sep 2009 21:49:05.0743 (UTC) FILETIME=[D4EC7DF0:01CA4217]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 September 2009, Bob Copeland wrote:
-> On Wed, Sep 30, 2009 at 09:52:27AM +0200, Frans Pop wrote:
-> > This is on a laptop I don't use much, but with .31 wireless has always
-> > been (and still is) reliable (.31-rc5 is the last kernel I built for
-> > it). On my other laptop wireless (iwlagn) works fine with .32-rc1.
->
-> Although iwlagn works, I would think this kind of thing:
-> > ath0: authenticated
-> > ath0: associate with AP 00:14:c1:38:e5:15 (try 1)
-> > ath0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=2)
-> > ath0: associated 
-> > ath0: deauthenticating by local choice (reason=3)
->
-> ...is some kind of issue with userspace or wext rather than the driver.
-> Ath5k only had a dozen or so patches this time around, so it should be
-> easy to bisect if it's a problem in the driver.  One possibility is
-> hardware CCMP support but I've been using it here for some time.
 
-I doubt it's a userspace issue, but it does look like the regression was
-not triggered by the ath5k driver itself. In the mean time I did a bisect
-on the drivers/net/wireless/ath directory without any results.
+> Subject: [PATCH 1/2] edac: i5100 add scrubbing
 
-> By the way, name it what you will, but the standard is wlan0 these days
-> :)
+I received
 
-Yep. A leftover from the days I used madwifi :-) I kind of like it though
-given its similarity to eth0.
+	[patch 1/3]
+	[patch 1/1]
+	[patch 1/2]
 
-> > So the difference looks to be how I boot: if I do a *cold* boot
-> > directly into .32, wireless fails; if I *reboot* from .31 into .32,
-> > wireless comes up correctly. Reboot from .32 to .32 fails too.
->
-> Is that repeatable?
+which tricked me for a while, but I worked it out!
 
-Yes, 100%. Weird heh? That's what made me think it must be an ath5k
-driver issue as it looks like a hardware initialization problem. Could
-be PCI or PCMCIA though, although I don't see anything suspicious in
-dmesg.
+On Fri, 25 Sep 2009 16:35:49 -0600
+dougthompson@xmission.com wrote:
 
-> Rafael J. Wysocki has a patch floating around to fix PCMCIA resume,
-> linked here: http://bugzilla.kernel.org/show_bug.cgi?id=13092
+> From: Nils Carlson <nils.carlson@ludd.ltu.se>
+> 
+> ls.carlson@ludd.ltu.seThis patch adds scrubbing to the i5100 chipset.
+> The i5100 chipset only  supports one scrubbing rate, which is not constant
+> but dependent on memory load. The rate returned by this driver is an
+> estimate based on some experimentation, but is substantially closer to
+> the truth than the speed supplied in the documentation.
+> 
+> Also, scrubbing is done once, and then a done-bit is set. This means that
+> to accomplish continuous scrubbing a re-enabling mechanism must be used. I
+> have created the simplest possible such mechanism in the form of a
+> work-queue which will check every five minutes. This interval is quite
+> arbitrary but should be sufficient for all sizes of system memory.
 
-Ack.
+nits:
 
-I'll probably wait and see how -rc2 (or 2a or 3 or whatever) behaves
-before doing a full bisect, but I will come back to this.
+> Index: linux-2.6.31/drivers/edac/i5100_edac.c
+> ===================================================================
+> --- linux-2.6.31.orig/drivers/edac/i5100_edac.c
+> +++ linux-2.6.31/drivers/edac/i5100_edac.c
+> @@ -25,6 +25,8 @@
+>  
+>  /* device 16, func 1 */
+>  #define I5100_MC		0x40	/* Memory Control Register */
+> +#define 	I5100_MC_SCRBEN_MASK	(1 << 7)
+> +#define 	I5100_MC_SCRBDONE_MASK	(1 << 4)
+>  #define I5100_MS		0x44	/* Memory Status Register */
 
-Thanks,
-FJP
+You used tabs, they used spaces.  Doesn't matter.  I prefer tabs.
+
+>  #define I5100_SPDDATA		0x48	/* Serial Presence Detect Status Reg */
+>  #define I5100_SPDCMD		0x4c	/* Serial Presence Detect Command Reg */
+
+
+> @@ -72,11 +74,21 @@
+>  
+>  /* bit field accessors */
+>  
+> +static inline u32 i5100_mc_scrben(u32 mc)
+> +{
+> +	return mc >> 7 & 1;
+> +}
+> +
+>  static inline u32 i5100_mc_errdeten(u32 mc)
+>  {
+>  	return mc >> 5 & 1;
+>  }
+>  
+> +static inline u32 i5100_mc_scrbdone(u32 mc)
+> +{
+> +	return mc >> 4 & 1;
+> +}
+
+"scrb", "en", "err", "det".
+
+The problem with these scruffy abbreviations is that it's difficult to
+_remember_ them.  Which is why we'll so often spell out the full word
+in kernel code.  That's easy to remember.
+
+>  static inline u16 i5100_spddata_rdo(u16 a)
+>  {
+>  	return a >> 15 & 1;
+> @@ -272,6 +284,7 @@ static inline u32 i5100_recmemb_ras(u32
+>  #define I5100_MAX_DIMM_SLOTS_PER_CHAN	4
+>  #define I5100_MAX_RANK_INTERLEAVE	4
+>  #define I5100_MAX_DMIRS			5
+> +#define I5100_SCRUB_REFRESH_RATE	(5 * 60 * HZ)
+>  
+>  struct i5100_priv {
+>  	/* ranks on each dimm -- 0 maps to not present -- obtained via SPD */
+> @@ -318,6 +331,9 @@ struct i5100_priv {
+>  	struct pci_dev *mc;	/* device 16 func 1 */
+>  	struct pci_dev *ch0mm;	/* device 21 func 0 */
+>  	struct pci_dev *ch1mm;	/* device 22 func 0 */
+> +
+> +	struct delayed_work i5100_scrubbing;
+> +	int scrub_enable;
+>  };
+>  
+>  /* map a rank/chan to a slot number on the mainboard */
+> @@ -534,6 +550,80 @@ static void i5100_check_error(struct mem
+>  	}
+>  }
+>  
+> +/* The i5100 chipset will scrub the entire memory once, then
+> + * set a done bit. Continuous scrubbing is achieved by enqueing
+> + * delayed work to a workqueue, checking every few minutes if
+> + * the scrubbing has completed and if so reinitiating it.
+> + */
+> +
+> +static void i5100_refresh_scrubbing(struct work_struct *work)
+> +{
+> +	struct delayed_work *i5100_scrubbing = container_of(work,
+> +							    struct delayed_work,
+> +							    work);
+> +	struct i5100_priv *priv = container_of(i5100_scrubbing,
+> +					       struct i5100_priv,
+> +					       i5100_scrubbing);
+> +	u32 dw;
+
+Jumping through hoops to make it fit in 80-cols.  But there's a better way:
+
+	struct delayed_work *i5100_scrubbing;
+	struct i5100_priv *priv;
+	u32 dw;
+
+	i5100_scrubbing = container_of(work, struct delayed_work, work);
+	priv = container_of(i5100_scrubbing, struct i5100_priv,
+				i5100_scrubbing);
+
+> +	pci_read_config_dword(priv->mc, I5100_MC, &dw);
+> +
+> +	if (priv->scrub_enable) {
+> +
+> +		pci_read_config_dword(priv->mc, I5100_MC, &dw);
+> +
+> +		if (i5100_mc_scrbdone(dw)) {
+> +			dw |= I5100_MC_SCRBEN_MASK;
+> +			pci_write_config_dword(priv->mc, I5100_MC, dw);
+> +			pci_read_config_dword(priv->mc, I5100_MC, &dw);
+> +		}
+> +
+> +		schedule_delayed_work(&(priv->i5100_scrubbing),
+
+The parens around the `&' operand aren't needed (several instances).
+
+> +				      I5100_SCRUB_REFRESH_RATE);
+> +	}
+> +}
+
