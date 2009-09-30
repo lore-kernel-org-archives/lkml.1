@@ -1,103 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbZI3PLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbZI3PSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754637AbZI3PLe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 11:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbZI3PLd
+	id S1754658AbZI3PSN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 11:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbZI3PSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 11:11:33 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:52040 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754701AbZI3PLb (ORCPT
+	Wed, 30 Sep 2009 11:18:12 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35343 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754480AbZI3PSL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 11:11:31 -0400
-From: Ilkka Koskinen <ilkka.koskinen@nokia.com>
-To: linux-kernel@vger.kernel.org, sameo@linux.intel.com
-Cc: linux-omap@vger.kernel.org, ilkka.koskinen@nokia.com
-Subject: [PATCH 2/2] twl4030: Enable low-power mode to 32KHz oscillator
-Date: Wed, 30 Sep 2009 18:11:55 +0300
-Message-Id: <1254323515-30866-2-git-send-email-ilkka.koskinen@nokia.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1254323515-30866-1-git-send-email-ilkka.koskinen@nokia.com>
-References: <1254323515-30866-1-git-send-email-ilkka.koskinen@nokia.com>
-X-OriginalArrivalTime: 30 Sep 2009 15:11:26.0558 (UTC) FILETIME=[47BDC7E0:01CA41E0]
-X-Nokia-AV: Clean
+	Wed, 30 Sep 2009 11:18:11 -0400
+Date: Wed, 30 Sep 2009 17:18:33 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Hannes Eder <heder@google.com>
+Cc: Wensong Zhang <wensong@linux-vs.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] ipvs: Add boundary check on ioctl arguments
+Message-ID: <20090930171833.5ce0011d@infradead.org>
+In-Reply-To: <4AC35F44.60707@google.com>
+References: <20090930131109.2b3f71b8@infradead.org>
+	<4AC35F44.60707@google.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allows TWL's 32KHz oscillator to go in low-power mode when
-main battery voltage is running low.
+On Wed, 30 Sep 2009 15:38:12 +0200
+Hannes Eder <heder@google.com> wrote:
+>  > @@ -2353,17 +2357,25 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd,
+>  > void __user 
+> *user, int *len)
+>  >  {
+>  >  	unsigned char arg[128];
+> 
+> can MAX_ARG_LEN be used here?
 
-Signed-off-by: Ilkka Koskinen <ilkka.koskinen@nokia.com>
+I am not convinced... it is a different numerical value,
+so it could be an ABI change. Rather not do that in this
+type of patch...
+
+>  > +	copylen = get_arglen[GET_CMDID(cmd)];
+>  > +	if (copylen > 128)
+> 
+> I think it's better to use 'copylen > sizeof(arg)' here.
+
+fair enough; updated patch below
+
+>From 28ae217858e683c0c94c02219d46a9a9c87f61c6 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Wed, 30 Sep 2009 13:05:51 +0200
+Subject: [PATCH] ipvs: Add boundary check on ioctl arguments
+
+The ipvs code has a nifty system for doing the size of ioctl command copies;
+it defines an array with values into which it indexes the cmd to find the
+right length.
+
+Unfortunately, the ipvs code forgot to check if the cmd was in the range
+that the array provides, allowing for an index outside of the array,
+which then gives a "garbage" result into the length, which then gets
+used for copying into a stack buffer.
+
+Fix this by adding sanity checks on these as well as the copy size.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- drivers/mfd/twl4030-core.c  |    9 +++++++--
- include/linux/i2c/twl4030.h |    5 +++++
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ net/netfilter/ipvs/ip_vs_ctl.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-index 8cf0a02..5596bb4 100644
---- a/drivers/mfd/twl4030-core.c
-+++ b/drivers/mfd/twl4030-core.c
-@@ -177,6 +177,7 @@
- #define HFCLK_FREQ_26_MHZ		(2 << 0)
- #define HFCLK_FREQ_38p4_MHZ		(3 << 0)
- #define HIGH_PERF_SQ			(1 << 3)
-+#define CK32K_LOWPWR_EN			(1 << 7)
+diff --git a/net/netfilter/ipvs/ip_vs_ctl.c b/net/netfilter/ipvs/ip_vs_ctl.c
+index ac624e5..7adc876 100644
+--- a/net/netfilter/ipvs/ip_vs_ctl.c
++++ b/net/netfilter/ipvs/ip_vs_ctl.c
+@@ -2077,6 +2077,10 @@ do_ip_vs_set_ctl(struct sock *sk, int cmd, void __user *user, unsigned int len)
+ 	if (!capable(CAP_NET_ADMIN))
+ 		return -EPERM;
  
- 
- /* chip-specific feature flags, for i2c_device_id.driver_data */
-@@ -678,7 +679,8 @@ static inline int __init unprotect_pm_master(void)
- 	return e;
- }
- 
--static void clocks_init(struct device *dev)
-+static void clocks_init(struct device *dev,
-+			struct twl4030_clock_init_data *clock)
++	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_SET_MAX + 1)
++		return -EINVAL;
++	if (len < 0 || len >  sizeof(arg))
++		return -EINVAL;
+ 	if (len != set_arglen[SET_CMDID(cmd)]) {
+ 		pr_err("set_ctl: len %u != %u\n",
+ 		       len, set_arglen[SET_CMDID(cmd)]);
+@@ -2353,17 +2357,25 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd, void __user *user, int *len)
  {
- 	int e = 0;
- 	struct clk *osc;
-@@ -725,6 +727,9 @@ static void clocks_init(struct device *dev)
+ 	unsigned char arg[128];
+ 	int ret = 0;
++	unsigned int copylen;
+ 
+ 	if (!capable(CAP_NET_ADMIN))
+ 		return -EPERM;
+ 
++	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_GET_MAX + 1)
++		return -EINVAL;
++
+ 	if (*len < get_arglen[GET_CMDID(cmd)]) {
+ 		pr_err("get_ctl: len %u < %u\n",
+ 		       *len, get_arglen[GET_CMDID(cmd)]);
+ 		return -EINVAL;
  	}
  
- 	ctrl |= HIGH_PERF_SQ;
-+	if (clock && clock->ck32k_lowpwr_enable)
-+		ctrl |= CK32K_LOWPWR_EN;
+-	if (copy_from_user(arg, user, get_arglen[GET_CMDID(cmd)]) != 0)
++	copylen = get_arglen[GET_CMDID(cmd)];
++	if (copylen > sizeof(arg))
++		return -EINVAL;
 +
- 	e |= unprotect_pm_master();
- 	/* effect->MADC+USB ck en */
- 	e |= twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER, ctrl, R_CFG_BOOT);
-@@ -805,7 +810,7 @@ twl4030_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 	inuse = true;
++	if (copy_from_user(arg, user, copylen) != 0)
+ 		return -EFAULT;
  
- 	/* setup clock framework */
--	clocks_init(&client->dev);
-+	clocks_init(&client->dev, pdata->clock);
- 
- 	/* load power event scripts */
- 	if (twl_has_power() && pdata->power)
-diff --git a/include/linux/i2c/twl4030.h b/include/linux/i2c/twl4030.h
-index 2d02dfd..612d0b7 100644
---- a/include/linux/i2c/twl4030.h
-+++ b/include/linux/i2c/twl4030.h
-@@ -312,6 +312,10 @@ int twl4030_i2c_read(u8 mod_no, u8 *value, u8 reg, unsigned num_bytes);
- 
- /*----------------------------------------------------------------------*/
- 
-+struct twl4030_clock_init_data {
-+	int ck32k_lowpwr_enable;
-+};
-+
- struct twl4030_bci_platform_data {
- 	int *battery_tmp_tbl;
- 	unsigned int tblsize;
-@@ -403,6 +407,7 @@ extern void twl4030_power_init(struct twl4030_power_data *triton2_scripts);
- 
- struct twl4030_platform_data {
- 	unsigned				irq_base, irq_end;
-+	struct twl4030_clock_init_data		*clock;
- 	struct twl4030_bci_platform_data	*bci;
- 	struct twl4030_gpio_platform_data	*gpio;
- 	struct twl4030_madc_platform_data	*madc;
+ 	if (mutex_lock_interruptible(&__ip_vs_mutex))
 -- 
-1.6.0.4
+1.6.2.5
 
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
