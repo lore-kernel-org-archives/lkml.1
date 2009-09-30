@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbZI3Wqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbZI3Wty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754528AbZI3Wqr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 18:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbZI3Wqq
+	id S1754902AbZI3Wty (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 18:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZI3Wtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 18:46:46 -0400
-Received: from borg.medozas.de ([188.40.89.202]:51699 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753022AbZI3Wqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 18:46:45 -0400
-Date: Thu, 1 Oct 2009 00:46:48 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Joe Perches <joe@perches.com>
-cc: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>,
-       Simon Horman <horms@verge.net.au>, Julian Anastasov <ja@ssi.bg>,
-       netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       lvs-devel@vger.kernel.org
-Subject: Re: [PATCH 1/2] net/netfilter/ipvs: Move #define KMSG_COMPONENT to
- Makefile
-In-Reply-To: <0026bcf5aad9ae5036e68fc2dcda9c778d30dc47.1254349375.git.joe@perches.com>
-Message-ID: <alpine.LSU.2.00.0910010042540.782@obet.zrqbmnf.qr>
-References: <cover.1254349374.git.joe@perches.com> <0026bcf5aad9ae5036e68fc2dcda9c778d30dc47.1254349375.git.joe@perches.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Sep 2009 18:49:53 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:2511 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754649AbZI3Wtw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 18:49:52 -0400
+X-IronPort-AV: E=McAfee;i="5300,2777,5757"; a="24391197"
+From: David Brown <davidb@codeaurora.org>
+To: linux-arm-kernel@lists.infradead.org
+Cc: David Brown <davidb@quicinc.com>, Russell King <linux@arm.linux.org.uk>,
+       Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] ARM: allow empty ATAG_CORE
+Date: Wed, 30 Sep 2009 15:53:00 -0700
+Message-Id: <1254351180-29199-1-git-send-email-davidb@codeaurora.org>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1254347072-27932-1-git-send-email-davidb@codeaurora.org>
+References: <1254347072-27932-1-git-send-email-davidb@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: David Brown <davidb@quicinc.com>
 
-On Thursday 2009-10-01 00:37, Joe Perches wrote:
+The ATAG_CORE is allowed to be empty.  Although this is handled
+by parse_tag_core(), __vet_atags during startup rejects this tag
+unless it contains data.  Allow the initial tag to be either the
+full size, or empty.
 
->This centralizes the definition and removes the
->replicated #defines from all files
+Signed-off-by: David Brown <davidb@quicinc.com>
+---
+Sorry, previous patch didn't actually do anything, since the new
+constant was defined incorrectly.
 
-And increases the length of the command line. Not that Linux does not
-support long command lines (in fact, configure often determines huge
-possible values on the max length test), but sometimes, developers
-have to inspect the command lines anyway for bugs, or something. It
-is already pretty long due to all the compiler flags. Oh what were
-the days of DOS programs that allowed to pass in arguments in a
-so-called "response file", wish we had that in gcc.
+ arch/arm/kernel/head-common.S |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
->+ccflags-y += -D "KMSG_COMPONENT=\"IPVS\""
->+ccflags-y += -D "pr_fmt(fmt)=KMSG_COMPONENT \": \" fmt"
->+
-> # IPVS transport protocol load balancing support
-> ip_vs_proto-objs-y :=
-> ip_vs_proto-objs-$(CONFIG_IP_VS_PROTO_TCP) += ip_vs_proto_tcp.o
->diff --git a/net/netfilter/ipvs/ip_vs_app.c b/net/netfilter/ipvs/ip_vs_app.c
->index 3c7e427..a5283d8 100644
->--- a/net/netfilter/ipvs/ip_vs_app.c
->+++ b/net/netfilter/ipvs/ip_vs_app.c
->@@ -18,9 +18,6 @@
->  *
->  */
-> 
->-#define KMSG_COMPONENT "IPVS"
->-#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
+diff --git a/arch/arm/kernel/head-common.S b/arch/arm/kernel/head-common.S
+index 93ad576..885a721 100644
+--- a/arch/arm/kernel/head-common.S
++++ b/arch/arm/kernel/head-common.S
+@@ -13,6 +13,7 @@
+ 
+ #define ATAG_CORE 0x54410001
+ #define ATAG_CORE_SIZE ((2*4 + 3*4) >> 2)
++#define ATAG_CORE_SIZE_EMPTY ((2*4) >> 2)
+ 
+ 	.align	2
+ 	.type	__switch_data, %object
+@@ -251,7 +252,8 @@ __vet_atags:
+ 	bne	1f
+ 
+ 	ldr	r5, [r2, #0]			@ is first tag ATAG_CORE?
+-	subs	r5, r5, #ATAG_CORE_SIZE
++	cmp	r5, #ATAG_CORE_SIZE
++	cmpne	r5, #ATAG_CORE_SIZE_EMPTY
+ 	bne	1f
+ 	ldr	r5, [r2, #4]
+ 	ldr	r6, =ATAG_CORE
+-- 
+1.6.2.3
 
-How about an #include file for the ipvs private things?
