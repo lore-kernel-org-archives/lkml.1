@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbZI3R7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbZI3SCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920AbZI3R7G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 13:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbZI3R7F
+	id S1755035AbZI3SCO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 14:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbZI3SCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 13:59:05 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61970 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbZI3R7F (ORCPT
+	Wed, 30 Sep 2009 14:02:13 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:61782 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754852AbZI3SCM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 13:59:05 -0400
-Subject: Re: 2.6.31.1 boot crash, compiled with ftrace
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Dick Hollenbeck <dick@softplc.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <4AC371C6.3050104@softplc.com>
-References: <4AC22613.4090803@softplc.com>  <1254297804.2963.14.camel@frodo>
-	 <1254301761.7286.4.camel@frodo>  <4AC371C6.3050104@softplc.com>
-Content-Type: text/plain
-Date: Wed, 30 Sep 2009 13:57:36 -0400
-Message-Id: <1254333456.2194.27.camel@frodo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Wed, 30 Sep 2009 14:02:12 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
+Date: Wed, 30 Sep 2009 19:59:40 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.27-8-eeepc; KDE/4.2.2; i686; ; )
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Arjan van de Ven <arjan@infradead.org>,
+       Roland McGrath <roland@redhat.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-api@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com
+References: <20090924165548.GA16586@us.ibm.com> <200909301815.45211.arnd@arndb.de> <alpine.LFD.2.01.0909300925170.6996@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0909300925170.6996@localhost.localdomain>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-1?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909301959.41706.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+jqhxLrErmtvpnHNW+ekdPEx59k3nF47LeT4w
+ lKkLWwAd8vjRcwAQuUVaAGOn8v1TOYw1U6xyQQhdriDhcaI766
+ lBNA41Q9Zw=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-30 at 09:57 -0500, Dick Hollenbeck wrote:
-
-> My real pursuit here is to find the reason for a nearly 1 second latency 
-> when running a SCHED_RR userspace process.  The filesystem is ext3 off 
-> the flash card via IDE. Linux is yanking the machine away from this 
-> process sporadically for up to 1 second, no disk file calls in this 
-> proces, only some serial port and networking (epoll) userspace calls in 
-> a loop.  It is insane.  So I have to get either LTT or FTRACE enabled, 
-> never used either before.  Its been a tough 2 weeks.  Just getting the 
-> LTT patches in sync with a decent kernel has been nearly unbearable.
+On Wednesday 30 September 2009, Linus Torvalds wrote:
+> Umm. I don't think that is possible.
 > 
+> You need architecture-specific code to even get access to all registers to 
+> copy and get a signal-handler-compatible stack frame. See for example 
+> arch/alpha/kernel/entry.S with the switch-stack thing etc.  I don't think 
+> there is any way to make that even remotely architecture-neutral.
 
-Great to hear that you narrowed it down. BTW, if you want to learn some
-more about ftrace, I just gave a 2 hour tutorial at LinuxCon last week.
-You can download the slides in the link below. They show lots of
-samples. I'll also start writing a howto for LWN real soon. So if you
-don't already have a subscription, I suggest you get one ;-)
+Right, you still need to save all the registers from the entry code.
+I was under the wrong assumption that task_pt_regs(current)
+would give the full register set on all architectures.
 
-http://people.redhat.com/srostedt/ftrace-tutorial-linux-con-2009.odp
+However, I'd still hope that a new system call can be defined in
+a way that you only need to have an assembly wrapper to save
+the full pt_regs, but no arch specific code to get the syscall arguments
+out of that again. In do_clone(), you need a pointer to pt_regs and
+the user stack pointer, but that can be generated from
+user_stack_pointer(regs).
 
--- Steve
+Does task_pt_regs(current) give the right pointer on all architectures
+or do we also need to pass the regs into the syscall?
 
-
+	Arnd <><
