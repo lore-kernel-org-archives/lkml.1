@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbZI3M60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753622AbZI3NDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbZI3M60 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbZI3M6Z
+	id S1753622AbZI3NDx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 09:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbZI3NDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:58:25 -0400
-Received: from www.tglx.de ([62.245.132.106]:54399 "EHLO www.tglx.de"
+	Wed, 30 Sep 2009 09:03:53 -0400
+Received: from sh.osrg.net ([192.16.179.4]:33780 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752764AbZI3M6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:58:25 -0400
-Date: Wed, 30 Sep 2009 14:57:25 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Remy Bohmer <linux@bohmer.net>
-cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31-rt11 freeze on userland start on ARM
-In-Reply-To: <3efb10970909211136g4e74c8b3vc339d548cdd0959f@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0909301448030.2518@nanos>
-References: <3efb10970909211136g4e74c8b3vc339d548cdd0959f@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753231AbZI3NDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 09:03:52 -0400
+Date: Wed, 30 Sep 2009 22:03:49 +0900 (JST)
+Message-Id: <20090930.220349.126057646.ryusuke@osrg.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [GIT PULL] nilfs2 fixes
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 30 Sep 2009 22:03:50 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Sep 2009, Remy Bohmer wrote:
-> So, as workaround/test I made this change:
-> 
-> Index: linux-2.6.31/drivers/serial/atmel_serial.c
-> ===================================================================
-> --- linux-2.6.31.orig/drivers/serial/atmel_serial.c	2009-09-21
-> 19:44:48.000000000 +0200
-> +++ linux-2.6.31/drivers/serial/atmel_serial.c	2009-09-21
-> 19:45:15.000000000 +0200
-> @@ -808,7 +808,8 @@ static int atmel_startup(struct uart_por
->  	/*
->  	 * Allocate the IRQ
->  	 */
-> -	retval = request_irq(port->irq, atmel_interrupt, IRQF_SHARED,
-> +	retval = request_irq(port->irq, atmel_interrupt,
-> +			IRQF_SHARED | IRQF_NODELAY,
->  			tty ? tty->name : "atmel_serial", port);
->  	if (retval) {
->  		printk("atmel_serial: atmel_startup - Can't get irq\n");
+Hi Linus,
 
-The serial irq cannot run in hard irq context.
+Nilfs tree has the following two corrections.
 
-There are two solutions to this problem:
+One of the two is an important fix which solves reported file system
+corruption infrequently triggered by garbage collection.
 
-1) Use the other timer which is available on AT91.
+Please pull from:
 
-2) Make the serial driver explicitely threaded and check in the
-hardirq handler whether the irq originated from the serial driver. If
-yes, disable it in the serial device and return IRQ_WAKE_THREAD
-otherwise return IRQ_NONE.
+  git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git for-linus
+
+to receive
+
+the following changes since commit 17d857be649a21ca90008c6dc425d849fa83db5c:
+  Linus Torvalds (1):
+        Linux 2.6.32-rc1
+
+Ryusuke Konishi (2):
+      nilfs2: fix missing zero-fill initialization of btree node cache
+      nilfs2: fix missing initialization of i_dir_start_lookup member
+
+ fs/nilfs2/btnode.c |    1 +
+ fs/nilfs2/inode.c  |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
 Thanks,
-
-	tglx
+Ryusuke Konishi
