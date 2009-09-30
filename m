@@ -1,775 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753465AbZI3Hwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbZI3Hy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753465AbZI3Hwb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 03:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZI3Hwb
+	id S1753490AbZI3Hy5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 03:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZI3Hy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 03:52:31 -0400
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:61172 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752873AbZI3Hw1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 03:52:27 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-wireless@vger.kernel.org
-Subject: [.32-rc1/2] ath5k: has become unreliable with .32-rc1
-Date: Wed, 30 Sep 2009 09:52:27 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Bob Copeland <me@bobcopeland.com>
-MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_94wwKx+VdeulF/s"
-Message-Id: <200909300952.29106.elendil@planet.nl>
-X-OriginalArrivalTime: 30 Sep 2009 07:52:29.0723 (UTC) FILETIME=[F5C3AEB0:01CA41A2]
+	Wed, 30 Sep 2009 03:54:57 -0400
+Received: from mail.perches.com ([173.55.12.10]:1445 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750873AbZI3Hy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 03:54:56 -0400
+Subject: Re: [RFC] move #define pr_fmt KBUILD_MODNAME and KMSG_COMPONENT to
+ Makefiles?
+From: Joe Perches <joe@perches.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+In-Reply-To: <20090930065533.GB13850@merkur.ravnborg.org>
+References: <1254248104.28232.447.camel@Joe-Laptop.home>
+	 <20090930065533.GB13850@merkur.ravnborg.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 30 Sep 2009 00:54:59 -0700
+Message-Id: <1254297299.2960.55.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_94wwKx+VdeulF/s
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, 2009-09-30 at 08:55 +0200, Sam Ravnborg wrote:
+> On Tue, Sep 29, 2009 at 11:15:04AM -0700, Joe Perches wrote:
+> > There are starting to be more uses of
+> > #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> > and
+> > #define KMSG_COMPONENT "foo"
+> > #define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
+> > in kernel sources.
+> > 
+> > Perhaps it would be better to put these
+> > defines in the appropriate Makefile and not
+> > sprinkle the sources with them multiple times?
+> 
+> Maybe I'm a bit dense but I do not quite follow you
+> here. What is it you want moved to kbuild here?
+> 
+> To me it looks more like a logical extension to the
+> pr_* macros based on info we already have available.
 
-This is on a laptop I don't use much, but with .31 wireless has always
-been (and still is) reliable (.31-rc5 is the last kernel I built for it).
-On my other laptop wireless (iwlagn) works fine with .32-rc1.
+Hi Sam.
 
+I agree it's a logical extension to what exists
+already, unfortunately there are already many
+uses of pr_<level> calls, some that use pr_fmt(),
+some that use an embedded constant string,
+and some with nothing.  Using a predeclared
+standardized pr_fmt would be a problem for
+those calls that use embedded constant strings.
 
-The first time I booted .32-rc1 (reboot from .31-rc5), wireless came up
-without problems, but failed to come back after suspend to RAM. I could
-only get wireless back by ejecting and re-inserting the PCMCIA card.
+So today, every file in a module that uses
+pr_fmt #defines pr_fmt before the #includes.
 
-The second and third time I booted .32-rc1 (to write this report; a cold
-boot and a ".32 to .32" reboot), wireless did not come up at all.
-See attached dmesg. The last part is after 'ifup ath0'. It seems to
-associate, but then for some reason immediately deauthenticates again.
-Ejecting/reinserting the PCMCIA card or unloading/reloading the driver
-does not help.
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-After that I tried .31-rc5 again and wireless came up fine. And when I
-then rebooted into .32, wireless came up OK as well, same as the first
-boot.
+There are starting to be a lot of these and
+likely there will be a lot more unless the
+defines are standardized somehow.
 
-So the difference looks to be how I boot: if I do a *cold* boot directly
-into .32, wireless fails; if I *reboot* from .31 into .32, wireless
-comes up correctly. Reboot from .32 to .32 fails too.
+Per Makefile ccflags would allow a gradual
+conversion of the many pr_<level> calls that
+are already prefixed with nothing, or constant
+strings, or already use pr_fmt with either
+KBUILD_MODNAME, KMSG_COMPONENT, or some
+other fixed string.
 
-I think the "wireless after boot" problem and the "resume" problem could
-very well be separate issues. The resume problem looks similar to
-http://bugzilla.kernel.org/show_bug.cgi?id=3D13948.
+If something like were added to a module Makefile:
 
+	ccflags-y += -D "pr_fmt(fmt)=KBUILD_MODNAME \": \" fmt"
 
-System: Toshiba Satellite A40; i386, Pentium 4, Debian stable ("Lenny")
+or if necessary a per-file entry in the Makefile:
 
-01:0b.0 CardBus bridge [0607]: Toshiba America Info Systems ToPIC100
-     PCI to Cardbus Bridge with ZV Support [1179:0617] (rev 33)
-02:00.0 Ethernet controller [0200]: Atheros Communications Inc.
-     AR5212/AR5213 Multiprotocol MAC/baseband processor [168c:0013] (rev 01)
+	CFLAGS_foo.o += -D "pr_fmt(fmt)=KBUILD_MODNAME \": \" fmt"
 
-=46rom ath_info:
- -=3D=3DDevice Information=3D=3D-
-MAC Version:  5212  (0x50)
-MAC Revision: 5213A (0x59)
-Device type:  1
+the number of these #defines pr_fmt in source could be
+reduced.
 
+These new Makefiles -D entries could later be stripped
+and the pr_fmt define standardized perhaps in the top
+level Makefile after the existing pr_<level> calls with
+embedded prefix strings in source are modified as necessary.
 
-dmesg diff showing resume with .31-rc5 and .32-rc1. Note that the "late"
-config restore seems to have disappeared.
+Something similar could be done in the Makefiles for
+KMSG_COMPONENT uses as well.
 
-=2D-- ../strider/2.6.31-rc5+resume        2009-09-30 03:42:21.000000000 +02=
-00
-+++ ../strider/2.6.32-rc1+resume        2009-09-30 03:38:54.000000000 +0200
- Back to C!
- CPU0: Thermal LVT vector (0xfa) already installed
- ACPI: Waking up from system sleep state S3
- pci 0000:00:02.1: restoring config space at offset 0x5 (was 0x0, writing 0=
-x2c000000)
- pci 0000:00:02.1: restoring config space at offset 0x4 (was 0x8, writing 0=
-x20000008)
- uhci_hcd 0000:00:1d.1: restoring config space at offset 0xf (was 0x2ff, wr=
-iting 0x20b)
-=2Dehci_hcd 0000:00:1d.7: PME# disabled
- PIIX_IDE 0000:00:1f.1: restoring config space at offset 0xf (was 0x1ff, wr=
-iting 0x10b)
- PIIX_IDE 0000:00:1f.1: restoring config space at offset 0x1 (was 0x2800003=
-, writing 0x2800007)
- e100 0000:01:08.0: restoring config space at offset 0xf (was 0x380801ff, w=
-riting 0x3808010b)
- e100 0000:01:08.0: restoring config space at offset 0x1 (was 0x2900003, wr=
-iting 0x2900007)
- ath5k 0000:02:00.0: restoring config space at offset 0xf (was 0xffffffff, =
-writing 0x1c0a0112)
- ath5k 0000:02:00.0: restoring config space at offset 0xe (was 0xffffffff, =
-writing 0x0)
- ath5k 0000:02:00.0: restoring config space at offset 0xd (was 0xffffffff, =
-writing 0x44)
- ath5k 0000:02:00.0: restoring config space at offset 0xc (was 0xffffffff, =
-writing 0x0)
- ath5k 0000:02:00.0: restoring config space at offset 0xb (was 0xffffffff, =
-writing 0x710316ab)
- ath5k 0000:02:00.0: restoring config space at offset 0xa (was 0xffffffff, =
-writing 0x5001)
- ath5k 0000:02:00.0: restoring config space at offset 0x9 (was 0xffffffff, =
-writing 0x0)
- ath5k 0000:02:00.0: restoring config space at offset 0x8 (was 0xffffffff, =
-writing 0x0)
- ath5k 0000:02:00.0: restoring config space at offset 0x7 (was 0xffffffff, =
-writing 0x0)
- ath5k 0000:02:00.0: restoring config space at offset 0x6 (was 0xffffffff, =
-writing 0x0)
- ath5k 0000:02:00.0: restoring config space at offset 0x5 (was 0xffffffff, =
-writing 0x0)
- ath5k 0000:02:00.0: restoring config space at offset 0x4 (was 0xffffffff, =
-writing 0x30000000)
- ath5k 0000:02:00.0: restoring config space at offset 0x3 (was 0xffffffff, =
-writing 0xa808)
- ath5k 0000:02:00.0: restoring config space at offset 0x2 (was 0xffffffff, =
-writing 0x2000001)
- ath5k 0000:02:00.0: restoring config space at offset 0x1 (was 0xffffffff, =
-writing 0x2900006)
- ath5k 0000:02:00.0: restoring config space at offset 0x0 (was 0xffffffff, =
-writing 0x13168c)
-=2Dpci 0000:00:02.0: PME# disabled
-=2Dpci 0000:00:02.1: PME# disabled
- uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
- uhci_hcd 0000:00:1d.0: setting latency timer to 64
- uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
- uhci_hcd 0000:00:1d.1: setting latency timer to 64
-=2Dehci_hcd 0000:00:1d.7: PME# disabled
- ehci_hcd 0000:00:1d.7: PCI INT D -> GSI 23 (level, low) -> IRQ 23
- ehci_hcd 0000:00:1d.7: setting latency timer to 64
- pci 0000:00:1e.0: setting latency timer to 64
- PIIX_IDE 0000:00:1f.1: PCI INT A -> GSI 18 (level, low) -> IRQ 18
- PIIX_IDE 0000:00:1f.1: setting latency timer to 64
- Intel ICH 0000:00:1f.5: PCI INT B -> GSI 17 (level, low) -> IRQ 17
- Intel ICH 0000:00:1f.5: setting latency timer to 64
- Intel ICH Modem 0000:00:1f.6: PCI INT B -> GSI 17 (level, low) -> IRQ 17
- Intel ICH Modem 0000:00:1f.6: setting latency timer to 64
-=2De100 0000:01:08.0: PME# disabled
- parport_pc 00:09: activated
- hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
- hda: UDMA/100 mode selected
- hdc: host max PIO4 wanted PIO255(auto-tune) selected PIO4
- hdc: UDMA/33 mode selected
-=2Dath5k 0000:02:00.0: restoring config space at offset 0xf (was 0x1c0a0100=
-, writing 0x1c0a0112)
-=2Dath5k 0000:02:00.0: restoring config space at offset 0x4 (was 0x0, writi=
-ng 0x30000000)
-=2Dath5k 0000:02:00.0: restoring config space at offset 0x3 (was 0x0, writi=
-ng 0xa808)
-=2Dath5k 0000:02:00.0: restoring config space at offset 0x1 (was 0x2900000,=
- writing 0x2900006)
-+ath5k 0000:02:00.0: enabling device (0000 -> 0002)
- ath5k 0000:02:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-+ath5k phy0: failed to wakeup the MAC Chip
-+ath5k phy0: can't reset hardware (-5)
-+ath5k phy0: failed to wakeup the MAC Chip
-+ath5k phy0: can't reset hardware (-5)
- Restarting tasks ... done.
+cheers, Joe
 
-
---Boundary-00=_94wwKx+VdeulF/s
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="dmesg.32-rc1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="dmesg.32-rc1"
-
-Linux version 2.6.32-rc1 (root@aragorn) (gcc version 4.3.4 (Debian 4.3.4-3) ) #4 SMP Wed Sep 30 02:43:52 CEST 2009
-KERNEL supported cpus:
-  Intel GenuineIntel
-  AMD AuthenticAMD
-  NSC Geode by NSC
-  Cyrix CyrixInstead
-  Centaur CentaurHauls
-  Transmeta GenuineTMx86
-  Transmeta TransmetaCPU
-  UMC UMC UMC UMC
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
- BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e0000 - 00000000000eee00 (reserved)
- BIOS-e820: 00000000000eee00 - 00000000000ef000 (ACPI NVS)
- BIOS-e820: 00000000000ef000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000001ef40000 (usable)
- BIOS-e820: 000000001ef40000 - 000000001ef50000 (ACPI data)
- BIOS-e820: 000000001ef50000 - 000000001f000000 (reserved)
- BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
- BIOS-e820: 00000000fec10000 - 00000000fec20000 (reserved)
- BIOS-e820: 00000000feda0000 - 00000000fedc0000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
- BIOS-e820: 00000000ffb00000 - 00000000ffc00000 (reserved)
- BIOS-e820: 00000000ffe80000 - 0000000100000000 (reserved)
-DMI 2.3 present.
-last_pfn = 0x1ef40 max_arch_pfn = 0x100000
-MTRR default type: uncachable
-MTRR fixed ranges enabled:
-  00000-9FFFF write-back
-  A0000-BFFFF uncachable
-  C0000-CFFFF write-protect
-  D0000-DFFFF uncachable
-  E0000-E7FFF write-protect
-  E8000-EFFFF write-back
-  F0000-FFFFF write-protect
-MTRR variable ranges enabled:
-  0 base 0FEDA0000 mask FFFFE0000 write-back
-  1 base 01F000000 mask FFF000000 uncachable
-  2 base 0FFF00000 mask FFFF00000 uncachable
-  3 base 000000000 mask FE0000000 write-back
-  4 disabled
-  5 disabled
-  6 disabled
-  7 disabled
-x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-e820 update range: 000000001f000000 - 00000000feda0000 (usable) ==> (reserved)
-initial memory mapped : 0 - 01800000
-init_memory_mapping: 0000000000000000-000000001ef40000
- 0000000000 - 0000400000 page 4k
- 0000400000 - 001ec00000 page 2M
- 001ec00000 - 001ef40000 page 4k
-kernel direct mapping tables up to 1ef40000 @ 7000-c000
-RAMDISK: 1eb5c000 - 1ef2f3ff
-ACPI: RSDP 000f0180 00014 (v00 TOSHIB)
-ACPI: RSDT 1ef40000 00038 (v01 TOSHIB 750      00970814 TASM 04010000)
-ACPI: FACP 1ef40060 00084 (v02 TOSHIB 750      20030101 TASM 04010000)
-ACPI: DSDT 1ef40558 04B72 (v01 TOSHIB A000C    20031216 MSFT 0100000E)
-ACPI: FACS 000eee00 00040
-ACPI: SSDT 1ef402ca 00082 (v01 TOSHIB A000C    20030917 MSFT 0100000E)
-ACPI: DBGP 1ef400e4 00034 (v01 TOSHIB 750      00970814 TASM 04010000)
-ACPI: BOOT 1ef40038 00028 (v01 TOSHIB 750      00970814 TASM 04010000)
-ACPI: APIC 1ef40118 00062 (v01 TOSHIB 750      00970814 TASM 04010000)
-ACPI: Local APIC address 0xfee00000
-0MB HIGHMEM available.
-495MB LOWMEM available.
-  mapped low ram: 0 - 1ef40000
-  low ram: 0 - 1ef40000
-  node 0 low ram: 00000000 - 1ef40000
-  node 0 bootmap 00002000 - 00005de8
-(9 early reservations) ==> bootmem [0000000000 - 001ef40000]
-  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-  #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
-  #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
-  #3 [0001000000 - 000143a26c]    TEXT DATA BSS ==> [0001000000 - 000143a26c]
-  #4 [001eb5c000 - 001ef2f3ff]          RAMDISK ==> [001eb5c000 - 001ef2f3ff]
-  #5 [000009fc00 - 0000100000]    BIOS reserved ==> [000009fc00 - 0000100000]
-  #6 [000143b000 - 00014411b0]              BRK ==> [000143b000 - 00014411b0]
-  #7 [0000007000 - 0000008000]          PGTABLE ==> [0000007000 - 0000008000]
-  #8 [0000002000 - 0000006000]          BOOTMAP ==> [0000002000 - 0000006000]
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00001000
-  Normal   0x00001000 -> 0x0001ef40
-  HighMem  0x0001ef40 -> 0x0001ef40
-Movable zone start PFN for each node
-early_node_map[2] active PFN ranges
-    0: 0x00000000 -> 0x0000009f
-    0: 0x00000100 -> 0x0001ef40
-On node 0 totalpages: 126687
-free_area_init_node: node 0, pgdat c1377f60, node_mem_map c1443000
-  DMA zone: 32 pages used for memmap
-  DMA zone: 0 pages reserved
-  DMA zone: 3967 pages, LIFO batch:0
-  Normal zone: 959 pages used for memmap
-  Normal zone: 121729 pages, LIFO batch:31
-Using APIC driver default
-ACPI: PM-Timer IO Port: 0xd808
-ACPI: Local APIC address 0xfee00000
-ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] disabled)
-ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
-ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 1, version 32, address 0xfec00000, GSI 0-23
-ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-ACPI: IRQ0 used by override.
-ACPI: IRQ2 used by override.
-ACPI: IRQ9 used by override.
-Enabling APIC mode:  Flat.  Using 1 I/O APICs
-Using ACPI (MADT) for SMP configuration information
-SMP: Allowing 2 CPUs, 1 hotplug CPUs
-nr_irqs_gsi: 24
-PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
-PM: Registered nosave memory: 00000000000a0000 - 00000000000e0000
-PM: Registered nosave memory: 00000000000e0000 - 00000000000ee000
-PM: Registered nosave memory: 00000000000ee000 - 00000000000ef000
-PM: Registered nosave memory: 00000000000ef000 - 0000000000100000
-Allocating PCI resources starting at 1f000000 (gap: 1f000000:dfc00000)
-NR_CPUS:8 nr_cpumask_bits:8 nr_cpu_ids:2 nr_node_ids:1
-PERCPU: Embedded 11 pages/cpu @c1c00000 s21720 r0 d23336 u2097152
-pcpu-alloc: s21720 r0 d23336 u2097152 alloc=1*4194304
-pcpu-alloc: [0] 0 1 
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 125696
-Kernel command line: root=/dev/mapper/strider-root ro vga=791 quiet
-PID hash table entries: 2048 (order: 1, 8192 bytes)
-Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
-Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-Initializing HighMem for node 0 (00000000:00000000)
-Memory: 493532k/507136k available (2348k kernel code, 12780k reserved, 1221k data, 324k init, 0k highmem)
-virtual kernel memory layout:
-    fixmap  : 0xfff1f000 - 0xfffff000   ( 896 kB)
-    pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
-    vmalloc : 0xdf740000 - 0xff7fe000   ( 512 MB)
-    lowmem  : 0xc0000000 - 0xdef40000   ( 495 MB)
-      .init : 0xc137d000 - 0xc13ce000   ( 324 kB)
-      .data : 0xc124b0f1 - 0xc137c5d0   (1221 kB)
-      .text : 0xc1000000 - 0xc124b0f1   (2348 kB)
-Checking if this processor honours the WP bit even in supervisor mode...Ok.
-Hierarchical RCU implementation.
-NR_IRQS:512
-Console: colour dummy device 80x25
-console [tty0] enabled
-Fast TSC calibration using PIT
-Detected 2792.798 MHz processor.
-Calibrating delay loop (skipped), value calculated using timer frequency.. 5585.59 BogoMIPS (lpj=11171192)
-Security Framework initialized
-SELinux:  Disabled at boot.
-Mount-cache hash table entries: 512
-CPU: Trace cache: 12K uops, L1 D cache: 8K
-CPU: L2 cache: 512K
-CPU: Hyper-Threading is disabled
-mce: CPU supports 4 MCE banks
-CPU0: Thermal monitoring enabled (TM1)
-Checking 'hlt' instruction... OK.
-SMP alternatives: switching to UP code
-ACPI: Core revision 20090903
-..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-CPU0: Mobile Intel(R) Pentium(R) 4     CPU 2.80GHz stepping 09
-Brought up 1 CPUs
-Total of 1 processors activated (5585.59 BogoMIPS).
-CPU0 attaching NULL sched-domain.
-NET: Registered protocol family 16
-ACPI: bus type pci registered
-PCI: PCI BIOS revision 2.10 entry at 0xfd2fe, last bus=3
-PCI: Using configuration type 1 for base access
-bio: create slab <bio-0> at 0
-ACPI: EC: Look up EC in DSDT
-ACPI Warning: Package List length (0xF) larger than NumElements count (0x2), truncated
- (20090903/dsobject-515)
-ACPI: Interpreter enabled
-ACPI: (supports S0 S3 S4 S5)
-ACPI: Using IOAPIC for interrupt routing
-ACPI: Enumerating devices from [\]
-[Firmware Bug]: ACPI: ACPI brightness control misses _BQC function
-ACPI: No dock devices found.
-ACPI: PCI Root Bridge [PCI0] (0000:00)
-pci 0000:00:02.0: reg 10 32bit mmio pref: [0xd8000000-0xdfffffff]
-pci 0000:00:02.0: reg 14 32bit mmio: [0xd0000000-0xd007ffff]
-pci 0000:00:02.0: reg 18 io port: [0xeff8-0xefff]
-pci 0000:00:02.0: supports D1
-pci 0000:00:02.1: reg 10 32bit mmio pref: [0x000000-0x7ffffff]
-pci 0000:00:02.1: reg 14 32bit mmio: [0x000000-0x07ffff]
-pci 0000:00:02.1: supports D1
-pci 0000:00:1d.0: reg 20 io port: [0xcfe0-0xcfff]
-pci 0000:00:1d.1: reg 20 io port: [0xcf80-0xcf9f]
-pci 0000:00:1d.7: reg 10 32bit mmio: [0x000000-0x0003ff]
-pci 0000:00:1d.7: PME# supported from D0 D3hot D3cold
-pci 0000:00:1d.7: PME# disabled
-pci 0000:00:1f.0: quirk: region d800-d87f claimed by ICH4 ACPI/GPIO/TCO
-pci 0000:00:1f.0: quirk: region eec0-eeff claimed by ICH4 GPIO
-pci 0000:00:1f.1: reg 10 io port: [0xbff8-0xbfff]
-pci 0000:00:1f.1: reg 14 io port: [0xbff4-0xbff7]
-pci 0000:00:1f.1: reg 18 io port: [0xbfe8-0xbfef]
-pci 0000:00:1f.1: reg 1c io port: [0xbfe4-0xbfe7]
-pci 0000:00:1f.1: reg 20 io port: [0xbfa0-0xbfaf]
-pci 0000:00:1f.1: reg 24 32bit mmio: [0x000000-0x0003ff]
-pci 0000:00:1f.5: reg 10 io port: [0x00-0xff]
-pci 0000:00:1f.5: reg 14 io port: [0x00-0x3f]
-pci 0000:00:1f.5: reg 18 32bit mmio: [0x000000-0x0001ff]
-pci 0000:00:1f.5: reg 1c 32bit mmio: [0x000000-0x0000ff]
-pci 0000:00:1f.5: PME# supported from D0 D3hot D3cold
-pci 0000:00:1f.5: PME# disabled
-pci 0000:00:1f.6: reg 10 io port: [0x00-0xff]
-pci 0000:00:1f.6: reg 14 io port: [0x00-0x7f]
-pci 0000:00:1f.6: PME# supported from D0 D3hot D3cold
-pci 0000:00:1f.6: PME# disabled
-pci 0000:01:08.0: reg 10 32bit mmio: [0xcffff000-0xcfffffff]
-pci 0000:01:08.0: reg 14 io port: [0xcf40-0xcf7f]
-pci 0000:01:08.0: supports D1 D2
-pci 0000:01:08.0: PME# supported from D0 D1 D2 D3hot D3cold
-pci 0000:01:08.0: PME# disabled
-pci 0000:01:0b.0: reg 10 32bit mmio: [0x000000-0x000fff]
-pci 0000:00:1e.0: transparent bridge
-pci 0000:00:1e.0: bridge io port: [0xc000-0xcfff]
-pci 0000:00:1e.0: bridge 32bit mmio: [0xcff00000-0xcfffffff]
-pci_bus 0000:00: on NUMA node 0
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCIB._PRT]
-ACPI: PCI Interrupt Link [LNKA] (IRQs *10)
-ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 6 7 *11)
-ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 6 7 *11)
-ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 6 7 *11)
-ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 *11)
-ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 6 7 *11)
-ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 6 7 *11)
-ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 *11)
-ACPI: Power Resource [PFAN] (off)
-vgaarb: device added: PCI:0000:00:02.0,decodes=io+mem,owns=io+mem,locks=none
-vgaarb: loaded
-PCI: Using ACPI for IRQ routing
-pci 0000:00:1d.0: BAR 4: address space collision on of device [0xcfe0-0xcfff]
-pci 0000:00:1d.0: BAR 4: can't allocate resource
-pci 0000:00:1d.1: BAR 4: address space collision on of device [0xcf80-0xcf9f]
-pci 0000:00:1d.1: BAR 4: can't allocate resource
-Switching to clocksource tsc
-pnp: PnP ACPI init
-ACPI: bus type pnp registered
-pnp 00:08: io resource (0x10-0x1f) overlaps 0000:00:1d.0 BAR 4 (0x0-0x1f), disabling
-pnp 00:08: io resource (0x10-0x1f) overlaps 0000:00:1d.1 BAR 4 (0x0-0x1f), disabling
-pnp: PnP ACPI: found 10 devices
-ACPI: ACPI bus type pnp unregistered
-PnPBIOS: Disabled by ACPI PNP
-system 00:00: iomem range 0x0-0x9ffff could not be reserved
-(The fact that a range could not be reserved is generally harmless.)
-system 00:00: iomem range 0xe0000-0xeffff could not be reserved
-system 00:00: iomem range 0xf0000-0xfffff could not be reserved
-system 00:00: iomem range 0x100000-0x1ef3ffff could not be reserved
-system 00:00: iomem range 0x1ef40000-0x1ef4ffff could not be reserved
-system 00:00: iomem range 0x1ef50000-0x1effffff has been reserved
-system 00:00: iomem range 0xfec10000-0xfec1ffff has been reserved
-system 00:00: iomem range 0xfeda0000-0xfedbffff has been reserved
-system 00:00: iomem range 0xfec00000-0xfec00fff could not be reserved
-system 00:00: iomem range 0xfee00000-0xfee00fff has been reserved
-system 00:00: iomem range 0xffb00000-0xffbfffff has been reserved
-system 00:00: iomem range 0xffe80000-0xffffffff has been reserved
-system 00:08: ioport range 0x1e0-0x1ef has been reserved
-system 00:08: ioport range 0x480-0x48f has been reserved
-system 00:08: ioport range 0x680-0x6ff has been reserved
-system 00:08: ioport range 0x800-0x80f has been reserved
-system 00:08: ioport range 0xd800-0xd87f has been reserved
-system 00:08: ioport range 0xd880-0xd89f has been reserved
-system 00:08: ioport range 0xd8a0-0xd8bf has been reserved
-system 00:08: ioport range 0xe000-0xe07f has been reserved
-system 00:08: ioport range 0xe080-0xe0ff has been reserved
-system 00:08: ioport range 0xe400-0xe47f has been reserved
-system 00:08: ioport range 0xe480-0xe4ff has been reserved
-system 00:08: ioport range 0xe800-0xe87f has been reserved
-system 00:08: ioport range 0xe880-0xe8ff has been reserved
-system 00:08: ioport range 0xec00-0xec7f has been reserved
-system 00:08: ioport range 0xec80-0xecff has been reserved
-system 00:08: ioport range 0xeeac-0xeeac has been reserved
-system 00:08: ioport range 0xeeb0-0xeebf has been reserved
-system 00:08: ioport range 0xeec0-0xeeff has been reserved
-system 00:08: ioport range 0x4d0-0x4d1 has been reserved
-pci 0000:01:0b.0: CardBus bridge, secondary bus 0000:02
-pci 0000:01:0b.0:   IO window: 0x00c000-0x00c0ff
-pci 0000:01:0b.0:   IO window: 0x00c400-0x00c4ff
-pci 0000:01:0b.0:   PREFETCH window: 0x28000000-0x2bffffff
-pci 0000:01:0b.0:   MEM window: 0x30000000-0x33ffffff
-pci 0000:00:1e.0: PCI bridge, secondary bus 0000:01
-pci 0000:00:1e.0:   IO window: 0xc000-0xcfff
-pci 0000:00:1e.0:   MEM window: 0xcff00000-0xcfffffff
-pci 0000:00:1e.0:   PREFETCH window: 0x28000000-0x2bffffff
-pci 0000:00:1e.0: setting latency timer to 64
-pci 0000:01:0b.0: enabling device (0000 -> 0003)
-pci 0000:01:0b.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
-pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffff]
-pci_bus 0000:01: resource 0 io:  [0xc000-0xcfff]
-pci_bus 0000:01: resource 1 mem: [0xcff00000-0xcfffffff]
-pci_bus 0000:01: resource 2 pref mem [0x28000000-0x2bffffff]
-pci_bus 0000:01: resource 3 io:  [0x00-0xffff]
-pci_bus 0000:01: resource 4 mem: [0x000000-0xffffffff]
-pci_bus 0000:02: resource 0 io:  [0xc000-0xc0ff]
-pci_bus 0000:02: resource 1 io:  [0xc400-0xc4ff]
-pci_bus 0000:02: resource 2 pref mem [0x28000000-0x2bffffff]
-pci_bus 0000:02: resource 3 mem: [0x30000000-0x33ffffff]
-NET: Registered protocol family 2
-IP route cache hash table entries: 4096 (order: 2, 16384 bytes)
-TCP established hash table entries: 16384 (order: 5, 131072 bytes)
-TCP bind hash table entries: 16384 (order: 5, 131072 bytes)
-TCP: Hash tables configured (established 16384 bind 16384)
-TCP reno registered
-NET: Registered protocol family 1
-Trying to unpack rootfs image as initramfs...
-Freeing initrd memory: 3916k freed
-Simple Boot Flag at 0x7c set to 0x1
-audit: initializing netlink socket (disabled)
-type=2000 audit(1254294277.285:1): initialized
-VFS: Disk quotas dquot_6.5.2
-Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
-msgmni has been set to 972
-alg: No test for stdrng (krng)
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-pci 0000:00:02.0: Boot video device
-pci 0000:01:08.0: Firmware left e100 interrupts enabled; disabling
-vesafb: framebuffer at 0xd8000000, mapped to 0xdf780000, using 3072k, total 16192k
-vesafb: mode is 1024x768x16, linelength=2048, pages=9
-vesafb: scrolling: redraw
-vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-Console: switching to colour frame buffer device 128x48
-fb0: VESA VGA frame buffer device
-isapnp: Scanning for PnP cards...
-isapnp: No Plug & Play device found
-Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
-serial 0000:00:1f.6: power state changed by ACPI to D0
-serial 0000:00:1f.6: enabling device (0000 -> 0001)
-serial 0000:00:1f.6: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-serial 0000:00:1f.6: PCI INT B disabled
-brd: module loaded
-e100: Intel(R) PRO/100 Network Driver, 3.5.24-k2-NAPI
-e100: Copyright(c) 1999-2006 Intel Corporation
-e100 0000:01:08.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-e100 0000:01:08.0: PME# disabled
-e100: eth0: e100_probe: addr 0xcffff000, irq 20, MAC addr 00:08:0d:17:bf:f5
-console [netcon0] enabled
-netconsole: network logging started
-PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
-serio: i8042 KBD port at 0x60,0x64 irq 1
-serio: i8042 AUX port at 0x60,0x64 irq 12
-mice: PS/2 mouse device common for all mice
-cpuidle: using governor ladder
-cpuidle: using governor menu
-TCP bic registered
-NET: Registered protocol family 17
-Using IPI No-Shortcut mode
-Freeing unused kernel memory: 324k freed
-input: AT Translated Set 2 keyboard as /class/input/input0
-fan PNP0C0B:00: registered as cooling_device0
-ACPI: Fan [FAN] (off)
-thermal LNXTHERM:01: registered as thermal_zone0
-ACPI: Thermal Zone [THRM] (43 C)
-Switched to high resolution mode on CPU 0
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-Uniform Multi-Platform E-IDE driver
-ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
-ehci_hcd 0000:00:1d.7: enabling device (0000 -> 0002)
-ehci_hcd 0000:00:1d.7: PCI INT D -> GSI 23 (level, low) -> IRQ 23
-ehci_hcd 0000:00:1d.7: setting latency timer to 64
-ehci_hcd 0000:00:1d.7: EHCI Host Controller
-ehci_hcd 0000:00:1d.7: new USB bus registered, assigned bus number 1
-ehci_hcd 0000:00:1d.7: debug port 1
-ehci_hcd 0000:00:1d.7: cache line size of 128 is not supported
-ehci_hcd 0000:00:1d.7: irq 23, io mem 0x2c080000
-ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00
-usb usb1: configuration #1 chosen from 1 choice
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 6 ports detected
-piix 0000:00:1f.1: IDE controller (0x8086:0x24ca rev 0x03)
-PIIX_IDE 0000:00:1f.1: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-piix 0000:00:1f.1: not 100% native mode: will probe irqs later
-    ide0: BM-DMA at 0xbfa0-0xbfa7
-    ide1: BM-DMA at 0xbfa8-0xbfaf
-Probing IDE interface ide0...
-uhci_hcd: USB Universal Host Controller Interface driver
-hda: HTS541080G9AT00, ATA DISK drive
-hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-hda: UDMA/100 mode selected
-Probing IDE interface ide1...
-hdc: TOSHIBA DVD-ROM SD-R6112, ATAPI CD/DVD-ROM drive
-hdc: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-hdc: UDMA/33 mode selected
-ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-ide1 at 0x170-0x177,0x376 on irq 15
-uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-uhci_hcd 0000:00:1d.0: setting latency timer to 64
-uhci_hcd 0000:00:1d.0: UHCI Host Controller
-uhci_hcd 0000:00:1d.0: new USB bus registered, assigned bus number 2
-uhci_hcd 0000:00:1d.0: irq 16, io base 0x000018c0
-usb usb2: configuration #1 chosen from 1 choice
-hub 2-0:1.0: USB hub found
-hub 2-0:1.0: 2 ports detected
-uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
-uhci_hcd 0000:00:1d.1: setting latency timer to 64
-uhci_hcd 0000:00:1d.1: UHCI Host Controller
-uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number 3
-uhci_hcd 0000:00:1d.1: irq 19, io base 0x000018e0
-usb usb3: configuration #1 chosen from 1 choice
-hub 3-0:1.0: USB hub found
-hub 3-0:1.0: 2 ports detected
-SCSI subsystem initialized
-libata version 3.00 loaded.
-ide-gd driver 1.18
-hda: max request size: 512KiB
-ide-cd driver 5.00
-hda: 156301488 sectors (80026 MB) w/7539KiB Cache, CHS=16383/255/63
-hda: cache flushes supported
- hda: hda1 hda2 hda3 hda4 < hda5 hda6 hda7 >
-ide-cd: hdc: ATAPI 24X DVD-ROM DVD-R CD-R/RW drive, 2048kB Cache
-Uniform CD-ROM driver Revision: 3.20
-device-mapper: ioctl: 4.15.0-ioctl (2009-04-01) initialised: dm-devel@redhat.com
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: mounted filesystem with ordered data mode.
-udevd version 125 started
-Marking TSC unstable due to TSC halts in idle
-processor LNXCPU:00: registered as cooling_device1
-Switching to clocksource acpi_pm
-input: Lid Switch as /class/input/input1
-ACPI: Lid Switch [LID]
-input: Power Button as /class/input/input2
-ACPI: Power Button [PWRB]
-input: Power Button as /class/input/input3
-ACPI: Power Button [PWRF]
-Linux agpgart interface v0.103
-ACPI: AC Adapter [ADP1] (on-line)
-pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-ACPI Warning for \_SB_.BAT1._BIF: Converted Buffer to expected String at index 9 (20090903/nsrepair-132)
-ACPI Warning for \_SB_.BAT1._BIF: Converted Buffer to expected String at index 10 (20090903/nsrepair-132)
-ACPI Warning for \_SB_.BAT1._BIF: Converted Buffer to expected String at index 11 (20090903/nsrepair-132)
-ACPI Warning for \_SB_.BAT1._BIF: Return Package type mismatch at index 12 - found Integer, expected String (20090903/nspredef-1012)
-agpgart-intel 0000:00:00.0: Intel 855GM Chipset
-agpgart-intel 0000:00:00.0: detected 16252K stolen memory
-agpgart-intel 0000:00:00.0: AGP aperture is 128M @ 0xd8000000
-ACPI: Battery Slot [BAT1] (battery present)
-shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
-[Firmware Bug]: ACPI: ACPI brightness control misses _BQC function
-acpi device:0d: registered as cooling_device2
-input: Video Bus as /class/input/input4
-ACPI: Video Device [VGA] (multi-head: yes  rom: yes  post: no)
-input: Toshiba input device as /class/input/input5
-toshiba_acpi: Toshiba Laptop ACPI Extras version 0.19
-toshiba_acpi:     HCI method: \_SB_.VALZ.GHCI
-parport_pc 00:09: activated
-parport_pc 00:09: reported by Plug and Play ACPI
-parport0: PC-style at 0x378 (0x778), irq 7, dma 1 [PCSPP,TRISTATE,COMPAT,ECP,DMA]
-input: PC Speaker as /class/input/input6
-Driver 'rtc_cmos' needs updating - please use bus_type methods
-rtc_cmos 00:07: RTC can wake from S4
-rtc_cmos 00:07: rtc core: registered rtc_cmos as rtc0
-rtc0: alarms up to one year, 114 bytes nvram
-yenta_cardbus 0000:01:0b.0: CardBus bridge found [1179:0001]
-yenta_cardbus 0000:01:0b.0: ISA IRQ mask 0x0c38, PCI irq 18
-yenta_cardbus 0000:01:0b.0: Socket status: 30000020
-yenta_cardbus 0000:01:0b.0: pcmcia: parent PCI bridge I/O window: 0xc000 - 0xcfff
-pcmcia_socket pcmcia_socket0: cs: IO port probe 0xc000-0xcfff: clean.
-yenta_cardbus 0000:01:0b.0: pcmcia: parent PCI bridge Memory window: 0xcff00000 - 0xcfffffff
-yenta_cardbus 0000:01:0b.0: pcmcia: parent PCI bridge Memory window: 0x28000000 - 0x2bffffff
-Intel ICH 0000:00:1f.5: power state changed by ACPI to D0
-Intel ICH 0000:00:1f.5: enabling device (0000 -> 0003)
-Intel ICH 0000:00:1f.5: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-Intel ICH 0000:00:1f.5: setting latency timer to 64
-input: PS/2 Mouse as /class/input/input7
-input: AlpsPS/2 ALPS GlidePoint as /class/input/input8
-pcmcia_socket pcmcia_socket0: pccard: CardBus card inserted into slot 0
-pci 0000:02:00.0: reg 10 32bit mmio: [0x000000-0x00ffff]
-cfg80211: Using static regulatory domain info
-cfg80211: Regulatory domain: EU
-	(start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
-	(2402000 KHz - 2482000 KHz @ 40000 KHz), (600 mBi, 2000 mBm)
-	(5170000 KHz - 5190000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-	(5190000 KHz - 5210000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-	(5210000 KHz - 5230000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-	(5230000 KHz - 5330000 KHz @ 40000 KHz), (600 mBi, 2000 mBm)
-	(5490000 KHz - 5710000 KHz @ 40000 KHz), (600 mBi, 3000 mBm)
-cfg80211: Calling CRDA for country: EU
-cfg80211: Calling CRDA for country: EU
-pcmcia_socket pcmcia_socket0: cs: IO port probe 0x100-0x3af: clean.
-pcmcia_socket pcmcia_socket0: cs: IO port probe 0x3e0-0x4ff: clean.
-pcmcia_socket pcmcia_socket0: cs: IO port probe 0x820-0x8ff: clean.
-pcmcia_socket pcmcia_socket0: cs: IO port probe 0xc00-0xcf7: clean.
-pcmcia_socket pcmcia_socket0: cs: IO port probe 0xa00-0xaff: clean.
-ath5k 0000:02:00.0: enabling device (0000 -> 0002)
-ath5k 0000:02:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-ath5k 0000:02:00.0: registered as 'phy0'
-ath: EEPROM regdomain: 0x30
-ath: EEPROM indicates we should expect a direct regpair map
-ath: Country alpha2 being used: AM
-ath: Regpair used: 0x30
-phy0: Selected rate control algorithm 'minstrel'
-ath5k phy0: Atheros AR5213A chip found (MAC: 0x59, PHY: 0x43)
-ath5k phy0: RF2112B 2GHz radio found (0x46)
-cfg80211: Calling CRDA for country: AM
-udev: renamed network interface wlan0 to ath0
-intel8x0_measure_ac97_clock: measured 55296 usecs (2664 samples)
-intel8x0: clocking to 48000
-Intel ICH Modem 0000:00:1f.6: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-Intel ICH Modem 0000:00:1f.6: setting latency timer to 64
-EXT3 FS on dm-1, internal journal
-padlock: VIA PadLock not detected.
-padlock: VIA PadLock Hash Engine not detected.
-loop: module loaded
-NET: Registered protocol family 10
-lo: Disabled Privacy Extensions
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on dm-7, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on dm-5, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on dm-2, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-kjournald starting.  Commit interval 5 seconds
-EXT3 FS on dm-3, internal journal
-EXT3-fs: mounted filesystem with ordered data mode.
-Adding 1048568k swap on /dev/mapper/strider-swap_crypt.  Priority:-1 extents:1 across:1048568k 
-ADDRCONF(NETDEV_UP): ath0: link is not ready
-RPC: Registered udp transport module.
-RPC: Registered tcp transport module.
-RPC: Registered tcp NFSv4.1 backchannel transport module.
-lp0: using parport0 (interrupt-driven).
-ppdev: user-space parallel port driver
-ADDRCONF(NETDEV_UP): eth0: link is not ready
-ADDRCONF(NETDEV_UP): eth0: link is not ready
-CPUFREQ: Per core ondemand sysfs interface is deprecated - up_threshold
-CPUFREQ: Per core ondemand sysfs interface is deprecated - ignore_nice_load
-ADDRCONF(NETDEV_UP): ath0: link is not ready
-ath0: deauthenticating by local choice (reason=3)
-ath0: direct probe to AP 00:14:c1:38:e5:15 (try 1)
-ath0: direct probe to AP 00:14:c1:38:e5:15 (try 2)
-ath0 direct probe responded
-ath0: authenticate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: authenticated
-ath0: associate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: RX AssocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=2)
-ath0: associated
-ADDRCONF(NETDEV_CHANGE): ath0: link becomes ready
-ath0: deauthenticating by local choice (reason=3)
-ath0: direct probe to AP 00:14:c1:38:e5:15 (try 1)
-ath0 direct probe responded
-ath0: authenticate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: authenticated
-ath0: associate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=2)
-ath0: associated
-ath0: deauthenticating by local choice (reason=3)
-ath0: direct probe to AP 00:14:c1:38:e5:15 (try 1)
-ath0 direct probe responded
-ath0: authenticate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: authenticated
-ath0: associate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=2)
-ath0: associated
-ath0: deauthenticating by local choice (reason=3)
-ath0: direct probe to AP 00:14:c1:38:e5:15 (try 1)
-ath0 direct probe responded
-ath0: authenticate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: authenticated
-ath0: associate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=2)
-ath0: associated
-ath0: deauthenticating by local choice (reason=3)
-ath0: direct probe to AP 00:14:c1:38:e5:15 (try 1)
-ath0 direct probe responded
-ath0: authenticate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: authenticated
-ath0: associate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=2)
-ath0: associated
-ath0: deauthenticating by local choice (reason=3)
-ath0: direct probe to AP 00:14:c1:38:e5:15 (try 1)
-ath0 direct probe responded
-ath0: authenticate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: authenticated
-ath0: associate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=2)
-ath0: associated
-ath0: deauthenticating by local choice (reason=3)
-ath0: direct probe to AP 00:14:c1:38:e5:15 (try 1)
-ath0 direct probe responded
-ath0: authenticate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: authenticated
-ath0: associate with AP 00:14:c1:38:e5:15 (try 1)
-ath0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=2)
-ath0: associated
-ath0: deauthenticating by local choice (reason=3)
-
---Boundary-00=_94wwKx+VdeulF/s--
