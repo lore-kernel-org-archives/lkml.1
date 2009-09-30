@@ -1,162 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbZI3V0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754268AbZI3VYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbZI3V0b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 17:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbZI3V0a
+	id S1754268AbZI3VYp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 17:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbZI3VYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 17:26:30 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45459 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754356AbZI3V02 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 17:26:28 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Nelson Elhage <nelhage@ksplice.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH 2/2] arm: Clean up linker script using new linker script macros.
-Date: Wed, 30 Sep 2009 17:25:35 -0400
-Message-Id: <1254345935-15958-3-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1254345935-15958-1-git-send-email-tabbott@ksplice.com>
-References: <1254345935-15958-1-git-send-email-tabbott@ksplice.com>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Wed, 30 Sep 2009 17:24:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50238 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751697AbZI3VYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 17:24:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Danny Feng <dfeng@redhat.com>
+Subject: Re: [PATCH] acpi: pci_root: fix NULL pointer deref after  resume from suspend
+Date: Wed, 30 Sep 2009 23:26:14 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Alex Chiang <achiang@hp.com>, lenb@kernel.org, bjorn.helgaas@hp.com,
+       andrew.patterson@hp.com, jbarnes@virtuousgeek.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1254119480-9730-1-git-send-email-dfeng@redhat.com> <200909292212.42697.rjw@sisk.pl> <4AC2C687.8060601@redhat.com>
+In-Reply-To: <4AC2C687.8060601@redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909302326.14183.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nelson Elhage <nelhage@ksplice.com>
+On Wednesday 30 September 2009, Danny Feng wrote:
+> On 09/30/2009 04:12 AM, Rafael J. Wysocki wrote:
+> > On Tuesday 29 September 2009, Danny Feng wrote:
+> >> On 09/29/2009 01:38 AM, Alex Chiang wrote:
+> >>> Hi Xiaotian,
+> >>>
+> >>> Thanks for the bug report.
+> >>>
+> >>> * Xiaotian Feng<dfeng@redhat.com>:
+> >>>
+> >>>> commit 275582 introduces acpi_get_pci_dev(), but pdev->subordinate
+> >>>> can be NULL, then a NULL was passed to pci_get_slot, this results
+> >>>> the kernel oops when resume from suspend.
+> >>>>
+> >>>> This patch resolves following kernel oops:
+> >>>> BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
+> >>>> IP: [<ffffffff812217e7>] pci_get_slot+0x4c/0x8c
+> >>>>
+> >>>> Signed-off-by: Xiaotian Feng<dfeng@redhat.com>
+> >>>> ---
+> >>>>    drivers/acpi/pci_root.c |    6 +++++-
+> >>>>    1 files changed, 5 insertions(+), 1 deletions(-)
+> >>>>
+> >>>> diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+> >>>> index 3112221..3c35144 100644
+> >>>> --- a/drivers/acpi/pci_root.c
+> >>>> +++ b/drivers/acpi/pci_root.c
+> >>>> @@ -387,7 +387,11 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
+> >>>>    		if (!pdev || hnd == handle)
+> >>>>    			break;
+> >>>>
+> >>>> -		pbus = pdev->subordinate;
+> >>>> +		if (pdev->subordinate)
+> >>>> +			pbus = pdev->subordinate;
+> >>>> +		else
+> >>>> +			pbus = pdev->bus;
+> >>>> +
+> >>>>
+> >>> I'm a little confused by this. If we start from the PCI root
+> >>> bridge and walk back down the hierarchy, shouldn't everything
+> >>> between the root and the device be a P2P bridge?
+> >>>
+> >>> What is special about suspend/resume that causes the subordinate
+> >>> bus to become NULL?
+> >>>
+> >>> Can you send the full stacktrace?
+> >>>
+> >>> Thanks.
+> >>>
+> >>> /ac
+> >>>
+> >>>
+> >>>
+> >> the full call trace is here:
+> >>
+> >> BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
+> >> IP: [<ffffffff812217e7>] pci_get_slot+0x4c/0x8c
+> >> PGD 208b9d067 PUD 208a89067 PMD 0
+> >> Oops: 0000 [#1] SMP
+> >> last sysfs file: /sys/power/state
+> >> CPU 0
+> >> Modules linked in: fuse radeon ttm drm_kms_helper drm i2c_algo_bit sco
+> >> bridge stp llc bnep l2cap bluetooth sunrpc ip6t_REJECT nf_conntrack_ipv6
+> >> ip6table_filter ip6_tables ipv6 dm_multipath uinput snd_hda_codec_analog
+> >> snd_hda_intel snd_hda_codec snd_hwdep e1000e snd_pcm snd_timer i2c_i801
+> >> i2c_core snd soundcore snd_page_alloc iTCO_wdt iTCO_vendor_support
+> >> serio_raw ppdev parport_pc parport pcspkr dcdbas ata_generic pata_acpi
+> >> [last unloaded: speedstep_lib]
+> >> Pid: 35, comm: kacpi_hotplug Not tainted 2.6.32-rc2 #3 OptiPlex 760
+> >> RIP: 0010:[<ffffffff812217e7>]  [<ffffffff812217e7>] pci_get_slot+0x4c/0x8c
+> >> RSP: 0018:ffff88022ee69aa0  EFLAGS: 00010286
+> >> RAX: 0000000000000000 RBX: ffff88022e9b1090 RCX: 00000000000000a0
+> >> RDX: 000000000000002f RSI: ffffffff8168ab38 RDI: ffffffff8168ab38
+> >> RBP: ffff88022ee69ac0 R08: ffffffff8168ab30 R09: ffff880100000000
+> >> R10: ffffffff8168ab50 R11: 0000000000000000 R12: 0000000000000000
+> >> R13: 0000000000000001 R14: ffff88022f712000 R15: ffff88022f710dd0
+> >> FS:  0000000000000000(0000) GS:ffff880028200000(0000)
+> >> knlGS:0000000000000000
+> >> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> >> CR2: 0000000000000028 CR3: 00000001fc298000 CR4: 00000000000406f0
+> >> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> >> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> >> Process kacpi_hotplug (pid: 35, threadinfo ffff88022ee68000, task
+> >> ffff88022eefc120)
+> >> Stack:
+> >>    0000000000000018 ffff88022e9b1090 ffff88020880e9c0 0000000000000000
+> >> <0>  ffff88022ee69b30 ffffffff81254193 0000000000000000 ffff88022ee69ae0
+> >> <0>  ffff88020880e340 ffff88020880ee38 ffff88022f710208 0000000000000001
+> >> Call Trace:
+> >>    [<ffffffff81254193>] acpi_get_pci_dev+0x106/0x167
+> >
+> > Have you checked (using gdb) which source code line this corresponds to?
+> >
+> Yep, the code line corresponds to
+> pdev = pci_get_slot(pbus, PCI_DEVFN(dev, fn));
+> 
+> Also gdb shows pci_bus->devices has offset of 0x28.
+> 
+> I've put some check in acpi_get_pci_dev, it shows that pbus is NULL when 
+> the panic happens.
 
-This patch is mostly a straightforward translation. The primary side
-effect to the resulting vmlinux should be to increase the alignment on
-the initramfs to the standard PAGE_SIZE from 32 bytes.
+OK, thanks.
 
-Signed-off-by: Nelson Elhage <nelhage@ksplice.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
----
- arch/arm/kernel/vmlinux.lds.S |   75 +++++++++++-----------------------------
- 1 files changed, 21 insertions(+), 54 deletions(-)
+> >>    [<ffffffff8125545a>] acpi_pci_bind+0x1c/0x86
+> >>    [<ffffffff8116230a>] ? sysfs_create_file+0x2a/0x2c
+> >>    [<ffffffff8125141f>] acpi_add_single_object+0x964/0xa0c
+> >>    [<ffffffff812515a7>] acpi_bus_check_add+0xe0/0x138
+> >>    [<ffffffff81251667>] acpi_bus_scan+0x68/0xa0
+> >>    [<ffffffff812516f4>] acpi_bus_add+0x2a/0x2e
+> >
+> > This looks like a device has just been discovered.
+> >
+> >>    [<ffffffff81252c59>] hotplug_dock_devices+0x114/0x13e
+> >>    [<ffffffff8125301a>] acpi_dock_deferred_cb+0xbf/0x192
+> >
+> > Have the machine been docked while suspended?
+> I was confused too..I didn't touch anything just suspend and then power 
+> up. Are there some devices unplugged or ejected at suspend stage?
 
-diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
-index 0902f80..d5bc5be 100644
---- a/arch/arm/kernel/vmlinux.lds.S
-+++ b/arch/arm/kernel/vmlinux.lds.S
-@@ -40,43 +40,31 @@ SECTIONS
- 		__tagtable_begin = .;
- 			*(.taglist.init)
- 		__tagtable_end = .;
--		. = ALIGN(16);
--		__setup_start = .;
--			*(.init.setup)
--		__setup_end = .;
-+
-+		INIT_SETUP(16)
-+
- 		__early_begin = .;
- 			*(.early_param.init)
- 		__early_end = .;
--		__initcall_start = .;
--			INITCALLS
--		__initcall_end = .;
--		__con_initcall_start = .;
--			*(.con_initcall.init)
--		__con_initcall_end = .;
--		__security_initcall_start = .;
--			*(.security_initcall.init)
--		__security_initcall_end = .;
--#ifdef CONFIG_BLK_DEV_INITRD
--		. = ALIGN(32);
--		__initramfs_start = .;
--			usr/built-in.o(.init.ramfs)
--		__initramfs_end = .;
--#endif
--		. = ALIGN(PAGE_SIZE);
--		__per_cpu_load = .;
--		__per_cpu_start = .;
--			*(.data.percpu.page_aligned)
--			*(.data.percpu)
--			*(.data.percpu.shared_aligned)
--		__per_cpu_end = .;
-+
-+		INIT_CALLS
-+		CON_INITCALL
-+		SECURITY_INITCALL
-+		INIT_RAM_FS
-+
- #ifndef CONFIG_XIP_KERNEL
- 		__init_begin = _stext;
- 		INIT_DATA
--		. = ALIGN(PAGE_SIZE);
--		__init_end = .;
- #endif
- 	}
- 
-+	PERCPU(PAGE_SIZE)
-+
-+#ifndef CONFIG_XIP_KERNEL
-+	. = ALIGN(PAGE_SIZE);
-+	__init_end = .;
-+#endif
-+
- 	/DISCARD/ : {			/* Exit code and data		*/
- 		EXIT_TEXT
- 		EXIT_DATA
-@@ -155,7 +143,7 @@ SECTIONS
- 		 * first, the init task union, aligned
- 		 * to an 8192 byte boundary.
- 		 */
--		*(.data.init_task)
-+		INIT_TASK_DATA(THREAD_SIZE)
- 
- #ifdef CONFIG_XIP_KERNEL
- 		. = ALIGN(PAGE_SIZE);
-@@ -165,17 +153,8 @@ SECTIONS
- 		__init_end = .;
- #endif
- 
--		. = ALIGN(PAGE_SIZE);
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
--
--		/*
--		 * then the cacheline aligned data
--		 */
--		. = ALIGN(32);
--		*(.data.cacheline_aligned)
-+		NOSAVE_DATA
-+		CACHELINE_ALIGNED_DATA(32)
- 
- 		/*
- 		 * The exception fixup table (might need resorting at runtime)
-@@ -254,20 +233,8 @@ SECTIONS
- 	}
- #endif
- 
--	.bss : {
--		__bss_start = .;	/* BSS				*/
--		*(.bss)
--		*(COMMON)
--		__bss_stop = .;
--		_end = .;
--	}
--					/* Stabs debugging sections.	*/
--	.stab 0 : { *(.stab) }
--	.stabstr 0 : { *(.stabstr) }
--	.stab.excl 0 : { *(.stab.excl) }
--	.stab.exclstr 0 : { *(.stab.exclstr) }
--	.stab.index 0 : { *(.stab.index) }
--	.stab.indexstr 0 : { *(.stab.indexstr) }
-+	BSS_SECTION(0, 0, 0)
-+	STABS_DEBUG
- 	.comment 0 : { *(.comment) }
- }
- 
--- 
-1.6.3.3
+Well, that's what I'd like to find out.
 
+Can you please build the kernel with CONFIG_PM_VERBOSE set and with the
+$subject patch applied and post a dmesg output from it containing at least one
+suspend-resume cycle?
+
+Best,
+Rafael
