@@ -1,93 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZI3P6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbZI3P6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754743AbZI3P6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 11:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbZI3P6S
+	id S1754793AbZI3P6Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 11:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbZI3P6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 11:58:18 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:54524 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754447AbZI3P6R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 11:58:17 -0400
-Message-ID: <4AC37FE5.7020200@gmail.com>
-Date: Wed, 30 Sep 2009 17:57:25 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux 2.6.32-rc1
-References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain>	<4AC060AE.1090401@gmail.com>	<alpine.LFD.2.01.0909280829100.3349@localhost.localdomain>	<20090928191506.40b61793@mschwide.boeblingen.de.ibm.com>	<4AC10365.7090802@gmail.com>	<4AC2712C.4080901@gmail.com>	<alpine.LFD.2.01.0909291410440.6996@localhost.localdomain>	<20090929232248.735bf4df@infradead.org>	<alpine.LFD.2.01.0909291429570.6996@localhost.localdomain> <20090930170754.0886ff2e@infradead.org>
-In-Reply-To: <20090930170754.0886ff2e@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 30 Sep 2009 17:57:28 +0200 (CEST)
+	Wed, 30 Sep 2009 11:58:23 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:56091 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754265AbZI3P6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 11:58:21 -0400
+Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
+From: Raistlin <raistlin@linux.it>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Henrik Austad <henrik@austad.us>, Peter Zijlstra <peterz@infradead.org>,
+       claudio@evidence.eu.com, michael@evidence.eu.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       johan.eker@ericsson.com, p.faure@akatech.ch,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
+In-Reply-To: <4AC24525.9060607@nortel.com>
+References: <1253615424.20345.76.camel@Palantir>
+	 <1253623867.20345.156.camel@Palantir> <1253644603.18939.25.camel@laptop>
+	 <200909270855.49367.henrik@austad.us> <1254240635.7775.44.camel@Palantir>
+	 <4AC24525.9060607@nortel.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-eTU8UcIe+p/QejskF++s"
+Date: Wed, 30 Sep 2009 17:58:26 +0200
+Message-Id: <1254326306.11233.147.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven a écrit :
-> On Tue, 29 Sep 2009 14:56:28 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
->>
->> On Tue, 29 Sep 2009, Arjan van de Ven wrote:
->>> can't we use alternatives() for this, to patch cmpxchg64 in ?
->>> I mean.. it'll be commonly supported nowadays.. the fallback to it
->>> not being supported could be a bit slower by now...
->> Yes, we could. It would limit us to some fixed address format,
->> probably
->>
->> 	cmpxchg8b (%esi)
->>
->> or something. Use something like this as a starting point, perhaps?
->>
->> NOTE! Totally untested! And you'd actually need to implement the 
->> "cmpxchg8b_emu" function that takes it's arguments in %eax:%edx,
->> %ebx:%ecx and %esi and doesn't trash any other registers..
-> 
-> so I debugged this guy (had a few bugs ;-)
-> 
-> patch, including a new cmpxchg8b_emu below:
-> 
->>From 5a76986c5dd272ea16a9b8abb7349ff3d6791c2b Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Wed, 30 Sep 2009 17:04:35 +0200
-> Subject: [PATCH] x86: Provide an alternative() based cmpxchg64()
-> 
-> Based on Linus' patch, this patch provides cmpxchg64() using
-> the alternative() infrastructure.
-> 
-> Note: the fallback is NOT smp safe, just like the current fallback
-> is not SMP safe.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-> +#define cmpxchg64(ptr, o, n)					\
-> +({								\
-> +	__typeof__(*(ptr)) __ret;				\
-> +	__typeof__(*(ptr)) __old = (o);				\
-> +	__typeof__(*(ptr)) __new = (n);				\
-> +	alternative_io("call cmpxchg8b_emu",			\
-> +			"lock; cmpxchg8b (%%esi)" ,		\
-> +		       X86_FEATURE_CX8,				\
-> +		       "=A" (__ret),				\
-> +		       "S" ((ptr)), "0" (__old),		\
-> +		       "b" ((unsigned int)__new),		\
-> +		       "c" ((unsigned int)(__new>>32)));	\
+--=-eTU8UcIe+p/QejskF++s
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, 2009-09-29 at 11:34 -0600, Chris Friesen wrote:
+> Basically it boils down to a policy decision...
+Yep. I know that, and I know that policies have to be avoided as much as
+possible in this lands... :-(
 
-Note:
+> Personally I don't like the idea of fork() resulting in permanently
+> reduced allocation for the parent. =20
+Yeah, me neither.
 
-lock; cmpxchg8b (%%esi)
+> a) The child should get an identical bandwidth guarantee as the parent
+> and if that can't be guaranteed then the fork() should fail, maybe with
+> an errno of EBUSY.
+>=20
+Again, this could be done, pretty easily actually. :-)
 
-gives 4 bytes opcode : f0 0f c7 0e
-Because alternative (call cmpxchg8b_emu) uses 5 bytes, a nop will be added.
+> b) The child should start out with no guarantees (SCHED_OTHER nice 0
+> maybe?) and should have to request a bandwidth guarantee.  This could
+> complicate things in some circumstances because if it can't get the
+> guarantee then it needs to inform the parent somehow.
+>=20
+Ok, I see and agree, again, to many extents.
 
-Choosing ".byte 0xf0, 0x0f, 0xc7, 0x4e, 0x00"  aka "lock cmpxchg8b 0x0(%esi)" is a litle bit better ?
+> Given that any serious users of EDF are likely pretty specialized,
+> either one would probably work.  Which is the best policy is a different
+> question, and one that I don't have enough experience with to offer an
+> opinion.
+>=20
+Yeah... Maybe, since I'm adding (in the next patch I'm going to send
+soon) a flag field in the sched_param_ex structure, we can also use some
+of the bits for deciding how the fork will behave... The main problem
+would be the code will get more complicated, and we thus would have to
+decide if it is worth...
+
+Again, thanks for finding some time to comment.
+
+Regards,
+Dario
+
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
+
+--=-eTU8UcIe+p/QejskF++s
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkrDgBQACgkQk4XaBE3IOsRoNwCeIqDSp3kJ5sibCpxxZsq0jjB1
+lR4AnAnjVY1XqEOPJLiGNStjxirOzs9L
+=CHiR
+-----END PGP SIGNATURE-----
+
+--=-eTU8UcIe+p/QejskF++s--
 
