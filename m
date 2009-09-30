@@ -1,92 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbZI3IBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZI3ICW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbZI3IBh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 04:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbZI3IBh
+	id S1753991AbZI3ICW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 04:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZI3ICU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 04:01:37 -0400
-Received: from mail-pz0-f191.google.com ([209.85.222.191]:60007 "EHLO
-	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753265AbZI3IBg (ORCPT
+	Wed, 30 Sep 2009 04:02:20 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:51131 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753527AbZI3ICS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 04:01:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=En8Kki+RLVg3YTNugr4aAeaNJr4Kl3V3VWnPQz8qT6pl6UA2AgS/Big8uz8SXWWuiR
-         7ThHoz8mJ3CcpsYZsGjJaKi773nKFq3uk4jAV8oPPwc0GKtA2lWVKWSYbTqiSf/FDx+d
-         u9PfqITnwEiU97AplXTerex1fYv97pbsbNmsg=
+	Wed, 30 Sep 2009 04:02:18 -0400
+Date: Wed, 30 Sep 2009 10:02:21 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>, drbd-dev@lists.linbit.com
+Subject: Re: [Drbd-dev] [PATCH -next] drbd: trace depends on TRACING
+Message-ID: <20090930080221.GA8032@barkeeper1-xen.linbit>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Philipp Reisner <philipp.reisner@linbit.com>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+	akpm <akpm@linux-foundation.org>, drbd-dev@lists.linbit.com
+References: <20090925133830.1ba29584.sfr@canb.auug.org.au> <4ABD4C28.9070202@oracle.com> <200909291732.51383.philipp.reisner@linbit.com> <20090929153747.GA29621@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <20090930095043.48e7081f@hammerfall>
-References: <8db1092f0909270105x4b49daf8k268e453d2379020c@mail.gmail.com>
-	 <2674af740909270127s464a3cb2xef5e7f4cd61b0eb7@mail.gmail.com>
-	 <20090929072454.GA11414@elte.hu>
-	 <2674af740909290231m5af0fbc6t5fba0b127c63bd9f@mail.gmail.com>
-	 <20090930095043.48e7081f@hammerfall>
-Date: Wed, 30 Sep 2009 16:01:40 +0800
-Message-ID: <2674af740909300101x2ef4bbdewc12d52e703bdadf@mail.gmail.com>
-Subject: Re: [2.6.31-git17] WARNING: at kernel/hrtimer.c:648 
-	hres_timers_resume+0x40/0x50()/WARNING: at drivers/base/sys.c:353 
-	__sysdev_resume+0xc3/0xe0()
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: Michal Schmidt <mschmidt@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, clemens@ladisch.de,
-       venkatesh.pallipadi@intel.com, gregkh@suse.de
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090929153747.GA29621@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 3:50 PM, Michal Schmidt <mschmidt@redhat.com> wrote:
-> Dne Tue, 29 Sep 2009 17:31:43 +0800
-> Yong Zhang <yong.zhang0@gmail.com> napsal(a):
->
->> On Tue, Sep 29, 2009 at 3:24 PM, Ingo Molnar <mingo@elte.hu> wrote:
->> > Could you try this with .32-rc1? This commit should have fixed the
->> > message above:
->> >
->> > 89133f9: clocksource: Resume clocksource without taking the
->> > clocksource mutex
->> >
->>
->> Hi Ingo,
->>
->> Indeed, Maciej said this issue is gone with .32-rc1. But I don't think
->> this is the same
->> issue with 89133f9 because in this one timekeeping_resume() is called
->> with irq enabled.
->> This is very odd and the bug exists in other parts.
->
-> It is the same issue. Maciej has CONFIG_PREEMPT_VOLUNTARY=y which means
-> taking the mutex in clocksource_resume() could have called into
-> schedule(), thus enabling irqs.
->
+On Tue, Sep 29, 2009 at 11:37:47AM -0400, Christoph Hellwig wrote:
+> On Tue, Sep 29, 2009 at 05:32:50PM +0200, Philipp Reisner wrote:
+> > On Saturday 26 September 2009 01:03:04 Randy Dunlap wrote:
+> > > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > >
+> > > DRBD_TRACE should depend on TRACING.
+> > > It's also possible that TRACEPOINTS should depend on TRACING.
+> > >
+> > 
+> > Hi Randy,
+> > 
+> > I tried to figure out in which way that should be done. By looking
+> > at "BLK_DEV_IO_TRACE" I got the impression that this should
+> > be done by adding "select GENERIC_TRACER".
+> 
+> Neither really.  The only way of tracing that should be used is the
+> TRACE_EVENT macros, which compile away to nothing if tracing is
+> disabled, so no dependency is needed at all.
 
->From my previous mail, I have ask Maciej to test the blow patch:
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index fb0f46f..4a00a1a 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -569,6 +569,9 @@ static int timekeeping_resume(struct sys_device *dev)
-       unsigned long flags;
-       struct timespec ts;
+TRACE_EVENT macros depend on, and use TRACE_POINTS.
+And those trace points are what compiles away if !CONFIG_TRACEPOINTS, no?
 
-+       WARN_ONCE(!irqs_disabled(),
-+               KERN_INFO "timekeeping_resume() called with IRQs enabled!");
-+
-       read_persistent_clock(&ts);
+kernel/trace/Kconfig says
+# All tracer options should select GENERIC_TRACER. [...]
 
-       clocksource_resume();
+If one uses tracepoints without trace_events, they still compile away.
 
-And indeed, the warning is showed. That means irq is enabled before
-entering timekeeping_resume().
-So is there other way to call clocksource_resume() and lead to this issue?
+If using tracepoints directly, not using the (admittedly elegant)
+trace-events macro system, is in fact not wanted anymore, then
+Documentation/trace/* should be changed accordingly.
 
-Best Regards,
-Yong
+So what is the plan, going forward?
 
-> Michal
->
+-- 
+: Lars Ellenberg
+: LINBIT | Your Way to High Availability
+: DRBD/HA support and consulting http://www.linbit.com
+
+DRBD® and LINBIT® are registered trademarks of LINBIT, Austria.
