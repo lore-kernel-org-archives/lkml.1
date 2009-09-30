@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753052AbZI3Gt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbZI3Gxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753052AbZI3Gt3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 02:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZI3Gt2
+	id S1753087AbZI3Gxa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 02:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZI3Gx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 02:49:28 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:23524 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbZI3Gt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 02:49:27 -0400
+	Wed, 30 Sep 2009 02:53:29 -0400
+Received: from [195.41.46.235] ([195.41.46.235]:47263 "EHLO pfepa.post.tele.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751654AbZI3Gx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 02:53:28 -0400
+Date: Wed, 30 Sep 2009 08:53:26 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andreas Schwab <schwab@redhat.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Tim Abbott <tabbott@ksplice.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] m68k: Cleanup linker scripts using new linker
+	script macros.
+Message-ID: <20090930065326.GA13850@merkur.ravnborg.org>
+References: <1253119466-19488-1-git-send-email-tabbott@ksplice.com> <1253119466-19488-3-git-send-email-tabbott@ksplice.com> <10f740e80909270258o6bde0f3dk720bd5b5c091ed2f@mail.gmail.com> <m2ocowwngg.fsf@igel.home> <alpine.DEB.1.10.0909271351110.14151@dr-wily.mit.edu> <m3zl8dbron.fsf@hase.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Arjan van de Ven <arjan@infradead.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-api@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
-In-Reply-To: Linus Torvalds's message of  Tuesday, 29 September 2009 15:11:03 -0700 <alpine.LFD.2.01.0909291501530.6996@localhost.localdomain>
-X-Fcc: ~/Mail/linus
-References: <20090924165548.GA16586@us.ibm.com>
-	<20090924170308.GH16989@us.ibm.com>
-	<200909242343.59903.arnd@arndb.de>
-	<20090925082346.GB4436@localdomain>
-	<20090925105632.GG12824@hawkmoon.kerlabs.com>
-	<20090929180537.GD4625@us.ibm.com>
-	<20090929184023.532DF34@magilla.sf.frob.com>
-	<4AC255A4.4030002@zytor.com>
-	<20090929210207.247b94df@infradead.org>
-	<alpine.LFD.2.01.0909291207410.6996@localhost.localdomain>
-	<4AC267C7.4070300@zytor.com>
-	<alpine.LFD.2.01.0909291501530.6996@localhost.localdomain>
-X-Shopping-List: (1) Jubilant ring cheater-hawks
-   (2) Pharmaceutical heterogeneous cards
-   (3) Maternity affluent secretions
-   (4) Expectant snooze riots
-Message-Id: <20090930064839.AB188A3@magilla.sf.frob.com>
-Date: Tue, 29 Sep 2009 23:48:39 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <m3zl8dbron.fsf@hase.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The glibc prototype for clone uses ... and is not a direct map to the
-syscall args anyway.  So that would not change for adding more optional
-args enabled by certain flags, as it did not change to add the tid pointer
-arguments before.  But indeed the library function would have to change to
-pass on additional or different args to the existing syscall.
+On Tue, Sep 29, 2009 at 07:12:56PM +0200, Andreas Schwab wrote:
+> Tim Abbott <tabbott@ksplice.com> writes:
+> 
+> > Below is a new version of the second patch that attempts to address this 
+> > by putting the ALIGN inside a section, so that _end is at the end of the 
+> > load segment (I also did a bit more cleanup):
+> >
+> >   .init_end : {
+> > 	/* This ALIGN be in a section so that _end is at the end of the
+> > 	   load segment. */
+> > 	. = ALIGN(PAGE_SIZE);
+> > 	__init_end = .;
+> >   }
+> >   
+> >   _end = .;
+> 
+> This works fine.
 
+Thanks for testing Andreas.
 
-Thanks,
-Roland
+Geert - I assume you take the corrected version and push to Linus?
+
+	Sam
