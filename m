@@ -1,353 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZI3QDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZI3QJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbZI3QDy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 12:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbZI3QDy
+	id S1754811AbZI3QJG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 12:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZI3QJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 12:03:54 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:59455 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754679AbZI3QDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 12:03:53 -0400
-Date: Wed, 30 Sep 2009 11:02:59 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: SGU UV Fix irq affinity for hub based interrupts
-Message-ID: <20090930160259.GA7822@sgi.com>
+	Wed, 30 Sep 2009 12:09:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:40236 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752896AbZI3QJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 12:09:05 -0400
+Message-ID: <4AC3821D.2050900@redhat.com>
+Date: Wed, 30 Sep 2009 06:06:53 -1000
+From: Zachary Amsden <zamsden@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [PATCH v4: kvm 1/4] Code motion.  Separate timer intialization
+ into an indepedent function.
+References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com> <4AC31AA5.4060609@redhat.com> <4AC37E81.8080104@redhat.com> <4AC37F92.2090502@redhat.com>
+In-Reply-To: <4AC37F92.2090502@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes handling of uv hub irq affinity.  IRQs with ALL or
-NODE affinity can be routed to cpus other than their originally assigned
-cpu.  Those with CPU affinity cannot be rerouted.
+On 09/30/2009 05:56 AM, Avi Kivity wrote:
+> On 09/30/2009 05:51 PM, Zachary Amsden wrote:
+>
+> If the API allows us to query the tsc frequency, it would simply 
+> return the same values in all cases, which we'd ignore.
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+The API only allows querying the processor frequency.  In the 
+constant_tsc case, the highest processor frequency is likely going to be 
+the actual TSC frequency, but I don't think it's a guarantee; 
+theoretically, it could be faster on normal hardware ... or slower on 
+overclocked hardware with an externally clocked TSC.
 
----
-
-More specific handling for NODE affinity will be added once the patch for
-limiting irq affinity is in place.
-
- arch/x86/include/asm/uv/uv_irq.h |   15 +++-
- arch/x86/kernel/apic/io_apic.c   |   49 ++++++++++++-
- arch/x86/kernel/uv_irq.c         |  128 ++++++++++++++++++++++++++++++++---
- drivers/misc/sgi-xp/xpc_uv.c     |    5 -
- 4 files changed, 180 insertions(+), 17 deletions(-)
-
-Index: linux/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux.orig/arch/x86/kernel/apic/io_apic.c	2009-09-29 21:23:53.000000000 -0500
-+++ linux/arch/x86/kernel/apic/io_apic.c	2009-09-30 08:01:10.000000000 -0500
-@@ -3748,9 +3748,10 @@ int arch_setup_ht_irq(unsigned int irq, 
-  * on the specified blade to allow the sending of MSIs to the specified CPU.
-  */
- int arch_enable_uv_irq(char *irq_name, unsigned int irq, int cpu, int mmr_blade,
--		       unsigned long mmr_offset)
-+		       unsigned long mmr_offset, int restrict)
- {
- 	const struct cpumask *eligible_cpu = cpumask_of(cpu);
-+	struct irq_desc *desc = irq_to_desc(irq);
- 	struct irq_cfg *cfg;
- 	int mmr_pnode;
- 	unsigned long mmr_value;
-@@ -3766,6 +3767,11 @@ int arch_enable_uv_irq(char *irq_name, u
- 	if (err != 0)
- 		return err;
- 
-+	if (restrict == UV_AFFINITY_CPU)
-+		desc->status |= IRQ_NO_BALANCING;
-+	else
-+		desc->status |= IRQ_MOVE_PCNTXT;
-+
- 	spin_lock_irqsave(&vector_lock, flags);
- 	set_irq_chip_and_handler_name(irq, &uv_irq_chip, handle_percpu_irq,
- 				      irq_name);
-@@ -3794,11 +3800,10 @@ int arch_enable_uv_irq(char *irq_name, u
-  * Disable the specified MMR located on the specified blade so that MSIs are
-  * longer allowed to be sent.
-  */
--void arch_disable_uv_irq(int mmr_blade, unsigned long mmr_offset)
-+void arch_disable_uv_irq(int mmr_pnode, unsigned long mmr_offset)
- {
- 	unsigned long mmr_value;
- 	struct uv_IO_APIC_route_entry *entry;
--	int mmr_pnode;
- 
- 	BUILD_BUG_ON(sizeof(struct uv_IO_APIC_route_entry) != sizeof(unsigned long));
- 
-@@ -3806,9 +3811,45 @@ void arch_disable_uv_irq(int mmr_blade, 
- 	entry = (struct uv_IO_APIC_route_entry *)&mmr_value;
- 	entry->mask = 1;
- 
--	mmr_pnode = uv_blade_to_pnode(mmr_blade);
- 	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
- }
-+
-+int uv_set_irq_affinity(unsigned int irq, const struct cpumask *mask)
-+{
-+	struct irq_desc *desc = irq_to_desc(irq);
-+	struct irq_cfg *cfg = desc->chip_data;
-+	unsigned int dest;
-+	unsigned long mmr_value;
-+	struct uv_IO_APIC_route_entry *entry;
-+	unsigned long mmr_offset;
-+	unsigned mmr_pnode;
-+
-+	dest = set_desc_affinity(desc, mask);
-+	if (dest == BAD_APICID)
-+		return -1;
-+
-+	mmr_value = 0;
-+	entry = (struct uv_IO_APIC_route_entry *)&mmr_value;
-+
-+	entry->vector = cfg->vector;
-+	entry->delivery_mode = apic->irq_delivery_mode;
-+	entry->dest_mode = apic->irq_dest_mode;
-+	entry->polarity = 0;
-+	entry->trigger = 0;
-+	entry->mask = 0;
-+	entry->dest = dest;
-+
-+	/* Get previously stored MMR and pnode of hub sourcing interrupts */
-+	if (uv_irq_2_mmr_info(irq, &mmr_offset, &mmr_pnode))
-+		return -1;
-+
-+	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
-+
-+	if (cfg->move_in_progress)
-+		send_cleanup_vector(cfg);
-+
-+	return 0;
-+}
- #endif /* CONFIG_X86_64 */
- 
- int __init io_apic_get_redir_entries (int ioapic)
-Index: linux/drivers/misc/sgi-xp/xpc_uv.c
-===================================================================
---- linux.orig/drivers/misc/sgi-xp/xpc_uv.c	2009-09-29 21:23:53.000000000 -0500
-+++ linux/drivers/misc/sgi-xp/xpc_uv.c	2009-09-29 21:23:55.000000000 -0500
-@@ -106,7 +106,8 @@ xpc_get_gru_mq_irq_uv(struct xpc_gru_mq_
- 	int mmr_pnode = uv_blade_to_pnode(mq->mmr_blade);
- 
- #if defined CONFIG_X86_64
--	mq->irq = uv_setup_irq(irq_name, cpu, mq->mmr_blade, mq->mmr_offset);
-+	mq->irq = uv_setup_irq(irq_name, cpu, mq->mmr_blade, mq->mmr_offset,
-+			UV_AFFINITY_CPU);
- 	if (mq->irq < 0) {
- 		dev_err(xpc_part, "uv_setup_irq() returned error=%d\n",
- 			-mq->irq);
-@@ -136,7 +137,7 @@ static void
- xpc_release_gru_mq_irq_uv(struct xpc_gru_mq_uv *mq)
- {
- #if defined CONFIG_X86_64
--	uv_teardown_irq(mq->irq, mq->mmr_blade, mq->mmr_offset);
-+	uv_teardown_irq(mq->irq);
- 
- #elif defined CONFIG_IA64_GENERIC || defined CONFIG_IA64_SGI_UV
- 	int mmr_pnode;
-Index: linux/arch/x86/include/asm/uv/uv_irq.h
-===================================================================
---- linux.orig/arch/x86/include/asm/uv/uv_irq.h	2009-09-29 21:23:53.000000000 -0500
-+++ linux/arch/x86/include/asm/uv/uv_irq.h	2009-09-29 21:23:55.000000000 -0500
-@@ -25,12 +25,21 @@ struct uv_IO_APIC_route_entry {
- 		dest		: 32;
- };
- 
-+enum {
-+	UV_AFFINITY_ALL,
-+	UV_AFFINITY_NODE,
-+	UV_AFFINITY_CPU
-+};
-+
- extern struct irq_chip uv_irq_chip;
- 
--extern int arch_enable_uv_irq(char *, unsigned int, int, int, unsigned long);
-+extern int
-+arch_enable_uv_irq(char *, unsigned int, int, int, unsigned long, int);
- extern void arch_disable_uv_irq(int, unsigned long);
-+extern int uv_set_irq_affinity(unsigned int, const struct cpumask *);
- 
--extern int uv_setup_irq(char *, int, int, unsigned long);
--extern void uv_teardown_irq(unsigned int, int, unsigned long);
-+extern int uv_irq_2_mmr_info(int, unsigned long *, int *);
-+extern int uv_setup_irq(char *, int, int, unsigned long, int);
-+extern void uv_teardown_irq(unsigned int);
- 
- #endif /* _ASM_X86_UV_UV_IRQ_H */
-Index: linux/arch/x86/kernel/uv_irq.c
-===================================================================
---- linux.orig/arch/x86/kernel/uv_irq.c	2009-09-29 21:23:53.000000000 -0500
-+++ linux/arch/x86/kernel/uv_irq.c	2009-09-30 07:56:44.000000000 -0500
-@@ -9,10 +9,22 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/rbtree.h>
- #include <linux/irq.h>
- 
- #include <asm/apic.h>
- #include <asm/uv/uv_irq.h>
-+#include <asm/uv/uv_hub.h>
-+
-+/* MMR offset and pnode of hub sourcing interrupts for a given irq */
-+struct uv_irq_2_mmr_pnode{
-+	struct rb_node list;
-+	unsigned long offset;
-+	int pnode;
-+	int irq;
-+};
-+static spinlock_t uv_irq_lock;
-+static struct rb_root uv_irq_root;
- 
- static void uv_noop(unsigned int irq)
- {
-@@ -39,25 +51,106 @@ struct irq_chip uv_irq_chip = {
- 	.unmask		= uv_noop,
- 	.eoi		= uv_ack_apic,
- 	.end		= uv_noop,
-+	.set_affinity	= uv_set_irq_affinity,
- };
- 
- /*
-+ * Add offset and pnode information of the hub sourcing interrupts to the
-+ * rb tree for a specific irq.
-+ */
-+static int uv_set_irq_2_mmr_info(int irq, unsigned long offset, unsigned blade)
-+{
-+	struct rb_node **link = &uv_irq_root.rb_node;
-+	struct rb_node *parent = NULL;
-+	struct uv_irq_2_mmr_pnode *n;
-+	struct uv_irq_2_mmr_pnode *e;
-+	unsigned long irqflags;
-+
-+	n = kmalloc_node(sizeof(struct uv_irq_2_mmr_pnode), GFP_KERNEL,
-+				uv_blade_to_memory_nid(blade));
-+	if (!n)
-+		return -ENOMEM;
-+
-+	n->irq = irq;
-+	n->offset = offset;
-+	n->pnode = uv_blade_to_pnode(blade);
-+	spin_lock_irqsave(&uv_irq_lock, irqflags);
-+	/* Find the right place in the rbtree: */
-+	while (*link) {
-+		parent = *link;
-+		e = rb_entry(parent, struct uv_irq_2_mmr_pnode, list);
-+
-+		if (unlikely(irq == e->irq)) {
-+			/* irq entry exists */
-+			e->pnode = uv_blade_to_pnode(blade);
-+			e->offset = offset;
-+			spin_unlock_irqrestore(&uv_irq_lock, irqflags);
-+			kfree(n);
-+			return 0;
-+		}
-+
-+		if (irq < e->irq)
-+			link = &(*link)->rb_left;
-+		else
-+			link = &(*link)->rb_right;
-+	}
-+
-+	/* Insert the node into the rbtree. */
-+	rb_link_node(&n->list, parent, link);
-+	rb_insert_color(&n->list, &uv_irq_root);
-+
-+	spin_unlock_irqrestore(&uv_irq_lock, irqflags);
-+	return 0;
-+}
-+
-+/* Retrieve offset and pnode information from the rb tree for a specific irq */
-+int uv_irq_2_mmr_info(int irq, unsigned long *offset, int *pnode)
-+{
-+	struct uv_irq_2_mmr_pnode *e;
-+	struct rb_node *n;
-+	unsigned long irqflags;
-+
-+	spin_lock_irqsave(&uv_irq_lock, irqflags);
-+	n = uv_irq_root.rb_node;
-+	while (n) {
-+		e = rb_entry(n, struct uv_irq_2_mmr_pnode, list);
-+
-+		if (e->irq == irq) {
-+			*offset = e->offset;
-+			*pnode = e->pnode;
-+			spin_unlock_irqrestore(&uv_irq_lock, irqflags);
-+			return 0;
-+		}
-+
-+		if (irq < e->irq)
-+			n = n->rb_left;
-+		else
-+			n = n->rb_right;
-+	}
-+	spin_unlock_irqrestore(&uv_irq_lock, irqflags);
-+	return -1;
-+}
-+
-+/*
-  * Set up a mapping of an available irq and vector, and enable the specified
-  * MMR that defines the MSI that is to be sent to the specified CPU when an
-  * interrupt is raised.
-  */
- int uv_setup_irq(char *irq_name, int cpu, int mmr_blade,
--		 unsigned long mmr_offset)
-+		 unsigned long mmr_offset, int restrict)
- {
--	int irq;
--	int ret;
-+	int irq, ret;
-+
-+	irq = create_irq_nr(NR_IRQS_LEGACY, uv_blade_to_memory_nid(mmr_blade));
- 
--	irq = create_irq();
- 	if (irq <= 0)
- 		return -EBUSY;
- 
--	ret = arch_enable_uv_irq(irq_name, irq, cpu, mmr_blade, mmr_offset);
--	if (ret != irq)
-+	ret = arch_enable_uv_irq(irq_name, irq, cpu, mmr_blade, mmr_offset,
-+		restrict);
-+	if (ret == irq)
-+		uv_set_irq_2_mmr_info(irq, mmr_offset, mmr_blade);
-+	else
- 		destroy_irq(irq);
- 
- 	return ret;
-@@ -71,9 +164,28 @@ EXPORT_SYMBOL_GPL(uv_setup_irq);
-  *
-  * Set mmr_blade and mmr_offset to what was passed in on uv_setup_irq().
-  */
--void uv_teardown_irq(unsigned int irq, int mmr_blade, unsigned long mmr_offset)
-+void uv_teardown_irq(unsigned int irq)
- {
--	arch_disable_uv_irq(mmr_blade, mmr_offset);
-+	struct uv_irq_2_mmr_pnode *e;
-+	struct rb_node *n;
-+	unsigned long irqflags;
-+
-+	spin_lock_irqsave(&uv_irq_lock, irqflags);
-+	n = uv_irq_root.rb_node;
-+	while (n) {
-+		e = rb_entry(n, struct uv_irq_2_mmr_pnode, list);
-+		if (e->irq == irq) {
-+			arch_disable_uv_irq(e->pnode, e->offset);
-+			rb_erase(n, &uv_irq_root);
-+			kfree(e);
-+			break;
-+		}
-+		if (irq < e->irq)
-+			n = n->rb_left;
-+		else
-+			n = n->rb_right;
-+	}
-+	spin_unlock_irqrestore(&uv_irq_lock, irqflags);
- 	destroy_irq(irq);
- }
- EXPORT_SYMBOL_GPL(uv_teardown_irq);
+Zach
