@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbZI3Ub6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbZI3UdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756AbZI3Ub6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 16:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbZI3Ub5
+	id S1753737AbZI3UdF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 16:33:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbZI3UdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 16:31:57 -0400
-Received: from mga11.intel.com ([192.55.52.93]:39061 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753493AbZI3Ub5 convert rfc822-to-8bit (ORCPT
+	Wed, 30 Sep 2009 16:33:04 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36127 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752802AbZI3UdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 16:31:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,481,1249282800"; 
-   d="scan'208";a="498591011"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Tejun Heo <teheo@suse.de>, Nick Piggin <npiggin@suse.de>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>,
-       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 30 Sep 2009 13:32:00 -0700
-Subject: RE: [PATCHSET percpu#for-next] percpu: convert ia64 to dynamic
- percpu and drop the old one, take#2
-Thread-Topic: [PATCHSET percpu#for-next] percpu: convert ia64 to dynamic
- percpu and drop the old one, take#2
-Thread-Index: AcpAm1elVAfd0CArQGmD1n/gtd5k2QBcYFEA
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E2F03E58@orsmsx505.amr.corp.intel.com>
-References: <1253682382-24740-1-git-send-email-tj@kernel.org>
- <4AC153EA.2050007@suse.de>
-In-Reply-To: <4AC153EA.2050007@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 30 Sep 2009 16:33:03 -0400
+Date: Wed, 30 Sep 2009 22:32:52 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz, stable@kernel.org
+Subject: [patch for 2.6.31-stable] zaurus c3000 aka spitz: fix resume
+Message-ID: <20090930203251.GA1893@ucw.cz>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Tony, can you please ack ia64 part?
 
-Tejun,
 
-Ok. The new patchset builda and boots for both the contig.c and discontig.c
-versions of the kernel.
+Spitz resume was broken for year or likely two, and it would be very
+nice to fix it for 2.6.31-stable release. One liner is below...
 
-Acked-by; Tony Luck <tony.luck@intel.com>
+It is in 2.6.32-rc1/2, with some more signoffs...
+								Pavel
+
+---
+
+
+sharpsl_pm.c code tries to read battery state very early during
+resume, but those battery meters are connected on SPI and that's only
+resumed way later.
+
+Replace the check with simple checking of battery fatal signal, that
+actually works at this stage.
+
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+Tested-by: Stanislav Brabec <utx@penguin.cz>
+Acked-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+
+--- linux-rc/arch/arm.ofic/mach-pxa/sharpsl_pm.c	2009-08-28 00:19:10.000000000 +0200
++++ linux-rc/arch/arm/mach-pxa/sharpsl_pm.c	2009-09-04 11:18:33.000000000 +0200
+@@ -678,8 +678,8 @@
+ 		dev_dbg(sharpsl_pm.dev, "User triggered wakeup in offline charger.\n");
+ 	}
+ 
+-	if ((!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_LOCK)) || (sharpsl_fatal_check() < 0) )
+-	{
++	if ((!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_LOCK)) || 
++	    (!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_FATAL)))	{
+ 		dev_err(sharpsl_pm.dev, "Fatal condition. Suspend.\n");
+ 		corgi_goto_sleep(alarm_time, alarm_enable, state);
+ 		return 1;
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+----- End forwarded message -----
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
