@@ -1,189 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbZI3RlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbZI3Rlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870AbZI3RlJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 13:41:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZI3RlI
+	id S1754897AbZI3Rlr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 13:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbZI3Rlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 13:41:08 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42851 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754289AbZI3RlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 13:41:07 -0400
-Date: Wed, 30 Sep 2009 19:41:10 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] block updates for 2.6.32-rc
-Message-ID: <20090930174109.GD14918@kernel.dk>
+	Wed, 30 Sep 2009 13:41:46 -0400
+Received: from smtp161.iad.emailsrvr.com ([207.97.245.161]:52769 "EHLO
+	smtp161.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754812AbZI3Rlp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 13:41:45 -0400
+Message-ID: <4AC39859.3090703@librato.com>
+Date: Wed, 30 Sep 2009 13:41:45 -0400
+From: Oren Laadan <orenl@librato.com>
+Organization: Librato
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       mingo@elte.hu, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       torvalds@linux-foundation.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v7][PATCH 0/9] Implement clone2() system call
+References: <20090924165548.GA16586@us.ibm.com> <20090924175542.GA27678@x200>	<20090924183556.GA31356@us.ibm.com> <20090930053443.GA1010@x200>
+In-Reply-To: <20090930053443.GA1010@x200>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-This looks huge, but it's mostly a cciss driver update and the addition
-of drbd. I would have submitted this before -rc1, but Plumbers got in
-the way.
 
-Apart from that, it includes the discard bits from Christoph and a few
-trivial updates and fixes.
+Alexey Dobriyan wrote:
+> On Thu, Sep 24, 2009 at 01:35:56PM -0500, Serge E. Hallyn wrote:
+>> Quoting Alexey Dobriyan (adobriyan@gmail.com):
+>>> I don't like this even more.
+>>>
+>>> Pid namespaces are hierarchical _and_ anonymous, so simply
+>>> set of numbers doesn't describe the final object.
+>>>
+>>> struct pid isn't special, it's just another invariant if you like
+>>> as far as C/R is concerned, but system call is made special wrt pids.
+>>>
+>>> What will be in an image? I hope "struct kstate_image_pid" with several
+>> Sure pid namespaces are anonymous, but we will give each an 'objref'
+>> valid only for a checkpoint image, and store the relationship between
+>> pid namespaces based on those objrefs.  Basically the same way that user
+>> structs and hierarchical user namespaces are handled right now.
+> 
+> OK, that's certainly doable.
+> 
+> You're commiting yourself to creation of tasks in userspace if this goes in. :-\
+> Which can let you into putting wrong kind of relations into image.
 
-Please pull.
+A malicious user can put "wrong" king of relations into the image,
+regardless of whether the tasks are created in the kernel or in
+userspace. As long as the creation follows the "instructions" in
+the image, the result would be the same.
 
-  git://git.kernel.dk/linux-2.6-block.git for-linus
+> IIRC, clone_flags were in image (still?), but tomorrow kernel will get
+> new way to acquire, say, uts_ns, which, in theory, can't be described by
+> a set of consecutive clones, so, you'll have to fixup something in kernel.
 
-Alexander Beregalov (1):
-      cciss: fix build when !PROC_FS
+The only thing enforced in user space is task relations, threads
+and (as a by-product) session id's.  The rest are refined in the
+kernel. This includes uts_ns, for example.
 
-Alexey Dobriyan (2):
-      cpqarray: switch to seq_file
-      dac960: switch to seq_file
+(FWIW, _any_ clone relationships can be described by a set of
+clones. In particular because that's how they were constructed
+in the first place).
 
-Andrew Patterson (3):
-      cciss: Remove sysfs entries for logical drives on driver cleanup.
-      cciss: Use one scan thread per controller and fix hang during rmmod
-      cciss: Allow triggering of rescan of logical drive topology via sysfs entry
-
-Christoph Hellwig (2):
-      block: use normal I/O path for discard requests
-      block: allow large discard requests
-
-H Hartley Sweeten (1):
-      fs/bio.c: move EXPORT* macros to line after function
-
-Jens Axboe (3):
-      cciss: cciss_host_attr_groups should be const
-      Merge branch 'for-jens' of git://git.drbd.org/linux-2.6-drbd into for-linus
-      Merge branch 'for-jens' of git://git.drbd.org/linux-2.6-drbd into for-linus
-
-Jun'ichi Nomura (1):
-      Add a tracepoint for block request remapping
-
-Lars Ellenberg (1):
-      dropping unneeded include autoconf.h
-
-Martin K. Petersen (2):
-      block: Set max_sectors correctly for stacking devices
-      block: Do not clamp max_hw_sectors for stacking devices
-
-Philipp Reisner (1):
-      The DRBD driver
-
-Randy Dunlap (1):
-      cciss: fix schedule_timeout() parameters
-
-Stephen M. Cameron (17):
-      cciss: Remove some unused code in rebuild_lun_table()
-      cciss: Dynamically allocate struct device for each logical drive as needed.
-      cciss: Rearrange logical drive sysfs code to make the "changing a disk" path work.
-      cciss: Handle failure of blk_init_queue gracefully in cciss_add_disk.
-      cciss: Handle cases when cciss_add_disk fails.
-      cciss: Handle special case for sysfs attributes of the first logical drive.
-      cciss: Clear all sysfs-exposed data for deleted logical drives.
-      cciss: Fix usage_count check in rebuild_lun_table when triggered via sysfs.
-      cciss: Fix excessive gendisk freeing bug on driver unload.
-      cciss: Silence noisy per-disk messages output by cciss_read_capacity
-      cciss: Preserve all 8 bytes of LUN ID for logical drives.
-      cciss: Don't check h->busy_initializing in cciss_open().
-      cciss: Add lunid attribute to each logical drive in /sys
-      cciss: fix some magic numbers in the raid-level decoding
-      cciss: Add a "raid_level" attribute to each logical drive in /sys
-      cciss: Add usage_count attribute to each logical drive in /sys
-      cciss: Dynamically allocate the drive_info_struct for each logical drive.
-
-Suresh Jayaraman (1):
-      swapfile: avoid NULL pointer dereference in swapon when s_bdev is NULL
-
-Zdenek Kabelac (1):
-      Add missing blk_trace_remove_sysfs to be in pair with blk_trace_init_sysfs
-
- .../ABI/testing/sysfs-bus-pci-devices-cciss        |   28 +
- .../blockdev/drbd/DRBD-8.3-data-packets.svg        |  588 +++
- Documentation/blockdev/drbd/DRBD-data-packets.svg  |  459 ++
- Documentation/blockdev/drbd/README.txt             |   16 +
- Documentation/blockdev/drbd/conn-states-8.dot      |   18 +
- Documentation/blockdev/drbd/disk-states-8.dot      |   16 +
- .../drbd/drbd-connection-state-overview.dot        |   85 +
- Documentation/blockdev/drbd/node-states-8.dot      |   14 +
- MAINTAINERS                                        |   13 +
- block/blk-barrier.c                                |   45 +-
- block/blk-core.c                                   |    7 +-
- block/blk-settings.c                               |   34 +-
- block/blk-sysfs.c                                  |   11 +-
- drivers/block/DAC960.c                             |  156 +-
- drivers/block/Kconfig                              |    2 +
- drivers/block/Makefile                             |    1 +
- drivers/block/cciss.c                              |  753 +++-
- drivers/block/cciss.h                              |   12 +-
- drivers/block/cpqarray.c                           |   63 +-
- drivers/block/drbd/Kconfig                         |   82 +
- drivers/block/drbd/Makefile                        |    8 +
- drivers/block/drbd/drbd_actlog.c                   | 1484 +++++++
- drivers/block/drbd/drbd_bitmap.c                   | 1327 ++++++
- drivers/block/drbd/drbd_int.h                      | 2258 ++++++++++
- drivers/block/drbd/drbd_main.c                     | 3734 ++++++++++++++++
- drivers/block/drbd/drbd_nl.c                       | 2364 +++++++++++
- drivers/block/drbd/drbd_proc.c                     |  265 ++
- drivers/block/drbd/drbd_receiver.c                 | 4455 ++++++++++++++++++++
- drivers/block/drbd/drbd_req.c                      | 1131 +++++
- drivers/block/drbd/drbd_req.h                      |  326 ++
- drivers/block/drbd/drbd_strings.c                  |  113 +
- drivers/block/drbd/drbd_tracing.c                  |  752 ++++
- drivers/block/drbd/drbd_tracing.h                  |   87 +
- drivers/block/drbd/drbd_vli.h                      |  351 ++
- drivers/block/drbd/drbd_worker.c                   | 1528 +++++++
- drivers/block/drbd/drbd_wrappers.h                 |   91 +
- drivers/mtd/mtd_blkdevs.c                          |   19 +-
- drivers/staging/dst/dcore.c                        |    2 +-
- fs/bio.c                                           |   49 +-
- include/linux/blkdev.h                             |    9 +-
- include/linux/blktrace_api.h                       |    2 +
- include/linux/drbd.h                               |  349 ++
- include/linux/drbd_limits.h                        |  137 +
- include/linux/drbd_nl.h                            |  137 +
- include/linux/drbd_tag_magic.h                     |   83 +
- include/linux/lru_cache.h                          |  294 ++
- include/trace/events/block.h                       |   33 +
- kernel/trace/blktrace.c                            |   39 +
- lib/Kconfig                                        |    3 +
- lib/Makefile                                       |    2 +
- lib/lru_cache.c                                    |  560 +++
- mm/swapfile.c                                      |   12 +-
- 52 files changed, 23993 insertions(+), 414 deletions(-)
- create mode 100644 Documentation/blockdev/drbd/DRBD-8.3-data-packets.svg
- create mode 100644 Documentation/blockdev/drbd/DRBD-data-packets.svg
- create mode 100644 Documentation/blockdev/drbd/README.txt
- create mode 100644 Documentation/blockdev/drbd/conn-states-8.dot
- create mode 100644 Documentation/blockdev/drbd/disk-states-8.dot
- create mode 100644 Documentation/blockdev/drbd/drbd-connection-state-overview.dot
- create mode 100644 Documentation/blockdev/drbd/node-states-8.dot
- create mode 100644 drivers/block/drbd/Kconfig
- create mode 100644 drivers/block/drbd/Makefile
- create mode 100644 drivers/block/drbd/drbd_actlog.c
- create mode 100644 drivers/block/drbd/drbd_bitmap.c
- create mode 100644 drivers/block/drbd/drbd_int.h
- create mode 100644 drivers/block/drbd/drbd_main.c
- create mode 100644 drivers/block/drbd/drbd_nl.c
- create mode 100644 drivers/block/drbd/drbd_proc.c
- create mode 100644 drivers/block/drbd/drbd_receiver.c
- create mode 100644 drivers/block/drbd/drbd_req.c
- create mode 100644 drivers/block/drbd/drbd_req.h
- create mode 100644 drivers/block/drbd/drbd_strings.c
- create mode 100644 drivers/block/drbd/drbd_tracing.c
- create mode 100644 drivers/block/drbd/drbd_tracing.h
- create mode 100644 drivers/block/drbd/drbd_vli.h
- create mode 100644 drivers/block/drbd/drbd_worker.c
- create mode 100644 drivers/block/drbd/drbd_wrappers.h
- create mode 100644 include/linux/drbd.h
- create mode 100644 include/linux/drbd_limits.h
- create mode 100644 include/linux/drbd_nl.h
- create mode 100644 include/linux/drbd_tag_magic.h
- create mode 100644 include/linux/lru_cache.h
- create mode 100644 lib/lru_cache.c
-
--- 
-Jens Axboe
+Oren.
 
