@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbZI3Pzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZI3P4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbZI3Pzw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 11:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbZI3Pzv
+	id S1754839AbZI3P4D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 11:56:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbZI3P4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 11:55:51 -0400
-Received: from elasmtp-scoter.atl.sa.earthlink.net ([209.86.89.67]:36094 "EHLO
-	elasmtp-scoter.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754810AbZI3Pzu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 11:55:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=dx4hE1GOdCA/lugjLTy7WHuTGeHTggz+GU+NOF1Y8E2dIgyMvr7TINnXGrR/u6rV;
-  h=Message-ID:Date:From:Reply-To:To:Subject:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Mailer:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <3664891.1254326154501.JavaMail.root@elwamui-rubis.atl.sa.earthlink.net>
-Date: Wed, 30 Sep 2009 11:55:54 -0400 (EDT)
-From: "Steven A. DuChene" <linux-clusters@mindspring.com>
-Reply-To: "Steven A. DuChene" <linux-clusters@mindspring.com>
-To: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: newer non-distro kernels don't boot / unpack?
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 30 Sep 2009 11:56:02 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:25135 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754739AbZI3P4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 11:56:00 -0400
+Message-ID: <4AC37F92.2090502@redhat.com>
+Date: Wed, 30 Sep 2009 17:56:02 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Zachary Amsden <zamsden@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [PATCH v4: kvm 1/4] Code motion.  Separate timer intialization
+ into an indepedent function.
+References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com> <4AC31AA5.4060609@redhat.com> <4AC37E81.8080104@redhat.com>
+In-Reply-To: <4AC37E81.8080104@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: EarthLink Zoo Mail 1.0
-X-ELNK-Trace: ea4808abc3da2865808dd114cae72f675e89bb4777695beb00ff6c36d42eb1fa14b8613bf22062b2f0e0b821d28e6d0c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 209.86.224.47
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK, so after removing rhgb and quiet from the menu.lst
-for this kernel the last few messages it prints are:
-
-sdb:
-sdb1 sdb2
-sd 1:0:0:0: [sdb] Attached SCSI disk
-XFS mounting filesystem sda3
-VFS: Mounted root (xfs filesystem) readonly on device 8:3.
-Freeing unused kernel memory: 416k freed
-Warning: unable to open an initial console.
-
-Since it does not seem to be reaching the init stage but
-does seem to be finding the disks and mounting the filesystems
-it is getting much further along than I thought. I guess
-I have a problem with the console/terminal parts of the
-kernel compile/configuration.
-
-
------Original Message-----
->From: Arjan van de Ven <arjan@infradead.org>
->Sent: Sep 30, 2009 11:47 AM
->To: "Steven A. DuChene" <linux-clusters@mindspring.com>
->Subject: Re: newer non-distro kernels don't boot / unpack?
->
->first remove rhgb and quiet.. that way you get at least the kernel log
->on the screen... to see where you get stuck.
+On 09/30/2009 05:51 PM, Zachary Amsden wrote:
+>> Is anything preventing us from unifying the constant_tsc and !same 
+>> paths?  We could just do a quick check in the notifier, see the tsc 
+>> frequency hasn't changed, and return.
 >
 >
->-- 
->Arjan van de Ven 	Intel Open Source Technology Centre
->For development, discussion and tips for power savings, 
->visit http://www.lesswatts.org
+> Actually, yes.  On constant_tsc processors, the processor frequency 
+> may still change, however the TSC frequency does not change with it.
+>
+> I actually have both of these kinds of processors (freq changes with 
+> constant TSC and freq changes with variable TSC) so I was able to test 
+> both of these cases.
 
+If the API allows us to query the tsc frequency, it would simply return 
+the same values in all cases, which we'd ignore.
 
+-- 
+error compiling committee.c: too many arguments to function
 
