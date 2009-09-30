@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752513AbZI3MK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZI3MNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752513AbZI3MK2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZI3MK1
+	id S1753887AbZI3MNl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 08:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbZI3MNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:10:27 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:50717 "EHLO kernel.dk"
+	Wed, 30 Sep 2009 08:13:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37758 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbZI3MK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:10:26 -0400
-Date: Wed, 30 Sep 2009 14:10:30 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "david@fromorbit.com" <david@fromorbit.com>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Message-ID: <20090930121029.GA14918@kernel.dk>
-References: <1252431974.7746.151.camel@twins> <1252432501.7746.156.camel@twins> <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz> <1252597750.7205.82.camel@laptop> <20090914111721.GA24075@duck.suse.cz> <20090924083342.GA15918@localhost> <20090929173506.GE11573@duck.suse.cz> <20090930012406.GB6311@localhost> <20090930115539.GA16074@duck.suse.cz>
+	id S1752987AbZI3MNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 08:13:40 -0400
+Date: Wed, 30 Sep 2009 12:13:07 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, eric.dumazet@gmail.com, efault@gmx.de,
+       peterz@infradead.org, fweisbec@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
+       peterz@infradead.org, efault@gmx.de, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090925220239.GA5488@ghostprotocols.net>
+References: <20090925220239.GA5488@ghostprotocols.net>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf top: Add poll_idle to the skip list
+Message-ID: <tip-8357275bb919d91093bc5a959932ef7b1ea816e8@git.kernel.org>
+Git-Commit-ID: 8357275bb919d91093bc5a959932ef7b1ea816e8
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090930115539.GA16074@duck.suse.cz>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 30 Sep 2009 12:13:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30 2009, Jan Kara wrote:
-> > +void bdi_writeback_wait(struct backing_dev_info *bdi, long nr_pages)
-> > +{
-> > +	struct dirty_throttle_task tt = {
-> > +		.nr_pages = nr_pages,
-> > +		.complete = COMPLETION_INITIALIZER_ONSTACK(tt.complete),
-> > +	};
-> > +	struct wb_writeback_args args = {
-> > +		.sync_mode	= WB_SYNC_NONE,
-> > +		.nr_pages	= LONG_MAX,
-> > +		.range_cyclic	= 1,
-> > +		.for_background	= 1,
-> > +	};
-> > +	struct bdi_work work;
-> > +
-> > +	bdi_work_init(&work, &args);
-> > +	work.state |= WS_ONSTACK;
-> > +
-> > +	/*
-> > +	 * make sure we will be waken up by someone
-> > +	 */
-> > +	bdi_queue_work(bdi, &work);
->   This is wrong, you shouldn't submit the work like this because you'll
-> have to wait for completion (wb_clear_pending below is just bogus). You
-> should rather do bdi_start_writeback(bdi, NULL, 0).
+Commit-ID:  8357275bb919d91093bc5a959932ef7b1ea816e8
+Gitweb:     http://git.kernel.org/tip/8357275bb919d91093bc5a959932ef7b1ea816e8
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Fri, 25 Sep 2009 15:02:39 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 30 Sep 2009 13:56:54 +0200
 
-Indeed, the above will die a horrible death fairly soon. But we can add
-some "barrier" like synchronization, if you just wish to wait for
-previously submitted work to have been completed.
+perf top: Add poll_idle to the skip list
+
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Acked-by: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
+LKML-Reference: <20090925220239.GA5488@ghostprotocols.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
--- 
-Jens Axboe
+---
+ tools/perf/builtin-top.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index 1ca8889..37512e9 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -782,6 +782,7 @@ static const char *skip_symbols[] = {
+ 	"exit_idle",
+ 	"mwait_idle",
+ 	"mwait_idle_with_hints",
++	"poll_idle",
+ 	"ppc64_runlatch_off",
+ 	"pseries_dedicated_idle_sleep",
+ 	NULL
