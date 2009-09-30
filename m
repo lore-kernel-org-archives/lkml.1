@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbZI3MYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbZI3MZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754309AbZI3MYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZI3MYk
+	id S1754418AbZI3MZK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 08:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZI3MZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:24:40 -0400
-Received: from mail-ausfall.charite.de ([193.175.70.131]:39377 "EHLO
-	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751863AbZI3MYk (ORCPT
+	Wed, 30 Sep 2009 08:25:10 -0400
+Received: from mail.deathmatch.net ([72.66.92.28]:2474 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752368AbZI3MZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:24:40 -0400
-Date: Wed, 30 Sep 2009 14:24:41 +0200
-From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.31: WARNING: at net/ipv4/af_inet.c:154
- inet_sock_destruct+0x164/0x1c0()
-Message-ID: <20090930122441.GB17974@charite.de>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Wed, 30 Sep 2009 08:25:09 -0400
+Date: Wed, 30 Sep 2009 08:24:51 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [.32-rc1/2] ath5k: has become unreliable with .32-rc1
+Message-ID: <20090930122451.GA17280@hash.localnet>
+References: <200909300952.29106.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <200909300952.29106.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This machine runs openvpn:
+On Wed, Sep 30, 2009 at 09:52:27AM +0200, Frans Pop wrote:
+> This is on a laptop I don't use much, but with .31 wireless has always
+> been (and still is) reliable (.31-rc5 is the last kernel I built for it).
+> On my other laptop wireless (iwlagn) works fine with .32-rc1.
 
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259235] ------------[ cut here ]------------
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259246] WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct+0x164/0x1c0()
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259249] Hardware name: ProLiant DL360 G4p
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259251] Modules linked in: ipt_REJECT ipt_LOG xt_multiport tun xt_tcpudp xt_state iptable_nat nf_nat iptable_filter ip_tables x_tables nf_conntrack_ipv4 nf_defrag_ipv4 ipv6 psmouse nf_conntrack_ftp nf_conntrack tg3 libphy
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259274] Pid: 2286, comm: openvpn Not tainted 2.6.31 #1
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259276] Call Trace:
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259282]  [<c126d154>] ? inet_sock_destruct+0x164/0x1c0
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259288]  [<c10326fb>] ? warn_slowpath_common+0x6f/0xcd
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259292]  [<c126d154>] ? inet_sock_destruct+0x164/0x1c0
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259296]  [<c1032779>] ? warn_slowpath_null+0x20/0x3c
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259300]  [<c126d154>] ? inet_sock_destruct+0x164/0x1c0
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259305]  [<c128bdcb>] ? _spin_lock_bh+0x16/0x40
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259309]  [<c128bdcb>] ? _spin_lock_bh+0x16/0x40
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259314]  [<c121bc78>] ? __sk_free+0x21/0xd6
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259318]  [<c121be41>] ? sk_common_release+0x5b/0x97
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259321]  [<c126cc05>] ? inet_release+0x39/0x66
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259325]  [<c1218eaa>] ? sock_release+0x22/0x8d
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259329]  [<c1218f31>] ? sock_close+0x1c/0x42
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259334]  [<c10a125c>] ? __fput+0xd6/0x1e0
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259338]  [<c109dd34>] ? filp_close+0x41/0x72
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259342]  [<c109ddda>] ? sys_close+0x75/0xc0
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259347]  [<c1002ecf>] ? sysenter_do_call+0x12/0x26
-Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259350] ---[ end trace 4715d461fc27d993 ]---
+Although iwlagn works, I would think this kind of thing:
+
+> ath0: authenticated
+> ath0: associate with AP 00:14:c1:38:e5:15 (try 1)
+> ath0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=2)
+> ath0: associated
+> ath0: deauthenticating by local choice (reason=3)
+> ath0: direct probe to AP 00:14:c1:38:e5:15 (try 1)
+> ath0 direct probe responded
+> ath0: authenticate with AP 00:14:c1:38:e5:15 (try 1)
+> ath0: authenticated
+> ath0: associate with AP 00:14:c1:38:e5:15 (try 1)
+> ath0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=2)
+
+...is some kind of issue with userspace or wext rather than the driver.
+Ath5k only had a dozen or so patches this time around, so it should be
+easy to bisect if it's a problem in the driver.  One possibility is
+hardware CCMP support but I've been using it here for some time.
+
+By the way, name it what you will, but the standard is wlan0 these days :)
+
+> So the difference looks to be how I boot: if I do a *cold* boot directly
+> into .32, wireless fails; if I *reboot* from .31 into .32, wireless
+> comes up correctly. Reboot from .32 to .32 fails too.
+
+Is that repeatable?
+
+Rafael J. Wysocki has a patch floating around to fix PCMCIA resume,
+linked here: http://bugzilla.kernel.org/show_bug.cgi?id=13092
 
 -- 
-Ralf Hildebrandt
-  Geschäftsbereich IT | Abteilung Netzwerk
-  Charité - Universitätsmedizin Berlin
-  Campus Benjamin Franklin
-  Hindenburgdamm 30 | D-12203 Berlin
-  Tel. +49 30 450 570 155 | Fax: +49 30 450 570 962
-  ralf.hildebrandt@charite.de | http://www.charite.de
-	    
+Bob Copeland %% www.bobcopeland.com
+
