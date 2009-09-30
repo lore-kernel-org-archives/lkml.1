@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZI3GzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbZI3Gzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753216AbZI3GzN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 02:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZI3GzM
+	id S1753311AbZI3Gzf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 02:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZI3Gzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 02:55:12 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56399 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbZI3GzM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 02:55:12 -0400
-Date: Wed, 30 Sep 2009 08:54:48 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Wang, Shane" <shane.wang@intel.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>
-Subject: Re: [GIT PULL] x86/txt for v2.6.32
-Message-ID: <20090930065448.GB11652@elf.ucw.cz>
-References: <200909142051.n8EKpiOM017912@terminus.zytor.com> <200909262344.21257.rjw@sisk.pl> <20090928210252.GD1960@elf.ucw.cz> <200909282307.56190.rjw@sisk.pl> <4AC1267D.6020405@zytor.com> <20090928211745.GA2119@elf.ucw.cz> <4AC1AA61.8070408@intel.com> <20090929171318.GC14405@elf.ucw.cz> <20090929191951.18315e94@infradead.org> <037F493892196B458CD3E193E8EBAD4F01ED9FE3B1@pdsmsx502.ccr.corp.intel.com>
+	Wed, 30 Sep 2009 02:55:35 -0400
+Received: from [195.41.46.236] ([195.41.46.236]:53819 "EHLO pfepb.post.tele.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752843AbZI3Gze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 02:55:34 -0400
+Date: Wed, 30 Sep 2009 08:55:33 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Joe Perches <joe@perches.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [RFC] move #define pr_fmt KBUILD_MODNAME and KMSG_COMPONENT to
+	Makefiles?
+Message-ID: <20090930065533.GB13850@merkur.ravnborg.org>
+References: <1254248104.28232.447.camel@Joe-Laptop.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <037F493892196B458CD3E193E8EBAD4F01ED9FE3B1@pdsmsx502.ccr.corp.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <1254248104.28232.447.camel@Joe-Laptop.home>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-09-30 10:16:55, Wang, Shane wrote:
-> Arjan van de Ven wrote:
-> > On Tue, 29 Sep 2009 19:13:18 +0200
-> > Pavel Machek <pavel@ucw.cz> wrote:
-> > 
-> >> Ok, and what prevents me from commenting out the MAC checking code?
-> >> 
-> > 
-> > because the bios verified some code that verified the kernel which
-> > includes the MAC checking code .. as part of returning from S3 ?
+Hi Joe.
+
+On Tue, Sep 29, 2009 at 11:15:04AM -0700, Joe Perches wrote:
+> There are starting to be more uses of
 > 
-> Yes, S3 sleep/resume cause another cycle to build the measured environment.
-> i.e. SINIT will verify tboot, tboot will verify kernel mem, kernel will verify userspace mem.
-> If you comment out the MAC checking code in any party, the chain will lost and S3 resume will fail.
+> #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 > 
+> and
+> 
+> #define KMSG_COMPONENT "foo"
+> #define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
+> 
+> in kernel sources.
+> 
+> Perhaps it would be better to put these
+> defines in the appropriate Makefile and not
+> sprinkle the sources with them multiple times?
 
-Ok, that means that you are protecting integrity but not secrecy?
-Should that be written down in documentation, along with threat model?
+Maybe I'm a bit dense but I do not quiete follow you
+here. What is it you want moved to kbuild here?
 
-So I modify the RAM content so that BIOS does not think measured
-environment existed before suspend?
-									Pavel
+To me it looks more like a logical extension to the
+pr_* macros based on info we already have available.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Sam
