@@ -1,59 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZI3V76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZI3WD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbZI3V76 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 17:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZI3V75
+	id S1754701AbZI3WD2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 18:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZI3WD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 17:59:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50347 "EHLO ogre.sisk.pl"
+	Wed, 30 Sep 2009 18:03:27 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:60610 "EHLO isrv.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106AbZI3V75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 17:59:57 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kelly Bowa <kbpm@tuxedu.org>
-Subject: Re: __pm_runtime_idle() returns -11!
-Date: Thu, 1 Oct 2009 00:01:23 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>,
-       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>
-References: <20090930074650.GA2300@box.home>
-In-Reply-To: <20090930074650.GA2300@box.home>
+	id S1751226AbZI3WD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 18:03:27 -0400
+Message-ID: <4AC3D5B1.3030708@msgid.tls.msk.ru>
+Date: Thu, 01 Oct 2009 02:03:29 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: suspend vs usb and PS/2 ports
+References: <4AC35F86.20405@msgid.tls.msk.ru> <200909302354.55673.rjw@sisk.pl>
+In-Reply-To: <200909302354.55673.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910010001.23869.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 September 2009, Kelly Bowa wrote:
-> Hi Rafael,
+Rafael J. Wysocki wrote:
+> On Wednesday 30 September 2009, Michael Tokarev wrote:
+>> Hello.
+>>
+>> I've several PCs here which are able to wakeup -
+>> among others - from PS/2 and/or USB keyboard.
+>> Here for testing I'm using PS/2 keyboard and
+>> Asus M3A78-EM motherboard.
+>>
+>> When I do poweroff from linux, the keyboard
+>> stays powered up as it should (according to
+>> the BIOS settings).  But when I do suspend,
+>> keyboard is NOT powered anymore, and hence
+>> the system can't be woken up from it but only
+>> by using the power button.
+>>
+>> This happens consistently for many kernel
+>> versions.  To be fair, I don't even know if
+>> there was any kernel which does not show this
+>> behaviour: old versions was unable to do
+>> suspend/resume cycle on this platform at all.
+>>
+>> Any hints for this please?
 > 
-> I get the following error messages in dmesg:
-> 
-> [    0.488758] ACPI: Enumerating devices from [\]
-> [    0.489673] PM: Adding info for acpi:LNXSYSTM:00
-> [    0.489856] acpi LNXSYSTM:00: __pm_runtime_idle()!
-> [    0.489862] acpi LNXSYSTM:00: __pm_runtime_idle() returns -11!
-> [    0.490952] PM: Adding info for acpi:LNXCPU:00
-> [    0.491154] acpi LNXCPU:00: __pm_runtime_idle()!
-> [    0.491161] acpi LNXCPU:00: __pm_runtime_idle() returns -11!
-> ....
-> 
-> full dmesg: www.tuxedu.org/kbpm/dmesg2.txt
-> 
-> __pm_runtime_idle() returns -11 which could be that it is waiting for other 
-> suspend running in parallel or that pm_runtime_cancel() fails to suspend the 
-> given device ?.. this causes a noticeable delay in boot time. I get this on 
-> 2.6.31-mm1 and ill soon test against 2.6.32-rc1..
+> With USB, I think keyboard wake-up is off by default as it causes some
+> systems to wake up immediately after suspending.  Alan and Oliver can provide
+> more info about that.
 
-This is a result of a debug message which is not supposed to be enabled on
-production systems.  What debug options are enabled in your kernel config?
+Actually I wasn't able to get any machine to resume based on
+USB devices - notable keyboard, be it sleep/power button (on
+the keyboards that have it) or any other combination of keys
+configured in the BIOS.  Most motherboards I tried are from
+Asus, one or two from Gigabyte and one more from Biostar.
 
-Rafael
+That's why I use PS/2=>USB adaptor, to connect an USB keyboard
+to a PS/2 port - this one works just fine, with all the mobos
+I tried (provided the appropriate BIOS settings are turned on
+and ever exists, to start with).
+
+> I don't know about PS/2.
+> 
+> Can you post the contents of /proc/acpi/wakeup from one of these systems,
+> please?
+
+Hm.  That's.. curious.  Here we go, my home machine whihc I turn
+on every day from a PS/2-connected keyboard:
+
+Device	S-state	  Status   Sysfs node
+PCE2	  S4	 disabled
+PCE3	  S4	 disabled
+PCE4	  S4	 disabled
+PCE5	  S4	 disabled
+PCE6	  S4	 disabled  pci:0000:00:06.0
+RLAN	  S4	 disabled  pci:0000:02:00.0
+PCE7	  S4	 disabled
+PCE9	  S4	 disabled
+PCEA	  S4	 disabled
+PCEB	  S4	 disabled
+PCEC	  S4	 disabled
+SBAZ	  S4	 disabled  pci:0000:00:14.2
+PS2K	  S4	 disabled  pnp:00:09
+UAR1	  S4	 disabled  pnp:00:0a
+P0PC	  S4	 disabled  pci:0000:00:14.4
+UHC1	  S4	 disabled  pci:0000:00:12.0
+UHC2	  S4	 disabled  pci:0000:00:12.1
+UHC3	  S4	 disabled  pci:0000:00:12.2
+USB4	  S4	 disabled  pci:0000:00:13.0
+UHC5	  S4	 disabled  pci:0000:00:13.1
+UHC6	  S4	 disabled  pci:0000:00:13.2
+UHC7	  S4	 disabled  pci:0000:00:14.5
+
+It's all disabled!  But I *know* it wakes up
+from network and from ps/2 keyboard at least!
+In the corresponding BIOS menu almost everything
+is enabled (excluding RTC alarm, but including
+USB events).  This is an Asus motherboard, M3A-78EM,
+with latest BIOS.
+
+Here's another one, Gigabyte's GA-MA74GM-S2H,
+which definitely wakes on network:
+
+Device	S-state	  Status   Sysfs node
+PCI0	  S5	 disabled  no-bus:pci0000:00
+USB0	  S3	 disabled  pci:0000:00:12.0
+USB1	  S3	 disabled  pci:0000:00:12.1
+USB2	  S3	 disabled  pci:0000:00:12.2
+USB3	  S3	 disabled  pci:0000:00:13.0
+USB4	  S3	 disabled  pci:0000:00:13.1
+USB5	  S3	 disabled  pci:0000:00:13.2
+USB6	  S3	 disabled  pci:0000:00:14.5
+SBAZ	  S4	 disabled  pci:0000:00:14.2
+P2P	  S5	 disabled  pci:0000:00:14.4
+PCE2	  S4	 disabled
+PCE3	  S4	 disabled
+PCE4	  S4	 disabled
+PCE5	  S4	 disabled
+PCE6	  S4	 disabled  pci:0000:00:06.0
+PCE7	  S4	 disabled
+PCE8	  S4	 disabled
+
+hmm.  Blaming BIOS, as usual? :)
+
+But even if that's the case, why there's a difference
+between "just" power-off and power-off when suspending?
+
+The kernel is 2.6.31 vanilla.
+
+Thanks!
+
+/mjt
