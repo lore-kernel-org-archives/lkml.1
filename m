@@ -1,95 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZI3NWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbZI3N0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbZI3NWO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 09:22:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZI3NWO
+	id S1754215AbZI3N0W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 09:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbZI3N0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 09:22:14 -0400
-Received: from fias.uni-frankfurt.de ([141.2.248.1]:48430 "EHLO
-	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbZI3NWN (ORCPT
+	Wed, 30 Sep 2009 09:26:21 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:42843 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751697AbZI3N0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 09:22:13 -0400
-From: Jan Scholz <scholz@fias.uni-frankfurt.de>
-To: Jan Scholz <scholz@fias.uni-frankfurt.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Adrian Ulrich" <kernel@blinkenlights.ch>,
-       "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: [Bug #13935] 2.6.31-rcX breaks Apple MightyMouse (Bluetooth version)
-References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
-	<u1L1PAbl8zG.A.eKD.hj1fKB@chimera>
-	<87hbwewlk4.fsf@scholz.fias.uni-frankfurt.de>
-Date: Wed, 30 Sep 2009 15:21:03 +0200
-In-Reply-To: <87hbwewlk4.fsf@scholz.fias.uni-frankfurt.de> (Jan Scholz's
-	message of "Tue, 11 Aug 2009 15:02:19 +0200")
-Message-ID: <878wfwwou8.fsf@scholz.fias.uni-frankfurt.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 30 Sep 2009 09:26:20 -0400
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+To: List Linux Kernel <linux-kernel@vger.kernel.org>, dtor@mail.ru,
+       List Linux Omap <linux-omap@vger.kernel.org>
+Cc: Tony Lindgren <tony@atomide.com>,
+       Lauri Leukkunen <lauri.leukkunen@nokia.com>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: [PATCH] input: fix rx51 board keymap
+Date: Wed, 30 Sep 2009 16:25:28 +0300
+Message-Id: <1254317128-13954-1-git-send-email-amit.kucheria@verdurent.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 30 Sep 2009 13:25:30.0956 (UTC) FILETIME=[7B81E0C0:01CA41D1]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The original driver was written with the KEY() macro defined as (col, row)
+instead of (row, col) as defined by the matrix keypad infrastructure. So the
+keymap was defined accordingly.
 
-now that the patch "HID: completely remove apple mightymouse from
-blacklist" is merged upstream as
-"42960a13001aa6df52ca9952ce996f94a744ea65" I think it should be merged
-in the v2.6.31-stable series as well.
+Since the driver that was merged upstream uses the matrix keypad
+infrastructure, modify the keymap accordingly.
 
-Best regards,
-   Jan
+While we are at it, fix the comments in twl4030.h and define PERSISTENT_KEY as
+(r,c) instead of (c, r)
 
-Jan Scholz <scholz@fias.uni-frankfurt.de> writes:
+Tested on a RX51 (N900) device.
 
-> I can confirm the reported bug, but for me reverting fa047e4f6fa63a6 is
-> not sufficient. I have to remove the device id of the mighty mouse from
-> the hid_blacklist list in drivers/hid/hid-core.c as well, see the patch below.
->
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->
->> This message has been generated automatically as a part of a report
->> of recent regressions.
->>
->> The following bug entry is on the current list of known regressions
->> from 2.6.30.  Please verify if it still should be listed and let me know
->> (either way).
->>
->>
->> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13935
->> Subject		: 2.6.31-rcX breaks Apple MightyMouse (Bluetooth version)
->> Submitter	: Adrian Ulrich <kernel@blinkenlights.ch>
->> Date		: 2009-08-08 22:08 (2 days old)
->> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=fa047e4f6fa63a6e9d0ae4d7749538830d14a343
->>
->
-> From b7393ed6dfe00c9e126a2dd34659156548df15cc Mon Sep 17 00:00:00 2001
-> From: Jan Scholz <Scholz@fias.uni-frankfurt.de>
-> Date: Tue, 11 Aug 2009 14:33:27 +0200
-> Subject: [PATCH] HID: commit fa047e4f is incomplete
->
-> Commit fa047e4f6fa63a6e9d0ae4d7749538830d14a343 "HID: fix inverted
-> wheel for bluetooth version of apple mighty mouse" is incomplete. If
-> we remove Apple MightyMouse (bluetooth version) from the list of
-> apple_devices in drivers/hid/hid-apple.c we have to remove it from
-> hid_blacklist in drivers/hid/hid-core.c as well.
->
-> Signed-off-by: Jan Scholz <Scholz@fias.uni-frankfurt.de>
-> ---
->  drivers/hid/hid-core.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-> index 5eb10c2..047844d 100644
-> --- a/drivers/hid/hid-core.c
-> +++ b/drivers/hid/hid-core.c
-> @@ -1319,7 +1319,6 @@ static const struct hid_device_id hid_blacklist[] = {
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_ZEROPLUS, 0x0005) },
->  	{ HID_USB_DEVICE(USB_VENDOR_ID_ZEROPLUS, 0x0030) },
->  
-> -	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 0x030c) },
->  	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_MS_PRESENTER_8K_BT) },
->  	{ }
->  };
+Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Lauri Leukkunen <lauri.leukkunen@nokia.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+---
+ arch/arm/mach-omap2/board-rx51-peripherals.c |   78 +++++++++++++-------------
+ include/linux/i2c/twl4030.h                  |    6 +-
+ 2 files changed, 42 insertions(+), 42 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+index b45ad31..c1af532 100644
+--- a/arch/arm/mach-omap2/board-rx51-peripherals.c
++++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+@@ -38,49 +38,49 @@
+ 
+ static int board_keymap[] = {
+ 	KEY(0, 0, KEY_Q),
+-	KEY(0, 1, KEY_W),
+-	KEY(0, 2, KEY_E),
+-	KEY(0, 3, KEY_R),
+-	KEY(0, 4, KEY_T),
+-	KEY(0, 5, KEY_Y),
+-	KEY(0, 6, KEY_U),
+-	KEY(0, 7, KEY_I),
+-	KEY(1, 0, KEY_O),
++	KEY(0, 1, KEY_O),
++	KEY(0, 2, KEY_P),
++	KEY(0, 3, KEY_COMMA),
++	KEY(0, 4, KEY_BACKSPACE),
++	KEY(0, 6, KEY_A),
++	KEY(0, 7, KEY_S),
++	KEY(1, 0, KEY_W),
+ 	KEY(1, 1, KEY_D),
+-	KEY(1, 2, KEY_DOT),
+-	KEY(1, 3, KEY_V),
+-	KEY(1, 4, KEY_DOWN),
+-	KEY(2, 0, KEY_P),
+-	KEY(2, 1, KEY_F),
++	KEY(1, 2, KEY_F),
++	KEY(1, 3, KEY_G),
++	KEY(1, 4, KEY_H),
++	KEY(1, 5, KEY_J),
++	KEY(1, 6, KEY_K),
++	KEY(1, 7, KEY_L),
++	KEY(2, 0, KEY_E),
++	KEY(2, 1, KEY_DOT),
+ 	KEY(2, 2, KEY_UP),
+-	KEY(2, 3, KEY_B),
+-	KEY(2, 4, KEY_RIGHT),
+-	KEY(3, 0, KEY_COMMA),
+-	KEY(3, 1, KEY_G),
+-	KEY(3, 2, KEY_ENTER),
++	KEY(2, 3, KEY_ENTER),
++	KEY(2, 5, KEY_Z),
++	KEY(2, 6, KEY_X),
++	KEY(2, 7, KEY_C),
++	KEY(3, 0, KEY_R),
++	KEY(3, 1, KEY_V),
++	KEY(3, 2, KEY_B),
+ 	KEY(3, 3, KEY_N),
+-	KEY(4, 0, KEY_BACKSPACE),
+-	KEY(4, 1, KEY_H),
+-	KEY(4, 3, KEY_M),
++	KEY(3, 4, KEY_M),
++	KEY(3, 5, KEY_SPACE),
++	KEY(3, 6, KEY_SPACE),
++	KEY(3, 7, KEY_LEFT),
++	KEY(4, 0, KEY_T),
++	KEY(4, 1, KEY_DOWN),
++	KEY(4, 2, KEY_RIGHT),
+ 	KEY(4, 4, KEY_LEFTCTRL),
+-	KEY(5, 1, KEY_J),
+-	KEY(5, 2, KEY_Z),
+-	KEY(5, 3, KEY_SPACE),
+-	KEY(5, 4, KEY_LEFTSHIFT),
+-	KEY(6, 0, KEY_A),
+-	KEY(6, 1, KEY_K),
+-	KEY(6, 2, KEY_X),
+-	KEY(6, 3, KEY_SPACE),
+-	KEY(6, 4, KEY_FN),
+-	KEY(7, 0, KEY_S),
+-	KEY(7, 1, KEY_L),
+-	KEY(7, 2, KEY_C),
+-	KEY(7, 3, KEY_LEFT),
+-	KEY(0xff, 0, KEY_F6),
+-	KEY(0xff, 1, KEY_F7),
+-	KEY(0xff, 2, KEY_F8),
+-	KEY(0xff, 4, KEY_F9),
+-	KEY(0xff, 5, KEY_F10),
++	KEY(4, 5, KEY_RIGHTALT),
++	KEY(4, 6, KEY_LEFTSHIFT),
++	KEY(5, 0, KEY_Y),
++	KEY(6, 0, KEY_U),
++	KEY(7, 0, KEY_I),
++	KEY(7, 1, KEY_F7),
++	KEY(7, 2, KEY_F8),
++	KEY(0xff, 2, KEY_F9),
++	KEY(0xff, 4, KEY_F10),
++	KEY(0xff, 5, KEY_F11),
+ };
+ 
+ static struct matrix_keymap_data board_map_data = {
+diff --git a/include/linux/i2c/twl4030.h b/include/linux/i2c/twl4030.h
+index 2d02dfd..508824e 100644
+--- a/include/linux/i2c/twl4030.h
++++ b/include/linux/i2c/twl4030.h
+@@ -349,11 +349,11 @@ struct twl4030_madc_platform_data {
+ 	int		irq_line;
+ };
+ 
+-/* Boards have uniqe mappings of {col, row} --> keycode.
+- * Column and row are 4 bits, but range only from 0..7.
++/* Boards have uniqe mappings of {row, col} --> keycode.
++ * Column and row are 8 bits each, but range only from 0..7.
+  * a PERSISTENT_KEY is "always on" and never reported.
+  */
+-#define PERSISTENT_KEY(c, r)	KEY((c), (r), KEY_RESERVED)
++#define PERSISTENT_KEY(r, c)	KEY((r), (c), KEY_RESERVED)
+ 
+ struct twl4030_keypad_data {
+ 	const struct matrix_keymap_data *keymap_data;
+-- 
+1.6.3.3
+
