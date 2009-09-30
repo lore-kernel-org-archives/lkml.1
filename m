@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbZI3Ojz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbZI3OkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbZI3Ojz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 10:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZI3Ojy
+	id S1754588AbZI3OkM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 10:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZI3OkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 10:39:54 -0400
-Received: from gw0.danplanet.com ([71.245.107.82]:54133 "EHLO
-	mail.danplanet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753304AbZI3Ojx (ORCPT
+	Wed, 30 Sep 2009 10:40:11 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:50570 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754518AbZI3OkJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 10:39:53 -0400
-To: Daniel Lezcano <daniel.lezcano@free.fr>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, mingo@elte.hu, xemul@openvz.org
-Subject: Re: [PATCH 00/80] Kernel based checkpoint/restart [v18]
-References: <1253749920-18673-1-git-send-email-orenl@librato.com>
-	<20090924154139.2a7dd5ec.akpm@linux-foundation.org>
-	<20090928163704.GA3327@us.ibm.com> <4AC20BB8.4070509@free.fr>
-From: Dan Smith <danms@us.ibm.com>
-Date: Wed, 30 Sep 2009 07:39:44 -0700
-In-Reply-To: <4AC20BB8.4070509@free.fr> (Daniel Lezcano's message of "Tue\, 29 Sep 2009 15\:29\:28 +0200")
-Message-ID: <87iqf0o5sf.fsf@caffeine.danplanet.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 30 Sep 2009 10:40:09 -0400
+Date: Wed, 30 Sep 2009 20:09:53 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
+Message-ID: <20090930143953.GA2014@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930142537.GJ19951@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090930142537.GJ19951@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DL> Ok for the restart, but for the checkpoint, how do you access the
-DL> network setup from a process which belongs to another namespace
-DL> context ?
+On Wed, Sep 30, 2009 at 07:55:37PM +0530, Bharata B Rao wrote:
+> On Wed, Sep 30, 2009 at 05:36:29PM +0400, Pavel Emelyanov wrote:
+> > Bharata B Rao wrote:
+> > > Hi,
+> > > 
+> > > Here is the v2 post of hard limits feature for CFS group scheduler. This
+> > > RFC post mainly adds runtime borrowing feature and has a new locking scheme
+> > > to protect CFS runtime related fields.
+> > > 
+> > > It would be nice to have some comments on this set!
+> > 
+> > I have a question I'd like to ask before diving into the code.
+> > Consider I'm a user, that has a 4CPUs box 2GHz each and I'd like
+> > to create a container with 2CPUs 1GHz each. Can I achieve this
+> > after your patches?
+> 
+> I am not sure if I understand the GHz specification you mention here.
+> Are you saying that you want run a container with 2 CPUS with each of
+> them running at half their (frequency)capacity ?
+> 
+> This hard limits scheme is about time based rate limiting where you can
+> specify a runtime(=hard limit) and a period for the container and the
+> container will not be allowed to consume more than the specified CPU time
+> within a given period.
 
-So far the discussion has led to the kernel dumping all of that
-information on checkpoint, and then splitting it up into what can be
-done by userspace on restart and what still needs to be in the kernel.
+IMO Pavel's requirement can be met with a hard limit of 25%
 
-Similarly, the task structure is currently exported by the kernel on
-checkpoint, but recreated in userspace on restart.
+	2 CPU of 1GHz = (1/2 x 4) (1/2 x 2) GHz CPUs
+		      = 1/4 x 4 2GHz CPU
+		      = 25% of (4 2GHz CPU)
 
--- 
-Dan Smith
-IBM Linux Technology Center
-email: danms@us.ibm.com
+IOW by hard-limiting a container thread to run just 0.5sec every sec on a 2GHz 
+cpu, it is effectively making progress at the rate of 1GHz?
+
+- vatsa
