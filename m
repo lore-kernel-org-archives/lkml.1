@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbZI3Mds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173AbZI3Mg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754257AbZI3Mds (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZI3Mds
+	id S1754173AbZI3Mg0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 08:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZI3MgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:33:48 -0400
-Received: from mail-ausfall.charite.de ([193.175.70.131]:42537 "EHLO
-	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944AbZI3Mdr (ORCPT
+	Wed, 30 Sep 2009 08:36:25 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:57524 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbZI3MgZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:33:47 -0400
-Date: Wed, 30 Sep 2009 14:33:49 +0200
-From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31: WARNING: at net/ipv4/af_inet.c:154
- inet_sock_destruct+0x164/0x1c0()
-Message-ID: <20090930123349.GE17974@charite.de>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20090930122441.GB17974@charite.de>
+	Wed, 30 Sep 2009 08:36:25 -0400
+Message-ID: <4AC350C0.4040605@gmail.com>
+Date: Wed, 30 Sep 2009 14:36:16 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+To: Ralf.Hildebrandt@charite.de
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.31: WARNING: at net/ipv4/af_inet.c:154 inet_sock_destruct+0x164/0x1c0()
+References: <20090930122441.GB17974@charite.de>
 In-Reply-To: <20090930122441.GB17974@charite.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 30 Sep 2009 14:36:16 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>:
+Ralf Hildebrandt a écrit :
 > This machine runs openvpn:
 > 
 > Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259235] ------------[ cut here ]------------
@@ -53,6 +53,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259342]  [<c109ddda>] ? sys_close+0x75/0xc0
 > Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259347]  [<c1002ecf>] ? sysenter_do_call+0x12/0x26
 > Sep 30 08:48:05 vpn-gw-int kernel: [1706466.259350] ---[ end trace 4715d461fc27d993 ]---
+> 
 
-This bug can also be found here:
-http://bugzilla.kernel.org/show_bug.cgi?id=14002
+We believe following patch should fix this problem.
+
+http://lkml.org/lkml/2009/9/29/62
+
