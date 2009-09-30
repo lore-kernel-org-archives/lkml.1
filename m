@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZI3RcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZI3RhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbZI3RcX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 13:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbZI3RcX
+	id S1754858AbZI3RhM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 13:37:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZI3RhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 13:32:23 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:48631 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754516AbZI3RcW (ORCPT
+	Wed, 30 Sep 2009 13:37:11 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:62522 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754344AbZI3RhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 13:32:22 -0400
-Date: Wed, 30 Sep 2009 10:31:13 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH v3 2/3] cpu: Offline state Framework.
-Message-Id: <20090930103113.4361619d.randy.dunlap@oracle.com>
-In-Reply-To: <20090915120706.20523.95464.stgit@sofia.in.ibm.com>
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
-	<20090915120706.20523.95464.stgit@sofia.in.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 30 Sep 2009 13:37:10 -0400
+Message-ID: <4AC396CA.6070302@nortel.com>
+Date: Wed, 30 Sep 2009 11:35:06 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Raistlin <raistlin@linux.it>
+CC: Henrik Austad <henrik@austad.us>, Peter Zijlstra <peterz@infradead.org>,
+       claudio@evidence.eu.com, michael@evidence.eu.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       johan.eker@ericsson.com, p.faure@akatech.ch,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
+Subject: Re: [RFC][PATCH] SCHED_EDF scheduling class
+References: <1253615424.20345.76.camel@Palantir>	 <1253623867.20345.156.camel@Palantir> <1253644603.18939.25.camel@laptop>	 <200909270855.49367.henrik@austad.us> <1254240635.7775.44.camel@Palantir>	 <4AC24525.9060607@nortel.com> <1254326306.11233.147.camel@Palantir>
+In-Reply-To: <1254326306.11233.147.camel@Palantir>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt006.oracle.com [141.146.116.15]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4AC395E5.014D:SCFSTAT5015188,ss=1,fgs=0
+X-OriginalArrivalTime: 30 Sep 2009 17:37:04.0827 (UTC) FILETIME=[A027D0B0:01CA41F4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 17:37:06 +0530 Gautham R Shenoy wrote:
+On 09/30/2009 09:58 AM, Raistlin wrote:
+> On Tue, 2009-09-29 at 11:34 -0600, Chris Friesen wrote:
 
-> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-> ---
->  Documentation/cpu-hotplug.txt |   22 +++++
->  drivers/base/cpu.c            |  181 +++++++++++++++++++++++++++++++++++++++--
->  include/linux/cpu.h           |   10 ++
->  3 files changed, 204 insertions(+), 9 deletions(-)
+>> a) The child should get an identical bandwidth guarantee as the parent
+>> and if that can't be guaranteed then the fork() should fail, maybe with
+>> an errno of EBUSY.
+>>
+> Again, this could be done, pretty easily actually. :-)
 > 
-> diff --git a/Documentation/cpu-hotplug.txt b/Documentation/cpu-hotplug.txt
-> index 9d620c1..dcec06d 100644
-> --- a/Documentation/cpu-hotplug.txt
-> +++ b/Documentation/cpu-hotplug.txt
-> @@ -115,6 +115,28 @@ Just remember the critical section cannot call any
->  function that can sleep or schedule this process away. The preempt_disable()
->  will work as long as stop_machine_run() is used to take a cpu down.
->  
-> +CPU-offline states
-> +--------------------------------------
-> +On architectures which allow the more than one valid state when
+>> b) The child should start out with no guarantees (SCHED_OTHER nice 0
+>> maybe?) and should have to request a bandwidth guarantee.  This could
+>> complicate things in some circumstances because if it can't get the
+>> guarantee then it needs to inform the parent somehow.
+>>
+> Ok, I see and agree, again, to many extents.
 
-                                ^drop "the"
+> Maybe, since I'm adding (in the next patch I'm going to send
+> soon) a flag field in the sched_param_ex structure, we can also use some
+> of the bits for deciding how the fork will behave... The main problem
+> would be the code will get more complicated, and we thus would have to
+> decide if it is worth...
 
-> +the CPU goes offline, the system administrator can decide
-> +the state the CPU needs to go to when it is offlined.
+For now it might be best to keep it simple...it can always be extended
+later on.  Personally I prefer option "a" above as it makes applications
+easier to code.
 
-s/needs to/should/
+The only problem that I see is that it will refuse to fork() a task that
+has a bandwidth of more than 50% of the system.  I wouldn't expect this
+to be a common occurrence, but I could be wrong.
 
-> +
-> +If the architecture has implemented a cpu-offline driver exposing these
-> +multiple offline states, the system administrator can use the following sysfs
-> +interfaces to query the available hotplug states and also query and set the
-> +current hotplug state for a given cpu:
-> +
-> +To query the hotplug states, on needs to perform a read on:
-
-                                one
-
-> +/sys/devices/system/cpu/cpu<number>/available_hotplug_states
-> +
-> +To query or set the current state for a particular CPU,
-> +one needs to use the sysfs interface
-> +
-> +/sys/devices/system/cpu/cpu<number>/current_hotplug_state
-> +
-> +Writes to the "online" sysfs files are serialized against the writes to the
-> +"current_hotplug_state" file.
-> +
->  CPU Hotplug - Frequently Asked Questions.
->  
->  Q: How to enable my kernel to support CPU hotplug?
-
-
----
-~Randy
+Chris
