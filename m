@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbZI3VUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbZI3VWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242AbZI3VUk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 17:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbZI3VUi
+	id S1754275AbZI3VWf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 17:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbZI3VWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 17:20:38 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50219 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307AbZI3VUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 17:20:37 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kevin Hilman <khilman@deeprootsystems.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] CPUidle: always return with interrupts enabled
-Date: Wed, 30 Sep 2009 23:21:33 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-References: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
-In-Reply-To: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
+	Wed, 30 Sep 2009 17:22:35 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:50607 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751939AbZI3VWe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 17:22:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=xQjLEfDx8pE7A9txFp1s8ahgyg5IiWwNnBXPgSDtEM1PVUIp05HV9NAdmigMFN8m6l
+         8wCEIcDvkhl4WJy6HZeiV/qwDPjwEaGTprufpDKuLNUGxU6LhLuyjwtCXaJ9O+ew5AKc
+         6MSh+JR3Q9AYMuG2BeKv22oiCzSiPSVCakQ6A=
+Date: Wed, 30 Sep 2009 23:22:33 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Stefan Bader <stefan.bader@canonical.com>
+Cc: Peter Feuerer <peter@piie.net>, Borislav Petkov <petkovbb@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] acerhdf: Limit modalias matching to supported boards
+Message-ID: <20090930212233.GB17712@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	Stefan Bader <stefan.bader@canonical.com>,
+	Peter Feuerer <peter@piie.net>,
+	Borislav Petkov <petkovbb@gmail.com>, linux-kernel@vger.kernel.org
+References: <4AC34B83.6090402@canonical.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909302321.33088.rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4AC34B83.6090402@canonical.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 September 2009, Kevin Hilman wrote:
-> In the case where cpuidle_idle_call() returns before changing state
-> due to a need_resched(), it was returning with IRQs disabled.
+On Wed, Sep 30, 2009 at 02:13:55PM +0200, Stefan Bader wrote:
+> We got reports of acerhdf issuing warnings on Acer laptops other
+> than Aspire Ones. Looking at the dmi match this sounds a bit to
+> generic. IOW the module gets loaded on any Acer laptop. After the
+> following patch the module gets still loaded on my Aspire One but
+> not on the reported other laptop.
+> The same change might be helpful for the other two dmi matches, but
+> I had no way of testing.
+
+Yeah, we might need someone with such a machine to give us
+/sys/class/dmi/id/modalias content. Peter, do you have any users with
+such machines?
+
+> From 389f61f7e66ce615dc6418cb856e167edaa74b42 Mon Sep 17 00:00:00 2001
+> From: Stefan Bader <stefan.bader@canonical.com>
+> Date: Mon, 28 Sep 2009 17:11:29 +0000
+> Subject: [PATCH] UBUNTU: acerhdf: Limit modalias matching to supported boards
 > 
-> This patch ensures IRQs are (re)enabled before returning.
+> BugLink: https://bugs.launchpad.net/ubuntu/+bug/435958
+> 
+> The module alias currently matches any Acer computer but when loaded the
+> BIOS checks will only succeed on Aspire One models. This causes a invalid
+> BIOS warning for all other models (seen on Aspire 4810T).
+> This is not fatal but worries users that see this message. Limiting the
+> moule alias to models starting with AOA. Probably the same change should be
+> made for the two other entries.
+> 
+> Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
 
-Venki, any comments on this?
+Acked-by: Borislav Petkov <petkovbb@gmail.com>
 
-> Reported-by: Hemanth V <hemanthv@ti.com>
-> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
 > ---
->  drivers/cpuidle/cpuidle.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
+>  drivers/platform/x86/acerhdf.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index ad41f19..12fdd39 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -76,8 +76,11 @@ static void cpuidle_idle_call(void)
->  #endif
->  	/* ask the governor for the next state */
->  	next_state = cpuidle_curr_governor->select(dev);
-> -	if (need_resched())
-> +	if (need_resched()) {
-> +		local_irq_enable();
->  		return;
-> +	}
-> +
->  	target_state = &dev->states[next_state];
+> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+> index aa298d6..763f233 100644
+> --- a/drivers/platform/x86/acerhdf.c
+> +++ b/drivers/platform/x86/acerhdf.c
+> @@ -629,7 +629,7 @@ static void __exit acerhdf_exit(void)
+>  MODULE_LICENSE("GPL");
+>  MODULE_AUTHOR("Peter Feuerer");
+>  MODULE_DESCRIPTION("Aspire One temperature and fan driver");
+> -MODULE_ALIAS("dmi:*:*Acer*:*:");
+> +MODULE_ALIAS("dmi:*:*Acer*:pnAOA*:");
+>  MODULE_ALIAS("dmi:*:*Gateway*:*:");
+>  MODULE_ALIAS("dmi:*:*Packard Bell*:*:");
 >  
->  	/* enter the state and update stats */
+> -- 
+> 1.5.4.5
+> 
 
-Best,
-Rafael
+
+-- 
+Regards/Gruss,
+    Boris.
