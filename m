@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZI3CSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbZI3CpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753853AbZI3CSM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 22:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZI3CSL
+	id S1753986AbZI3CpH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 22:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbZI3CpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 22:18:11 -0400
-Received: from mga09.intel.com ([134.134.136.24]:28323 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752504AbZI3CSL convert rfc822-to-8bit (ORCPT
+	Tue, 29 Sep 2009 22:45:06 -0400
+Received: from mail-vw0-f203.google.com ([209.85.212.203]:37084 "EHLO
+	mail-vw0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753890AbZI3CpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 22:18:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,476,1249282800"; 
-   d="scan'208";a="452928637"
-From: "Wang, Shane" <shane.wang@intel.com>
-To: Arjan van de Ven <arjan@infradead.org>, Pavel Machek <pavel@ucw.cz>
-CC: "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>
-Date: Wed, 30 Sep 2009 10:16:55 +0800
-Subject: RE: [GIT PULL] x86/txt for v2.6.32
-Thread-Topic: [GIT PULL] x86/txt for v2.6.32
-Thread-Index: AcpBKSUU+7a0QAxGSMyt52SUZQa3MwASh2Gg
-Message-ID: <037F493892196B458CD3E193E8EBAD4F01ED9FE3B1@pdsmsx502.ccr.corp.intel.com>
-References: <200909142051.n8EKpiOM017912@terminus.zytor.com>
-	<200909262344.21257.rjw@sisk.pl>	<20090928210252.GD1960@elf.ucw.cz>
-	<200909282307.56190.rjw@sisk.pl>	<4AC1267D.6020405@zytor.com>
-	<20090928211745.GA2119@elf.ucw.cz>	<4AC1AA61.8070408@intel.com>
-	<20090929171318.GC14405@elf.ucw.cz> <20090929191951.18315e94@infradead.org>
-In-Reply-To: <20090929191951.18315e94@infradead.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 29 Sep 2009 22:45:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=FY63LI6F86QntJAQfJ3n2MAdsJM9jyAGWifF63AB5NUNQot7bclyu3EUWaoeyJZelD
+         VjYIEJudx6/ADC681KgPMj2Sy61CHdNWEkOvfdjCNSb9yqeGbUAb5xVFoxlk1c1tnYDF
+         UhV6/v1EL2gEPoYzAZNrOqMeAAg8NDs2Azb7U=
 MIME-Version: 1.0
+In-Reply-To: <1254133004-24877-1-git-send-email-21cnbao@gmail.com>
+References: <1254133004-24877-1-git-send-email-21cnbao@gmail.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 29 Sep 2009 22:44:48 -0400
+Message-ID: <8bd0f97a0909291944q53a060buc7bcbb30c1240da7@mail.gmail.com>
+Subject: Re: [PATCH] Fix half-Y2K38 problem in timecompare_update while 
+	calculating offset
+To: Barry Song <21cnbao@gmail.com>
+Cc: akpm@linux-foundation.org, davem@davemloft.net, patrick.ohly@intel.com,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Tue, 29 Sep 2009 19:13:18 +0200
-> Pavel Machek <pavel@ucw.cz> wrote:
-> 
->> Ok, and what prevents me from commenting out the MAC checking code?
->> 
-> 
-> because the bios verified some code that verified the kernel which
-> includes the MAC checking code .. as part of returning from S3 ?
+On Mon, Sep 28, 2009 at 06:16, Barry Song wrote:
+> ktime will overflow from 03:14:07 UTC on Tuesday, 19 January 2038,
+> ktime_add() in timecompare_update() will overflow a half earlier.
+> As a result, wrong offset will be gotten, then cause some strange
+> problems.
 
-Yes, S3 sleep/resume cause another cycle to build the measured environment.
-i.e. SINIT will verify tboot, tboot will verify kernel mem, kernel will verify userspace mem.
-If you comment out the MAC checking code in any party, the chain will lost and S3 resume will fail.
-
-Thanks.
-Shane
-
+Barry: you forgot to include your s-o-b tag ...
+-mike
