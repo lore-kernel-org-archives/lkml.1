@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbZI3Wty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266AbZI3XAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754902AbZI3Wty (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 18:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZI3Wtx
+	id S1754266AbZI3XAt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 19:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbZI3XAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 18:49:53 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:2511 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754649AbZI3Wtw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 18:49:52 -0400
-X-IronPort-AV: E=McAfee;i="5300,2777,5757"; a="24391197"
-From: David Brown <davidb@codeaurora.org>
-To: linux-arm-kernel@lists.infradead.org
-Cc: David Brown <davidb@quicinc.com>, Russell King <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] ARM: allow empty ATAG_CORE
-Date: Wed, 30 Sep 2009 15:53:00 -0700
-Message-Id: <1254351180-29199-1-git-send-email-davidb@codeaurora.org>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1254347072-27932-1-git-send-email-davidb@codeaurora.org>
-References: <1254347072-27932-1-git-send-email-davidb@codeaurora.org>
+	Wed, 30 Sep 2009 19:00:48 -0400
+Received: from claw.goop.org ([74.207.240.146]:35924 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752708AbZI3XAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 19:00:47 -0400
+Message-ID: <4AC3E1EB.4020903@goop.org>
+Date: Wed, 30 Sep 2009 15:55:39 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Dave Airlie <airlied@linux.ie>
+CC: dri-devel <dri-devel@lists.sourceforge.net>,
+       Jan Beulich <JBeulich@novell.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] drm: make sure page protections are updated after changing
+ vm_flags.
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brown <davidb@quicinc.com>
+Some architectures compute ->vm_page_prot depending on ->vm_flags, so
+we need to update the protections after adjusting the flags.
 
-The ATAG_CORE is allowed to be empty.  Although this is handled
-by parse_tag_core(), __vet_atags during startup rejects this tag
-unless it contains data.  Allow the initial tag to be either the
-full size, or empty.
+Reported-by: Jan Beulich <JBeulich@novell.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Signed-off-by: David Brown <davidb@quicinc.com>
----
-Sorry, previous patch didn't actually do anything, since the new
-constant was defined incorrectly.
-
- arch/arm/kernel/head-common.S |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/arch/arm/kernel/head-common.S b/arch/arm/kernel/head-common.S
-index 93ad576..885a721 100644
---- a/arch/arm/kernel/head-common.S
-+++ b/arch/arm/kernel/head-common.S
-@@ -13,6 +13,7 @@
+diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
+index 8104eca..9d3e39f 100644
+--- a/drivers/gpu/drm/drm_gem.c
++++ b/drivers/gpu/drm/drm_gem.c
+@@ -537,7 +537,7 @@ int drm_gem_mmap(struct file *filp, struct vm_area_struct *vma)
+ 	vma->vm_ops = obj->dev->driver->gem_vm_ops;
+ 	vma->vm_private_data = map->handle;
+ 	/* FIXME: use pgprot_writecombine when available */
+-	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
++	vma->vm_page_prot = pgprot_writecombine(vm_get_page_prot(vma->vm_flags));
  
- #define ATAG_CORE 0x54410001
- #define ATAG_CORE_SIZE ((2*4 + 3*4) >> 2)
-+#define ATAG_CORE_SIZE_EMPTY ((2*4) >> 2)
- 
- 	.align	2
- 	.type	__switch_data, %object
-@@ -251,7 +252,8 @@ __vet_atags:
- 	bne	1f
- 
- 	ldr	r5, [r2, #0]			@ is first tag ATAG_CORE?
--	subs	r5, r5, #ATAG_CORE_SIZE
-+	cmp	r5, #ATAG_CORE_SIZE
-+	cmpne	r5, #ATAG_CORE_SIZE_EMPTY
- 	bne	1f
- 	ldr	r5, [r2, #4]
- 	ldr	r6, =ATAG_CORE
--- 
-1.6.2.3
+ 	/* Take a ref for this mapping of the object, so that the fault
+ 	 * handler can dereference the mmap offset's pointer to the object.
+
 
