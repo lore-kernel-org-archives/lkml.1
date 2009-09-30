@@ -1,73 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZI3NUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZI3NWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbZI3NUd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 09:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbZI3NUc
+	id S1754153AbZI3NWO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 09:22:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZI3NWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 09:20:32 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:40025 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752878AbZI3NUb (ORCPT
+	Wed, 30 Sep 2009 09:22:14 -0400
+Received: from fias.uni-frankfurt.de ([141.2.248.1]:48430 "EHLO
+	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753076AbZI3NWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 09:20:31 -0400
-Date: Wed, 30 Sep 2009 15:20:35 +0200
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.com>
-Subject: Re: [PATCH] connector: Allow permission checking in the receiver
-	callbacks
-Message-ID: <20090930132034.GE8032@barkeeper1-xen.linbit>
-References: <1254235692-1631-1-git-send-email-philipp.reisner@linbit.com> <20090930112057.GA15150@ioremap.net>
+	Wed, 30 Sep 2009 09:22:13 -0400
+From: Jan Scholz <scholz@fias.uni-frankfurt.de>
+To: Jan Scholz <scholz@fias.uni-frankfurt.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Adrian Ulrich" <kernel@blinkenlights.ch>,
+       "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: [Bug #13935] 2.6.31-rcX breaks Apple MightyMouse (Bluetooth version)
+References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera>
+	<u1L1PAbl8zG.A.eKD.hj1fKB@chimera>
+	<87hbwewlk4.fsf@scholz.fias.uni-frankfurt.de>
+Date: Wed, 30 Sep 2009 15:21:03 +0200
+In-Reply-To: <87hbwewlk4.fsf@scholz.fias.uni-frankfurt.de> (Jan Scholz's
+	message of "Tue, 11 Aug 2009 15:02:19 +0200")
+Message-ID: <878wfwwou8.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090930112057.GA15150@ioremap.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 03:20:57PM +0400, Evgeniy Polyakov wrote:
-> Hi Philipp.
-> 
-> On Tue, Sep 29, 2009 at 04:48:07PM +0200, Philipp Reisner (philipp.reisner@linbit.com) wrote:
-> > Various users of the connector should actually check if the
-> > sender's capabilities of a netlink/connector packet are
-> > actually sufficient for the operation they trigger. Up to
-> > now the connector framework did not allow the kernel side
-> > receiver to do so.
-> > 
-> > This patch set does the groundwork.
-> > 
-> > Philipp Reisner (4):
-> >   connector: Keep the skb in cn_callback_data
-> >   connector: Provide the sender's credentials to the callback
-> >   connector/dm: Fixed a compilation warning
-> >   connector: Removed the destruct_data callback since it is always
-> >     kfree_skb()
-> 
-> Patches look good to me.
-> Andrew please apply to the appropriate tree. I do not know whether it is
-> acceptible now, since it is not a bugfix, but merely a simple cleanup.
-> Feel free to add my signed off or ack, thank you.
+Hi,
 
-Thanks.
+now that the patch "HID: completely remove apple mightymouse from
+blacklist" is merged upstream as
+"42960a13001aa6df52ca9952ce996f94a744ea65" I think it should be merged
+in the v2.6.31-stable series as well.
 
-Actually it is the basis for follow-up security fixes.
+Best regards,
+   Jan
 
-Without this, unprivileged user space is able to send arbitrary
-connector requests to kernel subsystems, which have no way to verify the
-privileges of the sender anymore, because that information, even though
-available at the netlink layer, has been dropped by the connector.
+Jan Scholz <scholz@fias.uni-frankfurt.de> writes:
 
-Once this is applied, the various in-kernel receiving connector
-callbacks can (and need to) add cap_raised(nsb->eff_cap, cap) where
-appropriate. For example, you don't want some guest user to be able to
-trigger a dst_del_node callback by sending a crafted netlink message,
-right?
-
-So it _is_ a (design-) bug fix.
-Or am I missing something?
-
-	Lars
+> I can confirm the reported bug, but for me reverting fa047e4f6fa63a6 is
+> not sufficient. I have to remove the device id of the mighty mouse from
+> the hid_blacklist list in drivers/hid/hid-core.c as well, see the patch below.
+>
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.30.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13935
+>> Subject		: 2.6.31-rcX breaks Apple MightyMouse (Bluetooth version)
+>> Submitter	: Adrian Ulrich <kernel@blinkenlights.ch>
+>> Date		: 2009-08-08 22:08 (2 days old)
+>> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=fa047e4f6fa63a6e9d0ae4d7749538830d14a343
+>>
+>
+> From b7393ed6dfe00c9e126a2dd34659156548df15cc Mon Sep 17 00:00:00 2001
+> From: Jan Scholz <Scholz@fias.uni-frankfurt.de>
+> Date: Tue, 11 Aug 2009 14:33:27 +0200
+> Subject: [PATCH] HID: commit fa047e4f is incomplete
+>
+> Commit fa047e4f6fa63a6e9d0ae4d7749538830d14a343 "HID: fix inverted
+> wheel for bluetooth version of apple mighty mouse" is incomplete. If
+> we remove Apple MightyMouse (bluetooth version) from the list of
+> apple_devices in drivers/hid/hid-apple.c we have to remove it from
+> hid_blacklist in drivers/hid/hid-core.c as well.
+>
+> Signed-off-by: Jan Scholz <Scholz@fias.uni-frankfurt.de>
+> ---
+>  drivers/hid/hid-core.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+> index 5eb10c2..047844d 100644
+> --- a/drivers/hid/hid-core.c
+> +++ b/drivers/hid/hid-core.c
+> @@ -1319,7 +1319,6 @@ static const struct hid_device_id hid_blacklist[] = {
+>  	{ HID_USB_DEVICE(USB_VENDOR_ID_ZEROPLUS, 0x0005) },
+>  	{ HID_USB_DEVICE(USB_VENDOR_ID_ZEROPLUS, 0x0030) },
+>  
+> -	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 0x030c) },
+>  	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_MS_PRESENTER_8K_BT) },
+>  	{ }
+>  };
