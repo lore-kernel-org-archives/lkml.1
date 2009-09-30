@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbZI3Ukf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbZI3Umk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753947AbZI3Ukf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 16:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZI3Uke
+	id S1753973AbZI3Umk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 16:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZI3Umk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 16:40:34 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:65312 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751629AbZI3Ukd (ORCPT
+	Wed, 30 Sep 2009 16:42:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52197 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753347AbZI3Umj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 16:40:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=GLKdyGSKW7F8dC6irxZ3wwYm/WI7zHl/vvtfz1igO6WwFpE4vfyczftpFzLKvTSMYW
-         dP0S685A8QkZPgbxBDY/wANpd3q8PUlMiNyroBUa8lCZhzHU/4Sa2tZlBw17rxBcVH1R
-         +RfMNE3xBcAujTeFbq/ZOwPywbGB0D1DmTatU=
-From: Jakub Narebski <jnareb@gmail.com>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: How can I download a git commit as a diff patch?
-Date: Wed, 30 Sep 2009 22:40:16 +0200
-User-Agent: KMail/1.9.3
-Cc: Alejandro Riveira =?iso-8859-1?q?Fern=E1ndez?= 
-	<ariveira@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>, Andy <genanr@emsphone.com>,
-       linux-kernel@vger.kernel.org, git@vger.kernel.org
-References: <20090930154410.GA31502@thumper2> <m3tyyk9ost.fsf@localhost.localdomain> <20090930202527.GB22159@csclub.uwaterloo.ca>
-In-Reply-To: <20090930202527.GB22159@csclub.uwaterloo.ca>
+	Wed, 30 Sep 2009 16:42:39 -0400
+Date: Wed, 30 Sep 2009 13:41:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Eric Dumazet <eric.dumazet@gmail.com>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Linux 2.6.32-rc1
+In-Reply-To: <4AC3BE89.3040708@gmail.com>
+Message-ID: <alpine.LFD.2.01.0909301339080.6996@localhost.localdomain>
+References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain> <4AC060AE.1090401@gmail.com> <alpine.LFD.2.01.0909280829100.3349@localhost.localdomain> <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com> <4AC10365.7090802@gmail.com>
+ <4AC2712C.4080901@gmail.com> <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain> <20090929232248.735bf4df@infradead.org> <alpine.LFD.2.01.0909291429570.6996@localhost.localdomain> <20090930170754.0886ff2e@infradead.org>
+ <alpine.LFD.2.01.0909301304310.6996@localhost.localdomain> <4AC3BE89.3040708@gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909302240.17729.jnareb@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009, Lennart Sorensen wrote:
-> On Wed, Sep 30, 2009 at 01:10:51PM -0700, Jakub Narebski wrote:
 
-> > Or better yet, if given installation of gitweb supports it, on the
-> > 'patch' link just on the right of 'raw' view.  Such patch can be
-> > applied better by git-am (but both should work for GNU patch or
-> > git-apply).
-> > 
-> > Yes, by default for merges the 'commitdiff' view (and the 'raw'
-> > version, i.e. 'commitdiff_plain' view) shows **combined** diff of
-> > changes brought by merge (see git-diff manpage for details on this
-> > format).
-> > 
-> > For merge commit you have to choose which of parents you want to have
-> > diff from.  Go to 'commit' view, there in the header would be two or
-> > more parents.  Click on the 'diff' link beside chosen parent, check if
-> > it is the diff you want to get, and then click on 'patch' (or 'raw')
-> > link.
+
+On Wed, 30 Sep 2009, Eric Dumazet wrote:
 > 
-> Is there a git command to show me a diff I can use with patch if I want to
-> select a given patch as long as I can tell it which tree I want to follow?
-> I don't care to use gitweb if I can do it with the command line git.
+> Yes, I provided following version in my first answer but apparently it 
+> was too complex :)
 
-You can specify parent explicitely: "git diff <rev>^1 <rev>" for diff
-to first parent, e.g. "git diff HEAD^ HEAD".
+It wasn't too complex, but YOU QUOTED THE WHOL F*CKING EMAIL.
 
-> 
-> git show obviously shows the git combined diff format, at least by default.
-> 
-> Or is the idea of trying to use the diff from the merge commit just
-> silly in the first place?
+I don't know about anybody else, but if I see a couple of screenfuls of 
+quotes, with no actual interesting new data, I just move on. I suspect 
+everybody else did too. 
 
-Just so you know that this single diff is not enough to redo a merge.
-It is only partial information.
+I really don't understand people who can't edit down their answer and only 
+quote the relevant parts. It makes it impossible to read the reply, 
+because it's hidden by all the old quoting.
 
+Please spend the time to edit quoting levels, because otherwise people 
+won't spend the time to look at your new text.
 
-BTW. there is also "git diff-tree -m <rev>") to show diff to *all*
-parents at once:
-
-    -m    By default, `git-diff-tree --stdin` does not show differences for
-          merge commits. With this flag, it shows differences to that commit
-          from all of its parents. See also `-c`.
-
--- 
-Jakub Narebski
-Poland
+			Linus
