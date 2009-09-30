@@ -1,112 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbZI3Rly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZI3RoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbZI3Rly (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 13:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbZI3Rlx
+	id S1754880AbZI3RoS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 13:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZI3RoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 13:41:53 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:55071 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754906AbZI3Rlv (ORCPT
+	Wed, 30 Sep 2009 13:44:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36952 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751804AbZI3RoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 13:41:51 -0400
-Date: Wed, 30 Sep 2009 10:41:55 -0700 (PDT)
-From: Sage Weil <sage@newdream.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       yehuda@newdream.net
-Subject: Re: [PATCH 03/21] ceph: client types
-In-Reply-To: <20090929165758.1b7df6c9.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0909301040250.16283@cobra.newdream.net>
-References: <1253641129-28434-1-git-send-email-sage@newdream.net>
- <1253641129-28434-2-git-send-email-sage@newdream.net>
- <1253641129-28434-3-git-send-email-sage@newdream.net>
- <1253641129-28434-4-git-send-email-sage@newdream.net>
- <20090929165758.1b7df6c9.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Sep 2009 13:44:17 -0400
+Date: Wed, 30 Sep 2009 19:44:47 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Steven A. DuChene" <linux-clusters@mindspring.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Warning: unable to open an initial console
+Message-ID: <20090930194447.016e66c3@infradead.org>
+In-Reply-To: <31532395.1254330324879.JavaMail.root@elwamui-rubis.atl.sa.earthlink.net>
+References: <31532395.1254330324879.JavaMail.root@elwamui-rubis.atl.sa.earthlink.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Sep 2009, Andrew Morton wrote:
+On Wed, 30 Sep 2009 13:05:24 -0400 (EDT)
+"Steven A. DuChene" <linux-clusters@mindspring.com> wrote:
 
-> On Tue, 22 Sep 2009 10:38:31 -0700
-> Sage Weil <sage@newdream.net> wrote:
+> Hmm, I tried various combonations of turning off the framebuffer
+> support all together and then turning it back on with various
+> drivers (nvidia or vesa vga) but still I get the same message
+> about "Warning: unable to open an initial console."
 > 
-> > We first define constants, types, and prototypes for the kernel client
-> > proper.
-> > 
-> > A few subsystems are defined separately later: the MDS, OSD, and
-> > monitor clients, and the messaging layer.
-> > 
-> >
-> > ...
-> >
-> > +static inline bool ceph_i_test(struct inode *inode, unsigned mask)
-> > +{
-> > +	struct ceph_inode_info *ci = ceph_inode(inode);
-> > +	bool r;
-> > +
-> > +	spin_lock(&inode->i_lock);
-> > +	r = (ci->i_ceph_flags & mask) == mask;
-> > +	spin_unlock(&inode->i_lock);
-> > +	return r;
-> > +}
+> Anything else I should be looking at besides the graphics support
+> part of the drivers section of the kernel config?
 > 
-> I'm not sure that the locking in ceph_i_test() makes much sense.  The
-> condition we just checked could change one femtosecond after we dropped
-> the lock, so why take the lock?
-
-Right.  Would I need an smb_mb() or something in it's place?
-
+> Again this is a fairly standard PCChips A13G motherboard with
+> NVidia chipset and AMD Athlon 3600+ CPU that works fine with the
+> regular distro supplied FC9 kernel (2.6.25-14.fc9.x86_64) and
+> I have the x86_64 version of FC9 installed.
 
 
-> > +
-> > +/* find a specific frag @f */
-> > +static inline struct ceph_inode_frag *
-> > +__ceph_find_frag(struct ceph_inode_info *ci, u32 f)
-> > +{
-> > +	struct rb_node *n = ci->i_fragtree.rb_node;
-> > +
-> > +	while (n) {
-> > +		struct ceph_inode_frag *frag =
-> > +			rb_entry(n, struct ceph_inode_frag, node);
-> > +		int c = frag_compare(f, frag->frag);
-> > +		if (c < 0)
-> > +			n = n->rb_left;
-> > +		else if (c > 0)
-> > +			n = n->rb_right;
-> > +		else
-> > +			return frag;
-> > +	}
-> > +	return NULL;
-> > +}
-> 
-> Please review the entire fs and verify that all inlining decisions were
-> appropriate.  Unless this function has a single call site, this
-> decision wasn't appropriate.
->
-> And if it _does_ have a single callsite, it should be defined in the
-> relevant .c file, not in .h
+on FC9 ....
+here's what to do on a successful boot
 
-Yep!
+mkdir /tmp/mnt2
+mount /dev/sdaX /tmp/mnt  
+(where the X is your root device, if you use lvm, mount the lvm thing
+there)
+cp -a /dev/console /tmp/mnt/dev/console
+umount /tmp/mnt2
 
-> > +/*
-> > + * choose fragment for value @v.  copy frag content to pfrag, if leaf
-> > + * exists
-> > + */
-> > +extern u32 ceph_choose_frag(struct ceph_inode_info *ci, u32 v,
-> > +			    struct ceph_inode_frag *pfrag,
-> > +			    int *found);
-> > +
-> >
-> > ...
-> >
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
