@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbZI3T31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZI3Tav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154AbZI3T31 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 15:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbZI3T31
+	id S1755175AbZI3Tav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 15:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbZI3Tau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 15:29:27 -0400
-Received: from kandzendo.ru ([195.178.208.66]:44116 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754964AbZI3T30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 15:29:26 -0400
-Date: Wed, 30 Sep 2009 23:29:28 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Lars Ellenberg <lars.ellenberg@linbit.com>
-Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.com>
-Subject: Re: [PATCH] connector: Allow permission checking in the receiver callbacks
-Message-ID: <20090930192928.GA1315@ioremap.net>
-References: <1254235692-1631-1-git-send-email-philipp.reisner@linbit.com> <20090930112057.GA15150@ioremap.net> <20090930132034.GE8032@barkeeper1-xen.linbit>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090930132034.GE8032@barkeeper1-xen.linbit>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 30 Sep 2009 15:30:50 -0400
+Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:57805 "EHLO
+	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752802AbZI3Tat (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 15:30:49 -0400
+Date: Wed, 30 Sep 2009 15:30:46 -0400
+From: Steven Toth <stoth@kernellabs.com>
+Subject: Re: [PATCH] media/video:  adding __init/__exit macros to various
+ drivers
+In-reply-to: <A69FA2915331DC488A831521EAE36FE4015536F6E8@dlee06.ent.ti.com>
+To: "Karicheri, Muralidharan" <m-karicheri2@ti.com>
+Cc: Peter Huewe <PeterHuewe@gmx.de>, Jiri Kosina <trivial@kernel.org>,
+       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+       Hans Verkuil <hverkuil@xs4all.nl>, Andy Walls <awalls@radix.net>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Michael Krufky <mkrufky@kernellabs.com>,
+       Martin Dauskardt <martin.dauskardt@gmx.de>,
+       "Beholder Intl. Ltd. Dmitry Belimov" <d.belimov@gmail.com>,
+       "ivtv-devel@ivtvdriver.org" <ivtv-devel@ivtvdriver.org>,
+       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Message-id: <4AC3B1E6.5010509@kernellabs.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <200909290219.01623.PeterHuewe@gmx.de>
+ <200909301002.35202.laurent.pinchart@ideasonboard.com>
+ <A69FA2915331DC488A831521EAE36FE4015536F6E8@dlee06.ent.ti.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US;
+ rv:1.9.1.4pre) Gecko/20090915 Thunderbird/3.0b4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 03:20:35PM +0200, Lars Ellenberg (lars.ellenberg@linbit.com) wrote:
-> Actually it is the basis for follow-up security fixes.
-> 
-> Without this, unprivileged user space is able to send arbitrary
-> connector requests to kernel subsystems, which have no way to verify the
-> privileges of the sender anymore, because that information, even though
-> available at the netlink layer, has been dropped by the connector.
+On 9/30/09 9:26 AM, Karicheri, Muralidharan wrote:
 
-It is not. One can add some checks at receiving time which happens in
-process context to get its credentials, but nothing in netlink itself
-carry this info. Getting that connector schedules workqueue this ability
-is lost.
+drivers/media/video/saa7164/saa7164-core.c
 
-> Once this is applied, the various in-kernel receiving connector
-> callbacks can (and need to) add cap_raised(nsb->eff_cap, cap) where
-> appropriate. For example, you don't want some guest user to be able to
-> trigger a dst_del_node callback by sending a crafted netlink message,
-> right?
-> 
-> So it _is_ a (design-) bug fix.
-> Or am I missing something?
+drivers/media/video/cx23885/cx23885-core.c
 
-This patchset is not a bugfix, just a cleanup, since none in patchset
-uses netlink_skb_parms and currently I see no users which are affected
-by this behaviour in the mainline branch (not counting staging tree).
-
-But if proposed configuration changes for DM are on the way, then I
-agree and they should force this patchset into the tree as a bugfix.
+Acked-By: Steven Toth <stoth@kernellabs.com>
 
 -- 
-	Evgeniy Polyakov
+Steven Toth - Kernel Labs
+http://www.kernellabs.com
