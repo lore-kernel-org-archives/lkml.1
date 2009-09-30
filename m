@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbZI3NjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbZI3N4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754525AbZI3NjS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 09:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZI3NjR
+	id S1754440AbZI3N4O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 09:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbZI3N4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 09:39:17 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:39766 "EHLO isrv.corpit.ru"
+	Wed, 30 Sep 2009 09:56:13 -0400
+Received: from relay.atmel.no ([80.232.32.139]:64535 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754337AbZI3NjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 09:39:17 -0400
-Message-ID: <4AC35F86.20405@msgid.tls.msk.ru>
-Date: Wed, 30 Sep 2009 17:39:18 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: suspend vs usb and PS/2 ports
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752282AbZI3N4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 09:56:13 -0400
+Date: Wed, 30 Sep 2009 15:55:57 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mmc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel@avr32linux.org,
+       Hans-Christian Egtvedt <hcegtvedt@atmel.com>
+Subject: Re: [PATCH 1/2] atmel-mci: change use of dma slave interface
+Message-ID: <20090930155557.7dae503b@hskinnemoen-d830>
+In-Reply-To: <4AC35E1D.7040802@atmel.com>
+References: <1253204967-30010-1-git-send-email-nicolas.ferre@atmel.com>
+	<1253204967-30010-2-git-send-email-nicolas.ferre@atmel.com>
+	<20090929122928.f5fea29b.akpm@linux-foundation.org>
+	<4AC35E1D.7040802@atmel.com>
+Organization: Atmel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+> > You'll still need typecasts to support the dma_request_channel()
+> > callback, but the code will be safer and cleaner, I expect.  
+> 
+> My concern are:
+> 1/ allow the use of either dmaengine driver
+> 2/ avoid too much modification to dw_dma_slave as it
+> is also used for audio stuff on avr32 platforms...
+> 3/ not introduce heavy weigh solution like the use of an union
 
-I've several PCs here which are able to wakeup -
-among others - from PS/2 and/or USB keyboard.
-Here for testing I'm using PS/2 keyboard and
-Asus M3A78-EM motherboard.
+We used to have a struct dma_slave in linux/dmaengine.h which took care
+of all this, but it got removed at some point.
 
-When I do poweroff from linux, the keyboard
-stays powered up as it should (according to
-the BIOS settings).  But when I do suspend,
-keyboard is NOT powered anymore, and hence
-the system can't be woken up from it but only
-by using the power button.
+How about introducing a new mach/atmel-mci.h file with a struct
+mci_dma_data encapsulating either a struct dw_dma_slave or a struct
+at_dma_slave, as well as any other DMA-related definitions needed by
+the atmel-mci driver?
 
-This happens consistently for many kernel
-versions.  To be fair, I don't even know if
-there was any kernel which does not show this
-behaviour: old versions was unable to do
-suspend/resume cycle on this platform at all.
+Then we just need to make sure that we either
+  1) use the same name on all fields in struct {dw,at}_dma_slave which
+     are used by the atmel-mci driver, or
+  2) add accessor functions or macros for those fields.
 
-Any hints for this please?
+I think I would prefer the latter, but both should work equally well.
 
-Thanks!
-
-/mjt
+Haavard
