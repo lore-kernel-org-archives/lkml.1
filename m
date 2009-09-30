@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbZI3OJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbZI3OPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbZI3OJG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 10:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZI3OJF
+	id S1754534AbZI3OPy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 10:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZI3OPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 10:09:05 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50552 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752878AbZI3OJF (ORCPT
+	Wed, 30 Sep 2009 10:15:53 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37882 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754203AbZI3OPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 10:09:05 -0400
-Date: Wed, 30 Sep 2009 16:09:04 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: x86@kernel.org, linux-kernel@vger.kernel.org
-Cc: Borislav Petkov <borislav.petkov@amd.com>, torvalds@osdl.org
-Subject: x86: mce: Please revert 22223c9b417be5fd0ab2cf9ad17eb7bd1e19f7b9
-Message-ID: <20090930140904.GA6150@one.firstfloor.org>
-Mime-Version: 1.0
+	Wed, 30 Sep 2009 10:15:52 -0400
+Date: Wed, 30 Sep 2009 10:09:05 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Gonsolo <gonsolo@gmail.com>
+Cc: Daniel J Blueman <daniel.blueman@gmail.com>, kernel-team@lists.ubuntu.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+Subject: Re: ath5k suspend
+Message-ID: <20090930140905.GA3193@tuxdriver.com>
+References: <4AC22B64.8050909@googlemail.com> <6278d2220909300536u7934d7dan286d219b5cf7e5a@mail.gmail.com> <4AC35CA0.5070401@googlemail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <4AC35CA0.5070401@googlemail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 30, 2009 at 03:26:56PM +0200, Gonsolo wrote:
+>>> Is it possible to add
+>>> http://patchwork.kernel.org/patch/38550/
+>>> to karmic? Otherwise karmic would be broken for me/my notebook/my
+>>> wireless pccard.
+>>
+>> Since Karmic tracks the 2.6.31 -stable kernels, it's worth reporting
+>> this upstream (CC'd) instead, particularly if it's a regression from a
+>> previous kernel version, using the same ath5k driver...?
+>
+> I did that, too. ;) Hopefully it will be in 2.6.31.2.
 
-Can someone please revert this incorrect commit that's in mainline
-now? 
+Maybe I missed it, but did you actually request the -stable team to
+take the patch?  -stable helps more than just Ubuntu... :-)
 
-Obviously kernels compiled with AMD support can still run on non
-AMD systems, so messages like this can never be removed at compile time.
+Greg (or Chris or...), the patch in question is here:
 
--andi
+commit edd7fc7003f31da48d06e215a93ea966a22c2a03
+Author: Nick Kossifidis <mick@madwifi-project.org>
+Date:   Mon Aug 10 03:29:02 2009 +0300
 
-Commit 22223c9b417be5fd0ab2cf9ad17eb7bd1e19f7b9
-Author: Borislav Petkov <borislav.petkov@amd.com>
-Date:   Tue Jul 28 14:47:10 2009 +0200
-
-    x86, mce: do not compile mcelog message on AMD
+    ath5k: Wakeup fixes
     
-    Now that decoding is done in-kernel, suppress mcelog message part.
+    * Don't put chip to full sleep because there are problems during
+       wakeup. Instead hold MAC/Baseband on warm reset state via a new
+       function ath5k_hw_on_hold.
     
-    CC: Andi Kleen <andi@firstfloor.org>
-    Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index b82866f..9bfe9d2 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -222,7 +222,10 @@ static void print_mce_head(void)
- static void print_mce_tail(void)
- {
-        printk(KERN_EMERG "This is not a software problem!\n"
--              "Run through mcelog --ascii to decode and contact your hardware vendor\n");
-+#if (!defined(CONFIG_EDAC) || !defined(CONFIG_CPU_SUP_AMD))
-+              "Run through mcelog --ascii to decode and contact your hardware vendor\n"
-+#endif
-+              );
- }
- 
- #define PANIC_TIMEOUT 5 /* 5 seconds */
+     * Minor cleanups
+    
+    Signed-off-by: Nick Kossifidis <mickflemm@gmail.com>
+    Tested-by: Ben Greear <greearb@candelatech.com>
+    Tested-by: Johannes Stezenbach <js@sig21.net>
+    Signed-off-by: John W. Linville <linville@tuxdriver.com>
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
