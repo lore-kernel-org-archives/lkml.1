@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZI3BLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbZI3BOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbZI3BLG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 21:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbZI3BLG
+	id S1753856AbZI3BOz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 21:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbZI3BOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 21:11:06 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:14784 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752378AbZI3BLF convert rfc822-to-8bit (ORCPT
+	Tue, 29 Sep 2009 21:14:55 -0400
+Received: from mail-vw0-f203.google.com ([209.85.212.203]:42549 "EHLO
+	mail-vw0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbZI3BOy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 21:11:05 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 29 Sep 2009 21:14:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=x9jJNGVhf0Oh02zFJwxBomUDcaem3W9mR+xKHk6GLNVHZCsMBfxqfd5u32sYhi4bYI
+         ktdZdfnD8XqQCpsN8oNl/RWbdsrOuT1JRSo2qiLnRCSJm6IytJ4E1R9cwdf+PMW7K3SZ
+         AiCTCbSMdcwc1KOMGDCTMvRSXm2SFZid6I3Hg=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+In-Reply-To: <20090929153902.ab74aa01.akpm@linux-foundation.org>
+References: <1253161357-22453-1-git-send-email-vapier@gentoo.org> 
+	<20090929153902.ab74aa01.akpm@linux-foundation.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 29 Sep 2009 21:14:37 -0400
+Message-ID: <8bd0f97a0909291814l2de1f989lcf640633cf25b9c8@mail.gmail.com>
+Subject: Re: [Uclinux-dist-devel] [PATCH] ad525x_dpot: new driver for AD525x 
+	digital potentiometers
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, chrisv@cyberswitching.com,
+       linux-kernel@vger.kernel.org, michael.hennerich@analog.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-Subject: futex question
-Date: Tue, 29 Sep 2009 18:10:41 -0700
-Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501FD7F97@exchange.ZeugmaSystems.local>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: futex question
-Thread-Index: AcpBatP6+iksCfysTge7pnJd9w7SvQ==
-From: "Anirban Sinha" <ASinha@zeugmasystems.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Folks:
+On Tue, Sep 29, 2009 at 18:39, Andrew Morton wrote:
+> On Thu, 17 Sep 2009 00:22:37 -0400 Mike Frysinger wrote:
+>> This driver supports the non-volatile digital potentiometers via I2C:
+>> AD5258, AD5259, AD5251, AD5252, AD5253, AD5254, and AD5255
+>>
+>> It provides a sysfs interface to each device for reading/writing.
+>
+> This sysfs interface is by far the most important aspect of this
+> driver.  For both its users and for its reviewers.
+>
+> Yet you tell us nothing about it!  Not in code comments, not in the
+> changelog, not in supporting documentation.
+>
+> So some poor idiot (ie: me) is left having to scratch his way through
+> the implementation trying to work out what the propoed userspace
+> interface is supposed to look like.
 
-We are observing something interesting regarding how task->robust_list
-pointer is being handled across a sys_execve() call. If a task does a
-sys_set_robust_list() with a certain head pointer and then at some point
-does a execve() call to over-write it's address space, the 'robust-list'
-pointer is never cleared. So in essence what happens is that during task
-exit, within mm_release(), the 
-if (unlikely(tsk->robust_list)) condition might still be true because
-the pointer has a non-null address. However, the actual address value
-may not belong to the new address space or point to something else
-within the new address space. Should we not just clear the pointer (and
-it's compat version) within do_execve()?
+i'll have to get a description from some people
 
-Granted, within exit_robust_list(), the fetch_robust_entry() calls will
-fail and bail out of the function. So in essence, nothing bad should
-happen. However, that extra code should save us from entering
-exit_robust_list() in the first place.
+> +       if (reg & AD525X_REG_TOL)
+> +               return sprintf(buf, "0x%04x\n", value & 0xFFFF);
+> +       else
+> +               return sprintf(buf, "%u\n", value & data->rdac_mask);
+>
+> which makes me suspect that the proposed userspace interface is quite
+> poor.
 
-CCing Ingo since the robust futex support was started by him.
+not really.  the proposed interface was discussed with a few different
+people (devs and end users) and reviewed for use across multiple parts
+rather than just slapping together a raw interface onto it.  if you
+actually read the datasheet as indicated in the comment you snipped,
+you'll see that the value isnt formatted for trivial conversion.  if
+the math can easily be done in the kernel, then that's one thing, but
+it doesnt look like it to me.
 
-Cheers,
+this field is a read-only percentage programmed into the part by the
+factory.  it can be interpreted by:
+MSB: 0 = +
+Next 7 MSB: 001 1100 = 28
+8 LSB: 0000 1111 = 15 * 2^-8 = 0.06
+Tolerance = 28.06%
+Rounded Tolerance = 28.1% and therefore
+RAB_ACTUAL = 12.810 kΩ
 
-Ani
- 
+seems to me that this requires floating point support
+-mike
