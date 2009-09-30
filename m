@@ -1,126 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbZI3PSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbZI3PYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbZI3PSN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 11:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbZI3PSM
+	id S1754698AbZI3PYY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 11:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbZI3PYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 11:18:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35343 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754480AbZI3PSL convert rfc822-to-8bit (ORCPT
+	Wed, 30 Sep 2009 11:24:24 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:48583 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754650AbZI3PYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 11:18:11 -0400
-Date: Wed, 30 Sep 2009 17:18:33 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Hannes Eder <heder@google.com>
-Cc: Wensong Zhang <wensong@linux-vs.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH] ipvs: Add boundary check on ioctl arguments
-Message-ID: <20090930171833.5ce0011d@infradead.org>
-In-Reply-To: <4AC35F44.60707@google.com>
-References: <20090930131109.2b3f71b8@infradead.org>
-	<4AC35F44.60707@google.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 30 Sep 2009 11:24:23 -0400
+Date: Wed, 30 Sep 2009 16:24:26 +0100
+From: Andy Whitcroft <apw@canonical.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] checkpatch: fix hang in relative indent checking
+Message-ID: <20090930152426.GC2957@shadowen.org>
+References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
+ <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009 15:38:12 +0200
-Hannes Eder <heder@google.com> wrote:
->  > @@ -2353,17 +2357,25 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd,
->  > void __user 
-> *user, int *len)
->  >  {
->  >  	unsigned char arg[128];
+On Mon, Sep 21, 2009 at 07:14:48PM -0700, Daniel Walker wrote:
+> I ran this command on v2.6.31 ,
 > 
-> can MAX_ARG_LEN be used here?
-
-I am not convinced... it is a different numerical value,
-so it could be an ABI change. Rather not do that in this
-type of patch...
-
->  > +	copylen = get_arglen[GET_CMDID(cmd)];
->  > +	if (copylen > 128)
+> ./scripts/checkpatch.pl --file net/decnet/dn_fib.c
 > 
-> I think it's better to use 'copylen > sizeof(arg)' here.
+> which resulted in checkpatch hanging without any output.
+> 
+> The lines that cause the hang are,
+> 
+> #define for_nexthops(fi) { int nhsel; const struct dn_fib_nh *nh;\
+>         for(nhsel = 0, nh = (fi)->fib_nh; nhsel < (fi)->fib_nhs; nh++, nhsel++)
+> 
+> The hang happend in the relative indent checking code. Checkpatch has the
+> following comment around the relative indent checking block,
+> 
+> # Also ignore a loop construct at the end of a
+> # preprocessor statement.
+> 
+> Since the line it's hanging on exactly fits the comment it shouldn't even be
+> checking this line. To resolve this I just prevent the checking like the
+> comment says should happen.
 
-fair enough; updated patch below
+Ok, this actually seems to have already been fixed in the version Andrew
+already has.  Specifically it was fixed by the change in:
 
->From 28ae217858e683c0c94c02219d46a9a9c87f61c6 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Wed, 30 Sep 2009 13:05:51 +0200
-Subject: [PATCH] ipvs: Add boundary check on ioctl arguments
+    checkpatch: indent checks -- stop when we run out of continuation lines
 
-The ipvs code has a nifty system for doing the size of ioctl command copies;
-it defines an array with values into which it indexes the cmd to find the
-right length.
+I assume this is happening with v0.28?  Could you retest that one with
+the version at the URL below for me to confirm.
 
-Unfortunately, the ipvs code forgot to check if the cmd was in the range
-that the array provides, allowing for an index outside of the array,
-which then gives a "garbage" result into the length, which then gets
-used for copying into a stack buffer.
+  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-0.29
 
-Fix this by adding sanity checks on these as well as the copy size.
+Thanks for the patch.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- net/netfilter/ipvs/ip_vs_ctl.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
-
-diff --git a/net/netfilter/ipvs/ip_vs_ctl.c b/net/netfilter/ipvs/ip_vs_ctl.c
-index ac624e5..7adc876 100644
---- a/net/netfilter/ipvs/ip_vs_ctl.c
-+++ b/net/netfilter/ipvs/ip_vs_ctl.c
-@@ -2077,6 +2077,10 @@ do_ip_vs_set_ctl(struct sock *sk, int cmd, void __user *user, unsigned int len)
- 	if (!capable(CAP_NET_ADMIN))
- 		return -EPERM;
- 
-+	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_SET_MAX + 1)
-+		return -EINVAL;
-+	if (len < 0 || len >  sizeof(arg))
-+		return -EINVAL;
- 	if (len != set_arglen[SET_CMDID(cmd)]) {
- 		pr_err("set_ctl: len %u != %u\n",
- 		       len, set_arglen[SET_CMDID(cmd)]);
-@@ -2353,17 +2357,25 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd, void __user *user, int *len)
- {
- 	unsigned char arg[128];
- 	int ret = 0;
-+	unsigned int copylen;
- 
- 	if (!capable(CAP_NET_ADMIN))
- 		return -EPERM;
- 
-+	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_GET_MAX + 1)
-+		return -EINVAL;
-+
- 	if (*len < get_arglen[GET_CMDID(cmd)]) {
- 		pr_err("get_ctl: len %u < %u\n",
- 		       *len, get_arglen[GET_CMDID(cmd)]);
- 		return -EINVAL;
- 	}
- 
--	if (copy_from_user(arg, user, get_arglen[GET_CMDID(cmd)]) != 0)
-+	copylen = get_arglen[GET_CMDID(cmd)];
-+	if (copylen > sizeof(arg))
-+		return -EINVAL;
-+
-+	if (copy_from_user(arg, user, copylen) != 0)
- 		return -EFAULT;
- 
- 	if (mutex_lock_interruptible(&__ip_vs_mutex))
--- 
-1.6.2.5
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+-apw
