@@ -1,47 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZI3ODq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbZI3OJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754511AbZI3ODq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 10:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZI3ODq
+	id S1754508AbZI3OJG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 10:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZI3OJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 10:03:46 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:36586 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753676AbZI3ODp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 10:03:45 -0400
-Date: Wed, 30 Sep 2009 16:03:47 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/block/DAC960.c: Use DAC960_V2_Controller
-Message-ID: <Pine.LNX.4.64.0909301603230.8553@pc-004.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Sep 2009 10:09:05 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50552 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752878AbZI3OJF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 10:09:05 -0400
+Date: Wed, 30 Sep 2009 16:09:04 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: x86@kernel.org, linux-kernel@vger.kernel.org
+Cc: Borislav Petkov <borislav.petkov@amd.com>, torvalds@osdl.org
+Subject: x86: mce: Please revert 22223c9b417be5fd0ab2cf9ad17eb7bd1e19f7b9
+Message-ID: <20090930140904.GA6150@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
 
-DAC960_LP_Controller and DAC960_V2_Controller have the same value, but
-elsewhere it is DAC960_V1_Controller or DAC960_V2_Controller that is used
-in the FirmwareType field.
+Can someone please revert this incorrect commit that's in mainline
+now? 
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+Obviously kernels compiled with AMD support can still run on non
+AMD systems, so messages like this can never be removed at compile time.
 
----
- drivers/block/DAC960.c              |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+-andi
 
-diff --git a/drivers/block/DAC960.c b/drivers/block/DAC960.c
-index eb4fa19..ce1fa92 100644
---- a/drivers/block/DAC960.c
-+++ b/drivers/block/DAC960.c
-@@ -7101,7 +7101,7 @@ static struct DAC960_privdata DAC960_BA_privdata = {
+Commit 22223c9b417be5fd0ab2cf9ad17eb7bd1e19f7b9
+Author: Borislav Petkov <borislav.petkov@amd.com>
+Date:   Tue Jul 28 14:47:10 2009 +0200
+
+    x86, mce: do not compile mcelog message on AMD
+    
+    Now that decoding is done in-kernel, suppress mcelog message part.
+    
+    CC: Andi Kleen <andi@firstfloor.org>
+    Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index b82866f..9bfe9d2 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -222,7 +222,10 @@ static void print_mce_head(void)
+ static void print_mce_tail(void)
+ {
+        printk(KERN_EMERG "This is not a software problem!\n"
+-              "Run through mcelog --ascii to decode and contact your hardware vendor\n");
++#if (!defined(CONFIG_EDAC) || !defined(CONFIG_CPU_SUP_AMD))
++              "Run through mcelog --ascii to decode and contact your hardware vendor\n"
++#endif
++              );
+ }
  
- static struct DAC960_privdata DAC960_LP_privdata = {
- 	.HardwareType =		DAC960_LP_Controller,
--	.FirmwareType 	=	DAC960_LP_Controller,
-+	.FirmwareType 	=	DAC960_V2_Controller,
- 	.InterruptHandler =	DAC960_LP_InterruptHandler,
- 	.MemoryWindowSize =	DAC960_LP_RegisterWindowSize,
- };
+ #define PANIC_TIMEOUT 5 /* 5 seconds */
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
