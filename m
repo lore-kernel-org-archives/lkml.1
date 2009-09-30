@@ -1,23 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbZI3XQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZI3XUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbZI3XQJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 19:16:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZI3XQI
+	id S1754790AbZI3XUV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 19:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbZI3XUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 19:16:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52453 "EHLO
+	Wed, 30 Sep 2009 19:20:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35910 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754627AbZI3XQH (ORCPT
+	by vger.kernel.org with ESMTP id S1754630AbZI3XUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 19:16:07 -0400
-Date: Wed, 30 Sep 2009 16:16:03 -0700
+	Wed, 30 Sep 2009 19:20:18 -0400
+Date: Wed, 30 Sep 2009 16:19:39 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] floppy: Add an extra bound check on ioctl arguments
-Message-Id: <20090930161603.1c7cb1b0.akpm@linux-foundation.org>
-In-Reply-To: <20090930131709.7300dff3@infradead.org>
-References: <20090930131709.7300dff3@infradead.org>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de, davem@davemloft.net, andi@firstfloor.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH,TRIVIAL] Fix csum_ipv6_magic asm memory clobber
+Message-Id: <20090930161939.8c6d140a.akpm@linux-foundation.org>
+In-Reply-To: <20090930230138.GZ6451@const.famille.thibault.fr>
+References: <20090926192748.GX7681@const.famille.thibault.fr>
+	<20090930154044.0c7ace16.akpm@linux-foundation.org>
+	<4AC3DF7B.5060407@zytor.com>
+	<20090930230138.GZ6451@const.famille.thibault.fr>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,54 +31,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009 13:17:09 +0200
-Arjan van de Ven <arjan@infradead.org> wrote:
+On Thu, 1 Oct 2009 01:01:38 +0200
+Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
 
-> 
-> >From 90d75780b319153d050bb1c0f3f38ce054775615 Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Wed, 30 Sep 2009 13:13:59 +0200
-> Subject: [PATCH] floppy: Add an extra bound check on ioctl arguments
-> 
-> gcc is not convinced that the floppy.c ioctl has sufficient bound checks,
-> and frankly, as a human I have a hard time proving the same more or less
-> (the size comes from the ioctl argument. humpf. maybe. the code isn't
-> very nice)
-> 
-> This patch adds an explicit check to make 100% sure it's safe, better
-> than finding out later that there indeed was a gap.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> ---
->  drivers/block/floppy.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-> index 5c01f74..0f11a77 100644
-> --- a/drivers/block/floppy.c
-> +++ b/drivers/block/floppy.c
-> @@ -3497,6 +3497,9 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
->  	    ((cmd & 0x80) && !capable(CAP_SYS_ADMIN)))
->  		return -EPERM;
->  
-> +	if (size < 0 || size > sizeof(inparam))
-> +		return -EINVAL;
+> Actually it hit Hurd's pfinetv4 when we tried to compile it with
+> gcc-4.3 (bogus checksums).
 
-I suspect that if this ever happens, normalize_ioctl() has
-malfunctioned and what we have is a kernel bug.
+That's important information!  I updated the changelog and added the
+Cc:stable, thanks.
 
-This?
 
---- a/drivers/block/floppy.c~floppy-add-an-extra-bound-check-on-ioctl-arguments-fix
-+++ a/drivers/block/floppy.c
-@@ -3497,7 +3497,7 @@ static int fd_ioctl(struct block_device 
- 	    ((cmd & 0x80) && !capable(CAP_SYS_ADMIN)))
- 		return -EPERM;
+Full patch for netdev benefit:
+
+
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+
+Just like ip_fast_csum, the assembly snippet in csum_ipv6_magic needs a
+memory clobber, as it is only passed the address of the buffer, not a
+memory reference to the buffer itself.
+
+This caused failures in Hurd's pfinetv4 when we tried to compile it with
+gcc-4.3 (bogus checksums).
+
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/x86/include/asm/checksum_32.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff -puN arch/x86/include/asm/checksum_32.h~x86-fix-csum_ipv6_magic-asm-memory-clobber arch/x86/include/asm/checksum_32.h
+--- a/arch/x86/include/asm/checksum_32.h~x86-fix-csum_ipv6_magic-asm-memory-clobber
++++ a/arch/x86/include/asm/checksum_32.h
+@@ -161,7 +161,8 @@ static inline __sum16 csum_ipv6_magic(co
+ 	    "adcl $0, %0	;\n"
+ 	    : "=&r" (sum)
+ 	    : "r" (saddr), "r" (daddr),
+-	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum));
++	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum)
++	    : "memory");
  
--	if (size < 0 || size > sizeof(inparam))
-+	if (WARN_ON(size < 0 || size > sizeof(inparam)))
- 		return -EINVAL;
- 
- 	/* copyin */
+ 	return csum_fold(sum);
+ }
 _
 
