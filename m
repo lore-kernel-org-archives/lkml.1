@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbZI3Bao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbZI3BfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753951AbZI3Bao (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 21:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZI3Ban
+	id S1753959AbZI3BfW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 21:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbZI3BfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 21:30:43 -0400
-Received: from mga14.intel.com ([143.182.124.37]:62454 "EHLO mga14.intel.com"
+	Tue, 29 Sep 2009 21:35:22 -0400
+Received: from mail1.radix.net ([207.192.128.31]:47165 "EHLO mail1.radix.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753853AbZI3Ban (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 21:30:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,476,1249282800"; 
-   d="scan'208";a="193238020"
-Date: Wed, 30 Sep 2009 09:30:34 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: regression in page writeback
-Message-ID: <20090930013034.GC6311@localhost>
-References: <20090922193622.42c00012.akpm@linux-foundation.org> <20090923140058.GA2794@think> <20090924031508.GD6456@localhost> <20090925001117.GA9464@discord.disaster> <20090925003820.GK2662@think> <20090925050413.GC9464@discord.disaster> <20090925064503.GA30450@localhost> <20090928010700.GE9464@discord.disaster> <20090928142524.GC6405@think> <20090929233936.GG9464@discord.disaster>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090929233936.GG9464@discord.disaster>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753821AbZI3BfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Sep 2009 21:35:21 -0400
+Subject: What is the near term future for kfifo?
+From: Andy Walls <awalls@radix.net>
+To: linux-kernel@vger.kernel.org
+Cc: linux-media@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>
+In-Reply-To: <1254096732.22211.9.camel@morgan.walls.org>
+References: <1254023141.6346.46.camel@palomino.walls.org>
+	 <4ABF6BA9.8000906@gmail.com> <1254060600.3152.20.camel@palomino.walls.org>
+	 <4ABF99B6.5090200@kernellabs.com>
+	 <1254075277.3554.8.camel@morgan.walls.org>
+	 <1254081645.3554.15.camel@morgan.walls.org>
+	 <1254096732.22211.9.camel@morgan.walls.org>
+Content-Type: text/plain
+Date: Tue, 29 Sep 2009 21:38:09 -0400
+Message-Id: <1254274689.5510.20.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 07:39:36AM +0800, Dave Chinner wrote:
-> On Mon, Sep 28, 2009 at 10:25:24AM -0400, Chris Mason wrote:
-> > On Mon, Sep 28, 2009 at 11:07:00AM +1000, Dave Chinner wrote:
-> > > In the context of the setup I was talking about, I meant is that sync
-> > > IO _should_ be unthrottled because it is self-throttling by it's
-> > > very nature. The current code makes no differentiation between the
-> > > two.
-> > 
-> > This isn't entirely true anymore.  WB_SYNC_ALL is turned into a sync
-> > bio, which is sent down with higher priority.  There may be a few spots
-> > that still need to be changed for it, but it is much better than it was.
-> 
-> Oh, I didn't realise that had changed - when did WRITE_SYNC_PLUG get
-> introduced?
+LKML,
 
-About 5 months before, when Linus complained something similar :)
+What's the status of the recently proposed kfifo changes?
 
-        http://lkml.org/lkml/2009/4/6/114
+This change set of mine, for implementing IR receiver support for the
+CX23888 chip:
 
-Thanks,
-Fengguang
+On Sun, 2009-09-27 at 20:12 -0400, Andy Walls wrote:
+> Mauro,
+> 
+> Please pull from http://linuxtv.org/hg/~awalls/cx23888-ir-part2
+> 
+> for the following 5 changesets:
+> 
+> 01/05: v4l2-subdev: Add v4l2_subdev_ir_ops and IR notify defines for v4l2_device
+> http://linuxtv.org/hg/~awalls/cx23888-ir-part2?cmd=changeset;node=8cbb951bbb9f
+> 
+> 02/05: cx23885: Complete CX23888 IR subdev implementation for Rx & almost for Tx
+> http://linuxtv.org/hg/~awalls/cx23888-ir-part2?cmd=changeset;node=a2d8d3d88c6d
+> 
+> 03/05: cx23885: Add integrated IR subdevice interrupt and notification handling
+> http://linuxtv.org/hg/~awalls/cx23888-ir-part2?cmd=changeset;node=1eb199665dbc
+> 
+> 04/05: ir-functions: Export ir_rc5_decode() for use by the cx23885 module
+> http://linuxtv.org/hg/~awalls/cx23888-ir-part2?cmd=changeset;node=55a1e2e8128f
+> 
+> 05/05: cx23885: Add IR input keypress handling and enable for the HVR-1850
+> http://linuxtv.org/hg/~awalls/cx23888-ir-part2?cmd=changeset;node=b05a093688a2
 
-> FWIW, I notice that __block_write_full_page(), gfs2, btrfs
-> and jdb use WRITE_SYNC_PLUG to implement this, but it appears that
-> filesystems that have their own writeback code (e.g. XFS) have not
-> been converted (gfs2 and btrfs being the exceptions).
-> 
-> Oh well, something else that needs tweaking in XFS...
-> 
-> Cheers,
-> 
-> Dave.
-> -- 
-> Dave Chinner
-> david@fromorbit.com
+
+relies on the current implementation
+
+http://git.kernel.org/?p=linux/kernel/git/next/linux-next.git;a=blob;f=include/linux/kfifo.h;h=ad6bdf5a5970c5fdbceb6b5c440a196b7a620b22;hb=HEAD
+
+that still requires a spinlock.  Fortunately, I happen to need a
+spinlock.
+
+
+I'd like this changeset to move forward, and I don't want to have a
+problem with unfortuante timing of any kfifo changes.
+
+Should I plan to
+
+1. leave my code alone and use the current kfifo API,
+2. update my use of kfifo to the new proposal I saw on the LKML
+recently, or
+3.  just write my own fifo implementation and port to the new kfifo
+later?
+
+
+Regards,
+Andy
+
