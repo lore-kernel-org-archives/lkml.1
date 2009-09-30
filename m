@@ -1,244 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbZI3LGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZI3LE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169AbZI3LGA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 07:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZI3LF7
+	id S1754158AbZI3LE4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 07:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZI3LE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 07:05:59 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:48597 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753442AbZI3LF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 07:05:59 -0400
-Date: Wed, 30 Sep 2009 07:05:00 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: nauman@google.com, linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
-       yoshikawa.takuya@oss.ntt.co.jp
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20090930110500.GA26631@redhat.com>
-References: <20090929032255.GA10664@redhat.com> <20090929.185653.183056711.ryov@valinux.co.jp> <20090929141049.GA12141@redhat.com> <20090930.174319.183036386.ryov@valinux.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090930.174319.183036386.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 30 Sep 2009 07:04:56 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46939 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752896AbZI3LEz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 07:04:55 -0400
+Date: Wed, 30 Sep 2009 13:05:23 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
+Subject: [PATCH] x86: Turn the copy_from_user check into an (optional)
+ compile time warning
+Message-ID: <20090930130523.348ae6c4@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 05:43:19PM +0900, Ryo Tsuruta wrote:
-> Hi Vivek,
-> 
-> Vivek Goyal <vgoyal@redhat.com> wrote:
-> > I was thinking that elevator layer will do the merge of bios. So IO
-> > scheduler/elevator can time stamp the first bio in the request as it goes
-> > into the disk and again timestamp with finish time once request finishes.
-> > 
-> > This way higher layer can get an idea how much disk time a group of bios
-> > used. But on multi queue, if we dispatch say 4 requests from same queue,
-> > then time accounting becomes an issue.
-> > 
-> > Consider following where four requests rq1, rq2, rq3 and rq4 are
-> > dispatched to disk at time t0, t1, t2 and t3 respectively and these
-> > requests finish at time t4, t5, t6 and t7. For sake of simlicity assume
-> > time elapsed between each of milestones is t. Also assume that all these
-> > requests are from same queue/group.
-> > 
-> >         t0   t1   t2   t3  t4   t5   t6   t7
-> >         rq1  rq2  rq3 rq4  rq1  rq2  rq3 rq4
-> > 
-> > Now higher layer will think that time consumed by group is:
-> > 
-> > (t4-t0) + (t5-t1) + (t6-t2) + (t7-t3) = 16t
-> > 
-> > But the time elapsed is only 7t.
-> 
-> IO controller can know how many requests are issued and still in
-> progress. Is it not enough to accumulate the time while in-flight IOs
-> exist?
-> 
 
-That time would not reflect disk time used. It will be follwoing.
+>From 350cf3cd513e6759ae6852946532a47249f25600 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Wed, 30 Sep 2009 12:57:46 +0200
+Subject: [PATCH] x86: Turn the copy_from_user check into an (optional) compile time warning
 
-(time spent waiting in CFQ queues) + (time spent in dispatch queue) +
-(time spent in disk)
+A previous patch added the buffer size check to copy_from_user().
 
-> > Secondly if a different group is running only single sequential reader,
-> > there CFQ will be driving queue depth of 1 and time will not be running
-> > faster and this inaccuracy in accounting will lead to unfair share between
-> > groups.
-> >
-> > So we need something better to get a sense which group used how much of
-> > disk time.
-> 
-> It could be solved by implementing the way to pass on such information
-> from IO scheduler to higher layer controller.
-> 
+One of the things learned from analyzing the result of the previous patch
+is that in general, gcc is really good at proving that the code contains
+sufficient security checks to not need to do a runtime check. But that
+for those cases where gcc could not prove this, there was a relatively
+high percentage of real security issues.
 
-How would you do that? Can you give some details exactly how and what
-information IO scheduler will pass to higher level IO controller so that IO
-controller can attribute right time to the group.
+This patch turns the case of "gcc cannot prove" into a compile time
+warning, as long as a sufficiently new gcc is in use that supports this.
+The objective is that these warnings will trigger developers checking
+new cases out before a security hole enters a linux kernel release.
 
-> > > How about making throttling policy be user selectable like the IO
-> > > scheduler and putting it in the higher layer? So we could support
-> > > all of policies (time-based, size-based and rate limiting). There
-> > > seems not to only one solution which satisfies all users. But I agree
-> > > with starting with proportional bandwidth control first. 
-> > > 
-> > 
-> > What are the cases where time based policy does not work and size based
-> > policy works better and user would choose size based policy and not timed
-> > based one?
-> 
-> I think that disk time is not simply proportional to IO size. If there
-> are two groups whose wights are equally assigned and they issue
-> different sized IOs repsectively, the bandwidth of each group would
-> not distributed equally as expected. 
-> 
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ arch/x86/include/asm/uaccess_32.h |   12 +++++++++---
+ arch/x86/lib/usercopy_32.c        |    6 ++++++
+ include/linux/compiler-gcc4.h     |    3 +++
+ include/linux/compiler.h          |    4 ++++
+ 4 files changed, 22 insertions(+), 3 deletions(-)
 
-If we are providing fairness in terms of time, it is fair. If we provide
-equal time slots to two processes and if one got more IO done because it
-was not wasting time seeking or it issued bigger size IO, it deserves that
-higher BW. IO controller will make sure that process gets fair share in
-terms of time and exactly how much BW one got will depend on the workload.
+diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
+index 582d6ae..7826639 100644
+--- a/arch/x86/include/asm/uaccess_32.h
++++ b/arch/x86/include/asm/uaccess_32.h
+@@ -191,6 +191,13 @@ unsigned long __must_check _copy_from_user(void *to,
+ 					  const void __user *from,
+ 					  unsigned long n);
+ 
++
++extern void copy_from_user_overflow(void)
++#ifdef CONFIG_DEBUG_STACKOVERFLOW
++	__compiletime_warning("copy_from_user buffer size is not provably correct")
++#endif
++;
++
+ static inline unsigned long __must_check copy_from_user(void *to,
+ 					  const void __user *from,
+ 					  unsigned long n)
+@@ -200,10 +207,9 @@ static inline unsigned long __must_check copy_from_user(void *to,
+ 
+ 	if (likely(sz == -1 || sz >= n))
+ 		ret = _copy_from_user(to, from, n);
+-#ifdef CONFIG_DEBUG_VM
+ 	else
+-		WARN(1, "Buffer overflow detected!\n");
+-#endif
++		copy_from_user_overflow();
++
+ 	return ret;
+ }
+ 
+diff --git a/arch/x86/lib/usercopy_32.c b/arch/x86/lib/usercopy_32.c
+index 8498684..e218d5d 100644
+--- a/arch/x86/lib/usercopy_32.c
++++ b/arch/x86/lib/usercopy_32.c
+@@ -883,3 +883,9 @@ _copy_from_user(void *to, const void __user *from, unsigned long n)
+ 	return n;
+ }
+ EXPORT_SYMBOL(_copy_from_user);
++
++void copy_from_user_overflow(void)
++{
++	WARN(1, "Buffer overflow detected!\n");
++}
++EXPORT_SYMBOL(copy_from_user_overflow);
+diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
+index a3aef5d..f1709c1 100644
+--- a/include/linux/compiler-gcc4.h
++++ b/include/linux/compiler-gcc4.h
+@@ -39,3 +39,6 @@
+ #endif
+ 
+ #define __compiletime_object_size(obj) __builtin_object_size(obj, 0)
++#if __GNUC_MINOR__ >= 4
++#define __compiletime_warning(message) __attribute__((warning(message)))
++#endif
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 9c42853..241dfd8 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -189,6 +189,10 @@ extern void __chk_io_ptr(const volatile void __iomem *);
+ #ifndef __compiletime_object_size
+ # define __compiletime_object_size(obj) -1
+ #endif
++#ifndef __compiletime_warning
++# define __compiletime_warning(message)
++#endif
++
+ /*
+  * Prevent the compiler from merging or refetching accesses.  The compiler
+  * is also forbidden from reordering successive instances of ACCESS_ONCE(),
+-- 
+1.6.2.5
 
-That's the precise reason that fairness in terms of time is better on
-seeky media.
 
-> > I am not against implementing things in higher layer as long as we can
-> > ensure tight control on latencies, strong isolation between groups and
-> > not break CFQ's class and ioprio model with-in group.
-> > 
-> > > BTW, I will start to reimplement dm-ioband into block layer.
-> > 
-> > Can you elaborate little bit on this?
-> 
-> bio is grabbed in generic_make_request() and throttled as well as
-> dm-ioband's mechanism. dmsetup command is not necessary any longer.
-> 
-
-Ok, so one would not need dm-ioband device now, but same dm-ioband
-throttling policies will apply. So until and unless we figure out a
-better way, the issues I have pointed out will still exists even in
-new implementation.
-
-> > > > Fairness for higher level logical devices
-> > > > =========================================
-> > > > Do we want good fairness numbers for higher level logical devices also
-> > > > or it is sufficient to provide fairness at leaf nodes. Providing fairness
-> > > > at leaf nodes can help us use the resources optimally and in the process
-> > > > we can get fairness at higher level also in many of the cases.
-> > > 
-> > > We should also take care of block devices which provide their own
-> > > make_request_fn() and not use a IO scheduler. We can't use the leaf
-> > > nodes approach to such devices.
-> > > 
-> > 
-> > I am not sure how big an issue is this. This can be easily solved by
-> > making use of NOOP scheduler by these devices. What are the reasons for
-> > these devices to not use even noop? 
-> 
-> I'm not sure why the developers of the device driver choose their own
-> way, and the driver is provided in binary form, so we can't modify it.
-> 
-> > > > Fairness with-in group
-> > > > ======================
-> > > > One of the issues with higher level controller is that how to do fair
-> > > > throttling so that fairness with-in group is not impacted. Especially
-> > > > the case of making sure that we don't break the notion of ioprio of the
-> > > > processes with-in group.
-> > > 
-> > > I ran your test script to confirm that the notion of ioprio was not
-> > > broken by dm-ioband. Here is the results of the test.
-> > > https://lists.linux-foundation.org/pipermail/containers/2009-May/017834.html
-> > > 
-> > > I think that the time period during which dm-ioband holds IO requests
-> > > for throttling would be too short to break the notion of ioprio.
-> > 
-> > Ok, I re-ran that test. Previously default io_limit value was 192 and now
-> 
-> The default value of io_limit on the previous test was 128 (not 192)
-> which is equall to the default value of nr_request.
-
-Hm..., I used following commands to create two ioband devices.
-
-echo "0 $(blockdev --getsize /dev/sdb2) ioband /dev/sdb2 1 0 0 none"
-"weight 0 :100" | dmsetup create ioband1
-echo "0 $(blockdev --getsize /dev/sdb3) ioband /dev/sdb3 1 0 0 none"
-"weight 0 :100" | dmsetup create ioband2
-
-Here io_limit value is zero so it should pick default value. Following is
-output of "dmsetup table" command.
-
-ioband2: 0 89899740 ioband 8:19 1 4 192 none weight 768 :100
-ioband1: 0 41961780 ioband 8:18 1 4 192 none weight 768 :100
-                                    ^^^^
-IIUC, above number 192 is reflecting io_limit? If yes, then default seems
-to be 192?
-
-> 
-> > I set it up to 256 as you suggested. I still see writer starving reader. I
-> > have removed "conv=fdatasync" from writer so that a writer is pure buffered
-> > writes.
-> 
-> O.K. You removed "conv=fdatasync", the new dm-ioband handles
-> sync/async requests separately, and it solves this
-> buffered-write-starves-read problem. I would like to post it soon
-> after doing some more test.
-> 
-> > On top of that can you please give some details how increasing the
-> > buffered queue length reduces the impact of writers?
-> 
-> When the number of in-flight IOs exceeds io_limit, processes which are
-> going to issue IOs are made sleep by dm-ioband until all the in-flight
-> IOs are finished. But IO scheduler layer can accept IO requests more
-> than the value of io_limit, so it was a bottleneck of the throughput.
-> 
-
-Ok, so it should have been throughput bottleneck but how did it solve the
-issue of writer starving the reader as you had mentioned in the mail.
-
-Secondly, you mentioned that processes are made to sleep once we cross 
-io_limit. This sounds like request descriptor facility on requeust queue
-where processes are made to sleep.
-
-There are threads in kernel which don't want to sleep while submitting
-bios. For example, btrfs has bio submitting thread which does not want
-to sleep hence it checks with device if it is congested or not and not
-submit the bio if it is congested.  How would you handle such cases. Have
-you implemented any per group congestion kind of interface to make sure
-such IO's don't sleep if group is congested.
-
-Or this limit is per ioband device which every group on the device is
-sharing. If yes, then how would you provide isolation between groups 
-because if one groups consumes io_limit tokens, then other will simply
-be serialized on that device?
-
-> > IO Prio issue
-> > --------------
-> > I ran another test where two ioband devices were created of weight 100 
-> > each on two partitions. In first group 4 readers were launched. Three
-> > readers are of class BE and prio 7, fourth one is of class BE prio 0. In
-> > group2, I launched a buffered writer.
-> > 
-> > One would expect that prio0 reader gets more bandwidth as compared to
-> > prio 4 readers and prio 7 readers will get more or less same bw. Looks like
-> > that is not happening. Look how vanilla CFQ provides much more bandwidth
-> > to prio0 reader as compared to prio7 reader and how putting them in the
-> > group reduces the difference betweej prio0 and prio7 readers.
-> > 
-> > Following are the results.
-> 
-> O.K. I'll try to do more test with dm-ioband according to your
-> comments especially working with CFQ. Thanks for pointing out.
-> 
-> Thanks,
-> Ryo Tsuruta
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
