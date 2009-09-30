@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZI3MQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbZI3MSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbZI3MQs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbZI3MQr
+	id S1754356AbZI3MSE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 08:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZI3MSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:16:47 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46422 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753186AbZI3MQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:16:44 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/+IXYbGon+ocgo29eduPQeF2Y5XvnayUJv6immvK
-	uex3y7LdOurzy8
-Date: Wed, 30 Sep 2009 14:16:56 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Pavel Machek <pavel@ucw.cz>
-cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Robert Jarzmik <robert.jarzmik@free.fr>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: arm tree in broken state (was Re: What's inside the pxa tree
- for this merge window)
-In-Reply-To: <20090930120920.GH1412@ucw.cz>
-Message-ID: <Pine.LNX.4.64.0909301415300.4330@axis700.grange>
-References: <f17812d70909100446h17a1903fy74941945dbfc6943@mail.gmail.com>
- <1253256227.4407.7.camel@pc-matejk> <20090918074551.GA26058@n2100.arm.linux.org.uk>
- <Pine.LNX.4.64.0909212111490.17328@axis700.grange>
- <20090921200923.GF30821@n2100.arm.linux.org.uk> <20090930120920.GH1412@ucw.cz>
+	Wed, 30 Sep 2009 08:18:03 -0400
+Received: from [195.41.46.236] ([195.41.46.236]:57510 "EHLO pfepb.post.tele.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752638AbZI3MSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 08:18:01 -0400
+Date: Wed, 30 Sep 2009 14:17:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mulyadi Santosa <mulyadi.santosa@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] generate-cmdlist.sh should be either executable or run
+	as parameter of "."
+Message-ID: <20090930121759.GA14467@merkur.ravnborg.org>
+References: <f284c33d0909251201w422e9687x8cd3a784e85adf7d@mail.gmail.com> <20090930120822.GC7618@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090930120822.GC7618@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel
-
-On Wed, 30 Sep 2009, Pavel Machek wrote:
-
-> > > > I discarded them _because_ Eric handled them, which is what I said in the
-> > > > comments when I discarded them.
-> > > 
-> > > Ok, I did do my best to get patches in the right order in the mainline, 
-> > > but it all failed. AFAICS, v4l and sh are already in the mainline with a 
-> > > _wrongly_ resolved mefge conflict, which, most likely, breaks the 
-> > > sh_mobile_ceu_camera.c driver, and the three PXA platforms, patches for 
-> > > which should have been applied before both those trees and still haven't 
-> > > been applied are broken until the patches do get in and the later those 
-> > > patches get applied the longer the interval with the broken for them 
-> > > bisection is going to be.
+On Wed, Sep 30, 2009 at 02:08:22PM +0200, Ingo Molnar wrote:
+> 
+> * Mulyadi Santosa <mulyadi.santosa@gmail.com> wrote:
+> 
+> > I believe this is just a small glitch. generate-cmdlist.sh by default 
+> > should be made as executable. But since one might forgot to do it, we 
+> > could simply call it as an argument "." or "source" or even "sh -c". I 
+> > pick "."
 > > 
-> > Meanwhile I have to consider that we have several bug fixes outstanding,
-> > and since I can't send Linus a pull request every day (max once a week)
-> > I have to be very careful about when I send stuff.
+> > Tested in 2.6.31
 > > 
-> > So I only get _two_ opportunities during a merge window to send a pull
-> > request.
+> > Signed-off-by: Mulyadi Santosa <mulyadi.santosa@gmail.com>
 > 
-> Well, you should certainly try to keep your tree  unbroken, but when
-> it breaks, fixing it asap should be a priority. I don't know where you
-> got the 'once a week' rule, but it seems stupid.
-> 
-> > I'm going to wait until tomorrow before sending my final pull for this
-> > window, which is the penultimate day before the window closes.
-> > 
-> > Don't blame me for these delays - it's not my choice to impose such
-> > delays.  I'd really like to fix those broken platforms right now.  I
-> > just can't do so without causing additional delays for other issues.
-> > Blame Linus for imposing the "max one pull a week" rule on me.
-> 
-> Do you have maillist reference? Not even Linus should slow down
-> development like that.
-> 
-> If Linus really insists on that, perhaps possible solution would be to
-> make subarch maintainers send pull requests for simple fixes directly
-> to Linus?
+> hm, generate-cmdlist.sh is executable in the upstream kernel repo. It 
+> apparently isnt executable on your box - why?
 
-Thanks for your concern, but the patches are long in mainline, no reason 
-to worry any more.
+Whatever - we should try to avoid relying on executable bit being set.
+umask can prevent this is tree is checkout as one user and build as another user.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+	Sam
