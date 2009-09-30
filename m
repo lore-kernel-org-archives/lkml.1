@@ -1,84 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbZI0KtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZI3KWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753815AbZI0KtI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Sep 2009 06:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZI0KtH
+	id S1754130AbZI3KWL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 06:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbZI3KWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Sep 2009 06:49:07 -0400
-Received: from imta-38.everyone.net ([216.200.145.38]:46488 "EHLO
-	omta0105.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753764AbZI0KtG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Sep 2009 06:49:06 -0400
-X-Greylist: delayed 1644 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Sep 2009 06:49:06 EDT
-X-Eon-Dm: dm0206
-X-Eon-Sig: AQMyNmxKvzxelRd20QIAAAAn,424fb88d03c7e07b83f4763c580d2e73
-Reply-To: <juliebryant2006@gmx.com>
-From: "Mrs Julie Bryant" <bellobo@netscape.com>
-Subject: READ AND REPLY 
-Date: Wed, 30 Sep 2009 03:20:01 -0700
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0074_01C2A9A6.5D1A0CE0"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2600.0000
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
-Message-Id: <20090927032014.F2E3ED44@dm0206.mta.everyone.net>
-To: undisclosed-recipients:;
+	Wed, 30 Sep 2009 06:22:11 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:17233 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbZI3KWK convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;3:1>);
+	Wed, 30 Sep 2009 06:22:10 -0400
+Message-Id: <4AC34D73020000780001744A@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Wed, 30 Sep 2009 11:22:11 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86-64: don't leak kernel register values to 32-bit
+	 processes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+While 32-bit processes can't directly access R8...R15, they can gain
+access to these registers by temporarily switching themselves into
+64-bit mode. Therefore, registers not preserved anyway by called C
+functions (i.e. R8...R11) must be cleared prior to returning to user
+mode.
 
-------=_NextPart_000_0074_01C2A9A6.5D1A0CE0
-Content-Type: text/plain;
-	charset="Windows-1251"
-Content-Transfer-Encoding: 7bit
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-GREETING IN THE NAME OF OUR LORD READ THE ATTACHMENT LETTER AND REPLY ME.
+---
+ arch/x86/ia32/ia32entry.S |   36 +++++++++++++++++++++++-------------
+ 1 file changed, 23 insertions(+), 13 deletions(-)
 
-------=_NextPart_000_0074_01C2A9A6.5D1A0CE0
-Content-Type: application/octet-stream;
-	name="GREETING IN THE NAME OF OUR LORD..txt"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
-	filename="GREETING IN THE NAME OF OUR LORD..txt"
+--- linux-2.6.32-rc1/arch/x86/ia32/ia32entry.S	2009-09-30 11:48:25.000000000 +0200
++++ 2.6.32-rc1-x86_64-ia32-syscall-reg-leak/arch/x86/ia32/ia32entry.S	2009-09-28 16:16:44.000000000 +0200
+@@ -21,8 +21,8 @@
+ #define __AUDIT_ARCH_LE	   0x40000000
+ 
+ #ifndef CONFIG_AUDITSYSCALL
+-#define sysexit_audit int_ret_from_sys_call
+-#define sysretl_audit int_ret_from_sys_call
++#define sysexit_audit ia32_ret_from_sys_call
++#define sysretl_audit ia32_ret_from_sys_call
+ #endif
+ 
+ #define IA32_NR_syscalls ((ia32_syscall_end - ia32_sys_call_table)/8)
+@@ -39,12 +39,12 @@
+ 	.endm 
+ 
+ 	/* clobbers %eax */	
+-	.macro  CLEAR_RREGS _r9=rax
++	.macro  CLEAR_RREGS offset=0, _r9=rax
+ 	xorl 	%eax,%eax
+-	movq	%rax,R11(%rsp)
+-	movq	%rax,R10(%rsp)
+-	movq	%\_r9,R9(%rsp)
+-	movq	%rax,R8(%rsp)
++	movq	%rax,\offset+R11(%rsp)
++	movq	%rax,\offset+R10(%rsp)
++	movq	%\_r9,\offset+R9(%rsp)
++	movq	%rax,\offset+R8(%rsp)
+ 	.endm
+ 
+ 	/*
+@@ -172,6 +172,10 @@ sysexit_from_sys_call:
+ 	movl	RIP-R11(%rsp),%edx		/* User %eip */
+ 	CFI_REGISTER rip,rdx
+ 	RESTORE_ARGS 1,24,1,1,1,1
++	xorq	%r8,%r8
++	xorq	%r9,%r9
++	xorq	%r10,%r10
++	xorq	%r11,%r11
+ 	popfq
+ 	CFI_ADJUST_CFA_OFFSET -8
+ 	/*CFI_RESTORE rflags*/
+@@ -202,7 +206,7 @@ sysexit_from_sys_call:
+ 
+ 	.macro auditsys_exit exit,ebpsave=RBP
+ 	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),TI_flags(%r10)
+-	jnz int_ret_from_sys_call
++	jnz ia32_ret_from_sys_call
+ 	TRACE_IRQS_ON
+ 	sti
+ 	movl %eax,%esi		/* second arg, syscall return value */
+@@ -218,8 +222,9 @@ sysexit_from_sys_call:
+ 	cli
+ 	TRACE_IRQS_OFF
+ 	testl %edi,TI_flags(%r10)
+-	jnz int_with_check
+-	jmp \exit
++	jz \exit
++	CLEAR_RREGS -ARGOFFSET
++	jmp int_with_check
+ 	.endm
+ 
+ sysenter_auditsys:
+@@ -329,6 +334,9 @@ sysretl_from_sys_call:
+ 	CFI_REGISTER rip,rcx
+ 	movl EFLAGS-ARGOFFSET(%rsp),%r11d	
+ 	/*CFI_REGISTER rflags,r11*/
++	xorq	%r10,%r10
++	xorq	%r9,%r9
++	xorq	%r8,%r8
+ 	TRACE_IRQS_ON
+ 	movl RSP-ARGOFFSET(%rsp),%esp
+ 	CFI_RESTORE rsp
+@@ -353,7 +361,7 @@ cstar_tracesys:
+ #endif
+ 	xchgl %r9d,%ebp
+ 	SAVE_REST
+-	CLEAR_RREGS r9
++	CLEAR_RREGS 0, r9
+ 	movq $-ENOSYS,RAX(%rsp)	/* ptrace can change this for a bad syscall */
+ 	movq %rsp,%rdi        /* &pt_regs -> arg1 */
+ 	call syscall_trace_enter
+@@ -425,6 +433,8 @@ ia32_do_call:
+ 	call *ia32_sys_call_table(,%rax,8) # xxx: rip relative
+ ia32_sysret:
+ 	movq %rax,RAX-ARGOFFSET(%rsp)
++ia32_ret_from_sys_call:
++	CLEAR_RREGS -ARGOFFSET
+ 	jmp int_ret_from_sys_call 
+ 
+ ia32_tracesys:			 
+@@ -442,8 +452,8 @@ END(ia32_syscall)
+ 
+ ia32_badsys:
+ 	movq $0,ORIG_RAX-ARGOFFSET(%rsp)
+-	movq $-ENOSYS,RAX-ARGOFFSET(%rsp)
+-	jmp int_ret_from_sys_call
++	movq $-ENOSYS,%rax
++	jmp ia32_sysret
+ 
+ quiet_ni_syscall:
+ 	movq $-ENOSYS,%rax
 
-R1JFRVRJTkcgSU4gVEhFIE5BTUUgT0YgT1VSIExPUkQuDQpJIEFNIE1SUy4g
-SlVMSUUgQlJZQU5ULCBBIFdJRE9XIFRPIExBVEUgQUxFWCBCUllBTlQuRlJP
-TSBIQU1CVVJHLCBHRVJNQU5ZLlBSRVNFTlRMWSBJTiBNQURSSUQgU1BBSU4s
-IFJFQ0VJVklORyBUUkVBVE1FTlRTLCBJIEFNIDYxIFlFQVJTIE9MRCwgSSBB
-TSBOT1cgQSBORVcgQ0hSSVNUSUFOIENPTlZFUlQsIFNVRkZFUklORyBGUk9N
-IExPTkcgVElNRSBDQU5DRVIgT0YgVEhFIEJSRUFTVCxGUk9NIEFMTCBJTkRJ
-Q0FUSU9OIE1ZIENPTkRJVElPTlMgSVMgUkVBTExZIERFVEVSSU9SQVRJTkcg
-QU5EIElUIElTIFFVSVRFIE9CVklPVVMgVEhBVCBJIFdPTidUIExJVkUgTU9S
-RSBUSEFOIFNJWCBNT05USFMsIEFDQ09SRElORyBUTyBNWSBET0NUT1JTLFRI
-SVMgSVMgQkVDQVVTRSBUSEUgQ0FOQ0VSIFNUQUdFIEhBUyBHT1RURU4gVE8g
-QSBWRVJZIEJBRCBTVEFHRS4gTVkgTEFURSBIVVNCQU5EIEtJTExFRCBEVVJJ
-TkcgVEhFIFUuUy4gUkFJRCBBR0FJTlNUIFRFUlJPUklTTSBJTiBBRkdIQU5J
-U1RBTiwgQU5EIERVUklORyBUSEUgUEVSSU9EIE9GIE9VUiBNQVJSSUFHRSBX
-RSBDT1VMRE4nVCBQUk9EVUNFIEFOWSBDSElMRC4NCg0KTVkgTEFURSBIVVNC
-QU5EIFdBUyBWRVJZIFdFQUxUSFkgQU5EIEFGVEVSIEhJUyBERUFUSCwgSSBJ
-TkhFUklURUQgQUxMIEhJUyBCVVNJTkVTUyBBTkQgV0VBTFRILiBUSEUgRE9D
-VE9SUyBIQVMgQURWSVNFRCBNRSBUSEFUIEkgTUFZIE5PVCBMSVZFIEZPUiBN
-T1JFIFRIQU4gU0lYIE1PTlRIUywgU08gSSBOT1cgREVDSURFRCBUTyBESVZJ
-REUgVEhFIFBBUlQgT0YgVEhJUyBXRUFMVEgsIFRPIENPTlRSSUJVVEUgVE8g
-VEhFIERFVkVMT1BNRU5UIE9GIFRIRSBDSFVSQ0ggSU4gQUZSSUNBLCBBTUVS
-SUNBLCBBU0lBLCBBTkQNCkVVUk9QRS4gSSBQUkFZRUQgT1ZFUiBJVCwuIEkg
-QU0gV0lMTElORyBUTyBET05BVEUgVEhFIFNVTSBPRiBVU0QgOC42LDAwMC4w
-MDAuMDAgRE9MTEFSUywgVE8gVEhFIExFU1MgUFJJVklMRUdFRC4gUExFQVNF
-IEkgV0FOVCBZT1UgVE8gTk9URSBUSEFUIEZVTkQgSVMgTFlJTkcgSU4gQSBT
-RUNVUklUWSBDT01QQU5ZIElOIE5FVyBZT1JLLCBVU0EuDQoNCkxBU1RMWSwg
-SSBIT05FU1RMWSBQUkFZIFRIQVQgVEhJUyBNT05FWSBXSEVOIFRSQU5TRkVS
-UkVEIFdJTEwgQkUgU1VSRSBGT1IgVEhFIFNBSUQgUFVSUE9TRSwgQkVDQVVT
-RSBJIEhBVkUgQ09NRSBUTyBGSU5EIE9VVCBUSEFUIFdFQUxUSCBBQ1FVSVNJ
-VElPTiBXSVRIT1VUIENIUklTVCBJUyBWQU5JVFkuIE1BWSBUSEUgR1JBQ0Ug
-T0YgT1VSIExPUkQgSkVTVVMgVEhFIExPVkUgT0YgR09EIEFORCBUSEUgRkVM
-TE9XU0hJUCBPRiBHT0QgQkUgV0lUSCBZT1UgQU5EIFlPVVIgRkFNSUxZIEkg
-QVdBSVQgVVJHRU5UIFJFUExZLg0KDQoNClRIQU5LUy4NCk1SUy4gSlVMSUUg
-QlJZQU5UIA0KUmVwbHkgbWUgYXQgbXJzanVsaWVicnlhbnRAYnRpbnRlcm5l
-dC5jb20NCg0KDQoNCg==
 
-------=_NextPart_000_0074_01C2A9A6.5D1A0CE0--
+
