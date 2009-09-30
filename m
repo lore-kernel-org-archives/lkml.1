@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbZI3OU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbZI3OZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbZI3OU4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 10:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbZI3OUz
+	id S1754491AbZI3OZO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 10:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbZI3OZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 10:20:55 -0400
-Received: from thunk.org ([69.25.196.29]:36678 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751605AbZI3OUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 10:20:54 -0400
-Date: Wed, 30 Sep 2009 10:20:49 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Josh Stone <jistone@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext4: Add a stub for mpage_da_data in the trace header
-Message-ID: <20090930142049.GH24383@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Christoph Hellwig <hch@infradead.org>,
-	Josh Stone <jistone@redhat.com>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <1254260407-14276-1-git-send-email-jistone@redhat.com> <20090930133335.GA14585@infradead.org>
+	Wed, 30 Sep 2009 10:25:13 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:63122 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbZI3OZM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 10:25:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=saY0SirsFZQbe9jTXHJ8AAM6939Jxkl/+aXnfVW885/poyA8Da709f/j0qcspMidfy
+         UxHhJlN6x0xbpOwV5lvy2mDL6gfF5xPaQ3Kornin9UJwOhVWm3+mfeu9+MfJfXgF3r7/
+         YHhQx0UJBOXq6ZGiW2LravkEexBV7p9I35Rio=
+Message-ID: <4AC36A46.7010209@googlemail.com>
+Date: Wed, 30 Sep 2009 16:25:10 +0200
+From: Gonsolo <gonsolo@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.9.1.4pre) Gecko/20090915 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090930133335.GA14585@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: "John W. Linville" <linville@tuxdriver.com>
+CC: Gonsolo <gonsolo@gmail.com>, Daniel J Blueman <daniel.blueman@gmail.com>,
+       kernel-team@lists.ubuntu.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+Subject: Re: ath5k suspend
+References: <4AC22B64.8050909@googlemail.com> <6278d2220909300536u7934d7dan286d219b5cf7e5a@mail.gmail.com> <4AC35CA0.5070401@googlemail.com> <20090930140905.GA3193@tuxdriver.com>
+In-Reply-To: <20090930140905.GA3193@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 09:33:35AM -0400, Christoph Hellwig wrote:
-> On Tue, Sep 29, 2009 at 02:40:07PM -0700, Josh Stone wrote:
-> > The tracepoint ext4_da_write_pages has a struct mpage_da_data*
-> > parameter, but that struct is only defined in fs/ext4/ext4.h.  This
-> > patch adds a forward declaration for that struct, so this tracepoint
-> > header can still be used by tools like SystemTap.
-> 
-> That's not what the tracepoints are for anyway.  No hacks for out of
-> tree crap like this please - just use the trace buffer directly like
-> ftrace and then you don't actually need any data types.
-> 
+Am 30.09.2009 16:09, schrieb John W. Linville:
+> On Wed, Sep 30, 2009 at 03:26:56PM +0200, Gonsolo wrote:
+>>>> Is it possible to add
+>>>> http://patchwork.kernel.org/patch/38550/
+>>>> to karmic? Otherwise karmic would be broken for me/my notebook/my
+>>>> wireless pccard.
+>>>
+>>> Since Karmic tracks the 2.6.31 -stable kernels, it's worth reporting
+>>> this upstream (CC'd) instead, particularly if it's a regression from a
+>>> previous kernel version, using the same ath5k driver...?
+>>
+>> I did that, too. ;) Hopefully it will be in 2.6.31.2.
+>
+> Maybe I missed it, but did you actually request the -stable team to
+> take the patch?  -stable helps more than just Ubuntu... :-)
 
-Josh, you do realize that SystemTap can pull stuff out of the trace
-buffer by examining information found in 
+I requested it in Ubuntu and stable in two separate emails, just to be 
+sure it will be there when I am going to upgrade. ;)
+I apologize if I caused confusion or doubled your amount of work.
+Maybe I should have done this in one email to both parties.
 
-	/sys/kernel/debug/tracing/events/*/*/format
-
-right?   For example:
-
-name: ext4_sync_fs
-ID: 600
-format:
-	field:unsigned short common_type;	offset:0;	size:2;
-	field:unsigned char common_flags;	offset:2;	size:1;
-	field:unsigned char common_preempt_count;	offset:3;	size:1;
-	field:int common_pid;	offset:4;	size:4;
-	field:int common_tgid;	offset:8;	size:4;
-
-	field:dev_t dev;	offset:12;	size:4;
-	field:int wait;	offset:16;	size:4;
-
-print fmt: "dev %s wait %d", jbd2_dev_to_name(REC->dev), REC->wait
-
-No need to for users to download gigabytes and gigabytes of DWARF
-crapola (and for developers to grow old waiting for a kernel compile
-with -g enabled to complete); SystemTap can just get what it needs
-straight out of /sys/kernel/debug/tracing/events, and then reading
-what it needs out of the ring buffer.
-
-In any case I've added the blind structure pointer to
-include/trace/events/ext4.h, but in the long term you're *much* better
-off pulling the information you need from the ftrace ring buffer and
-getting the information you need to interpret it out of
-/sys/kernel/debug/tracing.
-
-     	      				- Ted
+g
