@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbZI3MJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376AbZI3MJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754409AbZI3MJc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZI3MJa
+	id S1754376AbZI3MJW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 08:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZI3MJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:09:30 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55735 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754327AbZI3MJ3 (ORCPT
+	Wed, 30 Sep 2009 08:09:22 -0400
+Received: from mail-yw0-f199.google.com ([209.85.211.199]:60061 "EHLO
+	mail-yw0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753441AbZI3MJV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:09:29 -0400
-Date: Wed, 30 Sep 2009 14:09:20 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Robert Jarzmik <robert.jarzmik@free.fr>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>
-Subject: arm tree in broken state (was Re: What's inside the pxa tree for
-	this merge window)
-Message-ID: <20090930120920.GH1412@ucw.cz>
-References: <f17812d70909100446h17a1903fy74941945dbfc6943@mail.gmail.com> <1253256227.4407.7.camel@pc-matejk> <20090918074551.GA26058@n2100.arm.linux.org.uk> <Pine.LNX.4.64.0909212111490.17328@axis700.grange> <20090921200923.GF30821@n2100.arm.linux.org.uk>
+	Wed, 30 Sep 2009 08:09:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Xilmqqco0pZ1/8e+9u1War0fWePksJBALVBPqOsWRc6Ui9ee3FN4H4d50062Poo/2L
+         gpXPUQuaSwRxgCTxdJiXJFOZIXoJCXuKtVRn9G8mNFjcLX9KTC+YgNcts8f/pEHOgt4c
+         urIkZF13Q9Eydyo9p5CMzinHZtlIC0vayA6mo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090921200923.GF30821@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090930120655.GG1412@ucw.cz>
+References: <20090930120655.GG1412@ucw.cz>
+Date: Wed, 30 Sep 2009 16:09:25 +0400
+Message-ID: <bc64b4640909300509p6c682fa8rb5ce43c77c79f5@mail.gmail.com>
+Subject: Re: 2.6.32-rc1: spitz boots but suspend/resume is broken
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       omegamoon@gmail.com, eric.y.miao@gmail.com, utx@penguin.cz
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 30, 2009 at 4:06 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+> matrix keyboard driver needs to be enabled, otherwise it seems ok.
+>
+> Unfortunately, it does not respond to power button in any visible way
+> :-(. Any ideas what might be wrong/how to debug it?
 
-> > > I discarded them _because_ Eric handled them, which is what I said in the
-> > > comments when I discarded them.
-> > 
-> > Ok, I did do my best to get patches in the right order in the mainline, 
-> > but it all failed. AFAICS, v4l and sh are already in the mainline with a 
-> > _wrongly_ resolved mefge conflict, which, most likely, breaks the 
-> > sh_mobile_ceu_camera.c driver, and the three PXA platforms, patches for 
-> > which should have been applied before both those trees and still haven't 
-> > been applied are broken until the patches do get in and the later those 
-> > patches get applied the longer the interval with the broken for them 
-> > bisection is going to be.
-> 
-> Meanwhile I have to consider that we have several bug fixes outstanding,
-> and since I can't send Linus a pull request every day (max once a week)
-> I have to be very careful about when I send stuff.
-> 
-> So I only get _two_ opportunities during a merge window to send a pull
-> request.
+Enable gpio-keyboard driver, verify (or port power button to it :))
+and check that
+enable_wakeup is enabled.
 
-Well, you should certainly try to keep your tree  unbroken, but when
-it breaks, fixing it asap should be a priority. I don't know where you
-got the 'once a week' rule, but it seems stupid.
+BTW: on tosa initially i had a problem w/ wakeup. The power button wasn't
+able to wake the device up. However there was another gpio that was OR of
+ power button and AC-in gpios that had to be used for wakeup. Please check
+if the same design applies to your device.
 
-> I'm going to wait until tomorrow before sending my final pull for this
-> window, which is the penultimate day before the window closes.
-> 
-> Don't blame me for these delays - it's not my choice to impose such
-> delays.  I'd really like to fix those broken platforms right now.  I
-> just can't do so without causing additional delays for other issues.
-> Blame Linus for imposing the "max one pull a week" rule on me.
+>                                                                Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
 
-Do you have maillist reference? Not even Linus should slow down
-development like that.
-
-If Linus really insists on that, perhaps possible solution would be to
-make subarch maintainers send pull requests for simple fixes directly
-to Linus?
-
-								Pavel
 
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+With best wishes
+Dmitry
