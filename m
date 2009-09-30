@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbZI3QOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZI3QP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754083AbZI3QOu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 12:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZI3QOt
+	id S1754497AbZI3QP7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 12:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZI3QP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 12:14:49 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:38034 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbZI3QOs (ORCPT
+	Wed, 30 Sep 2009 12:15:59 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:52529 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752157AbZI3QP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 12:14:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Z6c6HP+uM9PPITcwwTlP9ccsPy7qaN6hiIERsgXpnT1QM/HIjiFr/JMKt8tKknhEJZ
-         Q2igQ7jmh7iKpkkoM0aXkll7joR4Cx0lgXSA581buPmNlpkzpqg9EWnpG9LSo9KaYKq7
-         FxMS8JAfR+gb46xBpt/78i2I4X30JyY1uLJg8=
-Date: Wed, 30 Sep 2009 20:14:47 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux 2.6.32-rc1
-Message-ID: <20090930161447.GC5235@lenovo>
-References: <4AC060AE.1090401@gmail.com> <alpine.LFD.2.01.0909280829100.3349@localhost.localdomain> <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com> <4AC10365.7090802@gmail.com> <4AC2712C.4080901@gmail.com> <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain> <20090929232248.735bf4df@infradead.org> <alpine.LFD.2.01.0909291429570.6996@localhost.localdomain> <20090930170754.0886ff2e@infradead.org> <4AC37FE5.7020200@gmail.com>
+	Wed, 30 Sep 2009 12:15:58 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC][v7][PATCH 8/9]: Define clone2() syscall
+Date: Wed, 30 Sep 2009 18:15:44 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Roland McGrath <roland@redhat.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-api@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com
+References: <20090924165548.GA16586@us.ibm.com> <alpine.LFD.2.01.0909291501530.6996@localhost.localdomain> <4AC287F2.8060603@zytor.com>
+In-Reply-To: <4AC287F2.8060603@zytor.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AC37FE5.7020200@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909301815.45211.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX196rVl4yh4hoRg1HWr3q3fdsIbTtu+7WWho0xV
+ 7bf1MKaLhlbxbTPXivO1rScb8gR4rxrnTKGv2wO6SgGaljAqyF
+ cino5DyZ7EhTi6+fRpzVA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Eric Dumazet - Wed, Sep 30, 2009 at 05:57:25PM +0200]
-...
-| 
-| > +#define cmpxchg64(ptr, o, n)					\
-| > +({								\
-| > +	__typeof__(*(ptr)) __ret;				\
-| > +	__typeof__(*(ptr)) __old = (o);				\
-| > +	__typeof__(*(ptr)) __new = (n);				\
-| > +	alternative_io("call cmpxchg8b_emu",			\
-| > +			"lock; cmpxchg8b (%%esi)" ,		\
-| > +		       X86_FEATURE_CX8,				\
-| > +		       "=A" (__ret),				\
-| > +		       "S" ((ptr)), "0" (__old),		\
-| > +		       "b" ((unsigned int)__new),		\
-| > +		       "c" ((unsigned int)(__new>>32)));	\
-| 
-| 
-| Note:
-| 
-| lock; cmpxchg8b (%%esi)
-| 
-| gives 4 bytes opcode : f0 0f c7 0e
-| Because alternative (call cmpxchg8b_emu) uses 5 bytes, a nop will be added.
-| 
-| Choosing ".byte 0xf0, 0x0f, 0xc7, 0x4e, 0x00"  aka "lock cmpxchg8b 0x0(%esi)" is a litle bit better ?
-| 
+On Wednesday 30 September 2009, H. Peter Anvin wrote:
+> Let's just make it another system call.  It doesn't have any downside
+> that I can see, might prevent problems, and avoids setting a bad
+> precedent that someone can misinterpret.
 
-Just curious why not "nop; lock; cmpxchg8b (%esi)"? lock itself is destructive
-instruction with causes write buffers to flush data back and NOP itself will
-be discarded by cpu internals so I suppose this form should be better. Though
-I could miss something, and OTOH it's not a big deal. But still curious :)
+One more argument for this is that the new code is architecture independent
+using user_stack_pointer(), while the original sys_clone is highly
+architecture specific, which is a source for bugs when trying to
+extend it.
 
-	-- Cyrill
+	Arnd <><
