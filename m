@@ -1,98 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZI3Tij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZI3TiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbZI3Tij (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 15:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbZI3Tii
+	id S1755160AbZI3TiN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 15:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbZI3TiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 15:38:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56806 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755136AbZI3Tig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 15:38:36 -0400
-Date: Wed, 30 Sep 2009 19:37:27 GMT
-From: tip-bot for Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       eric.dumazet@gmail.com, a.p.zijlstra@chello.nl, johnstul@us.ibm.com,
-       torvalds@linux-foundation.org, arjan@linux.intel.com,
-       schwidefsky@de.ibm.com, arjan@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       eric.dumazet@gmail.com, arjan@linux.intel.com,
-       torvalds@linux-foundation.org, johnstul@us.ibm.com,
-       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com, arjan@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090930170754.0886ff2e@infradead.org>
-References: <20090930170754.0886ff2e@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched_clock: Fix atomicity/continuity bug by using cmpxchg64()
-Message-ID: <tip-1cb9955464ad248c79c48e9c8be6669020fe178c@git.kernel.org>
-Git-Commit-ID: 1cb9955464ad248c79c48e9c8be6669020fe178c
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
+	Wed, 30 Sep 2009 15:38:12 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:24124 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754893AbZI3TiL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 15:38:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=GlNrj9+p8Agnf7Q4xqWGDDnZORCjuPta8yVRwYSuH0SRWYwKEr4QicqejWYjESjTvY
+         any+1OzHjYzvfSlZnNZLHwk7k3wk0GKTUcvfIMV4R4PizhW9Q9JzJeFVR+7jeor+tWT6
+         tLcPgwoHkIgH0O/ixufgRiM9S2H4aVdq1nZsY=
+Date: Wed, 30 Sep 2009 21:38:09 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Andy <genanr@emsphone.com>,
+       linux-kernel@vger.kernel.org, git@vger.kernel.org
+Subject: Re: How can I download a git commit as a diff patch?
+Message-ID: <20090930213809.71c2a8e8@varda>
+In-Reply-To: <20090930190014.GA22161@csclub.uwaterloo.ca>
+References: <20090930154410.GA31502@thumper2>
+	<20090930085500.a5856301.rdunlap@xenotime.net>
+	<20090930190014.GA22161@csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 30 Sep 2009 19:37:28 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1cb9955464ad248c79c48e9c8be6669020fe178c
-Gitweb:     http://git.kernel.org/tip/1cb9955464ad248c79c48e9c8be6669020fe178c
-Author:     Arjan van de Ven <arjan@infradead.org>
-AuthorDate: Wed, 30 Sep 2009 20:36:19 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 30 Sep 2009 20:58:27 +0200
+El Wed, 30 Sep 2009 15:00:14 -0400
 
-sched_clock: Fix atomicity/continuity bug by using cmpxchg64()
+ CCing git@vger.kernel.org ??
 
-Commit def0a9b2573 (sched_clock: Make it NMI safe) assumed
-cmpxchg() of 64bit values was available on X86_32.
+lsorense@csclub.uwaterloo.ca (Lennart Sorensen) escribió:
 
-That is not so - and causes some subtle scheduler misbehavior due
-to incorrect timestamps off to up by ~4 seconds.
-
-Two symptoms are known right now:
-
- - interactivity problems seen by Arjan: up to 600 msecs
-   latencies instead of the expected 20-40 msecs. These
-   latencies are very visible on the desktop.
-
- - incorrect CPU stats: occasionally too high percentages in 'top',
-   and crazy CPU usage stats.
-
-Reported-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: John Stultz <johnstul@us.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090930170754.0886ff2e@infradead.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/sched_clock.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-index ac2e1dc..479ce56 100644
---- a/kernel/sched_clock.c
-+++ b/kernel/sched_clock.c
-@@ -127,7 +127,7 @@ again:
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
- 
--	if (cmpxchg(&scd->clock, old_clock, clock) != old_clock)
-+	if (cmpxchg64(&scd->clock, old_clock, clock) != old_clock)
- 		goto again;
- 
- 	return clock;
-@@ -163,7 +163,7 @@ again:
- 		val = remote_clock;
- 	}
- 
--	if (cmpxchg(ptr, old_val, val) != old_val)
-+	if (cmpxchg64(ptr, old_val, val) != old_val)
- 		goto again;
- 
- 	return val;
+> On Wed, Sep 30, 2009 at 08:55:00AM -0700, Randy Dunlap wrote:
+> > On Wed, 30 Sep 2009 10:44:10 -0500 Andy wrote:
+> > 
+> > > I just want to down a particular git commit as a patch, not a git commit or
+> > > anything.  Yes, I can see the diffs on the web, but unless I am missing
+> > > something all are in unless html formats for me.  And cut and past from the
+> > > web page does not help either because some lines get mangled.  Is there some
+> > > site, or git itself, that would allow be to get the git commit as a simple
+> > > patch?
+> > 
+> > Look at the commitdiff using the web interface, then click on "raw" near
+> > the upper left corner.
+> 
+> Of course some git diff's are not in a format that patch will like as
+> far as I can tell.
+> 
+> For example commit 6cdee2f96a97f6da26bd3759c3f8823332fbb438 which has
+> stuff like:
+> diff --cc drivers/net/ixp2000/ixpdev.c
+> index 588b44d,92fb823..1272434
+> --- a/drivers/net/ixp2000/ixpdev.c
+> +++ b/drivers/net/ixp2000/ixpdev.c
+> @@@ -67,9 -68,9 +68,9 @@@ static int ixpdev_xmit(struct sk_buff *
+>         ip->tx_queue_entries++;
+>         if (ip->tx_queue_entries == TX_BUF_COUNT_PER_CHAN)
+>                 netif_stop_queue(dev);
+> -       local_irq_enable();
+> +       local_irq_restore(flags);
+> 
+>  -      return 0;
+>  +      return NETDEV_TX_OK;
+>   }
+> 
+> 
+> 
+> Ehm, what does that mean?  patch doesn't like it.
+> 
+> Do git merges cause weird diffs?
+> 
