@@ -1,81 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZI3I1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbZI3Im3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbZI3I1j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 04:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZI3I1j
+	id S1752854AbZI3Im3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 04:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbZI3Im2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 04:27:39 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:38467 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbZI3I1i convert rfc822-to-8bit (ORCPT
+	Wed, 30 Sep 2009 04:42:28 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41954 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbZI3Im2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 04:27:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Qe6q9rLV7ly50hI8WCBJcEAM/Rm/TAzs+oxRZfVsX5jgUlZD//SBv5571leGvuDZac
-         J7JA86t2I1MlQI4NeroUp8JRPhiOXpYcwAtJk73jVVo23Jg/8oGZVYP2HDDCy5DZjpVx
-         PZ5L/+oBWVaXMbn5AkGJd4KTi1tW08fbAH1PE=
-MIME-Version: 1.0
-In-Reply-To: <20090930102037.55db07ed@hammerfall>
-References: <8db1092f0909270105x4b49daf8k268e453d2379020c@mail.gmail.com>
-	 <2674af740909270127s464a3cb2xef5e7f4cd61b0eb7@mail.gmail.com>
-	 <20090929072454.GA11414@elte.hu>
-	 <2674af740909290231m5af0fbc6t5fba0b127c63bd9f@mail.gmail.com>
-	 <20090930095043.48e7081f@hammerfall>
-	 <2674af740909300101x2ef4bbdewc12d52e703bdadf@mail.gmail.com>
-	 <20090930102037.55db07ed@hammerfall>
-Date: Wed, 30 Sep 2009 16:27:42 +0800
-Message-ID: <2674af740909300127k255715d8se1c267089ed9283a@mail.gmail.com>
-Subject: Re: [2.6.31-git17] WARNING: at kernel/hrtimer.c:648 
-	hres_timers_resume+0x40/0x50()/WARNING: at drivers/base/sys.c:353 
-	__sysdev_resume+0xc3/0xe0()
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: Michal Schmidt <mschmidt@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, clemens@ladisch.de,
-       venkatesh.pallipadi@intel.com, gregkh@suse.de
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 30 Sep 2009 04:42:28 -0400
+Subject: Re: [PATCH] tracing: Fix infinite loop in ftrace_update_pid_func()
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Matt Fleming <matt@console-pimps.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>
+In-Reply-To: <20090929092245.GA5057@nowhere>
+References: <1254152581-18347-1-git-send-email-matt@console-pimps.org>
+	 <20090929092245.GA5057@nowhere>
+Content-Type: text/plain
+Date: Wed, 30 Sep 2009 04:41:15 -0400
+Message-Id: <1254300075.7286.2.camel@frodo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 4:20 PM, Michal Schmidt <mschmidt@redhat.com> wrote:
-> Dne Wed, 30 Sep 2009 16:01:40 +0800
-> Yong Zhang <yong.zhang0@gmail.com> napsal(a):
->> From my previous mail, I have ask Maciej to test the blow patch:
->> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
->> index fb0f46f..4a00a1a 100644
->> --- a/kernel/time/timekeeping.c
->> +++ b/kernel/time/timekeeping.c
->> @@ -569,6 +569,9 @@ static int timekeeping_resume(struct sys_device
->> *dev) unsigned long flags;
->>        struct timespec ts;
->>
->> +       WARN_ONCE(!irqs_disabled(),
->> +               KERN_INFO "timekeeping_resume() called with IRQs
->> enabled!"); +
->>        read_persistent_clock(&ts);
->>
->>        clocksource_resume();
->>
->> And indeed, the warning is showed.
->
-> Is it? After Maciej tested it, he said:
->> no "timekeeping_resume() called with IRQs enabled!".
-> which I read as: no such message was shown.
->
+On Tue, 2009-09-29 at 11:22 +0200, Frederic Weisbecker wrote:
+> On Mon, Sep 28, 2009 at 04:43:01PM +0100, Matt Fleming wrote:
+> > From: Matt Fleming <matthew.fleming@imgtec.com>
+> > 
+> > When CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST is enabled
+> > __ftrace_trace_function contains the current trace function, not
+> > ftrace_trace_function. In ftrace_update_pid_func() we currently
+> > incorrectly assign the value of ftrace_trace_function to
+> > __ftrace_trace_funcion before returning.
+> > 
+> > Without this patch it is possible to execute an infinite loop whereby
+> > ftrace_test_stop_func() calls __ftrace_trace_function, which was
+> > assigned ftrace_test_stop_func() in ftrace_update_pid_func().
+> > 
+> > Signed-off-by: Matt Fleming <matthew.fleming@imgtec.com>
+> > ---
+> >  kernel/trace/ftrace.c |    4 ++++
+> >  1 files changed, 4 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> > index 25edd5c..d9ba6d9 100644
+> > --- a/kernel/trace/ftrace.c
+> > +++ b/kernel/trace/ftrace.c
+> > @@ -225,7 +225,11 @@ static void ftrace_update_pid_func(void)
+> >  	if (ftrace_trace_function == ftrace_stub)
+> >  		return;
+> >  
+> > +#ifdef CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST
+> >  	func = ftrace_trace_function;
+> > +#else
+> > +	func = __ftrace_trace_function;
+> > +#endif
+> 
+> 
+> 
+> I don't understand how it can do that infinite loop.
+> It doesn't seem the following can happen:
+> 
+> func = ftrace_trace_function  //which is ftrace_test_stop_func
+> 
+> _ftrace_trace_function = func
+> 
+> Because we can sum up the path like that:
+> 
+> func = ftrace_trace_function;
+> 
+> ...
+> 
+> 
+> #ifdef CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST
+> 	ftrace_trace_function = func;
+> #else
+> 	__ftrace_trace_function = func;
+> #endif
+> 
+> So if we are in CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST,
+> that doesn't seem to harm, although it seems that what we want is
+> 
+> func = __ftrace_trace_function
+> 
+> ...
+> 
+> __ftrace_trace_function = func
+> 
+> Because we want to always keep ftrace_test_stop_func as the top level
+> wrapper. Which would be what does the above, plus the fact we avoid any
+> recursivity.
+> 
+> But it's possible I'm missing the point...
+> 
+> Also, Steve, is this an option that is still useful? It's even not
+> in Kconfig.
+> 
 
-Just check again.
-OMG, I'm blind for so long time.
-Yeah, it seem like 89133f9 fix this issue.
-Sorry again.
+Yeah, Matt found a real bug, and yes it will infinitely recurse. The
+thing is that the function can call itself which will continue to do so.
 
-Thanks,
-Yong
+As for the Kconfig, it's something that currently only x86 selects,
+because x86 does the test in entry.S.
 
-> Michal
->
+
+Matt,
+
+Thanks, I'll pull this in as soon as I get back from Dresden.
+
+-- Steve
+
+
