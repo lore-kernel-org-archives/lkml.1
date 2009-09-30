@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZI3LKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbZI3LQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbZI3LKm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 07:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZI3LKm
+	id S1754190AbZI3LQm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 07:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbZI3LQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 07:10:42 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48772 "EHLO
+	Wed, 30 Sep 2009 07:16:42 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37499 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbZI3LKl convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1753073AbZI3LQl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 07:10:41 -0400
-Date: Wed, 30 Sep 2009 13:11:09 +0200
+	Wed, 30 Sep 2009 07:16:41 -0400
+Date: Wed, 30 Sep 2009 13:17:09 +0200
 From: Arjan van de Ven <arjan@infradead.org>
-To: Wensong Zhang <wensong@linux-vs.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ipvs: Add boundary check on ioctl arguments
-Message-ID: <20090930131109.2b3f71b8@infradead.org>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] floppy: Add an extra bound check on ioctl arguments
+Message-ID: <20090930131709.7300dff3@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -28,69 +28,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From 761a182f96b3707e1fee44e1079ba227e48745d1 Mon Sep 17 00:00:00 2001
+>From 90d75780b319153d050bb1c0f3f38ce054775615 Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Wed, 30 Sep 2009 13:05:51 +0200
-Subject: [PATCH] ipvs: Add boundary check on ioctl arguments
+Date: Wed, 30 Sep 2009 13:13:59 +0200
+Subject: [PATCH] floppy: Add an extra bound check on ioctl arguments
 
-The ipvs code has a nifty system for doing the size of ioctl command copies;
-it defines an array with values into which it indexes the cmd to find the
-right length.
+gcc is not convinced that the floppy.c ioctl has sufficient bound checks,
+and frankly, as a human I have a hard time proving the same more or less
+(the size comes from the ioctl argument. humpf. maybe. the code isn't
+very nice)
 
-Unfortunately, the ipvs code forgot to check if the cmd was in the range
-that the array provides, allowing for an index outside of the array,
-which then gives a "garbage" result into the length, which then gets
-used for copying into a stack buffer.
-
-Fix this by adding sanity checks on these as well as the copy size.
+This patch adds an explicit check to make 100% sure it's safe, better
+than finding out later that there indeed was a gap.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- net/netfilter/ipvs/ip_vs_ctl.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ drivers/block/floppy.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/net/netfilter/ipvs/ip_vs_ctl.c b/net/netfilter/ipvs/ip_vs_ctl.c
-index ac624e5..3c52796 100644
---- a/net/netfilter/ipvs/ip_vs_ctl.c
-+++ b/net/netfilter/ipvs/ip_vs_ctl.c
-@@ -2077,6 +2077,10 @@ do_ip_vs_set_ctl(struct sock *sk, int cmd, void __user *user, unsigned int len)
- 	if (!capable(CAP_NET_ADMIN))
+diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+index 5c01f74..0f11a77 100644
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -3497,6 +3497,9 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd,
+ 	    ((cmd & 0x80) && !capable(CAP_SYS_ADMIN)))
  		return -EPERM;
  
-+	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_SET_MAX + 1)
-+		return -EINVAL;
-+	if (len < 0 || len >  MAX_ARG_LEN)
-+		return -EINVAL;
- 	if (len != set_arglen[SET_CMDID(cmd)]) {
- 		pr_err("set_ctl: len %u != %u\n",
- 		       len, set_arglen[SET_CMDID(cmd)]);
-@@ -2353,17 +2357,25 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd, void __user *user, int *len)
- {
- 	unsigned char arg[128];
- 	int ret = 0;
-+	unsigned int copylen;
- 
- 	if (!capable(CAP_NET_ADMIN))
- 		return -EPERM;
- 
-+	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_GET_MAX + 1)
++	if (size < 0 || size > sizeof(inparam))
 +		return -EINVAL;
 +
- 	if (*len < get_arglen[GET_CMDID(cmd)]) {
- 		pr_err("get_ctl: len %u < %u\n",
- 		       *len, get_arglen[GET_CMDID(cmd)]);
- 		return -EINVAL;
- 	}
- 
--	if (copy_from_user(arg, user, get_arglen[GET_CMDID(cmd)]) != 0)
-+	copylen = get_arglen[GET_CMDID(cmd)];
-+	if (copylen > 128)
-+		return -EINVAL;
-+
-+	if (copy_from_user(arg, user, copylen) != 0)
- 		return -EFAULT;
- 
- 	if (mutex_lock_interruptible(&__ip_vs_mutex))
+ 	/* copyin */
+ 	CLEARSTRUCT(&inparam);
+ 	if (_IOC_DIR(cmd) & _IOC_WRITE)
 -- 
 1.6.2.5
 
