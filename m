@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbZI3Oaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbZI3ObV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbZI3Oaw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 10:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbZI3Oaw
+	id S1754566AbZI3ObV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 10:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZI3ObU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 10:30:52 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:59543 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754197AbZI3Oav (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 10:30:51 -0400
-Date: Wed, 30 Sep 2009 10:29:24 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Gonsolo <gonsolo@gmail.com>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>, kernel-team@lists.ubuntu.com,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-Subject: Re: ath5k suspend
-Message-ID: <20090930142924.GB3835@tuxdriver.com>
-References: <4AC22B64.8050909@googlemail.com> <6278d2220909300536u7934d7dan286d219b5cf7e5a@mail.gmail.com> <4AC35CA0.5070401@googlemail.com> <20090930140905.GA3193@tuxdriver.com> <4AC36A46.7010209@googlemail.com>
+	Wed, 30 Sep 2009 10:31:20 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:5138 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752299AbZI3ObU convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 10:31:20 -0400
+X-SpamScore: -7
+X-BigFish: VPS-7(zz1432Rzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KQSGBI-02-MQV-02
+X-M-MSG: 
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "'Joerg Roedel'" <joro@8bytes.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Sarathy, Bhavna" <Bhavna.Sarathy@amd.com>,
+       "davej@redhat.com" <davej@redhat.com>
+Date: Wed, 30 Sep 2009 09:30:57 -0500
+Subject: RE: [PATCH] Option to synchronize P-states for  AMD family 0xf
+Thread-Topic: [PATCH] Option to synchronize P-states for  AMD family 0xf
+Thread-Index: AcpBtO/C8TGxhGhiRjShcKkzau2FQQAJWR9A
+Message-ID: <DDE95BDD51FB774B804A9C029E735EE10379BEDA68@sausexmbp02.amd.com>
+References: <200909291623.56130.mark.langsdorf@amd.com>
+ <20090930100059.GG29634@8bytes.org>
+In-Reply-To: <20090930100059.GG29634@8bytes.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AC36A46.7010209@googlemail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 04:25:10PM +0200, Gonsolo wrote:
-> Am 30.09.2009 16:09, schrieb John W. Linville:
->> On Wed, Sep 30, 2009 at 03:26:56PM +0200, Gonsolo wrote:
->>>>> Is it possible to add
->>>>> http://patchwork.kernel.org/patch/38550/
->>>>> to karmic? Otherwise karmic would be broken for me/my notebook/my
->>>>> wireless pccard.
->>>>
->>>> Since Karmic tracks the 2.6.31 -stable kernels, it's worth reporting
->>>> this upstream (CC'd) instead, particularly if it's a regression from a
->>>> previous kernel version, using the same ath5k driver...?
->>>
->>> I did that, too. ;) Hopefully it will be in 2.6.31.2.
->>
->> Maybe I missed it, but did you actually request the -stable team to
->> take the patch?  -stable helps more than just Ubuntu... :-)
->
-> I requested it in Ubuntu and stable in two separate emails, just to be  
-> sure it will be there when I am going to upgrade. ;)
-> I apologize if I caused confusion or doubled your amount of work.
-> Maybe I should have done this in one email to both parties.
+> > AMD Family 0xf processors (Athlon 64s and Opterons) do not
+> > have P-State or C-State invariant TSCs.  Instead, the TSC
+> > increments at the current processor frequency, which makes
+> > it unstable and unreliable if cpufreq is enabled.
+> > 
+> > This patch introduces a new command parameter for the
+> > PowerNow! driver called "tscsync".  When tscsync is
+> > set to 1, the driver forces all processors in the system
+> > to change frequency as the same time to the same frequency.
+> > This unified change means that all the TSCs in the system
+> > increment at the same rate.
+> 
+> Cool feature. Does Linux consider the TSC as stable on these machines
+> even after a longer uptime (say after a week)?
 
-Not really a big deal -- still, one email would tend to reduce confusion. :-)
+Ask me in a week.  Linux time-keeping code has evolved
+quite a bit since I last looked at this code.
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+-Mark Langsdorf
+Operating System Research Center
+AMD
