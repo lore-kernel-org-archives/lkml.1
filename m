@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZI3RjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZI3RGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbZI3RjB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 13:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZI3RjA
+	id S1754773AbZI3RGb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 13:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbZI3RGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 13:39:00 -0400
-Received: from elasmtp-junco.atl.sa.earthlink.net ([209.86.89.63]:59779 "EHLO
-	elasmtp-junco.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754477AbZI3RjA (ORCPT
+	Wed, 30 Sep 2009 13:06:30 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:59357 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754447AbZI3RG3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 13:39:00 -0400
-X-Greylist: delayed 2020 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Sep 2009 13:39:00 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=Ln6DwBNkJs/Noj+AgAFhPOosznK7eg2SEzXBQjDLxehyZSAtuDgCcCv35PGvuODL;
-  h=Message-ID:Date:From:Reply-To:To:Subject:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Mailer:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <31532395.1254330324879.JavaMail.root@elwamui-rubis.atl.sa.earthlink.net>
-Date: Wed, 30 Sep 2009 13:05:24 -0400 (EDT)
-From: "Steven A. DuChene" <linux-clusters@mindspring.com>
-Reply-To: "Steven A. DuChene" <linux-clusters@mindspring.com>
-To: linux-kernel@vger.kernel.org
-Subject: Warning: unable to open an initial console
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Mailer: EarthLink Zoo Mail 1.0
-X-ELNK-Trace: ea4808abc3da2865808dd114cae72f675e89bb4777695beb00ff6c36d42eb1fa7f4e5aef82e600c430c42262c8810425350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 209.86.224.47
+	Wed, 30 Sep 2009 13:06:29 -0400
+Authentication-Results: sj-iport-1.cisco.com; dkim=pass (signature verified [TEST]) header.i=rdreier@cisco.com
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAE8tw0qrR7PE/2dsb2JhbADBFYhbAZAMBoQngjI
+X-IronPort-AV: E=Sophos;i="4.44,481,1249257600"; 
+   d="scan'208";a="249166808"
+From: Roland Dreier <rdreier@cisco.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <peterz@infradead.org>,
+       linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+       general@lists.openfabrics.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
+References: <aday6omhz9d.fsf@cisco.com> <1253187028.8439.2.camel@twins>
+	<adafxalejiq.fsf@cisco.com> <adaab0tej5c.fsf@cisco.com>
+	<1253198976.14935.27.camel@laptop> <adazl8td35u.fsf@cisco.com>
+	<adatyz1d17q.fsf@cisco.com> <20090929171332.GD14405@elf.ucw.cz>
+	<20090930094456.GD24621@elte.hu>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 30 Sep 2009 10:06:32 -0700
+In-Reply-To: <20090930094456.GD24621@elte.hu> (Ingo Molnar's message of "Wed,
+	30 Sep 2009 11:44:56 +0200")
+Message-ID: <ada63b0tl9j.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 30 Sep 2009 17:06:32.0692 (UTC) FILETIME=[5C1E3340:01CA41F0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hmm, I tried various combonations of turning off the framebuffer
-support all together and then turning it back on with various
-drivers (nvidia or vesa vga) but still I get the same message
-about "Warning: unable to open an initial console."
 
-Anything else I should be looking at besides the graphics support
-part of the drivers section of the kernel config?
+ > Performance events filtering is being worked on and now with the proper 
+ > non-DoS limit you've added you can lose events too, dont you? So it's 
+ > all a question of how much buffering to add - and with perf events too 
+ > you can buffer arbitrary large amount of events.
 
-Again this is a fairly standard PCChips A13G motherboard with
-NVidia chipset and AMD Athlon 3600+ CPU that works fine with the
-regular distro supplied FC9 kernel (2.6.25-14.fc9.x86_64) and
-I have the x86_64 version of FC9 installed.
+No, the idea for non-DoS for ummunotify is that we would limit the
+number of regions the application can register; so an application might
+hit the limit up front but no runtime loss of events once a region was
+registered successfully.
 
------Original Message-----
->From: "Steven A. DuChene" <linux-clusters@mindspring.com>
->Sent: Sep 30, 2009 11:55 AM
->To: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
->Subject: Re: newer non-distro kernels don't boot / unpack?
->
->OK, so after removing rhgb and quiet from the menu.lst
->for this kernel the last few messages it prints are:
->
->sdb:
->sdb1 sdb2
->sd 1:0:0:0: [sdb] Attached SCSI disk
->XFS mounting filesystem sda3
->VFS: Mounted root (xfs filesystem) readonly on device 8:3.
->Freeing unused kernel memory: 416k freed
->Warning: unable to open an initial console.
->
->Since it does not seem to be reaching the init stage but
->does seem to be finding the disks and mounting the filesystems
->it is getting much further along than I thought. I guess
->I have a problem with the console/terminal parts of the
->kernel compile/configuration.
->
->
->-----Original Message-----
->>From: Arjan van de Ven <arjan@infradead.org>
->>Sent: Sep 30, 2009 11:47 AM
->>To: "Steven A. DuChene" <linux-clusters@mindspring.com>
->>Subject: Re: newer non-distro kernels don't boot / unpack?
->>
->>first remove rhgb and quiet.. that way you get at least the kernel log
->>on the screen... to see where you get stuck.
->>
->>
->>-- 
->>Arjan van de Ven 	Intel Open Source Technology Centre
->>For development, discussion and tips for power savings, 
->>visit http://www.lesswatts.org
->
->
+ > I think this could be done in a simpler, less limited, more generic, 
+ > more useful form by using some variation of perf events.
+ > 
+ > You should be able to get all that you want by adding two TRACE_EVENT() 
+ > tracepoints and using the existing perf event syscall to get the events 
+ > to user-space.
 
+Yes, I would like to use perf events too.  Would it be plausible to
+create a way for userspace to create a "counter" for each address range
+being watched?  Then events would not be lost, because those counters
+would become non-zero.
 
+ > Meaning that this:
+ >   9 files changed, 1060 insertions(+), 1 deletions(-)
 
+Note that lots/ of the files touched here are in Documentation or are
+one-line changes to Makefiles etc.
+
+ - R.
