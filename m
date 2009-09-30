@@ -1,68 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZI3ATW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbZI3AXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753665AbZI3ATW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Sep 2009 20:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbZI3ATV
+	id S1753737AbZI3AXa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Sep 2009 20:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbZI3AX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Sep 2009 20:19:21 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:62716 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbZI3ATU (ORCPT
+	Tue, 29 Sep 2009 20:23:29 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:53737 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753134AbZI3AX3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Sep 2009 20:19:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=j0iWfop1o6Se2E6O/kWfk9Kl4uinEov5WUt45bSQ+I0bcrY5M9FHd6LdVmVukfN0yt
-         JPcfPLXrtI+kU/p9xkXEGcaO/lP+b3sNTNz466CgpWFeR9stgqHAIT20pSuHQ3oTLe2C
-         UEaiPteUUJz+GSjApeIl/HPEUQ4D4z8ISgX7A=
-Date: Wed, 30 Sep 2009 00:18:57 +0000
-From: Andy Spencer <andy753421@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] Permission masking security module (was dpriv)
-Message-ID: <20090930001856.GA28312@c.hsd1.tn.comcast.net>
-References: <20090923005644.GA28244@c.hsd1.tn.comcast.net>
- <20090929071010.GA17782@c.hsd1.tn.comcast.net>
- <20090929174441.GE7209@kroah.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_c-28427-1254269961-0001-2"
-Content-Disposition: inline
-In-Reply-To: <20090929174441.GE7209@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 29 Sep 2009 20:23:29 -0400
+Date: Tue, 29 Sep 2009 19:23:27 -0500 (CDT)
+From: manoj.iyer@canonical.com
+To: Takashi Iwai <tiwai@suse.de>
+cc: manoj.iyer@canonical.com, perex@perex.cz, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH REALTEK] Added quirk to enable sound on Toshiba NB200
+In-Reply-To: <s5hd45agqoi.wl%tiwai@suse.de>
+Message-ID: <alpine.DEB.2.00.0909291812030.2426@little>
+References: <alpine.DEB.2.00.0909230036570.29432@little> <s5h3a6eb46r.wl%tiwai@suse.de> <alpine.DEB.2.00.0909281022500.2112@little> <s5hd45agqoi.wl%tiwai@suse.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_c-28427-1254269961-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-> What is this patch for?  Care to break it out separate with a
-> different changelog comment and push it upstream now if it is needed?
+> Thanks.  And what about my first question?
 
-It fixes a bug in sscanf when using, for example, `%*s%n'.
+No, without the change sound does not work, and I can confirm this on 
+NB200, NB205, and I hear that NB210 hass also the same hardware.
 
-I posted a separate patch for this a few days ago, but it hasn't been
-merged upstream so I included that change here as well.
+> Doesn't the latest driver work without your change?
+> Try alsa-driver-snapshot tarball below if not tested yet.
+>  ftp://ftp.kernel.org/pub/linux/kernel/people/tiwai/snapshot/alsa-driver-snapshot.tar.gz
+>
+> Or sound git tree master / for-next branches if you prefer kernel GIT:
+>  git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
+>
 
-For reference: http://lkml.org/lkml/2009/9/25/31
+I was not able to build the sound tree, but I installed the mainline 
+kernel build (29th sept):
 
---=_c-28427-1254269961-0001-2
-Content-Type: application/pgp-signature
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+http://kernel.ubuntu.com/~kernel-ppa/mainline/v2.6.31.1/
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
+and sound does not work with that either.
 
-iEYEARECAAYFAkrCpAgACgkQz1OYJ/s1XTCHpgCeK8S6wFJ4K8Ha/zaV/IhrdfVf
-JA0AoJlTc7JGHtU59EbCXAum+2TWiCby
-=vbR9
------END PGP SIGNATURE-----
-
---=_c-28427-1254269961-0001-2--
+>
+> Takashi
+>
+>>
+>> --- manjo
+>>
+>> On Wed, 23 Sep 2009, Takashi Iwai wrote:
+>>
+>>> At Wed, 23 Sep 2009 00:39:45 -0500 (CDT),
+>>> Manoj Iyer wrote:
+>>>>
+>>>>
+>>>>> From c96629e96fecbe59de7124ec913019ed378d0029 Mon Sep 17 00:00:00 2001
+>>>> From: Manoj Iyer <manoj.iyer@canonical.com>
+>>>> Date: Tue, 22 Sep 2009 18:33:29 -0500
+>>>> Subject: [PATCH] [PATCH REALTEK] Added quirk to enable sound on Toshiba NB200
+>>>>
+>>>> Patch was tested on Toshiba NB200 and is found to enable sound.
+>>>
+>>> So, it doesn't work without the model quirk?
+>>> Could you give alsa-info.sh output (run with --no-upload option)?
+>>>
+>>>
+>>> thanks,
+>>>
+>>> Takashi
+>>>
+>>>>
+>>>> Signed-off-by: Manoj Iyer <manoj.iyer@canonical.com>
+>>>> Cc: stable@kernel.org
+>>>> ---
+>>>>   sound/pci/hda/patch_realtek.c |    1 +
+>>>>   1 files changed, 1 insertions(+), 0 deletions(-)
+>>>>
+>>>> diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+>>>> index 30eeb30..713bf69 100644
+>>>> --- a/sound/pci/hda/patch_realtek.c
+>>>> +++ b/sound/pci/hda/patch_realtek.c
+>>>> @@ -16876,6 +16876,7 @@ static struct snd_pci_quirk alc662_cfg_tbl[] = {
+>>>>   	SND_PCI_QUIRK(0x105b, 0x0cd6, "Foxconn", ALC662_ECS),
+>>>>   	SND_PCI_QUIRK(0x105b, 0x0d47, "Foxconn 45CMX/45GMX/45CMX-K",
+>>>>   		      ALC662_3ST_6ch_DIG),
+>>>> +	SND_PCI_QUIRK(0x1179, 0xff6e, "Toshiba NB200", ALC663_ASUS_MODE4),
+>>>>   	SND_PCI_QUIRK(0x144d, 0xca00, "Samsung NC10", ALC272_SAMSUNG_NC10),
+>>>>   	SND_PCI_QUIRK(0x1458, 0xa002, "Gigabyte 945GCM-S2L",
+>>>>   		      ALC662_3ST_6ch_DIG),
+>>>> --
+>>>> 1.6.3.3
+>>>>
+>>>>
+>>>> --- manjo
+>>>>
+>>>
+>
