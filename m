@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbZI3HQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbZI3Hlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbZI3HQE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 03:16:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZI3HQD
+	id S1753194AbZI3Hlt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 03:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbZI3Hls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 03:16:03 -0400
-Received: from [195.41.46.235] ([195.41.46.235]:56683 "EHLO pfepa.post.tele.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751405AbZI3HQC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 03:16:02 -0400
-Date: Wed, 30 Sep 2009 09:15:55 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [PATCHv2 0/4] scsi: export and clean up headers
-Message-ID: <20090930071555.GA13915@merkur.ravnborg.org>
-References: <20090929103353.GA11183@redhat.com> <20090929124347.GA11375@infradead.org>
+	Wed, 30 Sep 2009 03:41:48 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:56821 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752153AbZI3Hls (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 03:41:48 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/4] virtio_blk: deprecate the 1024-byte ID field.
+Date: Wed, 30 Sep 2009 09:41:24 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-release; KDE/4.3.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org, john cooper <john.cooper@redhat.com>,
+       virtualization@lists.linux-foundation.org
+References: <200909300248.09630.rusty@rustcorp.com.au>
+In-Reply-To: <200909300248.09630.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090929124347.GA11375@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909300941.24736.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 08:43:47AM -0400, Christoph Hellwig wrote:
-> On Tue, Sep 29, 2009 at 12:33:53PM +0200, Michael S. Tsirkin wrote:
-> > This implements a minor cleanup of exported scsi headers,
-> > and adds export of headers that are de-facto used by userspace.
-> > The patches are on top of 2.6.32-rc1.
-> > Can these be queued for 2.6.32?
-> > Thanks.
+Am Dienstag 29 September 2009 19:18:09 schrieb Rusty Russell:
+> PCI, lguest and s390 can all only support 256-byte configuration
+> space.  So, this giant field broke just about everyone.
+> Unfortunately, removing it is not so simple: we don't want to break
+> old userspace, but we're going to want to re-use that part of the
+> struct.
 > 
-> Before we do anything in this area we need to find an agreement who
-> owns /usr/include/scsi/ .  Right now that's glibc, and if we want to
-> change it to the kernel headers we need to find a transition agreement
-> with the glibc maintainer (aka mostly Uli).
+> So, modern users can #define VIRTIO_BLK_IDENTIFY_DEPRECATED to indicate
+> that they know it's no longer in the config struct, and can use any
+> new features (all new features which add a configuration field will
+> conflict with this deprecated one).
 
-The scsi headers are exported. So it does not matter if glibc or any
-other libc for that amtter uses the headers or not.
-Exported headers has some rules to follow and scsi are no exception here.
 
-Now if we get the scsi headers in good shape then and only then we can 
-go to glibc people and tell them that we have a better set of scsi headers
-than they have.
+Since s390 never used the giant id field, it would be ok for us just delete it 
+(without the #define). IIRC kvm-userspace also never used that. Since qemu 
+upstream seems to use that field your way seems to be the only compatible...
 
-Postponing updates to the exported scsi headers just beacause we do not
-have any users of them at the moment is the wrong thing to do.
-We should rather use the opportunity to streamline the exported headers
-so we have a superior set of headers to offer.
+O dear, virtio used to look pretty ;-).
+I think somewhen in the future we have to create a virtio2 that gets rid of all 
+the stuff that accumulated in the early phase of Linux virtualization.
 
-	Sam
+Anyway, your patch was tested successfully on s390 to survive the current 
+userspace.
+
+Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
