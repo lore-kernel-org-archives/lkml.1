@@ -1,97 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZI3VN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbZI3VNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbZI3VN3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 17:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZI3VN2
+	id S1754669AbZI3VNo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 17:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbZI3VNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 17:13:28 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:59791 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbZI3VN1 (ORCPT
+	Wed, 30 Sep 2009 17:13:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42085 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754626AbZI3VNn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 17:13:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=lzrPGnXC3+wP2exYuVgcB3ESyJK52XpVKZW1cJCKU04NTo6tddaDfcmSIu6ljlgZTq
-         MMgkBOcVJruSQ70nNgoggwTaCfk9gqs3AwLDy1QVss3PinxUspZNaKfCYlscGIAAQCKj
-         1eTfSPReh/a2R8N6SFTJ5Do583go7N3PEarb8=
-Message-ID: <4AC3C9B8.9080003@gmail.com>
-Date: Wed, 30 Sep 2009 23:12:24 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
-MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Alan Cox <alan@linux.intel.com>
-Subject: Re: N_PPP_SYNC ldisc BUG: sleeping function called from invalid context
-References: <4AC37032.4030901@imap.cc> <20090930174704.796b24b9@lxorguk.ukuu.org.uk> <4AC3A986.4080808@imap.cc>
-In-Reply-To: <4AC3A986.4080808@imap.cc>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 30 Sep 2009 17:13:43 -0400
+Date: Wed, 30 Sep 2009 14:12:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stanislav Brabec <utx@penguin.cz>
+Cc: linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH] serial-core: resume serial hardware with
+ no_console_suspend
+Message-Id: <20090930141255.49b6caa0.akpm@linux-foundation.org>
+In-Reply-To: <1253872547.13257.18.camel@hammer.suse.cz>
+References: <1253021938.6597.16.camel@hammer.suse.cz>
+	<20090924170503.37cbe4ed.akpm@linux-foundation.org>
+	<20090925073617.GA5856@n2100.arm.linux.org.uk>
+	<1253872547.13257.18.camel@hammer.suse.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Schmidt wrote, On 09/30/2009 08:55 PM:
+On Fri, 25 Sep 2009 11:55:47 +0200
+Stanislav Brabec <utx@penguin.cz> wrote:
 
-> Alan Cox schrieb:
->>>  [<c026d39b>] tty_unthrottle+0x10/0x38
->>>  [<f8dcc31f>] ppp_sync_receive+0x168/0x170 [ppp_synctty]
->>>  [<f8fbb9ce>] handle_minor_recv+0x187/0x1cd [capi]
->>>  [<f8fbc19b>] capi_recv_message+0x1d9/0x24e [capi]
->> Really need to see the rest of the call trace to be sure
+> Russell King - ARM Linux wrote:
+> > On Thu, Sep 24, 2009 at 05:05:03PM -0700, Andrew Morton wrote:
+> > > On Tue, 15 Sep 2009 15:38:58 +0200
+> > > Stanislav Brabec <utx@penguin.cz> wrote:
+> > > 
+> > > > Hardware may need re-initialization to get serial port working after
+> > > > resume. It does not happen with no_console_suspend. Attached patch
+> > > > attempts to fix it.
+> > > > 
+> > > > The patch attempts to keep hardware running before suspend and run
+> > > > hardware re-initialization after resume. Maybe simpler approach is
+> > > > possible.
+> > > 
+> > > The patch doesn't apply any more and seems like a rather hacky thing to do.
 > 
-> There wasn't more than what I posted. I had six of them, they looked all
-> identical, and all of them ended after the kernel_thread_helper line. 
+> Yes, but no_console_suspend itself is a bit hacky. You need to save
+> console state but keep it running as long as possible afterwards and
+> resume it after return from the sleep.
 > 
->>> Turns out the ppp_sync_receive() function (drivers/net/ppp_synctty.c
->>> line 385ff.) has a comment in front stating:
->>>
->>> /*
->>>  * This can now be called from hard interrupt level as well
->>>  * as soft interrupt level or mainline.
->>>  */
->> Which is wrong. The flip_buffer_push -> rx processing path should never
->> be called from IRQ context and that was fixed for various drivers that
->> mis-set tty->low_latency, as well as in the PPP rework. The PPP case is
->> actually unrelated in many was.
+> I was not sure, what exactly should be skipped and what must be run, so
+> I experimented a bit.
 > 
-> Might be worth correcting that text then before is misleads someone.
+> Not calling hardware suspend/resume (current implementation) breaks
+> serial port in hardware that need resume.
 > 
->>> Opinions?
->> See how we got into that code direct from an IRQ path. The expectation of
->> the tty logic is that it gets processed from work queues either
->> specifically in driver or via tty_flip_buffer_push when tty->low_latency
->> = 0
+> Calling of resume without suspend seems to be dangerous. Not calling
+> suspend at all and standard initialization on resume would probably
+> reset the port setting and maybe cause memory leak.
 > 
-> I'm at a loss here. According to all the backtraces:
+> > > It appears that you have specific serial hardware which doesn't resume
+> > > correctly?  If so, that's a bug, so how about we start with a bug
+> > > report/description?
 > 
-> - ppp_sync_receive() was called, as the LD's receive_buf method,
->   via handle_recv_skb() [drivers/isdn/capi/capi.c line 504, inlined]
->   from handle_minor_recv() [drivers/isdn/capi/capi.c line 519]
+> The hardware resumes correctly. But no_console_suspend breaks its
+> resume.
 > 
-> - handle_minor_recv() was called from capi_recv_message()
->   [drivers/isdn/capi/capi.c line 656]
+> > It's something that I did point out when the no_console_suspend patch
+> > appeared, but I was overruled/ignored.
+> > 
+> > The problem is that on ARM hardware, there is no BIOS to re-initialize
+> > hardware.  The kernel has to do restore the entire system hardware
+> > state upon resume.  Unfortunately, no_console_suspend not only prevents
+> > the console from being suspended but _also_ resumed.
+> > 
+> > The result of that is the console UART is left in a totally uninitialized
+> > state.
 > 
-> - capi_recv_message() was called, as the CAPI application's
->   recv_message method, from recv_handler()
->   [drivers/isdn/capi/kcapi.c line 268]
-> 
-> - recv_handler() is never called directly. It's only scheduled
->   via the work queue ap->recv_work from capi_ctr_handle_message()
->   [drivers/isdn/capi/kcapi.c line 349]
-> 
-> Even if we don't trust the backtraces, there's not much room for
-> another activation path. So for all I know, the expectation of the
-> tty logic should have been met. The call was indeed processed from
-> a work queue.
-> 
-> Why then does mutex_lock() complain?
- 
+> Exactly, my ARM hardware is PXA270 on Zaurus SL-C3200.
 
-Hmm... capi_recv_message() calls handle_minor_recv() under
-spin_lock_irqsave(), doesn't it?
+hm, ho hum.
 
-Jarek P.
+Could you please redo/retest/resend the patch against the current
+kernel?  Someone went and renamed everything and it doesn't apply at
+all any more.
+
