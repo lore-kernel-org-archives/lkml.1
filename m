@@ -1,72 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbZI3OkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbZI3OlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbZI3OkM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 10:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZI3OkL
+	id S1754583AbZI3OlM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 10:41:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZI3OlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 10:40:11 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:50570 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754518AbZI3OkJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 10:40:09 -0400
-Date: Wed, 30 Sep 2009 20:09:53 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
-Message-ID: <20090930143953.GA2014@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930142537.GJ19951@in.ibm.com>
+	Wed, 30 Sep 2009 10:41:12 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37134 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754016AbZI3OlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 10:41:11 -0400
+Date: Wed, 30 Sep 2009 15:41:17 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Nick Piggin <npiggin@suse.de>, Christoph Lameter <cl@linux-foundation.org>,
+       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/4] slqb: Record what node is local to a kmem_cache_cpu
+Message-ID: <20090930144117.GA17906@csn.ul.ie>
+References: <1253624054-10882-1-git-send-email-mel@csn.ul.ie> <1253624054-10882-3-git-send-email-mel@csn.ul.ie> <84144f020909220638l79329905sf9a35286130e88d0@mail.gmail.com> <20090922135453.GF25965@csn.ul.ie> <84144f020909221154x820b287r2996480225692fad@mail.gmail.com> <20090922185608.GH25965@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090930142537.GJ19951@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090922185608.GH25965@csn.ul.ie>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 07:55:37PM +0530, Bharata B Rao wrote:
-> On Wed, Sep 30, 2009 at 05:36:29PM +0400, Pavel Emelyanov wrote:
-> > Bharata B Rao wrote:
-> > > Hi,
-> > > 
-> > > Here is the v2 post of hard limits feature for CFS group scheduler. This
-> > > RFC post mainly adds runtime borrowing feature and has a new locking scheme
-> > > to protect CFS runtime related fields.
-> > > 
-> > > It would be nice to have some comments on this set!
+On Tue, Sep 22, 2009 at 07:56:08PM +0100, Mel Gorman wrote:
+> On Tue, Sep 22, 2009 at 09:54:33PM +0300, Pekka Enberg wrote:
+> > Hi Mel,
 > > 
-> > I have a question I'd like to ask before diving into the code.
-> > Consider I'm a user, that has a 4CPUs box 2GHz each and I'd like
-> > to create a container with 2CPUs 1GHz each. Can I achieve this
-> > after your patches?
+> > On Tue, Sep 22, 2009 at 4:54 PM, Mel Gorman <mel@csn.ul.ie> wrote:
+> > >> I don't understand how the memory leak happens from the above
+> > >> description (or reading the code). page_to_nid() returns some crazy
+> > >> value at free time?
+> > >
+> > > Nope, it isn't a leak as such, the allocator knows where the memory is.
+> > > The problem is that is always frees remote but on allocation, it sees
+> > > the per-cpu list is empty and calls the page allocator again. The remote
+> > > lists just grow.
+> > >
+> > >> The remote list isn't drained properly?
+> > >
+> > > That is another way of looking at it. When the remote lists get to a
+> > > watermark, they should drain. However, it's worth pointing out if it's
+> > > repaired in this fashion, the performance of SLQB will suffer as it'll
+> > > never reuse the local list of pages and instead always get cold pages
+> > > from the allocator.
+> > 
+> > I worry about setting c->local_nid to the node of the allocated struct
+> > kmem_cache_cpu. It seems like an arbitrary policy decision that's not
+> > necessarily the best option and I'm not totally convinced it's correct
+> > when cpusets are configured. SLUB seems to do the sane thing here by
+> > using page allocator fallback (which respects cpusets AFAICT) and
+> > recycling one slab slab at a time.
+> > 
+> > Can I persuade you into sending me a patch that fixes remote list
+> > draining to get things working on PPC? I'd much rather wait for Nick's
+> > input on the allocation policy and performance.
+> > 
 > 
-> I am not sure if I understand the GHz specification you mention here.
-> Are you saying that you want run a container with 2 CPUS with each of
-> them running at half their (frequency)capacity ?
+> It'll be at least next week before I can revisit this again. I'm afraid
+> I'm going offline from tomorrow until Tuesday.
 > 
-> This hard limits scheme is about time based rate limiting where you can
-> specify a runtime(=hard limit) and a period for the container and the
-> container will not be allowed to consume more than the specified CPU time
-> within a given period.
 
-IMO Pavel's requirement can be met with a hard limit of 25%
+Ok, so I spent today looking at this again. The problem is not with faulty
+drain logic as such. As frees always place an object on a remote list
+and the allocation side is often (but not always) allocating a new page,
+a significant number of objects in the free list are the only object
+in a page. SLQB drains based on the number of objects on the free list,
+not the number of pages. With many of the pages having only one object,
+the freelists are pinning a lot more memory than expected.  For example,
+a watermark to drain of 512 could be pinning 2MB of pages.
 
-	2 CPU of 1GHz = (1/2 x 4) (1/2 x 2) GHz CPUs
-		      = 1/4 x 4 2GHz CPU
-		      = 25% of (4 2GHz CPU)
+The drain logic could be extended to track not only the number of objects on
+the free list but also the number of pages but I really don't think that is
+desirable behaviour. I'm somewhat running out of sensible ideas for dealing
+with this but here is another go anyway that might be more palatable than
+tracking what a "local" node is within the slab.
 
-IOW by hard-limiting a container thread to run just 0.5sec every sec on a 2GHz 
-cpu, it is effectively making progress at the rate of 1GHz?
+This boots on 2.6.32-rc1 with the latest slqb-core git tree with
+Kconfig modified to allow SLQB to be set on ppc64.
 
-- vatsa
+==== CUT HERE ====
+SLQB: Allocate from the remote lists when the local node is memoryless and has no free objects
+
+When SLQB is freeing an object, it checks if the object belongs to a
+page within the local node. If it is not, the object is freed to a
+remote list. When the remote list has too many objects, the list is
+drained.
+
+On allocation, the remote list is only used if a specific node is specified
+and that node is not the local node. On memoryless nodes, there is a problem
+in that the specified node will often not be the local node. The impact is
+that many objects on the free list are the only object in the page. This
+bloats SLQB's memory requirements and causes OOM to trigger.
+
+This patch alters the allocation path. If the allocation from local
+lists fails and the local node is memoryless, an attempt will be made to
+allocate from the remote lists before going to the page allocator.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ mm/slqb.c |   30 ++++++++++++++++++++++--------
+ 1 file changed, 22 insertions(+), 8 deletions(-)
+
+diff --git a/mm/slqb.c b/mm/slqb.c
+index 4d72be2..b73e7d0 100644
+--- a/mm/slqb.c
++++ b/mm/slqb.c
+@@ -1513,16 +1513,30 @@ try_remote:
+ 	l = &c->list;
+ 	object = __cache_list_get_object(s, l);
+ 	if (unlikely(!object)) {
+-		object = cache_list_get_page(s, l);
+-		if (unlikely(!object)) {
+-			object = __slab_alloc_page(s, gfpflags, node);
+-#ifdef CONFIG_NUMA
++		int thisnode = numa_node_id();
++
++		/*
++		 * If the local node is memoryless, try remote alloc before
++		 * trying the page allocator. Otherwise, what happens is
++		 * objects are always freed to remote lists but the allocation
++		 * side always allocates a new page with only one object
++		 * used in each page
++		 */
++		if (unlikely(!node_state(thisnode, N_HIGH_MEMORY)))
++			object = __remote_slab_alloc(s, gfpflags, thisnode);
++
++		if (!object) {
++			object = cache_list_get_page(s, l);
+ 			if (unlikely(!object)) {
+-				node = numa_node_id();
+-				goto try_remote;
+-			}
++				object = __slab_alloc_page(s, gfpflags, node);
++#ifdef CONFIG_NUMA
++				if (unlikely(!object)) {
++					node = numa_node_id();
++					goto try_remote;
++				}
+ #endif
+-			return object;
++				return object;
++			}
+ 		}
+ 	}
+ 	if (likely(object))
