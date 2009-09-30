@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbZI3MKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752513AbZI3MK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754333AbZI3MKn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 08:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZI3MKn
+	id S1752513AbZI3MK2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 08:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZI3MK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 08:10:43 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:7410 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbZI3MKm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 08:10:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Rc3Na0Ai8xlp0z/fwhYwszh47wdshXR5gf8/qumbZ6a9x44yn+twmVQ89GoHII11AP
-         nyk4V0WyKPd+Rc/GkNy2dKuAzWxjHjLYbMFiOv7RDUHm4/tlbuFCoxL5owiC6kWhaGlC
-         K/nDfWf4W5rslEQWlYmQIas9vxQ2Wz6jm0qtE=
+	Wed, 30 Sep 2009 08:10:27 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:50717 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751654AbZI3MK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 08:10:26 -0400
+Date: Wed, 30 Sep 2009 14:10:30 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+Message-ID: <20090930121029.GA14918@kernel.dk>
+References: <1252431974.7746.151.camel@twins> <1252432501.7746.156.camel@twins> <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz> <1252597750.7205.82.camel@laptop> <20090914111721.GA24075@duck.suse.cz> <20090924083342.GA15918@localhost> <20090929173506.GE11573@duck.suse.cz> <20090930012406.GB6311@localhost> <20090930115539.GA16074@duck.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <bc64b4640909300509p6c682fa8rb5ce43c77c79f5@mail.gmail.com>
-References: <20090930120655.GG1412@ucw.cz> <bc64b4640909300509p6c682fa8rb5ce43c77c79f5@mail.gmail.com>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Wed, 30 Sep 2009 20:10:26 +0800
-Message-ID: <f17812d70909300510t106a07b1u3caae9ec4127e26f@mail.gmail.com>
-Subject: Re: 2.6.32-rc1: spitz boots but suspend/resume is broken
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       omegamoon@gmail.com, utx@penguin.cz
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090930115539.GA16074@duck.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mmm.... if not due to kernel image size constraints, I'd really like to merge
-all the zaurus configs into one.
+On Wed, Sep 30 2009, Jan Kara wrote:
+> > +void bdi_writeback_wait(struct backing_dev_info *bdi, long nr_pages)
+> > +{
+> > +	struct dirty_throttle_task tt = {
+> > +		.nr_pages = nr_pages,
+> > +		.complete = COMPLETION_INITIALIZER_ONSTACK(tt.complete),
+> > +	};
+> > +	struct wb_writeback_args args = {
+> > +		.sync_mode	= WB_SYNC_NONE,
+> > +		.nr_pages	= LONG_MAX,
+> > +		.range_cyclic	= 1,
+> > +		.for_background	= 1,
+> > +	};
+> > +	struct bdi_work work;
+> > +
+> > +	bdi_work_init(&work, &args);
+> > +	work.state |= WS_ONSTACK;
+> > +
+> > +	/*
+> > +	 * make sure we will be waken up by someone
+> > +	 */
+> > +	bdi_queue_work(bdi, &work);
+>   This is wrong, you shouldn't submit the work like this because you'll
+> have to wait for completion (wb_clear_pending below is just bogus). You
+> should rather do bdi_start_writeback(bdi, NULL, 0).
 
-On Wed, Sep 30, 2009 at 8:09 PM, Dmitry Eremin-Solenikov
-<dbaryshkov@gmail.com> wrote:
-> On Wed, Sep 30, 2009 at 4:06 PM, Pavel Machek <pavel@ucw.cz> wrote:
->> Hi!
->>
->> matrix keyboard driver needs to be enabled, otherwise it seems ok.
->>
->> Unfortunately, it does not respond to power button in any visible way
->> :-(. Any ideas what might be wrong/how to debug it?
->
-> Enable gpio-keyboard driver, verify (or port power button to it :))
-> and check that
-> enable_wakeup is enabled.
->
-> BTW: on tosa initially i had a problem w/ wakeup. The power button wasn't
-> able to wake the device up. However there was another gpio that was OR of
->  power button and AC-in gpios that had to be used for wakeup. Please check
-> if the same design applies to your device.
->
->>                                                                Pavel
->> --
->> (english) http://www.livejournal.com/~pavelmachek
->> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->>
->
->
->
-> --
-> With best wishes
-> Dmitry
->
+Indeed, the above will die a horrible death fairly soon. But we can add
+some "barrier" like synchronization, if you just wish to wait for
+previously submitted work to have been completed.
+
+
+-- 
+Jens Axboe
+
