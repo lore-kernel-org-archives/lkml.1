@@ -1,133 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751939AbZI3FOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752067AbZI3FSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751939AbZI3FOq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 01:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZI3FOp
+	id S1752067AbZI3FSF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 01:18:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbZI3FSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 01:14:45 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33500 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbZI3FOo (ORCPT
+	Wed, 30 Sep 2009 01:18:05 -0400
+Received: from mail-pz0-f191.google.com ([209.85.222.191]:47526 "EHLO
+	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751610AbZI3FSD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 01:14:44 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Larry Woodman <lwoodman@redhat.com>
-Subject: Re: RFC [Patch] few useful page reclaim mm tracepoints
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <1254154166.3219.3.camel@dhcp-100-19-198.bos.redhat.com>
-References: <1254154166.3219.3.camel@dhcp-100-19-198.bos.redhat.com>
-Message-Id: <20090930134322.5EEC.A69D9226@jp.fujitsu.com>
+	Wed, 30 Sep 2009 01:18:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=dVCKmqdVVmd2ph+iQIpcyWwHMpucQ9URYRca2hF3Cu2Yq/g2uneZ99EDPQMfFTrPxa
+         52r8S9s+vF7TGheYSuapcREp4LOOhASLoBHBLlMVHuxT4L7Q+VimAXMptt6VquLYFMeW
+         VXqolQFUu9Sn4Fvi24+MYHSRXRgXFPobu5L0k=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 30 Sep 2009 14:14:46 +0900 (JST)
+Date: Wed, 30 Sep 2009 11:18:07 +0600
+Message-ID: <b9df5fa10909292218j5b3f022bmfb3f089ee08fed66@mail.gmail.com>
+Subject: [PATCH] sfi: Fix section mismatch warnings in sfi_core.c
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: sfi-devel@simplefirmware.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+ The function sfi_map_memory/sfi_unmap_memory uses
+early_ioremap/early_iounmap respectively, which refers to a __init
+function. And function sfi_check_table also refers to a __init
+function sfi_verify_table. Since the references are valid, so use
+__ref to get rid of the warnings.
 
-> 
-> Here a few mm page reclaim tracepoints that really show what is being
-> reclaimed and from where.  mm_get_scanratio reports the number anonymous
-> and pagecache pages as well as the percent that will be reclaimed from
-> each.  mm_pagereclaim_shrinkactive reports whether it is shrinking
-> anonymous or pagecache pages, the number scanned and the number actually
-> moved(deactivated).  mm_pagereclaim_shrinkinactive reports whether it is
-> shrinking anonymous or pagecache pages, the number scanned and the
-> number actually reclaimed.  These three simple mm tracepoints capture
-> much of the page reclaim activity.
-> 
-> ------------------------------------------------------------------------
-> 
-> # tracer: mm 
-> #
-> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-> #              | |       |          |         |
->          kswapd1-549   [004]   149.524509: mm_get_scanratio: 2043329
-> anonymous pages, reclaiming 1% - 1312 pagecache pages, reclaiming 99%
->          kswapd1-549   [004]   149.524709: mm_pagereclaim_shrinkactive:
-> anonymous, scanned 32, moved 32, priority 12
->          kswapd1-549   [004]   149.524542:
-> mm_pagereclaim_shrinkinactive: anonymous, scanned 32, reclaimed 32,
-> priority 7
+ We were warned by the following warnings:
 
-Looks good generally. and I have few comment.
+  LD      vmlinux.o
+  MODPOST vmlinux.o
+WARNING: vmlinux.o(.text+0xb6ba3a): Section mismatch in reference from
+the function sfi_map_memory() to the function
+.init.text:early_ioremap()
+The function sfi_map_memory() references
+the function __init early_ioremap().
+This is often because sfi_map_memory lacks a __init
+annotation or the annotation of early_ioremap is wrong.
 
+WARNING: vmlinux.o(.text+0xb6bab6): Section mismatch in reference from
+the function sfi_unmap_memory() to the function
+.init.text:early_iounmap()
+The function sfi_unmap_memory() references
+the function __init early_iounmap().
+This is often because sfi_unmap_memory lacks a __init
+annotation or the annotation of early_iounmap is wrong.
 
+WARNING: vmlinux.o(.text+0xb6be30): Section mismatch in reference from
+the function sfi_check_table() to the function
+.init.text:sfi_verify_table()
+The function sfi_check_table() references
+the function __init sfi_verify_table().
+This is often because sfi_check_table lacks a __init
+annotation or the annotation of sfi_verify_table is wrong.
 
+---
 
-> @@ -1168,6 +1170,8 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
->  done:
->  	local_irq_enable();
->  	pagevec_release(&pvec);
-> +	trace_mm_pagereclaim_shrinkinactive(nr_scanned, nr_reclaimed,
-> +						file, priority);
->  	return nr_reclaimed;
->  }
-
-In shrink_inactive list, the pages will become 
- (1) moved to active list
- (2) moved to inactive list again
- (3) moved to unevictable list
- (4) freed
-
-your tracepoint only watch freed pages.
-maybe, other moving should be watched too. each moving indicate each different pressure.
-
-Plus, I like more shorter tracepoint name personally.
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
 
 
->  
-> @@ -1325,6 +1329,7 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
->  						LRU_BASE   + file * LRU_FILE);
->  
->  	spin_unlock_irq(&zone->lru_lock);
-> +	trace_mm_pagereclaim_shrinkactive(pgscanned, pgmoved, file, priority);
->  }
+--- linus/drivers/sfi/sfi_core.c	2009-09-29 20:02:37.000000000 +0600
++++ rakib/drivers/sfi/sfi_core.c	2009-09-29 23:11:09.000000000 +0600
+@@ -90,7 +90,11 @@ static struct sfi_table_simple *syst_va
+  */
+ static u32 sfi_use_ioremap __read_mostly;
 
-pgmoved don't point meaningful data.
-pgmoved mean how much pages isolate from active list. but it doesn't mean
-how much pages move to inactive-list although we really need it.
+-static void __iomem *sfi_map_memory(u64 phys, u32 size)
++/*
++ * sfi_un/map_memory calls early_ioremap/iounmap which is a __init function
++ * and introduces section mismatch. So use __ref to make it calm.
++ */
++static void __iomem * __ref sfi_map_memory(u64 phys, u32 size)
+ {
+ 	if (!phys || !size)
+ 		return NULL;
+@@ -101,7 +105,7 @@ static void __iomem *sfi_map_memory(u64
+ 		return early_ioremap(phys, size);
+ }
 
-
->  static int inactive_anon_is_low_global(struct zone *zone)
-> @@ -1491,6 +1496,7 @@ static void get_scan_ratio(struct zone *zone, struct scan_control *sc,
->  	/* Normalize to percentages */
->  	percent[0] = 100 * ap / (ap + fp + 1);
->  	percent[1] = 100 - percent[0];
-> +	trace_mm_get_scanratio(anon, file, percent[0], percent[1]);
->  }
-
-Maybe bad place.
-shrink_zone() have following code.
-
-        if (!sc->may_swap || (nr_swap_pages <= 0)) {
-                noswap = 1;
-                percent[0] = 0;
-                percent[1] = 100;
-        } else
-                get_scan_ratio(zone, sc, percent);
-
-        (snip)
-
-        for_each_evictable_lru(l) {
-                int file = is_file_lru(l);
-                unsigned long scan;
-
-                scan = zone_nr_pages(zone, sc, l);
-                if (priority || noswap) {
-                        scan >>= priority;
-                        scan = (scan * percent[file]) / 100;
-                }
-
-(1) shrink_zone() often don't call get_scan_ratio().
-(2) for some reason, "scan" calculation igure percent[file].
-
-Maybe we should log scan variable or nr[l] variable.
-
-
-
+-static void sfi_unmap_memory(void __iomem *virt, u32 size)
++static void __ref sfi_unmap_memory(void __iomem *virt, u32 size)
+ {
+ 	if (!virt || !size)
+ 		return;
+@@ -213,12 +217,17 @@ static int sfi_table_check_key(struct sf
+  *    the mapped virt address will be returned, and the virt space
+  *    will be released by call sfi_put_table() later
+  *
++ * This two cases are from two different functions with two different
++ * sections and causes section mismatch warning. So use __ref to tell
++ * modpost not to make any noise.
++ *
+  * Return value:
+  *	NULL:			when can't find a table matching the key
+  *	ERR_PTR(error):		error value
+  *	virt table address:	when a matched table is found
+  */
+-struct sfi_table_header *sfi_check_table(u64 pa, struct sfi_table_key *key)
++struct sfi_table_header *
++ __ref sfi_check_table(u64 pa, struct sfi_table_key *key)
+ {
+ 	struct sfi_table_header *th;
+ 	void *ret = NULL;
