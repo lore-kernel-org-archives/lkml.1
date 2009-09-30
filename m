@@ -1,44 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbZI3KVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbZI0KtI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753988AbZI3KVI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 06:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZI3KVH
+	id S1753815AbZI0KtI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Sep 2009 06:49:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZI0KtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 06:21:07 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:7603 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751405AbZI3KVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 06:21:06 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.2.01.0909290909280.6996@localhost.localdomain>
-References: <alpine.LFD.2.01.0909290909280.6996@localhost.localdomain> <alpine.LFD.2.01.0909280743310.3349@localhost.localdomain> <20090928135332.4300.56046.stgit@warthog.procyon.org.uk> <20090928151628.62955233@lxorguk.ukuu.org.uk> <395.1254239745@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: dhowells@redhat.com, akpm@linux-foundation.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove pty_ops_bsd and pty_bsd_ioctl() as they're not used
-Date: Wed, 30 Sep 2009 11:20:00 +0100
-Message-ID: <29895.1254306000@redhat.com>
+	Sun, 27 Sep 2009 06:49:07 -0400
+Received: from imta-38.everyone.net ([216.200.145.38]:46488 "EHLO
+	omta0105.mta.everyone.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753764AbZI0KtG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Sep 2009 06:49:06 -0400
+X-Greylist: delayed 1644 seconds by postgrey-1.27 at vger.kernel.org; Sun, 27 Sep 2009 06:49:06 EDT
+X-Eon-Dm: dm0206
+X-Eon-Sig: AQMyNmxKvzxelRd20QIAAAAn,424fb88d03c7e07b83f4763c580d2e73
+Reply-To: <juliebryant2006@gmx.com>
+From: "Mrs Julie Bryant" <bellobo@netscape.com>
+Subject: READ AND REPLY 
+Date: Wed, 30 Sep 2009 03:20:01 -0700
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0074_01C2A9A6.5D1A0CE0"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2600.0000
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
+Message-Id: <20090927032014.F2E3ED44@dm0206.mta.everyone.net>
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+This is a multi-part message in MIME format.
 
-> So I do wonder whether the right thing to do would not be to simple remove 
-> the whole pty_ops_bsd code entirely. Or maybe mode the trivial TIOCSPTLCK 
-> into the generic tty ioctl handling, and just make it test for 
-> "driver->subtype == PTY_TYPE_MASTER" - and at least get rid of this subtle 
-> thing that was broken for over a year without anybody noticing..
+------=_NextPart_000_0074_01C2A9A6.5D1A0CE0
+Content-Type: text/plain;
+	charset="Windows-1251"
+Content-Transfer-Encoding: 7bit
 
-Also, does it matter if someone issues TIOCGPTN on a legacy pty master?  There
-is a number in tty->index that can be returned.  If it can, then
-pty_bsd_ioctl() can be merged with pty_unix98_ioctl(), and possibly both
-ioctls can be given to the generic tty ioctl handling with the condition that
-driver->subtype == PTY_TYPE_MASTER.
+GREETING IN THE NAME OF OUR LORD READ THE ATTACHMENT LETTER AND REPLY ME.
 
-David
+------=_NextPart_000_0074_01C2A9A6.5D1A0CE0
+Content-Type: application/octet-stream;
+	name="GREETING IN THE NAME OF OUR LORD..txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="GREETING IN THE NAME OF OUR LORD..txt"
+
+R1JFRVRJTkcgSU4gVEhFIE5BTUUgT0YgT1VSIExPUkQuDQpJIEFNIE1SUy4g
+SlVMSUUgQlJZQU5ULCBBIFdJRE9XIFRPIExBVEUgQUxFWCBCUllBTlQuRlJP
+TSBIQU1CVVJHLCBHRVJNQU5ZLlBSRVNFTlRMWSBJTiBNQURSSUQgU1BBSU4s
+IFJFQ0VJVklORyBUUkVBVE1FTlRTLCBJIEFNIDYxIFlFQVJTIE9MRCwgSSBB
+TSBOT1cgQSBORVcgQ0hSSVNUSUFOIENPTlZFUlQsIFNVRkZFUklORyBGUk9N
+IExPTkcgVElNRSBDQU5DRVIgT0YgVEhFIEJSRUFTVCxGUk9NIEFMTCBJTkRJ
+Q0FUSU9OIE1ZIENPTkRJVElPTlMgSVMgUkVBTExZIERFVEVSSU9SQVRJTkcg
+QU5EIElUIElTIFFVSVRFIE9CVklPVVMgVEhBVCBJIFdPTidUIExJVkUgTU9S
+RSBUSEFOIFNJWCBNT05USFMsIEFDQ09SRElORyBUTyBNWSBET0NUT1JTLFRI
+SVMgSVMgQkVDQVVTRSBUSEUgQ0FOQ0VSIFNUQUdFIEhBUyBHT1RURU4gVE8g
+QSBWRVJZIEJBRCBTVEFHRS4gTVkgTEFURSBIVVNCQU5EIEtJTExFRCBEVVJJ
+TkcgVEhFIFUuUy4gUkFJRCBBR0FJTlNUIFRFUlJPUklTTSBJTiBBRkdIQU5J
+U1RBTiwgQU5EIERVUklORyBUSEUgUEVSSU9EIE9GIE9VUiBNQVJSSUFHRSBX
+RSBDT1VMRE4nVCBQUk9EVUNFIEFOWSBDSElMRC4NCg0KTVkgTEFURSBIVVNC
+QU5EIFdBUyBWRVJZIFdFQUxUSFkgQU5EIEFGVEVSIEhJUyBERUFUSCwgSSBJ
+TkhFUklURUQgQUxMIEhJUyBCVVNJTkVTUyBBTkQgV0VBTFRILiBUSEUgRE9D
+VE9SUyBIQVMgQURWSVNFRCBNRSBUSEFUIEkgTUFZIE5PVCBMSVZFIEZPUiBN
+T1JFIFRIQU4gU0lYIE1PTlRIUywgU08gSSBOT1cgREVDSURFRCBUTyBESVZJ
+REUgVEhFIFBBUlQgT0YgVEhJUyBXRUFMVEgsIFRPIENPTlRSSUJVVEUgVE8g
+VEhFIERFVkVMT1BNRU5UIE9GIFRIRSBDSFVSQ0ggSU4gQUZSSUNBLCBBTUVS
+SUNBLCBBU0lBLCBBTkQNCkVVUk9QRS4gSSBQUkFZRUQgT1ZFUiBJVCwuIEkg
+QU0gV0lMTElORyBUTyBET05BVEUgVEhFIFNVTSBPRiBVU0QgOC42LDAwMC4w
+MDAuMDAgRE9MTEFSUywgVE8gVEhFIExFU1MgUFJJVklMRUdFRC4gUExFQVNF
+IEkgV0FOVCBZT1UgVE8gTk9URSBUSEFUIEZVTkQgSVMgTFlJTkcgSU4gQSBT
+RUNVUklUWSBDT01QQU5ZIElOIE5FVyBZT1JLLCBVU0EuDQoNCkxBU1RMWSwg
+SSBIT05FU1RMWSBQUkFZIFRIQVQgVEhJUyBNT05FWSBXSEVOIFRSQU5TRkVS
+UkVEIFdJTEwgQkUgU1VSRSBGT1IgVEhFIFNBSUQgUFVSUE9TRSwgQkVDQVVT
+RSBJIEhBVkUgQ09NRSBUTyBGSU5EIE9VVCBUSEFUIFdFQUxUSCBBQ1FVSVNJ
+VElPTiBXSVRIT1VUIENIUklTVCBJUyBWQU5JVFkuIE1BWSBUSEUgR1JBQ0Ug
+T0YgT1VSIExPUkQgSkVTVVMgVEhFIExPVkUgT0YgR09EIEFORCBUSEUgRkVM
+TE9XU0hJUCBPRiBHT0QgQkUgV0lUSCBZT1UgQU5EIFlPVVIgRkFNSUxZIEkg
+QVdBSVQgVVJHRU5UIFJFUExZLg0KDQoNClRIQU5LUy4NCk1SUy4gSlVMSUUg
+QlJZQU5UIA0KUmVwbHkgbWUgYXQgbXJzanVsaWVicnlhbnRAYnRpbnRlcm5l
+dC5jb20NCg0KDQoNCg==
+
+------=_NextPart_000_0074_01C2A9A6.5D1A0CE0--
