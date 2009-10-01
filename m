@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbZJAPQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbZJAPRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754346AbZJAPQv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 11:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZJAPQv
+	id S1753660AbZJAPRi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 11:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbZJAPRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 11:16:51 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43144 "EHLO gir.skynet.ie"
+	Thu, 1 Oct 2009 11:17:37 -0400
+Received: from mga14.intel.com ([143.182.124.37]:8154 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750971AbZJAPQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 11:16:50 -0400
-Date: Thu, 1 Oct 2009 16:16:57 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] slqb: Record what node is local to a kmem_cache_cpu
-Message-ID: <20091001151657.GH21906@csn.ul.ie>
-References: <84144f020909221154x820b287r2996480225692fad@mail.gmail.com> <20090922185608.GH25965@csn.ul.ie> <20090930144117.GA17906@csn.ul.ie> <alpine.DEB.1.10.0909301053550.9450@gentwo.org> <20090930220541.GA31530@csn.ul.ie> <alpine.DEB.1.10.0909301941570.11850@gentwo.org> <20091001104046.GA21906@csn.ul.ie> <alpine.DEB.1.10.0910011028380.3911@gentwo.org> <20091001150346.GD21906@csn.ul.ie> <alpine.DEB.1.10.0910011101390.3911@gentwo.org>
+	id S1751736AbZJAPRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 11:17:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,488,1249282800"; 
+   d="scan'208";a="193993956"
+Date: Thu, 1 Oct 2009 23:17:23 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jan Kara <jack@suse.cz>, Peter Zijlstra <peterz@infradead.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+Message-ID: <20091001151723.GA8028@localhost>
+References: <1252432501.7746.156.camel@twins> <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz> <1252597750.7205.82.camel@laptop> <20090914111721.GA24075@duck.suse.cz> <20090924083342.GA15918@localhost> <20090929173506.GE11573@duck.suse.cz> <20090930012406.GB6311@localhost> <20090930115539.GA16074@duck.suse.cz> <20090930121029.GA14918@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0910011101390.3911@gentwo.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090930121029.GA14918@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 11:03:16AM -0400, Christoph Lameter wrote:
-> On Thu, 1 Oct 2009, Mel Gorman wrote:
+On Wed, Sep 30, 2009 at 08:10:30PM +0800, Jens Axboe wrote:
+> On Wed, Sep 30 2009, Jan Kara wrote:
+> > > +void bdi_writeback_wait(struct backing_dev_info *bdi, long nr_pages)
+> > > +{
+> > > +	struct dirty_throttle_task tt = {
+> > > +		.nr_pages = nr_pages,
+> > > +		.complete = COMPLETION_INITIALIZER_ONSTACK(tt.complete),
+> > > +	};
+> > > +	struct wb_writeback_args args = {
+> > > +		.sync_mode	= WB_SYNC_NONE,
+> > > +		.nr_pages	= LONG_MAX,
+> > > +		.range_cyclic	= 1,
+> > > +		.for_background	= 1,
+> > > +	};
+> > > +	struct bdi_work work;
+> > > +
+> > > +	bdi_work_init(&work, &args);
+> > > +	work.state |= WS_ONSTACK;
+> > > +
+> > > +	/*
+> > > +	 * make sure we will be waken up by someone
+> > > +	 */
+> > > +	bdi_queue_work(bdi, &work);
+> >   This is wrong, you shouldn't submit the work like this because you'll
+> > have to wait for completion (wb_clear_pending below is just bogus). You
+> > should rather do bdi_start_writeback(bdi, NULL, 0).
 > 
-> > True, it might have been improved more if SLUB knew what local hugepage it
-> > resided within as the kernel portion of the address space is backed by huge
-> > TLB entries. Note that SLQB could have an advantage here early in boot as
-> > the page allocator will tend to give it back pages within a single huge TLB
-> > entry. It loses the advantage when the system has been running for a very long
-> > time but it might be enough to skew benchmark results on cold-booted systems.
-> 
-> The page allocator serves pages aligned to huge page boundaries as far as
-> I can remember.
+> Indeed, the above will die a horrible death fairly soon. But we can add
+> some "barrier" like synchronization, if you just wish to wait for
+> previously submitted work to have been completed.
 
-You're right, it does, particularly early in boot. It loses the advantage
-when the system has been running a long time and memory is mostly full but
-the same will apply to SLQB.
+Thanks, I just purged that hack and go for bdi_start_writeback :)
 
-> You can actually use huge pages in slub if you set the max
-> order to 9. So a page obtained from the page allocator is always aligned
-> properly.
-> 
+Thanks,
+Fengguang
 
-Fair point.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
