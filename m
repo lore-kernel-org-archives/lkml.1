@@ -1,68 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbZJAPdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZJAPdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbZJAPdD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 11:33:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbZJAPdD
+	id S1754954AbZJAPdL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 11:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZJAPdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 11:33:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44097 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754542AbZJAPdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 11:33:01 -0400
-Date: Thu, 1 Oct 2009 17:32:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: mce: Please revert
-	22223c9b417be5fd0ab2cf9ad17eb7bd1e19f7b9
-Message-ID: <20091001153250.GA25885@elte.hu>
-References: <20090930194049.GA17712@liondog.tnic> <20090930204643.GA24862@elte.hu> <20090930214859.GA28638@elte.hu> <20090930223956.GE17712@liondog.tnic> <20090930230947.GA9346@elte.hu> <20091001141432.GA11410@aftab> <alpine.LFD.2.01.0910010731130.6996@localhost.localdomain> <20091001144637.GB11410@aftab> <20091001150046.GA21476@elte.hu> <20091001152140.GC11410@aftab>
+	Thu, 1 Oct 2009 11:33:09 -0400
+Received: from mga10.intel.com ([192.55.52.92]:4324 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754627AbZJAPdH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 11:33:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,487,1249282800"; 
+   d="scan'208";a="732064159"
+Date: Thu, 1 Oct 2009 17:35:04 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] mfd: Refactor WM831x chip identification
+Message-ID: <20091001153503.GH10199@sortiz.org>
+References: <1254408067-15908-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091001152140.GC11410@aftab>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1254408067-15908-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Mark,
 
-* Borislav Petkov <borislav.petkov@amd.com> wrote:
+On Thu, Oct 01, 2009 at 03:41:04PM +0100, Mark Brown wrote:
+> Better support future device revisions by moving some of the output
+> around and making the chip ID enumeration be the value expected in
+> the ID register.
+Patches 1,2 and 4 applied to my for-next branch, thanks a lot.
 
-> On Thu, Oct 01, 2009 at 05:00:46PM +0200, Ingo Molnar wrote:
-> > > > Of course, if it _requires_ being loaded early for some other reason, then
-> > > 
-> > > the only reason I can think of is if you want to be able to decode 
-> > > MCEs happening as early as possible before the modules have been 
-> > > init-ted.
-> > > 
-> > > Question really is, what is more important to us? But we definitely 
-> > > can do the module stuff too and get rid of ~5K core kernel fat by 
-> > > relocating the whole functionality completely into the module. Hmm...
-> > 
-> > I'd focus on the built-in-side initially, which is the most 
-> > practical/debuggable/serviceable solution. It's of course not a problem 
-> > (at all) if it is _also_ module loadable but that's not the primary 
-> > goal.
+Cheers,
+Samuel.
+
+
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  drivers/mfd/wm831x-core.c |   58 ++++++++++++++-------------------------------
+>  1 files changed, 18 insertions(+), 40 deletions(-)
 > 
-> How about a CONFIG_EDAC_DECODE_MCE which depends on CONFIG_CPU_SUP_AMD 
-> and defaults to yes with a config text saying something in the likes 
-> of
+> diff --git a/drivers/mfd/wm831x-core.c b/drivers/mfd/wm831x-core.c
+> index 49b7885..143ab83 100644
+> --- a/drivers/mfd/wm831x-core.c
+> +++ b/drivers/mfd/wm831x-core.c
+> @@ -90,9 +90,9 @@ int wm831x_isinkv_values[WM831X_ISINK_MAX_ISEL] = {
+>  EXPORT_SYMBOL_GPL(wm831x_isinkv_values);
+>  
+>  enum wm831x_parent {
+> -	WM8310 = 0,
+> -	WM8311 = 1,
+> -	WM8312 = 2,
+> +	WM8310 = 0x8310,
+> +	WM8311 = 0x8311,
+> +	WM8312 = 0x8312,
+>  };
+>  
+>  static int wm831x_reg_locked(struct wm831x *wm831x, unsigned short reg)
+> @@ -1282,50 +1282,28 @@ static int wm831x_device_init(struct wm831x *wm831x, unsigned long id, int irq)
+>  		goto err;
+>  	}
+>  
+> +	/* Some engineering samples do not have the ID set, rely on
+> +	 * the device being registered correctly.
+> +	 */
+> +	if (ret == 0) {
+> +		dev_info(wm831x->dev, "Device is an engineering sample\n");
+> +		ret = id;
+> +	}
+> +
+>  	switch (ret) {
+> -	case 0x8310:
+> +	case WM8310:
+>  		parent = WM8310;
+> -		switch (rev) {
+> -		case 0:
+> -			dev_info(wm831x->dev, "WM8310 revision %c\n",
+> -				 'A' + rev);
+> -			break;
+> -		}
+> +		dev_info(wm831x->dev, "WM8310 revision %c\n", 'A' + rev);
+>  		break;
+>  
+> -	case 0x8311:
+> +	case WM8311:
+>  		parent = WM8311;
+> -		switch (rev) {
+> -		case 0:
+> -			dev_info(wm831x->dev, "WM8311 revision %c\n",
+> -				 'A' + rev);
+> -			break;
+> -		}
+> +		dev_info(wm831x->dev, "WM8311 revision %c\n", 'A' + rev);
+>  		break;
+>  
+> -	case 0x8312:
+> +	case WM8312:
+>  		parent = WM8312;
+> -		switch (rev) {
+> -		case 0:
+> -			dev_info(wm831x->dev, "WM8312 revision %c\n",
+> -				 'A' + rev);
+> -			break;
+> -		}
+> -		break;
+> -
+> -	case 0:
+> -		/* Some engineering samples do not have the ID set,
+> -		 * rely on the device being registered correctly.
+> -		 * This will need revisiting for future devices with
+> -		 * multiple dies.
+> -		 */
+> -		parent = id;
+> -		switch (rev) {
+> -		case 0:
+> -			dev_info(wm831x->dev, "WM831%d ES revision %c\n",
+> -				 parent, 'A' + rev);
+> -			break;
+> -		}
+> +		dev_info(wm831x->dev, "WM8312 revision %c\n", 'A' + rev);
+>  		break;
+>  
+>  	default:
+> @@ -1338,7 +1316,7 @@ static int wm831x_device_init(struct wm831x *wm831x, unsigned long id, int irq)
+>  	 * current parts.
+>  	 */
+>  	if (parent != id)
+> -		dev_warn(wm831x->dev, "Device was registered as a WM831%lu\n",
+> +		dev_warn(wm831x->dev, "Device was registered as a WM%lx\n",
+>  			 id);
+>  
+>  	/* Bootstrap the user key */
+> -- 
+> 1.6.4.3
 > 
-> "... Select Y here if you want to decode MCEs happening early before 
-> the modules framework has been initialized...."
 
-Yeah, that would be good. It should also obviously depend on 
-CONFIG_X86_MCE - so only visible if MCE support is enabled.
-
-	Ingo
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
