@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbZJAUeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZJAUfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756432AbZJAUeQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 16:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbZJAUeP
+	id S1756579AbZJAUfy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 16:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbZJAUfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 16:34:15 -0400
-Received: from e24smtp01.br.ibm.com ([32.104.18.85]:52215 "EHLO
-	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755801AbZJAUeO (ORCPT
+	Thu, 1 Oct 2009 16:35:53 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:29879 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756240AbZJAUfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 16:34:14 -0400
-Message-ID: <4AC51244.1010600@linux.vnet.ibm.com>
-Date: Thu, 01 Oct 2009 17:34:12 -0300
-From: Breno Leitao <leitao@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 1 Oct 2009 16:35:53 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=tkZstLfviX/pqK1YYjU4ziWZYzLP0+s91JFtKcWMiqeqZXKNRJdp/8RvDh3r1KB/o
+	9fnm3cWIZzK/+Mh7RKhEA==
+Date: Thu, 1 Oct 2009 13:35:44 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Suresh Jayaraman <sjayaraman@suse.de>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 01/31] mm: serialize access to min_free_kbytes
+In-Reply-To: <1254405871-15687-1-git-send-email-sjayaraman@suse.de>
+Message-ID: <alpine.DEB.1.00.0910011330430.27559@chino.kir.corp.google.com>
+References: <1254405871-15687-1-git-send-email-sjayaraman@suse.de>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] jsm: fixing termios structure to be compatible with stty
- application
-References: <1254327512-6880-1-git-send-email-leitao@linux.vnet.ibm.com> <20090930213140.4172748f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090930213140.4172748f@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> NAK
+On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
+
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl> 
 > 
-> termios->c_ispeed/ospeed are the actual baud rates not bit encodings
-Well, c_flag & CBAUD is the baud rate encoded in the Bfoo format. 
-
-> Use
+> There is a small race between the procfs caller and the memory hotplug caller
+> of setup_per_zone_wmarks(). Not a big deal, but the next patch will add yet
+> another caller. Time to close the gap.
 > 
-> 	tty_termios_encode_baudrate(termios, ispeed, ospeed);
 
-Well, let me explain you what I want to do. 
-Actually stty.c source code do: 
+By "next patch," you mean "mm: emegency pool" (patch 08/31)?
 
-	tcsetattr (STDIN_FILENO, TCSADRAIN, &mode)
-	tcgetattr (STDIN_FILENO, &new_mode)
-	...
-	if (memcmp (&mode, &new_mode, sizeof (mode)) != 0)
-		 error (EXIT_FAILURE, 0,....)
+If so, can't you eliminate var_free_mutex entirely from that patch and 
+take min_free_lock in adjust_memalloc_reserve() instead?
 
-When I run stty -F /dev/ttyn0 speed 9600, the mode structure is different
-from new_mode, causing that error.
-Debugging those structure, I found that ispeed and ospeed were not set in the
-Bfoo format, as expected, since mode->[o|i]speed are set in Bfoo format.
-
-Hence, I just assigned ospeed and ispeed with the requested speed in Bfoo
-format (c_flag & CBAUD).
-
-I also tested the tty_termios_encode_baud_rate(), and it will basically do what
-I did:
-
-        termios->c_ispeed = ibaud;
-        termios->c_ospeed = obaud;
-
-Thanks for the review, and sorry if I missed the point completely.
-Breno
+ [ __adjust_memalloc_reserve() would call __setup_per_zone_wmarks()
+   under lock instead, now. ]
