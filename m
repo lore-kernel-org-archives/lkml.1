@@ -1,64 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZJAPM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbZJAPOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbZJAPM5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 11:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbZJAPM5
+	id S1754252AbZJAPOm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 11:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbZJAPOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 11:12:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41484 "EHLO mx2.mail.elte.hu"
+	Thu, 1 Oct 2009 11:14:41 -0400
+Received: from mga03.intel.com ([143.182.124.21]:35129 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753612AbZJAPM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 11:12:56 -0400
-Date: Thu, 1 Oct 2009 17:12:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Clark Williams <williams@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
+	id S1753875AbZJAPOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 11:14:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,488,1249282800"; 
+   d="scan'208";a="193992736"
+Date: Thu, 1 Oct 2009 23:14:29 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
-       dhowells@redhat.com, arjan@linux.intel.com
-Subject: Re: [PATCH 19/19] workqueue: implement concurrency managed
-	workqueue
-Message-ID: <20091001151211.GA24308@elte.hu>
-References: <1254384558-1018-1-git-send-email-tj@kernel.org> <1254384558-1018-20-git-send-email-tj@kernel.org> <20091001074959.dbdf6f6a.akpm@linux-foundation.org>
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Subject: Re: regression in page writeback
+Message-ID: <20091001151429.GB9469@localhost>
+References: <20090925001117.GA9464@discord.disaster> <20090925003820.GK2662@think> <20090925050413.GC9464@discord.disaster> <20090925064503.GA30450@localhost> <20090928010700.GE9464@discord.disaster> <20090928071507.GA20068@localhost> <20090928130804.GA25880@infradead.org> <20090928140756.GC17514@mit.edu> <20090930052657.GA17268@localhost> <20090930141158.GG24383@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091001074959.dbdf6f6a.akpm@linux-foundation.org>
+In-Reply-To: <20090930141158.GG24383@mit.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ted,
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+On Wed, Sep 30, 2009 at 10:11:58PM +0800, Theodore Ts'o wrote:
+> On Wed, Sep 30, 2009 at 01:26:57PM +0800, Wu Fengguang wrote:
+> > It's good to increase MAX_WRITEBACK_PAGES, however I'm afraid
+> > max_contig_writeback_mb may be a burden in future: either it is not
+> > necessary, or a per-bdi counterpart must be introduced for all
+> > filesystems.
+> 
+> The per-filesystem tunable was just a short-term hack; the reason why
+> I did it that way was it was clear that a global tunable wouldn't fly,
+> and rightly so --- what might be suitable for a slow USB stick might
+> be very different than a super-fast RAID array, and someone might very
+> well have both on the same system.
 
-> On Thu,  1 Oct 2009 17:09:18 +0900 Tejun Heo <tj@kernel.org> wrote:
-> 
-> > To solve the above issues, this patch implements concurrency-managed
-> > workqueue.
-> 
-> Seems reasonable.
-> 
-> This approach would appear to rule out the option of setting a work 
-> thread's state (scheduling policy, scheduling priority, uid, etc) to 
-> anything other than some default.
-> 
-> I guess that's unlikely to be a problem if we haven't yet had a need 
-> to do that, but I'd be a bit surprised to discover that nobody has 
-> done that sort of thing yet?  Nobody has niced up their workqueue 
-> threads?
+Ah Yes.
 
-tuna in -rt might do that perhaps?
+> > And it's preferred to automatically handle slow devices well with the
+> > increased chunk size, instead of adding another parameter.
+> 
+> Agreed; long-term what we probably need is something which is
+> automatically tunable.  My thinking was that we should tune the the
+> initial nr_to_write parameter based on how many blocks could be
+> written in some time interval, which is tunable.  So if we decide that
+> 1 second is a suitable time period to be writing out one inode's dirty
+> pages, then for a fast server-class SATA disk, we might want to set
+> nr_to_write to be around 128mb worth of pages.  For a laptop SATA
+> disk, it might be around 64mb, and for a really slow USB stick, it
+> might be more like 16mb.  For super-fast enterprise RAID array, 128mb
+> might be too small!
 
-	Ingo
+Yes, 128MB may be too small :)
+
+> If we get timing and/or congestion information from the block layer,
+> it wouldn't be hard to figure out the optimal number of pages that
+> should be sent down to the filesystem, and to tune this automatically.
+
+Sure, it's possible.
+
+> > I scratched up a patch to demo the ideas collected in recent discussions.
+> > Can you check if it serves your needs? Thanks.
+> 
+> Sure, I'll definitely play with it, thanks.
+
+Thanks :)
+
+> > The wbc.timeout (when used per-file) is mainly a safeguard against slow
+> > devices, which may take too long time to sync 128MB data.
+> 
+> Maybe I'm missing something, but I don't think the wbc.timeout
+> approach is sufficient.  Consider the scenario of someone who is
+> ripping a DVD disc to an 8 gig USB stick.  The USB stick will be very
+> slow, but since the file is contiguous the filesystem will very
+> happily try to push it out there 128MB at a time, and wbc.timeout
+> value isn't really going to help since a single call to writepages
+> could easily cause 128MB worth of data to be streamed out to the USB
+> stick.
+
+Yes and no. Yes if the queue was empty for the slow device. No if the
+queue was full, in which case IO submission speed = IO complete speed
+for previously queued requests.
+
+So wbc.timeout will be accurate for IO submission time, and mostly
+accurate for IO completion time. The transient queue fill up phase
+shall not be a big problem?
+
+> This is why the MAX_WRITEBACK_PAGES really needs to be tuned on a
+> per-bdi basis; either manually, via a sysfs tunable, or automatically,
+> by auto-tuning based on how fast the storage device is or by some kind
+> of congestion-based approach.  This is certainly the best long-term
+> solution; my concern was that it might take a long-time for us to get
+> the auto-tunable just right, so in the meantime I added a
+> per-mounted-filesystem tunable and put the hack in the filesystem
+> layer.  I would like nothing better than to rip it out, once we have a
+> long-term solution.
+
+Thanks,
+Fengguang
