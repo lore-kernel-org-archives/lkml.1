@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZJAKlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbZJAKmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246AbZJAKlU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 06:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbZJAKlT
+	id S1756262AbZJAKmO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 06:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbZJAKmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 06:41:19 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51520 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756229AbZJAKlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 06:41:17 -0400
-Date: Thu, 1 Oct 2009 20:41:12 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: linux-next:  tree build failure
-Message-Id: <20091001204112.ec03869d.sfr@canb.auug.org.au>
-In-Reply-To: <20091001075838.GL14918@kernel.dk>
-References: <20091001131923.83e6836c.sfr@canb.auug.org.au>
-	<20091001075838.GL14918@kernel.dk>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__1_Oct_2009_20_41_12_+1000_Yh.knrykc1PvpDS2"
+	Thu, 1 Oct 2009 06:42:13 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58843 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756210AbZJAKmK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 06:42:10 -0400
+Date: Thu, 1 Oct 2009 12:42:08 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andy Spencer <andy753421@gmail.com>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Privilege dropping security module
+Message-ID: <20091001104208.GC2159@elf.ucw.cz>
+References: <20090923005644.GA28244@c.hsd1.tn.comcast.net> <4ABA892A.9090804@schaufler-ca.com> <20090923223110.GA1449@c.hsd1.tn.comcast.net> <20091001073853.GA1330@ucw.cz> <20091001091537.GA22337@c.hsd1.tn.comcast.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091001091537.GA22337@c.hsd1.tn.comcast.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__1_Oct_2009_20_41_12_+1000_Yh.knrykc1PvpDS2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu 2009-10-01 09:15:37, Andy Spencer wrote:
+> > Yeah, and now your ~/.ssh/identity is being uploaded to remote server.
+> 
+> The given policy sets the home directory (including ~/.ssh/) to `X'
+> which does not include read access, so ~/.ssh/identity should be safe.
+> There are some other problems with this particular policy though, /tmp/
+> is still readable for example.
+> 
+> 
+> > I believe people are already sandboxing apps with selinux...
+> 
+> Yes, some people (including myself) are already using selinux, tomoyo,
+> smack, etc, for sandboxing. However, I think those have some
+> disadvantages that I'm trying to address.
 
-Hi Jens,
+Ok, I guess advantages over selinux (etc) are probably worth it for
+changelog on submission...
 
-On Thu, 1 Oct 2009 09:58:38 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> Sorry Stephen, fixed up.
+> > ...and subterfugue certainly does what you want, using ptrace... no
+> > kernel mods needed and should already be secure.
+> 
+> subterfugue does look interesting, but it seems like it would be pretty
+> slow and hasn't been unmaintained since 2001.
 
-Thanks.
+It is userland code, it should not have rotted that much.
+									Pavel
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Thu__1_Oct_2009_20_41_12_+1000_Yh.knrykc1PvpDS2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrEh0gACgkQjjKRsyhoI8wBVgCcDw024Cad2QVpStkEf6na1ivh
-UbwAn1KD/AcGrEAgtIBsrE8PGBV1R4lg
-=u8rv
------END PGP SIGNATURE-----
-
---Signature=_Thu__1_Oct_2009_20_41_12_+1000_Yh.knrykc1PvpDS2--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
