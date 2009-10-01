@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbZJAIBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbZJAIBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755800AbZJAIBP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbZJAIBP
+	id S1755820AbZJAIBv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbZJAIBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:01:15 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:12069 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755694AbZJAIBO convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;5:1>);
-	Thu, 1 Oct 2009 04:01:14 -0400
-Message-Id: <4AC47DED0200007800017743@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Thu, 01 Oct 2009 09:01:17 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <ketuzsezr@darnok.org>, <pjones@redhat.com>
-Cc: "Jeremy Fitzhardinge" <Jeremy.Fitzhardinge@citrix.com>,
-       "Martin Wilck" <Martin.Wilck@fujitsu-siemens.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: [PATCH] iSCSI/iBFT: use proper address translation
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 1 Oct 2009 04:01:50 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:44089 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755739AbZJAIBt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 04:01:49 -0400
+Date: Thu, 1 Oct 2009 10:01:52 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.com>
+Subject: Re: [PATCH] connector: Allow permission checking in the receiver
+	callbacks
+Message-ID: <20091001080152.GA8018@barkeeper1-xen.linbit>
+References: <1254235692-1631-1-git-send-email-philipp.reisner@linbit.com> <20090930112057.GA15150@ioremap.net> <20090930132034.GE8032@barkeeper1-xen.linbit> <20090930192928.GA1315@ioremap.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090930192928.GA1315@ioremap.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In virtual environments (namely, Xen Dom0) virt <-> phys and
-virt <-> isa-bus translations cannot be freely interchanged. When
-looking at memory below 1M, the latter translations should always
-be used.
+On Wed, Sep 30, 2009 at 11:29:28PM +0400, Evgeniy Polyakov wrote:
+> On Wed, Sep 30, 2009 at 03:20:35PM +0200, Lars Ellenberg (lars.ellenberg@linbit.com) wrote:
+> > Actually it is the basis for follow-up security fixes.
+> > 
+> > Without this, unprivileged user space is able to send arbitrary
+> > connector requests to kernel subsystems, which have no way to verify the
+> > privileges of the sender anymore, because that information, even though
+> > available at the netlink layer, has been dropped by the connector.
+> 
+> It is not. One can add some checks at receiving time which happens in
+> process context to get its credentials, but nothing in netlink itself
+> carry this info. Getting that connector schedules workqueue this ability
+> is lost.
 
-iscsi_ibft_find.c part from: Martin Wilck <martin.wilck@ts.fujitsu.com>.
+Please correct me if I'm wrong.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Cc: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+My understanding is, that in netlink_sendmsg, the credentials and
+capabilities are copied into skb->cb.
+During kernel side receive, these can be checked.
 
----
- drivers/firmware/iscsi_ibft.c      |    2 +-
- drivers/firmware/iscsi_ibft_find.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+If we pass the skb, instead of just the msg, then even an asynchronously
+scheduled receive callback, running in any workqueue or other context,
+can check for these credentials.
 
---- linux-2.6.32-rc1/drivers/firmware/iscsi_ibft.c	2009-06-10 05:05:27.000000000 +0200
-+++ 2.6.32-rc1-ibft-addr-xlat/drivers/firmware/iscsi_ibft.c	2009-09-24 12:14:48.000000000 +0200
-@@ -939,7 +939,7 @@ static int __init ibft_init(void)
- 
- 	if (ibft_addr) {
- 		printk(KERN_INFO "iBFT detected at 0x%llx.\n",
--		       (u64)virt_to_phys((void *)ibft_addr));
-+		       (u64)isa_virt_to_bus(ibft_addr));
- 
- 		rc = ibft_check_device();
- 		if (rc)
---- linux-2.6.32-rc1/drivers/firmware/iscsi_ibft_find.c	2008-10-10 00:13:53.000000000 +0200
-+++ 2.6.32-rc1-ibft-addr-xlat/drivers/firmware/iscsi_ibft_find.c	2009-09-24 09:52:18.000000000 +0200
-@@ -65,10 +65,10 @@ void __init reserve_ibft_region(void)
- 		 * so skip that area */
- 		if (pos == VGA_MEM)
- 			pos += VGA_SIZE;
--		virt = phys_to_virt(pos);
-+		virt = isa_bus_to_virt(pos);
- 		if (memcmp(virt, IBFT_SIGN, IBFT_SIGN_LEN) == 0) {
- 			unsigned long *addr =
--			    (unsigned long *)phys_to_virt(pos + 4);
-+			    (unsigned long *)isa_bus_to_virt(pos + 4);
- 			len = *addr;
- 			/* if the length of the table extends past 1M,
- 			 * the table cannot be valid. */
+Passing skb instead of just the msg for use in cn_queue_wrapper
+is what the fist patch does.
+
+Second patch changes the semantics of the actual callback
+to be passed in the msg _and_ the netlink_skb_parms, both
+"reconstructed" from the skb.
+
+Now, in the end-user callback, there is the actual msg,
+but also the netlink_skb_parms.
+So this enables the end-user callback, running in arbitrary context,
+to check capabilities and other credentials of the sending process.
 
 
+> > Once this is applied, the various in-kernel receiving connector
+> > callbacks can (and need to) add cap_raised(nsb->eff_cap, cap) where
+> > appropriate. For example, you don't want some guest user to be able to
+> > trigger a dst_del_node callback by sending a crafted netlink message,
+> > right?
+> > 
+> > So it _is_ a (design-) bug fix.
+> > Or am I missing something?
+> 
+> This patchset is not a bugfix, just a cleanup, since none in patchset
+> uses netlink_skb_parms
 
+3. and 4. patch are in fact merely cleanups.
+
+> and currently I see no users which are affected
+> by this behaviour in the mainline branch (not counting staging tree).
+> 
+> But if proposed configuration changes for DM are on the way, then I
+> agree and they should force this patchset into the tree as a bugfix.
+> 
+> -- 
+> 	Evgeniy Polyakov
+> 
+
+-- 
+: Lars Ellenberg
+: LINBIT | Your Way to High Availability
+: DRBD/HA support and consulting http://www.linbit.com
+
+DRBD® and LINBIT® are registered trademarks of LINBIT, Austria.
