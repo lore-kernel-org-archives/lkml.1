@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbZJAJPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbZJAJPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755983AbZJAJPa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 05:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755938AbZJAJP3
+	id S1755924AbZJAJPP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 05:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbZJAJPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 05:15:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:25517 "EHLO mx1.redhat.com"
+	Thu, 1 Oct 2009 05:15:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:54879 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755949AbZJAJP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 05:15:29 -0400
-Message-ID: <4AC4725E.3070509@redhat.com>
-Date: Thu, 01 Oct 2009 11:11:58 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1755342AbZJAJPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 05:15:13 -0400
+Date: Thu, 1 Oct 2009 11:12:18 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 31/34] move virtrng_remove to .devexit.text
+Message-ID: <20091001091218.GE5718@redhat.com>
+References: <20091001082607.GA2181@pengutronix.de> <1254385718-14254-31-git-send-email-u.kleine-koenig@pengutronix.de> <200910011044.48293.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Tejun Heo <tj@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
-       jeff@garzik.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
-Subject: Re: [RFC PATCHSET] workqueue: implement concurrency managed	workqueue
-References: <1254384558-1018-1-git-send-email-tj@kernel.org> <20091001084040.GA15345@elte.hu>
-In-Reply-To: <20091001084040.GA15345@elte.hu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200910011044.48293.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/01/2009 10:40 AM, Ingo Molnar wrote:
-> Ok, this looks fairly interesting - and the way you reused scheduler
-> classes to auto-regulate with no impact on regular performance is quite
-> an ingenious idea as well. (KVM's preempt notifiers should probably use
-> this trick too, instead of an ugly notifier in the scheduler hotpath)
->
-> This mechanism could be used to implement threadlets/syslets too btw.,
-> and other forms of asynchronous IO.
->    
+On Thu, Oct 01, 2009 at 10:44:48AM +0200, Christian Borntraeger wrote:
+> Am Donnerstag 01 Oktober 2009 10:28:35 schrieb Uwe Kleine-König:
+> > The function virtrng_remove is used only wrapped by __devexit_p so define
+> > it using __devexit.
+> > 
+> > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> > Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> > Cc: Rusty Russell <rusty@rustcorp.com.au>
+> > Cc: Michael S. Tsirkin <mst@redhat.com>
+> > Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+> 
+> Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
-In fact I've thought of implementing threadlets and concurrency-managed 
-workqueues with preempt notifiers ;)
+FWIW
+Acked-by: Michael S. Tsirkin <mst@redhat.com>
 
-Isn't a scheduling class overkill for two existing callbacks?  Note we 
-can easily use a thread flag and __switch_to_xtra() to avoid the overhead.
+> It seems that there are similar changes possible in other virtio drivers (e.g. 
+> virtio_net). 
 
-For kvm, we don't want to force a specific scheduling class for vcpu 
-threads, so we'd need infrastructure to create a new scheduling class 
-out of an existing one to hook the two callbacks.  Seems like quite a 
-lot of work, for something that is orthogonal to scheduling.
+Yes, and more importantly drivers/virtio/virtio.c as well.
 
-Tejun, would preempt notifiers work for your workqueues?  see bottom of 
-include/linux/preempt.h.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+> 
+> [...]
+> > -static void virtrng_remove(struct virtio_device *vdev)
+> > +static void __devexit virtrng_remove(struct virtio_device *vdev)
+> [...]
