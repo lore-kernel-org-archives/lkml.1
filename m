@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbZJBG1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbZJBG2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756875AbZJBG1G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 02:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbZJBG1F
+	id S1756908AbZJBG2k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 02:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756816AbZJBG2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 02:27:05 -0400
-Received: from lucia.q-ag.de ([88.198.75.226]:47427 "EHLO lucia.q-ag.de"
+	Fri, 2 Oct 2009 02:28:39 -0400
+Received: from lucia.q-ag.de ([88.198.75.226]:47436 "EHLO lucia.q-ag.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756784AbZJBG1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 02:27:05 -0400
+	id S1756806AbZJBG2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 02:28:38 -0400
 From: Manfred Spraul <manfred@colorfullife.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: npiggin@suse.de
@@ -16,120 +16,94 @@ Cc: Nadia Derbey <Nadia.Derbey@bull.net>
 Cc: Pierre Peiffer <peifferp@gmail.com>
 Cc: linux-kernel@vger.kernel.org
 Date: Thu, 1 Oct 2009 10:00:00 +0200
-Subject: [PATCH 2/7] ipc/sem.c: sem use list operations
-Message-Id: <E1MtbcT-000519-So@lucia.q-ag.de>
+Subject: [PATCH 3/7] ipc/sem.c: sem preempt improve
+Message-Id: <E1Mtbdx-00051W-3K@lucia.q-ag.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The strange sysv semaphore wakeup scheme has a kind of busy-wait lock
+involved, which could deadlock if preemption is enabled during the
+"lock".
+
+It is an implementation detail (due to a spinlock being held) that this
+is actually the case. However if "spinlocks" are made preemptible, or if
+the sem lock is changed to a sleeping lock for example, then the wakeup
+would become buggy. So this might be a bugfix for -rt kernels.
+
+Imagine waker being preempted by wakee and never clearing IN_WAKEUP --
+if wakee has higher RT priority then there is a priority inversion deadlock.
+Even if there is not a priority inversion to cause a deadlock, then there
+is still time wasted spinning.
+
 Signed-off-by: Nick Piggin <npiggin@suse.de>
-
-Merged with my own patches, no changes.
-
-The patch replaces the handcoded list operations in update_queue() with the
-standard list_for_each_entry macros.
-list_for_each_entry_safe() must be used, because list entries can disappear
-immediately uppon the wakeup event.
 
 Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
 ---
- ipc/sem.c |   79 +++++++++++++++++++++++++-------------------------------------
- 1 file changed, 33 insertions(+), 46 deletions(-)
+ ipc/sem.c |   38 +++++++++++++++++++++++---------------
+ 1 file changed, 23 insertions(+), 15 deletions(-)
 
 Index: linux-2.6/ipc/sem.c
 ===================================================================
 --- linux-2.6.orig/ipc/sem.c
 +++ linux-2.6/ipc/sem.c
-@@ -402,58 +402,45 @@ undo:
-  */
- static void update_queue (struct sem_array * sma)
- {
--	int error;
--	struct sem_queue * q;
-+	struct sem_queue *q, *tq;
-+
-+again:
-+	list_for_each_entry_safe(q, tq, &sma->sem_pending, list) {
-+		int error;
-+		int alter;
- 
--	q = list_entry(sma->sem_pending.next, struct sem_queue, list);
--	while (&q->list != &sma->sem_pending) {
- 		error = try_atomic_semop(sma, q->sops, q->nsops,
- 					 q->undo, q->pid);
- 
- 		/* Does q->sleeper still need to sleep? */
--		if (error <= 0) {
--			struct sem_queue *n;
-+		if (error > 0)
-+			continue;
-+
-+		list_del(&q->list);
-+
-+		/*
-+		 * The next operation that must be checked depends on the type
-+		 * of the completed operation:
-+		 * - if the operation modified the array, then restart from the
-+		 *   head of the queue and check for threads that might be
-+		 *   waiting for semaphore values to become 0.
-+		 * - if the operation didn't modify the array, then just
-+		 *   continue.
-+		 */
-+		alter = q->alter;
-+
-+		/* wake up the waiting thread */
-+		q->status = IN_WAKEUP;
-+
-+		wake_up_process(q->sleeper);
-+		/* hands-off: q will disappear immediately after
-+		 * writing q->status.
-+		 */
-+		smp_wmb();
-+		q->status = error;
- 
--			/*
--			 * Continue scanning. The next operation
--			 * that must be checked depends on the type of the
--			 * completed operation:
--			 * - if the operation modified the array, then
--			 *   restart from the head of the queue and
--			 *   check for threads that might be waiting
--			 *   for semaphore values to become 0.
--			 * - if the operation didn't modify the array,
--			 *   then just continue.
--			 * The order of list_del() and reading ->next
--			 * is crucial: In the former case, the list_del()
--			 * must be done first [because we might be the
--			 * first entry in ->sem_pending], in the latter
--			 * case the list_del() must be done last
--			 * [because the list is invalid after the list_del()]
--			 */
--			if (q->alter) {
--				list_del(&q->list);
--				n = list_entry(sma->sem_pending.next,
--						struct sem_queue, list);
--			} else {
--				n = list_entry(q->list.next, struct sem_queue,
--						list);
--				list_del(&q->list);
--			}
--
--			/* wake up the waiting thread */
--			q->status = IN_WAKEUP;
--
--			wake_up_process(q->sleeper);
--			/* hands-off: q will disappear immediately after
--			 * writing q->status.
--			 */
--			smp_wmb();
--			q->status = error;
--			q = n;
--		} else {
--			q = list_entry(q->list.next, struct sem_queue, list);
--		}
-+		if (alter)
-+			goto again;
- 	}
+@@ -397,6 +397,27 @@ undo:
+ 	return result;
  }
  
++/*
++ * Wake up a process waiting on the sem queue with a given error.
++ * The queue is invalid (may not be accessed) after the function returns.
++ */
++static void wake_up_sem_queue(struct sem_queue *q, int error)
++{
++	/*
++	 * Hold preempt off so that we don't get preempted and have the
++	 * wakee busy-wait until we're scheduled back on. We're holding
++	 * locks here so it may not strictly be needed, however if the
++	 * locks become preemptible then this prevents such a problem.
++	 */
++	preempt_disable();
++	q->status = IN_WAKEUP;
++	wake_up_process(q->sleeper);
++	/* hands-off: q can disappear immediately after writing q->status. */
++	smp_wmb();
++	q->status = error;
++	preempt_enable();
++}
++
+ /* Go through the pending queue for the indicated semaphore
+  * looking for tasks that can be completed.
+  */
+@@ -428,17 +449,7 @@ again:
+ 		 *   continue.
+ 		 */
+ 		alter = q->alter;
+-
+-		/* wake up the waiting thread */
+-		q->status = IN_WAKEUP;
+-
+-		wake_up_process(q->sleeper);
+-		/* hands-off: q will disappear immediately after
+-		 * writing q->status.
+-		 */
+-		smp_wmb();
+-		q->status = error;
+-
++		wake_up_sem_queue(q, error);
+ 		if (alter)
+ 			goto again;
+ 	}
+@@ -522,10 +533,7 @@ static void freeary(struct ipc_namespace
+ 	list_for_each_entry_safe(q, tq, &sma->sem_pending, list) {
+ 		list_del(&q->list);
+ 
+-		q->status = IN_WAKEUP;
+-		wake_up_process(q->sleeper); /* doesn't sleep */
+-		smp_wmb();
+-		q->status = -EIDRM;	/* hands-off q */
++		wake_up_sem_queue(q, -EIDRM);
+ 	}
+ 
+ 	/* Remove the semaphore set from the IDR */
 
