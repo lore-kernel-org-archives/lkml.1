@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZJAPbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbZJAPdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbZJAPbI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 11:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbZJAPbG
+	id S1754841AbZJAPdD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 11:33:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbZJAPdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 11:31:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:49119 "EHLO mx1.redhat.com"
+	Thu, 1 Oct 2009 11:33:03 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44097 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752995AbZJAPbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 11:31:05 -0400
-Message-ID: <4AC4CB2A.4000908@redhat.com>
-Date: Thu, 01 Oct 2009 17:30:50 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1754542AbZJAPdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 11:33:01 -0400
+Date: Thu, 1 Oct 2009 17:32:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86: mce: Please revert
+	22223c9b417be5fd0ab2cf9ad17eb7bd1e19f7b9
+Message-ID: <20091001153250.GA25885@elte.hu>
+References: <20090930194049.GA17712@liondog.tnic> <20090930204643.GA24862@elte.hu> <20090930214859.GA28638@elte.hu> <20090930223956.GE17712@liondog.tnic> <20090930230947.GA9346@elte.hu> <20091001141432.GA11410@aftab> <alpine.LFD.2.01.0910010731130.6996@localhost.localdomain> <20091001144637.GB11410@aftab> <20091001150046.GA21476@elte.hu> <20091001152140.GC11410@aftab>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [PATCH v2] core, x86: Add user return notifiers
-References: <4AB3CDEC.5050902@zytor.com> <1253342422-13811-1-git-send-email-avi@redhat.com> <4AB8980D.5070803@redhat.com> <20090922143223.GA31702@elte.hu> <4AB8EAF2.1030204@zytor.com> <4AC4C8F2.5050708@redhat.com> <4AC4C9D5.3000902@zytor.com>
-In-Reply-To: <4AC4C9D5.3000902@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091001152140.GC11410@aftab>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/01/2009 05:25 PM, H. Peter Anvin wrote:
-> On 10/01/2009 08:21 AM, Avi Kivity wrote:
->    
->> Re-ping?
->>
->> If accepted, please merge just the core patch and I will carry all of
->> them in parallel.  Once tip is merged I'll drop my copy of the first patch.
->>
->>      
-> I was just talking to Ingo about this... would you consider this .32 or
-> .33 material at his time?  It came in awfully late for .32...
->    
 
-While I'd prefer it to be in .32, as there's much churn in both trees, I 
-guess we should follow the process and schedule it for .33.
+* Borislav Petkov <borislav.petkov@amd.com> wrote:
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+> On Thu, Oct 01, 2009 at 05:00:46PM +0200, Ingo Molnar wrote:
+> > > > Of course, if it _requires_ being loaded early for some other reason, then
+> > > 
+> > > the only reason I can think of is if you want to be able to decode 
+> > > MCEs happening as early as possible before the modules have been 
+> > > init-ted.
+> > > 
+> > > Question really is, what is more important to us? But we definitely 
+> > > can do the module stuff too and get rid of ~5K core kernel fat by 
+> > > relocating the whole functionality completely into the module. Hmm...
+> > 
+> > I'd focus on the built-in-side initially, which is the most 
+> > practical/debuggable/serviceable solution. It's of course not a problem 
+> > (at all) if it is _also_ module loadable but that's not the primary 
+> > goal.
+> 
+> How about a CONFIG_EDAC_DECODE_MCE which depends on CONFIG_CPU_SUP_AMD 
+> and defaults to yes with a config text saying something in the likes 
+> of
+> 
+> "... Select Y here if you want to decode MCEs happening early before 
+> the modules framework has been initialized...."
 
+Yeah, that would be good. It should also obviously depend on 
+CONFIG_X86_MCE - so only visible if MCE support is enabled.
+
+	Ingo
