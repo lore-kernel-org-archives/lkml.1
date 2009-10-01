@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbZJAVu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbZJAVvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753322AbZJAVu6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 17:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbZJAVu5
+	id S1753331AbZJAVvb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbZJAVv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 17:50:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53256 "EHLO
+	Thu, 1 Oct 2009 17:51:29 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53273 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753224AbZJAVu4 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752616AbZJAVvZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 17:50:56 -0400
-Date: Thu, 1 Oct 2009 09:17:51 +0200
+	Thu, 1 Oct 2009 17:51:25 -0400
+Date: Thu, 1 Oct 2009 09:18:58 +0200
 From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] floppy: Add an extra bound check on ioctl arguments
-Message-ID: <20091001091751.5e7c1782@infradead.org>
-In-Reply-To: <20090930161316.96b5889e.akpm@linux-foundation.org>
-References: <20090930131709.7300dff3@infradead.org>
-	<20090930161316.96b5889e.akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Linux 2.6.32-rc1
+Message-ID: <20091001091858.411d8df0@infradead.org>
+In-Reply-To: <20090930203818.GA24070@elte.hu>
+References: <4AC10365.7090802@gmail.com>
+	<4AC2712C.4080901@gmail.com>
+	<alpine.LFD.2.01.0909291410440.6996@localhost.localdomain>
+	<20090929232248.735bf4df@infradead.org>
+	<alpine.LFD.2.01.0909291429570.6996@localhost.localdomain>
+	<20090930170754.0886ff2e@infradead.org>
+	<20090930193204.GA16350@elte.hu>
+	<4AC3BC89.2050404@gmail.com>
+	<alpine.LFD.2.01.0909301320300.6996@localhost.localdomain>
+	<20090930202233.GA21890@elte.hu>
+	<20090930203818.GA24070@elte.hu>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009 16:13:16 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Wed, 30 Sep 2009 22:38:18 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Wed, 30 Sep 2009 13:17:09 +0200
-> Arjan van de Ven <arjan@infradead.org> wrote:
+> > > > probably a "memory" clobber is needed, alternative_io() doesnt
+> > > > provide it.
+> > > 
+> > > Yeah, good catch.
+> > 
+> > Yeah - i'm testing this right now, it looks like something that
+> > could explain the hang.
 > 
-> > gcc is not convinced that the floppy.c ioctl has sufficient bound
-> > checks,
-> 
-> gad.  You said "floppy" and "ioctl" in the same sentence.  Where
-> angels fear to tread.
+> Yeah - that was the cause of the hang
 
-I have to admit I was very much not looking forward to working on this
-warning, and made sure to wear protective clothing and that my
-immunizations were up to date.
-> 
-> It would be useful if you were to quote the gcc output in the
-> changelog please. 
-
-
-In function ‘copy_from_user’,
-    inlined from ‘fd_copyin’ at drivers/block/floppy.c:3080,
-    inlined from ‘fd_ioctl’ at drivers/block/floppy.c:3503:
-/home/arjan/linux/arch/x86/include/asm/uaccess_32.h:211:
-warning: call to ‘copy_from_user_overflow’ declared with attribute
-warning: copy_from_user buffer size is not provably correct
-
-> I assume that you're using some magical new gcc
-> option or something?
-
-Not so much a new option, as using an option that has been there for a
-while, and has been used extensively in userspace, just not yet in the
-kernel. The patches are in the -tip tree, but if you want to take a
-peek I can send them to you as well... they find some "interesting"
-stuff.
+I woke up at 2am realizing that this was missing.. but you beat me to
+it ;)
 
 
 -- 
