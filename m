@@ -1,103 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbZJAI5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZJAJCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbZJAI5B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbZJAI5A
+	id S1755422AbZJAJCA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 05:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbZJAJCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:57:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50827 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754319AbZJAI47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:56:59 -0400
-Date: Thu, 1 Oct 2009 10:56:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Rientjes <rientjes@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Ankita Garg <ankita@in.ibm.com>, Len Brown <len.brown@intel.com>,
-       x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/4] x86: interleave emulated nodes over physical nodes
-Message-ID: <20091001085628.GD15345@elte.hu>
-References: <alpine.DEB.1.00.0909251517440.14754@chino.kir.corp.google.com> <alpine.DEB.1.00.0909251519150.14754@chino.kir.corp.google.com>
+	Thu, 1 Oct 2009 05:02:00 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:56665 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755250AbZJAJB7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 05:01:59 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: Amit Shah <amit.shah@redhat.com>
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for generic guest and host communication
+Date: Thu, 1 Oct 2009 11:00:48 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-prerelease; KDE/4.3.1; i686; ; )
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Alan Cox <alan@linux.intel.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <200909291531.23389.borntraeger@de.ibm.com> <20090930171321.GA17200@amit-x200.redhat.com>
+In-Reply-To: <20090930171321.GA17200@amit-x200.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0909251519150.14754@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910011100.48087.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Mittwoch 30 September 2009 19:13:21 schrieb Amit Shah:
+> - uses port->id instead of a static hvc_vtermno to pass on a value to
+>   hvc_alloc(). Motivation explained within comments in the code.
 
-* David Rientjes <rientjes@google.com> wrote:
+[...]
+> +	 * The first argument of hvc_alloc() is the virtual console
+> +	 * number. hvc_alloc() checks if a console with the same value
+> +	 * was used in hvc_instantiate(). We may not end up passing
+> +	 * the same value here (we use the value 0 in
+> +	 * hvc_instantiate() but the console port may not be at id
+> +	 * 0). This isn't a problem, though. Nothing in hvc really
+> +	 * depends on these numbers and since this number is passed on
+> +	 * to us when cons_get/put_chars() is called, it's preferable
+> +	 * to pass on the port->id so that we can get the port struct
+> +	 * via get_port_from_id().
+[...]
+> +	port->hvc = hvc_alloc(port->id, 0, &virtio_cons, PAGE_SIZE);
 
-> Add interleaved NUMA emulation support
-> 
-> This patch interleaves emulated nodes over the system's physical 
-> nodes. This is required for interleave optimizations since 
-> mempolicies, for example, operate by iterating over a nodemask and act 
-> without knowledge of node distances.  It can also be used for testing 
-> memory latencies and NUMA bugs in the kernel.
-> 
-> There're a couple of ways to do this:
-> 
->  - divide the number of emulated nodes by the number of physical nodes
->    and allocate the result on each physical node, or
-> 
->  - allocate each successive emulated node on a different physical node
->    until all memory is exhausted.
-> 
-> The disadvantage of the first option is, depending on the asymmetry in 
-> node capacities of each physical node, emulated nodes may 
-> substantially differ in size on a particular physical node compared to 
-> another.
-> 
-> The disadvantage of the second option is, also depending on the 
-> asymmetry in node capacities of each physical node, there may be more 
-> emulated nodes allocated on a single physical node as another.
-> 
-> This patch implements the second option; we sacrifice the possibility 
-> that we may have slightly more emulated nodes on a particular physical 
-> node compared to another in lieu of node size asymmetry.
-> 
->  [ Note that "node capacity" of a physical node is not only a function of
->    its addressable range, but also is affected by subtracting out the
->    amount of reserved memory over that range.  NUMA emulation only deals
->    with available, non-reserved memory quantities. ]
-> 
-> We ensure there is at least a minimal amount of available memory
-> allocated to each node.  We also make sure that at least this amount of
-> available memory is available in ZONE_DMA32 for any node that includes
-> both ZONE_DMA32 and ZONE_NORMAL.
-> 
-> This patch also cleans the emulation code up by no longer passing the
-> statically allocated struct bootnode array among the various functions.
-> This init.data array is not allocated on the stack since it may be very
-> large and thus it may be accessed at file scope.
-> 
-> The WARN_ON() for nodes_cover_memory() when faking proximity domains is
-> removed since it relies on successive nodes always having greater start
-> addresses than previous nodes; with interleaving this is no longer always
-> true.
-> 
-> Cc: Yinghai Lu <yinghai@kernel.org>
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Cc: Ankita Garg <ankita@in.ibm.com>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  arch/x86/mm/numa_64.c |  211 ++++++++++++++++++++++++++++++++++++++++++------
->  arch/x86/mm/srat_64.c |    1 -
->  2 files changed, 184 insertions(+), 28 deletions(-)
+I am not sure if this is going to be ok. 
 
-Looks very nice. Peter, Thomas, any objections against queueing this up 
-in the x86 tree for more testing?
+When I change the old code (without your patch) to use vtermno=0 in 
+hvc_instantiate and vtermno=1 in hvc_alloc I get 
+"Warning: unable to open an initial console."
 
-	Ingo
+It seems to me that we have to pass the same values.
+
+Christian
