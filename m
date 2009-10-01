@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZJAQmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbZJAQpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbZJAQmo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 12:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396AbZJAQmn
+	id S1755591AbZJAQpW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 12:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZJAQpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 12:42:43 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:62926 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753622AbZJAQmm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 12:42:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=HI0NGSIthuK9dzSHuxAQ5fj5w1y9GpZGvHvQtlxhQh+4KuFFOgjZj+HuahME0L3JhV
-         w8aqJQKdMPJqkHzRz9hJDeIf5THlCTom5hkSb+TvnPiAVcvrpTR2VS/4Ca3XRNhErv9U
-         0hBvmBN2JLP+QItWU/YgvJaXFLzvFYH6KfToI=
+	Thu, 1 Oct 2009 12:45:21 -0400
+Received: from kroah.org ([198.145.64.141]:38163 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751587AbZJAQpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 12:45:20 -0400
+Date: Thu, 1 Oct 2009 09:42:49 -0700
+From: Greg KH <greg@kroah.com>
+To: Nathaniel McCallum <nathaniel@natemccallum.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Exposing device ids and driver names
+Message-ID: <20091001164249.GA2715@kroah.com>
+References: <4AC4DB65.8070404@natemccallum.com>
 MIME-Version: 1.0
-In-Reply-To: <20091001030733.GS24383@mit.edu>
-References: <cb0375e10909301954y68e18290m97e9fecfbc5aa6e3@mail.gmail.com>
-	 <20091001030733.GS24383@mit.edu>
-Date: Thu, 1 Oct 2009 12:42:45 -0400
-X-Google-Sender-Auth: 687b4535a4a57321
-Message-ID: <cb0375e10910010942m31c40ff5kc261deaa87969e55@mail.gmail.com>
-Subject: Re: 2.6.32-rc1 oops in ext4
-From: Andrew Lutomirski <andy@luto.us>
-To: Theodore Tso <tytso@mit.edu>, Andrew Lutomirski <andy@luto.us>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AC4DB65.8070404@natemccallum.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 11:07 PM, Theodore Tso <tytso@mit.edu> wrote:
-> On Wed, Sep 30, 2009 at 10:54:26PM -0400, Andrew Lutomirski wrote:
->> All I did was boot Fedora 11 and open a Konsole.  I'm running
->> 84d88d5d4efc37dfb8a93a4a58d8a227ee86ffa4.
->
-> I'm pretty sure this patch should fix things; can you confirm?
->
->                                              - Ted
->
-> commit 1f94533d9cd75f6d2826018d54a971b9cc085992
-> Author: Theodore Ts'o <tytso@mit.edu>
-> Date:   Wed Sep 30 22:57:41 2009 -0400
->
->    ext4: fix a BUG_ON crash by checking that page has buffers attached to it
->
->    In ext4_num_dirty_pages() we were calling page_buffers() before
->    checking to see if the page actually had pages attached to it; this
->    would cause a BUG check crash in the inline function page_buffers().
->
->    Thanks to Markus Trippelsdorf for reporting this bug.
->
->    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+On Thu, Oct 01, 2009 at 12:40:05PM -0400, Nathaniel McCallum wrote:
+> Please CC me on any responses as I'm not subscribed to lkml.
+> 
+> I have the aim at creating two tools helpful to linux.  The first tool 
+> is a driver regression test of sorts.  I want to be able to create 
+> essentially a time line of hardware support as they appear in distros. 
+> The second tool, related to the first, is a program which runs on 
+> Windows and scans for a user's hardware and tells them which distro will 
+> best support their hardware.
 
-I patched that onto the same kernel from git and it seems to work.
+That's going to be interesting, as all distros pretty much use the same
+kernel, it will just depend on who is "newer" at the moment, right?
 
-Tested-by: Andy Lutomirski <luto@mit.edu>
+> I already have a working prototype of these two tools.  It currently
+> uses the data exported by modinfo.  This however does not provide
+> transparency for drivers compiled into the kernel.
 
-Thanks,
-Andy
+Most distros don't build drivers into the kernel, so you should be fine
+with what you have today, right?  Or have you run into problems with
+this?
+
+Why not just use the baseline kernel as a model for this.  Do a 'make
+allmodconfig' and then extract the data and publish it that way.  No
+kernel changes are needed, and then any distro can be easily matched up
+by this based on what they are using.  That will save you time in
+downloading zillions of distro releases, and provide a nice easy way to
+show what the kernel.org releases support.
+
+thanks,
+
+greg k-h
