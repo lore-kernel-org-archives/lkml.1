@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbZJAJXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbZJAJcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbZJAJXs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 05:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbZJAJXr
+	id S1756008AbZJAJcq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 05:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbZJAJcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 05:23:47 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:39912 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbZJAJXq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 05:23:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=lXFz54RVQFazpE97W36aiwQq81sA/4VJcAC+XVscLLEDE5CMOpXJC8OO696715v1YB
-         NR9+ubzckVc/8iH8PGKxDy13qJ3FO5PpuXV0J4gDOU3D++gfw37ZmrPaArowcwYtOKVZ
-         zJZQit9ySYOSuS8HLxXDpAqW9uL59SAzPKo/4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: kernel BUG at drivers/ide/ide-disk.c:187 (2.6.31)
-Date: Thu, 1 Oct 2009 11:25:40 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-dirty; KDE/4.3.1; i686; ; )
-Cc: elendil@planet.nl, manty@manty.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <20090930110529.GA3676@dis.manty.net> <200910011026.17510.elendil@planet.nl> <20091001.013030.98262804.davem@davemloft.net>
-In-Reply-To: <20091001.013030.98262804.davem@davemloft.net>
+	Thu, 1 Oct 2009 05:32:45 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:13527 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755383AbZJAJcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 05:32:45 -0400
+Date: Thu, 1 Oct 2009 11:28:47 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <gregory.haskins@gmail.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+Message-ID: <20091001092847.GG5718@redhat.com>
+References: <4ABA61D1.80703@gmail.com> <4ABA78DC.7070604@redhat.com> <4ABA8FDC.5010008@gmail.com> <4ABB1D44.5000007@redhat.com> <4ABBB46D.2000102@gmail.com> <4ABC7DCE.2000404@redhat.com> <4ABD36E3.9070503@gmail.com> <4ABF33B2.4000805@redhat.com> <4AC3B9C6.5090408@gmail.com> <4AC46989.7030502@redhat.com>
 MIME-Version: 1.0
-Message-Id: <200910011125.40081.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AC46989.7030502@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 October 2009 10:30:30 David Miller wrote:
-> From: Frans Pop <elendil@planet.nl>
-> Date: Thu, 1 Oct 2009 10:26:14 +0200
-> 
-> > Question for IDE maintainers: should maybe the old printing of request info 
-> > be reinstated, or can the request flags also be obtained from the BUG 
-> > info?
-> 
-> Using a BUG for this doesn't make it any easier to track down the
-> problem.  WARN_ON_ONCE() or similar is much more appropriate here.
-> 
-> BUG() is for situations where the system's state is completely
-> irrecoverably corrupted, and we cannot continue, and that is not the
-> case here at all.
+On Thu, Oct 01, 2009 at 10:34:17AM +0200, Avi Kivity wrote:
+>> Second, I do not use ioeventfd anymore because it has too many problems
+>> with the surrounding technology.  However, that is a topic for a
+>> different thread.
+>>    
+>
+> Please post your issues.  I see ioeventfd/irqfd as critical kvm interfaces.
 
-The problem is that you simply cannot know what is the system state here.
+I second that. AFAIK ioeventfd/irqfd got exposed to userspace in 2.6.32-rc1,
+if there are issues we better nail them before 2.6.32 is out.
+And yes, please start a different thread.
 
-Thus when the unknown block layer request is encountered the best thing
-you can do is to BUG early instead of allowing the situation when some
-requests are silently dropped and possibly causing the data corruption.
+-- 
+MST
