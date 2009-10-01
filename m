@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbZJAQkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZJAQmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755563AbZJAQkV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 12:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbZJAQkT
+	id S1755534AbZJAQmo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 12:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396AbZJAQmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 12:40:19 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54310
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755533AbZJAQkP (ORCPT
+	Thu, 1 Oct 2009 12:42:43 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:62926 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753622AbZJAQmm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 12:40:15 -0400
-Date: Thu, 01 Oct 2009 09:40:34 -0700 (PDT)
-Message-Id: <20091001.094034.161463891.davem@davemloft.net>
-To: bzolnier@gmail.com
-Cc: elendil@planet.nl, manty@manty.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: kernel BUG at drivers/ide/ide-disk.c:187 (2.6.31)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200910011125.40081.bzolnier@gmail.com>
-References: <200910011026.17510.elendil@planet.nl>
-	<20091001.013030.98262804.davem@davemloft.net>
-	<200910011125.40081.bzolnier@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Oct 2009 12:42:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=HI0NGSIthuK9dzSHuxAQ5fj5w1y9GpZGvHvQtlxhQh+4KuFFOgjZj+HuahME0L3JhV
+         w8aqJQKdMPJqkHzRz9hJDeIf5THlCTom5hkSb+TvnPiAVcvrpTR2VS/4Ca3XRNhErv9U
+         0hBvmBN2JLP+QItWU/YgvJaXFLzvFYH6KfToI=
+MIME-Version: 1.0
+In-Reply-To: <20091001030733.GS24383@mit.edu>
+References: <cb0375e10909301954y68e18290m97e9fecfbc5aa6e3@mail.gmail.com>
+	 <20091001030733.GS24383@mit.edu>
+Date: Thu, 1 Oct 2009 12:42:45 -0400
+X-Google-Sender-Auth: 687b4535a4a57321
+Message-ID: <cb0375e10910010942m31c40ff5kc261deaa87969e55@mail.gmail.com>
+Subject: Re: 2.6.32-rc1 oops in ext4
+From: Andrew Lutomirski <andy@luto.us>
+To: Theodore Tso <tytso@mit.edu>, Andrew Lutomirski <andy@luto.us>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date: Thu, 1 Oct 2009 11:25:40 +0200
+On Wed, Sep 30, 2009 at 11:07 PM, Theodore Tso <tytso@mit.edu> wrote:
+> On Wed, Sep 30, 2009 at 10:54:26PM -0400, Andrew Lutomirski wrote:
+>> All I did was boot Fedora 11 and open a Konsole.  I'm running
+>> 84d88d5d4efc37dfb8a93a4a58d8a227ee86ffa4.
+>
+> I'm pretty sure this patch should fix things; can you confirm?
+>
+>                                              - Ted
+>
+> commit 1f94533d9cd75f6d2826018d54a971b9cc085992
+> Author: Theodore Ts'o <tytso@mit.edu>
+> Date:   Wed Sep 30 22:57:41 2009 -0400
+>
+>    ext4: fix a BUG_ON crash by checking that page has buffers attached to it
+>
+>    In ext4_num_dirty_pages() we were calling page_buffers() before
+>    checking to see if the page actually had pages attached to it; this
+>    would cause a BUG check crash in the inline function page_buffers().
+>
+>    Thanks to Markus Trippelsdorf for reporting this bug.
+>
+>    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 
-> The problem is that you simply cannot know what is the system state here.
-> 
-> Thus when the unknown block layer request is encountered the best thing
-> you can do is to BUG early instead of allowing the situation when some
-> requests are silently dropped and possibly causing the data corruption.
+I patched that onto the same kernel from git and it seems to work.
 
-Yes, but if you BUG() in this kind of location, the chance of getting
-the debugging information from the user can be close to zero.  We were
-very lucky this time :-)
+Tested-by: Andy Lutomirski <luto@mit.edu>
 
-If we're tossing a request, signal an error to the submitter.
-
-I hear we have infrastructure for that :-)
+Thanks,
+Andy
