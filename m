@@ -1,226 +1,449 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756379AbZJATxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbZJAXE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756379AbZJATxR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 15:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbZJATxQ
+	id S1754142AbZJAXE3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZJAXE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 15:53:16 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:50258 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbZJATxQ (ORCPT
+	Thu, 1 Oct 2009 19:04:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57306 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752934AbZJAXEY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 15:53:16 -0400
-Date: Thu, 1 Oct 2009 14:53:11 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       Robert Jennings <rcj@linux.vnet.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] mm: add notifier in pageblock isolation for balloon
-	drivers
-Message-ID: <20091001195311.GA16667@austin.ibm.com>
-Mail-Followup-To: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	linuxppc-dev@ozlabs.org
+	Thu, 1 Oct 2009 19:04:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.32-rc1-git2: Reported regressions 2.6.30 -> 2.6.31
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
+Date: Thu,  1 Oct 2009 21:53:40 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Memory balloon drivers can allocate a large amount of memory which
-is not movable but could be freed to accommodate memory hotplug remove.
+[Notes:
 
-Prior to calling the memory hotplug notifier chain the memory in the
-pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
-isolation will not proceed, causing the memory removal for that page
-range to fail.
+ * Quite a number of new regressions from 2.6.30 has been reported during
+   the last three weeks.
 
-Rather than immediately failing pageblock isolation if the the
-migrateteype is not MIGRATE_MOVABLE, this patch checks if all of the
-pages in the pageblock are owned by a registered balloon driver using a
-notifier chain.  If all of the non-movable pages are owned by a balloon,
-they can be freed later through the memory notifier chain and the range
-can still be isolated in set_migratetype_isolate().
+ * The number of unresolved regressions 2.6.30 -> 2.6.31 is now the second
+   highest ever.]
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+This message contains a list of some regressions introduced between 2.6.30 and
+2.6.31, for which there are no fixes in the mainline I know of.  If any of them
+have been fixed already, please let me know.
 
----
- drivers/base/memory.c  |   19 +++++++++++++++++++
- include/linux/memory.h |   22 ++++++++++++++++++++++
- mm/page_alloc.c        |   49 +++++++++++++++++++++++++++++++++++++++++--------
- 3 files changed, 82 insertions(+), 8 deletions(-)
+If you know of any other unresolved regressions introduced between 2.6.30
+and 2.6.31, please let me know either and I'll add them to the list.
+Also, please let me know if any of the entries below are invalid.
 
-Index: b/drivers/base/memory.c
-===================================================================
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
- }
- EXPORT_SYMBOL(unregister_memory_notifier);
- 
-+static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
-+
-+int register_memory_isolate_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
-+}
-+EXPORT_SYMBOL(register_memory_isolate_notifier);
-+
-+void unregister_memory_isolate_notifier(struct notifier_block *nb)
-+{
-+	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
-+}
-+EXPORT_SYMBOL(unregister_memory_isolate_notifier);
-+
- /*
-  * register_memory - Setup a sysfs device for a memory block
-  */
-@@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
- 	return blocking_notifier_call_chain(&memory_chain, val, v);
- }
- 
-+int memory_isolate_notify(unsigned long val, void *v)
-+{
-+	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
-+}
-+
- /*
-  * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
-  * OK to have direct references to sparsemem variables in here.
-Index: b/include/linux/memory.h
-===================================================================
---- a/include/linux/memory.h
-+++ b/include/linux/memory.h
-@@ -50,6 +50,14 @@ struct memory_notify {
- 	int status_change_nid;
- };
- 
-+#define MEM_ISOLATE_COUNT	(1<<0)
-+
-+struct memory_isolate_notify {
-+	unsigned long start_addr;
-+	unsigned int nr_pages;
-+	unsigned int pages_found;
-+};
-+
- struct notifier_block;
- struct mem_section;
- 
-@@ -76,14 +84,28 @@ static inline int memory_notify(unsigned
- {
- 	return 0;
- }
-+static inline int register_memory_isolate_notifier(struct notifier_block *nb)
-+{
-+	return 0;
-+}
-+static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
-+{
-+}
-+static inline int memory_isolate_notify(unsigned long val, void *v)
-+{
-+	return 0;
-+}
- #else
- extern int register_memory_notifier(struct notifier_block *nb);
- extern void unregister_memory_notifier(struct notifier_block *nb);
-+extern int register_memory_isolate_notifier(struct notifier_block *nb);
-+extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
- extern int register_new_memory(int, struct mem_section *);
- extern int unregister_memory_section(struct mem_section *);
- extern int memory_dev_init(void);
- extern int remove_memory_block(unsigned long, struct mem_section *, int);
- extern int memory_notify(unsigned long val, void *v);
-+extern int memory_isolate_notify(unsigned long val, void *v);
- extern struct memory_block *find_memory_block(struct mem_section *);
- #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
- enum mem_add_context { BOOT, HOTPLUG };
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -48,6 +48,7 @@
- #include <linux/page_cgroup.h>
- #include <linux/debugobjects.h>
- #include <linux/kmemleak.h>
-+#include <linux/memory.h>
- #include <trace/events/kmem.h>
- 
- #include <asm/tlbflush.h>
-@@ -4985,23 +4986,55 @@ void set_pageblock_flags_group(struct pa
- int set_migratetype_isolate(struct page *page)
- {
- 	struct zone *zone;
--	unsigned long flags;
-+	unsigned long flags, pfn, iter;
-+	long immobile = 0;
-+	struct memory_isolate_notify arg;
-+	int notifier_ret;
- 	int ret = -EBUSY;
- 	int zone_idx;
- 
- 	zone = page_zone(page);
- 	zone_idx = zone_idx(zone);
-+
-+	pfn = page_to_pfn(page);
-+	arg.start_addr = (unsigned long)page_address(page);
-+	arg.nr_pages = pageblock_nr_pages;
-+	arg.pages_found = 0;
-+
- 	spin_lock_irqsave(&zone->lock, flags);
- 	/*
- 	 * In future, more migrate types will be able to be isolation target.
- 	 */
--	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
--	    zone_idx != ZONE_MOVABLE)
--		goto out;
--	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
--	move_freepages_block(zone, page, MIGRATE_ISOLATE);
--	ret = 0;
--out:
-+	do {
-+		if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE &&
-+		    zone_idx == ZONE_MOVABLE) {
-+			ret = 0;
-+			break;
-+		}
-+
-+		/*
-+		 * If all of the pages in a zone are used by a balloon,
-+		 * the range can be still be isolated.  The balloon will
-+		 * free these pages from the memory notifier chain.
-+		 */
-+		notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
-+		notifier_ret = notifier_to_errno(ret);
-+		if (notifier_ret || !arg.pages_found)
-+			break;
-+
-+		for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
-+			if (page_count(pfn_to_page(iter)))
-+				immobile++;
-+
-+		if (arg.pages_found == immobile)
-+			ret = 0;
-+	} while (0);
-+
-+	if (!ret) {
-+		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
-+		move_freepages_block(zone, page, MIGRATE_ISOLATE);
-+	}
-+
- 	spin_unlock_irqrestore(&zone->lock, flags);
- 	if (!ret)
- 		drain_all_pages();
+Each entry from the list will be sent additionally in an automatic reply to
+this message with CCs to the people involved in reporting and handling the
+issue.
+
+
+Listed regressions statistics:
+
+  Date          Total  Pending  Unresolved
+  ----------------------------------------
+  2009-10-02      151       49          42
+  2009-09-06      123       34          27
+  2009-08-26      108       33          26
+  2009-08-20      102       32          29
+  2009-08-10       89       27          24
+  2009-08-02       76       36          28
+  2009-07-27       70       51          43
+  2009-07-07       35       25          21
+  2009-06-29       22       22          15
+
+
+Unresolved regressions
+----------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14301
+Subject		: WARNING: at net/ipv4/af_inet.c:154
+Submitter	: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+Date		: 2009-09-30 12:24 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=125431350218137&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14294
+Subject		: kernel BUG at drivers/ide/ide-disk.c:187
+Submitter	: Santiago Garcia Mantinan <manty@manty.net>
+Date		: 2009-09-30 11:05 (2 days old)
+References	: http://marc.info/?l=linux-kernel&m=125430926311466&w=4
+Handled-By	: David Miller <davem@davemloft.net>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14270
+Subject		: Cannot boot on a PIII Celeron
+Submitter	: Michael Tokarev <mjt@tls.msk.ru>
+Date		: 2009-09-28 15:26 (4 days old)
+References	: http://marc.info/?l=linux-kernel&m=125415160524110&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14267
+Subject		: Disassociating atheros wlan
+Submitter	: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Date		: 2009-09-24 10:16 (8 days old)
+References	: http://marc.info/?l=linux-kernel&m=125378723723384&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14266
+Subject		: regression in page writeback
+Submitter	: Shaohua Li <shaohua.li@intel.com>
+Date		: 2009-09-22 5:49 (10 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d7831a0bdf06b9f722b947bb0c205ff7d77cebd8
+References	: http://marc.info/?l=linux-kernel&m=125359858117176&w=4
+Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14265
+Subject		: ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
+Submitter	: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+Date		: 2009-09-15 12:05 (17 days old)
+References	: http://marc.info/?l=linux-kernel&m=125301636509517&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14264
+Subject		: ehci problem - mouse dead on scroll
+Submitter	: Volker Armin Hemmann <volkerarmin@googlemail.com>
+Date		: 2009-09-12 7:46 (20 days old)
+References	: http://marc.info/?l=linux-kernel&m=125274202707893&w=4
+Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14257
+Subject		: Not able to boot on 32 bit System
+Submitter	: Rishikesh <risrajak@linux.vnet.ibm.com>
+Date		: 2009-09-21 15:25 (11 days old)
+References	: http://marc.info/?l=linux-kernel&m=125354604314412&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14256
+Subject		: kernel BUG at fs/ext3/super.c:435
+Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+Date		: 2009-09-21 7:29 (11 days old)
+References	: http://marc.info/?l=linux-kernel&m=125351816109264&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14255
+Subject		: WARNING: at drivers/char/tty_io.c:1267
+Submitter	: Heinz Diehl <htd@fancy-poultry.org>
+Date		: 2009-09-20 11:37 (12 days old)
+References	: http://marc.info/?l=linux-kernel&m=125344629506309&w=4
+		  http://lkml.org/lkml/2009/9/8/393
+Handled-By	: Linus Torvalds <torvalds@linux-foundation.org>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14254
+Subject		: Hibernation broken by clocksource: Save mult_orig in clocksource_disable()
+Submitter	: Ondrej Zary <linux@rainbow-software.org>
+Date		: 2009-09-19 19:55 (13 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c7121843685de2bf7f3afd3ae1d6a146010bf1fc
+References	: http://marc.info/?l=linux-kernel&m=125339012527719&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14252
+Subject		: WARNING: at include/linux/skbuff.h:1382 w/ e1000
+Submitter	: Stephan von Krawczynski <skraw@ithnet.com>
+Date		: 2009-09-20 11:26 (12 days old)
+References	: http://marc.info/?l=linux-kernel&m=125344599006033&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14251
+Subject		: 2.6.31: no login prompt
+Submitter	: Frédéric L. W. Meunier <fredlwm@gmail.com>
+Date		: 2009-09-19 22:43 (13 days old)
+References	: http://marc.info/?l=linux-kernel&m=125340020804711&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14249
+Subject		: BUG: oops in gss_validate on 2.6.31
+Submitter	: Bastian Blank <bastian@waldi.eu.org>
+Date		: 2009-09-16 10:29 (16 days old)
+References	: http://marc.info/?l=linux-kernel&m=125309700417283&w=4
+Handled-By	: Trond Myklebust <trond.myklebust@fys.uio.no>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14248
+Subject		: 2.6.31 wireless: WARNING: at net/wireless/ibss.c:34
+Submitter	: Jurriaan <thunder8@xs4all.nl>
+Date		: 2009-09-13 7:32 (19 days old)
+References	: http://marc.info/?l=linux-kernel&m=125282721113553&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14222
+Subject		: Hibernation oopses for the 2nd time with 2.6.31 (won't fit the screen)
+Submitter	: Ondrej Zary <linux@rainbow-software.org>
+Date		: 2009-09-24 14:07 (8 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c7121843685de2bf7f3afd3ae1d6a146010bf1fc
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14205
+Subject		: Intel DX58SO mainboard - powering off takes really long
+Submitter	: Tomasz Chmielewski <tch@wpkg.org>
+Date		: 2009-09-22 10:14 (10 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14204
+Subject		: MCE prevent booting on my computer(pentium iii @500Mhz)
+Submitter	: GNUtoo <GNUtoo@no-log.org>
+Date		: 2009-09-21 20:36 (11 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14185
+Subject		: Oops in driversbasefirmware_class
+Submitter	:  <lars_ericsson@telia.com>
+Date		: 2009-09-17 05:09 (15 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=6e03a201bbe8137487f340d26aa662110e324b20
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14181
+Subject		: b43 causes panic at system shutdown
+Submitter	: Jeremy Huddleston <jeremyhu@freedesktop.org>
+Date		: 2009-09-15 18:34 (17 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14157
+Subject		: end_request: I/O error, dev cciss/cXdX, sector 0
+Submitter	:  <jiri.harcarik@gmail.com>
+Date		: 2009-09-11 07:42 (21 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14143
+Subject		: OOPS when setting nr_requests for md devices
+Submitter	: aCaB <acab@clamav.net>
+Date		: 2009-09-08 08:48 (24 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14141
+Subject		: order 2 page allocation failures in iwlagn
+Submitter	: Frans Pop <elendil@planet.nl>
+Date		: 2009-09-06 7:40 (26 days old)
+References	: http://marc.info/?l=linux-kernel&m=125222287419691&w=4
+Handled-By	: Pekka Enberg <penberg@cs.helsinki.fi>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14133
+Subject		: WARNING: at arch/x86/kernel/smp.c:117 native_smp_send_reschedule
+Submitter	: Jens Axboe <jens.axboe@oracle.com>
+Date		: 2009-08-31 20:43 (32 days old)
+References	: http://marc.info/?l=linux-kernel&m=125175143918050&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14114
+Subject		: Tuning a saa7134 based card is broken in kernel 2.6.31-rc7
+Submitter	: Tsvety Petrov <Tsvetoslav.Petrov@itron.com>
+Date		: 2009-09-03 21:06 (29 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14090
+Subject		: WARNING: at fs/notify/inotify/inotify_user.c:394
+Submitter	: Joerg Platte <bugzilla@jako.ping.de>
+Date		: 2009-08-30 15:21 (33 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14070
+Subject		: lockdep warning triggered by dup_fd
+Submitter	: Bart Van Assche <bart.vanassche@gmail.com>
+Date		: 2009-08-23 09:36 (40 days old)
+References	: http://lkml.org/lkml/2009/8/23/8
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14058
+Subject		: Oops in fsnotify
+Submitter	: Grant Wilson <grant.wilson@zen.co.uk>
+Date		: 2009-08-20 15:48 (43 days old)
+References	: http://marc.info/?l=linux-kernel&m=125078450923133&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14013
+Subject		: hd don't show up
+Submitter	: Tim Blechmann <tim@klingt.org>
+Date		: 2009-08-14 8:26 (49 days old)
+References	: http://marc.info/?l=linux-kernel&m=125023842514480&w=4
+Handled-By	: Tejun Heo <tj@kernel.org>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13987
+Subject		: Received NMI interrupt at resume
+Submitter	: Christian Casteyde <casteyde.christian@free.fr>
+Date		: 2009-08-15 07:55 (48 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13950
+Subject		: Oops when USB Serial disconnected while in use
+Submitter	: Bruno Prémont <bonbons@linux-vserver.org>
+Date		: 2009-08-08 17:47 (55 days old)
+References	: http://marc.info/?l=linux-kernel&m=124975432900466&w=4
+Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13943
+Subject		: WARNING: at net/mac80211/mlme.c:2292 with ath5k
+Submitter	: Fabio Comolli <fabio.comolli@gmail.com>
+Date		: 2009-08-06 20:15 (57 days old)
+References	: http://marc.info/?l=linux-kernel&m=124958978600600&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13942
+Subject		: Troubles with AoE and uninitialized object
+Submitter	: Bruno Prémont <bonbons@linux-vserver.org>
+Date		: 2009-08-04 10:12 (59 days old)
+References	: http://marc.info/?l=linux-kernel&m=124938117104811&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13941
+Subject		: x86 Geode issue
+Submitter	: Martin-Éric Racine <q-funk@iki.fi>
+Date		: 2009-08-03 12:58 (60 days old)
+References	: http://marc.info/?l=linux-kernel&m=124930434732481&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13940
+Subject		: iwlagn and sky2 stopped working, ACPI-related
+Submitter	: Ricardo Jorge da Fonseca Marques Ferreira <storm@sys49152.net>
+Date		: 2009-08-07 22:33 (56 days old)
+References	: http://marc.info/?l=linux-kernel&m=124968457731107&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13935
+Subject		: 2.6.31-rcX breaks Apple MightyMouse (Bluetooth version)
+Submitter	: Adrian Ulrich <kernel@blinkenlights.ch>
+Date		: 2009-08-08 22:08 (55 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=fa047e4f6fa63a6e9d0ae4d7749538830d14a343
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13906
+Subject		: Huawei E169 GPRS connection causes Ooops
+Submitter	: Clemens Eisserer <linuxhippy@gmail.com>
+Date		: 2009-08-04 09:02 (59 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13869
+Subject		: Radeon framebuffer (w/o KMS) corruption at boot.
+Submitter	: Duncan <1i5t5.duncan@cox.net>
+Date		: 2009-07-29 16:44 (65 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13836
+Subject		: suspend script fails, related to stdout?
+Submitter	: Tomas M. <tmezzadra@gmail.com>
+Date		: 2009-07-17 21:24 (77 days old)
+References	: http://marc.info/?l=linux-kernel&m=124785853811667&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13809
+Subject		: oprofile: possible circular locking dependency detected
+Submitter	: Jerome Marchand <jmarchan@redhat.com>
+Date		: 2009-07-22 13:35 (72 days old)
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13733
+Subject		: 2.6.31-rc2: irq 16: nobody cared
+Submitter	: Niel Lambrechts <niel.lambrechts@gmail.com>
+Date		: 2009-07-06 18:32 (88 days old)
+References	: http://marc.info/?l=linux-kernel&m=124690524027166&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13645
+Subject		: NULL pointer dereference at (null) (level2_spare_pgt)
+Submitter	: poornima nayak <mpnayak@linux.vnet.ibm.com>
+Date		: 2009-06-17 17:56 (107 days old)
+References	: http://lkml.org/lkml/2009/6/17/194
+
+
+Regressions with patches
+------------------------
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14275
+Subject		: kernel>=2.6.31: ahci.c: do not force unconditionally sb600 to 32bit dma any more?
+Submitter	: gabriele balducci <balducci@units.it>
+Date		: 2009-09-30 15:02 (2 days old)
+Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=14275#c0
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14261
+Subject		: e1000e jumbo frames no longer work: 'Unsupported MTU setting'
+Submitter	: Nix <nix@esperi.org.uk>
+Date		: 2009-09-26 11:16 (6 days old)
+References	: http://marc.info/?l=linux-kernel&m=125396433321342&w=4
+Handled-By	: Alexander Duyck <alexander.duyck@gmail.com>
+Patch		: http://patchwork.kernel.org/patch/50277/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14258
+Subject		: Memory leak in SCSI initialization
+Submitter	: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Date		: 2009-09-22 4:18 (10 days old)
+References	: http://marc.info/?l=linux-kernel&m=125359311312243&w=4
+Handled-By	: Michael Ellerman <michael@ellerman.id.au>
+Patch		: http://patchwork.kernel.org/patch/49258/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14253
+Subject		: Oops in driversbasefirmware_class
+Submitter	: Lars Ericsson <Lars_Ericsson@telia.com>
+Date		: 2009-09-16 20:44 (16 days old)
+References	: http://lkml.org/lkml/2009/9/16/461
+Handled-By	: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Patch		: http://patchwork.kernel.org/patch/49914/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14137
+Subject		: usb console regressions
+Submitter	: Jason Wessel <jason.wessel@windriver.com>
+Date		: 2009-09-05 21:08 (27 days old)
+References	: http://marc.info/?l=linux-kernel&m=125218501310512&w=4
+Handled-By	: Jason Wessel <jason.wessel@windriver.com>
+Patch		: http://patchwork.kernel.org/patch/45953/
+		  http://patchwork.kernel.org/patch/45952/
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14017
+Subject		: _end symbol missing from Symbol.map
+Submitter	: Hannes Reinecke <hare@suse.de>
+Date		: 2009-08-13 6:45 (50 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=091e52c3551d3031343df24b573b770b4c6c72b6
+References	: http://marc.info/?l=linux-kernel&m=125014649102253&w=4
+Handled-By	: Hannes Reinecke <hare@suse.de>
+Patch		: http://marc.info/?l=linux-kernel&m=125014649102253&w=4
+
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13948
+Subject		: ath5k broken after suspend-to-ram
+Submitter	: Johannes Stezenbach <js@sig21.net>
+Date		: 2009-08-07 21:51 (56 days old)
+References	: http://marc.info/?l=linux-kernel&m=124968192727854&w=4
+Handled-By	: Nick Kossifidis <mickflemm@gmail.com>
+Patch		: http://patchwork.kernel.org/patch/38550/
+
+
+For details, please visit the bug entries and follow the links given in
+references.
+
+As you can see, there is a Bugzilla entry for each of the listed regressions.
+There also is a Bugzilla entry used for tracking the regressions introduced
+between 2.6.30 and 2.6.31, unresolved as well as resolved, at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=13615
+
+Please let me know if there are any Bugzilla entries that should be added to
+the list in there.
+
+Thanks,
+Rafael
+
