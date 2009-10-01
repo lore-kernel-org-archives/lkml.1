@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbZJAXiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbZJAXk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756220AbZJAXiW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbZJAXiT
+	id S1756727AbZJAXk5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbZJAXiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:38:19 -0400
-Received: from kroah.org ([198.145.64.141]:42042 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:38:21 -0400
+Received: from kroah.org ([198.145.64.141]:42043 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755539AbZJAXiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755991AbZJAXiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Oct 2009 19:38:13 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:33:21 2009
-Message-Id: <20091001233320.964047795@mini.kroah.org>
+Message-Id: <20091001233321.135633369@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:31:31 -0700
+Date: Thu, 01 Oct 2009 16:31:32 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, avi@redhat.com
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mark McLoughlin <markmc@redhat.com>, avi@redhat.com
-Subject: [patch 15/30] KVM: fix cpuid E2BIG handling for extended request types
+       Juan Quintela <quintela@redhat.com>,
+       Jan Kiszka <jan.kiszka@siemens.com>
+Subject: [patch 16/30] Revert "KVM: x86: check for cr3 validity in ioctl_set_sregs"
 References: <20091001233116.947658905@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-fix-cpuid-e2big-handling-for-extended-request-types.patch
+Content-Disposition: inline; filename=revert-kvm-x86-check-for-cr3-validity-in-ioctl_set_sregs.patch
 In-Reply-To: <20091001233504.GA17709@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Mark McLoughlin <markmc@redhat.com>
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-(cherry picked from commit cb007648de83cf226d69ec76e1c01848b4e8e49f)
+(cherry picked from commit dc7e795e3dd2a763e5ceaa1615f307e808cf3932)
 
-If we run out of cpuid entries for extended request types
-we should return -E2BIG, just like we do for the standard
-request types.
+This reverts commit 6c20e1442bb1c62914bb85b7f4a38973d2a423ba.
 
-Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+To my understanding, it became obsolete with the advent of the more
+robust check in mmu_alloc_roots (89da4ff17f). Moreover, it prevents
+the conceptually safe pattern
+
+ 1. set sregs
+ 2. register mem-slots
+ 3. run vcpu
+
+by setting a sticky triple fault during step 1.
+
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- arch/x86/kvm/x86.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/x86/kvm/x86.c |    8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -1438,6 +1438,10 @@ static int kvm_dev_ioctl_get_supported_c
- 	for (func = 0x80000001; func <= limit && nent < cpuid->nent; ++func)
- 		do_cpuid_ent(&cpuid_entries[nent], func, 0,
- 			     &nent, cpuid->nent);
-+	r = -E2BIG;
-+	if (nent >= cpuid->nent)
-+		goto out_free;
-+
- 	r = -EFAULT;
- 	if (copy_to_user(entries, cpuid_entries,
- 			 nent * sizeof(struct kvm_cpuid_entry2)))
+@@ -4012,13 +4012,7 @@ int kvm_arch_vcpu_ioctl_set_sregs(struct
+ 
+ 	vcpu->arch.cr2 = sregs->cr2;
+ 	mmu_reset_needed |= vcpu->arch.cr3 != sregs->cr3;
+-
+-	down_read(&vcpu->kvm->slots_lock);
+-	if (gfn_to_memslot(vcpu->kvm, sregs->cr3 >> PAGE_SHIFT))
+-		vcpu->arch.cr3 = sregs->cr3;
+-	else
+-		set_bit(KVM_REQ_TRIPLE_FAULT, &vcpu->requests);
+-	up_read(&vcpu->kvm->slots_lock);
++	vcpu->arch.cr3 = sregs->cr3;
+ 
+ 	kvm_set_cr8(vcpu, sregs->cr8);
+ 
 
 
