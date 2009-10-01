@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbZJAIdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932406AbZJAIgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932293AbZJAIdX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932253AbZJAIdV
+	id S932406AbZJAIgG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932212AbZJAIgC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:33:21 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56605 "EHLO
+	Thu, 1 Oct 2009 04:36:02 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:56555 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932250AbZJAI3a (ORCPT
+	with ESMTP id S932206AbZJAI3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:29:30 -0400
+	Thu, 1 Oct 2009 04:29:22 -0400
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       "Brian G. Merrell" <bgmerrell@novell.com>,
-       Shan Wei <shanwei@cn.fujitsu.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       devel@driverdev.osuosl.org
-Subject: [PATCH 28/34] move vhci_hcd_remove to .devexit.text
-Date: Thu,  1 Oct 2009 10:28:32 +0200
-Message-Id: <1254385718-14254-28-git-send-email-u.kleine-koenig@pengutronix.de>
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Michael S. Tsirkin" <mst@redhat.com>
+Subject: [PATCH 29/34] move virtballoon_remove to .devexit.text
+Date: Thu,  1 Oct 2009 10:28:33 +0200
+Message-Id: <1254385718-14254-29-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.4.3
 In-Reply-To: <20091001082607.GA2181@pengutronix.de>
 References: <20091001082607.GA2181@pengutronix.de>
@@ -35,33 +33,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function vhci_hcd_remove is used only wrapped by __devexit_p so define
-it using __devexit.
+The function virtballoon_remove is used only wrapped by __devexit_p so
+define it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Brian G. Merrell <bgmerrell@novell.com>
-Cc: Shan Wei <shanwei@cn.fujitsu.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: devel@driverdev.osuosl.org
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Michael S. Tsirkin <mst@redhat.com>
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/staging/usbip/vhci_hcd.c |    2 +-
+ drivers/virtio/virtio_balloon.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/usbip/vhci_hcd.c b/drivers/staging/usbip/vhci_hcd.c
-index 6e91fc2..22b1c6c 100644
---- a/drivers/staging/usbip/vhci_hcd.c
-+++ b/drivers/staging/usbip/vhci_hcd.c
-@@ -1131,7 +1131,7 @@ static int vhci_hcd_probe(struct platform_device *pdev)
+diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
+index 200c22f..b2d28bb 100644
+--- a/drivers/virtio/virtio_balloon.c
++++ b/drivers/virtio/virtio_balloon.c
+@@ -248,7 +248,7 @@ out:
+ 	return err;
  }
  
- 
--static int vhci_hcd_remove(struct platform_device *pdev)
-+static int __devexit vhci_hcd_remove(struct platform_device *pdev)
+-static void virtballoon_remove(struct virtio_device *vdev)
++static void __devexit virtballoon_remove(struct virtio_device *vdev)
  {
- 	struct usb_hcd	*hcd;
+ 	struct virtio_balloon *vb = vdev->priv;
  
 -- 
 1.6.4.3
