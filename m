@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbZJAI0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932137AbZJAI1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbZJAI0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932097AbZJAI0S
+	id S932137AbZJAI1E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:27:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932138AbZJAI1C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:26:18 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:56601 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755980AbZJAI0P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:26:15 -0400
-From: Frans Pop <elendil@planet.nl>
-To: manty@manty.net
-Subject: Re: kernel BUG at drivers/ide/ide-disk.c:187 (2.6.31)
-Date: Thu, 1 Oct 2009 10:26:14 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-References: <20090930110529.GA3676@dis.manty.net> <20090930110529.GA3676@dis.manty.net> <20090930235709.43ff1255.akpm@linux-foundation.org>
-In-reply-To: <20090930235709.43ff1255.akpm@linux-foundation.org>
+	Thu, 1 Oct 2009 04:27:02 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36426 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932139AbZJAI06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 04:26:58 -0400
+Date: Thu, 1 Oct 2009 10:26:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: john stultz <johnstul@us.ibm.com>
+Cc: mschmidt@redhat.com, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
+       tglx@linutronix.de, xtfeng@gmail.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:timers/urgent] clocksource: Resume clocksource without
+	taking the clocksource mutex
+Message-ID: <20091001082640.GB12200@elte.hu>
+References: <20090924172952.49697825@mschwide.boeblingen.de.ibm.com> <tip-89133f93508137231251543d1732da638e6022e1@git.kernel.org> <1254164114.7977.3.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910011026.17510.elendil@planet.nl>
-X-OriginalArrivalTime: 01 Oct 2009 08:26:18.0398 (UTC) FILETIME=[D95CABE0:01CA4270]
+In-Reply-To: <1254164114.7977.3.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Manty,
 
-Andrew Morton wrote:
-> On Wed, 30 Sep 2009 13:05:29 +0200 Santiago Garcia Mantinan wrote:
->> kernel BUG at drivers/ide/ide-disk.c:187!
+* john stultz <johnstul@us.ibm.com> wrote:
 
-Looks like this is a deliberate test for unknown requests that was added in 
-2.6.31 with the following commit:
+> On Fri, 2009-09-25 at 06:20 +0000, tip-bot for Martin Schwidefsky wrote:
+> > Commit-ID:  89133f93508137231251543d1732da638e6022e1
+> > Gitweb:     http://git.kernel.org/tip/89133f93508137231251543d1732da638e6022e1
+> > Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > AuthorDate: Thu, 24 Sep 2009 17:29:52 +0200
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Thu, 24 Sep 2009 22:37:53 +0200
+> > 
+> > clocksource: Resume clocksource without taking the clocksource mutex
+> > 
+> > git commit 75c5158f70c065b9 converted the clocksource spinlock to a
+> > mutex. This causes the following BUG:
+> > 
+> > BUG: sleeping function called from invalid context at
+> > kernel/mutex.c:280 in_atomic(): 0, irqs_disabled(): 1, pid: 2473,
+> > name: pm-suspend 2 locks held by pm-suspend/2473:
+> >  #0:  (&buffer->mutex){......}, at: [<ffffffff8115ab13>]
+> > sysfs_write_file+0x3c/0x137
+> >  #1:  (pm_mutex){......}, at: [<ffffffff810865b5>]
+> > enter_state+0x39/0x130 Pid: 2473, comm: pm-suspend Not tainted 2.6.31
+> > #1 Call Trace:
+> >  [<ffffffff810792f0>] ? __debug_show_held_locks+0x22/0x24
+> >  [<ffffffff8104a2ef>] __might_sleep+0x107/0x10b
+> >  [<ffffffff8141fca9>] mutex_lock_nested+0x25/0x43
+> >  [<ffffffff81073537>] clocksource_resume+0x1c/0x60
+> >  [<ffffffff81072902>] timekeeping_resume+0x1e/0x1c8
+> >  [<ffffffff812aee62>] __sysdev_resume+0x25/0xcf
+> >  [<ffffffff812aef79>] sysdev_resume+0x6d/0xae
+> >  [<ffffffff810864f8>] suspend_devices_and_enter+0x12b/0x1af
+> >  [<ffffffff8108665b>] enter_state+0xdf/0x130
+> >  [<ffffffff81085dc3>] state_store+0xb6/0xd3
+> >  [<ffffffff81204c73>] kobj_attr_store+0x17/0x19
+> >  [<ffffffff8115abd2>] sysfs_write_file+0xfb/0x137
+> >  [<ffffffff811057d2>] vfs_write+0xae/0x10b
+> >  [<ffffffff81208392>] ? __up_read+0x1a/0x7f
+> >  [<ffffffff811058ef>] sys_write+0x4a/0x6e
+> >  [<ffffffff81011b82>] system_call_fastpath+0x16/0x1b
+> > 
+> > clocksource_resume is called early in the resume process, there is 
+> > only one cpu, no processes are running and the interrupts are 
+> > disabled. It is therefore possible to resume the clocksources 
+> > without taking the clocksource mutex.
+> 
+> Should a comment to this effect be included in the code?
 
-commit 2c7eaa43c3bb7b3b9fe2051d17f308c1f0728c78
-Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date:   Mon Jun 15 22:16:10 2009 +0200
+Yeah. (I suspect if such a question ever arises the answer is always yes 
+;-)
 
-    ide: BUG() on unknown requests
-
-    Unsupported requests should be never handed down to device drivers
-    and the best thing we can do upon discovering such request inside
-    driver's ->do_request method is to just BUG().
-
-In previous kernels the code would not dump, but still fail and print the 
-request flags, identified by "ide_do_rw_disk - bad command", to the kernel 
-log.
-Manty: Have you ever seen such messages with previous kernels?
-
-Question for IDE maintainers: should maybe the old printing of request info 
-be reinstated, or can the request flags also be obtained from the BUG 
-info?
-
-Cheers,
-FJP
+	Ingo
