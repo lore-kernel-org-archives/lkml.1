@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbZJAXXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbZJAXYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754705AbZJAXXT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZJAXXS
+	id S1756678AbZJAXYW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZJAXXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:23:18 -0400
-Received: from kroah.org ([198.145.64.141]:39653 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:23:20 -0400
+Received: from kroah.org ([198.145.64.141]:39657 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753720AbZJAXXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:23:16 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:18:04 2009
-Message-Id: <20091001231804.721662998@mini.kroah.org>
+	id S1754527AbZJAXXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:23:17 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:18:05 2009
+Message-Id: <20091001231804.861826549@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:16:35 -0700
+Date: Thu, 01 Oct 2009 16:16:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Christian Lamparter <chunkeey@googlemail.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 2/9] p54usb: add Zcomax XG-705A usbid
+       Baruch Siach <baruch@tkos.co.il>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 3/9] enc28j60: fix RX buffer overflow
 References: <20091001231633.719696398@mini.kroah.org>
-Content-Disposition: inline; filename=p54usb-add-zcomax-xg-705a-usbid.patch
+Content-Disposition: inline; filename=enc28j60-fix-rx-buffer-overflow.patch
 In-Reply-To: <20091001231938.GA29593@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,30 +31,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Christian Lamparter <chunkeey@googlemail.com>
+From: Baruch Siach <baruch@tkos.co.il>
 
-commit f7f71173ea69d4dabf166533beffa9294090b7ef upstream.
+commit 22692018b93f0782cda5a843cecfffda1854eb8d upstream.
 
-This patch adds a new usbid for Zcomax XG-705A to the device table.
+The enc28j60 driver doesn't check whether the length of the packet as reported
+by the hardware fits into the preallocated buffer. When stressed, the hardware
+may report insanely large packets even tough the "Receive OK" bit is set. Fix
+this.
 
-Reported-by: Jari Jaakola <jari.jaakola@gmail.com>
-Signed-off-by: Christian Lamparter <chunkeey@googlemail.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/p54/p54usb.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/enc28j60.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/net/wireless/p54/p54usb.c
-+++ b/drivers/net/wireless/p54/p54usb.c
-@@ -63,6 +63,7 @@ static struct usb_device_id p54u_table[]
- 	{USB_DEVICE(0x0bf8, 0x1009)},   /* FUJITSU E-5400 USB D1700*/
- 	{USB_DEVICE(0x0cde, 0x0006)},   /* Medion MD40900 */
- 	{USB_DEVICE(0x0cde, 0x0008)},	/* Sagem XG703A */
-+	{USB_DEVICE(0x0cde, 0x0015)},	/* Zcomax XG-705A */
- 	{USB_DEVICE(0x0d8e, 0x3762)},	/* DLink DWL-G120 Cohiba */
- 	{USB_DEVICE(0x09aa, 0x1000)},	/* Spinnaker Proto board */
- 	{USB_DEVICE(0x124a, 0x4025)},	/* IOGear GWU513 (GW3887IK chip) */
+--- a/drivers/net/enc28j60.c
++++ b/drivers/net/enc28j60.c
+@@ -919,7 +919,7 @@ static void enc28j60_hw_rx(struct net_de
+ 	if (netif_msg_rx_status(priv))
+ 		enc28j60_dump_rsv(priv, __FUNCTION__, next_packet, len, rxstat);
+ 
+-	if (!RSV_GETBIT(rxstat, RSV_RXOK)) {
++	if (!RSV_GETBIT(rxstat, RSV_RXOK) || len > MAX_FRAMELEN) {
+ 		if (netif_msg_rx_err(priv))
+ 			dev_err(&ndev->dev, "Rx Error (%04x)\n", rxstat);
+ 		ndev->stats.rx_errors++;
+@@ -927,6 +927,8 @@ static void enc28j60_hw_rx(struct net_de
+ 			ndev->stats.rx_crc_errors++;
+ 		if (RSV_GETBIT(rxstat, RSV_LENCHECKERR))
+ 			ndev->stats.rx_frame_errors++;
++		if (len > MAX_FRAMELEN)
++			ndev->stats.rx_over_errors++;
+ 	} else {
+ 		skb = dev_alloc_skb(len + NET_IP_ALIGN);
+ 		if (!skb) {
 
 
