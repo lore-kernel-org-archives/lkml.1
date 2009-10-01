@@ -1,111 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbZJAXic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbZJAXib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756502AbZJAXic (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbZJAXia
+	id S1756430AbZJAXib (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZJAXi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:38:30 -0400
-Received: from kroah.org ([198.145.64.141]:42106 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:38:28 -0400
+Received: from kroah.org ([198.145.64.141]:42111 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754820AbZJAXiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:38:25 -0400
+	id S1755903AbZJAXi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:38:26 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:33:23 2009
-Message-Id: <20091001233322.964817376@mini.kroah.org>
+Message-Id: <20091001233323.116532896@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:31:44 -0700
+Date: Thu, 01 Oct 2009 16:31:45 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
-Cc: stable-review@kernel.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, nick@craig-wood.com, kbowa@tuxedu.org,
-       penberg@cs.helsinki.fi, kamezawa.hiroyu@jp.fujitsu.com
-Subject: [patch 28/30] /proc/kcore: work around a BUG()
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [patch 29/30] PM / PCMCIA: Drop second argument of pcmcia_socket_dev_suspend()
 References: <20091001233116.947658905@mini.kroah.org>
-Content-Disposition: inline; filename=proc-kcore-work-around-a-bug.patch
+Content-Disposition: inline; filename=pm-pcmcia-drop-second-argument-of-pcmcia_socket_dev_suspend.patch
 In-Reply-To: <20091001233504.GA17709@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Not upstream due to other fixes in .32
+commit 827b4649d4626bf97b203b4bcd69476bb9b4e760 upstream.
 
+pcmcia_socket_dev_suspend() doesn't use its second argument, so it
+may be dropped safely.
 
-Works around a BUG() which is triggered when the kernel accesses holes in
-vmalloc regions.
+This change is necessary for the subsequent yenta suspend/resume fix.
 
-BUG: unable to handle kernel paging request at fa54c000
-IP: [<c04f687a>] read_kcore+0x260/0x31a
-*pde = 3540b067 *pte = 00000000
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:1c.2/0000:03:00.0/ieee80211/phy0/rfkill0/state
-Modules linked in: fuse sco bridge stp llc bnep l2cap bluetooth sunrpc nf_conntrack_ftp ip6t_REJECT nf_conntrack_ipv6 ip6table_filter ip6_tables ipv6 cpufreq_ondemand acpi_cpufreq dm_multipath uinput usb_storage arc4 ecb snd_hda_codec_realtek snd_hda_intel ath5k snd_hda_codec snd_hwdep iTCO_wdt snd_pcm iTCO_vendor_support pcspkr i2c_i801 mac80211 joydev snd_timer serio_raw r8169 snd soundcore mii snd_page_alloc ath cfg80211 ata_generic i915 drm i2c_algo_bit i2c_core video output [last unloaded: scsi_wait_scan]
-Sep  4 12:45:16 tuxedu kernel: Pid: 2266, comm: cat Not tainted (2.6.31-rc8 #2) Joybook Lite U101
-EIP: 0060:[<c04f687a>] EFLAGS: 00010286 CPU: 0
-EIP is at read_kcore+0x260/0x31a
-EAX: f5e5ea00 EBX: fa54d000 ECX: 00000400 EDX: 00001000
-ESI: fa54c000 EDI: f44ad000 EBP: e4533f4c ESP: e4533f24
-DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process cat (pid: 2266, ti=e4532000 task=f09d19a0 task.ti=e4532000)
-Stack:
-00005000 00000000 f44ad000 09d9c000 00003000 fa54c000 00001000 f6d16f60
- e4520b80 fffffffb e4533f70 c04ef8eb e4533f98 00008000 09d97000 c04f661a
- e4520b80 09d97000 c04ef88c e4533f8c c04ba531 e4533f98 c04c0930 e4520b80
-Call Trace:
-[<c04ef8eb>] ? proc_reg_read+0x5f/0x73
-[<c04f661a>] ? read_kcore+0x0/0x31a
-[<c04ef88c>] ? proc_reg_read+0x0/0x73
-[<c04ba531>] ? vfs_read+0x82/0xe1
-[<c04c0930>] ? path_put+0x1a/0x1d
-[<c04ba62e>] ? sys_read+0x40/0x62
-[<c0403298>] ? sysenter_do_call+0x12/0x2d
-Code: 39 f3 89 ca 0f 43 f3 89 fb 29 f2 29 f3 39 cf 0f 46 d3 29 55 dc 8d 1c 32 f6 40 0c 01 75 18 89 d1 89 f7 c1 e9 02 2b 7d ec 03 7d e0 <f3> a5 89 d1 83 e1 03 74 02 f3 a4 8b 00 83 7d dc 00 74 04 85 c0
-EIP: [<c04f687a>] read_kcore+0x260/0x31a SS:ESP 0068:e4533f24
-CR2: 00000000fa54c000
-
-
-To access vmalloc area which may have memory holes, copy_from_user is
-useful.  So this:
-
- # cat /proc/kcore > /dev/null
-
-will not panic.
-
-This is a minimal fix, suitable for 2.6.30.x and 2.6.31.  More extensive
-/proc/kcore changes are planned for 2.6.32.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Tested-by: Nick Craig-Wood <nick@craig-wood.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Reported-by: <kbowa@tuxedu.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/proc/kcore.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/pcmcia/at91_cf.c        |    2 +-
+ drivers/pcmcia/au1000_generic.c |    2 +-
+ drivers/pcmcia/bfin_cf_pcmcia.c |    2 +-
+ drivers/pcmcia/cs.c             |    2 +-
+ drivers/pcmcia/i82092.c         |    2 +-
+ drivers/pcmcia/i82365.c         |    2 +-
+ drivers/pcmcia/m32r_cfc.c       |    2 +-
+ drivers/pcmcia/m32r_pcc.c       |    2 +-
+ drivers/pcmcia/m8xx_pcmcia.c    |    2 +-
+ drivers/pcmcia/omap_cf.c        |    2 +-
+ drivers/pcmcia/pd6729.c         |    2 +-
+ drivers/pcmcia/pxa2xx_base.c    |    2 +-
+ drivers/pcmcia/sa1100_generic.c |    2 +-
+ drivers/pcmcia/sa1111_generic.c |    2 +-
+ drivers/pcmcia/tcic.c           |    2 +-
+ drivers/pcmcia/vrc4171_card.c   |    2 +-
+ drivers/pcmcia/yenta_socket.c   |    2 +-
+ include/pcmcia/ss.h             |    2 +-
+ 18 files changed, 18 insertions(+), 18 deletions(-)
 
---- a/fs/proc/kcore.c
-+++ b/fs/proc/kcore.c
-@@ -361,7 +361,13 @@ read_kcore(struct file *file, char __use
- 				/* don't dump ioremap'd stuff! (TA) */
- 				if (m->flags & VM_IOREMAP)
- 					continue;
--				memcpy(elf_buf + (vmstart - start),
-+				/*
-+				 * we may access memory holes, then use
-+				 * ex_table. checking return value just for
-+				 * avoid warnings.
-+				 */
-+				vmsize = __copy_from_user_inatomic(
-+					elf_buf + (vmstart - start),
- 					(char *)vmstart, vmsize);
- 			}
- 			read_unlock(&vmlist_lock);
+--- a/drivers/pcmcia/at91_cf.c
++++ b/drivers/pcmcia/at91_cf.c
+@@ -363,7 +363,7 @@ static int at91_cf_suspend(struct platfo
+ 	struct at91_cf_socket	*cf = platform_get_drvdata(pdev);
+ 	struct at91_cf_data	*board = cf->board;
+ 
+-	pcmcia_socket_dev_suspend(&pdev->dev, mesg);
++	pcmcia_socket_dev_suspend(&pdev->dev);
+ 	if (device_may_wakeup(&pdev->dev)) {
+ 		enable_irq_wake(board->det_pin);
+ 		if (board->irq_pin)
+--- a/drivers/pcmcia/au1000_generic.c
++++ b/drivers/pcmcia/au1000_generic.c
+@@ -515,7 +515,7 @@ static int au1x00_drv_pcmcia_probe(struc
+ static int au1x00_drv_pcmcia_suspend(struct platform_device *dev,
+ 				     pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int au1x00_drv_pcmcia_resume(struct platform_device *dev)
+--- a/drivers/pcmcia/bfin_cf_pcmcia.c
++++ b/drivers/pcmcia/bfin_cf_pcmcia.c
+@@ -302,7 +302,7 @@ static int __devexit bfin_cf_remove(stru
+ 
+ static int bfin_cf_suspend(struct platform_device *pdev, pm_message_t mesg)
+ {
+-	return pcmcia_socket_dev_suspend(&pdev->dev, mesg);
++	return pcmcia_socket_dev_suspend(&pdev->dev);
+ }
+ 
+ static int bfin_cf_resume(struct platform_device *pdev)
+--- a/drivers/pcmcia/cs.c
++++ b/drivers/pcmcia/cs.c
+@@ -101,7 +101,7 @@ EXPORT_SYMBOL(pcmcia_socket_list_rwsem);
+ static int socket_resume(struct pcmcia_socket *skt);
+ static int socket_suspend(struct pcmcia_socket *skt);
+ 
+-int pcmcia_socket_dev_suspend(struct device *dev, pm_message_t state)
++int pcmcia_socket_dev_suspend(struct device *dev)
+ {
+ 	struct pcmcia_socket *socket;
+ 
+--- a/drivers/pcmcia/i82092.c
++++ b/drivers/pcmcia/i82092.c
+@@ -42,7 +42,7 @@ MODULE_DEVICE_TABLE(pci, i82092aa_pci_id
+ #ifdef CONFIG_PM
+ static int i82092aa_socket_suspend (struct pci_dev *dev, pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int i82092aa_socket_resume (struct pci_dev *dev)
+--- a/drivers/pcmcia/i82365.c
++++ b/drivers/pcmcia/i82365.c
+@@ -1241,7 +1241,7 @@ static int pcic_init(struct pcmcia_socke
+ static int i82365_drv_pcmcia_suspend(struct platform_device *dev,
+ 				     pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int i82365_drv_pcmcia_resume(struct platform_device *dev)
+--- a/drivers/pcmcia/m32r_cfc.c
++++ b/drivers/pcmcia/m32r_cfc.c
+@@ -699,7 +699,7 @@ static struct pccard_operations pcc_oper
+ static int cfc_drv_pcmcia_suspend(struct platform_device *dev,
+ 				     pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int cfc_drv_pcmcia_resume(struct platform_device *dev)
+--- a/drivers/pcmcia/m32r_pcc.c
++++ b/drivers/pcmcia/m32r_pcc.c
+@@ -675,7 +675,7 @@ static struct pccard_operations pcc_oper
+ static int pcc_drv_pcmcia_suspend(struct platform_device *dev,
+ 				     pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int pcc_drv_pcmcia_resume(struct platform_device *dev)
+--- a/drivers/pcmcia/m8xx_pcmcia.c
++++ b/drivers/pcmcia/m8xx_pcmcia.c
+@@ -1296,7 +1296,7 @@ static int m8xx_remove(struct of_device 
+ #ifdef CONFIG_PM
+ static int m8xx_suspend(struct platform_device *pdev, pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&pdev->dev, state);
++	return pcmcia_socket_dev_suspend(&pdev->dev);
+ }
+ 
+ static int m8xx_resume(struct platform_device *pdev)
+--- a/drivers/pcmcia/omap_cf.c
++++ b/drivers/pcmcia/omap_cf.c
+@@ -334,7 +334,7 @@ static int __exit omap_cf_remove(struct 
+ 
+ static int omap_cf_suspend(struct platform_device *pdev, pm_message_t mesg)
+ {
+-	return pcmcia_socket_dev_suspend(&pdev->dev, mesg);
++	return pcmcia_socket_dev_suspend(&pdev->dev);
+ }
+ 
+ static int omap_cf_resume(struct platform_device *pdev)
+--- a/drivers/pcmcia/pd6729.c
++++ b/drivers/pcmcia/pd6729.c
+@@ -758,7 +758,7 @@ static void __devexit pd6729_pci_remove(
+ #ifdef CONFIG_PM
+ static int pd6729_socket_suspend(struct pci_dev *dev, pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int pd6729_socket_resume(struct pci_dev *dev)
+--- a/drivers/pcmcia/pxa2xx_base.c
++++ b/drivers/pcmcia/pxa2xx_base.c
+@@ -302,7 +302,7 @@ static int pxa2xx_drv_pcmcia_remove(stru
+ 
+ static int pxa2xx_drv_pcmcia_suspend(struct platform_device *dev, pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int pxa2xx_drv_pcmcia_resume(struct platform_device *dev)
+--- a/drivers/pcmcia/sa1100_generic.c
++++ b/drivers/pcmcia/sa1100_generic.c
+@@ -89,7 +89,7 @@ static int sa11x0_drv_pcmcia_remove(stru
+ static int sa11x0_drv_pcmcia_suspend(struct platform_device *dev,
+ 				     pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int sa11x0_drv_pcmcia_resume(struct platform_device *dev)
+--- a/drivers/pcmcia/sa1111_generic.c
++++ b/drivers/pcmcia/sa1111_generic.c
+@@ -159,7 +159,7 @@ static int __devexit pcmcia_remove(struc
+ 
+ static int pcmcia_suspend(struct sa1111_dev *dev, pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int pcmcia_resume(struct sa1111_dev *dev)
+--- a/drivers/pcmcia/tcic.c
++++ b/drivers/pcmcia/tcic.c
+@@ -366,7 +366,7 @@ static int __init get_tcic_id(void)
+ static int tcic_drv_pcmcia_suspend(struct platform_device *dev,
+ 				     pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int tcic_drv_pcmcia_resume(struct platform_device *dev)
+--- a/drivers/pcmcia/vrc4171_card.c
++++ b/drivers/pcmcia/vrc4171_card.c
+@@ -707,7 +707,7 @@ __setup("vrc4171_card=", vrc4171_card_se
+ static int vrc4171_card_suspend(struct platform_device *dev,
+ 				     pm_message_t state)
+ {
+-	return pcmcia_socket_dev_suspend(&dev->dev, state);
++	return pcmcia_socket_dev_suspend(&dev->dev);
+ }
+ 
+ static int vrc4171_card_resume(struct platform_device *dev)
+--- a/drivers/pcmcia/yenta_socket.c
++++ b/drivers/pcmcia/yenta_socket.c
+@@ -1230,7 +1230,7 @@ static int yenta_dev_suspend (struct pci
+ 	struct yenta_socket *socket = pci_get_drvdata(dev);
+ 	int ret;
+ 
+-	ret = pcmcia_socket_dev_suspend(&dev->dev, state);
++	ret = pcmcia_socket_dev_suspend(&dev->dev);
+ 
+ 	if (socket) {
+ 		if (socket->type && socket->type->save_state)
+--- a/include/pcmcia/ss.h
++++ b/include/pcmcia/ss.h
+@@ -279,7 +279,7 @@ extern struct pccard_resource_ops pccard
+ extern struct pccard_resource_ops pccard_nonstatic_ops;
+ 
+ /* socket drivers are expected to use these callbacks in their .drv struct */
+-extern int pcmcia_socket_dev_suspend(struct device *dev, pm_message_t state);
++extern int pcmcia_socket_dev_suspend(struct device *dev);
+ extern int pcmcia_socket_dev_resume(struct device *dev);
+ 
+ /* socket drivers use this callback in their IRQ handler */
 
 
