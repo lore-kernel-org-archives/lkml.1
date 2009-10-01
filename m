@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbZJADT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZJADYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbZJADT3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 23:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbZJADT2
+	id S1755540AbZJADYj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 23:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZJADYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 23:19:28 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38654 "EHLO smtps.tip.net.au"
+	Wed, 30 Sep 2009 23:24:38 -0400
+Received: from mga02.intel.com ([134.134.136.20]:18693 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752883AbZJADT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 23:19:28 -0400
-Date: Thu, 1 Oct 2009 13:19:23 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: linux-next:  tree build failure
-Message-Id: <20091001131923.83e6836c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__1_Oct_2009_13_19_23_+1000_bH_GXaghe.FEiPF1"
+	id S1755491AbZJADYh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 23:24:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,484,1249282800"; 
+   d="scan'208";a="555594875"
+From: "Shi, Alex" <alex.shi@intel.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "Shi, Alex" <alex.shi@intel.com>, "Chen, Tim C" <tim.c.chen@intel.com>
+Date: Thu, 1 Oct 2009 11:23:20 +0800
+Subject: [PATCH] Fix kernel panic on i386 machine when booting with profile=2
+Thread-Topic: [PATCH] Fix kernel panic on i386 machine when booting with
+ profile=2
+Thread-Index: AcpCQs/OijAGJ3qBRE28xebfDGU+fwAAfMpA
+Message-ID: <F7C8A4D3A9905B45A80E4C194793FA6515538BDFC7@PDSMSX501.ccr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__1_Oct_2009_13_19_23_+1000_bH_GXaghe.FEiPF1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ 
+Latest kernel has a kernel panic in booting on i386 machine when profile=2
+setting in cmdline. Find it is due to 'sp' incorrect in profile_pc function.
 
-Hi Jens,
+BUG: unable to handle kernel NULL pointer dereference at 00000246
+IP: [<c01288b6>] profile_pc+0x2a/0x48
+*pde = 00000000
+Oops: 0000 [#1] SMP
 
-Today's linux-next build (powerpc allnoconfig) failed like this:
+Signed-off-by: Alex Shi <alex.shi@intel.com>
+---
+ arch/x86/kernel/time.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-include/linux/blktrace_api.h:215:40: error: macro parameters must be comma-=
-separated
+diff --git a/arch/x86/kernel/time.c b/arch/x86/kernel/time.c
+index dcb00d2..c4fedca 100644
+--- a/arch/x86/kernel/time.c
++++ b/arch/x86/kernel/time.c
+@@ -38,7 +38,12 @@ unsigned long profile_pc(struct pt_regs *regs)
+ #ifdef CONFIG_FRAME_POINTER
+ 		return *(unsigned long *)(regs->bp + sizeof(long));
+ #else
++#ifdef CONFIG_X86_32
++		unsigned long *sp = (unsigned long *)&regs->sp;
++#else
+ 		unsigned long *sp = (unsigned long *)regs->sp;
++
++#endif
+ 		/*
+ 		 * Return address is either directly at stack pointer
+ 		 * or above a saved flags. Eflags has bits 22-31 zero,
+-- 
+1.5.6.2
 
-Caused by commit 1e03edf3b5b16f7f30fa1e397cc9a130305fa8d3 ("Add missing
-blk_trace_remove_sysfs to be in pair with blk_trace_init_sysfs") from the
-block tree.  Half way between a static inline and a macro ...
-
-I have reverted that commit for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__1_Oct_2009_13_19_23_+1000_bH_GXaghe.FEiPF1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrEH7sACgkQjjKRsyhoI8wGfgCgjip4V2YHK3hq5hrDzlXNyUtb
-Tp0An1+b6mCtZTieco1qo+XBRuqB3j4O
-=wbCm
------END PGP SIGNATURE-----
-
---Signature=_Thu__1_Oct_2009_13_19_23_+1000_bH_GXaghe.FEiPF1--
