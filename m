@@ -1,42 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbZJAVDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752210AbZJAVCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752278AbZJAVDR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 17:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZJAVDQ
+	id S1752210AbZJAVCj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZJAVCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 17:03:16 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:41789 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752017AbZJAVDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 17:03:16 -0400
+	Thu, 1 Oct 2009 17:02:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56723 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751904AbZJAVCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 17:02:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 01/19] freezer: don't get over-anxious while waiting
+Date: Thu, 1 Oct 2009 23:04:00 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Oren Laadan <orenl@librato.com>
+References: <1254384558-1018-1-git-send-email-tj@kernel.org> <1254384558-1018-2-git-send-email-tj@kernel.org> <20091001183655.GA9995@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20091001183655.GA9995@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-In-Reply-To: <1254430820.5033.4.camel@localhost.localdomain>
-References: <1254345112.8837.9.camel@localhost.localdomain>
-	 <20091001132012.GA16975@amt.cnet>
-	 <1254416336.6787.6.camel@localhost.localdomain>
-	 <1254430820.5033.4.camel@localhost.localdomain>
-Date: Thu, 1 Oct 2009 16:03:19 -0500
-Message-ID: <90eb1dc70910011403q31218381tec865b1ecd361eff@mail.gmail.com>
-Subject: Re: INFO: task kjournal:337 blocked for more than 120 seconds
-From: Javier Guerra <javier@guerrag.com>
-To: Shirley Ma <mashirle@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       mcao@us.ibm.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910012304.00720.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 1, 2009 at 4:00 PM, Shirley Ma <mashirle@us.ibm.com> wrote:
-> I talked to Mingming, she suggested to use different IO scheduler. The
-> default scheduler is cfg, after I switch to noop, the problem is gone.
+On Thursday 01 October 2009, Pavel Machek wrote:
+> 
+> > Freezing isn't exactly the most latency sensitive operation and
+> > there's no reason to burn cpu cycles and power waiting for it to
+> > complete.  msleep(10) instead of yield().  This should improve
+> > reliability of emergency hibernation.
+> 
+> i don't see how it improves reliability, but its probably ok.
+> 
+> Well... for hibernation anyway. I can imagine cgroup users where
+> freeze is so fast that this matters. rjw cc-ed.		pavel
 
-deadline is the most recommended one for virtualization hosts.  some
-distros set it as default if you select Xen or KVM at installation
-time.  (and noop for the guests)
+Thanks.  I'd like to hear from the cgroup freezer people about that.
 
+> > Signed-off-by: Tejun Heo <tj@kernel.org>
+> > ---
+> >  kernel/power/process.c |   13 +++++++++----
+> >  1 files changed, 9 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/kernel/power/process.c b/kernel/power/process.c
+> > index cc2e553..9d26a0a 100644
+> > --- a/kernel/power/process.c
+> > +++ b/kernel/power/process.c
+> > @@ -41,7 +41,7 @@ static int try_to_freeze_tasks(bool sig_only)
+> >  	do_gettimeofday(&start);
+> >  
+> >  	end_time = jiffies + TIMEOUT;
+> > -	do {
+> > +	while (true) {
+> >  		todo = 0;
+> >  		read_lock(&tasklist_lock);
+> >  		do_each_thread(g, p) {
+> > @@ -62,10 +62,15 @@ static int try_to_freeze_tasks(bool sig_only)
+> >  				todo++;
+> >  		} while_each_thread(g, p);
+> >  		read_unlock(&tasklist_lock);
+> > -		yield();			/* Yield is okay here */
+> > -		if (time_after(jiffies, end_time))
+> > +		if (!todo || time_after(jiffies, end_time))
+> >  			break;
+> > -	} while (todo);
+> > +
+> > +		/*
+> > +		 * We need to retry.  There's no reason to be
+> > +		 * over-anxious about it and waste power.
+> > +		 */
 
--- 
-Javier
+The comment above looks like it's only meaningful in the context of the patch.
+After it's been applied the meaning of the comment won't be so obvious, I'm
+afraid.
+
+> > +		msleep(10);
+> > +	}
+> >  
+> >  	do_gettimeofday(&end);
+> >  	elapsed_csecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
+
+Thanks,
+Rafael
