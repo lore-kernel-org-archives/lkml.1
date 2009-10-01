@@ -1,127 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932718AbZJAOlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932732AbZJAOlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932718AbZJAOlO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 10:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932709AbZJAOlO
+	id S932732AbZJAOlU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 10:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932723AbZJAOlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 10:41:14 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:34125 "EHLO
+	Thu, 1 Oct 2009 10:41:19 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:34127 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932704AbZJAOlM (ORCPT
+	by vger.kernel.org with ESMTP id S932720AbZJAOlR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 10:41:12 -0400
+	Thu, 1 Oct 2009 10:41:17 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@linux.intel.com>
 Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 1/4] mfd: Refactor WM831x chip identification
-Date: Thu,  1 Oct 2009 15:41:04 +0100
-Message-Id: <1254408067-15908-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [PATCH 2/4] gpiolib: Make WM831x GPIO count dynamic
+Date: Thu,  1 Oct 2009 15:41:05 +0100
+Message-Id: <1254408067-15908-2-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.6.4.3
+In-Reply-To: <1254408067-15908-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1254408067-15908-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Better support future device revisions by moving some of the output
-around and making the chip ID enumeration be the value expected in
-the ID register.
+This supports future devices with fewer GPIOs.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
 ---
- drivers/mfd/wm831x-core.c |   58 ++++++++++++++-------------------------------
- 1 files changed, 18 insertions(+), 40 deletions(-)
+ drivers/gpio/wm831x-gpio.c      |    4 +---
+ drivers/mfd/wm831x-core.c       |    3 +++
+ include/linux/mfd/wm831x/core.h |    2 ++
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/gpio/wm831x-gpio.c b/drivers/gpio/wm831x-gpio.c
+index f9c09a5..f5e4934 100644
+--- a/drivers/gpio/wm831x-gpio.c
++++ b/drivers/gpio/wm831x-gpio.c
+@@ -23,8 +23,6 @@
+ #include <linux/mfd/wm831x/pdata.h>
+ #include <linux/mfd/wm831x/gpio.h>
+ 
+-#define WM831X_GPIO_MAX 16
+-
+ struct wm831x_gpio {
+ 	struct wm831x *wm831x;
+ 	struct gpio_chip gpio_chip;
+@@ -192,7 +190,7 @@ static int __devinit wm831x_gpio_probe(struct platform_device *pdev)
+ 
+ 	wm831x_gpio->wm831x = wm831x;
+ 	wm831x_gpio->gpio_chip = template_chip;
+-	wm831x_gpio->gpio_chip.ngpio = WM831X_GPIO_MAX;
++	wm831x_gpio->gpio_chip.ngpio = wm831x->num_gpio;
+ 	wm831x_gpio->gpio_chip.dev = &pdev->dev;
+ 	if (pdata && pdata->gpio_base)
+ 		wm831x_gpio->gpio_chip.base = pdata->gpio_base;
 diff --git a/drivers/mfd/wm831x-core.c b/drivers/mfd/wm831x-core.c
-index 49b7885..143ab83 100644
+index 143ab83..fa651e5 100644
 --- a/drivers/mfd/wm831x-core.c
 +++ b/drivers/mfd/wm831x-core.c
-@@ -90,9 +90,9 @@ int wm831x_isinkv_values[WM831X_ISINK_MAX_ISEL] = {
- EXPORT_SYMBOL_GPL(wm831x_isinkv_values);
- 
- enum wm831x_parent {
--	WM8310 = 0,
--	WM8311 = 1,
--	WM8312 = 2,
-+	WM8310 = 0x8310,
-+	WM8311 = 0x8311,
-+	WM8312 = 0x8312,
- };
- 
- static int wm831x_reg_locked(struct wm831x *wm831x, unsigned short reg)
-@@ -1282,50 +1282,28 @@ static int wm831x_device_init(struct wm831x *wm831x, unsigned long id, int irq)
- 		goto err;
- 	}
- 
-+	/* Some engineering samples do not have the ID set, rely on
-+	 * the device being registered correctly.
-+	 */
-+	if (ret == 0) {
-+		dev_info(wm831x->dev, "Device is an engineering sample\n");
-+		ret = id;
-+	}
-+
+@@ -1293,16 +1293,19 @@ static int wm831x_device_init(struct wm831x *wm831x, unsigned long id, int irq)
  	switch (ret) {
--	case 0x8310:
-+	case WM8310:
+ 	case WM8310:
  		parent = WM8310;
--		switch (rev) {
--		case 0:
--			dev_info(wm831x->dev, "WM8310 revision %c\n",
--				 'A' + rev);
--			break;
--		}
-+		dev_info(wm831x->dev, "WM8310 revision %c\n", 'A' + rev);
++		wm831x->num_gpio = 16;
+ 		dev_info(wm831x->dev, "WM8310 revision %c\n", 'A' + rev);
  		break;
  
--	case 0x8311:
-+	case WM8311:
+ 	case WM8311:
  		parent = WM8311;
--		switch (rev) {
--		case 0:
--			dev_info(wm831x->dev, "WM8311 revision %c\n",
--				 'A' + rev);
--			break;
--		}
-+		dev_info(wm831x->dev, "WM8311 revision %c\n", 'A' + rev);
++		wm831x->num_gpio = 16;
+ 		dev_info(wm831x->dev, "WM8311 revision %c\n", 'A' + rev);
  		break;
  
--	case 0x8312:
-+	case WM8312:
+ 	case WM8312:
  		parent = WM8312;
--		switch (rev) {
--		case 0:
--			dev_info(wm831x->dev, "WM8312 revision %c\n",
--				 'A' + rev);
--			break;
--		}
--		break;
--
--	case 0:
--		/* Some engineering samples do not have the ID set,
--		 * rely on the device being registered correctly.
--		 * This will need revisiting for future devices with
--		 * multiple dies.
--		 */
--		parent = id;
--		switch (rev) {
--		case 0:
--			dev_info(wm831x->dev, "WM831%d ES revision %c\n",
--				 parent, 'A' + rev);
--			break;
--		}
-+		dev_info(wm831x->dev, "WM8312 revision %c\n", 'A' + rev);
++		wm831x->num_gpio = 16;
+ 		dev_info(wm831x->dev, "WM8312 revision %c\n", 'A' + rev);
  		break;
  
- 	default:
-@@ -1338,7 +1316,7 @@ static int wm831x_device_init(struct wm831x *wm831x, unsigned long id, int irq)
- 	 * current parts.
- 	 */
- 	if (parent != id)
--		dev_warn(wm831x->dev, "Device was registered as a WM831%lu\n",
-+		dev_warn(wm831x->dev, "Device was registered as a WM%lx\n",
- 			 id);
+diff --git a/include/linux/mfd/wm831x/core.h b/include/linux/mfd/wm831x/core.h
+index 91eb493..c1bc59f 100644
+--- a/include/linux/mfd/wm831x/core.h
++++ b/include/linux/mfd/wm831x/core.h
+@@ -253,6 +253,8 @@ struct wm831x {
+ 	unsigned int irq_base;
+ 	int irq_masks[5];
  
- 	/* Bootstrap the user key */
++	int num_gpio;
++
+ 	struct mutex auxadc_lock;
+ 
+ 	/* The WM831x has a security key blocking access to certain
 -- 
 1.6.4.3
 
