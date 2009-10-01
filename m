@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932392AbZJAIel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932373AbZJAIdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932392AbZJAIel (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932260AbZJAIeX
+	id S932373AbZJAIdZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932242AbZJAIdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:34:23 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56563 "EHLO
+	Thu, 1 Oct 2009 04:33:19 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:56607 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932220AbZJAI3X (ORCPT
+	with ESMTP id S932251AbZJAI3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:29:23 -0400
+	Thu, 1 Oct 2009 04:29:30 -0400
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
        Jonathan Cameron <jic23@cam.ac.uk>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 33/34] move lis3l02dq_remove to .devexit.text
-Date: Thu,  1 Oct 2009 10:28:37 +0200
-Message-Id: <1254385718-14254-33-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 34/34] move sca3000_remove to .devexit.text
+Date: Thu,  1 Oct 2009 10:28:38 +0200
+Message-Id: <1254385718-14254-34-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.4.3
 In-Reply-To: <20091001082607.GA2181@pengutronix.de>
 References: <20091001082607.GA2181@pengutronix.de>
@@ -32,30 +32,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function lis3l02dq_remove is used only wrapped by __devexit_p so
-define it using __devexit.
+The function sca3000_remove is used only wrapped by __devexit_p so define
+it using __devexit.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Cc: Jonathan Cameron <jic23@cam.ac.uk>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/staging/iio/accel/lis3l02dq_core.c |    2 +-
+ drivers/staging/iio/accel/sca3000_core.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/staging/iio/accel/lis3l02dq_core.c b/drivers/staging/iio/accel/lis3l02dq_core.c
-index f008837..80e89a6 100644
---- a/drivers/staging/iio/accel/lis3l02dq_core.c
-+++ b/drivers/staging/iio/accel/lis3l02dq_core.c
-@@ -871,7 +871,7 @@ err_ret:
+diff --git a/drivers/staging/iio/accel/sca3000_core.c b/drivers/staging/iio/accel/sca3000_core.c
+index e27e3b7..5ea736a 100644
+--- a/drivers/staging/iio/accel/sca3000_core.c
++++ b/drivers/staging/iio/accel/sca3000_core.c
+@@ -1393,7 +1393,7 @@ error_ret:
+ 
  }
  
- /* fixme, confirm ordering in this function */
--static int lis3l02dq_remove(struct spi_device *spi)
-+static int __devexit lis3l02dq_remove(struct spi_device *spi)
+-static int sca3000_remove(struct spi_device *spi)
++static int __devexit sca3000_remove(struct spi_device *spi)
  {
- 	int ret;
- 	struct lis3l02dq_state *st = spi_get_drvdata(spi);
+ 	struct sca3000_state *st =  spi_get_drvdata(spi);
+ 	struct iio_dev *indio_dev = st->indio_dev;
 -- 
 1.6.4.3
 
