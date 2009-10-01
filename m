@@ -1,63 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932466AbZJAOSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932624AbZJAOSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932466AbZJAOSb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 10:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932309AbZJAOSa
+	id S932624AbZJAOSi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 10:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932590AbZJAOSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 10:18:30 -0400
-Received: from kroah.org ([198.145.64.141]:38499 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 10:18:37 -0400
+Received: from fifo99.com ([67.223.236.141]:60455 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756100AbZJAOS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 10:18:29 -0400
-Date: Thu, 1 Oct 2009 07:15:24 -0700
-From: Greg KH <greg@kroah.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers-core: nullify private pointer on device-release
-Message-ID: <20091001141524.GA3355@kroah.com>
-References: <Pine.LNX.4.64.0910010950330.4408@axis700.grange>
- <20091001132709.GA2221@kroah.com>
- <Pine.LNX.4.64.0910011533220.4408@axis700.grange>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0910011533220.4408@axis700.grange>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S932473AbZJAOSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 10:18:35 -0400
+Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
+From: Daniel Walker <dwalker@fifo99.com>
+To: Andy Whitcroft <apw@canonical.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <20090930152708.GD2957@shadowen.org>
+References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
+	 <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
+	 <1253585691-10987-3-git-send-email-dwalker@fifo99.com>
+	 <4AB86ED1.1040200@cn.fujitsu.com>  <20090930152708.GD2957@shadowen.org>
+Content-Type: text/plain
+Date: Thu, 01 Oct 2009 07:18:30 -0700
+Message-Id: <1254406711.18167.88.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 03:45:56PM +0200, Guennadi Liakhovetski wrote:
-> On Thu, 1 Oct 2009, Greg KH wrote:
-> 
-> > On Thu, Oct 01, 2009 at 10:02:08AM +0200, Guennadi Liakhovetski wrote:
-> > > Device structures can be reused over multiple device_add / device_release 
-> > > cycles.
-> > 
-> > They shouldn't be as they should be dynamic, not static.
-> 
-> Should they? I'm pretty sure this is not the first time this comes up - 
-> there are several drivers and / or subsystems, that re-use driver objects. 
+On Wed, 2009-09-30 at 16:27 +0100, Andy Whitcroft wrote:
 
-Then those drivers and subsystems should be fixed, as that is incorrect.
+> Yeah I think that blanket ignoring spacing throughout the file seems
+> dangerous.  If these are going to show up a lot then it seems more sensible
+> to special case TRACE_EVENT or whatever is triggering the actual 'false'
+> matches.  I also suspect the 'this should never get long' argument will
+> not be true.  Once you can have an exception people will add them all over
 
-> But finding in mail archives wouldn't be very easy. And it worked until 
-> now - why should we break it?
+It's not ignoring all spacing .. It's just ignoring a single error in a
+single directory (or single file).. So it's very specific.. If you did
+just match TRACE_EVENT like you suggest then what happens when another
+different call in the same code has similar spacing , which could easily
+happen.. You also are basically matching a style defect, which doesn't
+make much sense to me.. Then one day the person that added the errors
+has a revelation , and removes all the errors. Then all the work that
+went into the matching is poof worthless.. This list could get to be
+10-20 items lots (still not that long) , and writing individual matching
+for each of those items and maintaining it would be more work that is
+necessary ..
 
-I would argue that this code was always broken.
-When did this problem show up for you?
+In terms of the list getting long or not, your basically in control of
+it since you maintain checkpatch .. If you leave it without some sort of
+blacklist, then you end up with whole sections of code where the
+developers don't use checkpatch at all (or very little)..
 
-> > What device is having this problem?
-> 
-> My problem case is the soc-camera framework. There device struct is 
-> embedded into the video client object, which are kept as long as the 
-> driver is loaded.
+> Care to share an example of a change which is triggereing so we can
+> better target the exception.
 
-struct device is a dynamic structure, it is supposed to be able to be
-freed when the last reference goes away.  Static struct device usage is
-wrong.  It sounds like the video client object code is incorrect, please
-fix it.
+Basically any file in include/trace/event/ will trigger the blacklist
+(listed in the perl code along with the errors that are filtered out)..
 
-thanks,
+In include/trace/events/ext4.h for example the following code,
 
-greg k-h
+TRACE_EVENT(ext4_free_inode,
+        TP_PROTO(struct inode *inode),
+
+        TP_ARGS(inode),
+
+        TP_STRUCT__entry(
+                __field(        dev_t,  dev                     )
+                __field(        ino_t,  ino                     )
+                __field(        umode_t, mode                   )
+                __field(        uid_t,  uid                     )
+                __field(        gid_t,  gid                     )
+                __field(        blkcnt_t, blocks                )
+        ),
+
+        TP_fast_assign(
+                __entry->dev    = inode->i_sb->s_dev;
+                __entry->ino    = inode->i_ino;
+                __entry->mode   = inode->i_mode;
+                __entry->uid    = inode->i_uid;
+                __entry->gid    = inode->i_gid;
+                __entry->blocks = inode->i_blocks;
+        ),
+
+        TP_printk("dev %s ino %lu mode %d uid %u gid %u blocks %llu",
+                  jbd2_dev_to_name(__entry->dev), (unsigned long) __entry->ino,
+                  __entry->mode, __entry->uid, __entry->gid,
+                  (unsigned long long) __entry->blocks)
+);
+
+
+
+Daniel
+
