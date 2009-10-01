@@ -1,65 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbZJACQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbZJAC23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbZJACQy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 22:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZJACQy
+	id S1755486AbZJAC23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 22:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbZJAC23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 22:16:54 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58835 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755433AbZJACQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 22:16:53 -0400
-Date: Thu, 1 Oct 2009 04:16:57 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 03/33] fs: scale files_lock
-Message-ID: <20091001021657.GO6327@wotan.suse.de>
-References: <20090904065142.114706411@nick.local0.net> <20090904065534.303326352@nick.local0.net> <1254144248.15795.6.camel@laptop>
+	Wed, 30 Sep 2009 22:28:29 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40125 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755422AbZJAC22 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 22:28:28 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 1 Oct 2009 11:26:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: linux-fsdevel@vger.kernel.org, fengguang.wu@intel.com,
+       hugh.dickins@tiscali.co.uk, viro@zeniv.linux.org.uk
+Subject: [PATCH] a fix for too big f_pos handling
+Message-Id: <20091001112616.970931bb.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254144248.15795.6.camel@laptop>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 03:24:08PM +0200, Peter Zijlstra wrote:
-> On Fri, 2009-09-04 at 16:51 +1000, npiggin@suse.de wrote:
-> > Improve scalability of files_lock by adding per-cpu, per-sb files lists,
-> > protected with per-cpu locking. Effectively turning it into a big-writer
-> > lock.
-> 
-> What I did was fine-grain locking the double linked list so that you can
-> delete items without hitting a global lock.
-> 
-> For addition I added per-cpu list-heads that would be spliced onto the
-> global list once in a while.
-> 
-> Granted, the code was a tad involved... and hch wanted to get rid of
-> these lists, which is of course a much better solution.
+Maybe there are several ways to handle this...this is an idea.
 
-I did see that of course, and I sent you a critique of it... I
-didn't think it was appropriate for reasons I can't remember off
-hand (either overly complex for the same task, or had a scalability
-problem).
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-files_lock I would love to see go away completely, and in fact
-depending on progress of work to that end, these patches may never
-need to be merged. The problem I have is:
+Now, rw_verify_area() checsk f_pos is negative or not. And if
+negative, returns -EINVAL.
 
-1. I don't want to significantly change data structures or cause
-   avoidable reductions in potential expressiveness of the data
-   structures we have. (I don't want someone to complain that my
-   patches suck because they want to be able to traverse files).
+But, some special files as /dev/(k)mem and /proc/<pid>/mem etc..
+has negative offsets. And we can't do any access via read/write
+to the file(device).
 
-2. I need to take out this lock otherwise it become the choke
-   point and hides the rest of the progress on the rest of the
-   scalability work.
+This patch introduce a flag S_VERYBIG and allow negative file
+offsets.
 
-Again, I think brlock is not such a terrible thing for contention
-especially if we're looking at umount slowpath... For this guy
-actually though, the read side can probably be turned into RCU
-traversal quite easily, I _think_.
+Changelog: v4->v5
+ - clean up patches dor /dev/mem.
+ - rebased onto 2.6.32-rc1
+
+Changelog: v3->v4
+ - make changes in mem.c aligned.
+ - change __negative_fpos_check() to return int. 
+ - fixed bug in "pos" check.
+ - added comments.
+
+Changelog: v2->v3
+ - fixed bug in rw_verify_area (it cannot be compiled)
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ drivers/char/mem.c |    3 +++
+ fs/proc/base.c     |    2 ++
+ fs/read_write.c    |   22 ++++++++++++++++++++--
+ include/linux/fs.h |    2 ++
+ 4 files changed, 27 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.32-rc1/fs/read_write.c
+===================================================================
+--- linux-2.6.32-rc1.orig/fs/read_write.c
++++ linux-2.6.32-rc1/fs/read_write.c
+@@ -205,6 +205,21 @@ bad:
+ }
+ #endif
+ 
++static int
++__negative_fpos_check(struct inode *inode, loff_t pos, size_t count)
++{
++	/*
++	 * pos or pos+count is negative here, check overflow.
++	 * too big "count" will be caught in rw_verify_area().
++	 */
++	if ((pos < 0) && (pos + count < pos))
++		return -EOVERFLOW;
++	/* If !VERYBIG inode, negative pos(pos+count) is not allowed */
++	if (!IS_VERYBIG(inode))
++		return -EINVAL;
++	return 0;
++}
++
+ /*
+  * rw_verify_area doesn't like huge counts. We limit
+  * them to something that fits in "int" so that others
+@@ -222,8 +237,11 @@ int rw_verify_area(int read_write, struc
+ 	if (unlikely((ssize_t) count < 0))
+ 		return retval;
+ 	pos = *ppos;
+-	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+-		return retval;
++	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
++		retval = __negative_fpos_check(inode, pos, count);
++		if (retval)
++			return retval;
++	}
+ 
+ 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+ 		retval = locks_mandatory_area(
+Index: linux-2.6.32-rc1/include/linux/fs.h
+===================================================================
+--- linux-2.6.32-rc1.orig/include/linux/fs.h
++++ linux-2.6.32-rc1/include/linux/fs.h
+@@ -231,6 +231,7 @@ struct inodes_stat_t {
+ #define S_NOCMTIME	128	/* Do not update file c/mtime */
+ #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
+ #define S_PRIVATE	512	/* Inode is fs-internal */
++#define S_VERYBIG	1024	/* Allow file's loff_t can be negative */
+ 
+ /*
+  * Note that nosuid etc flags are inode-specific: setting some file-system
+@@ -265,6 +266,7 @@ struct inodes_stat_t {
+ #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
+ #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
+ #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
++#define IS_VERYBIG(inode)	((inode)->i_flags & S_VERYBIG)
+ 
+ /* the read-only stuff doesn't really belong here, but any other place is
+    probably as bad and I don't want to create yet another include file. */
+Index: linux-2.6.32-rc1/drivers/char/mem.c
+===================================================================
+--- linux-2.6.32-rc1.orig/drivers/char/mem.c
++++ linux-2.6.32-rc1/drivers/char/mem.c
+@@ -912,6 +912,9 @@ static int memory_open(struct inode *ino
+ 		ret = dev->fops->open(inode, filp);
+ 	else
+ 		ret = 0;
++	/* Is /dev/mem or /dev/kmem ? */
++	if (dev->dev_info == &directly_mappable_cdev_bdi)
++		inode->i_flags |= S_VERYBIG;
+ out:
+ 	unlock_kernel();
+ 	return ret;
+Index: linux-2.6.32-rc1/fs/proc/base.c
+===================================================================
+--- linux-2.6.32-rc1.orig/fs/proc/base.c
++++ linux-2.6.32-rc1/fs/proc/base.c
+@@ -778,6 +778,8 @@ static const struct file_operations proc
+ static int mem_open(struct inode* inode, struct file* file)
+ {
+ 	file->private_data = (void*)((long)current->self_exec_id);
++	/* this file is read only and we can catch out-pf-range */
++	inode->i_flags |= S_VERYBIG;
+ 	return 0;
+ }
+ 
 
