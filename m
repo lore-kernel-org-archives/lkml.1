@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932193AbZJANwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbZJANv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932193AbZJANwe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 09:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756320AbZJANwd
+	id S1756491AbZJANv5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 09:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbZJANv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 09:52:33 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:43630 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756236AbZJANwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 09:52:33 -0400
-Date: Thu, 1 Oct 2009 09:47:35 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: No more bits in vm_area_struct's vm_flags.
-In-Reply-To: <Pine.LNX.4.64.0910011134240.10818@sister.anvils>
-Message-ID: <alpine.DEB.1.10.0910010944480.26219@gentwo.org>
-References: <4AB9A0D6.1090004@crca.org.au> <20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com> <4ABC80B0.5010100@crca.org.au> <20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com> <4AC0234F.2080808@crca.org.au> <20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com>
- <20090928033624.GA11191@localhost> <20090928125705.6656e8c5.kamezawa.hiroyu@jp.fujitsu.com> <Pine.LNX.4.64.0909281637160.25798@sister.anvils> <a0ea21a7cfe313202e2b51510aa5435a.squirrel@webmail-b.css.fujitsu.com> <Pine.LNX.4.64.0909282134100.11529@sister.anvils>
- <20090929105735.06eea1ee.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.1.10.0909291019100.15549@gentwo.org> <Pine.LNX.4.64.0910011134240.10818@sister.anvils>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 1 Oct 2009 09:51:57 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:26728 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756189AbZJANv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 09:51:56 -0400
+Date: Thu, 1 Oct 2009 19:20:20 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
+	generic guest and host communication
+Message-ID: <20091001135020.GA14186@amit-x200.redhat.com>
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <200910011228.30563.borntraeger@de.ibm.com> <20091001114244.GB12334@amit-x200.redhat.com> <200910011404.37601.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910011404.37601.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Oct 2009, Hugh Dickins wrote:
+On (Thu) Oct 01 2009 [14:04:37], Christian Borntraeger wrote:
+> Am Donnerstag 01 Oktober 2009 13:58:01 schrieben Sie:
+> > I spawned two ports; one doing 'find /' and the other transferring a
+> > 800M file from the host to the guest, both running at the same time.
+> > This is on top of the latest Linus tree + my patches. It works fine.
+> > 
+> > Can you give me any additional info that can help me nail this down?
+> 
+> This is just a wild guess: My guest has 8 cpus and virtio requires that users do 
+> a proper locking. But as far as I see you use schedule_work which should be 
+> single threaded. 
+> Or maybe this is an existing bug that is just exposed by your patch - dont know. 
 
-> Are we doing that?  If you have some example like, when PG_slab is set
-> then PG_owner_priv_1 means such-and-such, but if not not: okay, I'm
-> fine with that.
+I think there might be two bugs. One is the readbuf_head list needs
+some locks around its operations. The readbuf_head list is a per-port
+list where buffers received from the host for a port are stored.
+They're taken off that list when userspace issues read() requests.
 
-Look at how compound pages are handled in include/linux/page-flags.h
+The other bug is the virtio one that you saw. I'll try to see how that
+one gets triggered.
 
-> But if you're saying something like, if PG_reclaim is set at the same
-> time as PG_buddy, then they mean the page is not a buddy or under
-> reclaim, but brokenbacked: then I'm a bit (or even 32 bits) worried.
-
-Of course you need to be careful not to use two bits that can be used
-indepedently.
-
-> > VM_HUGETLB cannot grow up and down f.e. and there are
-> > certainly lots of other impossible combinations that can be used to put
-> > more information into the flags.
->
-> Where it makes sense, where it's understandable, okay: there may be a
-> few which could naturally use combinations.  But in general, no, I
-> think we'd be asking for endless maintenance trouble if we change the
-> meaning of some flags according to other flags.
-
-We made the page flags stuff configurable. On 64 bit we use more flags, on
-32 bit we compress the page flags a bit. Maybe do the same for vm_flags?
-
-
+Thanks,
+		Amit
