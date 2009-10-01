@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbZJAXXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZJAXXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbZJAXXb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbZJAXXY
+	id S1754507AbZJAXXP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbZJAXXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:23:24 -0400
-Received: from kroah.org ([198.145.64.141]:39691 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:23:15 -0400
+Received: from kroah.org ([198.145.64.141]:39642 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754527AbZJAXXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:23:23 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:18:05 2009
-Message-Id: <20091001231805.791852583@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:16:42 -0700
+	id S1753666AbZJAXXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:23:14 -0400
+Date: Thu, 1 Oct 2009 16:19:38 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
-Cc: stable-review@kernel.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lee.Schermerhorn@hp.com,
-       lee.schermerhorn@hp.com, ak@linux.intel.com, eric.whitney@hp.com,
-       mel@csn.ul.ie, rientjes@google.com, agl@us.ibm.com, apw@canonical.com
-Subject: [patch 9/9] hugetlb: restore interleaving of bootmem huge pages (2.6.31)
-References: <20091001231633.719696398@mini.kroah.org>
-Content-Disposition: inline; filename=hugetlb-restore-interleaving-of-bootmem-huge-pages.patch
-In-Reply-To: <20091001231938.GA29593@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 0/9] 2.6.27.36-stable review
+Message-ID: <20091001231938.GA29593@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is the start of the stable review cycle for the 2.6.27.36 release.
+There are 9 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-------------------
+Responses should be made by Saturday, October 3, 2009 23:00:00 UTC.
+Anything received after that time might be too late.
 
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-
-Not upstream as it is fixed differently in .32
-
-I noticed that alloc_bootmem_huge_page() will only advance to the next
-node on failure to allocate a huge page.  I asked about this on linux-mm
-and linux-numa, cc'ing the usual huge page suspects.  Mel Gorman
-responded:
-
-	I strongly suspect that the same node being used until allocation
-	failure instead of round-robin is an oversight and not deliberate
-	at all. It appears to be a side-effect of a fix made way back in
-	commit 63b4613c3f0d4b724ba259dc6c201bb68b884e1a ["hugetlb: fix
-	hugepage allocation with memoryless nodes"]. Prior to that patch
-	it looked like allocations would always round-robin even when
-	allocation was successful.
-
-Andy Whitcroft countered that the existing behavior looked like Andi
-Kleen's original implementation and suggested that we ask him.  We did and
-Andy replied that his intention was to interleave the allocations.  So,
-...
-
-This patch moves the advance of the hstate next node from which to
-allocate up before the test for success of the attempted allocation.  This
-will unconditionally advance the next node from which to alloc,
-interleaving successful allocations over the nodes with sufficient
-contiguous memory, and skipping over nodes that fail the huge page
-allocation attempt.
-
-Note that alloc_bootmem_huge_page() will only be called for huge pages of
-order > MAX_ORDER.
-
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-Reviewed-by: Andi Kleen <ak@linux.intel.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Adam Litke <agl@us.ibm.com>
-Cc: Andy Whitcroft <apw@canonical.com>
-Cc: Eric Whitney <eric.whitney@hp.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- mm/hugetlb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -983,6 +983,7 @@ __attribute__((weak)) int alloc_bootmem_
- 				NODE_DATA(h->hugetlb_next_nid),
- 				huge_page_size(h), huge_page_size(h), 0);
- 
-+		hstate_next_node(h);
- 		if (addr) {
- 			/*
- 			 * Use the beginning of the huge page to store the
-@@ -993,7 +994,6 @@ __attribute__((weak)) int alloc_bootmem_
- 			if (m)
- 				goto found;
- 		}
--		hstate_next_node(h);
- 		nr_nodes--;
- 	}
- 	return 0;
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.36-rc1.gz
+and the diffstat can be found below.
 
 
+thanks,
+
+greg k-h
+
+--------------
+
+ Makefile                           |    2 +-
+ drivers/isdn/gigaset/bas-gigaset.c |   16 +++++++++-------
+ drivers/net/enc28j60.c             |    4 +++-
+ drivers/net/pcmcia/pcnet_cs.c      |    2 +-
+ drivers/net/wireless/p54/p54usb.c  |    1 +
+ fs/inode.c                         |   14 ++++++++------
+ mm/hugetlb.c                       |    2 +-
+ net/ax25/af_ax25.c                 |    2 +-
+ net/bridge/br_netfilter.c          |    2 +-
+ net/packet/af_packet.c             |    4 ++--
+ 10 files changed, 28 insertions(+), 21 deletions(-)
