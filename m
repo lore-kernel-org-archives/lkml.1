@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbZJAODx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932316AbZJAOEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932294AbZJAODx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 10:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932256AbZJAODw
+	id S932316AbZJAOEI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 10:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932256AbZJAOEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 10:03:52 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:39079 "EHLO
+	Thu, 1 Oct 2009 10:04:06 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:38644 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932251AbZJAODv (ORCPT
+	with ESMTP id S932171AbZJAOEF (ORCPT
 	<rfc822;groupwise-SJayaraman@novell.com;0:0>);
-	Thu, 1 Oct 2009 10:03:51 -0400
+	Thu, 1 Oct 2009 10:04:05 -0400
 From: Suresh Jayaraman <sjayaraman@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -18,9 +18,9 @@ Cc: netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
        Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, trond.myklebust@fys.uio.no,
        Suresh Jayaraman <sjayaraman@suse.de>
-Subject: [PATCH 03/31] mm: expose gfp_to_alloc_flags()
-Date: Thu,  1 Oct 2009 19:35:03 +0530
-Message-Id: <1254405903-15760-1-git-send-email-sjayaraman@suse.de>
+Subject: [PATCH 04/31] mm: tag reseve pages
+Date: Thu,  1 Oct 2009 19:35:17 +0530
+Message-Id: <1254405917-15796-1-git-send-email-sjayaraman@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,73 +28,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Peter Zijlstra <a.p.zijlstra@chello.nl> 
 
-Expose the gfp to alloc_flags mapping, so we can use it in other parts
-of the vm.
+Tag pages allocated from the reserves with a non-zero page->reserve.
+This allows us to distinguish and account reserve pages.
+
+Since low-memory situations are transient, and unrelated the the actual
+page (any page can be on the freelist when we run low), don't mark the
+page in any permanent way - just pass along the information to the
+allocatee.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
 ---
- mm/internal.h   |   15 +++++++++++++++
- mm/page_alloc.c |   16 +---------------
- 2 files changed, 16 insertions(+), 15 deletions(-)
+ include/linux/mm_types.h |    1 +
+ mm/page_alloc.c          |    4 +++-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-Index: mmotm/mm/internal.h
+Index: mmotm/include/linux/mm_types.h
 ===================================================================
---- mmotm.orig/mm/internal.h
-+++ mmotm/mm/internal.h
-@@ -194,6 +194,21 @@ static inline struct page *mem_map_next(
- #define __paginginit __init
- #endif
- 
-+/* The ALLOC_WMARK bits are used as an index to zone->watermark */
-+#define ALLOC_WMARK_MIN		WMARK_MIN
-+#define ALLOC_WMARK_LOW		WMARK_LOW
-+#define ALLOC_WMARK_HIGH	WMARK_HIGH
-+#define ALLOC_NO_WATERMARKS	0x04 /* don't check watermarks at all */
-+
-+/* Mask to get the watermark bits */
-+#define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS-1)
-+
-+#define ALLOC_HARDER		0x10 /* try to alloc harder */
-+#define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
-+#define ALLOC_CPUSET		0x40 /* check for correct cpuset */
-+
-+int gfp_to_alloc_flags(gfp_t gfp_mask);
-+
- /* Memory initialisation debug and verification */
- enum mminit_level {
- 	MMINIT_WARNING,
+--- mmotm.orig/include/linux/mm_types.h
++++ mmotm/include/linux/mm_types.h
+@@ -77,6 +77,7 @@ struct page {
+ 	union {
+ 		pgoff_t index;		/* Our offset within mapping. */
+ 		void *freelist;		/* SLUB: freelist req. slab lock */
++		int reserve;		/* page_alloc: page is a reserve page */
+ 	};
+ 	struct list_head lru;		/* Pageout list, eg. active_list
+ 					 * protected by zone->lru_lock !
 Index: mmotm/mm/page_alloc.c
 ===================================================================
 --- mmotm.orig/mm/page_alloc.c
 +++ mmotm/mm/page_alloc.c
-@@ -1190,19 +1190,6 @@ failed:
- 	return NULL;
- }
- 
--/* The ALLOC_WMARK bits are used as an index to zone->watermark */
--#define ALLOC_WMARK_MIN		WMARK_MIN
--#define ALLOC_WMARK_LOW		WMARK_LOW
--#define ALLOC_WMARK_HIGH	WMARK_HIGH
--#define ALLOC_NO_WATERMARKS	0x04 /* don't check watermarks at all */
--
--/* Mask to get the watermark bits */
--#define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS-1)
--
--#define ALLOC_HARDER		0x10 /* try to alloc harder */
--#define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
--#define ALLOC_CPUSET		0x40 /* check for correct cpuset */
--
- #ifdef CONFIG_FAIL_PAGE_ALLOC
- 
- static struct fail_page_alloc_attr {
-@@ -1691,8 +1678,7 @@ void wake_all_kswapd(unsigned int order,
- 		wakeup_kswapd(zone, order);
- }
- 
--static inline int
--gfp_to_alloc_flags(gfp_t gfp_mask)
-+int gfp_to_alloc_flags(gfp_t gfp_mask)
- {
- 	struct task_struct *p = current;
- 	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
+@@ -1501,8 +1501,10 @@ zonelist_scan:
+ try_this_zone:
+ 		page = buffered_rmqueue(preferred_zone, zone, order,
+ 						gfp_mask, migratetype);
+-		if (page)
++		if (page) {
++			page->reserve = !!(alloc_flags & ALLOC_NO_WATERMARKS);
+ 			break;
++		}
+ this_zone_full:
+ 		if (NUMA_BUILD)
+ 			zlc_mark_zone_full(zonelist, z);
