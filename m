@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbZJAO3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbZJAOid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932696AbZJAO3Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 10:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932661AbZJAO3X
+	id S932701AbZJAOid (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 10:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932519AbZJAOic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 10:29:23 -0400
-Received: from gimli.pxnet.com ([195.227.45.7]:34290 "EHLO mail.pxnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932542AbZJAO3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 10:29:23 -0400
-From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH] net/ppp: fix comments - ppp_{sync,asynctty}_receive() may sleep
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
-       Paul Mackerras <paulus@samba.org>, linux-ppp@vger.kernel.org
-CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       Jarek Poplawski <jarkao2@gmail.com>, linux-kernel@vger.kernel.org
-Message-Id: <20091001142844.C50E511186D@xenon.ts.pxnet.com>
-Date: Thu,  1 Oct 2009 16:28:44 +0200 (CEST)
-X-Spam-Score: -2.212 () BAYES_00,RDNS_NONE
+	Thu, 1 Oct 2009 10:38:32 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:50221 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932475AbZJAOib (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 10:38:31 -0400
+Date: Thu, 1 Oct 2009 10:32:54 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
+       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/4] slqb: Record what node is local to a
+ kmem_cache_cpu
+In-Reply-To: <20091001104046.GA21906@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0910011028380.3911@gentwo.org>
+References: <1253624054-10882-1-git-send-email-mel@csn.ul.ie> <1253624054-10882-3-git-send-email-mel@csn.ul.ie> <84144f020909220638l79329905sf9a35286130e88d0@mail.gmail.com> <20090922135453.GF25965@csn.ul.ie> <84144f020909221154x820b287r2996480225692fad@mail.gmail.com>
+ <20090922185608.GH25965@csn.ul.ie> <20090930144117.GA17906@csn.ul.ie> <alpine.DEB.1.10.0909301053550.9450@gentwo.org> <20090930220541.GA31530@csn.ul.ie> <alpine.DEB.1.10.0909301941570.11850@gentwo.org> <20091001104046.GA21906@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The receive_buf methods of the N_PPP and N_SYNC_PPP line disciplines,
-ppp_asynctty_receive() and ppp_sync_receive(), call tty_unthrottle()
-which may sleep. Fix the comments claiming otherwise.
+On Thu, 1 Oct 2009, Mel Gorman wrote:
 
-Impact: documentation
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
----
- drivers/net/ppp_async.c   |    5 +----
- drivers/net/ppp_synctty.c |    5 +----
- 2 files changed, 2 insertions(+), 8 deletions(-)
+> > Frees are done directly to the target slab page if they are not to the
+> > current active slab page. No centralized locks. Concurrent frees from
+> > processors on the same node to multiple other nodes (or different pages
+> > on the same node) can occur.
+> >
+>
+> So as a total aside, SLQB has an advantage in that it always uses object
+> in LIFO order and is more likely to be cache hot. SLUB has an advantage
+> when one CPU allocates and another one frees because it potentially
+> avoids a cache line bounce. Might be something worth bearing in mind
+> when/if a comparison happens later.
 
-diff --git a/drivers/net/ppp_async.c b/drivers/net/ppp_async.c
-index 6de8399..30b1b33 100644
---- a/drivers/net/ppp_async.c
-+++ b/drivers/net/ppp_async.c
-@@ -337,10 +337,7 @@ ppp_asynctty_poll(struct tty_struct *tty, struct file *file, poll_table *wait)
- 	return 0;
- }
- 
--/*
-- * This can now be called from hard interrupt level as well
-- * as soft interrupt level or mainline.
-- */
-+/* May sleep, don't call from interrupt level or with interrupts disabled */
- static void
- ppp_asynctty_receive(struct tty_struct *tty, const unsigned char *buf,
- 		  char *cflags, int count)
-diff --git a/drivers/net/ppp_synctty.c b/drivers/net/ppp_synctty.c
-index d2fa2db..c908b08 100644
---- a/drivers/net/ppp_synctty.c
-+++ b/drivers/net/ppp_synctty.c
-@@ -378,10 +378,7 @@ ppp_sync_poll(struct tty_struct *tty, struct file *file, poll_table *wait)
- 	return 0;
- }
- 
--/*
-- * This can now be called from hard interrupt level as well
-- * as soft interrupt level or mainline.
-- */
-+/* May sleep, don't call from interrupt level or with interrupts disabled */
- static void
- ppp_sync_receive(struct tty_struct *tty, const unsigned char *buf,
- 		  char *cflags, int count)
--- 
-1.6.2.1.214.ge986c
+SLQB may use cache hot objects regardless of their locality. SLUB
+always serves objects that have the same locality first (same page).
+SLAB returns objects via the alien caches to the remote node.
+So object allocations with SLUB will generate less TLB pressure since they
+are localized. SLUB objects are immediately returned to the remote node.
+SLAB/SLQB keeps them around for reallocation or queue processing.
+
+> > Look at fallback_alloc() in slab. You can likely copy much of it. It
+> > considers memory policies and cpuset constraints.
+> >
+> True, it looks like some of the logic should be taken from there all right. Can
+> the treatment of memory policies be dealt with as a separate thread though? I'd
+> prefer to get memoryless nodes sorted out before considering the next two
+> problems (per-cpu instability on ppc64 and memory policy handling in SLQB).
+
+Separate email thread? Ok.
 
