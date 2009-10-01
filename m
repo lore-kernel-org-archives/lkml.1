@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZJAHPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbZJAVu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbZJAHPf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 03:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbZJAHPf
+	id S1753322AbZJAVu6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbZJAVu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 03:15:35 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:54508 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754185AbZJAHPe convert rfc822-to-8bit (ORCPT
+	Thu, 1 Oct 2009 17:50:57 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53256 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753224AbZJAVu4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 03:15:34 -0400
-MIME-Version: 1.0
-In-Reply-To: <b833952fedbf24c4a16e0d79fe78019357e9652b.1253781660.git.kirill@shutemov.name>
-References: <b833952fedbf24c4a16e0d79fe78019357e9652b.1253781660.git.kirill@shutemov.name>
-Date: Thu, 1 Oct 2009 10:15:38 +0300
-Message-ID: <cc557aab0910010015i2e471c13mb4529409b3e68e45@mail.gmail.com>
-Subject: Re: [PATCH v5 1/2] ARM: Pass IFSR register to do_PrefetchAbort()
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: linux-arm-kernel@lists.infradead.org,
-       Russell King <linux@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Bityutskiy Artem <Artem.Bityutskiy@nokia.com>,
-       Koskinen Aaro <aaro.koskinen@nokia.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>
+	Thu, 1 Oct 2009 17:50:56 -0400
+Date: Thu, 1 Oct 2009 09:17:51 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] floppy: Add an extra bound check on ioctl arguments
+Message-ID: <20091001091751.5e7c1782@infradead.org>
+In-Reply-To: <20090930161316.96b5889e.akpm@linux-foundation.org>
+References: <20090930131709.7300dff3@infradead.org>
+	<20090930161316.96b5889e.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 24, 2009 at 11:49 AM, Kirill A. Shutemov
-<kirill@shutemov.name> wrote:
-> Instruction fault status register, IFSR, was introduced on ARMv6 to
-> provide status information about the last insturction fault. It
-> needed for proper prefetch abort handling.
->
-> Now we have three prefetch abort model:
->
->  * legacy - for CPUs before ARMv6. They doesn't provide neither
->    IFSR nor IFAR. We simulate IFSR with section translation fault
->    status for them to generalize code;
->  * ARMv6 - provides IFSR, but not IFAR;
->  * ARMv7 - provides both IFSR and IFAR.
->
-> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+On Wed, 30 Sep 2009 16:13:16 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Any chances to get it into 2.6.32?
+> On Wed, 30 Sep 2009 13:17:09 +0200
+> Arjan van de Ven <arjan@infradead.org> wrote:
+> 
+> > gcc is not convinced that the floppy.c ioctl has sufficient bound
+> > checks,
+> 
+> gad.  You said "floppy" and "ioctl" in the same sentence.  Where
+> angels fear to tread.
+
+I have to admit I was very much not looking forward to working on this
+warning, and made sure to wear protective clothing and that my
+immunizations were up to date.
+> 
+> It would be useful if you were to quote the gcc output in the
+> changelog please. 
+
+
+In function ‘copy_from_user’,
+    inlined from ‘fd_copyin’ at drivers/block/floppy.c:3080,
+    inlined from ‘fd_ioctl’ at drivers/block/floppy.c:3503:
+/home/arjan/linux/arch/x86/include/asm/uaccess_32.h:211:
+warning: call to ‘copy_from_user_overflow’ declared with attribute
+warning: copy_from_user buffer size is not provably correct
+
+> I assume that you're using some magical new gcc
+> option or something?
+
+Not so much a new option, as using an option that has been there for a
+while, and has been used extensively in userspace, just not yet in the
+kernel. The patches are in the -tip tree, but if you want to take a
+peek I can send them to you as well... they find some "interesting"
+stuff.
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
