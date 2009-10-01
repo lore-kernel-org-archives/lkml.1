@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbZJAXmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZJAXmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756739AbZJAXmN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbZJAXiR
+	id S1756753AbZJAXmc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbZJAXma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:38:17 -0400
-Received: from kroah.org ([198.145.64.141]:42048 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:42:30 -0400
+Received: from kroah.org ([198.145.64.141]:42054 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755999AbZJAXiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:38:15 -0400
+	id S1756004AbZJAXiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:38:16 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:33:21 2009
-Message-Id: <20091001233321.426432538@mini.kroah.org>
+Message-Id: <20091001233321.578747017@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:31:34 -0700
+Date: Thu, 01 Oct 2009 16:31:35 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, jakub@redhat.com,
-       security@kernel.org, mingo@elte.hu,
+       security@kernel.org, mingo@elte.hu, davem@davemloft.net,
        Arjan van de Ven <arjan@linux.intel.com>
-Subject: [patch 18/30] net ax25: Fix signed comparison in the sockopt handler
+Subject: [patch 19/30] net: Make the copy length in af_packet sockopt handler unsigned
 References: <20091001233116.947658905@mini.kroah.org>
-Content-Disposition: inline; filename=net-ax25-fix-signed-comparison-in-the-sockopt-handler.patch
+Content-Disposition: inline; filename=net-make-the-copy-length-in-af_packet-sockopt-handler-unsigned.patch
 In-Reply-To: <20091001233504.GA17709@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -35,25 +36,10 @@ From: Arjan van de Ven <arjan@linux.intel.com>
 
 fixed upstream in commit b7058842c940ad2c08dd829b21e5c92ebe3b8758 in a different way
 
-The ax25 code tried to use
-
-        if (optlen < sizeof(int))
-                return -EINVAL;
-
-as a security check against optlen being negative (or zero) in the
-set socket option.
-
-Unfortunately, "sizeof(int)" is an unsigned property, with the
-result that the whole comparison is done in unsigned, letting
-negative values slip through.
-
-This patch changes this to
-
-        if (optlen < (int)sizeof(int))
-                return -EINVAL;
-
-so that the comparison is done as signed, and negative values
-get properly caught.
+The length of the to-copy data structure is currently stored in
+a signed integer. However many comparisons are done with sizeof(..)
+which is unsigned. It's more suitable for this variable to be unsigned
+to make these comparisons more naturally right.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 Cc: David S. Miller <davem@davemloft.net>
@@ -62,19 +48,28 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ax25/af_ax25.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/packet/af_packet.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/net/ax25/af_ax25.c
-+++ b/net/ax25/af_ax25.c
-@@ -539,7 +539,7 @@ static int ax25_setsockopt(struct socket
- 	if (level != SOL_AX25)
- 		return -ENOPROTOOPT;
+--- a/net/packet/af_packet.c
++++ b/net/packet/af_packet.c
+@@ -1501,7 +1501,7 @@ packet_setsockopt(struct socket *sock, i
+ static int packet_getsockopt(struct socket *sock, int level, int optname,
+ 			     char __user *optval, int __user *optlen)
+ {
+-	int len;
++	unsigned int len;
+ 	int val;
+ 	struct sock *sk = sock->sk;
+ 	struct packet_sock *po = pkt_sk(sk);
+@@ -1514,7 +1514,7 @@ static int packet_getsockopt(struct sock
+ 	if (get_user(len, optlen))
+ 		return -EFAULT;
  
--	if (optlen < sizeof(int))
-+	if (optlen < (int)sizeof(int))
+-	if (len < 0)
++	if ((int)len < 0)
  		return -EINVAL;
  
- 	if (get_user(opt, (int __user *)optval))
+ 	switch(optname)	{
 
 
