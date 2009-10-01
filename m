@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756272AbZJAKmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbZJAKn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756272AbZJAKmO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 06:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbZJAKmM
+	id S1756258AbZJAKn5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 06:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbZJAKn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 06:42:12 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:54187 "EHLO poutre.nerim.net"
+	Thu, 1 Oct 2009 06:43:56 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:11951 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756204AbZJAKmK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 06:42:10 -0400
-Date: Thu, 1 Oct 2009 12:42:10 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: =?UTF-8?B?UGF3ZcWC?= Sikora <pluto@agmk.net>
-Cc: "Andy Walls" <awalls@radix.net>, linux-kernel@vger.kernel.org,
-       LMML <linux-media@vger.kernel.org>
-Subject: Re: [2.6.31] ir-kbd-i2c oops.
-Message-ID: <20091001124210.4be1dd71@hyperion.delvare>
-In-Reply-To: <op.u039i6wbzu3k57@pawels.alatek.krakow.pl>
-References: <200909160300.28382.pluto@agmk.net>
-	<200909161003.33090.pluto@agmk.net>
-	<20090929161629.2a5c8d30@hyperion.delvare>
-	<200909301016.15327.pluto@agmk.net>
-	<20090930125737.704413c8@hyperion.delvare>
-	<1254354167.4771.7.camel@palomino.walls.org>
-	<20091001120609.50327134@hyperion.delvare>
-	<op.u039i6wbzu3k57@pawels.alatek.krakow.pl>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1754535AbZJAKn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 06:43:56 -0400
+Date: Thu, 1 Oct 2009 16:12:49 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@linux.intel.com>
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
+	generic guest and host communication
+Message-ID: <20091001104249.GA12439@amit-x200.redhat.com>
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <200909291531.23389.borntraeger@de.ibm.com> <20090930171321.GA17200@amit-x200.redhat.com> <200910011228.30563.borntraeger@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910011228.30563.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Oct 2009 12:17:20 +0200, Paweł Sikora wrote:
-> Dnia 01-10-2009 o 12:06:09 Jean Delvare <khali@linux-fr.org> napisał(a):
+On (Thu) Oct 01 2009 [12:28:30], Christian Borntraeger wrote:
+> Am Mittwoch 30 September 2009 19:13:21 schrieben Sie:
+> > On (Tue) Sep 29 2009 [15:31:23], Christian Borntraeger wrote:
+> > > Am Dienstag 29 September 2009 15:09:50 schrieb Amit Shah:
+> > > > Great, thanks. However I was thinking of moving this init to the
+> > > > probe() routine instead of in the init_conosle routine just because
+> > > > multiple consoles can be added and we don't want to init this each
+> > > > time.. just once in probe is fine.
+> > >
+> > > If you have new patch CC me and I can give it a spin.
+> > 
+> > Hey Christian,
+> > 
+> > I have a new patch that changes a few things:
+> > - moves the put_char fix to probe instead of doing it in
+> >   init_port_console(), which gets called on each console port found.
+> > - uses port->id instead of a static hvc_vtermno to pass on a value to
+> >   hvc_alloc(). Motivation explained within comments in the code.
+> > - A few other changes that introduce and make use of port->vcon instead
+> >   of accessing the static virtconsole directly -- aimed at easing future
+> >   fix to have multiple virtio-console devices.
+> > 
+> > It would be great if you could test this.
 > 
-> >> I'm not sure if it is the problem here, but it may be prudent to check
-> >> that there's no mismatch between the module and the structure
-> >> definitions being pulled in via "#include"  (maybe by stopping gcc after
-> >> the preprocessing with -E ).
-> >
-> > Thanks for the hint. As far as I can see, this change is new in kernel
-> > 2.6.32-rc1. In 2.6.31, which is where Pawel reported the issue, we
-> > still have IR_KEYTAB_TYPE.
-> >
-> > Pawel, are you by any chance mixing kernel drivers of different
-> > sources?
+> With the latest git kernel + your patch I sometmes get a completely frozen 
+> console. In the dump there is 
 > 
-> everything is under control. i've two separated builds:
-> - 2.6.31 from git with debugging patch.
-> - vendor kernel from rpms.
-> both kernels have separated initrd images for easy booting/testing.
+>     <3>virtio_console virtio0: output:id 68 is not a head!
+> 
+> Seems that I can reproduce it with large amounts of output (find / for example)
+> Without your patch everything is fine.
 
-And both have the problem you reported?
+Do you mean the entire patch? Or just the last snippet that I sent?
 
--- 
-Jean Delvare
+I'm testing things using a few days old linux-next; I guess you're
+seeing this with Linus' git tree?
+
+I'll try that.
+
+		Amit
