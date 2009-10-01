@@ -1,289 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbZJAWkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbZJAWkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753889AbZJAWkU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 18:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZJAWkS
+	id S1753927AbZJAWkj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 18:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbZJAWkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 18:40:18 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:50890 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753560AbZJAWkO (ORCPT
+	Thu, 1 Oct 2009 18:40:36 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:60601 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753870AbZJAWkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 18:40:14 -0400
+	Thu, 1 Oct 2009 18:40:20 -0400
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
-Content-disposition: inline; filename=md-skip-resync.patch
-Content-type: TEXT/PLAIN; NAME=''md-skip-resync.patch
-Date: Thu, 01 Oct 2009 18:39:30 -0400
+Content-disposition: inline; filename=md-resync-range.patch
+Content-type: TEXT/PLAIN; NAME=''md-resync-range.patch
+Date: Thu, 01 Oct 2009 18:39:31 -0400
 From: scjody@sun.com
-Subject: [patch 1/4] [md] Add SKIP_RESYNC ioctl
+Subject: [patch 2/4] [md] Add RESYNC_RANGE ioctl
 To: linux-ext4@vger.kernel.org, linux-raid@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Andreas Dilger <adilger@sun.com>
-Message-id: <20091001224013.254622382@sun.com>
+Message-id: <20091001224016.013217204@sun.com>
 References: <20091001223929.120106893@sun.com>
 User-Agent: quilt/0.46-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a SKIP_RESYNC ioctl to md allowing resync to be skipped on an MD device
-or partition.
+Add the RESYNC_RANGE ioctl and implement it for RAID 4/5/6.  This causes an
+immediate resync of the requested sectors if the device is under resync.
 
-Design note: I expect there to be one (unpartitioned MD device) or just a few
-(partitioned MD device) skip_list entries, therefore searching a linked list
-is not a huge concern.
+TODO: In raid456 (and probably in any other personality that implements
+this), there should be some concept of the last blocks that were resynced
+since the personality can resync more data than requested which will result
+in multiple resyncs of the same data with this implementation.
 
 Index: linux-2.6.18-128.1.6/drivers/md/md.c
 ===================================================================
 --- linux-2.6.18-128.1.6.orig/drivers/md/md.c
 +++ linux-2.6.18-128.1.6/drivers/md/md.c
-@@ -314,12 +314,13 @@ static inline int mddev_trylock(mddev_t 
- 	return mutex_trylock(&mddev->reconfig_mutex);
- }
- 
--static inline void mddev_unlock(mddev_t * mddev)
-+inline void mddev_unlock(mddev_t * mddev)
- {
- 	mutex_unlock(&mddev->reconfig_mutex);
- 
- 	md_wakeup_thread(mddev->thread);
- }
-+EXPORT_SYMBOL_GPL(mddev_unlock);
- 
- static mdk_rdev_t * find_rdev_nr(mddev_t *mddev, int nr)
- {
-@@ -4484,6 +4485,33 @@ static int md_ioctl(struct inode *inode,
- 			err = set_bitmap_file(mddev, (int)arg);
+@@ -4512,6 +4512,71 @@ static int md_ioctl(struct inode *inode,
  			goto done_unlock;
+ 		}
  
-+		case SKIP_RESYNC:
++		case RESYNC_RANGE:
 +		{
++			mdu_range_t range;
 +			struct hd_struct *part = inode->i_bdev->bd_part;
-+			sector_t start, end;
++			int ret;
 +
-+			if (mddev->pers == NULL) {
-+				err = -ENODEV;
++			if (!arg) {
++				err = -EINVAL;
 +				goto abort_unlock;
 +			}
 +
-+			if (mddev->pers->skip_resync == NULL) {
++			ret = copy_from_user(&range, argp, sizeof(range));
++			if (ret) {
++				err = -EFAULT;
++				goto abort_unlock;
++			}
++
++			if (range.start > range.end) {
 +				err = -EINVAL;
 +				goto abort_unlock;
 +			}
 +
 +			if (part) {
-+				start = part->start_sect;
-+				end = part->start_sect + part->nr_sects - 1;
-+			} else {
-+				start = 0;
-+				end = (mddev->array_size<<1) - 1;
++				sector_t part_end;
++
++				range.start += part->start_sect;
++				range.end += part->start_sect;
++
++				part_end = part->start_sect + part->nr_sects - 1;
++
++				if (range.end > part_end) {
++					err = -EINVAL;
++					goto abort_unlock;
++				}
 +			}
 +
-+			err = mddev->pers->skip_resync(mddev, start, end);
++			if (range.end >= mddev->array_size<<1) {
++				err = -EINVAL;
++				goto abort_unlock;
++			}
++
++			if (!test_bit(MD_RECOVERY_RUNNING, &mddev->recovery)) {
++				/* We are already in sync; return success */
++				err = 0;
++				goto abort_unlock;
++			}
++
++			if (!test_bit(MD_RECOVERY_SYNC, &mddev->recovery)) {
++				/* Something is running but not a resync. */
++				err = -EBUSY;
++				goto abort_unlock;
++			}
++
++			if (mddev->pers->resync_range == NULL) {
++				err = -EINVAL;
++				goto abort_unlock;
++			}
++
++
++			err = mddev->pers->resync_range(mddev, range.start,
++							range.end);
++
 +			goto done_unlock;
 +		}
 +
  		default:
  			err = -EINVAL;
  			goto abort_unlock;
+@@ -4865,6 +4930,7 @@ static int md_seq_show(struct seq_file *
+ 	mdk_rdev_t *rdev;
+ 	struct mdstat_info *mi = seq->private;
+ 	struct bitmap *bitmap;
++	unsigned long resync;
+ 
+ 	if (v == (void*)1) {
+ 		struct mdk_personality *pers;
+@@ -4883,6 +4949,8 @@ static int md_seq_show(struct seq_file *
+ 		return 0;
+ 	}
+ 
++	resync = (mddev->curr_resync - atomic_read(&mddev->recovery_active))/2;
++ 
+ 	if (mddev_lock(mddev) < 0)
+ 		return -EINTR;
+ 
 Index: linux-2.6.18-128.1.6/include/linux/raid/md_u.h
 ===================================================================
 --- linux-2.6.18-128.1.6.orig/include/linux/raid/md_u.h
 +++ linux-2.6.18-128.1.6/include/linux/raid/md_u.h
-@@ -45,6 +45,7 @@
- #define STOP_ARRAY		_IO (MD_MAJOR, 0x32)
+@@ -46,6 +46,7 @@
  #define STOP_ARRAY_RO		_IO (MD_MAJOR, 0x33)
  #define RESTART_ARRAY_RW	_IO (MD_MAJOR, 0x34)
-+#define SKIP_RESYNC		_IO (MD_MAJOR, 0x40)
+ #define SKIP_RESYNC		_IO (MD_MAJOR, 0x40)
++#define RESYNC_RANGE		_IO (MD_MAJOR, 0x41)
  
  typedef struct mdu_version_s {
  	int major;
-Index: linux-2.6.18-128.1.6/include/linux/raid/md_k.h
-===================================================================
---- linux-2.6.18-128.1.6.orig/include/linux/raid/md_k.h
-+++ linux-2.6.18-128.1.6/include/linux/raid/md_k.h
-@@ -283,6 +283,7 @@ struct mdk_personality
- 	 * others - reserved
- 	 */
- 	void (*quiesce) (mddev_t *mddev, int state);
-+	int (*skip_resync) (mddev_t *mddev, sector_t start, sector_t end);
- };
+@@ -121,5 +122,11 @@ typedef struct mdu_param_s
+ 	int			max_fault;	/* unused for now */
+ } mdu_param_t;
  
++typedef struct mdu_range_s
++{
++	__u64           start;          /* starting sector */
++	__u64           end;            /* ending sector */
++} mdu_range_t;
++
+ #endif 
  
 Index: linux-2.6.18-128.1.6/drivers/md/raid5.c
 ===================================================================
 --- linux-2.6.18-128.1.6.orig/drivers/md/raid5.c
 +++ linux-2.6.18-128.1.6/drivers/md/raid5.c
-@@ -2827,6 +2827,72 @@ static inline int raid5_redo_bio(raid5_c
- 	return redo;
+@@ -1698,8 +1698,10 @@ static void handle_stripe5(struct stripe
+ 		}
+ 	}
+ 	if (failed > 1 && syncing) {
+-		md_done_sync(conf->mddev, STRIPE_SECTORS,0);
++		if (!test_bit(STRIPE_RESYNC_RANGE, &sh->state))
++			md_done_sync(conf->mddev, STRIPE_SECTORS,0);
+ 		clear_bit(STRIPE_SYNCING, &sh->state);
++		clear_bit(STRIPE_RESYNC_RANGE, &sh->state);
+ 		syncing = 0;
+ 	}
+ 
+@@ -1932,8 +1934,10 @@ static void handle_stripe5(struct stripe
+ 		}
+ 	}
+ 	if (syncing && locked == 0 && test_bit(STRIPE_INSYNC, &sh->state)) {
+-		md_done_sync(conf->mddev, STRIPE_SECTORS,1);
++		if (!test_bit(STRIPE_RESYNC_RANGE, &sh->state))
++			md_done_sync(conf->mddev, STRIPE_SECTORS,1);
+ 		clear_bit(STRIPE_SYNCING, &sh->state);
++		clear_bit(STRIPE_RESYNC_RANGE, &sh->state);
+ 	}
+ 
+ 	/* If the failed drive is just a ReadError, then we might need to progress
+@@ -2275,8 +2279,10 @@ static void handle_stripe6(struct stripe
+ 		}
+ 	}
+ 	if (failed > 2 && syncing) {
+-		md_done_sync(conf->mddev, STRIPE_SECTORS,0);
++		if (!test_bit(STRIPE_RESYNC_RANGE, &sh->state))
++			md_done_sync(conf->mddev, STRIPE_SECTORS,0);
+ 		clear_bit(STRIPE_SYNCING, &sh->state);
++		clear_bit(STRIPE_RESYNC_RANGE, &sh->state);
+ 		syncing = 0;
+ 	}
+ 
+@@ -2571,8 +2577,10 @@ static void handle_stripe6(struct stripe
+ 	}
+ 
+ 	if (syncing && locked == 0 && test_bit(STRIPE_INSYNC, &sh->state)) {
+-		md_done_sync(conf->mddev, STRIPE_SECTORS,1);
++		if (!test_bit(STRIPE_RESYNC_RANGE, &sh->state))
++			md_done_sync(conf->mddev, STRIPE_SECTORS,1);
+ 		clear_bit(STRIPE_SYNCING, &sh->state);
++		clear_bit(STRIPE_RESYNC_RANGE, &sh->state);
+ 	}
+ 
+ 	/* If the failed drives are just a ReadError, then we might need
+@@ -3300,6 +3308,52 @@ static inline sector_t sync_request(mdde
+ 	return STRIPE_SECTORS;
  }
  
-+/*
-+ * Mark the range of sectors start-end to be skipped during the current
-+ * resync.  If no resync is in progress, this will be ignored.
-+ */
-+static int skip_resync(mddev_t *mddev, sector_t start, sector_t end)
++/* Perform an immediate resync of the requested range. */
++static int resync_range(mddev_t *mddev, sector_t start, sector_t end)
 +{
-+	struct skip_entry *new;
 +	raid5_conf_t *conf = (raid5_conf_t *) mddev->private;
++	sector_t j, sync_end;
 +	unsigned int dd_idx, pd_idx, disks, data_disks;
 +
-+	if (!test_bit(MD_RECOVERY_SYNC, &mddev->recovery))
-+		return 0;
-+
-+	new = kmalloc(sizeof(*new), GFP_KERNEL);
-+	if (new == NULL)
-+		return -ENOMEM;
++	printk("resync_range, sectors %llu - %llu\n", (unsigned long long)start,
++	       (unsigned long long)end);
 +
 +	disks = conf->raid_disks;
 +	data_disks = disks - conf->max_degraded;
 +
-+	new->start = raid5_compute_sector(start, disks, data_disks,
-+					  &dd_idx, &pd_idx, conf);
-+	new->end = raid5_compute_sector(end, disks, data_disks,
++	j = raid5_compute_sector(start, disks, data_disks,
++				 &dd_idx, &pd_idx, conf);
++	sync_end = raid5_compute_sector(end, disks, data_disks,
 +					&dd_idx, &pd_idx, conf);
-+	spin_lock_irq(&conf->device_lock);
-+	list_add(&new->skip_list, &conf->skip_list);
-+	spin_unlock_irq(&conf->device_lock);
 +
-+	return 0;
-+}
++	while (j <= sync_end) {
++		struct stripe_head *sh;
 +
-+/*
-+ * Check to see if this sector should be skipped.  If so, return the number
-+ * of sectors to skip.
-+ */
-+static sector_t check_skip_list(raid5_conf_t *conf, sector_t sector_nr)
-+{
-+	struct skip_entry *e;
++		pd_idx = stripe_to_pdidx(j, conf, disks);
++		sh = get_active_stripe(conf, j, disks, pd_idx, 1);
++		if (sh == NULL) {
++			sh = get_active_stripe(conf, j, disks, pd_idx, 0);
++			/* make sure we don't swamp the stripe cache if someone
++			 * else is trying to get access
++			 */
++			schedule_timeout_uninterruptible(1);
++		}
 +
-+	list_for_each_entry(e, &conf->skip_list, skip_list) {
-+		if (sector_nr >= e->start && sector_nr <= e->end)
-+			return (e->end - sector_nr + 1);
++		spin_lock(&sh->lock);
++		set_bit(STRIPE_SYNCING, &sh->state);
++		set_bit(STRIPE_RESYNC_RANGE, &sh->state);
++		clear_bit(STRIPE_INSYNC, &sh->state);
++		spin_unlock(&sh->lock);
++
++		handle_stripe(sh, NULL, NULL);
++		release_stripe(sh);
++
++		j += STRIPE_SECTORS;
 +	}
 +
 +	return 0;
 +}
 +
-+/* Clear the skip list and free associated memory. */
-+static void clear_skip_list(raid5_conf_t *conf)
-+{
-+	struct list_head free_list;
-+
-+	INIT_LIST_HEAD(&free_list);
-+	spin_lock_irq(&conf->device_lock);
-+	list_splice_init(&conf->skip_list, &free_list);
-+	spin_unlock_irq(&conf->device_lock);
-+
-+	while (!list_empty(&free_list)) {
-+		struct list_head *l = free_list.next;
-+		struct skip_entry *e = list_entry(l, struct skip_entry,
-+						  skip_list);
-+		list_del_init(l);
-+		kfree(e);
-+	}
-+}
-+
- static int make_request(request_queue_t *q, struct bio * bi)
- {
- 	mddev_t *mddev = q->queuedata;
-@@ -3154,6 +3220,7 @@ static inline sector_t sync_request(mdde
- 	int sync_blocks;
- 	int still_degraded = 0;
- 	int i;
-+	sector_t skip_sectors;
- 
- 	if (sector_nr >= max_sector) {
- 		/* just being told to finish up .. nothing much to do */
-@@ -3169,6 +3236,7 @@ static inline sector_t sync_request(mdde
- 		else /* completed sync */
- 			conf->fullsync = 0;
- 		bitmap_close_sync(mddev->bitmap);
-+		clear_skip_list(conf);
- 
- 		return 0;
- 	}
-@@ -3194,6 +3262,13 @@ static inline sector_t sync_request(mdde
- 		*skipped = 1;
- 		return sync_blocks * STRIPE_SECTORS; /* keep things rounded to whole stripes */
- 	}
-+	spin_lock_irq(&conf->device_lock);
-+	skip_sectors = check_skip_list(conf, sector_nr);
-+	spin_unlock_irq(&conf->device_lock);
-+	if (skip_sectors) {
-+		*skipped = 1;
-+		return skip_sectors;
-+	}
- 
- 	pd_idx = stripe_to_pdidx(sector_nr, conf, raid_disks);
- 	sh = get_active_stripe(conf, sector_nr, raid_disks, pd_idx, 1);
-@@ -3449,6 +3524,7 @@ static int run(mddev_t *mddev)
- 	INIT_LIST_HEAD(&conf->delayed_list);
- 	INIT_LIST_HEAD(&conf->bitmap_list);
- 	INIT_LIST_HEAD(&conf->inactive_list);
-+	INIT_LIST_HEAD(&conf->skip_list);
- 	atomic_set(&conf->active_stripes, 0);
- 	atomic_set(&conf->preread_active_stripes, 0);
- 
-@@ -4029,6 +4105,7 @@ static struct mdk_personality raid6_pers
- 	.sync_request	= sync_request,
+ /*
+  * This is our raid5 kernel thread.
+  *
+@@ -4106,6 +4160,7 @@ static struct mdk_personality raid6_pers
  	.resize		= raid5_resize,
  	.quiesce	= raid5_quiesce,
-+	.skip_resync	= skip_resync,
+ 	.skip_resync	= skip_resync,
++	.resync_range	= resync_range,
  };
  static struct mdk_personality raid5_personality =
  {
-@@ -4050,6 +4127,7 @@ static struct mdk_personality raid5_pers
- 	.start_reshape  = raid5_start_reshape,
+@@ -4128,6 +4183,7 @@ static struct mdk_personality raid5_pers
  #endif
  	.quiesce	= raid5_quiesce,
-+	.skip_resync	= skip_resync,
+ 	.skip_resync	= skip_resync,
++	.resync_range	= resync_range,
  };
  
  static struct mdk_personality raid4_personality =
-@@ -4068,6 +4146,7 @@ static struct mdk_personality raid4_pers
- 	.sync_request	= sync_request,
+@@ -4147,6 +4203,7 @@ static struct mdk_personality raid4_pers
  	.resize		= raid5_resize,
  	.quiesce	= raid5_quiesce,
-+	.skip_resync	= skip_resync,
+ 	.skip_resync	= skip_resync,
++	.resync_range	= resync_range,
  };
  
  static int __init raid5_init(void)
+Index: linux-2.6.18-128.1.6/include/linux/raid/md_k.h
+===================================================================
+--- linux-2.6.18-128.1.6.orig/include/linux/raid/md_k.h
++++ linux-2.6.18-128.1.6/include/linux/raid/md_k.h
+@@ -284,6 +284,7 @@ struct mdk_personality
+ 	 */
+ 	void (*quiesce) (mddev_t *mddev, int state);
+ 	int (*skip_resync) (mddev_t *mddev, sector_t start, sector_t end);
++	int (*resync_range) (mddev_t *mddev, sector_t start, sector_t end);
+ };
+ 
+ 
 Index: linux-2.6.18-128.1.6/include/linux/raid/raid5.h
 ===================================================================
 --- linux-2.6.18-128.1.6.orig/include/linux/raid/raid5.h
 +++ linux-2.6.18-128.1.6/include/linux/raid/raid5.h
-@@ -260,6 +260,7 @@ struct raid5_private_data {
- 	int			pool_size; /* number of disks in stripeheads in pool */
- 	spinlock_t		device_lock;
- 	struct disk_info	*disks;
-+	struct list_head	skip_list;	/* used to skip resync on certain blocks */
- 
- 	/*
- 	 * Stats
-@@ -294,4 +295,11 @@ typedef struct raid5_private_data raid5_
- #define ALGORITHM_LEFT_SYMMETRIC	2
- #define ALGORITHM_RIGHT_SYMMETRIC	3
- 
-+struct skip_entry {
-+	struct list_head	skip_list;
+@@ -180,6 +180,8 @@ struct stripe_head {
+ #define	STRIPE_EXPANDING	9
+ #define	STRIPE_EXPAND_SOURCE	10
+ #define	STRIPE_EXPAND_READY	11
++#define	STRIPE_RESYNC_RANGE	12
 +
-+	sector_t		start;
-+	sector_t		end;
-+};
-+
- #endif
-Index: linux-2.6.18-128.1.6/include/linux/raid/md.h
-===================================================================
---- linux-2.6.18-128.1.6.orig/include/linux/raid/md.h
-+++ linux-2.6.18-128.1.6/include/linux/raid/md.h
-@@ -95,5 +95,7 @@ extern void md_new_event(mddev_t *mddev)
- 
- extern void md_update_sb(mddev_t * mddev);
- 
-+extern void mddev_unlock(mddev_t * mddev);
-+
- #endif 
- 
+ /*
+  * Plugging:
+  *
 
 -- 
