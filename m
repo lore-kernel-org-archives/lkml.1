@@ -1,89 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbZJAVfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbZJAVf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753042AbZJAVfX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 17:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZJAVfW
+	id S1753018AbZJAVf6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbZJAVf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 17:35:22 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41265 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752172AbZJAVfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 17:35:21 -0400
-Date: Thu, 1 Oct 2009 23:35:23 +0200
-From: Jan Kara <jack@suse.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, Peter Zijlstra <peterz@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "david@fromorbit.com" <david@fromorbit.com>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Message-ID: <20091001213523.GA21982@duck.suse.cz>
-References: <20090909142315.GA7949@duck.suse.cz> <1252597750.7205.82.camel@laptop> <20090914111721.GA24075@duck.suse.cz> <20090924083342.GA15918@localhost> <20090929173506.GE11573@duck.suse.cz> <20090930012406.GB6311@localhost> <20090930115539.GA16074@duck.suse.cz> <20091001133610.GA7228@localhost> <20091001142243.GD24027@duck.suse.cz> <20091001145443.GA9469@localhost>
+	Thu, 1 Oct 2009 17:35:57 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:54091 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302AbZJAVf4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 17:35:56 -0400
+Message-ID: <4AC520B5.9080600@austin.ibm.com>
+Date: Thu, 01 Oct 2009 16:35:49 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091001145443.GA9469@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] mm: add notifier in pageblock isolation for balloon
+ drivers
+References: <20091001195311.GA16667@austin.ibm.com>
+In-Reply-To: <20091001195311.GA16667@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 01-10-09 22:54:43, Wu Fengguang wrote:
-> > > >   You probably didn't understand my comment in the previous email. This is
-> > > > too late to wakeup all the tasks. There are two limits - background_limit
-> > > > (set to 5%) and dirty_limit (set to 10%). When amount of dirty data is
-> > > > above background_limit, we start the writeback but we don't throttle tasks
-> > > > yet. We start throttling tasks only when amount of dirty data on the bdi
-> > > > exceeds the part of the dirty limit belonging to the bdi. In case of a
-> > > > single bdi, this means we start throttling threads only when 10% of memory
-> > > > is dirty. To keep this behavior, we have to wakeup waiting threads as soon
-> > > > as their BDI gets below the dirty limit or when global number of dirty
-> > > > pages gets below (background_limit + dirty_limit) / 2.
-> > > 
-> > > Sure, but the design goal is to wakeup the throttled tasks in the
-> > > __bdi_writeout_inc() path instead of here. As long as some (background)
-> > > writeback is running, __bdi_writeout_inc() will be called to wakeup
-> > > the tasks.  This "unthrottle all on exit of background writeback" is
-> > > merely a safeguard, since once background writeback (which could be
-> > > queued by the throttled task itself, in bdi_writeback_wait) exits, the
-> > > calls to __bdi_writeout_inc() is likely to stop.
-> >   The thing is: In the old code, tasks returned from balance_dirty_pages()
-> > as soon as we got below dirty_limit, regardless of how much they managed to
-> > write. So we want to wake them up from waiting as soon as we get below the
-> > dirty limit (maybe a bit later so that they don't immediately block again
-> > but I hope you get the point).
+Robert Jennings wrote:
+> Memory balloon drivers can allocate a large amount of memory which
+> is not movable but could be freed to accommodate memory hotplug remove.
 > 
-> Ah good catch!  However overhitting the threshold by 1MB (maybe more with
-> concurrent dirtiers) should not be a problem. As you said, that avoids the
-> task being immediately blocked again.
+> Prior to calling the memory hotplug notifier chain the memory in the
+> pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
+> isolation will not proceed, causing the memory removal for that page
+> range to fail.
 > 
-> The old code does the dirty_limit check in an opportunistic manner. There were
-> no guarantee. 2.6.32 further weakens it with the removal of congestion back off.
-  Sure, there are no guarantees but if we let threads sleep in
-balance_dirty_pages longer than necessary it will have a performance impact
-(application will sleep instead of doing useful work). So we should better
-make sure applications sleep as few as necessary in balance_dirty_pages.
-
-> @@ -756,8 +811,11 @@ static long wb_writeback(struct bdi_writ
->  		 * For background writeout, stop when we are below the
->  		 * background dirty threshold
->  		 */
-> -		if (args->for_background && !over_bground_thresh())
-> +		if (args->for_background && !over_bground_thresh()) {
-> +			while (bdi_writeback_wakeup(wb->bdi))
-> +				;  /* unthrottle all tasks */
->  			break;
+> Rather than immediately failing pageblock isolation if the the
+> migrateteype is not MIGRATE_MOVABLE, this patch checks if all of the
+> pages in the pageblock are owned by a registered balloon driver using a
+> notifier chain.  If all of the non-movable pages are owned by a balloon,
+> they can be freed later through the memory notifier chain and the range
+> can still be isolated in set_migratetype_isolate().
+> 
+> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+> 
+> ---
+>  drivers/base/memory.c  |   19 +++++++++++++++++++
+>  include/linux/memory.h |   22 ++++++++++++++++++++++
+>  mm/page_alloc.c        |   49 +++++++++++++++++++++++++++++++++++++++++--------
+>  3 files changed, 82 insertions(+), 8 deletions(-)
+> 
+> Index: b/drivers/base/memory.c
+> ===================================================================
+> --- a/drivers/base/memory.c
+> +++ b/drivers/base/memory.c
+> @@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
+>  }
+>  EXPORT_SYMBOL(unregister_memory_notifier);
+>  
+> +static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
+> +
+> +int register_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
+> +}
+> +EXPORT_SYMBOL(register_memory_isolate_notifier);
+> +
+> +void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
+> +}
+> +EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+> +
+>  /*
+>   * register_memory - Setup a sysfs device for a memory block
+>   */
+> @@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
+>  	return blocking_notifier_call_chain(&memory_chain, val, v);
+>  }
+>  
+> +int memory_isolate_notify(unsigned long val, void *v)
+> +{
+> +	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
+> +}
+> +
+>  /*
+>   * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
+>   * OK to have direct references to sparsemem variables in here.
+> Index: b/include/linux/memory.h
+> ===================================================================
+> --- a/include/linux/memory.h
+> +++ b/include/linux/memory.h
+> @@ -50,6 +50,14 @@ struct memory_notify {
+>  	int status_change_nid;
+>  };
+>  
+> +#define MEM_ISOLATE_COUNT	(1<<0)
+> +
+> +struct memory_isolate_notify {
+> +	unsigned long start_addr;
+> +	unsigned int nr_pages;
+> +	unsigned int pages_found;
+> +};
+> +
+>  struct notifier_block;
+>  struct mem_section;
+>  
+> @@ -76,14 +84,28 @@ static inline int memory_notify(unsigned
+>  {
+>  	return 0;
+>  }
+> +static inline int register_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	return 0;
+> +}
+> +static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +}
+> +static inline int memory_isolate_notify(unsigned long val, void *v)
+> +{
+> +	return 0;
+> +}
+>  #else
+>  extern int register_memory_notifier(struct notifier_block *nb);
+>  extern void unregister_memory_notifier(struct notifier_block *nb);
+> +extern int register_memory_isolate_notifier(struct notifier_block *nb);
+> +extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
+>  extern int register_new_memory(int, struct mem_section *);
+>  extern int unregister_memory_section(struct mem_section *);
+>  extern int memory_dev_init(void);
+>  extern int remove_memory_block(unsigned long, struct mem_section *, int);
+>  extern int memory_notify(unsigned long val, void *v);
+> +extern int memory_isolate_notify(unsigned long val, void *v);
+>  extern struct memory_block *find_memory_block(struct mem_section *);
+>  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+>  enum mem_add_context { BOOT, HOTPLUG };
+> Index: b/mm/page_alloc.c
+> ===================================================================
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -48,6 +48,7 @@
+>  #include <linux/page_cgroup.h>
+>  #include <linux/debugobjects.h>
+>  #include <linux/kmemleak.h>
+> +#include <linux/memory.h>
+>  #include <trace/events/kmem.h>
+>  
+>  #include <asm/tlbflush.h>
+> @@ -4985,23 +4986,55 @@ void set_pageblock_flags_group(struct pa
+>  int set_migratetype_isolate(struct page *page)
+>  {
+>  	struct zone *zone;
+> -	unsigned long flags;
+> +	unsigned long flags, pfn, iter;
+> +	long immobile = 0;
+> +	struct memory_isolate_notify arg;
+> +	int notifier_ret;
+>  	int ret = -EBUSY;
+>  	int zone_idx;
+>  
+>  	zone = page_zone(page);
+>  	zone_idx = zone_idx(zone);
+> +
+> +	pfn = page_to_pfn(page);
+> +	arg.start_addr = (unsigned long)page_address(page);
+> +	arg.nr_pages = pageblock_nr_pages;
+> +	arg.pages_found = 0;
+> +
+>  	spin_lock_irqsave(&zone->lock, flags);
+>  	/*
+>  	 * In future, more migrate types will be able to be isolation target.
+>  	 */
+> -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
+> -	    zone_idx != ZONE_MOVABLE)
+> -		goto out;
+> -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> -	ret = 0;
+> -out:
+> +	do {
+> +		if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE &&
+> +		    zone_idx == ZONE_MOVABLE) {
+> +			ret = 0;
+> +			break;
 > +		}
-  Thus the check here should rather be
-if (args->for_background && !over_dirty_limit())
+> +
+> +		/*
+> +		 * If all of the pages in a zone are used by a balloon,
+> +		 * the range can be still be isolated.  The balloon will
+> +		 * free these pages from the memory notifier chain.
+> +		 */
+> +		notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
+> +		notifier_ret = notifier_to_errno(ret);
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Should this be
+
+		notifier_ret = notifier_to_errno(notifier_ret);
+
+-Nathan
+
+> +		if (notifier_ret || !arg.pages_found)
+> +			break;
+> +
+> +		for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
+> +			if (page_count(pfn_to_page(iter)))
+> +				immobile++;
+> +
+> +		if (arg.pages_found == immobile)
+> +			ret = 0;
+> +	} while (0);
+> +
+> +	if (!ret) {
+> +		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> +		move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> +	}
+> +
+>  	spin_unlock_irqrestore(&zone->lock, flags);
+>  	if (!ret)
+>  		drain_all_pages();
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
