@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbZJAXiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbZJAXjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756295AbZJAXiZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbZJAXiX
+	id S1756345AbZJAXjT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756278AbZJAXiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:38:23 -0400
-Received: from kroah.org ([198.145.64.141]:42062 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:38:24 -0400
+Received: from kroah.org ([198.145.64.141]:42071 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755274AbZJAXiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:38:18 -0400
+	id S1755981AbZJAXiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:38:19 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:33:22 2009
-Message-Id: <20091001233321.895031689@mini.kroah.org>
+Message-Id: <20091001233322.057476155@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:31:37 -0700
+Date: Thu, 01 Oct 2009 16:31:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>, davem@davemloft.net,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: [patch 21/30] netfilter: bridge: refcount fix
+       Patrick McHardy <kaber@trash.net>, davem@davemloft.net
+Subject: [patch 22/30] netfilter: ebt_ulog: fix checkentry return value
 References: <20091001233116.947658905@mini.kroah.org>
-Content-Disposition: inline; filename=netfilter-bridge-refcount-fix.patch
+Content-Disposition: inline; filename=netfilter-ebt_ulog-fix-checkentry-return-value.patch
 In-Reply-To: <20091001233504.GA17709@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -34,36 +33,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Patrick McHardy <kaber@trash.net>
 
-netfilter: bridge: refcount fix
+netfilter: ebt_ulog: fix checkentry return value
 
-Upstream commit f3abc9b9:
+Upstream commit 8a56df0a:
 
-commit f216f082b2b37c4943f1e7c393e2786648d48f6f
-([NETFILTER]: bridge netfilter: deal with martians correctly)
-added a refcount leak on in_dev.
+Commit 19eda87 (netfilter: change return types of check functions for
+Ebtables extensions) broke the ebtables ulog module by missing a return
+value conversion.
 
-Instead of using in_dev_get(), we can use __in_dev_get_rcu(),
-as netfilter hooks are running under rcu_read_lock(), as pointed
-by Patrick.
-
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/bridge/br_netfilter.c |    2 +-
+ net/bridge/netfilter/ebt_ulog.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/bridge/br_netfilter.c
-+++ b/net/bridge/br_netfilter.c
-@@ -357,7 +357,7 @@ static int br_nf_pre_routing_finish(stru
- 				},
- 				.proto = 0,
- 			};
--			struct in_device *in_dev = in_dev_get(dev);
-+			struct in_device *in_dev = __in_dev_get_rcu(dev);
+--- a/net/bridge/netfilter/ebt_ulog.c
++++ b/net/bridge/netfilter/ebt_ulog.c
+@@ -266,7 +266,7 @@ static bool ebt_ulog_tg_check(const stru
+ 	if (uloginfo->qthreshold > EBT_ULOG_MAX_QLEN)
+ 		uloginfo->qthreshold = EBT_ULOG_MAX_QLEN;
  
- 			/* If err equals -EHOSTUNREACH the error is due to a
- 			 * martian destination or due to the fact that
+-	return 0;
++	return true;
+ }
+ 
+ static struct xt_target ebt_ulog_tg_reg __read_mostly = {
 
 
