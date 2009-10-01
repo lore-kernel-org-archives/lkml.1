@@ -1,78 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbZJAKG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbZJAKGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbZJAKG4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 06:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbZJAKGs
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1756161AbZJAKGs (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 1 Oct 2009 06:06:48 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:35753 "EHLO
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZJAKGr
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 1 Oct 2009 06:06:47 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:35752 "EHLO
 	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756095AbZJAKGq (ORCPT
+	with ESMTP id S1756106AbZJAKGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Oct 2009 06:06:46 -0400
 From: Samu Onkalo <samu.p.onkalo@nokia.com>
 To: eric.piel@tremplin-utc.net
 Cc: linux-kernel@vger.kernel.org, Samu Onkalo <samu.p.onkalo@nokia.com>
-Subject: [PATCH 1/2] LIS3LV02D: axis remap, irq and resource setup / release added to platform data
-Date: Thu,  1 Oct 2009 13:06:30 +0300
-Message-Id: <1254391591-9696-2-git-send-email-samu.p.onkalo@nokia.com>
+Subject: [PATCH 2/2] LIS3LV02D: I2C support
+Date: Thu,  1 Oct 2009 13:06:31 +0300
+Message-Id: <1254391591-9696-3-git-send-email-samu.p.onkalo@nokia.com>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1254391591-9696-1-git-send-email-samu.p.onkalo@nokia.com>
+In-Reply-To: <1254391591-9696-2-git-send-email-samu.p.onkalo@nokia.com>
 References: <1254391591-9696-1-git-send-email-samu.p.onkalo@nokia.com>
-X-OriginalArrivalTime: 01 Oct 2009 10:06:33.0971 (UTC) FILETIME=[DAEC4430:01CA427E]
+ <1254391591-9696-2-git-send-email-samu.p.onkalo@nokia.com>
+X-OriginalArrivalTime: 01 Oct 2009 10:06:35.0268 (UTC) FILETIME=[DBB22C40:01CA427E]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds axis remapping and second IRQ request to platform data.
-Second IRQ request doesn't exists in all lis3xxx variants.
-
-Setup and release functions added to support
-platform specific operations.
+I2C bus support for lis3lv02d and variant accelerometer chips
 
 Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
 ---
- drivers/hwmon/lis3lv02d.h |    1 +
- include/linux/lis3lv02d.h |   13 +++++++++++++
- 2 files changed, 14 insertions(+), 0 deletions(-)
+ drivers/hwmon/Kconfig         |   17 ++++
+ drivers/hwmon/Makefile        |    1 +
+ drivers/hwmon/lis3lv02d_i2c.c |  183 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 201 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/hwmon/lis3lv02d_i2c.c
 
-diff --git a/drivers/hwmon/lis3lv02d.h b/drivers/hwmon/lis3lv02d.h
-index 3e1ff46..b89f465 100644
---- a/drivers/hwmon/lis3lv02d.h
-+++ b/drivers/hwmon/lis3lv02d.h
-@@ -207,6 +207,7 @@ struct lis3lv02d {
- 	struct axis_conversion	ac;        /* hw -> logical axis */
+diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+index 69222bc..3d8e1b7 100644
+--- a/drivers/hwmon/Kconfig
++++ b/drivers/hwmon/Kconfig
+@@ -992,6 +992,23 @@ config SENSORS_LIS3_SPI
+ 	  will be called lis3lv02d and a specific module for the SPI transport
+ 	  is called lis3lv02d_spi.
  
- 	u32			irq;       /* IRQ number */
-+	u32			irq2;      /* IRQ number (LIS302DL) */
- 	struct fasync_struct	*async_queue; /* queue for the misc device */
- 	wait_queue_head_t	misc_wait; /* Wait queue for the misc device */
- 	unsigned long		misc_opened; /* bit0: whether the device is open */
-diff --git a/include/linux/lis3lv02d.h b/include/linux/lis3lv02d.h
-index dbe0702..7ac1e56 100644
---- a/include/linux/lis3lv02d.h
-+++ b/include/linux/lis3lv02d.h
-@@ -43,6 +43,19 @@ struct lis3lv02d_platform_data {
- #define LIS3_WAKEUP_Z_HI	(1 << 5)
- 	unsigned char wakeup_flags;
- 	unsigned char wakeup_thresh;
-+#define LIS3_NO_MAP		0
-+#define LIS3_DEV_X		1
-+#define LIS3_DEV_Y		2
-+#define LIS3_DEV_Z		3
-+#define LIS3_INV_DEV_X	       -1
-+#define LIS3_INV_DEV_Y	       -2
-+#define LIS3_INV_DEV_Z	       -3
-+	s8 axis_x;
-+	s8 axis_y;
-+	s8 axis_z;
-+	u32 irq2;
-+	int (*setup_resources)(void);
-+	int (*release_resources)(void);
- };
- 
- #endif /* __LIS3LV02D_H_ */
++config SENSORS_LIS3_I2C
++	tristate "STMicroeletronics LIS3LV02Dx three-axis digital accelerometer (I2C)"
++	depends on I2C && INPUT
++	select INPUT_POLLDEV
++	default n
++	help
++	  This driver provides support for the LIS3LV02Dx accelerometer connected
++	  via I2C. The accelerometer data is readable via
++	  /sys/devices/platform/lis3lv02d.
++
++	  This driver also provides an absolute input class device, allowing
++	  the device to act as a pinball machine-esque joystick.
++
++	  This driver can also be built as modules.  If so, the core module
++	  will be called lis3lv02d and a specific module for the I2C transport
++	  is called lis3lv02d_I2C.
++
+ config SENSORS_APPLESMC
+ 	tristate "Apple SMC (Motion sensor, light sensor, keyboard backlight)"
+ 	depends on INPUT && X86
+diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+index 4a34375..699e372 100644
+--- a/drivers/hwmon/Makefile
++++ b/drivers/hwmon/Makefile
+@@ -55,6 +55,7 @@ obj-$(CONFIG_SENSORS_IT87)	+= it87.o
+ obj-$(CONFIG_SENSORS_K8TEMP)	+= k8temp.o
+ obj-$(CONFIG_SENSORS_LIS3LV02D) += lis3lv02d.o hp_accel.o
+ obj-$(CONFIG_SENSORS_LIS3_SPI)	+= lis3lv02d.o lis3lv02d_spi.o
++obj-$(CONFIG_SENSORS_LIS3_I2C)	+= lis3lv02d.o lis3lv02d_i2c.o
+ obj-$(CONFIG_SENSORS_LM63)	+= lm63.o
+ obj-$(CONFIG_SENSORS_LM70)	+= lm70.o
+ obj-$(CONFIG_SENSORS_LM75)	+= lm75.o
+diff --git a/drivers/hwmon/lis3lv02d_i2c.c b/drivers/hwmon/lis3lv02d_i2c.c
+new file mode 100644
+index 0000000..344b240
+--- /dev/null
++++ b/drivers/hwmon/lis3lv02d_i2c.c
+@@ -0,0 +1,183 @@
++/*
++ * drivers/hwmon/lis3lv02d_i2c.c
++ *
++ * Implements I2C interface for lis3lv02d (STMicroelectronics) accelerometer.
++ * Driver is based on corresponding SPI driver written by Daniel Mack
++ * (lis3lv02d_spi.c (C) 2009 Daniel Mack <daniel@caiaq.de> ).
++ *
++ * Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
++ *
++ * Contact: Samu Onkalo <samu.p.onkalo@nokia.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/err.h>
++#include <linux/i2c.h>
++#include "lis3lv02d.h"
++
++#define DRV_NAME 	"lis3lv02d_i2c"
++
++static inline s32 lis3_i2c_write(struct lis3lv02d *lis3, int reg, u8 value)
++{
++	struct i2c_client *c = lis3->bus_priv;
++	return i2c_smbus_write_byte_data(c, reg, value);
++}
++
++static inline s32 lis3_i2c_read(struct lis3lv02d *lis3, int reg, u8 *v)
++{
++	struct i2c_client *c = lis3->bus_priv;
++	*v = i2c_smbus_read_byte_data(c, reg);
++	return 0;
++}
++
++static int lis3_i2c_init(struct lis3lv02d *lis3)
++{
++	u8 reg;
++	int ret;
++
++	/* power up the device */
++	ret = lis3->read(lis3, CTRL_REG1, &reg);
++	if (ret < 0)
++		return ret;
++
++	reg |= CTRL1_PD0;
++	return lis3->write(lis3, CTRL_REG1, reg);
++}
++
++static struct axis_conversion lis3lv02d_axis_map = { 1, 2, 3 };
++
++static int __devinit lis3lv02d_i2c_probe(struct i2c_client *client,
++					const struct i2c_device_id *id)
++{
++	int ret = 0;
++	struct lis3lv02d_platform_data *pdata = client->dev.platform_data;
++
++	if (pdata) {
++		if (pdata->axis_x)
++			lis3lv02d_axis_map.x = pdata->axis_x;
++
++		if (pdata->axis_y)
++			lis3lv02d_axis_map.y = pdata->axis_y;
++
++		if (pdata->axis_z)
++			lis3lv02d_axis_map.z = pdata->axis_z;
++
++		lis3_dev.irq2 = pdata->irq2;
++
++		if (pdata->setup_resources)
++			ret = pdata->setup_resources();
++
++		if (ret)
++			goto fail;
++	}
++
++	lis3_dev.pdata	  = pdata;
++	lis3_dev.bus_priv = client;
++	lis3_dev.init	  = lis3_i2c_init;
++	lis3_dev.read	  = lis3_i2c_read;
++	lis3_dev.write	  = lis3_i2c_write;
++	lis3_dev.irq	  = client->irq;
++	lis3_dev.ac	  = lis3lv02d_axis_map;
++
++	i2c_set_clientdata(client, &lis3_dev);
++	ret = lis3lv02d_init_device(&lis3_dev);
++fail:
++	return ret;
++}
++
++static int __devexit lis3lv02d_i2c_remove(struct i2c_client *client)
++{
++	struct lis3lv02d *lis3 = i2c_get_clientdata(client);
++	struct lis3lv02d_platform_data *pdata = client->dev.platform_data;
++
++	if (pdata && pdata->release_resources)
++		pdata->release_resources();
++
++	lis3lv02d_joystick_disable();
++	lis3lv02d_poweroff(lis3);
++
++	return lis3lv02d_remove_fs(&lis3_dev);
++}
++
++#ifdef CONFIG_PM
++static int lis3lv02d_i2c_suspend(struct i2c_client *client, pm_message_t mesg)
++{
++	struct lis3lv02d *lis3 = i2c_get_clientdata(client);
++
++	if (!lis3->pdata->wakeup_flags)
++		lis3lv02d_poweroff(lis3);
++	return 0;
++}
++
++static int lis3lv02d_i2c_resume(struct i2c_client *client)
++{
++	struct lis3lv02d *lis3 = i2c_get_clientdata(client);
++
++	if (!lis3->pdata->wakeup_flags)
++		lis3lv02d_poweron(lis3);
++	return 0;
++}
++
++static void lis3lv02d_i2c_shutdown(struct i2c_client *client)
++{
++	lis3lv02d_i2c_suspend(client, PMSG_SUSPEND);
++}
++#else
++#define lis3lv02d_i2c_suspend	NULL
++#define lis3lv02d_i2c_resume	NULL
++#define lis3lv02d_i2c_shutdown	NULL
++#endif
++
++static const struct i2c_device_id lis3lv02d_id[] = {
++	{"lis3lv02d", 0 },
++	{}
++};
++
++MODULE_DEVICE_TABLE(i2c, lis3lv02d_id);
++
++static struct i2c_driver lis3lv02d_i2c_driver = {
++	.driver	 = {
++		.name   = DRV_NAME,
++		.owner  = THIS_MODULE,
++	},
++	.suspend = lis3lv02d_i2c_suspend,
++	.shutdown = lis3lv02d_i2c_shutdown,
++	.resume = lis3lv02d_i2c_resume,
++	.probe	= lis3lv02d_i2c_probe,
++	.remove	= __devexit_p(lis3lv02d_i2c_remove),
++	.id_table = lis3lv02d_id,
++};
++
++static int __init lis3lv02d_init(void)
++{
++	return i2c_add_driver(&lis3lv02d_i2c_driver);
++}
++
++static void __exit lis3lv02d_exit(void)
++{
++	i2c_del_driver(&lis3lv02d_i2c_driver);
++}
++
++MODULE_AUTHOR("Nokia Corporation");
++MODULE_DESCRIPTION("lis3lv02d I2C interface");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("i2c:" DRV_NAME);
++
++module_init(lis3lv02d_init);
++module_exit(lis3lv02d_exit);
 -- 
 1.5.6.3
 
