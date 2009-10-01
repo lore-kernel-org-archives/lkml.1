@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZJAIV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbZJAIYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbZJAIV0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZJAIVY
+	id S932108AbZJAIYK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbZJAIYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:21:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36881 "EHLO mx3.mail.elte.hu"
+	Thu, 1 Oct 2009 04:24:09 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:45246 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755867AbZJAIVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:21:22 -0400
-Date: Thu, 1 Oct 2009 10:21:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [origin tree boot crash] Re: [GIT PATCH] TTY patches for
-	2.6.31-git
-Message-ID: <20091001082115.GA12200@elte.hu>
-References: <20090919213345.GB7668@kroah.com> <20090930100902.GA29872@elte.hu> <20090930111726.618af641@lxorguk.ukuu.org.uk>
+	id S1755900AbZJAIYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 04:24:08 -0400
+Date: Thu, 1 Oct 2009 10:24:11 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
+Subject: Re: [RFC PATCHSET] workqueue: implement concurrency managed
+	workqueue
+Message-ID: <20091001082411.GM14918@kernel.dk>
+References: <1254384558-1018-1-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090930111726.618af641@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1254384558-1018-1-git-send-email-tj@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> On Wed, 30 Sep 2009 12:09:02 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
+On Thu, Oct 01 2009, Tejun Heo wrote:
+> Hello, all.
 > 
-> > 
-> > >       serial: use tty_port pointers in the core code
-> > 
-> > -tip testing found a weird serial code related crash on a testbox: the 
-> > box does spontaneous reboot during the user-space portions of bootup. 
+> This rather large patchset implements concurrency managed workqueue.
+> It's not complete yet.  Singlethread workqueue handling needs more
+> work and workqueue users need to be audited and simplified and async
+> and slow-work should be reimplemented in terms of workqueue.  Although
+> this patchset currently adds ~2000 lines of code, I'm fairly
+> optimistic that after the whole conversion is done, it would be a net
+> decrease in lines of code.
 > 
-> Does this only occur if running with serial console ?
+> This patchset reimplements workqueue such that it auto-regulates
+> concurrency and thus relieves its users from the managing duty.  It
+> works by managing single shared pool of per-cpu workers and hooking
+> into the scheduler to get notifications about workers going to sleep
+> and waking up.  Using the mechanism, workqueue implementation keeps
+> track of the current level of concurrency and schedules only the
+> necessary number of workers to keep the cpu occupied.
+> 
+> Concurrency managed workqueue has the following benefits.
+> 
+> * Workqueue users no longer have to worry about managing concurrency
+>   and, in most cases, deadlocks.  The workqueue will manage it
+>   automatically and unless the deadlock chain involves many (currently
+>   127) works, it won't happen.
+> 
+> * There's one single shared pool of workers per cpu and one rescuer
+>   for each workqueue which requires it, so there are far fewer number
+>   of kthreads.
+> 
+> * More efficient.  Although it adds considerable amount of code, the
+>   code added to hot path isn't big and works will be executed on the
+>   local cpu and in batch as much as possible using minimal number of
+>   kthreads leading to fewer task switches and lower cache
+>   footprint. <NEED SOME BACKING NUMBERS>
+> 
+> * As concurrency is no longer a problem, most types of asynchronous
+>   jobs can be done using generic workqueue and other async mechanisms,
+>   including slow-work, async and adhoc subsystem custom ones, can be
+>   removed.  ie. It can serve as the unified async thread pool
+>   mechanism.
 
-Hm, removing the serial console boot line portion still causes a 
-spontaneous reboot. Same for removing /bin/setserial and removing 
-/dev/ttyS0 and /dev/ttyS1.
+Awesome work so far Tejun, I have high hopes for this patchset! I'll
+take some time to review this when I have it, just consider this so far
+a big encouragement to crank away on this. It's always annoyed me that
+we have various methods for doing async work, this promises to unify
+that very nicely.
 
-That would exclude all possible uses of the codepath affected by that 
-commit, right?
+-- 
+Jens Axboe
 
-If yes i'd shuffle this into the 'weird things' bucket, waiting for a 
-more debuggable scenario to pop up.
-
-	Ingo
