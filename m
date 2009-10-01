@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbZJAXiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbZJAXon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbZJAXiB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZJAXiA
+	id S1755737AbZJAXon (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbZJAXom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:38:00 -0400
-Received: from kroah.org ([198.145.64.141]:41986 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:44:42 -0400
+Received: from kroah.org ([198.145.64.141]:41992 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106AbZJAXiA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:38:00 -0400
+	id S1753808AbZJAXiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:38:01 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:33:19 2009
-Message-Id: <20091001233318.969422820@mini.kroah.org>
+Message-Id: <20091001233319.139191343@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:31:17 -0700
+Date: Thu, 01 Oct 2009 16:31:18 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alex Chiang <achiang@hp.com>, Len Brown <len.brown@intel.com>
-Subject: [patch 01/30] ACPI: pci_slot.ko wants a 64-bit _SUN
+       Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@infradead.org>
+Subject: [patch 02/30] fs: make sure data stored into inode is properly seen before unlocking new inode
 References: <20091001233116.947658905@mini.kroah.org>
-Content-Disposition: inline; filename=acpi-pci_slot.ko-wants-a-64-bit-_sun.patch
+Content-Disposition: inline; filename=fs-make-sure-data-stored-into-inode-is-properly-seen-before-unlocking-new-inode.patch
 In-Reply-To: <20091001233504.GA17709@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,45 +29,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alex Chiang <achiang@hp.com>
+From: Jan Kara <jack@suse.cz>
 
-commit 7e24bc1ce669b2876ffa475ea1147f2bb9ffdc52 upstream.
+commit 580be0837a7a59b207c3d5c661d044d8dd0a6a30 upstream.
 
-Similar to commit b6adc195 (PCI hotplug: acpiphp wants a 64-bit
-_SUN), pci_slot.ko reads and creates sysfs directories based on
-the _SUN method.
+In theory it could happen that on one CPU we initialize a new inode but
+clearing of I_NEW | I_LOCK gets reordered before some of the
+initialization.  Thus on another CPU we return not fully uptodate inode
+from iget_locked().
 
-Certain HP platforms return 64 bits in _SUN. This change to
-pci_slot.ko allows us to see the correct sysfs directories.
+This seems to fix a corruption issue on ext3 mounted over NFS.
 
-Reported-by: Chad Smith <chad.smith@hp.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+[akpm@linux-foundation.org: add some commentary]
+Signed-off-by: Jan Kara <jack@suse.cz>
+Cc: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/pci_slot.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/inode.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
---- a/drivers/acpi/pci_slot.c
-+++ b/drivers/acpi/pci_slot.c
-@@ -57,7 +57,7 @@ ACPI_MODULE_NAME("pci_slot");
- 				MY_NAME , ## arg);		\
- 	} while (0)
- 
--#define SLOT_NAME_SIZE 20		/* Inspired by #define in acpiphp.h */
-+#define SLOT_NAME_SIZE 21		/* Inspired by #define in acpiphp.h */
- 
- struct acpi_pci_slot {
- 	acpi_handle root_handle;	/* handle of the root bridge */
-@@ -149,7 +149,7 @@ register_slot(acpi_handle handle, u32 lv
- 		return AE_OK;
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -672,13 +672,15 @@ void unlock_new_inode(struct inode *inod
  	}
- 
--	snprintf(name, sizeof(name), "%u", (u32)sun);
-+	snprintf(name, sizeof(name), "%llu", sun);
- 	pci_slot = pci_create_slot(pci_bus, device, name, NULL);
- 	if (IS_ERR(pci_slot)) {
- 		err("pci_create_slot returned %ld\n", PTR_ERR(pci_slot));
+ #endif
+ 	/*
+-	 * This is special!  We do not need the spinlock
+-	 * when clearing I_LOCK, because we're guaranteed
+-	 * that nobody else tries to do anything about the
+-	 * state of the inode when it is locked, as we
+-	 * just created it (so there can be no old holders
+-	 * that haven't tested I_LOCK).
++	 * This is special!  We do not need the spinlock when clearing I_LOCK,
++	 * because we're guaranteed that nobody else tries to do anything about
++	 * the state of the inode when it is locked, as we just created it (so
++	 * there can be no old holders that haven't tested I_LOCK).
++	 * However we must emit the memory barrier so that other CPUs reliably
++	 * see the clearing of I_LOCK after the other inode initialisation has
++	 * completed.
+ 	 */
++	smp_mb();
+ 	WARN_ON((inode->i_state & (I_LOCK|I_NEW)) != (I_LOCK|I_NEW));
+ 	inode->i_state &= ~(I_LOCK|I_NEW);
+ 	wake_up_inode(inode);
 
 
