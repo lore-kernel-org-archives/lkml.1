@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbZJADHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbZJADT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532AbZJADHf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 23:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZJADHe
+	id S1755536AbZJADT3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 23:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbZJADT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 23:07:34 -0400
-Received: from thunk.org ([69.25.196.29]:40046 "EHLO thunker.thunk.org"
+	Wed, 30 Sep 2009 23:19:28 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38654 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755479AbZJADHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 23:07:33 -0400
-Date: Wed, 30 Sep 2009 23:07:33 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andrew Lutomirski <andy@luto.us>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: 2.6.32-rc1 oops in ext4
-Message-ID: <20091001030733.GS24383@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrew Lutomirski <andy@luto.us>, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org
-References: <cb0375e10909301954y68e18290m97e9fecfbc5aa6e3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cb0375e10909301954y68e18290m97e9fecfbc5aa6e3@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1752883AbZJADT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 23:19:28 -0400
+Date: Thu, 1 Oct 2009 13:19:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: linux-next:  tree build failure
+Message-Id: <20091001131923.83e6836c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__1_Oct_2009_13_19_23_+1000_bH_GXaghe.FEiPF1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 10:54:26PM -0400, Andrew Lutomirski wrote:
-> All I did was boot Fedora 11 and open a Konsole.  I'm running
-> 84d88d5d4efc37dfb8a93a4a58d8a227ee86ffa4.
+--Signature=_Thu__1_Oct_2009_13_19_23_+1000_bH_GXaghe.FEiPF1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm pretty sure this patch should fix things; can you confirm?
+Hi Jens,
 
-    	   	     	   	      	      - Ted
+Today's linux-next build (powerpc allnoconfig) failed like this:
 
-commit 1f94533d9cd75f6d2826018d54a971b9cc085992
-Author: Theodore Ts'o <tytso@mit.edu>
-Date:   Wed Sep 30 22:57:41 2009 -0400
+include/linux/blktrace_api.h:215:40: error: macro parameters must be comma-=
+separated
 
-    ext4: fix a BUG_ON crash by checking that page has buffers attached to it
-    
-    In ext4_num_dirty_pages() we were calling page_buffers() before
-    checking to see if the page actually had pages attached to it; this
-    would cause a BUG check crash in the inline function page_buffers().
-    
-    Thanks to Markus Trippelsdorf for reporting this bug.
-    
-    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Caused by commit 1e03edf3b5b16f7f30fa1e397cc9a130305fa8d3 ("Add missing
+blk_trace_remove_sysfs to be in pair with blk_trace_init_sysfs") from the
+block tree.  Half way between a static inline and a macro ...
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index ec367bc..6e65d0e 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -1146,8 +1146,8 @@ static int check_block_validity(struct inode *inode, const char *msg,
- }
- 
- /*
-- * Return the number of dirty pages in the given inode starting at
-- * page frame idx.
-+ * Return the number of contiguous dirty pages in a given inode
-+ * starting at page frame idx.
-  */
- static pgoff_t ext4_num_dirty_pages(struct inode *inode, pgoff_t idx,
- 				    unsigned int max_pages)
-@@ -1181,15 +1181,15 @@ static pgoff_t ext4_num_dirty_pages(struct inode *inode, pgoff_t idx,
- 				unlock_page(page);
- 				break;
- 			}
--			head = page_buffers(page);
--			bh = head;
--			do {
--				if (!buffer_delay(bh) &&
--				    !buffer_unwritten(bh)) {
--					done = 1;
--					break;
--				}
--			} while ((bh = bh->b_this_page) != head);
-+			if (page_has_buffers(page)) {
-+				bh = head = page_buffers(page);
-+				do {
-+					if (!buffer_delay(bh) &&
-+					    !buffer_unwritten(bh))
-+						done = 1;
-+					bh = bh->b_this_page;
-+				} while (!done && (bh != head));
-+			}
- 			unlock_page(page);
- 			if (done)
- 				break;
+I have reverted that commit for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__1_Oct_2009_13_19_23_+1000_bH_GXaghe.FEiPF1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrEH7sACgkQjjKRsyhoI8wGfgCgjip4V2YHK3hq5hrDzlXNyUtb
+Tp0An1+b6mCtZTieco1qo+XBRuqB3j4O
+=wbCm
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__1_Oct_2009_13_19_23_+1000_bH_GXaghe.FEiPF1--
