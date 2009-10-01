@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbZJACPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbZJACQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbZJACPa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 22:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZJACPa
+	id S1755481AbZJACQy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 22:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZJACQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 22:15:30 -0400
-Received: from smtp-out-042.synserver.de ([212.40.180.42]:1089 "HELO
-	smtp-out-042.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755456AbZJACP3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 22:15:29 -0400
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: markus@trippelsdorf.de
-X-SynServer-PPID: 31706
-Date: Thu, 1 Oct 2009 04:15:31 +0200
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Kernel BUG] ext4 for v2.6.32 round II
-Message-ID: <20091001021531.GA2025@phenom2.trippelsdorf.de>
-References: <E1Msrgx-0001br-MP@closure.thunk.org>
- <20091001014128.GA2092@phenom2.trippelsdorf.de>
- <alpine.LFD.2.01.0909301847030.6996@localhost.localdomain>
-MIME-Version: 1.0
+	Wed, 30 Sep 2009 22:16:54 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58835 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755433AbZJACQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 22:16:53 -0400
+Date: Thu, 1 Oct 2009 04:16:57 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 03/33] fs: scale files_lock
+Message-ID: <20091001021657.GO6327@wotan.suse.de>
+References: <20090904065142.114706411@nick.local0.net> <20090904065534.303326352@nick.local0.net> <1254144248.15795.6.camel@laptop>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0909301847030.6996@localhost.localdomain>
+In-Reply-To: <1254144248.15795.6.camel@laptop>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 06:57:00PM -0700, Linus Torvalds wrote:
+On Mon, Sep 28, 2009 at 03:24:08PM +0200, Peter Zijlstra wrote:
+> On Fri, 2009-09-04 at 16:51 +1000, npiggin@suse.de wrote:
+> > Improve scalability of files_lock by adding per-cpu, per-sb files lists,
+> > protected with per-cpu locking. Effectively turning it into a big-writer
+> > lock.
 > 
+> What I did was fine-grain locking the double linked list so that you can
+> delete items without hitting a global lock.
 > 
-> On Thu, 1 Oct 2009, Markus Trippelsdorf wrote:
-> > 
-> > Running latest git I get the following kernel BUG message:
-> > 
-> > ------------[ cut here ]------------
-> > Kernel BUG at ffffffff810efa89 [verbose debug info unavailable]
+> For addition I added per-cpu list-heads that would be spliced onto the
+> global list once in a while.
 > 
-> You really shouldn't turn off verbose debug info unless you are _really_ 
-> tight on memory in some embedded device. It's not that complex, nor does 
-> it use a lot of memory, and it makes the error report much harder to 
-> figure out when the verbose debug output information isn't available.
-> 
-> But in this case I can do it by just looking at the function/offset:
-> 
-> > RIP: 0010:[<ffffffff810efa89>]  [<ffffffff810efa89>] ext4_num_dirty_pages+0x113/0x213
-> 
-> The only BUG_ON() that seems relevant in that function (at least with the 
-> config I tried with) ends up being
-> 
-> 	fs/ext4/inode.c:1184
-> 
-> in my sources, which is from "page_buffers(page)", which has a
-> 
-> 	BUG_ON(!PagePrivate(page));
-> 
-> in it. And that would have been much easier to figure out if you had had 
-> CONFIG_DEBUG_BUGVERBOSE enabled..
-> 
+> Granted, the code was a tad involved... and hch wanted to get rid of
+> these lists, which is of course a much better solution.
 
-You're right (with CONFIG_DEBUG_BUGVERBOSE=y):
+I did see that of course, and I sent you a critique of it... I
+didn't think it was appropriate for reasons I can't remember off
+hand (either overly complex for the same task, or had a scalability
+problem).
 
-------------[ cut here ]------------
-kernel BUG at fs/ext4/inode.c:1184!
-...
+files_lock I would love to see go away completely, and in fact
+depending on progress of work to that end, these patches may never
+need to be merged. The problem I have is:
 
-> Now over to the ext4 people to actually hopefully _solve_ the bug. Maybe 
-> bisection would help.
+1. I don't want to significantly change data structures or cause
+   avoidable reductions in potential expressiveness of the data
+   structures we have. (I don't want someone to complain that my
+   patches suck because they want to be able to traverse files).
 
--- 
-Markus
+2. I need to take out this lock otherwise it become the choke
+   point and hides the rest of the progress on the rest of the
+   scalability work.
+
+Again, I think brlock is not such a terrible thing for contention
+especially if we're looking at umount slowpath... For this guy
+actually though, the read side can probably be turned into RCU
+traversal quite easily, I _think_.
+
