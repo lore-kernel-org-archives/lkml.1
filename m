@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbZJAP0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbZJAPZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbZJAP0Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 11:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbZJAP0Z
+	id S1754735AbZJAPZu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 11:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbZJAPZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 11:26:25 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54229 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754351AbZJAP0Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 11:26:24 -0400
-Date: Thu, 1 Oct 2009 17:26:24 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: mce: Please revert 22223c9b417be5fd0ab2cf9ad17eb7bd1e19f7b9
-Message-ID: <20091001152624.GL1656@one.firstfloor.org>
-References: <20090930140904.GA6150@one.firstfloor.org> <20090930194049.GA17712@liondog.tnic> <20090930204643.GA24862@elte.hu> <20090930214859.GA28638@elte.hu> <20090930223956.GE17712@liondog.tnic> <20090930230947.GA9346@elte.hu> <20091001141432.GA11410@aftab> <alpine.LFD.2.01.0910010731130.6996@localhost.localdomain>
-Mime-Version: 1.0
+	Thu, 1 Oct 2009 11:25:49 -0400
+Received: from mga09.intel.com ([134.134.136.24]:20108 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754692AbZJAPZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 11:25:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,488,1249282800"; 
+   d="scan'208";a="555746803"
+Date: Thu, 1 Oct 2009 17:27:47 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] power_supply: Factor out WM831x backup battery
+ charger
+Message-ID: <20091001152746.GG10199@sortiz.org>
+References: <1254408067-15908-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1254408067-15908-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1254408067-15908-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <20091001145500.GA21973@oksana.dev.rtsoft.ru>
+ <20091001150330.GA16177@rakim.wolfsonmicro.main>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0910010731130.6996@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20091001150330.GA16177@rakim.wolfsonmicro.main>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 07:34:11AM -0700, Linus Torvalds wrote:
-> Of course, if it _requires_ being loaded early for some other reason, then 
-> that's a different issue. But don't do it just because we don't have the
+On Thu, Oct 01, 2009 at 04:03:31PM +0100, Mark Brown wrote:
+> On Thu, Oct 01, 2009 at 06:55:00PM +0400, Anton Vorontsov wrote:
 > 
-> 	#define early_initcall(fn)               module_init(fn)
+> > Looks good. Should I apply it, or it depends on 1/4 and 2/4?
 > 
-> line.
+> There should be no build time dependency so you should be able to apply
+> it.  It'd mean that the WM8320 won't get the backup battery charger
+> instantiating until it's merged with the power tree but that's not a
+> terribly big deal and it would avoid the possibility of any merge issues
+> from a colliding Makefile/Kconfig change in drivers/power.
+> 
+> Samuel, do you have any preferences?
+I'm fine with Anton taking it if that makes everyone's life easier.
+Anton, you can add my Acked-by for the mfd part, if you think that's
+necessary.
 
-Or just drop the patch like I proposed. I don't think it serves 
-a very useful purpose anyways.
+Cheers,
+Samuel.
 
--Andi
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Intel Open Source Technology Centre
+http://oss.intel.com/
