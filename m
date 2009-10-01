@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbZJAVl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbZJAV4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753260AbZJAVl4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 17:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbZJAVl4
+	id S1753269AbZJAV4a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbZJAV43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 17:41:56 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:29731 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753177AbZJAVlz (ORCPT
+	Thu, 1 Oct 2009 17:56:29 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:11454 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751568AbZJAV42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 17:41:55 -0400
-Date: Thu, 1 Oct 2009 16:42:39 -0500
-From: Mike Miller <mike.miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>,
-       James.Bottomley@HansenPartnership.com, axboe@kernel.dk,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Add hpsa driver for HP Smart Array controllers.
-Message-ID: <20091001214239.GA15691@beardog.cce.hp.com>
-References: <20091001211705.15591.76403.stgit@beardog.cce.hp.com> <20091001143035.a83a7564.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091001143035.a83a7564.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 1 Oct 2009 17:56:28 -0400
+X-Greylist: delayed 575 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Oct 2009 17:56:28 EDT
+X-IronPort-AV: E=Sophos;i="4.44,489,1249272000"; 
+   d="scan'208";a="67224538"
+Message-ID: <4AC5234C.5030409@citrix.com>
+Date: Thu, 01 Oct 2009 14:46:52 -0700
+From: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Jan Beulich <JBeulich@novell.com>
+CC: "ketuzsezr@darnok.org" <ketuzsezr@darnok.org>,
+       "pjones@redhat.com" <pjones@redhat.com>,
+       Martin Wilck <Martin.Wilck@fujitsu-siemens.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] iSCSI/iBFT: use proper address translation
+References: <4AC47DED0200007800017743@vpn.id2.novell.com>
+In-Reply-To: <4AC47DED0200007800017743@vpn.id2.novell.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Oct 2009 21:46:56.0003 (UTC) FILETIME=[B2017D30:01CA42E0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 02:30:35PM -0700, Andrew Morton wrote:
-> On Thu, 01 Oct 2009 16:25:30 -0500
-> "Stephen M. Cameron" <scameron@beardog.cce.hp.com> wrote:
-> 
-> > Add hpsa driver for HP Smart Array controllers.
-> > 
-> > This driver supports a subset of HP Smart Array Controllers.
-> > It is a SCSI alternative to the cciss driver.
-> 
-> Does it support all the devices which cciss supports?
-> 
-> IOW, do we have a plan here to remove the cciss driver or must we
-> maintain both drivers indefinitely?
+On 10/01/09 01:01, Jan Beulich wrote:
+> In virtual environments (namely, Xen Dom0) virt <-> phys and
+> virt <-> isa-bus translations cannot be freely interchanged. When
+> looking at memory below 1M, the latter translations should always
+> be used.
+>   
 
-Andrew,
-The hpsa driver supports only the latest generation of Smart Array
-controllers plus the P400 and P800. The goal was to have minimal overlap but
-if we included only the very latest I suspect little testing would be done
-because of the availability of new hardware.
+Do you have a different definition for isa_virt_to_bus in your kernel? 
+As far as I can see it is defined to be the same as virt_to_phys.  Also,
+the ISA memory is identity mapped into the domain's physical mapping
+space, so it should be directly accessible without any problems.
 
-No new controllers will be added to cciss once hpsa is accepted. We're
-looking at supporting both drivers for 3 or 4 years until cciss can be
-phased out completely.
-
--- mikem
+    J
