@@ -1,186 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbZJAHdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbZJAHhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbZJAHdc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 03:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628AbZJAHdc
+	id S1755686AbZJAHhL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 03:37:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbZJAHhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 03:33:32 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59896 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755626AbZJAHdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 03:33:31 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19+L6g/UEF+y1JgIqkbgjkojTbIExAIhEaRpm3/t8
-	YZ7UURhvvAFJJ/
-Subject: Re: IO scheduler based IO controller V10
-From: Mike Galbraith <efault@gmx.de>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-In-Reply-To: <20090930202447.GA28236@redhat.com>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
-	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
-	 <1253976676.7005.40.camel@marge.simson.net>
-	 <1254034500.7933.6.camel@marge.simson.net>
-	 <20090927164235.GA23126@kernel.dk>
-	 <1254340730.7695.32.camel@marge.simson.net>
-	 <1254341139.7695.36.camel@marge.simson.net>
-	 <20090930202447.GA28236@redhat.com>
-Content-Type: text/plain
-Date: Thu, 01 Oct 2009 09:33:25 +0200
-Message-Id: <1254382405.7595.9.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.44
+	Thu, 1 Oct 2009 03:37:11 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:30300 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755673AbZJAHhK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 03:37:10 -0400
+From: Roger Quadros <ext-roger.quadros@nokia.com>
+To: sameo@linux.intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] twl4030: Fix boot with twl4030 usb transceiver enabled
+Date: Thu,  1 Oct 2009 10:36:10 +0300
+Message-Id: <1254382570-4611-1-git-send-email-ext-roger.quadros@nokia.com>
+X-Mailer: git-send-email 1.6.0.4
+X-OriginalArrivalTime: 01 Oct 2009 07:36:48.0636 (UTC) FILETIME=[EF3EF3C0:01CA4269]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-30 at 16:24 -0400, Vivek Goyal wrote:
-> On Wed, Sep 30, 2009 at 10:05:39PM +0200, Mike Galbraith wrote:
-> > 
-> >  
-> > >  		/*
-> > > +		 * We may have seeky queues, don't throttle up just yet.
-> > > +		 */
-> > > +		if (time_before(jiffies, cfqd->last_seeker + CIC_SEEK_THR))
-> > > +			return 0;
-> > > +
-> > 
-> > bzzzt.  Window too large, but the though is to let them overload, but
-> > not instantly.
-> > 
-> 
-> CIC_SEEK_THR is 8K jiffies so that would be 8seconds on 1000HZ system. Try
-> using one "slice_idle" period of 8 ms. But it might turn out to be too
-> short depending on the disk speed.
+The usb regulator supplies (usb1v5, usb1v8 & usb3v1) must be available
+before adding the twl4030_usb child, else twl4030_usb_ldo_init() will
+always fail thus causing boot lock-up.
 
-Yeah, it is too short, as is even _400_ ms.  Trouble is, by the time
-some new task is determined to be seeky, the damage is already done.
+This patch fixes boot on OMAP systems using the twl4030 usb transceiver.
+CONFIG_TWL4030_USB=y
 
-The below does better, though not as well as "just say no to overload"
-of course ;-)
+Signed-off-by: Roger Quadros <ext-roger.quadros@nokia.com>
+---
+ drivers/mfd/twl4030-core.c |  112 ++++++++++++++++++--------------------------
+ 1 files changed, 46 insertions(+), 66 deletions(-)
 
-I have a patchlet from Corrado to test, likely better time investment
-than poking this darn thing with sharp sticks.
-
-	-Mike
-
-grep elapsed testo.log
-    0.894345911  seconds time elapsed <== solo seeky test measurement
-    3.732472877  seconds time elapsed
-    3.208443735  seconds time elapsed
-    4.249776673  seconds time elapsed
-    2.763449260  seconds time elapsed
-    4.235271019  seconds time elapsed
-
-(3.73 + 3.20 + 4.24 + 2.76 + 4.23) / 5 / 0.89 = 4... darn.
-
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index e2a9b92..44a888d 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -174,6 +174,8 @@ struct cfq_data {
- 	unsigned int cfq_slice_async_rq;
- 	unsigned int cfq_slice_idle;
- 
-+	unsigned long od_stamp;
-+
- 	struct list_head cic_list;
- 
- 	/*
-@@ -1296,19 +1298,26 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
- 	/*
- 	 * Drain async requests before we start sync IO
- 	 */
--	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
-+	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC]) {
-+		cfqd->od_stamp = jiffies;
- 		return 0;
-+	}
- 
- 	/*
- 	 * If this is an async queue and we have sync IO in flight, let it wait
- 	 */
--	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
-+	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq)) {
-+		cfqd->od_stamp = jiffies;
- 		return 0;
-+	}
- 
- 	max_dispatch = cfqd->cfq_quantum;
- 	if (cfq_class_idle(cfqq))
- 		max_dispatch = 1;
- 
-+	if (cfqd->busy_queues > 1)
-+		cfqd->od_stamp = jiffies;
-+
- 	/*
- 	 * Does this cfqq already have too much IO in flight?
- 	 */
-@@ -1326,6 +1335,12 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
- 			return 0;
- 
- 		/*
-+		 * Don't start overloading until we've been alone for a bit.
-+		 */
-+		if (time_before(jiffies, cfqd->od_stamp + cfq_slice_sync))
-+			return 0;
-+
-+		/*
- 		 * we are the only queue, allow up to 4 times of 'quantum'
- 		 */
- 		if (cfqq->dispatched >= 4 * max_dispatch)
-@@ -1941,7 +1956,7 @@ static void
- cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 		       struct cfq_io_context *cic)
+diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+index e424cf6..dcd27be 100644
+--- a/drivers/mfd/twl4030-core.c
++++ b/drivers/mfd/twl4030-core.c
+@@ -480,7 +480,6 @@ static int
+ add_children(struct twl4030_platform_data *pdata, unsigned long features)
  {
--	int old_idle, enable_idle;
-+	int old_idle, enable_idle, seeky = 0;
+ 	struct device	*child;
+-	struct device	*usb_transceiver = NULL;
  
- 	/*
- 	 * Don't idle for async or idle io prio class
-@@ -1949,10 +1964,19 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	if (!cfq_cfqq_sync(cfqq) || cfq_class_idle(cfqq))
- 		return;
+ 	if (twl_has_bci() && pdata->bci && !(features & TPS_SUBSET)) {
+ 		child = add_child(3, "twl4030_bci",
+@@ -532,16 +531,61 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+ 	}
  
-+	if (cfqd->hw_tag) {
-+		if (CIC_SEEKY(cic))
-+			seeky = 1;
-+		/*
-+		 * If known or incalculable seekiness, delay.
-+		 */
-+		if (seeky || !sample_valid(cic->seek_samples))
-+			cfqd->od_stamp = jiffies;
-+	}
+ 	if (twl_has_usb() && pdata->usb) {
 +
- 	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
++		static struct regulator_consumer_supply usb1v5 = {
++			.supply =	"usb1v5",
++		};
++		static struct regulator_consumer_supply usb1v8 = {
++			.supply =	"usb1v8",
++		};
++		static struct regulator_consumer_supply usb3v1 = {
++			.supply =	"usb3v1",
++		};
++
++	/* First add the regulators so that they can be used by transceiver */
++		if (twl_has_regulator()) {
++			/* this is a template that gets copied */
++			struct regulator_init_data usb_fixed = {
++				.constraints.valid_modes_mask =
++					REGULATOR_MODE_NORMAL
++					| REGULATOR_MODE_STANDBY,
++				.constraints.valid_ops_mask =
++					REGULATOR_CHANGE_MODE
++					| REGULATOR_CHANGE_STATUS,
++			};
++
++			child = add_regulator_linked(TWL4030_REG_VUSB1V5,
++						      &usb_fixed, &usb1v5, 1);
++			if (IS_ERR(child))
++				return PTR_ERR(child);
++
++			child = add_regulator_linked(TWL4030_REG_VUSB1V8,
++						      &usb_fixed, &usb1v8, 1);
++			if (IS_ERR(child))
++				return PTR_ERR(child);
++
++			child = add_regulator_linked(TWL4030_REG_VUSB3V1,
++						      &usb_fixed, &usb3v1, 1);
++			if (IS_ERR(child))
++				return PTR_ERR(child);
++
++		}
++
+ 		child = add_child(0, "twl4030_usb",
+ 				pdata->usb, sizeof(*pdata->usb),
+ 				true,
+ 				/* irq0 = USB_PRES, irq1 = USB */
+ 				pdata->irq_base + 8 + 2, pdata->irq_base + 4);
++
+ 		if (IS_ERR(child))
+ 			return PTR_ERR(child);
  
--	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
--	    (cfqd->hw_tag && CIC_SEEKY(cic)))
-+	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle || seeky)
- 		enable_idle = 0;
- 	else if (sample_valid(cic->ttime_samples)) {
- 		if (cic->ttime_mean > cfqd->cfq_slice_idle)
-@@ -2482,6 +2506,7 @@ static void *cfq_init_queue(struct request_queue *q)
- 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
- 	cfqd->cfq_slice_idle = cfq_slice_idle;
- 	cfqd->hw_tag = 1;
-+	cfqd->od_stamp = INITIAL_JIFFIES;
+ 		/* we need to connect regulators to this transceiver */
+-		usb_transceiver = child;
++		if (twl_has_regulator() && child) {
++			usb1v5.dev = child;
++			usb1v8.dev = child;
++			usb3v1.dev = child;
++		}
+ 	}
  
- 	return cfqd;
- }
-
-
-
+ 	if (twl_has_watchdog()) {
+@@ -557,70 +601,6 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+ 			return PTR_ERR(child);
+ 	}
+ 
+-	if (twl_has_regulator()) {
+-		/*
+-		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
+-		if (IS_ERR(child))
+-			return PTR_ERR(child);
+-		*/
+-
+-		child = add_regulator(TWL4030_REG_VMMC1, pdata->vmmc1);
+-		if (IS_ERR(child))
+-			return PTR_ERR(child);
+-
+-		child = add_regulator(TWL4030_REG_VDAC, pdata->vdac);
+-		if (IS_ERR(child))
+-			return PTR_ERR(child);
+-
+-		child = add_regulator((features & TWL4030_VAUX2)
+-					? TWL4030_REG_VAUX2_4030
+-					: TWL4030_REG_VAUX2,
+-				pdata->vaux2);
+-		if (IS_ERR(child))
+-			return PTR_ERR(child);
+-	}
+-
+-	if (twl_has_regulator() && usb_transceiver) {
+-		static struct regulator_consumer_supply usb1v5 = {
+-			.supply =	"usb1v5",
+-		};
+-		static struct regulator_consumer_supply usb1v8 = {
+-			.supply =	"usb1v8",
+-		};
+-		static struct regulator_consumer_supply usb3v1 = {
+-			.supply =	"usb3v1",
+-		};
+-
+-		/* this is a template that gets copied */
+-		struct regulator_init_data usb_fixed = {
+-			.constraints.valid_modes_mask =
+-				  REGULATOR_MODE_NORMAL
+-				| REGULATOR_MODE_STANDBY,
+-			.constraints.valid_ops_mask =
+-				  REGULATOR_CHANGE_MODE
+-				| REGULATOR_CHANGE_STATUS,
+-		};
+-
+-		usb1v5.dev = usb_transceiver;
+-		usb1v8.dev = usb_transceiver;
+-		usb3v1.dev = usb_transceiver;
+-
+-		child = add_regulator_linked(TWL4030_REG_VUSB1V5, &usb_fixed,
+-				&usb1v5, 1);
+-		if (IS_ERR(child))
+-			return PTR_ERR(child);
+-
+-		child = add_regulator_linked(TWL4030_REG_VUSB1V8, &usb_fixed,
+-				&usb1v8, 1);
+-		if (IS_ERR(child))
+-			return PTR_ERR(child);
+-
+-		child = add_regulator_linked(TWL4030_REG_VUSB3V1, &usb_fixed,
+-				&usb3v1, 1);
+-		if (IS_ERR(child))
+-			return PTR_ERR(child);
+-	}
+-
+ 	/* maybe add LDOs that are omitted on cost-reduced parts */
+ 	if (twl_has_regulator() && !(features & TPS_SUBSET)) {
+ 		child = add_regulator(TWL4030_REG_VPLL2, pdata->vpll2);
+-- 
+1.6.0.4
 
