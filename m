@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZJDByC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932711AbZJAOqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756861AbZJDByC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 21:54:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbZJDByA
+	id S932711AbZJAOqd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 10:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932613AbZJAOqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 21:54:00 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:37462 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756801AbZJDByA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 21:54:00 -0400
-Date: Thu, 1 Oct 2009 07:40:38 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Userspace RCU: (ab)using futexes to save cpu cycles and
-	energy
-Message-ID: <20091001144037.GB6205@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090923174820.GA12827@Krystal>
+	Thu, 1 Oct 2009 10:46:32 -0400
+Received: from mail-iw0-f190.google.com ([209.85.223.190]:38418 "EHLO
+	mail-iw0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932575AbZJAOqb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 10:46:31 -0400
+X-Greylist: delayed 335 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Oct 2009 10:46:31 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=CqcTpnGQ4jXUYa6qqzpKTmK2r8eEfg2KneClENcvKHyZDSjedfo3NM9TrFITFDR601
+         yQqx14wXERKm0x996nGgHYeVEhGtcUaYUHN307CemMkPIRGRPcPeuwq2KGgUUy02ioLI
+         laRC1oxaeOPZxzmAjbgHrR1CajM9yWhxOND3w=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090923174820.GA12827@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20091001085002.1dbc7eee@hyperion.delvare>
+References: <20090923191240.GA15198@dreamland.darkstar.lan>
+	 <51f3faa70909232018v7e621190m84deb648b08d2135@mail.gmail.com>
+	 <20090928131700.GA19243@nb-core2.darkstar.lan>
+	 <51f3faa70909281920x2782d8dfm1835ab24779abfa3@mail.gmail.com>
+	 <51f3faa70909282134o1d60efekeded09f09b192df6@mail.gmail.com>
+	 <68676e00909290707u70d192f2j2f2d4dd07bd07234@mail.gmail.com>
+	 <51f3faa70909290740l4f4df186w114bf48e1db3a948@mail.gmail.com>
+	 <4AC21E7B.70000@mandriva.org>
+	 <51f3faa70909301638s4eff14edg46420e2e8877fd15@mail.gmail.com>
+	 <20091001085002.1dbc7eee@hyperion.delvare>
+Date: Thu, 1 Oct 2009 08:40:59 -0600
+Message-ID: <51f3faa70910010740s2a412d07qf29f56ad8a3c59eb@mail.gmail.com>
+Subject: Re: [PATCH] asus_atk0110: add support for Asus P7P55D
+From: Robert Hancock <hancockrwd@gmail.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Thomas Backlund <tmb@mandriva.org>, Luca Tettamanti <kronos.it@gmail.com>,
+       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       astarikovskiy@suse.de
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 23, 2009 at 01:48:20PM -0400, Mathieu Desnoyers wrote:
-> Hi,
-> 
-> When implementing the call_rcu() "worker thread" in userspace, I ran
-> into the problem that it had to be woken up periodically to check if
-> there are any callbacks to execute. However, I easily imagine that this
-> does not fit well with the "green computing" definition.
-> 
-> Therefore, I've looked at ways to have the call_rcu() callers waking up
-> this worker thread when callbacks are enqueued. However, I don't want to
-> take any lock and the fast path (when no wake up is required) should not
-> cause any cache-line exchange.
-> 
-> Here are the primitives I've created. I'd like to have feedback on my
-> futex use, just to make sure I did not do any incorrect assumptions.
-> 
-> This could also be eventually used in the QSBR Userspace RCU quiescent
-> state and in mb/signal userspace RCU when exiting RCU read-side C.S. to
-> ensure synchronize_rcu() does not busy-wait for too long.
-> 
-> /*
->  * Wake-up any waiting defer thread. Called from many concurrent threads.
->  */
-> static void wake_up_defer(void)
-> {
->         if (unlikely(atomic_read(&defer_thread_futex) == -1))
->                 atomic_set(&defer_thread_futex, 0);
->                 futex(&defer_thread_futex, FUTEX_WAKE,
->                       0, NULL, NULL, 0);
-> }
-> 
-> /*
->  * Defer thread waiting. Single thread.
->  */
-> static void wait_defer(void)
-> {
->         atomic_dec(&defer_thread_futex);
->         if (atomic_read(&defer_thread_futex) == -1)
->                 futex(&defer_thread_futex, FUTEX_WAIT, -1,
->                       NULL, NULL, 0);
-> }
+On Thu, Oct 1, 2009 at 12:50 AM, Jean Delvare <khali@linux-fr.org> wrote:
+> On Wed, 30 Sep 2009 17:38:21 -0600, Robert Hancock wrote:
+>> On Tue, Sep 29, 2009 at 8:49 AM, Thomas Backlund <tmb@mandriva.org> wrote:
+>> > Try this one:
+>> > http://marc.info/?l=linux-kernel&m=125421276407283&w=2
+>>
+>> With that patch it's lasted almost a day with no timeouts, previously
+>> I was getting about one every hour. Has that patch been submitted?
+>
+> Do you mean you're still getting timeouts but they are less frequent,
+> or you did not get any timeout at all so far?
 
-The standard approach would be to use pthread_cond_wait() and
-pthread_cond_broadcast().  Unfortunately, this would require holding a
-pthread_mutex_lock across both operations, which would not necessarily
-be so good for wake-up-side scalability.
-
-That said, without this sort of heavy-locking approach, wakeup races
-are quite difficult to avoid.
-
-							Thanx, Paul
+So far no timeout at all (after about 36 hours).
