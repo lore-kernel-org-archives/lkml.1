@@ -1,143 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755129AbZJAAAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZJAAGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755129AbZJAAAn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 20:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbZJAAAm
+	id S1755176AbZJAAGA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 20:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbZJAAGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 20:00:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37336
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754927AbZJAAAl convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 20:00:41 -0400
-Date: Wed, 30 Sep 2009 17:01:01 -0700 (PDT)
-Message-Id: <20090930.170101.26180575.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 30 Sep 2009 20:06:00 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:41831 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755020AbZJAAF7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 20:05:59 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Huang Ying <ying.huang@intel.com>
+Subject: Re: [PATCH 0/9] Add vsprintf extension %pU to print UUID/GUIDs and use it
+Date: Thu, 1 Oct 2009 02:07:45 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31.1; KDE/4.3.1; x86_64; ; )
+Cc: Joe Perches <joe@perches.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <adrian.hunter@nokia.com>, Alex Elder <aelder@sgi.com>,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       Christoph Hellwig <hch@lst.de>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jgarzik@redhat.com>,
+       Matt Mackall <mpm@selenic.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Neil Brown <neilb@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
+       "xfs-masters@oss.sgi.com" <xfs-masters@oss.sgi.com>,
+       Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>
+References: <cover.1254193019.git.joe@perches.com> <1254203852.15717.1506.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1254203852.15717.1506.camel@yhuang-dev.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910010207.45514.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 29 September 2009 07:57:32 Huang Ying wrote:
+> Hi, Joe,
+> 
+> Thanks for the patch. I think that is a good idea.
+> 
+> For your patch. I think you need a changelog for each patch.
+> 
+> It seems that the binary representation of UUID can be little-endian
+> (used by most kernel components) or big-endian (defined by RFC4122, used
+> in network?). Maybe we should consider about that.
 
-1) Make optlen in setsockopt unsigned, providing type level
-   protection against several "< 0" issues that tend to
-   be (wrongly) addressed at the implementation level.
+I think that's what the 'r' option is supposed to handle. Maybe you could use 
+'b' and 'l' options instead, to specify the endianness explicitly.
 
-2) sock_wfree() can race with a cpu freeing up a socket,
-   fix from Eric Dumazet.  Lots of people are hitting this
-   lately.
+> In fact, I find there are many different UUID/GUID definitions in
+> kernel, such as that in efi, many file systems, some drivers, etc. It
+> seems that every kernel components need UUID/GUID has its own
+> definition, so I think we should unify all the UUID/GUID definitions in
+> kernel too. The file attached is a draft unified UUID/GUID definition,
+> with byte-order issue in mind.
+> 
+> Any comment?
 
-3) Off-by-one in ipv6 SIT tunnel driver, fix from Sascha Hlusiak
+Not much, it would help if you could show where those functions would be used.
 
-4) phonet does double mutex unlock, fix from Rémi Denis-Courmont.
+I would also use the 'le' and 'be' prefixes (as in le16, be32) instead of 'l' 
+and 'b', making it leuuid and beuuid, or maybe uuid_le and uuid_be.
 
-5) ax25 sets up destructor callback pointer before state is ready,
-   fix from Jarek Poplawski
+-- 
+Regards,
 
-6) TX timestamping stopped working on hw accelerated VLANs a few
-   releases ago, oops, fix from Eric Dumazet.
-
-Please pull, thanks a lot!
-
-The following changes since commit 9c1fe834c1bd7725b411055c66886b64c928083d:
-  Linus Torvalds (1):
-        Merge branch 'pm-fixes' of git://git.kernel.org/.../rafael/suspend-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-David S. Miller (1):
-      net: Make setsockopt() optlen be unsigned.
-
-Eric Dumazet (2):
-      net: Fix sock_wfree() race
-      net: restore tx timestamping for accelerated vlans
-
-Jarek Poplawski (1):
-      ax25: Fix possible oops in ax25_make_new
-
-Rémi Denis-Courmont (1):
-      Phonet: fix mutex imbalance
-
-Sascha Hlusiak (1):
-      sit: fix off-by-one in ipip6_tunnel_get_prl
-
- drivers/atm/ambassador.c           |    8 -----
- drivers/atm/eni.c                  |    2 +-
- drivers/atm/firestream.c           |    2 +-
- drivers/atm/fore200e.c             |    2 +-
- drivers/atm/horizon.c              |    2 +-
- drivers/atm/iphase.c               |    2 +-
- drivers/atm/zatm.c                 |    2 +-
- drivers/isdn/mISDN/socket.c        |    2 +-
- drivers/net/pppol2tp.c             |    2 +-
- include/linux/atmdev.h             |    2 +-
- include/linux/mroute.h             |    4 +-
- include/linux/mroute6.h            |    4 +-
- include/linux/net.h                |    8 ++--
- include/linux/netfilter.h          |    4 +-
- include/net/compat.h               |    4 +-
- include/net/inet_connection_sock.h |    6 ++--
- include/net/ip.h                   |    4 +-
- include/net/ipv6.h                 |    4 +-
- include/net/sctp/structs.h         |    4 +-
- include/net/sock.h                 |   12 +++---
- include/net/tcp.h                  |    4 +-
- include/net/udp.h                  |    2 +-
- net/atm/common.c                   |    2 +-
- net/atm/common.h                   |    2 +-
- net/atm/pvc.c                      |    2 +-
- net/atm/svc.c                      |    2 +-
- net/ax25/af_ax25.c                 |    4 +-
- net/bluetooth/hci_sock.c           |    2 +-
- net/bluetooth/l2cap.c              |    4 +-
- net/bluetooth/rfcomm/sock.c        |    4 +-
- net/bluetooth/sco.c                |    2 +-
- net/can/raw.c                      |    2 +-
- net/compat.c                       |   12 +++---
- net/core/dev.c                     |    6 ++--
- net/core/sock.c                    |   27 +++++++++------
- net/dccp/dccp.h                    |    4 +-
- net/dccp/proto.c                   |   10 +++---
- net/decnet/af_decnet.c             |    6 ++--
- net/ieee802154/dgram.c             |    2 +-
- net/ieee802154/raw.c               |    2 +-
- net/ipv4/inet_connection_sock.c    |    2 +-
- net/ipv4/ip_sockglue.c             |    6 ++--
- net/ipv4/ipmr.c                    |    2 +-
- net/ipv4/raw.c                     |    6 ++--
- net/ipv4/tcp.c                     |    6 ++--
- net/ipv4/udp.c                     |    6 ++--
- net/ipv4/udp_impl.h                |    4 +-
- net/ipv6/ip6mr.c                   |    2 +-
- net/ipv6/ipv6_sockglue.c           |    6 ++--
- net/ipv6/raw.c                     |    6 ++--
- net/ipv6/sit.c                     |    2 +-
- net/ipv6/udp.c                     |    4 +-
- net/ipv6/udp_impl.h                |    4 +-
- net/ipx/af_ipx.c                   |    2 +-
- net/irda/af_irda.c                 |    2 +-
- net/iucv/af_iucv.c                 |    2 +-
- net/llc/af_llc.c                   |    2 +-
- net/netfilter/nf_sockopt.c         |    4 +-
- net/netlink/af_netlink.c           |    2 +-
- net/netrom/af_netrom.c             |    2 +-
- net/packet/af_packet.c             |    2 +-
- net/phonet/pep.c                   |    2 +-
- net/phonet/socket.c                |    1 -
- net/rds/af_rds.c                   |    2 +-
- net/rose/af_rose.c                 |    2 +-
- net/rxrpc/af_rxrpc.c               |    2 +-
- net/sctp/socket.c                  |   62 +++++++++++++++++++-----------------
- net/socket.c                       |    2 +-
- net/tipc/socket.c                  |    2 +-
- net/x25/af_x25.c                   |    2 +-
- 70 files changed, 166 insertions(+), 166 deletions(-)
+Laurent Pinchart
