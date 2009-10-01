@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbZJAOid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932692AbZJAOgC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932701AbZJAOid (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 10:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932519AbZJAOic
+	id S932692AbZJAOgC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 10:36:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932634AbZJAOgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 10:38:32 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:50221 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932475AbZJAOib (ORCPT
+	Thu, 1 Oct 2009 10:36:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56571 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932627AbZJAOgA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 10:38:31 -0400
-Date: Thu, 1 Oct 2009 10:32:54 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] slqb: Record what node is local to a
- kmem_cache_cpu
-In-Reply-To: <20091001104046.GA21906@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0910011028380.3911@gentwo.org>
-References: <1253624054-10882-1-git-send-email-mel@csn.ul.ie> <1253624054-10882-3-git-send-email-mel@csn.ul.ie> <84144f020909220638l79329905sf9a35286130e88d0@mail.gmail.com> <20090922135453.GF25965@csn.ul.ie> <84144f020909221154x820b287r2996480225692fad@mail.gmail.com>
- <20090922185608.GH25965@csn.ul.ie> <20090930144117.GA17906@csn.ul.ie> <alpine.DEB.1.10.0909301053550.9450@gentwo.org> <20090930220541.GA31530@csn.ul.ie> <alpine.DEB.1.10.0909301941570.11850@gentwo.org> <20091001104046.GA21906@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 1 Oct 2009 10:36:00 -0400
+Date: Thu, 1 Oct 2009 07:34:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Borislav Petkov <borislav.petkov@amd.com>
+cc: Ingo Molnar <mingo@elte.hu>, Borislav Petkov <petkovbb@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86: mce: Please revert
+ 22223c9b417be5fd0ab2cf9ad17eb7bd1e19f7b9
+In-Reply-To: <20091001141432.GA11410@aftab>
+Message-ID: <alpine.LFD.2.01.0910010731130.6996@localhost.localdomain>
+References: <20090930140904.GA6150@one.firstfloor.org> <20090930194049.GA17712@liondog.tnic> <20090930204643.GA24862@elte.hu> <20090930214859.GA28638@elte.hu> <20090930223956.GE17712@liondog.tnic> <20090930230947.GA9346@elte.hu>
+ <20091001141432.GA11410@aftab>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Oct 2009, Mel Gorman wrote:
 
-> > Frees are done directly to the target slab page if they are not to the
-> > current active slab page. No centralized locks. Concurrent frees from
-> > processors on the same node to multiple other nodes (or different pages
-> > on the same node) can occur.
-> >
->
-> So as a total aside, SLQB has an advantage in that it always uses object
-> in LIFO order and is more likely to be cache hot. SLUB has an advantage
-> when one CPU allocates and another one frees because it potentially
-> avoids a cache line bounce. Might be something worth bearing in mind
-> when/if a comparison happens later.
 
-SLQB may use cache hot objects regardless of their locality. SLUB
-always serves objects that have the same locality first (same page).
-SLAB returns objects via the alien caches to the remote node.
-So object allocations with SLUB will generate less TLB pressure since they
-are localized. SLUB objects are immediately returned to the remote node.
-SLAB/SLQB keeps them around for reallocation or queue processing.
+On Thu, 1 Oct 2009, Borislav Petkov wrote:
+> 
+> Ok, here it is, tested on two Fam10 machines here with injecting MCEs.
+> The decoding code is now built-in by default (early_initcall requires
+> !MODULE).
 
-> > Look at fallback_alloc() in slab. You can likely copy much of it. It
-> > considers memory policies and cpuset constraints.
-> >
-> True, it looks like some of the logic should be taken from there all right. Can
-> the treatment of memory policies be dealt with as a separate thread though? I'd
-> prefer to get memoryless nodes sorted out before considering the next two
-> problems (per-cpu instability on ppc64 and memory policy handling in SLQB).
+I don't think it has to require !MODULE. We could do what we do for the 
+other initcalls, ie if MODULE we turn it into just a regular initcall. If 
+that allows something like the EDAC MCE to be built as a module, and 
+people want to, then just go ahead and add the one-liner to <linux/init.h>
 
-Separate email thread? Ok.
+Of course, if it _requires_ being loaded early for some other reason, then 
+that's a different issue. But don't do it just because we don't have the
 
+	#define early_initcall(fn)               module_init(fn)
+
+line.
+
+		Linus
