@@ -1,314 +1,679 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbZJAWkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbZJAWoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753941AbZJAWkk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 18:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbZJAWkc
+	id S1753944AbZJAWoa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 18:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbZJAWo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 18:40:32 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:60603 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753881AbZJAWkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 18:40:20 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-disposition: inline; filename=ext3-journal-guided-resync.patch
-Content-type: TEXT/PLAIN; NAME=''ext3-journal-guided-resync.patch
-Date: Thu, 01 Oct 2009 18:39:33 -0400
-From: scjody@sun.com
-Subject: [patch 4/4] [ext3] Add journal guided resync (data=declared mode)
-To: linux-ext4@vger.kernel.org, linux-raid@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Andreas Dilger <adilger@sun.com>
-Message-id: <20091001224021.757201872@sun.com>
-References: <20091001223929.120106893@sun.com>
-User-Agent: quilt/0.46-1
+	Thu, 1 Oct 2009 18:44:29 -0400
+Received: from www.sr71.net ([198.145.64.142]:45477 "EHLO blackbird.sr71.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753857AbZJAWo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 18:44:28 -0400
+From: Dave Hansen <dave@sr71.net>
+To: dave@sr71.net
+Cc: linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>,
+       Andrew Morton <akpm@linux-foundation.org>, rpurdie@rpsys.net,
+       rgirod@confocus.com, Arjan van de Ven <arjan@infradead.org>
+Subject: [PATCH] LED driver for Intel NAS SS4200 series (v5)
+Date: Thu,  1 Oct 2009 15:43:32 -0700
+Message-Id: <1254437012-9783-1-git-send-email-dave@sr71.net>
+X-Mailer: git-send-email 1.6.5.rc2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We introduce a new data write mode known as declared mode.  This is based on
-ordered mode except that a list of blocks to be written during the current
-transaction is added to the journal before the blocks themselves are written to
-the disk.  Then, if the system crashes, we can resync only those blocks during
-journal replay and skip the rest of the resync of the RAID array.
+Changes from last version:
+* Define pr_fmt before any headers to keep from having
+  to undef it
 
-TODO: Add support to e2fsck.
+Previous changes:
+* Changed logging functions to use cleaner helpers
+* created non-lock-taking __nasgpio_led_set_attr() and
+  a lock-taking version with no '__'.
+* added Kconfig dependency on DMI
+* Added some 'static's to functions
+* Added __devinit to init-time functions
+* Add missed pci_disable_device() on probe error and
+  device removal
+* Added dmi-basd hardware detection, and modparam
+  override for it
+* replaced DRIVER_NAME with KBUILD_MODNAME
 
-TODO: The following sequence of events could cause resync to be skipped
-incorrectly:
- - An MD array that supports RESYNC_RANGE is undergoing resync.
- - A filesystem on that array is mounted with data=declared.
- - The machine crashes before the resync completes.
- - The array is restarted and the filesystem is remounted.
- - Recovery resyncs only the blocks that were undergoing writes during
-   the crash and skips the rest.
-Addressing this requires even more communication between MD and ext and
-I need to think more about how to do this.
+--
 
-Index: linux-2.6.18-128.1.6/fs/ext3/file.c
-===================================================================
---- linux-2.6.18-128.1.6.orig/fs/ext3/file.c
-+++ linux-2.6.18-128.1.6/fs/ext3/file.c
-@@ -78,7 +78,8 @@ ext3_file_write(struct kiocb *iocb, cons
- 		 * Open question --- do we care about flushing timestamps too
- 		 * if the inode is IS_SYNC?
- 		 */
--		if (!ext3_should_journal_data(inode))
-+		if (!ext3_should_journal_data(inode) &&
-+		    !ext3_should_declare_data(inode))
- 			return ret;
+This code is based on a driver that came in the "Open-source
+and GPL components" download here:
+
+http://downloadcenter.intel.com/SearchResult.aspx?lang=eng&ProductFamily=Server+Products&ProductLine=Intel%C2%AE+Storage+Systems&ProductProduct=Intel%C2%AE+Entry+Storage+System+SS4200-E&OSVersion=OS+Independent
+
+It was in a file called nasgpio.c inside of a second zip file
+called SS4200-E_Linux_SIO_Driver-v1.4.zip.
+
+That code used an ioctl() call to operate the LEDs.  It also
+created a new top-level /proc file just to let userspace locate
+which dynamic major number had been allocated to the device.
+I decided that the interface probably wasn't mergeable in that
+form. :)
+
+I ripped out all of the hardware monitor support from nasgpio.c
+as well as the smbus code that controls the LED brightness.  I
+then converted the code to use the existing LED interfaces
+rather than the ioctl().  I don't have any need for brightness
+control, and its code is *completely* separate from the on/off
+controls implemented here.  If anyone else wants it, I'd be
+happy to look into adding it, but I don't care enough for now.
+
+Except for the probe routines, I rewrote most of it.  I also
+Note that I don't have any hardware documentation except for
+the original driver.
+
+Thanks go to Arjan for his help in getting the original source
+for this released and for chasing down some licensing issues.
+
+Cc: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: rpurdie@rpsys.net
+Cc: rgirod@confocus.com
+Cc: Arjan van de Ven <arjan@infradead.org>
+Signed-off-by: Dave Hansen <dave@sr71.net>
+---
+---
+ drivers/leds/Kconfig       |    9 +
+ drivers/leds/Makefile      |    1 +
+ drivers/leds/leds-ss4200.c |  552 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 562 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/leds/leds-ss4200.c
+
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 7c8e712..23409c1 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -229,6 +229,15 @@ config LEDS_BD2802
+ 	  This option enables support for BD2802GU RGB LED driver chips
+ 	  accessed via the I2C bus.
  
- 		goto force_commit;
-Index: linux-2.6.18-128.1.6/fs/ext3/fsync.c
-===================================================================
---- linux-2.6.18-128.1.6.orig/fs/ext3/fsync.c
-+++ linux-2.6.18-128.1.6/fs/ext3/fsync.c
-@@ -66,8 +66,13 @@ int ext3_sync_file(struct file * file, s
- 	 *  filemap_fdatawait() will encounter a ton of newly-dirtied pages
- 	 *  (they were dirtied by commit).  But that's OK - the blocks are
- 	 *  safe in-journal, which is all fsync() needs to ensure.
-+	 *
-+	 * data=declared:
-+	 *  Declare blocks are written before data blocks, then the
-+	 *  sync proceeds as for data=ordered.
- 	 */
--	if (ext3_should_journal_data(inode)) {
-+	if (ext3_should_journal_data(inode) ||
-+	    ext3_should_declare_data(inode)) {
- 		ret = ext3_force_commit(inode->i_sb);
- 		goto out;
- 	}
-Index: linux-2.6.18-128.1.6/fs/ext3/inode.c
-===================================================================
---- linux-2.6.18-128.1.6.orig/fs/ext3/inode.c
-+++ linux-2.6.18-128.1.6/fs/ext3/inode.c
-@@ -1190,6 +1190,15 @@ static int commit_write_fn(handle_t *han
- 	return ext3_journal_dirty_metadata(handle, bh);
- }
++config LEDS_INTEL_SS4200
++	tristate "LED driver for Intel NAS SS4200 series"
++	depends on LEDS_CLASS && PCI && DMI
++	help
++	  This option enables support for the Intel SS4200 series of
++	  Network Attached Storage servers.  You may control the hard
++	  drive or power LEDs on the front panel.  Using this driver
++	  can stop the front LED from blinking after startup.
++
+ comment "LED Triggers"
  
-+/* For commit_write() in data=declared mode */
-+static int declared_commit_write_fn(handle_t *handle, struct buffer_head *bh)
+ config LEDS_TRIGGERS
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index e8cdcf7..6af2f99 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -28,6 +28,7 @@ obj-$(CONFIG_LEDS_PCA955X)		+= leds-pca955x.o
+ obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
+ obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
+ obj-$(CONFIG_LEDS_PWM)			+= leds-pwm.o
++obj-$(CONFIG_LEDS_INTEL_SS4200)		+= leds-ss4200.o
+ 
+ # LED SPI Drivers
+ obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
+diff --git a/drivers/leds/leds-ss4200.c b/drivers/leds/leds-ss4200.c
+new file mode 100644
+index 0000000..0ec4ec3
+--- /dev/null
++++ b/drivers/leds/leds-ss4200.c
+@@ -0,0 +1,552 @@
++/*
++ * SS4200-E Hardware API
++ * Copyright (c) 2009, Intel Corporation.
++ * Copyright IBM Corporation, 2009
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Author: Dave Hansen <dave@sr71.net>
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/dmi.h>
++#include <linux/init.h>
++#include <linux/ioport.h>
++#include <linux/kernel.h>
++#include <linux/leds.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/types.h>
++#include <linux/uaccess.h>
++
++MODULE_AUTHOR("Rodney Girod <rgirod@confocus.com>, Dave Hansen <dave@sr71.net>");
++MODULE_DESCRIPTION("Intel NAS/Home Server ICH7 GPIO Driver");
++MODULE_LICENSE("GPL");
++
++/*
++ * ICH7 LPC/GPIO PCI Config register offsets
++ */
++#define PMBASE		0x040
++#define GPIO_BASE	0x048
++#define GPIO_CTRL	0x04c
++#define GPIO_EN		0x010
++
++/*
++ * The ICH7 GPIO register block is 64 bytes in size.
++ */
++#define ICH7_GPIO_SIZE	64
++
++/*
++ * Define register offsets within the ICH7 register block.
++ */
++#define GPIO_USE_SEL	0x000
++#define GP_IO_SEL	0x004
++#define GP_LVL		0x00c
++#define GPO_BLINK	0x018
++#define GPI_INV		0x030
++#define GPIO_USE_SEL2	0x034
++#define GP_IO_SEL2	0x038
++#define GP_LVL2		0x03c
++
++/*
++ * PCI ID of the Intel ICH7 LPC Device within which the GPIO block lives.
++ */
++static struct pci_device_id ich7_lpc_pci_id[] =
 +{
-+	if (!buffer_mapped(bh) || buffer_freed(bh))
-+		return 0;
-+	set_buffer_uptodate(bh);
-+	return ext3_journal_dirty_data(handle, bh);
-+}
-+
- /*
-  * We need to pick up the new inode size which generic_commit_write gave us
-  * `file' can be NULL - eg, when called from page_symlink().
-@@ -1220,6 +1229,37 @@ static int ext3_ordered_commit_write(str
- 			EXT3_I(inode)->i_disksize = new_i_size;
- 		ret = generic_commit_write(file, page, from, to);
- 	}
-+
-+	ret2 = ext3_journal_stop(handle);
-+	if (!ret)
-+		ret = ret2;
-+	return ret;
-+}
-+
-+static int ext3_declared_commit_write(struct file *file, struct page *page,
-+			     unsigned from, unsigned to)
-+{
-+	handle_t *handle = ext3_journal_current_handle();
-+	struct inode *inode = page->mapping->host;
-+	int ret = 0, ret2;
-+	int partial = 0;
-+	loff_t pos;
-+
-+	ret = walk_page_buffers(handle, page_buffers(page),
-+		from, to, &partial, declared_commit_write_fn);
-+
-+	if (ret == 0) {
-+		pos = ((loff_t)page->index << PAGE_CACHE_SHIFT) + to;
-+		if (pos > EXT3_I(inode)->i_disksize)
-+			EXT3_I(inode)->i_disksize = pos;
-+		if (!partial)
-+			SetPageUptodate(page);
-+		if (pos > inode->i_size) {
-+			i_size_write(inode, pos);
-+			mark_inode_dirty(inode);
-+		}
-+	}
-+
- 	ret2 = ext3_journal_stop(handle);
- 	if (!ret)
- 		ret = ret2;
-@@ -1741,14 +1781,30 @@ static const struct address_space_operat
- 	.releasepage	= ext3_releasepage,
- };
- 
-+static const struct address_space_operations ext3_declared_aops = {
-+	.readpage	= ext3_readpage,
-+	.readpages	= ext3_readpages,
-+	.writepage	= ext3_ordered_writepage,
-+	.sync_page	= block_sync_page,
-+	.prepare_write	= ext3_prepare_write,
-+	.commit_write	= ext3_declared_commit_write,
-+	.bmap		= ext3_bmap,
-+	.invalidatepage	= ext3_invalidatepage,
-+	.releasepage	= ext3_releasepage,
-+	.direct_IO	= ext3_direct_IO,
-+	.migratepage	= buffer_migrate_page,
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH7_0) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH7_1) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH7_30) },
++	{ } /* NULL entry */
 +};
 +
- void ext3_set_aops(struct inode *inode)
- {
- 	if (ext3_should_order_data(inode))
- 		inode->i_mapping->a_ops = &ext3_ordered_aops;
- 	else if (ext3_should_writeback_data(inode))
- 		inode->i_mapping->a_ops = &ext3_writeback_aops;
--	else
-+	else if (ext3_should_journal_data(inode))
- 		inode->i_mapping->a_ops = &ext3_journalled_aops;
-+	else
-+		inode->i_mapping->a_ops = &ext3_declared_aops;
- }
- 
- /*
-@@ -1845,9 +1901,12 @@ static int ext3_block_truncate_page(hand
- 	if (ext3_should_journal_data(inode)) {
- 		err = ext3_journal_dirty_metadata(handle, bh);
- 	} else {
--		if (ext3_should_order_data(inode))
-+		if (ext3_should_order_data(inode) ||
-+		    ext3_should_declare_data(inode))
- 			err = ext3_journal_dirty_data(handle, bh);
--		mark_buffer_dirty(bh);
++MODULE_DEVICE_TABLE(pci, ich7_lpc_pci_id);
 +
-+		if (!ext3_should_declare_data(inode))
-+			mark_buffer_dirty(bh);
- 	}
- 
- unlock:
-Index: linux-2.6.18-128.1.6/fs/ext3/super.c
-===================================================================
---- linux-2.6.18-128.1.6.orig/fs/ext3/super.c
-+++ linux-2.6.18-128.1.6/fs/ext3/super.c
-@@ -391,6 +391,9 @@ static void ext3_put_super (struct super
- 	int i, err;
- 
- 	ext3_xattr_put_super(sb);
-+	journal_clear_features(sbi->s_journal, 0, 0,
-+			       JFS_FEATURE_INCOMPAT_DECLARE_BLOCKS);
-+	journal_update_superblock(sbi->s_journal, 1);
- 	err = journal_destroy(sbi->s_journal);
- 	sbi->s_journal = NULL;
- 	if (err < 0)
-@@ -553,6 +556,8 @@ static int ext3_show_options(struct seq_
- 		seq_puts(seq, ",data=ordered");
- 	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_WRITEBACK_DATA)
- 		seq_puts(seq, ",data=writeback");
-+	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_DECLARED_DATA)
-+		seq_puts(seq, ",data=declared");
- 
- 	ext3_show_quota_options(seq, sb);
- 
-@@ -682,7 +687,7 @@ enum {
- 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
- 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
- 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
--	Opt_grpquota
-+	Opt_grpquota, Opt_data_declared
- };
- 
- static match_table_t tokens = {
-@@ -721,6 +726,7 @@ static match_table_t tokens = {
- 	{Opt_data_journal, "data=journal"},
- 	{Opt_data_ordered, "data=ordered"},
- 	{Opt_data_writeback, "data=writeback"},
-+	{Opt_data_declared, "data=declared"},
- 	{Opt_offusrjquota, "usrjquota="},
- 	{Opt_usrjquota, "usrjquota=%s"},
- 	{Opt_offgrpjquota, "grpjquota="},
-@@ -922,6 +928,9 @@ static int parse_options (char *options,
- 			goto datacheck;
- 		case Opt_data_writeback:
- 			data_opt = EXT3_MOUNT_WRITEBACK_DATA;
-+			goto datacheck;
-+		case Opt_data_declared:
-+			data_opt = EXT3_MOUNT_DECLARED_DATA;
- 		datacheck:
- 			if (is_remount) {
- 				if ((sbi->s_mount_opt & EXT3_MOUNT_DATA_FLAGS)
-@@ -1740,7 +1749,21 @@ static int ext3_fill_super (struct super
- 		else
- 			set_opt(sbi->s_mount_opt, JOURNAL_DATA);
- 		break;
--
-+	case EXT3_MOUNT_DECLARED_DATA:
-+		if (!journal_check_available_features
-+		    (sbi->s_journal, 0, 0, JFS_FEATURE_INCOMPAT_DECLARE_BLOCKS)) {
-+			printk(KERN_ERR "EXT3-fs: Journal does not support "
-+			       "declared data journaling mode\n");
-+			goto failed_mount4;
-+		}
-+		spin_lock(&sbi->s_journal->j_state_lock);
-+		sbi->s_journal->j_flags |= JFS_DECLARE;
-+		spin_unlock(&sbi->s_journal->j_state_lock);
-+		if (!journal_set_features(sbi->s_journal, 0, 0,
-+					  JFS_FEATURE_INCOMPAT_DECLARE_BLOCKS)) {
-+			printk(KERN_ERR "EXT3-fs: Cannot set declared mode.\n");
-+			goto failed_mount4;
-+		}
- 	case EXT3_MOUNT_ORDERED_DATA:
- 	case EXT3_MOUNT_WRITEBACK_DATA:
- 		if (!journal_check_available_features
-@@ -1797,6 +1820,7 @@ static int ext3_fill_super (struct super
- 	printk (KERN_INFO "EXT3-fs: mounted filesystem with %s data mode.\n",
- 		test_opt(sb,DATA_FLAGS) == EXT3_MOUNT_JOURNAL_DATA ? "journal":
- 		test_opt(sb,DATA_FLAGS) == EXT3_MOUNT_ORDERED_DATA ? "ordered":
-+		test_opt(sb,DATA_FLAGS) == EXT3_MOUNT_DECLARED_DATA ? "declared":
- 		"writeback");
- 
- 	lock_kernel();
-Index: linux-2.6.18-128.1.6/include/linux/ext3_fs.h
-===================================================================
---- linux-2.6.18-128.1.6.orig/include/linux/ext3_fs.h
-+++ linux-2.6.18-128.1.6/include/linux/ext3_fs.h
-@@ -357,11 +357,11 @@ struct ext3_inode {
- #define EXT3_MOUNT_MINIX_DF		0x00080	/* Mimics the Minix statfs */
- #define EXT3_MOUNT_NOLOAD		0x00100	/* Don't use existing journal*/
- #define EXT3_MOUNT_ABORT		0x00200	/* Fatal error detected */
--#define EXT3_MOUNT_DATA_FLAGS		0x00C00	/* Mode for data writes: */
-+#define EXT3_MOUNT_DATA_FLAGS		0x01C00	/* Mode for data writes: */
- #define EXT3_MOUNT_JOURNAL_DATA		0x00400	/* Write data to journal */
- #define EXT3_MOUNT_ORDERED_DATA		0x00800	/* Flush data before commit */
- #define EXT3_MOUNT_WRITEBACK_DATA	0x00C00	/* No data ordering */
--#define EXT3_MOUNT_UPDATE_JOURNAL	0x01000	/* Update the journal format */
-+#define EXT3_MOUNT_DECLARED_DATA	0x01000	/* Declare data blocks before writing */
- #define EXT3_MOUNT_NO_UID32		0x02000  /* Disable 32-bit UIDs */
- #define EXT3_MOUNT_XATTR_USER		0x04000	/* Extended user attributes */
- #define EXT3_MOUNT_POSIX_ACL		0x08000	/* POSIX Access Control Lists */
-@@ -383,6 +383,7 @@ struct ext3_inode {
- #define EXT2_MOUNT_ABORT		EXT3_MOUNT_ABORT
- #define EXT2_MOUNT_DATA_FLAGS		EXT3_MOUNT_DATA_FLAGS
- #endif
-+#define EXT3_MOUNT_UPDATE_JOURNAL	0x40000000 /* Update the journal format */
- 
- #define ext3_set_bit			ext2_set_bit
- #define ext3_set_bit_atomic		ext2_set_bit_atomic
-Index: linux-2.6.18-128.1.6/include/linux/ext3_jbd.h
-===================================================================
---- linux-2.6.18-128.1.6.orig/include/linux/ext3_jbd.h
-+++ linux-2.6.18-128.1.6/include/linux/ext3_jbd.h
-@@ -265,4 +265,15 @@ static inline int ext3_should_writeback_
- 	return 0;
- }
- 
-+static inline int ext3_should_declare_data(struct inode *inode)
++static int __init ss4200_led_dmi_callback(const struct dmi_system_id *id)
 +{
-+	if (!S_ISREG(inode->i_mode))
-+		return 0;
-+	if (EXT3_I(inode)->i_flags & EXT3_JOURNAL_DATA_FL)
-+		return 0;
-+	if (test_opt(inode->i_sb, DATA_FLAGS) == EXT3_MOUNT_DECLARED_DATA)
++	pr_info("detected '%s'\n", id->ident);
++	return 1;
++}
++
++static unsigned int __initdata nodetect;
++module_param_named(nodetect, nodetect, bool, 0);
++MODULE_PARM_DESC(nodetect, "Skip DMI-based hardware detection");
++
++/*
++ * struct nas_led_whitelist - List of known good models
++ *
++ * Contains the known good models this driver is compatible with.
++ * When adding a new model try to be as strict as possible. This
++ * makes it possible to keep the false positives (the model is
++ * detected as working, but in reality it is not) as low as
++ * possible.
++ */
++static struct dmi_system_id __initdata nas_led_whitelist[] = {
++	{
++		.callback = ss4200_led_dmi_callback,
++		.ident = "Intel SS4200-E",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Intel"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "SS4200-E"),
++			DMI_MATCH(DMI_PRODUCT_VERSION, "1.00.00")
++		}
++	},
++};
++
++/*
++ * Base I/O address assigned to the Power Management register block
++ */
++static u32 g_pm_io_base;
++
++/*
++ * Base I/O address assigned to the ICH7 GPIO register block
++ */
++static u32 nas_gpio_io_base;
++
++/*
++ * When we successfully register a region, we are returned a resource.
++ * We use these to identify which regions we need to release on our way
++ * back out.
++ */
++static struct resource *gp_gpio_resource;
++
++struct nasgpio_led {
++	char *name;
++	u32 gpio_bit;
++	struct led_classdev led_cdev;
++};
++
++/*
++ * gpio_bit(s) are the ICH7 GPIO bit assignments
++ */
++static struct nasgpio_led nasgpio_leds[] = {
++	{ .name = "hdd1:blue:sata",	.gpio_bit = 0 },
++	{ .name = "hdd1:amber:sata",	.gpio_bit = 1 },
++	{ .name = "hdd2:blue:sata",	.gpio_bit = 2 },
++	{ .name = "hdd2:amber:sata",	.gpio_bit = 3 },
++	{ .name = "hdd3:blue:sata",	.gpio_bit = 4 },
++	{ .name = "hdd3:amber:sata",	.gpio_bit = 5 },
++	{ .name = "hdd4:blue:sata",	.gpio_bit = 6 },
++	{ .name = "hdd4:amber:sata",	.gpio_bit = 7 },
++	{ .name = "power:blue:power",	.gpio_bit = 27},
++	{ .name = "power:amber:power",  .gpio_bit = 28},
++};
++
++#define NAS_RECOVERY	0x00000400	/* GPIO10 */
++
++static struct nasgpio_led *
++led_classdev_to_nasgpio_led(struct led_classdev *led_cdev)
++{
++	return container_of(led_cdev, struct nasgpio_led, led_cdev);
++}
++
++static struct nasgpio_led *get_led_named(char *name)
++{
++	int i;
++	for (i = 0; i < ARRAY_SIZE(nasgpio_leds); i++) {
++		if (strcmp(nasgpio_leds[i].name, name))
++			continue;
++		return &nasgpio_leds[i];
++	}
++	return NULL;
++}
++
++/*
++ * This protects access to the gpio ports.
++ */
++static DEFINE_SPINLOCK(nasgpio_gpio_lock);
++
++/*
++ * There are two gpio ports, one for blinking and the other
++ * for power.  @port tells us if we're doing blinking or
++ * power control.
++ *
++ * Caller must hold nasgpio_gpio_lock
++ */
++static void __nasgpio_led_set_attr(struct led_classdev *led_cdev,
++				   u32 port, u32 value)
++{
++	struct nasgpio_led *led = led_classdev_to_nasgpio_led(led_cdev);
++	u32 gpio_out;
++
++	gpio_out = inl(nas_gpio_io_base + port);
++	if (value)
++		gpio_out |= (1<<led->gpio_bit);
++	else
++		gpio_out &= ~(1<<led->gpio_bit);
++
++	outl(gpio_out, nas_gpio_io_base + port);
++}
++
++static void nasgpio_led_set_attr(struct led_classdev *led_cdev,
++				 u32 port, u32 value)
++{
++	spin_lock(&nasgpio_gpio_lock);
++	__nasgpio_led_set_attr(led_cdev, port, value);
++	spin_unlock(&nasgpio_gpio_lock);
++}
++
++u32 nasgpio_led_get_attr(struct led_classdev *led_cdev, u32 port)
++{
++	struct nasgpio_led *led = led_classdev_to_nasgpio_led(led_cdev);
++	u32 gpio_in;
++
++	spin_lock(&nasgpio_gpio_lock);
++	gpio_in = inl(nas_gpio_io_base + port);
++	spin_unlock(&nasgpio_gpio_lock);
++	if (gpio_in & (1<<led->gpio_bit))
 +		return 1;
 +	return 0;
 +}
 +
- #endif	/* _LINUX_EXT3_JBD_H */
-
++/*
++ * There is actual brightness control in the hardware,
++ * but it is via smbus commands and not implemented
++ * in this driver.
++ */
++static void nasgpio_led_set_brightness(struct led_classdev *led_cdev,
++				       enum led_brightness brightness)
++{
++	u32 setting = 0;
++	if (brightness >= LED_HALF)
++		setting = 1;
++	/*
++	 * Hold the lock across both operations.  This ensures
++	 * consistency so that both the "turn off blinking"
++	 * and "turn light off" operations complete as a set.
++	 */
++	spin_lock(&nasgpio_gpio_lock);
++	/*
++	 * LED class documentation asks that past blink state
++	 * be disabled when brightness is turned to zero.
++	 */
++	if (brightness == 0)
++		__nasgpio_led_set_attr(led_cdev, GPO_BLINK, 0);
++	__nasgpio_led_set_attr(led_cdev, GP_LVL, setting);
++	spin_unlock(&nasgpio_gpio_lock);
++}
++
++static int nasgpio_led_set_blink(struct led_classdev *led_cdev,
++				 unsigned long *delay_on,
++				 unsigned long *delay_off)
++{
++	u32 setting = 1;
++	if (!(*delay_on == 0 && *delay_off == 0) &&
++	    !(*delay_on == 500 && *delay_off == 500))
++		return -EINVAL;
++	/*
++	 * These are very approximate.
++	 */
++	*delay_on = 500;
++	*delay_off = 500;
++
++	nasgpio_led_set_attr(led_cdev, GPO_BLINK, setting);
++
++	return 0;
++}
++
++
++/*
++ * Initialize the ICH7 GPIO registers for NAS usage.  The BIOS should have
++ * already taken care of this, but we will do so in a non destructive manner
++ * so that we have what we need whether the BIOS did it or not.
++ */
++static int __devinit ich7_gpio_init(struct device *dev)
++{
++	int i;
++	u32 config_data = 0;
++	u32 all_nas_led = 0;
++
++	for (i = 0; i < ARRAY_SIZE(nasgpio_leds); i++)
++		all_nas_led |= (1<<nasgpio_leds[i].gpio_bit);
++
++	spin_lock(&nasgpio_gpio_lock);
++	/*
++	 * We need to enable all of the GPIO lines used by the NAS box,
++	 * so we will read the current Use Selection and add our usage
++	 * to it.  This should be benign with regard to the original
++	 * BIOS configuration.
++	 */
++	config_data = inl(nas_gpio_io_base + GPIO_USE_SEL);
++	dev_dbg(dev, ": Data read from GPIO_USE_SEL = 0x%08x\n", config_data);
++	config_data |= all_nas_led + NAS_RECOVERY;
++	outl(config_data, nas_gpio_io_base + GPIO_USE_SEL);
++	config_data = inl(nas_gpio_io_base + GPIO_USE_SEL);
++	dev_dbg(dev, ": GPIO_USE_SEL = 0x%08x\n\n", config_data);
++
++	/*
++	 * The LED GPIO outputs need to be configured for output, so we
++	 * will ensure that all LED lines are cleared for output and the
++	 * RECOVERY line ready for input.  This too should be benign with
++	 * regard to BIOS configuration.
++	 */
++	config_data = inl(nas_gpio_io_base + GP_IO_SEL);
++	dev_dbg(dev, ": Data read from GP_IO_SEL = 0x%08x\n",
++					config_data);
++	config_data &= ~all_nas_led;
++	config_data |= NAS_RECOVERY;
++	outl(config_data, nas_gpio_io_base + GP_IO_SEL);
++	config_data = inl(nas_gpio_io_base + GP_IO_SEL);
++	dev_dbg(dev, ": GP_IO_SEL = 0x%08x\n", config_data);
++
++	/*
++	 * In our final system, the BIOS will initialize the state of all
++	 * of the LEDs.  For now, we turn them all off (or Low).
++	 */
++	config_data = inl(nas_gpio_io_base + GP_LVL);
++	dev_dbg(dev, ": Data read from GP_LVL = 0x%08x\n", config_data);
++	/*
++	 * In our final system, the BIOS will initialize the blink state of all
++	 * of the LEDs.  For now, we turn blink off for all of them.
++	 */
++	config_data = inl(nas_gpio_io_base + GPO_BLINK);
++	dev_dbg(dev, ": Data read from GPO_BLINK = 0x%08x\n", config_data);
++
++	/*
++	 * At this moment, I am unsure if anything needs to happen with GPI_INV
++	 */
++	config_data = inl(nas_gpio_io_base + GPI_INV);
++	dev_dbg(dev, ": Data read from GPI_INV = 0x%08x\n", config_data);
++
++	spin_unlock(&nasgpio_gpio_lock);
++	return 0;
++}
++
++static void ich7_lpc_cleanup(struct device *dev)
++{
++	/*
++	 * If we were given exclusive use of the GPIO
++	 * I/O Address range, we must return it.
++	 */
++	if (gp_gpio_resource) {
++		dev_dbg(dev, ": Releasing GPIO I/O addresses\n");
++		release_region(nas_gpio_io_base, ICH7_GPIO_SIZE);
++		gp_gpio_resource = NULL;
++	}
++}
++
++/*
++ * The OS has determined that the LPC of the Intel ICH7 Southbridge is present
++ * so we can retrive the required operational information and prepare the GPIO.
++ */
++static struct pci_dev *nas_gpio_pci_dev;
++static int __devinit ich7_lpc_probe(struct pci_dev *dev,
++				    const struct pci_device_id *id)
++{
++	int status = 0;
++	u32 gc = 0;
++
++	pci_enable_device(dev);
++
++	nas_gpio_pci_dev = dev;
++	status = pci_read_config_dword(dev, PMBASE, &g_pm_io_base);
++	if (status)
++		goto out;
++	g_pm_io_base &= 0x00000ff80;
++
++	status = pci_read_config_dword(dev, GPIO_CTRL, &gc);
++	if (!(GPIO_EN & gc)) {
++		status = -EEXIST;
++		dev_info(&dev->dev,
++			   "ERROR: The LPC GPIO Block has not been enabled.\n");
++		goto out;
++	}
++
++	status = pci_read_config_dword(dev, GPIO_BASE, &nas_gpio_io_base);
++	if (0 > status) {
++		dev_info(&dev->dev, "Unable to read GPIOBASE.\n");
++		goto out;
++	}
++	dev_dbg(&dev->dev, ": GPIOBASE = 0x%08x\n", nas_gpio_io_base);
++	nas_gpio_io_base &= 0x00000ffc0;
++
++	/*
++	 * Insure that we have exclusive access to the GPIO I/O address range.
++	 */
++	gp_gpio_resource = request_region(nas_gpio_io_base, ICH7_GPIO_SIZE,
++					  KBUILD_MODNAME);
++	if (NULL == gp_gpio_resource) {
++		dev_info(&dev->dev,
++			 "ERROR Unable to register GPIO I/O addresses.\n");
++		status = -1;
++		goto out;
++	}
++
++	/*
++	 * Initialize the GPIO for NAS/Home Server Use
++	 */
++	ich7_gpio_init(&dev->dev);
++
++out:
++	if (status) {
++		ich7_lpc_cleanup(&dev->dev);
++		pci_disable_device(dev);
++	}
++	return status;
++}
++
++static void ich7_lpc_remove(struct pci_dev *dev)
++{
++	ich7_lpc_cleanup(&dev->dev);
++	pci_disable_device(dev);
++}
++
++/*
++ * pci_driver structure passed to the PCI modules
++ */
++static struct pci_driver nas_gpio_pci_driver = {
++	.name = KBUILD_MODNAME,
++	.id_table = ich7_lpc_pci_id,
++	.probe = ich7_lpc_probe,
++	.remove = ich7_lpc_remove,
++};
++
++static struct led_classdev *get_classdev_for_led_nr(int nr)
++{
++	struct nasgpio_led *nas_led = &nasgpio_leds[nr];
++	struct led_classdev *led = &nas_led->led_cdev;
++	return led;
++}
++
++
++static void set_power_light_amber_noblink(void)
++{
++	struct nasgpio_led *amber = get_led_named("power:amber:power");
++	struct nasgpio_led *blue = get_led_named("power:blue:power");
++
++	if (!amber || !blue)
++		return;
++	/*
++	 * LED_OFF implies disabling future blinking
++	 */
++	pr_debug("setting blue off and amber on\n");
++
++	nasgpio_led_set_brightness(&blue->led_cdev, LED_OFF);
++	nasgpio_led_set_brightness(&amber->led_cdev, LED_FULL);
++}
++
++static ssize_t nas_led_blink_show(struct device *dev,
++				  struct device_attribute *attr, char *buf)
++{
++	struct led_classdev *led = dev_get_drvdata(dev);
++	int blinking = 0;
++	if (nasgpio_led_get_attr(led, GPO_BLINK))
++		blinking = 1;
++	return sprintf(buf, "%u\n", blinking);
++}
++
++static ssize_t nas_led_blink_store(struct device *dev,
++				   struct device_attribute *attr,
++				   const char *buf, size_t size)
++{
++	int ret;
++	struct led_classdev *led = dev_get_drvdata(dev);
++	unsigned long blink_state;
++
++	ret = strict_strtoul(buf, 10, &blink_state);
++	if (ret)
++		return ret;
++
++	nasgpio_led_set_attr(led, GPO_BLINK, blink_state);
++
++	return size;
++}
++
++static DEVICE_ATTR(blink, 0644, nas_led_blink_show, nas_led_blink_store);
++
++static int register_nasgpio_led(int led_nr)
++{
++	int ret;
++	struct nasgpio_led *nas_led = &nasgpio_leds[led_nr];
++	struct led_classdev *led = get_classdev_for_led_nr(led_nr);
++
++	led->name = nas_led->name;
++	led->brightness = LED_OFF;
++	if (nasgpio_led_get_attr(led, GP_LVL))
++		led->brightness = LED_FULL;
++	led->brightness_set = nasgpio_led_set_brightness;
++	led->blink_set = nasgpio_led_set_blink;
++	ret = led_classdev_register(&nas_gpio_pci_dev->dev, led);
++	if (ret)
++		return ret;
++	ret = device_create_file(led->dev, &dev_attr_blink);
++	if (ret)
++		led_classdev_unregister(led);
++	return ret;
++}
++
++static void unregister_nasgpio_led(int led_nr)
++{
++	struct led_classdev *led = get_classdev_for_led_nr(led_nr);
++	led_classdev_unregister(led);
++	device_remove_file(led->dev, &dev_attr_blink);
++}
++/*
++ * module load/initialization
++ */
++static int __init nas_gpio_init(void)
++{
++	int i;
++	int ret = 0;
++	int nr_devices = 0;
++
++	nr_devices = dmi_check_system(nas_led_whitelist);
++	if (nodetect) {
++		pr_info("skipping hardware autodetection\n");
++		pr_info("Please send 'dmidecode' output to dave@sr71.net\n");
++		nr_devices++;
++	}
++
++	if (nr_devices <= 0) {
++		pr_info("no LED devices found\n");
++		return -ENODEV;
++	}
++
++	pr_info("registering PCI driver\n");
++	ret = pci_register_driver(&nas_gpio_pci_driver);
++	if (ret)
++		return ret;
++	for (i = 0; i < ARRAY_SIZE(nasgpio_leds); i++) {
++		ret = register_nasgpio_led(i);
++		if (ret)
++			goto out_err;
++	}
++	/*
++	 * When the system powers on, the BIOS leaves the power
++	 * light blue and blinking.  This will turn it solid
++	 * amber once the driver is loaded.
++	 */
++	set_power_light_amber_noblink();
++	return 0;
++out_err:
++	for (; i >= 0; i--)
++		unregister_nasgpio_led(i);
++	pci_unregister_driver(&nas_gpio_pci_driver);
++	return ret;
++}
++
++/*
++ * module unload
++ */
++static void __exit nas_gpio_exit(void)
++{
++	int i;
++	pr_info("Unregistering driver\n");
++	for (i = 0; i < ARRAY_SIZE(nasgpio_leds); i++)
++		unregister_nasgpio_led(i);
++	pci_unregister_driver(&nas_gpio_pci_driver);
++}
++
++module_init(nas_gpio_init);
++module_exit(nas_gpio_exit);
 -- 
+1.6.5.rc2
+
