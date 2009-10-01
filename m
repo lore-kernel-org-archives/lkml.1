@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932636AbZJAOKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932629AbZJAOJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932636AbZJAOKB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 10:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932591AbZJAOJ4
+	id S932629AbZJAOJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 10:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932560AbZJAOJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 10:09:56 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:35256 "EHLO
+	Thu, 1 Oct 2009 10:09:57 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:58963 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932588AbZJAOJy (ORCPT
+	with ESMTP id S932580AbZJAOJx (ORCPT
 	<rfc822;groupwise-SJayaraman@novell.com;0:0>);
-	Thu, 1 Oct 2009 10:09:54 -0400
+	Thu, 1 Oct 2009 10:09:53 -0400
 From: Suresh Jayaraman <sjayaraman@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
@@ -18,51 +18,79 @@ Cc: netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
        Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, trond.myklebust@fys.uio.no,
        Suresh Jayaraman <sjayaraman@suse.de>
-Subject: [PATCH 30/31] Fix use of uninitialized variable in cache_grow()
-Date: Thu,  1 Oct 2009 19:40:57 +0530
-Message-Id: <1254406257-16735-1-git-send-email-sjayaraman@suse.de>
+Subject: [PATCH 31/31] swapfile: avoid NULL pointer dereference in swapon when s_bdev is NULL
+Date: Thu,  1 Oct 2009 19:41:09 +0530
+Message-Id: <1254406269-16771-1-git-send-email-sjayaraman@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+While testing Swap over NFS patchset, I noticed an oops that was triggered
+during swapon. Investigating further, the NULL pointer deference is due to the
+SSD device check/optimization in the swapon code that assumes s_bdev is not
+NULL.
 
-This fixes a bug in reserve-slub.patch.
+inode->i_sb->s_bdev could be NULL in a few cases. For e.g. one such case is
+loopback NFS mount, there could be others as well. Fix this by ensuring s_bdev
+is not NULL before we try to deference s_bdev.
 
-If cache_grow() was called with objp != NULL then the 'reserve' local
-variable wasn't initialized. This resulted in ac->reserve being set to
-a rubbish value.  Due to this in some circumstances huge amounts of
-slab pages were allocated (due to slab_force_alloc() returning true),
-which caused atomic page allocation failures and slowdown of the
-system.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
 ---
- mm/slab.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ mm/swapfile.c |   26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
-Index: mmotm/mm/slab.c
+Index: mmotm/mm/swapfile.c
 ===================================================================
---- mmotm.orig/mm/slab.c
-+++ mmotm/mm/slab.c
-@@ -2760,7 +2760,7 @@ static int cache_grow(struct kmem_cache
- 	size_t offset;
- 	gfp_t local_flags;
- 	struct kmem_list3 *l3;
--	int reserve;
-+	int reserve = -1;
+--- mmotm.orig/mm/swapfile.c
++++ mmotm/mm/swapfile.c
+@@ -160,10 +160,12 @@ static int discard_swap(struct swap_info
+ 				continue;
+ 		}
  
- 	/*
- 	 * Be lazy and only check for valid flags here,  keeping it out of the
-@@ -2816,7 +2816,8 @@ static int cache_grow(struct kmem_cache
- 	if (local_flags & __GFP_WAIT)
- 		local_irq_disable();
- 	check_irq_off();
--	slab_set_reserve(cachep, reserve);
-+	if (reserve != -1)
-+		slab_set_reserve(cachep, reserve);
- 	spin_lock(&l3->list_lock);
+-		err = blkdev_issue_discard(si->bdev, start_block,
++		if (si->bdev) {
++			err = blkdev_issue_discard(si->bdev, start_block,
+ 						nr_blocks, GFP_KERNEL);
+-		if (err)
+-			break;
++			if (err)
++				break;
++		}
  
- 	/* Make slab active. */
+ 		cond_resched();
+ 	}
+@@ -199,9 +201,11 @@ static void discard_swap_cluster(struct
+ 
+ 			start_block <<= PAGE_SHIFT - 9;
+ 			nr_blocks <<= PAGE_SHIFT - 9;
+-			if (blkdev_issue_discard(si->bdev, start_block,
++			if (si->bdev) {
++				if (blkdev_issue_discard(si->bdev, start_block,
+ 							nr_blocks, GFP_NOIO))
+-				break;
++					break;
++			}
+ 		}
+ 
+ 		lh = se->list.next;
+@@ -1991,12 +1995,14 @@ SYSCALL_DEFINE2(swapon, const char __use
+ 		goto bad_swap;
+ 	}
+ 
+-	if (blk_queue_nonrot(bdev_get_queue(p->bdev))) {
+-		p->flags |= SWP_SOLIDSTATE;
+-		p->cluster_next = 1 + (random32() % p->highest_bit);
++	if (p->bdev) {
++		if (blk_queue_nonrot(bdev_get_queue(p->bdev))) {
++			p->flags |= SWP_SOLIDSTATE;
++			p->cluster_next = 1 + (random32() % p->highest_bit);
++		}
++		if (discard_swap(p) == 0)
++			p->flags |= SWP_DISCARDABLE;
+ 	}
+-	if (discard_swap(p) == 0)
+-		p->flags |= SWP_DISCARDABLE;
+ 
+ 	mutex_lock(&swapon_mutex);
+ 	spin_lock(&swap_lock);
