@@ -1,114 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbZJAANF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZJAASc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbZJAANF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 20:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbZJAANE
+	id S1755195AbZJAASc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 20:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbZJAASb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 20:13:04 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56201 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754871AbZJAAND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 20:13:03 -0400
-Message-ID: <4AC3F411.5040506@redhat.com>
-Date: Wed, 30 Sep 2009 17:13:05 -0700
-From: Josh Stone <jistone@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+	Wed, 30 Sep 2009 20:18:31 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:40870 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754898AbZJAASa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 20:18:30 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 6/9] drivers/media/video/uvc: Use %pUr to print UUIDs
+Date: Thu, 1 Oct 2009 02:20:17 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31.1; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Adrian Hunter <adrian.hunter@nokia.com>,
+       Alex Elder <aelder@sgi.com>, Artem Bityutskiy <dedekind@infradead.org>,
+       Christoph Hellwig <hch@lst.de>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jgarzik@redhat.com>, Matt Mackall <mpm@selenic.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Neil Brown <neilb@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
+       xfs-masters@oss.sgi.com, linux-media@vger.kernel.org
+References: <cover.1254193019.git.joe@perches.com> <111526fa2ce7f728d1f81465a00859c1780f0607.1254193019.git.joe@perches.com>
+In-Reply-To: <111526fa2ce7f728d1f81465a00859c1780f0607.1254193019.git.joe@perches.com>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext4: Add a stub for mpage_da_data in the trace header
-References: <1254260407-14276-1-git-send-email-jistone@redhat.com> <20090930133335.GA14585@infradead.org> <20090930142049.GH24383@mit.edu> <4AC3B553.7070704@redhat.com> <20090930212332.GN24383@mit.edu>
-In-Reply-To: <20090930212332.GN24383@mit.edu>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910010220.17534.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/30/2009 02:23 PM, Theodore Tso wrote:
-> On Wed, Sep 30, 2009 at 12:45:23PM -0700, Josh Stone wrote:
->> If you just want the data in the trace buffer, then SystemTap is not the
->> tool for you.  By all means, just write yourself a perl script or
->> something that parses the trace buffer however you like.
->>
->> On the other hand, stap is useful to do some processing/inspection
->> *live*, at the moment the event happens.  For that, we register our own
->> tracepoint handler that can do something different than ftrace.
+Hi Joe,
+
+thanks for the patch. A few comments below.
+
+On Tuesday 29 September 2009 07:01:08 Joe Perches wrote:
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/media/video/uvc/uvc_ctrl.c   |   69 ++++++++++++++++------------------
+>  drivers/media/video/uvc/uvc_driver.c |    7 +--
+>  drivers/media/video/uvc/uvcvideo.h   |   10 -----
+>  3 files changed, 35 insertions(+), 51 deletions(-)
 > 
-> So there are two things I would point out here.  First of all, now
-> that ftrace has the ability to do basic filtering, just about the only
-> thing SystemTap can do which is unique is either complex filtering,
-> summary statistics, or some kind of correlation between multiple
-> events (within the limits of restricted memory allocation limits of
-> SystemTap).
-
-This "only thing" seems like quite a lot to me, but I suppose the
-significance could be a matter of opinion.  I would also add that
-SystemTap can better support concurrent users who want to monitor
-different things.
-
-> So I'm not sure it's such a great idea to cede a large bit of
-> functionality to as being something that SystemTap will never 
-> accomplish --- especially when it's far more convenient and stable
-> to depend on fixed trace points than setting arbitrary dynamic trace 
-> points in the middle of source files which will break all the time 
-> when distro's release new kernels, etc.
-
-I don't understand your point about ceding here.  But yes, I agree that
-fixed trace points are more convenient and stable, which is why we've
-long supported static instrumentation in the kernel.
-
-> Secondly, while I'm not so sure it's that big of a restriction to have
-> Systemtap pull events out of the trace buffer, if you must capture the
-> event right as it happens, it should be possible set a kprobe in the
-> ftrace subsystem, and then pull out the data of the event from the
-> trace buffer.
-
-This is possible, but it's a step backward for a few reasons:
-
-- A kprobe will be inherently slower than a tracepoint handler.
-- It requires debuginfo (maybe not to place the probe, but surely to dig
-into ftrace's internal data structures).
-- It requires knowledge about the ftrace internals, which is fragile and
-unmaintainable.
-- It assumes that every bit of data that the user wants is captured in
-the trace buffer.
-
-I think that last point is particularly significant.  Kernel devs are
-not prescient, so the trace event might not be capturing all of the data
-that's relevant to a particular troubleshooting effort.  With stap you
-can gather whatever data you want.
-
-(By the way, I seem to recall that we once discussed adding a proper
-hook for stap to grab ftrace data as it comes, but I don't think that
-went anywhere.)
-
-> Keep in mind that one of the advantage DTrace has over SystemTap is
-> that it can use pre-defined events in the kernel, and not have to
-> keep userspace macro files in sync with a changing kernel source
-> base.  It seems counterproductive to throw away the opportunity of
-> being able to read the tracepoint event data, since it would give 
-> SystemTap a lot more power.
-
-Aren't "pre-defined events" == tracepoints?  That's exactly what we're
-trying to use in SystemTap!  But then, DTrace doesn't dictate what data
-is captured at those events, so I don't understand why you think we
-should be more restrictive.
-
->> However, SystemTap does *not* require the kernel debuginfo for using
->> tracepoints, even when reading parameters.  It should work in the
->> complete absence of CONFIG_DEBUGINFO, so if you find otherwise, please
->> let me know and I will fix it.
+> diff --git a/drivers/media/video/uvc/uvc_ctrl.c
+>  b/drivers/media/video/uvc/uvc_ctrl.c index c3225a5..2959e46 100644
+> --- a/drivers/media/video/uvc/uvc_ctrl.c
+> +++ b/drivers/media/video/uvc/uvc_ctrl.c
+> @@ -1093,8 +1093,8 @@ int uvc_xu_ctrl_query(struct uvc_video_chain *chain,
 > 
-> Well, how is it going to do that if you don't have access to the
-> structure definition?  This is why fetching the information from the
-> ring buffer is much more powerful.
+>  	if (!found) {
+>  		uvc_trace(UVC_TRACE_CONTROL,
+> -			"Control " UVC_GUID_FORMAT "/%u not found.\n",
+> -			UVC_GUID_ARGS(entity->extension.guidExtensionCode),
+> +			"Control %pUr/%u not found.\n",
+> +			entity->extension.guidExtensionCode,
+>  			xctrl->selector);
 
-True, when neither a header nor debuginfo for a private type is
-available, then it will be opaque to us, so the ring buffer can offer
-pre-defined insight into those structures.  But in sched_switch, for
-example, the ring buffer only knows prev/next->comm/pid/prio/state,
-whereas stap has the entire rq and task_structs at your disposal.  Each
-has power in their own place...
+Could you try to cut long statements in as few lines as possible ? This one
+would become
 
-Josh
+		uvc_trace(UVC_TRACE_CONTROL, "Control %pUr/%u not found.\n",
+			  entity->extension.guidExtensionCode, xctrl->selector);
+
+There are a few others that should be changed as well. If you prefer I can
+apply the patch through my tree (after the printk patch goes in of course)
+and handle that myself.
+
+[snip]
+
+>  		flags = info->flags;
+>  		if (((flags & UVC_CONTROL_GET_CUR) && !(inf & (1 << 0))) ||
+>  		    ((flags & UVC_CONTROL_SET_CUR) && !(inf & (1 << 1)))) {
+> -			uvc_trace(UVC_TRACE_CONTROL, "Control "
+> -				UVC_GUID_FORMAT "/%u flags don't match "
+> -				"supported operations.\n",
+> -				UVC_GUID_ARGS(info->entity), info->selector);
+> +			uvc_trace(UVC_TRACE_CONTROL,
+> +				  "Control %pUr/%u flags don't match supported operations.\n",
+> +				  info->entity, info->selector);
+
+This doesn't fit the 80 columns limit. Please run checkpatch.pl on your patches.
+
+[snip]
+
+> diff --git a/drivers/media/video/uvc/uvc_driver.c
+>  b/drivers/media/video/uvc/uvc_driver.c index 8756be5..647d0a2 100644
+> --- a/drivers/media/video/uvc/uvc_driver.c
+> +++ b/drivers/media/video/uvc/uvc_driver.c
+> @@ -328,11 +328,10 @@ static int uvc_parse_format(struct uvc_device *dev,
+>  				sizeof format->name);
+>  			format->fcc = fmtdesc->fcc;
+>  		} else {
+> -			uvc_printk(KERN_INFO, "Unknown video format "
+> -				UVC_GUID_FORMAT "\n",
+> -				UVC_GUID_ARGS(&buffer[5]));
+> +			uvc_printk(KERN_INFO, "Unknown video format %pUr\n",
+> +				   &buffer[5]);
+>  			snprintf(format->name, sizeof format->name,
+> -				UVC_GUID_FORMAT, UVC_GUID_ARGS(&buffer[5]));
+> +				 "%pUr", &Buffer[5]);
+
+Should be &buffer[5], not &Buffer[5]. You haven't compiled the patch, have
+you ? :-)
+
+-- 
+Regards,
+
+Laurent Pinchart
