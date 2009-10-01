@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbZJAQpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbZJAQox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755591AbZJAQpW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 12:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZJAQpV
+	id S1755631AbZJAQox (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 12:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbZJAQow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 12:45:21 -0400
-Received: from kroah.org ([198.145.64.141]:38163 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 12:44:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50870 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751587AbZJAQpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 12:45:20 -0400
-Date: Thu, 1 Oct 2009 09:42:49 -0700
-From: Greg KH <greg@kroah.com>
-To: Nathaniel McCallum <nathaniel@natemccallum.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Exposing device ids and driver names
-Message-ID: <20091001164249.GA2715@kroah.com>
-References: <4AC4DB65.8070404@natemccallum.com>
+	id S1755511AbZJAQon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 12:44:43 -0400
+Message-ID: <4AC4DC46.70907@kernel.org>
+Date: Fri, 02 Oct 2009 01:43:50 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AC4DB65.8070404@natemccallum.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Avi Kivity <avi@redhat.com>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       jeff@garzik.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
+Subject: Re: [RFC PATCHSET] workqueue: implement concurrency managed	workqueue
+References: <1254384558-1018-1-git-send-email-tj@kernel.org> <20091001084040.GA15345@elte.hu>
+In-Reply-To: <20091001084040.GA15345@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 16:43:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 12:40:05PM -0400, Nathaniel McCallum wrote:
-> Please CC me on any responses as I'm not subscribed to lkml.
+Hello,
+
+Ingo Molnar wrote:
+> Ok, this looks fairly interesting - and the way you reused scheduler 
+> classes to auto-regulate with no impact on regular performance is quite 
+> an ingenious idea as well. (KVM's preempt notifiers should probably use 
+> this trick too, instead of an ugly notifier in the scheduler hotpath)
 > 
-> I have the aim at creating two tools helpful to linux.  The first tool 
-> is a driver regression test of sorts.  I want to be able to create 
-> essentially a time line of hardware support as they appear in distros. 
-> The second tool, related to the first, is a program which runs on 
-> Windows and scans for a user's hardware and tells them which distro will 
-> best support their hardware.
+> This mechanism could be used to implement threadlets/syslets too btw., 
+> and other forms of asynchronous IO.
+> 
+> My main worry is that in practice workqueues arent all that performance 
+> critical - so we are shooting to optimize something that doesnt 
+> necessarily use all the potential goodness inherent in this approach.
 
-That's going to be interesting, as all distros pretty much use the same
-kernel, it will just depend on who is "newer" at the moment, right?
+The scheduler code was pretty nice to hook into.  But as Jens said,
+this patchset is more about getting the async framework which can
+scale and be used universally.  Performance-wise, I was mainly aiming
+for not introducing noticeable slow down as I expect workqueues to be
+used more widely with this change.  Workqueue is already pretty
+heavily used in certain paths - ie. block IO completion path with SSDs
+and any signficant overhead would be noticeable.  With mixture of
+different works of different run time, I think the net effect would be
+positive.  It should be able to achieve better latency and throughput.
+I don't have any numbers to back my rather optimistic projection yet
+tho.
 
-> I already have a working prototype of these two tools.  It currently
-> uses the data exported by modinfo.  This however does not provide
-> transparency for drivers compiled into the kernel.
+Thanks.
 
-Most distros don't build drivers into the kernel, so you should be fine
-with what you have today, right?  Or have you run into problems with
-this?
-
-Why not just use the baseline kernel as a model for this.  Do a 'make
-allmodconfig' and then extract the data and publish it that way.  No
-kernel changes are needed, and then any distro can be easily matched up
-by this based on what they are using.  That will save you time in
-downloading zillions of distro releases, and provide a nice easy way to
-show what the kernel.org releases support.
-
-thanks,
-
-greg k-h
+-- 
+tejun
