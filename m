@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbZJAXXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbZJAXYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbZJAXXW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbZJAXXU
+	id S1754586AbZJAXYZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZJAXYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:23:20 -0400
-Received: from kroah.org ([198.145.64.141]:39664 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:24:24 -0400
+Received: from kroah.org ([198.145.64.141]:39667 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754513AbZJAXXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:23:18 -0400
+	id S1754586AbZJAXXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:23:19 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:18:05 2009
-Message-Id: <20091001231805.021733475@mini.kroah.org>
+Message-Id: <20091001231805.170427311@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:16:37 -0700
+Date: Thu, 01 Oct 2009 16:16:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Cord Walter <qord@cwalter.net>, Komuro <komurojun-mbn@nifty.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Christoph Biedl <linux-kernel.bfrz@manchmal.in-ulm.de>
-Subject: [patch 4/9] pcnet_cs: Fix misuse of the equality operator.
+       Stefan Bader <stefan.bader@canonical.com>,
+       Tim Gardner <tim.gardner@canonical.com>,
+       Steve Conklin <steve.conklin@canonical.com>
+Subject: [patch 5/9] Fix incorrect stable backport to bas_gigaset
 References: <20091001231633.719696398@mini.kroah.org>
-Content-Disposition: inline; filename=pcnet_cs-fix-misuse-of-the-equality-operator.patch
+Content-Disposition: inline; filename=fix-incorrect-stable-backport-to-bas_gigaset.patch
 In-Reply-To: <20091001231938.GA29593@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,30 +32,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Cord Walter <qord@cwalter.net>
+From: Tilman Schmidt <tilman@imap.cc>
 
-commit a9d3a146923d374b945aa388dc884df69564a818 upstream.
+bas_gigaset: correctly allocate USB interrupt transfer buffer
 
-Signed-off-by: Cord Walter <qord@cwalter.net>
-Signed-off-by: Komuro <komurojun-mbn@nifty.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Christoph Biedl <linux-kernel.bfrz@manchmal.in-ulm.de>
+[ Upstream commit 170ebf85160dd128e1c4206cc197cce7d1424705 ]
+
+This incorrect backport to 2.6.28.10 placed some code into the probe function
+which used a pointer before it was initialized. Moving this to the correct
+place (as it is in upstream).
+
+Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
+Acked-by: Tim Gardner <tim.gardner@canonical.com>
+Acked-by: Steve Conklin <steve.conklin@canonical.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/pcmcia/pcnet_cs.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/isdn/gigaset/bas-gigaset.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
---- a/drivers/net/pcmcia/pcnet_cs.c
-+++ b/drivers/net/pcmcia/pcnet_cs.c
-@@ -591,7 +591,7 @@ static int pcnet_config(struct pcmcia_de
-     }
+--- a/drivers/isdn/gigaset/bas-gigaset.c
++++ b/drivers/isdn/gigaset/bas-gigaset.c
+@@ -2140,8 +2140,16 @@ static int gigaset_initcshw(struct cards
+ 	struct bas_cardstate *ucs;
  
-     if ((link->conf.ConfigBase == 0x03c0)
--	&& (link->manf_id == 0x149) && (link->card_id = 0xc1ab)) {
-+	&& (link->manf_id == 0x149) && (link->card_id == 0xc1ab)) {
- 	printk(KERN_INFO "pcnet_cs: this is an AX88190 card!\n");
- 	printk(KERN_INFO "pcnet_cs: use axnet_cs instead.\n");
- 	goto failed;
+ 	cs->hw.bas = ucs = kmalloc(sizeof *ucs, GFP_KERNEL);
+-	if (!ucs)
++	if (!ucs) {
++		pr_err("out of memory\n");
++		return 0;
++	}
++	ucs->int_in_buf = kmalloc(IP_MSGSIZE, GFP_KERNEL);
++	if (!ucs->int_in_buf) {
++		kfree(ucs);
++		pr_err("out of memory\n");
+ 		return 0;
++	}
+ 
+ 	ucs->urb_cmd_in = NULL;
+ 	ucs->urb_cmd_out = NULL;
+@@ -2236,12 +2244,6 @@ static int gigaset_probe(struct usb_inte
+ 		}
+ 		hostif = interface->cur_altsetting;
+ 	}
+-	ucs->int_in_buf = kmalloc(IP_MSGSIZE, GFP_KERNEL);
+-	if (!ucs->int_in_buf) {
+-		kfree(ucs);
+-		pr_err("out of memory\n");
+-		return 0;
+-	}
+ 
+ 	/* Reject application specific interfaces
+ 	 */
 
 
