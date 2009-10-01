@@ -1,19 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZJAXPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbZJAXKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437AbZJAXPq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbZJAXJ6
+	id S1755226AbZJAXKI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbZJAXKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:09:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57460 "EHLO ogre.sisk.pl"
+	Thu, 1 Oct 2009 19:10:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57473 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755125AbZJAXJ4 convert rfc822-to-8bit (ORCPT
+	id S1755110AbZJAXJ7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:09:56 -0400
+	Thu, 1 Oct 2009 19:09:59 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Magnus Damm" <damm@igel.co.jp>, "Magnus Damm" <magnus.damm@gmail.com>,
-       "Ondrej Zary" <linux@rainbow-software.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
+       "Mikael Pettersson" <mikpe@it.uu.se>
 References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
 In-Reply-To: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <COE24pZSBH.A.N-.ANTxKB@chimera>
-Subject: [Bug #14254] Hibernation broken by clocksource: Save mult_orig in clocksource_disable()
+Message-ID: <COE24pZSBH.A.ot.9MTxKB@chimera>
+Subject: [Bug #14256] kernel BUG at fs/ext3/super.c:435
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Thu,  1 Oct 2009 21:56:01 +0200 (CEST)
+Date: Thu,  1 Oct 2009 21:56:02 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,11 +35,10 @@ introduced between 2.6.30 and 2.6.31.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14254
-Subject		: Hibernation broken by clocksource: Save mult_orig in clocksource_disable()
-Submitter	: Ondrej Zary <linux@rainbow-software.org>
-Date		: 2009-09-19 19:55 (13 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c7121843685de2bf7f3afd3ae1d6a146010bf1fc
-References	: http://marc.info/?l=linux-kernel&m=125339012527719&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14256
+Subject		: kernel BUG at fs/ext3/super.c:435
+Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+Date		: 2009-09-21 7:29 (11 days old)
+References	: http://marc.info/?l=linux-kernel&m=125351816109264&w=4
 
 
