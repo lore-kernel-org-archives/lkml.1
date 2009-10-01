@@ -1,83 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbZJAKys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756322AbZJAKzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756310AbZJAKys (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 06:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbZJAKyr
+	id S1756322AbZJAKzz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 06:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756296AbZJAKzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 06:54:47 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:4033 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756276AbZJAKyq (ORCPT
+	Thu, 1 Oct 2009 06:55:54 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34500 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756279AbZJAKzx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 06:54:46 -0400
-X-Trace: 265406197/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.44.42/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.44.42
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtoEACYnxEpQKSwq/2dsb2JhbACBUdR/hCgE
-X-IronPort-AV: E=Sophos;i="4.44,487,1249254000"; 
-   d="scan'208";a="265406197"
-Date: Thu, 1 Oct 2009 11:54:34 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: No more bits in vm_area_struct's vm_flags.
-In-Reply-To: <alpine.DEB.1.10.0909291019100.15549@gentwo.org>
-Message-ID: <Pine.LNX.4.64.0910011134240.10818@sister.anvils>
-References: <4AB9A0D6.1090004@crca.org.au> <20090924100518.78df6b93.kamezawa.hiroyu@jp.fujitsu.com>
- <4ABC80B0.5010100@crca.org.au> <20090925174009.79778649.kamezawa.hiroyu@jp.fujitsu.com>
- <4AC0234F.2080808@crca.org.au> <20090928120450.c2d8a4e2.kamezawa.hiroyu@jp.fujitsu.com>
- <20090928033624.GA11191@localhost> <20090928125705.6656e8c5.kamezawa.hiroyu@jp.fujitsu.com>
- <Pine.LNX.4.64.0909281637160.25798@sister.anvils>
- <a0ea21a7cfe313202e2b51510aa5435a.squirrel@webmail-b.css.fujitsu.com>
- <Pine.LNX.4.64.0909282134100.11529@sister.anvils>
- <20090929105735.06eea1ee.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.1.10.0909291019100.15549@gentwo.org>
+	Thu, 1 Oct 2009 06:55:53 -0400
+Date: Thu, 1 Oct 2009 11:55:31 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Jan Beulich <JBeulich@novell.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Fix 4a49622: module: reduce symbol table for loaded modules (v2)
+Message-ID: <20091001105531.GA25122@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Sep 2009, Christoph Lameter wrote:
-> 
-> Another concern that has not been discussed is the increased cache
-> footprint due to a slightly enlarged vm data working set (there is also a
-> corresponding icache issue since additional accesses are needed).
+Unfortunately, the above referenced change results in the following
+for the !KALLSYMS case:
 
-Using unsigned long long vm_flags makes no difference to cache footprint
-on 64-bit systems, being a no-op there; and I think these days, though
-we sure like our 32-bit systems to run well, we're not so anxious about
-saving every last cycle on them.
+kernel/module.c:1995: warning: type defaults to 'int' in declaration of 'Elf_Hdr'
+kernel/module.c:1995: error: expected ';', ',' or ')' before '*' token
+kernel/module.c: In function 'load_module':
+kernel/module.c:2203: error: 'strmap' undeclared (first use in this function)
+kernel/module.c:2203: error: (Each undeclared identifier is reported only once
+kernel/module.c:2203: error: for each function it appears in.)
+kernel/module.c:2239: error: 'symoffs' undeclared (first use in this function)
+kernel/module.c:2239: error: implicit declaration of function 'layout_symtab'
+kernel/module.c:2240: error: 'stroffs' undeclared (first use in this function)
 
-> 
-> Could we stick with the current size and do combinations of flags like we
-> do with page flags?
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+--
+ kernel/module.c |   30 ++++++++----------------------
+ 1 files changed, 8 insertions(+), 22 deletions(-)
 
-Are we doing that?  If you have some example like, when PG_slab is set
-then PG_owner_priv_1 means such-and-such, but if not not: okay, I'm
-fine with that.
-
-But if you're saying something like, if PG_reclaim is set at the same
-time as PG_buddy, then they mean the page is not a buddy or under
-reclaim, but brokenbacked: then I'm a bit (or even 32 bits) worried.
-
-> VM_HUGETLB cannot grow up and down f.e. and there are
-> certainly lots of other impossible combinations that can be used to put
-> more information into the flags.
-
-Where it makes sense, where it's understandable, okay: there may be a
-few which could naturally use combinations.  But in general, no, I
-think we'd be asking for endless maintenance trouble if we change the
-meaning of some flags according to other flags.
-
-Hugh
+diff --git a/kernel/module.c b/kernel/module.c
+index fe748a8..e30df34 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1987,28 +1987,6 @@ static void add_kallsyms(struct module *mod,
+ 		if (test_bit(i, strmap))
+ 			*++s = mod->strtab[i];
+ }
+-#else
+-static inline unsigned long layout_symtab(struct module *mod,
+-					  Elf_Shdr *sechdrs,
+-					  unsigned int symindex,
+-					  unsigned int strindex,
+-					  const Elf_Hdr *hdr,
+-					  const char *secstrings,
+-					  unsigned long *pstroffs,
+-					  unsigned long *strmap)
+-{
+-}
+-static inline void add_kallsyms(struct module *mod,
+-				Elf_Shdr *sechdrs,
+-				unsigned int shnum,
+-				unsigned int symindex,
+-				unsigned int strindex,
+-				unsigned long symoffs,
+-				unsigned long stroffs,
+-				const char *secstrings,
+-				const unsigned long *strmap)
+-{
+-}
+ #endif /* CONFIG_KALLSYMS */
+ 
+ static void dynamic_debug_setup(struct _ddebug *debug, unsigned int num)
+@@ -2200,12 +2178,14 @@ static noinline struct module *load_module(void __user *umod,
+ 		goto free_hdr;
+ 	}
+ 
++#ifdef CONFIG_KALLSYMS
+ 	strmap = kzalloc(BITS_TO_LONGS(sechdrs[strindex].sh_size)
+ 			 * sizeof(long), GFP_KERNEL);
+ 	if (!strmap) {
+ 		err = -ENOMEM;
+ 		goto free_mod;
+ 	}
++#endif
+ 
+ 	if (find_module(mod->name)) {
+ 		err = -EEXIST;
+@@ -2236,8 +2216,10 @@ static noinline struct module *load_module(void __user *umod,
+ 	   this is done generically; there doesn't appear to be any
+ 	   special cases for the architectures. */
+ 	layout_sections(mod, hdr, sechdrs, secstrings);
++#ifdef CONFIG_KALLSYMS
+ 	symoffs = layout_symtab(mod, sechdrs, symindex, strindex, hdr,
+ 				secstrings, &stroffs, strmap);
++#endif
+ 
+ 	/* Do the allocs. */
+ 	ptr = module_alloc_update_bounds(mod->core_size);
+@@ -2442,10 +2424,12 @@ static noinline struct module *load_module(void __user *umod,
+ 	percpu_modcopy(mod->percpu, (void *)sechdrs[pcpuindex].sh_addr,
+ 		       sechdrs[pcpuindex].sh_size);
+ 
++#ifdef CONFIG_KALLSYMS
+ 	add_kallsyms(mod, sechdrs, hdr->e_shnum, symindex, strindex,
+ 		     symoffs, stroffs, secstrings, strmap);
+ 	kfree(strmap);
+ 	strmap = NULL;
++#endif
+ 
+ 	if (!mod->taints) {
+ 		struct _ddebug *debug;
+@@ -2535,7 +2519,9 @@ static noinline struct module *load_module(void __user *umod,
+ 		percpu_modfree(percpu);
+  free_mod:
+ 	kfree(args);
++#ifdef CONFIG_KALLSYMS
+ 	kfree(strmap);
++#endif
+  free_hdr:
+ 	vfree(hdr);
+ 	return ERR_PTR(err);
