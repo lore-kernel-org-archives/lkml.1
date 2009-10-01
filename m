@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbZJAAb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbZJAAf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbZJAAb1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 20:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbZJAAb1
+	id S1755273AbZJAAf1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 20:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbZJAAf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 20:31:27 -0400
-Received: from borg.medozas.de ([188.40.89.202]:39003 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755241AbZJAAbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 20:31:25 -0400
-Date: Thu, 1 Oct 2009 02:31:24 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Joe Perches <joe@perches.com>
-cc: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>,
-       Simon Horman <horms@verge.net.au>, Julian Anastasov <ja@ssi.bg>,
-       netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       lvs-devel@vger.kernel.org
-Subject: Re: [PATCH 1/2] net/netfilter/ipvs: Move #define KMSG_COMPONENT to
- Makefile
-In-Reply-To: <1254352160.2960.119.camel@Joe-Laptop.home>
-Message-ID: <alpine.LSU.2.00.0910010219100.7559@obet.zrqbmnf.qr>
-References: <cover.1254349374.git.joe@perches.com>  <0026bcf5aad9ae5036e68fc2dcda9c778d30dc47.1254349375.git.joe@perches.com>  <alpine.LSU.2.00.0910010042540.782@obet.zrqbmnf.qr> <1254352160.2960.119.camel@Joe-Laptop.home>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Wed, 30 Sep 2009 20:35:26 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:61986 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755118AbZJAAf0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 20:35:26 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-wireless@vger.kernel.org
+Subject: Re: [SOLVED][.32-rc1/2] ath5k: has become unreliable with .32-rc1
+Date: Thu, 1 Oct 2009 02:35:27 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Bob Copeland <me@bobcopeland.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <200909300952.29106.elendil@planet.nl>
+In-Reply-To: <200909300952.29106.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910010235.28904.elendil@planet.nl>
+X-OriginalArrivalTime: 01 Oct 2009 00:35:29.0395 (UTC) FILETIME=[13A4E430:01CA422F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thursday 2009-10-01 01:09, Joe Perches wrote:
->On Thu, 2009-10-01 at 00:46 +0200, Jan Engelhardt wrote:
->> On Thursday 2009-10-01 00:37, Joe Perches wrote:
->> >This centralizes the definition and removes the
->> >replicated #defines from all files
+On Wednesday 30 September 2009, Frans Pop wrote:
+> The first time I booted .32-rc1 (reboot from .31-rc5), wireless came up
+> without problems, but failed to come back after suspend to RAM. I could
+> only get wireless back by ejecting and re-inserting the PCMCIA card.
 >
->I think this increased command line length hardly matters.
->
->I think a reasonable complaint might be that it separates
->the definition of a macro from the code.  I think it's
->similar to the already used KBUILD_MODNAME macro though.
+> The second and third time I booted .32-rc1 (to write this report; a cold
+> boot and a ".32 to .32" reboot), wireless did not come up at all.
+> See attached dmesg. The last part is after 'ifup ath0'. It seems to
+> associate, but then for some reason immediately deauthenticates again.
 
-KBUILD_MODNAME is special in that it is derived from the actual
-source filename. Of course you could put #define KBUILD_MODNAME "foo"
-in your source file, but that is like putting changelogs there
-when they belong into the git log.
+Both issues are solved with current mainline. Probably the resume issue by 
+Rafael's PCMCIA patch (the "late" config restore messages for ath5k are 
+back too), the boot issue by one of Johannes' patches (I'd guess either 
+4be3bd8c 'cfg80211: don't set privacy w/o key' or maybe 8bb89485
+'cfg80211: always get BSS').
 
->> How about an #include file for the ipvs private things?
->
->It's not just IPVS, this style could be used treewide
->without requiring extra #includes.
+Still strange that iwlagn continued to work. Although, come to think of it, 
+I have not cold booted that laptop recently.
 
-Well I personally prefer the #include instead of hiding such in 
-Makefiles. You know, when newcomers could start doing `grep 
-KMSG_COMPONENT *.[ch]`. Perhaps GCC's -include flag in a Makefile
-to avoid #includes in .c files?
+Cheers,
+FJP
