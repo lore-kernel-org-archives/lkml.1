@@ -1,122 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZJAVPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752765AbZJAVQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbZJAVPG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 17:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZJAVPC
+	id S1752765AbZJAVQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZJAVQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 17:15:02 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50578 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752602AbZJAVPA (ORCPT
+	Thu, 1 Oct 2009 17:16:28 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:59253 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752625AbZJAVQ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 17:15:00 -0400
-Date: Thu, 1 Oct 2009 14:14:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: oleg@redhat.com, scott@ubuntu.com, zbr@ioremap.net,
-       linux-kernel@vger.kernel.org, matthltc@us.ibm.com, davem@davemloft.net,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] connector: Fix regression introduced by sid connector
-Message-Id: <20091001141426.2c1a0139.akpm@linux-foundation.org>
-In-Reply-To: <200909300843.11208.borntraeger@de.ibm.com>
-References: <200909251123.03482.borntraeger@de.ibm.com>
-	<200909291712.33099.borntraeger@de.ibm.com>
-	<20090929162855.GA15319@redhat.com>
-	<200909300843.11208.borntraeger@de.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 1 Oct 2009 17:16:28 -0400
+Subject: Re: 2.6.32-rc0-git: oops in wireless, iwl3945 related?
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20090929171249.GB14405@elf.ucw.cz>
+References: <20090929171249.GB14405@elf.ucw.cz>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-P07HAGU3xY43kYV86rag"
+Date: Thu, 01 Oct 2009 23:16:23 +0200
+Message-Id: <1254431783.3959.45.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009 08:43:11 +0200
-Christian Borntraeger <borntraeger@de.ibm.com> wrote:
 
-> Hi Andrew,
-> 
-> since commit 02b51df1b07b4e9ca823c89284e704cadb323cd1 (proc connector: add event 
-> for process becoming session leader) we have the following warning:
-> Badness at kernel/softirq.c:143
-> [...]
-> Krnl PSW : 0404c00180000000 00000000001481d4 (local_bh_enable+0xb0/0xe0)
-> [...]
-> Call Trace:
-> ([<000000013fe04100>] 0x13fe04100)
->  [<000000000048a946>] sk_filter+0x9a/0xd0
->  [<000000000049d938>] netlink_broadcast+0x2c0/0x53c
->  [<00000000003ba9ae>] cn_netlink_send+0x272/0x2b0
->  [<00000000003baef0>] proc_sid_connector+0xc4/0xd4
->  [<0000000000142604>] __set_special_pids+0x58/0x90
->  [<0000000000159938>] sys_setsid+0xb4/0xd8
->  [<00000000001187fe>] sysc_noemu+0x10/0x16
->  [<00000041616cb266>] 0x41616cb266
-> 
-> The warning is
-> --->    WARN_ON_ONCE(in_irq() || irqs_disabled());
-> 
-> The network code must not be called with disabled interrupts but
-> sys_setsid holds the tasklist_lock with spinlock_irq while calling
-> the connector. 
-> After a discussion we agreed that we can move proc_sid_connector
-> from __set_special_pids to sys_setsid.
-> We also agreed that it is sufficient to change the check from
-> task_session(curr) != pid into err > 0, since if we don't change the
-> session, this means we were already the leader and return -EPERM.
-> 
-> One last thing:
-> There is also daemonize(), and some people might want to get a
-> notification in that case. Since daemonize() is only needed if a user
-> space does kernel_thread this does not look important (and there seems
-> to be no consensus if this connector should be called in daemonize). If
-> we really want this, we can add proc_sid_connector to daemonize() in an
-> additional patch (Scott?)
-> 
-> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-> CCed: Scott James Remnant <scott@ubuntu.com>
-> CCed: Matt Helsley <matthltc@us.ibm.com>
-> CCed: David S. Miller <davem@davemloft.net>
-> Acked-by: Oleg Nesterov <oleg@redhat.com>
-> Acked-by: Evgeniy Polyakov <zbr@ioremap.net>
-> ---
->  kernel/exit.c |    4 +---
->  kernel/sys.c  |    2 ++
->  2 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6/kernel/exit.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/exit.c
-> +++ linux-2.6/kernel/exit.c
-> @@ -359,10 +359,8 @@ void __set_special_pids(struct pid *pid)
->  {
->  	struct task_struct *curr = current->group_leader;
->  
-> -	if (task_session(curr) != pid) {
-> +	if (task_session(curr) != pid)
->  		change_pid(curr, PIDTYPE_SID, pid);
-> -		proc_sid_connector(curr);
-> -	}
->  
->  	if (task_pgrp(curr) != pid)
->  		change_pid(curr, PIDTYPE_PGID, pid);
-> Index: linux-2.6/kernel/sys.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sys.c
-> +++ linux-2.6/kernel/sys.c
-> @@ -1110,6 +1110,8 @@ SYSCALL_DEFINE0(setsid)
->  	err = session;
->  out:
->  	write_unlock_irq(&tasklist_lock);
-> +	if (err > 0)
-> +		proc_sid_connector(sid);
->  	return err;
->  }
+--=-P07HAGU3xY43kYV86rag
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-kernel/sys.c: In function 'sys_setsid':
-kernel/sys.c:1114: warning: passing argument 1 of 'proc_sid_connector' from incompatible pointer type
+On Tue, 2009-09-29 at 19:12 +0200, Pavel Machek wrote:
+>=20
+> Happened while playing with wireless.
+>=20
+> Kernel is:
+>=20
+> Linux version 2.6.31 (pavel@amd) (gcc version 4.3.3 (Debian 4.3.3-10)
+> ) #72 SMP Thu Sep 10 21:56:19 CEST 2009
+> KERNEL supported cpus:
+>=20
+> (Could we get kernels between release and -rc1 mark themselves
+> somehow?)
 
-Pass a `struct pid*' into a function expecting a `struct task_struct*'.
-Surely it will crash??
+CONFIG_LOCALVERSION_AUTO?
 
-Please redo the patch and test it more carefully.
+> Registered led device: iwl-phy0::radio
+> Registered led device: iwl-phy0::assoc
+> Registered led device: iwl-phy0::RX
+> Registered led device: iwl-phy0::TX
+> wlan0: Selected IBSS BSSID 02:18:41:de:3f:02 based on configured SSID
+> wlan0: Trigger new scan to find an IBSS to join
+> wlan0: Trigger new scan to find an IBSS to join
+> wlan0: Creating new IBSS network, BSSID f2:d3:80:82:ed:6a
+> wlan0: Creating new IBSS network, BSSID 52:17:bf:45:d6:9d
+> skb_over_panic: text:c07b4113 len:130 put:36 head:e4c3edf0
+
+This entire log is very odd ... can you reproduce this easily? printk
+timestamps would be useful.
+
+johannes
+
+--=-P07HAGU3xY43kYV86rag
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKxRwkAAoJEODzc/N7+QmazKkP/1pg60E2W8XKI0Djsyvh6GKK
+YV5gEu3R16L4l9EZkHD4akgGlQDPtfIIlrxPQ11gLSKMt0K8UzsavJTWOkEbL4d0
+Dc3DVYNk1+lGcJmJHgz/9AuwWc0mZLZ/e7aoWGRvZsv9E3+fQG1qBLisKrUB9tLO
+MW/kPbjjlR5momvE4XglR/5/6yjWywayDL4kblR/xOSpaOJDxGTET4j+P42QiVQB
+NOal2NJDipfkBEh3qmAAueQBbcfJoRqsi0tXxh7Pysf2Yy1hcVTXNORYGhUKlbCG
+OISu+kYYIEd6AdYS5xoWmAKcKWNPoiww6xDE58hF689EJAoxju2OvqNNgwsWt7MM
+SLRPzLKUhOx/xqktljgiHxQ2PbFGfqrsknZbqzui4zljAFOnc+me1hTFuPdXljSv
+bwahG86iA27k8h7q0f3x5aJgsz8bmznfLFUr8kxmluujaqiTKuhAibko4FSr6TW7
+EehHyxiHxp0+cz0UXq3iIAoAcPFfiSKVr7bhTCim6RGIP/vFnxW5kGz/UTP4W+aA
+QB+ysMhbreM9YRFHNhysmDFwXV5MRzqdiVeT6lwaAN5xOVXfqPJSrpZyanfFYHLy
+lYuu7EI0I+tBNZgGkLpjzWgHAUfcmUesaJ4wlnLW4kMscTw7CJTyN+kzgGrZuPyB
+LeMcSHoDplvTsZqP/cZp
+=yYaN
+-----END PGP SIGNATURE-----
+
+--=-P07HAGU3xY43kYV86rag--
+
