@@ -1,179 +1,386 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932125AbZJAIQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbZJAINn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932125AbZJAIQq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbZJAIQp
+	id S932123AbZJAINn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:13:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932116AbZJAINl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:16:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38370 "EHLO hera.kernel.org"
+	Thu, 1 Oct 2009 04:13:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38399 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755851AbZJAIKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:10:19 -0400
+	id S1755804AbZJAIKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 04:10:33 -0400
 From: Tejun Heo <tj@kernel.org>
 To: jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 02/19] scheduler: implement sched_class_equal()
-Date: Thu,  1 Oct 2009 17:09:01 +0900
-Message-Id: <1254384558-1018-3-git-send-email-tj@kernel.org>
+Subject: [PATCH 03/19] scheduler: implement workqueue scheduler class
+Date: Thu,  1 Oct 2009 17:09:02 +0900
+Message-Id: <1254384558-1018-4-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1254384558-1018-1-git-send-email-tj@kernel.org>
 References: <1254384558-1018-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 08:09:37 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 08:09:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add ->identity to sched_class and implement and use
-sched_class_equal() which compares the field to test for equality.
-This is to allow sub-classing scheduler classes so that part of it can
-be overridden while maintaining most of the original behavior.  Please
-note that __setscheduler() only switches sched_class if the new
-sched_class's identity different from the current one.
+Implement workqueue scheduler class.  Workqueue sched_class inherits
+fair sched_class and behaves exactly the same as sched_class except
+that it has two callback functions which get called when a task is put
+to sleep and wakes up and doesn't allow switching to different
+scheduler class.
+
+workqueue sched_class can only be selected by calling
+switch_sched_workqueue() when the current sched_class is fair.
+workqueue is updated to select workqueue sched_class for all workers.
+Both scheduler callbacks are noop now.  They'll be used to implement
+concurrency-managed workqueue.
+
+This patch also updates current_is_keventd() to check for the
+scheduler class instead of directly matching the keventd workers, so
+the function will return true for any workqueue workers.  For the
+current users, this shouldn't be a problem.
 
 NOT_SIGNED_OFF_YET
 ---
- include/linux/sched.h   |    1 +
- kernel/sched.c          |   16 +++++++++++-----
- kernel/sched_fair.c     |    5 +++--
- kernel/sched_idletask.c |    1 +
- kernel/sched_rt.c       |    1 +
- 5 files changed, 17 insertions(+), 7 deletions(-)
+ include/linux/sched.h    |    1 +
+ kernel/sched.c           |    1 +
+ kernel/sched_fair.c      |   59 +++++++++++++--------
+ kernel/sched_workqueue.c |  130 ++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/sched_workqueue.h |   17 ++++++
+ kernel/workqueue.c       |   34 ++++++++----
+ 6 files changed, 207 insertions(+), 35 deletions(-)
+ create mode 100644 kernel/sched_workqueue.c
+ create mode 100644 kernel/sched_workqueue.h
 
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 75e6e60..02f505d 100644
+index 02f505d..cbebadf 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -1065,6 +1065,7 @@ struct sched_domain;
- 
- struct sched_class {
- 	const struct sched_class *next;
-+	const struct sched_class *identity;
- 
- 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
- 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
+@@ -1952,6 +1952,7 @@ extern int idle_cpu(int cpu);
+ extern int sched_setscheduler(struct task_struct *, int, struct sched_param *);
+ extern int sched_setscheduler_nocheck(struct task_struct *, int,
+ 				      struct sched_param *);
++extern void sched_setscheduler_workqueue(struct task_struct *p);
+ extern struct task_struct *idle_task(int cpu);
+ extern struct task_struct *curr_task(int cpu);
+ extern void set_curr_task(int cpu, struct task_struct *p);
 diff --git a/kernel/sched.c b/kernel/sched.c
-index ee61f45..66d918a 100644
+index 66d918a..4e3e789 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -1813,6 +1813,8 @@ static void cfs_rq_set_shares(struct cfs_rq *cfs_rq, unsigned long shares)
- 
- static void calc_load_account_active(struct rq *this_rq);
- 
-+#define sched_class_equal(a, b)		((a)->identity == (b)->identity)
-+
- #include "sched_stats.h"
+@@ -1819,6 +1819,7 @@ static void calc_load_account_active(struct rq *this_rq);
  #include "sched_idletask.c"
  #include "sched_fair.c"
-@@ -1987,7 +1989,7 @@ static inline void check_class_changed(struct rq *rq, struct task_struct *p,
- 				       const struct sched_class *prev_class,
- 				       int oldprio, int running)
- {
--	if (prev_class != p->sched_class) {
-+	if (!sched_class_equal(prev_class, p->sched_class)) {
- 		if (prev_class->switched_from)
- 			prev_class->switched_from(rq, p, running);
- 		p->sched_class->switched_to(rq, p, running);
-@@ -2012,7 +2014,7 @@ task_hot(struct task_struct *p, u64 now, struct sched_domain *sd)
- 			 &p->se == cfs_rq_of(&p->se)->last))
- 		return 1;
- 
--	if (p->sched_class != &fair_sched_class)
-+	if (!sched_class_equal(p->sched_class, &fair_sched_class))
- 		return 0;
- 
- 	if (sysctl_sched_migration_cost == -1)
-@@ -6139,6 +6141,8 @@ static struct task_struct *find_process_by_pid(pid_t pid)
- static void
- __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
- {
-+	const struct sched_class *new_class = NULL;
-+
- 	BUG_ON(p->se.on_rq);
- 
- 	p->policy = policy;
-@@ -6146,13 +6150,15 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
- 	case SCHED_NORMAL:
- 	case SCHED_BATCH:
- 	case SCHED_IDLE:
--		p->sched_class = &fair_sched_class;
-+		new_class = &fair_sched_class;
- 		break;
- 	case SCHED_FIFO:
- 	case SCHED_RR:
--		p->sched_class = &rt_sched_class;
-+		new_class = &rt_sched_class;
- 		break;
- 	}
-+	if (!sched_class_equal(p->sched_class, new_class))
-+		p->sched_class = new_class;
- 
- 	p->rt_priority = prio;
- 	p->normal_prio = normal_prio(p);
-@@ -10384,7 +10390,7 @@ cpu_cgroup_can_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
- 		return -EINVAL;
- #else
- 	/* We don't support RT-tasks being in separate groups */
--	if (tsk->sched_class != &fair_sched_class)
-+	if (!sched_class_equal(tsk->sched_class, &fair_sched_class))
- 		return -EINVAL;
+ #include "sched_rt.c"
++#include "sched_workqueue.c"
+ #ifdef CONFIG_SCHED_DEBUG
+ # include "sched_debug.c"
  #endif
- 	return 0;
 diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 4e777b4..a12d1bd 100644
+index a12d1bd..eb116f0 100644
 --- a/kernel/sched_fair.c
 +++ b/kernel/sched_fair.c
-@@ -961,7 +961,7 @@ static void hrtick_update(struct rq *rq)
- {
- 	struct task_struct *curr = rq->curr;
- 
--	if (curr->sched_class != &fair_sched_class)
-+	if (!sched_class_equal(curr->sched_class, &fair_sched_class))
- 		return;
- 
- 	if (cfs_rq_of(&curr->se)->nr_running < sched_nr_latency)
-@@ -1576,7 +1576,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int wake_
- 		return;
- 	}
- 
--	if (unlikely(p->sched_class != &fair_sched_class))
-+	if (unlikely(!sched_class_equal(p->sched_class, &fair_sched_class)))
- 		return;
- 
- 	if (unlikely(se == pse))
-@@ -1962,6 +1962,7 @@ unsigned int get_rr_interval_fair(struct task_struct *task)
+@@ -1961,37 +1961,50 @@ unsigned int get_rr_interval_fair(struct task_struct *task)
+ /*
   * All the scheduling class methods:
   */
- static const struct sched_class fair_sched_class = {
-+	.identity		= &fair_sched_class,
- 	.next			= &idle_sched_class,
- 	.enqueue_task		= enqueue_task_fair,
- 	.dequeue_task		= dequeue_task_fair,
-diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
-index b133a28..57a0c4b 100644
---- a/kernel/sched_idletask.c
-+++ b/kernel/sched_idletask.c
-@@ -106,6 +106,7 @@ unsigned int get_rr_interval_idle(struct task_struct *task)
-  * Simple, special scheduling class for the per-CPU idle tasks:
-  */
- static const struct sched_class idle_sched_class = {
-+	.identity		= &idle_sched_class,
- 	/* .next is NULL */
- 	/* no enqueue/yield_task for idle tasks */
+-static const struct sched_class fair_sched_class = {
+-	.identity		= &fair_sched_class,
+-	.next			= &idle_sched_class,
+-	.enqueue_task		= enqueue_task_fair,
+-	.dequeue_task		= dequeue_task_fair,
+-	.yield_task		= yield_task_fair,
+-
+-	.check_preempt_curr	= check_preempt_wakeup,
+-
+-	.pick_next_task		= pick_next_task_fair,
+-	.put_prev_task		= put_prev_task_fair,
++#define FAIR_SCHED_CLASS_INIT_BASE					\
++	.identity		= &fair_sched_class,			\
++	.next			= &idle_sched_class,			\
++	.enqueue_task		= enqueue_task_fair,			\
++	.dequeue_task		= dequeue_task_fair,			\
++	.yield_task		= yield_task_fair,			\
++									\
++	.check_preempt_curr	= check_preempt_wakeup,			\
++									\
++	.pick_next_task		= pick_next_task_fair,			\
++	.put_prev_task		= put_prev_task_fair,			\
++									\
++	.set_curr_task          = set_curr_task_fair,			\
++	.task_tick		= task_tick_fair,			\
++	.task_new		= task_new_fair,			\
++									\
++	.prio_changed		= prio_changed_fair,			\
++	.switched_to		= switched_to_fair,			\
++									\
++	.get_rr_interval	= get_rr_interval_fair,
  
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index a4d790c..06a8106 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1746,6 +1746,7 @@ unsigned int get_rr_interval_rt(struct task_struct *task)
+ #ifdef CONFIG_SMP
+-	.select_task_rq		= select_task_rq_fair,
+-
+-	.load_balance		= load_balance_fair,
++#define FAIR_SCHED_CLASS_INIT_SMP					\
++	.select_task_rq		= select_task_rq_fair,			\
++	.load_balance		= load_balance_fair,			\
+ 	.move_one_task		= move_one_task_fair,
++#else
++#define FAIR_SCHED_CLASS_INIT_SMP
+ #endif
+ 
+-	.set_curr_task          = set_curr_task_fair,
+-	.task_tick		= task_tick_fair,
+-	.task_new		= task_new_fair,
+-
+-	.prio_changed		= prio_changed_fair,
+-	.switched_to		= switched_to_fair,
+-
+-	.get_rr_interval	= get_rr_interval_fair,
+-
+ #ifdef CONFIG_FAIR_GROUP_SCHED
++#define FAIR_SCHED_CLASS_INIT_GROUP					\
+ 	.moved_group		= moved_group_fair,
++#else
++#define FAIR_SCHED_CLASS_INIT_GROUP
+ #endif
++
++#define FAIR_SCHED_CLASS_INIT						\
++	FAIR_SCHED_CLASS_INIT_BASE					\
++	FAIR_SCHED_CLASS_INIT_SMP					\
++	FAIR_SCHED_CLASS_INIT_GROUP
++
++static const struct sched_class fair_sched_class = {
++	FAIR_SCHED_CLASS_INIT
+ };
+ 
+ #ifdef CONFIG_SCHED_DEBUG
+diff --git a/kernel/sched_workqueue.c b/kernel/sched_workqueue.c
+new file mode 100644
+index 0000000..d8d6cb2
+--- /dev/null
++++ b/kernel/sched_workqueue.c
+@@ -0,0 +1,130 @@
++/*
++ * kernel/sched_workqueue.c - workqueue scheduler class
++ *
++ * Copyright (C) 2009		SUSE Linux Products GmbH
++ * Copyright (C) 2009		Tejun Heo <tj@kernel.org>
++ *
++ * This file is released under the GPLv2.
++ *
++ * This scheduler class wraps the fair class and provide scheduling
++ * hints to workqueue to help it maintain proper level of concurrency.
++ * Other than calling workqueue hook functions and disallowing
++ * switching to other classes, this scheduler class is identical to
++ * the fair class.
++ */
++#include "sched_workqueue.h"
++
++static void enqueue_task_wq(struct rq *rq, struct task_struct *p, int wakeup)
++{
++	if (wakeup)
++		sched_workqueue_worker_wakeup(p);
++
++	return enqueue_task_fair(rq, p, wakeup);
++}
++
++static void dequeue_task_wq(struct rq *rq, struct task_struct *p, int sleep)
++{
++	if (sleep)
++		sched_workqueue_worker_sleep(p);
++
++	return dequeue_task_fair(rq, p, sleep);
++}
++
++static void switched_from_wq(struct rq *this_rq, struct task_struct *task,
++			     int running)
++{
++	BUG();	/* no can do */
++}
++
++/*
++ * If you want to add more override methods, please check sched.c
++ * _CAREFULLY_ before doing so.  There are several places where fair
++ * sched specific optimizations are made and the overrides might not
++ * work as expected.
++ */
++static const struct sched_class workqueue_sched_class = {
++	FAIR_SCHED_CLASS_INIT
++	.enqueue_task		= enqueue_task_wq,
++	.dequeue_task		= dequeue_task_wq,
++	.switched_from		= switched_from_wq,
++};
++
++/**
++ * sched_workqueue_wake_up_process - wake up a process from sched callbacks
++ * @p: task to wake up
++ *
++ * Wake up @p.  This function can only be called from workqueue
++ * scheduler callbacks and can only wake up tasks which are bound to
++ * the cpu in question.
++ *
++ * CONTEXT:
++ * workqueue scheduler callbacks.
++ *
++ * RETURNS:
++ * true if @p was waken up, false if @p was already awake.
++ */
++bool sched_workqueue_wake_up_process(struct task_struct *p)
++{
++	struct rq *rq = task_rq(p);
++	bool success = false;
++
++	assert_spin_locked(&rq->lock);
++
++	if (!p->se.on_rq) {
++		schedstat_inc(p, se.nr_wakeups);
++		schedstat_inc(p, se.nr_wakeups_local);
++		activate_task(rq, p, 1);
++		success = true;
++	}
++
++	trace_sched_wakeup(rq, p, success);
++	p->state = TASK_RUNNING;
++#ifdef CONFIG_SMP
++	if (p->sched_class->task_wake_up)
++		p->sched_class->task_wake_up(rq, p);
++#endif
++	return success;
++}
++
++/**
++ * switch_sched_workqueue - switch workqueue scheduler class
++ * @p: target task
++ * @enable: enable or disable sched_workqueue
++ *
++ * Switch @p to or from workqueue scheduler class.  @p is assumed to
++ * have either fair or one of its alias classes on entry.
++ *
++ * CONTEXT:
++ * !in_interrupt().
++ */
++void switch_sched_workqueue(struct task_struct *p, bool enable)
++{
++	struct sched_param sched_param = { .sched_priority = 0 };
++	struct rq *rq;
++	unsigned long flags;
++
++	rq = task_rq_lock(p, &flags);
++	BUG_ON(!sched_class_equal(p->sched_class, &fair_sched_class));
++	p->sched_class = enable ? &workqueue_sched_class : &fair_sched_class;
++	task_rq_unlock(rq, &flags);
++
++	BUG_ON(sched_setscheduler_nocheck(p, SCHED_NORMAL, &sched_param));
++}
++
++/**
++ * is_sched_workqueue - test whether a task is in workqueue scheduler class
++ * @p: target task
++ *
++ * Tests whether @p is in workqueue scheduler class.
++ *
++ * CONTEXT:
++ * The caller is responsible for ensuring that @p doesn't go away or
++ * change scheduler class.
++ *
++ * RETURNS:
++ * true if @p is in workerqueue scheduler class, false otherwise.
++ */
++bool is_sched_workqueue(struct task_struct *p)
++{
++	return p->sched_class == &workqueue_sched_class;
++}
+diff --git a/kernel/sched_workqueue.h b/kernel/sched_workqueue.h
+new file mode 100644
+index 0000000..5a52a4f
+--- /dev/null
++++ b/kernel/sched_workqueue.h
+@@ -0,0 +1,17 @@
++/*
++ * kernel/sched_workqueue.h - workqueue scheduler class interface
++ *
++ * Copyright (C) 2009		SUSE Linux Products GmbH
++ * Copyright (C) 2009		Tejun Heo <tj@kernel.org>
++ *
++ * This file is released under the GPLv2.
++ *
++ * This is interface between sched_workqueue and workqueue.  Read
++ * comments in sched_workqueue.c and workqueue.c for details.
++ */
++void sched_workqueue_worker_wakeup(struct task_struct *task);
++void sched_workqueue_worker_sleep(struct task_struct *task);
++
++bool sched_workqueue_wake_up_process(struct task_struct *p);
++void switch_sched_workqueue(struct task_struct *p, bool enable);
++bool is_sched_workqueue(struct task_struct *p);
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index addfe2d..b56737b 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -36,6 +36,8 @@
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/workqueue.h>
+ 
++#include "sched_workqueue.h"
++
+ /*
+  * The per-CPU workqueue (if single thread, we always use the first
+  * possible cpu).
+@@ -125,6 +127,22 @@ struct cpu_workqueue_struct *get_wq_data(struct work_struct *work)
+ 	return (void *) (atomic_long_read(&work->data) & WORK_STRUCT_WQ_DATA_MASK);
  }
  
- static const struct sched_class rt_sched_class = {
-+	.identity		= &rt_sched_class,
- 	.next			= &fair_sched_class,
- 	.enqueue_task		= enqueue_task_rt,
- 	.dequeue_task		= dequeue_task_rt,
++/*
++ * Scheduler callbacks.  These functions are called during schedule()
++ * with rq lock held.  Don't try to acquire any lock and only access
++ * fields which are safe with preemption disabled from local cpu.
++ */
++
++/* called when a worker task wakes up from sleep */
++void sched_workqueue_worker_wakeup(struct task_struct *task)
++{
++}
++
++/* called when a worker task goes into sleep */
++void sched_workqueue_worker_sleep(struct task_struct *task)
++{
++}
++
+ static void insert_work(struct cpu_workqueue_struct *cwq,
+ 			struct work_struct *work, struct list_head *head)
+ {
+@@ -314,6 +332,9 @@ static int worker_thread(void *__cwq)
+ 	struct cpu_workqueue_struct *cwq = __cwq;
+ 	DEFINE_WAIT(wait);
+ 
++	/* set workqueue scheduler */
++	switch_sched_workqueue(current, true);
++
+ 	if (cwq->wq->freezeable)
+ 		set_freezable();
+ 
+@@ -726,18 +747,7 @@ int keventd_up(void)
+ 
+ int current_is_keventd(void)
+ {
+-	struct cpu_workqueue_struct *cwq;
+-	int cpu = raw_smp_processor_id(); /* preempt-safe: keventd is per-cpu */
+-	int ret = 0;
+-
+-	BUG_ON(!keventd_wq);
+-
+-	cwq = per_cpu_ptr(keventd_wq->cpu_wq, cpu);
+-	if (current == cwq->thread)
+-		ret = 1;
+-
+-	return ret;
+-
++	return is_sched_workqueue(current);
+ }
+ 
+ static struct cpu_workqueue_struct *
 -- 
 1.6.4.2
 
