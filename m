@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbZJAIrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZJAIsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754260AbZJAIrb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZJAIra
+	id S1754737AbZJAIsy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbZJAIsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:47:30 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57239 "EHLO kernel.dk"
+	Thu, 1 Oct 2009 04:48:53 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:40080 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752883AbZJAIr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:47:29 -0400
-Date: Thu, 1 Oct 2009 10:47:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tejun Heo <tj@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Avi Kivity <avi@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       jeff@garzik.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
-Subject: Re: [RFC PATCHSET] workqueue: implement concurrency managed
-	workqueue
-Message-ID: <20091001084733.GO14918@kernel.dk>
-References: <1254384558-1018-1-git-send-email-tj@kernel.org> <20091001084040.GA15345@elte.hu>
+	id S1754590AbZJAIsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 04:48:52 -0400
+Date: Thu, 1 Oct 2009 14:17:37 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Alan Cox <alan@linux.intel.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
+	generic guest and host communication
+Message-ID: <20091001084737.GA8385@amit-x200.redhat.com>
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <200909291531.23389.borntraeger@de.ibm.com> <20090930171321.GA17200@amit-x200.redhat.com> <200910011017.29502.borntraeger@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091001084040.GA15345@elte.hu>
+In-Reply-To: <200910011017.29502.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01 2009, Ingo Molnar wrote:
-> My main worry is that in practice workqueues arent all that performance 
-> critical - so we are shooting to optimize something that doesnt 
-> necessarily use all the potential goodness inherent in this approach.
+On (Thu) Oct 01 2009 [10:17:29], Christian Borntraeger wrote:
+> Am Mittwoch 30 September 2009 19:13:21 schrieb Amit Shah:
+> > On (Tue) Sep 29 2009 [15:31:23], Christian Borntraeger wrote:
+> > > Am Dienstag 29 September 2009 15:09:50 schrieb Amit Shah:
+> > > > Great, thanks. However I was thinking of moving this init to the
+> > > > probe() routine instead of in the init_conosle routine just because
+> > > > multiple consoles can be added and we don't want to init this each
+> > > > time.. just once in probe is fine.
+> > >
+> > > If you have new patch CC me and I can give it a spin.
+> > 
+> > Hey Christian,
+> > 
+> > I have a new patch that changes a few things:
+> > - moves the put_char fix to probe instead of doing it in
+> >   init_port_console(), which gets called on each console port found.
+> > - uses port->id instead of a static hvc_vtermno to pass on a value to
+> >   hvc_alloc(). Motivation explained within comments in the code.
+> > - A few other changes that introduce and make use of port->vcon instead
+> >   of accessing the static virtconsole directly -- aimed at easing future
+> >   fix to have multiple virtio-console devices.
+> > 
+> > It would be great if you could test this.
+> 
+> The basic stuff seems to work, but when I did a console resize I get:
 
-Well, the main problem with the current code is that per-cpu workqueues
-are way abused. I don't look at this patchset from a performance point
-of view, but rather a way to limit this huge number of idle and
-pointless threads. Another issue are specific workqueues to deal with
-slowly executing work, or dependency issues. The end result is just
-hundreds of pointless kernel threads. I have two 64-thread boxes here, I
-dare not think what the 128 or 256 thread (and even bigger) boxes look
-like when booted. The latter would be safely into the thousands of
-useless threads.
+...
 
-If we get this right, we'll have a leaner kernel and far fewer threads.
-On the source side, we'll potentially get rid of specialized workqueue
-akin implementations.
+> One of the config->get() related changes is probably wrong.
 
-It's a win-win as far as I'm concerned.
+I see it. The following should fix it.
 
--- 
-Jens Axboe
+		Amit
+
+diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
+index 30361c1..b2de2df 100644
+--- a/drivers/char/virtio_console.c
++++ b/drivers/char/virtio_console.c
+@@ -822,9 +822,10 @@ static void tx_intr(struct virtqueue *vq)
+ 
+ static void config_intr(struct virtio_device *vdev)
+ {
+-	/* Handle port hot-add */
+-	schedule_work(&virtconsole.config_work);
+-
++	if (use_multiport()) {
++		/* Handle port hot-add */
++		schedule_work(&virtconsole.config_work);
++	}
+ 	/* Handle console size changes */
+ 	virtcons_apply_config(vdev);
+ }
 
