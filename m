@@ -1,75 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZJAXmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbZJAXly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbZJAXmc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbZJAXma
+	id S1756679AbZJAXly (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755429AbZJAXlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:42:30 -0400
-Received: from kroah.org ([198.145.64.141]:42054 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:41:52 -0400
+Received: from kroah.org ([198.145.64.141]:42059 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756004AbZJAXiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:38:16 -0400
+	id S1756058AbZJAXiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:38:17 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:33:21 2009
-Message-Id: <20091001233321.578747017@mini.kroah.org>
+Message-Id: <20091001233321.739706856@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:31:35 -0700
+Date: Thu, 01 Oct 2009 16:31:36 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, jakub@redhat.com,
-       security@kernel.org, mingo@elte.hu, davem@davemloft.net,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: [patch 19/30] net: Make the copy length in af_packet sockopt handler unsigned
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Dave Jones <davej@redhat.com>
+Subject: [patch 20/30] [CPUFREQ] Fix NULL ptr regression in powernow-k8
 References: <20091001233116.947658905@mini.kroah.org>
-Content-Disposition: inline; filename=net-make-the-copy-length-in-af_packet-sockopt-handler-unsigned.patch
+Content-Disposition: inline; filename=fix-null-ptr-regression-in-powernow-k8.patch
 In-Reply-To: <20091001233504.GA17709@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Arjan van de Ven <arjan@linux.intel.com>
+From: Kurt Roeckx <kurt@roeckx.be>
 
-fixed upstream in commit b7058842c940ad2c08dd829b21e5c92ebe3b8758 in a different way
+commit f0adb134d8dc9993a9998dc50845ec4f6ff4fadc upstream.
 
-The length of the to-copy data structure is currently stored in
-a signed integer. However many comparisons are done with sizeof(..)
-which is unsigned. It's more suitable for this variable to be unsigned
-to make these comparisons more naturally right.
+Fixes bugzilla #13780
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
+From: Kurt Roeckx <kurt@roeckx.be>
+Signed-off-by: Dave Jones <davej@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/packet/af_packet.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -1501,7 +1501,7 @@ packet_setsockopt(struct socket *sock, i
- static int packet_getsockopt(struct socket *sock, int level, int optname,
- 			     char __user *optval, int __user *optlen)
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -618,9 +618,10 @@ static int check_pst_table(struct powern
+ 	return 0;
+ }
+ 
+-static void invalidate_entry(struct powernow_k8_data *data, unsigned int entry)
++static void invalidate_entry(struct cpufreq_frequency_table *powernow_table,
++		unsigned int entry)
  {
--	int len;
-+	unsigned int len;
- 	int val;
- 	struct sock *sk = sock->sk;
- 	struct packet_sock *po = pkt_sk(sk);
-@@ -1514,7 +1514,7 @@ static int packet_getsockopt(struct sock
- 	if (get_user(len, optlen))
- 		return -EFAULT;
+-	data->powernow_table[entry].frequency = CPUFREQ_ENTRY_INVALID;
++	powernow_table[entry].frequency = CPUFREQ_ENTRY_INVALID;
+ }
  
--	if (len < 0)
-+	if ((int)len < 0)
- 		return -EINVAL;
+ static void print_basics(struct powernow_k8_data *data)
+@@ -926,13 +927,13 @@ static int fill_powernow_table_pstate(st
+ 					"bad value %d.\n", i, index);
+ 			printk(KERN_ERR PFX "Please report to BIOS "
+ 					"manufacturer\n");
+-			invalidate_entry(data, i);
++			invalidate_entry(powernow_table, i);
+ 			continue;
+ 		}
+ 		rdmsr(MSR_PSTATE_DEF_BASE + index, lo, hi);
+ 		if (!(hi & HW_PSTATE_VALID_MASK)) {
+ 			dprintk("invalid pstate %d, ignoring\n", index);
+-			invalidate_entry(data, i);
++			invalidate_entry(powernow_table, i);
+ 			continue;
+ 		}
  
- 	switch(optname)	{
+@@ -982,7 +983,7 @@ static int fill_powernow_table_fidvid(st
+ 		/* verify frequency is OK */
+ 		if ((freq > (MAX_FREQ * 1000)) || (freq < (MIN_FREQ * 1000))) {
+ 			dprintk("invalid freq %u kHz, ignoring\n", freq);
+-			invalidate_entry(data, i);
++			invalidate_entry(powernow_table, i);
+ 			continue;
+ 		}
+ 
+@@ -990,7 +991,7 @@ static int fill_powernow_table_fidvid(st
+ 		 * BIOSs are using "off" to indicate invalid */
+ 		if (vid == VID_OFF) {
+ 			dprintk("invalid vid %u, ignoring\n", vid);
+-			invalidate_entry(data, i);
++			invalidate_entry(powernow_table, i);
+ 			continue;
+ 		}
+ 
+@@ -1021,7 +1022,7 @@ static int fill_powernow_table_fidvid(st
+ 				(unsigned int)
+ 				(data->acpi_data.states[i].core_frequency
+ 				 * 1000));
+-			invalidate_entry(data, i);
++			invalidate_entry(powernow_table, i);
+ 			continue;
+ 		}
+ 	}
 
 
