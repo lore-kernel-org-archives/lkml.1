@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932373AbZJAIdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932351AbZJAIaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932373AbZJAIdZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932242AbZJAIdT
+	id S932351AbZJAIaR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932315AbZJAIaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:33:19 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56607 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932251AbZJAI3a (ORCPT
+	Thu, 1 Oct 2009 04:30:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43559
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932340AbZJAIaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:29:30 -0400
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Jonathan Cameron <jic23@cam.ac.uk>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 34/34] move sca3000_remove to .devexit.text
-Date: Thu,  1 Oct 2009 10:28:38 +0200
-Message-Id: <1254385718-14254-34-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.4.3
-In-Reply-To: <20091001082607.GA2181@pengutronix.de>
-References: <20091001082607.GA2181@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Thu, 1 Oct 2009 04:30:11 -0400
+Date: Thu, 01 Oct 2009 01:30:30 -0700 (PDT)
+Message-Id: <20091001.013030.98262804.davem@davemloft.net>
+To: elendil@planet.nl
+Cc: manty@manty.net, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, bzolnier@gmail.com
+Subject: Re: kernel BUG at drivers/ide/ide-disk.c:187 (2.6.31)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200910011026.17510.elendil@planet.nl>
+References: <20090930110529.GA3676@dis.manty.net>
+	<20090930235709.43ff1255.akpm@linux-foundation.org>
+	<200910011026.17510.elendil@planet.nl>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function sca3000_remove is used only wrapped by __devexit_p so define
-it using __devexit.
+From: Frans Pop <elendil@planet.nl>
+Date: Thu, 1 Oct 2009 10:26:14 +0200
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org
----
- drivers/staging/iio/accel/sca3000_core.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> Question for IDE maintainers: should maybe the old printing of request info 
+> be reinstated, or can the request flags also be obtained from the BUG 
+> info?
 
-diff --git a/drivers/staging/iio/accel/sca3000_core.c b/drivers/staging/iio/accel/sca3000_core.c
-index e27e3b7..5ea736a 100644
---- a/drivers/staging/iio/accel/sca3000_core.c
-+++ b/drivers/staging/iio/accel/sca3000_core.c
-@@ -1393,7 +1393,7 @@ error_ret:
- 
- }
- 
--static int sca3000_remove(struct spi_device *spi)
-+static int __devexit sca3000_remove(struct spi_device *spi)
- {
- 	struct sca3000_state *st =  spi_get_drvdata(spi);
- 	struct iio_dev *indio_dev = st->indio_dev;
--- 
-1.6.4.3
+Using a BUG for this doesn't make it any easier to track down the
+problem.  WARN_ON_ONCE() or similar is much more appropriate here.
 
+BUG() is for situations where the system's state is completely
+irrecoverably corrupted, and we cannot continue, and that is not the
+case here at all.
