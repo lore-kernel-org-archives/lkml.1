@@ -1,289 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbZJBHDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbZJAV1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757076AbZJBHDN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 03:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756883AbZJBHDL
+	id S1752938AbZJAV1u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZJAV1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 03:03:11 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:57851 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756567AbZJBHDL (ORCPT
+	Thu, 1 Oct 2009 17:27:49 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:46283 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752827AbZJAV1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 03:03:11 -0400
-X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
-	times
-Message-Id: <20091001212601.400860194@gentwo.org>
-References: <20091001212521.123389189@gentwo.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 01 Oct 2009 17:25:41 -0400
-From: cl@linux-foundation.org
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: mingo@elte.hu
-Cc: rusty@rustcorp.com.au
-Subject: [this_cpu_xx V4 20/20] SLUB: Experimental new fastpath w/o interrupt disable
-Content-Disposition: inline; filename=this_cpu_slub_irqless
+	Thu, 1 Oct 2009 17:27:49 -0400
+Subject: Re: 2.6.32-rc0-git: oops in wireless, iwl3945 related?
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <1254431783.3959.45.camel@johannes.local>
+References: <20090929171249.GB14405@elf.ucw.cz>
+	 <1254431783.3959.45.camel@johannes.local>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 01 Oct 2009 23:27:49 +0200
+Message-Id: <1254432469.3959.46.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a bit of a different tack on things than the last version provided
-by Mathieu.
+On Thu, 2009-10-01 at 23:16 +0200, Johannes Berg wrote:
 
-Instead of using a cmpxchg we keep a state variable in the per cpu structure
-that is incremented when we enter the hot path. We can then detect that
-a thread is in the fastpath. For recursive calling scenarios we can fallback
-to alternate allocation / free techniques that bypass fastpath caching.
+> > wlan0: Selected IBSS BSSID 02:18:41:de:3f:02 based on configured SSID
+> > wlan0: Trigger new scan to find an IBSS to join
+> > wlan0: Trigger new scan to find an IBSS to join
+> > wlan0: Creating new IBSS network, BSSID f2:d3:80:82:ed:6a
+> > wlan0: Creating new IBSS network, BSSID 52:17:bf:45:d6:9d
+> > skb_over_panic: text:c07b4113 len:130 put:36 head:e4c3edf0
+> 
+> This entire log is very odd ... can you reproduce this easily? printk
+> timestamps would be useful.
 
-A disadvantage is that we have to disable preempt. But if preemt is disabled
-(like on most kernels that I run) then the hotpath becomes very efficient.
+Kinda looks like a race condition, but it's rather odd. I think there's
+a race condition, so I'm going to submit this patch regardless after
+some testing, but if you want please try the patch below.
 
-WARNING: Very experimental
-
-It would be good to compare against an update of Mathieu's latest which
-implemented pointer versioning to avoid even disabling preemption.
-
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
+johannes
 
 ---
- include/linux/slub_def.h |    1 
- mm/slub.c                |   91 +++++++++++++++++++++++++++++++++++++----------
- 2 files changed, 74 insertions(+), 18 deletions(-)
+ net/mac80211/ibss.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6/include/linux/slub_def.h
-===================================================================
---- linux-2.6.orig/include/linux/slub_def.h	2009-10-01 15:53:15.000000000 -0500
-+++ linux-2.6/include/linux/slub_def.h	2009-10-01 15:53:15.000000000 -0500
-@@ -38,6 +38,7 @@ struct kmem_cache_cpu {
- 	void **freelist;	/* Pointer to first free per cpu object */
- 	struct page *page;	/* The slab from which we are allocating */
- 	int node;		/* The node of the page (or -1 for debug) */
-+	int active;		/* Active fastpaths */
- #ifdef CONFIG_SLUB_STATS
- 	unsigned stat[NR_SLUB_STAT_ITEMS];
- #endif
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c	2009-10-01 15:53:15.000000000 -0500
-+++ linux-2.6/mm/slub.c	2009-10-01 15:53:15.000000000 -0500
-@@ -1606,7 +1606,14 @@ static void *__slab_alloc(struct kmem_ca
- 			  unsigned long addr)
- {
- 	void **object;
--	struct page *page = __this_cpu_read(s->cpu_slab->page);
-+	struct page *page;
-+	unsigned long flags;
-+	int hotpath;
-+
-+	local_irq_save(flags);
-+	preempt_enable();	/* Get rid of count */
-+	hotpath = __this_cpu_read(s->cpu_slab->active) != 0;
-+	page = __this_cpu_read(s->cpu_slab->page);
- 
- 	/* We handle __GFP_ZERO in the caller */
- 	gfpflags &= ~__GFP_ZERO;
-@@ -1626,13 +1633,21 @@ load_freelist:
- 		goto another_slab;
- 	if (unlikely(SLABDEBUG && PageSlubDebug(page)))
- 		goto debug;
--
--	__this_cpu_write(s->cpu_slab->freelist, get_freepointer(s, object));
--	page->inuse = page->objects;
--	page->freelist = NULL;
--	__this_cpu_write(s->cpu_slab->node, page_to_nid(page));
-+	if (unlikely(hotpath)) {
-+		/* Object on second free list available and hotpath busy */
-+		page->inuse++;
-+		page->freelist = get_freepointer(s, object);
-+	} else {
-+		/* Prepare new list of objects for hotpath */
-+		__this_cpu_write(s->cpu_slab->freelist, get_freepointer(s, object));
-+		page->inuse = page->objects;
-+		page->freelist = NULL;
-+		__this_cpu_write(s->cpu_slab->node, page_to_nid(page));
-+	}
- unlock_out:
-+	__this_cpu_dec(s->cpu_slab->active);
- 	slab_unlock(page);
-+	local_irq_restore(flags);
- 	stat(s, ALLOC_SLOWPATH);
- 	return object;
- 
-@@ -1642,8 +1657,12 @@ another_slab:
- new_slab:
- 	page = get_partial(s, gfpflags, node);
- 	if (page) {
--		__this_cpu_write(s->cpu_slab->page, page);
- 		stat(s, ALLOC_FROM_PARTIAL);
-+
-+		if (hotpath)
-+			goto hot_lock;
-+
-+		__this_cpu_write(s->cpu_slab->page, page);
- 		goto load_freelist;
+--- wireless-testing.orig/net/mac80211/ibss.c	2009-10-01 23:21:11.000000000 +0200
++++ wireless-testing/net/mac80211/ibss.c	2009-10-01 23:22:24.000000000 +0200
+@@ -831,7 +831,7 @@ void ieee80211_ibss_notify_scan_complete
+ 		if (!sdata->u.ibss.ssid_len)
+ 			continue;
+ 		sdata->u.ibss.last_scan_completed = jiffies;
+-		ieee80211_sta_find_ibss(sdata);
++		mod_timer(&ifibss->timer, 0);
  	}
- 
-@@ -1657,6 +1676,10 @@ new_slab:
- 
- 	if (page) {
- 		stat(s, ALLOC_SLAB);
-+
-+		if (hotpath)
-+			 goto hot_no_lock;
-+
- 		if (__this_cpu_read(s->cpu_slab->page))
- 			flush_slab(s, __this_cpu_ptr(s->cpu_slab));
- 		slab_lock(page);
-@@ -1664,6 +1687,10 @@ new_slab:
- 		__this_cpu_write(s->cpu_slab->page, page);
- 		goto load_freelist;
- 	}
-+
-+	__this_cpu_dec(s->cpu_slab->active);
-+	local_irq_restore(flags);
-+
- 	if (!(gfpflags & __GFP_NOWARN) && printk_ratelimit())
- 		slab_out_of_memory(s, gfpflags, node);
- 	return NULL;
-@@ -1675,6 +1702,19 @@ debug:
- 	page->freelist = get_freepointer(s, object);
- 	__this_cpu_write(s->cpu_slab->node, -1);
- 	goto unlock_out;
-+
-+	/*
-+	 * Hotpath is busy and we need to avoid touching
-+	 * hotpath variables
-+	 */
-+hot_no_lock:
-+	slab_lock(page);
-+hot_lock:
-+	__ClearPageSlubFrozen(page);
-+	if (get_freepointer(s, page->freelist))
-+		/* Cannot put page into the hotpath. Instead back to partial */
-+		add_partial(get_node(s, page_to_nid(page)), page, 0);
-+	goto load_freelist;
+ 	mutex_unlock(&local->iflist_mtx);
  }
- 
- /*
-@@ -1691,7 +1731,6 @@ static __always_inline void *slab_alloc(
- 		gfp_t gfpflags, int node, unsigned long addr)
- {
- 	void **object;
--	unsigned long flags;
- 
- 	gfpflags &= gfp_allowed_mask;
- 
-@@ -1701,19 +1740,21 @@ static __always_inline void *slab_alloc(
- 	if (should_failslab(s->objsize, gfpflags))
- 		return NULL;
- 
--	local_irq_save(flags);
-+	preempt_disable();
-+	irqsafe_cpu_inc(s->cpu_slab->active);
- 	object = __this_cpu_read(s->cpu_slab->freelist);
--	if (unlikely(!object || !node_match(s, node)))
-+	if (unlikely(!object || !node_match(s, node) ||
-+			__this_cpu_read(s->cpu_slab->active)))
- 
- 		object = __slab_alloc(s, gfpflags, node, addr);
- 
- 	else {
- 		__this_cpu_write(s->cpu_slab->freelist,
- 			get_freepointer(s, object));
-+		irqsafe_cpu_dec(s->cpu_slab->active);
-+		preempt_enable();
- 		stat(s, ALLOC_FASTPATH);
- 	}
--	local_irq_restore(flags);
--
- 	if (unlikely((gfpflags & __GFP_ZERO) && object))
- 		memset(object, 0, s->objsize);
- 
-@@ -1777,6 +1818,11 @@ static void __slab_free(struct kmem_cach
- {
- 	void *prior;
- 	void **object = (void *)x;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	preempt_enable();	/* Fix up count */
-+	__this_cpu_dec(s->cpu_slab->active);
- 
- 	stat(s, FREE_SLOWPATH);
- 	slab_lock(page);
-@@ -1809,6 +1855,7 @@ checks_ok:
- 
- out_unlock:
- 	slab_unlock(page);
-+	local_irq_restore(flags);
- 	return;
- 
- slab_empty:
-@@ -1820,6 +1867,7 @@ slab_empty:
- 		stat(s, FREE_REMOVE_PARTIAL);
- 	}
- 	slab_unlock(page);
-+	local_irq_restore(flags);
- 	stat(s, FREE_SLAB);
- 	discard_slab(s, page);
- 	return;
-@@ -1845,24 +1893,26 @@ static __always_inline void slab_free(st
- 			struct page *page, void *x, unsigned long addr)
- {
- 	void **object = (void *)x;
--	unsigned long flags;
- 
- 	kmemleak_free_recursive(x, s->flags);
--	local_irq_save(flags);
- 	kmemcheck_slab_free(s, object, s->objsize);
- 	debug_check_no_locks_freed(object, s->objsize);
- 	if (!(s->flags & SLAB_DEBUG_OBJECTS))
- 		debug_check_no_obj_freed(object, s->objsize);
- 
-+	preempt_disable();
-+	irqsafe_cpu_inc(s->cpu_slab->active);
- 	if (likely(page == __this_cpu_read(s->cpu_slab->page) &&
--			__this_cpu_read(s->cpu_slab->node) >= 0)) {
--		set_freepointer(s, object, __this_cpu_read(s->cpu_slab->freelist));
-+			__this_cpu_read(s->cpu_slab->node) >= 0) &&
-+			!__this_cpu_read(s->cpu_slab->active)) {
-+		set_freepointer(s, object,
-+			__this_cpu_read(s->cpu_slab->freelist));
- 		__this_cpu_write(s->cpu_slab->freelist, object);
-+		irqsafe_cpu_dec(s->cpu_slab->active);
-+		preempt_enable();
- 		stat(s, FREE_FASTPATH);
- 	} else
- 		__slab_free(s, page, x, addr);
--
--	local_irq_restore(flags);
- }
- 
- void kmem_cache_free(struct kmem_cache *s, void *x)
-@@ -2064,6 +2114,8 @@ static DEFINE_PER_CPU(struct kmem_cache_
- 
- static inline int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
- {
-+	int cpu;
-+
- 	if (s < kmalloc_caches + KMALLOC_CACHES && s >= kmalloc_caches)
- 		/*
- 		 * Boot time creation of the kmalloc array. Use static per cpu data
-@@ -2073,6 +2125,9 @@ static inline int alloc_kmem_cache_cpus(
- 	else
- 		s->cpu_slab =  alloc_percpu(struct kmem_cache_cpu);
- 
-+	for_each_possible_cpu(cpu)
-+		per_cpu_ptr(s->cpu_slab, cpu)->active = -1;
-+
- 	if (!s->cpu_slab)
- 		return 0;
- 
 
--- 
+
