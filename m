@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZJAGlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbZJAGkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946AbZJAGlb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 02:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbZJAGla
+	id S1753682AbZJAGkz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 02:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbZJAGky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 02:41:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43431 "EHLO hera.kernel.org"
+	Thu, 1 Oct 2009 02:40:54 -0400
+Received: from thunk.org ([69.25.196.29]:54655 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754587AbZJAGl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 02:41:28 -0400
-Date: Thu, 1 Oct 2009 06:40:17 GMT
-From: tip-bot for Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <alpine.LFD.2.01.0909301743150.6996@localhost.localdomain>
-References: <alpine.LFD.2.01.0909301743150.6996@localhost.localdomain>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Optimize cmpxchg64() at build-time some more
-Message-ID: <tip-982d007a6eec4a0abb404d2355eeec2c041c61ea@git.kernel.org>
-Git-Commit-ID: 982d007a6eec4a0abb404d2355eeec2c041c61ea
-X-Mailer: tip-git-log-daemon
+	id S1752822AbZJAGky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 02:40:54 -0400
+Date: Thu, 1 Oct 2009 02:40:41 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Markus Trippelsdorf <markus@trippelsdorf.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Kernel BUG] ext4 for v2.6.32 round II
+Message-ID: <20091001064041.GV24383@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Markus Trippelsdorf <markus@trippelsdorf.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <E1Msrgx-0001br-MP@closure.thunk.org> <20091001014128.GA2092@phenom2.trippelsdorf.de> <alpine.LFD.2.01.0909301847030.6996@localhost.localdomain> <20091001021531.GA2025@phenom2.trippelsdorf.de> <20091001030151.GR24383@mit.edu> <20091001034716.GA2008@phenom2.trippelsdorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 06:40:30 +0000 (UTC)
+In-Reply-To: <20091001034716.GA2008@phenom2.trippelsdorf.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  982d007a6eec4a0abb404d2355eeec2c041c61ea
-Gitweb:     http://git.kernel.org/tip/982d007a6eec4a0abb404d2355eeec2c041c61ea
-Author:     Linus Torvalds <torvalds@linux-foundation.org>
-AuthorDate: Wed, 30 Sep 2009 17:57:27 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 1 Oct 2009 08:01:08 +0200
+On Thu, Oct 01, 2009 at 05:47:16AM +0200, Markus Trippelsdorf wrote:
+> On Wed, Sep 30, 2009 at 11:01:51PM -0400, Theodore Tso wrote:
+> > Hi Markus, 
+> > 
+> > I'm pretty sure the following should fix your problems; can you
+> > confirm?
+> 
+> Yes, everything is fine again.
 
-x86: Optimize cmpxchg64() at build-time some more
+Linus, can you pull from:
 
-Try to avoid the 'alternates()' code when we can statically
-determine that cmpxchg8b is fine. We already have that
-CONFIG_x86_CMPXCHG64 (enabled by PAE support), and we could easily
-also enable it for some of the CPU cases.
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-Note, this patch only adds CMPXCHG8B for the obvious Intel CPU's,
-not for others. (There was something really messy about cmpxchg8b
-and clone CPU's, so if you enable it on other CPUs later, do it
-carefully.)
+This will pick up the fix to the problem Markus reported, plus some
+old code that we had promised would be removed for 2.6.31.
 
-If we avoid that asm-alternative thing when we can assume the
-instruction exists, we'll generate less support crud, and we'll
-avoid the whole issue with that extra 'nop' for padding instruction
-sizes etc.
+    	      	     	      	       	       - Ted
 
-LKML-Reference: <alpine.LFD.2.01.0909301743150.6996@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Eric Sandeen (1):
+      ext4: drop ext4dev compat
 
+Theodore Ts'o (1):
+      ext4: fix a BUG_ON crash by checking that page has buffers attached to it
 
----
- arch/x86/Kconfig.cpu |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index 527519b..f2824fb 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -400,7 +400,7 @@ config X86_TSC
- 
- config X86_CMPXCHG64
- 	def_bool y
--	depends on X86_PAE || X86_64
-+	depends on X86_PAE || X86_64 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MATOM
- 
- # this should be set for all -march=.. options where the compiler
- # generates cmov.
-@@ -412,6 +412,7 @@ config X86_MINIMUM_CPU_FAMILY
- 	int
- 	default "64" if X86_64
- 	default "6" if X86_32 && X86_P6_NOP
-+	default "5" if X86_32 && X86_CMPXCHG64
- 	default "4" if X86_32 && (X86_XADD || X86_CMPXCHG || X86_BSWAP || X86_WP_WORKS_OK)
- 	default "3"
- 
+ fs/ext4/Kconfig |   14 --------------
+ fs/ext4/inode.c |   22 +++++++++++-----------
+ fs/ext4/super.c |   31 -------------------------------
+ 3 files changed, 11 insertions(+), 56 deletions(-)
