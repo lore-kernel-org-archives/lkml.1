@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbZJAKLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbZJAKRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbZJAKLb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 06:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbZJAKLa
+	id S1756191AbZJAKRe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 06:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZJAKRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 06:11:30 -0400
-Received: from ara.aytolacoruna.es ([91.117.124.165]:43569 "EHLO
-	mx.aytolacoruna.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755681AbZJAKLa (ORCPT
+	Thu, 1 Oct 2009 06:17:33 -0400
+Received: from mail.agmk.net ([91.192.224.71]:56056 "EHLO mail.agmk.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756095AbZJAKRa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 06:11:30 -0400
-Date: Thu, 1 Oct 2009 12:11:19 +0200
-From: Santiago Garcia Mantinan <manty@manty.net>
-To: Frans Pop <elendil@planet.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: kernel BUG at drivers/ide/ide-disk.c:187 (2.6.31)
-Message-ID: <20091001101118.GA2904@dis.manty.net>
-References: <20090930110529.GA3676@dis.manty.net>
- <20090930110529.GA3676@dis.manty.net>
- <20090930235709.43ff1255.akpm@linux-foundation.org>
- <200910011026.17510.elendil@planet.nl>
+	Thu, 1 Oct 2009 06:17:30 -0400
+Content-Type: text/plain; charset=utf-8; format=flowed; delsp=yes
+To: "Jean Delvare" <khali@linux-fr.org>, "Andy Walls" <awalls@radix.net>
+Cc: linux-kernel@vger.kernel.org, LMML <linux-media@vger.kernel.org>
+Subject: Re: [2.6.31] ir-kbd-i2c oops.
+References: <200909160300.28382.pluto@agmk.net>
+ <200909161003.33090.pluto@agmk.net> <20090929161629.2a5c8d30@hyperion.delvare>
+ <200909301016.15327.pluto@agmk.net> <20090930125737.704413c8@hyperion.delvare>
+ <1254354167.4771.7.camel@palomino.walls.org>
+ <20091001120609.50327134@hyperion.delvare>
+Date: Thu, 01 Oct 2009 12:17:20 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910011026.17510.elendil@planet.nl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+From: =?utf-8?B?UGF3ZcWCIFNpa29yYQ==?= <pluto@agmk.net>
+Message-ID: <op.u039i6wbzu3k57@pawels.alatek.krakow.pl>
+In-Reply-To: <20091001120609.50327134@hyperion.delvare>
+User-Agent: Opera Mail/10.00 (Win32)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In previous kernels the code would not dump, but still fail and print the 
-> request flags, identified by "ide_do_rw_disk - bad command", to the kernel 
-> log.
-> Manty: Have you ever seen such messages with previous kernels?
+Dnia 01-10-2009 o 12:06:09 Jean Delvare <khali@linux-fr.org> napisał(a):
 
-Not at all.
+>> I'm not sure if it is the problem here, but it may be prudent to check
+>> that there's no mismatch between the module and the structure
+>> definitions being pulled in via "#include"  (maybe by stopping gcc after
+>> the preprocessing with -E ).
+>
+> Thanks for the hint. As far as I can see, this change is new in kernel
+> 2.6.32-rc1. In 2.6.31, which is where Pawel reported the issue, we
+> still have IR_KEYTAB_TYPE.
+>
+> Pawel, are you by any chance mixing kernel drivers of different
+> sources?
 
-Regards...
--- 
-Manty/BestiaTester -> http://manty.net
+everything is under control. i've two separated builds:
+- 2.6.31 from git with debugging patch.
+- vendor kernel from rpms.
+both kernels have separated initrd images for easy booting/testing.
