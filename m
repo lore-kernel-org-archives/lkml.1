@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752513AbZJAImR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753114AbZJAIor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752513AbZJAImR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbZJAImQ
+	id S1753114AbZJAIor (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZJAIor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:42:16 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:56723 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbZJAImP (ORCPT
+	Thu, 1 Oct 2009 04:44:47 -0400
+Received: from mtagate3.de.ibm.com ([195.212.17.163]:58901 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751570AbZJAIoq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:42:15 -0400
-Message-ID: <4AC46B20.6020300@nokia.com>
-Date: Thu, 01 Oct 2009 11:41:04 +0300
-From: Roger Quadros <ext-roger.quadros@nokia.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 1 Oct 2009 04:44:46 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: "Uwe =?utf-8?q?Kleine-K=C3=B6nig?=" <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH 31/34] move virtrng_remove to .devexit.text
+Date: Thu, 1 Oct 2009 10:44:48 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-prerelease; KDE/4.3.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Michael S. Tsirkin" <mst@redhat.com>
+References: <20091001082607.GA2181@pengutronix.de>  <1254385718-14254-31-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1254385718-14254-31-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-To: "dedekind1@gmail.com" <dedekind1@gmail.com>
-CC: "sameo@linux.intel.com" <sameo@linux.intel.com>,
-       "tony@atomide.com" <tony@atomide.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH v2] twl4030: Fix boot with twl4030 usb transceiver enabled
-References: <1254385536-26912-1-git-send-email-ext-roger.quadros@nokia.com> <1254386189.32310.20.camel@localhost>
-In-Reply-To: <1254386189.32310.20.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Oct 2009 08:41:44.0099 (UTC) FILETIME=[011F6F30:01CA4273]
-X-Nokia-AV: Clean
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200910011044.48293.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy wrote:
-> On Thu, 2009-10-01 at 11:25 +0300, Roger Quadros wrote:
->>  	if (twl_has_bci() && pdata->bci && !(features & TPS_SUBSET)) {
->>  		child = add_child(3, "twl4030_bci",
->> @@ -532,16 +531,61 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
->>  	}
->>  
->>  	if (twl_has_usb() && pdata->usb) {
->> +
-> Why is this extra line?
+Am Donnerstag 01 Oktober 2009 10:28:35 schrieb Uwe Kleine-König:
+> The function virtrng_remove is used only wrapped by __devexit_p so define
+> it using __devexit.
 > 
->> +		static struct regulator_consumer_supply usb1v5 = {
->> +			.supply =	"usb1v5",
->> +		};
-> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Michael S. Tsirkin <mst@redhat.com>
+> Cc: Christian Borntraeger <borntraeger@de.ibm.com>
 
-oops, my bad. and checkpatch didn't point it out ;)
+Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+
+It seems that there are similar changes possible in other virtio drivers (e.g. 
+virtio_net). 
+
+
+[...]
+> -static void virtrng_remove(struct virtio_device *vdev)
+> +static void __devexit virtrng_remove(struct virtio_device *vdev)
+[...]
