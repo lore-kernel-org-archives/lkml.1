@@ -1,97 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932624AbZJAOSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932626AbZJAOUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932624AbZJAOSi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 10:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932590AbZJAOSh
+	id S932626AbZJAOUH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 10:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932427AbZJAOUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 10:18:37 -0400
-Received: from fifo99.com ([67.223.236.141]:60455 "EHLO fifo99.com"
+	Thu, 1 Oct 2009 10:20:06 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53186 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932473AbZJAOSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 10:18:35 -0400
-Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
-From: Daniel Walker <dwalker@fifo99.com>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <20090930152708.GD2957@shadowen.org>
-References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
-	 <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
-	 <1253585691-10987-3-git-send-email-dwalker@fifo99.com>
-	 <4AB86ED1.1040200@cn.fujitsu.com>  <20090930152708.GD2957@shadowen.org>
-Content-Type: text/plain
-Date: Thu, 01 Oct 2009 07:18:30 -0700
-Message-Id: <1254406711.18167.88.camel@desktop>
+	id S932423AbZJAOUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 10:20:05 -0400
+Subject: Re: [PATCH 02/34] move atp870u_remove to .devexit.text
+From: James Bottomley <James.Bottomley@suse.de>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Yang Hongyang <yanghy@cn.fujitsu.com>, Alan Cox <alan@redhat.com>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <1254385718-14254-2-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <20091001082607.GA2181@pengutronix.de>
+	 <1254385718-14254-2-git-send-email-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 01 Oct 2009 14:20:02 +0000
+Message-Id: <1254406802.3885.1.camel@mulgrave.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-30 at 16:27 +0100, Andy Whitcroft wrote:
+On Thu, 2009-10-01 at 10:28 +0200, Uwe Kleine-König wrote:
+> The function atp870u_remove is used only wrapped by __devexit_p so define
+> it using __devexit.
 
-> Yeah I think that blanket ignoring spacing throughout the file seems
-> dangerous.  If these are going to show up a lot then it seems more sensible
-> to special case TRACE_EVENT or whatever is triggering the actual 'false'
-> matches.  I also suspect the 'this should never get long' argument will
-> not be true.  Once you can have an exception people will add them all over
+What's the justification for this?
 
-It's not ignoring all spacing .. It's just ignoring a single error in a
-single directory (or single file).. So it's very specific.. If you did
-just match TRACE_EVENT like you suggest then what happens when another
-different call in the same code has similar spacing , which could easily
-happen.. You also are basically matching a style defect, which doesn't
-make much sense to me.. Then one day the person that added the errors
-has a revelation , and removes all the errors. Then all the work that
-went into the matching is poof worthless.. This list could get to be
-10-20 items lots (still not that long) , and writing individual matching
-for each of those items and maintaining it would be more work that is
-necessary ..
+Given that practically every kernel on the planet is hotplug enabled
+these days and that the savings on the very few that aren't from
+discarding the devexit section is at most a page or two (and even arm
+says they don't care about that), there doesn't seem to be any point
+making these changes.  In fact, I think we can just kill devinit and
+devexit as section markers.
 
-In terms of the list getting long or not, your basically in control of
-it since you maintain checkpatch .. If you leave it without some sort of
-blacklist, then you end up with whole sections of code where the
-developers don't use checkpatch at all (or very little)..
+James
 
-> Care to share an example of a change which is triggereing so we can
-> better target the exception.
-
-Basically any file in include/trace/event/ will trigger the blacklist
-(listed in the perl code along with the errors that are filtered out)..
-
-In include/trace/events/ext4.h for example the following code,
-
-TRACE_EVENT(ext4_free_inode,
-        TP_PROTO(struct inode *inode),
-
-        TP_ARGS(inode),
-
-        TP_STRUCT__entry(
-                __field(        dev_t,  dev                     )
-                __field(        ino_t,  ino                     )
-                __field(        umode_t, mode                   )
-                __field(        uid_t,  uid                     )
-                __field(        gid_t,  gid                     )
-                __field(        blkcnt_t, blocks                )
-        ),
-
-        TP_fast_assign(
-                __entry->dev    = inode->i_sb->s_dev;
-                __entry->ino    = inode->i_ino;
-                __entry->mode   = inode->i_mode;
-                __entry->uid    = inode->i_uid;
-                __entry->gid    = inode->i_gid;
-                __entry->blocks = inode->i_blocks;
-        ),
-
-        TP_printk("dev %s ino %lu mode %d uid %u gid %u blocks %llu",
-                  jbd2_dev_to_name(__entry->dev), (unsigned long) __entry->ino,
-                  __entry->mode, __entry->uid, __entry->gid,
-                  (unsigned long long) __entry->blocks)
-);
-
-
-
-Daniel
 
