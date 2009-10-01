@@ -1,46 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbZJAHFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZJAHR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbZJAHFr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 03:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbZJAHFq
+	id S1755611AbZJAHR3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 03:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbZJAHR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 03:05:46 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:35293 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754185AbZJAHFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 03:05:46 -0400
-Date: Thu, 1 Oct 2009 09:05:49 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] block updates for 2.6.32-rc
-Message-ID: <20091001070549.GI14918@kernel.dk>
-References: <20090930174109.GD14918@kernel.dk> <20090930193911.GA14391@infradead.org>
+	Thu, 1 Oct 2009 03:17:28 -0400
+Received: from mail-pz0-f191.google.com ([209.85.222.191]:52036 "EHLO
+	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755588AbZJAHR1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 03:17:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Qpyzk5wKYa2S4udHX8zQokxjwyLaoTkFapYTopSftkjGOvnlnR1xKIhcYlNHPo5E92
+         uHmkGQTgwTV/4JZ1lQtDgstVZi65wWAA/FYdgPgy6c2Y9haB5mhMjRLJNqYdCkSX8CgV
+         h8AhDItzuLSkCXsJy6iX1BtxB4ShZsqcKyh2Y=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090930193911.GA14391@infradead.org>
+In-Reply-To: <f28939e0018c7e2a9e898722e0fb8514a843b14c.1254193019.git.joe@perches.com>
+References: <cover.1254193019.git.joe@perches.com>
+	 <f28939e0018c7e2a9e898722e0fb8514a843b14c.1254193019.git.joe@perches.com>
+Date: Thu, 1 Oct 2009 09:10:07 +0200
+X-Google-Sender-Auth: fae88eac5569f7c2
+Message-ID: <10f740e80910010010o4522a008h265e09d7988d7192@mail.gmail.com>
+Subject: Re: [PATCH 1/9] lib/vsprintf.c: Add %pU to print UUID/GUIDs
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Adrian Hunter <adrian.hunter@nokia.com>,
+       Alex Elder <aelder@sgi.com>, Artem Bityutskiy <dedekind@infradead.org>,
+       Christoph Hellwig <hch@lst.de>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>,
+       Matt Mackall <mpm@selenic.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Neil Brown <neilb@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
+       xfs-masters@oss.sgi.com, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30 2009, Christoph Hellwig wrote:
-> On Wed, Sep 30, 2009 at 07:41:10PM +0200, Jens Axboe wrote:
-> > Hi Linus,
-> > 
-> > This looks huge, but it's mostly a cciss driver update and the addition
-> > of drbd. I would have submitted this before -rc1, but Plumbers got in
-> > the way.
-> 
-> And DRBD is defintively not ready.  Even if people want to merge another
-> duplicate RAID driver including another crappy user interface it has
-> tracing stuff of a form that would let Ingo go beserk and also uses the
-> stupid connector.
+On Tue, Sep 29, 2009 at 07:01, Joe Perches <joe@perches.com> wrote:
+> UUID/GUIDs are somewhat common in kernel source.
+>
+> Standardize the printed style of UUID/GUIDs by using
+> another extension to %p.
+>
+> %pU:    01020304-0506-0708-090a-0b0c0d0e0f10
+> %pUr:   04030201-0605-0807-090a-0b0c0d0e0f10
+> %pU[r]X:Use upper case hex
 
-Can we get rid of the connector? Didn't look very closely, but looks
-kinda stuck with it. I killed the tracing bits, agree on that.
+To me, it looks a bit strange to have the options after the `U', combined with
+the variable-length nature.
 
--- 
-Jens Axboe
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
