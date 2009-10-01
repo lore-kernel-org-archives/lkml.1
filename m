@@ -1,38 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbZJAVvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752350AbZJAVvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331AbZJAVvb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 17:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbZJAVv3
+	id S1752350AbZJAVvN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:51:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZJAVvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 17:51:29 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53273 "EHLO
+	Thu, 1 Oct 2009 17:51:10 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53265 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbZJAVvZ (ORCPT
+	with ESMTP id S1751557AbZJAVvI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 17:51:25 -0400
-Date: Thu, 1 Oct 2009 09:18:58 +0200
+	Thu, 1 Oct 2009 17:51:08 -0400
+Date: Thu, 1 Oct 2009 09:22:20 +0200
 From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Linux 2.6.32-rc1
-Message-ID: <20091001091858.411d8df0@infradead.org>
-In-Reply-To: <20090930203818.GA24070@elte.hu>
-References: <4AC10365.7090802@gmail.com>
-	<4AC2712C.4080901@gmail.com>
-	<alpine.LFD.2.01.0909291410440.6996@localhost.localdomain>
-	<20090929232248.735bf4df@infradead.org>
-	<alpine.LFD.2.01.0909291429570.6996@localhost.localdomain>
-	<20090930170754.0886ff2e@infradead.org>
-	<20090930193204.GA16350@elte.hu>
-	<4AC3BC89.2050404@gmail.com>
-	<alpine.LFD.2.01.0909301320300.6996@localhost.localdomain>
-	<20090930202233.GA21890@elte.hu>
-	<20090930203818.GA24070@elte.hu>
+To: Julian Anastasov <ja@ssi.bg>
+Cc: Hannes Eder <heder@google.com>, Wensong Zhang <wensong@linux-vs.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] ipvs: Add boundary check on ioctl arguments
+Message-ID: <20091001092220.2ea81cb2@infradead.org>
+In-Reply-To: <Pine.LNX.4.58.0909302231360.2853@u.domain.uli>
+References: <20090930131109.2b3f71b8@infradead.org>
+	<4AC35F44.60707@google.com>
+	<20090930171833.5ce0011d@infradead.org>
+	<Pine.LNX.4.58.0909302231360.2853@u.domain.uli>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -44,21 +34,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Sep 2009 22:38:18 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Wed, 30 Sep 2009 22:41:05 +0300 (EEST)
+Julian Anastasov <ja@ssi.bg> wrote:
 
-> > > > probably a "memory" clobber is needed, alternative_io() doesnt
-> > > > provide it.
-> > > 
-> > > Yeah, good catch.
-> > 
-> > Yeah - i'm testing this right now, it looks like something that
-> > could explain the hang.
 > 
-> Yeah - that was the cause of the hang
+> 	Hello,
+> 
+> On Wed, 30 Sep 2009, Arjan van de Ven wrote:
+> 
+> > fair enough; updated patch below
 
-I woke up at 2am realizing that this was missing.. but you beat me to
-it ;)
+
+
+> Later len can be checked
+> additionally and surely can exceed 128 (include/linux/ip_vs.h has
+> all user structures). 
+
+the on-stack structure currently is 128 bytes though...
+
+> Can you show the exact cmd and len
+> used, may be there is error in some command or may be the
+> provided user structure is wrong?
+
+this comes from code inspection using gcc features; this
+is one of the (few) cases in the kernel where gcc cannot prove
+that the copy_from_user() length for the copy-to-stack is sufficiently
+bounds checked. I'm trying to make sure all these cases have
+complete enough checks, both for the obvious security reasons but
+also to be able to then make gcc emit a warning to prevent future
+issues from popping up.
+
 
 
 -- 
