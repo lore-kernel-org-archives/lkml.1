@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932259AbZJAMZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932238AbZJAMZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932259AbZJAMZu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 08:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932171AbZJAMZs
+	id S932238AbZJAMZn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 08:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932172AbZJAMZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 08:25:48 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:47649 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932149AbZJAMZq (ORCPT
+	Thu, 1 Oct 2009 08:25:42 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:50853 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932177AbZJAMZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 08:25:46 -0400
+	Thu, 1 Oct 2009 08:25:41 -0400
 From: Samu Onkalo <samu.p.onkalo@nokia.com>
 To: akpm@linux-foundation.org, daniel@caiaq.de
 Cc: eric.piel@tremplin-utc.net, linux-kernel@vger.kernel.org,
        Samu Onkalo <samu.p.onkalo@nokia.com>
-Subject: [PATCH 0/1] LIS3LV02D_SPI incomplete module unloading
-Date: Thu,  1 Oct 2009 15:25:23 +0300
-Message-Id: <1254399924-30921-1-git-send-email-samu.p.onkalo@nokia.com>
+Subject: [PATCH 1/1] LIS3LV02D_SPI: Module unload didn't remove sysfs entry
+Date: Thu,  1 Oct 2009 15:25:24 +0300
+Message-Id: <1254399924-30921-2-git-send-email-samu.p.onkalo@nokia.com>
 X-Mailer: git-send-email 1.5.6.3
-X-OriginalArrivalTime: 01 Oct 2009 12:25:29.0770 (UTC) FILETIME=[437240A0:01CA4292]
+In-Reply-To: <1254399924-30921-1-git-send-email-samu.p.onkalo@nokia.com>
+References: <1254399924-30921-1-git-send-email-samu.p.onkalo@nokia.com>
+X-OriginalArrivalTime: 01 Oct 2009 12:25:31.0744 (UTC) FILETIME=[449F7600:01CA4292]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While implementing I2C driver for LIS3LV02D, following bug was found
-from corresponding SPI implementation. This is not tested with real
-HW where LIS3 is connected via SPI since I don't have one.
-However, module loading and unloading is tested with dummy SPI configuration.
+In module unload, lis3lv02d core driver sysfs clean up was not called.
 
-Patch created to top of 2.6.32-RC1
-
-Samu Onkalo (1):
-  LIS3LV02D_SPI: Module unload didn't remove sysfs entry
-
+Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
+Acked-by: Daniel Mack <daniel@caiaq.de>
+---
  drivers/hwmon/lis3lv02d_spi.c |    3 ++-
  1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/hwmon/lis3lv02d_spi.c b/drivers/hwmon/lis3lv02d_spi.c
+index ecd7395..82b1680 100644
+--- a/drivers/hwmon/lis3lv02d_spi.c
++++ b/drivers/hwmon/lis3lv02d_spi.c
+@@ -83,7 +83,8 @@ static int __devexit lis302dl_spi_remove(struct spi_device *spi)
+ 	struct lis3lv02d *lis3 = spi_get_drvdata(spi);
+ 	lis3lv02d_joystick_disable();
+ 	lis3lv02d_poweroff(lis3);
+-	return 0;
++
++	return lis3lv02d_remove_fs(&lis3_dev);
+ }
+ 
+ #ifdef CONFIG_PM
+-- 
+1.5.6.3
 
