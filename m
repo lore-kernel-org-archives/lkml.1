@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZJAVbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753038AbZJAVbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753150AbZJAVbQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 17:31:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbZJAVbP
+	id S1753038AbZJAVbm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbZJAVbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 17:31:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41492 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753002AbZJAVbN (ORCPT
+	Thu, 1 Oct 2009 17:31:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39980
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753009AbZJAVbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 17:31:13 -0400
-Date: Thu, 1 Oct 2009 14:30:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
-Cc: James.Bottomley@HansenPartnership.com, axboe@kernel.dk,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       mikem@beardog.cce.hp.com, scameron@beardog.cce.hp.com
-Subject: Re: [PATCH] Add hpsa driver for HP Smart Array controllers.
-Message-Id: <20091001143035.a83a7564.akpm@linux-foundation.org>
-In-Reply-To: <20091001211705.15591.76403.stgit@beardog.cce.hp.com>
-References: <20091001211705.15591.76403.stgit@beardog.cce.hp.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 1 Oct 2009 17:31:40 -0400
+Date: Thu, 01 Oct 2009 14:31:59 -0700 (PDT)
+Message-Id: <20091001.143159.62171955.davem@davemloft.net>
+To: clownix@clownix.net
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: clownix-spy plots any kernel variable history
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1254432239.6772.1.camel@localhost>
+References: <1254432239.6772.1.camel@localhost>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Oct 2009 16:25:30 -0500
-"Stephen M. Cameron" <scameron@beardog.cce.hp.com> wrote:
+From: clownix <clownix@clownix.net>
+Date: Thu, 01 Oct 2009 23:23:59 +0200
 
-> Add hpsa driver for HP Smart Array controllers.
+Netdev CC:'d
+
+> I have made a tool at http://clownix.net which can plot qdisc
+> enqueues/dequeues/drops...
 > 
-> This driver supports a subset of HP Smart Array Controllers.
-> It is a SCSI alternative to the cciss driver.
-
-Does it support all the devices which cciss supports?
-
-IOW, do we have a plan here to remove the cciss driver or must we
-maintain both drivers indefinitely?
-
+> But the qdisc spy is only given as an example, basically any kernel
+> variable can be plotted after you have writen only a few lines in a
+> module, in this module, you subscribe to the klownix module and then the
+> klownix kernel thread periodically gathers the variables and sends them
+> through the netlink socket to a user daemon. A gtk interface requests
+> the plotting of the history of the variable.
+> 
+> The package contains a little test of visualization of the hfsc qdisc in
+> action.
+> 
+> If you visit the clownix site, beware, the tool is not the Cloonix-Net
+> which is another project altogether.
+> 
+> Regards
+> Vincent Perrier
