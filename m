@@ -1,68 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbZJARPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbZJARQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755859AbZJARPl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 13:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbZJARPk
+	id S1755922AbZJARQV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 13:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbZJARQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 13:15:40 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:36890 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbZJARPk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 13:15:40 -0400
-Date: Thu, 1 Oct 2009 13:15:38 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, nhorman@tuxdriver.com
-Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits
-	external to a process (v3)
-Message-ID: <20091001171538.GB2456@hmsreliant.think-freely.org>
-References: <20090928200600.GA3053@hmsreliant.think-freely.org>
-MIME-Version: 1.0
+	Thu, 1 Oct 2009 13:16:20 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:56322 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754657AbZJARQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 13:16:20 -0400
+Date: Thu, 1 Oct 2009 13:15:47 -0400
+From: Valerie Aurora <vaurora@redhat.com>
+To: kevin granade <kevin.granade@gmail.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Union mounts/writable overlays design
+Message-ID: <20091001171547.GE29152@shell>
+References: <20091001145547.GA29152@shell> <7004b08e0910010838i6d0a5f5xeed699be686f6906@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090928200600.GA3053@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-Score: -4.9 (----)
+In-Reply-To: <7004b08e0910010838i6d0a5f5xeed699be686f6906@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, heres attempt number 3, in response to your thoughts and concerns Andrew.
+On Thu, Oct 01, 2009 at 10:38:27AM -0500, kevin granade wrote:
+> Wow, amazingly thorough writeup, was a very interesting read and I'm looking
+> forward to trying this out.
+> 
+> Examples
+> > ========
+> >
+> > What happens when I...
+> >
+> > - creat() /newfile -> creates on top layer
+> > - unlink() /oldfile -> creates a whiteout on top layer
+> > - Edit /existingfile -> copies up to top layer at open(O_WR) time
+> > - truncate /existingfile -> copies up to top layer + N bytes if specified
+> > - touch()/chmod()/chown()/etc. -> copies up to top layer
+> > - mkdir() /newdir -> creates on top layer
+> > - rmdir() /olddir -> creates a whiteout on top layer
+> > - mkdir() /olddir after above -> creates on top layer w/ opaque flag
+> > - readdir() /shareddir -> copies up entries from bottom layer as fallthrus
+> > - link() /oldfile /newlink -> copies up /oldfile, creates /newlink on top
+> > layer
+> > - symlink() /oldfile /symlink -> nothing special
+> > - rename() /oldfile /newfile -> copies up /oldfile to /newfile on top layer
+> >
+> 
+> Minor quibble here, rename should also whiteout /oldfile, of course you have
+> it explained correctly in the detailed description of rename() below.
+> Or am I misunderstanding and the above is what it does now and the detailed
+> description is what it will do once implemented properly?
 
-Change Notes:
-1) Kept ability to set/get rlimits via /proc/pid/limits as in the previous
-patches
+Hi Kevin,
 
-2) Augmented the patchset with 2 new syscall defines, getprlimit and setprlimit,
-which take a pid_t as an additional argument, allowing a user to specify a
-process id for the rlimits in question.  The core code for setting rlimits is
-shared with the previous patch, and is in do_setrlimit, so that all the security
-checks and such remain unaltered.
+You are correct, it whiteouts the original name.  Thanks for pointing
+that out!
 
-3) Add syscall numbers to asm-generic/unistd.h so that any arch using the
-generic syscall code picks up these new syscalls.  I figure I don't have access
-to systems that don't use that code, so I should probably leave those changes up
-to the arch maintainers.
+> > Non-features
+> > ------------
+> >
+> > Features we do not currently plan to support as part of writable
+> > overlays:
+> >
+> > Online upgrade: E.g., installing software on a file system NFS
+> > exported to clients while the clients are still up and running.
+> > Allowing the read-only bottom layer to change while the writable
+> > overlay file system is mounted invalidates our locking strategy.
+> >
+> 
+> So as long as the RO filesystem is NOT mounted as part of an overlay, you
+> could modify it and then re-construct the previous overlay and things will
+> work as expected?
+> For example could one create a hard drive over CD overlay, then periodically
+> (requiring a reboot probably) replace the underlying CD with a new version
+> and automagically have new versions of software available?  ( obviously
+> there are additional complexities in packaging to make this work, but having
+> support in the kernel is the first step. )
 
+This could theoretically work, but the main problem is resolving
+differences between files (always the big problem in upgrade).  Say
+you have /etc/passwd, you add a new user and write to it on the top
+layer, and then the next upgrade adds a new user to the read-only
+version.  You're not going to see the new user.
 
-Summary
+> One last thing, I don't see this in either the "features" or the
+> "non-features".  Will there be a way to "revert" a file to the RO version
+> once it has been copied up, either by just removing the overlay entry or by
+> somehow forcing the open of the underlying file when it has an overlay?  Now
+> that I think of it, one could just mount the underlying filesystem elsewhere
+> and copy the file, but I'd still be interested to know if there is any
+> desire to provide the more "direct" operation.
 
-Its been requested often that we have the ability to read and modify process
-rlimit values from contexts external to the owning process.  Ideally this allows
-sysadmins to adjust rlimits on long running processes wihout the need to stop
-and restart those processes, which incurs undesireable downtime.  This patch
-enables that functionality,  It does so in two places.  First it enables process
-limit setting by writing to the /proc/pid/limits file a string in the format:
-<limit> <current limit> <max limit> > /proc/<pid>/limits
-where limit is one of
-[as,core,cpu,data,fsize,locks,memlock,msgqueue,nice,nofile,nproc,rss,rtprio,rttime]
+I think that people are calling this "punch-through."  I don't see a
+problem with it, other than slightly more kernel support.
 
-Secondly it allows for programatic setting of these limits via 2 new syscalls,
-getprlimit, and setprlimit, which act in an identical fashion to getrlimit and
-setrlimit respectively, except that they except a process id as an extra
-argument, to specify the process id of the rlimit values that you wish to
-read/write
-
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-
+-VAL
