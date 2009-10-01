@@ -1,88 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbZJAXYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbZJAXYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754586AbZJAXYZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZJAXYY
+	id S1756707AbZJAXYg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675AbZJAXYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:24:24 -0400
-Received: from kroah.org ([198.145.64.141]:39667 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:24:22 -0400
+Received: from kroah.org ([198.145.64.141]:39671 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754586AbZJAXXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:23:19 -0400
+	id S1754492AbZJAXXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:23:20 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:18:05 2009
-Message-Id: <20091001231805.170427311@mini.kroah.org>
+Message-Id: <20091001231805.321427288@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:16:38 -0700
+Date: Thu, 01 Oct 2009 16:16:39 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stefan Bader <stefan.bader@canonical.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Steve Conklin <steve.conklin@canonical.com>
-Subject: [patch 5/9] Fix incorrect stable backport to bas_gigaset
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, jakub@redhat.com,
+       security@kernel.org, mingo@elte.hu,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: [patch 6/9] net ax25: Fix signed comparison in the sockopt handler
 References: <20091001231633.719696398@mini.kroah.org>
-Content-Disposition: inline; filename=fix-incorrect-stable-backport-to-bas_gigaset.patch
+Content-Disposition: inline; filename=net-ax25-fix-signed-comparison-in-the-sockopt-handler.patch
 In-Reply-To: <20091001231938.GA29593@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Tilman Schmidt <tilman@imap.cc>
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-bas_gigaset: correctly allocate USB interrupt transfer buffer
+fixed upstream in commit b7058842c940ad2c08dd829b21e5c92ebe3b8758 in a different way
 
-[ Upstream commit 170ebf85160dd128e1c4206cc197cce7d1424705 ]
+The ax25 code tried to use
 
-This incorrect backport to 2.6.28.10 placed some code into the probe function
-which used a pointer before it was initialized. Moving this to the correct
-place (as it is in upstream).
+        if (optlen < sizeof(int))
+                return -EINVAL;
 
-Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
-Acked-by: Tim Gardner <tim.gardner@canonical.com>
-Acked-by: Steve Conklin <steve.conklin@canonical.com>
+as a security check against optlen being negative (or zero) in the
+set socket option.
+
+Unfortunately, "sizeof(int)" is an unsigned property, with the
+result that the whole comparison is done in unsigned, letting
+negative values slip through.
+
+This patch changes this to
+
+        if (optlen < (int)sizeof(int))
+                return -EINVAL;
+
+so that the comparison is done as signed, and negative values
+get properly caught.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/isdn/gigaset/bas-gigaset.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ net/ax25/af_ax25.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/isdn/gigaset/bas-gigaset.c
-+++ b/drivers/isdn/gigaset/bas-gigaset.c
-@@ -2140,8 +2140,16 @@ static int gigaset_initcshw(struct cards
- 	struct bas_cardstate *ucs;
+--- a/net/ax25/af_ax25.c
++++ b/net/ax25/af_ax25.c
+@@ -539,7 +539,7 @@ static int ax25_setsockopt(struct socket
+ 	if (level != SOL_AX25)
+ 		return -ENOPROTOOPT;
  
- 	cs->hw.bas = ucs = kmalloc(sizeof *ucs, GFP_KERNEL);
--	if (!ucs)
-+	if (!ucs) {
-+		pr_err("out of memory\n");
-+		return 0;
-+	}
-+	ucs->int_in_buf = kmalloc(IP_MSGSIZE, GFP_KERNEL);
-+	if (!ucs->int_in_buf) {
-+		kfree(ucs);
-+		pr_err("out of memory\n");
- 		return 0;
-+	}
+-	if (optlen < sizeof(int))
++	if (optlen < (int)sizeof(int))
+ 		return -EINVAL;
  
- 	ucs->urb_cmd_in = NULL;
- 	ucs->urb_cmd_out = NULL;
-@@ -2236,12 +2244,6 @@ static int gigaset_probe(struct usb_inte
- 		}
- 		hostif = interface->cur_altsetting;
- 	}
--	ucs->int_in_buf = kmalloc(IP_MSGSIZE, GFP_KERNEL);
--	if (!ucs->int_in_buf) {
--		kfree(ucs);
--		pr_err("out of memory\n");
--		return 0;
--	}
- 
- 	/* Reject application specific interfaces
- 	 */
+ 	if (get_user(opt, (int __user *)optval))
 
 
