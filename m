@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZJARos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbZJARs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbZJARos (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 13:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbZJARor
+	id S1755990AbZJARs0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 13:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbZJARs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 13:44:47 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58000 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755554AbZJARor (ORCPT
+	Thu, 1 Oct 2009 13:48:26 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:45587 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755494AbZJARsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 13:44:47 -0400
-Date: Thu, 1 Oct 2009 19:44:49 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: "Altobelli, David" <david.altobelli@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 07/34] move ilo_remove to .devexit.text
-Message-ID: <20091001174449.GB27288@pengutronix.de>
-References: <20091001082607.GA2181@pengutronix.de> <1254385718-14254-7-git-send-email-u.kleine-koenig@pengutronix.de> <92D64232F2316045B18937D5C9996B1522CD82DF6E@GVW1144EXB.americas.hpqcorp.net>
+	Thu, 1 Oct 2009 13:48:25 -0400
+Message-ID: <4AC4EB2E.4050907@s5r6.in-berlin.de>
+Date: Thu, 01 Oct 2009 19:47:26 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.22) Gecko/20090605 SeaMonkey/1.1.17
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <92D64232F2316045B18937D5C9996B1522CD82DF6E@GVW1144EXB.americas.hpqcorp.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Nathaniel McCallum <nathaniel@natemccallum.com>
+CC: linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: Exposing device ids and driver names
+References: <4AC4DB65.8070404@natemccallum.com>
+In-Reply-To: <4AC4DB65.8070404@natemccallum.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
-
-On Thu, Oct 01, 2009 at 02:10:27PM +0000, Altobelli, David wrote:
-> > The function ilo_remove is used only wrapped by __devexit_p so define it
-> > using __devexit.
+Nathaniel McCallum wrote:
+> Please CC me on any responses as I'm not subscribed to lkml.
 > 
-> Looks good to me.  Not sure if this is needed or not...
-it fixes at least a warning if you compile the driver as built-in with
-CONFIG_HOTPLUG=n about ilo_remove not being used.
+> I have the aim at creating two tools helpful to linux.  The first tool 
+> is a driver regression test of sorts.  I want to be able to create 
+> essentially a time line of hardware support as they appear in distros. 
+> The second tool, related to the first, is a program which runs on 
+> Windows and scans for a user's hardware and tells them which distro will 
+> best support their hardware.  I already have a working prototype of 
+> these two tools.  It currently uses the data exported by modinfo.  This 
+> however does not provide transparency for drivers compiled into the kernel.
 
-Best regards
-Uwe
+Hardware support also depends on userland:  Udev rules, libraries,
+application programs.
 
+Even if you ignore that for now and only look at the kernel part of
+hardware support:  Beyond "doesn't have a matching driver" and "does
+have", there is a large and impossible to track grey area of "has a
+poorly working driver" and "has a perfectly working driver".
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Stefan Richter
+-=====-==--= =-=- ----=
+http://arcgraph.de/sr/
