@@ -1,100 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbZJACCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbZJACKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbZJACCH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 22:02:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbZJACCG
+	id S1755470AbZJACKk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 22:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbZJACKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 22:02:06 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58572 "EHLO mx1.suse.de"
+	Wed, 30 Sep 2009 22:10:39 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58763 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755383AbZJACCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 22:02:05 -0400
-Date: Thu, 1 Oct 2009 04:02:07 +0200
+	id S1755436AbZJACKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 22:10:38 -0400
+Date: Thu, 1 Oct 2009 04:10:42 +0200
 From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] HWPOISON: remove the unsafe __set_page_locked()
-Message-ID: <20091001020207.GL6327@wotan.suse.de>
-References: <20090926031537.GA10176@localhost> <20090926034936.GK30185@one.firstfloor.org> <20090926105259.GA5496@localhost> <20090926113156.GA12240@localhost> <20090927104739.GA1666@localhost> <20090927192025.GA6327@wotan.suse.de> <20090928084401.GA22131@localhost>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 04/33] fs: brlock vfsmount_lock
+Message-ID: <20091001021042.GN6327@wotan.suse.de>
+References: <20090904065142.114706411@nick.local0.net> <20090904065534.447753909@nick.local0.net> <20090922151751.GM5858@ZenIV.linux.org.uk> <20090927195619.GG6327@wotan.suse.de> <1254144063.15795.3.camel@laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090928084401.GA22131@localhost>
+In-Reply-To: <1254144063.15795.3.camel@laptop>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 04:44:01PM +0800, Wu Fengguang wrote:
-> On Mon, Sep 28, 2009 at 03:20:25AM +0800, Nick Piggin wrote:
-> > On Sun, Sep 27, 2009 at 06:47:39PM +0800, Wu Fengguang wrote:
-> > > > 
-> > > > And standard deviation is 0.04%, much larger than the difference 0.008% ..
+On Mon, Sep 28, 2009 at 03:21:03PM +0200, Peter Zijlstra wrote:
+> On Sun, 2009-09-27 at 21:56 +0200, Nick Piggin wrote:
+> > On Tue, Sep 22, 2009 at 04:17:51PM +0100, Al Viro wrote:
+> > > On Fri, Sep 04, 2009 at 04:51:45PM +1000, npiggin@suse.de wrote:
+> > > > Use a brlock for the vfsmount lock.
 > > > 
-> > > Sorry that's not correct. I improved the accounting by treating
-> > > function0+function1 from two CPUs as an integral entity:
-> > > 
-> > >                  total time      add_to_page_cache_lru   percent  stddev
-> > >          before  3880166848.722  9683329.610             0.250%   0.014%
-> > >          after   3828516894.376  9778088.870             0.256%   0.012%
-> > >          delta                                           0.006%
+> > > I like it, but I'd like to see how costly it becomes on heavily SMP boxen.
+> > > Creation/removal of bindings as load...
 > > 
-> > I don't understand why you're doing this NFS workload to measure?
+> > I could test that... Is there some realistic scenario I can try
+> > to implement that exercises this? (failing that, I'll happily
+> > do a microbenchmark).
+> > 
+> > I was thinking it *might* be possible to do RCU... but especially
+> > coming up with a scheme that avoids synchronize_rcu() in the
+> > umount path is not trivial, so perhaps the simple read/write
+> > annotations with brlock behind the scenes is a more reasonable step.
+> > 
+> > I do also actually owe you some documentation with this one too,
+> > which I will get around to adding.
 > 
-> Because it is the first convenient workload hit my mind, and avoids
-> real disk IO :)
+> The thing that worries me is that the write-side is very heavy and the
+> read sides are spinning on it, yielding rather large spin times on large
+> smp boxen.
 
-Using tmpfs or sparse files is probably a lot easier.
+Well, that might be true. Although I'd say that huge systems that
+are doing a reasonable amount of vfs operations will have much
+larger spin times today due to pathological queueing on the
+global locks (almost to the point of effectively being a livelock).
 
- 
-> > I see significant nfs, networking protocol and device overheads in
-> > your profiles, also you're hitting some locks or something which
-> > is causing massive context switching. So I don't think this is a
-> > good test.
+
+> It wouldn't nearly be as bad if the read sides could block..
 > 
-> Yes there are overheads. However it is a real and common workload.
+> FWIW, spin_lock_nested is limited to 8 subclasses, so your current
+> implementation will explode on anything larger than an 8-way.
 
-Right, but so are lots of other workloads that don't hit
-add_to_page_cache heavily :)
- 
+So OK, a _mergeable_ sequence for this will basicaly look like:
+1. document and add read/write lock variations to the call sites
+   which is just a wrapper around existing lock (no functional
+   change).
+2. add a general brlock implementation, which is nice to lockdep
+   (basically could just annotate it as an rwlock and be done)
+   And this is where -rt could also do something more appropriate
+   if needed.
+3. switch vfsmount lock to brlock.
 
-> > But anyway as Hugh points out, you need to compare with a
-> > *completely* fixed kernel, which includes auditing all users of page
-> > flags non-atomically (slab, notably, but possibly also other
-> > places).
-> 
-> That's good point. We can do more benchmarks when more fixes are
-> available. However I suspect their design goal will be "fix them
-> without introducing noticeable overheads" :)
-
-s/noticeable//
-
-The problem with all the non-noticeable overheads that we're
-continually adding to the kernel is that we're adding them to
-the kernel. Non-noticeable part only makes it worse because
-you can't bisect them :)
- 
-
-> > One other thing to keep in mind that I will mention is that I am
-> > going to push in a patch to the page allocator to allow callers
-> > to avoid the refcounting (atomic_dec_and_test) in page lifetime,
-> > which is especially important for SLUB and takes more cycles off
-> > the page allocator...
-> >
-> > I don't know exactly what you're going to do after that to get a
-> > stable reference to slab pages. I guess you can read the page
-> > flags and speculatively take some slab locks and recheck etc...
-> 
-> For reliably we could skip page lock on zero refcounted pages.
-> 
-> We may lose the PG_hwpoison bit on races with __SetPageSlub*, however
-> it should be an acceptable imperfection.
-
-I think if you're wiling to accept these problems, then it is
-completely reasonable to also accept similar races with kernel
-fastpaths to avoid extra overheads there.
+Someone also was interested in using brlocks elsewhere, you'll be
+unhappy to know! :) Yes I would really like to see an RCU
+implementation _eventually_, but as I say, that is probably a
+whole project on its own.
 
