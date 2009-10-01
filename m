@@ -1,110 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbZJALI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbZJALNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756346AbZJALI4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 07:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756316AbZJALI4
+	id S1756368AbZJALNL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 07:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756357AbZJALNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 07:08:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49073 "EHLO mx3.mail.elte.hu"
+	Thu, 1 Oct 2009 07:13:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57527 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756307AbZJALIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 07:08:55 -0400
-Date: Thu, 1 Oct 2009 13:08:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Huang Ying <ying.huang@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] x86, mce: rename finished to valid in struct mce II
-Message-ID: <20091001110850.GA32337@elte.hu>
-References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com> <4AC05BBF.3010102@jp.fujitsu.com> <4AC05CFC.4020702@jp.fujitsu.com> <4AC0FF58.5040302@linux.intel.com> <4AC1C80F.8010904@jp.fujitsu.com> <4AC2926F.4080503@linux.intel.com> <4AC29645.1010209@zytor.com> <4AC2E103.5090707@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AC2E103.5090707@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1756337AbZJALNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 07:13:08 -0400
+Date: Thu, 1 Oct 2009 21:13:02 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: michael@ellerman.id.au, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] perf_event, powerpc: Fix compilation after big
+ perf_counter rename
+Message-Id: <20091001211302.601f2837.sfr@canb.auug.org.au>
+In-Reply-To: <20091001074201.GA6300@elte.hu>
+References: <19128.4280.813369.589704@cargo.ozlabs.ibm.com>
+	<1253584591.7103.197.camel@pasglop>
+	<20090922072834.GA25470@elte.hu>
+	<1253606415.7103.216.camel@pasglop>
+	<1253620332.10476.4.camel@concordia>
+	<20090923124420.GA5525@elte.hu>
+	<1253747995.6110.5.camel@concordia>
+	<20090924121423.GB12262@elte.hu>
+	<1253798755.16237.4.camel@concordia>
+	<20090925095841.8578073a.sfr@canb.auug.org.au>
+	<20091001074201.GA6300@elte.hu>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__1_Oct_2009_21_13_02_+1000_Tc3=iddc8h0I6l07"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__1_Oct_2009_21_13_02_+1000_Tc3=iddc8h0I6l07
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Andi Kleen <ak@linux.intel.com> wrote:
+Hi Ingo,
 
-> H. Peter Anvin wrote:
->> On 09/29/2009 04:04 PM, Andi Kleen wrote:
->>> Hidetoshi Seto wrote:
->>>> Andi Kleen wrote:
->>>>> struct mce is exported to user space. I don't think it's a good idea
->>>>> to rename fields in exported structures like this.  That just causes confusion.
->>>> I don't know any other real user of this struct than the mcelog and the
->>>> mce test suite.  In other words, I expected that you (Huang and Andi) are
->>>> only users who may be confused by this kind of change.
->>> Also I should add there are other consumers of /dev/mcelog, not just
->>> mcelog/mce-inject.
->>>
->>
->> Details?
+On Thu, 1 Oct 2009 09:42:01 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 >
-> e.g. mced
+> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>=20
+> > On Thu, 24 Sep 2009 23:25:55 +1000 Michael Ellerman <michael@ellerman.i=
+d.au> wrote:
+> > >
+> > > Give me a day or two, I should be able to add a per-branch setting for
+> > > who to send mails to without too much trouble.
+> >=20
+> > In the mean time I don't now if someone has pointed you at these today:
+> >=20
+> > http://kisskb.ellerman.id.au/kisskb/branch/12/
+>=20
+> That's an upstream warning.
 
-Am i the only one who finds Andi's reply and discussion methods in such 
-matters utterly unproductive and intentionally obstructive?
+When I sent that to you, I was referring to these build results:
 
-Firstly, the initial sentence of:
+http://kisskb.ellerman.id.au/kisskb/buildresult/1307802/
 
-  " Also I should add there are other consumers of /dev/mcelog, not just
-    mcelog/mce-inject. "
+which (as you say) was only a waning in the rest of the kernel but is
+turned into an error by the -Werror we use when building arch/powerpc.
+The warning came from commit 4765c1db84c73f775eb1822a009117cbae524e9e
+("rcu-tiny: The Bloatwatch Edition, v6") in the -tip tree and fixed by
+commit 5ef9b8e59c043624fb44e31439cecf7f8b4cd62a ("rcu: Clean up the
+warning message about RCU not defined") the next day (in the -tip tree).
+So no big problem.  Neither of these commits are upstream.
 
-Was IMO designed to be as unhelpful as possible, while still making his 
-point. It would have been _so_ easy for Andi to be a bit more helpful to 
-add this little bit of information to the sentence:
+I was just filling in the role of notifying you of build problems until
+Michael can automate it.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-   "..., such as 'mced'."
+--Signature=_Thu__1_Oct_2009_21_13_02_+1000_Tc3=iddc8h0I6l07
+Content-Type: application/pgp-signature
 
-A communication style like that sucks on lkml, a lot. It's vasteful 
-(costs time) and is deceptive as well and holds up the technical 
-discussion.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-The "which are those?" basic question was to be expected, especially 
-given that mced is a very, very obscure project barely findable via 
-googling around. It's not packaged up and not available in rpmfind.net's 
-vast package repo. So Andi cannot credibly claim a "oh, I thought that's 
-obvious" defense.
+iEYEARECAAYFAkrEjr4ACgkQjjKRsyhoI8yrlACeOP3p43pl1NTk/I/1QmehQpnQ
+FmkAnRIrTU46n6YEjCk10Qe1AAhbphtt
+=MLFF
+-----END PGP SIGNATURE-----
 
-Nor is the second (again maximally minimal) reply from Andi helpful:
-
-   "e.g. mced"
-
-... which still implies that "there might be others". But it does not 
-tell us what _Andi_ thinks about that. A fair, honest, helpful reply 
-would have been to write the truth straight away, via something like:
-
-  " Also I should add there are other consumers of /dev/mcelog, not just
-    mcelog/mce-inject. There's a tiny, still-obscure project called 
-    'mced' - and there might be others although i dont know of any. 
-    Granted, for our purposes, mcelog/mce-inject are the main ones to 
-    care about. "
-
-And look how such an honest and helpful reply would convey the right 
-kind of technical message, instead of this multiple (and avoidable) 
-ping-pong trying to spoon-feed information which still conveys a 
-deceptive technical message? And that's all just because Andi apparently 
-disagrees with the direction of the discussion?
-
-This lack of basic honestly and helpfulnesss is one of the reasons why i 
-have to ignore most of Andi's mails btw. Such exchanges show the attempt 
-of trying to treat information as a weapon - giving it out 
-conservatively while taking it in liberally and hoarding it. That's very 
-much against basic FOSS principles. It is also very hard for me to trust 
-a person who is willing to hurt (stand in the way of) others with such 
-an ease of mind.
-
-	Ingo
+--Signature=_Thu__1_Oct_2009_21_13_02_+1000_Tc3=iddc8h0I6l07--
