@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbZJAJgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZJAJic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbZJAJgD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 05:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbZJAJgC
+	id S1756038AbZJAJic (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 05:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbZJAJib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 05:36:02 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:52217 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755649AbZJAJgA (ORCPT
+	Thu, 1 Oct 2009 05:38:31 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:44169 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756011AbZJAJib (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 05:36:00 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Date: Thu, 1 Oct 2009 11:36:01 +0200
-User-Agent: KMail/1.9.9
-Cc: arjan@infradead.org, realnc@arcor.de, linux-kernel@vger.kernel.org
-References: <20090906205952.GA6516@elte.hu> <200909082222.44828.elendil@planet.nl> <1252489988.26522.46.camel@pasglop> <200909091355.56335.elendil@planet.nl> <200909091355.56335.elendil@planet.nl> <1252632981.8566.10.camel@pasglop> <200909162027.29850.elendil@planet.nl> <200909162027.29850.elendil@planet.nl> <1253150999.8375.329.camel@pasglop>
-In-reply-To: <1253150999.8375.329.camel@pasglop>
+	Thu, 1 Oct 2009 05:38:31 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4AC478B2.5020707@cam.ac.uk>
+Date: Thu, 01 Oct 2009 10:38:58 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090803)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910011136.03590.elendil@planet.nl>
-X-OriginalArrivalTime: 01 Oct 2009 09:36:03.0508 (UTC) FILETIME=[97E1C740:01CA427A]
+To: =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
+	<u.kleine-koenig@pengutronix.de>
+CC: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 33/34] move lis3l02dq_remove to .devexit.text
+References: <20091001082607.GA2181@pengutronix.de> <1254385718-14254-33-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1254385718-14254-33-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2009-09-16 at 20:27 +0200, Frans Pop wrote:
->> Benjamin Herrenschmidt wrote:
->> > I'll have a look after the merge window madness. Multiple windows is
->> > also still an option I suppose even if i don't like it that much: we
->> > could support double-click on an app or "global" in the left list,
->> > making that pop a new window with the same content as the right pane
->> > for that app (or global) that updates at the same time as the rest.
->>  
->> I have another request. If I select a specific application to watch (say
->> a mail client) but it is idle for a while and thus has no latencies, it
->> will get dropped from the list and thus my selection of it will be lost.
->> 
->> It would be nice if in that case a selected application would stay
->> visible and selected, or maybe get reselected automatically when it
->> appears again.
+Thanks Uwe
+
+Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
+> The function lis3l02dq_remove is used only wrapped by __devexit_p so
+> define it using __devexit.
 > 
-> Hrm... I though I forced the selected app to remain ... or maybe I
-> wanted to do that and failed :-) Ok. On the list. Please ping me next
-> week if nothing happens.
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Cc: Jonathan Cameron <jic23@cam.ac.uk>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  drivers/staging/iio/accel/lis3l02dq_core.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/staging/iio/accel/lis3l02dq_core.c b/drivers/staging/iio/accel/lis3l02dq_core.c
+> index f008837..80e89a6 100644
+> --- a/drivers/staging/iio/accel/lis3l02dq_core.c
+> +++ b/drivers/staging/iio/accel/lis3l02dq_core.c
+> @@ -871,7 +871,7 @@ err_ret:
+>  }
+>  
+>  /* fixme, confirm ordering in this function */
+> -static int lis3l02dq_remove(struct spi_device *spi)
+> +static int __devexit lis3l02dq_remove(struct spi_device *spi)
+>  {
+>  	int ret;
+>  	struct lis3l02dq_state *st = spi_get_drvdata(spi);
 
-As requested: ping?
-
-And while I'm writing anyway, one more suggestion.
-I find the fact that the buttons jump twice every 30 seconds (because of a 
-change in the timer between <10 and >=10 seconds) slightly annoying.
-Any chance of making the position of the buttons fixed? One option could be 
-moving the timer to the left side of the bottom bar.
-
-Cheers,
-FJP
