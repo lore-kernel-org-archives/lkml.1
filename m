@@ -1,47 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbZJAJcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbZJAJbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbZJAJcq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 05:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbZJAJcp
+	id S1755731AbZJAJbG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 05:31:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbZJAJbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 05:32:45 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:13527 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755383AbZJAJcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 05:32:45 -0400
-Date: Thu, 1 Oct 2009 11:28:47 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20091001092847.GG5718@redhat.com>
-References: <4ABA61D1.80703@gmail.com> <4ABA78DC.7070604@redhat.com> <4ABA8FDC.5010008@gmail.com> <4ABB1D44.5000007@redhat.com> <4ABBB46D.2000102@gmail.com> <4ABC7DCE.2000404@redhat.com> <4ABD36E3.9070503@gmail.com> <4ABF33B2.4000805@redhat.com> <4AC3B9C6.5090408@gmail.com> <4AC46989.7030502@redhat.com>
+	Thu, 1 Oct 2009 05:31:05 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49091 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755243AbZJAJbF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 05:31:05 -0400
+Date: Thu, 1 Oct 2009 11:31:06 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 31/34] move virtrng_remove to .devexit.text
+Message-ID: <20091001093106.GA6386@pengutronix.de>
+References: <20091001082607.GA2181@pengutronix.de> <1254385718-14254-31-git-send-email-u.kleine-koenig@pengutronix.de> <200910011044.48293.borntraeger@de.ibm.com> <20091001091218.GE5718@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4AC46989.7030502@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091001091218.GE5718@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 10:34:17AM +0200, Avi Kivity wrote:
->> Second, I do not use ioeventfd anymore because it has too many problems
->> with the surrounding technology.  However, that is a topic for a
->> different thread.
->>    
->
-> Please post your issues.  I see ioeventfd/irqfd as critical kvm interfaces.
+Hello,
 
-I second that. AFAIK ioeventfd/irqfd got exposed to userspace in 2.6.32-rc1,
-if there are issues we better nail them before 2.6.32 is out.
-And yes, please start a different thread.
+On Thu, Oct 01, 2009 at 11:12:18AM +0200, Michael S. Tsirkin wrote:
+> On Thu, Oct 01, 2009 at 10:44:48AM +0200, Christian Borntraeger wrote:
+> > Am Donnerstag 01 Oktober 2009 10:28:35 schrieb Uwe Kleine-König:
+> > > The function virtrng_remove is used only wrapped by __devexit_p so define
+> > > it using __devexit.
+> > > 
+> > > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> > > Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> > > Cc: Rusty Russell <rusty@rustcorp.com.au>
+> > > Cc: Michael S. Tsirkin <mst@redhat.com>
+> > > Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+> > 
+> > Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+> 
+> FWIW
+> Acked-by: Michael S. Tsirkin <mst@redhat.com>
+ok
+
+> > It seems that there are similar changes possible in other virtio drivers (e.g. 
+> > virtio_net). 
+http://thread.gmane.org/gmane.linux.kernel/896297/focus=896309
+
+> Yes, and more importantly drivers/virtio/virtio.c as well.
+Hm, I don't see it:
+
+	$ git grep -E '__(dev)?exit_p' linus/master:drivers/virtio/virtio.c
+
+	$
+
+Well, you could add something, but adding __devexit is a noop for most
+kernels.  It matters only if you don't have CONFIG_HOTPLUG.
+
+In this series I only addressed drivers that use __{,dev}exit and
+__{,dev}exit_p inconsistenly.  I.e. my script greps for __{,dev}exit_p
+and checks the prototype of the wrapped function.  I have another
+script that does a similar check for platform_devices in general.  This
+one also notices if you have a __devexit function that isn't wrapped by
+__devexit_p.
+
+So if you want to see drivers/virtio/virtio.c improving, send patches
+yourself :-)
+ 
+Best regards
+Uwe
 
 -- 
-MST
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
