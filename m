@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbZJAPDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbZJAPLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755599AbZJAPDk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 11:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbZJAPDj
+	id S1754066AbZJAPLa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 11:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbZJAPL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 11:03:39 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:42948 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755292AbZJAPDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 11:03:39 -0400
-Date: Thu, 1 Oct 2009 16:03:46 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Tejun Heo <tj@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] slqb: Record what node is local to a kmem_cache_cpu
-Message-ID: <20091001150346.GD21906@csn.ul.ie>
-References: <84144f020909220638l79329905sf9a35286130e88d0@mail.gmail.com> <20090922135453.GF25965@csn.ul.ie> <84144f020909221154x820b287r2996480225692fad@mail.gmail.com> <20090922185608.GH25965@csn.ul.ie> <20090930144117.GA17906@csn.ul.ie> <alpine.DEB.1.10.0909301053550.9450@gentwo.org> <20090930220541.GA31530@csn.ul.ie> <alpine.DEB.1.10.0909301941570.11850@gentwo.org> <20091001104046.GA21906@csn.ul.ie> <alpine.DEB.1.10.0910011028380.3911@gentwo.org>
+	Thu, 1 Oct 2009 11:11:29 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:52748 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753123AbZJAPL2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 11:11:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=b1goYtj+Fpwx6JC9st5KEIntRl8jVmcWb9WJ0yk509aZQ/k6dMZkplT9rtskm5/ZLz
+         gHi4fHkvRXjLZ4NfqCtuH37hUgZvkW185H+X7yk2dc+tn9K0EJXzX4OyoUxcllE1eE4K
+         6WBeuX3H+1qtNfmOvmWM3an0TyfbnIaHWP8q0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0910011028380.3911@gentwo.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Matteo Croce <technoboy85@gmail.com>
+Date: Thu, 1 Oct 2009 17:11:10 +0200
+Message-ID: <40101cc30910010811v5d15ff4cx9dd57c9cc9b4b045@mail.gmail.com>
+Subject: [PATCH] AMD Geode LX optimizations
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 10:32:54AM -0400, Christoph Lameter wrote:
-> On Thu, 1 Oct 2009, Mel Gorman wrote:
-> 
-> > > Frees are done directly to the target slab page if they are not to the
-> > > current active slab page. No centralized locks. Concurrent frees from
-> > > processors on the same node to multiple other nodes (or different pages
-> > > on the same node) can occur.
-> > >
-> >
-> > So as a total aside, SLQB has an advantage in that it always uses object
-> > in LIFO order and is more likely to be cache hot. SLUB has an advantage
-> > when one CPU allocates and another one frees because it potentially
-> > avoids a cache line bounce. Might be something worth bearing in mind
-> > when/if a comparison happens later.
-> 
-> SLQB may use cache hot objects regardless of their locality. SLUB
-> always serves objects that have the same locality first (same page).
-> SLAB returns objects via the alien caches to the remote node.
-> So object allocations with SLUB will generate less TLB pressure since they
-> are localized.
+Hi,
+i found that we can optimize a bit the kernel for the AMD Geode LX.
+I made this simple patch against a 2.6.31 kernel.
+Tested, compiles and works fine.
 
-True, it might have been improved more if SLUB knew what local hugepage it
-resided within as the kernel portion of the address space is backed by huge
-TLB entries. Note that SLQB could have an advantage here early in boot as
-the page allocator will tend to give it back pages within a single huge TLB
-entry. It loses the advantage when the system has been running for a very long
-time but it might be enough to skew benchmark results on cold-booted systems.
+Signed-off-by: Matteo Croce <technoboy85@gmail.com>
 
-> SLUB objects are immediately returned to the remote node.
-> SLAB/SLQB keeps them around for reallocation or queue processing.
-> 
-> > > Look at fallback_alloc() in slab. You can likely copy much of it. It
-> > > considers memory policies and cpuset constraints.
-> > >
-> > True, it looks like some of the logic should be taken from there all right. Can
-> > the treatment of memory policies be dealt with as a separate thread though? I'd
-> > prefer to get memoryless nodes sorted out before considering the next two
-> > problems (per-cpu instability on ppc64 and memory policy handling in SLQB).
-> 
-> Separate email thread? Ok.
-> 
+--- a/arch/x86/Makefile_32.cpu	2009-09-10 21:16:53.198243207 +0200
++++ b/arch/x86/Makefile_32.cpu	2009-09-10 21:21:28.434245121 +0200
+@@ -39,7 +39,7 @@
 
-Yes, but I'll be honest. It'll be at least two weeks before I can tackle
-memory policy related issues in SLQB. It's not high on my list of
-priorities. I'm more concerned with breakage on ppc64 and a patch that
-forces it to be disabled. Minimally, I want this resolved before getting
-distracted by another thread.
+ # Geode GX1 support
+ cflags-$(CONFIG_MGEODEGX1)	+= -march=pentium-mmx
+-
++cflags-$(CONFIG_MGEODE_LX)	+= $(call cc-option,-march=geode,-march=pentium-mmx)
+ # add at the end to overwrite eventual tuning options from earlier
+ # cpu entries
+ cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
+--- a/arch/x86/Kconfig.cpu	2009-10-01 16:51:56.567771217 +0200
++++ b/arch/x86/Kconfig.cpu	2009-10-01 16:52:25.936010648 +0200
+@@ -397,7 +397,7 @@
+ # generates cmov.
+ config X86_CMOV
+ 	def_bool y
+-	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM ||
+MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE ||
+MEFFICEON || X86_64)
++	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM ||
+MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE ||
+MEFFICEON || MGEODE_LX || X86_64)
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+ config X86_MINIMUM_CPU_FAMILY
+ 	int
