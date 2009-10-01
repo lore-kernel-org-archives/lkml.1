@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbZJAI3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932339AbZJAIbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932308AbZJAI3x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932104AbZJAI3u
+	id S932339AbZJAIbv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932293AbZJAI3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:29:50 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56692 "EHLO
+	Thu, 1 Oct 2009 04:29:48 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:56683 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932263AbZJAI3q (ORCPT
+	with ESMTP id S932208AbZJAI3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:29:46 -0400
+	Thu, 1 Oct 2009 04:29:45 -0400
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       "Figo.zhang" <figo1802@gmail.com>, alsa-devel@alsa-project.org
-Subject: [PATCH 24/34] don't use __devexit_p to wrap snd_sgio2audio_remove
-Date: Thu,  1 Oct 2009 10:28:28 +0200
-Message-Id: <1254385718-14254-24-git-send-email-u.kleine-koenig@pengutronix.de>
+       "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       Yang Hongyang <yanghy@cn.fujitsu.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-scsi@vger.kernel.org
+Subject: [PATCH 25/34] don't use __devexit_p to wrap snirm710_driver_remove
+Date: Thu,  1 Oct 2009 10:28:29 +0200
+Message-Id: <1254385718-14254-25-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.4.3
 In-Reply-To: <20091001082607.GA2181@pengutronix.de>
 References: <20091001082607.GA2181@pengutronix.de>
@@ -33,31 +36,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function snd_sgio2audio_remove is defined using __exit, so don't use
-__devexit_p but __exit_p to wrap it.
+The function snirm710_driver_remove is defined using __exit, so don't
+use __devexit_p but __exit_p to wrap it.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Figo.zhang <figo1802@gmail.com>
-Cc: alsa-devel@alsa-project.org
+Cc: James E.J. Bottomley <James.Bottomley@suse.de>
+Cc: Yang Hongyang <yanghy@cn.fujitsu.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-scsi@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 ---
- sound/mips/sgio2audio.c |    2 +-
+ drivers/scsi/sni_53c710.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/sound/mips/sgio2audio.c b/sound/mips/sgio2audio.c
-index e497525..e24ba5a 100644
---- a/sound/mips/sgio2audio.c
-+++ b/sound/mips/sgio2audio.c
-@@ -984,7 +984,7 @@ static int __exit snd_sgio2audio_remove(struct platform_device *pdev)
+diff --git a/drivers/scsi/sni_53c710.c b/drivers/scsi/sni_53c710.c
+index 37b3359..491a088 100644
+--- a/drivers/scsi/sni_53c710.c
++++ b/drivers/scsi/sni_53c710.c
+@@ -133,7 +133,7 @@ static int __exit snirm710_driver_remove(struct platform_device *dev)
  
- static struct platform_driver sgio2audio_driver = {
- 	.probe	= snd_sgio2audio_probe,
--	.remove	= __devexit_p(snd_sgio2audio_remove),
-+	.remove	= __exit_p(snd_sgio2audio_remove),
- 	.driver = {
- 		.name	= "sgio2audio",
+ static struct platform_driver snirm710_driver = {
+ 	.probe	= snirm710_probe,
+-	.remove	= __devexit_p(snirm710_driver_remove),
++	.remove	= __exit_p(snirm710_driver_remove),
+ 	.driver	= {
+ 		.name	= "snirm_53c710",
  		.owner	= THIS_MODULE,
 -- 
 1.6.4.3
