@@ -1,93 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZJAIKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbZJAIQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbZJAIKe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbZJAIKb
+	id S1755875AbZJAIQA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755857AbZJAIKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:10:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38367 "EHLO hera.kernel.org"
+	Thu, 1 Oct 2009 04:10:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38327 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755848AbZJAIKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:10:18 -0400
+	id S1755839AbZJAIKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 04:10:06 -0400
 From: Tejun Heo <tj@kernel.org>
 To: jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 05/19] kthread: implement kthread_data()
-Date: Thu,  1 Oct 2009 17:09:04 +0900
-Message-Id: <1254384558-1018-6-git-send-email-tj@kernel.org>
+Subject: [PATCH 06/19] acpi: use queue_work_on() instead of binding workqueue worker to cpu0
+Date: Thu,  1 Oct 2009 17:09:05 +0900
+Message-Id: <1254384558-1018-7-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1254384558-1018-1-git-send-email-tj@kernel.org>
 References: <1254384558-1018-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 08:09:37 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 08:09:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement kthread_data() which takes @task pointing to a kthread and
-returns @data specified when creating the kthread.  The caller is
-responsible for ensuring the validity of @task when calling this
-function.
+ACPI works need to be executed on cpu0 and acpi/osl.c achieves this by
+creating singlethread workqueue and then binding it to cpu0 from a
+work which is quite unorthodox.  Make it create regular workqueues and
+use queue_work_on() instead.  This is in preparation of concurrency
+managed workqueue and the extra workers won't be a problem after it's
+implemented.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
+NOT_SIGNED_OFF_YET
 ---
- include/linux/kthread.h |    1 +
- kernel/kthread.c        |   15 +++++++++++++++
- 2 files changed, 16 insertions(+), 0 deletions(-)
+ drivers/acpi/osl.c |   41 ++++++++++++-----------------------------
+ 1 files changed, 12 insertions(+), 29 deletions(-)
 
-diff --git a/include/linux/kthread.h b/include/linux/kthread.h
-index aabc8a1..14f63e8 100644
---- a/include/linux/kthread.h
-+++ b/include/linux/kthread.h
-@@ -30,6 +30,7 @@ struct task_struct *kthread_create(int (*threadfn)(void *data),
- void kthread_bind(struct task_struct *k, unsigned int cpu);
- int kthread_stop(struct task_struct *k);
- int kthread_should_stop(void);
-+void *kthread_data(struct task_struct *k);
- 
- int kthreadd(void *unused);
- extern struct task_struct *kthreadd_task;
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 5fe7099..bd4cb7f 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -35,6 +35,7 @@ struct kthread_create_info
- 
- struct kthread {
- 	int should_stop;
-+	void *data;
- 	struct completion exited;
- };
- 
-@@ -54,6 +55,19 @@ int kthread_should_stop(void)
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index 7c1c59e..f742b7b 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -191,36 +191,11 @@ acpi_status __init acpi_os_initialize(void)
+ 	return AE_OK;
  }
- EXPORT_SYMBOL(kthread_should_stop);
  
-+/**
-+ * kthread_data - return data value specified on kthread creation
-+ * @task: kthread task in question
-+ *
-+ * Return the data value specified when kthread @task was created.
-+ * The caller is responsible for ensuring the validity of @task when
-+ * calling this function.
-+ */
-+void *kthread_data(struct task_struct *task)
-+{
-+	return to_kthread(task)->data;
-+}
-+
- static int kthread(void *_create)
+-static void bind_to_cpu0(struct work_struct *work)
+-{
+-	set_cpus_allowed_ptr(current, cpumask_of(0));
+-	kfree(work);
+-}
+-
+-static void bind_workqueue(struct workqueue_struct *wq)
+-{
+-	struct work_struct *work;
+-
+-	work = kzalloc(sizeof(struct work_struct), GFP_KERNEL);
+-	INIT_WORK(work, bind_to_cpu0);
+-	queue_work(wq, work);
+-}
+-
+ acpi_status acpi_os_initialize1(void)
  {
- 	/* Copy data: it's on kthread's stack */
-@@ -64,6 +78,7 @@ static int kthread(void *_create)
- 	int ret;
+-	/*
+-	 * On some machines, a software-initiated SMI causes corruption unless
+-	 * the SMI runs on CPU 0.  An SMI can be initiated by any AML, but
+-	 * typically it's done in GPE-related methods that are run via
+-	 * workqueues, so we can avoid the known corruption cases by binding
+-	 * the workqueues to CPU 0.
+-	 */
+-	kacpid_wq = create_singlethread_workqueue("kacpid");
+-	bind_workqueue(kacpid_wq);
+-	kacpi_notify_wq = create_singlethread_workqueue("kacpi_notify");
+-	bind_workqueue(kacpi_notify_wq);
+-	kacpi_hotplug_wq = create_singlethread_workqueue("kacpi_hotplug");
+-	bind_workqueue(kacpi_hotplug_wq);
++	kacpid_wq = create_workqueue("kacpid");
++	kacpi_notify_wq = create_workqueue("kacpi_notify");
++	kacpi_hotplug_wq = create_workqueue("kacpi_hotplug");
+ 	BUG_ON(!kacpid_wq);
+ 	BUG_ON(!kacpi_notify_wq);
+ 	BUG_ON(!kacpi_hotplug_wq);
+@@ -759,7 +734,15 @@ static acpi_status __acpi_os_execute(acpi_execute_type type,
+ 		(type == OSL_NOTIFY_HANDLER ? kacpi_notify_wq : kacpid_wq);
+ 	dpc->wait = hp ? 1 : 0;
+ 	INIT_WORK(&dpc->work, acpi_os_execute_deferred);
+-	ret = queue_work(queue, &dpc->work);
++
++	/*
++	 * On some machines, a software-initiated SMI causes corruption unless
++	 * the SMI runs on CPU 0.  An SMI can be initiated by any AML, but
++	 * typically it's done in GPE-related methods that are run via
++	 * workqueues, so we can avoid the known corruption cases by always
++	 * queueing on CPU 0.
++	 */
++	ret = queue_work_on(0, queue, &dpc->work);
  
- 	self.should_stop = 0;
-+	self.data = data;
- 	init_completion(&self.exited);
- 	current->vfork_done = &self.exited;
- 
+ 	if (!ret) {
+ 		printk(KERN_ERR PREFIX
 -- 
 1.6.4.2
 
