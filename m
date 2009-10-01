@@ -1,103 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbZJAG5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZJAHAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755570AbZJAG5V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 02:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbZJAG5U
+	id S1755553AbZJAHAL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 03:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbZJAHAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 02:57:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53703 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754396AbZJAG5T (ORCPT
+	Thu, 1 Oct 2009 03:00:10 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:41484 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753634AbZJAHAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 02:57:19 -0400
-Date: Wed, 30 Sep 2009 23:57:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Santiago Garcia Mantinan <manty@manty.net>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: kernel BUG at drivers/ide/ide-disk.c:187 (2.6.31)
-Message-Id: <20090930235709.43ff1255.akpm@linux-foundation.org>
-In-Reply-To: <20090930110529.GA3676@dis.manty.net>
-References: <20090930110529.GA3676@dis.manty.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Oct 2009 03:00:10 -0400
+Message-ID: <4AC45360.9020800@gmail.com>
+Date: Thu, 01 Oct 2009 08:59:44 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [GIT PULL] scheduler fixes
+References: <20090930170754.0886ff2e@infradead.org> <4AC37FE5.7020200@gmail.com> <alpine.LFD.2.01.0909300909460.6996@localhost.localdomain> <20090930185315.GA9716@elte.hu> <20090930220342.GA2118@elte.hu> <alpine.LFD.2.01.0909301738220.6996@localhost.localdomain> <alpine.LFD.2.01.0909301743150.6996@localhost.localdomain> <4AC43E7E.1000600@gmail.com> <20091001061109.GA21488@elte.hu> <4AC449BD.1060003@gmail.com> <20091001064209.GA25189@elte.hu>
+In-Reply-To: <20091001064209.GA25189@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 01 Oct 2009 08:59:46 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-ide)
+Ingo Molnar a écrit :
 
-On Wed, 30 Sep 2009 13:05:29 +0200 Santiago Garcia Mantinan <manty@manty.net> wrote:
 
-> Hi!
+> The way to check for a disabled option in a Make rule is:
 > 
-> Right after I compiled my first 2.6.31 for my server I got a crash, machine
-> stops at user level, network, keyboard, ... still work, seems to me that
-> only disk access crashes. I know 2.6.31.1 is out but the changelog didn't
-> seem to show anything related to this, I'll try to test it anyway just to be
-> sure.
+> 	ifneq ($(CONFIG_X86_CMPXCHG64),y)
 > 
-> It took me a while to get the crash to happen again and get a photo of the
-> screen which then I passed through gocr and then I corrected (sorry if there
-> are any typos left). It seems that the bug tends to happen on weekends or
-> so, as I had the machine working throughout the week without any problem and
-> then it crashed again on the next weekend, but I haven't identified any
-> special disk related jobs, other than the typical weekly jobs that the
-> distro (Debian) runs, which didn't seem relevant to me.
-> 
-> Machine is a Pentium III and had previously been running 2.6.30.5 without
-> any problem at all.
-> 
-> I don't know what else to add, so I leave here the trace I got, please don't
-> hesitate to contact me if you need any other info.
->
-> ------------[ cut here ]------------
-> kernel BUG at drivers/ide/ide-disk.c:187!
-> invalid opcode; 0000 [#1]
-> last sysfs file: /sys/devices/pci0000:00/0000:00:0c.0/i2c-adapter/i2c-0/name
-> Modules linked in: gl518sm fue smbfs zd1201 tuner tea5767 tda8290 tuner_xc2028
-> snd_sbawe snd_opl3_lib snd_hwdep xc5000 tda9887 snd_sb16_dsp snd_sb_common tuner
-> _simple snd_mpu401_uart tuner_types mt20xx tea5761 snd_rawmidi snd_seq_device tv
-> audio snd_pcm snd_timer snd snd_page_alloc tda7432 msp3400 bttv ir_common i2c_al
-> go_bit v4l2_common uhci_hcd ehci_hcd ohci_hcd videodev v4l1_compat videobuf_dma_
-> sg videobuf_core btcx_risc tveeprom i2c_viapro i2c_core dl2k usbcore parport_pc
-> via_agp parport agpgart
-> 
-> Pid: 77, comm: kblockd/0 Not tainted  (2.6.31 #1)
-> EIP: 0060:[<c0205bca>] EFLAGS: 00010206 CPU: 0
-> EIP is at ide_do_rw_disk+0x26/0x266
-> EAX: ef8d5e00 EBX: 000c2d3f ECX: 000c2d3f EDX: c7911834
-> ESI: ef9e3c00 EDI: 00000088 EBP: c7911834 ESP: ef90beb8
->  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-> Process kblockd/0 (pid: 77, ti=ef90a000 task=ef8feec0 task.ti=ef90a000)
-> Stack:
->  c019df97 c7911834 c791187c c01a5a42 ef8d5200 ef8d9f04 c7911834 ef8d9f04
-> <0> efb090e8 ef8d5200 c01a5b09 00000000 c01ab97d c01fea56 4088c800 00000000
-> <0> ef9e3c00 ef90bf78 c7911834 c01ff098 000004e2 ef90bf13 c02b2334 ef9e3c00
-> Call Trace:
->  [<c019df97>] ? elv_rb_del+0x20/0x2e
->  [<c01a5a42>] ? cfq_remove_request+0xbf/0x162
->  [<c01a5b09>] ? cfq_dispatch_insert+0x24/0x32
->  [<c01ab97d>] ? __const_udelay+0x15/0x16
->  [<c01fea56>] ? __ide_wait_stat+0x81/0xb0
->  [<c01ff098>] ? ide_wait_stat+0x3f/0x6f
->  [<c02055e9>] ? ide_gd_do_request+0x7/0x9
->  [<c01fe7f2>] ? do_ide_request+0x316/0x488
->  [<c010f865>] ? dequeue_task+x90/0x9e
->  [<c029d777>] ? schedule+0x2ad/0x2d9
->  [<c019f63a>] ? __blk_run_queue+0x39/0x60
->  [<c0la4f97>] ? cfq_kick_queue+0x0/0xb
->  [<c01a4fa0>] ? cfq_kick_queue+0x9/0xb
->  [<c011dd82>] ? worker_thread+0xae/0x11c
->  [<c0120354>] ? autoremove_wake_function+0x0/0x2d
->  [<c011dcd4>] ? worker_thread+0x0/0x11c
->  [<c0120084>] ? kthread+0x6b/0x70
->  [<c0120019>] ? kthread+0x0/0x70
->  [<c0102d43>] ? kernel_thread_helper+0x7/0x10
-> Code: 00 c3 31 c0 c3 55 57 56 89 c6 53 89 cb 83 ec 58 f6 46 2a 02 89 54 24 04 8b
->  40 20 74 04 0f 0b eb fe 8b 54 24 04 83 7a 28 01 74 04 <0f> 0b eb fe 8b 48 6c 85
->  c9 74 08 8b 54 24 04 89 f0 ff d1 8b 44
-> EIP: [<c0205bca>] ide_do_rw_disk+0x26/0x266 SS:ESP 0068:ef90beb8
-> ---[ end trace 76b3e81fa9e97b6f ]---
 
+Ah OK, thanks for the explanation, my test 486-build (before your change) just finished to :
+
+arch/x86/built-in.o:(__ksymtab+0xa8): undefined reference to `cmpxchg8b_emu'
+kernel/built-in.o: In function `sched_clock_local':
+/opt/src/linux-2.6/kernel/sched_clock.c:130: undefined reference to `cmpxchg8b_emu'
+kernel/built-in.o: In function `sched_clock_remote':
+/opt/src/linux-2.6/kernel/sched_clock.c:166: undefined reference to `cmpxchg8b_emu'
+make: *** [.tmp_vmlinux1] Error 1
+
+
+
+> As in the disabled case the config variable will be undefined. (and wont 
+> have a value of 'n'). I've done the fix below on your patch.
+> 
+> 	Ingo
+> 
+> Index: linux2/arch/x86/lib/Makefile
+> ===================================================================
+> --- linux2.orig/arch/x86/lib/Makefile
+> +++ linux2/arch/x86/lib/Makefile
+> @@ -16,7 +16,7 @@ ifeq ($(CONFIG_X86_32),y)
+>          lib-y += checksum_32.o
+>          lib-y += strstr_32.o
+>          lib-y += semaphore_32.o string_32.o
+> -ifeq ($(CONFIG_X86_CMPXCHG64),n)
+> +ifneq ($(CONFIG_X86_CMPXCHG64),y)
+>          lib-y += cmpxchg8b_emu.o
+>  endif
+>          lib-$(CONFIG_X86_USE_3DNOW) += mmx_32.o
+
+
+Thats perfect this fixed my 486-build, thanks again.
+
+Looking at disassembly I still see atomic64_cmpxchg(),
+atomic64_xchg(), atomic64_add_return(),  and friends being
+included... (but not used)
+
+I'll check if similar patch could be done as well for atomic64 functions.
