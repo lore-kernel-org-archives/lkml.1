@@ -1,36 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbZJAHLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZJAHPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755590AbZJAHLn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 03:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbZJAHLm
+	id S1755603AbZJAHPf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 03:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbZJAHPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 03:11:42 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:33901 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755534AbZJAHLm (ORCPT
+	Thu, 1 Oct 2009 03:15:35 -0400
+Received: from mail-yx0-f199.google.com ([209.85.210.199]:54508 "EHLO
+	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754185AbZJAHPe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 03:11:42 -0400
-Date: Thu, 1 Oct 2009 02:11:35 -0500 (CDT)
-From: manoj.iyer@canonical.com
-To: Takashi Iwai <tiwai@suse.de>
-cc: manoj.iyer@canonical.com, perex@perex.cz, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org, Joey Stanford <joey@canonical.com>
-Subject: Re: [PATCH REALTEK] Added quirk to enable sound on Toshiba NB200
-In-Reply-To: <s5hhbulov3f.wl%tiwai@suse.de>
-Message-ID: <alpine.DEB.2.00.0910010208220.7813@little>
-References: <alpine.DEB.2.00.0909230036570.29432@little> <s5h3a6eb46r.wl%tiwai@suse.de> <alpine.DEB.2.00.0909281022500.2112@little> <s5hd45agqoi.wl%tiwai@suse.de> <alpine.DEB.2.00.0909291812030.2426@little> <s5hhbulov3f.wl%tiwai@suse.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 1 Oct 2009 03:15:34 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+In-Reply-To: <b833952fedbf24c4a16e0d79fe78019357e9652b.1253781660.git.kirill@shutemov.name>
+References: <b833952fedbf24c4a16e0d79fe78019357e9652b.1253781660.git.kirill@shutemov.name>
+Date: Thu, 1 Oct 2009 10:15:38 +0300
+Message-ID: <cc557aab0910010015i2e471c13mb4529409b3e68e45@mail.gmail.com>
+Subject: Re: [PATCH v5 1/2] ARM: Pass IFSR register to do_PrefetchAbort()
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: linux-arm-kernel@lists.infradead.org,
+       Russell King <linux@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Bityutskiy Artem <Artem.Bityutskiy@nokia.com>,
+       Koskinen Aaro <aaro.koskinen@nokia.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 2.6.31.x is way too old for testing the new stuff :)
-> Any chance to test 2.6.32-rc1?
+On Thu, Sep 24, 2009 at 11:49 AM, Kirill A. Shutemov
+<kirill@shutemov.name> wrote:
+> Instruction fault status register, IFSR, was introduced on ARMv6 to
+> provide status information about the last insturction fault. It
+> needed for proper prefetch abort handling.
+>
+> Now we have three prefetch abort model:
+>
+>  * legacy - for CPUs before ARMv6. They doesn't provide neither
+>    IFSR nor IFAR. We simulate IFSR with section translation fault
+>    status for them to generalize code;
+>  * ARMv6 - provides IFSR, but not IFAR;
+>  * ARMv7 - provides both IFSR and IFAR.
+>
+> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
 
-http://kernel.ubuntu.com/~kernel-ppa/mainline/v2.6.32-rc1/
-
-I tried the 2.6.32-rc1 today, and sound does not work for me on the NB200.
-
---- manjo
+Any chances to get it into 2.6.32?
