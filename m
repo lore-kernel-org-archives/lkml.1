@@ -1,83 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZJAGtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZJAGth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbZJAGtP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 02:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbZJAGtP
+	id S1755560AbZJAGth (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 02:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbZJAGtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 02:49:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55380 "EHLO hera.kernel.org"
+	Thu, 1 Oct 2009 02:49:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46004 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753553AbZJAGtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 02:49:14 -0400
-Date: Thu, 1 Oct 2009 06:48:50 GMT
-From: tip-bot for Matt Fleming <matthew.fleming@imgtec.com>
+	id S1753553AbZJAGtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 02:49:35 -0400
+Date: Thu, 1 Oct 2009 06:49:05 GMT
+From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       matthew.fleming@imgtec.com, mingo@elte.hu
+       eric.dumazet@gmail.com, torvalds@linux-foundation.org,
+       a.p.zijlstra@chello.nl, johnstul@us.ibm.com, schwidefsky@de.ibm.com,
+       arjan@infradead.org, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       matthew.fleming@imgtec.com, mingo@elte.hu
-In-Reply-To: <1254152581-18347-1-git-send-email-matt@console-pimps.org>
-References: <1254152581-18347-1-git-send-email-matt@console-pimps.org>
+       eric.dumazet@gmail.com, johnstul@us.ibm.com, a.p.zijlstra@chello.nl,
+       torvalds@linux-foundation.org, schwidefsky@de.ibm.com,
+       arjan@infradead.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4AC43E7E.1000600@gmail.com>
+References: <4AC43E7E.1000600@gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/urgent] tracing: Fix infinite recursion in ftrace_update_pid_func()
-Message-ID: <tip-33974093c024f08caadd2fc71a83bd811ed1831d@git.kernel.org>
-Git-Commit-ID: 33974093c024f08caadd2fc71a83bd811ed1831d
+Subject: [tip:x86/urgent] x86: Don't generate cmpxchg8b_emu if CONFIG_X86_CMPXCHG64=y
+Message-ID: <tip-04edbdef02ec4386a2ae38cab7ae7d166e17a756@git.kernel.org>
+Git-Commit-ID: 04edbdef02ec4386a2ae38cab7ae7d166e17a756
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 06:48:52 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 06:49:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  33974093c024f08caadd2fc71a83bd811ed1831d
-Gitweb:     http://git.kernel.org/tip/33974093c024f08caadd2fc71a83bd811ed1831d
-Author:     Matt Fleming <matthew.fleming@imgtec.com>
-AuthorDate: Mon, 28 Sep 2009 16:43:01 +0100
+Commit-ID:  04edbdef02ec4386a2ae38cab7ae7d166e17a756
+Gitweb:     http://git.kernel.org/tip/04edbdef02ec4386a2ae38cab7ae7d166e17a756
+Author:     Eric Dumazet <eric.dumazet@gmail.com>
+AuthorDate: Thu, 1 Oct 2009 07:30:38 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 1 Oct 2009 08:19:24 +0200
+CommitDate: Thu, 1 Oct 2009 08:42:24 +0200
 
-tracing: Fix infinite recursion in ftrace_update_pid_func()
+x86: Don't generate cmpxchg8b_emu if CONFIG_X86_CMPXCHG64=y
 
-When CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST is enabled
-__ftrace_trace_function contains the current trace function, not
-ftrace_trace_function.
+Conditionaly compile cmpxchg8b_emu.o and EXPORT_SYMBOL(cmpxchg8b_emu).
 
-In ftrace_update_pid_func() we currently incorrectly assign the
-value of ftrace_trace_function to __ftrace_trace_funcion before
-returning.
+This reduces the kernel size a bit.
 
-Without this patch it is possible to execute an infinite recursion
-whereby ftrace_test_stop_func() calls __ftrace_trace_function,
-which was assigned ftrace_test_stop_func() in
-ftrace_update_pid_func().
-
-Signed-off-by: Matt Fleming <matthew.fleming@imgtec.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1254152581-18347-1-git-send-email-matt@console-pimps.org>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: John Stultz <johnstul@us.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+LKML-Reference: <4AC43E7E.1000600@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/ftrace.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/x86/kernel/i386_ksyms_32.c |    2 ++
+ arch/x86/lib/Makefile           |    6 ++++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 46592fe..3724756 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -225,7 +225,11 @@ static void ftrace_update_pid_func(void)
- 	if (ftrace_trace_function == ftrace_stub)
- 		return;
- 
-+#ifdef CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST
- 	func = ftrace_trace_function;
-+#else
-+	func = __ftrace_trace_function;
+diff --git a/arch/x86/kernel/i386_ksyms_32.c b/arch/x86/kernel/i386_ksyms_32.c
+index 1736c5a..9c3bd4a 100644
+--- a/arch/x86/kernel/i386_ksyms_32.c
++++ b/arch/x86/kernel/i386_ksyms_32.c
+@@ -15,8 +15,10 @@ EXPORT_SYMBOL(mcount);
+  * the export, but dont use it from C code, it is used
+  * by assembly code and is not using C calling convention!
+  */
++#ifndef CONFIG_X86_CMPXCHG64
+ extern void cmpxchg8b_emu(void);
+ EXPORT_SYMBOL(cmpxchg8b_emu);
 +#endif
  
- 	if (ftrace_pid_trace) {
- 		set_ftrace_pid_function(func);
+ /* Networking helper routines. */
+ EXPORT_SYMBOL(csum_partial_copy_generic);
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index 3e549b8..85f5db9 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -15,8 +15,10 @@ ifeq ($(CONFIG_X86_32),y)
+         obj-y += atomic64_32.o
+         lib-y += checksum_32.o
+         lib-y += strstr_32.o
+-        lib-y += semaphore_32.o string_32.o cmpxchg8b_emu.o
+-
++        lib-y += semaphore_32.o string_32.o
++ifneq ($(CONFIG_X86_CMPXCHG64),y)
++        lib-y += cmpxchg8b_emu.o
++endif
+         lib-$(CONFIG_X86_USE_3DNOW) += mmx_32.o
+ else
+         obj-y += io_64.o iomap_copy_64.o
