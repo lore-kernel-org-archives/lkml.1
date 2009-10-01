@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbZJAW1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbZJAW2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753623AbZJAW1A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 18:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZJAW07
+	id S1753646AbZJAW2M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 18:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbZJAW2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 18:26:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60985
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753467AbZJAW07 (ORCPT
+	Thu, 1 Oct 2009 18:28:12 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:41776 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753396AbZJAW2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 18:26:59 -0400
-Date: Thu, 01 Oct 2009 15:27:17 -0700 (PDT)
-Message-Id: <20091001.152717.187318570.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: eric.dumazet@gmail.com, jgunthorpe@obsidianresearch.com, vl@samba.org,
-       opurdila@ixiacom.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: SPLICE_F_NONBLOCK semantics...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.01.0910011516390.6996@localhost.localdomain>
-References: <20091001.151102.09812927.davem@davemloft.net>
-	<alpine.LFD.2.01.0910011516390.6996@localhost.localdomain>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 1 Oct 2009 18:28:11 -0400
+Subject: Re: 2.6.32-rc0-git: oops in wireless, iwl3945 related?
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, yi.zhu@intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20091001222413.GB10893@elf.ucw.cz>
+References: <20090929171249.GB14405@elf.ucw.cz>
+	 <1254431783.3959.45.camel@johannes.local>
+	 <20091001222413.GB10893@elf.ucw.cz>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-mFFMDVuZEQo7rbj6aU18"
+Date: Fri, 02 Oct 2009 00:28:13 +0200
+Message-Id: <1254436093.3959.47.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 1 Oct 2009 15:21:44 -0700 (PDT)
 
-> On Thu, 1 Oct 2009, David Miller wrote:
->> 
->> It depends upon our interpretation of how you intended the
->> SPLICE_F_NONBLOCK flag to work when you added it way back
->> when.
->> 
->> Linus introduced  SPLICE_F_NONBLOCK in commit 29e350944fdc2dfca102500790d8ad6d6ff4f69d
->> (splice: add SPLICE_F_NONBLOCK flag )
->> 
->>   It doesn't make the splice itself necessarily nonblocking (because the
->>   actual file descriptors that are spliced from/to may block unless they
->>   have the O_NONBLOCK flag set), but it makes the splice pipe operations
->>   nonblocking.
->> 
->> Linus intention was clear : let SPLICE_F_NONBLOCK control the splice pipe mode only
-> 
-> Ack. The original intent was for the flag to affect the buffering, not the 
-> end points.
+--=-mFFMDVuZEQo7rbj6aU18
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Great, thanks for reviewing.
+On Fri, 2009-10-02 at 00:24 +0200, Pavel Machek wrote:
 
-> Although the more I think about it, the more I suspect that the
-> whole NONBLOCK thing should probably have been two bits, and simply
-> been about "nonblocking input" vs "nonblocking output" (so that you
-> could control both sides on a call-by-call basis).
+> Not sure. I was trying to setup adhoc network, randomly running
+> scripts and pushing interfaces up and down. But I do have timestamps:
+>=20
+> Drat. What is going on? I guess this is from another instance; looks
+> like I did not even notice it. text: address is same so that should be
+> same version...?
 
-I think we could still extend things in this way if we wanted to.
-So if you specify the explicit input and/or output nonblock flag,
-it takes precedence over the SPLICE_F_NONBLOCK thing.
+> Sep 28 22:09:02 amd kernel: Registered led device: iwl-phy0::radio
+> Sep 28 22:09:02 amd kernel: Registered led device: iwl-phy0::assoc
+> Sep 28 22:09:02 amd kernel: Registered led device: iwl-phy0::RX
+> Sep 28 22:09:02 amd kernel: Registered led device: iwl-phy0::TX
+> Sep 28 22:09:02 amd wpa_supplicant[1984]: No network configuration
+> found for the current AP
+> Sep 28 22:09:11 amd wpa_supplicant[1984]: CTRL-EVENT-SCAN-RESULTS=20
+> Sep 28 22:09:11 amd wpa_supplicant[1984]: No network configuration
+> found for the current AP
+> Sep 28 22:09:11 amd kernel: skb_over_panic: text:c07b4113 len:130
+> put:36 head:e4c3edf0 data:e4c3edf0 tail:0xe4c3ee72 end:0xe4c3ee70
+> dev:<NULL>
 
-Anyways, just an idea.
+oddly, this one doesn't even have any of the other messages that we had
+before the problem in the other instance.
+
+johannes
+
+--=-mFFMDVuZEQo7rbj6aU18
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKxSz5AAoJEODzc/N7+QmaYpYQAJoYLQpGHJjhexrQVvVq8jwO
+cy+ctfj0RiCr23mzV97Az83HrTH/3uak/aG/ut9AVn4jwo/+ii2LXE3tVl7OlUgG
+xAUTFr8JrzEPFyssWzTENqASa7cixsSbvsAkyJZYVRbB1WduEvTDgs/31+CYxxmu
+BiOzIMponOP0sK4zGniimPdyTnIKxch3Dg3NHnVTJ2Nne/jj3kyRsV5sdYlP8RpA
+qVUcWQXk4e5K7nT/W3l1MRfX/EbmWVOYpTz3sY/2y16DbqCmf1C7xfVRgi0jsdoi
++cAzVGesIYNH2+yaxkcXv5eanYF3m/ul+ADAS1d1vY8fynByppS09RBY2egslpn2
+bdF2A35YOmCgoToRrcR5E1GJBgCiSGhvGdWu+QETocGPGAWMFDi6rF8BDOwWzfkm
+JgQ+vUozDBGNbMyOjvF/KMLNDyMRsF5ga6q1oQA5lHEC4q9JT66PKAnmeXQuI0fR
+a5SUsztPfZ0popGB4HVQmOW9Qx5S8VLMgwWYeGXsuf+R1KxjnC6aFZgYQmdDp5Pg
+gTX34qN1PiqvE2bv3alIP/VNN8YKRBHhFniq9euHatyKxCtiNfRaNSb1lOLL7C1y
+esxI/JF5DJbmg3cQ1nJTuFxRbaPGt6oxwDMeYh7gaMEPXya1YWLx0XxMSwKt18Qb
+wHmZNIxrrcg3PO9QdIuN
+=d1Na
+-----END PGP SIGNATURE-----
+
+--=-mFFMDVuZEQo7rbj6aU18--
+
