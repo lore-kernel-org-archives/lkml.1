@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbZJAAYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbZJAAb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbZJAAYK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 20:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbZJAAYJ
+	id S1755282AbZJAAb1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 20:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbZJAAb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 20:24:09 -0400
-Received: from mail.perches.com ([173.55.12.10]:1554 "EHLO mail.perches.com"
+	Wed, 30 Sep 2009 20:31:27 -0400
+Received: from borg.medozas.de ([188.40.89.202]:39003 "EHLO borg.medozas.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755134AbZJAAYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 20:24:08 -0400
-Subject: Re: [PATCH 6/9] drivers/media/video/uvc: Use %pUr to print UUIDs
-From: Joe Perches <joe@perches.com>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-kernel@vger.kernel.org, Adrian Hunter <adrian.hunter@nokia.com>,
-       Alex Elder <aelder@sgi.com>, Artem Bityutskiy <dedekind@infradead.org>,
-       Christoph Hellwig <hch@lst.de>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jgarzik@redhat.com>, Matt Mackall <mpm@selenic.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Neil Brown <neilb@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       xfs-masters@oss.sgi.com, linux-media@vger.kernel.org
-In-Reply-To: <200910010220.17534.laurent.pinchart@ideasonboard.com>
-References: <cover.1254193019.git.joe@perches.com>
-	 <111526fa2ce7f728d1f81465a00859c1780f0607.1254193019.git.joe@perches.com>
-	 <200910010220.17534.laurent.pinchart@ideasonboard.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Sep 2009 17:24:10 -0700
-Message-Id: <1254356650.2960.132.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	id S1755241AbZJAAbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 20:31:25 -0400
+Date: Thu, 1 Oct 2009 02:31:24 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Joe Perches <joe@perches.com>
+cc: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>,
+       Simon Horman <horms@verge.net.au>, Julian Anastasov <ja@ssi.bg>,
+       netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       lvs-devel@vger.kernel.org
+Subject: Re: [PATCH 1/2] net/netfilter/ipvs: Move #define KMSG_COMPONENT to
+ Makefile
+In-Reply-To: <1254352160.2960.119.camel@Joe-Laptop.home>
+Message-ID: <alpine.LSU.2.00.0910010219100.7559@obet.zrqbmnf.qr>
+References: <cover.1254349374.git.joe@perches.com>  <0026bcf5aad9ae5036e68fc2dcda9c778d30dc47.1254349375.git.joe@perches.com>  <alpine.LSU.2.00.0910010042540.782@obet.zrqbmnf.qr> <1254352160.2960.119.camel@Joe-Laptop.home>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-01 at 02:20 +0200, Laurent Pinchart wrote:
-> >  		flags = info->flags;
-> >  		if (((flags & UVC_CONTROL_GET_CUR) && !(inf & (1 << 0))) ||
-> >  		    ((flags & UVC_CONTROL_SET_CUR) && !(inf & (1 << 1)))) {
-> > -			uvc_trace(UVC_TRACE_CONTROL, "Control "
-> > -				UVC_GUID_FORMAT "/%u flags don't match "
-> > -				"supported operations.\n",
-> > -				UVC_GUID_ARGS(info->entity), info->selector);
-> > +			uvc_trace(UVC_TRACE_CONTROL,
-> > +				  "Control %pUr/%u flags don't match supported operations.\n",
-> > +				  info->entity, info->selector);
-> 
-> This doesn't fit the 80 columns limit. Please run checkpatch.pl on your patches.
 
-Intentional.  Strings shouldn't be broken across lines unnecessarily.
+On Thursday 2009-10-01 01:09, Joe Perches wrote:
+>On Thu, 2009-10-01 at 00:46 +0200, Jan Engelhardt wrote:
+>> On Thursday 2009-10-01 00:37, Joe Perches wrote:
+>> >This centralizes the definition and removes the
+>> >replicated #defines from all files
+>
+>I think this increased command line length hardly matters.
+>
+>I think a reasonable complaint might be that it separates
+>the definition of a macro from the code.  I think it's
+>similar to the already used KBUILD_MODNAME macro though.
 
-> >  			snprintf(format->name, sizeof format->name,
-> > -				UVC_GUID_FORMAT, UVC_GUID_ARGS(&buffer[5]));
-> > +				 "%pUr", &Buffer[5]);
-> 
-> Should be &buffer[5], not &Buffer[5]. You haven't compiled the patch, have
-> you ? :-)
+KBUILD_MODNAME is special in that it is derived from the actual
+source filename. Of course you could put #define KBUILD_MODNAME "foo"
+in your source file, but that is like putting changelogs there
+when they belong into the git log.
 
-Unintentional.  Did compile allyesconfig.
+>> How about an #include file for the ipvs private things?
+>
+>It's not just IPVS, this style could be used treewide
+>without requiring extra #includes.
 
-cheers, Joe
-
-
+Well I personally prefer the #include instead of hiding such in 
+Makefiles. You know, when newcomers could start doing `grep 
+KMSG_COMPONENT *.[ch]`. Perhaps GCC's -include flag in a Makefile
+to avoid #includes in .c files?
