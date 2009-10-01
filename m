@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZJADYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZJADrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbZJADYj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 23:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZJADYi
+	id S1755549AbZJADrQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 23:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbZJADrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 23:24:38 -0400
-Received: from mga02.intel.com ([134.134.136.20]:18693 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755491AbZJADYh convert rfc822-to-8bit (ORCPT
+	Wed, 30 Sep 2009 23:47:16 -0400
+Received: from smtp-out-042.synserver.de ([212.40.180.42]:1063 "HELO
+	smtp-out-042.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755524AbZJADrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 23:24:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,484,1249282800"; 
-   d="scan'208";a="555594875"
-From: "Shi, Alex" <alex.shi@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "Shi, Alex" <alex.shi@intel.com>, "Chen, Tim C" <tim.c.chen@intel.com>
-Date: Thu, 1 Oct 2009 11:23:20 +0800
-Subject: [PATCH] Fix kernel panic on i386 machine when booting with profile=2
-Thread-Topic: [PATCH] Fix kernel panic on i386 machine when booting with
- profile=2
-Thread-Index: AcpCQs/OijAGJ3qBRE28xebfDGU+fwAAfMpA
-Message-ID: <F7C8A4D3A9905B45A80E4C194793FA6515538BDFC7@PDSMSX501.ccr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Wed, 30 Sep 2009 23:47:15 -0400
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 11811
+Date: Thu, 1 Oct 2009 05:47:16 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [Kernel BUG] ext4 for v2.6.32 round II
+Message-ID: <20091001034716.GA2008@phenom2.trippelsdorf.de>
+References: <E1Msrgx-0001br-MP@closure.thunk.org>
+ <20091001014128.GA2092@phenom2.trippelsdorf.de>
+ <alpine.LFD.2.01.0909301847030.6996@localhost.localdomain>
+ <20091001021531.GA2025@phenom2.trippelsdorf.de>
+ <20091001030151.GR24383@mit.edu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091001030151.GR24383@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-Latest kernel has a kernel panic in booting on i386 machine when profile=2
-setting in cmdline. Find it is due to 'sp' incorrect in profile_pc function.
+On Wed, Sep 30, 2009 at 11:01:51PM -0400, Theodore Tso wrote:
+> Hi Markus, 
+> 
+> I'm pretty sure the following should fix your problems; can you
+> confirm?
 
-BUG: unable to handle kernel NULL pointer dereference at 00000246
-IP: [<c01288b6>] profile_pc+0x2a/0x48
-*pde = 00000000
-Oops: 0000 [#1] SMP
+Yes, everything is fine again.
+Thank you.
 
-Signed-off-by: Alex Shi <alex.shi@intel.com>
----
- arch/x86/kernel/time.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/time.c b/arch/x86/kernel/time.c
-index dcb00d2..c4fedca 100644
---- a/arch/x86/kernel/time.c
-+++ b/arch/x86/kernel/time.c
-@@ -38,7 +38,12 @@ unsigned long profile_pc(struct pt_regs *regs)
- #ifdef CONFIG_FRAME_POINTER
- 		return *(unsigned long *)(regs->bp + sizeof(long));
- #else
-+#ifdef CONFIG_X86_32
-+		unsigned long *sp = (unsigned long *)&regs->sp;
-+#else
- 		unsigned long *sp = (unsigned long *)regs->sp;
-+
-+#endif
- 		/*
- 		 * Return address is either directly at stack pointer
- 		 * or above a saved flags. Eflags has bits 22-31 zero,
 -- 
-1.5.6.2
-
+Markus
