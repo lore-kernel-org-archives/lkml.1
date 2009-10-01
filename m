@@ -1,96 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZJAGth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbZJAGuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755560AbZJAGth (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 02:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbZJAGtg
+	id S1754865AbZJAGuE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 02:50:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbZJAGuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 02:49:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46004 "EHLO hera.kernel.org"
+	Thu, 1 Oct 2009 02:50:03 -0400
+Received: from poutre.nerim.net ([62.4.16.124]:57775 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753553AbZJAGtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 02:49:35 -0400
-Date: Thu, 1 Oct 2009 06:49:05 GMT
-From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       eric.dumazet@gmail.com, torvalds@linux-foundation.org,
-       a.p.zijlstra@chello.nl, johnstul@us.ibm.com, schwidefsky@de.ibm.com,
-       arjan@infradead.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       eric.dumazet@gmail.com, johnstul@us.ibm.com, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org, schwidefsky@de.ibm.com,
-       arjan@infradead.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4AC43E7E.1000600@gmail.com>
-References: <4AC43E7E.1000600@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Don't generate cmpxchg8b_emu if CONFIG_X86_CMPXCHG64=y
-Message-ID: <tip-04edbdef02ec4386a2ae38cab7ae7d166e17a756@git.kernel.org>
-Git-Commit-ID: 04edbdef02ec4386a2ae38cab7ae7d166e17a756
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 06:49:07 +0000 (UTC)
+	id S1753553AbZJAGuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 02:50:01 -0400
+Date: Thu, 1 Oct 2009 08:50:02 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Thomas Backlund <tmb@mandriva.org>, Luca Tettamanti <kronos.it@gmail.com>,
+       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       astarikovskiy@suse.de
+Subject: Re: [PATCH] asus_atk0110: add support for Asus P7P55D
+Message-ID: <20091001085002.1dbc7eee@hyperion.delvare>
+In-Reply-To: <51f3faa70909301638s4eff14edg46420e2e8877fd15@mail.gmail.com>
+References: <20090923191240.GA15198@dreamland.darkstar.lan>
+	<51f3faa70909232018v7e621190m84deb648b08d2135@mail.gmail.com>
+	<20090928131700.GA19243@nb-core2.darkstar.lan>
+	<51f3faa70909281920x2782d8dfm1835ab24779abfa3@mail.gmail.com>
+	<51f3faa70909282134o1d60efekeded09f09b192df6@mail.gmail.com>
+	<68676e00909290707u70d192f2j2f2d4dd07bd07234@mail.gmail.com>
+	<51f3faa70909290740l4f4df186w114bf48e1db3a948@mail.gmail.com>
+	<4AC21E7B.70000@mandriva.org>
+	<51f3faa70909301638s4eff14edg46420e2e8877fd15@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  04edbdef02ec4386a2ae38cab7ae7d166e17a756
-Gitweb:     http://git.kernel.org/tip/04edbdef02ec4386a2ae38cab7ae7d166e17a756
-Author:     Eric Dumazet <eric.dumazet@gmail.com>
-AuthorDate: Thu, 1 Oct 2009 07:30:38 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 1 Oct 2009 08:42:24 +0200
+On Wed, 30 Sep 2009 17:38:21 -0600, Robert Hancock wrote:
+> On Tue, Sep 29, 2009 at 8:49 AM, Thomas Backlund <tmb@mandriva.org> wrote:
+> > Try this one:
+> > http://marc.info/?l=linux-kernel&m=125421276407283&w=2
+> 
+> With that patch it's lasted almost a day with no timeouts, previously
+> I was getting about one every hour. Has that patch been submitted?
 
-x86: Don't generate cmpxchg8b_emu if CONFIG_X86_CMPXCHG64=y
+Do you mean you're still getting timeouts but they are less frequent,
+or you did not get any timeout at all so far?
 
-Conditionaly compile cmpxchg8b_emu.o and EXPORT_SYMBOL(cmpxchg8b_emu).
-
-This reduces the kernel size a bit.
-
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: John Stultz <johnstul@us.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <4AC43E7E.1000600@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/i386_ksyms_32.c |    2 ++
- arch/x86/lib/Makefile           |    6 ++++--
- 2 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/i386_ksyms_32.c b/arch/x86/kernel/i386_ksyms_32.c
-index 1736c5a..9c3bd4a 100644
---- a/arch/x86/kernel/i386_ksyms_32.c
-+++ b/arch/x86/kernel/i386_ksyms_32.c
-@@ -15,8 +15,10 @@ EXPORT_SYMBOL(mcount);
-  * the export, but dont use it from C code, it is used
-  * by assembly code and is not using C calling convention!
-  */
-+#ifndef CONFIG_X86_CMPXCHG64
- extern void cmpxchg8b_emu(void);
- EXPORT_SYMBOL(cmpxchg8b_emu);
-+#endif
- 
- /* Networking helper routines. */
- EXPORT_SYMBOL(csum_partial_copy_generic);
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index 3e549b8..85f5db9 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -15,8 +15,10 @@ ifeq ($(CONFIG_X86_32),y)
-         obj-y += atomic64_32.o
-         lib-y += checksum_32.o
-         lib-y += strstr_32.o
--        lib-y += semaphore_32.o string_32.o cmpxchg8b_emu.o
--
-+        lib-y += semaphore_32.o string_32.o
-+ifneq ($(CONFIG_X86_CMPXCHG64),y)
-+        lib-y += cmpxchg8b_emu.o
-+endif
-         lib-$(CONFIG_X86_USE_3DNOW) += mmx_32.o
- else
-         obj-y += io_64.o iomap_copy_64.o
+-- 
+Jean Delvare
