@@ -1,164 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbZJAJ7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbZJAKAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbZJAJ7k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 05:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbZJAJ7j
+	id S1756143AbZJAKAb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 06:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbZJAKAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 05:59:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55816 "EHLO hera.kernel.org"
+	Thu, 1 Oct 2009 06:00:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55883 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756087AbZJAJ7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 05:59:37 -0400
-Date: Thu, 1 Oct 2009 09:59:12 GMT
-From: tip-bot for Jan Beulich <JBeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jbeulich@novell.com, stable@kernel.org, JBeulich@novell.com,
+	id S1756116AbZJAKA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 06:00:26 -0400
+Date: Thu, 1 Oct 2009 09:59:26 GMT
+From: tip-bot for Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, jmorris@namei.org, hpa@zytor.com,
+       mingo@redhat.com, torvalds@linux-foundation.org, arjan@linux.intel.com,
+       davem@davemloft.net, arjan@infradead.org, jbeulich@novell.com,
        tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com, stable@kernel.org, JBeulich@novell.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4AC34D73020000780001744A@vpn.id2.novell.com>
-References: <4AC34D73020000780001744A@vpn.id2.novell.com>
+Reply-To: mingo@redhat.com, hpa@zytor.com, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       torvalds@linux-foundation.org, davem@davemloft.net, arjan@infradead.org,
+       jbeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090930130523.348ae6c4@infradead.org>
+References: <20090930130523.348ae6c4@infradead.org>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Don't leak 64-bit kernel register values to 32-bit processes
-Message-ID: <tip-24e35800cdc4350fc34e2bed37b608a9e13ab3b6@git.kernel.org>
-Git-Commit-ID: 24e35800cdc4350fc34e2bed37b608a9e13ab3b6
+Subject: [tip:x86/asm] x86: Turn the copy_from_user check into an (optional) compile time warning
+Message-ID: <tip-4a3127693001c61a21d1ce680db6340623f52e93@git.kernel.org>
+Git-Commit-ID: 4a3127693001c61a21d1ce680db6340623f52e93
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 09:59:13 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 09:59:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  24e35800cdc4350fc34e2bed37b608a9e13ab3b6
-Gitweb:     http://git.kernel.org/tip/24e35800cdc4350fc34e2bed37b608a9e13ab3b6
-Author:     Jan Beulich <JBeulich@novell.com>
-AuthorDate: Wed, 30 Sep 2009 11:22:11 +0100
+Commit-ID:  4a3127693001c61a21d1ce680db6340623f52e93
+Gitweb:     http://git.kernel.org/tip/4a3127693001c61a21d1ce680db6340623f52e93
+Author:     Arjan van de Ven <arjan@infradead.org>
+AuthorDate: Wed, 30 Sep 2009 13:05:23 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 1 Oct 2009 11:24:26 +0200
+CommitDate: Thu, 1 Oct 2009 11:31:04 +0200
 
-x86: Don't leak 64-bit kernel register values to 32-bit processes
+x86: Turn the copy_from_user check into an (optional) compile time warning
 
-While 32-bit processes can't directly access R8...R15, they can
-gain access to these registers by temporarily switching themselves
-into 64-bit mode.
+A previous patch added the buffer size check to copy_from_user().
 
-Therefore, registers not preserved anyway by called C functions
-(i.e. R8...R11) must be cleared prior to returning to user mode.
+One of the things learned from analyzing the result of the previous
+patch is that in general, gcc is really good at proving that the
+code contains sufficient security checks to not need to do a
+runtime check. But that for those cases where gcc could not prove
+this, there was a relatively high percentage of real security
+issues.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Cc: <stable@kernel.org>
-LKML-Reference: <4AC34D73020000780001744A@vpn.id2.novell.com>
+This patch turns the case of "gcc cannot prove" into a compile time
+warning, as long as a sufficiently new gcc is in use that supports
+this. The objective is that these warnings will trigger developers
+checking new cases out before a security hole enters a linux kernel
+release.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: James Morris <jmorris@namei.org>
+Cc: Jan Beulich <jbeulich@novell.com>
+LKML-Reference: <20090930130523.348ae6c4@infradead.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/ia32/ia32entry.S |   36 +++++++++++++++++++++++-------------
- 1 files changed, 23 insertions(+), 13 deletions(-)
+ arch/x86/include/asm/uaccess_32.h |   12 +++++++++---
+ arch/x86/lib/usercopy_32.c        |    6 ++++++
+ include/linux/compiler-gcc4.h     |    3 +++
+ include/linux/compiler.h          |    4 ++++
+ 4 files changed, 22 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 74619c4..1733f9f 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -21,8 +21,8 @@
- #define __AUDIT_ARCH_LE	   0x40000000
+diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
+index 582d6ae..952f9e7 100644
+--- a/arch/x86/include/asm/uaccess_32.h
++++ b/arch/x86/include/asm/uaccess_32.h
+@@ -191,6 +191,13 @@ unsigned long __must_check _copy_from_user(void *to,
+ 					  const void __user *from,
+ 					  unsigned long n);
  
- #ifndef CONFIG_AUDITSYSCALL
--#define sysexit_audit int_ret_from_sys_call
--#define sysretl_audit int_ret_from_sys_call
-+#define sysexit_audit ia32_ret_from_sys_call
-+#define sysretl_audit ia32_ret_from_sys_call
++
++extern void copy_from_user_overflow(void)
++#ifdef CONFIG_DEBUG_STACKOVERFLOW
++	__compiletime_warning("copy_from_user() buffer size is not provably correct")
++#endif
++;
++
+ static inline unsigned long __must_check copy_from_user(void *to,
+ 					  const void __user *from,
+ 					  unsigned long n)
+@@ -200,10 +207,9 @@ static inline unsigned long __must_check copy_from_user(void *to,
+ 
+ 	if (likely(sz == -1 || sz >= n))
+ 		ret = _copy_from_user(to, from, n);
+-#ifdef CONFIG_DEBUG_VM
+ 	else
+-		WARN(1, "Buffer overflow detected!\n");
+-#endif
++		copy_from_user_overflow();
++
+ 	return ret;
+ }
+ 
+diff --git a/arch/x86/lib/usercopy_32.c b/arch/x86/lib/usercopy_32.c
+index 8498684..e218d5d 100644
+--- a/arch/x86/lib/usercopy_32.c
++++ b/arch/x86/lib/usercopy_32.c
+@@ -883,3 +883,9 @@ _copy_from_user(void *to, const void __user *from, unsigned long n)
+ 	return n;
+ }
+ EXPORT_SYMBOL(_copy_from_user);
++
++void copy_from_user_overflow(void)
++{
++	WARN(1, "Buffer overflow detected!\n");
++}
++EXPORT_SYMBOL(copy_from_user_overflow);
+diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
+index a3aef5d..f1709c1 100644
+--- a/include/linux/compiler-gcc4.h
++++ b/include/linux/compiler-gcc4.h
+@@ -39,3 +39,6 @@
  #endif
  
- #define IA32_NR_syscalls ((ia32_syscall_end - ia32_sys_call_table)/8)
-@@ -39,12 +39,12 @@
- 	.endm 
- 
- 	/* clobbers %eax */	
--	.macro  CLEAR_RREGS _r9=rax
-+	.macro  CLEAR_RREGS offset=0, _r9=rax
- 	xorl 	%eax,%eax
--	movq	%rax,R11(%rsp)
--	movq	%rax,R10(%rsp)
--	movq	%\_r9,R9(%rsp)
--	movq	%rax,R8(%rsp)
-+	movq	%rax,\offset+R11(%rsp)
-+	movq	%rax,\offset+R10(%rsp)
-+	movq	%\_r9,\offset+R9(%rsp)
-+	movq	%rax,\offset+R8(%rsp)
- 	.endm
- 
- 	/*
-@@ -172,6 +172,10 @@ sysexit_from_sys_call:
- 	movl	RIP-R11(%rsp),%edx		/* User %eip */
- 	CFI_REGISTER rip,rdx
- 	RESTORE_ARGS 1,24,1,1,1,1
-+	xorq	%r8,%r8
-+	xorq	%r9,%r9
-+	xorq	%r10,%r10
-+	xorq	%r11,%r11
- 	popfq
- 	CFI_ADJUST_CFA_OFFSET -8
- 	/*CFI_RESTORE rflags*/
-@@ -202,7 +206,7 @@ sysexit_from_sys_call:
- 
- 	.macro auditsys_exit exit,ebpsave=RBP
- 	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),TI_flags(%r10)
--	jnz int_ret_from_sys_call
-+	jnz ia32_ret_from_sys_call
- 	TRACE_IRQS_ON
- 	sti
- 	movl %eax,%esi		/* second arg, syscall return value */
-@@ -218,8 +222,9 @@ sysexit_from_sys_call:
- 	cli
- 	TRACE_IRQS_OFF
- 	testl %edi,TI_flags(%r10)
--	jnz int_with_check
--	jmp \exit
-+	jz \exit
-+	CLEAR_RREGS -ARGOFFSET
-+	jmp int_with_check
- 	.endm
- 
- sysenter_auditsys:
-@@ -329,6 +334,9 @@ sysretl_from_sys_call:
- 	CFI_REGISTER rip,rcx
- 	movl EFLAGS-ARGOFFSET(%rsp),%r11d	
- 	/*CFI_REGISTER rflags,r11*/
-+	xorq	%r10,%r10
-+	xorq	%r9,%r9
-+	xorq	%r8,%r8
- 	TRACE_IRQS_ON
- 	movl RSP-ARGOFFSET(%rsp),%esp
- 	CFI_RESTORE rsp
-@@ -353,7 +361,7 @@ cstar_tracesys:
+ #define __compiletime_object_size(obj) __builtin_object_size(obj, 0)
++#if __GNUC_MINOR__ >= 4
++#define __compiletime_warning(message) __attribute__((warning(message)))
++#endif
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 8e54108..9503563 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -270,6 +270,10 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
+ #ifndef __compiletime_object_size
+ # define __compiletime_object_size(obj) -1
  #endif
- 	xchgl %r9d,%ebp
- 	SAVE_REST
--	CLEAR_RREGS r9
-+	CLEAR_RREGS 0, r9
- 	movq $-ENOSYS,RAX(%rsp)	/* ptrace can change this for a bad syscall */
- 	movq %rsp,%rdi        /* &pt_regs -> arg1 */
- 	call syscall_trace_enter
-@@ -425,6 +433,8 @@ ia32_do_call:
- 	call *ia32_sys_call_table(,%rax,8) # xxx: rip relative
- ia32_sysret:
- 	movq %rax,RAX-ARGOFFSET(%rsp)
-+ia32_ret_from_sys_call:
-+	CLEAR_RREGS -ARGOFFSET
- 	jmp int_ret_from_sys_call 
- 
- ia32_tracesys:			 
-@@ -442,8 +452,8 @@ END(ia32_syscall)
- 
- ia32_badsys:
- 	movq $0,ORIG_RAX-ARGOFFSET(%rsp)
--	movq $-ENOSYS,RAX-ARGOFFSET(%rsp)
--	jmp int_ret_from_sys_call
-+	movq $-ENOSYS,%rax
-+	jmp ia32_sysret
- 
- quiet_ni_syscall:
- 	movq $-ENOSYS,%rax
++#ifndef __compiletime_warning
++# define __compiletime_warning(message)
++#endif
++
+ /*
+  * Prevent the compiler from merging or refetching accesses.  The compiler
+  * is also forbidden from reordering successive instances of ACCESS_ONCE(),
