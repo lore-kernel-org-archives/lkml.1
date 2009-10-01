@@ -1,86 +1,402 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbZJANgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbZJANga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756355AbZJANgL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 09:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756225AbZJANgL
+	id S1756434AbZJANga (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 09:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbZJANg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 09:36:11 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:58407 "EHLO mx1.redhat.com"
+	Thu, 1 Oct 2009 09:36:29 -0400
+Received: from mga14.intel.com ([143.182.124.37]:44493 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756224AbZJANgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 09:36:10 -0400
-Message-ID: <4AC4B020.9080107@redhat.com>
-Date: Thu, 01 Oct 2009 09:35:28 -0400
-From: Peter Jones <pjones@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.8.b3.fc12 Thunderbird/3.0b3
+	id S1756225AbZJANg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 09:36:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,487,1249282800"; 
+   d="scan'208";a="193955540"
+Date: Thu, 1 Oct 2009 21:36:10 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+Message-ID: <20091001133610.GA7228@localhost>
+References: <1252431974.7746.151.camel@twins> <1252432501.7746.156.camel@twins> <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz> <1252597750.7205.82.camel@laptop> <20090914111721.GA24075@duck.suse.cz> <20090924083342.GA15918@localhost> <20090929173506.GE11573@duck.suse.cz> <20090930012406.GB6311@localhost> <20090930115539.GA16074@duck.suse.cz>
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: ketuzsezr@darnok.org, Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Martin Wilck <Martin.Wilck@fujitsu-siemens.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] iSCSI/iBFT: use proper address translation
-References: <4AC47DED0200007800017743@vpn.id2.novell.com>
-In-Reply-To: <4AC47DED0200007800017743@vpn.id2.novell.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090930115539.GA16074@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/01/2009 04:01 AM, Jan Beulich wrote:
-> In virtual environments (namely, Xen Dom0) virt <-> phys and
-> virt <-> isa-bus translations cannot be freely interchanged. When
-> looking at memory below 1M, the latter translations should always
-> be used.
-> 
-> iscsi_ibft_find.c part from: Martin Wilck <martin.wilck@ts.fujitsu.com>.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Cc: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+On Wed, Sep 30, 2009 at 07:55:39PM +0800, Jan Kara wrote:
+> > writeback: let balance_dirty_pages() wait on background writeback
+> > 
+> > CC: Chris Mason <chris.mason@oracle.com> 
+> > CC: Dave Chinner <david@fromorbit.com> 
+> > CC: Jan Kara <jack@suse.cz> 
+> > CC: Peter Zijlstra <a.p.zijlstra@chello.nl> 
+> > CC: Jens Axboe <jens.axboe@oracle.com> 
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> >  fs/fs-writeback.c           |   89 ++++++++++++++++++++++++++++++++--
+> >  include/linux/backing-dev.h |   15 +++++
+> >  mm/backing-dev.c            |    4 +
+> >  mm/page-writeback.c         |   43 ++--------------
+> >  4 files changed, 109 insertions(+), 42 deletions(-)
+> > 
+> > --- linux.orig/mm/page-writeback.c	2009-09-28 19:01:40.000000000 +0800
+> > +++ linux/mm/page-writeback.c	2009-09-28 19:02:48.000000000 +0800
+> > @@ -218,6 +218,10 @@ static inline void __bdi_writeout_inc(st
+> >  {
+> >  	__prop_inc_percpu_max(&vm_completions, &bdi->completions,
+> >  			      bdi->max_prop_frac);
+> > +
+> > +	if (atomic_read(&bdi->throttle_pages) < DIRTY_THROTTLE_PAGES_STOP &&
+> > +	    atomic_dec_and_test(&bdi->throttle_pages))
+> > +		bdi_writeback_wakeup(bdi);
+> >  }
+> >  
+> >  void bdi_writeout_inc(struct backing_dev_info *bdi)
+> > @@ -458,20 +462,10 @@ static void balance_dirty_pages(struct a
+> >  	unsigned long background_thresh;
+> >  	unsigned long dirty_thresh;
+> >  	unsigned long bdi_thresh;
+> > -	unsigned long pages_written = 0;
+> > -	unsigned long pause = 1;
+> >  	int dirty_exceeded;
+> >  	struct backing_dev_info *bdi = mapping->backing_dev_info;
+> >  
+> >  	for (;;) {
+> > -		struct writeback_control wbc = {
+> > -			.bdi		= bdi,
+> > -			.sync_mode	= WB_SYNC_NONE,
+> > -			.older_than_this = NULL,
+> > -			.nr_to_write	= write_chunk,
+> > -			.range_cyclic	= 1,
+> > -		};
+> > -
+> >  		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+> >  				 global_page_state(NR_UNSTABLE_NFS);
+> >  		nr_writeback = global_page_state(NR_WRITEBACK) +
+> > @@ -518,31 +512,7 @@ static void balance_dirty_pages(struct a
+> >  		if (!bdi->dirty_exceeded)
+> >  			bdi->dirty_exceeded = 1;
+> >  
+> > -		/* Note: nr_reclaimable denotes nr_dirty + nr_unstable.
+> > -		 * Unstable writes are a feature of certain networked
+> > -		 * filesystems (i.e. NFS) in which data may have been
+> > -		 * written to the server's write cache, but has not yet
+> > -		 * been flushed to permanent storage.
+> > -		 * Only move pages to writeback if this bdi is over its
+> > -		 * threshold otherwise wait until the disk writes catch
+> > -		 * up.
+> > -		 */
+> > -		if (bdi_nr_reclaimable > bdi_thresh) {
+> > -			writeback_inodes_wbc(&wbc);
+> > -			pages_written += write_chunk - wbc.nr_to_write;
+> > -			/* don't wait if we've done enough */
+> > -			if (pages_written >= write_chunk)
+> > -				break;
+> > -		}
+> > -		schedule_timeout_interruptible(pause);
+> > -
+> > -		/*
+> > -		 * Increase the delay for each loop, up to our previous
+> > -		 * default of taking a 100ms nap.
+> > -		 */
+> > -		pause <<= 1;
+> > -		if (pause > HZ / 10)
+> > -			pause = HZ / 10;
+> > +		bdi_writeback_wait(bdi, write_chunk);
 
-Looks good to me.
+Added a "break;" line here: we can remove the loop now :)
 
-Signed-off-by: Peter Jones <pjones@redhat.com>
+> >  	}
+> >  
+> >  	if (!dirty_exceeded && bdi->dirty_exceeded)
+> > @@ -559,8 +529,7 @@ static void balance_dirty_pages(struct a
+> >  	 * In normal mode, we start background writeout at the lower
+> >  	 * background_thresh, to keep the amount of dirty memory low.
+> >  	 */
+> > -	if ((laptop_mode && pages_written) ||
+> > -	    (!laptop_mode && (nr_reclaimable > background_thresh)))
+> > +	if (!laptop_mode && (nr_reclaimable > background_thresh))
+> >  		bdi_start_writeback(bdi, NULL, 0);
+> >  }
+> >  
+> > --- linux.orig/include/linux/backing-dev.h	2009-09-28 18:52:51.000000000 +0800
+> > +++ linux/include/linux/backing-dev.h	2009-09-28 19:02:45.000000000 +0800
+> > @@ -86,6 +86,13 @@ struct backing_dev_info {
+> >  
+> >  	struct list_head work_list;
+> >  
+> > +	/*
+> > +	 * dirtier process throttling
+> > +	 */
+> > +	spinlock_t		throttle_lock;
+> > +	struct list_head	throttle_list;	/* nr to sync for each task */
+> > +	atomic_t		throttle_pages; /* nr to sync for head task */
+> > +
+> >  	struct device *dev;
+> >  
+> >  #ifdef CONFIG_DEBUG_FS
+> > @@ -94,6 +101,12 @@ struct backing_dev_info {
+> >  #endif
+> >  };
+> >  
+> > +/*
+> > + * when no task is throttled, set throttle_pages to larger than this,
+> > + * to avoid unnecessary atomic decreases.
+> > + */
+> > +#define DIRTY_THROTTLE_PAGES_STOP	(1 << 22)
+> > +
+> >  int bdi_init(struct backing_dev_info *bdi);
+> >  void bdi_destroy(struct backing_dev_info *bdi);
+> >  
+> > @@ -105,6 +118,8 @@ void bdi_start_writeback(struct backing_
+> >  				long nr_pages);
+> >  int bdi_writeback_task(struct bdi_writeback *wb);
+> >  int bdi_has_dirty_io(struct backing_dev_info *bdi);
+> > +int bdi_writeback_wakeup(struct backing_dev_info *bdi);
+> > +void bdi_writeback_wait(struct backing_dev_info *bdi, long nr_pages);
+> >  
+> >  extern spinlock_t bdi_lock;
+> >  extern struct list_head bdi_list;
+> > --- linux.orig/fs/fs-writeback.c	2009-09-28 18:57:51.000000000 +0800
+> > +++ linux/fs/fs-writeback.c	2009-09-28 19:02:45.000000000 +0800
+> > @@ -25,6 +25,7 @@
+> >  #include <linux/blkdev.h>
+> >  #include <linux/backing-dev.h>
+> >  #include <linux/buffer_head.h>
+> > +#include <linux/completion.h>
+> >  #include "internal.h"
+> >  
+> >  #define inode_to_bdi(inode)	((inode)->i_mapping->backing_dev_info)
+> > @@ -136,14 +137,14 @@ static void wb_work_complete(struct bdi_
+> >  		call_rcu(&work->rcu_head, bdi_work_free);
+> >  }
+> >  
+> > -static void wb_clear_pending(struct bdi_writeback *wb, struct bdi_work *work)
+> > +static void wb_clear_pending(struct backing_dev_info *bdi,
+> > +			     struct bdi_work *work)
+> >  {
+> >  	/*
+> >  	 * The caller has retrieved the work arguments from this work,
+> >  	 * drop our reference. If this is the last ref, delete and free it
+> >  	 */
+> >  	if (atomic_dec_and_test(&work->pending)) {
+> > -		struct backing_dev_info *bdi = wb->bdi;
+> >  
+> >  		spin_lock(&bdi->wb_lock);
+> >  		list_del_rcu(&work->list);
+> > @@ -275,6 +276,81 @@ void bdi_start_writeback(struct backing_
+> >  	bdi_alloc_queue_work(bdi, &args);
+> >  }
+> >  
+> > +struct dirty_throttle_task {
+> > +	long			nr_pages;
+> > +	struct list_head	list;
+> > +	struct completion	complete;
+> > +};
+> > +
+> > +void bdi_writeback_wait(struct backing_dev_info *bdi, long nr_pages)
+> > +{
+> > +	struct dirty_throttle_task tt = {
+> > +		.nr_pages = nr_pages,
+> > +		.complete = COMPLETION_INITIALIZER_ONSTACK(tt.complete),
+> > +	};
+> > +	struct wb_writeback_args args = {
+> > +		.sync_mode	= WB_SYNC_NONE,
+> > +		.nr_pages	= LONG_MAX,
+> > +		.range_cyclic	= 1,
+> > +		.for_background	= 1,
+> > +	};
+> > +	struct bdi_work work;
+> > +
+> > +	bdi_work_init(&work, &args);
+> > +	work.state |= WS_ONSTACK;
+> > +
+> > +	/*
+> > +	 * make sure we will be waken up by someone
+> > +	 */
+> > +	bdi_queue_work(bdi, &work);
+>   This is wrong, you shouldn't submit the work like this because you'll
+> have to wait for completion (wb_clear_pending below is just bogus). You
+> should rather do bdi_start_writeback(bdi, NULL, 0).
 
-> 
-> ---
->  drivers/firmware/iscsi_ibft.c      |    2 +-
->  drivers/firmware/iscsi_ibft_find.c |    4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> --- linux-2.6.32-rc1/drivers/firmware/iscsi_ibft.c	2009-06-10 05:05:27.000000000 +0200
-> +++ 2.6.32-rc1-ibft-addr-xlat/drivers/firmware/iscsi_ibft.c	2009-09-24 12:14:48.000000000 +0200
-> @@ -939,7 +939,7 @@ static int __init ibft_init(void)
->  
->  	if (ibft_addr) {
->  		printk(KERN_INFO "iBFT detected at 0x%llx.\n",
-> -		       (u64)virt_to_phys((void *)ibft_addr));
-> +		       (u64)isa_virt_to_bus(ibft_addr));
->  
->  		rc = ibft_check_device();
->  		if (rc)
-> --- linux-2.6.32-rc1/drivers/firmware/iscsi_ibft_find.c	2008-10-10 00:13:53.000000000 +0200
-> +++ 2.6.32-rc1-ibft-addr-xlat/drivers/firmware/iscsi_ibft_find.c	2009-09-24 09:52:18.000000000 +0200
-> @@ -65,10 +65,10 @@ void __init reserve_ibft_region(void)
->  		 * so skip that area */
->  		if (pos == VGA_MEM)
->  			pos += VGA_SIZE;
-> -		virt = phys_to_virt(pos);
-> +		virt = isa_bus_to_virt(pos);
->  		if (memcmp(virt, IBFT_SIGN, IBFT_SIGN_LEN) == 0) {
->  			unsigned long *addr =
-> -			    (unsigned long *)phys_to_virt(pos + 4);
-> +			    (unsigned long *)isa_bus_to_virt(pos + 4);
->  			len = *addr;
->  			/* if the length of the table extends past 1M,
->  			 * the table cannot be valid. */
-> 
-> 
-> 
+No I don't intent to wait for completion of this work (that would
+wait too long). This bdi work is to ensure writeback IO submissions
+are now in progress. Thus __bdi_writeout_inc() will be called to
+decrease bdi->throttle_pages, and when it counts down to 0, wake up
+this process.
 
+The alternative way is to do
 
--- 
-        Peter
+        if (no background work queued)
+                bdi_start_writeback(bdi, NULL, 0)
 
-When privacy is outlawed only outlaws will have privacy.
-		-- Zimmermann
+It looks a saner solution, thanks for the suggestion :)
+
+> > +
+> > +	/*
+> > +	 * register throttle pages
+> > +	 */
+> > +	spin_lock(&bdi->throttle_lock);
+> > +	if (list_empty(&bdi->throttle_list))
+> > +		atomic_set(&bdi->throttle_pages, nr_pages);
+> > +	list_add(&tt.list, &bdi->throttle_list);
+> > +	spin_unlock(&bdi->throttle_lock);
+> > +
+> > +	wait_for_completion(&tt.complete);
+
+> > +	wb_clear_pending(bdi, &work); /* XXX */
+
+For the above reason, I remove the work here and don't care whether it
+has been executed or is running or not seen at all. We have been waken up.
+
+Sorry I definitely "misused" wb_clear_pending() for a slightly
+different purpose..
+
+This didn't really cancel the work if it has already been running.
+So bdi_writeback_wait() achieves another goal of starting background
+writeback if bdi-flush is previously idle.
+
+> > +}
+> > +
+> > +/*
+> > + * return 1 if there are more waiting tasks.
+> > + */
+> > +int bdi_writeback_wakeup(struct backing_dev_info *bdi)
+> > +{
+> > +	struct dirty_throttle_task *tt;
+> > +
+> > +	spin_lock(&bdi->throttle_lock);
+> > +	/*
+> > +	 * remove and wakeup head task
+> > +	 */
+> > +	if (!list_empty(&bdi->throttle_list)) {
+> > +		tt = list_entry(bdi->throttle_list.prev,
+> > +				struct dirty_throttle_task, list);
+> > +		list_del(&tt->list);
+> > +		complete(&tt->complete);
+> > +	}
+> > +	/*
+> > +	 * update throttle pages
+> > +	 */
+> > +	if (!list_empty(&bdi->throttle_list)) {
+> > +		tt = list_entry(bdi->throttle_list.prev,
+> > +				struct dirty_throttle_task, list);
+> > +		atomic_set(&bdi->throttle_pages, tt->nr_pages);
+> > +	} else {
+> > +		tt = NULL;
+> > +		atomic_set(&bdi->throttle_pages, DIRTY_THROTTLE_PAGES_STOP * 2);
+>   Why is here * 2?
+ 
+Because we do a racy test in another place:
+
+    +	if (atomic_read(&bdi->throttle_pages) < DIRTY_THROTTLE_PAGES_STOP &&
+    +	    atomic_dec_and_test(&bdi->throttle_pages))
+    +		bdi_writeback_wakeup(bdi);
+
+The *2 is for reducing the race possibility. It might still be racy, but
+that's OK, because it's mainly an optimization. It's perfectly correct
+if we simply do 
+
+    +	if (atomic_dec_and_test(&bdi->throttle_pages))
+    +		bdi_writeback_wakeup(bdi);
+
+> > +	}
+> > +	spin_unlock(&bdi->throttle_lock);
+> > +
+> > +	return tt != NULL;
+> > +}
+> > +
+> >  /*
+> >   * Redirty an inode: set its when-it-was dirtied timestamp and move it to the
+> >   * furthest end of its superblock's dirty-inode list.
+> > @@ -788,8 +864,11 @@ static long wb_writeback(struct bdi_writ
+> >  		 * For background writeout, stop when we are below the
+> >  		 * background dirty threshold
+> >  		 */
+> > -		if (args->for_background && !over_bground_thresh())
+> > +		if (args->for_background && !over_bground_thresh()) {
+> > +			while (bdi_writeback_wakeup(wb->bdi))
+> > +				;  /* unthrottle all tasks */
+> >  			break;
+> > +		}
+>   You probably didn't understand my comment in the previous email. This is
+> too late to wakeup all the tasks. There are two limits - background_limit
+> (set to 5%) and dirty_limit (set to 10%). When amount of dirty data is
+> above background_limit, we start the writeback but we don't throttle tasks
+> yet. We start throttling tasks only when amount of dirty data on the bdi
+> exceeds the part of the dirty limit belonging to the bdi. In case of a
+> single bdi, this means we start throttling threads only when 10% of memory
+> is dirty. To keep this behavior, we have to wakeup waiting threads as soon
+> as their BDI gets below the dirty limit or when global number of dirty
+> pages gets below (background_limit + dirty_limit) / 2.
+
+Sure, but the design goal is to wakeup the throttled tasks in the
+__bdi_writeout_inc() path instead of here. As long as some (background)
+writeback is running, __bdi_writeout_inc() will be called to wakeup
+the tasks.  This "unthrottle all on exit of background writeback" is
+merely a safeguard, since once background writeback (which could be
+queued by the throttled task itself, in bdi_writeback_wait) exits, the
+calls to __bdi_writeout_inc() is likely to stop.
+
+> >  
+> >  		wbc.more_io = 0;
+> >  		wbc.encountered_congestion = 0;
+> > @@ -911,7 +990,7 @@ long wb_do_writeback(struct bdi_writebac
+> >  		 * that we have seen this work and we are now starting it.
+> >  		 */
+> >  		if (args.sync_mode == WB_SYNC_NONE)
+> > -			wb_clear_pending(wb, work);
+> > +			wb_clear_pending(bdi, work);
+> >  
+> >  		wrote += wb_writeback(wb, &args);
+> >  
+> > @@ -920,7 +999,7 @@ long wb_do_writeback(struct bdi_writebac
+> >  		 * notification when we have completed the work.
+> >  		 */
+> >  		if (args.sync_mode == WB_SYNC_ALL)
+> > -			wb_clear_pending(wb, work);
+> > +			wb_clear_pending(bdi, work);
+> >  	}
+> >  
+> >  	/*
+> > --- linux.orig/mm/backing-dev.c	2009-09-28 18:52:18.000000000 +0800
+> > +++ linux/mm/backing-dev.c	2009-09-28 19:02:45.000000000 +0800
+> > @@ -645,6 +645,10 @@ int bdi_init(struct backing_dev_info *bd
+> >  	bdi->wb_mask = 1;
+> >  	bdi->wb_cnt = 1;
+> >  
+> > +	spin_lock_init(&bdi->throttle_lock);
+> > +	INIT_LIST_HEAD(&bdi->throttle_list);
+> > +	atomic_set(&bdi->throttle_pages, DIRTY_THROTTLE_PAGES_STOP * 2);
+> > +
+>   Again, why is * 2 here? I'd just set DIRTY_THROTTLE_PAGES_STOP to some
+> magic value (like ~0) and use it directly...
+
+See above. ~0 is not used because atomic_t only promises 24bit data
+space, and to reduce a small race :)
+
+Thanks,
+Fengguang
+
+> >  	for (i = 0; i < NR_BDI_STAT_ITEMS; i++) {
+> >  		err = percpu_counter_init(&bdi->bdi_stat[i], 0);
+> >  		if (err)
+> 
+> 								Honza
+> -- 
+> Jan Kara <jack@suse.cz>
+> SUSE Labs, CR
