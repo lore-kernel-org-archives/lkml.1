@@ -1,97 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbZJALNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756390AbZJALUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756368AbZJALNL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 07:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756357AbZJALNK
+	id S1756390AbZJALUT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 07:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756379AbZJALUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 07:13:10 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57527 "EHLO smtps.tip.net.au"
+	Thu, 1 Oct 2009 07:20:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50704 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756337AbZJALNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 07:13:08 -0400
-Date: Thu, 1 Oct 2009 21:13:02 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: michael@ellerman.id.au, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] perf_event, powerpc: Fix compilation after big
- perf_counter rename
-Message-Id: <20091001211302.601f2837.sfr@canb.auug.org.au>
-In-Reply-To: <20091001074201.GA6300@elte.hu>
-References: <19128.4280.813369.589704@cargo.ozlabs.ibm.com>
-	<1253584591.7103.197.camel@pasglop>
-	<20090922072834.GA25470@elte.hu>
-	<1253606415.7103.216.camel@pasglop>
-	<1253620332.10476.4.camel@concordia>
-	<20090923124420.GA5525@elte.hu>
-	<1253747995.6110.5.camel@concordia>
-	<20090924121423.GB12262@elte.hu>
-	<1253798755.16237.4.camel@concordia>
-	<20090925095841.8578073a.sfr@canb.auug.org.au>
-	<20091001074201.GA6300@elte.hu>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__1_Oct_2009_21_13_02_+1000_Tc3=iddc8h0I6l07"
+	id S1756370AbZJALUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 07:20:17 -0400
+Date: Thu, 1 Oct 2009 13:20:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       tglx@linutronix.de, rostedt@goodmis.org, ak@suse.de, roland@redhat.com,
+       rth@redhat.com, mhiramat@redhat.com
+Subject: Re: [PATCH 1/4] jump label - make init_kernel_text() global
+Message-ID: <20091001112003.GA2962@elte.hu>
+References: <cover.1253831945.git.jbaron@redhat.com> <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__1_Oct_2009_21_13_02_+1000_Tc3=iddc8h0I6l07
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ingo,
+* Jason Baron <jbaron@redhat.com> wrote:
 
-On Thu, 1 Oct 2009 09:42:01 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->=20
-> > On Thu, 24 Sep 2009 23:25:55 +1000 Michael Ellerman <michael@ellerman.i=
-d.au> wrote:
-> > >
-> > > Give me a day or two, I should be able to add a per-branch setting for
-> > > who to send mails to without too much trouble.
-> >=20
-> > In the mean time I don't now if someone has pointed you at these today:
-> >=20
-> > http://kisskb.ellerman.id.au/kisskb/branch/12/
->=20
-> That's an upstream warning.
+> allow usage of init_kernel_text - we need this in jump labeling to 
+> avoid attemtpting to patch code that has been freed as in the __init 
+> sections
 
-When I sent that to you, I was referring to these build results:
+s/attemtpting/attempting
 
-http://kisskb.ellerman.id.au/kisskb/buildresult/1307802/
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> ---
+>  include/linux/kernel.h |    1 +
+>  kernel/extable.c       |    2 +-
+>  2 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> index f61039e..9d3419f 100644
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -295,6 +295,7 @@ extern int get_option(char **str, int *pint);
+>  extern char *get_options(const char *str, int nints, int *ints);
+>  extern unsigned long long memparse(const char *ptr, char **retptr);
+>  
+> +extern int init_kernel_text(unsigned long addr);
+>  extern int core_kernel_text(unsigned long addr);
+>  extern int __kernel_text_address(unsigned long addr);
+>  extern int kernel_text_address(unsigned long addr);
+> diff --git a/kernel/extable.c b/kernel/extable.c
+> index 7f8f263..f6893ad 100644
+> --- a/kernel/extable.c
+> +++ b/kernel/extable.c
+> @@ -52,7 +52,7 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
+>  	return e;
+>  }
+>  
+> -static inline int init_kernel_text(unsigned long addr)
+> +int init_kernel_text(unsigned long addr)
+>  {
+>  	if (addr >= (unsigned long)_sinittext &&
+>  	    addr <= (unsigned long)_einittext)
 
-which (as you say) was only a waning in the rest of the kernel but is
-turned into an error by the -Werror we use when building arch/powerpc.
-The warning came from commit 4765c1db84c73f775eb1822a009117cbae524e9e
-("rcu-tiny: The Bloatwatch Edition, v6") in the -tip tree and fixed by
-commit 5ef9b8e59c043624fb44e31439cecf7f8b4cd62a ("rcu: Clean up the
-warning message about RCU not defined") the next day (in the -tip tree).
-So no big problem.  Neither of these commits are upstream.
+i'm confused. Later on jump_label_update() does:
 
-I was just filling in the role of notifying you of build problems until
-Michael can automate it.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
++                       if (!(system_state == SYSTEM_RUNNING &&
++                                       (init_kernel_text(iter->code))))
++                               jump_label_transform(iter, type);
 
---Signature=_Thu__1_Oct_2009_21_13_02_+1000_Tc3=iddc8h0I6l07
-Content-Type: application/pgp-signature
+which is:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
++                       if (system_state != SYSTEM_RUNNING ||
++                                       !init_kernel_text(iter->code)))
++                               jump_label_transform(iter, type);
 
-iEYEARECAAYFAkrEjr4ACgkQjjKRsyhoI8yrlACeOP3p43pl1NTk/I/1QmehQpnQ
-FmkAnRIrTU46n6YEjCk10Qe1AAhbphtt
-=MLFF
------END PGP SIGNATURE-----
+What is the logic behind that? System going into SYSTEM_RUNNING does not 
+coincide with free_initmem() precisely.
 
---Signature=_Thu__1_Oct_2009_21_13_02_+1000_Tc3=iddc8h0I6l07--
+Also, do we ever want to patch init-text tracepoints? I think we want to 
+stay away from them as much as possible.
+
+It appears to me that what we want here is a straight:
+
+                       if (kernel_text(iter->code))
+                               jump_label_transform(iter, type);
+
+Also, maybe a WARN_ONCE(!kernel_text()) - we should never even attempt 
+to transform non-patchable code. If yes then we want to know about that 
+in a noisy way and not skip it silently.
+
+	Ingo
