@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbZJAKcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZJAKfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbZJAKcB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 06:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbZJAKcA
+	id S1756214AbZJAKfd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 06:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbZJAKfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 06:32:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33273 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756171AbZJAKb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 06:31:59 -0400
-Date: Thu, 1 Oct 2009 20:31:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: linux-next: sound tree build failure
-Message-Id: <20091001203152.f40330a8.sfr@canb.auug.org.au>
-In-Reply-To: <s5hljjvk3xn.wl%tiwai@suse.de>
-References: <20091001111935.8fb15d90.sfr@canb.auug.org.au>
-	<s5hljjvk3xn.wl%tiwai@suse.de>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
+	Thu, 1 Oct 2009 06:35:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33007 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756181AbZJAKfc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 06:35:32 -0400
+Date: Thu, 1 Oct 2009 11:36:10 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [origin tree boot crash] Re: [GIT PATCH] TTY patches for
+ 2.6.31-git
+Message-ID: <20091001113610.0915de7d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091001082115.GA12200@elte.hu>
+References: <20090919213345.GB7668@kroah.com>
+	<20090930100902.GA29872@elte.hu>
+	<20090930111726.618af641@lxorguk.ukuu.org.uk>
+	<20091001082115.GA12200@elte.hu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__1_Oct_2009_20_31_52_+1000_lmjDKOorkxsSxrzT"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__1_Oct_2009_20_31_52_+1000_lmjDKOorkxsSxrzT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Hm, removing the serial console boot line portion still causes a 
+> spontaneous reboot. Same for removing /bin/setserial and removing 
+> /dev/ttyS0 and /dev/ttyS1.
+> 
+> That would exclude all possible uses of the codepath affected by that 
+> commit, right?
 
-On Thu, 01 Oct 2009 08:45:40 +0200 Takashi Iwai <tiwai@suse.de> wrote:
->=20
-> I overlooked this since SPI was disabled on my test build.
-> Now fixed in sound git tree.
-
-OK, thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__1_Oct_2009_20_31_52_+1000_lmjDKOorkxsSxrzT
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrEhRgACgkQjjKRsyhoI8wbgwCdF3go02sPNZJywIVLXrXyfJAL
-SSgAmwYjy0Lpa1jeNxs2s1C5T2D6769X
-=xOCx
------END PGP SIGNATURE-----
-
---Signature=_Thu__1_Oct_2009_20_31_52_+1000_lmjDKOorkxsSxrzT--
+Who knows what the early Red Hat user space does. Booting with
+init=/bin/sh might be informative just as a double check.
