@@ -1,176 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbZJAXdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbZJBBtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbZJAXdc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbZJAXdb
+	id S1757130AbZJBBtz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757124AbZJBBth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:33:31 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:41159 "EHLO
+	Thu, 1 Oct 2009 21:49:37 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:53283 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752462AbZJAXda (ORCPT
+	with ESMTP id S1756079AbZJBBd2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:33:30 -0400
+	Thu, 1 Oct 2009 21:33:28 -0400
 X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
 	times
-Message-Id: <20091001212558.918941929@gentwo.org>
+Message-Id: <20091001212559.113173079@gentwo.org>
 References: <20091001212521.123389189@gentwo.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 01 Oct 2009 17:25:28 -0400
+Date: Thu, 01 Oct 2009 17:25:29 -0400
 From: cl@linux-foundation.org
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       Dan Williams <dan.j.williams@intel.com>, Tejun Heo <tj@kernel.org>,
-       Eric Biederman <ebiederm@aristanetworks.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       David L Stevens <dlstevens@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Olaf Weber <olaf@sgi.com>
 Cc: mingo@elte.hu
 Cc: rusty@rustcorp.com.au
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [this_cpu_xx V4 07/20] this_cpu_ptr: Eliminate get/put_cpu
-Content-Disposition: inline; filename=this_cpu_ptr_eliminate_get_put_cpu
+Subject: [this_cpu_xx V4 08/20] this_cpu_ptr: xfs_icsb_modify_counters does not need "cpu" variable
+Content-Disposition: inline; filename=this_cpu_ptr_xfs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are cases where we can use this_cpu_ptr and as the result
-of using this_cpu_ptr() we no longer need to determine the
-currently executing cpu.
+The xfs_icsb_modify_counters() function no longer needs the cpu variable
+if we use this_cpu_ptr() and we can get rid of get/put_cpu().
 
-In those places no get/put_cpu combination is needed anymore.
-The local cpu variable can be eliminated.
-
-Preemption still needs to be disabled and enabled since the
-modifications of the per cpu variables is not atomic. There may
-be multiple per cpu variables modified and those must all
-be from the same processor.
-
-Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
-Acked-by: Dan Williams <dan.j.williams@intel.com>
 Acked-by: Tejun Heo <tj@kernel.org>
-cc: Eric Biederman <ebiederm@aristanetworks.com>
-cc: Stephen Hemminger <shemminger@vyatta.com>
-cc: David L Stevens <dlstevens@us.ibm.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Olaf Weber <olaf@sgi.com>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- drivers/dma/dmaengine.c |   36 +++++++++++++-----------------------
- drivers/net/veth.c      |    7 +++----
- 2 files changed, 16 insertions(+), 27 deletions(-)
+ fs/xfs/xfs_mount.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/drivers/dma/dmaengine.c
+Index: linux-2.6/fs/xfs/xfs_mount.c
 ===================================================================
---- linux-2.6.orig/drivers/dma/dmaengine.c	2009-09-28 10:08:09.000000000 -0500
-+++ linux-2.6/drivers/dma/dmaengine.c	2009-09-29 09:01:54.000000000 -0500
-@@ -326,14 +326,7 @@ arch_initcall(dma_channel_table_init);
-  */
- struct dma_chan *dma_find_channel(enum dma_transaction_type tx_type)
+--- linux-2.6.orig/fs/xfs/xfs_mount.c	2009-06-15 09:08:01.000000000 -0500
++++ linux-2.6/fs/xfs/xfs_mount.c	2009-06-15 14:20:11.000000000 -0500
+@@ -2389,12 +2389,12 @@ xfs_icsb_modify_counters(
  {
--	struct dma_chan *chan;
--	int cpu;
--
+ 	xfs_icsb_cnts_t	*icsbp;
+ 	long long	lcounter;	/* long counter for 64 bit fields */
+-	int		cpu, ret = 0;
++	int		ret = 0;
+ 
+ 	might_sleep();
+ again:
 -	cpu = get_cpu();
--	chan = per_cpu_ptr(channel_table[tx_type], cpu)->chan;
--	put_cpu();
--
--	return chan;
-+	return this_cpu_read(channel_table[tx_type]->chan);
- }
- EXPORT_SYMBOL(dma_find_channel);
- 
-@@ -847,7 +840,6 @@ dma_async_memcpy_buf_to_buf(struct dma_c
- 	struct dma_async_tx_descriptor *tx;
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
--	int cpu;
- 	unsigned long flags;
- 
- 	dma_src = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
-@@ -866,10 +858,10 @@ dma_async_memcpy_buf_to_buf(struct dma_c
- 	tx->callback = NULL;
- 	cookie = tx->tx_submit(tx);
- 
--	cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
+-	icsbp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, cpu);
 +	preempt_disable();
-+	__this_cpu_add(chan->local->bytes_transferred, len);
-+	__this_cpu_inc(chan->local->memcpy_count);
++	icsbp = this_cpu_ptr(mp->m_sb_cnts);
+ 
+ 	/*
+ 	 * if the counter is disabled, go to slow path
+@@ -2438,11 +2438,11 @@ again:
+ 		break;
+ 	}
+ 	xfs_icsb_unlock_cntr(icsbp);
+-	put_cpu();
++	preempt_enable();
+ 	return 0;
+ 
+ slow_path:
+-	put_cpu();
 +	preempt_enable();
  
- 	return cookie;
- }
-@@ -896,7 +888,6 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
- 	struct dma_async_tx_descriptor *tx;
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
--	int cpu;
- 	unsigned long flags;
+ 	/*
+ 	 * serialise with a mutex so we don't burn lots of cpu on
+@@ -2490,7 +2490,7 @@ slow_path:
  
- 	dma_src = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
-@@ -913,10 +904,10 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
- 	tx->callback = NULL;
- 	cookie = tx->tx_submit(tx);
- 
--	cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
+ balance_counter:
+ 	xfs_icsb_unlock_cntr(icsbp);
 -	put_cpu();
-+	preempt_disable();
-+	__this_cpu_add(chan->local->bytes_transferred, len);
-+	__this_cpu_inc(chan->local->memcpy_count);
 +	preempt_enable();
  
- 	return cookie;
- }
-@@ -945,7 +936,6 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
- 	struct dma_async_tx_descriptor *tx;
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
--	int cpu;
- 	unsigned long flags;
- 
- 	dma_src = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
-@@ -963,10 +953,10 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
- 	tx->callback = NULL;
- 	cookie = tx->tx_submit(tx);
- 
--	cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
-+	preempt_disable();
-+	__this_cpu_add(chan->local->bytes_transferred, len);
-+	__this_cpu_inc(chan->local->memcpy_count);
-+	preempt_enable();
- 
- 	return cookie;
- }
-Index: linux-2.6/drivers/net/veth.c
-===================================================================
---- linux-2.6.orig/drivers/net/veth.c	2009-09-17 17:54:16.000000000 -0500
-+++ linux-2.6/drivers/net/veth.c	2009-09-29 09:01:54.000000000 -0500
-@@ -153,7 +153,7 @@ static netdev_tx_t veth_xmit(struct sk_b
- 	struct net_device *rcv = NULL;
- 	struct veth_priv *priv, *rcv_priv;
- 	struct veth_net_stats *stats, *rcv_stats;
--	int length, cpu;
-+	int length;
- 
- 	skb_orphan(skb);
- 
-@@ -161,9 +161,8 @@ static netdev_tx_t veth_xmit(struct sk_b
- 	rcv = priv->peer;
- 	rcv_priv = netdev_priv(rcv);
- 
--	cpu = smp_processor_id();
--	stats = per_cpu_ptr(priv->stats, cpu);
--	rcv_stats = per_cpu_ptr(rcv_priv->stats, cpu);
-+	stats = this_cpu_ptr(priv->stats);
-+	rcv_stats = this_cpu_ptr(rcv_priv->stats);
- 
- 	if (!(rcv->flags & IFF_UP))
- 		goto tx_drop;
+ 	/*
+ 	 * We may have multiple threads here if multiple per-cpu
 
 -- 
