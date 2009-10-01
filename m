@@ -1,92 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbZJAUtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751938AbZJAUv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752055AbZJAUtK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 16:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbZJAUtH
+	id S1751938AbZJAUv7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 16:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZJAUv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 16:49:07 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:38483 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbZJAUtF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 16:49:05 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=q89G58JOGOvwm85lsKnEmSSTr3AZlHAFXu4uDACAeVcs4Sz8oUMeFFOw2E2jYxkZI
-	AQNiFK7FW4vslbffaimnA==
-Date: Thu, 1 Oct 2009 13:49:00 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Suresh Jayaraman <sjayaraman@suse.de>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 30/31] Fix use of uninitialized variable in
- cache_grow()
-In-Reply-To: <1254406257-16735-1-git-send-email-sjayaraman@suse.de>
-Message-ID: <alpine.DEB.1.00.0910011341280.27559@chino.kir.corp.google.com>
-References: <1254406257-16735-1-git-send-email-sjayaraman@suse.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Thu, 1 Oct 2009 16:51:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56686 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751557AbZJAUv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 16:51:58 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [linux-pm] [PATCH 1/2] Move swap functions 
+ =?iso-8859-1?q?to=09kernel/power/swap=2Ec=2E?=
+Date: Thu, 1 Oct 2009 22:53:24 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <4AC036F9.5000003@crca.org.au> <200909292224.32795.rjw@sisk.pl> <4AC405BE.7070304@crca.org.au>
+In-Reply-To: <4AC405BE.7070304@crca.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910012253.24465.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
-
-> From: Miklos Szeredi <mszeredi@suse.cz>
+On Thursday 01 October 2009, Nigel Cunningham wrote:
+> Hi.
 > 
-> This fixes a bug in reserve-slub.patch.
+> Rafael J. Wysocki wrote:
+> > On Monday 28 September 2009, Nigel Cunningham wrote:
+> >> Move hibernation code's functions for allocating and freeing swap
+> >> from swsusp.c to swap.c, which is where you'd expect to find them.
+> > 
+> > Sorry for the delay.
+> > 
+> > Both patches look good, I'm going to add them to suspend-2.6/linux-next
+> > in the next few days.
 > 
-> If cache_grow() was called with objp != NULL then the 'reserve' local
-> variable wasn't initialized. This resulted in ac->reserve being set to
-> a rubbish value.  Due to this in some circumstances huge amounts of
-> slab pages were allocated (due to slab_force_alloc() returning true),
-> which caused atomic page allocation failures and slowdown of the
-> system.
+> Okay; thanks.
 > 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
-> ---
->  mm/slab.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: mmotm/mm/slab.c
-> ===================================================================
-> --- mmotm.orig/mm/slab.c
-> +++ mmotm/mm/slab.c
-> @@ -2760,7 +2760,7 @@ static int cache_grow(struct kmem_cache
->  	size_t offset;
->  	gfp_t local_flags;
->  	struct kmem_list3 *l3;
-> -	int reserve;
-> +	int reserve = -1;
->  
->  	/*
->  	 * Be lazy and only check for valid flags here,  keeping it out of the
-> @@ -2816,7 +2816,8 @@ static int cache_grow(struct kmem_cache
->  	if (local_flags & __GFP_WAIT)
->  		local_irq_disable();
->  	check_irq_off();
-> -	slab_set_reserve(cachep, reserve);
-> +	if (reserve != -1)
-> +		slab_set_reserve(cachep, reserve);
->  	spin_lock(&l3->list_lock);
->  
->  	/* Make slab active. */
+> I have another patch for allocating the swap prior to starting to write 
+> the image (working towards removing the index pages and then adding 
+> readahead & compression). I know the preallocation patch works, but want 
+> to do a little more testing (make sure it's always calculating correctly 
+> how many pages are needed) before I send it.
 
-Given the patch description, shouldn't this be a test for objp != NULL 
-instead, then?
+Fine by me.
 
-If so, it doesn't make sense because reserve will only be initialized when 
-objp == NULL in the call to kmem_getpages() from cache_grow().
-
-
-The title of the patch suggests this is just dealing with an uninitialized 
-auto variable so the anticipated change would be from "int reserve" to 
-"int uninitialized_var(result)".
+Thanks,
+Rafael
