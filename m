@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932369AbZJAIah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbZJAIeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932369AbZJAIah (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932323AbZJAIaM
+	id S932378AbZJAIeX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932271AbZJAIeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:30:12 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56764 "EHLO
+	Thu, 1 Oct 2009 04:34:20 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:42841 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932315AbZJAIaI (ORCPT
+	with ESMTP id S932230AbZJAIeD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:30:08 -0400
+	Thu, 1 Oct 2009 04:34:03 -0400
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Ralf Baechle <ralf@linux-mips.org>, Patrick McHardy <kaber@trash.net>,
-       Johannes Berg <johannes@sipsolutions.net>, netdev@vger.kernel.org
-Subject: [PATCH 13/34] don't use __devexit_p to wrap meth_remove
-Date: Thu,  1 Oct 2009 10:28:17 +0200
-Message-Id: <1254385718-14254-13-git-send-email-u.kleine-koenig@pengutronix.de>
+       Roland Dreier <rolandd@cisco.com>,
+       Yevgeny Petrilin <yevgenyp@mellanox.co.il>,
+       Yang Hongyang <yanghy@cn.fujitsu.com>,
+       Jack Morgenstein <jackm@dev.mellanox.co.il>,
+       Eli Cohen <eli@mellanox.co.il>
+Subject: [PATCH 14/34] don't wrap mlx4_remove_one in __devexit_p
+Date: Thu,  1 Oct 2009 10:28:18 +0200
+Message-Id: <1254385718-14254-14-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.4.3
 In-Reply-To: <20091001082607.GA2181@pengutronix.de>
 References: <20091001082607.GA2181@pengutronix.de>
@@ -34,33 +36,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function meth_remove is defined using __exit, so don't use __devexit_p
-but __exit_p to wrap it.
+The function mlx4_remove_one is defined in .text, so there is no need to
+wrap it with __devexit_p.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: Patrick McHardy <kaber@trash.net>
-Cc: Johannes Berg <johannes@sipsolutions.net>
-Cc: netdev@vger.kernel.org
+Cc: Roland Dreier <rolandd@cisco.com>
+Cc: Yevgeny Petrilin <yevgenyp@mellanox.co.il>
+Cc: Yang Hongyang <yanghy@cn.fujitsu.com>
+Cc: Jack Morgenstein <jackm@dev.mellanox.co.il>
+Cc: Eli Cohen <eli@mellanox.co.il>
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/net/meth.c |    2 +-
+ drivers/net/mlx4/main.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/meth.c b/drivers/net/meth.c
-index 92ceb68..2af8173 100644
---- a/drivers/net/meth.c
-+++ b/drivers/net/meth.c
-@@ -828,7 +828,7 @@ static int __exit meth_remove(struct platform_device *pdev)
+diff --git a/drivers/net/mlx4/main.c b/drivers/net/mlx4/main.c
+index 3dd481e..00625a7 100644
+--- a/drivers/net/mlx4/main.c
++++ b/drivers/net/mlx4/main.c
+@@ -1291,7 +1291,7 @@ static struct pci_driver mlx4_driver = {
+ 	.name		= DRV_NAME,
+ 	.id_table	= mlx4_pci_table,
+ 	.probe		= mlx4_init_one,
+-	.remove		= __devexit_p(mlx4_remove_one)
++	.remove		= mlx4_remove_one
+ };
  
- static struct platform_driver meth_driver = {
- 	.probe	= meth_probe,
--	.remove	= __devexit_p(meth_remove),
-+	.remove	= __exit_p(meth_remove),
- 	.driver = {
- 		.name	= "meth",
- 		.owner	= THIS_MODULE,
+ static int __init mlx4_verify_params(void)
 -- 
 1.6.4.3
 
