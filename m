@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbZJAGFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbZJAGL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752565AbZJAGFX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 02:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZJAGFW
+	id S1752697AbZJAGL0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 02:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382AbZJAGLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 02:05:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34543 "EHLO mx2.mail.elte.hu"
+	Thu, 1 Oct 2009 02:11:25 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49465 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751969AbZJAGFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 02:05:22 -0400
-Date: Thu, 1 Oct 2009 08:05:02 +0200
+	id S1752331AbZJAGLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 02:11:25 -0400
+Date: Thu, 1 Oct 2009 08:11:09 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
 Subject: Re: [GIT PULL] scheduler fixes
-Message-ID: <20091001060501.GA20053@elte.hu>
-References: <4AC2712C.4080901@gmail.com> <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain> <20090929232248.735bf4df@infradead.org> <alpine.LFD.2.01.0909291429570.6996@localhost.localdomain> <20090930170754.0886ff2e@infradead.org> <4AC37FE5.7020200@gmail.com> <alpine.LFD.2.01.0909300909460.6996@localhost.localdomain> <20090930185315.GA9716@elte.hu> <20090930220342.GA2118@elte.hu> <alpine.LFD.2.01.0909301738220.6996@localhost.localdomain>
+Message-ID: <20091001061109.GA21488@elte.hu>
+References: <20090929232248.735bf4df@infradead.org> <alpine.LFD.2.01.0909291429570.6996@localhost.localdomain> <20090930170754.0886ff2e@infradead.org> <4AC37FE5.7020200@gmail.com> <alpine.LFD.2.01.0909300909460.6996@localhost.localdomain> <20090930185315.GA9716@elte.hu> <20090930220342.GA2118@elte.hu> <alpine.LFD.2.01.0909301738220.6996@localhost.localdomain> <alpine.LFD.2.01.0909301743150.6996@localhost.localdomain> <4AC43E7E.1000600@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0909301738220.6996@localhost.localdomain>
+In-Reply-To: <4AC43E7E.1000600@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -39,19 +38,53 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
-> On Thu, 1 Oct 2009, Ingo Molnar wrote:
-> > 
-> > Ok, it now looks good in all tests here so Linus please pull the latest 
-> > sched-fixes-for-linus git tree from:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+> [PATCH] x86: Dont generate cmpxchg8b_emu if CONFIG_X86_CMPXCHG64=y
 > 
-> Pulled. I'd also like to see something that actually fails gracefully 
-> on cmpxchg() of an unsupported size, though. The silent failure still 
-> annoys me.
+> cmpxchg8b_emu helper wont be used if CONFIG_X86_CMPXCHG64=y
+> 
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> ---
+>  arch/x86/kernel/i386_ksyms_32.c |    2 ++
+>  arch/x86/lib/Makefile           |    6 ++++--
+>  2 files changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/i386_ksyms_32.c b/arch/x86/kernel/i386_ksyms_32.c
+> index 1736c5a..9c3bd4a 100644
+> --- a/arch/x86/kernel/i386_ksyms_32.c
+> +++ b/arch/x86/kernel/i386_ksyms_32.c
+> @@ -15,8 +15,10 @@ EXPORT_SYMBOL(mcount);
+>   * the export, but dont use it from C code, it is used
+>   * by assembly code and is not using C calling convention!
+>   */
+> +#ifndef CONFIG_X86_CMPXCHG64
+>  extern void cmpxchg8b_emu(void);
+>  EXPORT_SYMBOL(cmpxchg8b_emu);
+> +#endif
+>  
+>  /* Networking helper routines. */
+>  EXPORT_SYMBOL(csum_partial_copy_generic);
+> diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+> index 3e549b8..c309b82 100644
+> --- a/arch/x86/lib/Makefile
+> +++ b/arch/x86/lib/Makefile
+> @@ -15,8 +15,10 @@ ifeq ($(CONFIG_X86_32),y)
+>          obj-y += atomic64_32.o
+>          lib-y += checksum_32.o
+>          lib-y += strstr_32.o
+> -        lib-y += semaphore_32.o string_32.o cmpxchg8b_emu.o
+> -
+> +        lib-y += semaphore_32.o string_32.o
+> +ifeq ($(CONFIG_X86_CMPXCHG64),n)
+> +        lib-y += cmpxchg8b_emu.o
+> +endif
+>          lib-$(CONFIG_X86_USE_3DNOW) += mmx_32.o
+>  else
+>          obj-y += io_64.o iomap_copy_64.o
 
-Yeah. It even works fine on 64-bit which makes it double dangerous.
+That's not enough - the inline assembly code in 
+arch/x86/include/asm/cmpxchg_32.h should also not reference 
+cmpxchg8b_emu in that case.
 
 	Ingo
