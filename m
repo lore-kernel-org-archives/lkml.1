@@ -1,54 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbZJAHbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbZJAHdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755656AbZJAHbw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 03:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628AbZJAHbv
+	id S1755665AbZJAHdc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 03:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628AbZJAHdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 03:31:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49438 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755625AbZJAHbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 03:31:51 -0400
-Date: Thu, 1 Oct 2009 09:31:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2 v2] optimize for perf_event_init_task()
-Message-ID: <20091001073138.GB1502@elte.hu>
-References: <4AB88F06.10900@cn.fujitsu.com> <19128.39768.149110.673711@cargo.ozlabs.ibm.com> <4AB98BB0.6020202@cn.fujitsu.com> <19129.38627.94363.857137@cargo.ozlabs.ibm.com> <4AB9D7FA.5040707@cn.fujitsu.com> <1253695230.7695.122.camel@twins> <4ABC5A55.7000208@cn.fujitsu.com> <4ABC5AF9.6060808@cn.fujitsu.com> <1253868957.10287.5.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253868957.10287.5.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.5
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0761]
+	Thu, 1 Oct 2009 03:33:32 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59896 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755626AbZJAHdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 03:33:31 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19+L6g/UEF+y1JgIqkbgjkojTbIExAIhEaRpm3/t8
+	YZ7UURhvvAFJJ/
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+In-Reply-To: <20090930202447.GA28236@redhat.com>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
+	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
+	 <1253976676.7005.40.camel@marge.simson.net>
+	 <1254034500.7933.6.camel@marge.simson.net>
+	 <20090927164235.GA23126@kernel.dk>
+	 <1254340730.7695.32.camel@marge.simson.net>
+	 <1254341139.7695.36.camel@marge.simson.net>
+	 <20090930202447.GA28236@redhat.com>
+Content-Type: text/plain
+Date: Thu, 01 Oct 2009 09:33:25 +0200
+Message-Id: <1254382405.7595.9.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Fri, 2009-09-25 at 13:54 +0800, Xiao Guangrong wrote:
-> > We can traverse ctx->group_list to get all group leader, it should be safe
-> > since we hold ctx->mutex
+On Wed, 2009-09-30 at 16:24 -0400, Vivek Goyal wrote:
+> On Wed, Sep 30, 2009 at 10:05:39PM +0200, Mike Galbraith wrote:
 > > 
-> > Changlog v1->v2:
-> > - remove WARN_ON_ONCE() as Peter Zijlstra's suggestion
+> >  
+> > >  		/*
+> > > +		 * We may have seeky queues, don't throttle up just yet.
+> > > +		 */
+> > > +		if (time_before(jiffies, cfqd->last_seeker + CIC_SEEK_THR))
+> > > +			return 0;
+> > > +
 > > 
-> > Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> > bzzzt.  Window too large, but the though is to let them overload, but
+> > not instantly.
+> > 
 > 
-> Thanks!
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> CIC_SEEK_THR is 8K jiffies so that would be 8seconds on 1000HZ system. Try
+> using one "slice_idle" period of 8 ms. But it might turn out to be too
+> short depending on the disk speed.
 
-Thanks Xiao and Peter, i've queued up both patches for v2.6.32.
+Yeah, it is too short, as is even _400_ ms.  Trouble is, by the time
+some new task is determined to be seeky, the damage is already done.
 
-	Ingo
+The below does better, though not as well as "just say no to overload"
+of course ;-)
+
+I have a patchlet from Corrado to test, likely better time investment
+than poking this darn thing with sharp sticks.
+
+	-Mike
+
+grep elapsed testo.log
+    0.894345911  seconds time elapsed <== solo seeky test measurement
+    3.732472877  seconds time elapsed
+    3.208443735  seconds time elapsed
+    4.249776673  seconds time elapsed
+    2.763449260  seconds time elapsed
+    4.235271019  seconds time elapsed
+
+(3.73 + 3.20 + 4.24 + 2.76 + 4.23) / 5 / 0.89 = 4... darn.
+
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index e2a9b92..44a888d 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -174,6 +174,8 @@ struct cfq_data {
+ 	unsigned int cfq_slice_async_rq;
+ 	unsigned int cfq_slice_idle;
+ 
++	unsigned long od_stamp;
++
+ 	struct list_head cic_list;
+ 
+ 	/*
+@@ -1296,19 +1298,26 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
+ 	/*
+ 	 * Drain async requests before we start sync IO
+ 	 */
+-	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
++	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC]) {
++		cfqd->od_stamp = jiffies;
+ 		return 0;
++	}
+ 
+ 	/*
+ 	 * If this is an async queue and we have sync IO in flight, let it wait
+ 	 */
+-	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
++	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq)) {
++		cfqd->od_stamp = jiffies;
+ 		return 0;
++	}
+ 
+ 	max_dispatch = cfqd->cfq_quantum;
+ 	if (cfq_class_idle(cfqq))
+ 		max_dispatch = 1;
+ 
++	if (cfqd->busy_queues > 1)
++		cfqd->od_stamp = jiffies;
++
+ 	/*
+ 	 * Does this cfqq already have too much IO in flight?
+ 	 */
+@@ -1326,6 +1335,12 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
+ 			return 0;
+ 
+ 		/*
++		 * Don't start overloading until we've been alone for a bit.
++		 */
++		if (time_before(jiffies, cfqd->od_stamp + cfq_slice_sync))
++			return 0;
++
++		/*
+ 		 * we are the only queue, allow up to 4 times of 'quantum'
+ 		 */
+ 		if (cfqq->dispatched >= 4 * max_dispatch)
+@@ -1941,7 +1956,7 @@ static void
+ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		       struct cfq_io_context *cic)
+ {
+-	int old_idle, enable_idle;
++	int old_idle, enable_idle, seeky = 0;
+ 
+ 	/*
+ 	 * Don't idle for async or idle io prio class
+@@ -1949,10 +1964,19 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	if (!cfq_cfqq_sync(cfqq) || cfq_class_idle(cfqq))
+ 		return;
+ 
++	if (cfqd->hw_tag) {
++		if (CIC_SEEKY(cic))
++			seeky = 1;
++		/*
++		 * If known or incalculable seekiness, delay.
++		 */
++		if (seeky || !sample_valid(cic->seek_samples))
++			cfqd->od_stamp = jiffies;
++	}
++
+ 	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
+ 
+-	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
+-	    (cfqd->hw_tag && CIC_SEEKY(cic)))
++	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle || seeky)
+ 		enable_idle = 0;
+ 	else if (sample_valid(cic->ttime_samples)) {
+ 		if (cic->ttime_mean > cfqd->cfq_slice_idle)
+@@ -2482,6 +2506,7 @@ static void *cfq_init_queue(struct request_queue *q)
+ 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
+ 	cfqd->cfq_slice_idle = cfq_slice_idle;
+ 	cfqd->hw_tag = 1;
++	cfqd->od_stamp = INITIAL_JIFFIES;
+ 
+ 	return cfqd;
+ }
+
+
+
+
