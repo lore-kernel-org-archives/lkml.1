@@ -1,78 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbZJBDd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZJBDdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754324AbZJBDd3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 23:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZJBDd1
+	id S1754384AbZJBDdh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 23:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbZJBDd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 23:33:27 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:42151 "EHLO
+	Thu, 1 Oct 2009 23:33:28 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:36173 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753866AbZJBDdZ (ORCPT
+	with ESMTP id S1753075AbZJBDdY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 23:33:25 -0400
-X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
-	times
-Message-Id: <20091001212558.534705127@gentwo.org>
+	Thu, 1 Oct 2009 23:33:24 -0400
+X-Amavis-Alert: BAD HEADER, Duplicate header field: "Cc"
+Message-Id: <20091001212558.729480973@gentwo.org>
 References: <20091001212521.123389189@gentwo.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 01 Oct 2009 17:25:26 -0400
+Date: Thu, 01 Oct 2009 17:25:27 -0400
 From: cl@linux-foundation.org
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu
-Cc: rusty@rustcorp.com.au
+Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Eric Dumazet <dada1@cosmosbay.com>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [this_cpu_xx V4 05/20] use this_cpu ops for network statistics
-Content-Disposition: inline; filename=this_cpu_net
+Subject: [this_cpu_xx V4 06/20] this_cpu_ptr: Straight transformations
+Content-Disposition: inline; filename=this_cpu_ptr_straight_transforms
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Use this_cpu_ptr and __this_cpu_ptr in locations where straight
+transformations are possible because per_cpu_ptr is used with
+either smp_processor_id() or raw_smp_processor_id().
+
+cc: David Howells <dhowells@redhat.com>
 Acked-by: Tejun Heo <tj@kernel.org>
-Acked-by: David Miller <davem@davemloft.net>
+cc: Ingo Molnar <mingo@elte.hu>
+cc: Rusty Russell <rusty@rustcorp.com.au>
+cc: Eric Dumazet <dada1@cosmosbay.com>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- include/net/neighbour.h              |    7 +------
- include/net/netfilter/nf_conntrack.h |    4 ++--
- 2 files changed, 3 insertions(+), 8 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_irq.c |    3 +--
+ drivers/net/chelsio/sge.c             |    5 ++---
+ drivers/net/loopback.c                |    2 +-
+ fs/ext4/mballoc.c                     |    2 +-
+ 4 files changed, 5 insertions(+), 7 deletions(-)
 
-Index: linux-2.6/include/net/neighbour.h
+Index: linux-2.6/drivers/net/chelsio/sge.c
 ===================================================================
---- linux-2.6.orig/include/net/neighbour.h	2009-09-30 18:32:31.000000000 -0500
-+++ linux-2.6/include/net/neighbour.h	2009-09-30 18:32:55.000000000 -0500
-@@ -90,12 +90,7 @@ struct neigh_statistics
- 	unsigned long unres_discards;	/* number of unresolved drops */
- };
+--- linux-2.6.orig/drivers/net/chelsio/sge.c	2009-09-29 09:31:40.000000000 -0500
++++ linux-2.6/drivers/net/chelsio/sge.c	2009-09-29 11:39:20.000000000 -0500
+@@ -1378,7 +1378,7 @@ static void sge_rx(struct sge *sge, stru
+ 	}
+ 	__skb_pull(skb, sizeof(*p));
  
--#define NEIGH_CACHE_STAT_INC(tbl, field)				\
--	do {								\
--		preempt_disable();					\
--		(per_cpu_ptr((tbl)->stats, smp_processor_id())->field)++; \
--		preempt_enable();					\
--	} while (0)
-+#define NEIGH_CACHE_STAT_INC(tbl, field) this_cpu_inc((tbl)->stats->field)
+-	st = per_cpu_ptr(sge->port_stats[p->iff], smp_processor_id());
++	st = this_cpu_ptr(sge->port_stats[p->iff]);
  
- struct neighbour
+ 	skb->protocol = eth_type_trans(skb, adapter->port[p->iff].dev);
+ 	if ((adapter->flags & RX_CSUM_ENABLED) && p->csum == 0xffff &&
+@@ -1780,8 +1780,7 @@ netdev_tx_t t1_start_xmit(struct sk_buff
  {
-Index: linux-2.6/include/net/netfilter/nf_conntrack.h
+ 	struct adapter *adapter = dev->ml_priv;
+ 	struct sge *sge = adapter->sge;
+-	struct sge_port_stats *st = per_cpu_ptr(sge->port_stats[dev->if_port],
+-						smp_processor_id());
++	struct sge_port_stats *st = this_cpu_ptr(sge->port_stats[dev->if_port]);
+ 	struct cpl_tx_pkt *cpl;
+ 	struct sk_buff *orig_skb = skb;
+ 	int ret;
+Index: linux-2.6/drivers/net/loopback.c
 ===================================================================
---- linux-2.6.orig/include/net/netfilter/nf_conntrack.h	2009-09-30 18:32:57.000000000 -0500
-+++ linux-2.6/include/net/netfilter/nf_conntrack.h	2009-09-30 18:34:13.000000000 -0500
-@@ -295,11 +295,11 @@ extern unsigned int nf_conntrack_htable_
- extern unsigned int nf_conntrack_max;
+--- linux-2.6.orig/drivers/net/loopback.c	2009-09-29 09:31:40.000000000 -0500
++++ linux-2.6/drivers/net/loopback.c	2009-09-29 11:39:20.000000000 -0500
+@@ -81,7 +81,7 @@ static netdev_tx_t loopback_xmit(struct 
  
- #define NF_CT_STAT_INC(net, count)	\
--	(per_cpu_ptr((net)->ct.stat, raw_smp_processor_id())->count++)
-+	__this_cpu_inc((net)->ct.stat->count)
- #define NF_CT_STAT_INC_ATOMIC(net, count)		\
- do {							\
- 	local_bh_disable();				\
--	per_cpu_ptr((net)->ct.stat, raw_smp_processor_id())->count++;	\
-+	__this_cpu_inc((net)->ct.stat->count);		\
- 	local_bh_enable();				\
- } while (0)
+ 	/* it's OK to use per_cpu_ptr() because BHs are off */
+ 	pcpu_lstats = dev->ml_priv;
+-	lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
++	lb_stats = this_cpu_ptr(pcpu_lstats);
  
+ 	len = skb->len;
+ 	if (likely(netif_rx(skb) == NET_RX_SUCCESS)) {
+Index: linux-2.6/fs/ext4/mballoc.c
+===================================================================
+--- linux-2.6.orig/fs/ext4/mballoc.c	2009-09-29 09:31:40.000000000 -0500
++++ linux-2.6/fs/ext4/mballoc.c	2009-09-29 11:39:20.000000000 -0500
+@@ -4210,7 +4210,7 @@ static void ext4_mb_group_or_file(struct
+ 	 * per cpu locality group is to reduce the contention between block
+ 	 * request from multiple CPUs.
+ 	 */
+-	ac->ac_lg = per_cpu_ptr(sbi->s_locality_groups, raw_smp_processor_id());
++	ac->ac_lg = __this_cpu_ptr(sbi->s_locality_groups);
+ 
+ 	/* we're going to use group allocation */
+ 	ac->ac_flags |= EXT4_MB_HINT_GROUP_ALLOC;
+Index: linux-2.6/drivers/infiniband/hw/ehca/ehca_irq.c
+===================================================================
+--- linux-2.6.orig/drivers/infiniband/hw/ehca/ehca_irq.c	2009-09-29 09:31:40.000000000 -0500
++++ linux-2.6/drivers/infiniband/hw/ehca/ehca_irq.c	2009-09-29 11:39:20.000000000 -0500
+@@ -826,8 +826,7 @@ static void __cpuinit take_over_work(str
+ 		cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
+ 
+ 		list_del(&cq->entry);
+-		__queue_comp_task(cq, per_cpu_ptr(pool->cpu_comp_tasks,
+-						  smp_processor_id()));
++		__queue_comp_task(cq, this_cpu_ptr(pool->cpu_comp_tasks));
+ 	}
+ 
+ 	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
 
 -- 
