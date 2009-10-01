@@ -1,82 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757125AbZJBBuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbZJBHDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757125AbZJBBuY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757082AbZJBBuV
+	id S1757188AbZJBHDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 03:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757080AbZJBHDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:50:21 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:51299 "EHLO
+	Fri, 2 Oct 2009 03:03:16 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:38933 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756193AbZJBBdW (ORCPT
+	with ESMTP id S1756833AbZJBHDO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:33:22 -0400
-X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
+	Fri, 2 Oct 2009 03:03:14 -0400
+X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 5
 	times
-Message-Id: <20091001212559.690311062@gentwo.org>
+Message-Id: <20091001212559.879284755@gentwo.org>
 References: <20091001212521.123389189@gentwo.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 01 Oct 2009 17:25:32 -0400
+Date: Thu, 01 Oct 2009 17:25:33 -0400
 From: cl@linux-foundation.org
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
+Cc: Tejun Heo <tj@kernel.org>
 Cc: mingo@elte.hu
 Cc: rusty@rustcorp.com.au
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [this_cpu_xx V4 11/20] RCU: Use this_cpu operations
-Content-Disposition: inline; filename=this_cpu_rcu
+Subject: [this_cpu_xx V4 12/20] Move early initialization of pagesets out of zone_wait_table_init()
+Content-Disposition: inline; filename=this_cpu_move_initialization
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RCU does not do dynamic allocations but it increments per cpu variables
-a lot. These instructions results in a move to a register and then back
-to memory. This patch will make it use the inc/dec instructions on x86
-that do not need a register.
+Explicitly initialize the pagesets after the per cpu areas have been
+initialized. This is necessary in order to be able to use per cpu
+operations in later patches.
 
-Acked-by: Tejun Heo <tj@kernel.org>
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- kernel/rcutorture.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/ia64/kernel/setup.c       |    1 +
+ arch/powerpc/kernel/setup_64.c |    1 +
+ arch/sparc/kernel/smp_64.c     |    1 +
+ arch/x86/kernel/setup_percpu.c |    2 ++
+ include/linux/mm.h             |    1 +
+ mm/page_alloc.c                |   40 +++++++++++++++++++++++++++++-----------
+ mm/percpu.c                    |    2 ++
+ 7 files changed, 37 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/kernel/rcutorture.c
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/kernel/rcutorture.c	2009-09-28 10:08:10.000000000 -0500
-+++ linux-2.6/kernel/rcutorture.c	2009-09-29 09:02:00.000000000 -0500
-@@ -731,13 +731,13 @@ static void rcu_torture_timer(unsigned l
- 		/* Should not happen, but... */
- 		pipe_count = RCU_TORTURE_PIPE_LEN;
- 	}
--	++__get_cpu_var(rcu_torture_count)[pipe_count];
-+	__this_cpu_inc(per_cpu_var(rcu_torture_count)[pipe_count]);
- 	completed = cur_ops->completed() - completed;
- 	if (completed > RCU_TORTURE_PIPE_LEN) {
- 		/* Should not happen, but... */
- 		completed = RCU_TORTURE_PIPE_LEN;
- 	}
--	++__get_cpu_var(rcu_torture_batch)[completed];
-+	__this_cpu_inc(per_cpu_var(rcu_torture_batch)[completed]);
- 	preempt_enable();
- 	cur_ops->readunlock(idx);
+--- linux-2.6.orig/mm/page_alloc.c	2009-10-01 08:54:19.000000000 -0500
++++ linux-2.6/mm/page_alloc.c	2009-10-01 09:36:19.000000000 -0500
+@@ -3270,23 +3270,42 @@ void zone_pcp_update(struct zone *zone)
+ 	stop_machine(__zone_pcp_update, zone, NULL);
  }
-@@ -786,13 +786,13 @@ rcu_torture_reader(void *arg)
- 			/* Should not happen, but... */
- 			pipe_count = RCU_TORTURE_PIPE_LEN;
- 		}
--		++__get_cpu_var(rcu_torture_count)[pipe_count];
-+		__this_cpu_inc(per_cpu_var(rcu_torture_count)[pipe_count]);
- 		completed = cur_ops->completed() - completed;
- 		if (completed > RCU_TORTURE_PIPE_LEN) {
- 			/* Should not happen, but... */
- 			completed = RCU_TORTURE_PIPE_LEN;
- 		}
--		++__get_cpu_var(rcu_torture_batch)[completed];
-+		__this_cpu_inc(per_cpu_var(rcu_torture_batch)[completed]);
- 		preempt_enable();
- 		cur_ops->readunlock(idx);
- 		schedule();
+ 
+-static __meminit void zone_pcp_init(struct zone *zone)
++/*
++ * Early setup of pagesets.
++ *
++ * In the NUMA case the pageset setup simply results in all zones pcp
++ * pointer being directed at a per cpu pageset with zero batchsize.
++ *
++ * This means that every free and every allocation occurs directly from
++ * the buddy allocator tables.
++ *
++ * The pageset never queues pages during early boot and is therefore usable
++ * for every type of zone.
++ */
++__meminit void setup_pagesets(void)
+ {
+ 	int cpu;
+-	unsigned long batch = zone_batchsize(zone);
++	struct zone *zone;
+ 
+-	for (cpu = 0; cpu < NR_CPUS; cpu++) {
++	for_each_zone(zone) {
+ #ifdef CONFIG_NUMA
+-		/* Early boot. Slab allocator not functional yet */
+-		zone_pcp(zone, cpu) = &boot_pageset[cpu];
+-		setup_pageset(&boot_pageset[cpu],0);
++		unsigned long batch = 0;
++
++		for (cpu = 0; cpu < NR_CPUS; cpu++) {
++			/* Early boot. Slab allocator not functional yet */
++			zone_pcp(zone, cpu) = &boot_pageset[cpu];
++		}
+ #else
+-		setup_pageset(zone_pcp(zone,cpu), batch);
++		unsigned long batch = zone_batchsize(zone);
+ #endif
++
++		for_each_possible_cpu(cpu)
++			setup_pageset(zone_pcp(zone, cpu), batch);
++
++		if (zone->present_pages)
++			printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%lu\n",
++				zone->name, zone->present_pages, batch);
+ 	}
+-	if (zone->present_pages)
+-		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%lu\n",
+-			zone->name, zone->present_pages, batch);
+ }
+ 
+ __meminit int init_currently_empty_zone(struct zone *zone,
+@@ -3841,7 +3860,6 @@ static void __paginginit free_area_init_
+ 
+ 		zone->prev_priority = DEF_PRIORITY;
+ 
+-		zone_pcp_init(zone);
+ 		for_each_lru(l) {
+ 			INIT_LIST_HEAD(&zone->lru[l].list);
+ 			zone->reclaim_stat.nr_saved_scan[l] = 0;
+Index: linux-2.6/include/linux/mm.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm.h	2009-10-01 08:54:19.000000000 -0500
++++ linux-2.6/include/linux/mm.h	2009-10-01 09:36:19.000000000 -0500
+@@ -1060,6 +1060,7 @@ extern void show_mem(void);
+ extern void si_meminfo(struct sysinfo * val);
+ extern void si_meminfo_node(struct sysinfo *val, int nid);
+ extern int after_bootmem;
++extern void setup_pagesets(void);
+ 
+ #ifdef CONFIG_NUMA
+ extern void setup_per_cpu_pageset(void);
+Index: linux-2.6/arch/ia64/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/setup.c	2009-10-01 08:54:19.000000000 -0500
++++ linux-2.6/arch/ia64/kernel/setup.c	2009-10-01 09:35:39.000000000 -0500
+@@ -864,6 +864,7 @@ void __init
+ setup_per_cpu_areas (void)
+ {
+ 	/* start_kernel() requires this... */
++	setup_pagesets();
+ }
+ #endif
+ 
+Index: linux-2.6/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/setup_64.c	2009-10-01 08:54:19.000000000 -0500
++++ linux-2.6/arch/powerpc/kernel/setup_64.c	2009-10-01 09:35:39.000000000 -0500
+@@ -578,6 +578,7 @@ static void ppc64_do_msg(unsigned int sr
+ 		snprintf(buf, 128, "%s", msg);
+ 		ppc_md.progress(buf, 0);
+ 	}
++	setup_pagesets();
+ }
+ 
+ /* Print a boot progress message. */
+Index: linux-2.6/arch/sparc/kernel/smp_64.c
+===================================================================
+--- linux-2.6.orig/arch/sparc/kernel/smp_64.c	2009-10-01 08:54:19.000000000 -0500
++++ linux-2.6/arch/sparc/kernel/smp_64.c	2009-10-01 09:35:39.000000000 -0500
+@@ -1486,4 +1486,5 @@ void __init setup_per_cpu_areas(void)
+ 	of_fill_in_cpu_data();
+ 	if (tlb_type == hypervisor)
+ 		mdesc_fill_in_cpu_data(cpu_all_mask);
++	setup_pagesets();
+ }
+Index: linux-2.6/arch/x86/kernel/setup_percpu.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_percpu.c	2009-10-01 08:54:19.000000000 -0500
++++ linux-2.6/arch/x86/kernel/setup_percpu.c	2009-10-01 09:35:39.000000000 -0500
+@@ -269,4 +269,6 @@ void __init setup_per_cpu_areas(void)
+ 
+ 	/* Setup cpu initialized, callin, callout masks */
+ 	setup_cpu_local_masks();
++
++	setup_pagesets();
+ }
+Index: linux-2.6/mm/percpu.c
+===================================================================
+--- linux-2.6.orig/mm/percpu.c	2009-10-01 08:54:19.000000000 -0500
++++ linux-2.6/mm/percpu.c	2009-10-01 09:35:39.000000000 -0500
+@@ -2062,5 +2062,7 @@ void __init setup_per_cpu_areas(void)
+ 	delta = (unsigned long)pcpu_base_addr - (unsigned long)__per_cpu_start;
+ 	for_each_possible_cpu(cpu)
+ 		__per_cpu_offset[cpu] = delta + pcpu_unit_offsets[cpu];
++
++	setup_pagesets();
+ }
+ #endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
 
 -- 
