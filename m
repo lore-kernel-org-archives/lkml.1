@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZJATen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932098AbZJASu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756324AbZJATen (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 15:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbZJATem
+	id S932098AbZJASu0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 14:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbZJASuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 15:34:42 -0400
-Received: from [76.245.85.235] ([76.245.85.235]:58143 "EHLO cynthia.pants.nu"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755546AbZJATel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 15:34:41 -0400
-X-Greylist: delayed 2653 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Oct 2009 15:34:41 EDT
-Date: Thu, 1 Oct 2009 11:49:35 -0700
-From: Brad Boyer <flar@allandria.com>
-To: Valerie Aurora <vaurora@redhat.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Union mounts/writable overlays design
-Message-ID: <20091001184935.GA27667@cynthia.pants.nu>
-References: <20091001145547.GA29152@shell>
+	Thu, 1 Oct 2009 14:50:25 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:37112 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752952AbZJASuZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 14:50:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=WYBf2Nynp7IypnyM0w215rTTIL94snvIVlpvr9pfcVsqWk0KpLiFOzFVzlgfLVTvI/
+         QYmqsikcwGvhmHbhjo0eMaVykzDpb2Q3fR4/aZjaA1gMIc6BEyB9tJSZVLaxj3yJbzb6
+         G187S3WrHFoVMaVJinmkQDF6uXYCHvJmNOcTE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: kernel BUG at drivers/ide/ide-disk.c:187 (2.6.31)
+Date: Thu, 1 Oct 2009 20:52:16 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-dirty; KDE/4.3.1; i686; ; )
+Cc: elendil@planet.nl, manty@manty.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <200910011125.40081.bzolnier@gmail.com> <200910012021.24260.bzolnier@gmail.com> <20091001.113418.139794332.davem@davemloft.net>
+In-Reply-To: <20091001.113418.139794332.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091001145547.GA29152@shell>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200910012052.16465.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 10:55:48AM -0400, Valerie Aurora wrote:
-> We need to guarantee that a file system will be read-only for as long
-> as it is the bottom layer of a writable overlay.  To do this, we track
-> the number of "read-only users" of a file system in its VFS superblock
-> structure.  When we mount a writable overlay over a file system, we
-> increment its read-only user count.  The file system can only be
-> mounted read-write if its read-only users count is zero.
+On Thursday 01 October 2009 20:34:18 David Miller wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date: Thu, 1 Oct 2009 20:21:24 +0200
 > 
-> Todo:
+> > - for the last three months you haven't debugged/fixed a single IDE issue
+> >   and you keep dodging every single bug-report 
 > 
-> - Support really really read-only NFS mounts.  See discussion here:
+> I mostly do the same with networking, and I'm the maintainer there
+> too. :-)
 > 
->   http://markmail.org/message/3mkgnvo4pswxd7lp
+> And regardless of my workload, all reasonable patches and bug fixes
+> submitted for IDE flowed freely during this time, or were given
+> a review NACK.
+> 
+> I depend upon subsystem contributors to fix the bugs, that's how this
+> works.  I merely mediate, review patches, apply patches, and chip in
+> with some work of my own from time to time as the situation and my
+> workload dictate.
 
-Is there any way for a file system driver to just come out and say
-"I can't guarantee that this mount is really read-only"? I can imagine
-this might be an issue for things other than NFS. I think it would be
-worthwhile to have a flag maybe on a per sb level that says that even
-if it is mounted with the "ro" option that it might not really be stable.
-I don't think this is essential, but it would be a good feature as long
-as it doesn't damage the design or performance too much.
-
-	Brad Boyer
-	flar@allandria.com
-
+IIRC you were not very content with exactly this style of my management
+of IDE some years ago..  However I'm really glad that it works for you
+so well in the networking, and now in IDE too! :)
