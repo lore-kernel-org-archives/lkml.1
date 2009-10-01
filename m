@@ -1,186 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbZJAXi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZJAXn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756696AbZJAXi7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbZJAXi6
+	id S1755364AbZJAXn7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZJAXn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:38:58 -0400
-Received: from kroah.org ([198.145.64.141]:42113 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:43:58 -0400
+Received: from kroah.org ([198.145.64.141]:42020 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756309AbZJAXi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:38:27 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:33:23 2009
-Message-Id: <20091001233323.256648044@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:31:46 -0700
+	id S1754824AbZJAXiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:38:06 -0400
+Date: Thu, 1 Oct 2009 16:35:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch 30/30] PM / yenta: Fix cardbus suspend/resume regression
-References: <20091001233116.947658905@mini.kroah.org>
-Content-Disposition: inline; filename=pm-yenta-fix-cardbus-suspend-resume-regression.patch
-In-Reply-To: <20091001233504.GA17709@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/30] 2.6.30.9-stable review
+Message-ID: <20091001233504.GA17709@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.30-stable review patch.  If anyone has any objections, please let us know.
+NOTE:  This is going to be the last .30 kernel release unless something
+odd happens.  Everyone should move to the .31 kernel release soon.
 
-------------------
-From: Rafael J. Wysocki <rjw@sisk.pl>
+This is the start of the stable review cycle for the 2.6.30.9 release.
+There are 30 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-commit 0c570cdeb8fdfcb354a3e9cd81bfc6a09c19de0c upstream.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-Since 2.6.29 the PCI PM core have been restoring the standard
-configuration registers of PCI devices in the early phase of
-resume.  In particular, PCI devices without drivers have been handled
-this way since commit 355a72d75b3b4f4877db4c9070c798238028ecb5
-(PCI: Rework default handling of suspend and resume).  Unfortunately,
-this leads to post-resume problems with CardBus devices which cannot
-be accessed in the early phase of resume, because the sockets they
-are on have not been woken up yet at that point.
+Responses should be made by Saturday, October 3, 2009 23:00:00 UTC.
+Anything received after that time might be too late.
 
-To solve this problem, move the yenta socket resume to the early
-phase of resume and, analogously, move the suspend of it to the late
-phase of suspend.  Additionally, remove some unnecessary PCI code
-from the yenta socket's resume routine.
-
-Fixes http://bugzilla.kernel.org/show_bug.cgi?id=13092, which is a
-post-2.6.28 regression.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Florian <fs-kernelbugzilla@spline.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/pcmcia/yenta_socket.c |   92 ++++++++++++++++++++++--------------------
- 1 file changed, 50 insertions(+), 42 deletions(-)
-
---- a/drivers/pcmcia/yenta_socket.c
-+++ b/drivers/pcmcia/yenta_socket.c
-@@ -1225,60 +1225,71 @@ static int __devinit yenta_probe (struct
- }
- 
- #ifdef CONFIG_PM
--static int yenta_dev_suspend (struct pci_dev *dev, pm_message_t state)
-+static int yenta_dev_suspend_noirq(struct device *dev)
- {
--	struct yenta_socket *socket = pci_get_drvdata(dev);
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct yenta_socket *socket = pci_get_drvdata(pdev);
- 	int ret;
- 
--	ret = pcmcia_socket_dev_suspend(&dev->dev);
-+	ret = pcmcia_socket_dev_suspend(dev);
- 
--	if (socket) {
--		if (socket->type && socket->type->save_state)
--			socket->type->save_state(socket);
--
--		/* FIXME: pci_save_state needs to have a better interface */
--		pci_save_state(dev);
--		pci_read_config_dword(dev, 16*4, &socket->saved_state[0]);
--		pci_read_config_dword(dev, 17*4, &socket->saved_state[1]);
--		pci_disable_device(dev);
--
--		/*
--		 * Some laptops (IBM T22) do not like us putting the Cardbus
--		 * bridge into D3.  At a guess, some other laptop will
--		 * probably require this, so leave it commented out for now.
--		 */
--		/* pci_set_power_state(dev, 3); */
--	}
-+	if (!socket)
-+		return ret;
-+
-+	if (socket->type && socket->type->save_state)
-+		socket->type->save_state(socket);
-+
-+	pci_save_state(pdev);
-+	pci_read_config_dword(pdev, 16*4, &socket->saved_state[0]);
-+	pci_read_config_dword(pdev, 17*4, &socket->saved_state[1]);
-+	pci_disable_device(pdev);
-+
-+	/*
-+	 * Some laptops (IBM T22) do not like us putting the Cardbus
-+	 * bridge into D3.  At a guess, some other laptop will
-+	 * probably require this, so leave it commented out for now.
-+	 */
-+	/* pci_set_power_state(dev, 3); */
- 
- 	return ret;
- }
- 
--
--static int yenta_dev_resume (struct pci_dev *dev)
-+static int yenta_dev_resume_noirq(struct device *dev)
- {
--	struct yenta_socket *socket = pci_get_drvdata(dev);
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct yenta_socket *socket = pci_get_drvdata(pdev);
-+	int ret;
- 
--	if (socket) {
--		int rc;
-+	if (!socket)
-+		return 0;
- 
--		pci_set_power_state(dev, 0);
--		/* FIXME: pci_restore_state needs to have a better interface */
--		pci_restore_state(dev);
--		pci_write_config_dword(dev, 16*4, socket->saved_state[0]);
--		pci_write_config_dword(dev, 17*4, socket->saved_state[1]);
-+	pci_write_config_dword(pdev, 16*4, socket->saved_state[0]);
-+	pci_write_config_dword(pdev, 17*4, socket->saved_state[1]);
- 
--		rc = pci_enable_device(dev);
--		if (rc)
--			return rc;
-+	ret = pci_enable_device(pdev);
-+	if (ret)
-+		return ret;
- 
--		pci_set_master(dev);
-+	pci_set_master(pdev);
- 
--		if (socket->type && socket->type->restore_state)
--			socket->type->restore_state(socket);
--	}
-+	if (socket->type && socket->type->restore_state)
-+		socket->type->restore_state(socket);
- 
--	return pcmcia_socket_dev_resume(&dev->dev);
-+	return pcmcia_socket_dev_resume(dev);
- }
-+
-+static struct dev_pm_ops yenta_pm_ops = {
-+	.suspend_noirq = yenta_dev_suspend_noirq,
-+	.resume_noirq = yenta_dev_resume_noirq,
-+	.freeze_noirq = yenta_dev_suspend_noirq,
-+	.thaw_noirq = yenta_dev_resume_noirq,
-+	.poweroff_noirq = yenta_dev_suspend_noirq,
-+	.restore_noirq = yenta_dev_resume_noirq,
-+};
-+
-+#define YENTA_PM_OPS	(&yenta_pm_ops)
-+#else
-+#define YENTA_PM_OPS	NULL
- #endif
- 
- #define CB_ID(vend,dev,type)				\
-@@ -1376,10 +1387,7 @@ static struct pci_driver yenta_cardbus_d
- 	.id_table	= yenta_table,
- 	.probe		= yenta_probe,
- 	.remove		= __devexit_p(yenta_close),
--#ifdef CONFIG_PM
--	.suspend	= yenta_dev_suspend,
--	.resume		= yenta_dev_resume,
--#endif
-+	.driver.pm	= YENTA_PM_OPS,
- };
- 
- 
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.9-rc1.gz
+and the diffstat can be found below.
 
 
+thanks,
+
+greg k-h
+
+------
+
+ Makefile                                  |    2 +-
+ arch/powerpc/include/asm/pte-common.h     |    2 +-
+ arch/powerpc/mm/pgtable.c                 |   19 +++++-
+ arch/x86/include/asm/kvm_host.h           |    1 +
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   15 +++--
+ arch/x86/kernel/kvmclock.c                |    4 +-
+ arch/x86/kvm/lapic.c                      |    9 +++
+ arch/x86/kvm/mmu.c                        |    9 +--
+ arch/x86/kvm/vmx.c                        |   11 ++--
+ arch/x86/kvm/x86.c                        |   31 ++++++++--
+ drivers/acpi/pci_slot.c                   |    4 +-
+ drivers/ata/ahci.c                        |    4 +-
+ drivers/net/wireless/p54/p54usb.c         |    1 +
+ drivers/pcmcia/at91_cf.c                  |    2 +-
+ drivers/pcmcia/au1000_generic.c           |    2 +-
+ drivers/pcmcia/bfin_cf_pcmcia.c           |    2 +-
+ drivers/pcmcia/cs.c                       |    2 +-
+ drivers/pcmcia/i82092.c                   |    2 +-
+ drivers/pcmcia/i82365.c                   |    2 +-
+ drivers/pcmcia/m32r_cfc.c                 |    2 +-
+ drivers/pcmcia/m32r_pcc.c                 |    2 +-
+ drivers/pcmcia/m8xx_pcmcia.c              |    2 +-
+ drivers/pcmcia/omap_cf.c                  |    2 +-
+ drivers/pcmcia/pd6729.c                   |    2 +-
+ drivers/pcmcia/pxa2xx_base.c              |    2 +-
+ drivers/pcmcia/sa1100_generic.c           |    2 +-
+ drivers/pcmcia/sa1111_generic.c           |    2 +-
+ drivers/pcmcia/tcic.c                     |    2 +-
+ drivers/pcmcia/vrc4171_card.c             |    2 +-
+ drivers/pcmcia/yenta_socket.c             |   88 ++++++++++++++++-------------
+ fs/cifs/cifsglob.h                        |    4 +-
+ fs/inode.c                                |   14 +++--
+ fs/nilfs2/btnode.c                        |    1 +
+ fs/proc/kcore.c                           |    8 ++-
+ fs/proc/uptime.c                          |    7 ++-
+ include/linux/kvm_para.h                  |    1 +
+ include/pcmcia/ss.h                       |    2 +-
+ mm/hugetlb.c                              |    2 +-
+ net/ax25/af_ax25.c                        |    2 +-
+ net/bridge/br_netfilter.c                 |    2 +-
+ net/bridge/netfilter/ebt_ulog.c           |    2 +-
+ net/ipv4/netfilter/nf_nat_core.c          |    2 +-
+ net/packet/af_packet.c                    |    4 +-
+ scripts/kallsyms.c                        |    2 +-
+ 44 files changed, 172 insertions(+), 113 deletions(-)
