@@ -1,70 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZJAHR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbZJAHLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbZJAHR3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 03:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbZJAHR2
+	id S1755590AbZJAHLn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 03:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbZJAHLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 03:17:28 -0400
-Received: from mail-pz0-f191.google.com ([209.85.222.191]:52036 "EHLO
-	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755588AbZJAHR1 convert rfc822-to-8bit (ORCPT
+	Thu, 1 Oct 2009 03:11:42 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:33901 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755534AbZJAHLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 03:17:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Qpyzk5wKYa2S4udHX8zQokxjwyLaoTkFapYTopSftkjGOvnlnR1xKIhcYlNHPo5E92
-         uHmkGQTgwTV/4JZ1lQtDgstVZi65wWAA/FYdgPgy6c2Y9haB5mhMjRLJNqYdCkSX8CgV
-         h8AhDItzuLSkCXsJy6iX1BtxB4ShZsqcKyh2Y=
+	Thu, 1 Oct 2009 03:11:42 -0400
+Date: Thu, 1 Oct 2009 02:11:35 -0500 (CDT)
+From: manoj.iyer@canonical.com
+To: Takashi Iwai <tiwai@suse.de>
+cc: manoj.iyer@canonical.com, perex@perex.cz, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org, Joey Stanford <joey@canonical.com>
+Subject: Re: [PATCH REALTEK] Added quirk to enable sound on Toshiba NB200
+In-Reply-To: <s5hhbulov3f.wl%tiwai@suse.de>
+Message-ID: <alpine.DEB.2.00.0910010208220.7813@little>
+References: <alpine.DEB.2.00.0909230036570.29432@little> <s5h3a6eb46r.wl%tiwai@suse.de> <alpine.DEB.2.00.0909281022500.2112@little> <s5hd45agqoi.wl%tiwai@suse.de> <alpine.DEB.2.00.0909291812030.2426@little> <s5hhbulov3f.wl%tiwai@suse.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <f28939e0018c7e2a9e898722e0fb8514a843b14c.1254193019.git.joe@perches.com>
-References: <cover.1254193019.git.joe@perches.com>
-	 <f28939e0018c7e2a9e898722e0fb8514a843b14c.1254193019.git.joe@perches.com>
-Date: Thu, 1 Oct 2009 09:10:07 +0200
-X-Google-Sender-Auth: fae88eac5569f7c2
-Message-ID: <10f740e80910010010o4522a008h265e09d7988d7192@mail.gmail.com>
-Subject: Re: [PATCH 1/9] lib/vsprintf.c: Add %pU to print UUID/GUIDs
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Adrian Hunter <adrian.hunter@nokia.com>,
-       Alex Elder <aelder@sgi.com>, Artem Bityutskiy <dedekind@infradead.org>,
-       Christoph Hellwig <hch@lst.de>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>,
-       Matt Mackall <mpm@selenic.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Neil Brown <neilb@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       xfs-masters@oss.sgi.com, "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 07:01, Joe Perches <joe@perches.com> wrote:
-> UUID/GUIDs are somewhat common in kernel source.
->
-> Standardize the printed style of UUID/GUIDs by using
-> another extension to %p.
->
-> %pU:    01020304-0506-0708-090a-0b0c0d0e0f10
-> %pUr:   04030201-0605-0807-090a-0b0c0d0e0f10
-> %pU[r]X:Use upper case hex
+> 2.6.31.x is way too old for testing the new stuff :)
+> Any chance to test 2.6.32-rc1?
 
-To me, it looks a bit strange to have the options after the `U', combined with
-the variable-length nature.
+http://kernel.ubuntu.com/~kernel-ppa/mainline/v2.6.32-rc1/
 
-Gr{oetje,eeting}s,
+I tried the 2.6.32-rc1 today, and sound does not work for me on the NB200.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--- manjo
