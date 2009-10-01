@@ -1,112 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbZJAR7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZJASHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756033AbZJAR7V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 13:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbZJAR7U
+	id S1756040AbZJASHm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 14:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbZJASHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 13:59:20 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:48763 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755673AbZJAR7T (ORCPT
+	Thu, 1 Oct 2009 14:07:41 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:42012 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755694AbZJASHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 13:59:19 -0400
-Date: Thu, 1 Oct 2009 11:59:23 -0600
-From: Alex Chiang <achiang@hp.com>
-To: lenb@kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH, trivial] ACPI: dock: fix "sibiling" typo
-Message-ID: <20091001175923.GD31915@ldl.fc.hp.com>
+	Thu, 1 Oct 2009 14:07:40 -0400
+X-Greylist: delayed 312 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Oct 2009 14:07:40 EDT
+Message-ID: <4AC4EEB2.8090904@natemccallum.com>
+Date: Thu, 01 Oct 2009 14:02:26 -0400
+From: Nathaniel McCallum <nathaniel@natemccallum.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: Exposing device ids and driver names
+References: <4AC4DB65.8070404@natemccallum.com> <4AC4EB2E.4050907@s5r6.in-berlin.de>
+In-Reply-To: <4AC4EB2E.4050907@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Crossword clues as haikus:
+On 10/01/2009 01:47 PM, Stefan Richter wrote:
+> Nathaniel McCallum wrote:
+>> Please CC me on any responses as I'm not subscribed to lkml.
+>>
+>> I have the aim at creating two tools helpful to linux.  The first tool
+>> is a driver regression test of sorts.  I want to be able to create
+>> essentially a time line of hardware support as they appear in distros.
+>> The second tool, related to the first, is a program which runs on
+>> Windows and scans for a user's hardware and tells them which distro will
+>> best support their hardware.  I already have a working prototype of
+>> these two tools.  It currently uses the data exported by modinfo.  This
+>> however does not provide transparency for drivers compiled into the kernel.
+>
+> Hardware support also depends on userland:  Udev rules, libraries,
+> application programs.
+>
+> Even if you ignore that for now and only look at the kernel part of
+> hardware support:  Beyond "doesn't have a matching driver" and "does
+> have", there is a large and impossible to track grey area of "has a
+> poorly working driver" and "has a perfectly working driver".
 
-	Snakes from the same brood
-	fighting Jackson on a plane?
-	sibilant siblings
+Yes, I'm aware of this and will account for it as best as I am able. 
+There is still tremendous value in identifying (with real data):
+1. differences between distros and upstream
+2. the flow of driver support between distros and upstream
+3. statistically common devices that have no driver
 
-I guess Will Shortz's job is still secure.
+Further, for the most common device classes (video cards, networking, 
+wireless, etc) it is fairly easy to get a good reading.  For instance, 
+the difference between "no graphics at all" and "some graphics" is 
+infinitely larger than "some graphics" and "great 3D acceleration."  I'm 
+not aware of any video cards which have drivers that claim to support 
+them that can't at least modeset.
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index 3a2cfef..7338b6a 100644
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -67,7 +67,7 @@ struct dock_station {
- 	struct list_head dependent_devices;
- 	struct list_head hotplug_devices;
- 
--	struct list_head sibiling;
-+	struct list_head sibling;
- 	struct platform_device *dock_device;
- };
- static LIST_HEAD(dock_stations);
-@@ -275,7 +275,7 @@ int is_dock_device(acpi_handle handle)
- 
- 	if (is_dock(handle))
- 		return 1;
--	list_for_each_entry(dock_station, &dock_stations, sibiling) {
-+	list_for_each_entry(dock_station, &dock_stations, sibling) {
- 		if (find_dock_dependent_device(dock_station, handle))
- 			return 1;
- 	}
-@@ -619,7 +619,7 @@ register_hotplug_dock_device(acpi_handle handle, struct acpi_dock_ops *ops,
- 	 * make sure this handle is for a device dependent on the dock,
- 	 * this would include the dock station itself
- 	 */
--	list_for_each_entry(dock_station, &dock_stations, sibiling) {
-+	list_for_each_entry(dock_station, &dock_stations, sibling) {
- 		/*
- 		 * An ATA bay can be in a dock and itself can be ejected
- 		 * seperately, so there are two 'dock stations' which need the
-@@ -651,7 +651,7 @@ void unregister_hotplug_dock_device(acpi_handle handle)
- 	if (!dock_station_count)
- 		return;
- 
--	list_for_each_entry(dock_station, &dock_stations, sibiling) {
-+	list_for_each_entry(dock_station, &dock_stations, sibling) {
- 		dd = find_dock_dependent_device(dock_station, handle);
- 		if (dd)
- 			dock_del_hotplug_device(dock_station, dd);
-@@ -787,7 +787,7 @@ static int acpi_dock_notifier_call(struct notifier_block *this,
- 	if (event != ACPI_NOTIFY_BUS_CHECK && event != ACPI_NOTIFY_DEVICE_CHECK
- 	   && event != ACPI_NOTIFY_EJECT_REQUEST)
- 		return 0;
--	list_for_each_entry(dock_station, &dock_stations, sibiling) {
-+	list_for_each_entry(dock_station, &dock_stations, sibling) {
- 		if (dock_station->handle == handle) {
- 			struct dock_data *dock_data;
- 
-@@ -958,7 +958,7 @@ static int dock_add(acpi_handle handle)
- 	dock_station->last_dock_time = jiffies - HZ;
- 	INIT_LIST_HEAD(&dock_station->dependent_devices);
- 	INIT_LIST_HEAD(&dock_station->hotplug_devices);
--	INIT_LIST_HEAD(&dock_station->sibiling);
-+	INIT_LIST_HEAD(&dock_station->sibling);
- 	spin_lock_init(&dock_station->dd_lock);
- 	mutex_init(&dock_station->hp_lock);
- 	ATOMIC_INIT_NOTIFIER_HEAD(&dock_notifier_list);
-@@ -1044,7 +1044,7 @@ static int dock_add(acpi_handle handle)
- 	add_dock_dependent_device(dock_station, dd);
- 
- 	dock_station_count++;
--	list_add(&dock_station->sibiling, &dock_stations);
-+	list_add(&dock_station->sibling, &dock_stations);
- 	return 0;
- 
- dock_add_err_unregister:
-@@ -1149,7 +1149,7 @@ static void __exit dock_exit(void)
- 	struct dock_station *tmp;
- 
- 	unregister_acpi_bus_notifier(&dock_acpi_notifier);
--	list_for_each_entry_safe(dock_station, tmp, &dock_stations, sibiling)
-+	list_for_each_entry_safe(dock_station, tmp, &dock_stations, sibling)
- 		dock_remove(dock_station);
- }
- 
+To summarize, you are correct that we cannot predict 100% of user 
+experience.  But 70% is a huge improvement over 0%.
+
+Nathaniel
