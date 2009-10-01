@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbZJAVhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbZJAVl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753160AbZJAVhB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 17:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZJAVhA
+	id S1753260AbZJAVl4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbZJAVl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 17:37:00 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:7991 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752212AbZJAVg7 (ORCPT
+	Thu, 1 Oct 2009 17:41:56 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:29731 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753177AbZJAVlz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 17:36:59 -0400
-Message-ID: <4AC520F9.8000201@natemccallum.com>
-Date: Thu, 01 Oct 2009 17:36:57 -0400
-From: Nathaniel McCallum <nathaniel@natemccallum.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Exposing device ids and driver names
-References: <4AC4DB65.8070404@natemccallum.com> <20091001164249.GA2715@kroah.com> <4AC4E07E.8040707@natemccallum.com> <20091001180531.GA3199@kroah.com> <4AC4F67C.7010500@natemccallum.com> <20091001184021.GA26875@kroah.com>
-In-Reply-To: <20091001184021.GA26875@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 1 Oct 2009 17:41:55 -0400
+Date: Thu, 1 Oct 2009 16:42:39 -0500
+From: Mike Miller <mike.miller@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>,
+       James.Bottomley@HansenPartnership.com, axboe@kernel.dk,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Add hpsa driver for HP Smart Array controllers.
+Message-ID: <20091001214239.GA15691@beardog.cce.hp.com>
+References: <20091001211705.15591.76403.stgit@beardog.cce.hp.com> <20091001143035.a83a7564.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091001143035.a83a7564.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/01/2009 02:40 PM, Greg KH wrote:
-> On Thu, Oct 01, 2009 at 02:35:40PM -0400, Nathaniel McCallum wrote:
->> But I still would prefer a non-invasive solution.
->
-> Agreed, sorry I don't have an idea on how to do it.
+On Thu, Oct 01, 2009 at 02:30:35PM -0700, Andrew Morton wrote:
+> On Thu, 01 Oct 2009 16:25:30 -0500
+> "Stephen M. Cameron" <scameron@beardog.cce.hp.com> wrote:
+> 
+> > Add hpsa driver for HP Smart Array controllers.
+> > 
+> > This driver supports a subset of HP Smart Array Controllers.
+> > It is a SCSI alternative to the cciss driver.
+> 
+> Does it support all the devices which cciss supports?
+> 
+> IOW, do we have a plan here to remove the cciss driver or must we
+> maintain both drivers indefinitely?
 
-How about this?
+Andrew,
+The hpsa driver supports only the latest generation of Smart Array
+controllers plus the P400 and P800. The goal was to have minimal overlap but
+if we included only the very latest I suspect little testing would be done
+because of the availability of new hardware.
 
--#define MODULE_GENERIC_TABLE(gtype,name)
-+#define MODULE_GENERIC_TABLE(gtype,name)               \
-+static const struct gtype##_id gtype##_id_table        \
-+  __attribute__ ((unused, alias(__stringify(name))))
+No new controllers will be added to cciss once hpsa is accepted. We're
+looking at supporting both drivers for 3 or 4 years until cciss can be
+phased out completely.
 
-We add an alias to the existing symbol.  This just creates a new entry 
-in the symbol table.  These entries are all stripped anyway and inserted 
-into the System.map.
-
-Impact:
-	* No change to the resulting vmlinuz binary
-	* Increases size of System.map (~2k with the Fedora config)
-
-Nathaniel
-
+-- mikem
