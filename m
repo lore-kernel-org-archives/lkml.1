@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbZJAXR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbZJAXSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbZJAXR6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755069AbZJAXRz
+	id S1756644AbZJAXSM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756630AbZJAXSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:17:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57429 "EHLO ogre.sisk.pl"
+	Thu, 1 Oct 2009 19:18:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57428 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754490AbZJAXJ1 convert rfc822-to-8bit (ORCPT
+	id S1754435AbZJAXJ1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Oct 2009 19:09:27 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "GNUtoo" <GNUtoo@no-log.org>, "Ingo Molnar" <mingo@elte.hu>
+       "David Woodhouse" <dwmw2@infradead.org>, "" <lars_ericsson@telia.com>
 References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
 In-Reply-To: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <COE24pZSBH.A.tnB.RNTxKB@chimera>
-Subject: [Bug #14204] MCE prevent booting on my computer(pentium iii @500Mhz)
+Message-ID: <COE24pZSBH.A.irB.TNTxKB@chimera>
+Subject: [Bug #14185] Oops in driversbasefirmware_class
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Thu,  1 Oct 2009 21:55:59 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,9 +35,10 @@ introduced between 2.6.30 and 2.6.31.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14204
-Subject		: MCE prevent booting on my computer(pentium iii @500Mhz)
-Submitter	: GNUtoo <GNUtoo@no-log.org>
-Date		: 2009-09-21 20:36 (11 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14185
+Subject		: Oops in driversbasefirmware_class
+Submitter	:  <lars_ericsson@telia.com>
+Date		: 2009-09-17 05:09 (15 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=6e03a201bbe8137487f340d26aa662110e324b20
 
 
