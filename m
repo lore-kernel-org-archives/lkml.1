@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932133AbZJAJiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbZJAJgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932133AbZJAJiJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 05:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbZJAJiI
+	id S1756019AbZJAJgD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 05:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbZJAJgC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 05:38:08 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:7030 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754771AbZJAJiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 05:38:07 -0400
-Date: Thu, 1 Oct 2009 11:35:48 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 29/34] move virtballoon_remove to .devexit.text
-Message-ID: <20091001093548.GH5718@redhat.com>
-References: <20091001082607.GA2181@pengutronix.de> <1254385718-14254-29-git-send-email-u.kleine-koenig@pengutronix.de>
+	Thu, 1 Oct 2009 05:36:02 -0400
+Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:52217 "EHLO
+	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755649AbZJAJgA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 05:36:00 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Date: Thu, 1 Oct 2009 11:36:01 +0200
+User-Agent: KMail/1.9.9
+Cc: arjan@infradead.org, realnc@arcor.de, linux-kernel@vger.kernel.org
+References: <20090906205952.GA6516@elte.hu> <200909082222.44828.elendil@planet.nl> <1252489988.26522.46.camel@pasglop> <200909091355.56335.elendil@planet.nl> <200909091355.56335.elendil@planet.nl> <1252632981.8566.10.camel@pasglop> <200909162027.29850.elendil@planet.nl> <200909162027.29850.elendil@planet.nl> <1253150999.8375.329.camel@pasglop>
+In-reply-To: <1253150999.8375.329.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1254385718-14254-29-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200910011136.03590.elendil@planet.nl>
+X-OriginalArrivalTime: 01 Oct 2009 09:36:03.0508 (UTC) FILETIME=[97E1C740:01CA427A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 10:28:33AM +0200, Uwe Kleine-König wrote:
-> The function virtballoon_remove is used only wrapped by __devexit_p so
-> define it using __devexit.
+Benjamin Herrenschmidt wrote:
+> On Wed, 2009-09-16 at 20:27 +0200, Frans Pop wrote:
+>> Benjamin Herrenschmidt wrote:
+>> > I'll have a look after the merge window madness. Multiple windows is
+>> > also still an option I suppose even if i don't like it that much: we
+>> > could support double-click on an app or "global" in the left list,
+>> > making that pop a new window with the same content as the right pane
+>> > for that app (or global) that updates at the same time as the rest.
+>>  
+>> I have another request. If I select a specific application to watch (say
+>> a mail client) but it is idle for a while and thus has no latencies, it
+>> will get dropped from the list and thus my selection of it will be lost.
+>> 
+>> It would be nice if in that case a selected application would stay
+>> visible and selected, or maybe get reselected automatically when it
+>> appears again.
 > 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Michael S. Tsirkin <mst@redhat.com>
-> Cc: linux-kernel@vger.kernel.org
+> Hrm... I though I forced the selected app to remain ... or maybe I
+> wanted to do that and failed :-) Ok. On the list. Please ping me next
+> week if nothing happens.
 
-Acked-by: Michael S. Tsirkin <mst@redhat.com>
+As requested: ping?
 
-Generally I think all remove pointers on virtio bus are devexit.  How do
-you find all these, and remember to mark new ones properly?  Can we
-annotate the remove pointer in struct virtio_driver so that sparse can
-find them?
+And while I'm writing anyway, one more suggestion.
+I find the fact that the buttons jump twice every 30 seconds (because of a 
+change in the timer between <10 and >=10 seconds) slightly annoying.
+Any chance of making the position of the buttons fixed? One option could be 
+moving the timer to the left side of the bottom bar.
 
-> ---
->  drivers/virtio/virtio_balloon.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
-> index 200c22f..b2d28bb 100644
-> --- a/drivers/virtio/virtio_balloon.c
-> +++ b/drivers/virtio/virtio_balloon.c
-> @@ -248,7 +248,7 @@ out:
->  	return err;
->  }
->  
-> -static void virtballoon_remove(struct virtio_device *vdev)
-> +static void __devexit virtballoon_remove(struct virtio_device *vdev)
->  {
->  	struct virtio_balloon *vb = vdev->priv;
->  
-> -- 
-> 1.6.4.3
+Cheers,
+FJP
