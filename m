@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbZJAStG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZJATen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168AbZJAStG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 14:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbZJAStF
+	id S1756324AbZJATen (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 15:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbZJATem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 14:49:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51753 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752254AbZJAStF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 14:49:05 -0400
-Date: Thu, 1 Oct 2009 20:48:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Avi Kivity <avi@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Tejun Heo <tj@kernel.org>, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
-Subject: Re: [PATCH 03/19] scheduler: implement workqueue scheduler class
-Message-ID: <20091001184824.GA21357@elte.hu>
-References: <1254384558-1018-1-git-send-email-tj@kernel.org> <1254384558-1018-4-git-send-email-tj@kernel.org> <alpine.LFD.2.01.0910010953010.6996@localhost.localdomain>
+	Thu, 1 Oct 2009 15:34:42 -0400
+Received: from [76.245.85.235] ([76.245.85.235]:58143 "EHLO cynthia.pants.nu"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755546AbZJATel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 15:34:41 -0400
+X-Greylist: delayed 2653 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Oct 2009 15:34:41 EDT
+Date: Thu, 1 Oct 2009 11:49:35 -0700
+From: Brad Boyer <flar@allandria.com>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Union mounts/writable overlays design
+Message-ID: <20091001184935.GA27667@cynthia.pants.nu>
+References: <20091001145547.GA29152@shell>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0910010953010.6996@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091001145547.GA29152@shell>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Thu, 1 Oct 2009, Tejun Heo wrote:
-> >
-> > Implement workqueue scheduler class.  Workqueue sched_class inherits 
-> > fair sched_class and behaves exactly the same as sched_class except 
-> > that it has two callback functions which get called when a task is 
-> > put to sleep and wakes up and doesn't allow switching to different 
-> > scheduler class.
+On Thu, Oct 01, 2009 at 10:55:48AM -0400, Valerie Aurora wrote:
+> We need to guarantee that a file system will be read-only for as long
+> as it is the bottom layer of a writable overlay.  To do this, we track
+> the number of "read-only users" of a file system in its VFS superblock
+> structure.  When we mount a writable overlay over a file system, we
+> increment its read-only user count.  The file system can only be
+> mounted read-write if its read-only users count is zero.
 > 
-> So this looks odd to me.
+> Todo:
 > 
-> I agree completely with the callback functions, but what I don't agree 
-> with is that this is somehow workqueue-related. I bet that others 
-> could use this, and in fact, I suspect that it should not be tied to 
-> the scheduler class at all, but to the _thread_.
+> - Support really really read-only NFS mounts.  See discussion here:
 > 
-> Just as an example, I could imagine that we would do lock_kernel() 
-> releasing the kernel lock on scheduling (and re-taking it on wakeup) 
-> as a callback. Or async IO handling - both done independently of any 
-> "workqueue" logic.
-> 
-> So tying this to the scheduler class seems a bit odd. But maybe I'm 
-> missing something?
+>   http://markmail.org/message/3mkgnvo4pswxd7lp
 
-We could do what Avi suggested: not use scheduler classes at all for 
-this (that brings in other limitations like lack of p->policy freedom), 
-but use the existing preempt-notifications callbacks.
+Is there any way for a file system driver to just come out and say
+"I can't guarantee that this mount is really read-only"? I can imagine
+this might be an issue for things other than NFS. I think it would be
+worthwhile to have a flag maybe on a per sb level that says that even
+if it is mounted with the "ro" option that it might not really be stable.
+I don't think this is essential, but it would be a good feature as long
+as it doesn't damage the design or performance too much.
 
-They are per task - we would simply make preempt notifiers 
-unconditional, i.e. remove CONFIG_PREEMPT_NOTIFIERS and make it all 
-unconditional scheduler logic.
+	Brad Boyer
+	flar@allandria.com
 
-( Sidenote: we could even unify that logic with the perf event 
-  sched-in/sched-out logic which is per task in a similar fashion and 
-  which can have callback properties as well. That would mean a single,
-  well-defined callback facility for scheduler events. )
-
-	Ingo
