@@ -1,140 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbZJAKBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbZJAKFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbZJAKBU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 06:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbZJAKBU
+	id S1755306AbZJAKFu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 06:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZJAKFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 06:01:20 -0400
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:48759 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756087AbZJAKBT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 06:01:19 -0400
-Date: Thu, 1 Oct 2009 15:31:09 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [RFC PATCH] perf_core: provide a kernel-internal interface to
-	get to performance counters
-Message-ID: <20091001100109.GB3636@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090925122556.2f8bd939@infradead.org> <y0mhbuplmlr.fsf@fche.csb> <20090926183246.GA4141@in.ibm.com> <20090926204848.0b2b48d2@infradead.org> <20091001072518.GA1502@elte.hu> <20091001081616.GA3636@in.ibm.com> <20091001085330.GC15345@elte.hu>
+	Thu, 1 Oct 2009 06:05:50 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:10769 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752736AbZJAKFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 06:05:49 -0400
+Date: Thu, 1 Oct 2009 15:34:39 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Alan Cox <alan@linux.intel.com>,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
+	generic guest and host communication
+Message-ID: <20091001100439.GA9684@amit-x200.redhat.com>
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <200909291531.23389.borntraeger@de.ibm.com> <20090930171321.GA17200@amit-x200.redhat.com> <200910011100.48087.borntraeger@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091001085330.GC15345@elte.hu>
+In-Reply-To: <200910011100.48087.borntraeger@de.ibm.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 10:53:30AM +0200, Ingo Molnar wrote:
+On (Thu) Oct 01 2009 [11:00:48], Christian Borntraeger wrote:
+> Am Mittwoch 30 September 2009 19:13:21 schrieb Amit Shah:
+> > - uses port->id instead of a static hvc_vtermno to pass on a value to
+> >   hvc_alloc(). Motivation explained within comments in the code.
 > 
-> * K.Prasad <prasad@linux.vnet.ibm.com> wrote:
+> [...]
+> > +	 * The first argument of hvc_alloc() is the virtual console
+> > +	 * number. hvc_alloc() checks if a console with the same value
+> > +	 * was used in hvc_instantiate(). We may not end up passing
+> > +	 * the same value here (we use the value 0 in
+> > +	 * hvc_instantiate() but the console port may not be at id
+> > +	 * 0). This isn't a problem, though. Nothing in hvc really
+> > +	 * depends on these numbers and since this number is passed on
+> > +	 * to us when cons_get/put_chars() is called, it's preferable
+> > +	 * to pass on the port->id so that we can get the port struct
+> > +	 * via get_port_from_id().
+> [...]
+> > +	port->hvc = hvc_alloc(port->id, 0, &virtio_cons, PAGE_SIZE);
 > 
-> > On Thu, Oct 01, 2009 at 09:25:18AM +0200, Ingo Molnar wrote:
-> > > 
-> > > * Arjan van de Ven <arjan@infradead.org> wrote:
-> > > 
-> > > > On Sun, 27 Sep 2009 00:02:46 +0530
-> > > > "K.Prasad" <prasad@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > On Sat, Sep 26, 2009 at 12:03:28PM -0400, Frank Ch. Eigler wrote:
-> > > > 
-> > > > > > For what it's worth, this sort of thing also looks useful from 
-> > > > > > systemtap's point of view.
-> > > > > 
-> > > > > Wouldn't SystemTap be another user that desires support for 
-> > > > > multiple/all CPU perf-counters (apart from hw-breakpoints as a 
-> > > > > potential user)? As Arjan pointed out, perf's present design would 
-> > > > > support only a per-CPU or per-task counter; not both.
-> > > > 
-> > > > I'm sorry but I think I am missing your point. "all cpu counters" 
-> > > > would be one small helper wrapper away, a helper I'm sure the 
-> > > > SystemTap people are happy to submit as part of their patch series 
-> > > > when they submit SystemTap to the kernel.
-> > > 
-> > > Yes, and Frederic wrote that wrapper already for the hw-breakpoints 
-> > > patches. It's a non-issue and does not affect the design - we can always 
-> > > gang up an array of per cpu perf events, it's a straightforward use of 
-> > > the existing design.
-> > > 
-> > 
-> > Such a design (iteratively invoking a per-CPU perf event for all 
-> > desired CPUs) isn't without issues, some of which are noted here: 
-> > (apart from http://lkml.org/lkml/2009/9/14/298).
-> > 
-> > - It breaks the abstraction that a user of the exported interfaces would
-> >   enjoy w.r.t. having all CPU (or a cpumask of CPU) breakpoints.
+> I am not sure if this is going to be ok. 
 > 
-> CPU offlining/onlining support would be interesting to add.
+> When I change the old code (without your patch) to use vtermno=0 in 
+> hvc_instantiate and vtermno=1 in hvc_alloc I get 
+> "Warning: unable to open an initial console."
 > 
-> > - (Un)Availability of debug registers on every requested CPU is not
-> >   known until request for that CPU fails. A failed request should be 
-> >   followed by a rollback of the partially successful requests.
-> 
-> Yes.
-> 
-> > - Any breakpoint exceptions generated due to partially successful
-> >   requests (before a failed request is encountered) must be treated as 
-> >   'stray' and be ignored (by the end-user? or the wrapper code?).
-> 
-> Such inatomicity is inherent in using more than one CPU and a disjoint 
-> set of hw-breakpoints. If the calling code cares then callbacks 
-> triggering while the registration has not returned yet can be ignored.
-> 
+> It seems to me that we have to pass the same values.
 
-It can be prevented through book-keeping for debug registers, and
-takes a 'greedy' approach that writes values onto the physical registers
-only if it is known that there are sufficient slots available on all
-desired CPUs (as done by the register_kernel_hw_breakpoint() code in
--tip now).
+OK; that's bad enough. The following diff reverts that patch and adds a
+new get_port_from_vtermno() that works from hvc callbacks.
 
-> > - Any CPUs that become online eventually have to be trapped and
-> >   populated with the appropriate debug register value (not something 
-> >   that the end-user of breakpoints should be bothered with).
-> > 
-> > - Modifying the characteristics of a kernel breakpoint (including the
-> >   valid CPUs) will be equally painful.
-> > 
-> > - Races between the requests (also leading to temporary failure of
-> >   all CPU requests) presenting an unclear picture about free debug
-> >   registers (making it difficult to predict the need for a retry).
-> > 
-> > So we either have a perf event infrastructure that is cognisant of 
-> > many/all CPU counters, or make perf as a user of hw-breakpoints layer 
-> > which already handles such requests in a deft manner (through 
-> > appropriate book-keeping).
-> 
-> Given that these are all still in the add-on category not affecting the 
-> design, while the problems solved by perf events are definitely in the 
-> non-trivial category, i'd suggest you extend perf events with a 'system 
-> wide' event abstraction, which:
-> 
->  - Enumerates such registered events (via a list)
-> 
->  - Adds a CPU hotplug handler (which clones those events over to a new
->    CPU and directs it back to the ring-buffer of the existing event(s)
->    [if any])
-> 
->  - Plus a state field that allows the filtering out of stray/premature
->    events.
-> 
+What do you think? (Applies on top of the latest patch I sent.)
 
-With some book-keeping (as stated before) in place, stray exceptions due
-to premature events would be prevented since only successful requests
-are written onto debug registers. There would be no need for a rollback
-from the end-user too.
+		Amit
 
-But I'm not sure if such book-keeping variables/data-structures will
-find uses in other hw/sw events in perf apart from breakpoints (depends
-on whether there's a need for support for multiple instances of a
-hw/sw perf counter for a given CPU). If yes, then, the existing
-synchronisation mechanism (through spin-locks over hw_breakpoint_lock)
-must be extended over other perf events (post integration).
 
-Thanks,
-K.Prasad
-
+diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
+index b2de2df..a8ba5aa 100644
+--- a/drivers/char/virtio_console.c
++++ b/drivers/char/virtio_console.c
+@@ -105,12 +105,42 @@ struct virtio_console_port {
+ 	/* The 'id' to identify the port with the Host */
+ 	u32 id;
+ 
++	/*
++	 * If this port is a console port, this number identifies the
++	 * number that we used to register with hvc in
++	 * hvc_instantiate() and hvc_alloc().
++	 */
++	u32 vtermno;
++
+ 	/* Is the host device open */
+ 	bool host_connected;
+ };
+ 
+ static struct virtio_console_struct virtconsole;
+ 
++/*
++ * This is used to keep track of the number of hvc consoles spawned.
++ * This number is given as first argument to hvc_alloc(). We could as
++ * well pass on the minor number of the char device but to correctly
++ * map an initial console spawned via hvc_instantiate to the console
++ * being hooked up via hvc_alloc, we need to pass the same vtermno.
++ *
++ * With this int, we just assume the first console being initialised
++ * was the first one that got used as the initial console.
++ */
++static unsigned int hvc_vtermno;
++
++static struct virtio_console_port *get_port_from_vtermno(u32 vtermno)
++{
++	struct virtio_console_port *port;
++
++	list_for_each_entry(port, &virtconsole.port_head, next) {
++		if (port->vtermno == vtermno)
++			return port;
++	}
++	return NULL;
++}
++
+ static struct virtio_console_port *get_port_from_devt(dev_t devt)
+ {
+ 	struct virtio_console_port *port;
+@@ -457,7 +487,7 @@ static int cons_put_chars(u32 vtermno, const char *buf, int count)
+ {
+ 	struct virtio_console_port *port;
+ 
+-	port = get_port_from_id(vtermno);
++	port = get_port_from_vtermno(vtermno);
+ 	if (!port)
+ 		return 0;
+ 
+@@ -478,7 +508,7 @@ static int cons_get_chars(u32 vtermno, char *buf, int count)
+ 	/* If we don't have an input queue yet, we can't get input. */
+ 	BUG_ON(!virtconsole.in_vq);
+ 
+-	port = get_port_from_id(vtermno);
++	port = get_port_from_vtermno(vtermno);
+ 	if (!port)
+ 		return 0;
+ 
+@@ -566,32 +596,23 @@ int init_port_console(struct virtio_console_port *port)
+ 	 * hvc_alloc().
+ 	 *
+ 	 * The first argument of hvc_alloc() is the virtual console
+-	 * number. hvc_alloc() checks if a console with the same value
+-	 * was used in hvc_instantiate(). We may not end up passing
+-	 * the same value here (we use the value 0 in
+-	 * hvc_instantiate() but the console port may not be at id
+-	 * 0). This isn't a problem, though. Nothing in hvc really
+-	 * depends on these numbers and since this number is passed on
+-	 * to us when cons_get/put_chars() is called, it's preferable
+-	 * to pass on the port->id so that we can get the port struct
+-	 * via get_port_from_id().
+-	 *
+-	 * The second argument is the parameter for the notification
+-	 * mechanism (like irq number). We currently leave this as
+-	 * zero, virtqueues have implicit notifications.
++	 * number.  The second argument is the parameter for the
++	 * notification mechanism (like irq number). We currently
++	 * leave this as zero, virtqueues have implicit notifications.
+ 	 *
+ 	 * The third argument is a "struct hv_ops" containing the
+ 	 * put_chars() get_chars(), notifier_add() and notifier_del()
+ 	 * pointers.  The final argument is the output buffer size: we
+ 	 * can do any size, so we put PAGE_SIZE here.
+ 	 */
+-	port->hvc = hvc_alloc(port->id, 0, &virtio_cons, PAGE_SIZE);
++	port->hvc = hvc_alloc(hvc_vtermno, 0, &virtio_cons, PAGE_SIZE);
+ 	if (IS_ERR(port->hvc)) {
+ 		ret = PTR_ERR(port->hvc);
+ 		pr_err("%s: Could not alloc hvc for virtio console port, ret = %d\n",
+ 		       __func__, ret);
+ 		port->hvc = NULL;
+ 	}
++	port->vtermno = hvc_vtermno++;
+ 	return ret;
+ }
+ 
