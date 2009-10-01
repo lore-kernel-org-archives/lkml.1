@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932692AbZJAOgC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZJDByC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932692AbZJAOgC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 10:36:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932634AbZJAOgB
+	id S1756861AbZJDByC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 21:54:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbZJDByA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 10:36:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56571 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932627AbZJAOgA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 10:36:00 -0400
-Date: Thu, 1 Oct 2009 07:34:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Borislav Petkov <borislav.petkov@amd.com>
-cc: Ingo Molnar <mingo@elte.hu>, Borislav Petkov <petkovbb@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: mce: Please revert
- 22223c9b417be5fd0ab2cf9ad17eb7bd1e19f7b9
-In-Reply-To: <20091001141432.GA11410@aftab>
-Message-ID: <alpine.LFD.2.01.0910010731130.6996@localhost.localdomain>
-References: <20090930140904.GA6150@one.firstfloor.org> <20090930194049.GA17712@liondog.tnic> <20090930204643.GA24862@elte.hu> <20090930214859.GA28638@elte.hu> <20090930223956.GE17712@liondog.tnic> <20090930230947.GA9346@elte.hu>
- <20091001141432.GA11410@aftab>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sat, 3 Oct 2009 21:54:00 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:37462 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756801AbZJDByA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 21:54:00 -0400
+Date: Thu, 1 Oct 2009 07:40:38 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Userspace RCU: (ab)using futexes to save cpu cycles and
+	energy
+Message-ID: <20091001144037.GB6205@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090923174820.GA12827@Krystal>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090923174820.GA12827@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 1 Oct 2009, Borislav Petkov wrote:
+On Wed, Sep 23, 2009 at 01:48:20PM -0400, Mathieu Desnoyers wrote:
+> Hi,
 > 
-> Ok, here it is, tested on two Fam10 machines here with injecting MCEs.
-> The decoding code is now built-in by default (early_initcall requires
-> !MODULE).
+> When implementing the call_rcu() "worker thread" in userspace, I ran
+> into the problem that it had to be woken up periodically to check if
+> there are any callbacks to execute. However, I easily imagine that this
+> does not fit well with the "green computing" definition.
+> 
+> Therefore, I've looked at ways to have the call_rcu() callers waking up
+> this worker thread when callbacks are enqueued. However, I don't want to
+> take any lock and the fast path (when no wake up is required) should not
+> cause any cache-line exchange.
+> 
+> Here are the primitives I've created. I'd like to have feedback on my
+> futex use, just to make sure I did not do any incorrect assumptions.
+> 
+> This could also be eventually used in the QSBR Userspace RCU quiescent
+> state and in mb/signal userspace RCU when exiting RCU read-side C.S. to
+> ensure synchronize_rcu() does not busy-wait for too long.
+> 
+> /*
+>  * Wake-up any waiting defer thread. Called from many concurrent threads.
+>  */
+> static void wake_up_defer(void)
+> {
+>         if (unlikely(atomic_read(&defer_thread_futex) == -1))
+>                 atomic_set(&defer_thread_futex, 0);
+>                 futex(&defer_thread_futex, FUTEX_WAKE,
+>                       0, NULL, NULL, 0);
+> }
+> 
+> /*
+>  * Defer thread waiting. Single thread.
+>  */
+> static void wait_defer(void)
+> {
+>         atomic_dec(&defer_thread_futex);
+>         if (atomic_read(&defer_thread_futex) == -1)
+>                 futex(&defer_thread_futex, FUTEX_WAIT, -1,
+>                       NULL, NULL, 0);
+> }
 
-I don't think it has to require !MODULE. We could do what we do for the 
-other initcalls, ie if MODULE we turn it into just a regular initcall. If 
-that allows something like the EDAC MCE to be built as a module, and 
-people want to, then just go ahead and add the one-liner to <linux/init.h>
+The standard approach would be to use pthread_cond_wait() and
+pthread_cond_broadcast().  Unfortunately, this would require holding a
+pthread_mutex_lock across both operations, which would not necessarily
+be so good for wake-up-side scalability.
 
-Of course, if it _requires_ being loaded early for some other reason, then 
-that's a different issue. But don't do it just because we don't have the
+That said, without this sort of heavy-locking approach, wakeup races
+are quite difficult to avoid.
 
-	#define early_initcall(fn)               module_init(fn)
-
-line.
-
-		Linus
+							Thanx, Paul
