@@ -1,48 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932579AbZJAOLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932603AbZJAOJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932579AbZJAOLq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 10:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932453AbZJAOLo
+	id S932603AbZJAOJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 10:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbZJAOJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 10:11:44 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:21218 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932310AbZJAOLn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 10:11:43 -0400
-From: "Altobelli, David" <david.altobelli@hp.com>
-To: =?utf-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
-	<u.kleine-koenig@pengutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Date: Thu, 1 Oct 2009 14:10:27 +0000
-Subject: RE: [PATCH 07/34] move ilo_remove to .devexit.text
-Thread-Topic: [PATCH 07/34] move ilo_remove to .devexit.text
-Thread-Index: AcpCcVQOxLb1oBI4RQuEqQJTQzEODgAL1OLg
-Message-ID: <92D64232F2316045B18937D5C9996B1522CD82DF6E@GVW1144EXB.americas.hpqcorp.net>
-References: <20091001082607.GA2181@pengutronix.de>
- <1254385718-14254-7-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1254385718-14254-7-git-send-email-u.kleine-koenig@pengutronix.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+	Thu, 1 Oct 2009 10:09:26 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42271 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932527AbZJAOJX (ORCPT
+	<rfc822;groupwise-SJayaraman@novell.com;0:0>);
+	Thu, 1 Oct 2009 10:09:23 -0400
+From: Suresh Jayaraman <sjayaraman@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Cc: netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, trond.myklebust@fys.uio.no,
+       Suresh Jayaraman <sjayaraman@suse.de>
+Subject: [PATCH 28/31] nfs: fix various memory recursions possible with swap over NFS.
+Date: Thu,  1 Oct 2009 19:40:32 +0530
+Message-Id: <1254406232-16663-1-git-send-email-sjayaraman@suse.de>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n91ECf16014964
 
+From: Peter Zijlstra <a.p.zijlstra@chello.nl> 
 
-> The function ilo_remove is used only wrapped by __devexit_p so define it
-> using __devexit.
+GFP_NOFS is _more_ permissive than GFP_NOIO in that it will initiate IO,
+just not of any filesystem data.
 
-Looks good to me.  Not sure if this is needed or not...
+The problem is that previuosly NOFS was correct because that avoids
+recursion into the NFS code, it now is not, because also IO (swap) can
+lead to this recursion.
 
-Acked-by: David Altobelli <david.altobelli@hp.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
+---
+ fs/nfs/pagelist.c |    2 +-
+ fs/nfs/write.c    |    7 ++++---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Index: mmotm/fs/nfs/write.c
+===================================================================
+--- mmotm.orig/fs/nfs/write.c
++++ mmotm/fs/nfs/write.c
+@@ -48,7 +48,7 @@ static mempool_t *nfs_commit_mempool;
+ 
+ struct nfs_write_data *nfs_commitdata_alloc(void)
+ {
+-	struct nfs_write_data *p = mempool_alloc(nfs_commit_mempool, GFP_NOFS);
++	struct nfs_write_data *p = mempool_alloc(nfs_commit_mempool, GFP_NOIO);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -67,7 +67,7 @@ void nfs_commit_free(struct nfs_write_da
+ 
+ struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
+ {
+-	struct nfs_write_data *p = mempool_alloc(nfs_wdata_mempool, GFP_NOFS);
++	struct nfs_write_data *p = mempool_alloc(nfs_wdata_mempool, GFP_NOIO);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -77,7 +77,8 @@ struct nfs_write_data *nfs_writedata_all
+ 		if (pagecount <= ARRAY_SIZE(p->page_array))
+ 			p->pagevec = p->page_array;
+ 		else {
+-			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
++			p->pagevec = kcalloc(pagecount, sizeof(struct page *),
++					GFP_NOIO);
+ 			if (!p->pagevec) {
+ 				mempool_free(p, nfs_wdata_mempool);
+ 				p = NULL;
+Index: mmotm/fs/nfs/pagelist.c
+===================================================================
+--- mmotm.orig/fs/nfs/pagelist.c
++++ mmotm/fs/nfs/pagelist.c
+@@ -27,7 +27,7 @@ static inline struct nfs_page *
+ nfs_page_alloc(void)
+ {
+ 	struct nfs_page	*p;
+-	p = kmem_cache_alloc(nfs_page_cachep, GFP_KERNEL);
++	p = kmem_cache_alloc(nfs_page_cachep, GFP_NOIO);
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+ 		INIT_LIST_HEAD(&p->wb_list);
