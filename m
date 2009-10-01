@@ -1,58 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932711AbZJAOqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932718AbZJAOlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932711AbZJAOqd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 10:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932613AbZJAOqc
+	id S932718AbZJAOlO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 10:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932709AbZJAOlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 10:46:32 -0400
-Received: from mail-iw0-f190.google.com ([209.85.223.190]:38418 "EHLO
-	mail-iw0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932575AbZJAOqb (ORCPT
+	Thu, 1 Oct 2009 10:41:14 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:34125 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932704AbZJAOlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 10:46:31 -0400
-X-Greylist: delayed 335 seconds by postgrey-1.27 at vger.kernel.org; Thu, 01 Oct 2009 10:46:31 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=CqcTpnGQ4jXUYa6qqzpKTmK2r8eEfg2KneClENcvKHyZDSjedfo3NM9TrFITFDR601
-         yQqx14wXERKm0x996nGgHYeVEhGtcUaYUHN307CemMkPIRGRPcPeuwq2KGgUUy02ioLI
-         laRC1oxaeOPZxzmAjbgHrR1CajM9yWhxOND3w=
-MIME-Version: 1.0
-In-Reply-To: <20091001085002.1dbc7eee@hyperion.delvare>
-References: <20090923191240.GA15198@dreamland.darkstar.lan>
-	 <51f3faa70909232018v7e621190m84deb648b08d2135@mail.gmail.com>
-	 <20090928131700.GA19243@nb-core2.darkstar.lan>
-	 <51f3faa70909281920x2782d8dfm1835ab24779abfa3@mail.gmail.com>
-	 <51f3faa70909282134o1d60efekeded09f09b192df6@mail.gmail.com>
-	 <68676e00909290707u70d192f2j2f2d4dd07bd07234@mail.gmail.com>
-	 <51f3faa70909290740l4f4df186w114bf48e1db3a948@mail.gmail.com>
-	 <4AC21E7B.70000@mandriva.org>
-	 <51f3faa70909301638s4eff14edg46420e2e8877fd15@mail.gmail.com>
-	 <20091001085002.1dbc7eee@hyperion.delvare>
-Date: Thu, 1 Oct 2009 08:40:59 -0600
-Message-ID: <51f3faa70910010740s2a412d07qf29f56ad8a3c59eb@mail.gmail.com>
-Subject: Re: [PATCH] asus_atk0110: add support for Asus P7P55D
-From: Robert Hancock <hancockrwd@gmail.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Thomas Backlund <tmb@mandriva.org>, Luca Tettamanti <kronos.it@gmail.com>,
-       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
-       astarikovskiy@suse.de
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 1 Oct 2009 10:41:12 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 1/4] mfd: Refactor WM831x chip identification
+Date: Thu,  1 Oct 2009 15:41:04 +0100
+Message-Id: <1254408067-15908-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.4.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 1, 2009 at 12:50 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> On Wed, 30 Sep 2009 17:38:21 -0600, Robert Hancock wrote:
->> On Tue, Sep 29, 2009 at 8:49 AM, Thomas Backlund <tmb@mandriva.org> wrote:
->> > Try this one:
->> > http://marc.info/?l=linux-kernel&m=125421276407283&w=2
->>
->> With that patch it's lasted almost a day with no timeouts, previously
->> I was getting about one every hour. Has that patch been submitted?
->
-> Do you mean you're still getting timeouts but they are less frequent,
-> or you did not get any timeout at all so far?
+Better support future device revisions by moving some of the output
+around and making the chip ID enumeration be the value expected in
+the ID register.
 
-So far no timeout at all (after about 36 hours).
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/mfd/wm831x-core.c |   58 ++++++++++++++-------------------------------
+ 1 files changed, 18 insertions(+), 40 deletions(-)
+
+diff --git a/drivers/mfd/wm831x-core.c b/drivers/mfd/wm831x-core.c
+index 49b7885..143ab83 100644
+--- a/drivers/mfd/wm831x-core.c
++++ b/drivers/mfd/wm831x-core.c
+@@ -90,9 +90,9 @@ int wm831x_isinkv_values[WM831X_ISINK_MAX_ISEL] = {
+ EXPORT_SYMBOL_GPL(wm831x_isinkv_values);
+ 
+ enum wm831x_parent {
+-	WM8310 = 0,
+-	WM8311 = 1,
+-	WM8312 = 2,
++	WM8310 = 0x8310,
++	WM8311 = 0x8311,
++	WM8312 = 0x8312,
+ };
+ 
+ static int wm831x_reg_locked(struct wm831x *wm831x, unsigned short reg)
+@@ -1282,50 +1282,28 @@ static int wm831x_device_init(struct wm831x *wm831x, unsigned long id, int irq)
+ 		goto err;
+ 	}
+ 
++	/* Some engineering samples do not have the ID set, rely on
++	 * the device being registered correctly.
++	 */
++	if (ret == 0) {
++		dev_info(wm831x->dev, "Device is an engineering sample\n");
++		ret = id;
++	}
++
+ 	switch (ret) {
+-	case 0x8310:
++	case WM8310:
+ 		parent = WM8310;
+-		switch (rev) {
+-		case 0:
+-			dev_info(wm831x->dev, "WM8310 revision %c\n",
+-				 'A' + rev);
+-			break;
+-		}
++		dev_info(wm831x->dev, "WM8310 revision %c\n", 'A' + rev);
+ 		break;
+ 
+-	case 0x8311:
++	case WM8311:
+ 		parent = WM8311;
+-		switch (rev) {
+-		case 0:
+-			dev_info(wm831x->dev, "WM8311 revision %c\n",
+-				 'A' + rev);
+-			break;
+-		}
++		dev_info(wm831x->dev, "WM8311 revision %c\n", 'A' + rev);
+ 		break;
+ 
+-	case 0x8312:
++	case WM8312:
+ 		parent = WM8312;
+-		switch (rev) {
+-		case 0:
+-			dev_info(wm831x->dev, "WM8312 revision %c\n",
+-				 'A' + rev);
+-			break;
+-		}
+-		break;
+-
+-	case 0:
+-		/* Some engineering samples do not have the ID set,
+-		 * rely on the device being registered correctly.
+-		 * This will need revisiting for future devices with
+-		 * multiple dies.
+-		 */
+-		parent = id;
+-		switch (rev) {
+-		case 0:
+-			dev_info(wm831x->dev, "WM831%d ES revision %c\n",
+-				 parent, 'A' + rev);
+-			break;
+-		}
++		dev_info(wm831x->dev, "WM8312 revision %c\n", 'A' + rev);
+ 		break;
+ 
+ 	default:
+@@ -1338,7 +1316,7 @@ static int wm831x_device_init(struct wm831x *wm831x, unsigned long id, int irq)
+ 	 * current parts.
+ 	 */
+ 	if (parent != id)
+-		dev_warn(wm831x->dev, "Device was registered as a WM831%lu\n",
++		dev_warn(wm831x->dev, "Device was registered as a WM%lx\n",
+ 			 id);
+ 
+ 	/* Bootstrap the user key */
+-- 
+1.6.4.3
+
