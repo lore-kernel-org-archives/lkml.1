@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbZJACKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbZJACPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbZJACKk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 22:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbZJACKj
+	id S1755475AbZJACPa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Sep 2009 22:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZJACPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 22:10:39 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58763 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755436AbZJACKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 22:10:38 -0400
-Date: Thu, 1 Oct 2009 04:10:42 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-fsdevel@vger.kernel.org,
+	Wed, 30 Sep 2009 22:15:30 -0400
+Received: from smtp-out-042.synserver.de ([212.40.180.42]:1089 "HELO
+	smtp-out-042.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755456AbZJACP3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Sep 2009 22:15:29 -0400
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 31706
+Date: Thu, 1 Oct 2009 04:15:31 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 04/33] fs: brlock vfsmount_lock
-Message-ID: <20091001021042.GN6327@wotan.suse.de>
-References: <20090904065142.114706411@nick.local0.net> <20090904065534.447753909@nick.local0.net> <20090922151751.GM5858@ZenIV.linux.org.uk> <20090927195619.GG6327@wotan.suse.de> <1254144063.15795.3.camel@laptop>
-Mime-Version: 1.0
+Subject: Re: [Kernel BUG] ext4 for v2.6.32 round II
+Message-ID: <20091001021531.GA2025@phenom2.trippelsdorf.de>
+References: <E1Msrgx-0001br-MP@closure.thunk.org>
+ <20091001014128.GA2092@phenom2.trippelsdorf.de>
+ <alpine.LFD.2.01.0909301847030.6996@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1254144063.15795.3.camel@laptop>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <alpine.LFD.2.01.0909301847030.6996@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 28, 2009 at 03:21:03PM +0200, Peter Zijlstra wrote:
-> On Sun, 2009-09-27 at 21:56 +0200, Nick Piggin wrote:
-> > On Tue, Sep 22, 2009 at 04:17:51PM +0100, Al Viro wrote:
-> > > On Fri, Sep 04, 2009 at 04:51:45PM +1000, npiggin@suse.de wrote:
-> > > > Use a brlock for the vfsmount lock.
-> > > 
-> > > I like it, but I'd like to see how costly it becomes on heavily SMP boxen.
-> > > Creation/removal of bindings as load...
-> > 
-> > I could test that... Is there some realistic scenario I can try
-> > to implement that exercises this? (failing that, I'll happily
-> > do a microbenchmark).
-> > 
-> > I was thinking it *might* be possible to do RCU... but especially
-> > coming up with a scheme that avoids synchronize_rcu() in the
-> > umount path is not trivial, so perhaps the simple read/write
-> > annotations with brlock behind the scenes is a more reasonable step.
-> > 
-> > I do also actually owe you some documentation with this one too,
-> > which I will get around to adding.
+On Wed, Sep 30, 2009 at 06:57:00PM -0700, Linus Torvalds wrote:
 > 
-> The thing that worries me is that the write-side is very heavy and the
-> read sides are spinning on it, yielding rather large spin times on large
-> smp boxen.
-
-Well, that might be true. Although I'd say that huge systems that
-are doing a reasonable amount of vfs operations will have much
-larger spin times today due to pathological queueing on the
-global locks (almost to the point of effectively being a livelock).
-
-
-> It wouldn't nearly be as bad if the read sides could block..
 > 
-> FWIW, spin_lock_nested is limited to 8 subclasses, so your current
-> implementation will explode on anything larger than an 8-way.
+> On Thu, 1 Oct 2009, Markus Trippelsdorf wrote:
+> > 
+> > Running latest git I get the following kernel BUG message:
+> > 
+> > ------------[ cut here ]------------
+> > Kernel BUG at ffffffff810efa89 [verbose debug info unavailable]
+> 
+> You really shouldn't turn off verbose debug info unless you are _really_ 
+> tight on memory in some embedded device. It's not that complex, nor does 
+> it use a lot of memory, and it makes the error report much harder to 
+> figure out when the verbose debug output information isn't available.
+> 
+> But in this case I can do it by just looking at the function/offset:
+> 
+> > RIP: 0010:[<ffffffff810efa89>]  [<ffffffff810efa89>] ext4_num_dirty_pages+0x113/0x213
+> 
+> The only BUG_ON() that seems relevant in that function (at least with the 
+> config I tried with) ends up being
+> 
+> 	fs/ext4/inode.c:1184
+> 
+> in my sources, which is from "page_buffers(page)", which has a
+> 
+> 	BUG_ON(!PagePrivate(page));
+> 
+> in it. And that would have been much easier to figure out if you had had 
+> CONFIG_DEBUG_BUGVERBOSE enabled..
+> 
 
-So OK, a _mergeable_ sequence for this will basicaly look like:
-1. document and add read/write lock variations to the call sites
-   which is just a wrapper around existing lock (no functional
-   change).
-2. add a general brlock implementation, which is nice to lockdep
-   (basically could just annotate it as an rwlock and be done)
-   And this is where -rt could also do something more appropriate
-   if needed.
-3. switch vfsmount lock to brlock.
+You're right (with CONFIG_DEBUG_BUGVERBOSE=y):
 
-Someone also was interested in using brlocks elsewhere, you'll be
-unhappy to know! :) Yes I would really like to see an RCU
-implementation _eventually_, but as I say, that is probably a
-whole project on its own.
+------------[ cut here ]------------
+kernel BUG at fs/ext4/inode.c:1184!
+...
 
+> Now over to the ext4 people to actually hopefully _solve_ the bug. Maybe 
+> bisection would help.
+
+-- 
+Markus
