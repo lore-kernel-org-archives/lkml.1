@@ -1,109 +1,396 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbZJARQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZJARQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755922AbZJARQV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 13:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbZJARQU
+	id S1755962AbZJARQq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 13:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbZJARQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 13:16:20 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56322 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754657AbZJARQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 13:16:20 -0400
-Date: Thu, 1 Oct 2009 13:15:47 -0400
-From: Valerie Aurora <vaurora@redhat.com>
-To: kevin granade <kevin.granade@gmail.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
-       Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Union mounts/writable overlays design
-Message-ID: <20091001171547.GE29152@shell>
-References: <20091001145547.GA29152@shell> <7004b08e0910010838i6d0a5f5xeed699be686f6906@mail.gmail.com>
-Mime-Version: 1.0
+	Thu, 1 Oct 2009 13:16:45 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:60738 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755840AbZJARQo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 13:16:44 -0400
+Date: Thu, 1 Oct 2009 13:16:44 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, nhorman@tuxdriver.com
+Subject: Re: [PATCH 1/3] extend get/setrlimit to support setting rlimits
+	external to a process (v3)
+Message-ID: <20091001171644.GC2456@hmsreliant.think-freely.org>
+References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7004b08e0910010838i6d0a5f5xeed699be686f6906@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20091001171538.GB2456@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -4.9 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 10:38:27AM -0500, kevin granade wrote:
-> Wow, amazingly thorough writeup, was a very interesting read and I'm looking
-> forward to trying this out.
-> 
-> Examples
-> > ========
-> >
-> > What happens when I...
-> >
-> > - creat() /newfile -> creates on top layer
-> > - unlink() /oldfile -> creates a whiteout on top layer
-> > - Edit /existingfile -> copies up to top layer at open(O_WR) time
-> > - truncate /existingfile -> copies up to top layer + N bytes if specified
-> > - touch()/chmod()/chown()/etc. -> copies up to top layer
-> > - mkdir() /newdir -> creates on top layer
-> > - rmdir() /olddir -> creates a whiteout on top layer
-> > - mkdir() /olddir after above -> creates on top layer w/ opaque flag
-> > - readdir() /shareddir -> copies up entries from bottom layer as fallthrus
-> > - link() /oldfile /newlink -> copies up /oldfile, creates /newlink on top
-> > layer
-> > - symlink() /oldfile /symlink -> nothing special
-> > - rename() /oldfile /newfile -> copies up /oldfile to /newfile on top layer
-> >
-> 
-> Minor quibble here, rename should also whiteout /oldfile, of course you have
-> it explained correctly in the detailed description of rename() below.
-> Or am I misunderstanding and the above is what it does now and the detailed
-> description is what it will do once implemented properly?
+Augment /proc/<pid>/limits file to support limit setting
 
-Hi Kevin,
+It was suggested to me recently that we support a mechanism by which we can set
+various process limits from points external to the process.  The reasoning being
+that some processes are very long lived, and it would be beneficial to these
+long lived processes if we could modify their various limits without needing to
+kill them, adjust the limits for the user and restarting them.  While individual
+application can certainly export this control on their own, it would be nice if
+such functionality were available to a sysadmin, without needing to have each
+application re-invent the wheel.
 
-You are correct, it whiteouts the original name.  Thanks for pointing
-that out!
+As such, I've implemented the below patch, which makes /proc/pid/limits writable
+for each process.  By writing the following format:
+<limit> <current value> <max value>
+to the limits file, an administrator can now dynamically change the limits for
+the respective process.  Tested by myself with good results.
 
-> > Non-features
-> > ------------
-> >
-> > Features we do not currently plan to support as part of writable
-> > overlays:
-> >
-> > Online upgrade: E.g., installing software on a file system NFS
-> > exported to clients while the clients are still up and running.
-> > Allowing the read-only bottom layer to change while the writable
-> > overlay file system is mounted invalidates our locking strategy.
-> >
-> 
-> So as long as the RO filesystem is NOT mounted as part of an overlay, you
-> could modify it and then re-construct the previous overlay and things will
-> work as expected?
-> For example could one create a hard drive over CD overlay, then periodically
-> (requiring a reboot probably) replace the underlying CD with a new version
-> and automagically have new versions of software available?  ( obviously
-> there are additional complexities in packaging to make this work, but having
-> support in the kernel is the first step. )
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-This could theoretically work, but the main problem is resolving
-differences between files (always the big problem in upgrade).  Say
-you have /etc/passwd, you add a new user and write to it on the top
-layer, and then the next upgrade adds a new user to the read-only
-version.  You're not going to see the new user.
 
-> One last thing, I don't see this in either the "features" or the
-> "non-features".  Will there be a way to "revert" a file to the RO version
-> once it has been copied up, either by just removing the overlay entry or by
-> somehow forcing the open of the underlying file when it has an overlay?  Now
-> that I think of it, one could just mount the underlying filesystem elsewhere
-> and copy the file, but I'd still be interested to know if there is any
-> desire to provide the more "direct" operation.
+ fs/proc/base.c        |  165 +++++++++++++++++++++++++++++++++++++++++---------
+ include/linux/sched.h |    3 
+ kernel/sys.c          |   48 +++++++++-----
+ 3 files changed, 169 insertions(+), 47 deletions(-)
 
-I think that people are calling this "punch-through."  I don't see a
-problem with it, other than slightly more kernel support.
-
--VAL
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 6f742f6..2f05799 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -49,6 +49,8 @@
+ 
+ #include <asm/uaccess.h>
+ 
++#include <linux/string.h>
++#include <linux/ctype.h>
+ #include <linux/errno.h>
+ #include <linux/time.h>
+ #include <linux/proc_fs.h>
+@@ -455,72 +457,177 @@ static int proc_oom_score(struct task_struct *task, char *buffer)
+ struct limit_names {
+ 	char *name;
+ 	char *unit;
++	char *match;
+ };
+ 
+ static const struct limit_names lnames[RLIM_NLIMITS] = {
+-	[RLIMIT_CPU] = {"Max cpu time", "ms"},
+-	[RLIMIT_FSIZE] = {"Max file size", "bytes"},
+-	[RLIMIT_DATA] = {"Max data size", "bytes"},
+-	[RLIMIT_STACK] = {"Max stack size", "bytes"},
+-	[RLIMIT_CORE] = {"Max core file size", "bytes"},
+-	[RLIMIT_RSS] = {"Max resident set", "bytes"},
+-	[RLIMIT_NPROC] = {"Max processes", "processes"},
+-	[RLIMIT_NOFILE] = {"Max open files", "files"},
+-	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes"},
+-	[RLIMIT_AS] = {"Max address space", "bytes"},
+-	[RLIMIT_LOCKS] = {"Max file locks", "locks"},
+-	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals"},
+-	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes"},
+-	[RLIMIT_NICE] = {"Max nice priority", NULL},
+-	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL},
+-	[RLIMIT_RTTIME] = {"Max realtime timeout", "us"},
++	[RLIMIT_CPU] = {"Max cpu time", "ms", "cpu"},
++	[RLIMIT_FSIZE] = {"Max file size", "bytes", "fsize"},
++	[RLIMIT_DATA] = {"Max data size", "bytes", "data"},
++	[RLIMIT_STACK] = {"Max stack size", "bytes", "stack"},
++	[RLIMIT_CORE] = {"Max core file size", "bytes", "core"},
++	[RLIMIT_RSS] = {"Max resident set", "bytes", "rss"},
++	[RLIMIT_NPROC] = {"Max processes", "processes", "nproc"},
++	[RLIMIT_NOFILE] = {"Max open files", "files", "nofile"},
++	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes", "memlock"},
++	[RLIMIT_AS] = {"Max address space", "bytes", "as"},
++	[RLIMIT_LOCKS] = {"Max file locks", "locks", "locks"},
++	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals", "sigpending"},
++	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes", "msgqueue"},
++	[RLIMIT_NICE] = {"Max nice priority", NULL, "nice"},
++	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL, "rtprio"},
++	[RLIMIT_RTTIME] = {"Max realtime timeout", "us", "rttime"},
+ };
+ 
+ /* Display limits for a process */
+-static int proc_pid_limits(struct task_struct *task, char *buffer)
++static ssize_t proc_pid_limit_read(struct file *file, char __user *buf,
++			size_t count, loff_t *ppos)
+ {
+ 	unsigned int i;
+-	int count = 0;
+ 	unsigned long flags;
+-	char *bufptr = buffer;
++	char *bufptr;
++	size_t bcount = 0;
++	size_t ccount = 0;
++	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
+ 
+ 	struct rlimit rlim[RLIM_NLIMITS];
+ 
++	bufptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!bufptr)
++		goto out;
++
+ 	if (!lock_task_sighand(task, &flags))
+-		return 0;
++		goto out;
+ 	memcpy(rlim, task->signal->rlim, sizeof(struct rlimit) * RLIM_NLIMITS);
+ 	unlock_task_sighand(task, &flags);
+ 
+ 	/*
+ 	 * print the file header
+ 	 */
+-	count += sprintf(&bufptr[count], "%-25s %-20s %-20s %-10s\n",
++	bcount += sprintf(&bufptr[bcount], "%-25s %-20s %-20s %-10s\n",
+ 			"Limit", "Soft Limit", "Hard Limit", "Units");
+ 
+ 	for (i = 0; i < RLIM_NLIMITS; i++) {
+ 		if (rlim[i].rlim_cur == RLIM_INFINITY)
+-			count += sprintf(&bufptr[count], "%-25s %-20s ",
++			bcount += sprintf(&bufptr[bcount], "%-25s %-20s ",
+ 					 lnames[i].name, "unlimited");
+ 		else
+-			count += sprintf(&bufptr[count], "%-25s %-20lu ",
++			bcount += sprintf(&bufptr[bcount], "%-25s %-20lu ",
+ 					 lnames[i].name, rlim[i].rlim_cur);
+ 
+ 		if (rlim[i].rlim_max == RLIM_INFINITY)
+-			count += sprintf(&bufptr[count], "%-20s ", "unlimited");
++			bcount += sprintf(&bufptr[bcount], "%-20s ",
++					 "unlimited");
+ 		else
+-			count += sprintf(&bufptr[count], "%-20lu ",
++			bcount += sprintf(&bufptr[bcount], "%-20lu ",
+ 					 rlim[i].rlim_max);
+ 
+ 		if (lnames[i].unit)
+-			count += sprintf(&bufptr[count], "%-10s\n",
++			bcount += sprintf(&bufptr[bcount], "%-10s\n",
+ 					 lnames[i].unit);
+ 		else
+-			count += sprintf(&bufptr[count], "\n");
++			bcount += sprintf(&bufptr[bcount], "\n");
++	}
++
++	if (*ppos >= bcount)
++		goto out_task;
++
++	ccount = min(count, (size_t)(bcount-(*ppos)));
++	ccount = ccount - copy_to_user(buf, &bufptr[*ppos], ccount);
++	*ppos += ccount;
++	kfree(bufptr);
++out_task:
++	put_task_struct(task);
++out:
++	return ccount;
++}
++
++static ssize_t proc_pid_limit_write(struct file *file, const char __user *buf,
++		size_t count, loff_t *ppos)
++{
++	char *buffer;
++	char *element, *vmc, *vmm;
++	struct rlimit new_rlim;
++	unsigned long flags;
++	int i;
++	int index = -1;
++	size_t wcount = 0;
++	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
++
++
++	if (*ppos != 0)
++		goto out;
++
++	if (count > 128)
++		goto out;
++	buffer = kzalloc(128, GFP_KERNEL);
++
++	if (!buffer)
++		goto out;
++
++	element = kzalloc(sizeof(buffer), GFP_KERNEL);
++	vmc = kzalloc(sizeof(buffer), GFP_KERNEL);
++	vmm = kzalloc(sizeof(buffer), GFP_KERNEL);
++
++	if (!element || !vmm || !vmc)
++		goto out_free;
++
++	wcount = count - copy_from_user(buffer, buf, count);
++	if (wcount < count)
++		goto out_free;
++
++	i = sscanf(buffer, "%s %s %s", element, vmc, vmm);
++
++	if (i < 3)
++		goto out_free;
++
++	for (i = 0; i <= strlen(element); i++)
++		element[i] = tolower(element[i]);
++
++	if (!strncmp(vmc, "unlimited", 9))
++		new_rlim.rlim_cur = RLIM_INFINITY;
++	else
++		new_rlim.rlim_cur = simple_strtoull(vmc, NULL, 10);
++
++	if (!strncmp(vmm, "unlimited", 9))
++		new_rlim.rlim_max = RLIM_INFINITY;
++	else
++		new_rlim.rlim_max = simple_strtoull(vmm, NULL, 10);
++
++	for (i = 0; i < RLIM_NLIMITS; i++) {
++		if ((lnames[i].match) &&
++		    !strncmp(element, lnames[i].match,
++		     strlen(lnames[i].match))) {
++			index = i;
++			break;
++		}
+ 	}
+ 
++	if (!lock_task_sighand(task, &flags))
++		goto out_free;
++
++	if ((index >= 0) && (index < RLIM_NLIMITS))
++		do_setrlimit(index, &new_rlim, task);
++
++	unlock_task_sighand(task, &flags);
++
++out_free:
++	kfree(element);
++	kfree(vmc);
++	kfree(vmm);
++	kfree(buffer);
++out:
++	*ppos += count;
++	put_task_struct(task);
+ 	return count;
+ }
+ 
++
++static const struct file_operations proc_limit_operations = {
++	.read           = proc_pid_limit_read,
++	.write		= proc_pid_limit_write,
++};
++
+ #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
+ static int proc_pid_syscall(struct task_struct *task, char *buffer)
+ {
+@@ -2483,7 +2590,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	INF("auxv",       S_IRUSR, proc_pid_auxv),
+ 	ONE("status",     S_IRUGO, proc_pid_status),
+ 	ONE("personality", S_IRUSR, proc_pid_personality),
+-	INF("limits",	  S_IRUSR, proc_pid_limits),
++	REG("limits",	  S_IRUSR|S_IWUSR, proc_limit_operations),
+ #ifdef CONFIG_SCHED_DEBUG
+ 	REG("sched",      S_IRUGO|S_IWUSR, proc_pid_sched_operations),
+ #endif
+@@ -2822,7 +2929,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	INF("auxv",      S_IRUSR, proc_pid_auxv),
+ 	ONE("status",    S_IRUGO, proc_pid_status),
+ 	ONE("personality", S_IRUSR, proc_pid_personality),
+-	INF("limits",	 S_IRUSR, proc_pid_limits),
++	REG("limits",	 S_IRUSR|S_IWUSR, proc_limit_operations),
+ #ifdef CONFIG_SCHED_DEBUG
+ 	REG("sched",     S_IRUGO|S_IWUSR, proc_pid_sched_operations),
+ #endif
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 0f1ea4a..cada5d2 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -631,6 +631,9 @@ struct signal_struct {
+ #endif
+ };
+ 
++extern int do_setrlimit(unsigned int resource, struct rlimit *new_rlim,
++			struct task_struct *tsk);
++
+ /* Context switch must be unlocked if interrupts are to be enabled */
+ #ifdef __ARCH_WANT_INTERRUPTS_ON_CTXSW
+ # define __ARCH_WANT_UNLOCKED_CTXSW
+diff --git a/kernel/sys.c b/kernel/sys.c
+index b3f1097..05bd22a 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1236,41 +1236,41 @@ SYSCALL_DEFINE2(old_getrlimit, unsigned int, resource,
+ 
+ #endif
+ 
+-SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
++int do_setrlimit(unsigned int resource, struct rlimit *new_rlim,
++		 struct task_struct *tsk)
+ {
+-	struct rlimit new_rlim, *old_rlim;
+ 	int retval;
++	struct rlimit *old_rlim;
+ 
+-	if (resource >= RLIM_NLIMITS)
+-		return -EINVAL;
+-	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
+-		return -EFAULT;
+-	if (new_rlim.rlim_cur > new_rlim.rlim_max)
++
++	if (new_rlim->rlim_cur > new_rlim->rlim_max)
+ 		return -EINVAL;
+-	old_rlim = current->signal->rlim + resource;
+-	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
++	old_rlim = tsk->signal->rlim + resource;
++
++	if ((new_rlim->rlim_max > old_rlim->rlim_max) &&
+ 	    !capable(CAP_SYS_RESOURCE))
+ 		return -EPERM;
+-	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > sysctl_nr_open)
++
++	if (resource == RLIMIT_NOFILE && new_rlim->rlim_max > sysctl_nr_open)
+ 		return -EPERM;
+ 
+-	retval = security_task_setrlimit(resource, &new_rlim);
++	retval = security_task_setrlimit(resource, new_rlim);
+ 	if (retval)
+ 		return retval;
+ 
+-	if (resource == RLIMIT_CPU && new_rlim.rlim_cur == 0) {
++	if (resource == RLIMIT_CPU && new_rlim->rlim_cur == 0) {
+ 		/*
+ 		 * The caller is asking for an immediate RLIMIT_CPU
+ 		 * expiry.  But we use the zero value to mean "it was
+ 		 * never set".  So let's cheat and make it one second
+ 		 * instead
+ 		 */
+-		new_rlim.rlim_cur = 1;
++		new_rlim->rlim_cur = 1;
+ 	}
+ 
+-	task_lock(current->group_leader);
+-	*old_rlim = new_rlim;
+-	task_unlock(current->group_leader);
++	task_lock(tsk->group_leader);
++	*old_rlim = *new_rlim;
++	task_unlock(tsk->group_leader);
+ 
+ 	if (resource != RLIMIT_CPU)
+ 		goto out;
+@@ -1281,14 +1281,26 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ 	 * very long-standing error, and fixing it now risks breakage of
+ 	 * applications, so we live with it
+ 	 */
+-	if (new_rlim.rlim_cur == RLIM_INFINITY)
++	if (new_rlim->rlim_cur == RLIM_INFINITY)
+ 		goto out;
+ 
+-	update_rlimit_cpu(new_rlim.rlim_cur);
++	update_rlimit_cpu(new_rlim->rlim_cur);
+ out:
+ 	return 0;
+ }
+ 
++SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
++{
++	struct rlimit new_rlim;
++
++	if (resource >= RLIM_NLIMITS)
++		return -EINVAL;
++	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
++		return -EFAULT;
++
++	return do_setrlimit(resource, &new_rlim, current);
++}
++
+ /*
+  * It would make sense to put struct rusage in the task_struct,
+  * except that would make the task_struct be *really big*.  After
