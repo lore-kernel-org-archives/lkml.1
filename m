@@ -1,251 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbZJAIKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZJAIKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812AbZJAIKY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 04:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbZJAIKX
+	id S1755906AbZJAIKe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 04:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbZJAIKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 04:10:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38342 "EHLO hera.kernel.org"
+	Thu, 1 Oct 2009 04:10:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38367 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755840AbZJAIKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 04:10:11 -0400
+	id S1755848AbZJAIKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 04:10:18 -0400
 From: Tejun Heo <tj@kernel.org>
 To: jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
        cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 04/19] scheduler: implement force_cpus_allowed_ptr()
-Date: Thu,  1 Oct 2009 17:09:03 +0900
-Message-Id: <1254384558-1018-5-git-send-email-tj@kernel.org>
+Subject: [PATCH 05/19] kthread: implement kthread_data()
+Date: Thu,  1 Oct 2009 17:09:04 +0900
+Message-Id: <1254384558-1018-6-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1254384558-1018-1-git-send-email-tj@kernel.org>
 References: <1254384558-1018-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 08:09:36 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 08:09:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement force_cpus_allowed_ptr() which is similar to
-set_cpus_allowed_ptr() but bypasses PF_THREAD_BOUND check and ignores
-cpu_active() status as long as the target cpu is online.  This will be
-used for concurrency-managed workqueue.
+Implement kthread_data() which takes @task pointing to a kthread and
+returns @data specified when creating the kthread.  The caller is
+responsible for ensuring the validity of @task when calling this
+function.
 
-NOT_SIGNED_OFF_YET
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- include/linux/sched.h |    7 ++++
- kernel/sched.c        |   88 +++++++++++++++++++++++++++++++++----------------
- 2 files changed, 66 insertions(+), 29 deletions(-)
+ include/linux/kthread.h |    1 +
+ kernel/kthread.c        |   15 +++++++++++++++
+ 2 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index cbebadf..5fe60bf 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1810,6 +1810,8 @@ static inline void rcu_copy_process(struct task_struct *p)
- #ifdef CONFIG_SMP
- extern int set_cpus_allowed_ptr(struct task_struct *p,
- 				const struct cpumask *new_mask);
-+extern int force_cpus_allowed_ptr(struct task_struct *p,
-+				  const struct cpumask *new_mask);
- #else
- static inline int set_cpus_allowed_ptr(struct task_struct *p,
- 				       const struct cpumask *new_mask)
-@@ -1818,6 +1820,11 @@ static inline int set_cpus_allowed_ptr(struct task_struct *p,
- 		return -EINVAL;
- 	return 0;
- }
-+static inline int force_cpus_allowed_ptr(struct task_struct *p,
-+					 const struct cpumask *new_mask)
-+{
-+	return set_cpus_allowed_ptr(p, new_mask);
-+}
- #endif
+diff --git a/include/linux/kthread.h b/include/linux/kthread.h
+index aabc8a1..14f63e8 100644
+--- a/include/linux/kthread.h
++++ b/include/linux/kthread.h
+@@ -30,6 +30,7 @@ struct task_struct *kthread_create(int (*threadfn)(void *data),
+ void kthread_bind(struct task_struct *k, unsigned int cpu);
+ int kthread_stop(struct task_struct *k);
+ int kthread_should_stop(void);
++void *kthread_data(struct task_struct *k);
  
- #ifndef CONFIG_CPUMASK_OFFSTACK
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 4e3e789..02f07b2 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2070,6 +2070,7 @@ struct migration_req {
+ int kthreadd(void *unused);
+ extern struct task_struct *kthreadd_task;
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index 5fe7099..bd4cb7f 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -35,6 +35,7 @@ struct kthread_create_info
  
- 	struct task_struct *task;
- 	int dest_cpu;
-+	bool force;
- 
- 	struct completion done;
+ struct kthread {
+ 	int should_stop;
++	void *data;
+ 	struct completion exited;
  };
-@@ -2078,8 +2079,8 @@ struct migration_req {
-  * The task's runqueue lock must be held.
-  * Returns true if you have to wait for migration thread.
-  */
--static int
--migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
-+static int migrate_task(struct task_struct *p, int dest_cpu,
-+			struct migration_req *req, bool force)
- {
- 	struct rq *rq = task_rq(p);
  
-@@ -2095,6 +2096,7 @@ migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
- 	init_completion(&req->done);
- 	req->task = p;
- 	req->dest_cpu = dest_cpu;
-+	req->force = force;
- 	list_add(&req->list, &rq->migration_queue);
- 
- 	return 1;
-@@ -3096,7 +3098,7 @@ static void sched_migrate_task(struct task_struct *p, int dest_cpu)
- 		goto out;
- 
- 	/* force the process onto the specified CPU */
--	if (migrate_task(p, dest_cpu, &req)) {
-+	if (migrate_task(p, dest_cpu, &req, false)) {
- 		/* Need to wait for migration thread (might exit: take ref). */
- 		struct task_struct *mt = rq->migration_thread;
- 
-@@ -7015,34 +7017,19 @@ static inline void sched_init_granularity(void)
-  * 7) we wake up and the migration is done.
-  */
- 
--/*
-- * Change a given task's CPU affinity. Migrate the thread to a
-- * proper CPU and schedule it away if the CPU it's executing on
-- * is removed from the allowed bitmask.
-- *
-- * NOTE: the caller must have a valid reference to the task, the
-- * task must not exit() & deallocate itself prematurely. The
-- * call is not atomic; no spinlocks may be held.
-- */
--int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
-+static inline int __set_cpus_allowed_ptr(struct task_struct *p,
-+					 const struct cpumask *new_mask,
-+					 struct rq *rq, unsigned long *flags,
-+					 bool force)
- {
- 	struct migration_req req;
--	unsigned long flags;
--	struct rq *rq;
- 	int ret = 0;
- 
--	rq = task_rq_lock(p, &flags);
- 	if (!cpumask_intersects(new_mask, cpu_online_mask)) {
- 		ret = -EINVAL;
- 		goto out;
- 	}
- 
--	if (unlikely((p->flags & PF_THREAD_BOUND) && p != current &&
--		     !cpumask_equal(&p->cpus_allowed, new_mask))) {
--		ret = -EINVAL;
--		goto out;
--	}
--
- 	if (p->sched_class->set_cpus_allowed)
- 		p->sched_class->set_cpus_allowed(p, new_mask);
- 	else {
-@@ -7054,12 +7041,13 @@ int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
- 	if (cpumask_test_cpu(task_cpu(p), new_mask))
- 		goto out;
- 
--	if (migrate_task(p, cpumask_any_and(cpu_online_mask, new_mask), &req)) {
-+	if (migrate_task(p, cpumask_any_and(cpu_online_mask, new_mask), &req,
-+			 force)) {
- 		/* Need help from migration thread: drop lock and wait. */
- 		struct task_struct *mt = rq->migration_thread;
- 
- 		get_task_struct(mt);
--		task_rq_unlock(rq, &flags);
-+		task_rq_unlock(rq, flags);
- 		wake_up_process(rq->migration_thread);
- 		put_task_struct(mt);
- 		wait_for_completion(&req.done);
-@@ -7067,13 +7055,53 @@ int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
- 		return 0;
- 	}
- out:
--	task_rq_unlock(rq, &flags);
-+	task_rq_unlock(rq, flags);
- 
- 	return ret;
+@@ -54,6 +55,19 @@ int kthread_should_stop(void)
  }
-+
-+/*
-+ * Change a given task's CPU affinity. Migrate the thread to a
-+ * proper CPU and schedule it away if the CPU it's executing on
-+ * is removed from the allowed bitmask.
+ EXPORT_SYMBOL(kthread_should_stop);
+ 
++/**
++ * kthread_data - return data value specified on kthread creation
++ * @task: kthread task in question
 + *
-+ * NOTE: the caller must have a valid reference to the task, the
-+ * task must not exit() & deallocate itself prematurely. The
-+ * call is not atomic; no spinlocks may be held.
++ * Return the data value specified when kthread @task was created.
++ * The caller is responsible for ensuring the validity of @task when
++ * calling this function.
 + */
-+int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
++void *kthread_data(struct task_struct *task)
 +{
-+	unsigned long flags;
-+	struct rq *rq;
-+
-+	rq = task_rq_lock(p, &flags);
-+
-+	if (unlikely((p->flags & PF_THREAD_BOUND) && p != current &&
-+		     !cpumask_equal(&p->cpus_allowed, new_mask))) {
-+		task_rq_unlock(rq, &flags);
-+		return -EINVAL;
-+	}
-+
-+	return __set_cpus_allowed_ptr(p, new_mask, rq, &flags, false);
-+}
- EXPORT_SYMBOL_GPL(set_cpus_allowed_ptr);
- 
- /*
-+ * Similar to set_cpus_allowed_ptr() but bypasses PF_THREAD_BOUND
-+ * check and ignores cpu_active() status as long as the cpu is online.
-+ * The caller is responsible for ensuring things don't go bonkers.
-+ */
-+int force_cpus_allowed_ptr(struct task_struct *p,
-+			   const struct cpumask *new_mask)
-+{
-+	unsigned long flags;
-+	struct rq *rq;
-+
-+	rq = task_rq_lock(p, &flags);
-+	return __set_cpus_allowed_ptr(p, new_mask, rq, &flags, true);
++	return to_kthread(task)->data;
 +}
 +
-+/*
-  * Move (not current) task off this cpu, onto dest cpu. We're doing
-  * this because either it can't run here any more (set_cpus_allowed()
-  * away from this CPU, or CPU going down), or because we're
-@@ -7084,12 +7112,13 @@ EXPORT_SYMBOL_GPL(set_cpus_allowed_ptr);
-  *
-  * Returns non-zero if task was successfully migrated.
-  */
--static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu)
-+static int __migrate_task(struct task_struct *p, int src_cpu, int dest_cpu,
-+			  bool force)
+ static int kthread(void *_create)
  {
- 	struct rq *rq_dest, *rq_src;
- 	int ret = 0, on_rq;
- 
--	if (unlikely(!cpu_active(dest_cpu)))
-+	if (!force && unlikely(!cpu_active(dest_cpu)))
- 		return ret;
- 
- 	rq_src = cpu_rq(src_cpu);
-@@ -7168,7 +7197,8 @@ static int migration_thread(void *data)
- 
- 		if (req->task != NULL) {
- 			spin_unlock(&rq->lock);
--			__migrate_task(req->task, cpu, req->dest_cpu);
-+			__migrate_task(req->task, cpu, req->dest_cpu,
-+				       req->force);
- 		} else if (likely(cpu == (badcpu = smp_processor_id()))) {
- 			req->dest_cpu = RCU_MIGRATION_GOT_QS;
- 			spin_unlock(&rq->lock);
-@@ -7193,7 +7223,7 @@ static int __migrate_task_irq(struct task_struct *p, int src_cpu, int dest_cpu)
+ 	/* Copy data: it's on kthread's stack */
+@@ -64,6 +78,7 @@ static int kthread(void *_create)
  	int ret;
  
- 	local_irq_disable();
--	ret = __migrate_task(p, src_cpu, dest_cpu);
-+	ret = __migrate_task(p, src_cpu, dest_cpu, false);
- 	local_irq_enable();
- 	return ret;
- }
+ 	self.should_stop = 0;
++	self.data = data;
+ 	init_completion(&self.exited);
+ 	current->vfork_done = &self.exited;
+ 
 -- 
 1.6.4.2
 
