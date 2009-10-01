@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbZJAVDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbZJAVDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752406AbZJAVDX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 17:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZJAVDV
+	id S1752278AbZJAVDR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 17:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZJAVDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 17:03:21 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:45246 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751921AbZJAVDT (ORCPT
+	Thu, 1 Oct 2009 17:03:16 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:41789 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbZJAVDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 17:03:19 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=drxAm5hxGHBXhrhI626JGIWs0AkA7R6/Sr1QU1cvATcBpgfnRZkUAwCq91xEn3TnI
-	jyfNw0T95QY8lBpDwWnmA==
-Date: Thu, 1 Oct 2009 14:03:16 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Suresh Jayaraman <sjayaraman@suse.de>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 03/31] mm: expose gfp_to_alloc_flags()
-In-Reply-To: <1254405903-15760-1-git-send-email-sjayaraman@suse.de>
-Message-ID: <alpine.DEB.1.00.0910011355230.32006@chino.kir.corp.google.com>
-References: <1254405903-15760-1-git-send-email-sjayaraman@suse.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Thu, 1 Oct 2009 17:03:16 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <1254430820.5033.4.camel@localhost.localdomain>
+References: <1254345112.8837.9.camel@localhost.localdomain>
+	 <20091001132012.GA16975@amt.cnet>
+	 <1254416336.6787.6.camel@localhost.localdomain>
+	 <1254430820.5033.4.camel@localhost.localdomain>
+Date: Thu, 1 Oct 2009 16:03:19 -0500
+Message-ID: <90eb1dc70910011403q31218381tec865b1ecd361eff@mail.gmail.com>
+Subject: Re: INFO: task kjournal:337 blocked for more than 120 seconds
+From: Javier Guerra <javier@guerrag.com>
+To: Shirley Ma <mashirle@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       mcao@us.ibm.com
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
+On Thu, Oct 1, 2009 at 4:00 PM, Shirley Ma <mashirle@us.ibm.com> wrote:
+> I talked to Mingming, she suggested to use different IO scheduler. The
+> default scheduler is cfg, after I switch to noop, the problem is gone.
 
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl> 
-> 
-> Expose the gfp to alloc_flags mapping, so we can use it in other parts
-> of the vm.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
+deadline is the most recommended one for virtualization hosts.  some
+distros set it as default if you select Xen or KVM at installation
+time.  (and noop for the guests)
 
-Nack, these flags are internal to the page allocator and exporting them to 
-generic VM code is unnecessary.
 
-The only bit you actually use in your patchset is ALLOC_NO_WATERMARKS to 
-determine whether a particular allocation can use memory reserves.  I'd 
-suggest adding a bool function that returns whether the current context is 
-given access to reserves including your new __GFP_MEMALLOC flag and 
-exporting that instead.
+-- 
+Javier
