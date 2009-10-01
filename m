@@ -1,100 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbZJAXkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbZJAXi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756287AbZJAXkF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbZJAXkD
+	id S1756365AbZJAXi2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZJAXiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:40:03 -0400
-Received: from kroah.org ([198.145.64.141]:42089 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:38:25 -0400
+Received: from kroah.org ([198.145.64.141]:42095 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756205AbZJAXiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:38:22 -0400
+	id S1755903AbZJAXiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:38:23 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:33:22 2009
-Message-Id: <20091001233322.522313514@mini.kroah.org>
+Message-Id: <20091001233322.677176498@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:31:41 -0700
+Date: Thu, 01 Oct 2009 16:31:42 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
-Cc: stable-review@kernel.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lee.Schermerhorn@hp.com,
-       lee.schermerhorn@hp.com, ak@linux.intel.com, eric.whitney@hp.com,
-       mel@csn.ul.ie, rientjes@google.com, agl@us.ibm.com, apw@canonical.com
-Subject: [patch 25/30] hugetlb: restore interleaving of bootmem huge pages (2.6.31)
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>, RFeany@mrv.com,
+       Rex Feany <rfeany@mrv.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch 26/30] powerpc/8xx: Fix regression introduced by cache coherency rewrite
 References: <20091001233116.947658905@mini.kroah.org>
-Content-Disposition: inline; filename=hugetlb-restore-interleaving-of-bootmem-huge-pages.patch
+Content-Disposition: inline; filename=powerpc-8xx-fix-regression-introduced-by-cache-coherency-rewrite.patch
 In-Reply-To: <20091001233504.GA17709@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+From: Rex Feany <RFeany@mrv.com>
 
-Not upstream as it is fixed differently in .32
+commit e0908085fc2391c85b85fb814ae1df377c8e0dcb upstream.
 
-I noticed that alloc_bootmem_huge_page() will only advance to the next
-node on failure to allocate a huge page.  I asked about this on linux-mm
-and linux-numa, cc'ing the usual huge page suspects.  Mel Gorman
-responded:
+After upgrading to the latest kernel on my mpc875 userspace started
+running incredibly slow (hours to get to a shell, even!).
+I tracked it down to commit 8d30c14cab30d405a05f2aaceda1e9ad57800f36,
+that patch removed a work-around for the 8xx. Adding it
+back makes my problem go away.
 
-	I strongly suspect that the same node being used until allocation
-	failure instead of round-robin is an oversight and not deliberate
-	at all. It appears to be a side-effect of a fix made way back in
-	commit 63b4613c3f0d4b724ba259dc6c201bb68b884e1a ["hugetlb: fix
-	hugepage allocation with memoryless nodes"]. Prior to that patch
-	it looked like allocations would always round-robin even when
-	allocation was successful.
-
-Andy Whitcroft countered that the existing behavior looked like Andi
-Kleen's original implementation and suggested that we ask him.  We did and
-Andy replied that his intention was to interleave the allocations.  So,
-...
-
-This patch moves the advance of the hstate next node from which to
-allocate up before the test for success of the attempted allocation.  This
-will unconditionally advance the next node from which to alloc,
-interleaving successful allocations over the nodes with sufficient
-contiguous memory, and skipping over nodes that fail the huge page
-allocation attempt.
-
-Note that alloc_bootmem_huge_page() will only be called for huge pages of
-order > MAX_ORDER.
-
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-Reviewed-by: Andi Kleen <ak@linux.intel.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Adam Litke <agl@us.ibm.com>
-Cc: Andy Whitcroft <apw@canonical.com>
-Cc: Eric Whitney <eric.whitney@hp.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Rex Feany <rfeany@mrv.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/hugetlb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/pgtable.c |   19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -1017,6 +1017,7 @@ int __weak alloc_bootmem_huge_page(struc
- 				NODE_DATA(h->hugetlb_next_nid),
- 				huge_page_size(h), huge_page_size(h), 0);
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -30,6 +30,8 @@
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
  
-+		hstate_next_node(h);
- 		if (addr) {
- 			/*
- 			 * Use the beginning of the huge page to store the
-@@ -1026,7 +1027,6 @@ int __weak alloc_bootmem_huge_page(struc
- 			m = addr;
- 			goto found;
- 		}
--		hstate_next_node(h);
- 		nr_nodes--;
- 	}
- 	return 0;
++#include "mmu_decl.h"
++
+ static DEFINE_PER_CPU(struct pte_freelist_batch *, pte_freelist_cur);
+ static unsigned long pte_freelist_forced_free;
+ 
+@@ -119,7 +121,7 @@ void pte_free_finish(void)
+ /*
+  * Handle i/d cache flushing, called from set_pte_at() or ptep_set_access_flags()
+  */
+-static pte_t do_dcache_icache_coherency(pte_t pte)
++static pte_t do_dcache_icache_coherency(pte_t pte, unsigned long addr)
+ {
+ 	unsigned long pfn = pte_pfn(pte);
+ 	struct page *page;
+@@ -128,6 +130,17 @@ static pte_t do_dcache_icache_coherency(
+ 		return pte;
+ 	page = pfn_to_page(pfn);
+ 
++#ifdef CONFIG_8xx
++       /* On 8xx, cache control instructions (particularly
++        * "dcbst" from flush_dcache_icache) fault as write
++        * operation if there is an unpopulated TLB entry
++        * for the address in question. To workaround that,
++        * we invalidate the TLB here, thus avoiding dcbst
++        * misbehaviour.
++        */
++       _tlbil_va(addr, 0 /* 8xx doesn't care about PID */);
++#endif
++
+ 	if (!PageReserved(page) && !test_bit(PG_arch_1, &page->flags)) {
+ 		pr_debug("do_dcache_icache_coherency... flushing\n");
+ 		flush_dcache_icache_page(page);
+@@ -198,7 +211,7 @@ void set_pte_at(struct mm_struct *mm, un
+ 	 */
+ 	pte = __pte(pte_val(pte) & ~_PAGE_HPTEFLAGS);
+ 	if (pte_need_exec_flush(pte, 1))
+-		pte = do_dcache_icache_coherency(pte);
++		pte = do_dcache_icache_coherency(pte, addr);
+ 
+ 	/* Perform the setting of the PTE */
+ 	__set_pte_at(mm, addr, ptep, pte, 0);
+@@ -216,7 +229,7 @@ int ptep_set_access_flags(struct vm_area
+ {
+ 	int changed;
+ 	if (!dirty && pte_need_exec_flush(entry, 0))
+-		entry = do_dcache_icache_coherency(entry);
++		entry = do_dcache_icache_coherency(entry, address);
+ 	changed = !pte_same(*(ptep), entry);
+ 	if (changed) {
+ 		if (!(vma->vm_flags & VM_HUGETLB))
 
 
