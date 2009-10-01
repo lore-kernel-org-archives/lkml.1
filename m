@@ -1,84 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbZJAQkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbZJAQkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbZJAQkK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 12:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZJAQkJ
+	id S1755563AbZJAQkV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 12:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbZJAQkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 12:40:09 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:49107 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753597AbZJAQkI (ORCPT
+	Thu, 1 Oct 2009 12:40:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54310
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755533AbZJAQkP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 12:40:08 -0400
-Message-ID: <4AC4DB65.8070404@natemccallum.com>
-Date: Thu, 01 Oct 2009 12:40:05 -0400
-From: Nathaniel McCallum <nathaniel@natemccallum.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: greg@kroah.com
-Subject: Exposing device ids and driver names
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 1 Oct 2009 12:40:15 -0400
+Date: Thu, 01 Oct 2009 09:40:34 -0700 (PDT)
+Message-Id: <20091001.094034.161463891.davem@davemloft.net>
+To: bzolnier@gmail.com
+Cc: elendil@planet.nl, manty@manty.net, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: kernel BUG at drivers/ide/ide-disk.c:187 (2.6.31)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200910011125.40081.bzolnier@gmail.com>
+References: <200910011026.17510.elendil@planet.nl>
+	<20091001.013030.98262804.davem@davemloft.net>
+	<200910011125.40081.bzolnier@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please CC me on any responses as I'm not subscribed to lkml.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date: Thu, 1 Oct 2009 11:25:40 +0200
 
-I have the aim at creating two tools helpful to linux.  The first tool 
-is a driver regression test of sorts.  I want to be able to create 
-essentially a time line of hardware support as they appear in distros. 
-The second tool, related to the first, is a program which runs on 
-Windows and scans for a user's hardware and tells them which distro will 
-best support their hardware.  I already have a working prototype of 
-these two tools.  It currently uses the data exported by modinfo.  This 
-however does not provide transparency for drivers compiled into the kernel.
+> The problem is that you simply cannot know what is the system state here.
+> 
+> Thus when the unknown block layer request is encountered the best thing
+> you can do is to BUG early instead of allowing the situation when some
+> requests are silently dropped and possibly causing the data corruption.
 
-Thus, my requirements are as follows.  I need to be able to gather the 
-*_device_id tables and driver names from the kernel by scanning the 
-kernel/module binaries.  The implementation should be careful not to 
-expand memory footprint if at all possible and should seek to expose 
-only stable structures to userspace.
+Yes, but if you BUG() in this kind of location, the chance of getting
+the debugging information from the user can be close to zero.  We were
+very lucky this time :-)
 
-Further, I have the limitation that symbol names are unhelpful since 
-they are stripped out of the kernel.
+If we're tossing a request, signal an error to the submitter.
 
-My initial investigation has led me to one of two methods (though I am 
-certainly open to other suggestions).  Since symbols are most often 
-stripped from the kernel, I have largely focused my investigation on 
-using ELF sections.
-
-The first method is to expand the MODULE_DEVICE_TABLE() macro to do 
-something for built in modules (such as the following):
-#define MODULE_DEVICE_TABLE(type, name)                        \
-   static const struct type##_device_id *__##name##_dev_tbl     \
-     __used __section(.dev.ids.##type)
-
-This has the advantage of being an extremely small change to the kernel 
-and being easy to parse out of the binaries.  The disadvantages are that 
-it adds a pointer for each device table (expanding memory footprint) and 
-does not provide the name of the driver which will be loaded for that 
-table (making it hard to track when a driver moves in/out of the kernel 
-to/from a module).
-
-The second method is to create a macro for *_driver struct definitions 
-(similar to DEFINE_PCI_DEVICE_TABLE() in include/linux/pci.h).  Perhaps 
-something like this:
-#define DEFINE_DRIVER(type, name) \
-   static struct type##_driver name __section(.drv.##type)
-
-The advantages of this method are minimal memory footprint increase 
-(only the size of the ELF section header and name) and easy parsing of 
-both the driver name and the type##_device_id struct.  The disadvantages 
-are that every driver will have to be updated to use the new macro 
-(which can probably be done programatically) and that *_driver structs 
-have now become part of the kernel ABI (I'm not sure how bad this is). 
-I also ran into a wierd problem where the *_driver structs are zeroed 
-when built into modules, but I'm not sure what causes that (it wasn't my 
-patch).
-
-Which method is preferable? Any other suggestions?
-
-Thanks for your help,
-Nathaniel
+I hear we have infrastructure for that :-)
