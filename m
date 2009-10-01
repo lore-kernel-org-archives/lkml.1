@@ -1,61 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZJARRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbZJARVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbZJARRd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 13:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZJARRd
+	id S1755762AbZJARVh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 13:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbZJARVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 13:17:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42256 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752194AbZJARRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 13:17:32 -0400
-Message-ID: <4AC4E405.4040407@kernel.org>
-Date: Fri, 02 Oct 2009 02:16:53 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Thu, 1 Oct 2009 13:21:36 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:53824 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755476AbZJARVf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 13:21:35 -0400
+Date: Thu, 1 Oct 2009 13:21:37 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, nhorman@tuxdriver.com
+Subject: Re: [PATCH 2/3] extend get/setrlimit to support setting rlimits
+	external to a process (v3)
+Message-ID: <20091001172137.GD2456@hmsreliant.think-freely.org>
+References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: jeff@garzik.org, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
-Subject: Re: [PATCH 15/19] workqueue: reimplement workqueue flushing using
- color coded works
-References: <1254384558-1018-1-git-send-email-tj@kernel.org> <1254384558-1018-16-git-send-email-tj@kernel.org> <alpine.LFD.2.01.0910010959390.6996@localhost.localdomain> <4AC4E2D1.6030804@kernel.org>
-In-Reply-To: <4AC4E2D1.6030804@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 17:16:56 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091001171538.GB2456@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -4.9 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello, Linus.
-> 
-> Linus Torvalds wrote:
->> On Thu, 1 Oct 2009, Tejun Heo wrote:
->>> Reimplement workqueue flushing using color coded works.  There are two
->>> colors and each cwq has the current color which is painted on the
->>> works being issued via the cwq.  Flushing a workqueue is achieved by
->>> flipping the current colors of each cwq and wait for the works which
->>> have the old color to drain.
->> Is there any reason for the "two colors" choice? I could imagine that it 
->> could end up being a limitation (and possible deadlock?) to allow just a 
->> single flush pending at any time.
->>
->> Could the color be an 8-bit counter or something like that instead?
-> 
-> It's related to how many bits can be used from work_struct->data which
-> in turn is determined by the alignment of cwq.  Currently, the
-> alignment is 8 bytes so 3 bits are available.  One is used for
-> PENDING, the other for LINKED and one last bit is used for COLOR.
-> Aligning cwq to, say, 64bytes wouldn't be bad at all and then we can
-> have 6-bits of coloring.  Hmmm... yeap, I'll work on that.
+Add syscall infrastructure for getprlimit/setprlimit
 
-Oops, 4 not 6.
+This patch adds the definitions for the get/setprlimit syscalls.  They are
+identical to the get/setlimit calls, except that they allow the caller to
+manipulate limits for processes other than themselves.
 
--- 
-tejun
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+
+
+ include/linux/syscalls.h |    4 ++
+ kernel/sys.c             |   84 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 88 insertions(+)
+
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 80de700..535210a 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -584,11 +584,15 @@ asmlinkage long sys_newuname(struct new_utsname __user *name);
+ 
+ asmlinkage long sys_getrlimit(unsigned int resource,
+ 				struct rlimit __user *rlim);
++asmlinkage long sys_getprlimit(pid_t pid, unsigned int resource,
++				struct rlimit __user *rlim);
+ #if defined(COMPAT_RLIM_OLD_INFINITY) || !(defined(CONFIG_IA64))
+ asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *rlim);
+ #endif
+ asmlinkage long sys_setrlimit(unsigned int resource,
+ 				struct rlimit __user *rlim);
++asmlinkage long	sys_setprlimit(pid_t pid, unsigned int resource,
++				struct rlimit __user *rlim);
+ asmlinkage long sys_getrusage(int who, struct rusage __user *ru);
+ asmlinkage long sys_umask(int mask);
+ 
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 05bd22a..4fe1140 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1211,6 +1211,50 @@ SYSCALL_DEFINE2(getrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ 	}
+ }
+ 
++SYSCALL_DEFINE3(getprlimit, pid_t, pid, unsigned int, resource,
++		struct rlimit __user *, rlim)
++{
++	unsigned long flags;
++	struct task_struct *tsk;
++	struct pid *ppid;
++	int retval = -EINVAL;
++
++	ppid = find_get_pid(pid);
++	if (!ppid)
++		goto out;
++
++	tsk = get_pid_task(ppid, PIDTYPE_PID);
++
++	if (!tsk)
++		goto out_put_pid;
++
++	if (resource >= RLIM_NLIMITS)
++		goto out_put_all;
++
++	retval = -EBUSY;
++	if (!lock_task_sighand(tsk, &flags))
++		goto out_put_all;
++
++	else {
++		struct rlimit val;
++
++		task_lock(tsk->group_leader);
++		val = current->signal->rlim[resource];
++		task_unlock(tsk->group_leader);
++		retval = copy_to_user(rlim, &val, sizeof(*rlim)) ? -EFAULT : 0;
++	}
++
++	unlock_task_sighand(tsk, &flags);
++
++out_put_all:
++	put_task_struct(tsk);
++out_put_pid:
++	put_pid(ppid);
++out:
++	return retval;
++}
++
++
+ #ifdef __ARCH_WANT_SYS_OLD_GETRLIMIT
+ 
+ /*
+@@ -1301,6 +1345,46 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ 	return do_setrlimit(resource, &new_rlim, current);
+ }
+ 
++SYSCALL_DEFINE3(setprlimit, pid_t, pid, unsigned int, resource,
++		struct rlimit __user *, rlim)
++{
++	struct task_struct *tsk;
++	struct pid *ppid;
++	unsigned long flags;
++	struct rlimit new_rlim;
++	int retval = -EINVAL;
++
++	ppid = find_get_pid(pid);
++	if (!ppid)
++		goto out;
++
++	tsk = get_pid_task(ppid, PIDTYPE_PID);
++
++	if (!tsk)
++		goto out_put_pid;
++
++	if (resource >= RLIM_NLIMITS)
++		goto out_put_all;
++
++	retval = -EFAULT;
++	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
++		goto out_put_all;
++
++	if (!lock_task_sighand(tsk, &flags))
++		goto out_put_all;
++
++	retval = do_setrlimit(resource, &new_rlim, tsk);
++
++	unlock_task_sighand(tsk, &flags);
++
++out_put_all:
++	put_task_struct(tsk);
++out_put_pid:
++	put_pid(ppid);
++out:
++	return retval;
++}
++
+ /*
+  * It would make sense to put struct rusage in the task_struct,
+  * except that would make the task_struct be *really big*.  After
