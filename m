@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbZJAXXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbZJAXXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbZJAXXt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZJAXXo
+	id S1756667AbZJAXXb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbZJAXXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:23:44 -0400
-Received: from kroah.org ([198.145.64.141]:39686 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:23:24 -0400
+Received: from kroah.org ([198.145.64.141]:39691 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754794AbZJAXXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:23:22 -0400
+	id S1754527AbZJAXXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:23:23 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:18:05 2009
-Message-Id: <20091001231805.637821425@mini.kroah.org>
+Message-Id: <20091001231805.791852583@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:16:41 -0700
+Date: Thu, 01 Oct 2009 16:16:42 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>, davem@davemloft.net,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: [patch 8/9] netfilter: bridge: refcount fix
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
+Cc: stable-review@kernel.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Lee.Schermerhorn@hp.com,
+       lee.schermerhorn@hp.com, ak@linux.intel.com, eric.whitney@hp.com,
+       mel@csn.ul.ie, rientjes@google.com, agl@us.ibm.com, apw@canonical.com
+Subject: [patch 9/9] hugetlb: restore interleaving of bootmem huge pages (2.6.31)
 References: <20091001231633.719696398@mini.kroah.org>
-Content-Disposition: inline; filename=netfilter-bridge-refcount-fix.patch
+Content-Disposition: inline; filename=hugetlb-restore-interleaving-of-bootmem-huge-pages.patch
 In-Reply-To: <20091001231938.GA29593@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,38 +33,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 
-netfilter: bridge: refcount fix
+Not upstream as it is fixed differently in .32
 
-Upstream commit f3abc9b9:
+I noticed that alloc_bootmem_huge_page() will only advance to the next
+node on failure to allocate a huge page.  I asked about this on linux-mm
+and linux-numa, cc'ing the usual huge page suspects.  Mel Gorman
+responded:
 
-commit f216f082b2b37c4943f1e7c393e2786648d48f6f
-([NETFILTER]: bridge netfilter: deal with martians correctly)
-added a refcount leak on in_dev.
+	I strongly suspect that the same node being used until allocation
+	failure instead of round-robin is an oversight and not deliberate
+	at all. It appears to be a side-effect of a fix made way back in
+	commit 63b4613c3f0d4b724ba259dc6c201bb68b884e1a ["hugetlb: fix
+	hugepage allocation with memoryless nodes"]. Prior to that patch
+	it looked like allocations would always round-robin even when
+	allocation was successful.
 
-Instead of using in_dev_get(), we can use __in_dev_get_rcu(),
-as netfilter hooks are running under rcu_read_lock(), as pointed
-by Patrick.
+Andy Whitcroft countered that the existing behavior looked like Andi
+Kleen's original implementation and suggested that we ask him.  We did and
+Andy replied that his intention was to interleave the allocations.  So,
+...
 
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+This patch moves the advance of the hstate next node from which to
+allocate up before the test for success of the attempted allocation.  This
+will unconditionally advance the next node from which to alloc,
+interleaving successful allocations over the nodes with sufficient
+contiguous memory, and skipping over nodes that fail the huge page
+allocation attempt.
+
+Note that alloc_bootmem_huge_page() will only be called for huge pages of
+order > MAX_ORDER.
+
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Reviewed-by: Andi Kleen <ak@linux.intel.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Adam Litke <agl@us.ibm.com>
+Cc: Andy Whitcroft <apw@canonical.com>
+Cc: Eric Whitney <eric.whitney@hp.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/bridge/br_netfilter.c |    2 +-
+ mm/hugetlb.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/bridge/br_netfilter.c
-+++ b/net/bridge/br_netfilter.c
-@@ -358,7 +358,7 @@ static int br_nf_pre_routing_finish(stru
- 				},
- 				.proto = 0,
- 			};
--			struct in_device *in_dev = in_dev_get(dev);
-+			struct in_device *in_dev = __in_dev_get_rcu(dev);
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -983,6 +983,7 @@ __attribute__((weak)) int alloc_bootmem_
+ 				NODE_DATA(h->hugetlb_next_nid),
+ 				huge_page_size(h), huge_page_size(h), 0);
  
- 			/* If err equals -EHOSTUNREACH the error is due to a
- 			 * martian destination or due to the fact that
++		hstate_next_node(h);
+ 		if (addr) {
+ 			/*
+ 			 * Use the beginning of the huge page to store the
+@@ -993,7 +994,6 @@ __attribute__((weak)) int alloc_bootmem_
+ 			if (m)
+ 				goto found;
+ 		}
+-		hstate_next_node(h);
+ 		nr_nodes--;
+ 	}
+ 	return 0;
 
 
