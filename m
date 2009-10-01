@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbZJAXm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZJAXiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756135AbZJAXm4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 19:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbZJAXmy
+	id S1755980AbZJAXiM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 19:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbZJAXiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 19:42:54 -0400
-Received: from kroah.org ([198.145.64.141]:42032 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 19:38:10 -0400
+Received: from kroah.org ([198.145.64.141]:42034 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755258AbZJAXiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 19:38:08 -0400
+	id S1755459AbZJAXiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 19:38:09 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 16:33:20 2009
-Message-Id: <20091001233320.245354779@mini.kroah.org>
+Message-Id: <20091001233320.400713767@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 16:31:26 -0700
+Date: Thu, 01 Oct 2009 16:31:27 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jan Kiszka <jan.kiszka@siemens.com>, avi@redhat.com
-Subject: [patch 10/30] KVM: x86: Disallow hypercalls for guest callers in rings > 0
+       Marcelo Tosatti <mtosatti@redhat.com>, avi@redhat.com
+Subject: [patch 11/30] KVM: MMU: fix missing locking in alloc_mmu_pages
 References: <20091001233116.947658905@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-x86-disallow-hypercalls-for-guest-callers-in-rings-0.patch
+Content-Disposition: inline; filename=kvm-mmu-fix-missing-locking-in-alloc_mmu_pages.patch
 In-Reply-To: <20091001233504.GA17709@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jan Kiszka <jan.kiszka@siemens.com>
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-(cherry picked from commit 07708c4af1346ab1521b26a202f438366b7bcffd)
+(cherry picked from commit 6a1ac77110ee3e8d8dfdef8442f3b30b3d83e6a2)
 
-So far unprivileged guest callers running in ring 3 can issue, e.g., MMU
-hypercalls. Normally, such callers cannot provide any hand-crafted MMU
-command structure as it has to be passed by its physical address, but
-they can still crash the guest kernel by passing random addresses.
+n_requested_mmu_pages/n_free_mmu_pages are used by
+kvm_mmu_change_mmu_pages to calculate the number of pages to zap.
 
-To close the hole, this patch considers hypercalls valid only if issued
-from guest ring 0. This may still be relaxed on a per-hypercall base in
-the future once required.
+alloc_mmu_pages, called from the vcpu initialization path, modifies this
+variables without proper locking, which can result in a negative value
+in kvm_mmu_change_mmu_pages (say, with cpu hotplug).
 
-Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kvm/x86.c       |    6 ++++++
- include/linux/kvm_para.h |    1 +
- 2 files changed, 7 insertions(+)
+ arch/x86/kvm/mmu.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2898,6 +2898,11 @@ int kvm_emulate_hypercall(struct kvm_vcp
- 		a3 &= 0xFFFFFFFF;
- 	}
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -2692,12 +2692,14 @@ static int alloc_mmu_pages(struct kvm_vc
  
-+	if (kvm_x86_ops->get_cpl(vcpu) != 0) {
-+		ret = -KVM_EPERM;
-+		goto out;
-+	}
-+
- 	switch (nr) {
- 	case KVM_HC_VAPIC_POLL_IRQ:
- 		ret = 0;
-@@ -2909,6 +2914,7 @@ int kvm_emulate_hypercall(struct kvm_vcp
- 		ret = -KVM_ENOSYS;
- 		break;
- 	}
-+out:
- 	kvm_register_write(vcpu, VCPU_REGS_RAX, ret);
- 	++vcpu->stat.hypercalls;
- 	return r;
---- a/include/linux/kvm_para.h
-+++ b/include/linux/kvm_para.h
-@@ -13,6 +13,7 @@
- #define KVM_ENOSYS		1000
- #define KVM_EFAULT		EFAULT
- #define KVM_E2BIG		E2BIG
-+#define KVM_EPERM		EPERM
+ 	ASSERT(vcpu);
  
- #define KVM_HC_VAPIC_POLL_IRQ		1
- #define KVM_HC_MMU_OP			2
++	spin_lock(&vcpu->kvm->mmu_lock);
+ 	if (vcpu->kvm->arch.n_requested_mmu_pages)
+ 		vcpu->kvm->arch.n_free_mmu_pages =
+ 					vcpu->kvm->arch.n_requested_mmu_pages;
+ 	else
+ 		vcpu->kvm->arch.n_free_mmu_pages =
+ 					vcpu->kvm->arch.n_alloc_mmu_pages;
++	spin_unlock(&vcpu->kvm->mmu_lock);
+ 	/*
+ 	 * When emulating 32-bit mode, cr3 is only 32 bits even on x86_64.
+ 	 * Therefore we need to allocate shadow page tables in the first
 
 
