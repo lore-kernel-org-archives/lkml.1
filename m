@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751722AbZJAEe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751788AbZJAEua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751722AbZJAEe4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 00:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbZJAEez
+	id S1751788AbZJAEua (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 00:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbZJAEu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 00:34:55 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:64235 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751287AbZJAEez (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 00:34:55 -0400
-Message-ID: <4AC43118.6050409@ct.jp.nec.com>
-Date: Thu, 01 Oct 2009 13:33:28 +0900
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 1 Oct 2009 00:50:29 -0400
+Received: from ozlabs.org ([203.10.76.45]:53548 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751350AbZJAEu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 00:50:29 -0400
 MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH] trace: fix missing assignment in trace_ctxwake_*
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19140.13582.223629.56214@cargo.ozlabs.ibm.com>
+Date: Thu, 1 Oct 2009 14:50:22 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Possible bug in ftrace_profile_enable_event
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+I was looking through kernel/trace/trace_event_profile.c and I saw
+this code:
 
-The state char variable S should be reassigned, if S == 0.
+static int ftrace_profile_enable_event(struct ftrace_event_call *event)
+{
+	char *buf;
+	int ret = -ENOMEM;
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- kernel/trace/trace_output.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+	if (atomic_inc_return(&event->profile_count))
+		return 0;
 
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index f572f44..cda766f 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -883,7 +883,7 @@ static int trace_ctxwake_raw(struct trace_iterator *iter, char S)
- 	trace_assign_type(field, iter->ent);
- 
- 	if (!S)
--		task_state_char(field->prev_state);
-+		S = task_state_char(field->prev_state);
- 	T = task_state_char(field->next_state);
- 	if (!trace_seq_printf(&iter->seq, "%d %d %c %d %d %d %c\n",
- 			      field->prev_pid,
-@@ -918,7 +918,7 @@ static int trace_ctxwake_hex(struct trace_iterator *iter, char S)
- 	trace_assign_type(field, iter->ent);
- 
- 	if (!S)
--		task_state_char(field->prev_state);
-+		S = task_state_char(field->prev_state);
- 	T = task_state_char(field->next_state);
- 
- 	SEQ_PUT_HEX_FIELD_RET(s, field->prev_pid);
--- 
-1.6.3.3
+	if (!total_profile_count++) {
+		buf = (char *)alloc_percpu(profile_buf_t);
+		if (!buf)
+			goto fail_buf;
 
+		rcu_assign_pointer(trace_profile_buf, buf);
+
+		buf = (char *)alloc_percpu(profile_buf_t);
+		if (!buf)
+			goto fail_buf_nmi;
+
+		rcu_assign_pointer(trace_profile_buf_nmi, buf);
+	}
+
+	ret = event->profile_enable();
+	if (!ret)
+		return 0;
+
+	kfree(trace_profile_buf_nmi);
+fail_buf_nmi:
+	kfree(trace_profile_buf);
+fail_buf:
+	total_profile_count--;
+
+...
+
+So we only allocate trace_profile_buf and trace_profile_buf_nmi if
+total_profile_count was zero on entry, but if we get an error returned
+from event->profile_enable(), we free them both unconditionally,
+regardless of the value of total_profile_count.  That seems wrong.  Is
+there a subtle reason why that is the right thing to do?
+
+(Also, is kfree the appropriate counterpart to alloc_percpu?)
+
+Paul.
