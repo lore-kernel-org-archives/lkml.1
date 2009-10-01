@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbZJAWtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbZJAWxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752952AbZJAWtB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 18:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbZJAWtA
+	id S1754282AbZJAWxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 18:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbZJAWxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 18:49:00 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43598 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752008AbZJAWs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 18:48:59 -0400
-Subject: Re: 2.6.32-rc1-git2: Reported regressions from 2.6.31
-From: James Bottomley <James.Bottomley@suse.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-In-Reply-To: <9UCePxij8cB.A.VCG.-3SxKB@chimera>
-References: <9UCePxij8cB.A.VCG.-3SxKB@chimera>
-Content-Type: text/plain
-Date: Thu, 01 Oct 2009 17:48:56 -0500
-Message-Id: <1254437336.3885.68.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Thu, 1 Oct 2009 18:53:16 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:50222 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbZJAWxQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 18:53:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=mqyTABd/I6t37dc786u2n6BYCY5j9LMdpqRz9wktn3aiFp5RdQEAxHZCMbqz1wKUtR
+         r6XWDYQT5P+qqJeIYBfO9UTM9KpCRrw+4ihWsbzs0OmwZMkGrUfKxTcaE35IEjL6cUD+
+         lVgvzgNHhSEYo/xZcBlZ1wfygUk0wQpgj0Hy4=
+Message-ID: <4AC532DB.1050205@gmail.com>
+Date: Fri, 02 Oct 2009 00:53:15 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.1 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Joe Perches <joe@perches.com>
+CC: Alan Cox <alan@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] isicom.c: Use pr_fmt and pr_<level>
+References: <1254428738.1799.95.camel@Joe-Laptop.home>
+In-Reply-To: <1254428738.1799.95.camel@Joe-Laptop.home>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-01 at 21:26 +0200, Rafael J. Wysocki wrote:
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14214
-> Subject         : BUG at drivers/scsi/scsi_lib.c:1108!
-> Submitter       : Plamen Petrov <pvp-lsts@fs.ru.acad.bg>
-> Date            : 2009-09-23 11:13 (9 days old)
+On 10/01/2009 10:25 PM, Joe Perches wrote:
+> Added #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> Converted printks to pr_<level>
+> Converted some embedded function names to %s...__func__
+> Removed a period after exclamation points.
+> Removed #define pr_dbg which could be used by future kernel.h includes
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-This one is fixed (as confirmed by the bug report).
-
-James
-
-
+Acked-by: Jiri Slaby <jirislaby@gmail.com>
