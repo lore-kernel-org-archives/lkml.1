@@ -1,50 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbZJAFN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752239AbZJAFbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752056AbZJAFN5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 01:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZJAFN5
+	id S1752239AbZJAFbF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 01:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZJAFbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 01:13:57 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:53808 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751570AbZJAFN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 01:13:56 -0400
-Date: Thu, 1 Oct 2009 10:42:30 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v2 PATCH 0/8] CFS Hard limits - v2
-Message-ID: <20091001051230.GA3451@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090930124919.GA19951@in.ibm.com> <4AC35EDD.1080902@openvz.org> <20090930143820.GG3071@balbir.in.ibm.com> <4AC374E3.9000308@openvz.org> <20090930153053.GM3071@balbir.in.ibm.com> <20090930223039.GO484@MAIL.13thfloor.at>
+	Thu, 1 Oct 2009 01:31:04 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:47918 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751915AbZJAFbE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 01:31:04 -0400
+Message-ID: <4AC43E7E.1000600@gmail.com>
+Date: Thu, 01 Oct 2009 07:30:38 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090930223039.GO484@MAIL.13thfloor.at>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [GIT PULL] scheduler fixes
+References: <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com> <4AC10365.7090802@gmail.com> <4AC2712C.4080901@gmail.com> <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain> <20090929232248.735bf4df@infradead.org> <alpine.LFD.2.01.0909291429570.6996@localhost.localdomain> <20090930170754.0886ff2e@infradead.org> <4AC37FE5.7020200@gmail.com> <alpine.LFD.2.01.0909300909460.6996@localhost.localdomain> <20090930185315.GA9716@elte.hu> <20090930220342.GA2118@elte.hu> <alpine.LFD.2.01.0909301738220.6996@localhost.localdomain> <alpine.LFD.2.01.0909301743150.6996@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0909301743150.6996@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 01 Oct 2009 07:30:40 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 12:30:39AM +0200, Herbert Poetzl wrote:
+Linus Torvalds a écrit :
 > 
-> Linux-VServer uses interval and rate, which is very similar
-> to your setup, except that we use two pairs to achive
-> a differentiation for 'busy' and 'idle' cases, i.e. when
-> the cpu(s) would go idle, we switch from R1/I1 to R2/I2
-> for all guests, allowing to distribute the excess differently
-> than the 'active' part ... but only one set is needed for
-> hard limits ...
+> On Wed, 30 Sep 2009, Linus Torvalds wrote:
+> Oh, and we probably should try to avoid the 'alternates()' code when we 
+> can statically determine that cmpxchg8b is fine. We already have that 
+> CONFIG_x86_CMPXCHG64 (enabled by PAE support), and we could easily also 
+> enable it for some of the CPU cases.
+> 
 
-Do you have examples of how you choose R1, I1 and R2, I2 for guests
-running typical workloads ?
+Agreed.
 
-Regards,
-Bharata.
+Please find following patch to conditionaly compile cmpxchg8b_emu.o and
+EXPORT_SYMBOL(cmpxchg8b_emu).
+
+This patch doesnt depend on yours.
+
+Thanks
+
+[PATCH] x86: Dont generate cmpxchg8b_emu if CONFIG_X86_CMPXCHG64=y
+
+cmpxchg8b_emu helper wont be used if CONFIG_X86_CMPXCHG64=y
+
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
+ arch/x86/kernel/i386_ksyms_32.c |    2 ++
+ arch/x86/lib/Makefile           |    6 ++++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/i386_ksyms_32.c b/arch/x86/kernel/i386_ksyms_32.c
+index 1736c5a..9c3bd4a 100644
+--- a/arch/x86/kernel/i386_ksyms_32.c
++++ b/arch/x86/kernel/i386_ksyms_32.c
+@@ -15,8 +15,10 @@ EXPORT_SYMBOL(mcount);
+  * the export, but dont use it from C code, it is used
+  * by assembly code and is not using C calling convention!
+  */
++#ifndef CONFIG_X86_CMPXCHG64
+ extern void cmpxchg8b_emu(void);
+ EXPORT_SYMBOL(cmpxchg8b_emu);
++#endif
+ 
+ /* Networking helper routines. */
+ EXPORT_SYMBOL(csum_partial_copy_generic);
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index 3e549b8..c309b82 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -15,8 +15,10 @@ ifeq ($(CONFIG_X86_32),y)
+         obj-y += atomic64_32.o
+         lib-y += checksum_32.o
+         lib-y += strstr_32.o
+-        lib-y += semaphore_32.o string_32.o cmpxchg8b_emu.o
+-
++        lib-y += semaphore_32.o string_32.o
++ifeq ($(CONFIG_X86_CMPXCHG64),n)
++        lib-y += cmpxchg8b_emu.o
++endif
+         lib-$(CONFIG_X86_USE_3DNOW) += mmx_32.o
+ else
+         obj-y += io_64.o iomap_copy_64.o
