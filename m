@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbZJAQJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZJAQPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbZJAQJG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 12:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZJAQJF
+	id S1754461AbZJAQPr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 12:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbZJAQPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 12:09:05 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34653 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbZJAQJE (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 12:09:04 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux 2.6.32-rc1
-In-Reply-To: Your message of "Thu, 01 Oct 2009 08:48:32 EDT."
-             <20091001124832.GA25757@infradead.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com> <4AC10365.7090802@gmail.com> <4AC2712C.4080901@gmail.com> <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain> <20090929232248.735bf4df@infradead.org> <alpine.LFD.2.01.0909291429570.6996@localhost.localdomain> <20090930170754.0886ff2e@infradead.org> <alpine.LFD.2.01.0909301304310.6996@localhost.localdomain> <4AC3BE89.3040708@gmail.com> <alpine.LFD.2.01.0909301339080.6996@localhost.localdomain>
-            <20091001124832.GA25757@infradead.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1254413309_2942P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Thu, 1 Oct 2009 12:15:47 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49902 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754299AbZJAQPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 12:15:46 -0400
+Message-ID: <4AC4D595.2070202@garzik.org>
+Date: Thu, 01 Oct 2009 12:15:17 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: Tejun Heo <tj@kernel.org>, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, arjan@linux.intel.com
+Subject: Re: [PATCH 10/19] workqueue: update cwq alignement and make one more
+ flag bit available
+References: <1254384558-1018-11-git-send-email-tj@kernel.org> <1254384558-1018-1-git-send-email-tj@kernel.org> <10133.1254402320@redhat.com>
+In-Reply-To: <10133.1254402320@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Thu, 01 Oct 2009 12:08:29 -0400
-Message-ID: <8276.1254413309@turing-police.cc.vt.edu>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1254413309_2942P
-Content-Type: text/plain; charset=us-ascii
+On 10/01/2009 09:05 AM, David Howells wrote:
+> Tejun Heo<tj@kernel.org>  wrote:
+>
+>> +enum {
+>> +	WORK_STRUCT_PENDING	= 0,	/* work item is pending execution */
+>> +
+>> +	/*
+>> +	 * Reserve 3bits off of cwq pointer.  This is enough and
+>> +	 * provides acceptable alignment on both 32 and 64bit
+>> +	 * machines.
+>> +	 */
+>> +	WORK_STRUCT_FLAG_BITS	= 3,
+>> +
+>> +	WORK_STRUCT_FLAG_MASK	= (1UL<<  WORK_STRUCT_FLAG_BITS) - 1,
+>> +	WORK_STRUCT_WQ_DATA_MASK = ~WORK_STRUCT_FLAG_MASK,
+>> +};
+>
+> There's some great enum abuse going on here:-)
 
-On Thu, 01 Oct 2009 08:48:32 EDT, Christoph Hellwig said:
+The quoted code is a standard kernel technique for creating typed 
+constants that are visible to the C compiler (rather than CPP) and debugger.
 
-> I do most of the time.  But if everyone did all the time Linux
-> development would become almost defunct.  Fullquotes are spreading like
-> a cancer, mostly by people using thunderbird, evolution and similar
-> crap.
+It is found in a great many Linux kernel drivers at this point, and is 
+definitely not abuse, IMO.
 
-What? There's mainline graphic MUAs that *don't* do "select big chunk of text
-with mouse drag, hit delete"?
+	Jeff
 
-No, I suspect people are just lazy.  Just like the ones that say "Sorry for
-top-posting, MUA XYZ makes me" - in the time it took them to type that, they
-could have scrolled down to where they should reply and start typing *there*.
 
---==_Exmh_1254413309_2942P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKxNP9cC3lWbTT17ARAnK/AJ9hDI2omhtYhgjhFTO46BUj86Q5YgCePXwU
-6rb9CNDlqDAoyxF5Nx7CWZE=
-=lL+E
------END PGP SIGNATURE-----
-
---==_Exmh_1254413309_2942P--
