@@ -1,81 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbZJATRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbZJATYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756149AbZJATRU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 15:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZJATRT
+	id S1756094AbZJATYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 15:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbZJATYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 15:17:19 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:54041 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755021AbZJATRT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 15:17:19 -0400
-Message-ID: <4AC5003D.5020304@natemccallum.com>
-Date: Thu, 01 Oct 2009 15:17:17 -0400
-From: Nathaniel McCallum <nathaniel@natemccallum.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Lightning/1.0pre Thunderbird/3.0b4
+	Thu, 1 Oct 2009 15:24:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44319 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754466AbZJATYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 15:24:19 -0400
+Date: Thu, 1 Oct 2009 21:23:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Avi Kivity <avi@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Tejun Heo <tj@kernel.org>, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
+       dhowells@redhat.com, arjan@linux.intel.com
+Subject: Re: [PATCH 03/19] scheduler: implement workqueue scheduler class
+Message-ID: <20091001192338.GA24862@elte.hu>
+References: <1254384558-1018-1-git-send-email-tj@kernel.org> <1254384558-1018-4-git-send-email-tj@kernel.org> <alpine.LFD.2.01.0910010953010.6996@localhost.localdomain> <20091001184824.GA21357@elte.hu> <4AC4FC47.4010405@redhat.com> <alpine.LFD.2.01.0910011207180.6996@localhost.localdomain>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Exposing device ids and driver names
-References: <4AC4DB65.8070404@natemccallum.com> <20091001164249.GA2715@kroah.com> <4AC4E07E.8040707@natemccallum.com> <20091001180531.GA3199@kroah.com> <4AC4F67C.7010500@natemccallum.com> <20091001184021.GA26875@kroah.com> <4AC4FB77.2090600@natemccallum.com> <20091001190733.GA27434@kroah.com>
-In-Reply-To: <20091001190733.GA27434@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0910011207180.6996@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/01/2009 03:07 PM, Greg KH wrote:
-> On Thu, Oct 01, 2009 at 02:56:55PM -0400, Nathaniel McCallum wrote:
->> On 10/01/2009 02:40 PM, Greg KH wrote:
->>> On Thu, Oct 01, 2009 at 02:35:40PM -0400, Nathaniel McCallum wrote:
->>>> On 10/01/2009 02:05 PM, Greg KH wrote:
->>>>> On Thu, Oct 01, 2009 at 01:01:50PM -0400, Nathaniel McCallum wrote:
->>>>>> On 10/01/2009 12:42 PM, Greg KH wrote:
->>>>>>> Why not just use the baseline kernel as a model for this.  Do a 'make
->>>>>>> allmodconfig' and then extract the data and publish it that way.  No
->>>>>>> kernel changes are needed, and then any distro can be easily matched up
->>>>>>> by this based on what they are using.  That will save you time in
->>>>>>> downloading zillions of distro releases, and provide a nice easy way to
->>>>>>> show what the kernel.org releases support.
->>>>>>
->>>>>> Unfortunately, I would not be able to track changes to the kernel in
->>>>>> this model.  Since this is one of my explicit goals (to make sure that
->>>>>> distro kernel changes get upstream), I think a non-invasive kernel
->>>>>> modification would be worth the effort.
->>>>>
->>>>> But this was an invasive modification, it added space to the kernel
->>>>> images for no real benifit other than for your tracking tools.  That's
->>>>> not going to fly unless you can find another good use for the change.
->>>>
->>>> Which is why I asked for advice for better options.  I would prefer a
->>>> non-invasive modification.  I am hoping that someone more familiar with
->>>> the layer would provide such a suggestion.
->>>>
->>>> One potential benefit for moving module info to ELF sections would be
->>>> the ability to strip kernel modules.  As a test, I did this on a recent
->>>> Fedora rawhide kernel I had lying around.  Stripping the modules results
->>>> in a 43% decrease in size (82M to 47M).
->>>
->>> Did those modules have debugging symbols enabled?  That seems like a
->>> large savings for just the module device tables.
->>
->> It does not appear so (none of the debug sections are present).  But I
->> could be wrong.
->>
->> Stripping the modules on the penultimate Fedora 11 kernel results in the
->> same drop in size.  I can't imagine why a release kernel would have
->> anything extra left in the modules (unless it is just by accident).
->
-> Are you sure things still work after stripping?  Stuff like systemtap
-> and other tools?
 
-Not at all.  I have no idea what the ramifications are.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-My point was merely that whatever is stripped out of the kernel should 
-be able (in theory) to be stripped from the modules.  The only point of 
-difference should be the actual module symbols themselves which can in 
-stead be stored in ELF sections.
+> On Thu, 1 Oct 2009, Avi Kivity wrote:
+> > 
+> > Sure, but it would mean that we need a new notifier.  sched_out, 
+> > sched_in, and wakeup (and, return to userspace, with the new 
+> > notifier).
+> 
+> Ok, see the email I just sent out.
+> 
+> And I don't think we want a new notifier - mainly because I don't 
+> think we want to walk the list four times (prepare, out, in, final - 
+> we need to make sure that these things nest properly, so even if "in" 
+> and "final" happen with the same state, they aren't the same, because 
+> "in" only happens if "out" was called, while "final" would happen if 
+> "prepare" was called)
+> 
+> So it would be better to have separate lists, in order to avoid 
+> walking the lists four times just because there was a single notifier 
+> that just wanted to be called for the inner (or outer) cases.
 
-Nathaniel
+Sounds a bit like perf events with callbacks, triggered at those places. 
+(allowing arbitrary permutation of the callbacks)
+
+But ... it needs some work to shape in precisely such a way. Primarily 
+it would need a splitting/slimming of struct perf_event, to allow the 
+callback properties to be separated out for in-kernel users that are 
+only interested in the callbacks, not in the other abstractions.
+
+But it looks straightforward and useful ... the kind of useful work 
+interested parties would be able to complete by the next merge window 
+;-)
+
+Other places could use this too - we really want just one callback 
+facility for certain system events - be that in-kernel use for other 
+kernel facilities, or external instrumentation injected by user-space.
+
+> > btw, I've been thinking we should extend concurrency managed 
+> > workqueues to userspace.  Right now userspace can spawn a massive 
+> > amount of threads, hoping to hide any waiting by making more work 
+> > available to the scheduler.  That has the drawback of increasing 
+> > latency due to involuntary preemption.  Or userspace can use one 
+> > thread per cpu, hope it's the only application on the machine, and 
+> > go all-aio.
+> 
+> This is what the whole next-gen AIO was supposed to do with the 
+> threadlets, ie avoid doing a new thread if it could do the IO all 
+> cached and without being preempted.
+
+Yeah. That scheme was hobbled by signal semantics: it looked hard to do 
+the 'flip a reserve thread with a blocked thread' trick in the scheduler 
+while still keeping all the signal details in place.
+
+	Ingo
