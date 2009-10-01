@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbZJAPLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZJAPM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbZJAPLa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 11:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbZJAPL3
+	id S1754130AbZJAPM5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 11:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbZJAPM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 11:11:29 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:52748 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753123AbZJAPL2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 11:11:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=b1goYtj+Fpwx6JC9st5KEIntRl8jVmcWb9WJ0yk509aZQ/k6dMZkplT9rtskm5/ZLz
-         gHi4fHkvRXjLZ4NfqCtuH37hUgZvkW185H+X7yk2dc+tn9K0EJXzX4OyoUxcllE1eE4K
-         6WBeuX3H+1qtNfmOvmWM3an0TyfbnIaHWP8q0=
+	Thu, 1 Oct 2009 11:12:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41484 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753612AbZJAPM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 11:12:56 -0400
+Date: Thu, 1 Oct 2009 17:12:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Clark Williams <williams@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Tejun Heo <tj@kernel.org>, jeff@garzik.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
+       dhowells@redhat.com, arjan@linux.intel.com
+Subject: Re: [PATCH 19/19] workqueue: implement concurrency managed
+	workqueue
+Message-ID: <20091001151211.GA24308@elte.hu>
+References: <1254384558-1018-1-git-send-email-tj@kernel.org> <1254384558-1018-20-git-send-email-tj@kernel.org> <20091001074959.dbdf6f6a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-From: Matteo Croce <technoboy85@gmail.com>
-Date: Thu, 1 Oct 2009 17:11:10 +0200
-Message-ID: <40101cc30910010811v5d15ff4cx9dd57c9cc9b4b045@mail.gmail.com>
-Subject: [PATCH] AMD Geode LX optimizations
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091001074959.dbdf6f6a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-i found that we can optimize a bit the kernel for the AMD Geode LX.
-I made this simple patch against a 2.6.31 kernel.
-Tested, compiles and works fine.
 
-Signed-off-by: Matteo Croce <technoboy85@gmail.com>
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
---- a/arch/x86/Makefile_32.cpu	2009-09-10 21:16:53.198243207 +0200
-+++ b/arch/x86/Makefile_32.cpu	2009-09-10 21:21:28.434245121 +0200
-@@ -39,7 +39,7 @@
+> On Thu,  1 Oct 2009 17:09:18 +0900 Tejun Heo <tj@kernel.org> wrote:
+> 
+> > To solve the above issues, this patch implements concurrency-managed
+> > workqueue.
+> 
+> Seems reasonable.
+> 
+> This approach would appear to rule out the option of setting a work 
+> thread's state (scheduling policy, scheduling priority, uid, etc) to 
+> anything other than some default.
+> 
+> I guess that's unlikely to be a problem if we haven't yet had a need 
+> to do that, but I'd be a bit surprised to discover that nobody has 
+> done that sort of thing yet?  Nobody has niced up their workqueue 
+> threads?
 
- # Geode GX1 support
- cflags-$(CONFIG_MGEODEGX1)	+= -march=pentium-mmx
--
-+cflags-$(CONFIG_MGEODE_LX)	+= $(call cc-option,-march=geode,-march=pentium-mmx)
- # add at the end to overwrite eventual tuning options from earlier
- # cpu entries
- cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
---- a/arch/x86/Kconfig.cpu	2009-10-01 16:51:56.567771217 +0200
-+++ b/arch/x86/Kconfig.cpu	2009-10-01 16:52:25.936010648 +0200
-@@ -397,7 +397,7 @@
- # generates cmov.
- config X86_CMOV
- 	def_bool y
--	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM ||
-MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE ||
-MEFFICEON || X86_64)
-+	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM ||
-MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE ||
-MEFFICEON || MGEODE_LX || X86_64)
+tuna in -rt might do that perhaps?
 
- config X86_MINIMUM_CPU_FAMILY
- 	int
+	Ingo
