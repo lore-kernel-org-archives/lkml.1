@@ -1,147 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbZJAKAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZJAKAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbZJAKAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 06:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbZJAKAa
+	id S1756153AbZJAKAo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 06:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZJAKAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 06:00:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55883 "EHLO hera.kernel.org"
+	Thu, 1 Oct 2009 06:00:43 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55894 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756116AbZJAKA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 06:00:26 -0400
-Date: Thu, 1 Oct 2009 09:59:26 GMT
-From: tip-bot for Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, jmorris@namei.org, hpa@zytor.com,
-       mingo@redhat.com, torvalds@linux-foundation.org, arjan@linux.intel.com,
-       davem@davemloft.net, arjan@infradead.org, jbeulich@novell.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, jmorris@namei.org,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
-       torvalds@linux-foundation.org, davem@davemloft.net, arjan@infradead.org,
-       jbeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090930130523.348ae6c4@infradead.org>
-References: <20090930130523.348ae6c4@infradead.org>
+	id S1756080AbZJAKAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 06:00:39 -0400
+Date: Thu, 1 Oct 2009 09:59:41 GMT
+From: tip-bot for Paul Mundt <lethal@linux-sh.org>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       lizf@cn.fujitsu.com, penberg@cs.helsinki.fi,
+       eduard.munteanu@linux360.ro, lethal@linux-sh.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, lizf@cn.fujitsu.com,
+       eduard.munteanu@linux360.ro, lethal@linux-sh.org, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090928075540.GD6668@linux-sh.org>
+References: <20090928075540.GD6668@linux-sh.org>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/asm] x86: Turn the copy_from_user check into an (optional) compile time warning
-Message-ID: <tip-4a3127693001c61a21d1ce680db6340623f52e93@git.kernel.org>
-Git-Commit-ID: 4a3127693001c61a21d1ce680db6340623f52e93
+Subject: [tip:tracing/urgent] kmemtrace: Fix up tracer registration
+Message-ID: <tip-f9ac5a69edee0ee7e06a05727226e3f275306c8d@git.kernel.org>
+Git-Commit-ID: f9ac5a69edee0ee7e06a05727226e3f275306c8d
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 09:59:28 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 01 Oct 2009 09:59:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4a3127693001c61a21d1ce680db6340623f52e93
-Gitweb:     http://git.kernel.org/tip/4a3127693001c61a21d1ce680db6340623f52e93
-Author:     Arjan van de Ven <arjan@infradead.org>
-AuthorDate: Wed, 30 Sep 2009 13:05:23 +0200
+Commit-ID:  f9ac5a69edee0ee7e06a05727226e3f275306c8d
+Gitweb:     http://git.kernel.org/tip/f9ac5a69edee0ee7e06a05727226e3f275306c8d
+Author:     Paul Mundt <lethal@linux-sh.org>
+AuthorDate: Mon, 28 Sep 2009 16:55:40 +0900
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 1 Oct 2009 11:31:04 +0200
+CommitDate: Thu, 1 Oct 2009 11:53:44 +0200
 
-x86: Turn the copy_from_user check into an (optional) compile time warning
+kmemtrace: Fix up tracer registration
 
-A previous patch added the buffer size check to copy_from_user().
+Commit ddc1637af217dbd8bc51f30e6d24e84476a869a6 ("kmemtrace: Print
+binary output only if 'bin' option is set") ended up inverting the
+error detection logic. register_tracer() returns 0 on success,
+which this change caused to treat as an error, resulting in:
 
-One of the things learned from analyzing the result of the previous
-patch is that in general, gcc is really good at proving that the
-code contains sufficient security checks to not need to do a
-runtime check. But that for those cases where gcc could not prove
-this, there was a relatively high percentage of real security
-issues.
+[    0.132000] Warning: could not register the kmem tracer
 
-This patch turns the case of "gcc cannot prove" into a compile time
-warning, as long as a sufficiently new gcc is in use that supports
-this. The objective is that these warnings will trigger developers
-checking new cases out before a security hole enters a linux kernel
-release.
+as well as bailing out of the initcall with an error value. This
+restores the old logic.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: James Morris <jmorris@namei.org>
-Cc: Jan Beulich <jbeulich@novell.com>
-LKML-Reference: <20090930130523.348ae6c4@infradead.org>
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <20090928075540.GD6668@linux-sh.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/uaccess_32.h |   12 +++++++++---
- arch/x86/lib/usercopy_32.c        |    6 ++++++
- include/linux/compiler-gcc4.h     |    3 +++
- include/linux/compiler.h          |    4 ++++
- 4 files changed, 22 insertions(+), 3 deletions(-)
+ kernel/trace/kmemtrace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
-index 582d6ae..952f9e7 100644
---- a/arch/x86/include/asm/uaccess_32.h
-+++ b/arch/x86/include/asm/uaccess_32.h
-@@ -191,6 +191,13 @@ unsigned long __must_check _copy_from_user(void *to,
- 					  const void __user *from,
- 					  unsigned long n);
+diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
+index 81b1645..a91da69 100644
+--- a/kernel/trace/kmemtrace.c
++++ b/kernel/trace/kmemtrace.c
+@@ -501,7 +501,7 @@ static int __init init_kmem_tracer(void)
+ 		return 1;
+ 	}
  
-+
-+extern void copy_from_user_overflow(void)
-+#ifdef CONFIG_DEBUG_STACKOVERFLOW
-+	__compiletime_warning("copy_from_user() buffer size is not provably correct")
-+#endif
-+;
-+
- static inline unsigned long __must_check copy_from_user(void *to,
- 					  const void __user *from,
- 					  unsigned long n)
-@@ -200,10 +207,9 @@ static inline unsigned long __must_check copy_from_user(void *to,
- 
- 	if (likely(sz == -1 || sz >= n))
- 		ret = _copy_from_user(to, from, n);
--#ifdef CONFIG_DEBUG_VM
- 	else
--		WARN(1, "Buffer overflow detected!\n");
--#endif
-+		copy_from_user_overflow();
-+
- 	return ret;
- }
- 
-diff --git a/arch/x86/lib/usercopy_32.c b/arch/x86/lib/usercopy_32.c
-index 8498684..e218d5d 100644
---- a/arch/x86/lib/usercopy_32.c
-+++ b/arch/x86/lib/usercopy_32.c
-@@ -883,3 +883,9 @@ _copy_from_user(void *to, const void __user *from, unsigned long n)
- 	return n;
- }
- EXPORT_SYMBOL(_copy_from_user);
-+
-+void copy_from_user_overflow(void)
-+{
-+	WARN(1, "Buffer overflow detected!\n");
-+}
-+EXPORT_SYMBOL(copy_from_user_overflow);
-diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
-index a3aef5d..f1709c1 100644
---- a/include/linux/compiler-gcc4.h
-+++ b/include/linux/compiler-gcc4.h
-@@ -39,3 +39,6 @@
- #endif
- 
- #define __compiletime_object_size(obj) __builtin_object_size(obj, 0)
-+#if __GNUC_MINOR__ >= 4
-+#define __compiletime_warning(message) __attribute__((warning(message)))
-+#endif
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 8e54108..9503563 100644
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -270,6 +270,10 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
- #ifndef __compiletime_object_size
- # define __compiletime_object_size(obj) -1
- #endif
-+#ifndef __compiletime_warning
-+# define __compiletime_warning(message)
-+#endif
-+
- /*
-  * Prevent the compiler from merging or refetching accesses.  The compiler
-  * is also forbidden from reordering successive instances of ACCESS_ONCE(),
+-	if (!register_tracer(&kmem_tracer)) {
++	if (register_tracer(&kmem_tracer) != 0) {
+ 		pr_warning("Warning: could not register the kmem tracer\n");
+ 		return 1;
+ 	}
