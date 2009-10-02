@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbZJBBd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbZJBBd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756850AbZJBBd6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbZJBBdz
+	id S1756837AbZJBBd5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbZJBBdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:33:55 -0400
-Received: from kroah.org ([198.145.64.141]:33383 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:33:54 -0400
+Received: from kroah.org ([198.145.64.141]:33387 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756808AbZJBBdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:33:50 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:21 2009
-Message-Id: <20091002012421.821846740@mini.kroah.org>
+	id S1756811AbZJBBdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:33:51 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:22 2009
+Message-Id: <20091002012421.975071873@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:22 -0700
+Date: Thu, 01 Oct 2009 18:17:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Alan Stern <stern@rowland.harvard.edu>
-Subject: [094/136] usb-serial: put subroutines in logical order
+Subject: [095/136] usb-serial: change logic of serial lookups
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=usb-serial-put-subroutines-in-logical-order.patch
+Content-Disposition: inline; filename=usb-serial-change-logic-of-serial-lookups.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,228 +31,117 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Alan Stern <stern@rowland.harvard.edu>
 
-commit f5b0953a89fa3407fb293cc54ead7d8feec489e4 upstream.
+commit 8bc2c1b2daf95029658868cb1427baea2da87139 upstream.
 
-This patch (as1285) rearranges the subroutines in usb-serial.c
-concerned with tty lifetimes into a more logical order: install, open,
-hangup, close, release.  It also updates the formatting of the
-kerneldoc comments.
+This patch (as1286) changes usb_serial_get_by_index().  Now the
+routine will check whether the serial device has been disconnected; if
+it has then the return value will be NULL.  If the device hasn't been
+disconnected then the routine will return with serial->disc_mutex
+held, so that the caller can use the structure without fear of racing
+against driver unloads.
+
+This permits the scope of table_mutex in destroy_serial() to be
+reduced.  Instead of protecting the entire function, it suffices to
+protect the part that actually uses serial_table[], i.e., the call to
+return_serial().  There's no longer any danger of the refcount being
+incremented after it reaches 0 (which was the reason for having the
+large scope previously), because it can't reach 0 until the serial
+device has been disconnected.
+
+Also, the patch makes serial_install() check that serial is non-NULL
+before attempting to use it.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/usb-serial.c |  154 ++++++++++++++++++++--------------------
- 1 file changed, 77 insertions(+), 77 deletions(-)
+ drivers/usb/serial/usb-serial.c |   31 +++++++++++++++++++++++--------
+ 1 file changed, 23 insertions(+), 8 deletions(-)
 
 --- a/drivers/usb/serial/usb-serial.c
 +++ b/drivers/usb/serial/usb-serial.c
-@@ -166,6 +166,41 @@ void usb_serial_put(struct usb_serial *s
- /*****************************************************************************
-  * Driver tty interface functions
-  *****************************************************************************/
-+
-+/**
-+ * serial_install - install tty
-+ * @driver: the driver (USB in our case)
-+ * @tty: the tty being created
-+ *
-+ * Create the termios objects for this tty.  We use the default
-+ * USB serial settings but permit them to be overridden by
-+ * serial->type->init_termios.
+@@ -66,6 +66,11 @@ static struct usb_serial *serial_table[S
+ static DEFINE_MUTEX(table_lock);
+ static LIST_HEAD(usb_serial_driver_list);
+ 
++/*
++ * Look up the serial structure.  If it is found and it hasn't been
++ * disconnected, return with its disc_mutex held and its refcount
++ * incremented.  Otherwise return NULL.
 + */
-+static int serial_install(struct tty_driver *driver, struct tty_struct *tty)
-+{
-+	int idx = tty->index;
-+	struct usb_serial *serial;
-+	int retval;
-+
-+	/* If the termios setup has yet to be done */
-+	if (tty->driver->termios[idx] == NULL) {
-+		/* perform the standard setup */
-+		retval = tty_init_termios(tty);
-+		if (retval)
-+			return retval;
-+		/* allow the driver to update it */
-+		serial = usb_serial_get_by_index(tty->index);
-+		if (serial->type->init_termios)
-+			serial->type->init_termios(tty);
-+		usb_serial_put(serial);
+ struct usb_serial *usb_serial_get_by_index(unsigned index)
+ {
+ 	struct usb_serial *serial;
+@@ -73,8 +78,15 @@ struct usb_serial *usb_serial_get_by_ind
+ 	mutex_lock(&table_lock);
+ 	serial = serial_table[index];
+ 
+-	if (serial)
+-		kref_get(&serial->kref);
++	if (serial) {
++		mutex_lock(&serial->disc_mutex);
++		if (serial->disconnected) {
++			mutex_unlock(&serial->disc_mutex);
++			serial = NULL;
++		} else {
++			kref_get(&serial->kref);
++		}
 +	}
-+	/* Final install (we use the default method) */
-+	tty_driver_kref_get(driver);
-+	tty->count++;
-+	driver->ttys[idx] = tty;
-+	return 0;
-+}
-+
- static int serial_open (struct tty_struct *tty, struct file *filp)
- {
- 	struct usb_serial *serial;
-@@ -264,13 +299,11 @@ bailout_serial_put:
+ 	mutex_unlock(&table_lock);
+ 	return serial;
+ }
+@@ -123,8 +135,10 @@ static void return_serial(struct usb_ser
+ 
+ 	dbg("%s", __func__);
+ 
++	mutex_lock(&table_lock);
+ 	for (i = 0; i < serial->num_ports; ++i)
+ 		serial_table[serial->minor + i] = NULL;
++	mutex_unlock(&table_lock);
  }
  
- /**
-- *	serial_do_down		-	shut down hardware
-- *	@port: port to shut down
-+ * serial_do_down - shut down hardware
-+ * @port: port to shut down
-  *
-- *	Shut down a USB port unless it is the console. We never shut down the
-- *	console hardware as it will always be in use.
-- *
-- *	Don't free any resources at this point
-+ * Shut down a USB serial port unless it is the console.  We never
-+ * shut down the console hardware as it will always be in use.
-  */
- static void serial_do_down(struct usb_serial_port *port)
+ static void destroy_serial(struct kref *kref)
+@@ -158,9 +172,7 @@ static void destroy_serial(struct kref *
+ 
+ void usb_serial_put(struct usb_serial *serial)
  {
-@@ -278,8 +311,10 @@ static void serial_do_down(struct usb_se
- 	struct usb_serial *serial;
- 	struct module *owner;
- 
--	/* The console is magical, do not hang up the console hardware
--	   or there will be tears */
-+	/*
-+	 * The console is magical.  Do not hang up the console hardware
-+	 * or there will be tears.
-+	 */
- 	if (port->console)
- 		return;
- 
-@@ -293,24 +328,50 @@ static void serial_do_down(struct usb_se
- 	mutex_unlock(&port->mutex);
+-	mutex_lock(&table_lock);
+ 	kref_put(&serial->kref, destroy_serial);
+-	mutex_unlock(&table_lock);
  }
  
-+static void serial_hangup(struct tty_struct *tty)
-+{
-+	struct usb_serial_port *port = tty->driver_data;
-+	serial_do_down(port);
-+	tty_port_hangup(&port->port);
-+	/* We must not free port yet - the USB serial layer depends on it's
-+	   continued existence */
-+}
-+
-+static void serial_close(struct tty_struct *tty, struct file *filp)
-+{
-+	struct usb_serial_port *port = tty->driver_data;
-+
-+	if (!port)
-+		return;
-+
-+	dbg("%s - port %d", __func__, port->number);
-+
-+	if (tty_port_close_start(&port->port, tty, filp) == 0)
-+		return;
-+	serial_do_down(port);
-+	tty_port_close_end(&port->port, tty);
-+	tty_port_tty_set(&port->port, NULL);
-+
-+}
-+
- /**
-- *	serial_do_free		-	free resources post close/hangup
-- *	@port: port to free up
-+ * serial_do_free - free resources post close/hangup
-+ * @port: port to free up
-  *
-- *	Do the resource freeing and refcount dropping for the port. We must
-- *	be careful about ordering and we must avoid freeing up the console.
-+ * Do the resource freeing and refcount dropping for the port.
-+ * Avoid freeing the console.
-  *
-- *	Called when the last tty kref is dropped.
-+ * Called when the last tty kref is dropped.
-  */
--
- static void serial_do_free(struct tty_struct *tty)
- {
- 	struct usb_serial_port *port = tty->driver_data;
- 	struct usb_serial *serial;
- 	struct module *owner;
- 
--	/* The console is magical, do not hang up the console hardware
--	   or there will be tears */
-+	/* The console is magical.  Do not hang up the console hardware
-+	 * or there will be tears.
-+	 */
- 	if (port == NULL || port->console)
- 		return;
- 
-@@ -326,32 +387,6 @@ static void serial_do_free(struct tty_st
- 	module_put(owner);
- }
- 
--static void serial_close(struct tty_struct *tty, struct file *filp)
--{
--	struct usb_serial_port *port = tty->driver_data;
--
--	if (!port)
--		return;
--
--	dbg("%s - port %d", __func__, port->number);
--
--	if (tty_port_close_start(&port->port, tty, filp) == 0)
--		return;
--	serial_do_down(port);		
--	tty_port_close_end(&port->port, tty);
--	tty_port_tty_set(&port->port, NULL);
--
--}
--
--static void serial_hangup(struct tty_struct *tty)
--{
--	struct usb_serial_port *port = tty->driver_data;
--	serial_do_down(port);
--	tty_port_hangup(&port->port);
--	/* We must not free port yet - the USB serial layer depends on it's
--	   continued existence */
--}
--
- static int serial_write(struct tty_struct *tty, const unsigned char *buf,
- 								int count)
- {
-@@ -699,41 +734,6 @@ static const struct tty_port_operations 
- 	.dtr_rts = serial_dtr_rts,
- };
- 
--/**
-- *	serial_install		-	install tty
-- *	@driver: the driver (USB in our case)
-- *	@tty: the tty being created
-- *
-- *	Create the termios objects for this tty. We use the default USB
-- *	serial ones but permit them to be overriddenby serial->type->termios.
-- *	This lets us remove all the ugly hackery
-- */
--
--static int serial_install(struct tty_driver *driver, struct tty_struct *tty)
--{
--	int idx = tty->index;
--	struct usb_serial *serial;
--	int retval;
--
--	/* If the termios setup has yet to be done */
--	if (tty->driver->termios[idx] == NULL) {
--		/* perform the standard setup */
--		retval = tty_init_termios(tty);
--		if (retval)
--			return retval;
--		/* allow the driver to update it */
--		serial = usb_serial_get_by_index(tty->index);
+ /*****************************************************************************
+@@ -190,9 +202,12 @@ static int serial_install(struct tty_dri
+ 			return retval;
+ 		/* allow the driver to update it */
+ 		serial = usb_serial_get_by_index(tty->index);
 -		if (serial->type->init_termios)
 -			serial->type->init_termios(tty);
 -		usb_serial_put(serial);
--	}
--	/* Final install (we use the default method) */
--	tty_driver_kref_get(driver);
--	tty->count++;
--	driver->ttys[idx] = tty;
--	return 0;
--}
--
- int usb_serial_probe(struct usb_interface *interface,
- 			       const struct usb_device_id *id)
- {
++		if (serial) {
++			if (serial->type->init_termios)
++				serial->type->init_termios(tty);
++			usb_serial_put(serial);
++			mutex_unlock(&serial->disc_mutex);
++		}
+ 	}
+ 	/* Final install (we use the default method) */
+ 	tty_driver_kref_get(driver);
+@@ -218,7 +233,6 @@ static int serial_open (struct tty_struc
+ 		return -ENODEV;
+ 	}
+ 
+-	mutex_lock(&serial->disc_mutex);
+ 	portNumber = tty->index - serial->minor;
+ 	port = serial->port[portNumber];
+ 	if (!port || serial->disconnected)
+@@ -529,6 +543,7 @@ static int serial_proc_show(struct seq_f
+ 
+ 		seq_putc(m, '\n');
+ 		usb_serial_put(serial);
++		mutex_unlock(&serial->disc_mutex);
+ 	}
+ 	return 0;
+ }
 
 
