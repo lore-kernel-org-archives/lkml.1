@@ -1,111 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbZJBJzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757517AbZJBJzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757507AbZJBJzA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 05:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757496AbZJBJy7
+	id S1757517AbZJBJzy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 05:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757486AbZJBJzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 05:54:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47690 "EHLO mx2.suse.de"
+	Fri, 2 Oct 2009 05:55:53 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:41881 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757495AbZJBJy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 05:54:57 -0400
-Date: Fri, 2 Oct 2009 11:54:59 +0200
-From: Jan Kara <jack@suse.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, Peter Zijlstra <peterz@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "david@fromorbit.com" <david@fromorbit.com>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Message-ID: <20091002095459.GA24990@duck.suse.cz>
-References: <20090914111721.GA24075@duck.suse.cz> <20090924083342.GA15918@localhost> <20090929173506.GE11573@duck.suse.cz> <20090930012406.GB6311@localhost> <20090930115539.GA16074@duck.suse.cz> <20091001133610.GA7228@localhost> <20091001142243.GD24027@duck.suse.cz> <20091001145443.GA9469@localhost> <20091001213523.GA21982@duck.suse.cz> <20091002022511.GA7061@localhost>
+	id S1757484AbZJBJzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 05:55:52 -0400
+Date: Fri, 2 Oct 2009 11:55:55 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002095555.GB26962@kernel.dk>
+References: <1254034500.7933.6.camel@marge.simson.net> <20090927164235.GA23126@kernel.dk> <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net> <20091001185816.GU14918@kernel.dk> <1254464628.7158.101.camel@marge.simson.net> <20091002080417.GG14918@kernel.dk> <1254473609.6378.24.camel@marge.simson.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091002022511.GA7061@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1254473609.6378.24.camel@marge.simson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 02-10-09 10:25:12, Wu Fengguang wrote:
-> On Fri, Oct 02, 2009 at 05:35:23AM +0800, Jan Kara wrote:
-> > On Thu 01-10-09 22:54:43, Wu Fengguang wrote:
-> > > > > >   You probably didn't understand my comment in the previous email. This is
-> > > > > > too late to wakeup all the tasks. There are two limits - background_limit
-> > > > > > (set to 5%) and dirty_limit (set to 10%). When amount of dirty data is
-> > > > > > above background_limit, we start the writeback but we don't throttle tasks
-> > > > > > yet. We start throttling tasks only when amount of dirty data on the bdi
-> > > > > > exceeds the part of the dirty limit belonging to the bdi. In case of a
-> > > > > > single bdi, this means we start throttling threads only when 10% of memory
-> > > > > > is dirty. To keep this behavior, we have to wakeup waiting threads as soon
-> > > > > > as their BDI gets below the dirty limit or when global number of dirty
-> > > > > > pages gets below (background_limit + dirty_limit) / 2.
-> > > > > 
-> > > > > Sure, but the design goal is to wakeup the throttled tasks in the
-> > > > > __bdi_writeout_inc() path instead of here. As long as some (background)
-> > > > > writeback is running, __bdi_writeout_inc() will be called to wakeup
-> > > > > the tasks.  This "unthrottle all on exit of background writeback" is
-> > > > > merely a safeguard, since once background writeback (which could be
-> > > > > queued by the throttled task itself, in bdi_writeback_wait) exits, the
-> > > > > calls to __bdi_writeout_inc() is likely to stop.
-> > > >   The thing is: In the old code, tasks returned from balance_dirty_pages()
-> > > > as soon as we got below dirty_limit, regardless of how much they managed to
-> > > > write. So we want to wake them up from waiting as soon as we get below the
-> > > > dirty limit (maybe a bit later so that they don't immediately block again
-> > > > but I hope you get the point).
-> > > 
-> > > Ah good catch!  However overhitting the threshold by 1MB (maybe more with
-> > > concurrent dirtiers) should not be a problem. As you said, that avoids the
-> > > task being immediately blocked again.
-> > > 
-> > > The old code does the dirty_limit check in an opportunistic manner. There were
-> > > no guarantee. 2.6.32 further weakens it with the removal of congestion back off.
-> >   Sure, there are no guarantees but if we let threads sleep in
-> > balance_dirty_pages longer than necessary it will have a performance impact
-> > (application will sleep instead of doing useful work). So we should better
-> > make sure applications sleep as few as necessary in balance_dirty_pages.
+On Fri, Oct 02 2009, Mike Galbraith wrote:
+> On Fri, 2009-10-02 at 10:04 +0200, Jens Axboe wrote:
+> > On Fri, Oct 02 2009, Mike Galbraith wrote:
 > 
-> To avoid long sleep, we limit write_chunk size for balance_dirty_pages.
-> That's all we need.  The "abort earlier if below dirty_limit" logic is
-> not necessary (or even undesirable) in three ways.
-> - just found that pre-31 kernels will normally succeed in writing the
->   whole write_chunk because nonblocking=0, thus it won't backoff on
->   congestion. So it's not over_bground_thresh() but over_dirty_limit()
->   that will change behavior.
-  OK, good point.
+> > > If we're in the idle window and doing the async drain thing, we've at
+> > > the spot where Vivek's patch helps a ton.  Seemed like a great time to
+> > > limit the size of any io that may land in front of my sync reader to
+> > > plain "you are not alone" quantity.
+> > 
+> > You can't be in the idle window and doing async drain at the same time,
+> > the idle window doesn't start until the sync queue has completed a
+> > request. Hence my above rant on device interference.
+> 
+> I'll take your word for it.
+> 
+>         /*
+>          * Drain async requests before we start sync IO
+>          */
+>         if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
+> 
+> Looked about the same to me as..
+>  
+> 	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
+> 
+> ..where Vivek prevented turning 1 into 0, so I stamped it ;-)
 
-> - whether it be abort on over_bground_thresh() or over_dirty_limit(),
->   there is some constant threshold around which applications are
->   throttled. The exact threshold level won't change the throttled
->   dirty throughput. It is determined by the write IO throughput the
->   block device can handle.
-  But the aim is to throttle applications at higher limit than a limit at
-which we start pdflush-style writeback. So that if writeback thread is fast
-enough to flush the data, applications don't get throttled at all. That's
-the reason for a difference between dirty_thresh and background_thresh.
+cfq_cfqq_idle_window(cfqq) just tells you whether this queue may enter
+idling, not that it is currently idling. The actual idling happens from
+cfq_completed_request(), here:
 
-> - The over_bground_thresh() check is merely a safeguard which is not
->   relevant in 99.9% time. But when increased to over_dirty_limit(), it
->   may become a hot wakeup path comparable to the __bdi_writeout_inc()
->   path.  The problem of this wakeup path is, it is "wakeup all". It's
->   preferable to wake up processes one by one in __bdi_writeout_inc().
-  Well, it depends on the number of applications writing data (if there are
-100 threads writing data, the last would get unblocked after 400 MB are
-written assuming ratelimit_pages = 1024). So in this case there are high
-chances that quite some threads will get woken up because we reach even
-background_thresh.
-  What I'm in fact a bit worried about is the latency - in the example
-above it can take quite a long time for an application to be woken in
-balance_dirty_pages (that's not a new problem I agree). When the threads
-are writing continuously losts of data, there's no way around this. But
-when it was just a short spike of IO, we'd win if we woke those threads
-earlier. But OK, probaly we can sort that out later.
+                else if (cfqq_empty && !cfq_close_cooperator(cfqd, cfqq, 1) &&
+                         sync && !rq_noidle(rq))
+                        cfq_arm_slice_timer(cfqd);
 
-								Honza
+and after that the queue will be marked as waiting, so
+cfq_cfqq_wait_request(cfqq) is a better indication of whether we are
+currently waiting for a request (idling) or not.
+
+> > > Dunno, I was just tossing rocks and sticks at it.
+> > > 
+> > > I don't really understand the reasoning behind overloading:  I can see
+> > > that allows cutting thicker slabs for the disk, but with the streaming
+> > > writer vs reader case, seems only the writers can do that.  The reader
+> > > is unlikely to be alone isn't it?  Seems to me that either dd, a flusher
+> > > thread or kjournald is going to be there with it, which gives dd a huge
+> > > advantage.. it has two proxies to help it squabble over disk, konsole
+> > > has none.
+> > 
+> > That is true, async queues have a huge advantage over sync ones. But
+> > sync vs async is only part of it, any combination of queued sync, queued
+> > sync random etc have different ramifications on behaviour of the
+> > individual queue.
+> > 
+> > It's not hard to make the latency good, the hard bit is making sure we
+> > also perform well for all other scenarios.
+> 
+> Yeah, that's why I'm trying to be careful about what I say, I know full
+> well this ain't easy to get right.  I'm not even thinking of submitting
+> anything, it's just diagnostic testing.
+
+It's much appreciated btw, if we can make this better without killing
+throughput, then I'm surely interested in picking up your interesting
+bits and getting them massaged into something we can include. So don't
+be discouraged, I'm just being realistic :-)
+
+
+-- 
+Jens Axboe
+
