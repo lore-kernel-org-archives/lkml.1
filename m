@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbZJBKDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbZJBKFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbZJBKDG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 06:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbZJBKDF
+	id S1757538AbZJBKFR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 06:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757503AbZJBKFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 06:03:05 -0400
-Received: from smtprelay05.ispgateway.de ([80.67.31.39]:36555 "EHLO
-	smtprelay05.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756720AbZJBKDE (ORCPT
+	Fri, 2 Oct 2009 06:05:16 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:53846 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756831AbZJBKFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 06:03:04 -0400
-X-Greylist: delayed 11381 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Oct 2009 06:03:04 EDT
-References: <4AC34B83.6090402@canonical.com> <20090930212233.GB17712@liondog.tnic> <cone.1254466252.404216.3290.1000@onepiie> <4AC5B0F1.4030303@canonical.com> <9ea470500910020254j21fad1d3g1c825bcecdbb29fb@mail.gmail.com>
-Message-ID: <cone.1254477850.9043.3499.1000@onepiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Stefan Bader <stefan.bader@canonical.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] acerhdf: Limit modalias matching to supported boards
-Date: Fri, 02 Oct 2009 12:04:10 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+	Fri, 2 Oct 2009 06:05:14 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=bBrA8mqM1mTF3pvEmaAVYMLl9hysOJmCHRMUyhC2qANVflSCINoU4UnS2Q0hWTSFW
+	UaLl+t7TZrbue3He0eYOQ==
+Date: Fri, 2 Oct 2009 03:05:07 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Neil Brown <neilb@suse.de>
+cc: Suresh Jayaraman <sjayaraman@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org,
+       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 30/31] Fix use of uninitialized variable in
+ cache_grow()
+In-Reply-To: <19141.34685.863491.329836@notabene.brown>
+Message-ID: <alpine.DEB.1.00.0910020258190.25369@chino.kir.corp.google.com>
+References: <1254406257-16735-1-git-send-email-sjayaraman@suse.de> <alpine.DEB.1.00.0910011341280.27559@chino.kir.corp.google.com> <19141.34685.863491.329836@notabene.brown>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov writes:
+On Fri, 2 Oct 2009, Neil Brown wrote:
 
-> On Fri, Oct 2, 2009 at 9:51 AM, Stefan Bader <stefan.bader@canonical.com> wrote:
->>>> I search my acerhdf-inbox for the people who sent me the BIOS versions,
->>> maybe they still have the netbook and can me send the modalias content. I'll
->>> hopefully find some time upcoming weekend.
->>>
->>> But, can't we simply assume, following dmi lines?
->>>
->>> MODULE_ALIAS("dmi:*:*Acer*:*AOA*:");
->>> MODULE_ALIAS("dmi:*:*Gateway*:*AOA*:");
->>> MODULE_ALIAS("dmi:*:*Packard Bell*:*AOA*:");
->>> MODULE_ALIAS("dmi:*:*Packard Bell*:*DOA*:");
->>>
->>> We have exactly those constellations within the BIOS settings table. If I
->>> interpret the modalias line correctly, "pnAOA110" means "Product Name
->>> AOA110" and that's what we have already in the BIOS settings table. So I
->>> think we do already have all information we need to create a complete patch
->>> for the problem, or am I wrong?
->>
->> Right pn means that. I would strongly believe the above changes should be
->> good. I sometimes tend to be over-cautious. Attaching a refreshed patch
->> which includes them all.
+> > > Index: mmotm/mm/slab.c
+> > > ===================================================================
+> > > --- mmotm.orig/mm/slab.c
+> > > +++ mmotm/mm/slab.c
+> > > @@ -2760,7 +2760,7 @@ static int cache_grow(struct kmem_cache
+> > >  	size_t offset;
+> > >  	gfp_t local_flags;
+> > >  	struct kmem_list3 *l3;
+> > > -	int reserve;
+> > > +	int reserve = -1;
+> > >  
+> > >  	/*
+> > >  	 * Be lazy and only check for valid flags here,  keeping it out of the
+> > > @@ -2816,7 +2816,8 @@ static int cache_grow(struct kmem_cache
+> > >  	if (local_flags & __GFP_WAIT)
+> > >  		local_irq_disable();
+> > >  	check_irq_off();
+> > > -	slab_set_reserve(cachep, reserve);
+> > > +	if (reserve != -1)
+> > > +		slab_set_reserve(cachep, reserve);
+> > >  	spin_lock(&l3->list_lock);
+> > >  
+> > >  	/* Make slab active. */
+> > 
+> > Given the patch description, shouldn't this be a test for objp != NULL 
+> > instead, then?
 > 
-> Well, acerhdf.c and dmi-id.c both do
-> dmi_get_system_info(DMI_PRODUCT_NAME) when querying product name which
-> means that the product names in the acerhdf table and the dmi-id ones
-> are actually one and the same thing.
+> In between those to patch hunks, cache_grow contains the code:
+> 	if (!objp)
+> 		objp = kmem_getpages(cachep, local_flags, nodeid, &reserve);
+> 	if (!objp)
+> 		goto failed;
 > 
-> IMO, we should just go ahead send it to Len. Stefan, you have my ACK.
+> We can no longer test if objp was NULL on entry to the function.
+> We could take a copy of objp on entry to the function, and test it
+> here.  But initialising 'reserve' to an invalid value is easier.
+> 
 
-Will try the patch tomorrow morning and you'll then get also my ack, if it's 
-working.
+Seems like you could do all this in kmem_getpages(), then, by calling 
+slab_set_reserve(cachep, page->reserve) before returning the new page?
 
---peter
+ [ I'd also drop the branch in slab_set_reserve(), it's faster to just 
+   assign it unconditionally. ]
