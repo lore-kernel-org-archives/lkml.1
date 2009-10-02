@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbZJBKlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbZJBKoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932113AbZJBKlX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 06:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757564AbZJBKlW
+	id S1757576AbZJBKoD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 06:44:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbZJBKoC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 06:41:22 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:64608 "EHLO mx1.redhat.com"
+	Fri, 2 Oct 2009 06:44:02 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:58865 "EHLO isrv.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754359AbZJBKlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 06:41:21 -0400
-Subject: vfs: Use GFP_NOFS in posix_acl_from_xattr()
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Alexander Viro <aviro@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Red Hat UK Ltd
-Date: Fri, 02 Oct 2009 11:43:23 +0100
-Message-Id: <1254480203.2701.2.camel@localhost.localdomain>
-Mime-Version: 1.0
+	id S1753767AbZJBKoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 06:44:01 -0400
+Message-ID: <4AC5D972.70002@msgid.tls.msk.ru>
+Date: Fri, 02 Oct 2009 14:44:02 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: LZMA on PIII-Celeron is broken [was: 2.6.31: booting on a PIII Celeron?]
+References: <4AC0D59F.8000502@msgid.tls.msk.ru> <4AC0D651.7030009@msgid.tls.msk.ru> <20090928163617.GA25503@atrey.karlin.mff.cuni.cz> <4AC20CD0.8030801@msgid.tls.msk.ru> <20090929160312.GA14405@elf.ucw.cz>
+In-Reply-To: <20090929160312.GA14405@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From bf48ad624f8917d97cd179a997c4fab7249f0a63 Mon Sep 17 00:00:00 2001
-From: Steven Whitehouse <swhiteho@redhat.com>
-Date: Tue, 29 Sep 2009 16:31:03 +0100
-Subject: vfs: Use GFP_NOFS in posix_acl_from_xattr()
+Pavel Machek wrote:
+> Hi!
+> 
+>>>> So the celeron machine lacks "apic" flag.  And in my
+>>>> kernel config, apic is enabled:
+>>>>  CONFIG_X86_LOCAL_APIC=y
+>>>>  CONFIG_X86_IO_APIC=y
+>>>> (but not on the command line like apic=force)
+>>> try 'noapic nolapic' to see if it helps?
+>> Neither (nor both) changes anything.  It just reboots
+>> instantly right after "Loading initrd..." message from
+>> the bootloader.
+> 
+> Ok, you may want to try bisection...
+> 
+>> Ok, one more thing to mention.  2.6.31 introduced a
+>> somewhat annoying feature, -- the screen (console)
+>> blinks at the very start of the boot process (I mean
+>> text mode, no any framebuffers or the like).  Here,
+>> the screen blinks as usual for .31, I can see everything
+>> back including that "Loading initrd" line, and only
+>> after this the system reboots.  No more messages
+>> gets printed, including "kernel command line:",
+>> "Initializing cgroup subsys" or "Linux version ...".
+>> I switched CPU clock to 200MHz (minimum clock rate
+>> this motherboard supports using jumpers) and I can
+>> see the whole thing like in slow motion.
+> 
+> Hmm, can you try enabling earlyprintk?
 
-GFS2 needs to call this from under a glock, so we need GFP_NOFS
-and I suspect that other filesystems might require this too.
+The issue was simpler than we thought.  It's the
+lzma code that causes this.  In this .config I
+changed from BZIP2 compression to LZMA compression.
+When changing it back to BZIP2 the system boots
+again.
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
----
- fs/xattr_acl.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Now I've no idea how to debug it further, since
+there should be no difference between "plain"
+PIII and PIII-Celeron.
 
-diff --git a/fs/xattr_acl.c b/fs/xattr_acl.c
-index c6ad7c7..05ac0fe 100644
---- a/fs/xattr_acl.c
-+++ b/fs/xattr_acl.c
-@@ -36,7 +36,7 @@ posix_acl_from_xattr(const void *value, size_t size)
- 	if (count == 0)
- 		return NULL;
- 	
--	acl = posix_acl_alloc(count, GFP_KERNEL);
-+	acl = posix_acl_alloc(count, GFP_NOFS);
- 	if (!acl)
- 		return ERR_PTR(-ENOMEM);
- 	acl_e = acl->a_entries;
--- 
-1.6.2.5
+Thanks!
 
-
-
+/mjt
