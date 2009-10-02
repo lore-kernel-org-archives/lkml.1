@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755852AbZJBB6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbZJBBcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755852AbZJBB6j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbZJBB6i
+	id S1755272AbZJBBcx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZJBBcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:58:38 -0400
-Received: from kroah.org ([198.145.64.141]:32981 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:32:50 -0400
+Received: from kroah.org ([198.145.64.141]:32987 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755109AbZJBBcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:32:46 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:09 2009
-Message-Id: <20091002012409.691327788@mini.kroah.org>
+	id S1755149AbZJBBcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:32:47 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:10 2009
+Message-Id: <20091002012409.864013829@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:16:14 -0700
+Date: Thu, 01 Oct 2009 18:16:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Yang Xiaowei <xiaowei.yang@intel.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [026/136] xen: only enable interrupts while actually blocking for spinlock
+Subject: [027/136] xen: use stronger barrier after unlocking lock
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=xen-only-enable-interrupts-while-actually-blocking-for-spinlock.patch
+Content-Disposition: inline; filename=xen-use-stronger-barrier-after-unlocking-lock.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,89 +30,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+From: Yang Xiaowei <xiaowei.yang@intel.com>
 
-commit 4d576b57b50a92801e6493e76e5243d6cff193d2 upstream.
+commit 2496afbf1e50c70f80992656bcb730c8583ddac3 upstream.
 
-Where possible we enable interrupts while waiting for a spinlock to
-become free, in order to reduce big latency spikes in interrupt handling.
+We need to have a stronger barrier between releasing the lock and
+checking for any waiting spinners.  A compiler barrier is not sufficient
+because the CPU's ordering rules do not prevent the read xl->spinners
+from happening before the unlock assignment, as they are different
+memory locations.
 
-However, at present if we manage to pick up the spinlock just before
-blocking, we'll end up holding the lock with interrupts enabled for a
-while.  This will cause a deadlock if we recieve an interrupt in that
-window, and the interrupt handler tries to take the lock too.
+We need to have an explicit barrier to enforce the write-read ordering
+to different memory locations.
 
-Solve this by shrinking the interrupt-enabled region to just around the
-blocking call.
+Because of it, I can't bring up > 4 HVM guests on one SMP machine.
 
-[ Impact: avoid race/deadlock when using Xen PV spinlocks ]
+[ Code and commit comments expanded -J ]
 
-Reported-by: "Yang, Xiaowei" <xiaowei.yang@intel.com>
+[ Impact: avoid deadlock when using Xen PV spinlocks ]
+
+Signed-off-by: Yang Xiaowei <xiaowei.yang@intel.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/xen/spinlock.c |   19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ arch/x86/xen/spinlock.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
 --- a/arch/x86/xen/spinlock.c
 +++ b/arch/x86/xen/spinlock.c
-@@ -187,7 +187,6 @@ static noinline int xen_spin_lock_slow(s
- 	struct xen_spinlock *prev;
- 	int irq = __get_cpu_var(lock_kicker_irq);
- 	int ret;
--	unsigned long flags;
- 	u64 start;
+@@ -326,8 +326,13 @@ static void xen_spin_unlock(struct raw_s
+ 	smp_wmb();		/* make sure no writes get moved after unlock */
+ 	xl->lock = 0;		/* release lock */
  
- 	/* If kicker interrupts not initialized yet, just spin */
-@@ -199,16 +198,12 @@ static noinline int xen_spin_lock_slow(s
- 	/* announce we're spinning */
- 	prev = spinning_lock(xl);
+-	/* make sure unlock happens before kick */
+-	barrier();
++	/*
++	 * Make sure unlock happens before checking for waiting
++	 * spinners.  We need a strong barrier to enforce the
++	 * write-read ordering to different memory locations, as the
++	 * CPU makes no implied guarantees about their ordering.
++	 */
++	mb();
  
--	flags = __raw_local_save_flags();
--	if (irq_enable) {
--		ADD_STATS(taken_slow_irqenable, 1);
--		raw_local_irq_enable();
--	}
--
- 	ADD_STATS(taken_slow, 1);
- 	ADD_STATS(taken_slow_nested, prev != NULL);
- 
- 	do {
-+		unsigned long flags;
-+
- 		/* clear pending */
- 		xen_clear_irq_pending(irq);
- 
-@@ -228,6 +223,12 @@ static noinline int xen_spin_lock_slow(s
- 			goto out;
- 		}
- 
-+		flags = __raw_local_save_flags();
-+		if (irq_enable) {
-+			ADD_STATS(taken_slow_irqenable, 1);
-+			raw_local_irq_enable();
-+		}
-+
- 		/*
- 		 * Block until irq becomes pending.  If we're
- 		 * interrupted at this point (after the trylock but
-@@ -238,13 +239,15 @@ static noinline int xen_spin_lock_slow(s
- 		 * pending.
- 		 */
- 		xen_poll_irq(irq);
-+
-+		raw_local_irq_restore(flags);
-+
- 		ADD_STATS(taken_slow_spurious, !xen_test_irq_pending(irq));
- 	} while (!xen_test_irq_pending(irq)); /* check for spurious wakeups */
- 
- 	kstat_incr_irqs_this_cpu(irq, irq_to_desc(irq));
- 
- out:
--	raw_local_irq_restore(flags);
- 	unspinning_lock(xl, prev);
- 	spin_time_accum_blocked(start);
- 
+ 	if (unlikely(xl->spinners))
+ 		xen_spin_unlock_slow(xl);
 
 
