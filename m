@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbZJBJUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZJBJYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757388AbZJBJUb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 05:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757379AbZJBJUa
+	id S1757379AbZJBJYx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 05:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZJBJYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 05:20:30 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:52961 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757375AbZJBJU2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 05:20:28 -0400
-Date: Fri, 2 Oct 2009 11:20:25 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jaroslav Kysela <perex@perex.cz>, alsa-devel@alsa-project.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 06/34] don't use __devexit_p to wrap hal2_remove
-Message-ID: <20091002092025.GB4442@pengutronix.de>
-References: <20091001082607.GA2181@pengutronix.de> <1254385718-14254-6-git-send-email-u.kleine-koenig@pengutronix.de> <s5hy6nvik7o.wl%tiwai@suse.de> <20091001085355.GD2181@pengutronix.de> <s5hzl8agocf.wl%tiwai@suse.de>
+	Fri, 2 Oct 2009 05:24:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52830 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755572AbZJBJYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 05:24:51 -0400
+Date: Fri, 2 Oct 2009 11:24:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Mike Galbraith <efault@gmx.de>, Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002092409.GA19529@elte.hu>
+References: <1253976676.7005.40.camel@marge.simson.net> <1254034500.7933.6.camel@marge.simson.net> <20090927164235.GA23126@kernel.dk> <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net> <20091001185816.GU14918@kernel.dk> <1254464628.7158.101.camel@marge.simson.net> <20091002080417.GG14918@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <s5hzl8agocf.wl%tiwai@suse.de>
+In-Reply-To: <20091002080417.GG14918@kernel.dk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-On Fri, Oct 02, 2009 at 11:02:56AM +0200, Takashi Iwai wrote:
-> At Thu, 1 Oct 2009 10:53:55 +0200,
-> Uwe Kleine-König wrote:
-> > 
-> > On Thu, Oct 01, 2009 at 10:36:59AM +0200, Takashi Iwai wrote:
-> > > At Thu,  1 Oct 2009 10:28:10 +0200,
-> > > Uwe Kleine-König wrote:
-> > > > 
-> > > > The function hal2_remove is defined using __exit, so don't use __devexit_p
-> > > > but __exit_p to wrap it.
-> > > 
-> > > I think it's the other way round.  We should replace __exit with __devexit.
-> > > Ditto for sound/mips/sgio2audio.c.
-> > Actually both ways are possible.  I choosed the alternative that doesn't
-> > add bloat to the kernel.  The cost is that the device isn't hotplugable,
-> > but you can still unload the module to unbind the driver.
-> 
-> Hm, is it really safe to set remove=NULL although the driver needs
-> some work at unbinding?  It looks like that unbind is allowed no
-> matter whether remove is NULL or not.  So, it would jus keeps stray
-> resources, and it might conflict at the next bind.
-I just tried that and you're right.  IMHO that's a bug.  Greg?
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Best regards
-Uwe
+> It's not hard to make the latency good, the hard bit is making sure we 
+> also perform well for all other scenarios.
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Looking at the numbers from Mike:
+
+ | dd competing against perf stat -- konsole -e exec timings, 5 back to 
+ | back runs
+ |                                                         Avg
+ | before         9.15    14.51     9.39    15.06     9.90   11.6
+ | after [+patch] 1.76     1.54     1.93     1.88     1.56    1.7
+
+_PLEASE_ make read latencies this good - the numbers are _vastly_ 
+better. We'll worry about the 'other' things _after_ we've reached good 
+latencies.
+
+I thought this principle was a well established basic rule of Linux IO 
+scheduling. Why do we have to have a 'latency vs. bandwidth' discussion 
+again and again? I thought latency won hands down.
+
+	Ingo
