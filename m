@@ -1,124 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbZJBOUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbZJBOWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857AbZJBOUJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 10:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbZJBOUF
+	id S1754993AbZJBOWp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 10:22:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbZJBOWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 10:20:05 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:55143 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754163AbZJBOUD (ORCPT
-	<rfc822;groupwise-GHaskins@novell.com;0:0>);
-	Fri, 2 Oct 2009 10:20:03 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH] net: add dataref destructor to sk_buff
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, ghaskins@novell.com
-Date: Fri, 02 Oct 2009 10:20:00 -0400
-Message-ID: <20091002141407.30224.54207.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+	Fri, 2 Oct 2009 10:22:44 -0400
+Received: from kroah.org ([198.145.64.141]:35621 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751568AbZJBOWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 10:22:44 -0400
+Date: Fri, 2 Oct 2009 07:20:21 -0700
+From: Greg KH <greg@kroah.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 00/30] 2.6.30.9-stable review
+Message-ID: <20091002142021.GB20816@kroah.com>
+References: <20091001233504.GA17709@kroah.com>
+ <20091002024317.GA2045@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091002024317.GA2045@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Applies to davem/net-2.6.git:4fdb78d30)
+On Thu, Oct 01, 2009 at 11:43:17PM -0300, Henrique de Moraes Holschuh wrote:
+> Greg, I sent a few days ago to you guys a patch for thinkpad-acpi to unbreak
+> a _very_ annoying brightness control bug on 2.6.30 on many IBM thinkpads.
+> 
+> Could you please include it?
+> 
+> http://patchwork.kernel.org/patch/50201/
 
-Hi David, netdevs,
+Ick, you are right, I missed that one somehow, it's still in my
+"todo-stable" mbox as well.  My fault, I'll go queue it up and release a
+-rc2 for .30-stable.
 
-The following is an RFC for an attempt at addressing a zero-copy solution.
+thanks,
 
-To be perfectly honest, I have no idea if this is the best solution, or if
-there is truly a problem with skb->destructor that requires an alternate
-mechanism.  What I do know is that this patch seems to work, and I would
-like to see some kind of solution available upstream.  So I thought I would
-send my hack out as at least a point of discussion.  FWIW: This has been
-tested heavily in my rig and is technically suitable for inclusion after
-review as is, if that is decided to be the optimal path forward here.
-
-Thanks for your review and consideration,
-
-Kind regards,
--Greg
-
-----------------------------------------
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH] net: add dataref destructor to sk_buff
-
-What: The skb->destructor field is reportedly unreliable for ensuring
-that all shinfo users have dropped their references.  Therefore, we add
-a distinct ->release() method for the shinfo structure which is closely
-tied to the underlying page resources we want to protect.
-
-Why: We want to add zero-copy transmit support for AlacrityVM guests.
-In order to support this, the host kernel must map guest pages directly
-into a paged-skb and send it as normal.  put_page() alone is not
-sufficient lifetime management since the pages are ultimately allocated
-from within the guest.  Therefore, we need higher-level notification
-when the skb is finally freed on the host so we can then inject a proper
-"tx-complete" event into the guest context.
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
-
- include/linux/skbuff.h |    2 ++
- net/core/skbuff.c      |    9 +++++++++
- 2 files changed, 11 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index df7b23a..02cdab6 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -207,6 +207,8 @@ struct skb_shared_info {
- 	/* Intermediate layers must ensure that destructor_arg
- 	 * remains valid until skb destructor */
- 	void *		destructor_arg;
-+	void *          priv;
-+	void           (*release)(struct sk_buff *skb);
- };
- 
- /* We divide dataref into two halves.  The higher 16 bits hold references
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 80a9616..a7e40a9 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -219,6 +219,8 @@ struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
- 	shinfo->tx_flags.flags = 0;
- 	skb_frag_list_init(skb);
- 	memset(&shinfo->hwtstamps, 0, sizeof(shinfo->hwtstamps));
-+	shinfo->release = NULL;
-+	shinfo->priv = NULL;
- 
- 	if (fclone) {
- 		struct sk_buff *child = skb + 1;
-@@ -350,6 +352,9 @@ static void skb_release_data(struct sk_buff *skb)
- 		if (skb_has_frags(skb))
- 			skb_drop_fraglist(skb);
- 
-+		if (skb_shinfo(skb)->release)
-+			skb_shinfo(skb)->release(skb);
-+
- 		kfree(skb->head);
- 	}
- }
-@@ -514,6 +519,8 @@ int skb_recycle_check(struct sk_buff *skb, int skb_size)
- 	shinfo->tx_flags.flags = 0;
- 	skb_frag_list_init(skb);
- 	memset(&shinfo->hwtstamps, 0, sizeof(shinfo->hwtstamps));
-+	shinfo->release = NULL;
-+	shinfo->priv = NULL;
- 
- 	memset(skb, 0, offsetof(struct sk_buff, tail));
- 	skb->data = skb->head + NET_SKB_PAD;
-@@ -856,6 +863,8 @@ int pskb_expand_head(struct sk_buff *skb, int nhead, int ntail,
- 	skb->hdr_len  = 0;
- 	skb->nohdr    = 0;
- 	atomic_set(&skb_shinfo(skb)->dataref, 1);
-+	skb_shinfo(skb)->release = NULL;
-+	skb_shinfo(skb)->priv = NULL;
- 	return 0;
- 
- nodata:
-
+greg k-h
