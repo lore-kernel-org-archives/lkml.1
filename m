@@ -1,88 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbZJBVTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbZJCBX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753248AbZJBVTv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 17:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZJBVTu
+	id S1756756AbZJCBX3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 21:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbZJCBX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 17:19:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36613 "EHLO ogre.sisk.pl"
+	Fri, 2 Oct 2009 21:23:28 -0400
+Received: from dovecot.org ([82.118.211.50]:57524 "EHLO dovecot.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751804AbZJBVTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 17:19:50 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matt Helsley <matthltc@us.ibm.com>, Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 01/19] freezer: don't get over-anxious while waiting
-Date: Fri, 2 Oct 2009 23:21:11 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Oren Laadan <orenl@librato.com>, Pavel Machek <pavel@ucw.cz>,
-       jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <1254384558-1018-1-git-send-email-tj@kernel.org> <4AC658C2.6070406@librato.com> <20091002210445.GE4189@count0.beaverton.ibm.com>
-In-Reply-To: <20091002210445.GE4189@count0.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1752526AbZJCBX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 21:23:28 -0400
+Subject: [PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
+From: Timo Sirainen <tss@iki.fi>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 02 Oct 2009 17:23:22 -0400
+Message-Id: <1254518602.5050.4.camel@hurina>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910022321.11796.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 October 2009, Matt Helsley wrote:
-> On Fri, Oct 02, 2009 at 03:47:14PM -0400, Oren Laadan wrote:
-> > 
-> > 
-> > Rafael J. Wysocki wrote:
-> > > On Thursday 01 October 2009, Pavel Machek wrote:
-> > >>> Freezing isn't exactly the most latency sensitive operation and
-> > >>> there's no reason to burn cpu cycles and power waiting for it to
-> > >>> complete.  msleep(10) instead of yield().  This should improve
-> > >>> reliability of emergency hibernation.
-> > >> i don't see how it improves reliability, but its probably ok.
-> 
-> From what little of the patch I can see at this point I agree. 
-> On a single cpu system the yield gives up the cpu so other tasks
-> are more likely to make the progress necessary to become freezable.
-> 
-> > >>
-> > >> Well... for hibernation anyway. I can imagine cgroup users where
-> > >> freeze is so fast that this matters. rjw cc-ed.		pavel
-> 
-> It doesn't (more below), though I appreciate your keeping us in mind.
-> 
-> > > 
-> > > Thanks.  I'd like to hear from the cgroup freezer people about that.
-> > > 
-> > 
-> > [Adding Matt Helsley to the CC list]
-> > 
-> > To checkpoint or migrate an application, the cgroup to which it belongs
-> > must be frozen first.
-> > 
-> > It's a bit down the road, but if one seeks minimum application downtime
-> > during application checkpoint and/or migration, then a (minimum of)
-> > 10ms - or multiples of it - may result in a visible/undesired hick-up.
-> > 
-> > Perhaps avoid it when freezing a cgroup ?  or maybe a way for the user
-> > to control this behavior per cgroup ?
-> 
-> This is already the case.
-> 
-> The cgroup freezer does not use this yield-loop to iterate over all the tasks.
-> Instead of yield() the cgroup freezer has its own "loop". It changes its
-> own state to FREEZING and returns to userspace so that userspace can decide
-> what to do -- sleep? keep trying to freeze? go back to THAWED? etc. 
-> 
-> [ In the future this may change depending on the blocking/non-blocking
-> flag of the open freezer.state cgroup file handle. ]
+PR_SET_PROCTITLE_AREA updates mm_struct->arg_start and arg_end to the
+given pointers, which makes it possible for user space to implement
+setproctitle(3) cleanly.
 
-OK, thanks for the info.
 
-Tejun, do you want me to take the patch or is it more convenient to you to
-push it yourself?
+Signed-off-by: Timo Sirainen <tss@iki.fi>
+---
+ fs/proc/base.c        |    9 ++++++---
+ include/linux/prctl.h |    2 ++
+ kernel/sys.c          |   10 ++++++++++
+ 3 files changed, 18 insertions(+), 3 deletions(-)
 
-Also, care to respond to my previous comment?
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 837469a..43ef276 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -267,9 +267,12 @@ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
+  
+ 	res = access_process_vm(task, mm->arg_start, buffer, len, 0);
+ 
+-	// If the nul at the end of args has been overwritten, then
+-	// assume application is using setproctitle(3).
+-	if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
++	if (mm->arg_end != mm->env_start) {
++		// PR_SET_PROCTITLE_AREA used
++		res = strnlen(buffer, res);
++	} else if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
++		// If the nul at the end of args has been overwritten, then
++		// assume application is using old style setproctitle(3).
+ 		len = strnlen(buffer, res);
+ 		if (len < res) {
+ 		    res = len;
+diff --git a/include/linux/prctl.h b/include/linux/prctl.h
+index 9311505..c79ccc8 100644
+--- a/include/linux/prctl.h
++++ b/include/linux/prctl.h
+@@ -90,4 +90,6 @@
+ 
+ #define PR_MCE_KILL	33
+ 
++#define PR_SET_PROCTITLE_AREA 34	/* Set process title memory area */
++
+ #endif /* _LINUX_PRCTL_H */
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 255475d..c216ae6 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1564,6 +1564,16 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
+ 			error = 0;
+ 			break;
+ 
++		case PR_SET_PROCTITLE_AREA: {
++			struct mm_struct *mm = current->mm;
++
++			if (arg2 >= arg3)
++				return -EINVAL;
++
++			mm->arg_start = arg2;
++			mm->arg_end = arg3;
++			return 0;
++		}
+ 		default:
+ 			error = -EINVAL;
+ 			break;
+-- 
+1.6.3.3
 
-Rafael
+
