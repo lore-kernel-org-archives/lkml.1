@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbZJBHLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752415AbZJBESI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757303AbZJBHLG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 03:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757283AbZJBHLG
+	id S1752415AbZJBESI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 00:18:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZJBESI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 03:11:06 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38232 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757282AbZJBHLF (ORCPT
+	Fri, 2 Oct 2009 00:18:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48219 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751891AbZJBESH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 03:11:05 -0400
-Date: Fri, 2 Oct 2009 06:13:46 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Richard Purdie <rpurdie@rpsys.net>,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
-       Andrea Adami <andrea.adami@gmail.com>
-Subject: Re: Zaurus suspend saga
-Message-ID: <20091002041346.GC1409@ucw.cz>
-References: <20090906052653.GB1324@ucw.cz> <1252276145.17852.15.camel@dax.rpnet.com> <f17812d70909061806y651c390w1faa5364f0fb6ddc@mail.gmail.com> <20090907110307.GK23450@elf.ucw.cz> <1252323270.14911.20.camel@hammer.suse.cz>
+	Fri, 2 Oct 2009 00:18:07 -0400
+To: Sage Weil <sage@newdream.net>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, yehuda@newdream.net
+Subject: Re: [PATCH 19/21] ceph: ioctls
+From: Andi Kleen <andi@firstfloor.org>
+References: <1253641129-28434-1-git-send-email-sage@newdream.net>
+	<1253641129-28434-2-git-send-email-sage@newdream.net>
+	<1253641129-28434-3-git-send-email-sage@newdream.net>
+	<1253641129-28434-4-git-send-email-sage@newdream.net>
+	<1253641129-28434-5-git-send-email-sage@newdream.net>
+	<1253641129-28434-6-git-send-email-sage@newdream.net>
+	<1253641129-28434-7-git-send-email-sage@newdream.net>
+	<1253641129-28434-8-git-send-email-sage@newdream.net>
+	<1253641129-28434-9-git-send-email-sage@newdream.net>
+	<1253641129-28434-10-git-send-email-sage@newdream.net>
+	<1253641129-28434-11-git-send-email-sage@newdream.net>
+	<1253641129-28434-12-git-send-email-sage@newdream.net>
+	<1253641129-28434-13-git-send-email-sage@newdream.net>
+	<1253641129-28434-14-git-send-email-sage@newdream.net>
+	<1253641129-28434-15-git-send-email-sage@newdream.net>
+	<1253641129-28434-16-git-send-email-sage@newdream.net>
+	<1253641129-28434-17-git-send-email-sage@newdream.net>
+	<1253641129-28434-18-git-send-email-sage@newdream.net>
+	<1253641129-28434-19-git-send-email-sage@newdream.net>
+	<1253641129-28434-20-git-send-email-sage@newdream.net>
+Date: Fri, 02 Oct 2009 06:18:08 +0200
+In-Reply-To: <1253641129-28434-20-git-send-email-sage@newdream.net> (Sage Weil's message of "Tue, 22 Sep 2009 10:38:47 -0700")
+Message-ID: <87ske2sa2n.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252323270.14911.20.camel@hammer.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-09-07 13:34:29, Stanislav Brabec wrote:
-> Pavel Machek wrote:
-> 
-> > Yep, zaurus is currently pretty broken; I don't think charging from
-> > Linux works at all, so I simply power down back to bootloader for
-> > charge.
-> > 
-> > Anyway, suspend/resume is currently more important for me than charge,
-> > and I'd like to get at least that to work.
-> > 
-> > Could we apply the trivial patch from "zaurus c3000 aka spitz: fix
-> > resume" , and preferably push it to linus for 2.6.31? One version
-> > where kernel suspends/resumes would be good. 
-> 
-> I vote for applying Pavel's patch, as it fixes suspend/resume. Emergency
-> suspend may happen later, when SPI will be fully resumed. If future
-> fixes provide early SPI resume, then this patch may be reverted.
-> 
-> Tested-by: Stanislav Brabec <utx@penguin.cz>
-> 
-> ...
-> 
-> Remaining Zaurus SL-C3200 problems in the current vanilla (regressions
-> are compared with 2.6.26-RP):
+Sage Weil <sage@newdream.net> writes:
+> +/*
+> + * Extract identity, address of the OSD and object storing a given
+> + * file offset.
+> + */
+> +struct ceph_ioctl_dataloc {
+> +	__u64 file_offset;           /* in+out: file offset */
+> +	__u64 object_offset;         /* out: offset in object */
+> +	__u64 object_no;             /* out: object # */
+> +	__u64 object_size;           /* out: object size */
+> +	char object_name[64];        /* out: object name */
+> +	__u64 block_offset;          /* out: offset in block */
+> +	__u64 block_size;            /* out: block length */
+> +	__s64 osd;                   /* out: osd # */
+> +	struct sockaddr_in osd_addr; /* out: osd address */
 
-Yep :-(. More developers/testers needed. People breaking zaurus all
-the time, probably because they don't have the hw.
+You'll have to revise that once you support IPv6. At least extend the structure
+better now? (_in is too small for IPv6)
 
-Should I get listed as zaurus maintainer so that I get to see
-zaurus-breaking patches before they hit the mainline?
-
+-Andi
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ak@linux.intel.com -- Speaking for myself only.
