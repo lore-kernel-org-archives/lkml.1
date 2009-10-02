@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbZJBNoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752410AbZJBNzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757919AbZJBNoh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 09:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZJBNoe
+	id S1752410AbZJBNzD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 09:55:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZJBNzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 09:44:34 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:18603 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757890AbZJBNo3 (ORCPT
+	Fri, 2 Oct 2009 09:55:01 -0400
+Received: from mxcampus2.tau.ac.il ([132.66.7.202]:11200 "EHLO
+	mxcampus2.tau.ac.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbZJBNzB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 09:44:29 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -14.389
-Message-ID: <4AC60383.4030005@tremplin-utc.net>
-Date: Fri, 02 Oct 2009 15:43:31 +0200
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20090830 Mandriva/2.0.0.23-2mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
+	Fri, 2 Oct 2009 09:55:01 -0400
+X-Greylist: delayed 615 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Oct 2009 09:55:00 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ar4DAESgxUqEQhFRYWdsb2JhbACaZxcVB7xGhCwE
+X-IronPort-AV: E=Sophos;i="4.44,494,1249246800"; 
+   d="scan'208";a="84585374"
+Message-ID: <20091002154447.62823bfv3qntxrrj@webmail.tau.ac.il>
+Date: Fri, 02 Oct 2009 15:44:47 +0200
+From: tomerma1@post.tau.ac.il
+To: linux-kernel@vger.kernel.org
+Subject: How to tell when a gendisk has been freed?
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Ian E. Morgan" <penguin.wrangler@gmail.com>
-Subject: [PATCH 3/3] lis3: add support for the HP HDX 18
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+	charset=UTF-8;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian E. Morgan <penguin.wrangler@gmail.com>
+Hi,
 
-I have an HP HDX 18 laptop, and noted that the configuration of the
-accelerometer needs to be x_inverted.
+Im writing a block device that does asynchronous mirroring. The user  
+creates a device by giving a local device and
+connecting to a remote device (on the net), mirroring writes to both.
 
-Signed-off-by: Ian E. Morgan <penguin.wrangler@gmail.com>
-Signed-off-by: Éric Piel <eric.piel@tremplin-utc.net>
----
- drivers/hwmon/hp_accel.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+When the user is done with the device i would like to give him the  
+option of deleting the device. To do that, i first
+stop taking requests (i disallow opens by looking at a variable i  
+allocated for that device (a custom struct)), next
+wait until there are no more active make_requests, and finally i free  
+everything... However, theres a problem
+with open - when i free the device, the open dereferences a variable i  
+allocated for that device, but i have already
+freed the device.
 
-diff --git a/drivers/hwmon/hp_accel.c b/drivers/hwmon/hp_accel.c
-index 1796b93..be475e8 100644
---- a/drivers/hwmon/hp_accel.c
-+++ b/drivers/hwmon/hp_accel.c
-@@ -216,6 +216,7 @@ static struct dmi_system_id lis3lv02d_dmi_ids[] = {
- 			y_inverted),
- 	AXIS_DMI_MATCH("DV7", "HP Pavilion dv7", x_inverted),
- 	AXIS_DMI_MATCH("HP8710", "HP Compaq 8710", y_inverted),
-+	AXIS_DMI_MATCH("HDX18", "HP HDX 18", x_inverted),
- 	{ NULL, }
- /* Laptop models without axis info (yet):
-  * "NC6910" "HP Compaq 6910"
--- 
-1.6.4.4
+The only safe way to free the device is when i know for sure no more  
+opens or make_requests can be called...
+To do that i have to know when the gendisk is gone (even if i  
+del_gendisk it, and wait until the opener counter drops to
+zero, i cant be sure that another open isnt being executed at the moment)...
+However, i didnt see any way to do it, so i was wondering what is the  
+right way to do it?
 
+Thanks,
+      Tomer
 
