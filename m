@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZJBO6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZJBPDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbZJBO6o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 10:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZJBO6n
+	id S1754755AbZJBPDa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 11:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZJBPD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 10:58:43 -0400
-Received: from andromeda.dapyr.net ([206.212.254.10]:59382 "EHLO
-	andromeda.dapyr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752351AbZJBO6n (ORCPT
+	Fri, 2 Oct 2009 11:03:29 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:56728 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753767AbZJBPD3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 10:58:43 -0400
-Date: Fri, 2 Oct 2009 10:58:25 -0400
-From: Konrad Rzeszutek Wilk <konrad@darnok.org>
-To: Peter Jones <pjones@redhat.com>
-Cc: Jan Beulich <JBeulich@novell.com>,
-       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       "ketuzsezr@darnok.org" <ketuzsezr@darnok.org>,
-       alex.zeffertt@eu.citrix.com, Martin Wilck <Martin.Wilck@ts.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] iSCSI/iBFT: use proper address translation
-Message-ID: <20091002145825.GA14826@andromeda.dapyr.net>
-References: <4AC47DED0200007800017743@vpn.id2.novell.com> <4AC5234C.5030409@citrix.com> <20091002012806.GB27478@andromeda.dapyr.net> <4AC5C7130200007800017A42@vpn.id2.novell.com> <4AC60EE3.4070708@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 Oct 2009 11:03:29 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Trevor Hemsley <trevor.hemsley@ntlworld.com>
+Subject: Re: Temperature above threshold loop with 2.6.31.1
+Date: Fri, 2 Oct 2009 17:03:30 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+References: <20091002134430.SOPU22934.aamtaout04-winn.ispmail.ntl.com@trevor2.dsl.pipex.com>
+In-reply-To: <20091002134430.SOPU22934.aamtaout04-winn.ispmail.ntl.com@trevor2.dsl.pipex.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4AC60EE3.4070708@redhat.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200910021703.31679.elendil@planet.nl>
+X-OriginalArrivalTime: 02 Oct 2009 15:03:32.0746 (UTC) FILETIME=[82274EA0:01CA4371]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 10:32:03AM -0400, Peter Jones wrote:
-> On 10/02/2009 03:25 AM, Jan Beulich wrote:
-> >>>>Konrad Rzeszutek<konrad@darnok.org>  02.10.09 03:28>>>
-> >>The issue as I've come to understand is that the virt_to_phys on
-> >>memory below the 1MB does not work. Alex suggested another fix which
-> >>ioremap's the iBFT region, but I think this patch by Martin does the same 
-> >>job.
-> >>
-> >>Either way, it looks good to me.
-> >>
-> >>Signed-off-by: Konrad Rzeszutek Wilk<ketuzsezs@darnok.org>
-> >
-> >With both ofyou having signed off on it - who's going to push this to
-> >Linus? I'm specifically asking in case I'm expected to.
+Trevor Hemsley wrote:
+> I just downloaded and installed the latest 2.6.31.1 kernel on my
+> machine here and I think I found a small bug. Shortly after boot I
+> start to receive messages like
 > 
-> Not sure how that's supposed to work, but I'm cool with you doing it ;)
+> CPU0: Temperature above threshold, cpu clock throttled (total events =
+> 21672)
+[...] 
+> More importantly, I get approximately 100,000 of these messages per
+> minute and the machine is completely unusable. All of these are for
+> CPU0 - at least all the ones that get written to /var/log/messages.
+> 
+> 1,666 notifications a second seems a little on the 'too frequent' side
+> of things to me :-)
 
-Yeah me too :-)
+Looks like this may already be fixed in mainline by the following commit:
+commit b417c9fd8690637f0c91479435ab3e2bf450c038
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Tue Sep 22 15:50:24 2009 +0200
+    x86: mce: Fix thermal throttling message storm
 
-P.S.
-In the past I pushed it off to Greg KH and/or Mike Christie.
+Can you confirm that please, either by compiling current git or by applying 
+that commit on top of 2.6.31.1?
+
+Ingo: is that patch already scheduled for stable?
+
+Cheers,
+FJP
