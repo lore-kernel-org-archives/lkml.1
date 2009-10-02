@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZJBBXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZJBB0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbZJBBXg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbZJBBXf
+	id S1754206AbZJBB0q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZJBB0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:23:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60167 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754052AbZJBBXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:23:35 -0400
-Date: Thu, 1 Oct 2009 18:21:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Theodore Tso <tytso@mit.edu>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, tglx@linutronix.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ondrej Zary <linux@rainbow-software.org>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: T400 suspend/resume regression -- bisected to a mystery merge
- commit
-In-Reply-To: <20091002005907.GA7490@mit.edu>
-Message-ID: <alpine.LFD.2.01.0910011817120.6996@localhost.localdomain>
-References: <E1MrRDa-0002WF-LO@closure.thunk.org> <200909271813.42829.rjw@sisk.pl> <20090928135109.GB17514@mit.edu> <200909282322.57824.rjw@sisk.pl> <20091002005907.GA7490@mit.edu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 1 Oct 2009 21:26:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58770 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754070AbZJBB0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:26:44 -0400
+Date: Fri, 2 Oct 2009 11:26:37 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Theodore Tso <tytso@MIT.EDU>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Curt Wohlgemuth <curtw@google.com>
+Subject: linux-next: ext4 tree build warning
+Message-Id: <20091002112637.c962d8ae.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__2_Oct_2009_11_26_37_+1000_AOMZ8dEY3yZRuRQ/"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Fri__2_Oct_2009_11_26_37_+1000_AOMZ8dEY3yZRuRQ/
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Ted,
 
-On Thu, 1 Oct 2009, Theodore Tso wrote:
-> 
-> commit 8c3ee48dabee782d470cc4c7048ea64bb8b7d1cb
-> Author: Theodore Ts'o <tytso@mit.edu>
-> Date:   Thu Oct 1 20:39:03 2009 -0400
-> 
->     Revert "timekeeping: Update clocksource with stop_machine"
->     
->     This reverts commit 75c5158f70c065b9704b924503d96e8297838f79.
+Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
 
-Hmm. Looks good. But you didn't cc most of the people actually involved 
-with that commit (Martin who is the author, and John who acked it).
+fs/ext4/inode.c: In function 'ext4_dirty_inode':
+fs/ext4/inode.c:5615: warning: unused variable 'current_handle'
 
-I think the revert is the right thing to do, especially as that 
-'clocksource_mutex' looks totally bogus. Either the thing is protected by 
-'stop_machine' or it's not. In neither case does it seem to make any sense 
-to replace a spinlock with a mutex. 
+Introduced by commit f3dc272fd5e2ae08244796bb39e7e1ce4b25d3b3 ("ext4:
+Make sure ext4_dirty_inode() updates the inode in no journal mode"). This
+variable is now only referenced by a jbd_debug().
 
-And resuming anything with a big mutex is crazy anyway. 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-That said, I do wonder if this is already fixed. See commit 
-89133f93508137231251543d1732da638e6022e1:
+--Signature=_Fri__2_Oct_2009_11_26_37_+1000_AOMZ8dEY3yZRuRQ/
+Content-Type: application/pgp-signature
 
-    clocksource: Resume clocksource without taking the clocksource mutex
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-which already undid the part that probably mattered for you. That said, I 
-still do think that that mutex is dubious, so maybe we should undo it all.
+iEYEARECAAYFAkrFVs0ACgkQjjKRsyhoI8x8YgCgtVl59ev+FLoLTJiNRPoGPLP4
+rKMAoK+emyvia66Y7iQmfVzjdNi1hG+Z
+=eyWh
+-----END PGP SIGNATURE-----
 
-		Linus
+--Signature=_Fri__2_Oct_2009_11_26_37_+1000_AOMZ8dEY3yZRuRQ/--
