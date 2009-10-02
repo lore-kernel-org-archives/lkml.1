@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbZJBR4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757018AbZJBR5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756308AbZJBR4l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbZJBR4k
+	id S1757018AbZJBR5t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756806AbZJBR5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:56:40 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47204
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754419AbZJBR4j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:56:39 -0400
-Date: Fri, 02 Oct 2009 10:56:59 -0700 (PDT)
-Message-Id: <20091002.105659.102583702.davem@davemloft.net>
-To: philipp.reisner@linbit.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, greg@kroah.com, dm-devel@redhat.com,
-       zbr@ioremap.net, linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
-References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Oct 2009 13:57:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44201 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752428AbZJBR5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:57:47 -0400
+Date: Fri, 2 Oct 2009 19:57:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frans Pop <elendil@planet.nl>
+Cc: Trevor Hemsley <trevor.hemsley@ntlworld.com>, linux-kernel@vger.kernel.org
+Subject: Re: Temperature above threshold loop with 2.6.31.1
+Message-ID: <20091002175745.GB14860@elte.hu>
+References: <20091002134430.SOPU22934.aamtaout04-winn.ispmail.ntl.com@trevor2.dsl.pipex.com> <200910021703.31679.elendil@planet.nl> <200910021938.09486.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910021938.09486.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Date: Fri,  2 Oct 2009 14:40:03 +0200
 
-> Affected: All code that uses connector, in kernel and out of mainline
-> 
-> The connector, as it is today, does not allow the in kernel receiving
-> parts to do any checks on privileges of a message's sender.
-> 
-> I know, there are not many out there that like connector, but as
-> long as it is in the kernel, we have to fix the security issues it has!
-> 
-> Please either drop connector, or someone who feels a bit responsible
-> and has our beloved dictator's blessing, PLEASE PLEASE PLEASE take 
-> this into your tree, and send the pull request to Linus.
-> 
-> Patches 1 to 4 are already Acked-by Evgeny, the connector's maintainer.
-> Patches 5 to 7 are the obvious fixes to the connector user's code.
-> 
-> For convenience these patches are also available as git tree:
-> git://git.drbd.org/linux-2.6-drbd.git connector-fix
+* Frans Pop <elendil@planet.nl> wrote:
 
-All applied to net-2.6, I'll push this out to Linus later
-today.
+> On Friday 02 October 2009, Frans Pop wrote:
+> > Trevor Hemsley wrote:
+> > > 1,666 notifications a second seems a little on the 'too frequent' side
+> > > of things to me :-)
+> >
+> > Looks like this may already be fixed in mainline by the following
+> > commit: commit b417c9fd8690637f0c91479435ab3e2bf450c038
+> > Author: Ingo Molnar <mingo@elte.hu>
+> > Date:   Tue Sep 22 15:50:24 2009 +0200
+> >     x86: mce: Fix thermal throttling message storm
+> >
+> > Can you confirm that please, either by compiling current git or by
+> > applying that commit on top of 2.6.31.1?
+> 
+> If you want to apply it to .31.1 you'll also need this commit:
+> commit 3967684006f30c253bc6d4a6604d1bad4a7fc672
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Tue Sep 22 15:50:24 2009 +0200
+>     x86: mce: Clean up thermal throttling state tracking code
+
+Yes. The way to test this is to do this on top of a .31.1 tree:
+
+ git cherry-pick 3967684006f30c253bc6d4a6604d1bad4a7fc672
+ git cherry-pick b417c9fd8690637f0c91479435ab3e2bf450c038
+
+	Ingo
