@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbZJBSI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbZJBSNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757854AbZJBSI4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbZJBSIz
+	id S1758013AbZJBSNW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757708AbZJBSNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:08:55 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:35365 "EHLO kernel.dk"
+	Fri, 2 Oct 2009 14:13:22 -0400
+Received: from mga01.intel.com ([192.55.52.88]:17030 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754542AbZJBSIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:08:54 -0400
-Date: Fri, 2 Oct 2009 20:08:57 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Vivek Goyal <vgoyal@redhat.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20091002180857.GM31616@kernel.dk>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com> <1253976676.7005.40.camel@marge.simson.net> <1254034500.7933.6.camel@marge.simson.net> <20090927164235.GA23126@kernel.dk> <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254382405.7595.9.camel@marge.simson.net>
+	id S1757482AbZJBSNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:13:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,495,1249282800"; 
+   d="scan'208";a="499323938"
+Subject: Re: [patch 1/4] dmar: support for parsing Remapping Hardware
+ Static Affinity structure
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "Brown, Len" <len.brown@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1254461981.3218.1219.camel@macbook.infradead.org>
+References: <20091001230743.949931468@sbs-t61.sc.intel.com>
+	 <1254461981.3218.1219.camel@macbook.infradead.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Fri, 02 Oct 2009 11:12:40 -0700
+Message-Id: <1254507160.2661.6.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01 2009, Mike Galbraith wrote:
->  	max_dispatch = cfqd->cfq_quantum;
->  	if (cfq_class_idle(cfqq))
->  		max_dispatch = 1;
->  
-> +	if (cfqd->busy_queues > 1)
-> +		cfqd->od_stamp = jiffies;
-> +
+On Thu, 2009-10-01 at 22:39 -0700, David Woodhouse wrote:
+> On Thu, 2009-10-01 at 16:06 -0700, Suresh Siddha wrote:
+> > Add support for parsing Remapping Hardware Static Affinity (RHSA) structure.
+> > This enables identifying the association between remapping hardware units and
+> > the corresponding proximity domain. This enables to allocate transalation
+> > structures closer to the remapping hardware unit.
+> 
+> That's not going to apply on top of commit 17b6097753e, is it?
 
-->busy_queues > 1 just means that they have requests ready for dispatch,
-not that they are dispatched.
+Oops, didn't notice Roland's patch. Just posted the new set on top of
+your tree.
 
-
--- 
-Jens Axboe
+thanks,
+suresh
 
