@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756957AbZJBBim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932182AbZJBBiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756957AbZJBBim (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932126AbZJBBik
+	id S932182AbZJBBiH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932138AbZJBBiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:38:40 -0400
-Received: from kroah.org ([198.145.64.141]:33571 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:38:03 -0400
+Received: from kroah.org ([198.145.64.141]:33575 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756913AbZJBBeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:34:19 -0400
+	id S1756571AbZJBBeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:34:20 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:26 2009
-Message-Id: <20091002012426.595293794@mini.kroah.org>
+Message-Id: <20091002012426.763825542@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:52 -0700
+Date: Thu, 01 Oct 2009 18:17:53 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Chris Wilson <chris@chris-wilson.co.uk>
-Subject: [124/136] drm/i915: Handle ERESTARTSYS during page fault
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Brian Rogers <brian@xyzw.org>, linux-media@vger.kernel.org
+Subject: [125/136] em28xx: ir-kbd-i2c init data needs a persistent object
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=drm-i915-handle-erestartsys-during-page-fault.patch
+Content-Disposition: inline; filename=em28xx-ir-kbd-i2c-init-data-needs-a-persistent-object.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,87 +30,117 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Chris Wilson <chris@chris-wilson.co.uk>
+From: Brian Rogers <brian@xyzw.org>
 
-commit c715089f49844260f1eeae8e3b55af9468ba1325 upstream.
+commit d2ebd0f806fdb6104903365e355675934eec22b2 upstream.
 
-During a page fault and rebinding the buffer there exists a window for a
-signal to arrive during the i915_wait_request() and trigger a
-ERESTARTSYS. This used to be handled by returning SIGBUS and thereby
-killing the application. Try 'cairo-perf-trace & cairo-test-suite' and
-watch X go boom!
+Original commit message:
 
-The solution as suggested by H. Peter Anvin is to simply return NOPAGE and
-leave the higher layers to spot we did not fill the page and resubmit
-the page fault.
+ir-kbd-i2c's ir_probe() function can be called much later (i.e. at
+ir-kbd-i2c module load), than the lifetime of a struct IR_i2c_init_data
+allocated off of the stack in cx18_i2c_new_ir() at registration time.
+Make sure we pass a pointer to a persistent IR_i2c_init_data object at
+i2c registration time.
 
-Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
-[anholt: Mostly squash it with another commit]
+Thanks to Brian Rogers, Dustin Mitchell, Andy Walls and Jean Delvare to
+rise this question.
+
+Before this patch, if ir-kbd-i2c were probed after em28xx, trash data
+were used. After the patch, no matter what order, it is properly
+reported as tested by me:
+
+input: i2c IR (i2c IR (EM2840 Hauppaug as /class/input/input10
+ir-kbd-i2c: i2c IR (i2c IR (EM2840 Hauppaug detected at i2c-4/4-0030/ir0 [em28xx #0]
+
+Original-patch-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+[brian@xyzw.org: backported for 2.6.31]
+Signed-off-by: Brian Rogers <brian@xyzw.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_gem.c |   29 ++++++++++++-----------------
- 1 file changed, 12 insertions(+), 17 deletions(-)
+ drivers/media/video/em28xx/em28xx-cards.c |   32 ++++++++++++++----------------
+ drivers/media/video/em28xx/em28xx.h       |    4 +++
+ 2 files changed, 19 insertions(+), 17 deletions(-)
 
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -1151,26 +1151,21 @@ int i915_gem_fault(struct vm_area_struct
- 	mutex_lock(&dev->struct_mutex);
- 	if (!obj_priv->gtt_space) {
- 		ret = i915_gem_object_bind_to_gtt(obj, obj_priv->gtt_alignment);
--		if (ret) {
--			mutex_unlock(&dev->struct_mutex);
--			return VM_FAULT_SIGBUS;
--		}
-+		if (ret)
-+			goto unlock;
-+
- 		list_add_tail(&obj_priv->list, &dev_priv->mm.inactive_list);
+--- a/drivers/media/video/em28xx/em28xx-cards.c
++++ b/drivers/media/video/em28xx/em28xx-cards.c
+@@ -2170,8 +2170,6 @@ static int em28xx_hint_board(struct em28
+ /* ----------------------------------------------------------------------- */
+ void em28xx_register_i2c_ir(struct em28xx *dev)
+ {
+-	struct i2c_board_info info;
+-	struct IR_i2c_init_data init_data;
+ 	const unsigned short addr_list[] = {
+ 		 0x30, 0x47, I2C_CLIENT_END
+ 	};
+@@ -2179,9 +2177,9 @@ void em28xx_register_i2c_ir(struct em28x
+ 	if (disable_ir)
+ 		return;
  
- 		ret = i915_gem_object_set_to_gtt_domain(obj, write);
--		if (ret) {
--			mutex_unlock(&dev->struct_mutex);
--			return VM_FAULT_SIGBUS;
--		}
-+		if (ret)
-+			goto unlock;
+-	memset(&info, 0, sizeof(struct i2c_board_info));
+-	memset(&init_data, 0, sizeof(struct IR_i2c_init_data));
+-	strlcpy(info.type, "ir_video", I2C_NAME_SIZE);
++	memset(&dev->info, 0, sizeof(&dev->info));
++	memset(&dev->init_data, 0, sizeof(dev->init_data));
++	strlcpy(dev->info.type, "ir_video", I2C_NAME_SIZE);
+ 
+ 	/* detect & configure */
+ 	switch (dev->model) {
+@@ -2191,19 +2189,19 @@ void em28xx_register_i2c_ir(struct em28x
+ 		break;
+ 	case (EM2800_BOARD_TERRATEC_CINERGY_200):
+ 	case (EM2820_BOARD_TERRATEC_CINERGY_250):
+-		init_data.ir_codes = ir_codes_em_terratec;
+-		init_data.get_key = em28xx_get_key_terratec;
+-		init_data.name = "i2c IR (EM28XX Terratec)";
++		dev->init_data.ir_codes = ir_codes_em_terratec;
++		dev->init_data.get_key = em28xx_get_key_terratec;
++		dev->init_data.name = "i2c IR (EM28XX Terratec)";
+ 		break;
+ 	case (EM2820_BOARD_PINNACLE_USB_2):
+-		init_data.ir_codes = ir_codes_pinnacle_grey;
+-		init_data.get_key = em28xx_get_key_pinnacle_usb_grey;
+-		init_data.name = "i2c IR (EM28XX Pinnacle PCTV)";
++		dev->init_data.ir_codes = ir_codes_pinnacle_grey;
++		dev->init_data.get_key = em28xx_get_key_pinnacle_usb_grey;
++		dev->init_data.name = "i2c IR (EM28XX Pinnacle PCTV)";
+ 		break;
+ 	case (EM2820_BOARD_HAUPPAUGE_WINTV_USB_2):
+-		init_data.ir_codes = ir_codes_hauppauge_new;
+-		init_data.get_key = em28xx_get_key_em_haup;
+-		init_data.name = "i2c IR (EM2840 Hauppauge)";
++		dev->init_data.ir_codes = ir_codes_hauppauge_new;
++		dev->init_data.get_key = em28xx_get_key_em_haup;
++		dev->init_data.name = "i2c IR (EM2840 Hauppauge)";
+ 		break;
+ 	case (EM2820_BOARD_MSI_VOX_USB_2):
+ 		break;
+@@ -2215,9 +2213,9 @@ void em28xx_register_i2c_ir(struct em28x
+ 		break;
  	}
  
- 	/* Need a new fence register? */
- 	if (obj_priv->tiling_mode != I915_TILING_NONE) {
- 		ret = i915_gem_object_get_fence_reg(obj);
--		if (ret) {
--			mutex_unlock(&dev->struct_mutex);
--			return VM_FAULT_SIGBUS;
--		}
-+		if (ret)
-+			goto unlock;
- 	}
- 
- 	pfn = ((dev->agp->base + obj_priv->gtt_offset) >> PAGE_SHIFT) +
-@@ -1178,18 +1173,18 @@ int i915_gem_fault(struct vm_area_struct
- 
- 	/* Finally, remap it using the new GTT offset */
- 	ret = vm_insert_pfn(vma, (unsigned long)vmf->virtual_address, pfn);
--
-+unlock:
- 	mutex_unlock(&dev->struct_mutex);
- 
- 	switch (ret) {
-+	case 0:
-+	case -ERESTARTSYS:
-+		return VM_FAULT_NOPAGE;
- 	case -ENOMEM:
- 	case -EAGAIN:
- 		return VM_FAULT_OOM;
--	case -EFAULT:
--	case -EINVAL:
--		return VM_FAULT_SIGBUS;
- 	default:
--		return VM_FAULT_NOPAGE;
-+		return VM_FAULT_SIGBUS;
- 	}
+-	if (init_data.name)
+-		info.platform_data = &init_data;
+-	i2c_new_probed_device(&dev->i2c_adap, &info, addr_list);
++	if (dev->init_data.name)
++		dev->info.platform_data = &dev->init_data;
++	i2c_new_probed_device(&dev->i2c_adap, &dev->info, addr_list);
  }
  
+ void em28xx_card_setup(struct em28xx *dev)
+--- a/drivers/media/video/em28xx/em28xx.h
++++ b/drivers/media/video/em28xx/em28xx.h
+@@ -595,6 +595,10 @@ struct em28xx {
+ 	struct delayed_work sbutton_query_work;
+ 
+ 	struct em28xx_dvb *dvb;
++
++	/* I2C keyboard data */
++	struct i2c_board_info info;
++	struct IR_i2c_init_data init_data;
+ };
+ 
+ struct em28xx_ops {
 
 
