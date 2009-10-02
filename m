@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbZJCBX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbZJBVXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756756AbZJCBX3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 21:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbZJCBX2
+	id S1753618AbZJBVXR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 17:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZJBVXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 21:23:28 -0400
-Received: from dovecot.org ([82.118.211.50]:57524 "EHLO dovecot.org"
+	Fri, 2 Oct 2009 17:23:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36644 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752526AbZJCBX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 21:23:28 -0400
-Subject: [PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
-From: Timo Sirainen <tss@iki.fi>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 02 Oct 2009 17:23:22 -0400
-Message-Id: <1254518602.5050.4.camel@hurina>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	id S1753072AbZJBVXP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 17:23:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bruno =?utf-8?q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
+Subject: Re: [Bug #13942] Troubles with AoE and uninitialized object
+Date: Fri, 2 Oct 2009 23:24:37 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.t9C.XOTxKB@chimera> <20091002213630.42c73909@neptune.home>
+In-Reply-To: <20091002213630.42c73909@neptune.home>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200910022324.37790.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PR_SET_PROCTITLE_AREA updates mm_struct->arg_start and arg_end to the
-given pointers, which makes it possible for user space to implement
-setproctitle(3) cleanly.
+On Friday 02 October 2009, Bruno Prémont wrote:
+> On Thu, 01 October 2009 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.30 and 2.6.31.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.30 and 2.6.31.  Please verify if it still
+> > should be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13942
+> > Subject	: Troubles with AoE and uninitialized object
+> > Submitter	: Bruno Prémont <bonbons@linux-vserver.org>
+> > Date		: 2009-08-04 10:12 (59 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124938117104811&w=4
+> 
+> This should have been fixed with commits:
+> 
+>   18d8217bc441630c3c5ec7416c5a65c69e8a0979
+>   aoe: end barrier bios with EOPNOTSUPP
+> 
+>   This addresses the trace on unmounting XFS
+> 
+> 
+>   7135a71b19be1faf48b7148d77844d03bc0717d6
+>   aoe: allocate unused request_queue for sysfs
+> 
+>   This addresses the NULL kobject part
+> 
+> 
+> I think the second one made it into 2.6.31 but first one didn't,
 
+Yes, it idid.
 
-Signed-off-by: Timo Sirainen <tss@iki.fi>
----
- fs/proc/base.c        |    9 ++++++---
- include/linux/prctl.h |    2 ++
- kernel/sys.c          |   10 ++++++++++
- 3 files changed, 18 insertions(+), 3 deletions(-)
+> please double-check! I've not seen them on stable though (which might
+> be worth especially for the first one)
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 837469a..43ef276 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -267,9 +267,12 @@ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
-  
- 	res = access_process_vm(task, mm->arg_start, buffer, len, 0);
- 
--	// If the nul at the end of args has been overwritten, then
--	// assume application is using setproctitle(3).
--	if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
-+	if (mm->arg_end != mm->env_start) {
-+		// PR_SET_PROCTITLE_AREA used
-+		res = strnlen(buffer, res);
-+	} else if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
-+		// If the nul at the end of args has been overwritten, then
-+		// assume application is using old style setproctitle(3).
- 		len = strnlen(buffer, res);
- 		if (len < res) {
- 		    res = len;
-diff --git a/include/linux/prctl.h b/include/linux/prctl.h
-index 9311505..c79ccc8 100644
---- a/include/linux/prctl.h
-+++ b/include/linux/prctl.h
-@@ -90,4 +90,6 @@
- 
- #define PR_MCE_KILL	33
- 
-+#define PR_SET_PROCTITLE_AREA 34	/* Set process title memory area */
-+
- #endif /* _LINUX_PRCTL_H */
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 255475d..c216ae6 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1564,6 +1564,16 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
- 			error = 0;
- 			break;
- 
-+		case PR_SET_PROCTITLE_AREA: {
-+			struct mm_struct *mm = current->mm;
-+
-+			if (arg2 >= arg3)
-+				return -EINVAL;
-+
-+			mm->arg_start = arg2;
-+			mm->arg_end = arg3;
-+			return 0;
-+		}
- 		default:
- 			error = -EINVAL;
- 			break;
--- 
-1.6.3.3
+Thanks, closed.
 
-
+Rafael
