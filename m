@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbZJBBgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZJBBgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756814AbZJBBgi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbZJBBgg
+	id S1756940AbZJBBgE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:36:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756814AbZJBBgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:36:36 -0400
-Received: from kroah.org ([198.145.64.141]:33605 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:36:00 -0400
+Received: from kroah.org ([198.145.64.141]:33615 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932126AbZJBBeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:34:25 -0400
+	id S932150AbZJBBe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:34:26 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:27 2009
-Message-Id: <20091002012427.563771141@mini.kroah.org>
+Message-Id: <20091002012427.696804391@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:58 -0700
+Date: Thu, 01 Oct 2009 18:17:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kashyap Desai <kashyap.desai@lsi.com>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Jan Beulich <JBeulich@novell.com>
-Subject: [130/136] [SCSI] mptsas : PAE Kernel more than 4 GB kernel panic
+       David Howells <dhowells@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Mundt <lethal@linux-sh.org>,
+       Mel Gorman <mel@csn.ul.ie>, Greg Ungerer <gerg@snapgear.com>
+Subject: [131/136] NOMMU: Fix MAP_PRIVATE mmap() of objects where the data can be mapped directly
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=mptsas-pae-kernel-more-than-4-gb-kernel-panic.patch
+Content-Disposition: inline; filename=nommu-fix-map_private-mmap-of-objects-where-the-data-can-be-mapped-directly.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,57 +31,143 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Kashyap, Desai <kashyap.desai@lsi.com>
+From: David Howells <dhowells@redhat.com>
 
-commit c55b89fba9872ebcd5ac15cdfdad29ffb89329f0 upstream.
+commit 645d83c5db970a1c57225e155113b4aa2451e920 upstream.
 
-This patch is solving problem for PAE kernel DMA operation.
-On PAE system dma_addr and unsigned long will have different
-values.
-Now dma_addr is not type casted using unsigned long.
+Fix MAP_PRIVATE mmap() of files and devices where the data in the backing store
+might be mapped directly.  Use the BDI_CAP_MAP_DIRECT capability flag to govern
+whether or not we should be trying to map a file directly.  This can be used to
+determine whether or not a region has been filled in at the point where we call
+do_mmap_shared() or do_mmap_private().
 
-Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
-Signed-off-by: James Bottomley <James.Bottomley@suse.de>
-Cc: Jan Beulich <JBeulich@novell.com>
+The BDI_CAP_MAP_DIRECT capability flag is cleared by validate_mmap_request() if
+there's any reason we can't use it.  It's also cleared in do_mmap_pgoff() if
+f_op->get_unmapped_area() fails.
+
+Without this fix, attempting to run a program from a RomFS image on a
+non-mappable MTD partition results in a BUG as the kernel attempts XIP, and
+this can be caught in gdb:
+
+Program received signal SIGABRT, Aborted.
+0xc005dce8 in add_nommu_region (region=<value optimized out>) at mm/nommu.c:547
+(gdb) bt
+#0  0xc005dce8 in add_nommu_region (region=<value optimized out>) at mm/nommu.c:547
+#1  0xc005f168 in do_mmap_pgoff (file=0xc31a6620, addr=<value optimized out>, len=3808, prot=3, flags=6146, pgoff=0) at mm/nommu.c:1373
+#2  0xc00a96b8 in elf_fdpic_map_file (params=0xc33fbbec, file=0xc31a6620, mm=0xc31bef60, what=0xc0213144 "executable") at mm.h:1145
+#3  0xc00aa8b4 in load_elf_fdpic_binary (bprm=0xc316cb00, regs=<value optimized out>) at fs/binfmt_elf_fdpic.c:343
+#4  0xc006b588 in search_binary_handler (bprm=0x6, regs=0xc33fbce0) at fs/exec.c:1234
+#5  0xc006c648 in do_execve (filename=<value optimized out>, argv=0xc3ad14cc, envp=0xc3ad1460, regs=0xc33fbce0) at fs/exec.c:1356
+#6  0xc0008cf0 in sys_execve (name=<value optimized out>, argv=0xc3ad14cc, envp=0xc3ad1460) at arch/frv/kernel/process.c:263
+#7  0xc00075dc in __syscall_call () at arch/frv/kernel/entry.S:897
+
+Note that this fix does the following commit differently:
+
+	commit a190887b58c32d19c2eee007c5eb8faa970a69ba
+	Author: David Howells <dhowells@redhat.com>
+	Date:   Sat Sep 5 11:17:07 2009 -0700
+	nommu: fix error handling in do_mmap_pgoff()
+
+Reported-by: Graff Yang <graff.yang@gmail.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Greg Ungerer <gerg@snapgear.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/message/fusion/mptbase.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ mm/nommu.c |   34 ++++++++++++----------------------
+ 1 file changed, 12 insertions(+), 22 deletions(-)
 
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -1015,9 +1015,9 @@ mpt_add_sge_64bit(void *pAddr, u32 flags
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1056,7 +1056,7 @@ static int do_mmap_shared_file(struct vm
+ 	ret = vma->vm_file->f_op->mmap(vma->vm_file, vma);
+ 	if (ret == 0) {
+ 		vma->vm_region->vm_top = vma->vm_region->vm_end;
+-		return ret;
++		return 0;
+ 	}
+ 	if (ret != -ENOSYS)
+ 		return ret;
+@@ -1073,7 +1073,8 @@ static int do_mmap_shared_file(struct vm
+  */
+ static int do_mmap_private(struct vm_area_struct *vma,
+ 			   struct vm_region *region,
+-			   unsigned long len)
++			   unsigned long len,
++			   unsigned long capabilities)
  {
- 	SGESimple64_t *pSge = (SGESimple64_t *) pAddr;
- 	pSge->Address.Low = cpu_to_le32
--			(lower_32_bits((unsigned long)(dma_addr)));
-+			(lower_32_bits(dma_addr));
- 	pSge->Address.High = cpu_to_le32
--			(upper_32_bits((unsigned long)dma_addr));
-+			(upper_32_bits(dma_addr));
- 	pSge->FlagsLength = cpu_to_le32
- 			((flagslength | MPT_SGE_FLAGS_64_BIT_ADDRESSING));
- }
-@@ -1038,8 +1038,8 @@ mpt_add_sge_64bit_1078(void *pAddr, u32 
- 	u32 tmp;
+ 	struct page *pages;
+ 	unsigned long total, point, n, rlen;
+@@ -1084,13 +1085,13 @@ static int do_mmap_private(struct vm_are
+ 	 * shared mappings on devices or memory
+ 	 * - VM_MAYSHARE will be set if it may attempt to share
+ 	 */
+-	if (vma->vm_file) {
++	if (capabilities & BDI_CAP_MAP_DIRECT) {
+ 		ret = vma->vm_file->f_op->mmap(vma->vm_file, vma);
+ 		if (ret == 0) {
+ 			/* shouldn't return success if we're not sharing */
+ 			BUG_ON(!(vma->vm_flags & VM_MAYSHARE));
+ 			vma->vm_region->vm_top = vma->vm_region->vm_end;
+-			return ret;
++			return 0;
+ 		}
+ 		if (ret != -ENOSYS)
+ 			return ret;
+@@ -1328,7 +1329,7 @@ unsigned long do_mmap_pgoff(struct file 
+ 		 * - this is the hook for quasi-memory character devices to
+ 		 *   tell us the location of a shared mapping
+ 		 */
+-		if (file && file->f_op->get_unmapped_area) {
++		if (capabilities & BDI_CAP_MAP_DIRECT) {
+ 			addr = file->f_op->get_unmapped_area(file, addr, len,
+ 							     pgoff, flags);
+ 			if (IS_ERR((void *) addr)) {
+@@ -1352,15 +1353,17 @@ unsigned long do_mmap_pgoff(struct file 
+ 	}
  
- 	pSge->Address.Low = cpu_to_le32
--			(lower_32_bits((unsigned long)(dma_addr)));
--	tmp = (u32)(upper_32_bits((unsigned long)dma_addr));
-+			(lower_32_bits(dma_addr));
-+	tmp = (u32)(upper_32_bits(dma_addr));
+ 	vma->vm_region = region;
+-	add_nommu_region(region);
  
- 	/*
- 	 * 1078 errata workaround for the 36GB limitation
-@@ -1101,7 +1101,7 @@ mpt_add_chain_64bit(void *pAddr, u8 next
- 		pChain->NextChainOffset = next;
+-	/* set up the mapping */
++	/* set up the mapping
++	 * - the region is filled in if BDI_CAP_MAP_DIRECT is still set
++	 */
+ 	if (file && vma->vm_flags & VM_SHARED)
+ 		ret = do_mmap_shared_file(vma);
+ 	else
+-		ret = do_mmap_private(vma, region, len);
++		ret = do_mmap_private(vma, region, len, capabilities);
+ 	if (ret < 0)
+-		goto error_put_region;
++		goto error_just_free;
++	add_nommu_region(region);
  
- 		pChain->Address.Low = cpu_to_le32(tmp);
--		tmp = (u32)(upper_32_bits((unsigned long)dma_addr));
-+		tmp = (u32)(upper_32_bits(dma_addr));
- 		pChain->Address.High = cpu_to_le32(tmp);
- }
+ 	/* okay... we have a mapping; now we have to register it */
+ 	result = vma->vm_start;
+@@ -1378,19 +1381,6 @@ share:
+ 	kleave(" = %lx", result);
+ 	return result;
  
+-error_put_region:
+-	__put_nommu_region(region);
+-	if (vma) {
+-		if (vma->vm_file) {
+-			fput(vma->vm_file);
+-			if (vma->vm_flags & VM_EXECUTABLE)
+-				removed_exe_file_vma(vma->vm_mm);
+-		}
+-		kmem_cache_free(vm_area_cachep, vma);
+-	}
+-	kleave(" = %d [pr]", ret);
+-	return ret;
+-
+ error_just_free:
+ 	up_write(&nommu_region_sem);
+ error:
 
 
