@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbZJBCBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZJBCCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754634AbZJBCBW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 22:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbZJBBcc
+	id S1754254AbZJBCCE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 22:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbZJBCCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:32:32 -0400
-Received: from kroah.org ([198.145.64.141]:32877 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 22:02:00 -0400
+Received: from kroah.org ([198.145.64.141]:32886 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754453AbZJBBc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:32:29 -0400
+	id S1754347AbZJBBca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:32:30 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:07 2009
-Message-Id: <20091002012406.906817735@mini.kroah.org>
+Message-Id: <20091002012407.066667319@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:15:56 -0700
+Date: Thu, 01 Oct 2009 18:15:57 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Peter Korsgaard <jacmet@sunsite.dk>, Ben Dooks <ben-linux@fluff.org>
-Subject: [008/136] video: s3c_fb.c: fix build with CONFIG_HOTPLUG=n
+       Magnus Granberg <zorry@ume.nu>, "Jory A. Pratt" <anarchy@gentoo.org>,
+       Fredric Johansson <johansson_fredric@hotmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [009/136] kbuild: fix cc1 options check to ensure we do not use -fPIC when compiling
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=video-s3c_fb.c-fix-build-with-config_hotplug-n.patch
+Content-Disposition: inline; filename=kbuild-fix-cc1-options-check-to-ensure-we-do-not-use-fpic-when-compiling.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,37 +31,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Peter Korsgaard <jacmet@sunsite.dk>
+From: Jory A. Pratt <anarchy@gentoo.org>
 
-commit 3163eaba34943967aebb1eefa0d4bdc4e5dc197c upstream.
+commit c47efe5548abbf53c2f66e06dcb46183b11d6b22 upstream.
 
-Fixes `s3c_fb_remove' referenced in section `.data' of
-drivers/built-in.o: defined in discarded section `.devexit.text' of
-drivers/built-in.o
+The arch/*/boot/Makefile use cc-options to check for GCC command options
+and cc-options use the hardened specs when checking for GCC command
+options.  When -fPIE is pass to cc1 it can't use -ffreestanding or
+-fno-toplevel-reorder.  Then it fail to build stuff with -ffreestanding
+and -fno-toplevel-reorder.
 
-With CONFIG_HOTPLUG=n, functions marked with __devexit gets removed,
-so make sure we use __devexit_p when referencing pointers to them.
+Thanks to Fredric Johansson for finding the main problem behind a failed
+build using a hardened toolchain.
 
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-Acked-by: Ben Dooks <ben-linux@fluff.org>
+Signed-off-by: Magnus Granberg <zorry@ume.nu>
+Signed-off-by: Jory A. Pratt <anarchy@gentoo.org>
+Cc: Fredric Johansson <johansson_fredric@hotmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/s3c-fb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ scripts/Kbuild.include |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -1036,7 +1036,7 @@ static int s3c_fb_resume(struct platform
+--- a/scripts/Kbuild.include
++++ b/scripts/Kbuild.include
+@@ -105,12 +105,12 @@ as-instr = $(call try-run,\
+ # Usage: cflags-y += $(call cc-option,-march=winchip-c6,-march=i586)
  
- static struct platform_driver s3c_fb_driver = {
- 	.probe		= s3c_fb_probe,
--	.remove		= s3c_fb_remove,
-+	.remove		= __devexit_p(s3c_fb_remove),
- 	.suspend	= s3c_fb_suspend,
- 	.resume		= s3c_fb_resume,
- 	.driver		= {
+ cc-option = $(call try-run,\
+-	$(CC) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",$(1),$(2))
++	$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",$(1),$(2))
+ 
+ # cc-option-yn
+ # Usage: flag := $(call cc-option-yn,-march=winchip-c6)
+ cc-option-yn = $(call try-run,\
+-	$(CC) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",y,n)
++	$(CC) $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",y,n)
+ 
+ # cc-option-align
+ # Prefix align with either -falign or -malign
 
 
