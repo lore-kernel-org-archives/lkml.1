@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbZJBQ5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZJBQ5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757370AbZJBQ5p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 12:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbZJBQ5m
+	id S1756193AbZJBQ5H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 12:57:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbZJBQ5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 12:57:42 -0400
-Received: from cantor.suse.de ([195.135.220.2]:48328 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757308AbZJBQ5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 12:57:40 -0400
-Date: Fri, 2 Oct 2009 09:55:05 -0700
-From: Greg KH <gregkh@suse.de>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Mel Gorman <mel@csn.ul.ie>,
-       Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [121/136] mm: fix anonymous dirtying
-Message-ID: <20091002165505.GC3901@suse.de>
-References: <20091002011548.335611824@mini.kroah.org>
- <20091002012426.168639081@mini.kroah.org>
- <Pine.LNX.4.64.0910021731230.20933@sister.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0910021731230.20933@sister.anvils>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 2 Oct 2009 12:57:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41959
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754394AbZJBQ5F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 12:57:05 -0400
+Date: Fri, 02 Oct 2009 09:57:24 -0700 (PDT)
+Message-Id: <20091002.095724.12562070.davem@davemloft.net>
+To: philipp.reisner@linbit.com
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, dm-devel@redhat.com, zbr@ioremap.net,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200910021754.12940.philipp.reisner@linbit.com>
+References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
+	<20091002135859.GA9383@kroah.com>
+	<200910021754.12940.philipp.reisner@linbit.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 05:34:03PM +0100, Hugh Dickins wrote:
-> On Thu, 1 Oct 2009, Greg KH wrote:
-> > 2.6.31-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> > 
-> > commit 1ac0cb5d0e22d5e483f56b2bc12172dec1cf7536 upstream.
-> > 
-> > do_anonymous_page() has been wrong to dirty the pte regardless.
-> > If it's not going to mark the pte writable, then it won't help
-> > to mark it dirty here, and clogs up memory with pages which will
-> > need swap instead of being thrown away.  Especially wrong if no
-> > overcommit is chosen, and this vma is not yet VM_ACCOUNTed -
-> > we could exceed the limit and OOM despite no overcommit.
-> 
-> Thanks a lot for including this little fix in 2.6.31.2.
-> It is equally relevant to both 2.6.27.36 and 2.6.30.9,
-> so if not too late, please consider adding it into those too.
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Date: Fri, 2 Oct 2009 17:54:12 +0200
 
-Ok, will do.
+> Think of the connector as a layer on top of netlink that allows more
+> than a hard coded number of subsystems to use netlink.
 
-thanks,
+There are no such limits in netlink, we have 'genetlink' which allows
+an arbitrary number of subsystems to use netlink.
 
-greg k-h
+What connector provides over netlink/genetlink is something different
+altogether.
