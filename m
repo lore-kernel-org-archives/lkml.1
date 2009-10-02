@@ -1,176 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbZJBXZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbZJBXj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754351AbZJBXZw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 19:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZJBXZv
+	id S1754863AbZJBXj1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 19:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbZJBXj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 19:25:51 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:41391 "EHLO e9.ny.us.ibm.com"
+	Fri, 2 Oct 2009 19:39:27 -0400
+Received: from cmpxchg.org ([85.214.51.133]:40187 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751924AbZJBXZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 19:25:51 -0400
-Subject: [PATCH 2/2] time: remove xtime_cache
-From: john stultz <johnstul@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: John Kacur <jkacur@redhat.com>, Clark Williams <williams@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1254525473.7741.88.camel@localhost.localdomain>
-References: <1254525473.7741.88.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 02 Oct 2009 16:24:15 -0700
-Message-Id: <1254525855.7741.95.camel@localhost.localdomain>
+	id S1754414AbZJBXj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 19:39:26 -0400
+Date: Sat, 3 Oct 2009 01:38:37 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Mel Gorman <mel@csn.ul.ie>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [rfc patch 3/3] mm: munlock COW pages on truncation unmap
+Message-ID: <20091002233837.GA3638@cmpxchg.org>
+References: <1254344964-8124-1-git-send-email-hannes@cmpxchg.org> <1254344964-8124-3-git-send-email-hannes@cmpxchg.org> <20091002100838.5F5A.A69D9226@jp.fujitsu.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091002100838.5F5A.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the prior logarithmic time accumulation patch, xtime will now
-always be within one "tick" of the current time, instead of possibly
-half a second off. 
+Hello KOSAKI-san,
 
-This removes the need for the xtime_cache value, which always stored the
-time at the last interrupt, so this patch cleans that up removing the
-xtime_cache related code.
+On Fri, Oct 02, 2009 at 11:40:34AM +0900, KOSAKI Motohiro wrote:
+> > @@ -835,6 +835,43 @@ static unsigned long zap_pte_range(struc
+> >  				    (page->index < details->first_index ||
+> >  				     page->index > details->last_index))
+> >  					continue;
+> > +				/*
+> > +				 * When truncating, private COW pages may be
+> > +				 * mlocked in VM_LOCKED VMAs, so they need
+> > +				 * munlocking here before getting freed.
+> > +				 *
+> > +				 * Skip them completely if we don't have the
+> > +				 * anon_vma locked.  We will get it the second
+> > +				 * time.  When page cache is truncated, no more
+> > +				 * private pages can show up against this VMA
+> > +				 * and the anon_vma is either present or will
+> > +				 * never be.
+> > +				 *
+> > +				 * Otherwise, we still have to synchronize
+> > +				 * against concurrent reclaimers.  We can not
+> > +				 * grab the page lock, but with correct
+> > +				 * ordering of page flag accesses we can get
+> > +				 * away without it.
+> > +				 *
+> > +				 * A concurrent isolator may add the page to
+> > +				 * the unevictable list, set PG_lru and then
+> > +				 * recheck PG_mlocked to verify it chose the
+> > +				 * right list and conditionally move it again.
+> > +				 *
+> > +				 * TestClearPageMlocked() provides one half of
+> > +				 * the barrier: when we do not see the page on
+> > +				 * the LRU and fail isolation, the isolator
+> > +				 * must see PG_mlocked cleared and move the
+> > +				 * page on its own back to the evictable list.
+> > +				 */
+> > +				if (private && !details->anon_vma)
+> > +					continue;
+> > +				if (private && TestClearPageMlocked(page)) {
+> > +					dec_zone_page_state(page, NR_MLOCK);
+> > +					count_vm_event(UNEVICTABLE_PGCLEARED);
+> > +					if (!isolate_lru_page(page))
+> > +						putback_lru_page(page);
+> > +				}
+> >  			}
+> >  			ptent = ptep_get_and_clear_full(mm, addr, pte,
+> >  							tlb->fullmm);
+> 
+> Umm..
+> I haven't understand this.
+> 
+> (1) unmap_mapping_range() is called twice.
+> 
+> 	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+> 	truncate_inode_pages(mapping, new);
+> 	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+> 
+> (2) PG_mlock is turned on from mlock() and vmscan.
+> (3) vmscan grab anon_vma, but mlock don't grab anon_vma.
 
-This is a bit simpler, but still could use some wider testing.
+You are right, I was so focused on the LRU side that I missed an
+obvious window here: an _explicit_ mlock can still happen between the
+PG_mlocked clearing section and releasing the page.
 
-Any comments or feedback would be appreciated!
+If we race with it, the put_page() in __mlock_vma_pages_range() might
+free the freshly mlocked page.
 
-thanks
--john
+> (4) after truncate_inode_pages(), we don't need to think vs-COW, because
+>     find_get_page() never success. but first unmap_mapping_range()
+>     have vs-COW racing.
 
+Yes, we can race with COW breaking, but I can not see a problem there.
+It clears the old page's mlock, but also with an atomic
+TestClearPageMlocked().  And the new page is mapped and mlocked under
+pte lock and only if we didn't clear the pte in the meantime.
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> So, Is anon_vma grabbing really sufficient?
 
-diff --git a/kernel/time.c b/kernel/time.c
-index 2e2e469..2ef4fe2 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -136,7 +136,6 @@ static inline void warp_clock(void)
- 	write_seqlock_irq(&xtime_lock);
- 	wall_to_monotonic.tv_sec -= sys_tz.tz_minuteswest * 60;
- 	xtime.tv_sec += sys_tz.tz_minuteswest * 60;
--	update_xtime_cache(0);
- 	write_sequnlock_irq(&xtime_lock);
- 	clock_was_set();
- }
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 4cc5656..a1513d0 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -164,13 +164,6 @@ struct timespec raw_time;
- /* flag for if timekeeping is suspended */
- int __read_mostly timekeeping_suspended;
- 
--static struct timespec xtime_cache __attribute__ ((aligned (16)));
--void update_xtime_cache(u64 nsec)
--{
--	xtime_cache = xtime;
--	timespec_add_ns(&xtime_cache, nsec);
--}
--
- /* must hold xtime_lock */
- void timekeeping_leap_insert(int leapsecond)
- {
-@@ -331,8 +324,6 @@ int do_settimeofday(struct timespec *tv)
- 
- 	xtime = *tv;
- 
--	update_xtime_cache(0);
--
- 	timekeeper.ntp_error = 0;
- 	ntp_clear();
- 
-@@ -547,7 +538,6 @@ void __init timekeeping_init(void)
- 	}
- 	set_normalized_timespec(&wall_to_monotonic,
- 				-boot.tv_sec, -boot.tv_nsec);
--	update_xtime_cache(0);
- 	total_sleep_time.tv_sec = 0;
- 	total_sleep_time.tv_nsec = 0;
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
-@@ -581,7 +571,6 @@ static int timekeeping_resume(struct sys_device *dev)
- 		wall_to_monotonic = timespec_sub(wall_to_monotonic, ts);
- 		total_sleep_time = timespec_add_safe(total_sleep_time, ts);
- 	}
--	update_xtime_cache(0);
- 	/* re-base the last cycle value */
- 	timekeeper.clock->cycle_last = timekeeper.clock->read(timekeeper.clock);
- 	timekeeper.ntp_error = 0;
-@@ -721,7 +710,6 @@ static void timekeeping_adjust(s64 offset)
- 				timekeeper.ntp_error_shift;
- }
- 
--
- /**
-  * logarithmic_accumulation - shifted accumulation of cycles
-  *
-@@ -765,7 +753,6 @@ static cycle_t logarithmic_accumulation(cycle_t offset, int shift)
- 	return offset;
- }
- 
--
- /**
-  * update_wall_time - Uses the current clocksource to increment the wall time
-  *
-@@ -775,7 +762,6 @@ void update_wall_time(void)
- {
- 	struct clocksource *clock;
- 	cycle_t offset;
--	u64 nsecs;
- 	int shift = 0, maxshift;
- 
- 	/* Make sure we're fully resumed: */
-@@ -841,9 +827,6 @@ void update_wall_time(void)
- 	timekeeper.ntp_error +=	timekeeper.xtime_nsec <<
- 				timekeeper.ntp_error_shift;
- 
--	nsecs = clocksource_cyc2ns(offset, timekeeper.mult, timekeeper.shift);
--	update_xtime_cache(nsecs);
--
- 	/* check to see if there is a new clocksource to use */
- 	update_vsyscall(&xtime, timekeeper.clock);
- }
-@@ -880,13 +863,13 @@ void monotonic_to_bootbased(struct timespec *ts)
- 
- unsigned long get_seconds(void)
- {
--	return xtime_cache.tv_sec;
-+	return xtime.tv_sec;
- }
- EXPORT_SYMBOL(get_seconds);
- 
- struct timespec __current_kernel_time(void)
- {
--	return xtime_cache;
-+	return xtime;
- }
- 
- struct timespec current_kernel_time(void)
-@@ -896,8 +879,7 @@ struct timespec current_kernel_time(void)
- 
- 	do {
- 		seq = read_seqbegin(&xtime_lock);
--
--		now = xtime_cache;
-+		now = xtime;
- 	} while (read_seqretry(&xtime_lock, seq));
- 
- 	return now;
-@@ -911,8 +893,7 @@ struct timespec get_monotonic_coarse(void)
- 
- 	do {
- 		seq = read_seqbegin(&xtime_lock);
--
--		now = xtime_cache;
-+		now = xtime;
- 		mono = wall_to_monotonic;
- 	} while (read_seqretry(&xtime_lock, seq));
- 
+No, the explicit mlocking race exists, I think.
 
+> Or, you intent to the following?
+> 
+> 	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 0);
+> 	truncate_inode_pages(mapping, new);
+> 	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
 
+As mentioned above, I don't see how it would make a difference.
+
+> > @@ -544,6 +544,13 @@ redo:
+> >  		 */
+> >  		lru = LRU_UNEVICTABLE;
+> >  		add_page_to_unevictable_list(page);
+> > +		/*
+> > +		 * See the TestClearPageMlocked() in zap_pte_range():
+> > +		 * if a racing unmapper did not see the above setting
+> > +		 * of PG_lru, we must see its clearing of PG_locked
+> > +		 * and move the page back to the evictable list.
+> > +		 */
+> > +		smp_mb();
+> >  	}
+> 
+> add_page_to_unevictable() have a spin lock. Why do we need additionl
+> explicit memory barrier?
+
+It sets PG_lru under spinlock and tests PG_mlocked after the unlock.
+The following sections from memory-barriers.txt made me nervous:
+
+ (5) LOCK operations.
+
+     This acts as a one-way permeable barrier.  It guarantees that all memory
+     operations after the LOCK operation will appear to happen after the LOCK
+     operation with respect to the other components of the system.
+
+ (6) UNLOCK operations.
+
+     This also acts as a one-way permeable barrier.  It guarantees that all
+     memory operations before the UNLOCK operation will appear to happen before
+     the UNLOCK operation with respect to the other components of the system.
+
+     Memory operations that occur after an UNLOCK operation may appear to
+     happen before it completes.
+
+So the only garuantee this gives us is that both PG_lru setting and
+PG_mlocked testing happen after LOCK and PG_lru setting finishes
+before UNLOCK, no?  I wanted to make sure this does not happen:
+
+	LOCK, test PG_mlocked, set PG_lru, UNLOCK
+
+I don't know whether there is a data dependency between those two
+operations.  They go to the same word, but I could also imagine
+setting one bit is independent of reading another one.  Humm.  Help.
+
+Thanks,
+	Hannes
