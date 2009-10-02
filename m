@@ -1,97 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZJBPyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbZJBPzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbZJBPyO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 11:54:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZJBPyM
+	id S1755497AbZJBPzZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 11:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754967AbZJBPzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 11:54:12 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:56859 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755165AbZJBPyL (ORCPT
+	Fri, 2 Oct 2009 11:55:24 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:53920 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754908AbZJBPzX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 11:54:11 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
-Date: Fri, 2 Oct 2009 17:54:12 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.28-14-generic; KDE/4.2.4; i686; ; )
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, dm-devel@redhat.com,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       linux-fbdev-devel@lists.sourceforge.net
-References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com> <20091002135859.GA9383@kroah.com>
-In-Reply-To: <20091002135859.GA9383@kroah.com>
+	Fri, 2 Oct 2009 11:55:23 -0400
+Date: Fri, 2 Oct 2009 08:55:27 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, yehuda@newdream.net
+Subject: Re: [PATCH 19/21] ceph: ioctls
+In-Reply-To: <87ske2sa2n.fsf@basil.nowhere.org>
+Message-ID: <Pine.LNX.4.64.0910020840180.16283@cobra.newdream.net>
+References: <1253641129-28434-1-git-send-email-sage@newdream.net>
+ <1253641129-28434-5-git-send-email-sage@newdream.net>
+ <1253641129-28434-6-git-send-email-sage@newdream.net>
+ <1253641129-28434-7-git-send-email-sage@newdream.net>
+ <1253641129-28434-8-git-send-email-sage@newdream.net>
+ <1253641129-28434-9-git-send-email-sage@newdream.net>
+ <1253641129-28434-10-git-send-email-sage@newdream.net>
+ <1253641129-28434-11-git-send-email-sage@newdream.net>
+ <1253641129-28434-12-git-send-email-sage@newdream.net>
+ <1253641129-28434-13-git-send-email-sage@newdream.net>
+ <1253641129-28434-14-git-send-email-sage@newdream.net>
+ <1253641129-28434-15-git-send-email-sage@newdream.net>
+ <1253641129-28434-16-git-send-email-sage@newdream.net>
+ <1253641129-28434-17-git-send-email-sage@newdream.net>
+ <1253641129-28434-18-git-send-email-sage@newdream.net>
+ <1253641129-28434-19-git-send-email-sage@newdream.net>
+ <1253641129-28434-20-git-send-email-sage@newdream.net> <87ske2sa2n.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910021754.12940.philipp.reisner@linbit.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, Oct 02, 2009 at 02:40:03PM +0200, Philipp Reisner wrote:
-> > Affected: All code that uses connector, in kernel and out of mainline
-> >
-> > The connector, as it is today, does not allow the in kernel receiving
-> > parts to do any checks on privileges of a message's sender.
->
-> So, assume I know nothing about the connector architecture, what does
-> this mean in a security context?
->
+On Fri, 2 Oct 2009, Andi Kleen wrote:
 
-Think of the connector as a layer on top of netlink that allows more
-than a hard coded number of subsystems to use netlink.
+> Sage Weil <sage@newdream.net> writes:
+> > +/*
+> > + * Extract identity, address of the OSD and object storing a given
+> > + * file offset.
+> > + */
+> > +struct ceph_ioctl_dataloc {
+> > +	__u64 file_offset;           /* in+out: file offset */
+> > +	__u64 object_offset;         /* out: offset in object */
+> > +	__u64 object_no;             /* out: object # */
+> > +	__u64 object_size;           /* out: object size */
+> > +	char object_name[64];        /* out: object name */
+> > +	__u64 block_offset;          /* out: offset in block */
+> > +	__u64 block_size;            /* out: block length */
+> > +	__s64 osd;                   /* out: osd # */
+> > +	struct sockaddr_in osd_addr; /* out: osd address */
+> 
+> You'll have to revise that once you support IPv6. At least extend the structure
+> better now? (_in is too small for IPv6)
 
-Netlink is used e.g. to modify routing tables in the kernel.
+Yes.  I suspect an explicit
 
-As it is today, subsystem utilising the connector can not examine
-the capabilities of the user/program that sent the netlink message.
+	struct in6_addr osd_addr;
+	__be16 osd_port;
 
-If the same would be true for netlink, than every unprivileged user
-could change the routing tables on your box.
+makes more sense.  Then legacy IPv4 addresses can just be represented as 
+::ffff:1.2.3.4.  That seems like the simplest route?
 
-> > I know, there are not many out there that like connector, but as
-> > long as it is in the kernel, we have to fix the security issues it has!
->
-> And what specifically are the security issues?
->
+I should similarly update the struct ceph_entity_addr as well (it also 
+embeds a sockaddr_in).  And/or embed that struct here.
 
-unprivileged users can trigger operations that are supposed to be only
-accessible to users having CAP_SYS_ADMIN (or some other CAP_XXX)
-
-> > Please either drop connector, or someone who feels a bit responsible
-> > and has our beloved dictator's blessing, PLEASE PLEASE PLEASE take
-> > this into your tree, and send the pull request to Linus.
-> >
-> > Patches 1 to 4 are already Acked-by Evgeny, the connector's maintainer.
-> > Patches 5 to 7 are the obvious fixes to the connector user's code.
->
-> Obvious in what way?
->
-
-They limit processing of connector/netlink messages in these subsystems
-to messages sent from root (or some user having CAP_SYS_ADMIN).
-
-That is obvious for dst, because device setup and destruction is done by
-connector messages.
-
-This is obvious for pohmelfs becuase these connector messages are
-used there to change some configuration.
-
-This is obvious for uvesafb because the connector messages are used 
-there to delegate some video bios emulation to userspace. 
-
-Last not least dm's dirty logging in user space, should be immune to
-some crafted netlink packets sent by some unprivileged user.
-
-Patches 1 to 4 fix the framework, should be merged as soon as possible.
-
-Patches 5 to 8 (not 7) should probably be blessed by the affected
-subsystem's maintainers. I think I have put all on CC. 
-
-HTH.
-
--phil
+sage
