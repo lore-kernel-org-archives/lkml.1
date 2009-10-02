@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbZJBLmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbZJBLqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752934AbZJBLmR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 07:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbZJBLmR
+	id S1752921AbZJBLqT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 07:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZJBLqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 07:42:17 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:64997 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbZJBLmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 07:42:16 -0400
-From: Aaro Koskinen <aaro.koskinen@nokia.com>
-To: mingo@elte.hu, akpm@linux-foundation.org, arjan@linux.intel.com,
-       ak@linux.intel.com, fweisbec@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] panic: call bust_spinlocks(0) before dying
-Date: Fri,  2 Oct 2009 14:41:20 +0300
-Message-Id: <1254483680-25578-1-git-send-email-aaro.koskinen@nokia.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
-X-OriginalArrivalTime: 02 Oct 2009 11:41:25.0766 (UTC) FILETIME=[45E90260:01CA4355]
-X-Nokia-AV: Clean
+	Fri, 2 Oct 2009 07:46:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33190 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752696AbZJBLqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 07:46:18 -0400
+Message-ID: <4AC5E7BA.5060700@kernel.org>
+Date: Fri, 02 Oct 2009 20:44:58 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, arjan@linux.intel.com
+Subject: Re: [RFC PATCHSET] workqueue: implement concurrency managed workqueue
+References: <1254384558-1018-1-git-send-email-tj@kernel.org> <9942.1254401629@redhat.com>
+In-Reply-To: <9942.1254401629@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 02 Oct 2009 11:45:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit ffd71da4e3f323b7673b061e6f7e0d0c12dc2b49 moved bust_spinlocks(0)
-to the end of the function, which in practice is never reached. As a
-result console_unblank() is not called, and on some systems the user
-may not see the panic message.
+Hello, David Howells.
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
----
- kernel/panic.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+David Howells wrote:
+> Sounds interesting as a replacement for slow-work.  Some thoughts for you:
+> 
+> The most important features of slow-work are:
+> 
+>  (1) Work items are not re-entered whilst they are executing.
+> 
+>  (2) The slow-work facility keeps references on its work items by asking the
+>      client to get and put on the client's refcount.
+> 
+>  (3) The slow-work facility can create a lot more threads than the number of
+>      CPUs on a system, and the system doesn't grind to a halt if they're all
+>      taken up with long term I/O (performing several mkdirs for example).
+> 
+> I think you have (1) and (3) covered, but I'm unsure about (2).
 
-diff --git a/kernel/panic.c b/kernel/panic.c
-index bcdef26..96b45d0 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -90,6 +90,8 @@ NORET_TYPE void panic(const char * fmt, ...)
- 
- 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
- 
-+	bust_spinlocks(0);
-+
- 	if (!panic_blink)
- 		panic_blink = no_blink;
- 
-@@ -136,7 +138,6 @@ NORET_TYPE void panic(const char * fmt, ...)
- 		mdelay(1);
- 		i++;
- 	}
--	bust_spinlocks(0);
- }
- 
- EXPORT_SYMBOL(panic);
+Given that slow-work isn't being used too extensively yet, I was
+thinking whether that part could be pushed down to the caller.  Or, we
+can also wrap work and export an interface which supports the get/put
+reference.
+
+> Also, does it actually make sense to bind threads that are
+> performing long-term I/O to particular CPUs?  Threads that are going
+> to spend a lot more time sleeping on disk I/O than actually running
+> on a CPU?
+
+Binding is usually beneficial and doesn't matter for IO intensive
+ones, so...
+
+Thanks.
+
 -- 
-1.5.4.3
-
+tejun
