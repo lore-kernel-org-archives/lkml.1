@@ -1,66 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbZJBVo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZJBVrG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754637AbZJBVo4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 17:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbZJBVo4
+	id S1754789AbZJBVrG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 17:47:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZJBVrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 17:44:56 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:59780 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754447AbZJBVoz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 17:44:55 -0400
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] procfs: provide stack information for threads
-References: <1238511505.364.61.camel@matrix> <20090401193135.GA12316@elte.hu>
-	<1244146873.20012.6.camel@wall-e> <m2eipl7axx.fsf@igel.home>
-X-Yow: Well, O.K.  I'll compromise with my principles because of
- EXISTENTIAL DESPAIR!
-Date: Fri, 02 Oct 2009 23:44:56 +0200
-In-Reply-To: <m2eipl7axx.fsf@igel.home> (Andreas Schwab's message of "Fri, 02
-	Oct 2009 23:17:14 +0200")
-Message-ID: <m2ws3djwrr.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Fri, 2 Oct 2009 17:47:05 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:4732 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754618AbZJBVrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 17:47:03 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH tracing/kprobes v2 0/5] tracing/kprobes,
+	perf: perf probe support take 2
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Fri, 02 Oct 2009 17:48:34 -0400
+Message-ID: <20091002214834.30906.86502.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That missed compat_do_execve.
+Hi,
 
-Andreas.
+These patches introduce 'perf probe' command and update kprobe-tracer.
+perf probe command allows you to add new probe points by C line number
+and local variable names.
 
->From 2e81a4ab8da611f340a536aaaccbb274bfa0de5c Mon Sep 17 00:00:00 2001
-From: Andreas Schwab <schwab@linux-m68k.org>
-Date: Fri, 2 Oct 2009 23:43:47 +0200
-Subject: [PATCH] compat_do_execve: set current->stack_start as in do_execve
+This version fixes some bugs, changes subcommand name from kprobe to
+probe and use spaces for separator instead of ',' for visibility (this
+also make it easy to support probe list from stdin).
+
+Usage
+-----
+ perf probe [<options>] -P 'PROBEDEF' [-P 'PROBEDEF' ...]
+
+    -k, --vmlinux <file>  vmlinux/module pathname
+    -r, --release <rel>   kernel release
+    -P, --probe <p|r:[GRP/]NAME FUNC[+OFFS][@SRC]|@SRC:LINE [ARG ...]>
+                          probe point definition, where
+		p:	kprobe probe
+		r:	kretprobe probe
+		GRP:	Group name (optional)
+		NAME:	Event name
+		FUNC:	Function name
+		OFFS:	Offset from function entry (in byte)
+		SRC:	Source code path
+		LINE:	Line number
+		ARG:	Probe argument (local variable name or
+			kprobe-tracer argument format is supported.)
+
+Examples
+--------
+1) Add a new kprobe probe on a line of C source code.
+./perf probe -P 'p:myprobe @fs/read_write.c:285 file buf count'
+Adding new event: p:myprobe vfs_read+57 file=%bx buf=%si count=%ax
+
+2) Add a new kretprobe probe on a function return.
+./perf probe -P 'r:myretprobe vfs_read $rv'
+Adding new event: r:myretprobe vfs_read+0 $rv
+
+3) Check it in the perf list.
+./perf list
+...
+  rNNN                                       [raw hardware event descriptor]
+
+  kprobes:myprobe                            [Tracepoint event]
+  kprobes:myretprobe                         [Tracepoint event]
+  skb:kfree_skb                              [Tracepoint event]
+...
+
+4) Record the event by perf
+./perf record -f -e kprobes:myprobe:record  -F 1 -a ls
+...
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.081 MB perf.data (~3540 samples) ]
+
+5) Trace the event
+./perf trace
+            perf-11445 [000] 95862.048894383: myprobe: (c04bbed5) file=dae15e80 buf=b78b2000 count=400
+            perf-11445 [000] 95862.049066533: myprobe: (c04bbed5) file=dae15d80 buf=b78b2000 count=400
+            perf-11445 [000] 95862.049134394: myprobe: (c04bbed5) file=dae15d80 buf=b78b2000 count=400
+            perf-11445 [000] 95862.049171495: myprobe: (c04bbed5) file=dae15a80 buf=b78b2000 count=400
+
+NOTE
+----
+ perf still fails to parse format if arguments have special charactors
+(e.g. $rv, +10($sp) etc.) So, tracing myretprobe will fail with this
+version. This will be solved by naming arguments automatically if it
+doesn't have C-language name.
+
+TODO
+----
+ - Support sys_perf_counter_open (non-root)
+ - Input from stdin/output to stdout
+ - Non-auto static variable
+ - Fields of data structures (var->field)
+ - Type support
+   - Bit fields
+ - Array (var[N])
+ - Dynamic array indexing (var[var2])
+ - String/dynamic arrays (var:string, var[N..M])
+ - Force Type casting ((type)var)
+ - Non-inline search
+ - libdw, libdwfl
+ - etc.
+
+Thank you,
 
 ---
- fs/compat.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/fs/compat.c b/fs/compat.c
-index d576b55..6c19040 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1532,6 +1532,8 @@ int compat_do_execve(char * filename,
- 	if (retval < 0)
- 		goto out;
- 
-+	current->stack_start = current->mm->start_stack;
-+
- 	/* execve succeeded */
- 	current->fs->in_exec = 0;
- 	current->in_execve = 0;
+Masami Hiramatsu (5):
+      perf: kprobe command supports without libdwarf
+      perf: Add perf probe subcommand for kprobe-event setup helper
+      tracing/kprobes: Rename fixed field name
+      tracing/kprobes: Avoid field name confliction
+      tracing/kprobes: Rename special variables syntax
+
+
+ Documentation/trace/kprobetrace.txt |   10 -
+ kernel/trace/trace_kprobe.c         |  125 +++++-
+ tools/perf/Makefile                 |   10 +
+ tools/perf/builtin-probe.c          |  384 +++++++++++++++++++
+ tools/perf/builtin.h                |    1 
+ tools/perf/perf.c                   |    1 
+ tools/perf/util/probe-finder.c      |  690 +++++++++++++++++++++++++++++++++++
+ tools/perf/util/probe-finder.h      |   70 ++++
+ 8 files changed, 1251 insertions(+), 40 deletions(-)
+ create mode 100644 tools/perf/builtin-probe.c
+ create mode 100644 tools/perf/util/probe-finder.c
+ create mode 100644 tools/perf/util/probe-finder.h
+
 -- 
-1.6.4.4
+Masami Hiramatsu
 
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+e-mail: mhiramat@redhat.com
