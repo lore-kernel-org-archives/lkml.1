@@ -1,163 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbZJBXj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZJBXjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbZJBXj1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 19:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbZJBXj1
+	id S1754072AbZJBXjD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 19:39:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZJBXjC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 19:39:27 -0400
-Received: from cmpxchg.org ([85.214.51.133]:40187 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754414AbZJBXj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 19:39:26 -0400
-Date: Sat, 3 Oct 2009 01:38:37 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Mel Gorman <mel@csn.ul.ie>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [rfc patch 3/3] mm: munlock COW pages on truncation unmap
-Message-ID: <20091002233837.GA3638@cmpxchg.org>
-References: <1254344964-8124-1-git-send-email-hannes@cmpxchg.org> <1254344964-8124-3-git-send-email-hannes@cmpxchg.org> <20091002100838.5F5A.A69D9226@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091002100838.5F5A.A69D9226@jp.fujitsu.com>
+	Fri, 2 Oct 2009 19:39:02 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:60448 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753001AbZJBXjB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 19:39:01 -0400
+Message-ID: <4AC68F13.8050601@us.ibm.com>
+Date: Fri, 02 Oct 2009 16:38:59 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Anirban Sinha <ASinha@zeugmasystems.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: futex question
+References: <DDFD17CC94A9BD49A82147DDF7D545C501FD7F97@exchange.ZeugmaSystems.local> <20091001092218.GH15345@elte.hu> <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local>
+In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello KOSAKI-san,
-
-On Fri, Oct 02, 2009 at 11:40:34AM +0900, KOSAKI Motohiro wrote:
-> > @@ -835,6 +835,43 @@ static unsigned long zap_pte_range(struc
-> >  				    (page->index < details->first_index ||
-> >  				     page->index > details->last_index))
-> >  					continue;
-> > +				/*
-> > +				 * When truncating, private COW pages may be
-> > +				 * mlocked in VM_LOCKED VMAs, so they need
-> > +				 * munlocking here before getting freed.
-> > +				 *
-> > +				 * Skip them completely if we don't have the
-> > +				 * anon_vma locked.  We will get it the second
-> > +				 * time.  When page cache is truncated, no more
-> > +				 * private pages can show up against this VMA
-> > +				 * and the anon_vma is either present or will
-> > +				 * never be.
-> > +				 *
-> > +				 * Otherwise, we still have to synchronize
-> > +				 * against concurrent reclaimers.  We can not
-> > +				 * grab the page lock, but with correct
-> > +				 * ordering of page flag accesses we can get
-> > +				 * away without it.
-> > +				 *
-> > +				 * A concurrent isolator may add the page to
-> > +				 * the unevictable list, set PG_lru and then
-> > +				 * recheck PG_mlocked to verify it chose the
-> > +				 * right list and conditionally move it again.
-> > +				 *
-> > +				 * TestClearPageMlocked() provides one half of
-> > +				 * the barrier: when we do not see the page on
-> > +				 * the LRU and fail isolation, the isolator
-> > +				 * must see PG_mlocked cleared and move the
-> > +				 * page on its own back to the evictable list.
-> > +				 */
-> > +				if (private && !details->anon_vma)
-> > +					continue;
-> > +				if (private && TestClearPageMlocked(page)) {
-> > +					dec_zone_page_state(page, NR_MLOCK);
-> > +					count_vm_event(UNEVICTABLE_PGCLEARED);
-> > +					if (!isolate_lru_page(page))
-> > +						putback_lru_page(page);
-> > +				}
-> >  			}
-> >  			ptent = ptep_get_and_clear_full(mm, addr, pte,
-> >  							tlb->fullmm);
+Anirban Sinha wrote:
+>> Should we not just clear the pointer (and
+>>> it's compat version) within do_execve()?
 > 
-> Umm..
-> I haven't understand this.
 > 
-> (1) unmap_mapping_range() is called twice.
+> In our private repository, applying the following patch resolved the
+> issues I mentioned. I no longer see messages like this:
 > 
-> 	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
-> 	truncate_inode_pages(mapping, new);
-> 	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+>  [futex] ("ifconfig")(pid=2509) exit_robust_list:unable to fetch robust
+> entry. uaddr=0x000000002abbc4f0
 > 
-> (2) PG_mlock is turned on from mlock() and vmscan.
-> (3) vmscan grab anon_vma, but mlock don't grab anon_vma.
+> from my instrumented kernel within exit_robust_list(). My
+> instrumentation looked something like this:
 
-You are right, I was so focused on the LRU side that I missed an
-obvious window here: an _explicit_ mlock can still happen between the
-PG_mlocked clearing section and releasing the page.
-
-If we race with it, the put_page() in __mlock_vma_pages_range() might
-free the freshly mlocked page.
-
-> (4) after truncate_inode_pages(), we don't need to think vs-COW, because
->     find_get_page() never success. but first unmap_mapping_range()
->     have vs-COW racing.
-
-Yes, we can race with COW breaking, but I can not see a problem there.
-It clears the old page's mlock, but also with an atomic
-TestClearPageMlocked().  And the new page is mapped and mlocked under
-pte lock and only if we didn't clear the pte in the meantime.
-
-> So, Is anon_vma grabbing really sufficient?
-
-No, the explicit mlocking race exists, I think.
-
-> Or, you intent to the following?
 > 
-> 	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 0);
-> 	truncate_inode_pages(mapping, new);
-> 	unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
-
-As mentioned above, I don't see how it would make a difference.
-
-> > @@ -544,6 +544,13 @@ redo:
-> >  		 */
-> >  		lru = LRU_UNEVICTABLE;
-> >  		add_page_to_unevictable_list(page);
-> > +		/*
-> > +		 * See the TestClearPageMlocked() in zap_pte_range():
-> > +		 * if a racing unmapper did not see the above setting
-> > +		 * of PG_lru, we must see its clearing of PG_locked
-> > +		 * and move the page back to the evictable list.
-> > +		 */
-> > +		smp_mb();
-> >  	}
+> if (fetch_robust_entry(...)) {
+> printk(...);
+> return;
+> }
 > 
-> add_page_to_unevictable() have a spin lock. Why do we need additionl
-> explicit memory barrier?
+> Just tossing the patch in the community in case someone is interested
 
-It sets PG_lru under spinlock and tests PG_mlocked after the unlock.
-The following sections from memory-barriers.txt made me nervous:
 
- (5) LOCK operations.
+Thanks for sending the patch.  I'm looking into it now.  Couple questions:
 
-     This acts as a one-way permeable barrier.  It guarantees that all memory
-     operations after the LOCK operation will appear to happen after the LOCK
-     operation with respect to the other components of the system.
+1) What caused you to instrument this path in the first place?  Were you 
+seeing some unexpected behavior?
 
- (6) UNLOCK operations.
+2) I wonder why we would need to clear the robust list, but I don't see 
+other things like pi_blocked_on, etc. in execve being cleared.  I'm 
+looking into this now (perhaps we don't do the same cleanup, need to 
+check).... have to get on the plane...
 
-     This also acts as a one-way permeable barrier.  It guarantees that all
-     memory operations before the UNLOCK operation will appear to happen before
-     the UNLOCK operation with respect to the other components of the system.
+--
+Darren Hart
 
-     Memory operations that occur after an UNLOCK operation may appear to
-     happen before it completes.
+> ...
+> 
+> 
+> 
+> Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
+> ---
+>  fs/compat.c |    3 +++
+>  fs/exec.c   |    3 +++
+>  2 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/compat.c b/fs/compat.c
+> index 6d6f98f..c3d117c 100644
+> --- a/fs/compat.c
+> +++ b/fs/compat.c
+> @@ -1510,6 +1510,9 @@ int compat_do_execve(char * filename,
+>         if (retval)
+>                 goto out_file;
+> 
+> +#ifdef CONFIG_FUTEX
+> +       current->compat_robust_list = NULL;
+> +#endif
+>         bprm->argc = compat_count(argv, MAX_ARG_STRINGS);
+>         if ((retval = bprm->argc) < 0)
+>                 goto out;
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 172ceb6..e9334b8 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -1323,6 +1323,9 @@ int do_execve(char * filename,
+>         retval = bprm_mm_init(bprm);
+>         if (retval)
+>                 goto out_file;
+> +#ifdef CONFIG_FUTEX
+> +       current->robust_list = NULL;
+> +#endif
+> 
+>         bprm->argc = count(argv, MAX_ARG_STRINGS);
+>         if ((retval = bprm->argc) < 0)
+> 
+> 
 
-So the only garuantee this gives us is that both PG_lru setting and
-PG_mlocked testing happen after LOCK and PG_lru setting finishes
-before UNLOCK, no?  I wanted to make sure this does not happen:
 
-	LOCK, test PG_mlocked, set PG_lru, UNLOCK
-
-I don't know whether there is a data dependency between those two
-operations.  They go to the same word, but I could also imagine
-setting one bit is independent of reading another one.  Humm.  Help.
-
-Thanks,
-	Hannes
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
