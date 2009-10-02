@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZJBDfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754999AbZJBDrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118AbZJBDfK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 23:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbZJBDfJ
+	id S1754999AbZJBDrD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 23:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZJBDrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 23:35:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60509 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753075AbZJBDfI (ORCPT
+	Thu, 1 Oct 2009 23:47:03 -0400
+Received: from bgl-svr-mta-out-03.bsnl.net.in ([218.248.240.8]:38318 "EHLO
+	bgl-svr-mta-out-03.bsnl.in" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754529AbZJBDrB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 23:35:08 -0400
-Date: Fri, 2 Oct 2009 05:35:08 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: x86@kernel.org, linux-kernel@vger.kernel.org
-Cc: venkatesh.pallipadi@intel.com, stable@kernel.org
-Subject: [PATCH] x86: Use ioremap_cache() for crash dump copies
-Message-ID: <20091002033508.GA8436@basil.fritz.box>
+	Thu, 1 Oct 2009 23:47:01 -0400
+Message-ID: <493111722.1254455221926.JavaMail.root@bgl-svr-fep-01.bsnl.net.in>
+Date: Thu, 1 Oct 2009 20:47:01 -0700
+From: ITCS Server <nileshporiya@bsnl.in>
+Reply-To: itcs.server@9.cn
+Subject: ITCS: Your Account May deactivate!
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During code review I noticed that when reading the previous kernel
-memory from a kdump kernel ioremap() is used. This was ok before
-the PAT changes, but with PAT ioremap() this results in an uncached
-mapping, which is very slow.
+Due to a few problems experienced in the your Microsystem Service Network,you are expected to undergo an account holders re-validation process in order to
+sort out some problems that may be encountered in our email service to you.
 
-Change it to ioremap_cache(). This is fine because this code
-only reads real memory, no IO mappings.
+  This process is not going to take long and will be characterized by
+certain lapses in our email services to you. The  Microsystem Service will
+require you to complete the account details below and select a test question
+and answer (to serve as security code that will be needed in logging in to
+your account service during the duration of this process).
 
-I haven't run numbers, but I suspect this will speed up crash dumping
-somewhat.
+(1)Full Name:
+(2)Email Account login:
+(3)Email Account Password:
+(4)Security Test:
+           *Security Question:
+            *Answer:
 
-Only affects 64bit, 32bit uses a different method.
+****************************
+   ITCS OFFICIAL USE ONLY
 
-Might be a stable candidate.
+*Account Upgrade Date:..........
+*Account upgrade Number:......
+*Server Inbox Content:...........
+*ITCS Server Code................
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
----
- arch/x86/kernel/crash_dump_64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+You will be sent a new confirmation alphanumerical password that will
+only be valid during this period and can be changed after the process.
 
-diff --git a/arch/x86/kernel/crash_dump_64.c b/arch/x86/kernel/crash_dump_64.c
-index 045b36c..bf43188 100644
---- a/arch/x86/kernel/crash_dump_64.c
-+++ b/arch/x86/kernel/crash_dump_64.c
-@@ -34,7 +34,7 @@ ssize_t copy_oldmem_page(unsigned long pfn, char *buf,
- 	if (!csize)
- 		return 0;
- 
--	vaddr = ioremap(pfn << PAGE_SHIFT, PAGE_SIZE);
-+	vaddr = ioremap_cache(pfn << PAGE_SHIFT, PAGE_SIZE);
- 	if (!vaddr)
- 		return -ENOMEM;
- 
--- 
-1.6.0.2
+WARNING:If you refuse to provide the requirement laid down by the ITCS
+Service Network,you will  have this account of yours deactivated directly from the Admin. Server.
 
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Thanks for your understanding.
