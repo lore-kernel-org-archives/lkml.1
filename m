@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbZJBHHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbZJBHLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbZJBHHb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 03:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbZJBHHa
+	id S1757303AbZJBHLG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 03:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757283AbZJBHLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 03:07:30 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37863 "EHLO
+	Fri, 2 Oct 2009 03:11:06 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38232 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756971AbZJBHHa (ORCPT
+	with ESMTP id S1757282AbZJBHLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 03:07:30 -0400
-Date: Fri, 2 Oct 2009 06:10:15 +0200
+	Fri, 2 Oct 2009 03:11:05 -0400
+Date: Fri, 2 Oct 2009 06:13:46 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       omegamoon@gmail.com, eric.y.miao@gmail.com, utx@penguin.cz,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.32-rc1: spitz boots but suspend/resume is broken
-Message-ID: <20091002041015.GB1409@ucw.cz>
-References: <20090930120655.GG1412@ucw.cz> <bc64b4640909300509p6c682fa8rb5ce43c77c79f5@mail.gmail.com>
+To: Stanislav Brabec <utx@penguin.cz>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Richard Purdie <rpurdie@rpsys.net>,
+       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
+       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
+       thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
+       Andrea Adami <andrea.adami@gmail.com>
+Subject: Re: Zaurus suspend saga
+Message-ID: <20091002041346.GC1409@ucw.cz>
+References: <20090906052653.GB1324@ucw.cz> <1252276145.17852.15.camel@dax.rpnet.com> <f17812d70909061806y651c390w1faa5364f0fb6ddc@mail.gmail.com> <20090907110307.GK23450@elf.ucw.cz> <1252323270.14911.20.camel@hammer.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <bc64b4640909300509p6c682fa8rb5ce43c77c79f5@mail.gmail.com>
+In-Reply-To: <1252323270.14911.20.camel@hammer.suse.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-09-30 16:09:25, Dmitry Eremin-Solenikov wrote:
-> On Wed, Sep 30, 2009 at 4:06 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> > matrix keyboard driver needs to be enabled, otherwise it seems ok.
-> >
-> > Unfortunately, it does not respond to power button in any visible way
-> > :-(. Any ideas what might be wrong/how to debug it?
+On Mon 2009-09-07 13:34:29, Stanislav Brabec wrote:
+> Pavel Machek wrote:
 > 
-> Enable gpio-keyboard driver, verify (or port power button to it :))
-> and check that
-> enable_wakeup is enabled.
+> > Yep, zaurus is currently pretty broken; I don't think charging from
+> > Linux works at all, so I simply power down back to bootloader for
+> > charge.
+> > 
+> > Anyway, suspend/resume is currently more important for me than charge,
+> > and I'd like to get at least that to work.
+> > 
+> > Could we apply the trivial patch from "zaurus c3000 aka spitz: fix
+> > resume" , and preferably push it to linus for 2.6.31? One version
+> > where kernel suspends/resumes would be good. 
+> 
+> I vote for applying Pavel's patch, as it fixes suspend/resume. Emergency
+> suspend may happen later, when SPI will be fully resumed. If future
+> fixes provide early SPI resume, then this patch may be reverted.
+> 
+> Tested-by: Stanislav Brabec <utx@penguin.cz>
+> 
+> ...
+> 
+> Remaining Zaurus SL-C3200 problems in the current vanilla (regressions
+> are compared with 2.6.26-RP):
 
-It seems neccessary tables for gpio-keyboard just are not there :-(.
+Yep :-(. More developers/testers needed. People breaking zaurus all
+the time, probably because they don't have the hw.
 
-In the meantime, this allows easy switch to known-good driver. (Can we
-get it upstream until problem is fixed properly?)
-
-Unfortunately, that still does not fix suspend/resume. (Does it work
-for you?)
-
-> BTW: on tosa initially i had a problem w/ wakeup. The power button wasn't
-> able to wake the device up. However there was another gpio that was OR of
->  power button and AC-in gpios that had to be used for wakeup. Please check
-> if the same design applies to your device.
-
-Well, it all worked in 2.6.31. How do I check it?
-
-								Pavel
----
-
-Switch back to known-good keyboard driver. The new one does not
-support power key, making suspend unusable.
-
-This actually fixes regression from 2.6.31 (power key now works) but
-not suspend/resume regression (will have to hunt more).
-
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-diff -ur linux-rc/arch/arm.ofic/mach-pxa/spitz.c linux-rc/arch/arm/mach-pxa/spitz.c
---- linux-rc/arch/arm.ofic/mach-pxa/spitz.c	2009-09-28 12:09:26.000000000 +0200
-+++ linux-rc/arch/arm/mach-pxa/spitz.c	2009-09-30 22:27:43.000000000 +0200
-@@ -367,7 +367,8 @@
- };
- 
- static struct platform_device spitzkbd_device = {
--	.name		= "matrix-keypad",
-+  //	.name		= "matrix-keypad",
-+	.name		= "spitz-keyboard",
- 	.id		= -1,
- 	.dev		= {
- 		.platform_data = &spitzkbd_pdata,
-
+Should I get listed as zaurus maintainer so that I get to see
+zaurus-breaking patches before they hit the mainline?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
