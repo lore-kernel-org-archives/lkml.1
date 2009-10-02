@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbZJBBob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbZJBBni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756988AbZJBBob (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbZJBBdx
+	id S932290AbZJBBni (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbZJBBd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:33:53 -0400
-Received: from kroah.org ([198.145.64.141]:33375 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:33:57 -0400
+Received: from kroah.org ([198.145.64.141]:33378 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756284AbZJBBds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:33:48 -0400
+	id S1756795AbZJBBdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:33:49 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:21 2009
-Message-Id: <20091002012421.467132177@mini.kroah.org>
+Message-Id: <20091002012421.652610299@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:20 -0700
+Date: Thu, 01 Oct 2009 18:17:21 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Cox <alan@linux.intel.com>
-Subject: [092/136] tty: USB serial termios bits
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [093/136] usb-serial: change referencing of port and serial structures
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=tty-usb-serial-termios-bits.patch
+Content-Disposition: inline; filename=usb-serial-change-referencing-of-port-and-serial-structures.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,533 +29,235 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alan Cox <alan@linux.intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit fe1ae7fdd2ee603f2d95f04e09a68f7f79045127 upstream.
+commit 41bd34ddd7aa46dbc03b5bb33896e0fa8100fe7b upstream.
 
-Various drivers have hacks to mangle termios structures. This stems from
-the fact there is no nice setup hook for configuring the termios settings
-when the port is created
+This patch (as1284) changes the referencing of the usb_serial and
+usb_serial_port structures in usb-serial.c.  It's not feasible to make
+the port structures keep a reference to the serial structure, because
+the ports need to remain in existence when serial is released -- quite
+a few of the drivers expect this.  Consequently taking a reference
+to the port when the device file is open is insufficient; such a
+reference would not pin serial.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
+To fix this, we now take a reference to serial when the device file is
+opened.  The final put_device() for the ports occurs in
+destroy_serial(), so that the ports will last as long as they are
+needed.
+
+The patch initializes all the port devices, including those in the
+unused "fake" ports.  This makes the code more uniform because they
+can all be released in the same way.  The error handling code in
+usb_serial_probe() is much simplified by this approach; instead of
+freeing everything by hand we can use a single usb_serial_put() call.
+
+Also simplified is the port-release mechanism.  Instead of being two
+separate routines, port_release() and port_free() can be combined into
+one.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/tty_io.c            |    1 
- drivers/usb/serial/ark3116.c     |   46 +++++++++------------------------------
- drivers/usb/serial/cypress_m8.c  |   12 ++--------
- drivers/usb/serial/empeg.c       |   12 ++--------
- drivers/usb/serial/iuu_phoenix.c |   31 +++++++++++---------------
- drivers/usb/serial/kobil_sct.c   |   22 +++++++++---------
- drivers/usb/serial/oti6858.c     |   21 ++++++++---------
- drivers/usb/serial/spcp8x5.c     |   21 ++++++++---------
- drivers/usb/serial/usb-serial.c  |   38 +++++++++++++++++++++++++++++++-
- drivers/usb/serial/whiteheat.c   |    6 ++---
- include/linux/usb/serial.h       |    3 ++
- 11 files changed, 106 insertions(+), 107 deletions(-)
+ drivers/usb/serial/usb-serial.c |   95 ++++++++--------------------------------
+ 1 file changed, 20 insertions(+), 75 deletions(-)
 
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1184,6 +1184,7 @@ int tty_init_termios(struct tty_struct *
- 	tty->termios->c_ospeed = tty_termios_baud_rate(tty->termios);
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(tty_init_termios);
- 
- /**
-  *	tty_driver_install_tty() - install a tty entry in the driver
---- a/drivers/usb/serial/ark3116.c
-+++ b/drivers/usb/serial/ark3116.c
-@@ -35,11 +35,6 @@ static struct usb_device_id id_table [] 
- };
- MODULE_DEVICE_TABLE(usb, id_table);
- 
--struct ark3116_private {
--	spinlock_t lock;
--	u8 termios_initialized;
--};
--
- static inline void ARK3116_SND(struct usb_serial *serial, int seq,
- 			       __u8 request, __u8 requesttype,
- 			       __u16 value, __u16 index)
-@@ -82,22 +77,11 @@ static inline void ARK3116_RCV_QUIET(str
- static int ark3116_attach(struct usb_serial *serial)
- {
- 	char *buf;
--	struct ark3116_private *priv;
--	int i;
--
--	for (i = 0; i < serial->num_ports; ++i) {
--		priv = kzalloc(sizeof(struct ark3116_private), GFP_KERNEL);
--		if (!priv)
--			goto cleanup;
--		spin_lock_init(&priv->lock);
--
--		usb_set_serial_port_data(serial->port[i], priv);
--	}
- 
- 	buf = kmalloc(1, GFP_KERNEL);
- 	if (!buf) {
- 		dbg("error kmalloc -> out of mem?");
--		goto cleanup;
-+		return -ENOMEM;
- 	}
- 
- 	/* 3 */
-@@ -149,13 +133,16 @@ static int ark3116_attach(struct usb_ser
- 
- 	kfree(buf);
- 	return 0;
-+}
- 
--cleanup:
--	for (--i; i >= 0; --i) {
--		kfree(usb_get_serial_port_data(serial->port[i]));
--		usb_set_serial_port_data(serial->port[i], NULL);
--	}
--	return -ENOMEM;
-+static void ark3116_init_termios(struct tty_struct *tty)
-+{
-+	struct ktermios *termios = tty->termios;
-+	*termios = tty_std_termios;
-+	termios->c_cflag = B9600 | CS8
-+				      | CREAD | HUPCL | CLOCAL;
-+	termios->c_ispeed = 9600;
-+	termios->c_ospeed = 9600;
- }
- 
- static void ark3116_set_termios(struct tty_struct *tty,
-@@ -163,10 +150,8 @@ static void ark3116_set_termios(struct t
- 				struct ktermios *old_termios)
- {
- 	struct usb_serial *serial = port->serial;
--	struct ark3116_private *priv = usb_get_serial_port_data(port);
- 	struct ktermios *termios = tty->termios;
- 	unsigned int cflag = termios->c_cflag;
--	unsigned long flags;
- 	int baud;
- 	int ark3116_baud;
- 	char *buf;
-@@ -176,16 +161,6 @@ static void ark3116_set_termios(struct t
- 
- 	dbg("%s - port %d", __func__, port->number);
- 
--	spin_lock_irqsave(&priv->lock, flags);
--	if (!priv->termios_initialized) {
--		*termios = tty_std_termios;
--		termios->c_cflag = B9600 | CS8
--					      | CREAD | HUPCL | CLOCAL;
--		termios->c_ispeed = 9600;
--		termios->c_ospeed = 9600;
--		priv->termios_initialized = 1;
--	}
--	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	cflag = termios->c_cflag;
- 	termios->c_cflag &= ~(CMSPAR|CRTSCTS);
-@@ -455,6 +430,7 @@ static struct usb_serial_driver ark3116_
- 	.num_ports =		1,
- 	.attach =		ark3116_attach,
- 	.set_termios =		ark3116_set_termios,
-+	.init_termios =		ark3116_init_termios,
- 	.ioctl =		ark3116_ioctl,
- 	.tiocmget =		ark3116_tiocmget,
- 	.open =			ark3116_open,
---- a/drivers/usb/serial/cypress_m8.c
-+++ b/drivers/usb/serial/cypress_m8.c
-@@ -659,15 +659,7 @@ static int cypress_open(struct tty_struc
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	/* Set termios */
--	result = cypress_write(tty, port, NULL, 0);
--
--	if (result) {
--		dev_err(&port->dev,
--			"%s - failed setting the control lines - error %d\n",
--							__func__, result);
--		return result;
--	} else
--		dbg("%s - success setting the control lines", __func__);
-+	cypress_send(port);
- 
- 	if (tty)
- 		cypress_set_termios(tty, port, &priv->tmp_termios);
-@@ -1005,6 +997,8 @@ static void cypress_set_termios(struct t
- 	dbg("%s - port %d", __func__, port->number);
- 
- 	spin_lock_irqsave(&priv->lock, flags);
-+	/* We can't clean this one up as we don't know the device type
-+	   early enough */
- 	if (!priv->termios_initialized) {
- 		if (priv->chiptype == CT_EARTHMATE) {
- 			*(tty->termios) = tty_std_termios;
---- a/drivers/usb/serial/empeg.c
-+++ b/drivers/usb/serial/empeg.c
-@@ -90,8 +90,7 @@ static int  empeg_chars_in_buffer(struct
- static void empeg_throttle(struct tty_struct *tty);
- static void empeg_unthrottle(struct tty_struct *tty);
- static int  empeg_startup(struct usb_serial *serial);
--static void empeg_set_termios(struct tty_struct *tty,
--		struct usb_serial_port *port, struct ktermios *old_termios);
-+static void empeg_init_termios(struct tty_struct *tty);
- static void empeg_write_bulk_callback(struct urb *urb);
- static void empeg_read_bulk_callback(struct urb *urb);
- 
-@@ -123,7 +122,7 @@ static struct usb_serial_driver empeg_de
- 	.throttle =		empeg_throttle,
- 	.unthrottle =		empeg_unthrottle,
- 	.attach =		empeg_startup,
--	.set_termios =		empeg_set_termios,
-+	.init_termios =		empeg_init_termios,
- 	.write =		empeg_write,
- 	.write_room =		empeg_write_room,
- 	.chars_in_buffer =	empeg_chars_in_buffer,
-@@ -150,9 +149,6 @@ static int empeg_open(struct tty_struct 
- 
- 	dbg("%s - port %d", __func__, port->number);
- 
--	/* Force default termio settings */
--	empeg_set_termios(tty, port, NULL) ;
--
- 	bytes_in = 0;
- 	bytes_out = 0;
- 
-@@ -425,11 +421,9 @@ static int  empeg_startup(struct usb_ser
- }
- 
- 
--static void empeg_set_termios(struct tty_struct *tty,
--		struct usb_serial_port *port, struct ktermios *old_termios)
-+static void empeg_init_termios(struct tty_struct *tty)
- {
- 	struct ktermios *termios = tty->termios;
--	dbg("%s - port %d", __func__, port->number);
- 
- 	/*
- 	 * The empeg-car player wants these particular tty settings.
---- a/drivers/usb/serial/iuu_phoenix.c
-+++ b/drivers/usb/serial/iuu_phoenix.c
-@@ -71,7 +71,6 @@ struct iuu_private {
- 	spinlock_t lock;	/* store irq state */
- 	wait_queue_head_t delta_msr_wait;
- 	u8 line_status;
--	u8 termios_initialized;
- 	int tiostatus;		/* store IUART SIGNAL for tiocmget call */
- 	u8 reset;		/* if 1 reset is needed */
- 	int poll;		/* number of poll */
-@@ -1018,6 +1017,18 @@ static void iuu_close(struct usb_serial_
- 	}
- }
- 
-+static void iuu_init_termios(struct tty_struct *tty)
-+{
-+	*(tty->termios) = tty_std_termios;
-+	tty->termios->c_cflag = CLOCAL | CREAD | CS8 | B9600
-+				| TIOCM_CTS | CSTOPB | PARENB;
-+	tty->termios->c_ispeed = 9600;
-+	tty->termios->c_ospeed = 9600;
-+	tty->termios->c_lflag = 0;
-+	tty->termios->c_oflag = 0;
-+	tty->termios->c_iflag = 0;
-+}
-+
- static int iuu_open(struct tty_struct *tty,
- 			struct usb_serial_port *port, struct file *filp)
- {
-@@ -1025,7 +1036,6 @@ static int iuu_open(struct tty_struct *t
- 	u8 *buf;
- 	int result;
- 	u32 actual;
--	unsigned long flags;
- 	struct iuu_private *priv = usb_get_serial_port_data(port);
- 
- 	dbg("%s -  port %d", __func__, port->number);
-@@ -1064,21 +1074,7 @@ static int iuu_open(struct tty_struct *t
- 			  port->bulk_in_buffer, 512,
- 			  NULL, NULL);
- 
--	/* set the termios structure */
--	spin_lock_irqsave(&priv->lock, flags);
--	if (tty && !priv->termios_initialized) {
--		*(tty->termios) = tty_std_termios;
--		tty->termios->c_cflag = CLOCAL | CREAD | CS8 | B9600
--					| TIOCM_CTS | CSTOPB | PARENB;
--		tty->termios->c_ispeed = 9600;
--		tty->termios->c_ospeed = 9600;
--		tty->termios->c_lflag = 0;
--		tty->termios->c_oflag = 0;
--		tty->termios->c_iflag = 0;
--		priv->termios_initialized = 1;
--		priv->poll = 0;
--	 }
--	spin_unlock_irqrestore(&priv->lock, flags);
-+	priv->poll = 0;
- 
- 	/* initialize writebuf */
- #define FISH(a, b, c, d) do { \
-@@ -1201,6 +1197,7 @@ static struct usb_serial_driver iuu_devi
- 	.tiocmget = iuu_tiocmget,
- 	.tiocmset = iuu_tiocmset,
- 	.set_termios = iuu_set_termios,
-+	.init_termios = iuu_init_termios,
- 	.attach = iuu_startup,
- 	.release = iuu_release,
- };
---- a/drivers/usb/serial/kobil_sct.c
-+++ b/drivers/usb/serial/kobil_sct.c
-@@ -85,7 +85,7 @@ static void kobil_read_int_callback(stru
- static void kobil_write_callback(struct urb *purb);
- static void kobil_set_termios(struct tty_struct *tty,
- 			struct usb_serial_port *port, struct ktermios *old);
--
-+static void kobil_init_termios(struct tty_struct *tty);
- 
- static struct usb_device_id id_table [] = {
- 	{ USB_DEVICE(KOBIL_VENDOR_ID, KOBIL_ADAPTER_B_PRODUCT_ID) },
-@@ -120,6 +120,7 @@ static struct usb_serial_driver kobil_de
- 	.release =		kobil_release,
- 	.ioctl =		kobil_ioctl,
- 	.set_termios =		kobil_set_termios,
-+	.init_termios =		kobil_init_termios,
- 	.tiocmget =		kobil_tiocmget,
- 	.tiocmset =		kobil_tiocmset,
- 	.open =			kobil_open,
-@@ -210,6 +211,15 @@ static void kobil_release(struct usb_ser
- 		kfree(usb_get_serial_port_data(serial->port[i]));
- }
- 
-+static void kobil_init_termios(struct tty_struct *tty)
-+{
-+	/* Default to echo off and other sane device settings */
-+	tty->termios->c_lflag = 0;
-+	tty->termios->c_lflag &= ~(ISIG | ICANON | ECHO | IEXTEN | XCASE);
-+	tty->termios->c_iflag = IGNBRK | IGNPAR | IXOFF;
-+	/* do NOT translate CR to CR-NL (0x0A -> 0x0A 0x0D) */
-+	tty->termios->c_oflag &= ~ONLCR;
-+}
- 
- static int kobil_open(struct tty_struct *tty,
- 			struct usb_serial_port *port, struct file *filp)
-@@ -226,16 +236,6 @@ static int kobil_open(struct tty_struct 
- 	/* someone sets the dev to 0 if the close method has been called */
- 	port->interrupt_in_urb->dev = port->serial->dev;
- 
--	if (tty) {
--
--		/* Default to echo off and other sane device settings */
--		tty->termios->c_lflag = 0;
--		tty->termios->c_lflag &= ~(ISIG | ICANON | ECHO | IEXTEN |
--								 XCASE);
--		tty->termios->c_iflag = IGNBRK | IGNPAR | IXOFF;
--		/* do NOT translate CR to CR-NL (0x0A -> 0x0A 0x0D) */
--		tty->termios->c_oflag &= ~ONLCR;
--	}
- 	/* allocate memory for transfer buffer */
- 	transfer_buffer = kzalloc(transfer_buffer_length, GFP_KERNEL);
- 	if (!transfer_buffer)
---- a/drivers/usb/serial/oti6858.c
-+++ b/drivers/usb/serial/oti6858.c
-@@ -146,6 +146,7 @@ static int oti6858_open(struct tty_struc
- static void oti6858_close(struct usb_serial_port *port);
- static void oti6858_set_termios(struct tty_struct *tty,
- 			struct usb_serial_port *port, struct ktermios *old);
-+static void oti6858_init_termios(struct tty_struct *tty);
- static int oti6858_ioctl(struct tty_struct *tty, struct file *file,
- 			unsigned int cmd, unsigned long arg);
- static void oti6858_read_int_callback(struct urb *urb);
-@@ -186,6 +187,7 @@ static struct usb_serial_driver oti6858_
- 	.write =		oti6858_write,
- 	.ioctl =		oti6858_ioctl,
- 	.set_termios =		oti6858_set_termios,
-+	.init_termios = 	oti6858_init_termios,
- 	.tiocmget =		oti6858_tiocmget,
- 	.tiocmset =		oti6858_tiocmset,
- 	.read_bulk_callback =	oti6858_read_bulk_callback,
-@@ -206,7 +208,6 @@ struct oti6858_private {
- 	struct {
- 		u8 read_urb_in_use;
- 		u8 write_urb_in_use;
--		u8 termios_initialized;
- 	} flags;
- 	struct delayed_work delayed_write_work;
- 
-@@ -447,6 +448,14 @@ static int oti6858_chars_in_buffer(struc
- 	return chars;
- }
- 
-+static void oti6858_init_termios(struct tty_struct *tty)
-+{
-+	*(tty->termios) = tty_std_termios;
-+	tty->termios->c_cflag = B38400 | CS8 | CREAD | HUPCL | CLOCAL;
-+	tty->termios->c_ispeed = 38400;
-+	tty->termios->c_ospeed = 38400;
-+}
-+
- static void oti6858_set_termios(struct tty_struct *tty,
- 		struct usb_serial_port *port, struct ktermios *old_termios)
- {
-@@ -464,16 +473,6 @@ static void oti6858_set_termios(struct t
- 		return;
- 	}
- 
--	spin_lock_irqsave(&priv->lock, flags);
--	if (!priv->flags.termios_initialized) {
--		*(tty->termios) = tty_std_termios;
--		tty->termios->c_cflag = B38400 | CS8 | CREAD | HUPCL | CLOCAL;
--		tty->termios->c_ispeed = 38400;
--		tty->termios->c_ospeed = 38400;
--		priv->flags.termios_initialized = 1;
--	}
--	spin_unlock_irqrestore(&priv->lock, flags);
--
- 	cflag = tty->termios->c_cflag;
- 
- 	spin_lock_irqsave(&priv->lock, flags);
---- a/drivers/usb/serial/spcp8x5.c
-+++ b/drivers/usb/serial/spcp8x5.c
-@@ -299,7 +299,6 @@ struct spcp8x5_private {
- 	wait_queue_head_t	delta_msr_wait;
- 	u8 			line_control;
- 	u8 			line_status;
--	u8 			termios_initialized;
- };
- 
- /* desc : when device plug in,this function would be called.
-@@ -498,6 +497,15 @@ static void spcp8x5_close(struct usb_ser
- 		dev_dbg(&port->dev, "usb_unlink_urb(read_urb) = %d\n", result);
- }
- 
-+static void spcp8x5_init_termios(struct tty_struct *tty)
-+{
-+	/* for the 1st time call this function */
-+	*(tty->termios) = tty_std_termios;
-+	tty->termios->c_cflag = B115200 | CS8 | CREAD | HUPCL | CLOCAL;
-+	tty->termios->c_ispeed = 115200;
-+	tty->termios->c_ospeed = 115200;
-+}
-+
- /* set the serial param for transfer. we should check if we really need to
-  * transfer. if we set flow control we should do this too. */
- static void spcp8x5_set_termios(struct tty_struct *tty,
-@@ -514,16 +522,6 @@ static void spcp8x5_set_termios(struct t
- 	int i;
- 	u8 control;
- 
--	/* for the 1st time call this function */
--	spin_lock_irqsave(&priv->lock, flags);
--	if (!priv->termios_initialized) {
--		*(tty->termios) = tty_std_termios;
--		tty->termios->c_cflag = B115200 | CS8 | CREAD | HUPCL | CLOCAL;
--		tty->termios->c_ispeed = 115200;
--		tty->termios->c_ospeed = 115200;
--		priv->termios_initialized = 1;
--	}
--	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	/* check that they really want us to change something */
- 	if (!tty_termios_hw_change(tty->termios, old_termios))
-@@ -1011,6 +1009,7 @@ static struct usb_serial_driver spcp8x5_
- 	.carrier_raised		= spcp8x5_carrier_raised,
- 	.write 			= spcp8x5_write,
- 	.set_termios 		= spcp8x5_set_termios,
-+	.init_termios		= spcp8x5_init_termios,
- 	.ioctl 			= spcp8x5_ioctl,
- 	.tiocmget 		= spcp8x5_tiocmget,
- 	.tiocmset 		= spcp8x5_tiocmset,
 --- a/drivers/usb/serial/usb-serial.c
 +++ b/drivers/usb/serial/usb-serial.c
-@@ -721,6 +721,41 @@ static const struct tty_port_operations 
- 	.dtr_rts = serial_dtr_rts,
- };
+@@ -43,8 +43,6 @@
+ #define DRIVER_AUTHOR "Greg Kroah-Hartman, greg@kroah.com, http://www.kroah.com/linux/"
+ #define DRIVER_DESC "USB Serial Driver core"
  
-+/**
-+ *	serial_install		-	install tty
-+ *	@driver: the driver (USB in our case)
-+ *	@tty: the tty being created
-+ *
-+ *	Create the termios objects for this tty. We use the default USB
-+ *	serial ones but permit them to be overriddenby serial->type->termios.
-+ *	This lets us remove all the ugly hackery
-+ */
-+
-+static int serial_install(struct tty_driver *driver, struct tty_struct *tty)
-+{
-+	int idx = tty->index;
-+	struct usb_serial *serial;
-+	int retval;
-+
-+	/* If the termios setup has yet to be done */
-+	if (tty->driver->termios[idx] == NULL) {
-+		/* perform the standard setup */
-+		retval = tty_init_termios(tty);
-+		if (retval)
-+			return retval;
-+		/* allow the driver to update it */
-+		serial = usb_serial_get_by_index(tty->index);
-+		if (serial->type->init_termios)
-+			serial->type->init_termios(tty);
-+		usb_serial_put(serial);
-+	}
-+	/* Final install (we use the default method) */
-+	tty_driver_kref_get(driver);
-+	tty->count++;
-+	driver->ttys[idx] = tty;
-+	return 0;
-+}
-+
- int usb_serial_probe(struct usb_interface *interface,
- 			       const struct usb_device_id *id)
- {
-@@ -1228,7 +1263,8 @@ static const struct tty_operations seria
- 	.chars_in_buffer =	serial_chars_in_buffer,
- 	.tiocmget =		serial_tiocmget,
- 	.tiocmset =		serial_tiocmset,
--	.shutdown =		serial_do_free,
-+	.shutdown = 		serial_do_free,
-+	.install = 		serial_install,
- 	.proc_fops =		&serial_proc_fops,
- };
+-static void port_free(struct usb_serial_port *port);
+-
+ /* Driver structure we register with the USB core */
+ static struct usb_driver usb_serial_driver = {
+ 	.name =		"usbserial",
+@@ -145,27 +143,16 @@ static void destroy_serial(struct kref *
  
---- a/drivers/usb/serial/whiteheat.c
-+++ b/drivers/usb/serial/whiteheat.c
-@@ -259,7 +259,7 @@ static int firm_send_command(struct usb_
- 						__u8 *data, __u8 datasize);
- static int firm_open(struct usb_serial_port *port);
- static int firm_close(struct usb_serial_port *port);
--static int firm_setup_port(struct tty_struct *tty);
-+static void firm_setup_port(struct tty_struct *tty);
- static int firm_set_rts(struct usb_serial_port *port, __u8 onoff);
- static int firm_set_dtr(struct usb_serial_port *port, __u8 onoff);
- static int firm_set_break(struct usb_serial_port *port, __u8 onoff);
-@@ -1211,7 +1211,7 @@ static int firm_close(struct usb_serial_
+ 	serial->type->release(serial);
+ 
+-	for (i = 0; i < serial->num_ports; ++i) {
++	/* Now that nothing is using the ports, they can be freed */
++	for (i = 0; i < serial->num_port_pointers; ++i) {
+ 		port = serial->port[i];
+-		if (port)
++		if (port) {
++			port->serial = NULL;
+ 			put_device(&port->dev);
+-	}
+-
+-	/* If this is a "fake" port, we have to clean it up here, as it will
+-	 * not get cleaned up in port_release() as it was never registered with
+-	 * the driver core */
+-	if (serial->num_ports < serial->num_port_pointers) {
+-		for (i = serial->num_ports;
+-					i < serial->num_port_pointers; ++i) {
+-			port = serial->port[i];
+-			if (port)
+-				port_free(port);
+ 		}
+ 	}
+ 
+ 	usb_put_dev(serial->dev);
+-
+-	/* free up any memory that we allocated */
+ 	kfree(serial);
  }
  
+@@ -201,8 +188,6 @@ static int serial_open (struct tty_struc
+ 	port = serial->port[portNumber];
+ 	if (!port || serial->disconnected)
+ 		retval = -ENODEV;
+-	else
+-		get_device(&port->dev);
+ 	/*
+ 	 * Note: Our locking order requirement does not allow port->mutex
+ 	 * to be acquired while serial->disc_mutex is held.
+@@ -213,7 +198,7 @@ static int serial_open (struct tty_struc
  
--static int firm_setup_port(struct tty_struct *tty)
-+static void firm_setup_port(struct tty_struct *tty)
- {
- 	struct usb_serial_port *port = tty->driver_data;
- 	struct whiteheat_port_settings port_settings;
-@@ -1286,7 +1286,7 @@ static int firm_setup_port(struct tty_st
- 	port_settings.lloop = 0;
+ 	if (mutex_lock_interruptible(&port->mutex)) {
+ 		retval = -ERESTARTSYS;
+-		goto bailout_port_put;
++		goto bailout_serial_put;
+ 	}
  
- 	/* now send the message to the device */
--	return firm_send_command(port, WHITEHEAT_SETUP_PORT,
-+	firm_send_command(port, WHITEHEAT_SETUP_PORT,
- 			(__u8 *)&port_settings, sizeof(port_settings));
+ 	++port->port.count;
+@@ -273,8 +258,6 @@ bailout_mutex_unlock:
+ 	tty->driver_data = NULL;
+ 	tty_port_tty_set(&port->port, NULL);
+ 	mutex_unlock(&port->mutex);
+-bailout_port_put:
+-	put_device(&port->dev);
+ bailout_serial_put:
+ 	usb_serial_put(serial);
+ 	return retval;
+@@ -333,14 +316,13 @@ static void serial_do_free(struct tty_st
+ 
+ 	serial = port->serial;
+ 	owner = serial->type->driver.owner;
+-	put_device(&port->dev);
+-	/* Mustn't dereference port any more */
++
+ 	mutex_lock(&serial->disc_mutex);
+ 	if (!serial->disconnected)
+ 		usb_autopm_put_interface(serial->interface);
+ 	mutex_unlock(&serial->disc_mutex);
++
+ 	usb_serial_put(serial);
+-	/* Mustn't dereference serial any more */
+ 	module_put(owner);
  }
  
---- a/include/linux/usb/serial.h
-+++ b/include/linux/usb/serial.h
-@@ -261,6 +261,9 @@ struct usb_serial_driver {
- 	   be an attached tty at this point */
- 	void (*dtr_rts)(struct usb_serial_port *port, int on);
- 	int  (*carrier_raised)(struct usb_serial_port *port);
-+	/* Called by the usb serial hooks to allow the user to rework the
-+	   termios state */
-+	void (*init_termios)(struct tty_struct *tty);
- 	/* USB events */
- 	void (*read_int_callback)(struct urb *urb);
- 	void (*write_int_callback)(struct urb *urb);
+@@ -581,14 +563,6 @@ static void usb_serial_port_work(struct 
+ 	tty_kref_put(tty);
+ }
+ 
+-static void port_release(struct device *dev)
+-{
+-	struct usb_serial_port *port = to_usb_serial_port(dev);
+-
+-	dbg ("%s - %s", __func__, dev_name(dev));
+-	port_free(port);
+-}
+-
+ static void kill_traffic(struct usb_serial_port *port)
+ {
+ 	usb_kill_urb(port->read_urb);
+@@ -608,8 +582,12 @@ static void kill_traffic(struct usb_seri
+ 	usb_kill_urb(port->interrupt_out_urb);
+ }
+ 
+-static void port_free(struct usb_serial_port *port)
++static void port_release(struct device *dev)
+ {
++	struct usb_serial_port *port = to_usb_serial_port(dev);
++
++	dbg ("%s - %s", __func__, dev_name(dev));
++
+ 	/*
+ 	 * Stop all the traffic before cancelling the work, so that
+ 	 * nobody will restart it by calling usb_serial_port_softint.
+@@ -955,6 +933,11 @@ int usb_serial_probe(struct usb_interfac
+ 		mutex_init(&port->mutex);
+ 		INIT_WORK(&port->work, usb_serial_port_work);
+ 		serial->port[i] = port;
++		port->dev.parent = &interface->dev;
++		port->dev.driver = NULL;
++		port->dev.bus = &usb_serial_bus_type;
++		port->dev.release = &port_release;
++		device_initialize(&port->dev);
+ 	}
+ 
+ 	/* set up the endpoint information */
+@@ -1097,15 +1080,10 @@ int usb_serial_probe(struct usb_interfac
+ 	/* register all of the individual ports with the driver core */
+ 	for (i = 0; i < num_ports; ++i) {
+ 		port = serial->port[i];
+-		port->dev.parent = &interface->dev;
+-		port->dev.driver = NULL;
+-		port->dev.bus = &usb_serial_bus_type;
+-		port->dev.release = &port_release;
+-
+ 		dev_set_name(&port->dev, "ttyUSB%d", port->number);
+ 		dbg ("%s - registering %s", __func__, dev_name(&port->dev));
+ 		port->dev_state = PORT_REGISTERING;
+-		retval = device_register(&port->dev);
++		retval = device_add(&port->dev);
+ 		if (retval) {
+ 			dev_err(&port->dev, "Error registering port device, "
+ 				"continuing\n");
+@@ -1123,39 +1101,7 @@ exit:
+ 	return 0;
+ 
+ probe_error:
+-	for (i = 0; i < num_bulk_in; ++i) {
+-		port = serial->port[i];
+-		if (!port)
+-			continue;
+-		usb_free_urb(port->read_urb);
+-		kfree(port->bulk_in_buffer);
+-	}
+-	for (i = 0; i < num_bulk_out; ++i) {
+-		port = serial->port[i];
+-		if (!port)
+-			continue;
+-		usb_free_urb(port->write_urb);
+-		kfree(port->bulk_out_buffer);
+-	}
+-	for (i = 0; i < num_interrupt_in; ++i) {
+-		port = serial->port[i];
+-		if (!port)
+-			continue;
+-		usb_free_urb(port->interrupt_in_urb);
+-		kfree(port->interrupt_in_buffer);
+-	}
+-	for (i = 0; i < num_interrupt_out; ++i) {
+-		port = serial->port[i];
+-		if (!port)
+-			continue;
+-		usb_free_urb(port->interrupt_out_urb);
+-		kfree(port->interrupt_out_buffer);
+-	}
+-
+-	/* free up any memory that we allocated */
+-	for (i = 0; i < serial->num_port_pointers; ++i)
+-		kfree(serial->port[i]);
+-	kfree(serial);
++	usb_serial_put(serial);
+ 	return -EIO;
+ }
+ EXPORT_SYMBOL_GPL(usb_serial_probe);
+@@ -1206,8 +1152,7 @@ void usb_serial_disconnect(struct usb_in
+ 	}
+ 	serial->type->disconnect(serial);
+ 
+-	/* let the last holder of this object
+-	 * cause it to be cleaned up */
++	/* let the last holder of this object cause it to be cleaned up */
+ 	usb_serial_put(serial);
+ 	dev_info(dev, "device disconnected\n");
+ }
 
 
