@@ -1,107 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbZJBOjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZJBOpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757957AbZJBOjK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 10:39:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757954AbZJBOjJ
+	id S1755843AbZJBOpw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 10:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZJBOpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 10:39:09 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:42170 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757933AbZJBOjI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 10:39:08 -0400
-X-IronPort-AV: E=Sophos;i="4.44,494,1249272000"; 
-   d="scan'208";a="5269144"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH v2] mfd: ADP5520 Multifunction LCD Backlight and Keypad Input Device Driver
-Date: Fri, 2 Oct 2009 15:39:09 +0100
-Message-ID: <8A42379416420646B9BFAC9682273B6D0E33B2C0@limkexm3.ad.analog.com>
-In-Reply-To: <20091002131546.GB7575@sortiz.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-thread-topic: [PATCH v2] mfd: ADP5520 Multifunction LCD Backlight and Keypad Input Device Driver
-thread-index: AcpDYk15HVRYTM/GRzKY1ddFQVDR0QAC6fhQ
-References: <1253212036-29445-1-git-send-email-vapier@gentoo.org> <1253682664-27040-1-git-send-email-vapier@gentoo.org> <20091001140948.GD10199@sortiz.org> <8A42379416420646B9BFAC9682273B6D0E33AC35@limkexm3.ad.analog.com> <20091002131546.GB7575@sortiz.org>
-From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-To: "Samuel Ortiz" <sameo@linux.intel.com>
-CC: "Mike Frysinger" <vapier@gentoo.org>, <linux-kernel@vger.kernel.org>,
-       <uclinux-dist-devel@blackfin.uclinux.org>,
-       "Bryan Wu" <cooloney@kernel.org>
-X-OriginalArrivalTime: 02 Oct 2009 14:39:12.0056 (UTC) FILETIME=[1B83B380:01CA436E]
+	Fri, 2 Oct 2009 10:45:52 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60151 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754070AbZJBOpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 10:45:51 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/5FI4C6fH51MYhNMkkWetq+QkPf/Uwm5TgOBVudH
+	INomGT9/d0Tot5
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+In-Reply-To: <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain>
+References: <1254034500.7933.6.camel@marge.simson.net>
+	 <20090927164235.GA23126@kernel.dk>
+	 <1254340730.7695.32.camel@marge.simson.net>
+	 <1254341139.7695.36.camel@marge.simson.net>
+	 <20090930202447.GA28236@redhat.com>
+	 <1254382405.7595.9.camel@marge.simson.net>
+	 <20091001185816.GU14918@kernel.dk>
+	 <1254464628.7158.101.camel@marge.simson.net>
+	 <20091002080417.GG14918@kernel.dk> <20091002092409.GA19529@elte.hu>
+	 <20091002092839.GA26962@kernel.dk>
+	 <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 02 Oct 2009 16:45:42 +0200
+Message-Id: <1254494742.7307.37.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.63
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->With 2 of those devices, your board file would look like that:
->
->static struct i2c_board_info __initdata board_i2c_board_info[] = {
->	{	/* APD5520 #1 */
->		I2C_BOARD_INFO("pmic-adp5520", SLAVE_ADDR_1),
->		.platform_data	= &apd5520_platform_1,
->	},
->	{	/* APD5520 #2 */
->		I2C_BOARD_INFO("pmic-adp5520", SLAVE_ADDR_2),
->		.platform_data	= &apd5520_platform_2,
->	},
->};
->
->and your platform data would be an aggregation of all subdevices
-platform data
->structures:
->
->struct adp5520_platform_data {
->	struct adp5520_leds_platfrom_data *leds;
->	struct adp5520_keys_platfrom_data *keyp;
->	struct adp5520_gpio_platfrom_data *gpio;
->}
->
->Then, your mfd/adp5520.c will have that piece of code:
->
->static struct platform_device adp5520_gpio_device = {
->	.name	= "adp5520-gpio",
->	.id	= -1,
->}
->
->static struct platform_device *adp5520_subdevs[] = {
->	&adp5520_gpio_device,
->	&adp5520_leds_device,
->	&adp5520_keyp_device,
->}
->
->Finally, your i2c probe routine would assign platform_data pointers to
-te
->right devices:
->
->static int __devinit adp5520_probe(struct i2c_client *client,
->					const struct i2c_device_id *id)
->{
->	struct adp5520_platform_data *pdata = client->dev.platform_data;
->[...]
->	for (i = 0; i < ARRAY_SIZE(adp5520_subdevs); i++) {
->		adp5520_subdevs[i]->dev.parent = &client->dev;
->		adp5520_assign_pdata(&adp5520_subdevs[i], pdata);
->	}
->
->	platform_add_devices(adp5520_subdevs,
->			ARRAY_SIZE(adp5520_subdevs));
->}
->
->Where adp5520_assign_pdata() is a routine setting the platform_device's
->platform_data pointer according e.g. to the platform_device name field.
->
->Would that make sense to you ?
->
->Cheers,
->Samuel.
+On Fri, 2009-10-02 at 07:24 -0700, Linus Torvalds wrote:
+> 
+> On Fri, 2 Oct 2009, Jens Axboe wrote:
+> > 
+> > It's really not that simple, if we go and do easy latency bits, then
+> > throughput drops 30% or more.
+> 
+> Well, if we're talking 500-950% improvement vs 30% deprovement, I think 
+> it's pretty clear, though. Even the server people do care about latencies. 
+> 
+> Often they care quite a bit, in fact.
+> 
+> And Mike's patch didn't look big or complicated.
 
-I think that should work.
-Thanks,
+But it is a hack.  (thought about and measured, but hack nonetheless)
 
-Michael
+I haven't tested it on much other than reader vs streaming writer.  It
+may well destroy the rest of the IO universe. I don't have the hw to
+even test any hairy chested IO.
 
-
+	-Mike
 
