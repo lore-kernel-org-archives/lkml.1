@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbZJBSEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbZJBSI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757408AbZJBSEs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756976AbZJBSEp
+	id S1757854AbZJBSI4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbZJBSIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:04:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60465
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756878AbZJBSEo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:04:44 -0400
-Date: Fri, 02 Oct 2009 11:05:04 -0700 (PDT)
-Message-Id: <20091002.110504.08207839.davem@davemloft.net>
-To: greg@kroah.com
-Cc: philipp.reisner@linbit.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, akpm@linux-foundation.org, dm-devel@redhat.com,
-       zbr@ioremap.net, linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091002180022.GA22229@kroah.com>
-References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
-	<20091002.105659.102583702.davem@davemloft.net>
-	<20091002180022.GA22229@kroah.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Oct 2009 14:08:55 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:35365 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754542AbZJBSIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:08:54 -0400
+Date: Fri, 2 Oct 2009 20:08:57 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002180857.GM31616@kernel.dk>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com> <1253976676.7005.40.camel@marge.simson.net> <1254034500.7933.6.camel@marge.simson.net> <20090927164235.GA23126@kernel.dk> <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254382405.7595.9.camel@marge.simson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg KH <greg@kroah.com>
-Date: Fri, 2 Oct 2009 11:00:22 -0700
+On Thu, Oct 01 2009, Mike Galbraith wrote:
+>  	max_dispatch = cfqd->cfq_quantum;
+>  	if (cfq_class_idle(cfqq))
+>  		max_dispatch = 1;
+>  
+> +	if (cfqd->busy_queues > 1)
+> +		cfqd->od_stamp = jiffies;
+> +
 
-> On Fri, Oct 02, 2009 at 10:56:59AM -0700, David Miller wrote:
->> All applied to net-2.6, I'll push this out to Linus later
->> today.
-> 
-> Should it also go to -stable?  If so, I can pick it up once it hits
-> Linus's tree.
+->busy_queues > 1 just means that they have requests ready for dispatch,
+not that they are dispatched.
 
-Yes, please take it into -stable.
 
-Greg, I'll also send you a batch of other networking bits
-for -stable later this afternoon as well, just FYI...
+-- 
+Jens Axboe
+
