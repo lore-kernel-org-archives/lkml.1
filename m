@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756963AbZJBBl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbZJBBeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756963AbZJBBl4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756869AbZJBBeD
+	id S1756882AbZJBBeF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbZJBBeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:34:03 -0400
-Received: from kroah.org ([198.145.64.141]:33402 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:34:00 -0400
+Received: from kroah.org ([198.145.64.141]:33408 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756799AbZJBBdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:33:54 -0400
+	id S1756827AbZJBBdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:33:55 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:22 2009
-Message-Id: <20091002012422.533759505@mini.kroah.org>
+Message-Id: <20091002012422.697706742@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:26 -0700
+Date: Thu, 01 Oct 2009 18:17:27 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Alan Stern <stern@rowland.harvard.edu>
-Subject: [098/136] usb-serial: rename subroutines
+Subject: [099/136] usb-serial: add missing tests and debug lines
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=usb-serial-rename-subroutines.patch
+Content-Disposition: inline; filename=usb-serial-add-missing-tests-and-debug-lines.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,98 +31,92 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 74556123e034c8337b69a3ebac2f3a5fc0a97032 upstream.
+commit ff8324df1187b7280e507c976777df76c73a1ef1 upstream.
 
-This patch (as1289) renames serial_do_down() to serial_down() and
-serial_do_free() to serial_release().  It also adds a missing call to
-tty_shutdown() in serial_release().
+This patch (as1290) adds some missing tests.  serial_down() isn't
+supposed to do anything if the hardware hasn't been initialized, and
+serial_close() isn't supposed to do anything if the tty has gotten a
+hangup (because serial_hangup() takes care of shutting down the
+hardware).
+
+The patch also updates and adds a few debugging lines.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/usb-serial.c |   19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ drivers/usb/serial/usb-serial.c |   21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
 
 --- a/drivers/usb/serial/usb-serial.c
 +++ b/drivers/usb/serial/usb-serial.c
-@@ -191,7 +191,7 @@ void usb_serial_put(struct usb_serial *s
-  * This is the first place a new tty gets used.  Hence this is where we
-  * acquire references to the usb_serial structure and the driver module,
-  * where we store a pointer to the port, and where we do an autoresume.
-- * All these actions are reversed in serial_do_free().
-+ * All these actions are reversed in serial_release().
-  */
- static int serial_install(struct tty_driver *driver, struct tty_struct *tty)
- {
-@@ -296,13 +296,13 @@ bailout_mutex_unlock:
- }
+@@ -200,6 +200,8 @@ static int serial_install(struct tty_dri
+ 	struct usb_serial_port *port;
+ 	int retval = -ENODEV;
  
- /**
-- * serial_do_down - shut down hardware
-+ * serial_down - shut down hardware
-  * @port: port to shut down
-  *
-  * Shut down a USB serial port unless it is the console.  We never
-  * shut down the console hardware as it will always be in use.
-  */
--static void serial_do_down(struct usb_serial_port *port)
-+static void serial_down(struct usb_serial_port *port)
- {
- 	struct usb_serial_driver *drv = port->serial->type;
- 	struct usb_serial *serial;
-@@ -328,7 +328,7 @@ static void serial_do_down(struct usb_se
- static void serial_hangup(struct tty_struct *tty)
- {
- 	struct usb_serial_port *port = tty->driver_data;
--	serial_do_down(port);
-+	serial_down(port);
- 	tty_port_hangup(&port->port);
- 	/* We must not free port yet - the USB serial layer depends on it's
- 	   continued existence */
-@@ -342,13 +342,13 @@ static void serial_close(struct tty_stru
++	dbg("%s", __func__);
++
+ 	serial = usb_serial_get_by_index(idx);
+ 	if (!serial)
+ 		return retval;
+@@ -250,11 +252,11 @@ static int serial_open (struct tty_struc
+ 	int retval = 0;
+ 	int first = 0;
  
- 	if (tty_port_close_start(&port->port, tty, filp) == 0)
- 		return;
--	serial_do_down(port);
-+	serial_down(port);
- 	tty_port_close_end(&port->port, tty);
- 	tty_port_tty_set(&port->port, NULL);
- }
+-	dbg("%s", __func__);
+-
+ 	port = tty->driver_data;
+ 	serial = port->serial;
  
- /**
-- * serial_do_free - free resources post close/hangup
-+ * serial_release - free resources post close/hangup
-  * @port: port to free up
-  *
-  * Do the resource freeing and refcount dropping for the port.
-@@ -356,7 +356,7 @@ static void serial_close(struct tty_stru
-  *
-  * Called when the last tty kref is dropped.
-  */
--static void serial_do_free(struct tty_struct *tty)
-+static void serial_release(struct tty_struct *tty)
- {
- 	struct usb_serial_port *port = tty->driver_data;
- 	struct usb_serial *serial;
-@@ -368,6 +368,9 @@ static void serial_do_free(struct tty_st
++	dbg("%s - port %d", __func__, port->number);
++
+ 	if (mutex_lock_interruptible(&port->mutex))
+ 		return -ERESTARTSYS;
+ 
+@@ -315,6 +317,12 @@ static void serial_down(struct usb_seria
  	if (port->console)
  		return;
  
-+	/* Standard shutdown processing */
-+	tty_shutdown(tty);
++	/* Don't call the close method if the hardware hasn't been
++	 * initialized.
++	 */
++	if (!test_and_clear_bit(ASYNCB_INITIALIZED, &port->port.flags))
++		return;
 +
- 	tty->driver_data = NULL;
- 
+ 	mutex_lock(&port->mutex);
  	serial = port->serial;
-@@ -1204,7 +1207,7 @@ static const struct tty_operations seria
- 	.chars_in_buffer =	serial_chars_in_buffer,
- 	.tiocmget =		serial_tiocmget,
- 	.tiocmset =		serial_tiocmset,
--	.shutdown = 		serial_do_free,
-+	.shutdown = 		serial_release,
- 	.install = 		serial_install,
- 	.proc_fops =		&serial_proc_fops,
- };
+ 	owner = serial->type->driver.owner;
+@@ -328,10 +336,11 @@ static void serial_down(struct usb_seria
+ static void serial_hangup(struct tty_struct *tty)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
++
++	dbg("%s - port %d", __func__, port->number);
++
+ 	serial_down(port);
+ 	tty_port_hangup(&port->port);
+-	/* We must not free port yet - the USB serial layer depends on it's
+-	   continued existence */
+ }
+ 
+ static void serial_close(struct tty_struct *tty, struct file *filp)
+@@ -340,6 +349,8 @@ static void serial_close(struct tty_stru
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+ 
++	if (tty_hung_up_p(filp))
++		return;
+ 	if (tty_port_close_start(&port->port, tty, filp) == 0)
+ 		return;
+ 	serial_down(port);
+@@ -368,6 +379,8 @@ static void serial_release(struct tty_st
+ 	if (port->console)
+ 		return;
+ 
++	dbg("%s - port %d", __func__, port->number);
++
+ 	/* Standard shutdown processing */
+ 	tty_shutdown(tty);
+ 
 
 
