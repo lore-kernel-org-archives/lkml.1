@@ -1,131 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752319AbZJBVEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752768AbZJBVGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752319AbZJBVEq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 17:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbZJBVEp
+	id S1752768AbZJBVGi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 17:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZJBVGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 17:04:45 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:54115 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752085AbZJBVEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 17:04:44 -0400
-Date: Fri, 2 Oct 2009 14:04:45 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Oren Laadan <orenl@librato.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Tejun Heo <tj@kernel.org>, jeff@garzik.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
-       dhowells@redhat.com, arjan@linux.intel.com,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [PATCH 01/19] freezer: don't get over-anxious while waiting
-Message-ID: <20091002210445.GE4189@count0.beaverton.ibm.com>
-References: <1254384558-1018-1-git-send-email-tj@kernel.org> <1254384558-1018-2-git-send-email-tj@kernel.org> <20091001183655.GA9995@atrey.karlin.mff.cuni.cz> <200910012304.00720.rjw@sisk.pl> <4AC658C2.6070406@librato.com>
+	Fri, 2 Oct 2009 17:06:37 -0400
+Received: from smtp171.iad.emailsrvr.com ([207.97.245.171]:53776 "EHLO
+	smtp171.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751853AbZJBVGg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 17:06:36 -0400
+Message-ID: <4AC66B5E.9060200@librato.com>
+Date: Fri, 02 Oct 2009 17:06:38 -0400
+From: Oren Laadan <orenl@librato.com>
+Organization: Librato
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       mingo@elte.hu, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       torvalds@linux-foundation.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v7][PATCH 0/9] Implement clone2() system call
+References: <20090924165548.GA16586@us.ibm.com> <20090924175542.GA27678@x200> <20090924183556.GA31356@us.ibm.com> <20090930053443.GA1010@x200> <4AC39859.3090703@librato.com> <20091002202759.GA4826@x200>
+In-Reply-To: <20091002202759.GA4826@x200>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AC658C2.6070406@librato.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 03:47:14PM -0400, Oren Laadan wrote:
+
+
+Alexey Dobriyan wrote:
+> On Wed, Sep 30, 2009 at 01:41:45PM -0400, Oren Laadan wrote:
+>> Alexey Dobriyan wrote:
+>>> On Thu, Sep 24, 2009 at 01:35:56PM -0500, Serge E. Hallyn wrote:
+>>>> Quoting Alexey Dobriyan (adobriyan@gmail.com):
+>>>>> I don't like this even more.
+>>>>>
+>>>>> Pid namespaces are hierarchical _and_ anonymous, so simply
+>>>>> set of numbers doesn't describe the final object.
+>>>>>
+>>>>> struct pid isn't special, it's just another invariant if you like
+>>>>> as far as C/R is concerned, but system call is made special wrt pids.
+>>>>>
+>>>>> What will be in an image? I hope "struct kstate_image_pid" with several
+>>>> Sure pid namespaces are anonymous, but we will give each an 'objref'
+>>>> valid only for a checkpoint image, and store the relationship between
+>>>> pid namespaces based on those objrefs.  Basically the same way that user
+>>>> structs and hierarchical user namespaces are handled right now.
+>>> OK, that's certainly doable.
+>>>
+>>> You're commiting yourself to creation of tasks in userspace if this goes in. :-\
+>>> Which can let you into putting wrong kind of relations into image.
+>> A malicious user can put "wrong" king of relations into the image,
+>> regardless of whether the tasks are created in the kernel or in
+>> userspace. As long as the creation follows the "instructions" in
+>> the image, the result would be the same.
 > 
-> 
-> Rafael J. Wysocki wrote:
-> > On Thursday 01 October 2009, Pavel Machek wrote:
-> >>> Freezing isn't exactly the most latency sensitive operation and
-> >>> there's no reason to burn cpu cycles and power waiting for it to
-> >>> complete.  msleep(10) instead of yield().  This should improve
-> >>> reliability of emergency hibernation.
-> >> i don't see how it improves reliability, but its probably ok.
+> Wrong as in "fundamentally wrong", not malicious.
+> In case of uts_ns, the correct data to put into image is "task uses this uts_ns",
+> not "at this point do clone(CLONE_NEWUTS)".
 
->From what little of the patch I can see at this point I agree. 
-On a single cpu system the yield gives up the cpu so other tasks
-are more likely to make the progress necessary to become freezable.
+So we are in total agreement: that's how it is done now.
 
-> >>
-> >> Well... for hibernation anyway. I can imagine cgroup users where
-> >> freeze is so fast that this matters. rjw cc-ed.		pavel
-
-It doesn't (more below), though I appreciate your keeping us in mind.
-
-> > 
-> > Thanks.  I'd like to hear from the cgroup freezer people about that.
-> > 
-> 
-> [Adding Matt Helsley to the CC list]
-> 
-> To checkpoint or migrate an application, the cgroup to which it belongs
-> must be frozen first.
-> 
-> It's a bit down the road, but if one seeks minimum application downtime
-> during application checkpoint and/or migration, then a (minimum of)
-> 10ms - or multiples of it - may result in a visible/undesired hick-up.
-> 
-> Perhaps avoid it when freezing a cgroup ?  or maybe a way for the user
-> to control this behavior per cgroup ?
-
-This is already the case.
-
-The cgroup freezer does not use this yield-loop to iterate over all the tasks.
-Instead of yield() the cgroup freezer has its own "loop". It changes its
-own state to FREEZING and returns to userspace so that userspace can decide
-what to do -- sleep? keep trying to freeze? go back to THAWED? etc. 
-
-[ In the future this may change depending on the blocking/non-blocking
-flag of the open freezer.state cgroup file handle. ]
-
-Cheers,
-	-Matt Helsley
+Only task creation per-se, including pid-ns (future work) is done
+in userspace. Network namespaces will probably be created in userspace
+but attached to tasks in the kernel. Remaining namespaces are covered
+in the kernel the way you described.
 
 > 
-> Oren.
-> 
-> >>> Signed-off-by: Tejun Heo <tj@kernel.org>
-> >>> ---
-> >>>  kernel/power/process.c |   13 +++++++++----
-> >>>  1 files changed, 9 insertions(+), 4 deletions(-)
-> >>>
-> >>> diff --git a/kernel/power/process.c b/kernel/power/process.c
-> >>> index cc2e553..9d26a0a 100644
-> >>> --- a/kernel/power/process.c
-> >>> +++ b/kernel/power/process.c
-> >>> @@ -41,7 +41,7 @@ static int try_to_freeze_tasks(bool sig_only)
-> >>>  	do_gettimeofday(&start);
-> >>>  
-> >>>  	end_time = jiffies + TIMEOUT;
-> >>> -	do {
-> >>> +	while (true) {
-> >>>  		todo = 0;
-> >>>  		read_lock(&tasklist_lock);
-> >>>  		do_each_thread(g, p) {
-> >>> @@ -62,10 +62,15 @@ static int try_to_freeze_tasks(bool sig_only)
-> >>>  				todo++;
-> >>>  		} while_each_thread(g, p);
-> >>>  		read_unlock(&tasklist_lock);
-> >>> -		yield();			/* Yield is okay here */
-> >>> -		if (time_after(jiffies, end_time))
-> >>> +		if (!todo || time_after(jiffies, end_time))
-> >>>  			break;
-> >>> -	} while (todo);
-> >>> +
-> >>> +		/*
-> >>> +		 * We need to retry.  There's no reason to be
-> >>> +		 * over-anxious about it and waste power.
-> >>> +		 */
-> > 
-> > The comment above looks like it's only meaningful in the context of the patch.
-> > After it's been applied the meaning of the comment won't be so obvious, I'm
-> > afraid.
-> > 
-> >>> +		msleep(10);
-> >>> +	}
-> >>>  
-> >>>  	do_gettimeofday(&end);
-> >>>  	elapsed_csecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
-> > 
-> > Thanks,
-> > Rafael
+> BTW, now I'm convinced that nsproxy should not even be mentioned be in an image,
+> it's irrelevant technical detail, not future-proof at all.
+
+It's helpful (as is more efficient) to keep it now. We can always
+decide to ignore it in the future.
+
+Thanks,
+
+Oren.
