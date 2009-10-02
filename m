@@ -1,53 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbZJBBn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbZJBBvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbZJBBn0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932104AbZJBBnX
+	id S1757146AbZJBBvT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbZJBBvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:43:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34403 "EHLO mx2.suse.de"
+	Thu, 1 Oct 2009 21:51:16 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34642 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932068AbZJBBnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:43:21 -0400
-Subject: Re: SCSI driver for VMware's virtual HBA - V5.
-From: James Bottomley <James.Bottomley@suse.de>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Alok Kataria <akataria@vmware.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Bart Van Assche <bvanassche@acm.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
-       Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Robert Love <robert.w.love@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@fifo99.com>, Greg KH <gregkh@suse.de>
-In-Reply-To: <20091002004725.GP3958@sequoia.sous-sol.org>
-References: <1254336812.19921.23.camel@ank32.eng.vmware.com>
-	 <20091002004725.GP3958@sequoia.sous-sol.org>
-Content-Type: text/plain
-Date: Fri, 02 Oct 2009 01:43:12 +0000
-Message-Id: <1254447792.3885.72.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	id S1756247AbZJBBvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:51:12 -0400
+From: Neil Brown <neilb@suse.de>
+To: scjody@sun.com
+Date: Fri, 2 Oct 2009 11:51:59 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19141.23743.35576.466246@notabene.brown>
+Cc: linux-ext4@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andreas Dilger <adilger@sun.com>
+Subject: Re: [patch 4/4] [ext3] Add journal guided resync (data=declared mode)
+In-Reply-To: message from scjody@sun.com on Thursday October 1
+References: <20091001223929.120106893@sun.com>
+	<20091001224021.757201872@sun.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-01 at 17:47 -0700, Chris Wright wrote:
-> * Alok Kataria (akataria@vmware.com) wrote:
-> > VMware PVSCSI driver - v5.
+On Thursday October 1, scjody@sun.com wrote:
+> We introduce a new data write mode known as declared mode.  This is based on
+> ordered mode except that a list of blocks to be written during the current
+> transaction is added to the journal before the blocks themselves are written to
+> the disk.  Then, if the system crashes, we can resync only those blocks during
+> journal replay and skip the rest of the resync of the RAID array.
 > 
-> Were you still planning on renaming the driver to something less generic
-> (like vmw_pvscsi)?
+> TODO: Add support to e2fsck.
+> 
+> TODO: The following sequence of events could cause resync to be skipped
+> incorrectly:
+>  - An MD array that supports RESYNC_RANGE is undergoing resync.
+>  - A filesystem on that array is mounted with data=declared.
+>  - The machine crashes before the resync completes.
+>  - The array is restarted and the filesystem is remounted.
+>  - Recovery resyncs only the blocks that were undergoing writes during
+>    the crash and skips the rest.
+> Addressing this requires even more communication between MD and ext and
+> I need to think more about how to do this.
 
-Actually it's not a paravirt driver either, so something like
-vmwarevscsi would be fine.
+I have thought about this sort of thing from time to time and I have a
+very different idea for how the necessary communication between the
+filesystem and MD would happen.  I think my approach would completely
+address this problem, and doesn't need to add any ioctls (which I am not
+keen on).
 
-James
+I would add two new BIO_RW_ flags to be used with WRITE requests.
+The first flag would mean "don't worry about a crash in the middle of
+this write,  I will validate it after a crash before I rely on the
+data."
+The second would mean "last time I wrote data near here there might
+have been a failure, be extra careful".
 
+So the first flag would be used during normal filesystem writes for
+every block that gets recorded in the journal, and for every write
+to the journal.
 
+The second flag is used after a crash to re-write every block that
+could have been in-flight during the crash.  Some of those blocks will
+be read from the journal and written to their proper home, other will
+be read from wherever they are and written back there.
+
+The first flag would be interpreted by MD as "don't set the bitmap
+bit".  The second flag would be interpreted as "don't trust the
+parity block, but do a reconstruct-write".
+
+With this scheme you would still need a write-intent-bitmap on the MD
+array, but no bits would ever be set if the filesystem were using the
+new flags, so no performance impact.  You probably could run without a
+bitmap, in which case the flag would me "don't mark the array as
+active".
+
+I'm not entirely sure about the second flag.  Maybe it would be better
+to make it a flag for READ and have it mean "validate and correct any
+redundancy information (duplicates or parity) for this block before
+returning it.  Then we could have just one flag, which meant different
+things for READ and WRITE.
+
+What do you think?
+
+NeilBrown
