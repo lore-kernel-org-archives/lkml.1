@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbZJBRhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbZJBRiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757964AbZJBRhb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbZJBRha
+	id S1757985AbZJBRiJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757611AbZJBRiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:37:30 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47288 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753484AbZJBRh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:37:29 -0400
-Date: Fri, 2 Oct 2009 19:37:32 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Vivek Goyal <vgoyal@redhat.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       riel@redhat.com
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20091002173732.GK31616@kernel.dk>
-References: <20091002080417.GG14918@kernel.dk> <20091002092409.GA19529@elte.hu> <20091002092839.GA26962@kernel.dk> <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain> <20091002145610.GD31616@kernel.dk> <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain> <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu> <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu>
+	Fri, 2 Oct 2009 13:38:08 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:61607 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754717AbZJBRiH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:38:07 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Trevor Hemsley <trevor.hemsley@ntlworld.com>
+Subject: Re: Temperature above threshold loop with 2.6.31.1
+Date: Fri, 2 Oct 2009 19:38:08 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+References: <20091002134430.SOPU22934.aamtaout04-winn.ispmail.ntl.com@trevor2.dsl.pipex.com> <200910021703.31679.elendil@planet.nl>
+In-Reply-To: <200910021703.31679.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091002172842.GA4884@elte.hu>
+Message-Id: <200910021938.09486.elendil@planet.nl>
+X-OriginalArrivalTime: 02 Oct 2009 17:38:09.0695 (UTC) FILETIME=[1BA562F0:01CA4387]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02 2009, Ingo Molnar wrote:
-> 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Fri, Oct 02 2009, Ingo Molnar wrote:
-> > > 
-> > > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > 
-> > > > It's not _that_ easy, it depends a lot on the access patterns. A 
-> > > > good example of that is actually the idling that we already do. 
-> > > > Say you have two applications, each starting up. If you start them 
-> > > > both at the same time and just care for the dumb low latency, then 
-> > > > you'll do one IO from each of them in turn. Latency will be good, 
-> > > > but throughput will be aweful. And this means that in 20s they are 
-> > > > both started, while with the slice idling and priority disk access 
-> > > > that CFQ does, you'd hopefully have both up and running in 2s.
-> > > > 
-> > > > So latency is good, definitely, but sometimes you have to worry 
-> > > > about the bigger picture too. Latency is more than single IOs, 
-> > > > it's often for complete operation which may involve lots of IOs. 
-> > > > Single IO latency is a benchmark thing, it's not a real life 
-> > > > issue. And that's where it becomes complex and not so black and 
-> > > > white. Mike's test is a really good example of that.
-> > > 
-> > > To the extent of you arguing that Mike's test is artificial (i'm not 
-> > > sure you are arguing that) - Mike certainly did not do an artificial 
-> > > test - he tested 'konsole' cache-cold startup latency, such as:
-> > 
-> > [snip]
-> > 
-> > I was saying the exact opposite, that Mike's test is a good example of 
-> > a valid test. It's not measuring single IO latencies, it's doing a 
-> > sequence of valid events and looking at the latency for those. It's 
-> > benchmarking the bigger picture, not a microbenchmark.
-> 
-> Good, so we are in violent agreement :-)
+On Friday 02 October 2009, Frans Pop wrote:
+> Trevor Hemsley wrote:
+> > 1,666 notifications a second seems a little on the 'too frequent' side
+> > of things to me :-)
+>
+> Looks like this may already be fixed in mainline by the following
+> commit: commit b417c9fd8690637f0c91479435ab3e2bf450c038
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Tue Sep 22 15:50:24 2009 +0200
+>     x86: mce: Fix thermal throttling message storm
+>
+> Can you confirm that please, either by compiling current git or by
+> applying that commit on top of 2.6.31.1?
 
-Yes, perhaps that last sentence didn't provide enough evidence of which
-category I put Mike's test into :-)
-
-So to kick things off, I added an 'interactive' knob to CFQ and
-defaulted it to on, along with re-enabling slice idling for hardware
-that does tagged command queuing. This is almost completely identical to
-what Vivek Goyal originally posted, it's just combined into one and uses
-the term 'interactive' instead of 'fairness'. I think the former is a
-better umbrella under which to add further tweaks that may sacrifice
-throughput slightly, in the quest for better latency.
-
-It's queued up in the for-linus branch.
-
--- 
-Jens Axboe
-
+If you want to apply it to .31.1 you'll also need this commit:
+commit 3967684006f30c253bc6d4a6604d1bad4a7fc672
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Tue Sep 22 15:50:24 2009 +0200
+    x86: mce: Clean up thermal throttling state tracking code
