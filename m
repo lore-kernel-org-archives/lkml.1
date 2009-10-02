@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbZJBP6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZJBQMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbZJBP6F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 11:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbZJBP6E
+	id S1756167AbZJBQMi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 12:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbZJBQMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 11:58:04 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46733 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753354AbZJBP6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 11:58:03 -0400
-Date: Fri, 2 Oct 2009 17:58:06 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Adrian Ulrich <kernel@blinkenlights.ch>,
-       Jan Scholz <Scholz@fias.uni-frankfurt.de>
-Subject: Re: [Bug #13935] 2.6.31-rcX breaks Apple MightyMouse (Bluetooth
- version)
-In-Reply-To: <COE24pZSBH.A.DPD.fOTxKB@chimera>
-Message-ID: <alpine.LSU.2.00.0910021757390.10941@wotan.suse.de>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.DPD.fOTxKB@chimera>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Fri, 2 Oct 2009 12:12:37 -0400
+Received: from g6t0186.atlanta.hp.com ([15.193.32.63]:8494 "EHLO
+	g6t0186.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755743AbZJBQMf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 12:12:35 -0400
+X-Greylist: delayed 682 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Oct 2009 12:12:34 EDT
+Message-ID: <4AC623C4.5050003@hp.com>
+Date: Fri, 02 Oct 2009 12:01:08 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>, Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+References: <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net> <20091001185816.GU14918@kernel.dk> <1254464628.7158.101.camel@marge.simson.net> <20091002080417.GG14918@kernel.dk> <20091002092409.GA19529@elte.hu> <20091002092839.GA26962@kernel.dk> <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain> <20091002145610.GD31616@kernel.dk> <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Oct 2009, Rafael J. Wysocki wrote:
-
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.30 and 2.6.31.
+Linus Torvalds wrote:
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13935
-> Subject		: 2.6.31-rcX breaks Apple MightyMouse (Bluetooth version)
-> Submitter	: Adrian Ulrich <kernel@blinkenlights.ch>
-> Date		: 2009-08-08 22:08 (55 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=fa047e4f6fa63a6e9d0ae4d7749538830d14a343
+> I really think we should do latency first, and throughput second.
 
-Fixed now in Linus' tree (42960a13) and submitted for stable. Please 
-close.
+Agree.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+> It's _easy_ to get throughput. The people who care just about throughput 
+> can always just disable all the work we do for latency.
+
+But in my experience it is not that simple...
+
+The argument latency vs throughput or desktop vs server is wrong.
+
+I/O can never keep up with the ability of CPUs to dirty data.
+
+On desktops and servers (really many-user-desktops) we want
+minimum latency but the enemy is dirty VM.  If we ignore the
+need for throughput to flush dirty pages, VM gets angry and
+forced VM page cleaning I/O is bad I/O.
+
+We want min latency with low dirty page percent but need to
+switch to max write throughput at some high dirty page percent.
+
+We can not prevent the cliff we fall off where the system
+chokes because the dirty page load is too high, but if we
+only worry about latency, we bring that choke point cliff in
+so it happens with a lower load.  A 10% lower overload point
+might be fine to get 100% better latency, but would desktop
+users accept a 50% lower overload point where running one
+more application makes the system appear hung?
+
+Even desktop users commonly measure "how much work can I do
+before the system becomes unresponsive".
+
+jim
