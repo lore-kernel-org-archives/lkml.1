@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZJBBmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756913AbZJBBlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756869AbZJBBmA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbZJBBl4
+	id S1756913AbZJBBlk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbZJBBli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:41:56 -0400
-Received: from kroah.org ([198.145.64.141]:33452 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:41:38 -0400
+Received: from kroah.org ([198.145.64.141]:33465 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756870AbZJBBeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:34:03 -0400
+	id S1756871AbZJBBeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:34:04 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:24 2009
-Message-Id: <20091002012424.066794221@mini.kroah.org>
+Message-Id: <20091002012424.189244632@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:35 -0700
+Date: Thu, 01 Oct 2009 18:17:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Subject: [107/136] USB: xhci: Handle stalled control endpoints.
+Subject: [108/136] USB: xhci: Add quirk for Fresco Logic xHCI hardware.
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=usb-xhci-handle-stalled-control-endpoints.patch
+Content-Disposition: inline; filename=usb-xhci-add-quirk-for-fresco-logic-xhci-hardware.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,188 +31,357 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 
-commit 82d1009f537c2a43be0a410abd33521f76ee3a5a upstream.
+commit ac9d8fe7c6a8041cca5a0738915d2c4e21381421 upstream.
 
-When a control endpoint stalls, the next control transfer will clear the
-stall.  The USB core doesn't call down to the host controller driver's
-endpoint_reset() method when control endpoints stall, so the xHCI driver
-has to do all its stall handling for internal state in its interrupt handler.
+This Fresco Logic xHCI host controller chip revision puts bad data into
+the output endpoint context after a Reset Endpoint command.  It needs a
+Configure Endpoint command (instead of a Set TR Dequeue Pointer command)
+after the reset endpoint command.
 
-When the host stalls on a control endpoint, it may stop on the data phase
-or status phase of the control transfer.  Like other stalled endpoints,
-the xHCI driver needs to queue a Reset Endpoint command and move the
-hardware's control endpoint ring dequeue pointer past the failed control
-transfer (with a Set TR Dequeue Pointer or a Configure Endpoint command).
+Set up the input context before issuing the Reset Endpoint command so we
+don't copy bad data from the output endpoint context.  The HW also can't
+handle two commands queued at once, so submit the TRB for the Configure
+Endpoint command in the event handler for the Reset Endpoint command.
 
-Since the USB core doesn't call usb_hcd_reset_endpoint() for control
-endpoints, we need to do this in interrupt context when we get notified of
-the stalled transfer.  URBs may be queued to the hardware before these two
-commands complete.  The endpoint queue will be restarted once both
-commands complete.
+Devices that stall on control endpoints before a configuration is selected
+will not work under this Fresco Logic xHCI host controller revision.
+
+This patch is for prototype hardware that will be given to other companies
+for evaluation purposes only, and should not reach consumer hands.  Fresco
+Logic's next chip rev should have this bug fixed.
 
 Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/xhci-hcd.c  |   35 ++++++++++++++++++++++++-----------
- drivers/usb/host/xhci-ring.c |   33 ++++++++++++++++++++++++++++++---
- drivers/usb/host/xhci.h      |    4 ++++
- 3 files changed, 58 insertions(+), 14 deletions(-)
+ drivers/usb/host/xhci-hcd.c  |   77 +++++++++++++++++++++++++++++++++++++------
+ drivers/usb/host/xhci-pci.c  |   13 +++++++
+ drivers/usb/host/xhci-ring.c |   61 ++++++++++++++++++++++++++++++----
+ drivers/usb/host/xhci.h      |   20 +++++++----
+ 4 files changed, 148 insertions(+), 23 deletions(-)
 
 --- a/drivers/usb/host/xhci.h
 +++ b/drivers/usb/host/xhci.h
-@@ -589,6 +589,7 @@ struct xhci_ep_ctx {
-  */
- #define	FORCE_EVENT	(0x1)
- #define ERROR_COUNT(p)	(((p) & 0x3) << 1)
-+#define CTX_TO_EP_TYPE(p)	(((p) >> 3) & 0x7)
- #define EP_TYPE(p)	((p) << 3)
- #define ISOC_OUT_EP	1
- #define BULK_OUT_EP	2
-@@ -1231,6 +1232,9 @@ void xhci_find_new_dequeue_state(struct 
- void xhci_queue_new_dequeue_state(struct xhci_hcd *xhci,
+@@ -929,6 +929,12 @@ struct xhci_td {
+ 	union xhci_trb		*last_trb;
+ };
+ 
++struct xhci_dequeue_state {
++	struct xhci_segment *new_deq_seg;
++	union xhci_trb *new_deq_ptr;
++	int new_cycle_state;
++};
++
+ struct xhci_ring {
+ 	struct xhci_segment	*first_seg;
+ 	union  xhci_trb		*enqueue;
+@@ -955,12 +961,6 @@ struct xhci_ring {
+ 	u32			cycle_state;
+ };
+ 
+-struct xhci_dequeue_state {
+-	struct xhci_segment *new_deq_seg;
+-	union xhci_trb *new_deq_ptr;
+-	int new_cycle_state;
+-};
+-
+ struct xhci_erst_entry {
+ 	/* 64-bit event ring segment address */
+ 	u64	seg_addr;
+@@ -1063,6 +1063,7 @@ struct xhci_hcd {
+ 	int			error_bitmask;
+ 	unsigned int		quirks;
+ #define	XHCI_LINK_TRB_QUIRK	(1 << 0)
++#define XHCI_RESET_EP_QUIRK	(1 << 1)
+ };
+ 
+ /* For testing purposes */
+@@ -1170,6 +1171,8 @@ int xhci_alloc_virt_device(struct xhci_h
+ int xhci_setup_addressable_virt_dev(struct xhci_hcd *xhci, struct usb_device *udev);
+ unsigned int xhci_get_endpoint_index(struct usb_endpoint_descriptor *desc);
+ unsigned int xhci_get_endpoint_flag(struct usb_endpoint_descriptor *desc);
++unsigned int xhci_get_endpoint_flag_from_index(unsigned int ep_index);
++unsigned int xhci_last_valid_endpoint(u32 added_ctxs);
+ void xhci_endpoint_zero(struct xhci_hcd *xhci, struct xhci_virt_device *virt_dev, struct usb_host_endpoint *ep);
+ void xhci_endpoint_copy(struct xhci_hcd *xhci,
+ 		struct xhci_virt_device *vdev, unsigned int ep_index);
+@@ -1233,8 +1236,11 @@ void xhci_queue_new_dequeue_state(struct
  		struct xhci_ring *ep_ring, unsigned int slot_id,
  		unsigned int ep_index, struct xhci_dequeue_state *deq_state);
-+void xhci_cleanup_stalled_ring(struct xhci_hcd *xhci,
-+		struct usb_device *udev, struct usb_host_endpoint *ep,
-+		unsigned int ep_index, struct xhci_ring *ep_ring);
+ void xhci_cleanup_stalled_ring(struct xhci_hcd *xhci,
+-		struct usb_device *udev, struct usb_host_endpoint *ep,
++		struct usb_device *udev,
+ 		unsigned int ep_index, struct xhci_ring *ep_ring);
++void xhci_queue_config_ep_quirk(struct xhci_hcd *xhci,
++		unsigned int slot_id, unsigned int ep_index,
++		struct xhci_dequeue_state *deq_state);
  
  /* xHCI roothub code */
  int xhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue, u16 wIndex,
 --- a/drivers/usb/host/xhci-hcd.c
 +++ b/drivers/usb/host/xhci-hcd.c
-@@ -1230,6 +1230,25 @@ void xhci_reset_bandwidth(struct usb_hcd
+@@ -224,7 +224,7 @@ int xhci_init(struct usb_hcd *hcd)
+ 		xhci_dbg(xhci, "QUIRK: Not clearing Link TRB chain bits.\n");
+ 		xhci->quirks |= XHCI_LINK_TRB_QUIRK;
+ 	} else {
+-		xhci_dbg(xhci, "xHCI has no QUIRKS\n");
++		xhci_dbg(xhci, "xHCI doesn't need link TRB QUIRK\n");
+ 	}
+ 	retval = xhci_mem_init(xhci, GFP_KERNEL);
+ 	xhci_dbg(xhci, "Finished xhci_init\n");
+@@ -567,13 +567,22 @@ unsigned int xhci_get_endpoint_flag(stru
+ 	return 1 << (xhci_get_endpoint_index(desc) + 1);
+ }
+ 
++/* Find the flag for this endpoint (for use in the control context).  Use the
++ * endpoint index to create a bitmask.  The slot context is bit 0, endpoint 0 is
++ * bit 1, etc.
++ */
++unsigned int xhci_get_endpoint_flag_from_index(unsigned int ep_index)
++{
++	return 1 << (ep_index + 1);
++}
++
+ /* Compute the last valid endpoint context index.  Basically, this is the
+  * endpoint index plus one.  For slot contexts with more than valid endpoint,
+  * we find the most significant bit set in the added contexts flags.
+  * e.g. ep 1 IN (with epnum 0x81) => added_ctxs = 0b1000
+  * fls(0b1000) = 4, but the endpoint context index is 3, so subtract one.
+  */
+-static inline unsigned int xhci_last_valid_endpoint(u32 added_ctxs)
++unsigned int xhci_last_valid_endpoint(u32 added_ctxs)
+ {
+ 	return fls(added_ctxs) - 1;
+ }
+@@ -1230,8 +1239,44 @@ void xhci_reset_bandwidth(struct usb_hcd
  	xhci_zero_in_ctx(xhci, virt_dev);
  }
  
-+void xhci_cleanup_stalled_ring(struct xhci_hcd *xhci,
-+		struct usb_device *udev, struct usb_host_endpoint *ep,
-+		unsigned int ep_index, struct xhci_ring *ep_ring)
++void xhci_setup_input_ctx_for_quirk(struct xhci_hcd *xhci,
++		unsigned int slot_id, unsigned int ep_index,
++		struct xhci_dequeue_state *deq_state)
 +{
-+	struct xhci_dequeue_state deq_state;
++	struct xhci_container_ctx *in_ctx;
++	struct xhci_input_control_ctx *ctrl_ctx;
++	struct xhci_ep_ctx *ep_ctx;
++	u32 added_ctxs;
++	dma_addr_t addr;
 +
-+	xhci_dbg(xhci, "Cleaning up stalled endpoint ring\n");
-+	/* We need to move the HW's dequeue pointer past this TD,
-+	 * or it will attempt to resend it on the next doorbell ring.
-+	 */
-+	xhci_find_new_dequeue_state(xhci, udev->slot_id,
-+			ep_index, ep_ring->stopped_td, &deq_state);
-+
-+	xhci_dbg(xhci, "Queueing new dequeue state\n");
-+	xhci_queue_new_dequeue_state(xhci, ep_ring,
-+			udev->slot_id,
-+			ep_index, &deq_state);
-+}
-+
- /* Deal with stalled endpoints.  The core should have sent the control message
-  * to clear the halt condition.  However, we need to make the xHCI hardware
-  * reset its sequence number, since a device will expect a sequence number of
-@@ -1244,7 +1263,6 @@ void xhci_endpoint_reset(struct usb_hcd 
- 	unsigned int ep_index;
- 	unsigned long flags;
- 	int ret;
--	struct xhci_dequeue_state deq_state;
- 	struct xhci_ring *ep_ring;
- 
- 	xhci = hcd_to_xhci(hcd);
-@@ -1261,6 +1279,10 @@ void xhci_endpoint_reset(struct usb_hcd 
- 				ep->desc.bEndpointAddress);
- 		return;
- 	}
-+	if (usb_endpoint_xfer_control(&ep->desc)) {
-+		xhci_dbg(xhci, "Control endpoint stall already handled.\n");
++	xhci_endpoint_copy(xhci, xhci->devs[slot_id], ep_index);
++	in_ctx = xhci->devs[slot_id]->in_ctx;
++	ep_ctx = xhci_get_ep_ctx(xhci, in_ctx, ep_index);
++	addr = xhci_trb_virt_to_dma(deq_state->new_deq_seg,
++			deq_state->new_deq_ptr);
++	if (addr == 0) {
++		xhci_warn(xhci, "WARN Cannot submit config ep after "
++				"reset ep command\n");
++		xhci_warn(xhci, "WARN deq seg = %p, deq ptr = %p\n",
++				deq_state->new_deq_seg,
++				deq_state->new_deq_ptr);
 +		return;
 +	}
++	ep_ctx->deq = addr | deq_state->new_cycle_state;
++
++	xhci_slot_copy(xhci, xhci->devs[slot_id]);
++
++	ctrl_ctx = xhci_get_input_control_ctx(xhci, in_ctx);
++	added_ctxs = xhci_get_endpoint_flag_from_index(ep_index);
++	ctrl_ctx->add_flags = added_ctxs | SLOT_FLAG;
++	ctrl_ctx->drop_flags = added_ctxs;
++
++	xhci_dbg(xhci, "Slot ID %d Input Context:\n", slot_id);
++	xhci_dbg_ctx(xhci, in_ctx, ep_index);
++}
++
+ void xhci_cleanup_stalled_ring(struct xhci_hcd *xhci,
+-		struct usb_device *udev, struct usb_host_endpoint *ep,
++		struct usb_device *udev,
+ 		unsigned int ep_index, struct xhci_ring *ep_ring)
+ {
+ 	struct xhci_dequeue_state deq_state;
+@@ -1241,12 +1286,26 @@ void xhci_cleanup_stalled_ring(struct xh
+ 	 * or it will attempt to resend it on the next doorbell ring.
+ 	 */
+ 	xhci_find_new_dequeue_state(xhci, udev->slot_id,
+-			ep_index, ep_ring->stopped_td, &deq_state);
++			ep_index, ep_ring->stopped_td,
++			&deq_state);
  
- 	xhci_dbg(xhci, "Queueing reset endpoint command\n");
- 	spin_lock_irqsave(&xhci->lock, flags);
-@@ -1271,16 +1293,7 @@ void xhci_endpoint_reset(struct usb_hcd 
+-	xhci_dbg(xhci, "Queueing new dequeue state\n");
+-	xhci_queue_new_dequeue_state(xhci, ep_ring,
+-			udev->slot_id,
+-			ep_index, &deq_state);
++	/* HW with the reset endpoint quirk will use the saved dequeue state to
++	 * issue a configure endpoint command later.
++	 */
++	if (!(xhci->quirks & XHCI_RESET_EP_QUIRK)) {
++		xhci_dbg(xhci, "Queueing new dequeue state\n");
++		xhci_queue_new_dequeue_state(xhci, ep_ring,
++				udev->slot_id,
++				ep_index, &deq_state);
++	} else {
++		/* Better hope no one uses the input context between now and the
++		 * reset endpoint completion!
++		 */
++		xhci_dbg(xhci, "Setting up input context for "
++				"configure endpoint command\n");
++		xhci_setup_input_ctx_for_quirk(xhci, udev->slot_id,
++				ep_index, &deq_state);
++	}
+ }
+ 
+ /* Deal with stalled endpoints.  The core should have sent the control message
+@@ -1293,7 +1352,7 @@ void xhci_endpoint_reset(struct usb_hcd 
  	 * command.  Better hope that last command worked!
  	 */
  	if (!ret) {
--		xhci_dbg(xhci, "Cleaning up stalled endpoint ring\n");
--		/* We need to move the HW's dequeue pointer past this TD,
--		 * or it will attempt to resend it on the next doorbell ring.
--		 */
--		xhci_find_new_dequeue_state(xhci, udev->slot_id,
--				ep_index, ep_ring->stopped_td, &deq_state);
--		xhci_dbg(xhci, "Queueing new dequeue state\n");
--		xhci_queue_new_dequeue_state(xhci, ep_ring,
--				udev->slot_id,
--				ep_index, &deq_state);
-+		xhci_cleanup_stalled_ring(xhci, udev, ep, ep_index, ep_ring);
+-		xhci_cleanup_stalled_ring(xhci, udev, ep, ep_index, ep_ring);
++		xhci_cleanup_stalled_ring(xhci, udev, ep_index, ep_ring);
  		kfree(ep_ring->stopped_td);
  		xhci_ring_cmd_db(xhci);
  	}
+--- a/drivers/usb/host/xhci-pci.c
++++ b/drivers/usb/host/xhci-pci.c
+@@ -24,6 +24,10 @@
+ 
+ #include "xhci.h"
+ 
++/* Device for a quirk */
++#define PCI_VENDOR_ID_FRESCO_LOGIC	0x1b73
++#define PCI_DEVICE_ID_FRESCO_LOGIC_PDK	0x1000
++
+ static const char hcd_name[] = "xhci_hcd";
+ 
+ /* called after powerup, by probe or system-pm "wakeup" */
+@@ -62,6 +66,15 @@ static int xhci_pci_setup(struct usb_hcd
+ 	xhci->hcc_params = xhci_readl(xhci, &xhci->cap_regs->hcc_params);
+ 	xhci_print_registers(xhci);
+ 
++	/* Look for vendor-specific quirks */
++	if (pdev->vendor == PCI_VENDOR_ID_FRESCO_LOGIC &&
++			pdev->device == PCI_DEVICE_ID_FRESCO_LOGIC_PDK &&
++			pdev->revision == 0x0) {
++			xhci->quirks |= XHCI_RESET_EP_QUIRK;
++			xhci_dbg(xhci, "QUIRK: Fresco Logic xHC needs configure"
++					" endpoint cmd after reset endpoint\n");
++	}
++
+ 	/* Make sure the HC is halted. */
+ 	retval = xhci_halt(xhci);
+ 	if (retval)
 --- a/drivers/usb/host/xhci-ring.c
 +++ b/drivers/usb/host/xhci-ring.c
-@@ -817,6 +817,7 @@ static int handle_tx_event(struct xhci_h
+@@ -469,7 +469,6 @@ void xhci_queue_new_dequeue_state(struct
+ 	 * ring running.
+ 	 */
+ 	ep_ring->state |= SET_DEQ_PENDING;
+-	xhci_ring_cmd_db(xhci);
+ }
+ 
+ /*
+@@ -538,6 +537,7 @@ static void handle_stopped_endpoint(stru
+ 	if (deq_state.new_deq_ptr && deq_state.new_deq_seg) {
+ 		xhci_queue_new_dequeue_state(xhci, ep_ring,
+ 				slot_id, ep_index, &deq_state);
++		xhci_ring_cmd_db(xhci);
+ 	} else {
+ 		/* Otherwise just ring the doorbell to restart the ring */
+ 		ring_ep_doorbell(xhci, slot_id, ep_index);
+@@ -651,18 +651,31 @@ static void handle_reset_ep_completion(s
  {
- 	struct xhci_virt_device *xdev;
- 	struct xhci_ring *ep_ring;
-+	unsigned int slot_id;
- 	int ep_index;
- 	struct xhci_td *td = 0;
- 	dma_addr_t event_dma;
-@@ -827,7 +828,8 @@ static int handle_tx_event(struct xhci_h
- 	struct xhci_ep_ctx *ep_ctx;
+ 	int slot_id;
+ 	unsigned int ep_index;
++	struct xhci_ring *ep_ring;
  
- 	xhci_dbg(xhci, "In %s\n", __func__);
--	xdev = xhci->devs[TRB_TO_SLOT_ID(event->flags)];
-+	slot_id = TRB_TO_SLOT_ID(event->flags);
-+	xdev = xhci->devs[slot_id];
- 	if (!xdev) {
- 		xhci_err(xhci, "ERROR Transfer event pointed to bad slot\n");
- 		return -ENODEV;
-@@ -941,6 +943,25 @@ static int handle_tx_event(struct xhci_h
- 			xhci_warn(xhci, "WARN: short transfer on control ep\n");
- 			status = -EREMOTEIO;
- 			break;
-+		case COMP_STALL:
-+			/* Did we transfer part of the data (middle) phase? */
-+			if (event_trb != ep_ring->dequeue &&
-+					event_trb != td->last_trb)
-+				td->urb->actual_length =
-+					td->urb->transfer_buffer_length
-+					- TRB_LEN(event->transfer_len);
-+			else
-+				td->urb->actual_length = 0;
-+
-+			ep_ring->stopped_td = td;
-+			ep_ring->stopped_trb = event_trb;
-+			xhci_queue_reset_ep(xhci, slot_id, ep_index);
-+			xhci_cleanup_stalled_ring(xhci,
-+					td->urb->dev,
-+					td->urb->ep,
-+					ep_index, ep_ring);
-+			xhci_ring_cmd_db(xhci);
-+			goto td_cleanup;
- 		default:
- 			/* Others already handled above */
- 			break;
-@@ -1083,6 +1104,7 @@ static int handle_tx_event(struct xhci_h
- 			inc_deq(xhci, ep_ring, false);
- 		}
+ 	slot_id = TRB_TO_SLOT_ID(trb->generic.field[3]);
+ 	ep_index = TRB_TO_EP_INDEX(trb->generic.field[3]);
++	ep_ring = xhci->devs[slot_id]->ep_rings[ep_index];
+ 	/* This command will only fail if the endpoint wasn't halted,
+ 	 * but we don't care.
+ 	 */
+ 	xhci_dbg(xhci, "Ignoring reset ep completion code of %u\n",
+ 			(unsigned int) GET_COMP_CODE(event->status));
  
-+td_cleanup:
- 		/* Clean up the endpoint's TD list */
- 		urb = td->urb;
- 		list_del(&td->td_list);
-@@ -1091,8 +1113,13 @@ static int handle_tx_event(struct xhci_h
- 			list_del(&td->cancelled_td_list);
- 			ep_ring->cancels_pending--;
- 		}
--		/* Leave the TD around for the reset endpoint function to use */
--		if (GET_COMP_CODE(event->transfer_len) != COMP_STALL) {
-+		/* Leave the TD around for the reset endpoint function to use
-+		 * (but only if it's not a control endpoint, since we already
-+		 * queued the Set TR dequeue pointer command for stalled
-+		 * control endpoints).
+-	/* Clear our internal halted state and restart the ring */
+-	xhci->devs[slot_id]->ep_rings[ep_index]->state &= ~EP_HALTED;
+-	ring_ep_doorbell(xhci, slot_id, ep_index);
++	/* HW with the reset endpoint quirk needs to have a configure endpoint
++	 * command complete before the endpoint can be used.  Queue that here
++	 * because the HW can't handle two commands being queued in a row.
++	 */
++	if (xhci->quirks & XHCI_RESET_EP_QUIRK) {
++		xhci_dbg(xhci, "Queueing configure endpoint command\n");
++		xhci_queue_configure_endpoint(xhci,
++				xhci->devs[slot_id]->in_ctx->dma, slot_id);
++		xhci_ring_cmd_db(xhci);
++	} else {
++		/* Clear our internal halted state and restart the ring */
++		ep_ring->state &= ~EP_HALTED;
++		ring_ep_doorbell(xhci, slot_id, ep_index);
++	}
+ }
+ 
+ static void handle_cmd_completion(struct xhci_hcd *xhci,
+@@ -671,6 +684,10 @@ static void handle_cmd_completion(struct
+ 	int slot_id = TRB_TO_SLOT_ID(event->flags);
+ 	u64 cmd_dma;
+ 	dma_addr_t cmd_dequeue_dma;
++	struct xhci_input_control_ctx *ctrl_ctx;
++	unsigned int ep_index;
++	struct xhci_ring *ep_ring;
++	unsigned int ep_state;
+ 
+ 	cmd_dma = event->cmd_trb;
+ 	cmd_dequeue_dma = xhci_trb_virt_to_dma(xhci->cmd_ring->deq_seg,
+@@ -698,8 +715,39 @@ static void handle_cmd_completion(struct
+ 			xhci_free_virt_device(xhci, slot_id);
+ 		break;
+ 	case TRB_TYPE(TRB_CONFIG_EP):
+-		xhci->devs[slot_id]->cmd_status = GET_COMP_CODE(event->status);
+-		complete(&xhci->devs[slot_id]->cmd_completion);
++		/*
++		 * Configure endpoint commands can come from the USB core
++		 * configuration or alt setting changes, or because the HW
++		 * needed an extra configure endpoint command after a reset
++		 * endpoint command.  In the latter case, the xHCI driver is
++		 * not waiting on the configure endpoint command.
 +		 */
-+		if (usb_endpoint_xfer_control(&urb->ep->desc) ||
-+			GET_COMP_CODE(event->transfer_len) != COMP_STALL) {
- 			kfree(td);
- 		}
- 		urb->hcpriv = NULL;
++		ctrl_ctx = xhci_get_input_control_ctx(xhci,
++				xhci->devs[slot_id]->in_ctx);
++		/* Input ctx add_flags are the endpoint index plus one */
++		ep_index = xhci_last_valid_endpoint(ctrl_ctx->add_flags) - 1;
++		ep_ring = xhci->devs[slot_id]->ep_rings[ep_index];
++		if (!ep_ring) {
++			/* This must have been an initial configure endpoint */
++			xhci->devs[slot_id]->cmd_status =
++				GET_COMP_CODE(event->status);
++			complete(&xhci->devs[slot_id]->cmd_completion);
++			break;
++		}
++		ep_state = ep_ring->state;
++		xhci_dbg(xhci, "Completed config ep cmd - last ep index = %d, "
++				"state = %d\n", ep_index, ep_state);
++		if (xhci->quirks & XHCI_RESET_EP_QUIRK &&
++				ep_state & EP_HALTED) {
++			/* Clear our internal halted state and restart ring */
++			xhci->devs[slot_id]->ep_rings[ep_index]->state &=
++				~EP_HALTED;
++			ring_ep_doorbell(xhci, slot_id, ep_index);
++		} else {
++			xhci->devs[slot_id]->cmd_status =
++				GET_COMP_CODE(event->status);
++			complete(&xhci->devs[slot_id]->cmd_completion);
++		}
+ 		break;
+ 	case TRB_TYPE(TRB_EVAL_CONTEXT):
+ 		xhci->devs[slot_id]->cmd_status = GET_COMP_CODE(event->status);
+@@ -958,7 +1006,6 @@ static int handle_tx_event(struct xhci_h
+ 			xhci_queue_reset_ep(xhci, slot_id, ep_index);
+ 			xhci_cleanup_stalled_ring(xhci,
+ 					td->urb->dev,
+-					td->urb->ep,
+ 					ep_index, ep_ring);
+ 			xhci_ring_cmd_db(xhci);
+ 			goto td_cleanup;
 
 
