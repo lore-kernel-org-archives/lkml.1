@@ -1,70 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbZJBSaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbZJBSaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758063AbZJBSaB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbZJBSaA
+	id S1758071AbZJBSaS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbZJBSaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:30:00 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49525 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755542AbZJBSaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:30:00 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18aFgUXEfYaol+oaSWyszDA2HBcg1wlGg0oLguY2Z
-	t7OyceC6V/N46S
-Subject: Re: IO scheduler based IO controller V10
-From: Mike Galbraith <efault@gmx.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-In-Reply-To: <20091002180857.GM31616@kernel.dk>
-References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com>
-	 <4ABC28DE.7050809@datenparkplatz.de> <20090925202636.GC15007@redhat.com>
-	 <1253976676.7005.40.camel@marge.simson.net>
-	 <1254034500.7933.6.camel@marge.simson.net>
-	 <20090927164235.GA23126@kernel.dk>
-	 <1254340730.7695.32.camel@marge.simson.net>
-	 <1254341139.7695.36.camel@marge.simson.net>
-	 <20090930202447.GA28236@redhat.com>
-	 <1254382405.7595.9.camel@marge.simson.net>
-	 <20091002180857.GM31616@kernel.dk>
+	Fri, 2 Oct 2009 14:30:15 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38451 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758065AbZJBSaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:30:12 -0400
+Subject: Re: [2.6.31] Memory leak in SCSI initialization?
+From: James Bottomley <James.Bottomley@suse.de>
+To: michael@ellerman.id.au
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>
+In-Reply-To: <1253625194.5923.10.camel@concordia>
+References: <200909221318.IFD17141.OQLtSFJVOOFFMH@I-love.SAKURA.ne.jp>
+	 <1253625194.5923.10.camel@concordia>
 Content-Type: text/plain
-Date: Fri, 02 Oct 2009 20:29:57 +0200
-Message-Id: <1254508197.8667.22.camel@marge.simson.net>
+Date: Fri, 02 Oct 2009 13:30:08 -0500
+Message-Id: <1254508208.3874.131.camel@mulgrave.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.67
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-02 at 20:08 +0200, Jens Axboe wrote:
-> On Thu, Oct 01 2009, Mike Galbraith wrote:
-> >  	max_dispatch = cfqd->cfq_quantum;
-> >  	if (cfq_class_idle(cfqq))
-> >  		max_dispatch = 1;
-> >  
-> > +	if (cfqd->busy_queues > 1)
-> > +		cfqd->od_stamp = jiffies;
-> > +
+On Tue, 2009-09-22 at 23:13 +1000, Michael Ellerman wrote:
+> On Tue, 2009-09-22 at 13:18 +0900, Tetsuo Handa wrote:
+> > Hello.
+> > 
+> > I can see below message appears for 15 times in
+> > /sys/kernel/debug/kmemleak after processing /init inside initramfs.
+> > 
+> > unreferenced object 0xdeadb5c8 (size 32):
+> >   comm "insmod", pid 543, jiffies 4294674766
+> >   backtrace:
+> >     [<c048a22c>] create_object+0x135/0x202
+> >     [<c048a31e>] kmemleak_alloc+0x25/0x49
+> >     [<c04865d9>] kmemleak_alloc_recursive+0x1c/0x22
+> >     [<c0486d33>] __kmalloc+0x6c/0xb9
+> >     [<c04f5675>] kvasprintf+0x2d/0x4a
+> >     [<c04ef5af>] kobject_set_name_vargs+0x21/0x50
+> >     [<c054bbd7>] dev_set_name+0x1a/0x1c
+> >     [<e08dc1b7>] scsi_sysfs_device_initialize+0x8b/0xe4 [scsi_mod]
+> >     [<e08d9bbf>] scsi_alloc_sdev+0x134/0x18f [scsi_mod]
+> >     [<e08d9e7a>] scsi_probe_and_add_lun+0x107/0xa98 [scsi_mod]
+> >     [<e08da946>] __scsi_scan_target+0x70/0x4b1 [scsi_mod]
+> >     [<e08dadbe>] scsi_scan_channel+0x37/0x60 [scsi_mod]
+> >     [<e08dae9f>] scsi_scan_host_selected+0xb8/0xf1 [scsi_mod]
+> >     [<e08daf2c>] do_scsi_scan_host+0x54/0x5d [scsi_mod]
+> >     [<e08db2ef>] scsi_scan_host+0x14d/0x165 [scsi_mod]
+> >     [<e0959771>] mptspi_probe+0x2cd/0x2f8 [mptspi]
 > 
-> ->busy_queues > 1 just means that they have requests ready for dispatch,
-> not that they are dispatched.
+> I think this will fix it:
+> 
+> diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+> index 9ce5c34..284bcbe 100644
+> --- a/drivers/scsi/scsi_scan.c
+> +++ b/drivers/scsi/scsi_scan.c
+> @@ -957,7 +957,7 @@ static inline void scsi_destroy_sdev(struct scsi_device *sdev)
+>         if (sdev->host->hostt->slave_destroy)
+>                 sdev->host->hostt->slave_destroy(sdev);
+>         transport_destroy_device(&sdev->sdev_gendev);
+> -       put_device(&sdev->sdev_gendev);
+> +       put_device(&sdev->sdev_dev);
+>  }
+>  
+>  #ifdef CONFIG_SCSI_LOGGING
+> 
+> 
+> sdev_dev has class == sdev_class. The release function for sdev_class is
+> scsi_device_cls_release(), and _that_ does a put on the sdev_gendev.
+> 
+> But someone who groks all that mess, er beauty ;D, should check that
+> makes sense.
 
-But we're not alone, somebody else is using disk.  I'm trying to make
-sure we don't have someone _about_ to come back.. like a reader, so when
-there's another player, stamp to give him some time to wake up/submit
-before putting the pedal to the metal.
+The fix is correct, but it's depending on nastily deep magic inside the
+scsi sysfs layers.  We have to know at this point that we've allocated
+the containing object, parented sdev_dev, named sdev_dev (thus
+allocating memory) but won't take a reference on sdev_gendev for
+sdev_dev until add time, so doing a final put of sdev_dev also does a
+final put of sdev_gendev.
 
-	-Mike
+The root cause of the problem is the fact that dev_set_name() now
+allocates storage instead of using the original array within the kobj.
+That means that the SCSI assumption that if you haven't made the
+containing object or any sub objects visible, you can just destroy it
+(and its component devices) lock stock and barrel becomes false.
+
+The two ways to fix this naturally seem either to do the get of sdev_dev
+at parent time (this is usual) and thus do an extra put of it in
+scsi_destroy_sdev() (and all other destruction without add paths) or to
+make sure no allocations occur in scsi_sysfs_device_initialize() and
+thus we can just garbage collect the entire object without worrying
+about subobject allocations.
+
+On the whole, I would favour the latter since it returns us to the
+original assumptions, but that would also leave us with unnamed SCSI
+devices up until add time, which might be confusing, so let's try the
+former.
+
+Can we verify this fixes the memory leak?
+
+James
+
+---
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index c447838..0547a7f 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -317,6 +317,7 @@ static struct scsi_device *scsi_alloc_sdev(struct scsi_target *starget,
+ out_device_destroy:
+ 	scsi_device_set_state(sdev, SDEV_DEL);
+ 	transport_destroy_device(&sdev->sdev_gendev);
++	put_device(&sdev->sdev_dev);
+ 	put_device(&sdev->sdev_gendev);
+ out:
+ 	if (display_failure_msg)
+@@ -957,6 +958,7 @@ static inline void scsi_destroy_sdev(struct scsi_device *sdev)
+ 	if (sdev->host->hostt->slave_destroy)
+ 		sdev->host->hostt->slave_destroy(sdev);
+ 	transport_destroy_device(&sdev->sdev_gendev);
++	put_device(&sdev->sdev_dev);
+ 	put_device(&sdev->sdev_gendev);
+ }
+ 
+diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+index fde5453..5c7eb63 100644
+--- a/drivers/scsi/scsi_sysfs.c
++++ b/drivers/scsi/scsi_sysfs.c
+@@ -864,10 +864,6 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+ 		goto clean_device;
+ 	}
+ 
+-	/* take a reference for the sdev_dev; this is
+-	 * released by the sdev_class .release */
+-	get_device(&sdev->sdev_gendev);
+-
+ 	/* create queue files, which may be writable, depending on the host */
+ 	if (sdev->host->hostt->change_queue_depth)
+ 		error = device_create_file(&sdev->sdev_gendev, &sdev_attr_queue_depth_rw);
+@@ -917,6 +913,7 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+ 
+ 	device_del(&sdev->sdev_gendev);
+ 	transport_destroy_device(&sdev->sdev_gendev);
++	put_device(&sdev->sdev_dev);
+ 	put_device(&sdev->sdev_gendev);
+ 
+ 	return error;
+@@ -1065,7 +1062,7 @@ void scsi_sysfs_device_initialize(struct scsi_device *sdev)
+ 		     sdev->host->host_no, sdev->channel, sdev->id, sdev->lun);
+ 
+ 	device_initialize(&sdev->sdev_dev);
+-	sdev->sdev_dev.parent = &sdev->sdev_gendev;
++	sdev->sdev_dev.parent = get_device(&sdev->sdev_gendev);
+ 	sdev->sdev_dev.class = &sdev_class;
+ 	dev_set_name(&sdev->sdev_dev, "%d:%d:%d:%d",
+ 		     sdev->host->host_no, sdev->channel, sdev->id, sdev->lun);
+
+
 
