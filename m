@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbZJBRFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbZJBRFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757337AbZJBRFG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:05:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757147AbZJBRFG
+	id S1757384AbZJBRFr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbZJBRFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:05:06 -0400
-Received: from mga09.intel.com ([134.134.136.24]:49657 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756952AbZJBRFE convert rfc822-to-8bit (ORCPT
+	Fri, 2 Oct 2009 13:05:47 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:51452 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757102AbZJBRFq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:05:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,495,1249282800"; 
-   d="scan'208";a="454049023"
-From: "Wang, Shane" <shane.wang@intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-CC: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>
-Date: Sat, 3 Oct 2009 01:02:52 +0800
-Subject: RE: [GIT PULL] x86/txt for v2.6.32
-Thread-Topic: [GIT PULL] x86/txt for v2.6.32
-Thread-Index: AcpBmvovGzcIipIkSRSmfCqAYLlcJgB5Vc3g
-Message-ID: <037F493892196B458CD3E193E8EBAD4F01ED9FE6E3@pdsmsx502.ccr.corp.intel.com>
-References: <200909142051.n8EKpiOM017912@terminus.zytor.com>
- <200909262344.21257.rjw@sisk.pl> <20090928210252.GD1960@elf.ucw.cz>
- <200909282307.56190.rjw@sisk.pl> <4AC1267D.6020405@zytor.com>
- <20090928211745.GA2119@elf.ucw.cz> <4AC1AA61.8070408@intel.com>
- <20090929171318.GC14405@elf.ucw.cz> <20090929191951.18315e94@infradead.org>
- <037F493892196B458CD3E193E8EBAD4F01ED9FE3B1@pdsmsx502.ccr.corp.intel.com>
- <20090930065448.GB11652@elf.ucw.cz>
-In-Reply-To: <20090930065448.GB11652@elf.ucw.cz>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Fri, 2 Oct 2009 13:05:46 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsAEAF/PxUpMROOX/2dsb2JhbACBUtZuhCwEhi0
+Date: Fri, 2 Oct 2009 13:05:48 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Josh Triplett <josh@joshtriplett.org>, Jon Bernard <jbernard@debian.org>,
+       Jan Blunck <jblunck@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Pierre Habouzit <madcoder@debian.org>,
+       Steven Munroe <munroesj@linux.vnet.ibm.com>,
+       Bert Wesarg <bert.wesarg@googlemail.com>,
+       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, rp@svcs.cs.pdx.edu,
+       ltt-dev@lists.casi.polymtl.ca
+Subject: [RELEASE] Userspace RCU library (liburcu) 0.2.1
+Message-ID: <20091002170548.GA19796@Krystal>
+References: <20090929210951.GC28427@Krystal> <20091001135611.GA12323@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091001135611.GA12323@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 13:02:59 up 45 days,  3:52,  2 users,  load average: 1.02, 0.50,
+	0.29
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So I modify the RAM content so that BIOS does not think measured
-> environment existed before suspend?
-> 									Pavel
+Hello,
 
-Hi Pavel, what do you mean on this question? 
-When do you modify the RAM? before S3 sleep?
+Userspace RCU 0.2.1 includes:
 
-Thanks.
-Shane
+- small header dependency fix for rculist.h.
+- new "liburcu-bp.so" : "Bulletproof RCU", made especially for the UST
+  userspace tracer. It's a library that sacrifices a bit of read-side
+  performance for automatically monitoring thread creation/removal. See
+  README for details.
+
+Thanks,
+
+Mathieu
+
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> Hi,
+> 
+> Here is a 0.2 version of the urcu library. It should clarify usage of
+> 
+> rcu_cmpxchg_pointer
+> rcu_xchg_pointer
+> rcu_set_pointer
+> 
+> which are the recommended primitives to deal with pointers.
+> rcu_assign_pointer(ptr, new) is provided as compatibility layer with the
+> Linux kernel semantic, but note that its semantic for the first
+> parameter is IMHO odd and differs from rcu_{cmpxchg,xchg,set}_pointer.
+> 
+> Website URL:
+> http://lttng.org/urcu
+> 
+> Direct link to the package:
+> http://www.lttng.org/files/urcu/userspace-rcu-0.2.tar.gz
+> 
+> Thanks,
+> 
+> Mathieu
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
