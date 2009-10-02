@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbZJBQnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbZJBQli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756954AbZJBQnH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 12:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756691AbZJBQnH
+	id S1756915AbZJBQli (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 12:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbZJBQlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 12:43:07 -0400
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:33096 "EHLO
-	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756689AbZJBQnG (ORCPT
+	Fri, 2 Oct 2009 12:41:37 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:50689 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756663AbZJBQlh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 12:43:06 -0400
-Message-ID: <4AC62C8C.4060906@csr.com>
-Date: Fri, 02 Oct 2009 17:38:36 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Subject: Re: [109/136] USB: xhci: Make TRB completion code comparison readable.
-References: <20091002011548.335611824@mini.kroah.org> <20091002012424.339883108@mini.kroah.org>
-In-Reply-To: <20091002012424.339883108@mini.kroah.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 2 Oct 2009 12:41:37 -0400
+Date: Fri, 2 Oct 2009 09:40:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Tejun Heo <tj@kernel.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for October 2: percpu compile warnings (i386)
+Message-Id: <20091002094030.ffbde6ca.randy.dunlap@oracle.com>
+In-Reply-To: <20091002134718.f577be51.sfr@canb.auug.org.au>
+References: <20091002134718.f577be51.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Oct 2009 16:38:37.0179 (UTC) FILETIME=[CA42B4B0:01CA437E]
+X-Source-IP: abhmt010.oracle.com [141.146.116.19]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4AC62D00.007A:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> 2.6.31-stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-> 
-> commit 66d1eebce5cca916e0b08d961690bb01c64751ef upstream.
-> 
-> Use trb_comp_code instead of getting the completion code from the transfer
-> event every time.
+mm/percpu.c:1873: warning: comparison of distinct pointer types lacks a cast
+mm/percpu.c:1879: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'size_t'
 
-Are all these xhci patches really candidates for the stable tree?  XHCI
-support is marked as EXPERIMENTAL, the xhci standard is still at the
-draft stage, and I don't believe there are any xhci products available
-on the market yet.
+The second one is easily fixed (s/%lx/%zu/), but is that the correct fix?
 
-David
--- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+The first one is a max(size_t, unsigned long).
+The C99 spec says that the max value of a size_t is:
+	limit of size_t
+	SIZE_MAX 65535
+(from 7.8.13(2)), but max_distance (the size_t here) is being compared to
+unsigned long base_offset, which isn't limited to 65535 AFAICT.
 
+In fact, this test:
+	if (max_distance > (VMALLOC_END - VMALLOC_START) * 3 / 4) {
+checks max_distance > 0x000017ff_ffffffff (on x86_64).
 
-Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
+And it looks to me like there is some potential for some value truncation
+in the max() operation, even if size_t is not limited to SIZE_MAX.
+
+So maybe the size_t(s) should be changed to unsigned long and the
+printk format doesn't need to be fixed... ?
+
+---
+~Randy
