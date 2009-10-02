@@ -1,81 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbZJBKGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbZJBKQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbZJBKGP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 06:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbZJBKGO
+	id S1757535AbZJBKQL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 06:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbZJBKQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 06:06:14 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:54943 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756811AbZJBKGN (ORCPT
+	Fri, 2 Oct 2009 06:16:10 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:48299 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756881AbZJBKQJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 06:06:13 -0400
-Message-ID: <4AC5D098.1010504@canonical.com>
-Date: Fri, 02 Oct 2009 12:06:16 +0200
-From: Stefan Bader <stefan.bader@canonical.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Fri, 2 Oct 2009 06:16:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=bnaTqa4lvaQyc8dk/22vD7grQxHBEH7qXB7DGnXJFCr3D+tkyoYqZRyjWisWkq4HNR
+         Pbrw7qjy7X/yWgWQXjZw5HXm82Rh08e1Q74xuAZPx3T3QjUj9lfMRJkJjqKev9IuSQKo
+         U6fbLE+K0dnP2Yz9Qyk1AaGhZHJEumhu5QDbw=
 MIME-Version: 1.0
-To: Peter Feuerer <peter@piie.net>
-CC: Borislav Petkov <petkovbb@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] acerhdf: Limit modalias matching to supported boards
-References: <4AC34B83.6090402@canonical.com> <20090930212233.GB17712@liondog.tnic> <cone.1254466252.404216.3290.1000@onepiie> <4AC5B0F1.4030303@canonical.com> <9ea470500910020254j21fad1d3g1c825bcecdbb29fb@mail.gmail.com> <cone.1254477850.9043.3499.1000@onepiie>
-In-Reply-To: <cone.1254477850.9043.3499.1000@onepiie>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Fri, 2 Oct 2009 12:16:12 +0200
+Message-ID: <40a4ed590910020316t50800e0m6958a335cfdcaf3b@mail.gmail.com>
+Subject: When this happens my Machine hangs - Kernel 2.6.32-rc2: INFO: task 
+	master:26085 blocked for more than 120 seconds
+From: Zeno Davatz <zdavatz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Feuerer wrote:
-> Borislav Petkov writes:
-> 
->> On Fri, Oct 2, 2009 at 9:51 AM, Stefan Bader 
->> <stefan.bader@canonical.com> wrote:
->>>>> I search my acerhdf-inbox for the people who sent me the BIOS 
->>>>> versions,
->>>> maybe they still have the netbook and can me send the modalias 
->>>> content. I'll
->>>> hopefully find some time upcoming weekend.
->>>>
->>>> But, can't we simply assume, following dmi lines?
->>>>
->>>> MODULE_ALIAS("dmi:*:*Acer*:*AOA*:");
->>>> MODULE_ALIAS("dmi:*:*Gateway*:*AOA*:");
->>>> MODULE_ALIAS("dmi:*:*Packard Bell*:*AOA*:");
->>>> MODULE_ALIAS("dmi:*:*Packard Bell*:*DOA*:");
->>>>
->>>> We have exactly those constellations within the BIOS settings table. 
->>>> If I
->>>> interpret the modalias line correctly, "pnAOA110" means "Product Name
->>>> AOA110" and that's what we have already in the BIOS settings table. 
->>>> So I
->>>> think we do already have all information we need to create a 
->>>> complete patch
->>>> for the problem, or am I wrong?
->>>
->>> Right pn means that. I would strongly believe the above changes 
->>> should be
->>> good. I sometimes tend to be over-cautious. Attaching a refreshed patch
->>> which includes them all.
->>
->> Well, acerhdf.c and dmi-id.c both do
->> dmi_get_system_info(DMI_PRODUCT_NAME) when querying product name which
->> means that the product names in the acerhdf table and the dmi-id ones
->> are actually one and the same thing.
->>
->> IMO, we should just go ahead send it to Len. Stefan, you have my ACK.
-> 
-> Will try the patch tomorrow morning and you'll then get also my ack, if 
-> it's working.
-> 
-> --peter
+I am on: Linux zenogentoo 2.6.32-rc2 #63 SMP PREEMPT Mon Sep 28
+16:04:45 CEST 2009 i686 Intel(R) Pentium(R) 4 CPU 3.00GHz GenuineIntel
+GNU/Linux
 
-Ok, cool. Will wait on that.
+from /var/log/messages right at the time of the hang:
 
--Stefan
+Oct  2 12:00:01 zenogentoo cron[26059]: (root) CMD (test -x
+/usr/sbin/run-crons && /usr/sbin/run-crons )
+Oct  2 12:07:40 zenogentoo INFO: task master:26085 blocked for more
+than 120 seconds.
+Oct  2 12:07:40 zenogentoo "echo 0 >
+/proc/sys/kernel/hung_task_timeout_secs" disables this message.
+Oct  2 12:07:40 zenogentoo master        D 0000e15b     0 26085   3117
+0x00000000
+Oct  2 12:07:40 zenogentoo f72b7e90 00000086 669d4ad6 0000e15b
+c1693980 00000001 c2a08980 f72b7e64
+Oct  2 12:07:40 zenogentoo c107bfdf f72b7e54 c168f084 f72280b0
+f7228248 c2a08500 00000001 00000001
+Oct  2 12:07:40 zenogentoo c1693500 c2804104 f7228248 f722817c
+c2804104 f72b7e88 0002a25f 00000000
+Oct  2 12:07:40 zenogentoo Call Trace:
+Oct  2 12:07:40 zenogentoo [<c107bfdf>] ? sched_clock_cpu+0xc4/0xf8
+Oct  2 12:07:40 zenogentoo [<c1473842>] schedule_timeout+0x242/0x2ad
+Oct  2 12:07:40 zenogentoo [<c1031368>] ? sched_clock+0x8/0xb
+Oct  2 12:07:40 zenogentoo [<c107be97>] ? sched_clock_local+0x91/0x115
+Oct  2 12:07:40 zenogentoo [<c107bfdf>] ? sched_clock_cpu+0xc4/0xf8
+Oct  2 12:07:40 zenogentoo [<c1474c83>] ? _spin_lock+0x10/0x27
+Oct  2 12:07:40 zenogentoo [<c1472af1>] wait_for_common+0xa9/0x10a
+Oct  2 12:07:40 zenogentoo [<c1056373>] ? default_wake_function+0x0/0xd
+Oct  2 12:07:40 zenogentoo [<c1472bc4>] wait_for_completion+0x12/0x14
+Oct  2 12:07:40 zenogentoo [<c105c836>] sched_exec+0xd5/0xe4
+Oct  2 12:07:40 zenogentoo [<c10df99d>] do_execve+0x138/0x378
+Oct  2 12:07:40 zenogentoo [<c1029fcf>] sys_execve+0x35/0x61
+Oct  2 12:07:40 zenogentoo [<c102b690>] sysenter_do_call+0x12/0x2c
+Oct  2 12:08:08 zenogentoo sudo: pam_unix(sudo:auth): authentication
+failure; logname=zeno uid=0 euid=0 tty=pts/0 ruser= rhost=  user=zeno
+Oct  2 12:08:12 zenogentoo sudo:     zeno : TTY=pts/0 ; PWD=/home/zeno
+; USER=root ; COMMAND=/usr/bin/vi /var/log/messages
+Oct  2 12:09:40 zenogentoo INFO: task master:26085 blocked for more
+than 120 seconds.
+Oct  2 12:09:40 zenogentoo "echo 0 >
+/proc/sys/kernel/hung_task_timeout_secs" disables this message.
+Oct  2 12:09:40 zenogentoo master        D 0000e15b     0 26085   3117
+0x00000000
+Oct  2 12:09:40 zenogentoo f72b7e90 00000086 669d4ad6 0000e15b
+c1693980 00000001 c2a08980 f72b7e64
+Oct  2 12:09:40 zenogentoo c107bfdf f72b7e54 c168f084 f72280b0
+f7228248 c2a08500 00000001 00000001
+Oct  2 12:09:40 zenogentoo c1693500 c2804104 f7228248 f722817c
+c2804104 f72b7e88 0002a25f 00000000
+Oct  2 12:09:40 zenogentoo Call Trace:
+Oct  2 12:09:40 zenogentoo [<c107bfdf>] ? sched_clock_cpu+0xc4/0xf8
+Oct  2 12:09:40 zenogentoo [<c1473842>] schedule_timeout+0x242/0x2ad
+Oct  2 12:09:40 zenogentoo [<c1031368>] ? sched_clock+0x8/0xb
+Oct  2 12:09:40 zenogentoo [<c107be97>] ? sched_clock_local+0x91/0x115
+Oct  2 12:09:40 zenogentoo [<c107bfdf>] ? sched_clock_cpu+0xc4/0xf8
+Oct  2 12:09:40 zenogentoo [<c1474c83>] ? _spin_lock+0x10/0x27
+Oct  2 12:09:40 zenogentoo [<c1472af1>] wait_for_common+0xa9/0x10a
+Oct  2 12:09:40 zenogentoo [<c1056373>] ? default_wake_function+0x0/0xd
+Oct  2 12:09:40 zenogentoo [<c1472bc4>] wait_for_completion+0x12/0x14
+Oct  2 12:09:40 zenogentoo [<c105c836>] sched_exec+0xd5/0xe4
+Oct  2 12:09:40 zenogentoo [<c10df99d>] do_execve+0x138/0x378
+Oct  2 12:09:40 zenogentoo [<c1029fcf>] sys_execve+0x35/0x61
+Oct  2 12:09:40 zenogentoo [<c102b690>] sysenter_do_call+0x12/0x2c
 
--- 
+Any hints are welcome.
 
-When all other means of communication fail, try words!
-
-
+Best
+Zeno
