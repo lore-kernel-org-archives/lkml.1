@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbZJBRFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbZJBRF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbZJBRFr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbZJBRFr
+	id S1757449AbZJBRF5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbZJBRF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:05:47 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:51452 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757102AbZJBRFq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:05:46 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsAEAF/PxUpMROOX/2dsb2JhbACBUtZuhCwEhi0
-Date: Fri, 2 Oct 2009 13:05:48 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Josh Triplett <josh@joshtriplett.org>, Jon Bernard <jbernard@debian.org>,
-       Jan Blunck <jblunck@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Pierre Habouzit <madcoder@debian.org>,
-       Steven Munroe <munroesj@linux.vnet.ibm.com>,
-       Bert Wesarg <bert.wesarg@googlemail.com>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, rp@svcs.cs.pdx.edu,
-       ltt-dev@lists.casi.polymtl.ca
-Subject: [RELEASE] Userspace RCU library (liburcu) 0.2.1
-Message-ID: <20091002170548.GA19796@Krystal>
-References: <20090929210951.GC28427@Krystal> <20091001135611.GA12323@Krystal>
-Mime-Version: 1.0
+	Fri, 2 Oct 2009 13:05:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40625 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757410AbZJBRF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:05:56 -0400
+Date: Fri, 2 Oct 2009 19:05:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frans Pop <elendil@planet.nl>
+Cc: Trevor Hemsley <trevor.hemsley@ntlworld.com>, linux-kernel@vger.kernel.org
+Subject: Re: Temperature above threshold loop with 2.6.31.1
+Message-ID: <20091002170550.GA28428@elte.hu>
+References: <20091002134430.SOPU22934.aamtaout04-winn.ispmail.ntl.com@trevor2.dsl.pipex.com> <200910021703.31679.elendil@planet.nl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091001135611.GA12323@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 13:02:59 up 45 days,  3:52,  2 users,  load average: 1.02, 0.50,
-	0.29
+In-Reply-To: <200910021703.31679.elendil@planet.nl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Userspace RCU 0.2.1 includes:
+* Frans Pop <elendil@planet.nl> wrote:
 
-- small header dependency fix for rculist.h.
-- new "liburcu-bp.so" : "Bulletproof RCU", made especially for the UST
-  userspace tracer. It's a library that sacrifices a bit of read-side
-  performance for automatically monitoring thread creation/removal. See
-  README for details.
+> Trevor Hemsley wrote:
+> > I just downloaded and installed the latest 2.6.31.1 kernel on my
+> > machine here and I think I found a small bug. Shortly after boot I
+> > start to receive messages like
+> > 
+> > CPU0: Temperature above threshold, cpu clock throttled (total events =
+> > 21672)
+> [...] 
+> > More importantly, I get approximately 100,000 of these messages per
+> > minute and the machine is completely unusable. All of these are for
+> > CPU0 - at least all the ones that get written to /var/log/messages.
+> > 
+> > 1,666 notifications a second seems a little on the 'too frequent' side
+> > of things to me :-)
+> 
+> Looks like this may already be fixed in mainline by the following commit:
+> commit b417c9fd8690637f0c91479435ab3e2bf450c038
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Tue Sep 22 15:50:24 2009 +0200
+>     x86: mce: Fix thermal throttling message storm
+> 
+> Can you confirm that please, either by compiling current git or by applying 
+> that commit on top of 2.6.31.1?
+> 
+> Ingo: is that patch already scheduled for stable?
 
-Thanks,
+Not yet - i just forwarded it. Thanks for pointing it out,
 
-Mathieu
-
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> Hi,
-> 
-> Here is a 0.2 version of the urcu library. It should clarify usage of
-> 
-> rcu_cmpxchg_pointer
-> rcu_xchg_pointer
-> rcu_set_pointer
-> 
-> which are the recommended primitives to deal with pointers.
-> rcu_assign_pointer(ptr, new) is provided as compatibility layer with the
-> Linux kernel semantic, but note that its semantic for the first
-> parameter is IMHO odd and differs from rcu_{cmpxchg,xchg,set}_pointer.
-> 
-> Website URL:
-> http://lttng.org/urcu
-> 
-> Direct link to the package:
-> http://www.lttng.org/files/urcu/userspace-rcu-0.2.tar.gz
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Ingo
