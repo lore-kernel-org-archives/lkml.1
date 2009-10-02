@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZJBBc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbZJBB4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbZJBBc6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbZJBBc4
+	id S1757197AbZJBB4r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbZJBB4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:32:56 -0400
-Received: from kroah.org ([198.145.64.141]:33029 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:56:45 -0400
+Received: from kroah.org ([198.145.64.141]:33037 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755389AbZJBBcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:32:54 -0400
+	id S1755201AbZJBBcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:32:55 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:11 2009
-Message-Id: <20091002012410.983865030@mini.kroah.org>
+Message-Id: <20091002012411.140561491@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:16:22 -0700
+Date: Thu, 01 Oct 2009 18:16:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Mattia Dongili <malattia@linux.it>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [034/136] sony-laptop: check for rfkill hard block at load time
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [035/136] nilfs2: fix missing zero-fill initialization of btree node cache
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=sony-laptop-check-for-rfkill-hard-block-at-load-time.patch
+Content-Disposition: inline; filename=nilfs2-fix-missing-zero-fill-initialization-of-btree-node-cache.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,52 +29,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 
-commit 50fab0760a6c07cded229357a1351c325a575770 upstream.
+commit 1f28fcd925b2b3157411bbd08f0024b55b70d8dd upstream.
 
-"I recently (on a flight) I found out that when I boot with the hard-switch
-activated, so turning off all wireless activity on my laptop, the state
-is not correctly announced in /dev/rfkill (reading it with rfkill command,
-or my own gnome applet)...
+This will fix file system corruption which infrequently happens after
+mount.  The problem was reported from users with the title "[NILFS
+users] Fail to mount NILFS." (Message-ID:
+<200908211918.34720.yuri@itinteg.net>), and so forth.  I've also
+experienced the corruption multiple times on kernel 2.6.30 and 2.6.31.
 
-After turning off and on again the hard-switch the events were right."
+The problem turned out to be caused due to discordance between
+mapping->nrpages of a btree node cache and the actual number of pages
+hung on the cache; if the mapping->nrpages becomes zero even as it has
+pages, truncate_inode_pages() returns without doing anything.  Usually
+this is harmless except it may cause page leak, but garbage collection
+fairly infrequently sees a stale page remained in the btree node cache
+of DAT (i.e. disk address translation file of nilfs), and induces the
+corruption.
 
-We can fix this by querying the firmware at load time and calling
-rfkill_set_hw_state().
+I identified a missing initialization in btree node caches was the
+root cause.  This corrects the bug.
 
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Tested-by: Norbert Preining <preining@logic.at>
-Acked-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Mattia Dongili <malattia@linux.it>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+I've tested this for kernel 2.6.30 and 2.6.31.
+
+Reported-by: Yuri Chislov <yuri@itinteg.net>
+Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/platform/x86/sony-laptop.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ fs/nilfs2/btnode.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/platform/x86/sony-laptop.c
-+++ b/drivers/platform/x86/sony-laptop.c
-@@ -1081,6 +1081,8 @@ static int sony_nc_setup_rfkill(struct a
- 	struct rfkill *rfk;
- 	enum rfkill_type type;
- 	const char *name;
-+	int result;
-+	bool hwblock;
+--- a/fs/nilfs2/btnode.c
++++ b/fs/nilfs2/btnode.c
+@@ -36,6 +36,7 @@
  
- 	switch (nc_type) {
- 	case SONY_WIFI:
-@@ -1108,6 +1110,10 @@ static int sony_nc_setup_rfkill(struct a
- 	if (!rfk)
- 		return -ENOMEM;
- 
-+	sony_call_snc_handle(0x124, 0x200, &result);
-+	hwblock = !(result & 0x1);
-+	rfkill_set_hw_state(rfk, hwblock);
-+
- 	err = rfkill_register(rfk);
- 	if (err) {
- 		rfkill_destroy(rfk);
+ void nilfs_btnode_cache_init_once(struct address_space *btnc)
+ {
++	memset(btnc, 0, sizeof(*btnc));
+ 	INIT_RADIX_TREE(&btnc->page_tree, GFP_ATOMIC);
+ 	spin_lock_init(&btnc->tree_lock);
+ 	INIT_LIST_HEAD(&btnc->private_list);
 
 
