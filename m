@@ -1,66 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZJBJDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755426AbZJBJH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbZJBJDu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 05:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZJBJDt
+	id S1755426AbZJBJH3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 05:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbZJBJH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 05:03:49 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44475 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753087AbZJBJDs (ORCPT
+	Fri, 2 Oct 2009 05:07:28 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42744 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753599AbZJBJH1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 05:03:48 -0400
-Date: Fri, 2 Oct 2009 10:04:30 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Johan Hovold <jhovold@gmail.com>,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
-       Oliver Neukum <oliver@neukum.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-usb@vger.kernel.org, Alan Cox <alan@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
-Message-ID: <20091002100430.58785957@lxorguk.ukuu.org.uk>
-In-Reply-To: <m163ayzevu.fsf@fess.ebiederm.org>
-References: <20090924154023.GA27480@localhost>
-	<200909242103.48562.oliver@neukum.org>
-	<20090924202107.4730f2af@lxorguk.ukuu.org.uk>
-	<20090924211459.GB27963@localhost>
-	<4ABD020B.4040901@gandalf.sssup.it>
-	<20090929145514.GF2152@localhost>
-	<20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
-	<m163ayzevu.fsf@fess.ebiederm.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Oct 2009 05:07:27 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] munmap() don't check sysctl_max_mapcount
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Message-Id: <20091002180533.5F77.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri,  2 Oct 2009 18:07:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 Oct 2009 19:52:21 -0700
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+Hi everyone,
 
-> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
-> 
-> >> As it stands today ftdi_sio does indeed call tty_flip_buffer_push from
-> >> interrupt context with low_latency set and that is obviously incorrect,
-> >> right?
-> >
-> > It seems to do it from a work queue - or did I miss a case ?
-> 
-> ftdi_sio crash quite regularly for me with 2.6.31.
-> 
-> With a bunch of nasties like:
-> BUG: scheduling while atomic: swapper/0/0x00010000
-> bad: scheduling from the idle thread!
-> 
-> I don't know if I have a good backtrace as things
-> scrolled away faster than they were captured
-> but the code below looks like it may be.
+Is this good idea?
 
-So it is indeed wrong. Removing the tty->low_latency = 1 will fix the
-crash and probably should go for stable. I'll have a deeper look at what
-is doing with the rest of the stuff as the driver may just be trying to
-be far cleverer than it needs with the newer buffer code.
 
-Alan
+====================================================================
+>From 0b9de3b65158847d376e2786840f932361d00e08 Mon Sep 17 00:00:00 2001
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Date: Fri, 18 Sep 2009 13:22:06 +0900
+Subject: [PATCH] munmap() don't check sysctl_max_mapcount
+
+On ia64, the following test program exit abnormally, because
+glibc thread library called abort().
+
+ ========================================================
+ (gdb) bt
+ #0  0xa000000000010620 in __kernel_syscall_via_break ()
+ #1  0x20000000003208e0 in raise () from /lib/libc.so.6.1
+ #2  0x2000000000324090 in abort () from /lib/libc.so.6.1
+ #3  0x200000000027c3e0 in __deallocate_stack () from /lib/libpthread.so.0
+ #4  0x200000000027f7c0 in start_thread () from /lib/libpthread.so.0
+ #5  0x200000000047ef60 in __clone2 () from /lib/libc.so.6.1
+ ========================================================
+
+The fact is, glibc call munmap() when thread exitng time for freeing stack, and
+it assume munlock() never fail. However, munmap() often make vma splitting
+and it with many mapcount make -ENOMEM.
+
+Oh well, stack unfreeing is not reasonable option. Also munlock() via free()
+shouldn't failed.
+
+Thus, munmap() shoudn't check max-mapcount. This patch does it.
+
+ test_max_mapcount.c
+ ==================================================================
+  #include<stdio.h>
+  #include<stdlib.h>
+  #include<string.h>
+  #include<pthread.h>
+  #include<errno.h>
+  #include<unistd.h>
+ 
+  #define THREAD_NUM 30000
+  #define MAL_SIZE (100*1024)
+ 
+ void *wait_thread(void *args)
+ {
+ 	void *addr;
+ 
+ 	addr = malloc(MAL_SIZE);
+ 	if(addr)
+ 		memset(addr, 1, MAL_SIZE);
+ 	sleep(1);
+ 
+ 	return NULL;
+ }
+ 
+ void *wait_thread2(void *args)
+ {
+ 	sleep(60);
+ 
+ 	return NULL;
+ }
+ 
+ int main(int argc, char *argv[])
+ {
+ 	int i;
+ 	pthread_t thread[THREAD_NUM], th;
+ 	int ret, count = 0;
+ 	pthread_attr_t attr;
+ 
+ 	ret = pthread_attr_init(&attr);
+ 	if(ret) {
+ 		perror("pthread_attr_init");
+ 	}
+ 
+ 	ret = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+ 	if(ret) {
+ 		perror("pthread_attr_setdetachstate");
+ 	}
+ 
+ 	for (i = 0; i < THREAD_NUM; i++) {
+ 		ret = pthread_create(&th, &attr, wait_thread, NULL);
+ 		if(ret) {
+ 			fprintf(stderr, "[%d] ", count);
+ 			perror("pthread_create");
+ 		} else {
+ 			printf("[%d] create OK.\n", count);
+ 		}
+ 		count++;
+ 
+ 		ret = pthread_create(&thread[i], &attr, wait_thread2, NULL);
+ 		if(ret) {
+ 			fprintf(stderr, "[%d] ", count);
+ 			perror("pthread_create");
+ 		} else {
+ 			printf("[%d] create OK.\n", count);
+ 		}
+ 		count++;
+ 	}
+ 
+ 	sleep(3600);
+ 	return 0;
+ }
+ ==================================================================
+
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ mm/mmap.c |   18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
+
+Index: b/mm/mmap.c
+===================================================================
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1832,7 +1832,7 @@ detach_vmas_to_be_unmapped(struct mm_str
+  * Split a vma into two pieces at address 'addr', a new vma is allocated
+  * either for the first part or the tail.
+  */
+-int split_vma(struct mm_struct * mm, struct vm_area_struct * vma,
++static int __split_vma(struct mm_struct * mm, struct vm_area_struct * vma,
+ 	      unsigned long addr, int new_below)
+ {
+ 	struct mempolicy *pol;
+@@ -1842,9 +1842,6 @@ int split_vma(struct mm_struct * mm, str
+ 					~(huge_page_mask(hstate_vma(vma)))))
+ 		return -EINVAL;
+ 
+-	if (mm->map_count >= sysctl_max_map_count)
+-		return -ENOMEM;
+-
+ 	new = kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
+ 	if (!new)
+ 		return -ENOMEM;
+@@ -1884,6 +1881,15 @@ int split_vma(struct mm_struct * mm, str
+ 	return 0;
+ }
+ 
++int split_vma(struct mm_struct * mm, struct vm_area_struct * vma,
++	      unsigned long addr, int new_below)
++{
++	if (mm->map_count >= sysctl_max_map_count)
++		return -ENOMEM;
++
++	return __split_vma(mm, vma, addr, new_below);
++}
++
+ /* Munmap is split into 2 main parts -- this part which finds
+  * what needs doing, and the areas themselves, which do the
+  * work.  This now handles partial unmappings.
+@@ -1919,7 +1925,7 @@ int do_munmap(struct mm_struct *mm, unsi
+ 	 * places tmp vma above, and higher split_vma places tmp vma below.
+ 	 */
+ 	if (start > vma->vm_start) {
+-		int error = split_vma(mm, vma, start, 0);
++		int error = __split_vma(mm, vma, start, 0);
+ 		if (error)
+ 			return error;
+ 		prev = vma;
+@@ -1928,7 +1934,7 @@ int do_munmap(struct mm_struct *mm, unsi
+ 	/* Does it split the last one? */
+ 	last = find_vma(mm, end);
+ 	if (last && end > last->vm_start) {
+-		int error = split_vma(mm, last, end, 1);
++		int error = __split_vma(mm, last, end, 1);
+ 		if (error)
+ 			return error;
+ 	}
+
+
