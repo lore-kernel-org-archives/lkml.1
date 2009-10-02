@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbZJBBeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbZJBBm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbZJBBeI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756881AbZJBBeF
+	id S1756972AbZJBBm3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932188AbZJBBm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:34:05 -0400
-Received: from kroah.org ([198.145.64.141]:33437 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:42:28 -0400
+Received: from kroah.org ([198.145.64.141]:33442 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756797AbZJBBeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:34:00 -0400
+	id S1756827AbZJBBeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:34:01 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:23 2009
-Message-Id: <20091002012423.537284045@mini.kroah.org>
+Message-Id: <20091002012423.698811980@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:32 -0700
+Date: Thu, 01 Oct 2009 18:17:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Subject: [104/136] USB: xhci: Configure endpoint code refactoring.
+Subject: [105/136] USB: xhci: Set correct max packet size for HS/FS control endpoints.
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=usb-xhci-configure-endpoint-code-refactoring.patch
+Content-Disposition: inline; filename=usb-xhci-set-correct-max-packet-size-for-hs-fs-control-endpoints.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,301 +31,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 
-commit f2217e8edd95b0428d8123d426e0097a5e955f9f upstream.
+commit 47aded8ade9fee6779b121b2b156235f261239d7 upstream.
 
-Refactor out the code issue, wait for, and parse the event completion code
-for a configure endpoint command.  Modify it to support the evaluate
-context command, which has a very similar submission process.  Add
-functions to copy parts of the output context into the input context
-(which will be used in the evaluate context command).
+Set the max packet size for the default control endpoint on high speed
+devices to be 64 bytes.  High speed devices always have a max packet size
+of 64 bytes.  There's no use setting it to eight for the initial 8 byte
+descriptor fetch and then issuing (and waiting for) an evaluate context
+command to update it to 64 bytes for the subsequent control transfers.
+
+The USB core guesses that the max packet size on a full speed control
+endpoint is 64 bytes, and then updates it after the first 8-byte
+descriptor fetch.  Change the initial setup for the xHCI internal
+representation of the full speed device to have a 64 byte max packet size.
 
 Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/xhci-hcd.c  |  169 +++++++++++++++++++++++++++++--------------
- drivers/usb/host/xhci-mem.c  |   38 +++++++++
- drivers/usb/host/xhci-ring.c |    9 ++
- drivers/usb/host/xhci.h      |    5 +
- 4 files changed, 169 insertions(+), 52 deletions(-)
+ drivers/usb/host/xhci-mem.c |   23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
 
---- a/drivers/usb/host/xhci.h
-+++ b/drivers/usb/host/xhci.h
-@@ -1168,6 +1168,9 @@ int xhci_setup_addressable_virt_dev(stru
- unsigned int xhci_get_endpoint_index(struct usb_endpoint_descriptor *desc);
- unsigned int xhci_get_endpoint_flag(struct usb_endpoint_descriptor *desc);
- void xhci_endpoint_zero(struct xhci_hcd *xhci, struct xhci_virt_device *virt_dev, struct usb_host_endpoint *ep);
-+void xhci_endpoint_copy(struct xhci_hcd *xhci,
-+		struct xhci_virt_device *vdev, unsigned int ep_index);
-+void xhci_slot_copy(struct xhci_hcd *xhci, struct xhci_virt_device *vdev);
- int xhci_endpoint_init(struct xhci_hcd *xhci, struct xhci_virt_device *virt_dev,
- 		struct usb_device *udev, struct usb_host_endpoint *ep,
- 		gfp_t mem_flags);
-@@ -1216,6 +1219,8 @@ int xhci_queue_bulk_tx(struct xhci_hcd *
- 		int slot_id, unsigned int ep_index);
- int xhci_queue_configure_endpoint(struct xhci_hcd *xhci, dma_addr_t in_ctx_ptr,
- 		u32 slot_id);
-+int xhci_queue_evaluate_context(struct xhci_hcd *xhci, dma_addr_t in_ctx_ptr,
-+		u32 slot_id);
- int xhci_queue_reset_ep(struct xhci_hcd *xhci, int slot_id,
- 		unsigned int ep_index);
- void xhci_find_new_dequeue_state(struct xhci_hcd *xhci,
---- a/drivers/usb/host/xhci-hcd.c
-+++ b/drivers/usb/host/xhci-hcd.c
-@@ -942,6 +942,122 @@ static void xhci_zero_in_ctx(struct xhci
- 	}
- }
- 
-+static int xhci_configure_endpoint_result(struct xhci_hcd *xhci,
-+		struct usb_device *udev, struct xhci_virt_device *virt_dev)
-+{
-+	int ret;
-+
-+	switch (virt_dev->cmd_status) {
-+	case COMP_ENOMEM:
-+		dev_warn(&udev->dev, "Not enough host controller resources "
-+				"for new device state.\n");
-+		ret = -ENOMEM;
-+		/* FIXME: can we allocate more resources for the HC? */
-+		break;
-+	case COMP_BW_ERR:
-+		dev_warn(&udev->dev, "Not enough bandwidth "
-+				"for new device state.\n");
-+		ret = -ENOSPC;
-+		/* FIXME: can we go back to the old state? */
-+		break;
-+	case COMP_TRB_ERR:
-+		/* the HCD set up something wrong */
-+		dev_warn(&udev->dev, "ERROR: Endpoint drop flag = 0, "
-+				"add flag = 1, "
-+				"and endpoint is not disabled.\n");
-+		ret = -EINVAL;
-+		break;
-+	case COMP_SUCCESS:
-+		dev_dbg(&udev->dev, "Successful Endpoint Configure command\n");
-+		ret = 0;
-+		break;
-+	default:
-+		xhci_err(xhci, "ERROR: unexpected command completion "
-+				"code 0x%x.\n", virt_dev->cmd_status);
-+		ret = -EINVAL;
-+		break;
-+	}
-+	return ret;
-+}
-+
-+static int xhci_evaluate_context_result(struct xhci_hcd *xhci,
-+		struct usb_device *udev, struct xhci_virt_device *virt_dev)
-+{
-+	int ret;
-+
-+	switch (virt_dev->cmd_status) {
-+	case COMP_EINVAL:
-+		dev_warn(&udev->dev, "WARN: xHCI driver setup invalid evaluate "
-+				"context command.\n");
-+		ret = -EINVAL;
-+		break;
-+	case COMP_EBADSLT:
-+		dev_warn(&udev->dev, "WARN: slot not enabled for"
-+				"evaluate context command.\n");
-+	case COMP_CTX_STATE:
-+		dev_warn(&udev->dev, "WARN: invalid context state for "
-+				"evaluate context command.\n");
-+		xhci_dbg_ctx(xhci, virt_dev->out_ctx, 1);
-+		ret = -EINVAL;
-+		break;
-+	case COMP_SUCCESS:
-+		dev_dbg(&udev->dev, "Successful evaluate context command\n");
-+		ret = 0;
-+		break;
-+	default:
-+		xhci_err(xhci, "ERROR: unexpected command completion "
-+				"code 0x%x.\n", virt_dev->cmd_status);
-+		ret = -EINVAL;
-+		break;
-+	}
-+	return ret;
-+}
-+
-+/* Issue a configure endpoint command or evaluate context command
-+ * and wait for it to finish.
-+ */
-+static int xhci_configure_endpoint(struct xhci_hcd *xhci,
-+		struct usb_device *udev, struct xhci_virt_device *virt_dev,
-+		bool ctx_change)
-+{
-+	int ret;
-+	int timeleft;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&xhci->lock, flags);
-+	if (!ctx_change)
-+		ret = xhci_queue_configure_endpoint(xhci, virt_dev->in_ctx->dma,
-+				udev->slot_id);
-+	else
-+		ret = xhci_queue_evaluate_context(xhci, virt_dev->in_ctx->dma,
-+				udev->slot_id);
-+	if (ret < 0) {
-+		spin_unlock_irqrestore(&xhci->lock, flags);
-+		xhci_dbg(xhci, "FIXME allocate a new ring segment\n");
-+		return -ENOMEM;
-+	}
-+	xhci_ring_cmd_db(xhci);
-+	spin_unlock_irqrestore(&xhci->lock, flags);
-+
-+	/* Wait for the configure endpoint command to complete */
-+	timeleft = wait_for_completion_interruptible_timeout(
-+			&virt_dev->cmd_completion,
-+			USB_CTRL_SET_TIMEOUT);
-+	if (timeleft <= 0) {
-+		xhci_warn(xhci, "%s while waiting for %s command\n",
-+				timeleft == 0 ? "Timeout" : "Signal",
-+				ctx_change == 0 ?
-+					"configure endpoint" :
-+					"evaluate context");
-+		/* FIXME cancel the configure endpoint command */
-+		return -ETIME;
-+	}
-+
-+	if (!ctx_change)
-+		return xhci_configure_endpoint_result(xhci, udev, virt_dev);
-+	return xhci_evaluate_context_result(xhci, udev, virt_dev);
-+}
-+
- /* Called after one or more calls to xhci_add_endpoint() or
-  * xhci_drop_endpoint().  If this call fails, the USB core is expected
-  * to call xhci_reset_bandwidth().
-@@ -956,8 +1072,6 @@ int xhci_check_bandwidth(struct usb_hcd 
- {
- 	int i;
- 	int ret = 0;
--	int timeleft;
--	unsigned long flags;
- 	struct xhci_hcd *xhci;
- 	struct xhci_virt_device	*virt_dev;
- 	struct xhci_input_control_ctx *ctrl_ctx;
-@@ -987,56 +1101,7 @@ int xhci_check_bandwidth(struct usb_hcd 
- 	xhci_dbg_ctx(xhci, virt_dev->in_ctx,
- 			LAST_CTX_TO_EP_NUM(slot_ctx->dev_info));
- 
--	spin_lock_irqsave(&xhci->lock, flags);
--	ret = xhci_queue_configure_endpoint(xhci, virt_dev->in_ctx->dma,
--			udev->slot_id);
--	if (ret < 0) {
--		spin_unlock_irqrestore(&xhci->lock, flags);
--		xhci_dbg(xhci, "FIXME allocate a new ring segment\n");
--		return -ENOMEM;
--	}
--	xhci_ring_cmd_db(xhci);
--	spin_unlock_irqrestore(&xhci->lock, flags);
--
--	/* Wait for the configure endpoint command to complete */
--	timeleft = wait_for_completion_interruptible_timeout(
--			&virt_dev->cmd_completion,
--			USB_CTRL_SET_TIMEOUT);
--	if (timeleft <= 0) {
--		xhci_warn(xhci, "%s while waiting for configure endpoint command\n",
--				timeleft == 0 ? "Timeout" : "Signal");
--		/* FIXME cancel the configure endpoint command */
--		return -ETIME;
--	}
--
--	switch (virt_dev->cmd_status) {
--	case COMP_ENOMEM:
--		dev_warn(&udev->dev, "Not enough host controller resources "
--				"for new device state.\n");
--		ret = -ENOMEM;
--		/* FIXME: can we allocate more resources for the HC? */
--		break;
--	case COMP_BW_ERR:
--		dev_warn(&udev->dev, "Not enough bandwidth "
--				"for new device state.\n");
--		ret = -ENOSPC;
--		/* FIXME: can we go back to the old state? */
--		break;
--	case COMP_TRB_ERR:
--		/* the HCD set up something wrong */
--		dev_warn(&udev->dev, "ERROR: Endpoint drop flag = 0, add flag = 1, "
--				"and endpoint is not disabled.\n");
--		ret = -EINVAL;
--		break;
--	case COMP_SUCCESS:
--		dev_dbg(&udev->dev, "Successful Endpoint Configure command\n");
--		break;
--	default:
--		xhci_err(xhci, "ERROR: unexpected command completion "
--				"code 0x%x.\n", virt_dev->cmd_status);
--		ret = -EINVAL;
--		break;
--	}
-+	ret = xhci_configure_endpoint(xhci, udev, virt_dev, false);
- 	if (ret) {
- 		/* Callee should call reset_bandwidth() */
- 		return ret;
 --- a/drivers/usb/host/xhci-mem.c
 +++ b/drivers/usb/host/xhci-mem.c
-@@ -601,6 +601,44 @@ void xhci_endpoint_zero(struct xhci_hcd 
+@@ -401,15 +401,28 @@ int xhci_setup_addressable_virt_dev(stru
+ 	/* Step 5 */
+ 	ep0_ctx->ep_info2 = EP_TYPE(CTRL_EP);
+ 	/*
+-	 * See section 4.3 bullet 6:
+-	 * The default Max Packet size for ep0 is "8 bytes for a USB2
+-	 * LS/FS/HS device or 512 bytes for a USB3 SS device"
+ 	 * XXX: Not sure about wireless USB devices.
  	 */
- }
- 
-+/* Copy output xhci_ep_ctx to the input xhci_ep_ctx copy.
-+ * Useful when you want to change one particular aspect of the endpoint and then
-+ * issue a configure endpoint command.
-+ */
-+void xhci_endpoint_copy(struct xhci_hcd *xhci,
-+		struct xhci_virt_device *vdev, unsigned int ep_index)
-+{
-+	struct xhci_ep_ctx *out_ep_ctx;
-+	struct xhci_ep_ctx *in_ep_ctx;
-+
-+	out_ep_ctx = xhci_get_ep_ctx(xhci, vdev->out_ctx, ep_index);
-+	in_ep_ctx = xhci_get_ep_ctx(xhci, vdev->in_ctx, ep_index);
-+
-+	in_ep_ctx->ep_info = out_ep_ctx->ep_info;
-+	in_ep_ctx->ep_info2 = out_ep_ctx->ep_info2;
-+	in_ep_ctx->deq = out_ep_ctx->deq;
-+	in_ep_ctx->tx_info = out_ep_ctx->tx_info;
-+}
-+
-+/* Copy output xhci_slot_ctx to the input xhci_slot_ctx.
-+ * Useful when you want to change one particular aspect of the endpoint and then
-+ * issue a configure endpoint command.  Only the context entries field matters,
-+ * but we'll copy the whole thing anyway.
-+ */
-+void xhci_slot_copy(struct xhci_hcd *xhci, struct xhci_virt_device *vdev)
-+{
-+	struct xhci_slot_ctx *in_slot_ctx;
-+	struct xhci_slot_ctx *out_slot_ctx;
-+
-+	in_slot_ctx = xhci_get_slot_ctx(xhci, vdev->in_ctx);
-+	out_slot_ctx = xhci_get_slot_ctx(xhci, vdev->out_ctx);
-+
-+	in_slot_ctx->dev_info = out_slot_ctx->dev_info;
-+	in_slot_ctx->dev_info2 = out_slot_ctx->dev_info2;
-+	in_slot_ctx->tt_info = out_slot_ctx->tt_info;
-+	in_slot_ctx->dev_state = out_slot_ctx->dev_state;
-+}
-+
- /* Set up the scratchpad buffer array and scratchpad buffers, if needed. */
- static int scratchpad_alloc(struct xhci_hcd *xhci, gfp_t flags)
- {
---- a/drivers/usb/host/xhci-ring.c
-+++ b/drivers/usb/host/xhci-ring.c
-@@ -1740,6 +1740,15 @@ int xhci_queue_configure_endpoint(struct
- 			TRB_TYPE(TRB_CONFIG_EP) | SLOT_ID_FOR_TRB(slot_id));
- }
- 
-+/* Queue an evaluate context command TRB */
-+int xhci_queue_evaluate_context(struct xhci_hcd *xhci, dma_addr_t in_ctx_ptr,
-+		u32 slot_id)
-+{
-+	return queue_command(xhci, lower_32_bits(in_ctx_ptr),
-+			upper_32_bits(in_ctx_ptr), 0,
-+			TRB_TYPE(TRB_EVAL_CONTEXT) | SLOT_ID_FOR_TRB(slot_id));
-+}
-+
- int xhci_queue_stop_endpoint(struct xhci_hcd *xhci, int slot_id,
- 		unsigned int ep_index)
- {
+-	if (udev->speed == USB_SPEED_SUPER)
++	switch (udev->speed) {
++	case USB_SPEED_SUPER:
+ 		ep0_ctx->ep_info2 |= MAX_PACKET(512);
+-	else
++		break;
++	case USB_SPEED_HIGH:
++	/* USB core guesses at a 64-byte max packet first for FS devices */
++	case USB_SPEED_FULL:
++		ep0_ctx->ep_info2 |= MAX_PACKET(64);
++		break;
++	case USB_SPEED_LOW:
+ 		ep0_ctx->ep_info2 |= MAX_PACKET(8);
++		break;
++	case USB_SPEED_VARIABLE:
++		xhci_dbg(xhci, "FIXME xHCI doesn't support wireless speeds\n");
++		return -EINVAL;
++		break;
++	default:
++		/* New speed? */
++		BUG();
++	}
+ 	/* EP 0 can handle "burst" sizes of 1, so Max Burst Size field is 0 */
+ 	ep0_ctx->ep_info2 |= MAX_BURST(0);
+ 	ep0_ctx->ep_info2 |= ERROR_COUNT(3);
 
 
