@@ -1,91 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbZJBIC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbZJBIES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757225AbZJBIC3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 04:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbZJBIC2
+	id S1757255AbZJBIES (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 04:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbZJBIER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 04:02:28 -0400
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:33086 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbZJBICZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 04:02:25 -0400
-Date: Fri, 2 Oct 2009 10:02:18 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, John Stultz <johnstul@us.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, tglx@linutronix.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ondrej Zary <linux@rainbow-software.org>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: T400 suspend/resume regression -- bisected to a mystery merge
- commit
-Message-ID: <20091002100218.7c4eb8b8@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <alpine.LFD.2.01.0910011817120.6996@localhost.localdomain>
-References: <E1MrRDa-0002WF-LO@closure.thunk.org>
-	<200909271813.42829.rjw@sisk.pl>
-	<20090928135109.GB17514@mit.edu>
-	<200909282322.57824.rjw@sisk.pl>
-	<20091002005907.GA7490@mit.edu>
-	<alpine.LFD.2.01.0910011817120.6996@localhost.localdomain>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Oct 2009 04:04:17 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52085 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754698AbZJBIEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 04:04:15 -0400
+Date: Fri, 2 Oct 2009 10:04:18 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002080417.GG14918@kernel.dk>
+References: <20090925202636.GC15007@redhat.com> <1253976676.7005.40.camel@marge.simson.net> <1254034500.7933.6.camel@marge.simson.net> <20090927164235.GA23126@kernel.dk> <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net> <20091001185816.GU14918@kernel.dk> <1254464628.7158.101.camel@marge.simson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254464628.7158.101.camel@marge.simson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Oct 2009 18:21:50 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> 
-> 
-> On Thu, 1 Oct 2009, Theodore Tso wrote:
+On Fri, Oct 02 2009, Mike Galbraith wrote:
+> On Thu, 2009-10-01 at 20:58 +0200, Jens Axboe wrote:
+> > On Thu, Oct 01 2009, Mike Galbraith wrote:
+> > > > CIC_SEEK_THR is 8K jiffies so that would be 8seconds on 1000HZ system. Try
+> > > > using one "slice_idle" period of 8 ms. But it might turn out to be too
+> > > > short depending on the disk speed.
+> > > 
+> > > Yeah, it is too short, as is even _400_ ms.  Trouble is, by the time
+> > > some new task is determined to be seeky, the damage is already done.
+> > > 
+> > > The below does better, though not as well as "just say no to overload"
+> > > of course ;-)
 > > 
-> > commit 8c3ee48dabee782d470cc4c7048ea64bb8b7d1cb
-> > Author: Theodore Ts'o <tytso@mit.edu>
-> > Date:   Thu Oct 1 20:39:03 2009 -0400
-> > 
-> >     Revert "timekeeping: Update clocksource with stop_machine"
-> >     
-> >     This reverts commit 75c5158f70c065b9704b924503d96e8297838f79.
+> > So this essentially takes the "avoid impact from previous slice" to a
+> > new extreme, but idling even before dispatching requests from the new
+> > queue. We basically do two things to prevent this already - one is to
+> > only set the slice when the first request is actually serviced, and the
+> > other is to drain async requests completely before starting sync ones.
+> > I'm a bit surprised that the former doesn't solve the problem fully, I
+> > guess what happens is that if the drive has been flooded with writes, it
+> > may service the new read immediately and then return to finish emptying
+> > its writeback cache. This will cause an impact for any sync IO until
+> > that cache is flushed, and then cause that sync queue to not get as much
+> > service as it should have.
 > 
-> Hmm. Looks good. But you didn't cc most of the people actually involved 
-> with that commit (Martin who is the author, and John who acked it).
+> I did the stamping selection other than how long have we been solo based
+> on these possibly wrong speculations:
 > 
-> I think the revert is the right thing to do, especially as that 
-> 'clocksource_mutex' looks totally bogus. Either the thing is protected by 
-> 'stop_machine' or it's not. In neither case does it seem to make any sense 
-> to replace a spinlock with a mutex. 
-> 
-> And resuming anything with a big mutex is crazy anyway. 
-> 
-> That said, I do wonder if this is already fixed. See commit 
-> 89133f93508137231251543d1732da638e6022e1:
-> 
->     clocksource: Resume clocksource without taking the clocksource mutex
-> 
-> which already undid the part that probably mattered for you. That said, I 
-> still do think that that mutex is dubious, so maybe we should undo it all.
+> If we're in the idle window and doing the async drain thing, we've at
+> the spot where Vivek's patch helps a ton.  Seemed like a great time to
+> limit the size of any io that may land in front of my sync reader to
+> plain "you are not alone" quantity.
 
-It whole clocksource rework started with the wish to get rid of the
-change_clocksource call in update_wall_time. That call is unnecessary
-in 99.9% of all cases as the clocksource does not change all the time.
-In order to do that the new clocksource is activated with stop_machine.
-Now if you use stop_machine you can not hold any spinlock which made
-it necessary to convert the clocksource spinlock to a mutex. And we
-need something to protect against concurrent clocksource changes, e.g.
-one clocksource_register vs a clocksource_change_rating triggered by
-the watchdog. The only other solution would be to split the clocksource
-change, part 1) detection that a clocksource change is needed, part 2)
-stop_machine does the clocksource selection. Right now the clocksource
-to use is identified prior to the stop_machine call.
+You can't be in the idle window and doing async drain at the same time,
+the idle window doesn't start until the sync queue has completed a
+request. Hence my above rant on device interference.
+
+> If we've got sync io in flight, that should mean that my new or old
+> known seeky queue has been serviced at least once.  There's likely to be
+> more on the way, so delay overloading then too. 
+> 
+> The seeky bit is supposed to be the earlier "last time we saw a seeker"
+> thing, but known seeky is too late to help a new task at all unless you
+> turn off the overloading for ages, so I added the if incalculable check
+> for good measure, hoping that meant the task is new, may want to exec.
+> 
+> Stamping any place may (see below) possibly limit the size of the io the
+> reader can generate as well as writer, but I figured what's good for the
+> goose is good for the the gander, or it ain't really good.  The overload
+> was causing the observed pain, definitely ain't good for both at these
+> times at least, so don't let it do that.
+> 
+> > Perhaps the "set slice on first complete" isn't working correctly? Or
+> > perhaps we just need to be more extreme.
+> 
+> Dunno, I was just tossing rocks and sticks at it.
+> 
+> I don't really understand the reasoning behind overloading:  I can see
+> that allows cutting thicker slabs for the disk, but with the streaming
+> writer vs reader case, seems only the writers can do that.  The reader
+> is unlikely to be alone isn't it?  Seems to me that either dd, a flusher
+> thread or kjournald is going to be there with it, which gives dd a huge
+> advantage.. it has two proxies to help it squabble over disk, konsole
+> has none.
+
+That is true, async queues have a huge advantage over sync ones. But
+sync vs async is only part of it, any combination of queued sync, queued
+sync random etc have different ramifications on behaviour of the
+individual queue.
+
+It's not hard to make the latency good, the hard bit is making sure we
+also perform well for all other scenarios.
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Jens Axboe
 
