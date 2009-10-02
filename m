@@ -1,128 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbZJBIfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbZJBIh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbZJBIfk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 04:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZJBIfj
+	id S1756247AbZJBIh7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 04:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZJBIh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 04:35:39 -0400
-Received: from ja.ssi.bg ([217.79.71.194]:52511 "EHLO u.domain.uli"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753434AbZJBIfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 04:35:37 -0400
-Date: Fri, 2 Oct 2009 11:35:56 +0300 (EEST)
-From: Julian Anastasov <ja@ssi.bg>
-X-X-Sender: ja@u.domain.uli
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Hannes Eder <heder@google.com>, Wensong Zhang <wensong@linux-vs.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH] ipvs: Add boundary check on ioctl arguments
-In-Reply-To: <20090930171833.5ce0011d@infradead.org>
-Message-ID: <Pine.LNX.4.58.0910021027540.3189@u.domain.uli>
-References: <20090930131109.2b3f71b8@infradead.org> <4AC35F44.60707@google.com>
- <20090930171833.5ce0011d@infradead.org>
+	Fri, 2 Oct 2009 04:37:58 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41285 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbZJBIh5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 04:37:57 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/3] Mark strstrip() as must_check
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20091002173635.5F6C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri,  2 Oct 2009 17:37:58 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-	Hello,
+In few weeks ago discussion, Andrew Morton pointed out strstrip()
+should be must_check, because it was often abused.
 
-On Wed, 30 Sep 2009, Arjan van de Ven wrote:
+This patch does that.
 
-> fair enough; updated patch below
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ include/linux/string.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	OK, you can add my signed-off line after changing
-'cmd > ...MAX + 1' to 'cmd > ...MAX' at both
-places, nf_sockopt_ops ranges are [optmin ... optmax)
+diff --git a/include/linux/string.h b/include/linux/string.h
+index 489019e..b850886 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -62,7 +62,7 @@ extern char * strnchr(const char *, size_t, int);
+ #ifndef __HAVE_ARCH_STRRCHR
+ extern char * strrchr(const char *,int);
+ #endif
+-extern char * strstrip(char *);
++extern char * __must_check strstrip(char *);
+ #ifndef __HAVE_ARCH_STRSTR
+ extern char * strstr(const char *,const char *);
+ #endif
+-- 
+1.6.0.GIT
 
-May be comments should be changed because:
 
-- i'm not the author but after ispection we do not see any holes,
-we do not want users to upgrade just for this change
-- the cmd checks are just to help code checking tools
-- the len checks should help programmers (may be BUG_ON is
-better, user does not deserve EINVAL for wrong set_arglen/get_arglen).
-Checks for *len and len are not needed.
 
-	For example, for len checks this should be enough, before
-copy_from_user():
-
-in do_ip_vs_get_ctl check can be
-	BUG_ON(get_arglen[GET_CMDID(cmd)] > sizeof(arg));
-
-in do_ip_vs_set_ctl check can be
-	BUG_ON(set_arglen[SET_CMDID(cmd)] > sizeof(arg));
-
-Acked-by: Julian Anastasov <ja@ssi.bg>
-
-> >From 28ae217858e683c0c94c02219d46a9a9c87f61c6 Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Wed, 30 Sep 2009 13:05:51 +0200
-> Subject: [PATCH] ipvs: Add boundary check on ioctl arguments
-> 
-> The ipvs code has a nifty system for doing the size of ioctl command copies;
-> it defines an array with values into which it indexes the cmd to find the
-> right length.
-> 
-> Unfortunately, the ipvs code forgot to check if the cmd was in the range
-> that the array provides, allowing for an index outside of the array,
-> which then gives a "garbage" result into the length, which then gets
-> used for copying into a stack buffer.
-> 
-> Fix this by adding sanity checks on these as well as the copy size.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> ---
->  net/netfilter/ipvs/ip_vs_ctl.c |   14 +++++++++++++-
->  1 files changed, 13 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/netfilter/ipvs/ip_vs_ctl.c b/net/netfilter/ipvs/ip_vs_ctl.c
-> index ac624e5..7adc876 100644
-> --- a/net/netfilter/ipvs/ip_vs_ctl.c
-> +++ b/net/netfilter/ipvs/ip_vs_ctl.c
-> @@ -2077,6 +2077,10 @@ do_ip_vs_set_ctl(struct sock *sk, int cmd, void __user *user, unsigned int len)
->  	if (!capable(CAP_NET_ADMIN))
->  		return -EPERM;
->  
-> +	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_SET_MAX + 1)
-> +		return -EINVAL;
-> +	if (len < 0 || len >  sizeof(arg))
-> +		return -EINVAL;
->  	if (len != set_arglen[SET_CMDID(cmd)]) {
->  		pr_err("set_ctl: len %u != %u\n",
->  		       len, set_arglen[SET_CMDID(cmd)]);
-> @@ -2353,17 +2357,25 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd, void __user *user, int *len)
->  {
->  	unsigned char arg[128];
->  	int ret = 0;
-> +	unsigned int copylen;
->  
->  	if (!capable(CAP_NET_ADMIN))
->  		return -EPERM;
->  
-> +	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_GET_MAX + 1)
-> +		return -EINVAL;
-> +
->  	if (*len < get_arglen[GET_CMDID(cmd)]) {
->  		pr_err("get_ctl: len %u < %u\n",
->  		       *len, get_arglen[GET_CMDID(cmd)]);
->  		return -EINVAL;
->  	}
->  
-> -	if (copy_from_user(arg, user, get_arglen[GET_CMDID(cmd)]) != 0)
-> +	copylen = get_arglen[GET_CMDID(cmd)];
-> +	if (copylen > sizeof(arg))
-> +		return -EINVAL;
-> +
-> +	if (copy_from_user(arg, user, copylen) != 0)
->  		return -EFAULT;
->  
->  	if (mutex_lock_interruptible(&__ip_vs_mutex))
-
-Regards
-
---
-Julian Anastasov <ja@ssi.bg>
