@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbZJBHnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbZJBHrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbZJBHnt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 03:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZJBHnt
+	id S1756791AbZJBHrx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 03:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbZJBHrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 03:43:49 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:35410 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752446AbZJBHns (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 03:43:48 -0400
-Date: Fri, 2 Oct 2009 08:43:51 +0100
-From: Andy Whitcroft <apw@canonical.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] checkpatch: fix __attribute__ matching
-Message-ID: <20091002074351.GK2957@shadowen.org>
-References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
- <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
- <1253585691-10987-3-git-send-email-dwalker@fifo99.com>
- <1253585691-10987-4-git-send-email-dwalker@fifo99.com>
- <20090930174624.GF2957@shadowen.org>
- <1254407172.18167.96.camel@desktop>
+	Fri, 2 Oct 2009 03:47:52 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:39824 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756288AbZJBHrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 03:47:51 -0400
+Date: Fri, 2 Oct 2009 09:47:54 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, eric.dumazet@gmail.com,
+       jgunthorpe@obsidianresearch.com, vl@samba.org, opurdila@ixiacom.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: SPLICE_F_NONBLOCK semantics...
+Message-ID: <20091002074754.GE14918@kernel.dk>
+References: <20091001.151102.09812927.davem@davemloft.net> <alpine.LFD.2.01.0910011516390.6996@localhost.localdomain> <20091001.152717.187318570.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1254407172.18167.96.camel@desktop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091001.152717.187318570.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 07:26:12AM -0700, Daniel Walker wrote:
-> On Wed, 2009-09-30 at 18:46 +0100, Andy Whitcroft wrote:
+On Thu, Oct 01 2009, David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Thu, 1 Oct 2009 15:21:44 -0700 (PDT)
 > 
-> > The problem with the __attribute__ match is that it is impossible to
-> > sensibly write as a regular-expression as it has nested round brackets
-> > within it.  I do wonder why we care what is before the equals.  I
-> > suspect that any assignment ='s followed by a newline, followed by a {
-> > is wrong.  There are few places that a { is right on the next line.
-> 
-> Yeah, I was thinking about that also .. I though there might be some
-> "= {" situation I wasn't thinking of tho.
-> 
-> > I'll try that one out and see if it fires any false positives.  Its
-> > passing my tests here.
+> > On Thu, 1 Oct 2009, David Miller wrote:
+> >> 
+> >> It depends upon our interpretation of how you intended the
+> >> SPLICE_F_NONBLOCK flag to work when you added it way back
+> >> when.
+> >> 
+> >> Linus introduced  SPLICE_F_NONBLOCK in commit 29e350944fdc2dfca102500790d8ad6d6ff4f69d
+> >> (splice: add SPLICE_F_NONBLOCK flag )
+> >> 
+> >>   It doesn't make the splice itself necessarily nonblocking (because the
+> >>   actual file descriptors that are spliced from/to may block unless they
+> >>   have the O_NONBLOCK flag set), but it makes the splice pipe operations
+> >>   nonblocking.
+> >> 
+> >> Linus intention was clear : let SPLICE_F_NONBLOCK control the splice pipe mode only
 > > 
-> > Could you see if the version at the url below works better for you:
-> > 
-> >   http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
+> > Ack. The original intent was for the flag to affect the buffering, not the 
+> > end points.
 > 
-> I'm wondering about your release cycle .. You seem to be selectively
-> sending patches to Andrew ? Have you considered putting all your changes
-> into Linux-Next for instance then just keep up with the merge-window
-> cycle ? Either that or send everything to Andrew.. Either way, you would
-> have all the changes getting tested, instead of something like above
-> where is "testing" or a version number at an obscure url location..
+> Great, thanks for reviewing.
+> 
+> > Although the more I think about it, the more I suspect that the
+> > whole NONBLOCK thing should probably have been two bits, and simply
+> > been about "nonblocking input" vs "nonblocking output" (so that you
+> > could control both sides on a call-by-call basis).
+> 
+> I think we could still extend things in this way if we wanted to.
+> So if you specify the explicit input and/or output nonblock flag,
+> it takes precedence over the SPLICE_F_NONBLOCK thing.
 
-Linux-next might also make sense, though generally I'd seen it as an
-integration test bed to catch cross tree merge conflicts and I don't
-generally have that issue.  There is a wrinkle that my checkpatch tree
-is separate tree because it contains a large test suite and that really
-isn't something we likely want in the kernel tree itself.  I will look
-at generating some real linux based branches from my tree and pushing
-those to g.k.o which would be suitable for pulling into -next.
+Yes I agree, thank god for having a 'flags' parameter for the syscalls
+:-). I'll make a note to add and test bidirectional nonblock hints.
 
-I have been distracted lately getting up to speed in a new role and that
-has impacted the regular flow of checkpatch stuff.  I am hoping to get
-back to normal service there.
+The net patch looks fine and correct to me, feel free to add my acked-by
+if you want.
 
--apw
+-- 
+Jens Axboe
+
