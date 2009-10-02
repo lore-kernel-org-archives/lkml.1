@@ -1,328 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZJBGr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756975AbZJBGul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbZJBGr6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 02:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756652AbZJBGr6
+	id S1756975AbZJBGul (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 02:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbZJBGul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 02:47:58 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:63088 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756625AbZJBGr5 (ORCPT
+	Fri, 2 Oct 2009 02:50:41 -0400
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:43659 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756923AbZJBGuk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 02:47:57 -0400
-Message-ID: <4AC5A1FA.1080208@ct.jp.nec.com>
-Date: Fri, 02 Oct 2009 15:47:22 +0900
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 2 Oct 2009 02:50:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=RAZVaDvN/3vgd9CUkf1Z5rNWG4wmPeMMevRZqtGJWdQj7/Tg1AHm/reuHTqbXOVUDC
+         dR6p1SKU+yde0sMrBFtvANRt8jlLBZSX0/Yc1xlY9+rwtTmBLqHSOTwDBmbRsF6VOsFL
+         I2nQrNFAFf0dd+YFiH6C2HSu0zkKPovnXemTU=
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nis@tyo205.gate.nec.co.jp>
-Subject: Re: [PATCH 1/2] memcg: coalescing uncharge at unmap and truncation
-References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com> <20091002140126.61d15e5e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091002140126.61d15e5e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090928135109.GB17514@mit.edu>
+References: <E1MrRDa-0002WF-LO@closure.thunk.org>
+	 <200909271813.42829.rjw@sisk.pl> <20090928135109.GB17514@mit.edu>
+Date: Fri, 2 Oct 2009 15:50:43 +0900
+Message-ID: <aec7e5c30910012350g3908b2ecj4e9ed5f4549c6a4d@mail.gmail.com>
+Subject: Re: T400 suspend/resume regression -- bisected to a mystery merge 
+	commit
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Theodore Tso <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       tglx@linutronix.de, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Ondrej Zary <linux@rainbow-software.org>,
+       Magnus Damm <magnus.damm@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> In massive parallel enviroment, res_counter can be a performance bottleneck.
-> One strong techinque to reduce lock contention is reducing calls by
-> coalescing some amount of calls into one.
-> 
-> Considering charge/uncharge chatacteristic,
-> 	- charge is done one by one via demand-paging.
-> 	- uncharge is done by
-> 		- in chunk at munmap, truncate, exit, execve...
-> 		- one by one via vmscan/paging.
-> 
-> It seems we have a chance in uncharge at unmap/truncation.
-> 
-> This patch is a for coalescing uncharge. For avoiding scattering memcg's
-> structure to functions under /mm, this patch adds memcg batch uncharge
-> information to the task. 
-> 
-> The degree of coalescing depends on callers
->   - at invalidate/trucate... pagevec size
->   - at unmap ....ZAP_BLOCK_SIZE
-> (memory itself will be freed in this degree.)
-> Then, we'll not coalescing too much.
-> 
-> Changelog(now):
->  - rebased onto the latest mmotm + softlimit fix patches.
-> 
-> Changelog(old):
->  - unified patch for callers
->  - added commetns.
->  - make ->do_batch as bool.
->  - removed css_get() at el. We don't need it.
-> 
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  include/linux/memcontrol.h |   13 ++++++
->  include/linux/sched.h      |    7 +++
->  mm/memcontrol.c            |   91 ++++++++++++++++++++++++++++++++++++++++++---
->  mm/memory.c                |    2 
->  mm/truncate.c              |    6 ++
->  5 files changed, 113 insertions(+), 6 deletions(-)
-> 
-> Index: mmotm-2.6.31-Sep28/include/linux/memcontrol.h
-> ===================================================================
-> --- mmotm-2.6.31-Sep28.orig/include/linux/memcontrol.h
-> +++ mmotm-2.6.31-Sep28/include/linux/memcontrol.h
-> @@ -54,6 +54,11 @@ extern void mem_cgroup_rotate_lru_list(s
->  extern void mem_cgroup_del_lru(struct page *page);
->  extern void mem_cgroup_move_lists(struct page *page,
->  				  enum lru_list from, enum lru_list to);
-> +
-> +/* For coalescing uncharge for reducing memcg' overhead*/
-> +extern void mem_cgroup_uncharge_start(void);
-> +extern void mem_cgroup_uncharge_end(void);
-> +
->  extern void mem_cgroup_uncharge_page(struct page *page);
->  extern void mem_cgroup_uncharge_cache_page(struct page *page);
->  extern int mem_cgroup_shmem_charge_fallback(struct page *page,
-> @@ -151,6 +156,14 @@ static inline void mem_cgroup_cancel_cha
->  {
->  }
->  
-> +static inline void mem_cgroup_uncharge_batch_start(void)
-> +{
-> +}
-> +
-> +static inline void mem_cgroup_uncharge_batch_start(void)
+On Mon, Sep 28, 2009 at 10:51 PM, Theodore Tso <tytso@mit.edu> wrote:
+> On Sun, Sep 27, 2009 at 06:13:42PM +0200, Rafael J. Wysocki wrote:
+>>
+>> commit c7121843685de2bf7f3afd3ae1d6a146010bf1fc
+>> Author: Magnus Damm <magnus.damm@gmail.com>
+>> Date:   Tue Jul 28 14:09:55 2009 -0700
+>>
+>>     clocksource: Save mult_orig in clocksource_disable()
+>>
+>> Please try to revert it and retest.
+>
+> Using Linus's suggested technique, I bisected it down to this commit:
+>
+> Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Date:   Fri Aug 14 15:47:30 2009 +0200
+>
+>    timekeeping: Update clocksource with stop_machine
+>
+>    update_wall_time calls change_clocksource HZ times per second to check
+>    if a new clock source is available. In close to 100% of all calls
+>    there is no new clock. Replace the tick based check by an update done
+>    with stop_machine.
+>
+>    Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+>    Cc: Ingo Molnar <mingo@elte.hu>
+>    Acked-by: John Stultz <johnstul@us.ibm.com>
+>    Cc: Daniel Walker <dwalker@fifo99.com>
+>    LKML-Reference: <20090814134810.711836357@de.ibm.com>
+>    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>
+> Unfortunately there are a bunch of patches I'm trying to get in shape
+> to push to Linus (the merge window coincided unfortunately with
+> LinuxCon/Plumbeer's so I'm a bit behind) so I haven't had a chance to
+> take it further.  I'll try reverting each of the above two patches,
+> and report back in a day or two.
 
-mem_cgroup_uncharge_batch_end?
+Just checking, did need to revert
+c7121843685de2bf7f3afd3ae1d6a146010bf1fc? I hope not. =)
 
-
-Thanks,
-Hiroshi
-
-> +{
-> +}
-> +
->  static inline void mem_cgroup_uncharge_page(struct page *page)
->  {
->  }
-> Index: mmotm-2.6.31-Sep28/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep28.orig/mm/memcontrol.c
-> +++ mmotm-2.6.31-Sep28/mm/memcontrol.c
-> @@ -1826,6 +1826,49 @@ void mem_cgroup_cancel_charge_swapin(str
->  	css_put(&mem->css);
->  }
->  
-> +static void
-> +__do_uncharge(struct mem_cgroup *mem, const enum charge_type ctype)
-> +{
-> +	struct memcg_batch_info *batch = NULL;
-> +	bool uncharge_memsw = true;
-> +	/* If swapout, usage of swap doesn't decrease */
-> +	if (!do_swap_account || ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
-> +		uncharge_memsw = false;
-> +	/*
-> +	 * do_batch > 0 when unmapping pages or inode invalidate/truncate.
-> +	 * In those cases, all pages freed continously can be expected to be in
-> +	 * the same cgroup and we have chance to coalesce uncharges.
-> +	 * And, we do uncharge one by one if this is killed by OOM.
-> +	 */
-> +	if (!current->memcg_batch.do_batch || test_thread_flag(TIF_MEMDIE))
-> +		goto direct_uncharge;
-> +
-> +	batch = &current->memcg_batch;
-> +	/*
-> +	 * In usual, we do css_get() when we remember memcg pointer.
-> +	 * But in this case, we keep res->usage until end of a series of
-> +	 * uncharges. Then, it's ok to ignore memcg's refcnt.
-> +	 */
-> +	if (!batch->memcg)
-> +		batch->memcg = mem;
-> +	/*
-> +	 * In typical case, batch->memcg == mem. This means we can
-> +	 * merge a series of uncharges to an uncharge of res_counter.
-> +	 * If not, we uncharge res_counter ony by one.
-> +	 */
-> +	if (batch->memcg != mem)
-> +		goto direct_uncharge;
-> +	/* remember freed charge and uncharge it later */
-> +	batch->pages += PAGE_SIZE;
-> +	if (uncharge_memsw)
-> +		batch->memsw += PAGE_SIZE;
-> +	return;
-> +direct_uncharge:
-> +	res_counter_uncharge(&mem->res, PAGE_SIZE);
-> +	if (uncharge_memsw)
-> +		res_counter_uncharge(&mem->memsw, PAGE_SIZE);
-> +	return;
-> +}
->  
->  /*
->   * uncharge if !page_mapped(page)
-> @@ -1874,12 +1917,8 @@ __mem_cgroup_uncharge_common(struct page
->  		break;
->  	}
->  
-> -	if (!mem_cgroup_is_root(mem)) {
-> -		res_counter_uncharge(&mem->res, PAGE_SIZE);
-> -		if (do_swap_account &&
-> -				(ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
-> -			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
-> -	}
-> +	if (!mem_cgroup_is_root(mem))
-> +		__do_uncharge(mem, ctype);
->  	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
->  		mem_cgroup_swap_statistics(mem, true);
->  	mem_cgroup_charge_statistics(mem, pc, false);
-> @@ -1925,6 +1964,46 @@ void mem_cgroup_uncharge_cache_page(stru
->  	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
->  }
->  
-> +/*
-> + * batch_start/batch_end is called in unmap_page_range/invlidate/trucate.
-> + * In that cases, pages are freed continuously and we can expect pages
-> + * are in the same memcg. All these calls itself limits the number of
-> + * pages freed at once, then uncharge_start/end() is called properly.
-> + */
-> +
-> +void mem_cgroup_uncharge_start(void)
-> +{
-> +	if (!current->memcg_batch.do_batch) {
-> +		current->memcg_batch.memcg = NULL;
-> +		current->memcg_batch.pages = 0;
-> +		current->memcg_batch.memsw = 0;
-> +	}
-> +	current->memcg_batch.do_batch++;
-> +}
-> +
-> +void mem_cgroup_uncharge_end(void)
-> +{
-> +	struct mem_cgroup *mem;
-> +
-> +	if (!current->memcg_batch.do_batch)
-> +		return;
-> +
-> +	current->memcg_batch.do_batch--;
-> +	if (current->memcg_batch.do_batch) /* Nested ? */
-> +		return;
-> +
-> +	mem = current->memcg_batch.memcg;
-> +	if (!mem)
-> +		return;
-> +	/* This "mem" is valid bacause we hide charges behind us. */
-> +	if (current->memcg_batch.pages)
-> +		res_counter_uncharge(&mem->res, current->memcg_batch.pages);
-> +	if (current->memcg_batch.memsw)
-> +		res_counter_uncharge(&mem->memsw, current->memcg_batch.memsw);
-> +	/* Not necessary. but forget this pointer */
-> +	current->memcg_batch.memcg = NULL;
-> +}
-> +
->  #ifdef CONFIG_SWAP
->  /*
->   * called after __delete_from_swap_cache() and drop "page" account.
-> Index: mmotm-2.6.31-Sep28/include/linux/sched.h
-> ===================================================================
-> --- mmotm-2.6.31-Sep28.orig/include/linux/sched.h
-> +++ mmotm-2.6.31-Sep28/include/linux/sched.h
-> @@ -1549,6 +1549,13 @@ struct task_struct {
->  	unsigned long trace_recursion;
->  #endif /* CONFIG_TRACING */
->  	unsigned long stack_start;
-> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR /* memcg uses this to do batch job */
-> +	struct memcg_batch_info {
-> +		int do_batch;
-> +		struct mem_cgroup *memcg;
-> +		long pages, memsw;
-> +	} memcg_batch;
-> +#endif
->  };
->  
->  /* Future-safe accessor for struct task_struct's cpus_allowed. */
-> Index: mmotm-2.6.31-Sep28/mm/memory.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep28.orig/mm/memory.c
-> +++ mmotm-2.6.31-Sep28/mm/memory.c
-> @@ -940,6 +940,7 @@ static unsigned long unmap_page_range(st
->  		details = NULL;
->  
->  	BUG_ON(addr >= end);
-> +	mem_cgroup_uncharge_start();
->  	tlb_start_vma(tlb, vma);
->  	pgd = pgd_offset(vma->vm_mm, addr);
->  	do {
-> @@ -952,6 +953,7 @@ static unsigned long unmap_page_range(st
->  						zap_work, details);
->  	} while (pgd++, addr = next, (addr != end && *zap_work > 0));
->  	tlb_end_vma(tlb, vma);
-> +	mem_cgroup_uncharge_end();
->  
->  	return addr;
->  }
-> Index: mmotm-2.6.31-Sep28/mm/truncate.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep28.orig/mm/truncate.c
-> +++ mmotm-2.6.31-Sep28/mm/truncate.c
-> @@ -272,6 +272,7 @@ void truncate_inode_pages_range(struct a
->  			pagevec_release(&pvec);
->  			break;
->  		}
-> +		mem_cgroup_uncharge_start();
->  		for (i = 0; i < pagevec_count(&pvec); i++) {
->  			struct page *page = pvec.pages[i];
->  
-> @@ -286,6 +287,7 @@ void truncate_inode_pages_range(struct a
->  			unlock_page(page);
->  		}
->  		pagevec_release(&pvec);
-> +		mem_cgroup_uncharge_end();
->  	}
->  }
->  EXPORT_SYMBOL(truncate_inode_pages_range);
-> @@ -327,6 +329,7 @@ unsigned long invalidate_mapping_pages(s
->  	pagevec_init(&pvec, 0);
->  	while (next <= end &&
->  			pagevec_lookup(&pvec, mapping, next, PAGEVEC_SIZE)) {
-> +		mem_cgroup_uncharge_start();
->  		for (i = 0; i < pagevec_count(&pvec); i++) {
->  			struct page *page = pvec.pages[i];
->  			pgoff_t index;
-> @@ -354,6 +357,7 @@ unsigned long invalidate_mapping_pages(s
->  				break;
->  		}
->  		pagevec_release(&pvec);
-> +		mem_cgroup_uncharge_end();
->  		cond_resched();
->  	}
->  	return ret;
-> @@ -428,6 +432,7 @@ int invalidate_inode_pages2_range(struct
->  	while (next <= end && !wrapped &&
->  		pagevec_lookup(&pvec, mapping, next,
->  			min(end - next, (pgoff_t)PAGEVEC_SIZE - 1) + 1)) {
-> +		mem_cgroup_uncharge_start();
->  		for (i = 0; i < pagevec_count(&pvec); i++) {
->  			struct page *page = pvec.pages[i];
->  			pgoff_t page_index;
-> @@ -477,6 +482,7 @@ int invalidate_inode_pages2_range(struct
->  			unlock_page(page);
->  		}
->  		pagevec_release(&pvec);
-> +		mem_cgroup_uncharge_end();
->  		cond_resched();
->  	}
->  	return ret;
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> 
-
+/ magnus
