@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932226AbZJBBek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZJBBXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932226AbZJBBek (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932179AbZJBBei
+	id S1754093AbZJBBXg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbZJBBXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:34:38 -0400
-Received: from kroah.org ([198.145.64.141]:33647 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932173AbZJBBec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:34:32 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:28 2009
-Message-Id: <20091002012428.446815976@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:18:04 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Wey-Yi Guy <wey-yi.w.guy@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [136/136] iwlwifi: fix unloading driver while scanning
-References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=iwlwifi-fix-unloading-driver-while-scanning.patch
-In-Reply-To: <20091002012911.GA18542@kroah.com>
+	Thu, 1 Oct 2009 21:23:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60167 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754052AbZJBBXf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:23:35 -0400
+Date: Thu, 1 Oct 2009 18:21:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Theodore Tso <tytso@mit.edu>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       John Stultz <johnstul@us.ibm.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, tglx@linutronix.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ondrej Zary <linux@rainbow-software.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: T400 suspend/resume regression -- bisected to a mystery merge
+ commit
+In-Reply-To: <20091002005907.GA7490@mit.edu>
+Message-ID: <alpine.LFD.2.01.0910011817120.6996@localhost.localdomain>
+References: <E1MrRDa-0002WF-LO@closure.thunk.org> <200909271813.42829.rjw@sisk.pl> <20090928135109.GB17514@mit.edu> <200909282322.57824.rjw@sisk.pl> <20091002005907.GA7490@mit.edu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.31-stable review patch.  If anyone has any objections, please let us know.
-
-------------------
-From: Wey-Yi Guy <wey-yi.w.guy@intel.com>
-
-This is commit 5bddf54962bf68002816df710348ba197d6391bb in linux-2.6.
-
-If NetworkManager is busy scanning when user
-tries to unload the module, the driver can not be unloaded
-because HW still scanning.
-
-Make sure driver sends abort scan host command to uCode if it
-is in the middle of scanning during driver unload.
-
-Signed-off-by: Wey-Yi Guy <wey-yi.w.guy@intel.com>
-Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/net/wireless/iwlwifi/iwl-agn.c  |    2 +-
- drivers/net/wireless/iwlwifi/iwl-scan.c |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
---- a/drivers/net/wireless/iwlwifi/iwl-agn.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
-@@ -2215,7 +2215,7 @@ static void iwl_mac_stop(struct ieee8021
- 
- 	priv->is_open = 0;
- 
--	if (iwl_is_ready_rf(priv)) {
-+	if (iwl_is_ready_rf(priv) || test_bit(STATUS_SCAN_HW, &priv->status)) {
- 		/* stop mac, cancel any scan request and clear
- 		 * RXON_FILTER_ASSOC_MSK BIT
- 		 */
---- a/drivers/net/wireless/iwlwifi/iwl-scan.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-scan.c
-@@ -799,7 +799,8 @@ void iwl_bg_abort_scan(struct work_struc
- {
- 	struct iwl_priv *priv = container_of(work, struct iwl_priv, abort_scan);
- 
--	if (!iwl_is_ready(priv))
-+	if (!test_bit(STATUS_READY, &priv->status) ||
-+	    !test_bit(STATUS_GEO_CONFIGURED, &priv->status))
- 		return;
- 
- 	mutex_lock(&priv->mutex);
 
 
+On Thu, 1 Oct 2009, Theodore Tso wrote:
+> 
+> commit 8c3ee48dabee782d470cc4c7048ea64bb8b7d1cb
+> Author: Theodore Ts'o <tytso@mit.edu>
+> Date:   Thu Oct 1 20:39:03 2009 -0400
+> 
+>     Revert "timekeeping: Update clocksource with stop_machine"
+>     
+>     This reverts commit 75c5158f70c065b9704b924503d96e8297838f79.
+
+Hmm. Looks good. But you didn't cc most of the people actually involved 
+with that commit (Martin who is the author, and John who acked it).
+
+I think the revert is the right thing to do, especially as that 
+'clocksource_mutex' looks totally bogus. Either the thing is protected by 
+'stop_machine' or it's not. In neither case does it seem to make any sense 
+to replace a spinlock with a mutex. 
+
+And resuming anything with a big mutex is crazy anyway. 
+
+That said, I do wonder if this is already fixed. See commit 
+89133f93508137231251543d1732da638e6022e1:
+
+    clocksource: Resume clocksource without taking the clocksource mutex
+
+which already undid the part that probably mattered for you. That said, I 
+still do think that that mutex is dubious, so maybe we should undo it all.
+
+		Linus
