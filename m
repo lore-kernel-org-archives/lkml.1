@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbZJBBoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756963AbZJBBl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756992AbZJBBoe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbZJBBob
+	id S1756963AbZJBBl4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756869AbZJBBeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:44:31 -0400
-Received: from kroah.org ([198.145.64.141]:33393 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:34:03 -0400
+Received: from kroah.org ([198.145.64.141]:33402 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756820AbZJBBdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:33:53 -0400
+	id S1756799AbZJBBdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:33:54 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:22 2009
-Message-Id: <20091002012422.398569832@mini.kroah.org>
+Message-Id: <20091002012422.533759505@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:25 -0700
+Date: Thu, 01 Oct 2009 18:17:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Alan Stern <stern@rowland.harvard.edu>
-Subject: [097/136] usb-serial: fix termios initialization logic
+Subject: [098/136] usb-serial: rename subroutines
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=usb-serial-fix-termios-initialization-logic.patch
+Content-Disposition: inline; filename=usb-serial-rename-subroutines.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,64 +31,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 7e29bb4b779f4f35385e6f21994758845bf14d23 upstream.
+commit 74556123e034c8337b69a3ebac2f3a5fc0a97032 upstream.
 
-This patch (as1288) fixes the initialization logic in
-serial_install().  A new tty always needs to have a termios
-initialized no matter what, not just in the case where the lower
-driver will override the termios settings.
+This patch (as1289) renames serial_do_down() to serial_down() and
+serial_do_free() to serial_release().  It also adds a missing call to
+tty_shutdown() in serial_release().
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/usb-serial.c |   22 ++++++++++------------
- 1 file changed, 10 insertions(+), 12 deletions(-)
+ drivers/usb/serial/usb-serial.c |   19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
 --- a/drivers/usb/serial/usb-serial.c
 +++ b/drivers/usb/serial/usb-serial.c
-@@ -210,22 +210,21 @@ static int serial_install(struct tty_dri
- 	if (!try_module_get(serial->type->driver.owner))
- 		goto error_module_get;
+@@ -191,7 +191,7 @@ void usb_serial_put(struct usb_serial *s
+  * This is the first place a new tty gets used.  Hence this is where we
+  * acquire references to the usb_serial structure and the driver module,
+  * where we store a pointer to the port, and where we do an autoresume.
+- * All these actions are reversed in serial_do_free().
++ * All these actions are reversed in serial_release().
+  */
+ static int serial_install(struct tty_driver *driver, struct tty_struct *tty)
+ {
+@@ -296,13 +296,13 @@ bailout_mutex_unlock:
+ }
  
-+	/* perform the standard setup */
-+	retval = tty_init_termios(tty);
-+	if (retval)
-+		goto error_init_termios;
+ /**
+- * serial_do_down - shut down hardware
++ * serial_down - shut down hardware
+  * @port: port to shut down
+  *
+  * Shut down a USB serial port unless it is the console.  We never
+  * shut down the console hardware as it will always be in use.
+  */
+-static void serial_do_down(struct usb_serial_port *port)
++static void serial_down(struct usb_serial_port *port)
+ {
+ 	struct usb_serial_driver *drv = port->serial->type;
+ 	struct usb_serial *serial;
+@@ -328,7 +328,7 @@ static void serial_do_down(struct usb_se
+ static void serial_hangup(struct tty_struct *tty)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+-	serial_do_down(port);
++	serial_down(port);
+ 	tty_port_hangup(&port->port);
+ 	/* We must not free port yet - the USB serial layer depends on it's
+ 	   continued existence */
+@@ -342,13 +342,13 @@ static void serial_close(struct tty_stru
+ 
+ 	if (tty_port_close_start(&port->port, tty, filp) == 0)
+ 		return;
+-	serial_do_down(port);
++	serial_down(port);
+ 	tty_port_close_end(&port->port, tty);
+ 	tty_port_tty_set(&port->port, NULL);
+ }
+ 
+ /**
+- * serial_do_free - free resources post close/hangup
++ * serial_release - free resources post close/hangup
+  * @port: port to free up
+  *
+  * Do the resource freeing and refcount dropping for the port.
+@@ -356,7 +356,7 @@ static void serial_close(struct tty_stru
+  *
+  * Called when the last tty kref is dropped.
+  */
+-static void serial_do_free(struct tty_struct *tty)
++static void serial_release(struct tty_struct *tty)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+ 	struct usb_serial *serial;
+@@ -368,6 +368,9 @@ static void serial_do_free(struct tty_st
+ 	if (port->console)
+ 		return;
+ 
++	/* Standard shutdown processing */
++	tty_shutdown(tty);
 +
- 	retval = usb_autopm_get_interface(serial->interface);
- 	if (retval)
- 		goto error_get_interface;
+ 	tty->driver_data = NULL;
  
--	/* If the termios setup has yet to be done */
--	if (tty->driver->termios[idx] == NULL) {
--		/* perform the standard setup */
--		retval = tty_init_termios(tty);
--		if (retval)
--			goto error_init_termios;
--		/* allow the driver to update it */
--		if (serial->type->init_termios)
--			serial->type->init_termios(tty);
--	}
- 	mutex_unlock(&serial->disc_mutex);
- 
-+	/* allow the driver to update the settings */
-+	if (serial->type->init_termios)
-+		serial->type->init_termios(tty);
-+
- 	tty->driver_data = port;
- 
- 	/* Final install (we use the default method) */
-@@ -234,9 +233,8 @@ static int serial_install(struct tty_dri
- 	driver->ttys[idx] = tty;
- 	return retval;
- 
-- error_init_termios:
--	usb_autopm_put_interface(serial->interface);
-  error_get_interface:
-+ error_init_termios:
- 	module_put(serial->type->driver.owner);
-  error_module_get:
-  error_no_port:
+ 	serial = port->serial;
+@@ -1204,7 +1207,7 @@ static const struct tty_operations seria
+ 	.chars_in_buffer =	serial_chars_in_buffer,
+ 	.tiocmget =		serial_tiocmget,
+ 	.tiocmset =		serial_tiocmset,
+-	.shutdown = 		serial_do_free,
++	.shutdown = 		serial_release,
+ 	.install = 		serial_install,
+ 	.proc_fops =		&serial_proc_fops,
+ };
 
 
