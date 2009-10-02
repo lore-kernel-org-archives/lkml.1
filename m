@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbZJBRgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZJBRbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757910AbZJBRgU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbZJBRgU
+	id S1757914AbZJBRbQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757611AbZJBRbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:36:20 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:39570 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754357AbZJBRgT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:36:19 -0400
-Date: Fri, 2 Oct 2009 13:30:58 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Mel Gorman <mel@csn.ul.ie>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, mingo@elte.hu, rusty@rustcorp.com.au,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [this_cpu_xx V4 12/20] Move early initialization of pagesets
- out of zone_wait_table_init()
-In-Reply-To: <20091002141618.GO21906@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0910021326050.26189@gentwo.org>
-References: <20091001212521.123389189@gentwo.org> <20091001212559.879284755@gentwo.org> <20091002141618.GO21906@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 2 Oct 2009 13:31:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35778 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757581AbZJBRbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:31:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: 2.6.32-rc1-git2: Reported regressions from 2.6.31
+Date: Fri, 2 Oct 2009 19:32:27 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+References: <9UCePxij8cB.A.VCG.-3SxKB@chimera> <1254469139.3531.19.camel@ht.satnam> <4AC5F975.6060505@s5r6.in-berlin.de>
+In-Reply-To: <4AC5F975.6060505@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910021932.27789.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Oct 2009, Mel Gorman wrote:
+On Friday 02 October 2009, Stefan Richter wrote:
+> Jaswinder Singh Rajput wrote:
+> > If you add one more entry say "Suspected commit :" then it will be great
+> > and will solve regressions much faster.
+> 
+> Will?  Might.
 
-> On Thu, Oct 01, 2009 at 05:25:33PM -0400, cl@linux-foundation.org wrote:
-> > Explicitly initialize the pagesets after the per cpu areas have been
-> > initialized. This is necessary in order to be able to use per cpu
-> > operations in later patches.
-> >
->
-> Can you be more explicit about this? I think the reasoning is as follows
->
-> A later patch will use DEFINE_PER_CPU which allocates memory later in
-> the boot-cycle after zones have already been initialised. Without this
-> patch, use of DEFINE_PER_CPU would result in invalid memory accesses
-> during pageset initialisation.
+In fact I add the "First-Bad-Commit" annotation where there is a bisection
+result or it's possible to fix things by reverting a specific commit.
 
-Nope. Pagesets are not statically allocated per cpu data. They are
-allocated with the per cpu allocator.
+> > You can request submitter to
+> > submit 'suspected commit' by git bisect and also specify git bisect
+> > links like : (for more information about git bisect check
+> > http://kerneltrap.org/node/11753)
+> 
+> I disagree.  A reporter should only be asked to bisect (using git or
+> other tools) /if/ a developer determined that bisection may speed up the
+> debugging process or is the only remaining option to make progress with
+> a bug.
+> 
+> It would be wrong to steal a reporter's valuable time by asking for
+> bisection before anybody familiar with the matter even had a first look
+> at the report.
 
-The per cpu allocator is not initialized that early in boot. We cannot
-allocate the pagesets then. Therefore we use a fake single item pageset
-(like used now for NUMA boot) to take its place until the slab and percpu
-allocators are up. Then we allocate the real pagesets.
+Agreed.
 
-> > -static __meminit void zone_pcp_init(struct zone *zone)
-> > +/*
-> > + * Early setup of pagesets.
-> > + *
-> > + * In the NUMA case the pageset setup simply results in all zones pcp
-> > + * pointer being directed at a per cpu pageset with zero batchsize.
-> > + *
->
-> The batchsize becomes 1, not 0 if you look at setup_pageset() but that aside,
-> it's unclear from the comment *why* the batchsize is 1 in the NUMA case.
-> Maybe something like the following?
->
-> =====
-> In the NUMA case, the boot_pageset is used until the slab allocator is
-> available to allocate per-zone pagesets as each CPU is brought up. At
-> this point, the batchsize is set to 1 to prevent pages "leaking" onto the
-> boot_pageset freelists.
-> =====
->
-> Otherwise, nothing in the patch jumped out at me other than to double
-> check CPU-up events actually result in process_zones() being called and
-> that boot_pageset is not being accidentally used in the long term.
-
-This is already explained in a commment where boot_pageset is defined.
-Should we add some more elaborate comments to zone_pcp_init()?
-
-
+Thanks,
+Rafael
