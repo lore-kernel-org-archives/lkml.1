@@ -1,113 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbZJBExM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbZJBE5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754246AbZJBExM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 00:53:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZJBExJ
+	id S1754589AbZJBE5u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 00:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbZJBE5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 00:53:09 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51589 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752566AbZJBExH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 00:53:07 -0400
-From: Neil Brown <neilb@suse.de>
-To: David Rientjes <rientjes@google.com>
-Date: Fri, 2 Oct 2009 14:54:21 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 2 Oct 2009 00:57:50 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34095 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbZJBE5t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 00:57:49 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 2 Oct 2009 13:55:31 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: [PATCH 0/2] memcg: improving scalability by reducing lock
+ contention at charge/uncharge
+Message-Id: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <19141.34685.863491.329836@notabene.brown>
-Cc: Suresh Jayaraman <sjayaraman@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org,
-       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 30/31] Fix use of uninitialized variable in
- cache_grow()
-In-Reply-To: message from David Rientjes on Thursday October 1
-References: <1254406257-16735-1-git-send-email-sjayaraman@suse.de>
-	<alpine.DEB.1.00.0910011341280.27559@chino.kir.corp.google.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday October 1, rientjes@google.com wrote:
-> On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
-> 
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > This fixes a bug in reserve-slub.patch.
-> > 
-> > If cache_grow() was called with objp != NULL then the 'reserve' local
-> > variable wasn't initialized. This resulted in ac->reserve being set to
-> > a rubbish value.  Due to this in some circumstances huge amounts of
-> > slab pages were allocated (due to slab_force_alloc() returning true),
-> > which caused atomic page allocation failures and slowdown of the
-> > system.
-> > 
-> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> > Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
-> > ---
-> >  mm/slab.c |    5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
-> > 
-> > Index: mmotm/mm/slab.c
-> > ===================================================================
-> > --- mmotm.orig/mm/slab.c
-> > +++ mmotm/mm/slab.c
-> > @@ -2760,7 +2760,7 @@ static int cache_grow(struct kmem_cache
-> >  	size_t offset;
-> >  	gfp_t local_flags;
-> >  	struct kmem_list3 *l3;
-> > -	int reserve;
-> > +	int reserve = -1;
-> >  
-> >  	/*
-> >  	 * Be lazy and only check for valid flags here,  keeping it out of the
-> > @@ -2816,7 +2816,8 @@ static int cache_grow(struct kmem_cache
-> >  	if (local_flags & __GFP_WAIT)
-> >  		local_irq_disable();
-> >  	check_irq_off();
-> > -	slab_set_reserve(cachep, reserve);
-> > +	if (reserve != -1)
-> > +		slab_set_reserve(cachep, reserve);
-> >  	spin_lock(&l3->list_lock);
-> >  
-> >  	/* Make slab active. */
-> 
-> Given the patch description, shouldn't this be a test for objp != NULL 
-> instead, then?
+Hi,
 
-In between those to patch hunks, cache_grow contains the code:
-	if (!objp)
-		objp = kmem_getpages(cachep, local_flags, nodeid, &reserve);
-	if (!objp)
-		goto failed;
+This patch is against mmotm + softlimit fix patches.
+(which are now in -rc git tree.)
 
-We can no longer test if objp was NULL on entry to the function.
-We could take a copy of objp on entry to the function, and test it
-here.  But initialising 'reserve' to an invalid value is easier.
+In the latest -rc series, the kernel avoids accessing res_counter when
+cgroup is root cgroup. This helps scalabilty when memcg is not used.
+
+It's necessary to improve scalabilty even when memcg is used. This patch
+is for that. Previous Balbir's work shows that the biggest obstacles for
+better scalabilty is memcg's res_counter. Then, there are 2 ways.
+
+(1) make counter scale well.
+(2) avoid accessing core counter as much as possible.
+
+My first direction was (1). But no, there is no counter which is free
+from false sharing when it needs system-wide fine grain synchronization.
+And res_counter has several functionality...this makes (1) difficult.
+spin_lock (in slow path) around counter means tons of invalidation will
+happen even when we just access counter without modification.
+
+This patch series is for (2). This implements charge/uncharge in bached manner.
+This coalesces access to res_counter at charge/uncharge using nature of
+access locality.
+
+Tested for a month. And I got good reorts from Balbir and Nishimura, thanks.
+One concern is that this adds some members to the bottom of task_struct.
+Better idea is welcome.
+
+Following is test result of continuous page-fault on my 8cpu box(x86-64).
+
+A loop like this runs on all cpus in parallel for 60secs. 
+==
+        while (1) {
+                x = mmap(NULL, MEGA, PROT_READ|PROT_WRITE,
+                        MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+
+                for (off = 0; off < MEGA; off += PAGE_SIZE)
+                        x[off]=0;
+                munmap(x, MEGA);
+        }
+==
+please see # of page faults. I think this is good improvement.
 
 
+[Before]
+ Performance counter stats for './runpause.sh' (5 runs):
 
-> 
-> If so, it doesn't make sense because reserve will only be initialized when 
-> objp == NULL in the call to kmem_getpages() from cache_grow().
-> 
-> 
-> The title of the patch suggests this is just dealing with an uninitialized 
-> auto variable so the anticipated change would be from "int reserve" to 
-> "int uninitialized_var(result)".
+  474539.756944  task-clock-msecs         #      7.890 CPUs    ( +-   0.015% )
+          10284  context-switches         #      0.000 M/sec   ( +-   0.156% )
+             12  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
+       18425800  page-faults              #      0.039 M/sec   ( +-   0.107% )
+  1486296285360  cycles                   #   3132.080 M/sec   ( +-   0.029% )
+   380334406216  instructions             #      0.256 IPC     ( +-   0.058% )
+     3274206662  cache-references         #      6.900 M/sec   ( +-   0.453% )
+     1272947699  cache-misses             #      2.682 M/sec   ( +-   0.118% )
 
-That change is only appropriate when the compiler is issuing a
-warning that the variable is used before it is initialised, but we
-know that not to be the case.
-In this situation, we know it *is* being used before it is
-initialised, and so we need to initialise it to something.
+   60.147907341  seconds time elapsed   ( +-   0.010% )
 
-Thanks,
-NeilBrown
+[After]
+ Performance counter stats for './runpause.sh' (5 runs):
+
+  474658.997489  task-clock-msecs         #      7.891 CPUs    ( +-   0.006% )
+          10250  context-switches         #      0.000 M/sec   ( +-   0.020% )
+             11  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
+       33177858  page-faults              #      0.070 M/sec   ( +-   0.152% )
+  1485264748476  cycles                   #   3129.120 M/sec   ( +-   0.021% )
+   409847004519  instructions             #      0.276 IPC     ( +-   0.123% )
+     3237478723  cache-references         #      6.821 M/sec   ( +-   0.574% )
+     1182572827  cache-misses             #      2.491 M/sec   ( +-   0.179% )
+
+   60.151786309  seconds time elapsed   ( +-   0.014% )
+
+Regards,
+-Kame
+
