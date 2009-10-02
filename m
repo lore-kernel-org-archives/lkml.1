@@ -1,57 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbZJBIaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbZJBIfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923AbZJBIaT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 04:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZJBIaS
+	id S1755314AbZJBIfk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 04:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZJBIfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 04:30:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:27294 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753131AbZJBIaQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 04:30:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=GE58xU1WxLsRuMg+oHJVFu2jGsjRU1ilvAlJV32Pe2HaghuDB9De06qY6jGS3IWIMx
-         qaLKeLSyHThYmQzJIG7Q1RhZPnKWnFf1gAgUhHi9/e2JpdlkxnoSudPLWf2CvjfipZKr
-         KfN60f04w5ei8XW/9yluxwiZNlxjwN4LScCwE=
+	Fri, 2 Oct 2009 04:35:39 -0400
+Received: from ja.ssi.bg ([217.79.71.194]:52511 "EHLO u.domain.uli"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753434AbZJBIfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 04:35:37 -0400
+Date: Fri, 2 Oct 2009 11:35:56 +0300 (EEST)
+From: Julian Anastasov <ja@ssi.bg>
+X-X-Sender: ja@u.domain.uli
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Hannes Eder <heder@google.com>, Wensong Zhang <wensong@linux-vs.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] ipvs: Add boundary check on ioctl arguments
+In-Reply-To: <20090930171833.5ce0011d@infradead.org>
+Message-ID: <Pine.LNX.4.58.0910021027540.3189@u.domain.uli>
+References: <20090930131109.2b3f71b8@infradead.org> <4AC35F44.60707@google.com>
+ <20090930171833.5ce0011d@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <COE24pZSBH.A.7sH.xMTxKB@chimera>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
-	 <COE24pZSBH.A.7sH.xMTxKB@chimera>
-Date: Fri, 2 Oct 2009 12:30:17 +0400
-Message-ID: <aa79d98a0910020130p4d3c5b5fh9597ea435db7f872@mail.gmail.com>
-Subject: Re: [Bug #14270] Cannot boot on a PIII Celeron
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/1/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.30 and 2.6.31.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> be listed and let me know (either way).
->
 
-Michael has been asked to bisect it (if possible). I cant reproduce it
-in kvm unfortunately.
+	Hello,
 
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14270
-> Subject		: Cannot boot on a PIII Celeron
-> Submitter	: Michael Tokarev <mjt@tls.msk.ru>
-> Date		: 2009-09-28 15:26 (4 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125415160524110&w=4
->
->
->
+On Wed, 30 Sep 2009, Arjan van de Ven wrote:
+
+> fair enough; updated patch below
+
+	OK, you can add my signed-off line after changing
+'cmd > ...MAX + 1' to 'cmd > ...MAX' at both
+places, nf_sockopt_ops ranges are [optmin ... optmax)
+
+May be comments should be changed because:
+
+- i'm not the author but after ispection we do not see any holes,
+we do not want users to upgrade just for this change
+- the cmd checks are just to help code checking tools
+- the len checks should help programmers (may be BUG_ON is
+better, user does not deserve EINVAL for wrong set_arglen/get_arglen).
+Checks for *len and len are not needed.
+
+	For example, for len checks this should be enough, before
+copy_from_user():
+
+in do_ip_vs_get_ctl check can be
+	BUG_ON(get_arglen[GET_CMDID(cmd)] > sizeof(arg));
+
+in do_ip_vs_set_ctl check can be
+	BUG_ON(set_arglen[SET_CMDID(cmd)] > sizeof(arg));
+
+Acked-by: Julian Anastasov <ja@ssi.bg>
+
+> >From 28ae217858e683c0c94c02219d46a9a9c87f61c6 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Wed, 30 Sep 2009 13:05:51 +0200
+> Subject: [PATCH] ipvs: Add boundary check on ioctl arguments
+> 
+> The ipvs code has a nifty system for doing the size of ioctl command copies;
+> it defines an array with values into which it indexes the cmd to find the
+> right length.
+> 
+> Unfortunately, the ipvs code forgot to check if the cmd was in the range
+> that the array provides, allowing for an index outside of the array,
+> which then gives a "garbage" result into the length, which then gets
+> used for copying into a stack buffer.
+> 
+> Fix this by adding sanity checks on these as well as the copy size.
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  net/netfilter/ipvs/ip_vs_ctl.c |   14 +++++++++++++-
+>  1 files changed, 13 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/netfilter/ipvs/ip_vs_ctl.c b/net/netfilter/ipvs/ip_vs_ctl.c
+> index ac624e5..7adc876 100644
+> --- a/net/netfilter/ipvs/ip_vs_ctl.c
+> +++ b/net/netfilter/ipvs/ip_vs_ctl.c
+> @@ -2077,6 +2077,10 @@ do_ip_vs_set_ctl(struct sock *sk, int cmd, void __user *user, unsigned int len)
+>  	if (!capable(CAP_NET_ADMIN))
+>  		return -EPERM;
+>  
+> +	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_SET_MAX + 1)
+> +		return -EINVAL;
+> +	if (len < 0 || len >  sizeof(arg))
+> +		return -EINVAL;
+>  	if (len != set_arglen[SET_CMDID(cmd)]) {
+>  		pr_err("set_ctl: len %u != %u\n",
+>  		       len, set_arglen[SET_CMDID(cmd)]);
+> @@ -2353,17 +2357,25 @@ do_ip_vs_get_ctl(struct sock *sk, int cmd, void __user *user, int *len)
+>  {
+>  	unsigned char arg[128];
+>  	int ret = 0;
+> +	unsigned int copylen;
+>  
+>  	if (!capable(CAP_NET_ADMIN))
+>  		return -EPERM;
+>  
+> +	if (cmd < IP_VS_BASE_CTL || cmd > IP_VS_SO_GET_MAX + 1)
+> +		return -EINVAL;
+> +
+>  	if (*len < get_arglen[GET_CMDID(cmd)]) {
+>  		pr_err("get_ctl: len %u < %u\n",
+>  		       *len, get_arglen[GET_CMDID(cmd)]);
+>  		return -EINVAL;
+>  	}
+>  
+> -	if (copy_from_user(arg, user, get_arglen[GET_CMDID(cmd)]) != 0)
+> +	copylen = get_arglen[GET_CMDID(cmd)];
+> +	if (copylen > sizeof(arg))
+> +		return -EINVAL;
+> +
+> +	if (copy_from_user(arg, user, copylen) != 0)
+>  		return -EFAULT;
+>  
+>  	if (mutex_lock_interruptible(&__ip_vs_mutex))
+
+Regards
+
+--
+Julian Anastasov <ja@ssi.bg>
