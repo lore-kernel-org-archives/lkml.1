@@ -1,54 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbZJBSaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078AbZJBSbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbZJBSaq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbZJBSap
+	id S932078AbZJBSbq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbZJBSbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:30:45 -0400
-Received: from claw.goop.org ([74.207.240.146]:57436 "EHLO claw.goop.org"
+	Fri, 2 Oct 2009 14:31:46 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:49382 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758032AbZJBSao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:30:44 -0400
-Message-ID: <4AC646D7.5030709@goop.org>
-Date: Fri, 02 Oct 2009 11:30:47 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1753898AbZJBSbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:31:44 -0400
+Date: Fri, 2 Oct 2009 13:31:45 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] mm: add notifier in pageblock isolation for
+	balloon drivers
+Message-ID: <20091002183145.GA4908@austin.ibm.com>
+Mail-Followup-To: Nathan Fontenot <nfont@austin.ibm.com>,
+	Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linuxppc-dev@ozlabs.org
+References: <20091001195311.GA16667@austin.ibm.com> <4AC520B5.9080600@austin.ibm.com>
 MIME-Version: 1.0
-To: Shirley Ma <mashirle@us.ibm.com>
-CC: virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Kevin Bowling <kevinb@analograils.com>,
-       Andrew Jones <drjones@redhat.com>
-Subject: Re: INFO: task journal:337 blocked for more than 120 seconds
-References: <1254345112.8837.9.camel@localhost.localdomain>
-In-Reply-To: <1254345112.8837.9.camel@localhost.localdomain>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AC520B5.9080600@austin.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/30/09 14:11, Shirley Ma wrote:
-> Anybody found this problem before? I kept hitting this issue for 2.6.31
-> guest kernel even with a simple network test.
+* Nathan Fontenot (nfont@austin.ibm.com) wrote:
+> Robert Jennings wrote:
+>> Memory balloon drivers can allocate a large amount of memory which
+>> is not movable but could be freed to accommodate memory hotplug remove.
+>>
+>> Prior to calling the memory hotplug notifier chain the memory in the
+>> pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
+>> isolation will not proceed, causing the memory removal for that page
+>> range to fail.
+>>
+>> Rather than immediately failing pageblock isolation if the the
+>> migrateteype is not MIGRATE_MOVABLE, this patch checks if all of the
+>> pages in the pageblock are owned by a registered balloon driver using a
+>> notifier chain.  If all of the non-movable pages are owned by a balloon,
+>> they can be freed later through the memory notifier chain and the range
+>> can still be isolated in set_migratetype_isolate().
+>>
+>> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+>>
+>> ---
+>>  drivers/base/memory.c  |   19 +++++++++++++++++++
+>>  include/linux/memory.h |   22 ++++++++++++++++++++++
+>>  mm/page_alloc.c        |   49 +++++++++++++++++++++++++++++++++++++++++--------
+>>  3 files changed, 82 insertions(+), 8 deletions(-)
+>>
+<snip>
+>> Index: b/mm/page_alloc.c
+>> ===================================================================
+>> --- a/mm/page_alloc.c
+>> +++ b/mm/page_alloc.c
+>> @@ -48,6 +48,7 @@
+>>  #include <linux/page_cgroup.h>
+>>  #include <linux/debugobjects.h>
+>>  #include <linux/kmemleak.h>
+>> +#include <linux/memory.h>
+>>  #include <trace/events/kmem.h>
+>>   #include <asm/tlbflush.h>
+>> @@ -4985,23 +4986,55 @@ void set_pageblock_flags_group(struct pa
+>>  int set_migratetype_isolate(struct page *page)
+>>  {
+>>  	struct zone *zone;
+>> -	unsigned long flags;
+>> +	unsigned long flags, pfn, iter;
+>> +	long immobile = 0;
+>> +	struct memory_isolate_notify arg;
+>> +	int notifier_ret;
+>>  	int ret = -EBUSY;
+>>  	int zone_idx;
+>>   	zone = page_zone(page);
+>>  	zone_idx = zone_idx(zone);
+>> +
+>> +	pfn = page_to_pfn(page);
+>> +	arg.start_addr = (unsigned long)page_address(page);
+>> +	arg.nr_pages = pageblock_nr_pages;
+>> +	arg.pages_found = 0;
+>> +
+>>  	spin_lock_irqsave(&zone->lock, flags);
+>>  	/*
+>>  	 * In future, more migrate types will be able to be isolation target.
+>>  	 */
+>> -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
+>> -	    zone_idx != ZONE_MOVABLE)
+>> -		goto out;
+>> -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+>> -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
+>> -	ret = 0;
+>> -out:
+>> +	do {
+>> +		if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE &&
+>> +		    zone_idx == ZONE_MOVABLE) {
+>> +			ret = 0;
+>> +			break;
+>> +		}
+>> +
+>> +		/*
+>> +		 * If all of the pages in a zone are used by a balloon,
+>> +		 * the range can be still be isolated.  The balloon will
+>> +		 * free these pages from the memory notifier chain.
+>> +		 */
+>> +		notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
+>> +		notifier_ret = notifier_to_errno(ret);
 >
-> INFO: task kjournal:337 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_sec" disables this message.
+> Should this be
 >
-> kjournald	D 00000041	0	337	2 0x00000000
+> 		notifier_ret = notifier_to_errno(notifier_ret);
 >
-> My test is totally being blocked.
+> -Nathan
 
-I'm assuming from the lists you've posted to that this is under KVM? 
-What disk drivers are you using (virtio or emulated)?
+I'll correct this.  Thanks
 
-Can you get a full stack backtrace of kjournald?
-
-Kevin Bowling submitted a RH bug against Xen with apparently the same
-symptoms (https://bugzilla.redhat.com/show_bug.cgi?id=526627).  I'm
-wondering if there's a core kernel bug here, which is perhaps more
-easily triggered by the changed timing in a virtual machine.
-
-Thanks,
-    J
