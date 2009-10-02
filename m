@@ -1,107 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbZJBJvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbZJBJvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757475AbZJBJvL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 05:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbZJBJvK
+	id S1757481AbZJBJvr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 05:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbZJBJvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 05:51:10 -0400
-Received: from mga03.intel.com ([143.182.124.21]:45966 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756670AbZJBJvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 05:51:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,493,1249282800"; 
-   d="scan'208";a="194343126"
-Date: Fri, 2 Oct 2009 17:50:50 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       linux-fsdevel@vger.kernel.org, Steve French <sfrench@samba.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Mark Fasheh <mfasheh@suse.com>, Joel Becker <joel.becker@oracle.com>,
-       David Howells <dhowells@redhat.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Subject: [RFC] writeback: abort writeback of the inode on wrap-around
-Message-ID: <20091002095050.GA12750@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 2 Oct 2009 05:51:46 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37961 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757418AbZJBJvq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 05:51:46 -0400
+Date: Fri, 2 Oct 2009 10:53:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
+Message-ID: <20091002105314.33d54bc5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091002100430.58785957@lxorguk.ukuu.org.uk>
+References: <20090924154023.GA27480@localhost>
+	<200909242103.48562.oliver@neukum.org>
+	<20090924202107.4730f2af@lxorguk.ukuu.org.uk>
+	<20090924211459.GB27963@localhost>
+	<4ABD020B.4040901@gandalf.sssup.it>
+	<20090929145514.GF2152@localhost>
+	<20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
+	<m163ayzevu.fsf@fess.ebiederm.org>
+	<20091002100430.58785957@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When past EOF, abort the writeback of the current inode, which will
-instruct writeback_single_inode() to redirty_tail() it. 
+Having had a look through the driver someone with docs or similar needs
+to explain how the ftdi_sio does hardware and software flow control. It
+has throttle/unthrottle methods but these just stall the URB queuing and
+don't do any flow processing of their own at all. Does the ftdi_sio do
+this in hardware when the urbs run low ?
 
-This is the right behavior for
-- sync writeback (is already so with range_whole)
-  we have scanned the inode address space, and don't care any more newly
-  dirtied pages. So shall update its i_dirtied_when and exclude it from
-  the todo list.
-- periodic writeback
-  any more newly dirtied pages should be associated with a new expire
-  time. This also prevents pointless IO for busy overwriters.
-- background writeback (irrelevant)
-  it generally don't care the dirty timestamp.
+Otherwise it can certainly be simplified a lot. In particular at the
+point you get throttle event you've got about 64K of cushion to react
+(flow control being async anyway) and you actually *want* to pull data
+after you whack the modem lines because the other end also has a latency
+to respond.
 
-That should get rid of one inefficient IO pattern of .range_cyclic when
-writeback_index wraps, in which the submitted pages may be consisted of
-two distant ranges: submit [10000-10100], (wrap), submit [0-100].
+So all the clever partial processing of urb stuff is overkill. Whether it
+needs not to repost urbs to the device or to implement flow control in
+software I don't know without docs.
 
-The new .stop_on_wrap is a quick hack to show the basic idea. Ideal
-would be to just convert the existing .range_cyclic to new behavior.
-This should simplify a lot of code.
+With that done the driver ought to be a good deal easier to debug.
 
-Since this involves many filesystems. I'd like to ask if any of them
-in fact _desire_ the current .range_cyclic semantics to wrap?
-
-Thanks,
-Fengguang
----
- fs/fs-writeback.c         |    1 +
- include/linux/writeback.h |    1 +
- mm/page-writeback.c       |    4 +++-
- 3 files changed, 5 insertions(+), 1 deletion(-)
-
---- linux.orig/fs/fs-writeback.c	2009-10-02 16:46:36.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-10-02 17:01:27.000000000 +0800
-@@ -810,6 +810,7 @@ static long wb_writeback(struct bdi_writ
- 		.for_kupdate		= args->for_kupdate,
- 		.for_background		= args->for_background,
- 		.range_cyclic		= args->range_cyclic,
-+		.stop_on_wrap		= 1,
- 	};
- 	unsigned long oldest_jif;
- 	long wrote = 0;
---- linux.orig/include/linux/writeback.h	2009-10-02 16:46:36.000000000 +0800
-+++ linux/include/linux/writeback.h	2009-10-02 16:57:13.000000000 +0800
-@@ -57,6 +57,7 @@ struct writeback_control {
- 	unsigned for_background:1;	/* A background writeback */
- 	unsigned for_reclaim:1;		/* Invoked from the page allocator */
- 	unsigned range_cyclic:1;	/* range_start is cyclic */
-+	unsigned stop_on_wrap:1;	/* stop when write index is to wrap */
- 	unsigned more_io:1;		/* more io to be dispatched */
- 	/*
- 	 * write_cache_pages() won't update wbc->nr_to_write and
---- linux.orig/mm/page-writeback.c	2009-10-02 16:46:36.000000000 +0800
-+++ linux/mm/page-writeback.c	2009-10-02 16:57:13.000000000 +0800
-@@ -913,7 +913,9 @@ continue_unlock:
- 			break;
- 		}
- 	}
--	if (!cycled && !done) {
-+	if (wbc->stop_on_wrap)
-+		done_index = 0;
-+	else if (!cycled && !done) {
- 		/*
- 		 * range_cyclic:
- 		 * We hit the last page and there is more work to be done: wrap
+Alan
