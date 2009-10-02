@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbZJBOWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbZJBO0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754993AbZJBOWp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 10:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbZJBOWo
+	id S1756421AbZJBO0L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 10:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbZJBO0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 10:22:44 -0400
-Received: from kroah.org ([198.145.64.141]:35621 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751568AbZJBOWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 10:22:44 -0400
-Date: Fri, 2 Oct 2009 07:20:21 -0700
-From: Greg KH <greg@kroah.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/30] 2.6.30.9-stable review
-Message-ID: <20091002142021.GB20816@kroah.com>
-References: <20091001233504.GA17709@kroah.com>
- <20091002024317.GA2045@khazad-dum.debian.net>
+	Fri, 2 Oct 2009 10:26:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48144 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754703AbZJBO0K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 10:26:10 -0400
+Date: Fri, 2 Oct 2009 07:24:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+In-Reply-To: <20091002092839.GA26962@kernel.dk>
+Message-ID: <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain>
+References: <1254034500.7933.6.camel@marge.simson.net> <20090927164235.GA23126@kernel.dk> <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net>
+ <20091001185816.GU14918@kernel.dk> <1254464628.7158.101.camel@marge.simson.net> <20091002080417.GG14918@kernel.dk> <20091002092409.GA19529@elte.hu> <20091002092839.GA26962@kernel.dk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091002024317.GA2045@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 11:43:17PM -0300, Henrique de Moraes Holschuh wrote:
-> Greg, I sent a few days ago to you guys a patch for thinkpad-acpi to unbreak
-> a _very_ annoying brightness control bug on 2.6.30 on many IBM thinkpads.
+
+
+On Fri, 2 Oct 2009, Jens Axboe wrote:
 > 
-> Could you please include it?
-> 
-> http://patchwork.kernel.org/patch/50201/
+> It's really not that simple, if we go and do easy latency bits, then
+> throughput drops 30% or more.
 
-Ick, you are right, I missed that one somehow, it's still in my
-"todo-stable" mbox as well.  My fault, I'll go queue it up and release a
--rc2 for .30-stable.
+Well, if we're talking 500-950% improvement vs 30% deprovement, I think 
+it's pretty clear, though. Even the server people do care about latencies. 
 
-thanks,
+Often they care quite a bit, in fact.
 
-greg k-h
+And Mike's patch didn't look big or complicated. 
+
+> You can't say it's black and white latency vs throughput issue,
+
+Umm. Almost 1000% vs 30%. Forget latency vs throughput. That's pretty damn 
+black-and-white _regardless_ of what you're measuring. Plus you probably 
+made up the 30% - have you tested the patch?
+
+And quite frankly, we get a _lot_ of complaints about latency. A LOT. It's 
+just harder to measure, so people seldom attach numbers to it. But that 
+again means that when people _are_ able to attach numbers to it, we should 
+take those numbers _more_ seriously rather than less.
+
+So the 30% you threw out as a number is pretty much worthless. 
+
+		Linus
