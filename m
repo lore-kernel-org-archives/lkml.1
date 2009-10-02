@@ -1,77 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbZJBIr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbZJBIz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbZJBIr7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 04:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757356AbZJBIr6
+	id S1753931AbZJBIz1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 04:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZJBIz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 04:47:58 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:5632 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753555AbZJBIr4 (ORCPT
+	Fri, 2 Oct 2009 04:55:26 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42274 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750815AbZJBIzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 04:47:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nw7q1vnKU4/4grf1OgMIoJT5tXoJPU7UWW3pUpU6/WZkUjsciWbUEn6FVVXxzBcvCB
-         xsdBH0CXvlx9LuhR95vZm4OoJEa5dCXlAJzJr2LiwnFdnCVqljWItwLgFnEKsE/1qERS
-         ExtdC2z8JaIrEVKSj7CC9UM8khBpORcfgOz0A=
-Date: Fri, 2 Oct 2009 10:47:55 +0200
-From: Johan Hovold <jhovold@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Johan Hovold <jhovold@gmail.com>,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
-       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
-Message-ID: <20091002084755.GA7382@localhost>
-References: <20090924154023.GA27480@localhost>
- <200909242103.48562.oliver@neukum.org>
- <20090924202107.4730f2af@lxorguk.ukuu.org.uk>
- <20090924211459.GB27963@localhost>
- <4ABD020B.4040901@gandalf.sssup.it>
- <20090929145514.GF2152@localhost>
- <20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
- <m163ayzevu.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m163ayzevu.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 2 Oct 2009 04:55:25 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 2 Oct 2009 17:53:10 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 0/2] memcg: improving scalability by reducing lock
+ contention at charge/uncharge
+Message-Id: <20091002175310.0991139c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Fri__2_Oct_2009_17_53_10_+0900_CjTryyjzW0PATSRD"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 07:52:21PM -0700, Eric W. Biederman wrote:
-> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
-> 
-> >> As it stands today ftdi_sio does indeed call tty_flip_buffer_push from
-> >> interrupt context with low_latency set and that is obviously incorrect,
-> >> right?
-> >
-> > It seems to do it from a work queue - or did I miss a case ?
-> 
-> ftdi_sio crash quite regularly for me with 2.6.31.
-> 
-> With a bunch of nasties like:
-> BUG: scheduling while atomic: swapper/0/0x00010000
-> bad: scheduling from the idle thread!
+This is a multi-part message in MIME format.
 
-It's the same problem.
+--Multipart=_Fri__2_Oct_2009_17_53_10_+0900_CjTryyjzW0PATSRD
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Greg, can't we apply the patch for stable at least? Then we can massage
-ftdi_sio into actually using the work queue for doing _all_ processing
-in the meantime if deemed necessary.
+On Fri, 2 Oct 2009 13:55:31 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Alan, did you have time to look at it? Are there any reasons for wanting
-to keep low_latency in ftdi_sio when it was removed from all other
-drivers processing in interrupt context (without doing work queue
-re-implementations)?
+> Following is test result of continuous page-fault on my 8cpu box(x86-64).
+> 
+> A loop like this runs on all cpus in parallel for 60secs. 
+> ==
+>         while (1) {
+>                 x = mmap(NULL, MEGA, PROT_READ|PROT_WRITE,
+>                         MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+> 
+>                 for (off = 0; off < MEGA; off += PAGE_SIZE)
+>                         x[off]=0;
+>                 munmap(x, MEGA);
+>         }
+> ==
+> please see # of page faults. I think this is good improvement.
+> 
+> 
+> [Before]
+>  Performance counter stats for './runpause.sh' (5 runs):
+> 
+>   474539.756944  task-clock-msecs         #      7.890 CPUs    ( +-   0.015% )
+>           10284  context-switches         #      0.000 M/sec   ( +-   0.156% )
+>              12  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
+>        18425800  page-faults              #      0.039 M/sec   ( +-   0.107% )
+>   1486296285360  cycles                   #   3132.080 M/sec   ( +-   0.029% )
+>    380334406216  instructions             #      0.256 IPC     ( +-   0.058% )
+>      3274206662  cache-references         #      6.900 M/sec   ( +-   0.453% )
+>      1272947699  cache-misses             #      2.682 M/sec   ( +-   0.118% )
+> 
+>    60.147907341  seconds time elapsed   ( +-   0.010% )
+> 
+> [After]
+>  Performance counter stats for './runpause.sh' (5 runs):
+> 
+>   474658.997489  task-clock-msecs         #      7.891 CPUs    ( +-   0.006% )
+>           10250  context-switches         #      0.000 M/sec   ( +-   0.020% )
+>              11  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
+>        33177858  page-faults              #      0.070 M/sec   ( +-   0.152% )
+>   1485264748476  cycles                   #   3129.120 M/sec   ( +-   0.021% )
+>    409847004519  instructions             #      0.276 IPC     ( +-   0.123% )
+>      3237478723  cache-references         #      6.821 M/sec   ( +-   0.574% )
+>      1182572827  cache-misses             #      2.491 M/sec   ( +-   0.179% )
+> 
+>    60.151786309  seconds time elapsed   ( +-   0.014% )
+> 
+BTW, this is a score in root cgroup.
+
+
+  473811.590852  task-clock-msecs         #      7.878 CPUs    ( +-   0.006% )
+          10257  context-switches         #      0.000 M/sec   ( +-   0.049% )
+             10  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
+       36418112  page-faults              #      0.077 M/sec   ( +-   0.195% )
+  1482880352588  cycles                   #   3129.684 M/sec   ( +-   0.011% )
+   410948762898  instructions             #      0.277 IPC     ( +-   0.123% )
+     3182986911  cache-references         #      6.718 M/sec   ( +-   0.555% )
+     1147144023  cache-misses             #      2.421 M/sec   ( +-   0.137% )
+
+
+Then,
+  36418112 x 100 / 33177858 = 109% slower in children cgroup.
+
+But, Hmm, this test is an extreme case.(60sec continuous page faults on all cpus.)
+We may can do something more, but this score itself is not so bad. I think.
+Results on more cpus are welcome. Programs I used are attached.
 
 Thanks,
-Johan
+-Kame
+ 
+
+
+
+--Multipart=_Fri__2_Oct_2009_17_53_10_+0900_CjTryyjzW0PATSRD
+Content-Type: text/x-csrc;
+ name="pagefault.c"
+Content-Disposition: attachment;
+ filename="pagefault.c"
+Content-Transfer-Encoding: 7bit
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <signal.h>
+
+#define PAGE_SIZE (4096)
+#define MEGA	(1024 * 1024)
+
+void sigalarm_handler(int sig)
+{
+}
+
+int main(int argc, char *argv[])
+{
+	char *x;
+	int off;
+
+	signal(SIGALRM, sigalarm_handler);
+	pause();
+	while (1) {
+		x = mmap(NULL, MEGA, PROT_READ|PROT_WRITE,
+			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+
+		for (off = 0; off < MEGA; off += PAGE_SIZE)
+			x[off]=0;
+		munmap(x, MEGA);
+	}
+}
+
+--Multipart=_Fri__2_Oct_2009_17_53_10_+0900_CjTryyjzW0PATSRD
+Content-Type: text/x-sh;
+ name="runpause.sh"
+Content-Disposition: attachment;
+ filename="runpause.sh"
+Content-Transfer-Encoding: 7bit
+
+#!/bin/sh
+
+for i in 0 1 2 3 4 5 6 7 ;do
+	taskset -c $i ./pagefault &
+done
+
+pkill -ALRM  pagefault
+sleep 60
+pkill -HUP pagefault
+
+--Multipart=_Fri__2_Oct_2009_17_53_10_+0900_CjTryyjzW0PATSRD--
 
