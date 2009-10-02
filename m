@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbZJBIKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbZJBIJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757315AbZJBIKO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 04:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757273AbZJBIKK
+	id S1757260AbZJBIJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 04:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbZJBIJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 04:10:10 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:58928 "EHLO kernel.dk"
+	Fri, 2 Oct 2009 04:09:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43213 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757272AbZJBIKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 04:10:09 -0400
-Date: Fri, 2 Oct 2009 10:10:12 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH] congestion_wait() don't use WRITE
-Message-ID: <20091002081012.GH14918@kernel.dk>
-References: <20091002170343.5F67.A69D9226@jp.fujitsu.com>
+	id S1753447AbZJBIJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 04:09:53 -0400
+Message-ID: <4AC5B59E.3050608@suse.de>
+Date: Fri, 02 Oct 2009 13:41:10 +0530
+From: Suresh Jayaraman <sjayaraman@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091002170343.5F67.A69D9226@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 03/31] mm: expose gfp_to_alloc_flags()
+References: <1254405903-15760-1-git-send-email-sjayaraman@suse.de> <alpine.DEB.1.00.0910011355230.32006@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.00.0910011355230.32006@chino.kir.corp.google.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02 2009, KOSAKI Motohiro wrote:
+David Rientjes wrote:
+> On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
 > 
-> commit 8aa7e847d (Fix congestion_wait() sync/async vs read/write confusion)
-> replace WRITE with BLK_RW_ASYNC.
-> Unfortunately, concurrent mm development made the unchanged place
-> accidentally.
+>> From: Peter Zijlstra <a.p.zijlstra@chello.nl> 
+>>
+>> Expose the gfp to alloc_flags mapping, so we can use it in other parts
+>> of the vm.
+>>
+>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>> Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
+> 
+> Nack, these flags are internal to the page allocator and exporting them to 
+> generic VM code is unnecessary.
 
-I see that was added after 2.6.31, and that is wrong. Your patch looks
-good.
+Yes, you're right.
 
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
+> The only bit you actually use in your patchset is ALLOC_NO_WATERMARKS to 
+> determine whether a particular allocation can use memory reserves.  I'd 
+> suggest adding a bool function that returns whether the current context is 
+> given access to reserves including your new __GFP_MEMALLOC flag and 
+> exporting that instead.
 
-> 
-> This patch fixes it too.
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  mm/vmscan.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 4a7b0d5..e4a915b 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1088,7 +1088,7 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
->  	int lumpy_reclaim = 0;
->  
->  	while (unlikely(too_many_isolated(zone, file, sc))) {
-> -		congestion_wait(WRITE, HZ/10);
-> +		congestion_wait(BLK_RW_ASYNC, HZ/10);
->  
->  		/* We are about to die and free our memory. Return now. */
->  		if (fatal_signal_pending(current))
-> -- 
-> 1.6.0.GIT
-> 
-> 
-> 
+Makes sense and Neil already posted a patch citing the suggested
+changes, will incorporate the change.
+
+Thanks,
 
 -- 
-Jens Axboe
-
+Suresh Jayaraman
