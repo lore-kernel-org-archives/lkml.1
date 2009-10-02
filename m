@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757638AbZJBRYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbZJBRVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757638AbZJBRYx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757627AbZJBRYw
+	id S1757556AbZJBRVZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbZJBRVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:24:52 -0400
-Received: from kroah.org ([198.145.64.141]:34736 "EHLO coco.kroah.org"
+	Fri, 2 Oct 2009 13:21:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34735 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757619AbZJBRYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:24:51 -0400
-Date: Fri, 2 Oct 2009 10:20:38 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Mel Gorman <mel@csn.ul.ie>,
-       Minchan Kim <minchan.kim@gmail.com>
-Subject: [patch 32/30] mm: fix anonymous dirtying
-Message-ID: <20091002172038.GA12576@kroah.com>
-References: <20091001233504.GA17709@kroah.com>
+	id S1753769AbZJBRVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:21:23 -0400
+Date: Fri, 2 Oct 2009 19:20:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002172046.GA2376@elte.hu>
+References: <1254382405.7595.9.camel@marge.simson.net> <20091001185816.GU14918@kernel.dk> <1254464628.7158.101.camel@marge.simson.net> <20091002080417.GG14918@kernel.dk> <20091002092409.GA19529@elte.hu> <20091002092839.GA26962@kernel.dk> <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain> <20091002145610.GD31616@kernel.dk> <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain> <20091002171129.GG31616@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091001233504.GA17709@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091002171129.GG31616@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-2.6.30-stable review patch.  If anyone has any objections, please let us know.
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-------------------
+> It's not _that_ easy, it depends a lot on the access patterns. A good 
+> example of that is actually the idling that we already do. Say you 
+> have two applications, each starting up. If you start them both at the 
+> same time and just care for the dumb low latency, then you'll do one 
+> IO from each of them in turn. Latency will be good, but throughput 
+> will be aweful. And this means that in 20s they are both started, 
+> while with the slice idling and priority disk access that CFQ does, 
+> you'd hopefully have both up and running in 2s.
+> 
+> So latency is good, definitely, but sometimes you have to worry about 
+> the bigger picture too. Latency is more than single IOs, it's often 
+> for complete operation which may involve lots of IOs. Single IO 
+> latency is a benchmark thing, it's not a real life issue. And that's 
+> where it becomes complex and not so black and white. Mike's test is a 
+> really good example of that.
 
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+To the extent of you arguing that Mike's test is artificial (i'm not 
+sure you are arguing that) - Mike certainly did not do an artificial 
+test - he tested 'konsole' cache-cold startup latency, such as:
 
-commit 1ac0cb5d0e22d5e483f56b2bc12172dec1cf7536 upstream.
+    sh -c "perf stat -- konsole -e exit" 2>&1|tee -a $LOGFILE
 
-do_anonymous_page() has been wrong to dirty the pte regardless.
-If it's not going to mark the pte writable, then it won't help
-to mark it dirty here, and clogs up memory with pages which will
-need swap instead of being thrown away.  Especially wrong if no
-overcommit is chosen, and this vma is not yet VM_ACCOUNTed -
-we could exceed the limit and OOM despite no overcommit.
+against a streaming dd.
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Acked-by: Rik van Riel <riel@redhat.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: Minchan Kim <minchan.kim@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+That is a _very_ relevant benchmark IMHO and konsole's cache footprint 
+is far from trivial. (In fact i'd argue it's one of the most important 
+IO benchmarks on a desktop system - how does your desktop hold up to 
+something doing streaming IO.)
 
----
- mm/memory.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2586,7 +2586,8 @@ static int do_anonymous_page(struct mm_s
- 		goto oom_free_page;
- 
- 	entry = mk_pte(page, vma->vm_page_prot);
--	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-+	if (vma->vm_flags & VM_WRITE)
-+		entry = pte_mkwrite(pte_mkdirty(entry));
- 
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
- 	if (!pte_none(*page_table))
+	Ingo
