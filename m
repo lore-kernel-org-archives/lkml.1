@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbZJBBwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbZJBBdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757126AbZJBBwN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:52:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbZJBBwK
+	id S1756266AbZJBBdX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbZJBBdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:52:10 -0400
-Received: from kroah.org ([198.145.64.141]:33164 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:33:19 -0400
+Received: from kroah.org ([198.145.64.141]:33172 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756007AbZJBBdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:33:16 -0400
+	id S1756063AbZJBBdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:33:17 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:15 2009
-Message-Id: <20091002012415.188369380@mini.kroah.org>
+Message-Id: <20091002012415.328780860@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:16:46 -0700
+Date: Thu, 01 Oct 2009 18:16:47 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Chris Wilson <chris@chris-wilson.co.uk>,
+       Chris Wilson <chris@chris-wilson.co.uk>, Eric Anholt <eric@anholt.net>,
        Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [058/136] drm/i915: Add buffer to inactive list immediately during fault
+Subject: [059/136] drm/i915: Check that the relocation points to within the target
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=drm-i915-add-buffer-to-inactive-list-immediately-during-fault.patch
+Content-Disposition: inline; filename=drm-i915-check-that-the-relocation-points-to-within-the-target.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,36 +32,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Chris Wilson <chris@chris-wilson.co.uk>
 
-commit 4960aaca14010b9ff92e5726dd178cbd6805d412 upstream.
+commit cd0b9fb400ba775737bdc3874c4cbee4047e66d8 upstream.
 
-If we failed to set the domain, the buffer was no longer being tracked
-on any list.
+Eric noted a potential concern with the low bits not being strictly used
+as part of the absolute offset (instead part of the command stream to the
+GPU), but in practice that should not be an issue.
 
 Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+Tested-by: Andy Whitcroft <apw@canonical.com>
+Cc: Eric Anholt <eric@anholt.net>
 Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_gem.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/gpu/drm/i915/i915_gem.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 --- a/drivers/gpu/drm/i915/i915_gem.c
 +++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -1155,14 +1155,13 @@ int i915_gem_fault(struct vm_area_struct
- 			mutex_unlock(&dev->struct_mutex);
- 			return VM_FAULT_SIGBUS;
+@@ -3006,6 +3006,16 @@ i915_gem_object_pin_and_relocate(struct 
+ 			return -EINVAL;
  		}
-+		list_add_tail(&obj_priv->list, &dev_priv->mm.inactive_list);
  
- 		ret = i915_gem_object_set_to_gtt_domain(obj, write);
- 		if (ret) {
- 			mutex_unlock(&dev->struct_mutex);
- 			return VM_FAULT_SIGBUS;
- 		}
--
--		list_add_tail(&obj_priv->list, &dev_priv->mm.inactive_list);
- 	}
- 
- 	/* Need a new fence register? */
++		if (reloc->delta >= target_obj->size) {
++			DRM_ERROR("Relocation beyond target object bounds: "
++				  "obj %p target %d delta %d size %d.\n",
++				  obj, reloc->target_handle,
++				  (int) reloc->delta, (int) target_obj->size);
++			drm_gem_object_unreference(target_obj);
++			i915_gem_object_unpin(obj);
++			return -EINVAL;
++		}
++
+ 		if (reloc->write_domain & I915_GEM_DOMAIN_CPU ||
+ 		    reloc->read_domains & I915_GEM_DOMAIN_CPU) {
+ 			DRM_ERROR("reloc with read/write CPU domains: "
 
 
