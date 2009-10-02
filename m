@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbZJBSHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbZJBTNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757853AbZJBSHm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbZJBSHl
+	id S1755109AbZJBTNY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 15:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZJBTNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:07:41 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:48391
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757906AbZJBSHi (ORCPT
+	Fri, 2 Oct 2009 15:13:23 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49031 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752885AbZJBTNW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:07:38 -0400
-Message-ID: <4AC6507F.70303@microgate.com>
-Date: Fri, 02 Oct 2009 13:11:59 -0600
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 2 Oct 2009 15:13:22 -0400
+Date: Fri, 2 Oct 2009 21:13:17 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Yang Hongyang <yanghy@cn.fujitsu.com>, Alan Cox <alan@redhat.com>,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 02/34] move atp870u_remove to .devexit.text
+Message-ID: <20091002191317.GA17428@pengutronix.de>
+References: <20091001082607.GA2181@pengutronix.de> <1254385718-14254-2-git-send-email-u.kleine-koenig@pengutronix.de> <1254406802.3885.1.camel@mulgrave.site>
 MIME-Version: 1.0
-To: lenrek@me.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/char/pcmcia/synclink_cs.c: BKL pushdown?
-References: <060E5EC8-93F4-4AF1-889F-04A13378CB8D@me.com> <20091002124945.1814a2c3@lxorguk.ukuu.org.uk> <4AC5FE11.9060500@microgate.com> <0358338D-E697-4D44-96A8-E7107D50F77E@me.com> <4AC61D4E.4040000@microgate.com> <0DA1DE03-4131-4257-B476-03A776A9B4A6@me.com>
-In-Reply-To: <0DA1DE03-4131-4257-B476-03A776A9B4A6@me.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1254406802.3885.1.camel@mulgrave.site>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lenrek@me.com wrote:
-> On 2009/10/03, at 0:33, Paul Fulghum wrote:
-> 
->> lenrek@me.com wrote:
->>> How about the BKL calls in synclinkmp.c, synclink.c, and  
->>> synclink_gt.c?
->>> Can they be safely eliminated?
->> I looked those over and yes, the BKL can be removed
->> from those as well. All 4 synclink drivers are mostly
->> variations on the same code.
->>
->> It looks like the lock_kernel calls were blindly pushed down
->> for safety during the initial transition, but all of the
->> functions covered either use device specific locking or
->> do not require locking.
-> 
-> Many thanks.  I enclose a patch against 2.6.31.1
-> which eliminates the BKL calls from the synclink drivers.
+Hello,
 
-Acked-by: Paul Fulghum <paulkf@microgate.com>
+On Thu, Oct 01, 2009 at 02:20:02PM +0000, James Bottomley wrote:
+> Given that practically every kernel on the planet is hotplug enabled
+> these days and that the savings on the very few that aren't from
+> discarding the devexit section is at most a page or two (and even arm
+> says they don't care about that), there doesn't seem to be any point
+> making these changes.  In fact, I think we can just kill devinit and
+> devexit as section markers.
+IMHO you should better kill CONFIG_HOTPLUG completely then.
+
+Best regards
+Uwe
 
 -- 
-Paul Fulghum
-MicroGate Systems, Ltd.
-=Customer Driven, by Design=
-(800)444-1982
-(512)345-7791 (Direct)
-(512)343-9046 (Fax)
-Central Time Zone (GMT -5h)
-www.microgate.com
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
