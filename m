@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbZJBJZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbZJBJ2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392AbZJBJZI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 05:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbZJBJZH
+	id S1757395AbZJBJ2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 05:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757372AbZJBJ2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 05:25:07 -0400
-Received: from 1wt.eu ([62.212.114.60]:49778 "EHLO 1wt.eu"
+	Fri, 2 Oct 2009 05:28:17 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:55416 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755217AbZJBJZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 05:25:05 -0400
-Date: Fri, 2 Oct 2009 11:25:07 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Subject: [PATCH 2.4] Fix Kernel 2.4 build with bash 4
-Message-ID: <20091002092507.GA26741@1wt.eu>
-References: <20091002111711.5de3bf8f@strolchi>
+	id S1756298AbZJBJ2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 05:28:17 -0400
+Date: Fri, 2 Oct 2009 11:28:18 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: [PATCH] lcd: Fix wrong sizeof
+Message-ID: <20091002112818.54428c49@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091002111711.5de3bf8f@strolchi>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stefan,
+Which is why I have always preferred sizeof(struct foo) over
+sizeof(var).
 
-On Fri, Oct 02, 2009 at 11:17:11AM +0200, Stefan Seyfried wrote:
-> 
-> Signed-off-by: Stefan <stefan.seyfried@googlemail.com>
-> ---
->  scripts/Configure |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/scripts/Configure b/scripts/Configure
-> index 1a3af43..7a73423 100644
-> --- a/scripts/Configure
-> +++ b/scripts/Configure
-> @@ -546,9 +546,9 @@ if [ -f $DEFAULTS ]; then
->    echo "#"
->    echo "# Using defaults found in" $DEFAULTS
->    echo "#"
-> -  . $DEFAULTS
-> +  . ./$DEFAULTS
->    sed -e 's/# \(CONFIG_[^ ]*\) is not.*/\1=n/' <$DEFAULTS >.config-is-not.$$
-> -  . .config-is-not.$$
-> +  . ./.config-is-not.$$
->    rm .config-is-not.$$
->  else
->    echo "#"
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+---
+Stable team, this one applies to 2.6.31, 2.6.30 and 2.6.27.
 
-This is amazing it has ever worked at all ! None of my scripts which use
-". $file" without "./" work even in bash 3. Probably this depends on some
-PATH variables and maybe your environment has changed since you upgarded
-to bash 4. 
+ drivers/video/backlight/lcd.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks for the fix, I'll merge it.
-Willy
+--- linux-2.6.32-rc1.orig/drivers/video/backlight/lcd.c	2009-06-10 05:05:27.000000000 +0200
++++ linux-2.6.32-rc1/drivers/video/backlight/lcd.c	2009-10-02 10:18:49.000000000 +0200
+@@ -56,7 +56,7 @@ static int fb_notifier_callback(struct n
+ 
+ static int lcd_register_fb(struct lcd_device *ld)
+ {
+-	memset(&ld->fb_notif, 0, sizeof(&ld->fb_notif));
++	memset(&ld->fb_notif, 0, sizeof(ld->fb_notif));
+ 	ld->fb_notif.notifier_call = fb_notifier_callback;
+ 	return fb_register_client(&ld->fb_notif);
+ }
 
+
+-- 
+Jean Delvare
