@@ -1,42 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbZJBLtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbZJBL4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbZJBLtZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 07:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZJBLtY
+	id S1752990AbZJBL4G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 07:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZJBL4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 07:49:24 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37177 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753413AbZJBLtY (ORCPT
+	Fri, 2 Oct 2009 07:56:05 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:37780 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751719AbZJBL4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 07:49:24 -0400
-Date: Fri, 2 Oct 2009 12:49:45 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: lenrek@me.com
-Cc: linux-kernel@vger.kernel.org, lenrek@me.com
-Subject: Re: [PATCH] drivers/char/pcmcia/synclink_cs.c: BKL pushdown?
-Message-ID: <20091002124945.1814a2c3@lxorguk.ukuu.org.uk>
-In-Reply-To: <060E5EC8-93F4-4AF1-889F-04A13378CB8D@me.com>
-References: <060E5EC8-93F4-4AF1-889F-04A13378CB8D@me.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Fri, 2 Oct 2009 07:56:04 -0400
+Date: Fri, 02 Oct 2009 20:56:07 +0900 (JST)
+Message-Id: <20091002.205607.193712402.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: [PATCH 1/9] I/O bandwidth controller and BIO tracking
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Oct 2009 19:37:21 +0900
-lenrek@me.com wrote:
+Hi all,
 
-> I found the counterpart of function mgslpc_wait_until_sent
-> in drivers/char/synclinkmp.c (wait_until_sent) is modified to
-> issue (un)lock_kernel.  This patch does the same modification.
-> 
-> However, I'm afraid similar modifications are necessary further on  
-> functions
-> mgslpc_ioctl and mgslpc_write_room.
+These are new releases of dm-ioband and blkio-cgroup. The major change
+of these releases is that dm-ioband handles sync/async IO requests
+separately and it solves write-startve-read issue pointed out by Vivek.
+Thank you Vivek for your pointing out the issue.
 
-The push down work normally eliminated BKL calls that were demonstrably
-not needed and left it in anywhere that needed thought. Do those
-functions still really need the BKL ?
+  Subject: ioband: Writer starves reader even without competitors
+  http://lkml.org/lkml/2009/9/15/478
+
+Here is the test result. I did the same test as Vivek did, it reads
+32MB files four times during a bufferd writer is running.
+
+dm-ioband v1.14.0
+file #   1, plain reading it took: 0.73 seconds
+file #   2, plain reading it took: 0.78 seconds
+file #   3, plain reading it took: 0.78 seconds
+file #   4, plain reading it took: 0.94 seconds
+
+dm-ioband v1.13.0
+file #   1, plain reading it took: 14.27 seconds
+file #   2, plain reading it took: 22.17 seconds
+file #   3, plain reading it took: 12.31 seconds
+file #   4, plain reading it took: 17.69 seconds
+
+The summary of the changes are below:
+dm-ioband v1.14.0
+  - Handle sync/async IO requests separetely, it solves write-starve-read
+    issue.
+  - Allow it to compile against 2.6.32-rc1.
+blkio-cgroup v13
+  - Fix style issues caught by checkpatch.pl.
+  - Allow it to compile against 2.6.32-rc1.
+
+The list of the patches:
+  [PATCH 1/9] I/O bandwidth controller and BIO tracking
+  [PATCH 2/9] dm-ioband-1.14.0: All-in-one patch
+  [PATCH 3/9] blkio-cgroup-v13: The new page_cgroup framework
+  [PATCH 4/9] blkio-cgroup-v13: Refactoring io-context initialization
+  [PATCH 5/9] blkio-cgroup-v13: The body of blkio-cgroup
+  [PATCH 6/9] blkio-cgroup-v13: Page tracking hooks
+  [PATCH 7/9] blkio-cgroup-v13: The document of blkio-cgroup
+  [PATCH 8/9] blkio-cgroup-v13: Add a cgroup support to dm-ioband
+  [PATCH 9/9] blkio-cgroup-v13: The document of a cgroup support for dm-ioband
+
+About dm-ioband
+  dm-ioband is an I/O bandwidth controller implemented as a
+  device-mapper driver and can control bandwidth on per partition, per
+  user, per process, per virtual machine (such as KVM or Xen) basis.
+
+About blkio-cgruop
+  blkio-cgroup is a block I/O tracking mechanism implemented on the
+  cgroup memory subsystem. Using this feature the owners of any type
+  of I/O can be determined. This allows dm-ioband to control block I/O
+  bandwidth even when it is accepting delayed write requests.
+  dm-ioband can find the cgroup of each request. It is also for
+  possible that others working on I/O bandwidth throttling to use this
+  functionality to control asynchronous I/O with a little enhancement.
+
+Please visit our website, the patches and more information are available.
+  Linux Block I/O Bandwidth Control Project
+  http://sourceforge.net/apps/trac/ioband/
+
+I'd like to get some feedbacks from the list. Any comments are
+appreciated.
+
+Thanks,
+Ryo Tsuruta
