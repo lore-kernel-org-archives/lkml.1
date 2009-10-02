@@ -1,69 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752415AbZJBESI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZJBEva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752415AbZJBESI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 00:18:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZJBESI
+	id S1753687AbZJBEva (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 00:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZJBEv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 00:18:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48219 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751891AbZJBESH (ORCPT
+	Fri, 2 Oct 2009 00:51:29 -0400
+Received: from skoismta14.skoost.com ([80.248.18.50]:60090 "EHLO
+	skoismta14.skoost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751569AbZJBEv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 00:18:07 -0400
-To: Sage Weil <sage@newdream.net>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, yehuda@newdream.net
-Subject: Re: [PATCH 19/21] ceph: ioctls
-From: Andi Kleen <andi@firstfloor.org>
-References: <1253641129-28434-1-git-send-email-sage@newdream.net>
-	<1253641129-28434-2-git-send-email-sage@newdream.net>
-	<1253641129-28434-3-git-send-email-sage@newdream.net>
-	<1253641129-28434-4-git-send-email-sage@newdream.net>
-	<1253641129-28434-5-git-send-email-sage@newdream.net>
-	<1253641129-28434-6-git-send-email-sage@newdream.net>
-	<1253641129-28434-7-git-send-email-sage@newdream.net>
-	<1253641129-28434-8-git-send-email-sage@newdream.net>
-	<1253641129-28434-9-git-send-email-sage@newdream.net>
-	<1253641129-28434-10-git-send-email-sage@newdream.net>
-	<1253641129-28434-11-git-send-email-sage@newdream.net>
-	<1253641129-28434-12-git-send-email-sage@newdream.net>
-	<1253641129-28434-13-git-send-email-sage@newdream.net>
-	<1253641129-28434-14-git-send-email-sage@newdream.net>
-	<1253641129-28434-15-git-send-email-sage@newdream.net>
-	<1253641129-28434-16-git-send-email-sage@newdream.net>
-	<1253641129-28434-17-git-send-email-sage@newdream.net>
-	<1253641129-28434-18-git-send-email-sage@newdream.net>
-	<1253641129-28434-19-git-send-email-sage@newdream.net>
-	<1253641129-28434-20-git-send-email-sage@newdream.net>
-Date: Fri, 02 Oct 2009 06:18:08 +0200
-In-Reply-To: <1253641129-28434-20-git-send-email-sage@newdream.net> (Sage Weil's message of "Tue, 22 Sep 2009 10:38:47 -0700")
-Message-ID: <87ske2sa2n.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Fri, 2 Oct 2009 00:51:28 -0400
+X-Greylist: delayed 1199 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Oct 2009 00:51:28 EDT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Saravana Kumar" <skoost@skoost.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Reply-To: "Saravana Kumar" <saran1484@gmail.com>
+Date: 2 Oct 2009 04:33:06 +0000
+Subject: A little gift - Saravana
+Content-Type: text/plain; charset=utf-8
+Message-Id: <20091002043132.97555220406@skoismta14.skoost.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n924pm16024657
 
-Sage Weil <sage@newdream.net> writes:
-> +/*
-> + * Extract identity, address of the OSD and object storing a given
-> + * file offset.
-> + */
-> +struct ceph_ioctl_dataloc {
-> +	__u64 file_offset;           /* in+out: file offset */
-> +	__u64 object_offset;         /* out: offset in object */
-> +	__u64 object_no;             /* out: object # */
-> +	__u64 object_size;           /* out: object size */
-> +	char object_name[64];        /* out: object name */
-> +	__u64 block_offset;          /* out: offset in block */
-> +	__u64 block_size;            /* out: block length */
-> +	__s64 osd;                   /* out: osd # */
-> +	struct sockaddr_in osd_addr; /* out: osd address */
+Saravana Kumar belongs to Skoost and sent you a little gift.
 
-You'll have to revise that once you support IPv6. At least extend the structure
-better now? (_in is too small for IPv6)
+Click below to collect your gift:
+http://www.skoost.com/fun?linux%2Dkernel%40vger%2Ekernel%2Eorg/23340448/10
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+P.S. This is a safe and innocent gift that Saravana Kumar
+sent from Skoost.
+
+This e-mail was sent to linux-kernel@vger.kernel.org on 10/2/2009 5:31:14 AM
+on behalf of Saravana Kumar (saran1484@gmail.com)ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
