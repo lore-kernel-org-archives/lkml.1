@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbZJBFND@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732AbZJBFLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbZJBFND (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 01:13:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbZJBFND
+	id S1755732AbZJBFLl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 01:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbZJBFLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 01:13:03 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51866 "EHLO mx1.suse.de"
+	Fri, 2 Oct 2009 01:11:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51829 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218AbZJBFNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 01:13:01 -0400
-Date: Thu, 1 Oct 2009 22:10:56 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [000/136] 2.6.31.2-stable review
-Message-ID: <20091002051056.GA7181@suse.de>
-References: <20091002012911.GA18542@kroah.com> <m1tyyixuc1.fsf@fess.ebiederm.org>
+	id S1754340AbZJBFLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 01:11:39 -0400
+Message-ID: <4AC58B88.8010602@suse.de>
+Date: Fri, 02 Oct 2009 14:11:36 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1tyyixuc1.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Nick Piggin <npiggin@suse.de>, Tony Luck <tony.luck@intel.com>,
+       Fenghua Yu <fenghua.yu@intel.com>,
+       linux-ia64 <linux-ia64@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET percpu#for-next] percpu: convert ia64 to dynamic percpu
+ and drop the old one, take#2
+References: <1253682382-24740-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1253682382-24740-1-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 10:01:34PM -0700, Eric W. Biederman wrote:
-> Greg KH <gregkh@suse.de> writes:
+Tejun Heo wrote:
+> Hello, all.
 > 
-> > Note from the -stable maintainer on this release:
-> >
-> >   This release is big.  Yeah, really big.  There are a number of
-> >   areas that needed some rework in order to get things back to
-> >   working order.  Like the tty layer.  Hopefully everyone can now
-> >   use their usb to serial devices again without oopsing the
-> >   kernel
-> 
-> The ftdi_sio driver still crashes and burns.
+> This is the second take of convert-ia64-to-dynamic-percpu patchset.
+> Changes from the last take[L] are
 
-What were you doing when it crashed?  I tested the pl2303 device and it
-worked fine for me here, I don't have a ftdi_sio one :(
+Patchset pushed out for linux-next with Rusty and Tony's acks added.
 
-thanks,
+Thanks.
 
-greg k-h
+-- 
+tejun
