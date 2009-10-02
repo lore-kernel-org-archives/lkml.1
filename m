@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbZJBW46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbZJBW5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753986AbZJBW46 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 18:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbZJBW45
+	id S1756172AbZJBW5l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 18:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbZJBW5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 18:56:57 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:43372 "EHLO mx1.redhat.com"
+	Fri, 2 Oct 2009 18:57:40 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:45588 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751684AbZJBW45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 18:56:57 -0400
+	id S1752221AbZJBW5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 18:57:39 -0400
 From: Jeff Moyer <jmoyer@redhat.com>
 To: zach.brown@oracle.com
 Cc: linux-aio <linux-aio@kvack.org>,
        Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch v4 1/2] block: get rid of the WRITE_ODIRECT flag
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch v4 2/2] aio: implement request batching
 References: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com>
 X-PGP-KeyID: 1F78E1B4
 X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
 X-PCLoadLetter: What the f**k does that mean?
-Date: Fri, 02 Oct 2009 18:56:53 -0400
+Date: Fri, 02 Oct 2009 18:57:36 -0400
 In-Reply-To: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com> (Jeff Moyer's
 	message of "Fri, 02 Oct 2009 18:54:20 -0400")
-Message-ID: <x49vdix76bu.fsf@segfault.boston.devel.redhat.com>
+Message-ID: <x49r5tl76an.fsf@segfault.boston.devel.redhat.com>
 User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -33,46 +32,157 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-The WRITE_ODIRECT flag is only used in one place, and that code path
-happens to also call blk_run_address_space.  The introduction of this
-flag, then, could result in the device being unplugged twice for every
-I/O.
-
-Further, with the batching changes in the next patch, we don't want an
-O_DIRECT write to imply a queue unplug.
+Some workloads issue batches of small I/O, and the performance is poor
+due to the call to blk_run_address_space for every single iocb.  Nathan
+Roberts pointed this out, and suggested that by deferring this call
+until all I/Os in the iocb array are submitted to the block layer, we
+can realize some impressive performance gains (up to 30% for sequential
+4k reads in batches of 16).
 
 Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
 
+diff --git a/fs/aio.c b/fs/aio.c
+index 02a2c93..cf0bef4 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -32,6 +32,9 @@
+ #include <linux/workqueue.h>
+ #include <linux/security.h>
+ #include <linux/eventfd.h>
++#include <linux/blkdev.h>
++#include <linux/mempool.h>
++#include <linux/hash.h>
+ 
+ #include <asm/kmap_types.h>
+ #include <asm/uaccess.h>
+@@ -60,6 +63,14 @@ static DECLARE_WORK(fput_work, aio_fput_routine);
+ static DEFINE_SPINLOCK(fput_lock);
+ static LIST_HEAD(fput_head);
+ 
++#define AIO_BATCH_HASH_BITS	3 /* allocated on-stack, so don't go crazy */
++#define AIO_BATCH_HASH_SIZE	(1 << AIO_BATCH_HASH_BITS)
++struct aio_batch_entry {
++	struct hlist_node list;
++	struct address_space *mapping;
++};
++mempool_t *abe_pool;
++
+ static void aio_kick_handler(struct work_struct *);
+ static void aio_queue_work(struct kioctx *);
+ 
+@@ -73,6 +84,8 @@ static int __init aio_setup(void)
+ 	kioctx_cachep = KMEM_CACHE(kioctx,SLAB_HWCACHE_ALIGN|SLAB_PANIC);
+ 
+ 	aio_wq = create_workqueue("aio");
++	abe_pool = mempool_create_kmalloc_pool(1, sizeof(struct aio_batch_entry));
++	BUG_ON(!abe_pool);
+ 
+ 	pr_debug("aio_setup: sizeof(struct page) = %d\n", (int)sizeof(struct page));
+ 
+@@ -1531,8 +1544,44 @@ static int aio_wake_function(wait_queue_t *wait, unsigned mode,
+ 	return 1;
+ }
+ 
++static void aio_batch_add(struct address_space *mapping,
++			  struct hlist_head *batch_hash)
++{
++	struct aio_batch_entry *abe;
++	struct hlist_node *pos;
++	unsigned bucket;
++
++	bucket = hash_ptr(mapping, AIO_BATCH_HASH_BITS);
++	hlist_for_each_entry(abe, pos, &batch_hash[bucket], list) {
++		if (abe->mapping == mapping)
++			return;
++	}
++
++	abe = mempool_alloc(abe_pool, GFP_KERNEL);
++	BUG_ON(!igrab(mapping->host));
++	abe->mapping = mapping;
++	hlist_add_head(&abe->list, &batch_hash[bucket]);
++	return;
++}
++
++static void aio_batch_free(struct hlist_head *batch_hash)
++{
++	struct aio_batch_entry *abe;
++	struct hlist_node *pos, *n;
++	int i;
++
++	for (i = 0; i < AIO_BATCH_HASH_SIZE; i++) {
++		hlist_for_each_entry_safe(abe, pos, n, &batch_hash[i], list) {
++			blk_run_address_space(abe->mapping);
++			iput(abe->mapping->host);
++			hlist_del(&abe->list);
++			mempool_free(abe, abe_pool);
++		}
++	}
++}
++
+ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
+-			 struct iocb *iocb)
++			 struct iocb *iocb, struct hlist_head *batch_hash)
+ {
+ 	struct kiocb *req;
+ 	struct file *file;
+@@ -1608,6 +1657,12 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
+ 			;
+ 	}
+ 	spin_unlock_irq(&ctx->ctx_lock);
++	if (req->ki_opcode == IOCB_CMD_PREAD ||
++	    req->ki_opcode == IOCB_CMD_PREADV ||
++	    req->ki_opcode == IOCB_CMD_PWRITE ||
++	    req->ki_opcode == IOCB_CMD_PWRITEV)
++		aio_batch_add(file->f_mapping, batch_hash);
++
+ 	aio_put_req(req);	/* drop extra ref to req */
+ 	return 0;
+ 
+@@ -1635,6 +1690,7 @@ SYSCALL_DEFINE3(io_submit, aio_context_t, ctx_id, long, nr,
+ 	struct kioctx *ctx;
+ 	long ret = 0;
+ 	int i;
++	struct hlist_head batch_hash[AIO_BATCH_HASH_SIZE] = { { 0, }, };
+ 
+ 	if (unlikely(nr < 0))
+ 		return -EINVAL;
+@@ -1666,10 +1722,11 @@ SYSCALL_DEFINE3(io_submit, aio_context_t, ctx_id, long, nr,
+ 			break;
+ 		}
+ 
+-		ret = io_submit_one(ctx, user_iocb, &tmp);
++		ret = io_submit_one(ctx, user_iocb, &tmp, batch_hash);
+ 		if (ret)
+ 			break;
+ 	}
++	aio_batch_free(batch_hash);
+ 
+ 	put_ioctx(ctx);
+ 	return i ? i : ret;
 diff --git a/fs/direct-io.c b/fs/direct-io.c
-index 8b10b87..c86d35f 100644
+index c86d35f..3af761c 100644
 --- a/fs/direct-io.c
 +++ b/fs/direct-io.c
-@@ -1124,7 +1124,7 @@ __blockdev_direct_IO(int rw, struct kiocb *iocb, struct inode *inode,
- 	int acquire_i_mutex = 0;
+@@ -1028,9 +1028,6 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
+ 	if (dio->bio)
+ 		dio_bio_submit(dio);
  
- 	if (rw & WRITE)
--		rw = WRITE_ODIRECT;
-+		rw = WRITE_SYNC_PLUG;
+-	/* All IO is now issued, send it on its way */
+-	blk_run_address_space(inode->i_mapping);
+-
+ 	/*
+ 	 * It is possible that, we return short IO due to end of file.
+ 	 * In that case, we need to release all the pages we got hold on.
+@@ -1057,8 +1054,11 @@ direct_io_worker(int rw, struct kiocb *iocb, struct inode *inode,
+ 	    ((rw & READ) || (dio->result == dio->size)))
+ 		ret = -EIOCBQUEUED;
  
- 	if (bdev)
- 		bdev_blkbits = blksize_bits(bdev_logical_block_size(bdev));
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 2adaa25..2aac751 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -129,7 +129,6 @@ struct inodes_stat_t {
-  * WRITE_SYNC		Like WRITE_SYNC_PLUG, but also unplugs the device
-  *			immediately after submission. The write equivalent
-  *			of READ_SYNC.
-- * WRITE_ODIRECT	Special case write for O_DIRECT only.
-  * SWRITE_SYNC
-  * SWRITE_SYNC_PLUG	Like WRITE_SYNC/WRITE_SYNC_PLUG, but locks the buffer.
-  *			See SWRITE.
-@@ -151,7 +150,6 @@ struct inodes_stat_t {
- #define READ_META	(READ | (1 << BIO_RW_META))
- #define WRITE_SYNC_PLUG	(WRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_NOIDLE))
- #define WRITE_SYNC	(WRITE_SYNC_PLUG | (1 << BIO_RW_UNPLUG))
--#define WRITE_ODIRECT	(WRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG))
- #define SWRITE_SYNC_PLUG	\
- 			(SWRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_NOIDLE))
- #define SWRITE_SYNC	(SWRITE_SYNC_PLUG | (1 << BIO_RW_UNPLUG))
+-	if (ret != -EIOCBQUEUED)
++	if (ret != -EIOCBQUEUED) {
++		/* All IO is now issued, send it on its way */
++		blk_run_address_space(inode->i_mapping);
+ 		dio_await_completion(dio);
++	}
+ 
+ 	/*
+ 	 * Sync will always be dropping the final ref and completing the
