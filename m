@@ -1,95 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbZJBPmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbZJBPsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753894AbZJBPmH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 11:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZJBPmG
+	id S1754714AbZJBPsu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 11:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbZJBPst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 11:42:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:47235 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752482AbZJBPmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 11:42:04 -0400
-Date: Fri, 2 Oct 2009 11:40:20 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, riel@redhat.com
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20091002154020.GC4494@redhat.com>
-References: <200910021255.27689.czoccolo@gmail.com> <20091002124921.GA4494@redhat.com> <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com> <1254497520.10392.11.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254497520.10392.11.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 2 Oct 2009 11:48:49 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:47527 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753402AbZJBPss (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 11:48:48 -0400
+Subject: Re: linux-next: tree build failure
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: Jan Beulich <JBeulich@novell.com>
+Cc: sfr@canb.auug.org.au, akpm@linux-foundation.org,
+       linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
+In-Reply-To: <4AC318450200007800017355@vpn.id2.novell.com>
+References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
+	 <1254267572.15622.1621.camel@slab.beaverton.ibm.com>
+	 <4AC318450200007800017355@vpn.id2.novell.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 02 Oct 2009 08:48:36 -0700
+Message-Id: <1254498517.3839.17.camel@slab.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 05:32:00PM +0200, Mike Galbraith wrote:
-> On Fri, 2009-10-02 at 17:27 +0200, Corrado Zoccolo wrote:
-> > On Fri, Oct 2, 2009 at 2:49 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > On Fri, Oct 02, 2009 at 12:55:25PM +0200, Corrado Zoccolo wrote:
-> > >
-> > > Actually I am not touching this code. Looking at the V10, I have not
-> > > changed anything here in idling code.
-> > 
-> > I based my analisys on the original patch:
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0907.1/01793.html
-> > 
-> > Mike, can you confirm which version of the fairness patch did you use
-> > in your tests?
+On Wed, 2009-09-30 at 07:35 +0100, Jan Beulich wrote:
+> >>> Hollis Blanchard <hollisb@us.ibm.com> 30.09.09 01:39 >>>
+> >On Tue, 2009-09-29 at 10:28 +0100, Jan Beulich wrote:
+> >> >>> Hollis Blanchard  09/29/09 2:00 AM >>>
+> >> >First, I think there is a real bug here, and the code should read like
+> >> >this (to match the comment):
+> >> >    /* type has to be known at build time for optimization */
+> >> >-    BUILD_BUG_ON(__builtin_constant_p(type));
+> >> >+    BUILD_BUG_ON(!__builtin_constant_p(type));
+> >> >
+> >> >However, I get the same build error *both* ways, i.e.
+> >> >__builtin_constant_p(type) evaluates to both 0 and 1? Either that, or
+> >> >the new BUILD_BUG_ON() macro isn't working...
+> >> 
+> >> No, at this point of the compilation process it's neither zero nor one,
+> >> it's simply considered non-constant by the compiler at that stage
+> >> (this builtin is used for optimization, not during parsing, and the
+> >> error gets generated when the body of the function gets parsed,
+> >> not when code gets generated from it).
+> >
+> >I think I see what you're saying. Do you have a fix to suggest?
 > 
-> That would be this one-liner.
-> 
+> The one Rusty suggested the other day may help here. I don't like it
+> as a drop-in replacement for BUILD_BUG_ON() though (due to it
+> deferring the error generated to the linking stage), I'd rather view
+> this as an improvement to MAYBE_BUILD_BUG_ON() (which should
+> then be used here).
 
-Ok. Thanks. Sorry, I got confused and thought that you are using "io
-controller patches" with fairness=1.
+Can you be more specific?
 
-In that case, Corrado's suggestion of refining it further and disabling idling
-for seeky process only on non-rotational media (SSD and hardware RAID), makes
-sense to me.
+I have no idea what Rusty suggested where. I can't even guess what
+MAYBE_BUILD_BUG_ON() is supposed to do (sounds like a terrible name).
 
-Thanks
-Vivek
-  
-> o CFQ provides fair access to disk in terms of disk time used to processes.
->   Fairness is provided for the applications which have their think time with
->   in slice_idle (8ms default) limit.
-> 
-> o CFQ currently disables idling for seeky processes. So even if a process
->   has think time with-in slice_idle limits, it will still not get fair share
->   of disk. Disabling idling for a seeky process seems good from throughput
->   perspective but not necessarily from fairness perspecitve.
-> 
-> 0 Do not disable idling based on seek pattern of process if a user has set
->   /sys/block/<disk>/queue/iosched/fairness = 1.
-> 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
-> ---
->  block/cfq-iosched.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/block/cfq-iosched.c
-> ===================================================================
-> --- linux-2.6.orig/block/cfq-iosched.c
-> +++ linux-2.6/block/cfq-iosched.c
-> @@ -1953,7 +1953,7 @@ cfq_update_idle_window(struct cfq_data *
->  	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
->  
->  	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
-> -	    (cfqd->hw_tag && CIC_SEEKY(cic)))
-> +	    (!cfqd->cfq_fairness && cfqd->hw_tag && CIC_SEEKY(cic)))
->  		enable_idle = 0;
->  	else if (sample_valid(cic->ttime_samples)) {
->  		if (cic->ttime_mean > cfqd->cfq_slice_idle)
-> 
+All I know is that this used to build...
+
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
+
