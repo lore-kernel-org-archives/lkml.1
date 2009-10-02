@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbZJBRZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757844AbZJBR3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757807AbZJBRZX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757652AbZJBRZW
+	id S1757844AbZJBR3k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbZJBR3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:25:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35725 "EHLO ogre.sisk.pl"
+	Fri, 2 Oct 2009 13:29:39 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42529 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757627AbZJBRZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:25:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Subject: Re: [Bug #14258] Memory leak in SCSI initialization
-Date: Fri, 2 Oct 2009 19:26:46 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: James.Bottomley@steeleye.com, michael@ellerman.id.au,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.Vk.6MTxKB@chimera> <200910022158.JBD48969.MOSVQOFHJOLtFF@I-love.SAKURA.ne.jp>
-In-Reply-To: <200910022158.JBD48969.MOSVQOFHJOLtFF@I-love.SAKURA.ne.jp>
+	id S1757568AbZJBR3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:29:38 -0400
+Date: Fri, 2 Oct 2009 19:28:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002172842.GA4884@elte.hu>
+References: <1254464628.7158.101.camel@marge.simson.net> <20091002080417.GG14918@kernel.dk> <20091002092409.GA19529@elte.hu> <20091002092839.GA26962@kernel.dk> <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain> <20091002145610.GD31616@kernel.dk> <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain> <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu> <20091002172554.GJ31616@kernel.dk>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910021926.46532.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091002172554.GJ31616@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 October 2009, Tetsuo Handa wrote:
-> Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.30 and 2.6.31.
-> This memory leak might exist in all releases since 23 Sep 2005.
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=6f3a20242db2597312c50abc11f1e747c5d2326a
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> > be listed and let me know (either way).
-> As of now, the patch is not yet merged into Linus's tree.
-> It still should be listed.
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14258
-> > Subject		: Memory leak in SCSI initialization
-> > Submitter	: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-> > Date		: 2009-09-22 4:18 (10 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125359311312243&w=4
-> > Handled-By	: Michael Ellerman <michael@ellerman.id.au>
-> > Patch		: http://patchwork.kernel.org/patch/49258/
 
-Thanks for the update.
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Rafael
+> On Fri, Oct 02 2009, Ingo Molnar wrote:
+> > 
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > It's not _that_ easy, it depends a lot on the access patterns. A 
+> > > good example of that is actually the idling that we already do. 
+> > > Say you have two applications, each starting up. If you start them 
+> > > both at the same time and just care for the dumb low latency, then 
+> > > you'll do one IO from each of them in turn. Latency will be good, 
+> > > but throughput will be aweful. And this means that in 20s they are 
+> > > both started, while with the slice idling and priority disk access 
+> > > that CFQ does, you'd hopefully have both up and running in 2s.
+> > > 
+> > > So latency is good, definitely, but sometimes you have to worry 
+> > > about the bigger picture too. Latency is more than single IOs, 
+> > > it's often for complete operation which may involve lots of IOs. 
+> > > Single IO latency is a benchmark thing, it's not a real life 
+> > > issue. And that's where it becomes complex and not so black and 
+> > > white. Mike's test is a really good example of that.
+> > 
+> > To the extent of you arguing that Mike's test is artificial (i'm not 
+> > sure you are arguing that) - Mike certainly did not do an artificial 
+> > test - he tested 'konsole' cache-cold startup latency, such as:
+> 
+> [snip]
+> 
+> I was saying the exact opposite, that Mike's test is a good example of 
+> a valid test. It's not measuring single IO latencies, it's doing a 
+> sequence of valid events and looking at the latency for those. It's 
+> benchmarking the bigger picture, not a microbenchmark.
+
+Good, so we are in violent agreement :-)
+
+	Ingo
