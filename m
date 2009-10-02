@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbZJBUaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbZJBU2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758109AbZJBUaL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 16:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757743AbZJBUaK
+	id S1758047AbZJBU2B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 16:28:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757727AbZJBU2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 16:30:10 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:5430 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757727AbZJBUaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 16:30:09 -0400
-Message-ID: <4AC6623F.70600@ds.jp.nec.com>
-Date: Fri, 02 Oct 2009 16:27:43 -0400
-From: Munehiro Ikeda <m-ikeda@ds.jp.nec.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Fri, 2 Oct 2009 16:28:00 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:33515 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756969AbZJBU17 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 16:27:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DJ84Xv/6PI/E7i0A6X77NIk3LQeBbtD0apYho/+xVXOX8/TPKwOChRWc7Ufogtyksi
+         7sfvouA2/OTuwO+6TZoA7QiPtiR7LYRe/oR6HlB4jY0m7Vg0N9IleYzv8y1yKzlp1fpu
+         5/4TMz0EQ4DlIm2LdMw/lTCsrJHLJNV2IZexU=
+Date: Sat, 3 Oct 2009 00:27:59 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Oren Laadan <orenl@librato.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>,
+       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       mingo@elte.hu, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       torvalds@linux-foundation.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v7][PATCH 0/9] Implement clone2() system call
+Message-ID: <20091002202759.GA4826@x200>
+References: <20090924165548.GA16586@us.ibm.com>
+ <20090924175542.GA27678@x200>
+ <20090924183556.GA31356@us.ibm.com>
+ <20090930053443.GA1010@x200>
+ <4AC39859.3090703@librato.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Ryo Tsuruta <ryov@valinux.co.jp>, nauman@google.com,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
-       yoshikawa.takuya@oss.ntt.co.jp
-Subject: Re: IO scheduler based IO controller V10
-References: <20090929141049.GA12141@redhat.com> <20090930.174319.183036386.ryov@valinux.co.jp> <20090930110500.GA26631@redhat.com> <20091001.154125.104044685.ryov@valinux.co.jp> <20091001133109.GA4058@redhat.com> <20091002025731.GA2738@redhat.com>
-In-Reply-To: <20091002025731.GA2738@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AC39859.3090703@librato.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote, on 10/01/2009 10:57 PM:
-> Before finishing this mail, will throw a whacky idea in the ring. I was
-> going through the request based dm-multipath paper. Will it make sense
-> to implement request based dm-ioband? So basically we implement all the
-> group scheduling in CFQ and let dm-ioband implement a request function
-> to take the request and break it back into bios. This way we can keep
-> all the group control at one place and also meet most of the requirements.
->
-> So request based dm-ioband will have a request in hand once that request
-> has passed group control and prio control. Because dm-ioband is a device
-> mapper target, one can put it on higher level devices (practically taking
-> CFQ at higher level device), and provide fairness there. One can also
-> put it on those SSDs which don't use IO scheduler (this is kind of forcing
-> them to use the IO scheduler.)
->
-> I am sure that will be many issues but one big issue I could think of that
-> CFQ thinks that there is one device beneath it and dipsatches requests
-> from one queue (in case of idling) and that would kill parallelism at
-> higher layer and throughput will suffer on many of the dm/md configurations.
->
-> Thanks
-> Vivek
+On Wed, Sep 30, 2009 at 01:41:45PM -0400, Oren Laadan wrote:
+> Alexey Dobriyan wrote:
+> > On Thu, Sep 24, 2009 at 01:35:56PM -0500, Serge E. Hallyn wrote:
+> >> Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> >>> I don't like this even more.
+> >>>
+> >>> Pid namespaces are hierarchical _and_ anonymous, so simply
+> >>> set of numbers doesn't describe the final object.
+> >>>
+> >>> struct pid isn't special, it's just another invariant if you like
+> >>> as far as C/R is concerned, but system call is made special wrt pids.
+> >>>
+> >>> What will be in an image? I hope "struct kstate_image_pid" with several
+> >> Sure pid namespaces are anonymous, but we will give each an 'objref'
+> >> valid only for a checkpoint image, and store the relationship between
+> >> pid namespaces based on those objrefs.  Basically the same way that user
+> >> structs and hierarchical user namespaces are handled right now.
+> > 
+> > OK, that's certainly doable.
+> > 
+> > You're commiting yourself to creation of tasks in userspace if this goes in. :-\
+> > Which can let you into putting wrong kind of relations into image.
+> 
+> A malicious user can put "wrong" king of relations into the image,
+> regardless of whether the tasks are created in the kernel or in
+> userspace. As long as the creation follows the "instructions" in
+> the image, the result would be the same.
 
-As long as using CFQ, your idea is reasonable for me.  But how about for
-other IO schedulers?  In my understanding, one of the keys to guarantee
-group isolation in your patch is to have per-group IO scheduler internal
-queue even with as, deadline, and noop scheduler.  I think this is
-great idea, and to implement generic code for all IO schedulers was
-concluded when we had so many IO scheduler specific proposals.
-If we will still need per-group IO scheduler internal queues with
-request-based dm-ioband, we have to modify elevator layer.  It seems
-out of scope of dm.
-I might miss something...
+Wrong as in "fundamentally wrong", not malicious.
+In case of uts_ns, the correct data to put into image is "task uses this uts_ns",
+not "at this point do clone(CLONE_NEWUTS)".
 
-
-
--- 
-IKEDA, Munehiro
-   NEC Corporation of America
-     m-ikeda@ds.jp.nec.com
-
+BTW, now I'm convinced that nsproxy should not even be mentioned be in an image,
+it's irrelevant technical detail, not future-proof at all.
