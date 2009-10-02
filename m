@@ -1,72 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbZJBPsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZJBPxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714AbZJBPsu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 11:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbZJBPst
+	id S1754990AbZJBPxy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 11:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbZJBPxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 11:48:49 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:47527 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753402AbZJBPss (ORCPT
+	Fri, 2 Oct 2009 11:53:53 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:43966 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754670AbZJBPxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 11:48:48 -0400
-Subject: Re: linux-next: tree build failure
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: sfr@canb.auug.org.au, akpm@linux-foundation.org,
-       linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
-In-Reply-To: <4AC318450200007800017355@vpn.id2.novell.com>
-References: <4AC1E15502000078000516B5@vpn.id2.novell.com>
-	 <1254267572.15622.1621.camel@slab.beaverton.ibm.com>
-	 <4AC318450200007800017355@vpn.id2.novell.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 02 Oct 2009 08:48:36 -0700
-Message-Id: <1254498517.3839.17.camel@slab.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Oct 2009 11:53:52 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Fri, 02 Oct 2009 11:53:43 -0400
+From: Jody McIntyre <scjody@sun.com>
+Subject: Re: [patch 4/4] [ext3] Add journal guided resync (data=declared	mode)
+In-reply-to: <19141.23743.35576.466246@notabene.brown>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-ext4@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andreas Dilger <adilger@sun.com>
+Message-id: <20091002155343.GA22539@clouds>
+References: <20091001223929.120106893@sun.com>
+ <20091001224021.757201872@sun.com> <19141.23743.35576.466246@notabene.brown>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-30 at 07:35 +0100, Jan Beulich wrote:
-> >>> Hollis Blanchard <hollisb@us.ibm.com> 30.09.09 01:39 >>>
-> >On Tue, 2009-09-29 at 10:28 +0100, Jan Beulich wrote:
-> >> >>> Hollis Blanchard  09/29/09 2:00 AM >>>
-> >> >First, I think there is a real bug here, and the code should read like
-> >> >this (to match the comment):
-> >> >    /* type has to be known at build time for optimization */
-> >> >-    BUILD_BUG_ON(__builtin_constant_p(type));
-> >> >+    BUILD_BUG_ON(!__builtin_constant_p(type));
-> >> >
-> >> >However, I get the same build error *both* ways, i.e.
-> >> >__builtin_constant_p(type) evaluates to both 0 and 1? Either that, or
-> >> >the new BUILD_BUG_ON() macro isn't working...
-> >> 
-> >> No, at this point of the compilation process it's neither zero nor one,
-> >> it's simply considered non-constant by the compiler at that stage
-> >> (this builtin is used for optimization, not during parsing, and the
-> >> error gets generated when the body of the function gets parsed,
-> >> not when code gets generated from it).
-> >
-> >I think I see what you're saying. Do you have a fix to suggest?
+On Fri, Oct 02, 2009 at 11:51:59AM +1000, Neil Brown wrote:
+
+> I have thought about this sort of thing from time to time and I have a
+> very different idea for how the necessary communication between the
+> filesystem and MD would happen.  I think my approach would completely
+> address this problem, and doesn't need to add any ioctls (which I am not
+> keen on).
 > 
-> The one Rusty suggested the other day may help here. I don't like it
-> as a drop-in replacement for BUILD_BUG_ON() though (due to it
-> deferring the error generated to the linking stage), I'd rather view
-> this as an improvement to MAYBE_BUILD_BUG_ON() (which should
-> then be used here).
+> I would add two new BIO_RW_ flags to be used with WRITE requests.
+> The first flag would mean "don't worry about a crash in the middle of
+> this write,  I will validate it after a crash before I rely on the
+> data."
+> The second would mean "last time I wrote data near here there might
+> have been a failure, be extra careful".
+> 
+> So the first flag would be used during normal filesystem writes for
+> every block that gets recorded in the journal, and for every write
+> to the journal.
+> 
+> The second flag is used after a crash to re-write every block that
+> could have been in-flight during the crash.  Some of those blocks will
+> be read from the journal and written to their proper home, other will
+> be read from wherever they are and written back there.
+> 
+> The first flag would be interpreted by MD as "don't set the bitmap
+> bit".  The second flag would be interpreted as "don't trust the
+> parity block, but do a reconstruct-write".
+> 
+> With this scheme you would still need a write-intent-bitmap on the MD
+> array, but no bits would ever be set if the filesystem were using the
+> new flags, so no performance impact.  You probably could run without a
+> bitmap, in which case the flag would me "don't mark the array as
+> active".
 
-Can you be more specific?
+That makes a lot of sense.  The original design used something similar to
+your second flag to do all the resync work.  I changed to an IOCTL approach
+because there's no good way for a flagged IO to return "the resync you
+requested could not be done so don't skip the automated resync."  But with
+your suggestion, there's no need to explicitly skip the automated resync at
+the end either - it just won't act on those blocks, assuming all blocks
+were previously written with the first flag.
 
-I have no idea what Rusty suggested where. I can't even guess what
-MAYBE_BUILD_BUG_ON() is supposed to do (sounds like a terrible name).
+I don't like the IOCTLs either :)
 
-All I know is that this used to build...
+> I'm not entirely sure about the second flag.  Maybe it would be better
+> to make it a flag for READ and have it mean "validate and correct any
+> redundancy information (duplicates or parity) for this block before
+> returning it.  Then we could have just one flag, which meant different
+> things for READ and WRITE.
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+Yes, it needs to be a READ flag to avoid an unnecessary read-write cycle.
+The list of declare blocks in the ext3 journal just lists the block
+numbers, not their contents (this is equivalent to data=ordered, not
+data=journaled).
 
+It would be nice to also have a WRITE flag though, for those cases
+(metadata) where we do know what's being written to the block.
+
+In any case, I think it's less confusing to have two flags: the "don't
+worry about this block for now" flag and the "resync this block now" flag.
+
+There's still one complication though, and an IOCTL may still be necessary:
+at fsck time, we need to perform a journal recovery from e2fsck (userland.)
+Clearly, resyncing the declared blocks (plus the journal and affected
+metadata blocks) must be done before e2fsck does any writes to these
+blocks.  An IOCTL seemed to be the best way to do that, but I'm open to
+other suggestions.
+
+> What do you think?
+
+I'll send a new patchset, hopefully today.
+
+Cheers,
+Jody
+
+> NeilBrown
