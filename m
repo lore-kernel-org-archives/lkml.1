@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbZJBBdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbZJBBqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbZJBBdl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbZJBBdi
+	id S1756800AbZJBBqp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756688AbZJBBdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:33:38 -0400
-Received: from kroah.org ([198.145.64.141]:33298 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:33:40 -0400
+Received: from kroah.org ([198.145.64.141]:33305 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756358AbZJBBdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:33:37 -0400
+	id S1756288AbZJBBdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:33:38 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:19 2009
-Message-Id: <20091002012419.154037296@mini.kroah.org>
+Message-Id: <20091002012419.291638921@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:08 -0700
+Date: Thu, 01 Oct 2009 18:17:09 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pierre Habouzit <pierre.habouzit@intersec.com>
-Subject: [080/136] perf tools: do not complain if root is owning perf.data
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       Patrick McHardy <kaber@trash.net>, davem@davemloft.net,
+       Maximilian Engelhardt <maxi@daemonizer.de>
+Subject: [081/136] netfilter: nf_nat: fix inverted logic for persistent NAT mappings
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=perf-tools-do-not-complain-if-root-is-owning-perf.data.patch
+Content-Disposition: inline; filename=netfilter-nf_nat-fix-inverted-logic-for-persistent-nat-mappings.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Pierre Habouzit <pierre.habouzit@intersec.com>
+From: Patrick McHardy <kaber@trash.net>
 
-commit 119e7a22bb70d84849384e5113792cd45afa4f85 upstream.
+netfilter: nf_nat: fix inverted logic for persistent NAT mappings
 
-This improves patch fa6963b24 so that perf.data stuff that has
-been dumped as root can be read (annotate/report) by a user
-without the use of the --force.
+Upstream commit cce5a5c3:
 
-Rationale is that root has plenty of ways to screw us (usually)
-that do not require twisted schemes involving specially
-crafting a perf.data.
+Kernel 2.6.30 introduced a patch [1] for the persistent option in the
+netfilter SNAT target. This is exactly what we need here so I had a quick look
+at the code and noticed that the patch is wrong. The logic is simply inverted.
+The patch below fixes this.
 
-Signed-off-by: Pierre Habouzit <pierre.habouzit@intersec.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090827075902.GF19653@laphroaig.corp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Also note that because of this the default behavior of the SNAT target has
+changed since kernel 2.6.30 as it now ignores the destination IP in choosing
+the source IP for nating (which should only be the case if the persistent
+option is set).
+
+[1] http://git.eu.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=98d500d66cb7940747b424b245fc6a51ecfbf005
+
+Signed-off-by: Maximilian Engelhardt <maxi@daemonizer.de>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- tools/perf/builtin-annotate.c |    4 ++--
- tools/perf/builtin-report.c   |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ net/ipv4/netfilter/nf_nat_core.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -1335,8 +1335,8 @@ static int __cmd_annotate(void)
- 		exit(-1);
- 	}
- 
--	if (!force && (stat.st_uid != geteuid())) {
--		fprintf(stderr, "file: %s not owned by current user\n", input_name);
-+	if (!force && stat.st_uid && (stat.st_uid != geteuid())) {
-+		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
- 		exit(-1);
- 	}
- 
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -1857,8 +1857,8 @@ static int __cmd_report(void)
- 		exit(-1);
- 	}
- 
--	if (!force && (stat.st_uid != geteuid())) {
--		fprintf(stderr, "file: %s not owned by current user\n", input_name);
-+	if (!force && stat.st_uid && (stat.st_uid != geteuid())) {
-+		fprintf(stderr, "file: %s not owned by current user or root\n", input_name);
- 		exit(-1);
- 	}
- 
+--- a/net/ipv4/netfilter/nf_nat_core.c
++++ b/net/ipv4/netfilter/nf_nat_core.c
+@@ -212,7 +212,7 @@ find_best_ips_proto(struct nf_conntrack_
+ 	maxip = ntohl(range->max_ip);
+ 	j = jhash_2words((__force u32)tuple->src.u3.ip,
+ 			 range->flags & IP_NAT_RANGE_PERSISTENT ?
+-				(__force u32)tuple->dst.u3.ip : 0, 0);
++				0 : (__force u32)tuple->dst.u3.ip, 0);
+ 	j = ((u64)j * (maxip - minip + 1)) >> 32;
+ 	*var_ipp = htonl(minip + j);
+ }
 
 
