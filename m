@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbZJBBdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932296AbZJBBti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756619AbZJBBdf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbZJBBd3
+	id S932296AbZJBBti (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbZJBBd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:33:29 -0400
-Received: from kroah.org ([198.145.64.141]:33226 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:33:28 -0400
+Received: from kroah.org ([198.145.64.141]:33229 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756284AbZJBBdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:33:25 -0400
+	id S1756079AbZJBBd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:33:26 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:16 2009
-Message-Id: <20091002012416.615372815@mini.kroah.org>
+Message-Id: <20091002012416.788303162@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:16:55 -0700
+Date: Thu, 01 Oct 2009 18:16:56 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [067/136] nfsd4: fix null dereference creating nfsv4 callback client
+       Oliver Hartkopp <oliver@hartkopp.net>,
+       Urs Thuermann <urs@isnogud.escape.de>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [068/136] can: fix NOHZ local_softirq_pending 08 warning
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=nfsd4-fix-null-dereference-creating-nfsv4-callback-client.patch
+Content-Disposition: inline; filename=can-fix-nohz-local_softirq_pending-08-warning.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,46 +31,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: J. Bruce Fields <bfields@citi.umich.edu>
+From: Oliver Hartkopp <oliver@hartkopp.net>
 
-commit 886e3b7fe6054230c89ae078a09565ed183ecc73 upstream.
+commit 481a8199142c050b72bff8a1956a49fd0a75bbe0 upstream.
 
-On setting up the callback to the client, we attempt to use the same
-authentication flavor the client did.  We find an rpc cred to use by
-calling rpcauth_lookup_credcache(), which assumes that the given
-authentication flavor has a credentials cache.  However, this is not
-required to be true--in particular, auth_null does not use one.
-Instead, we should call the auth's lookup_cred() method.
+When using nanosleep() in an userspace application we get a ratelimit warning
 
-Without this, a client attempting to mount using nfsv4 and auth_null
-triggers a null dereference.
+NOHZ: local_softirq_pending 08
 
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+for 10 times.
+
+The echo of CAN frames is done from process context and softirq context only.
+Therefore the usage of netif_rx() was wrong (for years).
+
+This patch replaces netif_rx() with netif_rx_ni() which has to be used from
+process/softirq context. It also adds a missing comment that can_send() must
+no be used from hardirq context.
+
+Signed-off-by: Oliver Hartkopp <oliver@hartkopp.net>
+Signed-off-by: Urs Thuermann <urs@isnogud.escape.de>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfsd/nfs4callback.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/can/vcan.c |    2 +-
+ net/can/af_can.c       |    4 +++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
---- a/fs/nfsd/nfs4callback.c
-+++ b/fs/nfsd/nfs4callback.c
-@@ -444,6 +444,7 @@ static struct rpc_cred *lookup_cb_cred(s
- 	struct auth_cred acred = {
- 		.machine_cred = 1
- 	};
-+	struct rpc_auth *auth = cb->cb_client->cl_auth;
+--- a/drivers/net/can/vcan.c
++++ b/drivers/net/can/vcan.c
+@@ -80,7 +80,7 @@ static void vcan_rx(struct sk_buff *skb,
+ 	skb->dev       = dev;
+ 	skb->ip_summed = CHECKSUM_UNNECESSARY;
  
- 	/*
- 	 * Note in the gss case this doesn't actually have to wait for a
-@@ -451,8 +452,7 @@ static struct rpc_cred *lookup_cb_cred(s
- 	 * non-uptodate cred which the rpc state machine will fill in with
- 	 * a refresh_upcall later.
- 	 */
--	return rpcauth_lookup_credcache(cb->cb_client->cl_auth, &acred,
--							RPCAUTH_LOOKUP_NEW);
-+	return auth->au_ops->lookup_cred(auth, &acred, RPCAUTH_LOOKUP_NEW);
+-	netif_rx(skb);
++	netif_rx_ni(skb);
  }
  
- void do_probe_callback(struct nfs4_client *clp)
+ static int vcan_tx(struct sk_buff *skb, struct net_device *dev)
+--- a/net/can/af_can.c
++++ b/net/can/af_can.c
+@@ -199,6 +199,8 @@ static int can_create(struct net *net, s
+  * @skb: pointer to socket buffer with CAN frame in data section
+  * @loop: loopback for listeners on local CAN sockets (recommended default!)
+  *
++ * Due to the loopback this routine must not be called from hardirq context.
++ *
+  * Return:
+  *  0 on success
+  *  -ENETDOWN when the selected interface is down
+@@ -278,7 +280,7 @@ int can_send(struct sk_buff *skb, int lo
+ 	}
+ 
+ 	if (newskb)
+-		netif_rx(newskb);
++		netif_rx_ni(newskb);
+ 
+ 	/* update statistics */
+ 	can_stats.tx_frames++;
 
 
