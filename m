@@ -1,96 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbZJBShu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbZJBShv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758105AbZJBShu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbZJBSht
+	id S1758117AbZJBShv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbZJBShu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:37:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60368 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756367AbZJBShr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:37:47 -0400
-Date: Fri, 2 Oct 2009 18:36:55 GMT
-From: tip-bot for Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, torvalds@linux-foundation.org,
-       arjan@linux.intel.com, arjan@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: arjan@infradead.org, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, yinghai@kernel.org, arjan@linux.intel.com,
-       torvalds@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090926205150.30797709@infradead.org>
-References: <20090926205150.30797709@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Simplify bound checks in the MTRR code
-Message-ID: <tip-11879ba5d9ab8174af9b9cefbb2396a54dfbf8c1@git.kernel.org>
-Git-Commit-ID: 11879ba5d9ab8174af9b9cefbb2396a54dfbf8c1
-X-Mailer: tip-git-log-daemon
+	Fri, 2 Oct 2009 14:37:50 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:55464 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758040AbZJBShs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:37:48 -0400
+Date: Fri, 2 Oct 2009 13:37:33 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] mm: add notifier in pageblock isolation for
+	balloon drivers
+Message-ID: <20091002183733.GB4908@austin.ibm.com>
+Mail-Followup-To: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linuxppc-dev@ozlabs.org
+References: <20091001195311.GA16667@austin.ibm.com> <20091002104425.GN21906@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 02 Oct 2009 18:36:55 +0000 (UTC)
+In-Reply-To: <20091002104425.GN21906@csn.ul.ie>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  11879ba5d9ab8174af9b9cefbb2396a54dfbf8c1
-Gitweb:     http://git.kernel.org/tip/11879ba5d9ab8174af9b9cefbb2396a54dfbf8c1
-Author:     Arjan van de Ven <arjan@infradead.org>
-AuthorDate: Sat, 26 Sep 2009 20:51:50 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 2 Oct 2009 19:51:56 +0200
+* Mel Gorman (mel@csn.ul.ie) wrote:
+> On Thu, Oct 01, 2009 at 02:53:11PM -0500, Robert Jennings wrote:
+> > Memory balloon drivers can allocate a large amount of memory which
+> > is not movable but could be freed to accommodate memory hotplug remove.
+> > 
+> > Prior to calling the memory hotplug notifier chain the memory in the
+> > pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
+> > isolation will not proceed, causing the memory removal for that page
+> > range to fail.
+> > 
+> > Rather than immediately failing pageblock isolation if the the
+> > migrateteype is not MIGRATE_MOVABLE, this patch checks if all of the
+> > pages in the pageblock are owned by a registered balloon driver using a
+> > notifier chain.  If all of the non-movable pages are owned by a balloon,
+> > they can be freed later through the memory notifier chain and the range
+> > can still be isolated in set_migratetype_isolate().
+> > 
+> > Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+> > 
+> > ---
+> >  drivers/base/memory.c  |   19 +++++++++++++++++++
+> >  include/linux/memory.h |   22 ++++++++++++++++++++++
+> >  mm/page_alloc.c        |   49 +++++++++++++++++++++++++++++++++++++++++--------
+> >  3 files changed, 82 insertions(+), 8 deletions(-)
+> > 
+> > Index: b/drivers/base/memory.c
+> > ===================================================================
+> > --- a/drivers/base/memory.c
+> > +++ b/drivers/base/memory.c
+> > @@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
+> >  }
+> >  EXPORT_SYMBOL(unregister_memory_notifier);
+> >  
+> > +static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
+> > +
+> > +int register_memory_isolate_notifier(struct notifier_block *nb)
+> > +{
+> > +	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
+> > +}
+> > +EXPORT_SYMBOL(register_memory_isolate_notifier);
+> > +
+> > +void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> > +{
+> > +	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
+> > +}
+> > +EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+> > +
+> >  /*
+> >   * register_memory - Setup a sysfs device for a memory block
+> >   */
+> > @@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
+> >  	return blocking_notifier_call_chain(&memory_chain, val, v);
+> >  }
+> >  
+> > +int memory_isolate_notify(unsigned long val, void *v)
+> > +{
+> > +	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
+> > +}
+> > +
+> >  /*
+> >   * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
+> >   * OK to have direct references to sparsemem variables in here.
+> > Index: b/include/linux/memory.h
+> > ===================================================================
+> > --- a/include/linux/memory.h
+> > +++ b/include/linux/memory.h
+> > @@ -50,6 +50,14 @@ struct memory_notify {
+> >  	int status_change_nid;
+> >  };
+> >  
+> > +#define MEM_ISOLATE_COUNT	(1<<0)
+> > +
+> 
+> This needs a comment explaining that that this is an action to count the
+> number of pages within a range that have been isolated within a range of
+> pages and not a default value for "nr_pages" in the next structure.
 
-x86: Simplify bound checks in the MTRR code
+I'll provide a clear explanation for this.
 
-The current bound checks for copy_from_user in the MTRR driver are
-not as obvious as they could be, and gcc agrees with that.
+> > +struct memory_isolate_notify {
+> > +	unsigned long start_addr;
+> > +	unsigned int nr_pages;
+> > +	unsigned int pages_found;
+> > +};
+> 
+> Is there any particular reason you used virtual address of the mapped
+> page instead of PFN? I am guessing at this point that the balloon driver
+> is based on addresses but the code that populates the structure more
+> commonly deals with PFNs. Outside of debugging code, page_address is
+> rarely used in mm/page_alloc.c .
+> 
+> It's picky but it feels more natural to me to have the structure have
+> start_pfn and nr_pages or start_addr and end_addr but not a mix of both.
 
-This patch simplifies the boundary checks to the point that gcc can
-now prove to itself that the copy_from_user() is never going past
-its bounds.
+Changing this to use start_pfn and nr_pages, this will also match
+struct memory_notify.  Thanks for the review of this patch.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <20090926205150.30797709@infradead.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > +
+> >  struct notifier_block;
+> >  struct mem_section;
+> >  
+> > @@ -76,14 +84,28 @@ static inline int memory_notify(unsigned
+> >  {
+> >  	return 0;
+> >  }
+> > +static inline int register_memory_isolate_notifier(struct notifier_block *nb)
+> > +{
+> > +	return 0;
+> > +}
+> > +static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> > +{
+> > +}
+> > +static inline int memory_isolate_notify(unsigned long val, void *v)
+> > +{
+> > +	return 0;
+> > +}
+> >  #else
+> >  extern int register_memory_notifier(struct notifier_block *nb);
+> >  extern void unregister_memory_notifier(struct notifier_block *nb);
+> > +extern int register_memory_isolate_notifier(struct notifier_block *nb);
+> > +extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
+> >  extern int register_new_memory(int, struct mem_section *);
+> >  extern int unregister_memory_section(struct mem_section *);
+> >  extern int memory_dev_init(void);
+> >  extern int remove_memory_block(unsigned long, struct mem_section *, int);
+> >  extern int memory_notify(unsigned long val, void *v);
+> > +extern int memory_isolate_notify(unsigned long val, void *v);
+> >  extern struct memory_block *find_memory_block(struct mem_section *);
+> >  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+> >  enum mem_add_context { BOOT, HOTPLUG };
+> > Index: b/mm/page_alloc.c
+> > ===================================================================
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -48,6 +48,7 @@
+> >  #include <linux/page_cgroup.h>
+> >  #include <linux/debugobjects.h>
+> >  #include <linux/kmemleak.h>
+> > +#include <linux/memory.h>
+> >  #include <trace/events/kmem.h>
+> >  
+> >  #include <asm/tlbflush.h>
+> > @@ -4985,23 +4986,55 @@ void set_pageblock_flags_group(struct pa
+> >  int set_migratetype_isolate(struct page *page)
+> >  {
+> >  	struct zone *zone;
+> > -	unsigned long flags;
+> > +	unsigned long flags, pfn, iter;
+> > +	long immobile = 0;
+> 
+> So, the count in the structure is unsigned long, but long here. Why the
+> difference in types?
 
+No good reason, both will be unsigned long when I repost the patch.
 
----
- arch/x86/kernel/cpu/mtrr/if.c |   17 ++++++++++++-----
- 1 files changed, 12 insertions(+), 5 deletions(-)
+> > +	struct memory_isolate_notify arg;
+> > +	int notifier_ret;
+> >  	int ret = -EBUSY;
+> >  	int zone_idx;
+> >  
+> >  	zone = page_zone(page);
+> >  	zone_idx = zone_idx(zone);
+> > +
+> > +	pfn = page_to_pfn(page);
+> > +	arg.start_addr = (unsigned long)page_address(page);
+> > +	arg.nr_pages = pageblock_nr_pages;
+> > +	arg.pages_found = 0;
+> > +
+> >  	spin_lock_irqsave(&zone->lock, flags);
+> >  	/*
+> >  	 * In future, more migrate types will be able to be isolation target.
+> >  	 */
+> > -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
+> > -	    zone_idx != ZONE_MOVABLE)
+> > -		goto out;
+> > -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> > -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> > -	ret = 0;
+> > -out:
+> > +	do {
+> > +		if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE &&
+> > +		    zone_idx == ZONE_MOVABLE) {
+> 
+> So, this condition requires the zone be MOVABLE and the migrate type
+> be movable. That prevents MIGRATE_RESERVE regions in ZONE_MOVABLE being
+> off-lined even though they can likely be off-lined. It also prevents
+> MIGRATE_MOVABLE sections in other zones being off-lined.
+> 
+> Did you mean || here instead of && ?
+> 
+> Might want to expand the comment explaining this condition instead of
+> leaving it in the old location which is confusing.
 
-diff --git a/arch/x86/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
-index f04e725..3c1b12d 100644
---- a/arch/x86/kernel/cpu/mtrr/if.c
-+++ b/arch/x86/kernel/cpu/mtrr/if.c
-@@ -96,17 +96,24 @@ mtrr_write(struct file *file, const char __user *buf, size_t len, loff_t * ppos)
- 	unsigned long long base, size;
- 	char *ptr;
- 	char line[LINE_SIZE];
-+	int length;
- 	size_t linelen;
- 
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
--	if (!len)
--		return -EINVAL;
- 
- 	memset(line, 0, LINE_SIZE);
--	if (len > LINE_SIZE)
--		len = LINE_SIZE;
--	if (copy_from_user(line, buf, len - 1))
-+
-+	length = len;
-+	length--;
-+
-+	if (length > LINE_SIZE - 1)
-+		length = LINE_SIZE - 1;
-+
-+	if (length < 0)
-+		return -EINVAL;
-+
-+	if (copy_from_user(line, buf, length))
- 		return -EFAULT;
- 
- 	linelen = strlen(line);
+I will fix the logic and clean up the comments here.
+
+> > +			ret = 0;
+> > +			break;
+> > +		}
+> 
+> Why do you wrap all this in a do {} while(0)  instead of preserving the
+> out: label and using goto?
+
+I've put this back to how it was.
+
+> > +
+> > +		/*
+> > +		 * If all of the pages in a zone are used by a balloon,
+> > +		 * the range can be still be isolated.  The balloon will
+> > +		 * free these pages from the memory notifier chain.
+> > +		 */
+> > +		notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
+> > +		notifier_ret = notifier_to_errno(ret);
+> > +		if (notifier_ret || !arg.pages_found)
+> > +			break;
+> > +
+> > +		for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
+> > +			if (page_count(pfn_to_page(iter)))
+> > +				immobile++;
+> > +
+> > +		if (arg.pages_found == immobile)
+> 
+> and here you compare a signed with an unsigned type. Probably harmless
+> but why do it?
+
+This is corrected by making both variables unsigned longs.
+
+> > +			ret = 0;
+> > +	} while (0);
+> > +
+> 
+> So the out label would go here and you'd get rid of the do {} while(0)
+> loop.
+
+Fixed.
+
+> > +	if (!ret) {
+> > +		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> > +		move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> > +	}
+> > +
+> >  	spin_unlock_irqrestore(&zone->lock, flags);
+> >  	if (!ret)
+> >  		drain_all_pages();
