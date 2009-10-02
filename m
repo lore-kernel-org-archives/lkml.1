@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbZJBPkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbZJBPmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753985AbZJBPkM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 11:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZJBPkL
+	id S1753894AbZJBPmH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 11:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZJBPmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 11:40:11 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:48828 "EHLO mx1.redhat.com"
+	Fri, 2 Oct 2009 11:42:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:47235 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752597AbZJBPkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 11:40:10 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <4AC5E7BA.5060700@kernel.org>
-References: <4AC5E7BA.5060700@kernel.org> <1254384558-1018-1-git-send-email-tj@kernel.org> <9942.1254401629@redhat.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: dhowells@redhat.com, jeff@garzik.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
-       arjan@linux.intel.com
-Subject: Re: [RFC PATCHSET] workqueue: implement concurrency managed workqueue
-Date: Fri, 02 Oct 2009 16:38:03 +0100
-Message-ID: <31399.1254497883@redhat.com>
+	id S1752482AbZJBPmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 11:42:04 -0400
+Date: Fri, 2 Oct 2009 11:40:20 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002154020.GC4494@redhat.com>
+References: <200910021255.27689.czoccolo@gmail.com> <20091002124921.GA4494@redhat.com> <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com> <1254497520.10392.11.camel@marge.simson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254497520.10392.11.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> wrote:
+On Fri, Oct 02, 2009 at 05:32:00PM +0200, Mike Galbraith wrote:
+> On Fri, 2009-10-02 at 17:27 +0200, Corrado Zoccolo wrote:
+> > On Fri, Oct 2, 2009 at 2:49 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > > On Fri, Oct 02, 2009 at 12:55:25PM +0200, Corrado Zoccolo wrote:
+> > >
+> > > Actually I am not touching this code. Looking at the V10, I have not
+> > > changed anything here in idling code.
+> > 
+> > I based my analisys on the original patch:
+> > http://lkml.indiana.edu/hypermail/linux/kernel/0907.1/01793.html
+> > 
+> > Mike, can you confirm which version of the fairness patch did you use
+> > in your tests?
+> 
+> That would be this one-liner.
+> 
 
-> Given that slow-work isn't being used too extensively yet, I was
-> thinking whether that part could be pushed down to the caller.  Or, we
-> can also wrap work and export an interface which supports the get/put
-> reference.
+Ok. Thanks. Sorry, I got confused and thought that you are using "io
+controller patches" with fairness=1.
 
-The caller of what?
+In that case, Corrado's suggestion of refining it further and disabling idling
+for seeky process only on non-rotational media (SSD and hardware RAID), makes
+sense to me.
 
-I found the refcounting much easier to manage in slow-work when slow-work
-actively got/put refs on the work items it was queueing.  The reason for that
-is that slow-work can handle the queue/queue races and the requeue/execute
-races much more efficiently.
-
-Part of this was due to the fact I wanted to prevent re-entry into the work
-executor, and to do that I had maintenance flags in the work item struct - but
-that meant that slow-work had to modify the work item after execution.
-
-So I should adjust point 1 on my list.
-
-  (1) Work items can be requeued whilst they are executing, but the execution
-      function will not be re-entered until after the current execution
-      completes, but rather the execution will be deferred.
-
-One possible problem with assuming that you can no longer access the work item
-after you call the execution function, is that it's slightly dodgy to retain
-the pointer to it to prevent reentry as the item can be destroyed, reallocated
-and queued before the execution function returns.
-
-Anyway, don't let me put you off re-implementing the whole shebang - it needs
-doing.
-
-> Binding is usually beneficial and doesn't matter for IO intensive
-> ones, so...
-
-The scenario I'm thinking of is this: someone who has an NFS volume cached
-through FS-Cache does a tar of a large tree of files (say a kernel source
-tree).  FS-Cache adds a long duration work item for each of those files
-(~32000) to create structure in the cache.  Will all of those wind up bound to
-the same CPU as was running tar?
-
-David
+Thanks
+Vivek
+  
+> o CFQ provides fair access to disk in terms of disk time used to processes.
+>   Fairness is provided for the applications which have their think time with
+>   in slice_idle (8ms default) limit.
+> 
+> o CFQ currently disables idling for seeky processes. So even if a process
+>   has think time with-in slice_idle limits, it will still not get fair share
+>   of disk. Disabling idling for a seeky process seems good from throughput
+>   perspective but not necessarily from fairness perspecitve.
+> 
+> 0 Do not disable idling based on seek pattern of process if a user has set
+>   /sys/block/<disk>/queue/iosched/fairness = 1.
+> 
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> ---
+>  block/cfq-iosched.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6/block/cfq-iosched.c
+> ===================================================================
+> --- linux-2.6.orig/block/cfq-iosched.c
+> +++ linux-2.6/block/cfq-iosched.c
+> @@ -1953,7 +1953,7 @@ cfq_update_idle_window(struct cfq_data *
+>  	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
+>  
+>  	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
+> -	    (cfqd->hw_tag && CIC_SEEKY(cic)))
+> +	    (!cfqd->cfq_fairness && cfqd->hw_tag && CIC_SEEKY(cic)))
+>  		enable_idle = 0;
+>  	else if (sample_valid(cic->ttime_samples)) {
+>  		if (cic->ttime_mean > cfqd->cfq_slice_idle)
+> 
