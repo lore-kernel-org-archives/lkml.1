@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbZJBTPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755641AbZJBTTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756513AbZJBTPp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 15:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZJBTPo
+	id S1755641AbZJBTTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 15:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZJBTTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 15:15:44 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:1982 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbZJBTPn (ORCPT
+	Fri, 2 Oct 2009 15:19:18 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53424 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669AbZJBTTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 15:15:43 -0400
-Date: Fri, 2 Oct 2009 14:16:26 -0500
-From: Mike Miller <mike.miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>,
-       James.Bottomley@HansenPartnership.com, axboe@kernel.dk,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       mikem@beardog.cce.hp.com, jowens@hp.com, mike.miller@hp.com
-Subject: Re: [PATCH] Add hpsa driver for HP Smart Array controllers.
-Message-ID: <20091002191626.GA17862@beardog.cce.hp.com>
-References: <20091001211705.15591.76403.stgit@beardog.cce.hp.com> <20091001143035.a83a7564.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Fri, 2 Oct 2009 15:19:18 -0400
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de, hpa@zytor.com,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] x86: Use __builtin_memset and __builtin_memcpy for memset/memcpy
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090928113433.5e9b8ea7@infradead.org>
+Date: Fri, 02 Oct 2009 21:19:18 +0200
+In-Reply-To: <20090928113433.5e9b8ea7@infradead.org> (Arjan van de Ven's message of "Mon, 28 Sep 2009 11:34:33 +0200")
+Message-ID: <87bpkpbo3t.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091001143035.a83a7564.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 02:30:35PM -0700, Andrew Morton wrote:
-> On Thu, 01 Oct 2009 16:25:30 -0500
-> "Stephen M. Cameron" <scameron@beardog.cce.hp.com> wrote:
-> 
-> > Add hpsa driver for HP Smart Array controllers.
-> > 
-> > This driver supports a subset of HP Smart Array Controllers.
-> > It is a SCSI alternative to the cciss driver.
-> 
-> Does it support all the devices which cciss supports?
-> 
-> IOW, do we have a plan here to remove the cciss driver or must we
-> maintain both drivers indefinitely?
+Arjan van de Ven <arjan@infradead.org> writes:
 
-Andrew, et al.,
->From the lack of response I'm guessing my reply about phasing cciss out
-completely did not go over well. Or is that what the question meant?
+> From ebb81aab0c3df19771ebc0eec1261ae314ddc0af Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Mon, 28 Sep 2009 11:21:32 +0200
+> Subject: [PATCH] x86: Use __builtin_memset and __builtin_memcpy for memset/memcpy
+>
+> GCC provides reasonable memset/memcpy functions itself, with __builtin_memset
+> and __builtin_memcpy. For the "unknown" cases, it'll fall back to our
+> current existing functions, but for fixed size versions it'll inline
+> something smart. Quite often that will be the same as we have now,
+> but sometimes it can do something smarter (for example, if the code
+> then sets the first member of a struct, it can do a shorter memset).
+>
+> In addition, and this is more important, gcc knows which registers and
+> such are not clobbered (while for our asm version it pretty much
+> acts like a compiler barrier), so for various cases it can avoid reloading
+> values.
+>
+> The effect on codesize is shown below on my typical laptop .config:
+>
+>    text	   data	    bss	    dec	    hex	filename
+> 5605675	2041100	6525148	14171923	 d83f13	vmlinux.before
+> 5595849	2041668	6525148	14162665	 d81ae9	vmlinux.after
 
-We purposely limited controller support in hpsa to try and prevent problems
-in the field. What's needed to get hpsa accepted? Add support for all
-hardware?
+I tried this some time ago, but it it generates bad code on some 
+gcc 3 versions.
 
-While we do not want to maintain 2 drivers indefinitely we (HP) must
-continue to support cciss for some years to come.
+You really need to test such kind of changes on a wide variety
+of compilers, not assuming everyone uses the same version as you.
 
-Any guidance is appreciated.
+-Andi
 
--- mikem
+-- 
+ak@linux.intel.com -- Speaking for myself only.
