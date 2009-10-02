@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZJBOHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZJBONB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754095AbZJBOHf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 10:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbZJBOHe
+	id S1754244AbZJBONB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 10:13:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbZJBONA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 10:07:34 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:35397 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752803AbZJBOHd (ORCPT
+	Fri, 2 Oct 2009 10:13:00 -0400
+Received: from asmtpout012.mac.com ([17.148.16.87]:35537 "EHLO
+	asmtpout012.mac.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753487AbZJBOM7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 10:07:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=CQuw1VMtUvwxc9mqP/ixZ/JDUBhsZRv7zEX37B1CLevfGIaXiRXfAV0naEJ4OXZA1q
-         OuPQEHqVyOYscGtXAg2vPT5/Ub8GvHQ3M7R44jlUkWLKZaBO6KS44UW0BLdEwiCqbdRZ
-         zpvixw/x07WDzuV74v22zhu45nh1OO9YLq+64=
-MIME-Version: 1.0
-Date: Fri, 2 Oct 2009 10:07:38 -0400
-Message-ID: <804dabb00910020707r9820d8bpe371baf1efb67c1@mail.gmail.com>
-Subject: /dev/sdb not detected anymore?
-From: Peter Teoh <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 2 Oct 2009 10:12:59 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Cc: lenrek@me.com
+Message-id: <0358338D-E697-4D44-96A8-E7107D50F77E@me.com>
+From: lenrek@me.com
+To: linux-kernel@vger.kernel.org
+In-reply-to: <4AC5FE11.9060500@microgate.com>
+Subject: Re: [PATCH] drivers/char/pcmcia/synclink_cs.c: BKL pushdown?
+Date: Fri, 02 Oct 2009 23:12:52 +0900
+References: <060E5EC8-93F4-4AF1-889F-04A13378CB8D@me.com>
+ <20091002124945.1814a2c3@lxorguk.ukuu.org.uk> <4AC5FE11.9060500@microgate.com>
+X-Mailer: Apple Mail (2.936)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just built my 2.6.32-rc2 (from linus-git) yesterday, and repeated
-today again, starting from "make mrproper", and consistently both
-version cannot detect my /dev/sdb, which is the second SATA harddisk.
- The first SATA is detected as follows in dmesg:
 
-    742 [    4.595949] scsi 2:0:0:0: Direct-Access     ATA
-ST3500630AS      3.AA PQ: 0 ANSI: 5
-    743 [    4.596116] sd 2:0:0:0: [sda] 976773168 512-byte logical
-blocks: (500 GB/465 GiB)
-    744 [    4.596213] sd 2:0:0:0: [sda] Write Protect is off
-    745 [    4.596216] sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
-    746 [    4.596258] sd 2:0:0:0: [sda] Write cache: enabled, read
-cache: enabled, doesn't support DPO or FUA
-    747 [    4.596467]  sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 sda9 >
-    748 [    4.674607] sd 2:0:0:0: [sda] Attached SCSI disk
+On 2009/10/02, at 22:20, Paul Fulghum wrote:
 
-And from sg_inq:
+> Alan Cox wrote:
+>> On Fri, 02 Oct 2009 19:37:21 +0900
+>> lenrek@me.com wrote:
+>>
+>>> I found the counterpart of function mgslpc_wait_until_sent
+>>> in drivers/char/synclinkmp.c (wait_until_sent) is modified to
+>>> issue (un)lock_kernel.  This patch does the same modification.
+>>>
+>>> However, I'm afraid similar modifications are necessary further on
+>>> functions
+>>> mgslpc_ioctl and mgslpc_write_room.
+>>
+>> The push down work normally eliminated BKL calls that were  
+>> demonstrably
+>> not needed and left it in anywhere that needed thought. Do those
+>> functions still really need the BKL ?
+>
+> No, these functions use a device specific spinlock (info->lock)
+> when needed. Not even mgslpc_wait_until_sent needs BKL.
 
-standard INQUIRY:
-  PQual=0  Device_type=0  RMB=0  version=0x05  [SPC-3]
-  [AERC=0]  [TrmTsk=0]  NormACA=0  HiSUP=0  Resp_data_format=2
-  SCCS=0  ACC=0  TPGS=0  3PC=0  Protect=0  BQue=0
-  EncServ=0  MultiP=0  [MChngr=0]  [ACKREQQ=0]  Addr16=0
-  [RelAdr=0]  WBus16=0  Sync=0  Linked=0  [TranDis=0]  CmdQue=0
-  [SPI: Clocking=0x0  QAS=0  IUS=0]
-    length=96 (0x60)   Peripheral device type: disk
- Vendor identification: ATA
- Product identification: ST3500630AS
- Product revision level: 3.AA
- Unit serial number:             9QG14T5Z
-
-But the second SATA (identical in type/model) is not detectable.
-Upon rebooting to my previous 2.6.31 kernel version, it became
-detected and usable - absolutely nothing else is touch.   So what is
-it in the latest kernel which is giving the problem?
-
-Can someone help me out?
-
-THank you very much :-).
-
--- 
-Regards,
-Peter Teoh
+How about the BKL calls in synclinkmp.c, synclink.c, and synclink_gt.c?
+Can they be safely eliminated?
