@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbZJBJza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbZJBJyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757513AbZJBJza (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 05:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757484AbZJBJz3
+	id S1757493AbZJBJyy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 05:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757471AbZJBJyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 05:55:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34853 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757471AbZJBJzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 05:55:24 -0400
-Date: Fri, 2 Oct 2009 11:54:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: cl@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [this_cpu_xx V4 00/20] Introduce per cpu atomic operations and
-	avoid per cpu address arithmetic
-Message-ID: <20091002095455.GC21427@elte.hu>
-References: <20091001212521.123389189@gentwo.org> <4AC5C836.8000502@kernel.org>
+	Fri, 2 Oct 2009 05:54:53 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:53548 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756642AbZJBJyx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 05:54:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=wBSTRnTjqirKa9IIiSZAx8LcxiqvyMPyCoY1Ozp2UW6B+MEmKvsFFMtVjGa8hZSG3q
+         6vbllod/jR8PHAKRk5iNxT6JGjCP60ywuYdakyAKm+G1uyWrCqoL9lzXtZm2/5XJWMpw
+         JNE1Bbhn2wTYuMZifLepNN0IA7hfhtsT3nmjY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AC5C836.8000502@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4AC5B0F1.4030303@canonical.com>
+References: <4AC34B83.6090402@canonical.com>
+	 <20090930212233.GB17712@liondog.tnic>
+	 <cone.1254466252.404216.3290.1000@onepiie>
+	 <4AC5B0F1.4030303@canonical.com>
+Date: Fri, 2 Oct 2009 11:54:56 +0200
+Message-ID: <9ea470500910020254j21fad1d3g1c825bcecdbb29fb@mail.gmail.com>
+Subject: Re: [PATCH] acerhdf: Limit modalias matching to supported boards
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Stefan Bader <stefan.bader@canonical.com>
+Cc: Peter Feuerer <peter@piie.net>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 2, 2009 at 9:51 AM, Stefan Bader <stefan.bader@canonical.com> wrote:
+>>> I search my acerhdf-inbox for the people who sent me the BIOS versions,
+>> maybe they still have the netbook and can me send the modalias content. I'll
+>> hopefully find some time upcoming weekend.
+>>
+>> But, can't we simply assume, following dmi lines?
+>>
+>> MODULE_ALIAS("dmi:*:*Acer*:*AOA*:");
+>> MODULE_ALIAS("dmi:*:*Gateway*:*AOA*:");
+>> MODULE_ALIAS("dmi:*:*Packard Bell*:*AOA*:");
+>> MODULE_ALIAS("dmi:*:*Packard Bell*:*DOA*:");
+>>
+>> We have exactly those constellations within the BIOS settings table. If I
+>> interpret the modalias line correctly, "pnAOA110" means "Product Name
+>> AOA110" and that's what we have already in the BIOS settings table. So I
+>> think we do already have all information we need to create a complete patch
+>> for the problem, or am I wrong?
+>
+> Right pn means that. I would strongly believe the above changes should be
+> good. I sometimes tend to be over-cautious. Attaching a refreshed patch
+> which includes them all.
 
-* Tejun Heo <tj@kernel.org> wrote:
+Well, acerhdf.c and dmi-id.c both do
+dmi_get_system_info(DMI_PRODUCT_NAME) when querying product name which
+means that the product names in the acerhdf table and the dmi-id ones
+are actually one and the same thing.
 
-> Hello,
-> 
-> cl@linux-foundation.org wrote:
-> > V3->V4:
-> > - Fix various macro definitions.
-> > - Provider experimental percpu based fastpath that does not disable
-> >   interrupts for SLUB.
-> 
-> The series looks very good to me. [...]
+IMO, we should just go ahead send it to Len. Stefan, you have my ACK.
 
-Seconded, very nice series!
-
-One final step/cleanup seems to be missing from it: it should replace 
-current uses of percpu_op() [percpu_read(), etc.] in the x86 tree and 
-elsewhere with the new this_cpu_*() primitives. this_cpu_*() is using 
-per_cpu_from_op/per_cpu_to_op directly, we dont need those percpu_op() 
-variants anymore.
-
-There should also be a kernel image size comparison done for that step, 
-to make sure all the new primitives are optimized to the max on the 
-instruction level.
-
-> [...] percpu#for-next now has ia64 bits included and the legacy 
-> allocator is gone there so it can carry this series.  Sans the last 
-> one, they seem they can be stable and incremental from now on, right?  
-> Shall I include this series into the percpu tree?
-
-I'd definitely recommend doing that - it should be tested early and wide 
-for v2.6.33, and together with other percpu bits.
-
-	Ingo
+-- 
+Regards/Gruss,
+Boris
