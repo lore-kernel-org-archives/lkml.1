@@ -1,23 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZJBSdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758007AbZJBSgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077AbZJBSdU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758012AbZJBSdT
+	id S1758007AbZJBSgA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbZJBSf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:33:19 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48327 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757895AbZJBSdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:33:18 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/Yr3YpxKbYg7xnMfy+YMxWk4CN2jqNEUq5wgiS4b
-	BfsVcnD4i0jc0g
-Subject: Re: IO scheduler based IO controller V10
-From: Mike Galbraith <efault@gmx.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>,
+	Fri, 2 Oct 2009 14:35:59 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:38637 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754756AbZJBSf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:35:58 -0400
+Date: Fri, 2 Oct 2009 20:36:01 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
        Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
        linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
@@ -26,49 +21,47 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
        righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
        akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       riel@redhat.com
-In-Reply-To: <20091002182608.GO31616@kernel.dk>
-References: <20091002145610.GD31616@kernel.dk>
-	 <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain>
-	 <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu>
-	 <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu>
-	 <20091002173732.GK31616@kernel.dk> <20091002175629.GA14860@elte.hu>
-	 <20091002180437.GL31616@kernel.dk>
-	 <1254507754.8667.15.camel@marge.simson.net>
-	 <20091002182608.GO31616@kernel.dk>
-Content-Type: text/plain
-Date: Fri, 02 Oct 2009 20:33:17 +0200
-Message-Id: <1254508397.8667.24.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002183601.GQ31616@kernel.dk>
+References: <20090925202636.GC15007@redhat.com> <1253976676.7005.40.camel@marge.simson.net> <1254034500.7933.6.camel@marge.simson.net> <20090927164235.GA23126@kernel.dk> <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net> <20091002180857.GM31616@kernel.dk> <1254508197.8667.22.camel@marge.simson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254508197.8667.22.camel@marge.simson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-02 at 20:26 +0200, Jens Axboe wrote:
-> On Fri, Oct 02 2009, Mike Galbraith wrote:
-> > On Fri, 2009-10-02 at 20:04 +0200, Jens Axboe wrote:
+On Fri, Oct 02 2009, Mike Galbraith wrote:
+> On Fri, 2009-10-02 at 20:08 +0200, Jens Axboe wrote:
+> > On Thu, Oct 01 2009, Mike Galbraith wrote:
+> > >  	max_dispatch = cfqd->cfq_quantum;
+> > >  	if (cfq_class_idle(cfqq))
+> > >  		max_dispatch = 1;
+> > >  
+> > > +	if (cfqd->busy_queues > 1)
+> > > +		cfqd->od_stamp = jiffies;
+> > > +
 > > 
-> > > I'm not too crazy about it either. How about just using 'desktop' since
-> > > this is obviously what we are really targetting? 'latency' isn't fully
-> > > descriptive either, since it may not necessarily provide the best single
-> > > IO latency (noop would).
-> > 
-> > Grin. "Perfect is the enemy of good" :)
-> >                                                   Avg
-> >      16.24   175.82   154.38   228.97   147.16  144.5     noop
-> >      43.23    57.39    96.13   148.25   180.09  105.0     deadline
+> > ->busy_queues > 1 just means that they have requests ready for dispatch,
+> > not that they are dispatched.
 > 
-> Yep, that's where it falls down. Noop basically fails here because it
-> treats all IO as equal, which obviously isn't true for most people. But
-> even for pure read workloads (is the above the mixed read/write, or just
-> read?), latency would be excellent with noop but the desktop experience
-> would not.
+> But we're not alone, somebody else is using disk.  I'm trying to make
+> sure we don't have someone _about_ to come back.. like a reader, so when
+> there's another player, stamp to give him some time to wake up/submit
+> before putting the pedal to the metal.
 
-Yeah, it's the dd vs konsole -e exit.
+OK, then the check does what you want. It'll tell you that you have a
+pending request, and at least one other queue has one too. And that
+could dispatch right after you finish yours, depending on idling etc.
+Note that this _only_ applies to queues that have requests still sitting
+in CFQ, as soon as they are on the dispatch list in the block layer they
+will only be counted as busy if they still have sorted IO waiting.
 
-	-Mike
+But that should be OK already, since I switched CFQ to dispatch single
+requests a few revisions ago. So we should not run into that anymore.
+
+-- 
+Jens Axboe
 
