@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbZJBO0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZJBO1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756421AbZJBO0L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 10:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbZJBO0L
+	id S1756590AbZJBO1e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 10:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbZJBO1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 10:26:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48144 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754703AbZJBO0K (ORCPT
+	Fri, 2 Oct 2009 10:27:34 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:60722 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754904AbZJBO1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 10:26:10 -0400
-Date: Fri, 2 Oct 2009 07:24:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       riel@redhat.com
-Subject: Re: IO scheduler based IO controller V10
-In-Reply-To: <20091002092839.GA26962@kernel.dk>
-Message-ID: <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain>
-References: <1254034500.7933.6.camel@marge.simson.net> <20090927164235.GA23126@kernel.dk> <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net>
- <20091001185816.GU14918@kernel.dk> <1254464628.7158.101.camel@marge.simson.net> <20091002080417.GG14918@kernel.dk> <20091002092409.GA19529@elte.hu> <20091002092839.GA26962@kernel.dk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 2 Oct 2009 10:27:33 -0400
+Date: Fri, 2 Oct 2009 15:27:26 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Mike Frysinger <vapier@gentoo.org>,
+       tglx@linutronix.de, uclinux-dist-devel@blackfin.uclinux.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Uclinux-dist-devel] [PATCH v2] mfd: ADP5520 Multifunction
+	LCDBacklight and Keypad Input Device Driver
+Message-ID: <20091002142725.GC11133@sirena.org.uk>
+References: <8A42379416420646B9BFAC9682273B6D0E33AC35@limkexm3.ad.analog.com> <8A42379416420646B9BFAC9682273B6D0E33B1AA@limkexm3.ad.analog.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8A42379416420646B9BFAC9682273B6D0E33B1AA@limkexm3.ad.analog.com>
+X-Cookie: Zeus gave Leda the bird.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Oct 02, 2009 at 02:48:27PM +0100, Hennerich, Michael wrote:
 
+> Well the threaded irq handlers are no option here, since we use a Level
+> Sensitive Interrupt. 
+> The work queue here is to schedule the main irq handler outside hardirq
+> context.
+> I2C can't we invoked form none sleepy context, so we can't clear the
+> interrupt. 
+> This will cause that we execute the hardirq over and over again,
+> preventing the irq thread to be run.
 
-On Fri, 2 Oct 2009, Jens Axboe wrote:
-> 
-> It's really not that simple, if we go and do easy latency bits, then
-> throughput drops 30% or more.
+> The threaded irqs with its current implementation also doesn't allow me
+> to disable the irq in the hardirq handler.
 
-Well, if we're talking 500-950% improvement vs 30% deprovement, I think 
-it's pretty clear, though. Even the server people do care about latencies. 
+This should all work perfectly fine.  If you don't supply a hard IRQ
+handler then the genirq infrastructure will disable the IRQ and schedule
+the threaded handler, reenabling the IRQ when the threaded handler
+finishes.  The threaded handler runs in a non-atomic context so it can
+happily access I2C devices.
 
-Often they care quite a bit, in fact.
+> There have been some discussions about this on lkml recently.
+> Until there is a way to workaround this issue (handle_level_oneshot_irq,
+> etc.),
+> I like to stick with: 
 
-And Mike's patch didn't look big or complicated. 
+> >>> +	disable_irq_nosync(irq);
+> >>> +	schedule_work(&chip->irq_work);
 
-> You can't say it's black and white latency vs throughput issue,
-
-Umm. Almost 1000% vs 30%. Forget latency vs throughput. That's pretty damn 
-black-and-white _regardless_ of what you're measuring. Plus you probably 
-made up the 30% - have you tested the patch?
-
-And quite frankly, we get a _lot_ of complaints about latency. A LOT. It's 
-just harder to measure, so people seldom attach numbers to it. But that 
-again means that when people _are_ able to attach numbers to it, we should 
-take those numbers _more_ seriously rather than less.
-
-So the 30% you threw out as a number is pretty much worthless. 
-
-		Linus
+This is essentially what a threaded IRQ handler does with current
+mainline.  There were issues in 2.6.31 but I believe all Thomas' fixes
+have been merged now.
