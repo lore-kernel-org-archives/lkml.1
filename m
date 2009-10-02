@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbZJBFbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbZJBFeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756612AbZJBFbs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 01:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbZJBFbr
+	id S1756618AbZJBFeq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 01:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbZJBFep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 01:31:47 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:56306 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755117AbZJBFbr (ORCPT
+	Fri, 2 Oct 2009 01:34:45 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:50737 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756280AbZJBFeo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 01:31:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=YsVYOuk7zmOqwqsNqiCqc8YQfNAouMlionAjv4vXDEVhz/0OKCbvY++gzYuykt5D2h
-         Mco2/LyfihlDTx0wa20Gp4Gf26giuXRK9M4Qf88XXR5WWb8kKsgqZVS8v1fr9mq7TW+q
-         aEv2NZhdoPeFmBS0Rq3gjbODGJeSStCQhXJ9c=
+	Fri, 2 Oct 2009 01:34:44 -0400
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+References: <20091002012911.GA18542@kroah.com>
+	<m1tyyixuc1.fsf@fess.ebiederm.org> <20091002051056.GA7181@suse.de>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 01 Oct 2009 22:34:42 -0700
+In-Reply-To: <20091002051056.GA7181@suse.de> (Greg KH's message of "Thu\, 1 Oct 2009 22\:10\:56 -0700")
+Message-ID: <m1ljjuxsst.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Date: Fri, 2 Oct 2009 11:31:51 +0600
-Message-ID: <b9df5fa10910012231u38f49eeeoe1d0bcc9eafd53d6@mail.gmail.com>
-Subject: [PATCH] eeepc_laptop: Properly annote eeepc_enable_camera().
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: acpi4asus-user@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: corentincj@iksaif.net
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Greg KH <gregkh@suse.de>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.0 T_TooManySym_02 5+ unique symbols in subject
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [000/136] 2.6.31.2-stable review
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Currenlty the annotation for function eeepc_enable_camera() is
-__init, and refers to a function eeepc_hotk_add() which is non-init.
-Use __devinit for both functions which is
- more appropriate and fixes a section mismatch warning.
+Greg KH <gregkh@suse.de> writes:
 
- We were warned by the following warning:
+> On Thu, Oct 01, 2009 at 10:01:34PM -0700, Eric W. Biederman wrote:
+>> Greg KH <gregkh@suse.de> writes:
+>> 
+>> > Note from the -stable maintainer on this release:
+>> >
+>> >   This release is big.  Yeah, really big.  There are a number of
+>> >   areas that needed some rework in order to get things back to
+>> >   working order.  Like the tty layer.  Hopefully everyone can now
+>> >   use their usb to serial devices again without oopsing the
+>> >   kernel
+>> 
+>> The ftdi_sio driver still crashes and burns.
+>
+> What were you doing when it crashed?  I tested the pl2303 device and it
+> worked fine for me here, I don't have a ftdi_sio one :(
 
-  LD      drivers/platform/x86/built-in.o
-WARNING: drivers/platform/x86/built-in.o(.text+0x12e1): Section
-mismatch in reference from the function eeepc_hotk_add() to the
-function .init.text:eeepc_enable_camera()
-The function eeepc_hotk_add() references
-the function __init eeepc_enable_camera().
-This is often because eeepc_hotk_add lacks a __init
-annotation or the annotation of eeepc_enable_camera is wrong.
+sending a line every 1/10 a second in both directions.  Plus I threw
+in baud rate change every 20 seconds.  I can kill an ftdi_sio no time that way.
 
-----
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+I think the change to disable low latency in ftdi_sio fixes that I am build
+a kernel to check that now.
 
---- linus/drivers/platform/x86/eeepc-laptop.c	2009-09-28
-12:05:21.000000000 +0600
-+++ rakib/drivers/platform/x86/eeepc-laptop.c	2009-09-29
-23:40:00.000000000 +0600
-@@ -350,7 +350,7 @@ static const struct rfkill_ops eeepc_rfk
- 	.set_block = eeepc_rfkill_set,
- };
-
--static void __init eeepc_enable_camera(void)
-+static void __devinit eeepc_enable_camera(void)
- {
- 	/*
- 	 * If the following call to set_acpi() fails, it's because there's no
-@@ -1189,7 +1189,7 @@ static int eeepc_input_init(struct devic
- 	return 0;
- }
-
--static int eeepc_hotk_add(struct acpi_device *device)
-+static int __devinit eeepc_hotk_add(struct acpi_device *device)
- {
- 	struct device *dev;
- 	int result;
+Eric
