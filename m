@@ -1,130 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbZJBQMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZJBQVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbZJBQMt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 12:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756465AbZJBQMs
+	id S1753913AbZJBQVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 12:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZJBQVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 12:12:48 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:60337 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756386AbZJBQMq (ORCPT
+	Fri, 2 Oct 2009 12:21:18 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:51783 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752330AbZJBQVR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 12:12:46 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: len.brown@intel.com
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/1] SWSUSP: fix blkdev refleaks
-Date: Fri,  2 Oct 2009 18:12:46 +0200
-Message-Id: <1254499966-4806-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.4.2
+	Fri, 2 Oct 2009 12:21:17 -0400
+Date: Fri, 2 Oct 2009 18:21:21 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Greg KH <greg@kroah.com>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, dm-devel@redhat.com,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
+Message-ID: <20091002162121.GA8020@mail.linbit.com>
+References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com> <20091002135859.GA9383@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091002135859.GA9383@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While cruising through the swsusp code I found few blkdev reference
-leaks of resume_bdev.
+On Fri, Oct 02, 2009 at 06:58:59AM -0700, Greg KH wrote:
+> On Fri, Oct 02, 2009 at 02:40:03PM +0200, Philipp Reisner wrote:
+> > Affected: All code that uses connector, in kernel and out of mainline
+> > 
+> > The connector, as it is today, does not allow the in kernel receiving
+> > parts to do any checks on privileges of a message's sender.
+> 
+> So, assume I know nothing about the connector architecture, what does
+> this mean in a security context?
 
-swsusp_read: remove blkdev_put altogether. Some fail paths do
-             not do that.
-swsusp_check: make sure we always put a reference on fail paths
-software_resume: all fail paths between swsusp_check and swsusp_read
-                 omit swsusp_close. Add it in those cases. And since
-                 swsusp_read doesn't drop the reference anymore, do
-                 it here unconditionally.
+Arbitrary unprivileged users may craft a netlink message, which gets delivered
+through connector to callbacks (registered in kernel with cn_add_callback).
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/hibernate.c |   11 ++++++++---
- kernel/power/swap.c      |   10 ++++------
- 2 files changed, 12 insertions(+), 9 deletions(-)
+These callbacks will then act on the message, as if it originated from an
+"expected" source.  But currently there is no mechanism to verify the origin, 
+even if the callbacks would try to.
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 04b3a83..04a9e90 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -693,21 +693,22 @@ static int software_resume(void)
- 	/* The snapshot device should not be opened while we're running */
- 	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
- 		error = -EBUSY;
-+		swsusp_close(FMODE_READ);
- 		goto Unlock;
- 	}
- 
- 	pm_prepare_console();
- 	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
- 	if (error)
--		goto Finish;
-+		goto close_finish;
- 
- 	error = usermodehelper_disable();
- 	if (error)
--		goto Finish;
-+		goto close_finish;
- 
- 	error = create_basic_memory_bitmaps();
- 	if (error)
--		goto Finish;
-+		goto close_finish;
- 
- 	pr_debug("PM: Preparing processes for restore.\n");
- 	error = prepare_processes();
-@@ -719,6 +720,7 @@ static int software_resume(void)
- 	pr_debug("PM: Reading hibernation image.\n");
- 
- 	error = swsusp_read(&flags);
-+	swsusp_close(FMODE_READ);
- 	if (!error)
- 		hibernation_restore(flags & SF_PLATFORM_MODE);
- 
-@@ -737,6 +739,9 @@ static int software_resume(void)
- 	mutex_unlock(&pm_mutex);
- 	pr_debug("PM: Resume from disk failed.\n");
- 	return error;
-+close_finish:
-+	swsusp_close(FMODE_READ);
-+	goto Finish;
- }
- 
- late_initcall(software_resume);
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index b101cdc..cccea0b 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -572,8 +572,6 @@ int swsusp_read(unsigned int *flags_p)
- 		error = load_image(&handle, &snapshot, header->pages - 1);
- 	release_swap_reader(&handle);
- 
--	blkdev_put(resume_bdev, FMODE_READ);
--
- 	if (!error)
- 		pr_debug("PM: Image successfully loaded\n");
- 	else
-@@ -596,16 +594,16 @@ int swsusp_check(void)
- 		error = bio_read_page(swsusp_resume_block,
- 					swsusp_header, NULL);
- 		if (error)
--			return error;
-+			goto put;
- 
- 		if (!memcmp(SWSUSP_SIG, swsusp_header->sig, 10)) {
- 			memcpy(swsusp_header->sig, swsusp_header->orig_sig, 10);
- 			/* Reset swap signature now */
- 			error = bio_write_page(swsusp_resume_block,
- 						swsusp_header, NULL);
--		} else {
--			return -EINVAL;
--		}
-+		} else
-+			error = -EINVAL;
-+put:
- 		if (error)
- 			blkdev_put(resume_bdev, FMODE_READ);
- 		else
--- 
-1.6.4.2
+> > I know, there are not many out there that like connector, but as
+> > long as it is in the kernel, we have to fix the security issues it has!
+> 
+> And what specifically are the security issues?
 
+For the cn_ulog_callback (dm-log-userspace-transfer.c),
+someone would be able to fake completion (with or without error code)
+of ulog entries, copying arbitrary data into receiving_pkg entries.
+
+   /*
+    * This is the connector callback that delivers data
+    * that was sent from userspace.
+    */
+   static void cn_ulog_callback(void *data)
+   {
+           struct cn_msg *msg = (struct cn_msg *)data;
+           struct dm_ulog_request *tfr = (struct dm_ulog_request *)(msg + 1);
+   
+           spin_lock(&receiving_list_lock);
+           if (msg->len == 0)
+                   fill_pkg(msg, NULL);
+           else if (msg->len < sizeof(*tfr))
+                   DMERR("Incomplete message received (expected %u, got %u): [%u]",
+                         (unsigned)sizeof(*tfr), msg->len, msg->seq);
+           else
+                   fill_pkg(NULL, tfr);
+           spin_unlock(&receiving_list_lock);
+   }
+   
+   static int fill_pkg(struct cn_msg *msg, struct dm_ulog_request *tfr)
+   {
+           uint32_t rtn_seq = (msg) ? msg->seq : (tfr) ? tfr->seq : 0;
+   ...
+                   } else {
+                           pkg->error = tfr->error;
+                           memcpy(pkg->data, tfr->data, tfr->data_size);
+                           *(pkg->data_size) = tfr->data_size;
+                   }
+                   complete(&pkg->complete);
+
+   
+   
+should make that obvious: if an unprivileged user can deliver arbitrary msg to
+cn_ulog_callback, that should at least be disruptive to services that use it.
+
+fix: check origin of message for proper credentials (e.g. CAP_SYS_ADMIN).
+
+
+
+
+what or how much damage a crafted message can do in uvesafb_cn_callback,
+I'm not sure. But, if I get the msg->seq right, and get by the first
+sanity check, again, arbitrary input is copied into some
+kernel object, which will likely at least confuse that subsystem,
+maybe do damage, or result in some sort of denial of service.
+
+I just don't know what these uvesafb_ktask do, but I doubt that anyone but root
+should be able to manipulate them.
+
+
+
+
+in the case of dst and pohemlfs, it is (re|de) configuration of respective in
+kernel objects, possibly exposing arbitrary data content
+	@Evgeniy - is that statement correct? Does something prevent an
+	unprivileged user to export arbitrary things via dst?
+At least some sort of denial of service should be possible there.
+
+for DRBD, we have of course similar problems as long as we use the connector
+in its current form as our configuration choice.
+
+
+
+I'm not sure what actual harm can be done by arbitrary calling
+w1_reset_select_slave(), or w1_process_command_io(),
+but allowing unprivileged users to meddle with arbitrary devices is most likely
+not the intended behaviour there, either.
+
+
+The "obvious" way was to first make the credentials and capabilities of the
+message origin available to these callbacks, and then test on "CAP_SYS_ADMIN".
+
+
+Note that the suggested usage of the connector for _userspace_ tools
+is to bind() to some netlink socket, subscribing to apropriate mutlicast
+groups, which will usually fail for unprivileged users in netlink_bind()
+because of
+
+        /* Only superuser is allowed to listen multicasts */
+        if (nladdr->nl_groups) {
+                if (!netlink_capable(sock, NL_NONROOT_RECV))
+                        return -EPERM;
+                err = netlink_realloc_groups(sk);
+                if (err)
+                        return err;
+        }
+
+So typical userspace tools will fail when used as non-root.
+But if you leave out the bind, you are perfectly able to _send_ arbitrary
+messages on that socket, even if you are not able to receive any replies from
+connector kernel space in that case.
+
+
+
+Cheers,
+
+	Lars
