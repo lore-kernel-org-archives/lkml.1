@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932134AbZJBBm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZJBBmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932134AbZJBBm2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbZJBBm0
+	id S1756869AbZJBBmA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbZJBBl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:42:26 -0400
-Received: from kroah.org ([198.145.64.141]:33449 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:41:56 -0400
+Received: from kroah.org ([198.145.64.141]:33452 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756864AbZJBBeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:34:02 -0400
+	id S1756870AbZJBBeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:34:03 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:24 2009
-Message-Id: <20091002012423.870188148@mini.kroah.org>
+Message-Id: <20091002012424.066794221@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:34 -0700
+Date: Thu, 01 Oct 2009 18:17:35 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Subject: [106/136] USB: xhci: Support full speed devices.
+Subject: [107/136] USB: xhci: Handle stalled control endpoints.
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=usb-xhci-support-full-speed-devices.patch
+Content-Disposition: inline; filename=usb-xhci-handle-stalled-control-endpoints.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,178 +31,188 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 
-commit 2d3f1fac7ee8bb4c6fad40f838488edbeabb0c50 upstream.
+commit 82d1009f537c2a43be0a410abd33521f76ee3a5a upstream.
 
-Full speed devices have varying max packet sizes (8, 16, 32, or 64) for
-endpoint 0.  The xHCI hardware needs to know the real max packet size
-that the USB core discovers after it fetches the first 8 bytes of the
-device descriptor.
+When a control endpoint stalls, the next control transfer will clear the
+stall.  The USB core doesn't call down to the host controller driver's
+endpoint_reset() method when control endpoints stall, so the xHCI driver
+has to do all its stall handling for internal state in its interrupt handler.
 
-In order to fix this without adding a new hook to host controller drivers,
-the xHCI driver looks for an updated max packet size for control
-endpoints.  If it finds an updated size, it issues an evaluate context
-command and waits for that command to finish.  This should only happen in
-the initialization and device descriptor fetching steps in the khubd
-thread, so blocking should be fine.
+When the host stalls on a control endpoint, it may stop on the data phase
+or status phase of the control transfer.  Like other stalled endpoints,
+the xHCI driver needs to queue a Reset Endpoint command and move the
+hardware's control endpoint ring dequeue pointer past the failed control
+transfer (with a Set TR Dequeue Pointer or a Configure Endpoint command).
+
+Since the USB core doesn't call usb_hcd_reset_endpoint() for control
+endpoints, we need to do this in interrupt context when we get notified of
+the stalled transfer.  URBs may be queued to the hardware before these two
+commands complete.  The endpoint queue will be restarted once both
+commands complete.
 
 Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/xhci-hcd.c  |   88 ++++++++++++++++++++++++++++++++++++++++---
- drivers/usb/host/xhci-ring.c |    4 +
- drivers/usb/host/xhci.h      |    2 
- 3 files changed, 89 insertions(+), 5 deletions(-)
+ drivers/usb/host/xhci-hcd.c  |   35 ++++++++++++++++++++++++-----------
+ drivers/usb/host/xhci-ring.c |   33 ++++++++++++++++++++++++++++++---
+ drivers/usb/host/xhci.h      |    4 ++++
+ 3 files changed, 58 insertions(+), 14 deletions(-)
 
 --- a/drivers/usb/host/xhci.h
 +++ b/drivers/usb/host/xhci.h
-@@ -601,6 +601,8 @@ struct xhci_ep_ctx {
- /* bit 7 is Host Initiate Disable - for disabling stream selection */
- #define MAX_BURST(p)	(((p)&0xff) << 8)
- #define MAX_PACKET(p)	(((p)&0xffff) << 16)
-+#define MAX_PACKET_MASK		(0xffff << 16)
-+#define MAX_PACKET_DECODED(p)	(((p) >> 16) & 0xffff)
+@@ -589,6 +589,7 @@ struct xhci_ep_ctx {
+  */
+ #define	FORCE_EVENT	(0x1)
+ #define ERROR_COUNT(p)	(((p) & 0x3) << 1)
++#define CTX_TO_EP_TYPE(p)	(((p) >> 3) & 0x7)
+ #define EP_TYPE(p)	((p) << 3)
+ #define ISOC_OUT_EP	1
+ #define BULK_OUT_EP	2
+@@ -1231,6 +1232,9 @@ void xhci_find_new_dequeue_state(struct 
+ void xhci_queue_new_dequeue_state(struct xhci_hcd *xhci,
+ 		struct xhci_ring *ep_ring, unsigned int slot_id,
+ 		unsigned int ep_index, struct xhci_dequeue_state *deq_state);
++void xhci_cleanup_stalled_ring(struct xhci_hcd *xhci,
++		struct usb_device *udev, struct usb_host_endpoint *ep,
++		unsigned int ep_index, struct xhci_ring *ep_ring);
  
- 
- /**
+ /* xHCI roothub code */
+ int xhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue, u16 wIndex,
 --- a/drivers/usb/host/xhci-hcd.c
 +++ b/drivers/usb/host/xhci-hcd.c
-@@ -601,6 +601,70 @@ int xhci_check_args(struct usb_hcd *hcd,
- 	return 1;
+@@ -1230,6 +1230,25 @@ void xhci_reset_bandwidth(struct usb_hcd
+ 	xhci_zero_in_ctx(xhci, virt_dev);
  }
  
-+static int xhci_configure_endpoint(struct xhci_hcd *xhci,
-+		struct usb_device *udev, struct xhci_virt_device *virt_dev,
-+		bool ctx_change);
-+
-+/*
-+ * Full speed devices may have a max packet size greater than 8 bytes, but the
-+ * USB core doesn't know that until it reads the first 8 bytes of the
-+ * descriptor.  If the usb_device's max packet size changes after that point,
-+ * we need to issue an evaluate context command and wait on it.
-+ */
-+static int xhci_check_maxpacket(struct xhci_hcd *xhci, unsigned int slot_id,
-+		unsigned int ep_index, struct urb *urb)
++void xhci_cleanup_stalled_ring(struct xhci_hcd *xhci,
++		struct usb_device *udev, struct usb_host_endpoint *ep,
++		unsigned int ep_index, struct xhci_ring *ep_ring)
 +{
-+	struct xhci_container_ctx *in_ctx;
-+	struct xhci_container_ctx *out_ctx;
-+	struct xhci_input_control_ctx *ctrl_ctx;
-+	struct xhci_ep_ctx *ep_ctx;
-+	int max_packet_size;
-+	int hw_max_packet_size;
-+	int ret = 0;
++	struct xhci_dequeue_state deq_state;
 +
-+	out_ctx = xhci->devs[slot_id]->out_ctx;
-+	ep_ctx = xhci_get_ep_ctx(xhci, out_ctx, ep_index);
-+	hw_max_packet_size = MAX_PACKET_DECODED(ep_ctx->ep_info2);
-+	max_packet_size = urb->dev->ep0.desc.wMaxPacketSize;
-+	if (hw_max_packet_size != max_packet_size) {
-+		xhci_dbg(xhci, "Max Packet Size for ep 0 changed.\n");
-+		xhci_dbg(xhci, "Max packet size in usb_device = %d\n",
-+				max_packet_size);
-+		xhci_dbg(xhci, "Max packet size in xHCI HW = %d\n",
-+				hw_max_packet_size);
-+		xhci_dbg(xhci, "Issuing evaluate context command.\n");
++	xhci_dbg(xhci, "Cleaning up stalled endpoint ring\n");
++	/* We need to move the HW's dequeue pointer past this TD,
++	 * or it will attempt to resend it on the next doorbell ring.
++	 */
++	xhci_find_new_dequeue_state(xhci, udev->slot_id,
++			ep_index, ep_ring->stopped_td, &deq_state);
 +
-+		/* Set up the modified control endpoint 0 */
-+		xhci_endpoint_copy(xhci, xhci->devs[slot_id], ep_index);
-+		in_ctx = xhci->devs[slot_id]->in_ctx;
-+		ep_ctx = xhci_get_ep_ctx(xhci, in_ctx, ep_index);
-+		ep_ctx->ep_info2 &= ~MAX_PACKET_MASK;
-+		ep_ctx->ep_info2 |= MAX_PACKET(max_packet_size);
-+
-+		/* Set up the input context flags for the command */
-+		/* FIXME: This won't work if a non-default control endpoint
-+		 * changes max packet sizes.
-+		 */
-+		ctrl_ctx = xhci_get_input_control_ctx(xhci, in_ctx);
-+		ctrl_ctx->add_flags = EP0_FLAG;
-+		ctrl_ctx->drop_flags = 0;
-+
-+		xhci_dbg(xhci, "Slot %d input context\n", slot_id);
-+		xhci_dbg_ctx(xhci, in_ctx, ep_index);
-+		xhci_dbg(xhci, "Slot %d output context\n", slot_id);
-+		xhci_dbg_ctx(xhci, out_ctx, ep_index);
-+
-+		ret = xhci_configure_endpoint(xhci, urb->dev,
-+				xhci->devs[slot_id], true);
-+
-+		/* Clean up the input context for later use by bandwidth
-+		 * functions.
-+		 */
-+		ctrl_ctx->add_flags = SLOT_FLAG;
-+	}
-+	return ret;
++	xhci_dbg(xhci, "Queueing new dequeue state\n");
++	xhci_queue_new_dequeue_state(xhci, ep_ring,
++			udev->slot_id,
++			ep_index, &deq_state);
 +}
 +
- /*
-  * non-error returns are a promise to giveback() the urb later
-  * we drop ownership so next owner (or urb unlink) can get it
-@@ -612,13 +676,13 @@ int xhci_urb_enqueue(struct usb_hcd *hcd
- 	int ret = 0;
- 	unsigned int slot_id, ep_index;
+ /* Deal with stalled endpoints.  The core should have sent the control message
+  * to clear the halt condition.  However, we need to make the xHCI hardware
+  * reset its sequence number, since a device will expect a sequence number of
+@@ -1244,7 +1263,6 @@ void xhci_endpoint_reset(struct usb_hcd 
+ 	unsigned int ep_index;
+ 	unsigned long flags;
+ 	int ret;
+-	struct xhci_dequeue_state deq_state;
+ 	struct xhci_ring *ep_ring;
  
-+
- 	if (!urb || xhci_check_args(hcd, urb->dev, urb->ep, true, __func__) <= 0)
- 		return -EINVAL;
- 
- 	slot_id = urb->dev->slot_id;
- 	ep_index = xhci_get_endpoint_index(&urb->ep->desc);
- 
--	spin_lock_irqsave(&xhci->lock, flags);
- 	if (!xhci->devs || !xhci->devs[slot_id]) {
- 		if (!in_interrupt())
- 			dev_warn(&urb->dev->dev, "WARN: urb submitted for dev with no Slot ID\n");
-@@ -631,19 +695,33 @@ int xhci_urb_enqueue(struct usb_hcd *hcd
- 		ret = -ESHUTDOWN;
- 		goto exit;
+ 	xhci = hcd_to_xhci(hcd);
+@@ -1261,6 +1279,10 @@ void xhci_endpoint_reset(struct usb_hcd 
+ 				ep->desc.bEndpointAddress);
+ 		return;
  	}
--	if (usb_endpoint_xfer_control(&urb->ep->desc))
-+	if (usb_endpoint_xfer_control(&urb->ep->desc)) {
-+		/* Check to see if the max packet size for the default control
-+		 * endpoint changed during FS device enumeration
-+		 */
-+		if (urb->dev->speed == USB_SPEED_FULL) {
-+			ret = xhci_check_maxpacket(xhci, slot_id,
-+					ep_index, urb);
-+			if (ret < 0)
-+				return ret;
-+		}
-+
- 		/* We have a spinlock and interrupts disabled, so we must pass
- 		 * atomic context to this function, which may allocate memory.
- 		 */
-+		spin_lock_irqsave(&xhci->lock, flags);
- 		ret = xhci_queue_ctrl_tx(xhci, GFP_ATOMIC, urb,
- 				slot_id, ep_index);
--	else if (usb_endpoint_xfer_bulk(&urb->ep->desc))
-+		spin_unlock_irqrestore(&xhci->lock, flags);
-+	} else if (usb_endpoint_xfer_bulk(&urb->ep->desc)) {
-+		spin_lock_irqsave(&xhci->lock, flags);
- 		ret = xhci_queue_bulk_tx(xhci, GFP_ATOMIC, urb,
- 				slot_id, ep_index);
--	else
-+		spin_unlock_irqrestore(&xhci->lock, flags);
-+	} else {
- 		ret = -EINVAL;
++	if (usb_endpoint_xfer_control(&ep->desc)) {
++		xhci_dbg(xhci, "Control endpoint stall already handled.\n");
++		return;
 +	}
- exit:
--	spin_unlock_irqrestore(&xhci->lock, flags);
- 	return ret;
- }
  
+ 	xhci_dbg(xhci, "Queueing reset endpoint command\n");
+ 	spin_lock_irqsave(&xhci->lock, flags);
+@@ -1271,16 +1293,7 @@ void xhci_endpoint_reset(struct usb_hcd 
+ 	 * command.  Better hope that last command worked!
+ 	 */
+ 	if (!ret) {
+-		xhci_dbg(xhci, "Cleaning up stalled endpoint ring\n");
+-		/* We need to move the HW's dequeue pointer past this TD,
+-		 * or it will attempt to resend it on the next doorbell ring.
+-		 */
+-		xhci_find_new_dequeue_state(xhci, udev->slot_id,
+-				ep_index, ep_ring->stopped_td, &deq_state);
+-		xhci_dbg(xhci, "Queueing new dequeue state\n");
+-		xhci_queue_new_dequeue_state(xhci, ep_ring,
+-				udev->slot_id,
+-				ep_index, &deq_state);
++		xhci_cleanup_stalled_ring(xhci, udev, ep, ep_index, ep_ring);
+ 		kfree(ep_ring->stopped_td);
+ 		xhci_ring_cmd_db(xhci);
+ 	}
 --- a/drivers/usb/host/xhci-ring.c
 +++ b/drivers/usb/host/xhci-ring.c
-@@ -701,6 +701,10 @@ static void handle_cmd_completion(struct
- 		xhci->devs[slot_id]->cmd_status = GET_COMP_CODE(event->status);
- 		complete(&xhci->devs[slot_id]->cmd_completion);
- 		break;
-+	case TRB_TYPE(TRB_EVAL_CONTEXT):
-+		xhci->devs[slot_id]->cmd_status = GET_COMP_CODE(event->status);
-+		complete(&xhci->devs[slot_id]->cmd_completion);
-+		break;
- 	case TRB_TYPE(TRB_ADDR_DEV):
- 		xhci->devs[slot_id]->cmd_status = GET_COMP_CODE(event->status);
- 		complete(&xhci->addr_dev);
+@@ -817,6 +817,7 @@ static int handle_tx_event(struct xhci_h
+ {
+ 	struct xhci_virt_device *xdev;
+ 	struct xhci_ring *ep_ring;
++	unsigned int slot_id;
+ 	int ep_index;
+ 	struct xhci_td *td = 0;
+ 	dma_addr_t event_dma;
+@@ -827,7 +828,8 @@ static int handle_tx_event(struct xhci_h
+ 	struct xhci_ep_ctx *ep_ctx;
+ 
+ 	xhci_dbg(xhci, "In %s\n", __func__);
+-	xdev = xhci->devs[TRB_TO_SLOT_ID(event->flags)];
++	slot_id = TRB_TO_SLOT_ID(event->flags);
++	xdev = xhci->devs[slot_id];
+ 	if (!xdev) {
+ 		xhci_err(xhci, "ERROR Transfer event pointed to bad slot\n");
+ 		return -ENODEV;
+@@ -941,6 +943,25 @@ static int handle_tx_event(struct xhci_h
+ 			xhci_warn(xhci, "WARN: short transfer on control ep\n");
+ 			status = -EREMOTEIO;
+ 			break;
++		case COMP_STALL:
++			/* Did we transfer part of the data (middle) phase? */
++			if (event_trb != ep_ring->dequeue &&
++					event_trb != td->last_trb)
++				td->urb->actual_length =
++					td->urb->transfer_buffer_length
++					- TRB_LEN(event->transfer_len);
++			else
++				td->urb->actual_length = 0;
++
++			ep_ring->stopped_td = td;
++			ep_ring->stopped_trb = event_trb;
++			xhci_queue_reset_ep(xhci, slot_id, ep_index);
++			xhci_cleanup_stalled_ring(xhci,
++					td->urb->dev,
++					td->urb->ep,
++					ep_index, ep_ring);
++			xhci_ring_cmd_db(xhci);
++			goto td_cleanup;
+ 		default:
+ 			/* Others already handled above */
+ 			break;
+@@ -1083,6 +1104,7 @@ static int handle_tx_event(struct xhci_h
+ 			inc_deq(xhci, ep_ring, false);
+ 		}
+ 
++td_cleanup:
+ 		/* Clean up the endpoint's TD list */
+ 		urb = td->urb;
+ 		list_del(&td->td_list);
+@@ -1091,8 +1113,13 @@ static int handle_tx_event(struct xhci_h
+ 			list_del(&td->cancelled_td_list);
+ 			ep_ring->cancels_pending--;
+ 		}
+-		/* Leave the TD around for the reset endpoint function to use */
+-		if (GET_COMP_CODE(event->transfer_len) != COMP_STALL) {
++		/* Leave the TD around for the reset endpoint function to use
++		 * (but only if it's not a control endpoint, since we already
++		 * queued the Set TR dequeue pointer command for stalled
++		 * control endpoints).
++		 */
++		if (usb_endpoint_xfer_control(&urb->ep->desc) ||
++			GET_COMP_CODE(event->transfer_len) != COMP_STALL) {
+ 			kfree(td);
+ 		}
+ 		urb->hcpriv = NULL;
 
 
