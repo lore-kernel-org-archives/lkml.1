@@ -1,49 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbZJBTN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZJBTPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbZJBTN1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 15:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbZJBTNZ
+	id S1756893AbZJBTPx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 15:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbZJBTPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 15:13:25 -0400
-Received: from claw.goop.org ([74.207.240.146]:56289 "EHLO claw.goop.org"
+	Fri, 2 Oct 2009 15:15:51 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:11396 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754926AbZJBTNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 15:13:24 -0400
-Message-ID: <4AC650D6.5040800@goop.org>
-Date: Fri, 02 Oct 2009 12:13:26 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Shirley Ma <mashirle@us.ibm.com>
-CC: virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Kevin Bowling <kevinb@analograils.com>,
-       Andrew Jones <drjones@redhat.com>
-Subject: Re: INFO: task journal:337 blocked for more than 120 seconds
-References: <1254345112.8837.9.camel@localhost.localdomain>	 <4AC646D7.5030709@goop.org> <1254510407.7999.3.camel@localhost.localdomain>
-In-Reply-To: <1254510407.7999.3.camel@localhost.localdomain>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	id S1756580AbZJBTPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 15:15:47 -0400
+Date: Fri, 2 Oct 2009 15:15:01 -0400
+From: Valerie Aurora <vaurora@redhat.com>
+To: kevin granade <kevin.granade@gmail.com>
+Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andy Whitcroft <apw@canonical.com>,
+       Scott James Remnant <scott@canonical.com>,
+       Sandu Popa Marius <sandupopamarius@gmail.com>,
+       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>, Arnd Bergmann <arnd@arndb.de>,
+       Vladimir Dronnikov <dronnikov@gmail.com>,
+       Felix Fietkau <nbd@openwrt.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] Union mounts/writable overlays design
+Message-ID: <20091002191500.GB14665@shell>
+References: <20091001145547.GA29152@shell> <7004b08e0910010838i6d0a5f5xeed699be686f6906@mail.gmail.com> <20091001171547.GE29152@shell> <56A500B5-DEC5-4B4E-A224-6F5F2D702D2B@suse.de> <7004b08e0910011308n5acdee5u9d2853f2ef8f9c15@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7004b08e0910011308n5acdee5u9d2853f2ef8f9c15@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/02/09 12:06, Shirley Ma wrote:
-> On Fri, 2009-10-02 at 11:30 -0700, Jeremy Fitzhardinge wrote:
->   
->> I'm assuming from the lists you've posted to that this is under KVM? 
->> What disk drivers are you using (virtio or emulated)?
->>
->> Can you get a full stack backtrace of kjournald?
->>     
-> Yes, it's under KVM, disk driver is virtio. Since the io has issue, the
-> stack can't be saved on the disk. I have the image file attached here.
->   
+On Thu, Oct 01, 2009 at 03:08:46PM -0500, kevin granade wrote:
+> On Thu, Oct 1, 2009 at 12:55 PM, Jan Blunck <jblunck@suse.de> wrote:
+> > Am 01.10.2009 um 19:15 schrieb Valerie Aurora <vaurora@redhat.com>:
+> >
+> >> On Thu, Oct 01, 2009 at 10:38:27AM -0500, kevin granade wrote:
+> 
+> 
+> >>>> Non-features
+> >>>> ------------
+> >>>>
+> >>>> Features we do not currently plan to support as part of writable
+> >>>> overlays:
+> >>>>
+> >>>> Online upgrade: E.g., installing software on a file system NFS
+> >>>> exported to clients while the clients are still up and running.
+> >>>> Allowing the read-only bottom layer to change while the writable
+> >>>> overlay file system is mounted invalidates our locking strategy.
+> >>>>
+> >>>
+> >>> So as long as the RO filesystem is NOT mounted as part of an overlay, you
+> >>> could modify it and then re-construct the previous overlay and things
+> >>> will
+> >>> work as expected?
+> >>> For example could one create a hard drive over CD overlay, then
+> >>> periodically
+> >>> (requiring a reboot probably) replace the underlying CD with a new
+> >>> version
+> >>> and automagically have new versions of software available? ?( obviously
+> >>> there are additional complexities in packaging to make this work, but
+> >>> having
+> >>> support in the kernel is the first step. )
+> >>
+> >> This could theoretically work, but the main problem is resolving
+> >> differences between files (always the big problem in upgrade). ?Say
+> >> you have /etc/passwd, you add a new user and write to it on the top
+> >> layer, and then the next upgrade adds a new user to the read-only
+> >> version. ?You're not going to see the new user.
+> >>
+> >
+> > No. Scripts that come with updated packages still need to run on the union.
+> > Otherwise this is just asking for problems. Probably you could come up with
+> > a clever merger if the update and the base image is still available.
+> >
+> 
+> Yes, that sort of thing is what I meant by "additional complexities in
+> packaging", and I understand that they are in no way trivial, but I
+> was mostly interested in whether that kind of behavior would be
+> supported at the kernel level at all.
 
-Ah, thank you.  The backtrace does indeed look very similar.
+To a first approximation, if your question looks anything like:
 
-(BTW, you could get a serial console with "qemu-kvm -nographic -append
-console=ttyS0 ...")
+"Can I do [...] packaging [...] with writable overlays?"
 
-    J
+The answer is, no, you can't, and if you could, it wouldn't have the
+results you expected.
+
+Writable overlays are to packaging as file system snapshots were to
+source control - check out all the old papers, people were always
+saying, "And you can use it to make an easy diff of your changes to
+your source code!"  Now that we have decent source control, no one
+would dream of versioning their source control with file system level
+snapshots - what about commit grouping?  What about commit messages?
+What about annotation?
+
+I think packaging is at the same level today.  Seriously, go check out
+Puppet before hacking around with writable overlays.  It will probably
+fix your problems and give you more features.
+
+-VAL
