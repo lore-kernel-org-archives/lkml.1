@@ -1,61 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752410AbZJBNzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbZJBNs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752410AbZJBNzD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 09:55:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZJBNzB
+	id S1757901AbZJBNs2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 09:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757883AbZJBNs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 09:55:01 -0400
-Received: from mxcampus2.tau.ac.il ([132.66.7.202]:11200 "EHLO
-	mxcampus2.tau.ac.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbZJBNzB convert rfc822-to-8bit (ORCPT
+	Fri, 2 Oct 2009 09:48:27 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:55933 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757775AbZJBNs0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 09:55:01 -0400
-X-Greylist: delayed 615 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Oct 2009 09:55:00 EDT
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar4DAESgxUqEQhFRYWdsb2JhbACaZxcVB7xGhCwE
-X-IronPort-AV: E=Sophos;i="4.44,494,1249246800"; 
-   d="scan'208";a="84585374"
-Message-ID: <20091002154447.62823bfv3qntxrrj@webmail.tau.ac.il>
-Date: Fri, 02 Oct 2009 15:44:47 +0200
-From: tomerma1@post.tau.ac.il
-To: linux-kernel@vger.kernel.org
-Subject: How to tell when a gendisk has been freed?
+	Fri, 2 Oct 2009 09:48:26 -0400
+X-IronPort-AV: E=Sophos;i="4.44,494,1249272000"; 
+   d="scan'208";a="7117514"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=UTF-8;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.2)
+Subject: RE: [Uclinux-dist-devel] [PATCH v2] mfd: ADP5520 Multifunction LCDBacklight and Keypad Input Device Driver
+Date: Fri, 2 Oct 2009 14:48:27 +0100
+Message-ID: <8A42379416420646B9BFAC9682273B6D0E33B1AA@limkexm3.ad.analog.com>
+In-Reply-To: <8A42379416420646B9BFAC9682273B6D0E33AC35@limkexm3.ad.analog.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+thread-topic: [Uclinux-dist-devel] [PATCH v2] mfd: ADP5520 Multifunction LCDBacklight and Keypad Input Device Driver
+thread-index: AcpCoKkp7zT02K+cSQWdTYujkjhMDwAl7YWQAAqMDsA=
+References: <1253212036-29445-1-git-send-email-vapier@gentoo.org><1253682664-27040-1-git-send-email-vapier@gentoo.org><20091001140948.GD10199@sortiz.org> <8A42379416420646B9BFAC9682273B6D0E33AC35@limkexm3.ad.analog.com>
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       "Samuel Ortiz" <sameo@linux.intel.com>,
+       "Mike Frysinger" <vapier@gentoo.org>, <tglx@linutronix.de>
+CC: <uclinux-dist-devel@blackfin.uclinux.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 Oct 2009 13:48:29.0704 (UTC) FILETIME=[0621A080:01CA4367]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>From: uclinux-dist-devel-bounces@blackfin.uclinux.org
+[mailto:uclinux-dist-devel-
+>bounces@blackfin.uclinux.org] On Behalf Of Hennerich, Michael
+>Device Driver
+>
+>Hi Samuel,
+>
+>>From: Samuel Ortiz [mailto:sameo@linux.intel.com]
+>>Hi Mike,
+>>
+>>Some comments on this patch:
+>>
+>>On Wed, Sep 23, 2009 at 01:11:04AM -0400, Mike Frysinger wrote:
+>>> +static irqreturn_t adp5520_irq_handler(int irq, void *data)
+>>> +{
+>>> +	struct adp5520_chip *chip = data;
+>>> +
+>>> +	disable_irq_nosync(irq);
+>>> +	schedule_work(&chip->irq_work);
+>>Have you considered using a threaded irq handler here ?
+>
+>The Linux version I developed this driver on didn't feature threaded
+irq
+>handlers.
+>But thanks I'm going to take a look here.
 
-Im writing a block device that does asynchronous mirroring. The user  
-creates a device by giving a local device and
-connecting to a remote device (on the net), mirroring writes to both.
+Hi Samuel,
 
-When the user is done with the device i would like to give him the  
-option of deleting the device. To do that, i first
-stop taking requests (i disallow opens by looking at a variable i  
-allocated for that device (a custom struct)), next
-wait until there are no more active make_requests, and finally i free  
-everything... However, theres a problem
-with open - when i free the device, the open dereferences a variable i  
-allocated for that device, but i have already
-freed the device.
+Well the threaded irq handlers are no option here, since we use a Level
+Sensitive Interrupt. 
+The work queue here is to schedule the main irq handler outside hardirq
+context.
+I2C can't we invoked form none sleepy context, so we can't clear the
+interrupt. 
+This will cause that we execute the hardirq over and over again,
+preventing the irq thread to be run.
 
-The only safe way to free the device is when i know for sure no more  
-opens or make_requests can be called...
-To do that i have to know when the gendisk is gone (even if i  
-del_gendisk it, and wait until the opener counter drops to
-zero, i cant be sure that another open isnt being executed at the moment)...
-However, i didnt see any way to do it, so i was wondering what is the  
-right way to do it?
+The threaded irqs with its current implementation also doesn't allow me
+to disable the irq in the hardirq handler.
 
-Thanks,
-      Tomer
+There have been some discussions about this on lkml recently.
+Until there is a way to workaround this issue (handle_level_oneshot_irq,
+etc.),
+I like to stick with: 
+
+>>> +	disable_irq_nosync(irq);
+>>> +	schedule_work(&chip->irq_work);
+
+Best regards,
+Michael
 
