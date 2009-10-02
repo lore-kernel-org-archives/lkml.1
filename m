@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbZJBQqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZJBQvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756892AbZJBQqw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 12:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbZJBQqv
+	id S1754085AbZJBQvc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 12:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZJBQvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 12:46:51 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:5968 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753587AbZJBQqu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 12:46:50 -0400
-X-Trace: 265475648/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.120.155/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.120.155
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Au0AANvLxUpPRXib/2dsb2JhbAAI2FKCNIF4BA
-X-IronPort-AV: E=Sophos;i="4.44,495,1249254000"; 
-   d="scan'208";a="265475648"
-Date: Fri, 2 Oct 2009 17:46:40 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Greg KH <gregkh@suse.de>
-cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [120/136] mm: munlock use follow_page
-In-Reply-To: <20091002012426.002095979@mini.kroah.org>
-Message-ID: <Pine.LNX.4.64.0910021736540.20933@sister.anvils>
-References: <20091002011548.335611824@mini.kroah.org> <20091002012426.002095979@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 2 Oct 2009 12:51:31 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51638 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746AbZJBQvb (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 12:51:31 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>, Corrado Zoccolo <czoccolo@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+In-Reply-To: Your message of "Fri, 02 Oct 2009 11:40:20 EDT."
+             <20091002154020.GC4494@redhat.com>
+From: Valdis.Kletnieks@vt.edu
+References: <200910021255.27689.czoccolo@gmail.com> <20091002124921.GA4494@redhat.com> <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com> <1254497520.10392.11.camel@marge.simson.net>
+            <20091002154020.GC4494@redhat.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1254502217_3334P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 02 Oct 2009 12:50:17 -0400
+Message-ID: <12774.1254502217@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Oct 2009, Greg KH wrote:
-> 2.6.31-stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> 
-> commit 408e82b78bcc9f1b47c76e833c3df97f675947de upstream.
-> 
-> Hiroaki Wakabayashi points out that when mlock() has been interrupted
-> by SIGKILL, the subsequent munlock() takes unnecessarily long because
-> its use of __get_user_pages() insists on faulting in all the pages
-> which mlock() never reached.
-> 
-> It's worse than slowness if mlock() is terminated by Out Of Memory kill:
-> the munlock_vma_pages_all() in exit_mmap() insists on faulting in all the
-> pages which mlock() could not find memory for; so innocent bystanders are
-> killed too, and perhaps the system hangs.
-> 
-> __get_user_pages() does a lot that's silly for munlock(): so remove the
-> munlock option from __mlock_vma_pages_range(), and use a simple loop of
-> follow_page()s in munlock_vma_pages_range() instead; ignoring absent
-> pages, and not marking present pages as accessed or dirty.
-> 
-> (Change munlock() to only go so far as mlock() reached?  That does not
-> work out, given the convention that mlock() claims complete success even
-> when it has to give up early - in part so that an underlying file can be
-> extended later, and those pages locked which earlier would give SIGBUS.)
+--==_Exmh_1254502217_3334P
+Content-Type: text/plain; charset=us-ascii
 
-Thanks a lot for including this fix in 2.6.31.2.
+On Fri, 02 Oct 2009 11:40:20 EDT, Vivek Goyal said:
 
-If I'd done my homework, I'd be asking you to include the equivalent
-in 2.6.30.9 (it's irrelevant to 2.6.27.36); but because of intervening
-changes, although it would appear to apply there, it would be wrong.
+> In that case, Corrado's suggestion of refining it further and disabling idling
+> for seeky process only on non-rotational media (SSD and hardware RAID), makes
+> sense to me.
 
-And it's more than a one-liner, so I'd need to retest properly.
-If there's ever a call for a 2.6.30.10, I ought to supply you with
-the proper patch; but for now, unless others disagree, let's not
-rush it for 2.6.30.9.
+Umm... I got petabytes of hardware RAID across the hall that very definitely
+*is* rotating.  Did you mean "SSD and disk systems with big honking caches
+that cover up the rotation"?  Because "RAID" and "big honking caches" are
+not *quite* the same thing, and I can just see that corner case coming out
+to bite somebody on the ass...
 
-Hugh
+
+--==_Exmh_1254502217_3334P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKxi9JcC3lWbTT17ARApP2AJ4i2rJ5d8WCfE9DU/OfTmNPSD1P/ACg1mVC
+KmoukBpnPxlD7yD8IMZMXw0=
+=qKY6
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1254502217_3334P--
