@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbZJBPQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbZJBPYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544AbZJBPQb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 11:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbZJBPQa
+	id S1755008AbZJBPYR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 11:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZJBPYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 11:16:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58440 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754097AbZJBPQ3 (ORCPT
+	Fri, 2 Oct 2009 11:24:17 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:26708 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751082AbZJBPYQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 11:16:29 -0400
-Date: Fri, 2 Oct 2009 08:14:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       riel@redhat.com
-Subject: Re: IO scheduler based IO controller V10
-In-Reply-To: <20091002145610.GD31616@kernel.dk>
-Message-ID: <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain>
-References: <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net> <20091001185816.GU14918@kernel.dk> <1254464628.7158.101.camel@marge.simson.net>
- <20091002080417.GG14918@kernel.dk> <20091002092409.GA19529@elte.hu> <20091002092839.GA26962@kernel.dk> <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain> <20091002145610.GD31616@kernel.dk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 2 Oct 2009 11:24:16 -0400
+X-IronPort-AV: E=Sophos;i="4.44,494,1249272000"; 
+   d="scan'208";a="5271773"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [Uclinux-dist-devel] [PATCH v2] mfd: ADP5520MultifunctionLCDBacklight and Keypad Input Device Driver
+Date: Fri, 2 Oct 2009 16:24:17 +0100
+Message-ID: <8A42379416420646B9BFAC9682273B6D0E33B3A5@limkexm3.ad.analog.com>
+In-Reply-To: <20091002143851.GD11133@sirena.org.uk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+thread-topic: [Uclinux-dist-devel] [PATCH v2] mfd: ADP5520MultifunctionLCDBacklight and Keypad Input Device Driver
+thread-index: AcpDbhQ+qmefw3rSRrOx5InIM/11hwABZxGw
+References: <8A42379416420646B9BFAC9682273B6D0E33AC35@limkexm3.ad.analog.com> <8A42379416420646B9BFAC9682273B6D0E33B1AA@limkexm3.ad.analog.com> <20091002142725.GC11133@sirena.org.uk> <8A42379416420646B9BFAC9682273B6D0E33B2B6@limkexm3.ad.analog.com> <20091002143851.GD11133@sirena.org.uk>
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Mark Brown" <broonie@opensource.wolfsonmicro.com>
+CC: "Samuel Ortiz" <sameo@linux.intel.com>,
+       "Mike Frysinger" <vapier@gentoo.org>, <tglx@linutronix.de>,
+       <uclinux-dist-devel@blackfin.uclinux.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 02 Oct 2009 15:24:19.0637 (UTC) FILETIME=[695BC650:01CA4374]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
+>On Fri, Oct 02, 2009 at 03:37:15PM +0100, Hennerich, Michael wrote:
+>
+>> So I guess your patch won't work on 2.6.31
+>
+>Yes, it doesn't work in 2.6.31 - I waited until the relevant genirq
+>stuff had hit mainline before I submitted it.
+>
+>> >This is essentially what a threaded IRQ handler does with current
+>> >mainline.  There were issues in 2.6.31 but I believe all Thomas'
+fixes
+>> >have been merged now.
+>
+>> Do you know when they merged?
+>> They are not in latest staple 2.6.31.1.
+>
+>2.6.32.
 
+Thanks! IRQF_ONESHOT does the trick.
 
-On Fri, 2 Oct 2009, Jens Axboe wrote:
-> 
-> Mostly they care about throughput, and when they come running because
-> some their favorite app/benchmark/etc is now 2% slower, I get to hear
-> about it all the time. So yes, latency is not ignored, but mostly they
-> yack about throughput.
-
-The reason they yack about it is that they can measure it.
-
-Give them the benchmark where it goes the other way, and tell them why 
-they see a 2% deprovement. Give them some button they can tweak, because 
-they will.
-
-But make the default be low-latency. Because everybody cares about low 
-latency, and the people who do so are _not_ the people who you give 
-buttons to tweak things with.
-
-> I agree, we can easily make CFQ be very about about latency. If you
-> think that is fine, then lets just do that. Then we'll get to fix the
-> server side up when the next RHEL/SLES/whatever cycle is honing in on a
-> kernel, hopefully we wont have to start over when that happens.
-
-I really think we should do latency first, and throughput second.
-
-It's _easy_ to get throughput. The people who care just about throughput 
-can always just disable all the work we do for latency. If they really 
-care about just throughput, they won't want fairness either - none of that 
-complex stuff.
-
-			Linus
+-Michael
