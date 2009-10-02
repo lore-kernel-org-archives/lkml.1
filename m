@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbZJBBhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZJBBeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932153AbZJBBhk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932116AbZJBBeV
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1756920AbZJBBeV (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 1 Oct 2009 21:34:21 -0400
-Received: from kroah.org ([198.145.64.141]:33531 "EHLO coco.kroah.org"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbZJBBeS
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 1 Oct 2009 21:34:18 -0400
+Received: from kroah.org ([198.145.64.141]:33538 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756317AbZJBBeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:34:14 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:25 2009
-Message-Id: <20091002012425.842096239@mini.kroah.org>
+	id S1756307AbZJBBeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:34:15 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:26 2009
+Message-Id: <20091002012426.002095979@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:47 -0700
+Date: Thu, 01 Oct 2009 18:17:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: [119/136] page-allocator: limit the number of MIGRATE_RESERVE pageblocks per zone
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Mel Gorman <mel@csn.ul.ie>
+Subject: [120/136] mm: munlock use follow_page
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=page-allocator-limit-the-number-of-migrate_reserve-pageblocks-per-zone.patch
+Content-Disposition: inline; filename=mm-munlock-use-follow_page.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,81 +33,232 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Mel Gorman <mel@csn.ul.ie>
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-commit 78986a678f6ec3759a01976749f4437d8bf2d6c3 upstream.
+commit 408e82b78bcc9f1b47c76e833c3df97f675947de upstream.
 
-After anti-fragmentation was merged, a bug was reported whereby devices
-that depended on high-order atomic allocations were failing.  The solution
-was to preserve a property in the buddy allocator which tended to keep the
-minimum number of free pages in the zone at the lower physical addresses
-and contiguous.  To preserve this property, MIGRATE_RESERVE was introduced
-and a number of pageblocks at the start of a zone would be marked
-"reserve", the number of which depended on min_free_kbytes.
+Hiroaki Wakabayashi points out that when mlock() has been interrupted
+by SIGKILL, the subsequent munlock() takes unnecessarily long because
+its use of __get_user_pages() insists on faulting in all the pages
+which mlock() never reached.
 
-Anti-fragmentation works by avoiding the mixing of page migratetypes
-within the same pageblock.  One way of helping this is to increase
-min_free_kbytes because it becomes less like that it will be necessary to
-place pages of of MIGRATE_RESERVE is unbounded, the free memory is kept
-there in large contiguous blocks instead of helping anti-fragmentation as
-much as it should.  With the page-allocator tracepoint patches applied, it
-was found during anti-fragmentation tests that the number of
-fragmentation-related events were far higher than expected even with
-min_free_kbytes at higher values.
+It's worse than slowness if mlock() is terminated by Out Of Memory kill:
+the munlock_vma_pages_all() in exit_mmap() insists on faulting in all the
+pages which mlock() could not find memory for; so innocent bystanders are
+killed too, and perhaps the system hangs.
 
-This patch limits the number of MIGRATE_RESERVE blocks that exist per zone
-to two.  For example, with a sufficient min_free_kbytes, 4MB of memory
-will be kept aside on an x86-64 and remain more or less free and
-contiguous for the systems uptime.  This should be sufficient for devices
-depending on high-order atomic allocations while helping fragmentation
-control when min_free_kbytes is tuned appropriately.  As side-effect of
-this patch is that the reserve variable is converted to int as unsigned
-long was the wrong type to use when ensuring that only the required number
-of reserve blocks are created.
+__get_user_pages() does a lot that's silly for munlock(): so remove the
+munlock option from __mlock_vma_pages_range(), and use a simple loop of
+follow_page()s in munlock_vma_pages_range() instead; ignoring absent
+pages, and not marking present pages as accessed or dirty.
 
-With the patches applied, fragmentation-related events as measured by the
-page allocator tracepoints were significantly reduced when running some
-fragmentation stress-tests on systems with min_free_kbytes tuned to a
-value appropriate for hugepage allocations at runtime.  On x86, the events
-recorded were reduced by 99.8%, on x86-64 by 99.72% and on ppc64 by
-99.83%.
+(Change munlock() to only go so far as mlock() reached?  That does not
+work out, given the convention that mlock() claims complete success even
+when it has to give up early - in part so that an underlying file can be
+extended later, and those pages locked which earlier would give SIGBUS.)
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Acked-by: Rik van Riel <riel@redhat.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Hiroaki Wakabayashi <primulaelatior@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page_alloc.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ mm/mlock.c |   99 ++++++++++++++++++++++++-------------------------------------
+ 1 file changed, 40 insertions(+), 59 deletions(-)
 
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2783,7 +2783,8 @@ static void setup_zone_migrate_reserve(s
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -139,49 +139,36 @@ static void munlock_vma_page(struct page
+ }
+ 
+ /**
+- * __mlock_vma_pages_range() -  mlock/munlock a range of pages in the vma.
++ * __mlock_vma_pages_range() -  mlock a range of pages in the vma.
+  * @vma:   target vma
+  * @start: start address
+  * @end:   end address
+- * @mlock: 0 indicate munlock, otherwise mlock.
+  *
+- * If @mlock == 0, unlock an mlocked range;
+- * else mlock the range of pages.  This takes care of making the pages present ,
+- * too.
++ * This takes care of making the pages present too.
+  *
+  * return 0 on success, negative error code on error.
+  *
+  * vma->vm_mm->mmap_sem must be held for at least read.
+  */
+ static long __mlock_vma_pages_range(struct vm_area_struct *vma,
+-				   unsigned long start, unsigned long end,
+-				   int mlock)
++				    unsigned long start, unsigned long end)
  {
- 	unsigned long start_pfn, pfn, end_pfn;
- 	struct page *page;
--	unsigned long reserve, block_migratetype;
-+	unsigned long block_migratetype;
-+	int reserve;
+ 	struct mm_struct *mm = vma->vm_mm;
+ 	unsigned long addr = start;
+ 	struct page *pages[16]; /* 16 gives a reasonable batch */
+ 	int nr_pages = (end - start) / PAGE_SIZE;
+ 	int ret = 0;
+-	int gup_flags = 0;
++	int gup_flags;
  
- 	/* Get the start pfn, end pfn and the number of blocks to reserve */
- 	start_pfn = zone->zone_start_pfn;
-@@ -2791,6 +2792,15 @@ static void setup_zone_migrate_reserve(s
- 	reserve = roundup(min_wmark_pages(zone), pageblock_nr_pages) >>
- 							pageblock_order;
+ 	VM_BUG_ON(start & ~PAGE_MASK);
+ 	VM_BUG_ON(end   & ~PAGE_MASK);
+ 	VM_BUG_ON(start < vma->vm_start);
+ 	VM_BUG_ON(end   > vma->vm_end);
+-	VM_BUG_ON((!rwsem_is_locked(&mm->mmap_sem)) &&
+-		  (atomic_read(&mm->mm_users) != 0));
+-
+-	/*
+-	 * mlock:   don't page populate if vma has PROT_NONE permission.
+-	 * munlock: always do munlock although the vma has PROT_NONE
+-	 *          permission, or SIGKILL is pending.
+-	 */
+-	if (!mlock)
+-		gup_flags |= GUP_FLAGS_IGNORE_VMA_PERMISSIONS |
+-			     GUP_FLAGS_IGNORE_SIGKILL;
++	VM_BUG_ON(!rwsem_is_locked(&mm->mmap_sem));
  
-+	/*
-+	 * Reserve blocks are generally in place to help high-order atomic
-+	 * allocations that are short-lived. A min_free_kbytes value that
-+	 * would result in more than 2 reserve blocks for atomic allocations
-+	 * is assumed to be in place to help anti-fragmentation for the
-+	 * future allocation of hugepages at runtime.
-+	 */
-+	reserve = min(2, reserve);
++	gup_flags = 0;
+ 	if (vma->vm_flags & VM_WRITE)
+-		gup_flags |= GUP_FLAGS_WRITE;
++		gup_flags = GUP_FLAGS_WRITE;
+ 
+ 	while (nr_pages > 0) {
+ 		int i;
+@@ -201,19 +188,10 @@ static long __mlock_vma_pages_range(stru
+ 		 * This can happen for, e.g., VM_NONLINEAR regions before
+ 		 * a page has been allocated and mapped at a given offset,
+ 		 * or for addresses that map beyond end of a file.
+-		 * We'll mlock the the pages if/when they get faulted in.
++		 * We'll mlock the pages if/when they get faulted in.
+ 		 */
+ 		if (ret < 0)
+ 			break;
+-		if (ret == 0) {
+-			/*
+-			 * We know the vma is there, so the only time
+-			 * we cannot get a single page should be an
+-			 * error (ret < 0) case.
+-			 */
+-			WARN_ON(1);
+-			break;
+-		}
+ 
+ 		lru_add_drain();	/* push cached pages to LRU */
+ 
+@@ -224,28 +202,22 @@ static long __mlock_vma_pages_range(stru
+ 			/*
+ 			 * Because we lock page here and migration is blocked
+ 			 * by the elevated reference, we need only check for
+-			 * page truncation (file-cache only).
++			 * file-cache page truncation.  This page->mapping
++			 * check also neatly skips over the ZERO_PAGE(),
++			 * though if that's common we'd prefer not to lock it.
+ 			 */
+-			if (page->mapping) {
+-				if (mlock)
+-					mlock_vma_page(page);
+-				else
+-					munlock_vma_page(page);
+-			}
++			if (page->mapping)
++				mlock_vma_page(page);
+ 			unlock_page(page);
+-			put_page(page);		/* ref from get_user_pages() */
+-
+-			/*
+-			 * here we assume that get_user_pages() has given us
+-			 * a list of virtually contiguous pages.
+-			 */
+-			addr += PAGE_SIZE;	/* for next get_user_pages() */
+-			nr_pages--;
++			put_page(page);	/* ref from get_user_pages() */
+ 		}
 +
- 	for (pfn = start_pfn; pfn < end_pfn; pfn += pageblock_nr_pages) {
- 		if (!pfn_valid(pfn))
- 			continue;
++		addr += ret * PAGE_SIZE;
++		nr_pages -= ret;
+ 		ret = 0;
+ 	}
+ 
+-	return ret;	/* count entire vma as locked_vm */
++	return ret;	/* 0 or negative error code */
+ }
+ 
+ /*
+@@ -289,7 +261,7 @@ long mlock_vma_pages_range(struct vm_are
+ 			is_vm_hugetlb_page(vma) ||
+ 			vma == get_gate_vma(current))) {
+ 
+-		__mlock_vma_pages_range(vma, start, end, 1);
++		__mlock_vma_pages_range(vma, start, end);
+ 
+ 		/* Hide errors from mmap() and other callers */
+ 		return 0;
+@@ -310,7 +282,6 @@ no_mlock:
+ 	return nr_pages;		/* error or pages NOT mlocked */
+ }
+ 
+-
+ /*
+  * munlock_vma_pages_range() - munlock all pages in the vma range.'
+  * @vma - vma containing range to be munlock()ed.
+@@ -330,10 +301,24 @@ no_mlock:
+  * free them.  This will result in freeing mlocked pages.
+  */
+ void munlock_vma_pages_range(struct vm_area_struct *vma,
+-			   unsigned long start, unsigned long end)
++			     unsigned long start, unsigned long end)
+ {
++	unsigned long addr;
++
++	lru_add_drain();
+ 	vma->vm_flags &= ~VM_LOCKED;
+-	__mlock_vma_pages_range(vma, start, end, 0);
++
++	for (addr = start; addr < end; addr += PAGE_SIZE) {
++		struct page *page = follow_page(vma, addr, FOLL_GET);
++		if (page) {
++			lock_page(page);
++			if (page->mapping)
++				munlock_vma_page(page);
++			unlock_page(page);
++			put_page(page);
++		}
++		cond_resched();
++	}
+ }
+ 
+ /*
+@@ -400,18 +385,14 @@ success:
+ 	 * It's okay if try_to_unmap_one unmaps a page just after we
+ 	 * set VM_LOCKED, __mlock_vma_pages_range will bring it back.
+ 	 */
+-	vma->vm_flags = newflags;
+ 
+ 	if (lock) {
+-		ret = __mlock_vma_pages_range(vma, start, end, 1);
+-
+-		if (ret > 0) {
+-			mm->locked_vm -= ret;
+-			ret = 0;
+-		} else
+-			ret = __mlock_posix_error_return(ret); /* translate if needed */
++		vma->vm_flags = newflags;
++		ret = __mlock_vma_pages_range(vma, start, end);
++		if (ret < 0)
++			ret = __mlock_posix_error_return(ret);
+ 	} else {
+-		__mlock_vma_pages_range(vma, start, end, 0);
++		munlock_vma_pages_range(vma, start, end);
+ 	}
+ 
+ out:
 
 
