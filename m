@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932106AbZJBRog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZJBRxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932106AbZJBRog (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932075AbZJBRof
+	id S1755393AbZJBRxb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZJBRxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:44:35 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:36540 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757801AbZJBRoe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:44:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:content-type;
-        b=GyfPMugM3I8+qGEhCD8SWy3By9715ZQ1yiK9BTgbgyZ539n/E7YOnqWMcWvV08zGdy
-         Gxb8Bs7T6vURp/C3xcCb77m4c9VT78mukTp1OqC/t+urGn+MJKcQ4X3HvUtcFst9Q3JV
-         fyaemCqsc4zoOzTdXmzErLvPiS2IlCbXitmi8=
+	Fri, 2 Oct 2009 13:53:30 -0400
+Received: from kroah.org ([198.145.64.141]:33649 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752827AbZJBRxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:53:30 -0400
+Date: Fri, 2 Oct 2009 10:49:12 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Mel Gorman <mel@csn.ul.ie>,
+       Minchan Kim <minchan.kim@gmail.com>
+Subject: [patch 10/09] mm: fix anonymous dirtying
+Message-ID: <20091002174912.GA21917@kroah.com>
+References: <20091001231938.GA29593@kroah.com>
 MIME-Version: 1.0
-Date: Fri, 2 Oct 2009 13:44:37 -0400
-X-Google-Sender-Auth: 0577e9f37fe2e39d
-Message-ID: <cb0375e10910021044n182d696dy8fd566925e46b134@mail.gmail.com>
-Subject: High power consumption after suspend/resume cycle
-From: Andrew Lutomirski <luto@mit.edu>
-To: linux-kernel@vger.kernel.org, linux-thinkpad@linux-thinkpad.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091001231938.GA29593@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all-
 
-I'm running a git kernel that's slightly newer than 2.6.32-rc1.
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-First, thanks for all the great work everywhere on laptop power
-consumption -- on my Lenovo X200s, it looks like Linux is getting
-close to Windows (Windows wins by about 0.7W, except that its power
-usage frequently spikes since Windows apparently still doesn't know
-how to sit still and do nothing, whereas Linux's seems more stable.).
-Windows after a reboot, even running KDE with compositing enabled and
-while connected to wifi, at least after some tweaking.
+------------------
 
-There's a catch, though: after a suspend/resume cycle, power
-consumption goes up by over well over a watt.  (On a system that draws
-about 7 watts before suspending, that's a big deal.)  I've tried
-turning off X, suspending with 'echo mem > /sys/power/state' to avoid
-any distro scripts running, and manually restoring SATA power saving
-settings, but it still happens.  I even tried unbinding e1000e and
-both USB drivers, unloading the i2400 (wimax) driver, iwlagn, and
-iwlcore, and it still happens.  This is 100% reproducible, and I'd be
-happy to test things.
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-This could be a BIOS bug I suppose (although I'm running the latest
-BIOS), but Windows 7 does not have this problem at all.
+commit 1ac0cb5d0e22d5e483f56b2bc12172dec1cf7536 upstream.
 
-Any ideas about what to try or what subsystem to blame?
+do_anonymous_page() has been wrong to dirty the pte regardless.
+If it's not going to mark the pte writable, then it won't help
+to mark it dirty here, and clogs up memory with pages which will
+need swap instead of being thrown away.  Especially wrong if no
+overcommit is chosen, and this vma is not yet VM_ACCOUNTed -
+we could exceed the limit and OOM despite no overcommit.
 
-I'm running Fedora 11 if that makes any difference.
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Acked-by: Rik van Riel <riel@redhat.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Minchan Kim <minchan.kim@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Thanks,
-Andy
+---
+ mm/memory.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2422,7 +2422,8 @@ static int do_anonymous_page(struct mm_s
+ 		goto oom_free_page;
+ 
+ 	entry = mk_pte(page, vma->vm_page_prot);
+-	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
++	if (vma->vm_flags & VM_WRITE)
++		entry = pte_mkwrite(pte_mkdirty(entry));
+ 
+ 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
+ 	if (!pte_none(*page_table))
