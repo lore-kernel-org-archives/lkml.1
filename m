@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZJBCAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbZJBCBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZJBCAq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 22:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbZJBBcf
+	id S1754878AbZJBCBn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 22:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZJBCBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:32:35 -0400
-Received: from kroah.org ([198.145.64.141]:32903 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 22:01:20 -0400
+Received: from kroah.org ([198.145.64.141]:32909 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754453AbZJBBcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:32:33 -0400
+	id S1754575AbZJBBce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:32:34 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:07 2009
-Message-Id: <20091002012407.514610839@mini.kroah.org>
+Message-Id: <20091002012407.685873743@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:16:00 -0700
+Date: Thu, 01 Oct 2009 18:16:01 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alex Chiang <achiang@hp.com>, Len Brown <len.brown@intel.com>
-Subject: [012/136] ACPI: pci_slot.ko wants a 64-bit _SUN
+       Ian Armstrong <ian@iarmst.demon.co.uk>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [013/136] fbcon: only unbind from console if successfully registered
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=acpi-pci_slot.ko-wants-a-64-bit-_sun.patch
+Content-Disposition: inline; filename=fbcon-only-unbind-from-console-if-successfully-registered.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,45 +30,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alex Chiang <achiang@hp.com>
+From: Ian Armstrong <ian@iarmst.demon.co.uk>
 
-commit 7e24bc1ce669b2876ffa475ea1147f2bb9ffdc52 upstream.
+commit 2ddce3fd0acbdc1be684fb5f919ae3d2e9518aac upstream.
 
-Similar to commit b6adc195 (PCI hotplug: acpiphp wants a 64-bit
-_SUN), pci_slot.ko reads and creates sysfs directories based on
-the _SUN method.
+Attempting to unload a framebuffer module calls unregister_framebuffer()
+which in turn gets fbcon to release it.  If fbcon has no framebuffers
+linked to a console, it will also unbind itself from the console driver.
+However, if fbcon never registered itself as a console driver, the unbind
+will fail causing the framebuffer device entry to persist.  In most cases
+this failure will result in an oops when attempting to access the now
+non-existent device.
 
-Certain HP platforms return 64 bits in _SUN. This change to
-pci_slot.ko allows us to see the correct sysfs directories.
+This patch ensures that the fbcon unbind request will succeed even if a
+bind was never done.  It tracks if a successful bind ever occurred & will
+only attempt to unbind if needed.  If there never was a bind, it simply
+returns with no error.
 
-Reported-by: Chad Smith <chad.smith@hp.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Ian Armstrong <ian@iarmst.demon.co.uk>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/pci_slot.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/console/fbcon.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
---- a/drivers/acpi/pci_slot.c
-+++ b/drivers/acpi/pci_slot.c
-@@ -57,7 +57,7 @@ ACPI_MODULE_NAME("pci_slot");
- 				MY_NAME , ## arg);		\
- 	} while (0)
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -114,6 +114,7 @@ static int last_fb_vc = MAX_NR_CONSOLES 
+ static int fbcon_is_default = 1; 
+ static int fbcon_has_exited;
+ static int primary_device = -1;
++static int fbcon_has_console_bind;
  
--#define SLOT_NAME_SIZE 20		/* Inspired by #define in acpiphp.h */
-+#define SLOT_NAME_SIZE 21		/* Inspired by #define in acpiphp.h */
- 
- struct acpi_pci_slot {
- 	acpi_handle root_handle;	/* handle of the root bridge */
-@@ -149,7 +149,7 @@ register_slot(acpi_handle handle, u32 lv
- 		return AE_OK;
+ #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY
+ static int map_override;
+@@ -544,6 +545,8 @@ static int fbcon_takeover(int show_logo)
+ 			con2fb_map[i] = -1;
+ 		}
+ 		info_idx = -1;
++	} else {
++		fbcon_has_console_bind = 1;
  	}
  
--	snprintf(name, sizeof(name), "%u", (u32)sun);
-+	snprintf(name, sizeof(name), "%llu", sun);
- 	pci_slot = pci_create_slot(pci_bus, device, name, NULL);
- 	if (IS_ERR(pci_slot)) {
- 		err("pci_create_slot returned %ld\n", PTR_ERR(pci_slot));
+ 	return err;
+@@ -2923,6 +2926,10 @@ static int fbcon_unbind(void)
+ 
+ 	ret = unbind_con_driver(&fb_con, first_fb_vc, last_fb_vc,
+ 				fbcon_is_default);
++
++	if (!ret)
++		fbcon_has_console_bind = 0;
++
+ 	return ret;
+ }
+ #else
+@@ -2936,6 +2943,9 @@ static int fbcon_fb_unbind(int idx)
+ {
+ 	int i, new_idx = -1, ret = 0;
+ 
++	if (!fbcon_has_console_bind)
++		return 0;
++
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+ 		if (con2fb_map[i] != idx &&
+ 		    con2fb_map[i] != -1) {
 
 
