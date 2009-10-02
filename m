@@ -1,70 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbZJBKoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZJBKoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757576AbZJBKoD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 06:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbZJBKoC
+	id S1757589AbZJBKoV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 06:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757580AbZJBKoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 06:44:02 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:58865 "EHLO isrv.corpit.ru"
+	Fri, 2 Oct 2009 06:44:20 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37960 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753767AbZJBKoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 06:44:01 -0400
-Message-ID: <4AC5D972.70002@msgid.tls.msk.ru>
-Date: Fri, 02 Oct 2009 14:44:02 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1757579AbZJBKoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 06:44:18 -0400
+Date: Fri, 2 Oct 2009 11:44:25 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] mm: add notifier in pageblock isolation for
+	balloon drivers
+Message-ID: <20091002104425.GN21906@csn.ul.ie>
+References: <20091001195311.GA16667@austin.ibm.com>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: LZMA on PIII-Celeron is broken [was: 2.6.31: booting on a PIII Celeron?]
-References: <4AC0D59F.8000502@msgid.tls.msk.ru> <4AC0D651.7030009@msgid.tls.msk.ru> <20090928163617.GA25503@atrey.karlin.mff.cuni.cz> <4AC20CD0.8030801@msgid.tls.msk.ru> <20090929160312.GA14405@elf.ucw.cz>
-In-Reply-To: <20090929160312.GA14405@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091001195311.GA16667@austin.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
+On Thu, Oct 01, 2009 at 02:53:11PM -0500, Robert Jennings wrote:
+> Memory balloon drivers can allocate a large amount of memory which
+> is not movable but could be freed to accommodate memory hotplug remove.
 > 
->>>> So the celeron machine lacks "apic" flag.  And in my
->>>> kernel config, apic is enabled:
->>>>  CONFIG_X86_LOCAL_APIC=y
->>>>  CONFIG_X86_IO_APIC=y
->>>> (but not on the command line like apic=force)
->>> try 'noapic nolapic' to see if it helps?
->> Neither (nor both) changes anything.  It just reboots
->> instantly right after "Loading initrd..." message from
->> the bootloader.
+> Prior to calling the memory hotplug notifier chain the memory in the
+> pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
+> isolation will not proceed, causing the memory removal for that page
+> range to fail.
 > 
-> Ok, you may want to try bisection...
+> Rather than immediately failing pageblock isolation if the the
+> migrateteype is not MIGRATE_MOVABLE, this patch checks if all of the
+> pages in the pageblock are owned by a registered balloon driver using a
+> notifier chain.  If all of the non-movable pages are owned by a balloon,
+> they can be freed later through the memory notifier chain and the range
+> can still be isolated in set_migratetype_isolate().
 > 
->> Ok, one more thing to mention.  2.6.31 introduced a
->> somewhat annoying feature, -- the screen (console)
->> blinks at the very start of the boot process (I mean
->> text mode, no any framebuffers or the like).  Here,
->> the screen blinks as usual for .31, I can see everything
->> back including that "Loading initrd" line, and only
->> after this the system reboots.  No more messages
->> gets printed, including "kernel command line:",
->> "Initializing cgroup subsys" or "Linux version ...".
->> I switched CPU clock to 200MHz (minimum clock rate
->> this motherboard supports using jumpers) and I can
->> see the whole thing like in slow motion.
+> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 > 
-> Hmm, can you try enabling earlyprintk?
+> ---
+>  drivers/base/memory.c  |   19 +++++++++++++++++++
+>  include/linux/memory.h |   22 ++++++++++++++++++++++
+>  mm/page_alloc.c        |   49 +++++++++++++++++++++++++++++++++++++++++--------
+>  3 files changed, 82 insertions(+), 8 deletions(-)
+> 
+> Index: b/drivers/base/memory.c
+> ===================================================================
+> --- a/drivers/base/memory.c
+> +++ b/drivers/base/memory.c
+> @@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
+>  }
+>  EXPORT_SYMBOL(unregister_memory_notifier);
+>  
+> +static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
+> +
+> +int register_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
+> +}
+> +EXPORT_SYMBOL(register_memory_isolate_notifier);
+> +
+> +void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
+> +}
+> +EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+> +
+>  /*
+>   * register_memory - Setup a sysfs device for a memory block
+>   */
+> @@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
+>  	return blocking_notifier_call_chain(&memory_chain, val, v);
+>  }
+>  
+> +int memory_isolate_notify(unsigned long val, void *v)
+> +{
+> +	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
+> +}
+> +
+>  /*
+>   * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
+>   * OK to have direct references to sparsemem variables in here.
+> Index: b/include/linux/memory.h
+> ===================================================================
+> --- a/include/linux/memory.h
+> +++ b/include/linux/memory.h
+> @@ -50,6 +50,14 @@ struct memory_notify {
+>  	int status_change_nid;
+>  };
+>  
+> +#define MEM_ISOLATE_COUNT	(1<<0)
+> +
 
-The issue was simpler than we thought.  It's the
-lzma code that causes this.  In this .config I
-changed from BZIP2 compression to LZMA compression.
-When changing it back to BZIP2 the system boots
-again.
+This needs a comment explaining that that this is an action to count the
+number of pages within a range that have been isolated within a range of
+pages and not a default value for "nr_pages" in the next structure.
 
-Now I've no idea how to debug it further, since
-there should be no difference between "plain"
-PIII and PIII-Celeron.
+> +struct memory_isolate_notify {
+> +	unsigned long start_addr;
+> +	unsigned int nr_pages;
+> +	unsigned int pages_found;
+> +};
 
-Thanks!
+Is there any particular reason you used virtual address of the mapped
+page instead of PFN? I am guessing at this point that the balloon driver
+is based on addresses but the code that populates the structure more
+commonly deals with PFNs. Outside of debugging code, page_address is
+rarely used in mm/page_alloc.c .
 
-/mjt
+It's picky but it feels more natural to me to have the structure have
+start_pfn and nr_pages or start_addr and end_addr but not a mix of both.
+
+> +
+>  struct notifier_block;
+>  struct mem_section;
+>  
+> @@ -76,14 +84,28 @@ static inline int memory_notify(unsigned
+>  {
+>  	return 0;
+>  }
+> +static inline int register_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	return 0;
+> +}
+> +static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +}
+> +static inline int memory_isolate_notify(unsigned long val, void *v)
+> +{
+> +	return 0;
+> +}
+>  #else
+>  extern int register_memory_notifier(struct notifier_block *nb);
+>  extern void unregister_memory_notifier(struct notifier_block *nb);
+> +extern int register_memory_isolate_notifier(struct notifier_block *nb);
+> +extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
+>  extern int register_new_memory(int, struct mem_section *);
+>  extern int unregister_memory_section(struct mem_section *);
+>  extern int memory_dev_init(void);
+>  extern int remove_memory_block(unsigned long, struct mem_section *, int);
+>  extern int memory_notify(unsigned long val, void *v);
+> +extern int memory_isolate_notify(unsigned long val, void *v);
+>  extern struct memory_block *find_memory_block(struct mem_section *);
+>  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+>  enum mem_add_context { BOOT, HOTPLUG };
+> Index: b/mm/page_alloc.c
+> ===================================================================
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -48,6 +48,7 @@
+>  #include <linux/page_cgroup.h>
+>  #include <linux/debugobjects.h>
+>  #include <linux/kmemleak.h>
+> +#include <linux/memory.h>
+>  #include <trace/events/kmem.h>
+>  
+>  #include <asm/tlbflush.h>
+> @@ -4985,23 +4986,55 @@ void set_pageblock_flags_group(struct pa
+>  int set_migratetype_isolate(struct page *page)
+>  {
+>  	struct zone *zone;
+> -	unsigned long flags;
+> +	unsigned long flags, pfn, iter;
+> +	long immobile = 0;
+
+So, the count in the structure is unsigned long, but long here. Why the
+difference in types?
+
+> +	struct memory_isolate_notify arg;
+> +	int notifier_ret;
+>  	int ret = -EBUSY;
+>  	int zone_idx;
+>  
+>  	zone = page_zone(page);
+>  	zone_idx = zone_idx(zone);
+> +
+> +	pfn = page_to_pfn(page);
+> +	arg.start_addr = (unsigned long)page_address(page);
+> +	arg.nr_pages = pageblock_nr_pages;
+> +	arg.pages_found = 0;
+> +
+>  	spin_lock_irqsave(&zone->lock, flags);
+>  	/*
+>  	 * In future, more migrate types will be able to be isolation target.
+>  	 */
+> -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
+> -	    zone_idx != ZONE_MOVABLE)
+> -		goto out;
+> -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> -	ret = 0;
+> -out:
+> +	do {
+> +		if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE &&
+> +		    zone_idx == ZONE_MOVABLE) {
+
+So, this condition requires the zone be MOVABLE and the migrate type
+be movable. That prevents MIGRATE_RESERVE regions in ZONE_MOVABLE being
+off-lined even though they can likely be off-lined. It also prevents
+MIGRATE_MOVABLE sections in other zones being off-lined.
+
+Did you mean || here instead of && ?
+
+Might want to expand the comment explaining this condition instead of
+leaving it in the old location which is confusing.
+
+> +			ret = 0;
+> +			break;
+> +		}
+
+Why do you wrap all this in a do {} while(0)  instead of preserving the
+out: label and using goto?
+
+> +
+> +		/*
+> +		 * If all of the pages in a zone are used by a balloon,
+> +		 * the range can be still be isolated.  The balloon will
+> +		 * free these pages from the memory notifier chain.
+> +		 */
+> +		notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
+> +		notifier_ret = notifier_to_errno(ret);
+> +		if (notifier_ret || !arg.pages_found)
+> +			break;
+> +
+> +		for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
+> +			if (page_count(pfn_to_page(iter)))
+> +				immobile++;
+> +
+> +		if (arg.pages_found == immobile)
+
+and here you compare a signed with an unsigned type. Probably harmless
+but why do it?
+
+> +			ret = 0;
+> +	} while (0);
+> +
+
+So the out label would go here and you'd get rid of the do {} while(0)
+loop.
+
+> +	if (!ret) {
+> +		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> +		move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> +	}
+> +
+>  	spin_unlock_irqrestore(&zone->lock, flags);
+>  	if (!ret)
+>  		drain_all_pages();
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
