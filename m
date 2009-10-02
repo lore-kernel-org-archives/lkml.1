@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756915AbZJBQli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZJBQku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756915AbZJBQli (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 12:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbZJBQlh
+	id S1756885AbZJBQku (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 12:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbZJBQkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 12:41:37 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:50689 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756663AbZJBQlh (ORCPT
+	Fri, 2 Oct 2009 12:40:49 -0400
+Received: from bay0-omc3-s41.bay0.hotmail.com ([65.54.246.241]:20363 "EHLO
+	bay0-omc3-s41.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756608AbZJBQkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 12:41:37 -0400
-Date: Fri, 2 Oct 2009 09:40:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Tejun Heo <tj@kernel.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for October 2: percpu compile warnings (i386)
-Message-Id: <20091002094030.ffbde6ca.randy.dunlap@oracle.com>
-In-Reply-To: <20091002134718.f577be51.sfr@canb.auug.org.au>
-References: <20091002134718.f577be51.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt010.oracle.com [141.146.116.19]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4AC62D00.007A:SCFSTAT5015188,ss=1,fgs=0
+	Fri, 2 Oct 2009 12:40:49 -0400
+Message-ID: <BAY109-W3302C19CAD0A6635085210C3D20@phx.gbl>
+X-Originating-IP: [164.116.126.146]
+From: Yuhong Bao <yuhongbao_386@hotmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: <eric.dumazet@gmail.com>, <arjan@infradead.org>, <schwidefsky@de.ibm.com>,
+       <tglx@linutronix.de>, <johnstul@us.ibm.com>,
+       <linux-kernel@vger.kernel.org>, <mingo@elte.hu>
+Subject: RE: [GIT PULL] scheduler fixes
+Date: Fri, 2 Oct 2009 09:40:53 -0700
+Importance: Normal
+In-Reply-To: <alpine.LFD.2.01.0909301743150.6996@localhost.localdomain>
+References: <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com>
+ <4AC10365.7090802@gmail.com> <4AC2712C.4080901@gmail.com>
+ <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain>
+ <20090929232248.735bf4df@infradead.org>
+ <alpine.LFD.2.01.0909291429570.6996@loca
+X-OriginalArrivalTime: 02 Oct 2009 16:40:53.0383 (UTC) FILETIME=[1B71C970:01CA437F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mm/percpu.c:1873: warning: comparison of distinct pointer types lacks a cast
-mm/percpu.c:1879: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'size_t'
 
-The second one is easily fixed (s/%lx/%zu/), but is that the correct fix?
+ <alpine.LFD.2.01.0909301743150.6996@localhost.localdomain>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
 
-The first one is a max(size_t, unsigned long).
-The C99 spec says that the max value of a size_t is:
-	limit of size_t
-	SIZE_MAX 65535
-(from 7.8.13(2)), but max_distance (the size_t here) is being compared to
-unsigned long base_offset, which isn't limited to 65535 AFAICT.
 
-In fact, this test:
-	if (max_distance > (VMALLOC_END - VMALLOC_START) * 3 / 4) {
-checks max_distance > 0x000017ff_ffffffff (on x86_64).
 
-And it looks to me like there is some potential for some value truncation
-in the max() operation, even if size_t is not limited to SIZE_MAX.
-
-So maybe the size_t(s) should be changed to unsigned long and the
-printk format doesn't need to be fixed... ?
-
----
-~Randy
+> [ If I recall correctly=2C cmpxchg8b support detection was something that
+> was totally messed up in WNT=2C and I have this memory of TMTA _not_
+> claiming to support CX8 in the cpuid bits=2C but happily supporting the
+> instruction itself - because otherwise WNT would blue-screen on boot or
+> something silly like that.
+Yep=2C Geoff Chappell describe this bug excellently:http://www.geoffchappel=
+l.com/viewer.htm?doc=3Dstudies/windows/km/cpu/cx8.htm
+> As a result=2C the patch below only adds CMPXCHG8B for the obvious Intel
+> CPU's=2C not for others. There was something really messy about cmpxchg8b
+> and clone CPU's=2C but I'm not 100% sure about the details=2C so take thi=
+s
+> patch with a pinch of salt=2C and some thinking ]
+Basically=2C pre-SP4 NT 4 would crash if the CX8 bit was set in CPUID and v=
+endor was not GenuineIntel=2C AuthenticAMD=2C or CyrixInstead due to a bug =
+in the CPU detection=2C XP had to workaround it too when it began requiring=
+ CX8.
+Yuhong bao 		 	   		  =0A=
+_________________________________________________________________=0A=
+Insert movie times and more without leaving Hotmail=AE.=0A=
+http://windowslive.com/Tutorial/Hotmail/QuickAdd?ocid=3DTXT_TAGLM_WL_HM_Tut=
+orial_QuickAdd_062009=
