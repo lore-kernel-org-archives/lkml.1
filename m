@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbZJBJTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbZJBJUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757284AbZJBJTB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 05:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbZJBJTA
+	id S1757358AbZJBJUV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 05:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbZJBJUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 05:19:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56668 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753493AbZJBJS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 05:18:59 -0400
-Message-ID: <4AC5C572.9040309@kernel.org>
-Date: Fri, 02 Oct 2009 18:18:42 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Fri, 2 Oct 2009 05:20:20 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:44337 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754340AbZJBJUT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 05:20:19 -0400
+Date: Fri, 2 Oct 2009 09:20:21 +0000
+From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+To: Sven-Thorsten Dietrich <sdietrich@novell.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH][UHCI-DEBUG] Don't kmalloc with BKL held
+Message-ID: <20091002092021.GA25083@gambetta>
+References: <1254474744.28661.2.camel@sven.thebigcorporation.com>
 MIME-Version: 1.0
-To: cl@linux-foundation.org
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       rusty@rustcorp.com.au, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [this_cpu_xx V4 02/20] this_cpu: X86 optimized this_cpu operations
-References: <20091001212521.123389189@gentwo.org> <20091001212557.963565363@gentwo.org>
-In-Reply-To: <20091001212557.963565363@gentwo.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 02 Oct 2009 09:18:44 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254474744.28661.2.camel@sven.thebigcorporation.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cl@linux-foundation.org wrote:
-> Basically the existing percpu ops can be used for this_cpu variants that allow
-> operations also on dynamically allocated percpu data. However, we do not pass a
-> reference to a percpu variable in. Instead a dynamically or statically
-> allocated percpu variable is provided.
-> 
-> Preempt, the non preempt and the irqsafe operations generate the same code.
-> It will always be possible to have the requires per cpu atomicness in a single
-> RMW instruction with segment override on x86.
-> 
-> 64 bit this_cpu operations are not supported on 32 bit.
-> 
-> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+Hi Sven-Thorsten,
 
-Acked-by: Tejun Heo <tj@kernel.org>
+On Fri, Oct 02, 2009 at 11:12:24AM +0200, Sven-Thorsten Dietrich wrote:
+> Subject: Don't kmalloc with BKL held.
+> From: Sven-Thorsten Dietrich <sdietrich@suse.de>
+> 
+> I'm eyeballing this file for complete removal of lock_kernel but 
+> at first glance, we definitely don't need BKL to kmalloc(). 
+You need to move the unlock_kernel() above the out: label too.
 
--- 
-tejun
+Regards,
+Frederik
+
+> 
+> Signed-off-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
+> 
+> 
+> diff --git a/drivers/usb/host/uhci-debug.c b/drivers/usb/host/uhci-debug.c
+> index e52b954..325d508 100644
+> --- a/drivers/usb/host/uhci-debug.c
+> +++ b/drivers/usb/host/uhci-debug.c
+> @@ -497,7 +497,6 @@ static int uhci_debug_open(struct inode *inode, struct file *file)
+>  	int ret = -ENOMEM;
+>  	unsigned long flags;
+>  
+> -	lock_kernel();
+>  	up = kmalloc(sizeof(*up), GFP_KERNEL);
+>  	if (!up)
+>  		goto out;
+> @@ -509,6 +508,8 @@ static int uhci_debug_open(struct inode *inode, struct file *file)
+>  	}
+>  
+>  	up->size = 0;
+> +
+> +	lock_kernel();
+>  	spin_lock_irqsave(&uhci->lock, flags);
+>  	if (uhci->is_initialized)
+>  		up->size = uhci_sprint_schedule(uhci, up->data, MAX_OUTPUT);
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
