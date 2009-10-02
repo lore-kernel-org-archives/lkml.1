@@ -1,129 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595AbZJBKzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbZJBKzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757595AbZJBKzO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 06:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757582AbZJBKzN
+	id S1757609AbZJBKzc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 06:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757597AbZJBKzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 06:55:13 -0400
-Received: from mga14.intel.com ([143.182.124.37]:57636 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757581AbZJBKzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 06:55:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,493,1249282800"; 
-   d="scan'208";a="194357503"
-Date: Fri, 2 Oct 2009 18:54:59 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] HWPOISON: remove the unsafe __set_page_locked()
-Message-ID: <20091002105459.GA14526@localhost>
-References: <20090926031537.GA10176@localhost> <20090926034936.GK30185@one.firstfloor.org> <20090926105259.GA5496@localhost> <20090926113156.GA12240@localhost> <20090927104739.GA1666@localhost> <20090927192025.GA6327@wotan.suse.de> <20090928084401.GA22131@localhost> <20091001020207.GL6327@wotan.suse.de>
+	Fri, 2 Oct 2009 06:55:23 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:37184 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757582AbZJBKzP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 06:55:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:from:date:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=pDWn45J+tEhTu8iY0vIRyJMALn4vinAE/2guvUL9ytnJzol0jXTsPchE6KKDk3UgE1
+         IoFH93mPNsyKLIlCxU0/KQ4vG7LNWClyazjGh/nzHsyynR4J40QDAdsujZNIa1ApoqLK
+         Tt5RxtOgzILioIkYiviTdQmpSU06fbhJeAKPI=
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+From: Corrado Zoccolo <czoccolo@gmail.com>
+Date: Fri, 2 Oct 2009 12:55:25 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091001020207.GL6327@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200910021255.27689.czoccolo@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 10:02:07AM +0800, Nick Piggin wrote:
-> On Mon, Sep 28, 2009 at 04:44:01PM +0800, Wu Fengguang wrote:
-> > On Mon, Sep 28, 2009 at 03:20:25AM +0800, Nick Piggin wrote:
-> > > On Sun, Sep 27, 2009 at 06:47:39PM +0800, Wu Fengguang wrote:
-> > > > > 
-> > > > > And standard deviation is 0.04%, much larger than the difference 0.008% ..
-> > > > 
-> > > > Sorry that's not correct. I improved the accounting by treating
-> > > > function0+function1 from two CPUs as an integral entity:
-> > > > 
-> > > >                  total time      add_to_page_cache_lru   percent  stddev
-> > > >          before  3880166848.722  9683329.610             0.250%   0.014%
-> > > >          after   3828516894.376  9778088.870             0.256%   0.012%
-> > > >          delta                                           0.006%
-> > > 
-> > > I don't understand why you're doing this NFS workload to measure?
-> > 
-> > Because it is the first convenient workload hit my mind, and avoids
-> > real disk IO :)
-> 
-> Using tmpfs or sparse files is probably a lot easier.
+Hi Jens,
+On Fri, Oct 2, 2009 at 11:28 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Fri, Oct 02 2009, Ingo Molnar wrote:
+>>
+>> * Jens Axboe <jens.axboe@oracle.com> wrote:
+>>
+>
+> It's really not that simple, if we go and do easy latency bits, then
+> throughput drops 30% or more. You can't say it's black and white latency
+> vs throughput issue, that's just not how the real world works. The
+> server folks would be most unpleased.
+Could we be more selective when the latency optimization is introduced?
 
-Good ideas. In fact I tried them in the very beginning.
-The ratios are roughly at the same level (which is somehow unexpected):
+The code that is currently touched by Vivek's patch is:
+        if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
+            (cfqd->hw_tag && CIC_SEEKY(cic)))
+                enable_idle = 0;
+basically, when fairness=1, it becomes just:
+        if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle)
+                enable_idle = 0;
 
-        total time      add_to_page_cache_lru   percent  stddev
-tmpfs   1579056274.576  2615476.234             0.1656354036338758%
-sparse  1074931917.425  3001273                 0.27920586888791538%
+Note that, even if we enable idling here, the cfq_arm_slice_timer will use
+a different idle window for seeky (2ms) than for normal I/O.
 
-Workload is to copy 1G /dev/zero to /dev/shm/, or 1G sparse file
-(ext2) to /dev/null.
+I think that the 2ms idle window is good for a single rotational SATA disk scenario,
+even if it supports NCQ. Realistic access times for those disks are still around 8ms
+(but it is proportional to seek lenght), and waiting 2ms to see if we get a nearby
+request may pay off, not only in latency and fairness, but also in throughput.
 
- echo 1 > /debug/tracing/function_profile_enabled
- cp /dev/zero /dev/shm/
- echo 0 > /debug/tracing/function_profile_enabled
+What we don't want to do is to enable idling for NCQ enabled SSDs
+(and this is already taken care in cfq_arm_slice_timer) or for hardware RAIDs.
+If we agree that hardware RAIDs should be marked as non-rotational, then that
+code could become:
 
- dd if=/dev/zero of=/mnt/test bs=1k count=1 seek=1048575
- echo 1 > /debug/tracing/function_profile_enabled
- cp /mnt/test/sparse /dev/null
- echo 0 > /debug/tracing/function_profile_enabled
-
-> > > I see significant nfs, networking protocol and device overheads in
-> > > your profiles, also you're hitting some locks or something which
-> > > is causing massive context switching. So I don't think this is a
-> > > good test.
-> > 
-> > Yes there are overheads. However it is a real and common workload.
-> 
-> Right, but so are lots of other workloads that don't hit
-> add_to_page_cache heavily :)
->  
-> 
-> > > But anyway as Hugh points out, you need to compare with a
-> > > *completely* fixed kernel, which includes auditing all users of page
-> > > flags non-atomically (slab, notably, but possibly also other
-> > > places).
-> > 
-> > That's good point. We can do more benchmarks when more fixes are
-> > available. However I suspect their design goal will be "fix them
-> > without introducing noticeable overheads" :)
-> 
-> s/noticeable//
-> 
-> The problem with all the non-noticeable overheads that we're
-> continually adding to the kernel is that we're adding them to
-> the kernel. Non-noticeable part only makes it worse because
-> you can't bisect them :)
-
-Yes it makes sense.
-
-> > > One other thing to keep in mind that I will mention is that I am
-> > > going to push in a patch to the page allocator to allow callers
-> > > to avoid the refcounting (atomic_dec_and_test) in page lifetime,
-> > > which is especially important for SLUB and takes more cycles off
-> > > the page allocator...
-> > >
-> > > I don't know exactly what you're going to do after that to get a
-> > > stable reference to slab pages. I guess you can read the page
-> > > flags and speculatively take some slab locks and recheck etc...
-> > 
-> > For reliably we could skip page lock on zero refcounted pages.
-> > 
-> > We may lose the PG_hwpoison bit on races with __SetPageSlub*, however
-> > it should be an acceptable imperfection.
-> 
-> I think if you're wiling to accept these problems, then it is
-> completely reasonable to also accept similar races with kernel
-> fastpaths to avoid extra overheads there.
-
-Yes I do. Even better, for this perticular race, we managed to avoid
-it completely without introducing overheads in fast path :)
+        if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
+            (blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag && CIC_SEEKY(cic)))
+                enable_idle = 0;
+        else if (sample_valid(cic->ttime_samples)) {
+		unsigned idle_time = CIC_SEEKY(cic) ? CFQ_MIN_TT : cfqd->cfq_slice_idle;
+		if (cic->ttime_mean > idle_time)
+                        enable_idle = 0;
+                else
+                        enable_idle = 1;
+        }
 
 Thanks,
-Fengguang
+Corrado
+
+>
+> --
+> Jens Axboe
+>
+
+-- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
 
