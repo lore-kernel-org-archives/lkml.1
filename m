@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbZJBUNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbZJBUTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757763AbZJBUNV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 16:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbZJBUNV
+	id S1758012AbZJBUTV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 16:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbZJBUTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 16:13:21 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:62688 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757490AbZJBUNU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 16:13:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=OD55gjZ6zzbqC9RaB6E46KWokbsyro7jArr1JeeQUhKYks7bj+OQOf+CW8jewMdqcv
-         oRnfMBAIMW8CUPjutyFx02acrxIP8LgCxBbLw3Wu2Bf7nSUvBfYZS7b+IrNK3mbenFnI
-         zyYcLuMrwSsGmx/B/3dS1j1Mz2GH+1Pyvulks=
-Date: Sat, 3 Oct 2009 00:13:22 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] const: constify remaining pipe_buf_operations
-Message-ID: <20091002201322.GB29905@x200>
+	Fri, 2 Oct 2009 16:19:20 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:55125 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757361AbZJBUTT (ORCPT
+	<rfc822;groupwise-GHaskins@novell.com;0:0>);
+	Fri, 2 Oct 2009 16:19:19 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH v2 0/4] KVM: xinterface
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, ghaskins@novell.com
+Date: Fri, 02 Oct 2009 16:19:16 -0400
+Message-ID: <20091002201159.4014.33268.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+(Applies to kvm.git/master:083e9e10)
+
+For details, please read the patch headers.
+
+[ Changelog:
+
+     v2:
+	*) We now re-use the vmfd as the binding token, instead of creating
+           a new separate namespace
+	*) Added support for switch_to(mm), which is much faster
+	*) Added support for memslot-cache for exploiting slot locality
+	*) Added support for scatter-gather access
+	*) Added support for xioevent interface
+
+      v1:
+        *) Initial release
+]
+
+This series is included in upstream AlacrityVM and is well tested and
+known to work properly.  Comments?
+
+Kind Regards,
+-Greg
+
 ---
 
- kernel/relay.c       |    2 +-
- kernel/trace/trace.c |    4 ++--
- net/core/skbuff.c    |    2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+Gregory Haskins (4):
+      KVM: add scatterlist support to xinterface
+      KVM: add io services to xinterface
+      KVM: introduce "xinterface" API for external interaction with guests
+      mm: export use_mm() and unuse_mm() to modules
 
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -1198,7 +1198,7 @@ static void relay_pipe_buf_release(struct pipe_inode_info *pipe,
- 	relay_consume_bytes(rbuf, buf->private);
- }
- 
--static struct pipe_buf_operations relay_pipe_buf_ops = {
-+static const struct pipe_buf_operations relay_pipe_buf_ops = {
- 	.can_merge = 0,
- 	.map = generic_pipe_buf_map,
- 	.unmap = generic_pipe_buf_unmap,
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3103,7 +3103,7 @@ static void tracing_spd_release_pipe(struct splice_pipe_desc *spd,
- 	__free_page(spd->pages[idx]);
- }
- 
--static struct pipe_buf_operations tracing_pipe_buf_ops = {
-+static const struct pipe_buf_operations tracing_pipe_buf_ops = {
- 	.can_merge		= 0,
- 	.map			= generic_pipe_buf_map,
- 	.unmap			= generic_pipe_buf_unmap,
-@@ -3589,7 +3589,7 @@ static void buffer_pipe_buf_get(struct pipe_inode_info *pipe,
- }
- 
- /* Pipe buffer operations for a buffer. */
--static struct pipe_buf_operations buffer_pipe_buf_ops = {
-+static const struct pipe_buf_operations buffer_pipe_buf_ops = {
- 	.can_merge		= 0,
- 	.map			= generic_pipe_buf_map,
- 	.unmap			= generic_pipe_buf_unmap,
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -93,7 +93,7 @@ static int sock_pipe_buf_steal(struct pipe_inode_info *pipe,
- 
- 
- /* Pipe buffer operations for a socket. */
--static struct pipe_buf_operations sock_pipe_buf_ops = {
-+static const struct pipe_buf_operations sock_pipe_buf_ops = {
- 	.can_merge = 0,
- 	.map = generic_pipe_buf_map,
- 	.unmap = generic_pipe_buf_unmap,
+
+ arch/x86/kvm/Makefile          |    2 
+ include/linux/kvm_host.h       |    3 
+ include/linux/kvm_xinterface.h |  165 +++++++++++
+ kernel/fork.c                  |    1 
+ mm/mmu_context.c               |    3 
+ virt/kvm/kvm_main.c            |   24 ++
+ virt/kvm/xinterface.c          |  587 ++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 784 insertions(+), 1 deletions(-)
+ create mode 100644 include/linux/kvm_xinterface.h
+ create mode 100644 virt/kvm/xinterface.c
+
+-- 
+Signature
