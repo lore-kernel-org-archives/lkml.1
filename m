@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbZJBMip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbZJBMkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbZJBMip (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 08:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZJBMip
+	id S1756924AbZJBMkL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 08:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756790AbZJBMkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 08:38:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51546 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756646AbZJBMio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 08:38:44 -0400
-Date: Fri, 2 Oct 2009 14:38:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: [GIT PULL] timer fix
-Message-ID: <20091002123839.GA19831@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 2 Oct 2009 08:40:10 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:53766 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756768AbZJBMkJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 08:40:09 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, Greg KH <greg@kroah.com>
+Cc: dm-devel@redhat.com, Evgeniy Polyakov <zbr@ioremap.net>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Philipp Reisner <philipp.reisner@linbit.com>
+Subject: [PATCH 0/8] SECURITY ISSUE with connector
+Date: Fri,  2 Oct 2009 14:40:03 +0200
+Message-Id: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Affected: All code that uses connector, in kernel and out of mainline
 
-Please pull the latest timers-fixes-for-linus git tree from:
+The connector, as it is today, does not allow the in kernel receiving
+parts to do any checks on privileges of a message's sender.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
+I know, there are not many out there that like connector, but as
+long as it is in the kernel, we have to fix the security issues it has!
 
- Thanks,
+Please either drop connector, or someone who feels a bit responsible
+and has our beloved dictator's blessing, PLEASE PLEASE PLEASE take 
+this into your tree, and send the pull request to Linus.
 
-	Ingo
+Patches 1 to 4 are already Acked-by Evgeny, the connector's maintainer.
+Patches 5 to 7 are the obvious fixes to the connector user's code.
 
------------------->
-Roland Dreier (1):
-      hrtimer: Remove overly verbose "switch to high res mode" message
+For convenience these patches are also available as git tree:
+git://git.drbd.org/linux-2.6-drbd.git connector-fix
 
+-Phil
 
- kernel/hrtimer.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+Philipp Reisner (8):
+  connector: Keep the skb in cn_callback_data
+  connector: Provide the sender's credentials to the callback
+  connector/dm: Fixed a compilation warning
+  connector: Removed the destruct_data callback since it is always kfree_skb()
+  dm/connector: Only process connector packages from privileged processes
+  dst/connector: Disallow unpliviged users to configure dst
+  pohmelfs/connector: Disallow unpliviged users to configure pohmelfs
+  uvesafb/connector: Disallow unpliviged users to send netlink packets
 
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index e5d98ce..4267279 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -720,8 +720,6 @@ static int hrtimer_switch_to_hres(void)
- 	/* "Retrigger" the interrupt to get things going */
- 	retrigger_next_event(NULL);
- 	local_irq_restore(flags);
--	printk(KERN_DEBUG "Switched to high resolution mode on CPU %d\n",
--	       smp_processor_id());
- 	return 1;
- }
- 
+ Documentation/connector/cn_test.c      |    2 +-
+ Documentation/connector/connector.txt  |    8 ++++----
+ drivers/connector/cn_queue.c           |   12 +++++++-----
+ drivers/connector/connector.c          |   22 ++++++++--------------
+ drivers/md/dm-log-userspace-transfer.c |    6 ++++--
+ drivers/staging/dst/dcore.c            |    7 ++++++-
+ drivers/staging/pohmelfs/config.c      |    5 ++++-
+ drivers/video/uvesafb.c                |    5 ++++-
+ drivers/w1/w1_netlink.c                |    2 +-
+ include/linux/connector.h              |   11 ++++-------
+ 10 files changed, 43 insertions(+), 37 deletions(-)
+
