@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbZJBWo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbZJBWpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932122AbZJBWo2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 18:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbZJBWo1
+	id S1756675AbZJBWpf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 18:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172AbZJBWpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 18:44:27 -0400
-Received: from outbound-mail-153.bluehost.com ([67.222.39.33]:40524 "HELO
-	outbound-mail-153.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756646AbZJBWoZ (ORCPT
+	Fri, 2 Oct 2009 18:45:35 -0400
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:56753 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754791AbZJBWpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 18:44:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=fUbS1XnK+bGylaCnN5CAx2OpVccxRr7nFx3Yd5y4TdVO++Xw1Lb3ipZMk++9jXPP6+6SWe12DflT9pdCL47kmAQAMMKKlb7TIQAqHlN0VqGfm9doINg3apXIKi1Tsmi+;
-Date: Fri, 2 Oct 2009 15:44:24 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400
- laptops
-Message-ID: <20091002154424.331f82a6@jbarnes-g45>
-In-Reply-To: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
-References: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 2 Oct 2009 18:45:34 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 67.160.239.110
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19p/NDVVpDN+1PEzGd9uwX3
+Subject: [PATCH 7/8] omapfb: Blizzard: fix pointer to be const
+To: linux-arm-kernel@lists.infradead.org
+From: Tony Lindgren <tony@atomide.com>
+Cc: Imre Deak <imre.deak@nokia.com>, Tomi Valkeinen <tomi.valkeinen@nokia.com>,
+       Tommi Rantala <tt.rantala@gmail.com>, linux-omap@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Fri, 02 Oct 2009 15:45:37 -0700
+Message-ID: <20091002224537.11962.13995.stgit@localhost>
+In-Reply-To: <20091002223510.11962.21751.stgit@localhost>
+References: <20091002223510.11962.21751.stgit@localhost>
+User-Agent: StGit/0.14.3.347.g594a
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 02 Oct 2009 18:40:27 -0400
-"Theodore Ts'o" <tytso@mit.edu> wrote:
+From: Tommi Rantala <tt.rantala@gmail.com>
 
-> Hi, 
-> 
-> In recent kernels, my X display (running with a KMS-enabled X server)
-> has been very jittery and with lots of glitching and tearing --- sorry
-> if this isn't the correct technical term, not sure what it is --- on
-> my T400 Lenovo laptop.   It seems related to what is on the desktop,
-> and moving the mouse does seem to affect the rate and percentage of
-> the screen which jitters --- which is enough to be very distracting,
-> although I can still read the contents of the windows where the screen
-> is tearing/glitching/flashing.
-> 
-> I bisected it down to this commit:
-> 
-> 74dff282237ea8c0a5df1afd8526eac4b6cee063 is the first bad commit
-> commit 74dff282237ea8c0a5df1afd8526eac4b6cee063
-> Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Date:   Mon Sep 14 15:39:40 2009 -0700
-> 
->     drm/i915: framebuffer compression for GM45+
->     
->     Add support for framebuffer compression on GM45 and above.
-> Removes some unnecessary I915_HAS_FBC checks as well (this is now
-> part of the FBC display function).
->     
->     Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
->     Signed-off-by: Eric Anholt <eric@anholt.net>
-> 
-> ... and taking the latest git mainline, and I confirmed that the
-> problem was still present, and then after reverting this commit, the
-> problem went away.
-> 
-> I've included my Xorg.0.log file in case that's helpful.  Please let
-> me know if there's anything else you need.
+Fixes a compiler warning:
+warning: assignment discards qualifiers from pointer target type
 
-Yeah I've had a couple of other reports of flicker pointing to this
-commit... I'll be able to look into it next week.
+Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: Imre Deak <imre.deak@nokia.com>
+Signed-off-by: Tommi Rantala <tt.rantala@gmail.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/video/omap/blizzard.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+diff --git a/drivers/video/omap/blizzard.c b/drivers/video/omap/blizzard.c
+index d5e5955..ce28be6 100644
+--- a/drivers/video/omap/blizzard.c
++++ b/drivers/video/omap/blizzard.c
+@@ -191,7 +191,7 @@ struct blizzard_struct {
+ 
+ 	struct omapfb_device	*fbdev;
+ 	struct lcd_ctrl_extif	*extif;
+-	struct lcd_ctrl		*int_ctrl;
++	const struct lcd_ctrl	*int_ctrl;
+ 
+ 	void			(*power_up)(struct device *dev);
+ 	void			(*power_down)(struct device *dev);
+
