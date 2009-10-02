@@ -1,201 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755426AbZJBJH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbZJBJLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755426AbZJBJH3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 05:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbZJBJH2
+	id S1755624AbZJBJLz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 05:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZJBJLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 05:07:28 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42744 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753599AbZJBJH1 convert rfc822-to-8bit (ORCPT
+	Fri, 2 Oct 2009 05:11:54 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:56319 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754263AbZJBJLx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 05:07:27 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] munmap() don't check sysctl_max_mapcount
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Message-Id: <20091002180533.5F77.A69D9226@jp.fujitsu.com>
+	Fri, 2 Oct 2009 05:11:53 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+Date: Fri, 2 Oct 2009 11:11:52 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       Reinette Chatre <reinette.chatre@intel.com>, Mel Gorman <mel@csn.ul.ie>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.k2B.ZNTxKB@chimera>
+In-Reply-To: <COE24pZSBH.A.k2B.ZNTxKB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri,  2 Oct 2009 18:07:28 +0900 (JST)
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910021111.55749.elendil@planet.nl>
+X-OriginalArrivalTime: 02 Oct 2009 09:11:55.0960 (UTC) FILETIME=[637D3B80:01CA4340]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone,
+On Thursday 01 October 2009, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> be listed and let me know (either way).
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14141
+> Subject	: order 2 page allocation failures in iwlagn
+> Submitter	: Frans Pop <elendil@planet.nl>
+> Date		: 2009-09-06 7:40 (26 days old)
+> References	: http://marc.info/?l=linux-kernel&m=125222287419691&w=4
+> Handled-By	: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Is this good idea?
+I'm not sure about this.
 
+The error messages from failed allocations should now be a lot less as a 
+result of this commit:
+commit f82a924cc88a5541df1d4b9d38a0968cd077a051
+Author: Reinette Chatre <reinette.chatre@intel.com>
+Date:   Thu Sep 17 10:43:56 2009 -0700
+    iwlwifi: reduce noise when skb allocation fails
 
-====================================================================
->From 0b9de3b65158847d376e2786840f932361d00e08 Mon Sep 17 00:00:00 2001
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Fri, 18 Sep 2009 13:22:06 +0900
-Subject: [PATCH] munmap() don't check sysctl_max_mapcount
+That commit is in mainline, and I'm not sure if it is important enough for 
+a stable update (AFAICT it's not listed for 2.6.31.2).
 
-On ia64, the following test program exit abnormally, because
-glibc thread library called abort().
+That commit is mostly cosmetic, but possibly the real regression is not in 
+iwlagn but in the way memory is freed/defragmented. That aspect was also 
+reported by Bartlomiej (#14016) and was extensively discussed (without a 
+clear conclusion) here: http://lkml.org/lkml/2009/8/26/140.
 
- ========================================================
- (gdb) bt
- #0  0xa000000000010620 in __kernel_syscall_via_break ()
- #1  0x20000000003208e0 in raise () from /lib/libc.so.6.1
- #2  0x2000000000324090 in abort () from /lib/libc.so.6.1
- #3  0x200000000027c3e0 in __deallocate_stack () from /lib/libpthread.so.0
- #4  0x200000000027f7c0 in start_thread () from /lib/libpthread.so.0
- #5  0x200000000047ef60 in __clone2 () from /lib/libc.so.6.1
- ========================================================
+My own feeling is that Bartlomiej is correct and that something has changed 
+since .29 and that on average we do have less higher order areas available 
+after the system has been in use for some time, but I can't substantiate 
+that. I do know that before .30 I had never seen the SKB allocation 
+errors.
 
-The fact is, glibc call munmap() when thread exitng time for freeing stack, and
-it assume munlock() never fail. However, munmap() often make vma splitting
-and it with many mapcount make -ENOMEM.
+Main problem is that it's hard to deliberately and reproducibly get the 
+system in a state where the errors occur.
 
-Oh well, stack unfreeing is not reasonable option. Also munlock() via free()
-shouldn't failed.
+I certainly do feel that the kernel should try to make sure higher order 
+allocations remain possible during system use. They are not only needed 
+shortly after boot: drivers can be loaded/unloaded at any time. OTOH Mel 
+probably does have a point that really high order GFP_ATOMIC allocations 
+by drivers make no sense [1].
 
-Thus, munmap() shoudn't check max-mapcount. This patch does it.
+Anyway, I have no problems with this BR being closed.
 
- test_max_mapcount.c
- ==================================================================
-  #include<stdio.h>
-  #include<stdlib.h>
-  #include<string.h>
-  #include<pthread.h>
-  #include<errno.h>
-  #include<unistd.h>
- 
-  #define THREAD_NUM 30000
-  #define MAL_SIZE (100*1024)
- 
- void *wait_thread(void *args)
- {
- 	void *addr;
- 
- 	addr = malloc(MAL_SIZE);
- 	if(addr)
- 		memset(addr, 1, MAL_SIZE);
- 	sleep(1);
- 
- 	return NULL;
- }
- 
- void *wait_thread2(void *args)
- {
- 	sleep(60);
- 
- 	return NULL;
- }
- 
- int main(int argc, char *argv[])
- {
- 	int i;
- 	pthread_t thread[THREAD_NUM], th;
- 	int ret, count = 0;
- 	pthread_attr_t attr;
- 
- 	ret = pthread_attr_init(&attr);
- 	if(ret) {
- 		perror("pthread_attr_init");
- 	}
- 
- 	ret = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
- 	if(ret) {
- 		perror("pthread_attr_setdetachstate");
- 	}
- 
- 	for (i = 0; i < THREAD_NUM; i++) {
- 		ret = pthread_create(&th, &attr, wait_thread, NULL);
- 		if(ret) {
- 			fprintf(stderr, "[%d] ", count);
- 			perror("pthread_create");
- 		} else {
- 			printf("[%d] create OK.\n", count);
- 		}
- 		count++;
- 
- 		ret = pthread_create(&thread[i], &attr, wait_thread2, NULL);
- 		if(ret) {
- 			fprintf(stderr, "[%d] ", count);
- 			perror("pthread_create");
- 		} else {
- 			printf("[%d] create OK.\n", count);
- 		}
- 		count++;
- 	}
- 
- 	sleep(3600);
- 	return 0;
- }
- ==================================================================
+Cheers,
+FJP
 
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/mmap.c |   18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
-
-Index: b/mm/mmap.c
-===================================================================
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1832,7 +1832,7 @@ detach_vmas_to_be_unmapped(struct mm_str
-  * Split a vma into two pieces at address 'addr', a new vma is allocated
-  * either for the first part or the tail.
-  */
--int split_vma(struct mm_struct * mm, struct vm_area_struct * vma,
-+static int __split_vma(struct mm_struct * mm, struct vm_area_struct * vma,
- 	      unsigned long addr, int new_below)
- {
- 	struct mempolicy *pol;
-@@ -1842,9 +1842,6 @@ int split_vma(struct mm_struct * mm, str
- 					~(huge_page_mask(hstate_vma(vma)))))
- 		return -EINVAL;
- 
--	if (mm->map_count >= sysctl_max_map_count)
--		return -ENOMEM;
--
- 	new = kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
- 	if (!new)
- 		return -ENOMEM;
-@@ -1884,6 +1881,15 @@ int split_vma(struct mm_struct * mm, str
- 	return 0;
- }
- 
-+int split_vma(struct mm_struct * mm, struct vm_area_struct * vma,
-+	      unsigned long addr, int new_below)
-+{
-+	if (mm->map_count >= sysctl_max_map_count)
-+		return -ENOMEM;
-+
-+	return __split_vma(mm, vma, addr, new_below);
-+}
-+
- /* Munmap is split into 2 main parts -- this part which finds
-  * what needs doing, and the areas themselves, which do the
-  * work.  This now handles partial unmappings.
-@@ -1919,7 +1925,7 @@ int do_munmap(struct mm_struct *mm, unsi
- 	 * places tmp vma above, and higher split_vma places tmp vma below.
- 	 */
- 	if (start > vma->vm_start) {
--		int error = split_vma(mm, vma, start, 0);
-+		int error = __split_vma(mm, vma, start, 0);
- 		if (error)
- 			return error;
- 		prev = vma;
-@@ -1928,7 +1934,7 @@ int do_munmap(struct mm_struct *mm, unsi
- 	/* Does it split the last one? */
- 	last = find_vma(mm, end);
- 	if (last && end > last->vm_start) {
--		int error = split_vma(mm, last, end, 1);
-+		int error = __split_vma(mm, last, end, 1);
- 		if (error)
- 			return error;
- 	}
-
-
+[1] <20090921133704.GO12726@csn.ul.ie>
