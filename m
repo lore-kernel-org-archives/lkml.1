@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbZJBVma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbZJBVlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbZJBVma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 17:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbZJBVm3
+	id S1754366AbZJBVlk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 17:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbZJBVlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 17:42:29 -0400
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:60431 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754123AbZJBVm2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 17:42:28 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/21h24qXkfNOCOPMgFUq/8
-Date: Fri, 2 Oct 2009 14:42:29 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Venkatraman S <svenkatr@ti.com>
-Cc: Anuj Aggarwal <anuj.aggarwal@ti.com>, linux-omap@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SDMA: Fixing bug in omap_dma_set_global_params()
-Message-ID: <20091002214229.GU16865@atomide.com>
-References: <1253690346-17865-1-git-send-email-anuj.aggarwal@ti.com> <618f0c910909230124q773b90f6xd377e67a758e1237@mail.gmail.com>
+	Fri, 2 Oct 2009 17:41:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36728 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753838AbZJBVlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 17:41:39 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Subject: Re: [Bug #13943] WARNING: at net/mac80211/mlme.c:2292 with ath5k
+Date: Fri, 2 Oct 2009 23:42:47 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910021917.31509.rjw@sisk.pl> <b637ec0b0910021437l5a011f13qfa4dd541607a6dfb@mail.gmail.com>
+In-Reply-To: <b637ec0b0910021437l5a011f13qfa4dd541607a6dfb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <618f0c910909230124q773b90f6xd377e67a758e1237@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910022342.47977.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Venkatraman S <svenkatr@ti.com> [090923 01:25]:
-> On Wed, Sep 23, 2009 at 12:49 PM, Anuj Aggarwal <anuj.aggarwal@ti.com> wrote:
-> > Argument tparams was not being used to program
-> > global register GCR.HI_THREAD_RESERVED. This patch fixes the same.
-> >
-> > Signed-off-by: Anuj Aggarwal <anuj.aggarwal@ti.com>
-> > ---
-> >  arch/arm/plat-omap/dma.c |   13 +++++++------
-> >  1 files changed, 7 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/arch/arm/plat-omap/dma.c b/arch/arm/plat-omap/dma.c
-> > index bf08634..7a7b6df 100644
-> > --- a/arch/arm/plat-omap/dma.c
-> > +++ b/arch/arm/plat-omap/dma.c
-> > @@ -829,10 +829,10 @@ EXPORT_SYMBOL(omap_free_dma);
-> >  *
-> >  * @param arb_rate
-> >  * @param max_fifo_depth
-> > - * @param tparams - Number of thereads to reserve : DMA_THREAD_RESERVE_NORM
-> > - *                                                 DMA_THREAD_RESERVE_ONET
-> > - *                                                 DMA_THREAD_RESERVE_TWOT
-> > - *                                                 DMA_THREAD_RESERVE_THREET
-> > + * @param tparams - Number of threads to reserve : DMA_THREAD_RESERVE_NORM
-> > + *                                                DMA_THREAD_RESERVE_ONET
-> > + *                                                DMA_THREAD_RESERVE_TWOT
-> > + *                                                DMA_THREAD_RESERVE_THREET
-> >  */
-> >  void
-> >  omap_dma_set_global_params(int arb_rate, int max_fifo_depth, int tparams)
-> > @@ -847,8 +847,9 @@ omap_dma_set_global_params(int arb_rate, int max_fifo_depth, int tparams)
-> >        if (arb_rate == 0)
-> >                arb_rate = 1;
-> >
-> > -       reg = (arb_rate & 0xff) << 16;
-> > -       reg |= (0xff & max_fifo_depth);
-> > +       reg = 0xff & max_fifo_depth;
-> > +       reg |= (0x3 & tparams) << 12;
-> > +       reg |= (arb_rate & 0xff) << 16;
-> >
-> >        dma_write(reg, GCR);
-> >  }
+On Friday 02 October 2009, Fabio Comolli wrote:
+> Hi.
 > 
-> max_fifo_depth should not be set to zero. Perhaps it deserves a check
-> similar to arb_rate ?
+> On Fri, Oct 2, 2009 at 7:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Friday 02 October 2009, Fabio Comolli wrote:
+> >> Hi.
+> >> I suppose this is still valid. I had to work around it by rfkill-ing
+> >> the device during the suspend process and reenabling at resume time.
+> >
+> > Thanks for the update.
+> >
+> >> I can try to reproduce it with 2.6.31.1 if you want it.
+> >
+> > In fact I'm more interested in whether or not it's still present in the Linus'
+> > tree.
+> >
+> 
+> Well, I just tried 2.6.32-rc1-git3 and I have to say that it's mostly
+> useless with my eeepc. The warning didn't show up after resume but it
+> was impossible to reassociate with my AP and after some tentative the
+> screen went blank.
+> 
+> I was able to poweroff the netbook using the power button but I'm a
+> little scared to try again.
 
-Any news on updating this patch to also check the max_fifo_depth?
+It shouldn't kill the system cold dead, so as long as you have your data
+backed up, you can do some debugging IMHO.
 
-Tony
+> Maybe I'll try with -rc3 or something.
+
+I guess you should report the issues you have at the moment.  Then, it's
+actually more likely that someone will take care of fixing them.
+
+Thanks,
+Rafael
