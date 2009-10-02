@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbZJBCAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbZJBBcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757291AbZJBCAA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 22:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757273AbZJBB75
+	id S1755146AbZJBBcr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbZJBBcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:59:57 -0400
-Received: from kroah.org ([198.145.64.141]:32937 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:32:46 -0400
+Received: from kroah.org ([198.145.64.141]:32947 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754770AbZJBBcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:32:39 -0400
+	id S1754799AbZJBBcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:32:41 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:08 2009
-Message-Id: <20091002012408.644856870@mini.kroah.org>
+Message-Id: <20091002012408.786364159@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:16:07 -0700
+Date: Thu, 01 Oct 2009 18:16:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Serge Hallyn <serue@us.ibm.com>, ecryptfs-devel@lists.launchpad.net,
+       Serge Hallyn <serue@us.ibm.com>, Eric Sandeen <esandeen@redhat.com>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       ecryptfs-devel@lists.launchpad.net,
        Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-Subject: [019/136] eCryptfs: Handle unrecognized tag 3 cipher codes
+Subject: [020/136] eCryptfs: Check for O_RDONLY lower inodes when opening lower files
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=ecryptfs-handle-unrecognized-tag-3-cipher-codes.patch
+Content-Disposition: inline; filename=ecryptfs-check-for-o_rdonly-lower-inodes-when-opening-lower-files.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,58 +34,91 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
 
-commit b0105eaefa7cce8f4a941d0fc6354b250d30e745 upstream.
+commit ac22ba23b659e34a5961aec8c945608e471b0d5b upstream.
 
-Returns an error when an unrecognized cipher code is present in a tag 3
-packet or an ecryptfs_crypt_stat cannot be initialized.  Also sets an
-crypt_stat->tfm error pointer to NULL to ensure that it will not be
-incorrectly freed in ecryptfs_destroy_crypt_stat().
+If the lower inode is read-only, don't attempt to open the lower file
+read/write and don't hand off the open request to the privileged
+eCryptfs kthread for opening it read/write.  Instead, only try an
+unprivileged, read-only open of the file and give up if that fails.
+This patch fixes an oops when eCryptfs is mounted on top of a read-only
+mount.
 
 Acked-by: Serge Hallyn <serue@us.ibm.com>
+Cc: Eric Sandeen <esandeen@redhat.com>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Cc: ecryptfs-devel@lists.launchpad.net
 Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ecryptfs/crypto.c   |    1 +
- fs/ecryptfs/keystore.c |   10 +++++++---
- 2 files changed, 8 insertions(+), 3 deletions(-)
+ fs/ecryptfs/kthread.c |   24 ++++++++----------------
+ fs/ecryptfs/main.c    |    3 +--
+ 2 files changed, 9 insertions(+), 18 deletions(-)
 
---- a/fs/ecryptfs/crypto.c
-+++ b/fs/ecryptfs/crypto.c
-@@ -797,6 +797,7 @@ int ecryptfs_init_crypt_ctx(struct ecryp
- 	kfree(full_alg_name);
- 	if (IS_ERR(crypt_stat->tfm)) {
- 		rc = PTR_ERR(crypt_stat->tfm);
-+		crypt_stat->tfm = NULL;
- 		ecryptfs_printk(KERN_ERR, "cryptfs: init_crypt_ctx(): "
- 				"Error initializing cipher [%s]\n",
- 				crypt_stat->cipher);
---- a/fs/ecryptfs/keystore.c
-+++ b/fs/ecryptfs/keystore.c
-@@ -1316,8 +1316,10 @@ parse_tag_3_packet(struct ecryptfs_crypt
- 		rc = -EINVAL;
- 		goto out_free;
+--- a/fs/ecryptfs/kthread.c
++++ b/fs/ecryptfs/kthread.c
+@@ -136,6 +136,7 @@ int ecryptfs_privileged_open(struct file
+ 			     const struct cred *cred)
+ {
+ 	struct ecryptfs_open_req *req;
++	int flags = O_LARGEFILE;
+ 	int rc = 0;
+ 
+ 	/* Corresponding dput() and mntput() are done when the
+@@ -143,10 +144,14 @@ int ecryptfs_privileged_open(struct file
+ 	 * destroyed. */
+ 	dget(lower_dentry);
+ 	mntget(lower_mnt);
+-	(*lower_file) = dentry_open(lower_dentry, lower_mnt,
+-				    (O_RDWR | O_LARGEFILE), cred);
++	flags |= IS_RDONLY(lower_dentry->d_inode) ? O_RDONLY : O_RDWR;
++	(*lower_file) = dentry_open(lower_dentry, lower_mnt, flags, cred);
+ 	if (!IS_ERR(*lower_file))
+ 		goto out;
++	if (flags & O_RDONLY) {
++		rc = PTR_ERR((*lower_file));
++		goto out;
++	}
+ 	req = kmem_cache_alloc(ecryptfs_open_req_cache, GFP_KERNEL);
+ 	if (!req) {
+ 		rc = -ENOMEM;
+@@ -180,21 +185,8 @@ int ecryptfs_privileged_open(struct file
+ 		       __func__);
+ 		goto out_unlock;
  	}
--	ecryptfs_cipher_code_to_string(crypt_stat->cipher,
--				       (u16)data[(*packet_size)]);
-+	rc = ecryptfs_cipher_code_to_string(crypt_stat->cipher,
-+					    (u16)data[(*packet_size)]);
-+	if (rc)
-+		goto out_free;
- 	/* A little extra work to differentiate among the AES key
- 	 * sizes; see RFC2440 */
- 	switch(data[(*packet_size)++]) {
-@@ -1328,7 +1330,9 @@ parse_tag_3_packet(struct ecryptfs_crypt
- 		crypt_stat->key_size =
- 			(*new_auth_tok)->session_key.encrypted_key_size;
+-	if (IS_ERR(*req->lower_file)) {
++	if (IS_ERR(*req->lower_file))
+ 		rc = PTR_ERR(*req->lower_file);
+-		dget(lower_dentry);
+-		mntget(lower_mnt);
+-		(*lower_file) = dentry_open(lower_dentry, lower_mnt,
+-					    (O_RDONLY | O_LARGEFILE), cred);
+-		if (IS_ERR(*lower_file)) {
+-			rc = PTR_ERR(*req->lower_file);
+-			(*lower_file) = NULL;
+-			printk(KERN_WARNING "%s: Error attempting privileged "
+-			       "open of lower file with either RW or RO "
+-			       "perms; rc = [%d]. Giving up.\n",
+-			       __func__, rc);
+-		}
+-	}
+ out_unlock:
+ 	mutex_unlock(&req->mux);
+ out_free:
+--- a/fs/ecryptfs/main.c
++++ b/fs/ecryptfs/main.c
+@@ -129,11 +129,10 @@ int ecryptfs_init_persistent_file(struct
+ 		lower_dentry = ecryptfs_dentry_to_lower(ecryptfs_dentry);
+ 		rc = ecryptfs_privileged_open(&inode_info->lower_file,
+ 					      lower_dentry, lower_mnt, cred);
+-		if (rc || IS_ERR(inode_info->lower_file)) {
++		if (rc) {
+ 			printk(KERN_ERR "Error opening lower persistent file "
+ 			       "for lower_dentry [0x%p] and lower_mnt [0x%p]; "
+ 			       "rc = [%d]\n", lower_dentry, lower_mnt, rc);
+-			rc = PTR_ERR(inode_info->lower_file);
+ 			inode_info->lower_file = NULL;
+ 		}
  	}
--	ecryptfs_init_crypt_ctx(crypt_stat);
-+	rc = ecryptfs_init_crypt_ctx(crypt_stat);
-+	if (rc)
-+		goto out_free;
- 	if (unlikely(data[(*packet_size)++] != 0x03)) {
- 		printk(KERN_WARNING "Only S2K ID 3 is currently supported\n");
- 		rc = -ENOSYS;
 
 
