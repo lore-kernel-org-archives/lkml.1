@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbZJBXTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbZJBXZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754626AbZJBXTa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 19:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZJBXT3
+	id S1754351AbZJBXZw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 19:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZJBXZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 19:19:29 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:43213 "EHLO e1.ny.us.ibm.com"
+	Fri, 2 Oct 2009 19:25:51 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:41391 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752327AbZJBXT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 19:19:29 -0400
-Subject: [PATCH 1/2] time: logrithmic time accumulation
+	id S1751924AbZJBXZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 19:25:51 -0400
+Subject: [PATCH 2/2] time: remove xtime_cache
 From: john stultz <johnstul@us.ibm.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: John Kacur <jkacur@redhat.com>, Clark Williams <williams@redhat.com>,
@@ -17,9 +17,11 @@ Cc: John Kacur <jkacur@redhat.com>, Clark Williams <williams@redhat.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1254525473.7741.88.camel@localhost.localdomain>
+References: <1254525473.7741.88.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Fri, 02 Oct 2009 16:17:53 -0700
-Message-Id: <1254525473.7741.88.camel@localhost.localdomain>
+Date: Fri, 02 Oct 2009 16:24:15 -0700
+Message-Id: <1254525855.7741.95.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -27,176 +29,148 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Accumulating one tick at a time works well unless we're using NOHZ. Then
-it can be an issue, since we may have to run through the loop a few
-thousand times, which can increase timer interrupt caused latency.
+With the prior logarithmic time accumulation patch, xtime will now
+always be within one "tick" of the current time, instead of possibly
+half a second off. 
 
-The current solution was to accumulate in half-second intervals with
-NOHZ. This kept the number of loops down, however it did slightly change
-how we make NTP adjustments. While not an issue with NTPd users, as NTPd
-makes adjustments over a longer period of time, other adjtimex() users
-have noticed the half-second granularity with which we can apply
-frequency changes to the clock.
+This removes the need for the xtime_cache value, which always stored the
+time at the last interrupt, so this patch cleans that up removing the
+xtime_cache related code.
 
-For instance, if a application tries to apply a 100ppm frequency
-correction for 20ms to correct a 2us offset, with NOHZ they either get
-no correction, or a 50us correction.
-
-Now, there will always be some granularity error for applying frequency
-corrections. However with users sensitive to this error have seen a
-50-500x increase with NOHZ compared to running without NOHZ.
-
-So I figured I'd try another approach then just simply increasing the
-interval. My approach is to consume the time interval logarithmically.
-This reduces the number of times  through the loop needed keeping
-latency down, while still preserving the original granularity error for
-adjtimex() changes.
-
-Further, this change allows us to remove the xtime_cache code (patch to
-follow), as xtime is always within one tick of the current time, instead
-of the half-second updates it saw before.
-
-An earlier version of this patch has been shipping to x86 users in the
-RedHat MRG releases for awhile without issue, but I've reworked this
-version to be even more careful about avoiding possible overflows if the
-shift value gets too large.
-
-Since this is not the most trivial code, and its slightly different then
-whats been tested for  awhile, it would be good to get this into some
-trees for testing. Be it -tip or -mm, either would work. If there's no
-problems it could be a 2.6.33 or 2.6.34 item.
+This is a bit simpler, but still could use some wider testing.
 
 Any comments or feedback would be appreciated!
 
+thanks
+-john
+
+
 Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-diff --git a/include/linux/timex.h b/include/linux/timex.h
-index e6967d1..0c0ef7d 100644
---- a/include/linux/timex.h
-+++ b/include/linux/timex.h
-@@ -261,11 +261,7 @@ static inline int ntp_synced(void)
- 
- #define NTP_SCALE_SHIFT		32
- 
--#ifdef CONFIG_NO_HZ
--#define NTP_INTERVAL_FREQ  (2)
--#else
- #define NTP_INTERVAL_FREQ  (HZ)
--#endif
- #define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
- 
- /* Returns how long ticks are at present, in ns / 2^NTP_SCALE_SHIFT. */
+diff --git a/kernel/time.c b/kernel/time.c
+index 2e2e469..2ef4fe2 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -136,7 +136,6 @@ static inline void warp_clock(void)
+ 	write_seqlock_irq(&xtime_lock);
+ 	wall_to_monotonic.tv_sec -= sys_tz.tz_minuteswest * 60;
+ 	xtime.tv_sec += sys_tz.tz_minuteswest * 60;
+-	update_xtime_cache(0);
+ 	write_sequnlock_irq(&xtime_lock);
+ 	clock_was_set();
+ }
 diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index fb0f46f..4cc5656 100644
+index 4cc5656..a1513d0 100644
 --- a/kernel/time/timekeeping.c
 +++ b/kernel/time/timekeeping.c
-@@ -721,6 +721,51 @@ static void timekeeping_adjust(s64 offset)
+@@ -164,13 +164,6 @@ struct timespec raw_time;
+ /* flag for if timekeeping is suspended */
+ int __read_mostly timekeeping_suspended;
+ 
+-static struct timespec xtime_cache __attribute__ ((aligned (16)));
+-void update_xtime_cache(u64 nsec)
+-{
+-	xtime_cache = xtime;
+-	timespec_add_ns(&xtime_cache, nsec);
+-}
+-
+ /* must hold xtime_lock */
+ void timekeeping_leap_insert(int leapsecond)
+ {
+@@ -331,8 +324,6 @@ int do_settimeofday(struct timespec *tv)
+ 
+ 	xtime = *tv;
+ 
+-	update_xtime_cache(0);
+-
+ 	timekeeper.ntp_error = 0;
+ 	ntp_clear();
+ 
+@@ -547,7 +538,6 @@ void __init timekeeping_init(void)
+ 	}
+ 	set_normalized_timespec(&wall_to_monotonic,
+ 				-boot.tv_sec, -boot.tv_nsec);
+-	update_xtime_cache(0);
+ 	total_sleep_time.tv_sec = 0;
+ 	total_sleep_time.tv_nsec = 0;
+ 	write_sequnlock_irqrestore(&xtime_lock, flags);
+@@ -581,7 +571,6 @@ static int timekeeping_resume(struct sys_device *dev)
+ 		wall_to_monotonic = timespec_sub(wall_to_monotonic, ts);
+ 		total_sleep_time = timespec_add_safe(total_sleep_time, ts);
+ 	}
+-	update_xtime_cache(0);
+ 	/* re-base the last cycle value */
+ 	timekeeper.clock->cycle_last = timekeeper.clock->read(timekeeper.clock);
+ 	timekeeper.ntp_error = 0;
+@@ -721,7 +710,6 @@ static void timekeeping_adjust(s64 offset)
  				timekeeper.ntp_error_shift;
  }
  
-+
-+/**
-+ * logarithmic_accumulation - shifted accumulation of cycles
-+ *
-+ * This functions accumulates a shifted interval of cycles into 
-+ * into a shifted interval nanoseconds. Allows for O(log) accumulation
-+ * loop.
-+ * 
-+ * Returns the unconsumed cycles.
-+ */
-+static cycle_t logarithmic_accumulation(cycle_t offset, int shift)
-+{
-+	u64 nsecps = (u64)NSEC_PER_SEC << timekeeper.shift;
-+
-+	/* If the offset is smaller then a shifted interval, do nothing */
-+	if (offset < timekeeper.cycle_interval<<shift)
-+		return offset;
-+
-+	/* accumulate one shifted interval */
-+	offset -= timekeeper.cycle_interval << shift;
-+	timekeeper.clock->cycle_last += timekeeper.cycle_interval << shift;
-+	
-+	timekeeper.xtime_nsec += timekeeper.xtime_interval << shift;
-+	while (timekeeper.xtime_nsec >= nsecps) {
-+		timekeeper.xtime_nsec -= nsecps;
-+		xtime.tv_sec++;
-+		second_overflow();
-+	}
-+	
-+	/* accumulate into raw time */
-+	raw_time.tv_nsec += timekeeper.raw_interval << shift;;
-+	while (raw_time.tv_nsec >= NSEC_PER_SEC) {
-+		raw_time.tv_nsec -= NSEC_PER_SEC;
-+		raw_time.tv_sec++;
-+	}
-+
-+	/* accumulate error between NTP and clock interval */
-+	timekeeper.ntp_error += tick_length << shift;
-+	timekeeper.ntp_error -= timekeeper.xtime_interval <<
-+				(timekeeper.ntp_error_shift + shift);
-+
-+	return offset;
-+}
-+
-+
+-
+ /**
+  * logarithmic_accumulation - shifted accumulation of cycles
+  *
+@@ -765,7 +753,6 @@ static cycle_t logarithmic_accumulation(cycle_t offset, int shift)
+ 	return offset;
+ }
+ 
+-
  /**
   * update_wall_time - Uses the current clocksource to increment the wall time
   *
-@@ -731,6 +776,7 @@ void update_wall_time(void)
+@@ -775,7 +762,6 @@ void update_wall_time(void)
+ {
  	struct clocksource *clock;
  	cycle_t offset;
- 	u64 nsecs;
-+	int shift = 0, maxshift;
+-	u64 nsecs;
+ 	int shift = 0, maxshift;
  
  	/* Make sure we're fully resumed: */
- 	if (unlikely(timekeeping_suspended))
-@@ -744,33 +790,22 @@ void update_wall_time(void)
- #endif
- 	timekeeper.xtime_nsec = (s64)xtime.tv_nsec << timekeeper.shift;
+@@ -841,9 +827,6 @@ void update_wall_time(void)
+ 	timekeeper.ntp_error +=	timekeeper.xtime_nsec <<
+ 				timekeeper.ntp_error_shift;
  
--	/* normally this loop will run just once, however in the
--	 * case of lost or late ticks, it will accumulate correctly.
-+	/*
-+	 * With NO_HZ we may have to accumulate many cycle_intervals
-+	 * (think "ticks") worth of time at once. To do this efficiently,
-+	 * we calculate the largest doubling multiple of cycle_intervals
-+	 * that is smaller then the offset. We then accumulate that 
-+	 * chunk in one go, and then try to consume the next smaller
-+	 * doubled multiple.
- 	 */
-+	shift = ilog2(offset) - ilog2(timekeeper.cycle_interval);
-+	shift = max(0, shift);
-+	/* Bound shift to one less then what overflows tick_length */
-+	maxshift = (8*sizeof(tick_length) - (ilog2(tick_length)+1)) - 1;
-+	shift = min(shift, maxshift);	
- 	while (offset >= timekeeper.cycle_interval) {
--		u64 nsecps = (u64)NSEC_PER_SEC << timekeeper.shift;
+-	nsecs = clocksource_cyc2ns(offset, timekeeper.mult, timekeeper.shift);
+-	update_xtime_cache(nsecs);
 -
--		/* accumulate one interval */
--		offset -= timekeeper.cycle_interval;
--		clock->cycle_last += timekeeper.cycle_interval;
--
--		timekeeper.xtime_nsec += timekeeper.xtime_interval;
--		if (timekeeper.xtime_nsec >= nsecps) {
--			timekeeper.xtime_nsec -= nsecps;
--			xtime.tv_sec++;
--			second_overflow();
--		}
--
--		raw_time.tv_nsec += timekeeper.raw_interval;
--		if (raw_time.tv_nsec >= NSEC_PER_SEC) {
--			raw_time.tv_nsec -= NSEC_PER_SEC;
--			raw_time.tv_sec++;
--		}
--
--		/* accumulate error between NTP and clock interval */
--		timekeeper.ntp_error += tick_length;
--		timekeeper.ntp_error -= timekeeper.xtime_interval <<
--					timekeeper.ntp_error_shift;
-+		offset = logarithmic_accumulation(offset, shift);
-+		shift--;
- 	}
+ 	/* check to see if there is a new clocksource to use */
+ 	update_vsyscall(&xtime, timekeeper.clock);
+ }
+@@ -880,13 +863,13 @@ void monotonic_to_bootbased(struct timespec *ts)
  
- 	/* correct the clock when NTP error is too big */
+ unsigned long get_seconds(void)
+ {
+-	return xtime_cache.tv_sec;
++	return xtime.tv_sec;
+ }
+ EXPORT_SYMBOL(get_seconds);
+ 
+ struct timespec __current_kernel_time(void)
+ {
+-	return xtime_cache;
++	return xtime;
+ }
+ 
+ struct timespec current_kernel_time(void)
+@@ -896,8 +879,7 @@ struct timespec current_kernel_time(void)
+ 
+ 	do {
+ 		seq = read_seqbegin(&xtime_lock);
+-
+-		now = xtime_cache;
++		now = xtime;
+ 	} while (read_seqretry(&xtime_lock, seq));
+ 
+ 	return now;
+@@ -911,8 +893,7 @@ struct timespec get_monotonic_coarse(void)
+ 
+ 	do {
+ 		seq = read_seqbegin(&xtime_lock);
+-
+-		now = xtime_cache;
++		now = xtime;
+ 		mono = wall_to_monotonic;
+ 	} while (read_seqretry(&xtime_lock, seq));
+ 
 
 
