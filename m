@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbZJBBdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbZJBByG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbZJBBdL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbZJBBdJ
+	id S1757216AbZJBByG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:54:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbZJBBdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:33:09 -0400
-Received: from kroah.org ([198.145.64.141]:33097 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:33:07 -0400
+Received: from kroah.org ([198.145.64.141]:33101 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754999AbZJBBdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:33:04 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:12 2009
-Message-Id: <20091002012412.879266609@mini.kroah.org>
+	id S1755634AbZJBBdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:33:05 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:13 2009
+Message-Id: <20091002012412.966392210@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:16:33 -0700
+Date: Thu, 01 Oct 2009 18:16:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Alan Cox <alan@linux.intel.com>
-Subject: [045/136] cdc_acm: Fix to use modern speed interfaces
+Subject: [046/136] tty: remove dtr/rts use from the driver open methods
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=cdc_acm-fix-to-use-modern-speed-interfaces.patch
+Content-Disposition: inline; filename=tty-remove-dtr-rts-use-from-the-driver-open-methods.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,30 +31,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Alan Cox <alan@linux.intel.com>
 
-commit 9b80fee149a875a6292b2556ab2c64dc7ab7d6f5 upstream.
+commit 9a68e39d4a701fb3be03cae9b462408664ebd205 upstream.
 
-This changed in 2006 so its about time the ACM driver caught up
+These are handled by the tty_port core code which will raise and lower the
+carrier correctly in tty_wait_until_ready
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/class/cdc-acm.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/usb/serial/cp210x.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
---- a/drivers/usb/class/cdc-acm.c
-+++ b/drivers/usb/class/cdc-acm.c
-@@ -860,10 +860,7 @@ static void acm_tty_set_termios(struct t
- 	if (!ACM_READY(acm))
- 		return;
+--- a/drivers/usb/serial/cp210x.c
++++ b/drivers/usb/serial/cp210x.c
+@@ -399,12 +399,6 @@ static int cp210x_open(struct tty_struct
  
--	/* FIXME: Needs to support the tty_baud interface */
--	/* FIXME: Broken on sparc */
--	newline.dwDTERate = cpu_to_le32p(acm_tty_speed +
--		(termios->c_cflag & CBAUD & ~CBAUDEX) + (termios->c_cflag & CBAUDEX ? 15 : 0));
-+	newline.dwDTERate = cpu_to_le32(tty_get_baud_rate(tty));
- 	newline.bCharFormat = termios->c_cflag & CSTOPB ? 2 : 0;
- 	newline.bParityType = termios->c_cflag & PARENB ?
- 				(termios->c_cflag & PARODD ? 1 : 2) +
+ 	/* Configure the termios structure */
+ 	cp210x_get_termios(tty, port);
+-
+-	/* Set the DTR and RTS pins low */
+-	cp210x_tiocmset_port(tty ? (struct usb_serial_port *) tty->driver_data
+-			: port,
+-		NULL, TIOCM_DTR | TIOCM_RTS, 0);
+-
+ 	return 0;
+ }
+ 
 
 
