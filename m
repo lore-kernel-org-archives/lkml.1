@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbZJBJvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbZJBJza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757481AbZJBJvr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 05:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbZJBJvq
+	id S1757513AbZJBJza (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 05:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757484AbZJBJz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 05:51:46 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37961 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757418AbZJBJvq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 05:51:46 -0400
-Date: Fri, 2 Oct 2009 10:53:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-usb@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
-Message-ID: <20091002105314.33d54bc5@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091002100430.58785957@lxorguk.ukuu.org.uk>
-References: <20090924154023.GA27480@localhost>
-	<200909242103.48562.oliver@neukum.org>
-	<20090924202107.4730f2af@lxorguk.ukuu.org.uk>
-	<20090924211459.GB27963@localhost>
-	<4ABD020B.4040901@gandalf.sssup.it>
-	<20090929145514.GF2152@localhost>
-	<20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
-	<m163ayzevu.fsf@fess.ebiederm.org>
-	<20091002100430.58785957@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 2 Oct 2009 05:55:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34853 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757471AbZJBJzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 05:55:24 -0400
+Date: Fri, 2 Oct 2009 11:54:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: cl@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [this_cpu_xx V4 00/20] Introduce per cpu atomic operations and
+	avoid per cpu address arithmetic
+Message-ID: <20091002095455.GC21427@elte.hu>
+References: <20091001212521.123389189@gentwo.org> <4AC5C836.8000502@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AC5C836.8000502@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Having had a look through the driver someone with docs or similar needs
-to explain how the ftdi_sio does hardware and software flow control. It
-has throttle/unthrottle methods but these just stall the URB queuing and
-don't do any flow processing of their own at all. Does the ftdi_sio do
-this in hardware when the urbs run low ?
 
-Otherwise it can certainly be simplified a lot. In particular at the
-point you get throttle event you've got about 64K of cushion to react
-(flow control being async anyway) and you actually *want* to pull data
-after you whack the modem lines because the other end also has a latency
-to respond.
+* Tejun Heo <tj@kernel.org> wrote:
 
-So all the clever partial processing of urb stuff is overkill. Whether it
-needs not to repost urbs to the device or to implement flow control in
-software I don't know without docs.
+> Hello,
+> 
+> cl@linux-foundation.org wrote:
+> > V3->V4:
+> > - Fix various macro definitions.
+> > - Provider experimental percpu based fastpath that does not disable
+> >   interrupts for SLUB.
+> 
+> The series looks very good to me. [...]
 
-With that done the driver ought to be a good deal easier to debug.
+Seconded, very nice series!
 
-Alan
+One final step/cleanup seems to be missing from it: it should replace 
+current uses of percpu_op() [percpu_read(), etc.] in the x86 tree and 
+elsewhere with the new this_cpu_*() primitives. this_cpu_*() is using 
+per_cpu_from_op/per_cpu_to_op directly, we dont need those percpu_op() 
+variants anymore.
+
+There should also be a kernel image size comparison done for that step, 
+to make sure all the new primitives are optimized to the max on the 
+instruction level.
+
+> [...] percpu#for-next now has ia64 bits included and the legacy 
+> allocator is gone there so it can carry this series.  Sans the last 
+> one, they seem they can be stable and incremental from now on, right?  
+> Shall I include this series into the percpu tree?
+
+I'd definitely recommend doing that - it should be tested early and wide 
+for v2.6.33, and together with other percpu bits.
+
+	Ingo
