@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZJBBeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932138AbZJBBlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbZJBBeM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:34:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZJBBeI
+	id S932138AbZJBBlY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932068AbZJBBlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:34:08 -0400
-Received: from kroah.org ([198.145.64.141]:33474 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:41:20 -0400
+Received: from kroah.org ([198.145.64.141]:33477 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756883AbZJBBeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:34:05 -0400
+	id S1756890AbZJBBeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:34:06 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:24 2009
-Message-Id: <20091002012424.339883108@mini.kroah.org>
+Message-Id: <20091002012424.471713554@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:37 -0700
+Date: Thu, 01 Oct 2009 18:17:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Subject: [109/136] USB: xhci: Make TRB completion code comparison readable.
+Subject: [110/136] USB: xhci: Handle babbling endpoints correctly.
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=usb-xhci-make-trb-completion-code-comparison-readable.patch
+Content-Disposition: inline; filename=usb-xhci-handle-babbling-endpoints-correctly.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,82 +31,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 
-commit 66d1eebce5cca916e0b08d961690bb01c64751ef upstream.
+commit 83fbcdcca03013bb5af130d6d91eba11e3d3269e upstream.
 
-Use trb_comp_code instead of getting the completion code from the transfer
-event every time.
+The 0.95 xHCI spec says that non-control endpoints will be halted if a
+babble is detected on a transfer.  The 0.96 xHCI spec says all types of
+endpoints will be halted when a babble is detected.  Some hardware that
+claims to be 0.95 compliant halts the control endpoint anyway.
+
+When a babble is detected on a control endpoint, check the hardware's
+output endpoint context to see if the endpoint is marked as halted.  If
+the control endpoint is halted, a reset endpoint command must be issued
+and the transfer ring dequeue pointer needs to be moved past the stopped
+transfer.  Basically, we treat it as if the control endpoint had stalled.
+
+Handle bulk babbling endpoints as if we got a completion event with a
+stall completion code.
 
 Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/xhci-ring.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/usb/host/xhci-ring.c |   16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
 --- a/drivers/usb/host/xhci-ring.c
 +++ b/drivers/usb/host/xhci-ring.c
-@@ -874,6 +874,7 @@ static int handle_tx_event(struct xhci_h
- 	struct urb *urb = 0;
- 	int status = -EINPROGRESS;
- 	struct xhci_ep_ctx *ep_ctx;
-+	u32 trb_comp_code;
- 
- 	xhci_dbg(xhci, "In %s\n", __func__);
- 	slot_id = TRB_TO_SLOT_ID(event->flags);
-@@ -931,7 +932,8 @@ static int handle_tx_event(struct xhci_h
- 			(unsigned int) event->flags);
- 
- 	/* Look for common error cases */
--	switch (GET_COMP_CODE(event->transfer_len)) {
-+	trb_comp_code = GET_COMP_CODE(event->transfer_len);
-+	switch (trb_comp_code) {
- 	/* Skip codes that require special handling depending on
- 	 * transfer type
- 	 */
-@@ -974,7 +976,7 @@ static int handle_tx_event(struct xhci_h
- 	/* Was this a control transfer? */
- 	if (usb_endpoint_xfer_control(&td->urb->ep->desc)) {
- 		xhci_debug_trb(xhci, xhci->event_ring->dequeue);
--		switch (GET_COMP_CODE(event->transfer_len)) {
-+		switch (trb_comp_code) {
- 		case COMP_SUCCESS:
- 			if (event_trb == ep_ring->dequeue) {
- 				xhci_warn(xhci, "WARN: Success on ctrl setup TRB without IOC set??\n");
-@@ -1031,7 +1033,7 @@ static int handle_tx_event(struct xhci_h
- 				}
- 			} else {
- 			/* Maybe the event was for the data stage? */
--				if (GET_COMP_CODE(event->transfer_len) != COMP_STOP_INVAL) {
-+				if (trb_comp_code != COMP_STOP_INVAL) {
- 					/* We didn't stop on a link TRB in the middle */
- 					td->urb->actual_length =
- 						td->urb->transfer_buffer_length -
-@@ -1043,7 +1045,7 @@ static int handle_tx_event(struct xhci_h
- 			}
- 		}
+@@ -993,6 +993,16 @@ static int handle_tx_event(struct xhci_h
+ 			xhci_warn(xhci, "WARN: short transfer on control ep\n");
+ 			status = -EREMOTEIO;
+ 			break;
++		case COMP_BABBLE:
++			/* The 0.96 spec says a babbling control endpoint
++			 * is not halted. The 0.96 spec says it is.  Some HW
++			 * claims to be 0.95 compliant, but it halts the control
++			 * endpoint anyway.  Check if a babble halted the
++			 * endpoint.
++			 */
++			if (ep_ctx->ep_info != EP_STATE_HALTED)
++				break;
++			/* else fall through */
+ 		case COMP_STALL:
+ 			/* Did we transfer part of the data (middle) phase? */
+ 			if (event_trb != ep_ring->dequeue &&
+@@ -1137,7 +1147,8 @@ static int handle_tx_event(struct xhci_h
+ 		ep_ring->stopped_td = td;
+ 		ep_ring->stopped_trb = event_trb;
  	} else {
--		switch (GET_COMP_CODE(event->transfer_len)) {
-+		switch (trb_comp_code) {
- 		case COMP_SUCCESS:
- 			/* Double check that the HW transferred everything. */
- 			if (event_trb != td->last_trb) {
-@@ -1120,14 +1122,14 @@ static int handle_tx_event(struct xhci_h
- 			/* If the ring didn't stop on a Link or No-op TRB, add
- 			 * in the actual bytes transferred from the Normal TRB
- 			 */
--			if (GET_COMP_CODE(event->transfer_len) != COMP_STOP_INVAL)
-+			if (trb_comp_code != COMP_STOP_INVAL)
- 				td->urb->actual_length +=
- 					TRB_LEN(cur_trb->generic.field[2]) -
- 					TRB_LEN(event->transfer_len);
+-		if (GET_COMP_CODE(event->transfer_len) == COMP_STALL) {
++		if (trb_comp_code == COMP_STALL ||
++				trb_comp_code == COMP_BABBLE) {
+ 			/* The transfer is completed from the driver's
+ 			 * perspective, but we need to issue a set dequeue
+ 			 * command for this stalled endpoint to move the dequeue
+@@ -1168,7 +1179,8 @@ td_cleanup:
+ 		 * control endpoints).
+ 		 */
+ 		if (usb_endpoint_xfer_control(&urb->ep->desc) ||
+-			GET_COMP_CODE(event->transfer_len) != COMP_STALL) {
++			(trb_comp_code != COMP_STALL &&
++				trb_comp_code != COMP_BABBLE)) {
+ 			kfree(td);
  		}
- 	}
--	if (GET_COMP_CODE(event->transfer_len) == COMP_STOP_INVAL ||
--			GET_COMP_CODE(event->transfer_len) == COMP_STOP) {
-+	if (trb_comp_code == COMP_STOP_INVAL ||
-+			trb_comp_code == COMP_STOP) {
- 		/* The Endpoint Stop Command completion will take care of any
- 		 * stopped TDs.  A stopped TD may be restarted, so don't update
- 		 * the ring dequeue pointer or take this TD off any lists yet.
+ 		urb->hcpriv = NULL;
 
 
