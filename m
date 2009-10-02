@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbZJBRkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbZJBRhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757636AbZJBRkN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbZJBRkN
+	id S1757964AbZJBRhb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbZJBRha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:40:13 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49923 "EHLO mx1.suse.de"
+	Fri, 2 Oct 2009 13:37:30 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:47288 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754727AbZJBRkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:40:12 -0400
-Date: Fri, 2 Oct 2009 10:35:47 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: Greg KH <greg@kroah.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [109/136] USB: xhci: Make TRB completion code
- comparison readable.
-Message-ID: <20091002173547.GA18950@suse.de>
-References: <20091002011548.335611824@mini.kroah.org>
- <20091002012424.339883108@mini.kroah.org>
- <4AC62C8C.4060906@csr.com>
- <20091002165316.GB3890@kroah.com>
- <4AC636F7.2000506@csr.com>
+	id S1753484AbZJBRh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:37:29 -0400
+Date: Fri, 2 Oct 2009 19:37:32 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002173732.GK31616@kernel.dk>
+References: <20091002080417.GG14918@kernel.dk> <20091002092409.GA19529@elte.hu> <20091002092839.GA26962@kernel.dk> <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain> <20091002145610.GD31616@kernel.dk> <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain> <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu> <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AC636F7.2000506@csr.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091002172842.GA4884@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 06:23:03PM +0100, David Vrabel wrote:
-> Greg KH wrote:
-> > On Fri, Oct 02, 2009 at 05:38:36PM +0100, David Vrabel wrote:
-> >> Greg KH wrote:
-> >>> 2.6.31-stable review patch.  If anyone has any objections, please let us know.
-> >>>
-> >>> ------------------
-> >>> From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-> >>>
-> >>> commit 66d1eebce5cca916e0b08d961690bb01c64751ef upstream.
-> >>>
-> >>> Use trb_comp_code instead of getting the completion code from the transfer
-> >>> event every time.
-> >> Are all these xhci patches really candidates for the stable tree?  XHCI
-> >> support is marked as EXPERIMENTAL, the xhci standard is still at the
-> >> draft stage, and I don't believe there are any xhci products available
-> >> on the market yet.
-> > 
-> > Did you read the 000/136 message where I explained why I was accepting
-> > all of these xhci patches into the -stable tree?
+On Fri, Oct 02 2009, Ingo Molnar wrote:
 > 
-> I have now, sorry.  It just seemed odd that XHCI patches where added to
-> stable releases whilst essential WHCI patches don't even make it into
-> the current rc tree.
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Fri, Oct 02 2009, Ingo Molnar wrote:
+> > > 
+> > > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > It's not _that_ easy, it depends a lot on the access patterns. A 
+> > > > good example of that is actually the idling that we already do. 
+> > > > Say you have two applications, each starting up. If you start them 
+> > > > both at the same time and just care for the dumb low latency, then 
+> > > > you'll do one IO from each of them in turn. Latency will be good, 
+> > > > but throughput will be aweful. And this means that in 20s they are 
+> > > > both started, while with the slice idling and priority disk access 
+> > > > that CFQ does, you'd hopefully have both up and running in 2s.
+> > > > 
+> > > > So latency is good, definitely, but sometimes you have to worry 
+> > > > about the bigger picture too. Latency is more than single IOs, 
+> > > > it's often for complete operation which may involve lots of IOs. 
+> > > > Single IO latency is a benchmark thing, it's not a real life 
+> > > > issue. And that's where it becomes complex and not so black and 
+> > > > white. Mike's test is a really good example of that.
+> > > 
+> > > To the extent of you arguing that Mike's test is artificial (i'm not 
+> > > sure you are arguing that) - Mike certainly did not do an artificial 
+> > > test - he tested 'konsole' cache-cold startup latency, such as:
+> > 
+> > [snip]
+> > 
+> > I was saying the exact opposite, that Mike's test is a good example of 
+> > a valid test. It's not measuring single IO latencies, it's doing a 
+> > sequence of valid events and looking at the latency for those. It's 
+> > benchmarking the bigger picture, not a microbenchmark.
+> 
+> Good, so we are in violent agreement :-)
 
-The WHCI patches were submitted much after the XHCI patches.  The XHCI
-patches were in my tree, and the -next and -mm patches for weeks, it was
-my fault that they didn't make it to Linus earlier.  This is quite
-different from the WHCI patches.
+Yes, perhaps that last sentence didn't provide enough evidence of which
+category I put Mike's test into :-)
 
-thanks,
+So to kick things off, I added an 'interactive' knob to CFQ and
+defaulted it to on, along with re-enabling slice idling for hardware
+that does tagged command queuing. This is almost completely identical to
+what Vivek Goyal originally posted, it's just combined into one and uses
+the term 'interactive' instead of 'fairness'. I think the former is a
+better umbrella under which to add further tweaks that may sacrifice
+throughput slightly, in the quest for better latency.
 
-greg k-h
+It's queued up in the for-linus branch.
+
+-- 
+Jens Axboe
+
