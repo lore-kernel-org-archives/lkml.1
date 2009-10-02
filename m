@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbZJBJ2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbZJBJ2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbZJBJ2S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 05:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757372AbZJBJ2R
+	id S1757405AbZJBJ2i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 05:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757385AbZJBJ2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 05:28:17 -0400
-Received: from bamako.nerim.net ([62.4.17.28]:55416 "EHLO bamako.nerim.net"
+	Fri, 2 Oct 2009 05:28:37 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:41141 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756298AbZJBJ2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 05:28:17 -0400
-Date: Fri, 2 Oct 2009 11:28:18 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-Subject: [PATCH] lcd: Fix wrong sizeof
-Message-ID: <20091002112818.54428c49@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757360AbZJBJ2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 05:28:36 -0400
+Date: Fri, 2 Oct 2009 11:28:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002092839.GA26962@kernel.dk>
+References: <1254034500.7933.6.camel@marge.simson.net> <20090927164235.GA23126@kernel.dk> <1254340730.7695.32.camel@marge.simson.net> <1254341139.7695.36.camel@marge.simson.net> <20090930202447.GA28236@redhat.com> <1254382405.7595.9.camel@marge.simson.net> <20091001185816.GU14918@kernel.dk> <1254464628.7158.101.camel@marge.simson.net> <20091002080417.GG14918@kernel.dk> <20091002092409.GA19529@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091002092409.GA19529@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Which is why I have always preferred sizeof(struct foo) over
-sizeof(var).
+On Fri, Oct 02 2009, Ingo Molnar wrote:
+> 
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > It's not hard to make the latency good, the hard bit is making sure we 
+> > also perform well for all other scenarios.
+> 
+> Looking at the numbers from Mike:
+> 
+>  | dd competing against perf stat -- konsole -e exec timings, 5 back to 
+>  | back runs
+>  |                                                         Avg
+>  | before         9.15    14.51     9.39    15.06     9.90   11.6
+>  | after [+patch] 1.76     1.54     1.93     1.88     1.56    1.7
+> 
+> _PLEASE_ make read latencies this good - the numbers are _vastly_ 
+> better. We'll worry about the 'other' things _after_ we've reached good 
+> latencies.
+> 
+> I thought this principle was a well established basic rule of Linux IO 
+> scheduling. Why do we have to have a 'latency vs. bandwidth' discussion 
+> again and again? I thought latency won hands down.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>
----
-Stable team, this one applies to 2.6.31, 2.6.30 and 2.6.27.
-
- drivers/video/backlight/lcd.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.32-rc1.orig/drivers/video/backlight/lcd.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-2.6.32-rc1/drivers/video/backlight/lcd.c	2009-10-02 10:18:49.000000000 +0200
-@@ -56,7 +56,7 @@ static int fb_notifier_callback(struct n
- 
- static int lcd_register_fb(struct lcd_device *ld)
- {
--	memset(&ld->fb_notif, 0, sizeof(&ld->fb_notif));
-+	memset(&ld->fb_notif, 0, sizeof(ld->fb_notif));
- 	ld->fb_notif.notifier_call = fb_notifier_callback;
- 	return fb_register_client(&ld->fb_notif);
- }
-
+It's really not that simple, if we go and do easy latency bits, then
+throughput drops 30% or more. You can't say it's black and white latency
+vs throughput issue, that's just not how the real world works. The
+server folks would be most unpleased.
 
 -- 
-Jean Delvare
+Jens Axboe
+
