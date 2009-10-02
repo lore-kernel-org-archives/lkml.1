@@ -1,169 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbZJBIz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbZJBIxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbZJBIz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 04:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZJBIz0
+	id S1753852AbZJBIxh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 04:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZJBIxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 04:55:26 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42274 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbZJBIzZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 04:55:25 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 2 Oct 2009 17:53:10 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 0/2] memcg: improving scalability by reducing lock
- contention at charge/uncharge
-Message-Id: <20091002175310.0991139c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 2 Oct 2009 04:53:36 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36226 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751168AbZJBIxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 04:53:34 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19Q228bZBVQx8K90GO6K3EeKBAaE/7bBkZZcaLbDk
+	zJnTz2Fi38BObn
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+In-Reply-To: <20091002080417.GG14918@kernel.dk>
+References: <20090925202636.GC15007@redhat.com>
+	 <1253976676.7005.40.camel@marge.simson.net>
+	 <1254034500.7933.6.camel@marge.simson.net>
+	 <20090927164235.GA23126@kernel.dk>
+	 <1254340730.7695.32.camel@marge.simson.net>
+	 <1254341139.7695.36.camel@marge.simson.net>
+	 <20090930202447.GA28236@redhat.com>
+	 <1254382405.7595.9.camel@marge.simson.net>
+	 <20091001185816.GU14918@kernel.dk>
+	 <1254464628.7158.101.camel@marge.simson.net>
+	 <20091002080417.GG14918@kernel.dk>
+Content-Type: text/plain
+Date: Fri, 02 Oct 2009 10:53:29 +0200
+Message-Id: <1254473609.6378.24.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart=_Fri__2_Oct_2009_17_53_10_+0900_CjTryyjzW0PATSRD"
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Fri, 2009-10-02 at 10:04 +0200, Jens Axboe wrote:
+> On Fri, Oct 02 2009, Mike Galbraith wrote:
 
---Multipart=_Fri__2_Oct_2009_17_53_10_+0900_CjTryyjzW0PATSRD
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+> > If we're in the idle window and doing the async drain thing, we've at
+> > the spot where Vivek's patch helps a ton.  Seemed like a great time to
+> > limit the size of any io that may land in front of my sync reader to
+> > plain "you are not alone" quantity.
+> 
+> You can't be in the idle window and doing async drain at the same time,
+> the idle window doesn't start until the sync queue has completed a
+> request. Hence my above rant on device interference.
 
-On Fri, 2 Oct 2009 13:55:31 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+I'll take your word for it.
 
-> Following is test result of continuous page-fault on my 8cpu box(x86-64).
-> 
-> A loop like this runs on all cpus in parallel for 60secs. 
-> ==
->         while (1) {
->                 x = mmap(NULL, MEGA, PROT_READ|PROT_WRITE,
->                         MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-> 
->                 for (off = 0; off < MEGA; off += PAGE_SIZE)
->                         x[off]=0;
->                 munmap(x, MEGA);
->         }
-> ==
-> please see # of page faults. I think this is good improvement.
-> 
-> 
-> [Before]
->  Performance counter stats for './runpause.sh' (5 runs):
-> 
->   474539.756944  task-clock-msecs         #      7.890 CPUs    ( +-   0.015% )
->           10284  context-switches         #      0.000 M/sec   ( +-   0.156% )
->              12  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
->        18425800  page-faults              #      0.039 M/sec   ( +-   0.107% )
->   1486296285360  cycles                   #   3132.080 M/sec   ( +-   0.029% )
->    380334406216  instructions             #      0.256 IPC     ( +-   0.058% )
->      3274206662  cache-references         #      6.900 M/sec   ( +-   0.453% )
->      1272947699  cache-misses             #      2.682 M/sec   ( +-   0.118% )
-> 
->    60.147907341  seconds time elapsed   ( +-   0.010% )
-> 
-> [After]
->  Performance counter stats for './runpause.sh' (5 runs):
-> 
->   474658.997489  task-clock-msecs         #      7.891 CPUs    ( +-   0.006% )
->           10250  context-switches         #      0.000 M/sec   ( +-   0.020% )
->              11  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
->        33177858  page-faults              #      0.070 M/sec   ( +-   0.152% )
->   1485264748476  cycles                   #   3129.120 M/sec   ( +-   0.021% )
->    409847004519  instructions             #      0.276 IPC     ( +-   0.123% )
->      3237478723  cache-references         #      6.821 M/sec   ( +-   0.574% )
->      1182572827  cache-misses             #      2.491 M/sec   ( +-   0.179% )
-> 
->    60.151786309  seconds time elapsed   ( +-   0.014% )
-> 
-BTW, this is a score in root cgroup.
+        /*
+         * Drain async requests before we start sync IO
+         */
+        if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
 
-
-  473811.590852  task-clock-msecs         #      7.878 CPUs    ( +-   0.006% )
-          10257  context-switches         #      0.000 M/sec   ( +-   0.049% )
-             10  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
-       36418112  page-faults              #      0.077 M/sec   ( +-   0.195% )
-  1482880352588  cycles                   #   3129.684 M/sec   ( +-   0.011% )
-   410948762898  instructions             #      0.277 IPC     ( +-   0.123% )
-     3182986911  cache-references         #      6.718 M/sec   ( +-   0.555% )
-     1147144023  cache-misses             #      2.421 M/sec   ( +-   0.137% )
-
-
-Then,
-  36418112 x 100 / 33177858 = 109% slower in children cgroup.
-
-But, Hmm, this test is an extreme case.(60sec continuous page faults on all cpus.)
-We may can do something more, but this score itself is not so bad. I think.
-Results on more cpus are welcome. Programs I used are attached.
-
-Thanks,
--Kame
+Looked about the same to me as..
  
+	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
 
+..where Vivek prevented turning 1 into 0, so I stamped it ;-)
 
+> > Dunno, I was just tossing rocks and sticks at it.
+> > 
+> > I don't really understand the reasoning behind overloading:  I can see
+> > that allows cutting thicker slabs for the disk, but with the streaming
+> > writer vs reader case, seems only the writers can do that.  The reader
+> > is unlikely to be alone isn't it?  Seems to me that either dd, a flusher
+> > thread or kjournald is going to be there with it, which gives dd a huge
+> > advantage.. it has two proxies to help it squabble over disk, konsole
+> > has none.
+> 
+> That is true, async queues have a huge advantage over sync ones. But
+> sync vs async is only part of it, any combination of queued sync, queued
+> sync random etc have different ramifications on behaviour of the
+> individual queue.
+> 
+> It's not hard to make the latency good, the hard bit is making sure we
+> also perform well for all other scenarios.
 
---Multipart=_Fri__2_Oct_2009_17_53_10_+0900_CjTryyjzW0PATSRD
-Content-Type: text/x-csrc;
- name="pagefault.c"
-Content-Disposition: attachment;
- filename="pagefault.c"
-Content-Transfer-Encoding: 7bit
+Yeah, that's why I'm trying to be careful about what I say, I know full
+well this ain't easy to get right.  I'm not even thinking of submitting
+anything, it's just diagnostic testing.
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <signal.h>
+WRT my who can overload theory, I instrumented for my own edification.
 
-#define PAGE_SIZE (4096)
-#define MEGA	(1024 * 1024)
+Overload totally forbidden, stamps ergo disabled.
 
-void sigalarm_handler(int sig)
-{
-}
+fairness=0  11.3 avg  (ie == virgin source)
+fairness=1   2.8 avg
 
-int main(int argc, char *argv[])
-{
-	char *x;
-	int off;
+Back to virgin settings, instrument who is overloading during sequences of..
+        echo 2 > /proc/sys/vm/drop_caches
+        sh -c "perf stat -- konsole -e exit" 2>&1|tee -a $LOGFILE
+..with dd continually running.
 
-	signal(SIGALRM, sigalarm_handler);
-	pause();
-	while (1) {
-		x = mmap(NULL, MEGA, PROT_READ|PROT_WRITE,
-			MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+1 second counts for above.
+...
+[  916.585880] od_sync: 0  od_async: 87  reject_sync: 0  reject_async: 37
+[  917.662585] od_sync: 0  od_async: 126  reject_sync: 0  reject_async: 53
+[  918.732872] od_sync: 0  od_async: 96  reject_sync: 0  reject_async: 22
+[  919.743730] od_sync: 0  od_async: 75  reject_sync: 0  reject_async: 15
+[  920.914549] od_sync: 0  od_async: 81  reject_sync: 0  reject_async: 17
+[  921.988198] od_sync: 0  od_async: 123  reject_sync: 0  reject_async: 30
+...minutes long
 
-		for (off = 0; off < MEGA; off += PAGE_SIZE)
-			x[off]=0;
-		munmap(x, MEGA);
-	}
-}
+(reject == fqq->dispatched >= 4 * max_dispatch)
 
---Multipart=_Fri__2_Oct_2009_17_53_10_+0900_CjTryyjzW0PATSRD
-Content-Type: text/x-sh;
- name="runpause.sh"
-Content-Disposition: attachment;
- filename="runpause.sh"
-Content-Transfer-Encoding: 7bit
+Doing the same with firefox, I did see the burst below one time, dunno
+what triggered that.  I watched 6 runs, and only saw such a burst once.
+Typically, numbers are the same as konsole, with a very rare 4 or
+5 for sync sneaking in.
 
-#!/bin/sh
+[ 1988.177758] od_sync: 0  od_async: 104  reject_sync: 0  reject_async: 48
+[ 1992.291779] od_sync: 19  od_async: 83  reject_sync: 0  reject_async: 82
+[ 1993.300850] od_sync: 79  od_async: 0  reject_sync: 28  reject_async: 0
+[ 1994.313327] od_sync: 147  od_async: 104  reject_sync: 90  reject_async: 16
+[ 1995.378025] od_sync: 14  od_async: 45  reject_sync: 0  reject_async: 2
+[ 1996.456871] od_sync: 15  od_async: 74  reject_sync: 1  reject_async: 7
+[ 1997.611226] od_sync: 0  od_async: 84  reject_sync: 0  reject_async: 14
 
-for i in 0 1 2 3 4 5 6 7 ;do
-	taskset -c $i ./pagefault &
-done
+Never noticed a sync overload watching a make -j4 for a couple minutes.
 
-pkill -ALRM  pagefault
-sleep 60
-pkill -HUP pagefault
-
---Multipart=_Fri__2_Oct_2009_17_53_10_+0900_CjTryyjzW0PATSRD--
 
