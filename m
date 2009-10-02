@@ -1,63 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbZJBRUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757696AbZJBRY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbZJBRUL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbZJBRUK
+	id S1757696AbZJBRY7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbZJBRYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:20:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35672 "EHLO ogre.sisk.pl"
+	Fri, 2 Oct 2009 13:24:53 -0400
+Received: from kroah.org ([198.145.64.141]:34746 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753675AbZJBRUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:20:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [Bug #14133] WARNING: at arch/x86/kernel/smp.c:117 native_smp_send_reschedule
-Date: Fri, 2 Oct 2009 19:21:28 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       =?iso-8859-1?q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <1254466855.3531.6.camel@ht.satnam> <20091002073425.GA14918@kernel.dk>
-In-Reply-To: <20091002073425.GA14918@kernel.dk>
+	id S1757621AbZJBRYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:24:52 -0400
+Date: Fri, 2 Oct 2009 10:21:57 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <npiggin@suse.de>, Eric Whitney <eric.whitney@hp.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: [patch 33/30] mmap: avoid unnecessary anon_vma lock acquisition in
+ vma_adjust()
+Message-ID: <20091002172157.GB12576@kroah.com>
+References: <20091001233504.GA17709@kroah.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910021921.28374.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091001233504.GA17709@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 October 2009, Jens Axboe wrote:
-> On Fri, Oct 02 2009, Jaswinder Singh Rajput wrote:
-> > Hello Jens,
-> > 
-> > On Thu, 2009-10-01 at 21:55 +0200, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of regressions introduced between 2.6.30 and 2.6.31.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> > > be listed and let me know (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14133
-> > > Subject		: WARNING: at arch/x86/kernel/smp.c:117 native_smp_send_reschedule
-> > > Submitter	: Jens Axboe <jens.axboe@oracle.com>
-> > > Date		: 2009-08-31 20:43 (32 days old)
-> > > References	: http://marc.info/?l=linux-kernel&m=125175143918050&w=4
-> > > 
-> > > 
-> > 
-> > Are you still getting this warning in latest -tip. If yes, can you do
-> > git bisect and specify the commit.
-> 
-> Nope, it seems to have disappeared.
 
-OK, closed.
+2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
-Thanks,
-Rafael
+------------------
+
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+
+commit 252c5f94d944487e9f50ece7942b0fbf659c5c31 upstream.
+
+We noticed very erratic behavior [throughput] with the AIM7 shared
+workload running on recent distro [SLES11] and mainline kernels on an
+8-socket, 32-core, 256GB x86_64 platform.  On the SLES11 kernel
+[2.6.27.19+] with Barcelona processors, as we increased the load [10s of
+thousands of tasks], the throughput would vary between two "plateaus"--one
+at ~65K jobs per minute and one at ~130K jpm.  The simple patch below
+causes the results to smooth out at the ~130k plateau.
+
+But wait, there's more:
+
+We do not see this behavior on smaller platforms--e.g., 4 socket/8 core.
+This could be the result of the larger number of cpus on the larger
+platform--a scalability issue--or it could be the result of the larger
+number of interconnect "hops" between some nodes in this platform and how
+the tasks for a given load end up distributed over the nodes' cpus and
+memories--a stochastic NUMA effect.
+
+The variability in the results are less pronounced [on the same platform]
+with Shanghai processors and with mainline kernels.  With 31-rc6 on
+Shanghai processors and 288 file systems on 288 fibre attached storage
+volumes, the curves [jpm vs load] are both quite flat with the patched
+kernel consistently producing ~3.9% better throughput [~80K jpm vs ~77K
+jpm] than the unpatched kernel.
+
+Profiling indicated that the "slow" runs were incurring high[er]
+contention on an anon_vma lock in vma_adjust(), apparently called from the
+sbrk() system call.
+
+The patch:
+
+A comment in mm/mmap.c:vma_adjust() suggests that we don't really need the
+anon_vma lock when we're only adjusting the end of a vma, as is the case
+for brk().  The comment questions whether it's worth while to optimize for
+this case.  Apparently, on the newer, larger x86_64 platforms, with
+interesting NUMA topologies, it is worth while--especially considering
+that the patch [if correct!] is quite simple.
+
+We can detect this condition--no overlap with next vma--by noting a NULL
+"importer".  The anon_vma pointer will also be NULL in this case, so
+simply avoid loading vma->anon_vma to avoid the lock.
+
+However, we DO need to take the anon_vma lock when we're inserting a vma
+['insert' non-NULL] even when we have no overlap [NULL "importer"], so we
+need to check for 'insert', as well.  And Hugh points out that we should
+also take it when adjusting vm_start (so that rmap.c can rely upon
+vma_address() while it holds the anon_vma lock).
+
+akpm: Zhang Yanmin reprts a 150% throughput improvement with aim7, so it
+might be -stable material even though thiss isn't a regression: "this
+issue is not clear on dual socket Nehalem machine (2*4*2 cpu), but is
+severe on large machine (4*8*2 cpu)"
+
+[hugh.dickins@tiscali.co.uk: test vma start too]
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Eric Whitney <eric.whitney@hp.com>
+Tested-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ mm/mmap.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -572,9 +572,9 @@ again:			remove_next = 1 + (end > next->
+ 
+ 	/*
+ 	 * When changing only vma->vm_end, we don't really need
+-	 * anon_vma lock: but is that case worth optimizing out?
++	 * anon_vma lock.
+ 	 */
+-	if (vma->anon_vma)
++	if (vma->anon_vma && (insert || importer || start != vma->vm_start))
+ 		anon_vma = vma->anon_vma;
+ 	if (anon_vma) {
+ 		spin_lock(&anon_vma->lock);
