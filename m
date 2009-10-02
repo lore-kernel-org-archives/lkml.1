@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbZJBMKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbZJBMN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755577AbZJBMKJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 08:10:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbZJBMKI
+	id S1755900AbZJBMN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 08:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755701AbZJBMNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 08:10:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42152 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753395AbZJBMKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 08:10:07 -0400
-Message-ID: <4AC5ED72.7090201@kernel.org>
-Date: Fri, 02 Oct 2009 21:09:22 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Fri, 2 Oct 2009 08:13:55 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:65472 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755134AbZJBMNy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 08:13:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CWDlupa39d2fs4+3qpx5RR4qdrctKsZLxKjPIlrbKMPjfF7FpkapsRjQLNPvhqjcWW
+         ZCqCHqKcnPBpepdbt4akXlTSKS2eS4nsGNQxTl+n0w/BaMj/mmagekRjk6MEArJp2Nw1
+         82sE9kLlgJCE4M7cs4j7Bp5j9lnADsMFez2T4=
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, ar@firstfloor.org
-Subject: Re: [PATCH 19/19] workqueue: implement concurrency managed workqueue
-References: <1254384558-1018-1-git-send-email-tj@kernel.org>	<1254384558-1018-20-git-send-email-tj@kernel.org> <87ws3esk1m.fsf@basil.nowhere.org>
-In-Reply-To: <87ws3esk1m.fsf@basil.nowhere.org>
-X-Enigmail-Version: 0.95.7
+In-Reply-To: <19140.13582.223629.56214@cargo.ozlabs.ibm.com>
+References: <19140.13582.223629.56214@cargo.ozlabs.ibm.com>
+Date: Fri, 2 Oct 2009 14:13:57 +0200
+Message-ID: <c62985530910020513t45c32b00w30ac6204164e27ef@mail.gmail.com>
+Subject: Re: Possible bug in ftrace_profile_enable_event
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 02 Oct 2009 12:09:26 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Andi.
+2009/10/1 Paul Mackerras <paulus@samba.org>:
+> I was looking through kernel/trace/trace_event_profile.c and I saw
+> this code:
+>
+> static int ftrace_profile_enable_event(struct ftrace_event_call *event)
+> {
+>        char *buf;
+>        int ret = -ENOMEM;
+>
+>        if (atomic_inc_return(&event->profile_count))
+>                return 0;
+>
+>        if (!total_profile_count++) {
+>                buf = (char *)alloc_percpu(profile_buf_t);
+>                if (!buf)
+>                        goto fail_buf;
+>
+>                rcu_assign_pointer(trace_profile_buf, buf);
+>
+>                buf = (char *)alloc_percpu(profile_buf_t);
+>                if (!buf)
+>                        goto fail_buf_nmi;
+>
+>                rcu_assign_pointer(trace_profile_buf_nmi, buf);
+>        }
+>
+>        ret = event->profile_enable();
+>        if (!ret)
+>                return 0;
+>
+>        kfree(trace_profile_buf_nmi);
+> fail_buf_nmi:
+>        kfree(trace_profile_buf);
+> fail_buf:
+>        total_profile_count--;
+>
+> ...
+>
+> So we only allocate trace_profile_buf and trace_profile_buf_nmi if
+> total_profile_count was zero on entry, but if we get an error returned
+> from event->profile_enable(), we free them both unconditionally,
+> regardless of the value of total_profile_count.  That seems wrong.  Is
+> there a subtle reason why that is the right thing to do?
 
-Andi Kleen wrote:
-> Tejun Heo <tj@kernel.org> writes:
-> 
->> Currently each workqueue has its own dedicated worker pool.  This
->> causes the following problems.
-> 
-> I definitely like the basic idea (without having read all the code so
-> far).  Thanks for doing that work. On large systems the number of
-> kernel threads around can be mind boggling, and it will also get rid
-> of bizarreness like the ps2mouse thread.
-> 
-> I wonder have you ever thought about exposing this to user space too?
-> It can face similar problems for parallelization.
 
-Yeah, some similar mechanism could be useful to manage userland worker
-pool too but determining what to export would be the difficult
-question.  Events when all of certain groups of threads are blocked
-could be useful and cpu idleness is too.
+Oh right. Good catch.
+I'll fix that soon.
 
-One thing is that for userspace there's already pretty thick layer of
-abstraction in place and having this type of bare metal mechanism
-might not buy much.  In most cases, monitoring system parameters
-periodically and supplying a bit of extra threads should be able to
-achieve about the same result.  Do you have anything specific on your
-mind?
+
+>
+> (Also, is kfree the appropriate counterpart to alloc_percpu?)
+
+No indeed.
+That said it looks harmless for now because percpu_free seem to just
+roughly wrap kfree. But
+its implementation may change later, so I'll fix that too.
 
 Thanks.
-
--- 
-tejun
