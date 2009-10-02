@@ -1,109 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756964AbZJBTrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbZJBTuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756964AbZJBTrP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 15:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756610AbZJBTrO
+	id S1756928AbZJBTuT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 15:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbZJBTuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 15:47:14 -0400
-Received: from smtp241.iad.emailsrvr.com ([207.97.245.241]:59696 "EHLO
-	smtp241.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756550AbZJBTrN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 15:47:13 -0400
-Message-ID: <4AC658C2.6070406@librato.com>
-Date: Fri, 02 Oct 2009 15:47:14 -0400
-From: Oren Laadan <orenl@librato.com>
-Organization: Librato
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 2 Oct 2009 15:50:18 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:9540 "EHLO
+	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750750AbZJBTuQ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 15:50:16 -0400
+X-SpamScore: 1
+X-BigFish: VPS1(zzzz1202hzzz32i6bh66h)
+X-Spam-TCS-SCL: 5:0
+X-FB-SS: 5,
+X-WSS-ID: 0KQWKF8-02-H8J-02
+X-M-MSG: 
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+To: linux-kernel@vger.kernel.org, avi@qumranet.com, avi@redhat.com,
+       kvm@vger.kernel.org
+Subject: [PATCH][retry 2] Support Pause Filter in AMD processors
+Date: Fri, 2 Oct 2009 14:49:59 -0500
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, jeff@garzik.org,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
-       dhowells@redhat.com, arjan@linux.intel.com,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [PATCH 01/19] freezer: don't get over-anxious while waiting
-References: <1254384558-1018-1-git-send-email-tj@kernel.org> <1254384558-1018-2-git-send-email-tj@kernel.org> <20091001183655.GA9995@atrey.karlin.mff.cuni.cz> <200910012304.00720.rjw@sisk.pl>
-In-Reply-To: <200910012304.00720.rjw@sisk.pl>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-ID: <200910021449.59284.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 02 Oct 2009 19:50:06.0098 (UTC) FILETIME=[8A309F20:01CA4399]
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From 66741f741da741e58e8162ef7809dd7d6f8e01cf Mon Sep 17 00:00:00 2001
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+Date: Fri, 2 Oct 2009 10:32:33 -0500
+Subject: [PATCH] Support Pause Filter in AMD processors
+
+New AMD processors (Family 0x10 models 8+) support the Pause
+Filter Feature.  This feature creates a new field in the VMCB
+called Pause Filter Count.  If Pause Filter Count is greater
+than 0 and intercepting PAUSEs is enabled, the processor will
+increment an internal counter when a PAUSE instruction occurs
+instead of intercepting.  When the internal counter reaches the
+Pause Filter Count value, a PAUSE intercept will occur.
+
+This feature can be used to detect contended spinlocks,
+especially when the lock holding VCPU is not scheduled.
+Rescheduling another VCPU prevents the VCPU seeking the
+lock from wasting its quantum by spinning idly.
+
+Experimental results show that most spinlocks are held
+for less than 1000 PAUSE cycles or more than a few
+thousand.  Default the Pause Filter Counter to 3000 to
+detect the contended spinlocks.
+
+Processor support for this feature is indicated by a CPUID
+bit.
+
+On a 24 core system running 4 guests each with 16 VCPUs,
+this patch improved overall performance of each guest's
+32 job kernbench by approximately 3-5% when combined
+with a scheduler algorithm thati caused the VCPU to
+sleep for a brief period. Further performance improvement
+may be possible with a more sophisticated yield algorithm.
+
+This patch depends on the changes to the kvm code from
+KVM:VMX: Add support for Pause Loop Exiting
+http://www.mail-archive.com/kvm@vger.kernel.org/msg23089.html
+
+-Mark Langsdorf
+Operating System Research Center
+AMD
+---
+ arch/x86/include/asm/svm.h |    3 ++-
+ arch/x86/kvm/svm.c         |   16 ++++++++++++++++
+ 2 files changed, 18 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
+index 85574b7..1fecb7e 100644
+--- a/arch/x86/include/asm/svm.h
++++ b/arch/x86/include/asm/svm.h
+@@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
+ 	u16 intercept_dr_write;
+ 	u32 intercept_exceptions;
+ 	u64 intercept;
+-	u8 reserved_1[44];
++	u8 reserved_1[42];
++	u16 pause_filter_count;
+ 	u64 iopm_base_pa;
+ 	u64 msrpm_base_pa;
+ 	u64 tsc_offset;
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 9a4daca..d5d2e03 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -46,6 +46,7 @@ MODULE_LICENSE("GPL");
+ #define SVM_FEATURE_NPT  (1 << 0)
+ #define SVM_FEATURE_LBRV (1 << 1)
+ #define SVM_FEATURE_SVML (1 << 2)
++#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
+ 
+ #define NESTED_EXIT_HOST	0	/* Exit handled on host level */
+ #define NESTED_EXIT_DONE	1	/* Exit caused nested vmexit  */
+@@ -659,6 +660,11 @@ static void init_vmcb(struct vcpu_svm *svm)
+ 	svm->nested.vmcb = 0;
+ 	svm->vcpu.arch.hflags = 0;
+ 
++	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
++		control->pause_filter_count = 3000;
++		control->intercept |= (1ULL << INTERCEPT_PAUSE);
++	}
++
+ 	enable_gif(svm);
+ }
+ 
+@@ -2270,6 +2276,15 @@ static int interrupt_window_interception(struct vcpu_svm *svm)
+ 	return 1;
+ }
+ 
++static int pause_interception(struct vcpu_svm *svm)
++{
++	static int pause_count = 0;
++
++	kvm_vcpu_on_spin(&(svm->vcpu));
++printk(KERN_ERR "MJLL pause intercepted %d\n", ++pause_count);
++	return 1;
++}
++
+ static int (*svm_exit_handlers[])(struct vcpu_svm *svm) = {
+ 	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
+ 	[SVM_EXIT_READ_CR3]           		= emulate_on_interception,
+@@ -2305,6 +2320,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm) = {
+ 	[SVM_EXIT_CPUID]			= cpuid_interception,
+ 	[SVM_EXIT_IRET]                         = iret_interception,
+ 	[SVM_EXIT_INVD]                         = emulate_on_interception,
++	[SVM_EXIT_PAUSE]			= pause_interception,
+ 	[SVM_EXIT_HLT]				= halt_interception,
+ 	[SVM_EXIT_INVLPG]			= invlpg_interception,
+ 	[SVM_EXIT_INVLPGA]			= invlpga_interception,
+-- 
+1.6.0.2
 
 
-Rafael J. Wysocki wrote:
-> On Thursday 01 October 2009, Pavel Machek wrote:
->>> Freezing isn't exactly the most latency sensitive operation and
->>> there's no reason to burn cpu cycles and power waiting for it to
->>> complete.  msleep(10) instead of yield().  This should improve
->>> reliability of emergency hibernation.
->> i don't see how it improves reliability, but its probably ok.
->>
->> Well... for hibernation anyway. I can imagine cgroup users where
->> freeze is so fast that this matters. rjw cc-ed.		pavel
-> 
-> Thanks.  I'd like to hear from the cgroup freezer people about that.
-> 
-
-[Adding Matt Helsley to the CC list]
-
-To checkpoint or migrate an application, the cgroup to which it belongs
-must be frozen first.
-
-It's a bit down the road, but if one seeks minimum application downtime
-during application checkpoint and/or migration, then a (minimum of)
-10ms - or multiples of it - may result in a visible/undesired hick-up.
-
-Perhaps avoid it when freezing a cgroup ?  or maybe a way for the user
-to control this behavior per cgroup ?
-
-Oren.
-
->>> Signed-off-by: Tejun Heo <tj@kernel.org>
->>> ---
->>>  kernel/power/process.c |   13 +++++++++----
->>>  1 files changed, 9 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/kernel/power/process.c b/kernel/power/process.c
->>> index cc2e553..9d26a0a 100644
->>> --- a/kernel/power/process.c
->>> +++ b/kernel/power/process.c
->>> @@ -41,7 +41,7 @@ static int try_to_freeze_tasks(bool sig_only)
->>>  	do_gettimeofday(&start);
->>>  
->>>  	end_time = jiffies + TIMEOUT;
->>> -	do {
->>> +	while (true) {
->>>  		todo = 0;
->>>  		read_lock(&tasklist_lock);
->>>  		do_each_thread(g, p) {
->>> @@ -62,10 +62,15 @@ static int try_to_freeze_tasks(bool sig_only)
->>>  				todo++;
->>>  		} while_each_thread(g, p);
->>>  		read_unlock(&tasklist_lock);
->>> -		yield();			/* Yield is okay here */
->>> -		if (time_after(jiffies, end_time))
->>> +		if (!todo || time_after(jiffies, end_time))
->>>  			break;
->>> -	} while (todo);
->>> +
->>> +		/*
->>> +		 * We need to retry.  There's no reason to be
->>> +		 * over-anxious about it and waste power.
->>> +		 */
-> 
-> The comment above looks like it's only meaningful in the context of the patch.
-> After it's been applied the meaning of the comment won't be so obvious, I'm
-> afraid.
-> 
->>> +		msleep(10);
->>> +	}
->>>  
->>>  	do_gettimeofday(&end);
->>>  	elapsed_csecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
-> 
-> Thanks,
-> Rafael
