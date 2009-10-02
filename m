@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbZJBS0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbZJBS0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903AbZJBS0H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbZJBS0G
+	id S1758050AbZJBS0x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZJBS0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:26:06 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54661 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750844AbZJBS0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:26:05 -0400
-Date: Fri, 2 Oct 2009 20:26:08 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       riel@redhat.com
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20091002182608.GO31616@kernel.dk>
-References: <20091002145610.GD31616@kernel.dk> <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain> <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu> <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu> <20091002173732.GK31616@kernel.dk> <20091002175629.GA14860@elte.hu> <20091002180437.GL31616@kernel.dk> <1254507754.8667.15.camel@marge.simson.net>
+	Fri, 2 Oct 2009 14:26:53 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:35840 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757943AbZJBS0w convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:26:52 -0400
+X-SpamScore: -3
+X-BigFish: VPS-3(zz98dNzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KQWGKF-04-H3Y-02
+X-M-MSG: 
+Date: Fri, 2 Oct 2009 20:26:59 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] EDAC: carve out AMD MCE decoding logic
+Message-ID: <20091002182659.GA16436@aftab>
+References: <20090930230947.GA9346@elte.hu>
+ <20091001141432.GA11410@aftab>
+ <alpine.LFD.2.01.0910010731130.6996@localhost.localdomain>
+ <20091001144637.GB11410@aftab>
+ <20091001150046.GA21476@elte.hu>
+ <20091001152140.GC11410@aftab>
+ <20091001153250.GA25885@elte.hu>
+ <20091002132101.GA28682@aftab>
+ <20091002133148.GD28682@aftab>
+ <20091002133954.GA29390@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <1254507754.8667.15.camel@marge.simson.net>
+In-Reply-To: <20091002133954.GA29390@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 02 Oct 2009 18:26:30.0565 (UTC) FILETIME=[DCB30550:01CA438D]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02 2009, Mike Galbraith wrote:
-> On Fri, 2009-10-02 at 20:04 +0200, Jens Axboe wrote:
-> 
-> > I'm not too crazy about it either. How about just using 'desktop' since
-> > this is obviously what we are really targetting? 'latency' isn't fully
-> > descriptive either, since it may not necessarily provide the best single
-> > IO latency (noop would).
-> 
-> Grin. "Perfect is the enemy of good" :)
->                                                   Avg
->      16.24   175.82   154.38   228.97   147.16  144.5     noop
->      43.23    57.39    96.13   148.25   180.09  105.0     deadline
+On Fri, Oct 02, 2009 at 03:39:54PM +0200, Ingo Molnar wrote:
+> I suspect this is fine currently because no two EDAC modules should be 
+> active at the same time. A followup cleanup patch would be nice 
+> nevertheless that uses a notifier chain here with proper 
+> register/unregister locking.
 
-Yep, that's where it falls down. Noop basically fails here because it
-treats all IO as equal, which obviously isn't true for most people. But
-even for pure read workloads (is the above the mixed read/write, or just
-read?), latency would be excellent with noop but the desktop experience
-would not.
+Please do elaborate for I can't seem to follow.
+
+AFAICT, we are going to have max one MCE decoder at any one time so no
+need to notify it.
+
+The x86_mce_decode_callback assignment probably needs locking just to be
+on the safe side. We can do a
+
+mce_set_decode_callback(void (*f)(struct mce*m))
+
+helper which falls back to default_decode_mce() whenever its being
+passed a NULL for *f using proper locking...
+
+I'm pretty sure I'm missing something though...
 
 -- 
-Jens Axboe
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
