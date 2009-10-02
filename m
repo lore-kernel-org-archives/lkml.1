@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZJBODa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZJBOHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbZJBODa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 10:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbZJBODa
+	id S1754095AbZJBOHf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 10:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbZJBOHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 10:03:30 -0400
-Received: from mga09.intel.com ([134.134.136.24]:55302 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753111AbZJBOD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 10:03:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,494,1249282800"; 
-   d="scan'208";a="556041624"
-Date: Fri, 2 Oct 2009 16:05:18 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Cc: Mike Frysinger <vapier@gentoo.org>, tglx@linutronix.de,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
-Subject: Re: [Uclinux-dist-devel] [PATCH v2] mfd: ADP5520 Multifunction
- LCDBacklight and Keypad Input Device Driver
-Message-ID: <20091002140517.GA1520@sortiz.org>
-References: <1253212036-29445-1-git-send-email-vapier@gentoo.org>
- <1253682664-27040-1-git-send-email-vapier@gentoo.org>
- <20091001140948.GD10199@sortiz.org>
- <8A42379416420646B9BFAC9682273B6D0E33AC35@limkexm3.ad.analog.com>
- <8A42379416420646B9BFAC9682273B6D0E33B1AA@limkexm3.ad.analog.com>
+	Fri, 2 Oct 2009 10:07:34 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:35397 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbZJBOHd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 10:07:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=CQuw1VMtUvwxc9mqP/ixZ/JDUBhsZRv7zEX37B1CLevfGIaXiRXfAV0naEJ4OXZA1q
+         OuPQEHqVyOYscGtXAg2vPT5/Ub8GvHQ3M7R44jlUkWLKZaBO6KS44UW0BLdEwiCqbdRZ
+         zpvixw/x07WDzuV74v22zhu45nh1OO9YLq+64=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8A42379416420646B9BFAC9682273B6D0E33B1AA@limkexm3.ad.analog.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Date: Fri, 2 Oct 2009 10:07:38 -0400
+Message-ID: <804dabb00910020707r9820d8bpe371baf1efb67c1@mail.gmail.com>
+Subject: /dev/sdb not detected anymore?
+From: Peter Teoh <htmldeveloper@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+I just built my 2.6.32-rc2 (from linus-git) yesterday, and repeated
+today again, starting from "make mrproper", and consistently both
+version cannot detect my /dev/sdb, which is the second SATA harddisk.
+ The first SATA is detected as follows in dmesg:
 
-On Fri, Oct 02, 2009 at 02:48:27PM +0100, Hennerich, Michael wrote:
-> >From: uclinux-dist-devel-bounces@blackfin.uclinux.org
-> [mailto:uclinux-dist-devel-
-> >bounces@blackfin.uclinux.org] On Behalf Of Hennerich, Michael
-> >Device Driver
-> >
-> >Hi Samuel,
-> >
-> >>From: Samuel Ortiz [mailto:sameo@linux.intel.com]
-> >>Hi Mike,
-> >>
-> >>Some comments on this patch:
-> >>
-> >>On Wed, Sep 23, 2009 at 01:11:04AM -0400, Mike Frysinger wrote:
-> >>> +static irqreturn_t adp5520_irq_handler(int irq, void *data)
-> >>> +{
-> >>> +	struct adp5520_chip *chip = data;
-> >>> +
-> >>> +	disable_irq_nosync(irq);
-> >>> +	schedule_work(&chip->irq_work);
-> >>Have you considered using a threaded irq handler here ?
-> >
-> >The Linux version I developed this driver on didn't feature threaded
-> irq
-> >handlers.
-> >But thanks I'm going to take a look here.
-> 
-> Hi Samuel,
-> 
-> Well the threaded irq handlers are no option here, since we use a Level
-> Sensitive Interrupt. 
-> The work queue here is to schedule the main irq handler outside hardirq
-> context.
-> I2C can't we invoked form none sleepy context, so we can't clear the
-> interrupt. 
-> This will cause that we execute the hardirq over and over again,
-> preventing the irq thread to be run.
-> 
-> The threaded irqs with its current implementation also doesn't allow me
-> to disable the irq in the hardirq handler.
-Ok, that's the piece I missed. Thanks for the clarification.
+    742 [    4.595949] scsi 2:0:0:0: Direct-Access     ATA
+ST3500630AS      3.AA PQ: 0 ANSI: 5
+    743 [    4.596116] sd 2:0:0:0: [sda] 976773168 512-byte logical
+blocks: (500 GB/465 GiB)
+    744 [    4.596213] sd 2:0:0:0: [sda] Write Protect is off
+    745 [    4.596216] sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+    746 [    4.596258] sd 2:0:0:0: [sda] Write cache: enabled, read
+cache: enabled, doesn't support DPO or FUA
+    747 [    4.596467]  sda: sda1 sda2 sda3 sda4 < sda5 sda6 sda7 sda8 sda9 >
+    748 [    4.674607] sd 2:0:0:0: [sda] Attached SCSI disk
 
+And from sg_inq:
 
-> There have been some discussions about this on lkml recently.
-> Until there is a way to workaround this issue (handle_level_oneshot_irq,
-> etc.),
-> I like to stick with: 
-Fine with me, yes.
+standard INQUIRY:
+  PQual=0  Device_type=0  RMB=0  version=0x05  [SPC-3]
+  [AERC=0]  [TrmTsk=0]  NormACA=0  HiSUP=0  Resp_data_format=2
+  SCCS=0  ACC=0  TPGS=0  3PC=0  Protect=0  BQue=0
+  EncServ=0  MultiP=0  [MChngr=0]  [ACKREQQ=0]  Addr16=0
+  [RelAdr=0]  WBus16=0  Sync=0  Linked=0  [TranDis=0]  CmdQue=0
+  [SPI: Clocking=0x0  QAS=0  IUS=0]
+    length=96 (0x60)   Peripheral device type: disk
+ Vendor identification: ATA
+ Product identification: ST3500630AS
+ Product revision level: 3.AA
+ Unit serial number:             9QG14T5Z
 
-Cheers,
-Samuel.
+But the second SATA (identical in type/model) is not detectable.
+Upon rebooting to my previous 2.6.31 kernel version, it became
+detected and usable - absolutely nothing else is touch.   So what is
+it in the latest kernel which is giving the problem?
 
+Can someone help me out?
 
-> >>> +	disable_irq_nosync(irq);
-> >>> +	schedule_work(&chip->irq_work);
-> 
-> Best regards,
-> Michael
-> 
+THank you very much :-).
 
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Regards,
+Peter Teoh
