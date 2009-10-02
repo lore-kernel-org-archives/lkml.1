@@ -1,151 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757276AbZJBSHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZJBSEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757276AbZJBSHM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:07:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbZJBSHL
+	id S1756663AbZJBSEf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbZJBSEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:07:11 -0400
-Received: from mga01.intel.com ([192.55.52.88]:64163 "EHLO mga01.intel.com"
+	Fri, 2 Oct 2009 14:04:35 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:39228 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753942AbZJBSHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:07:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,495,1249282800"; 
-   d="scan'208";a="732522541"
-Message-Id: <20091002180257.877207006@sbs-t61.sc.intel.com>
-User-Agent: quilt/0.47-1
-Date: Fri, 02 Oct 2009 11:01:24 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: dwmw2@infradead.org
-Cc: jbarnes@virtuousgeek.org, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, rdreier@cisco.com,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 4/4] iommu: Allocate dma-remapping structures using numa locality info
-References: <20091002180120.234867335@sbs-t61.sc.intel.com>
-Content-Disposition: inline; filename=iommu_use_affinity_info.patch
+	id S1752785AbZJBSEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:04:34 -0400
+Date: Fri, 2 Oct 2009 20:04:37 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002180437.GL31616@kernel.dk>
+References: <20091002092839.GA26962@kernel.dk> <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain> <20091002145610.GD31616@kernel.dk> <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain> <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu> <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu> <20091002173732.GK31616@kernel.dk> <20091002175629.GA14860@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091002175629.GA14860@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allocate dma-remapping structures using numa locality info. On platforms
-having remapping hardware units span different nodes, this enables
-optimized dma-remapping transalation structures access by remapping hardware.
+On Fri, Oct 02 2009, Ingo Molnar wrote:
+> 
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Fri, Oct 02 2009, Ingo Molnar wrote:
+> > > 
+> > > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > On Fri, Oct 02 2009, Ingo Molnar wrote:
+> > > > > 
+> > > > > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > > 
+> > > > > > It's not _that_ easy, it depends a lot on the access patterns. A 
+> > > > > > good example of that is actually the idling that we already do. 
+> > > > > > Say you have two applications, each starting up. If you start them 
+> > > > > > both at the same time and just care for the dumb low latency, then 
+> > > > > > you'll do one IO from each of them in turn. Latency will be good, 
+> > > > > > but throughput will be aweful. And this means that in 20s they are 
+> > > > > > both started, while with the slice idling and priority disk access 
+> > > > > > that CFQ does, you'd hopefully have both up and running in 2s.
+> > > > > > 
+> > > > > > So latency is good, definitely, but sometimes you have to worry 
+> > > > > > about the bigger picture too. Latency is more than single IOs, 
+> > > > > > it's often for complete operation which may involve lots of IOs. 
+> > > > > > Single IO latency is a benchmark thing, it's not a real life 
+> > > > > > issue. And that's where it becomes complex and not so black and 
+> > > > > > white. Mike's test is a really good example of that.
+> > > > > 
+> > > > > To the extent of you arguing that Mike's test is artificial (i'm not 
+> > > > > sure you are arguing that) - Mike certainly did not do an artificial 
+> > > > > test - he tested 'konsole' cache-cold startup latency, such as:
+> > > > 
+> > > > [snip]
+> > > > 
+> > > > I was saying the exact opposite, that Mike's test is a good example of 
+> > > > a valid test. It's not measuring single IO latencies, it's doing a 
+> > > > sequence of valid events and looking at the latency for those. It's 
+> > > > benchmarking the bigger picture, not a microbenchmark.
+> > > 
+> > > Good, so we are in violent agreement :-)
+> > 
+> > Yes, perhaps that last sentence didn't provide enough evidence of 
+> > which category I put Mike's test into :-)
+> > 
+> > So to kick things off, I added an 'interactive' knob to CFQ and 
+> > defaulted it to on, along with re-enabling slice idling for hardware 
+> > that does tagged command queuing. This is almost completely identical 
+> > to what Vivek Goyal originally posted, it's just combined into one and 
+> > uses the term 'interactive' instead of 'fairness'. I think the former 
+> > is a better umbrella under which to add further tweaks that may 
+> > sacrifice throughput slightly, in the quest for better latency.
+> > 
+> > It's queued up in the for-linus branch.
+> 
+> i'd say 'latency' describes it even better. 'interactivity' as a term is 
+> a bit overladen.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
- drivers/pci/intel-iommu.c |   27 +++++++++++++++++++--------
- 1 file changed, 19 insertions(+), 8 deletions(-)
+I'm not too crazy about it either. How about just using 'desktop' since
+this is obviously what we are really targetting? 'latency' isn't fully
+descriptive either, since it may not necessarily provide the best single
+IO latency (noop would).
 
-Index: iommu-2.6/drivers/pci/intel-iommu.c
-===================================================================
---- iommu-2.6.orig/drivers/pci/intel-iommu.c
-+++ iommu-2.6/drivers/pci/intel-iommu.c
-@@ -277,6 +277,7 @@ static int hw_pass_through = 1;
- 
- struct dmar_domain {
- 	int	id;			/* domain id */
-+	int	nid;			/* node id */
- 	unsigned long iommu_bmp;	/* bitmap of iommus this domain uses*/
- 
- 	struct list_head devices; 	/* all devices' list */
-@@ -400,15 +401,18 @@ static inline void *iommu_kmem_cache_all
- }
- 
- 
--static inline void *alloc_pgtable_page(void)
-+static inline void *alloc_pgtable_page(int node)
- {
- 	unsigned int flags;
--	void *vaddr;
-+	struct page *page;
-+	void *vaddr = NULL;
- 
- 	/* trying to avoid low memory issues */
- 	flags = current->flags & PF_MEMALLOC;
- 	current->flags |= PF_MEMALLOC;
--	vaddr = (void *)get_zeroed_page(GFP_ATOMIC);
-+	page = alloc_pages_node(node, GFP_ATOMIC | __GFP_ZERO, 0);
-+	if (page)
-+		vaddr = page_address(page);
- 	current->flags &= (~PF_MEMALLOC | flags);
- 	return vaddr;
- }
-@@ -589,7 +593,8 @@ static struct context_entry * device_to_
- 	root = &iommu->root_entry[bus];
- 	context = get_context_addr_from_root(root);
- 	if (!context) {
--		context = (struct context_entry *)alloc_pgtable_page();
-+		context = (struct context_entry *)
-+				alloc_pgtable_page(iommu->node);
- 		if (!context) {
- 			spin_unlock_irqrestore(&iommu->lock, flags);
- 			return NULL;
-@@ -732,7 +737,7 @@ static struct dma_pte *pfn_to_dma_pte(st
- 		if (!dma_pte_present(pte)) {
- 			uint64_t pteval;
- 
--			tmp_page = alloc_pgtable_page();
-+			tmp_page = alloc_pgtable_page(domain->nid);
- 
- 			if (!tmp_page)
- 				return NULL;
-@@ -868,7 +873,7 @@ static int iommu_alloc_root_entry(struct
- 	struct root_entry *root;
- 	unsigned long flags;
- 
--	root = (struct root_entry *)alloc_pgtable_page();
-+	root = (struct root_entry *)alloc_pgtable_page(iommu->node);
- 	if (!root)
- 		return -ENOMEM;
- 
-@@ -1263,6 +1268,7 @@ static struct dmar_domain *alloc_domain(
- 	if (!domain)
- 		return NULL;
- 
-+	domain->nid = -1;
- 	memset(&domain->iommu_bmp, 0, sizeof(unsigned long));
- 	domain->flags = 0;
- 
-@@ -1420,9 +1426,10 @@ static int domain_init(struct dmar_domai
- 		domain->iommu_snooping = 0;
- 
- 	domain->iommu_count = 1;
-+	domain->nid = iommu->node;
- 
- 	/* always allocate the top pgd */
--	domain->pgd = (struct dma_pte *)alloc_pgtable_page();
-+	domain->pgd = (struct dma_pte *)alloc_pgtable_page(domain->nid);
- 	if (!domain->pgd)
- 		return -ENOMEM;
- 	__iommu_flush_cache(iommu, domain->pgd, PAGE_SIZE);
-@@ -1577,6 +1584,8 @@ static int domain_context_mapping_one(st
- 	spin_lock_irqsave(&domain->iommu_lock, flags);
- 	if (!test_and_set_bit(iommu->seq_id, &domain->iommu_bmp)) {
- 		domain->iommu_count++;
-+		if (domain->iommu_count == 1)
-+			domain->nid = iommu->node;
- 		domain_update_iommu_cap(domain);
- 	}
- 	spin_unlock_irqrestore(&domain->iommu_lock, flags);
-@@ -3416,6 +3425,7 @@ static struct dmar_domain *iommu_alloc_v
- 		return NULL;
- 
- 	domain->id = vm_domid++;
-+	domain->nid = -1;
- 	memset(&domain->iommu_bmp, 0, sizeof(unsigned long));
- 	domain->flags = DOMAIN_FLAG_VIRTUAL_MACHINE;
- 
-@@ -3442,9 +3452,10 @@ static int md_domain_init(struct dmar_do
- 	domain->iommu_coherency = 0;
- 	domain->iommu_snooping = 0;
- 	domain->max_addr = 0;
-+	domain->nid = -1;
- 
- 	/* always allocate the top pgd */
--	domain->pgd = (struct dma_pte *)alloc_pgtable_page();
-+	domain->pgd = (struct dma_pte *)alloc_pgtable_page(domain->nid);
- 	if (!domain->pgd)
- 		return -ENOMEM;
- 	domain_flush_cache(domain, domain->pgd, PAGE_SIZE);
-
+-- 
+Jens Axboe
 
