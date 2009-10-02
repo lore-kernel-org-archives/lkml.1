@@ -1,88 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbZJBDBI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756478AbZJBD2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756240AbZJBDBI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 23:01:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbZJBDBH
+	id S1756478AbZJBD2Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 23:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbZJBD2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 23:01:07 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:34430 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755060AbZJBDBG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 23:01:06 -0400
-To: akataria@vmware.com
-Cc: Arjan van de Ven <arjan@infradead.org>, Gerd Hoffmann <kraxel@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "virtualization\@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1253233028.19731.63.camel@ank32.eng.vmware.com>
-	<20090919224430.GB9567@kroah.com>
-	<1253419185.3253.21.camel@ank32.eng.vmware.com>
-	<20090920074247.GA5733@elte.hu>
-	<1253647845.10565.20.camel@ank32.eng.vmware.com>
-	<4AB9CE66.1030504@redhat.com>
-	<1254185107.13456.32.camel@ank32.eng.vmware.com>
-	<20090929100831.18ece319@infradead.org>
-	<1254242989.7803.11.camel@ank32.eng.vmware.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 01 Oct 2009 20:00:51 -0700
-In-Reply-To: <1254242989.7803.11.camel@ank32.eng.vmware.com> (Alok Kataria's message of "Tue\, 29 Sep 2009 09\:49\:49 -0700")
-Message-ID: <m1y6nuxzx8.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 1 Oct 2009 23:28:16 -0400
+Received: from mga03.intel.com ([143.182.124.21]:38741 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754499AbZJBD2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 23:28:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,491,1249282800"; 
+   d="scan'208";a="194260215"
+Date: Fri, 2 Oct 2009 11:27:14 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Subject: Re: regression in page writeback
+Message-ID: <20091002032714.GB14246@localhost>
+References: <20090925003820.GK2662@think> <20090925050413.GC9464@discord.disaster> <20090925064503.GA30450@localhost> <20090928010700.GE9464@discord.disaster> <20090928071507.GA20068@localhost> <20090928130804.GA25880@infradead.org> <20090928140756.GC17514@mit.edu> <20090930052657.GA17268@localhost> <20090930053223.GA14368@localhost> <20091001221738.GA25580@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;akataria@vmware.com
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: Paravirtualization on VMware's Platform [VMI].
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20091001221738.GA25580@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria <akataria@vmware.com> writes:
+On Fri, Oct 02, 2009 at 06:17:39AM +0800, Jan Kara wrote:
+> On Wed 30-09-09 13:32:23, Wu Fengguang wrote:
+> > writeback: bump up writeback chunk size to 128MB
+> > 
+> > Adjust the writeback call stack to support larger writeback chunk size.
+> > 
+> > - make wbc.nr_to_write a per-file parameter
+> > - init wbc.nr_to_write with MAX_WRITEBACK_PAGES=128MB
+> >   (proposed by Ted)
+> > - add wbc.nr_segments to limit seeks inside sparsely dirtied file
+> >   (proposed by Chris)
+> > - add wbc.timeout which will be used to control IO submission time
+> >   either per-file or globally.
+> >   
+> > The wbc.nr_segments is now determined purely by logical page index
+> > distance: if two pages are 1MB apart, it makes a new segment.
+> > 
+> > Filesystems could do this better with real extent knowledges.
+> > One possible scheme is to record the previous page index in
+> > wbc.writeback_index, and let ->writepage compare if the current and
+> > previous pages lie in the same extent, and decrease wbc.nr_segments
+> > accordingly. Care should taken to avoid double decreases in writepage
+> > and write_cache_pages.
+> > 
+> > The wbc.timeout (when used per-file) is mainly a safeguard against slow
+> > devices, which may take too long time to sync 128MB data.
+> > 
+> > The wbc.timeout (when used globally) could be useful when we decide to
+> > do two sync scans on dirty pages and dirty metadata. XFS could say:
+> > please return to sync dirty metadata after 10s. Would need another
+> > b_io_metadata queue, but that's possible.
+> > 
+> > This work depends on the balance_dirty_pages() wait queue patch.
+>   I don't know, I think it gets too complicated... I'd either use the
+> segments idea or the timeout idea but not both (unless you can find real
+> world tests in which both help).
 
-> On Tue, 2009-09-29 at 01:08 -0700, Arjan van de Ven wrote:
->> > For now I have just added some text in the feature-removal file and
->> > disabled VMI by default in the Kconfig, the reason that needs to be
->> > done is because "Live Migration" of a VMI enabled VM to future
->> > products which don't support VMI will not work, so its important that
->> > newer distros keep this disabled, if they want seamless migration
->> > that is.
->> 
->> btw the "default" in KConfig tends to be totally ignored by distro
->> kernel maintainers... please don't assume that just because some default
->> is set in KConfig it has ANY impact on what shows up in distributions.
->
-> So, are you saying that we should be doing something else along with
-> toggling it off in the Kconfig ? 
-> We have already informed most of the distro folks about this deprecation
-> so I think we should be okay there, but if there is something else that
-> should be done, do let me know.
+Maybe complicated, but nr_segments and timeout each has their target
+application.  nr_segments serves two major purposes:
+- fairness between two large files, one is continuously dirtied,
+  another is sparsely dirtied. Given the same amount of dirty pages,
+  it could take vastly different time to sync them to the _same_
+  device. The nr_segments check helps to favor continuous data.
+- avoid seeks/fragmentations. To give each file fair chance of
+  writeback, we have to abort a file when some nr_to_write or timeout
+  is reached. However they are both not good abort conditions.
+  The best is for filesystem to abort earlier in seek boundaries,
+  and treat nr_to_write/timeout as large enough bottom lines.
+timeout is mainly a safeguard in case nr_to_write is too large for
+slow devices. It is not necessary if nr_to_write is auto-computed,
+however timeout in itself serves as a simple throughput adapting
+scheme.
 
-Perhaps log a message when it is first used?
+> Also when we'll assure fairness via
+> timeout, maybe nr_to_write isn't needed anymore? WB_SYNC_ALL writeback
+> doesn't use nr_to_write. WB_SYNC_NONE writeback either sets it to some
+> large value (like LONG_MAX) or number of dirty pages (to effectively write
+> back as much as possible) or to MAX_WRITEBACK_PAGES to assure fairness
+> in kupdate style writeback. There are a few exceptions in btrfs but I
+> belive nr_to_write isn't really needed there either...
 
-I do that for sysctl right now.
+Totally agreed. I'd rather remove the top level nr_page/nr_to_write
+parameters. They are simply redundant ones.. The meaningful ones are
+background threshold, dirty expireness or global timeout, depending on
+the mission of the writeback work.
 
-Eric
+Thanks,
+Fengguang
