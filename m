@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932324AbZJBBtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZJBBrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932324AbZJBBtj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbZJBBti
+	id S1756841AbZJBBrg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbZJBBdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:49:38 -0400
-Received: from kroah.org ([198.145.64.141]:33240 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:33:36 -0400
+Received: from kroah.org ([198.145.64.141]:33246 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756321AbZJBBd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756311AbZJBBd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Oct 2009 21:33:28 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:17 2009
-Message-Id: <20091002012417.363241174@mini.kroah.org>
+Message-Id: <20091002012417.642843903@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:16:58 -0700
+Date: Thu, 01 Oct 2009 18:16:59 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, davem@davemloft.net
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Pavel Machek <pavel@ucw.cz>, Eric Miao <eric.y.miao@gmail.com>
-Subject: [070/136] [ARM] pxa/sharpsl_pm: zaurus c3000 aka spitz: fix resume
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, jakub@redhat.com,
+       mingo@elte.hu, Arjan van de Ven <arjan@linux.intel.com>
+Subject: [071/136] net ax25: Fix signed comparison in the sockopt handler
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=pxa-sharpsl_pm-zaurus-c3000-aka-spitz-fix-resume.patch
+Content-Disposition: inline; filename=net-ax25-fix-signed-comparison-in-the-sockopt-handler.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Pavel Machek <pavel@ucw.cz>
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-commit 99f329a2ba3c2d07cc90ca9309babf27ddf98bff upstream.
+fixed upstream in commit b7058842c940ad2c08dd829b21e5c92ebe3b8758 in a different way
 
-sharpsl_pm.c code tries to read battery state very early during
-resume, but those battery meters are connected on SPI and that's only
-resumed way later.
+The ax25 code tried to use
 
-Replace the check with simple checking of battery fatal signal, that
-actually works at this stage.
+        if (optlen < sizeof(int))
+                return -EINVAL;
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-Tested-by: Stanislav Brabec <utx@penguin.cz>
-Signed-off-by: Eric Miao <eric.y.miao@gmail.com>
+as a security check against optlen being negative (or zero) in the
+set socket option.
+
+Unfortunately, "sizeof(int)" is an unsigned property, with the
+result that the whole comparison is done in unsigned, letting
+negative values slip through.
+
+This patch changes this to
+
+        if (optlen < (int)sizeof(int))
+                return -EINVAL;
+
+so that the comparison is done as signed, and negative values
+get properly caught.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/arm/mach-pxa/sharpsl_pm.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/ax25/af_ax25.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/arm/mach-pxa/sharpsl_pm.c
-+++ b/arch/arm/mach-pxa/sharpsl_pm.c
-@@ -678,8 +678,8 @@ static int corgi_enter_suspend(unsigned 
- 		dev_dbg(sharpsl_pm.dev, "User triggered wakeup in offline charger.\n");
- 	}
+--- a/net/ax25/af_ax25.c
++++ b/net/ax25/af_ax25.c
+@@ -538,7 +538,7 @@ static int ax25_setsockopt(struct socket
+ 	if (level != SOL_AX25)
+ 		return -ENOPROTOOPT;
  
--	if ((!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_LOCK)) || (sharpsl_fatal_check() < 0) )
--	{
-+	if ((!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_LOCK)) ||
-+	    (!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_FATAL)))	{
- 		dev_err(sharpsl_pm.dev, "Fatal condition. Suspend.\n");
- 		corgi_goto_sleep(alarm_time, alarm_enable, state);
- 		return 1;
+-	if (optlen < sizeof(int))
++	if (optlen < (int)sizeof(int))
+ 		return -EINVAL;
+ 
+ 	if (get_user(opt, (int __user *)optval))
 
 
