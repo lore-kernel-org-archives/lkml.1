@@ -1,61 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbZJBIJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbZJBIUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757260AbZJBIJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 04:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbZJBIJz
+	id S1757336AbZJBIUp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 04:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbZJBIUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 04:09:55 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43213 "EHLO mx2.suse.de"
+	Fri, 2 Oct 2009 04:20:44 -0400
+Received: from mga14.intel.com ([143.182.124.37]:21639 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753447AbZJBIJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 04:09:53 -0400
-Message-ID: <4AC5B59E.3050608@suse.de>
-Date: Fri, 02 Oct 2009 13:41:10 +0530
-From: Suresh Jayaraman <sjayaraman@suse.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1757283AbZJBIUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 04:20:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,493,1249282800"; 
+   d="scan'208";a="194323552"
+Date: Fri, 2 Oct 2009 16:19:53 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Subject: Re: regression in page writeback
+Message-ID: <20091002081953.GA14529@localhost>
+References: <20090925064503.GA30450@localhost> <20090928010700.GE9464@discord.disaster> <20090928071507.GA20068@localhost> <20090928130804.GA25880@infradead.org> <20090928140756.GC17514@mit.edu> <20090930052657.GA17268@localhost> <20090930141158.GG24383@mit.edu> <20091001151429.GB9469@localhost> <20091001215438.GY24383@mit.edu> <20091002025502.GA14246@localhost>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 03/31] mm: expose gfp_to_alloc_flags()
-References: <1254405903-15760-1-git-send-email-sjayaraman@suse.de> <alpine.DEB.1.00.0910011355230.32006@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.1.00.0910011355230.32006@chino.kir.corp.google.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091002025502.GA14246@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
+On Fri, Oct 02, 2009 at 10:55:02AM +0800, Wu Fengguang wrote:
+> On Fri, Oct 02, 2009 at 05:54:38AM +0800, Theodore Ts'o wrote:
+> > On Thu, Oct 01, 2009 at 11:14:29PM +0800, Wu Fengguang wrote:
+> > > Yes and no. Yes if the queue was empty for the slow device. No if the
+> > > queue was full, in which case IO submission speed = IO complete speed
+> > > for previously queued requests.
+> > > 
+> > > So wbc.timeout will be accurate for IO submission time, and mostly
+> > > accurate for IO completion time. The transient queue fill up phase
+> > > shall not be a big problem?
+> > 
+> > So the problem is if we have a mixed workload where there are lots
+> > large contiguous writes, and lots of small writes which are fsync'ed()
+> > --- for example, consider the workload of copying lots of big DVD
+> > images combined with the infamous firefox-we-must-write-out-300-megs-of-
+> > small-random-writes-and-then-fsync-them-on-every-single-url-click-so-
+> > that-every-last-visited-page-is-preserved-for-history-bar-autocompletion
+> > workload.    The big writes, if the are contiguous, could take 1-2 seconds
+> > on a very slow, ancient laptop disk, and that will hold up any kind of 
+> > small synchornous activities --- such as either a disk read or a firefox-
+> > triggered fsync().
 > 
->> From: Peter Zijlstra <a.p.zijlstra@chello.nl> 
->>
->> Expose the gfp to alloc_flags mapping, so we can use it in other parts
->> of the vm.
->>
->> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->> Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
+> Yes, that's a problem. The SYNC/ASYNC elevator queues can help here.
 > 
-> Nack, these flags are internal to the page allocator and exporting them to 
-> generic VM code is unnecessary.
+> In IO submission paths, fsync writes will not be blocked by non-sync
+> writes because __filemap_fdatawrite_range() starts foreground sync
+> for the inode.
 
-Yes, you're right.
+> Without the congestion backoff, it will now have to
+> compete queue with bdi-flush. Should not be a big problem though.
 
-> The only bit you actually use in your patchset is ALLOC_NO_WATERMARKS to 
-> determine whether a particular allocation can use memory reserves.  I'd 
-> suggest adding a bool function that returns whether the current context is 
-> given access to reserves including your new __GFP_MEMALLOC flag and 
-> exporting that instead.
+I'd like to correct this: get_request_wait() uses one queue for SYNC
+rw and another for ASYNC rw. So fsync won't compete the request queue
+with background flush. That's perfect: when fsync comes, CFQ will
+honor it a green channel, and somehow block background flushes.
 
-Makes sense and Neil already posted a patch citing the suggested
-changes, will incorporate the change.
+> There's still the problem of IO submission time != IO completion time,
+> due to fluctuations of randomness and more. However that's a general
+> and unavoidable problem.  Both the wbc.timeout scheme and the
+> "wbc.nr_to_write based on estimated throughput" scheme are based on
+> _past_ requests and it's simply impossible to have a 100% accurate
+> scheme. In principle, wbc.timeout will only be inferior at IO startup
+> time. In the steady state of 100% full queue, it is actually estimating
+> the IO throughput implicitly :)
+
+Another difference between wbc.timeout and adaptive wbc.nr_to_write
+is, when there comes many _read_ requests or fsync, these SYNC rw
+requests will significant lower the ASYNC writeback throughput, if
+it's not completely stalled. So with timeout, the inode will be
+aborted with few pages written; with nr_to_write, the inode will be
+written a good number of pages, at the cost of taking up long time.
+
+IMHO the nr_to_write behavior seems more efficient. What do you think?
 
 Thanks,
+Fengguang
 
--- 
-Suresh Jayaraman
+> > That's why the IO completion time matters; it causes latency problems
+> > for slow disks and mixed large and small write workloads.  It was the
+> > original reason for the 1024 MAX_WRITEBACK_PAGES, which might have
+> > made sense 10 years ago back when disks were a lot slower.  One of the
+> > advantages of an auto-tuning algorithm, beyond auto-adjusting for
+> > different types of hardware, is that we don't need to worry about
+> > arbitrary and magic caps beocoming obsolete due to technological
+> > changes.  :-)
+> 
+> Yeah, I'm a big fan of auto-tuning :)
+> 
+> Thanks,
+> Fengguang
