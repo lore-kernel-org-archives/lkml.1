@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932243AbZJBBjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932143AbZJBBeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932243AbZJBBjI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932104AbZJBBjF
+	id S932143AbZJBBeZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbZJBBeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:39:05 -0400
-Received: from kroah.org ([198.145.64.141]:33562 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:34:23 -0400
+Received: from kroah.org ([198.145.64.141]:33566 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756909AbZJBBeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:34:17 -0400
+	id S1756906AbZJBBeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:34:18 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:26 2009
-Message-Id: <20091002012426.308241169@mini.kroah.org>
+Message-Id: <20091002012426.458051552@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:50 -0700
+Date: Thu, 01 Oct 2009 18:17:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <npiggin@suse.de>, Eric Whitney <eric.whitney@hp.com>
-Subject: [122/136] mmap: avoid unnecessary anon_vma lock acquisition in vma_adjust()
+       Michael Abbott <michael.abbott@diamond.ac.uk>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [123/136] Fix idle time field in /proc/uptime
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=mmap-avoid-unnecessary-anon_vma-lock-acquisition-in-vma_adjust.patch
+Content-Disposition: inline; filename=fix-idle-time-field-in-proc-uptime.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,89 +30,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+From: Michael Abbott <michael.abbott@diamond.ac.uk>
 
-commit 252c5f94d944487e9f50ece7942b0fbf659c5c31 upstream.
+commit 96830a57de1197519b62af6a4c9ceea556c18c3d upstream.
 
-We noticed very erratic behavior [throughput] with the AIM7 shared
-workload running on recent distro [SLES11] and mainline kernels on an
-8-socket, 32-core, 256GB x86_64 platform.  On the SLES11 kernel
-[2.6.27.19+] with Barcelona processors, as we increased the load [10s of
-thousands of tasks], the throughput would vary between two "plateaus"--one
-at ~65K jobs per minute and one at ~130K jpm.  The simple patch below
-causes the results to smooth out at the ~130k plateau.
+Git commit 79741dd changes idle cputime accounting, but unfortunately
+the /proc/uptime file hasn't caught up.  Here the idle time calculation
+from /proc/stat is copied over.
 
-But wait, there's more:
-
-We do not see this behavior on smaller platforms--e.g., 4 socket/8 core.
-This could be the result of the larger number of cpus on the larger
-platform--a scalability issue--or it could be the result of the larger
-number of interconnect "hops" between some nodes in this platform and how
-the tasks for a given load end up distributed over the nodes' cpus and
-memories--a stochastic NUMA effect.
-
-The variability in the results are less pronounced [on the same platform]
-with Shanghai processors and with mainline kernels.  With 31-rc6 on
-Shanghai processors and 288 file systems on 288 fibre attached storage
-volumes, the curves [jpm vs load] are both quite flat with the patched
-kernel consistently producing ~3.9% better throughput [~80K jpm vs ~77K
-jpm] than the unpatched kernel.
-
-Profiling indicated that the "slow" runs were incurring high[er]
-contention on an anon_vma lock in vma_adjust(), apparently called from the
-sbrk() system call.
-
-The patch:
-
-A comment in mm/mmap.c:vma_adjust() suggests that we don't really need the
-anon_vma lock when we're only adjusting the end of a vma, as is the case
-for brk().  The comment questions whether it's worth while to optimize for
-this case.  Apparently, on the newer, larger x86_64 platforms, with
-interesting NUMA topologies, it is worth while--especially considering
-that the patch [if correct!] is quite simple.
-
-We can detect this condition--no overlap with next vma--by noting a NULL
-"importer".  The anon_vma pointer will also be NULL in this case, so
-simply avoid loading vma->anon_vma to avoid the lock.
-
-However, we DO need to take the anon_vma lock when we're inserting a vma
-['insert' non-NULL] even when we have no overlap [NULL "importer"], so we
-need to check for 'insert', as well.  And Hugh points out that we should
-also take it when adjusting vm_start (so that rmap.c can rely upon
-vma_address() while it holds the anon_vma lock).
-
-akpm: Zhang Yanmin reprts a 150% throughput improvement with aim7, so it
-might be -stable material even though thiss isn't a regression: "this
-issue is not clear on dual socket Nehalem machine (2*4*2 cpu), but is
-severe on large machine (4*8*2 cpu)"
-
-[hugh.dickins@tiscali.co.uk: test vma start too]
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Eric Whitney <eric.whitney@hp.com>
-Tested-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/mmap.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/proc/uptime.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -570,9 +570,9 @@ again:			remove_next = 1 + (end > next->
+--- a/fs/proc/uptime.c
++++ b/fs/proc/uptime.c
+@@ -4,13 +4,18 @@
+ #include <linux/sched.h>
+ #include <linux/seq_file.h>
+ #include <linux/time.h>
++#include <linux/kernel_stat.h>
+ #include <asm/cputime.h>
  
- 	/*
- 	 * When changing only vma->vm_end, we don't really need
--	 * anon_vma lock: but is that case worth optimizing out?
-+	 * anon_vma lock.
- 	 */
--	if (vma->anon_vma)
-+	if (vma->anon_vma && (insert || importer || start != vma->vm_start))
- 		anon_vma = vma->anon_vma;
- 	if (anon_vma) {
- 		spin_lock(&anon_vma->lock);
+ static int uptime_proc_show(struct seq_file *m, void *v)
+ {
+ 	struct timespec uptime;
+ 	struct timespec idle;
+-	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
++	int i;
++	cputime_t idletime = cputime_zero;
++
++	for_each_possible_cpu(i)
++		idletime = cputime64_add(idletime, kstat_cpu(i).cpustat.idle);
+ 
+ 	do_posix_clock_monotonic_gettime(&uptime);
+ 	monotonic_to_bootbased(&uptime);
 
 
