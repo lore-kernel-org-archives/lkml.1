@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757829AbZJBR0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbZJBRZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757829AbZJBR0g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757612AbZJBR0f
+	id S1757807AbZJBRZX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757652AbZJBRZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:26:35 -0400
-Received: from thunk.org ([69.25.196.29]:45470 "EHLO thunker.thunk.org"
+	Fri, 2 Oct 2009 13:25:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35725 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757561AbZJBR0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:26:34 -0400
-Date: Fri, 2 Oct 2009 13:26:20 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: regression in page writeback
-Message-ID: <20091002172620.GB8161@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Wu Fengguang <fengguang.wu@intel.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Dave Chinner <david@fromorbit.com>,
-	Chris Mason <chris.mason@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	"Li, Shaohua" <shaohua.li@intel.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-	"jens.axboe@oracle.com" <jens.axboe@oracle.com>
-References: <20090928010700.GE9464@discord.disaster> <20090928071507.GA20068@localhost> <20090928130804.GA25880@infradead.org> <20090928140756.GC17514@mit.edu> <20090930052657.GA17268@localhost> <20090930141158.GG24383@mit.edu> <20091001151429.GB9469@localhost> <20091001215438.GY24383@mit.edu> <20091002025502.GA14246@localhost> <20091002081953.GA14529@localhost>
+	id S1757627AbZJBRZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:25:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Subject: Re: [Bug #14258] Memory leak in SCSI initialization
+Date: Fri, 2 Oct 2009 19:26:46 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: James.Bottomley@steeleye.com, michael@ellerman.id.au,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.Vk.6MTxKB@chimera> <200910022158.JBD48969.MOSVQOFHJOLtFF@I-love.SAKURA.ne.jp>
+In-Reply-To: <200910022158.JBD48969.MOSVQOFHJOLtFF@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091002081953.GA14529@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910021926.46532.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 04:19:53PM +0800, Wu Fengguang wrote:
-> > > The big writes, if they are contiguous, could take 1-2 seconds
-> > > on a very slow, ancient laptop disk, and that will hold up any kind of 
-> > > small synchornous activities --- such as either a disk read or a firefox-
-> > > triggered fsync().
+On Friday 02 October 2009, Tetsuo Handa wrote:
+> Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.30 and 2.6.31.
+> This memory leak might exist in all releases since 23 Sep 2005.
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=6f3a20242db2597312c50abc11f1e747c5d2326a
 > > 
-> > Yes, that's a problem. The SYNC/ASYNC elevator queues can help here.
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> > be listed and let me know (either way).
+> As of now, the patch is not yet merged into Linus's tree.
+> It still should be listed.
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14258
+> > Subject		: Memory leak in SCSI initialization
+> > Submitter	: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+> > Date		: 2009-09-22 4:18 (10 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=125359311312243&w=4
+> > Handled-By	: Michael Ellerman <michael@ellerman.id.au>
+> > Patch		: http://patchwork.kernel.org/patch/49258/
 
-The SYNC/ASYNC queues will partially help, up to the whatever the
-largest I/O that can issued as a single chunk times the queue depth
-for those disks that support NCQ. 
+Thanks for the update.
 
-> > There's still the problem of IO submission time != IO completion time,
-> > due to fluctuations of randomness and more. However that's a general
-> > and unavoidable problem.  Both the wbc.timeout scheme and the
-> > "wbc.nr_to_write based on estimated throughput" scheme are based on
-> > _past_ requests and it's simply impossible to have a 100% accurate
-> > scheme. In principle, wbc.timeout will only be inferior at IO startup
-> > time. In the steady state of 100% full queue, it is actually estimating
-> > the IO throughput implicitly :)
-> 
-> Another difference between wbc.timeout and adaptive wbc.nr_to_write
-> is, when there comes many _read_ requests or fsync, these SYNC rw
-> requests will significant lower the ASYNC writeback throughput, if
-> it's not completely stalled. So with timeout, the inode will be
-> aborted with few pages written; with nr_to_write, the inode will be
-> written a good number of pages, at the cost of taking up long time.
-> 
-> IMHO the nr_to_write behavior seems more efficient. What do you think?
-
-I agree, adaptively changing nr_to_write seems like the right thing to
-do.  For bonus points, we could also monitor how often synchronous I/O
-operations are happening, allow nr_to_write to go up by some amount if
-there aren't many synchronous operations happening at the moment.  So
-that might be another opportunity to do auto-tuning, although this
-might be a hueristic that might need to be configurable for certain
-specialized workloads.  For many other workloads, the it should be
-possible to detect regular pattern of reads and/or synchronous writes,
-and if so, use a lower nr_to_write versus if there isn't many
-synchronous I/O operations happening on that particular block device.
-
-	    		   	     	     - Ted
+Rafael
