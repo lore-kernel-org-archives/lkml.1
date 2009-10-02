@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbZJBWeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZJBWgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbZJBWeq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 18:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZJBWep
+	id S1755584AbZJBWgX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 18:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbZJBWgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 18:34:45 -0400
-Received: from thunk.org ([69.25.196.29]:33182 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753587AbZJBWep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 18:34:45 -0400
-Date: Fri, 2 Oct 2009 18:34:12 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       tglx@linutronix.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ondrej Zary <linux@rainbow-software.org>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: T400 suspend/resume regression -- bisected to a mystery merge
-	commit
-Message-ID: <20091002223412.GA8517@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	John Stultz <johnstul@us.ibm.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, tglx@linutronix.de,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Ondrej Zary <linux@rainbow-software.org>,
-	Magnus Damm <magnus.damm@gmail.com>
-References: <E1MrRDa-0002WF-LO@closure.thunk.org> <200909271813.42829.rjw@sisk.pl> <20090928135109.GB17514@mit.edu> <200909282322.57824.rjw@sisk.pl> <20091002005907.GA7490@mit.edu> <alpine.LFD.2.01.0910011817120.6996@localhost.localdomain>
+	Fri, 2 Oct 2009 18:36:22 -0400
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:60390 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754524AbZJBWgV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 18:36:21 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 67.160.239.110
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+i8ZICoKJx89Hpd4G5xjhJ
+Subject: [PATCH 0/8] Omap fixes for 2.6.32-rc2
+To: linux-arm-kernel@lists.infradead.org
+From: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Fri, 02 Oct 2009 15:36:23 -0700
+Message-ID: <20091002223510.11962.21751.stgit@localhost>
+User-Agent: StGit/0.14.3.347.g594a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0910011817120.6996@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 01, 2009 at 06:21:50PM -0700, Linus Torvalds wrote:
-> I think the revert is the right thing to do, especially as that 
-> 'clocksource_mutex' looks totally bogus. Either the thing is protected by 
-> 'stop_machine' or it's not. In neither case does it seem to make any sense 
-> to replace a spinlock with a mutex. 
-> 
-> And resuming anything with a big mutex is crazy anyway. 
-> 
-> That said, I do wonder if this is already fixed. See commit 
-> 89133f93508137231251543d1732da638e6022e1:
-> 
->     clocksource: Resume clocksource without taking the clocksource mutex
-> 
-> which already undid the part that probably mattered for you. That said, I 
-> still do think that that mutex is dubious, so maybe we should undo it all.
+Hi all,
 
-Hmm, I just tried the latest git release, and the problem does seem to
-have disappeared.  I don't know if it was fixed by commit #89133f9,
-but I'll take it.  :-)
+Here are some more fixes for review.
 
-(Note!  The problem I was bisecting is different and distinct from BZ
-#14222.  First of all, for me 2.6.31 works fine, and in #14222 the
-reporter claimed that 2.6.30 worked, and 2.6.31 didn't.  For me this
-regression happened *after* the merge window opened.  Secondly, in
-#14222 the failure reported was an OOPS, whereas in my case, the
-system simply doesn't come back after the second suspend-to-memory.
-The HD disk flashes once or twice, but then the machine stays dead,
-with the screen not coming to life and the suspend light still lit.
-Finally, I bisected the failure to a different commit (75c5158) which
-is post 2.6.31, where as commit c7121843 which is pre-2.6.31.)
+Regards,
 
-   		      	 		       - Ted
+Tony
 
+---
+
+Daniel Walker (1):
+      omap: iovmm: Add missing mutex_unlock
+
+Hiroshi DOYU (1):
+      omap: iovmm: Fix incorrect spelling
+
+Rajendra Nayak (1):
+      omap: Lock DPLL5 at boot
+
+Sergio Aguirre (1):
+      omapfb: Condition mutex acquisition
+
+Tommi Rantala (2):
+      omapfb: Blizzard: constify register address tables
+      omapfb: Blizzard: fix pointer to be const
+
+Tony Lindgren (1):
+      omap: Fix incorrect 730 vs 850 detection
+
+ye janboe (1):
+      omap: SRAM: flush the right address after memcpy in omap_sram_push
+
+
+ arch/arm/mach-omap2/clock34xx.c       |   35 +++++++++++++++++++++++++++++++
+ arch/arm/plat-omap/include/mach/cpu.h |   37 ++++++++++++---------------------
+ arch/arm/plat-omap/iovmm.c            |    9 ++++----
+ arch/arm/plat-omap/sram.c             |    3 ++-
+ drivers/video/omap/blizzard.c         |   10 ++++-----
+ drivers/video/omap/omapfb_main.c      |   22 ++++++++++++--------
+ 6 files changed, 75 insertions(+), 41 deletions(-)
+
+-- 
+Signature
