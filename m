@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbZJBBcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbZJBBcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbZJBBcr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbZJBBcq
+	id S1755069AbZJBBcp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbZJBBcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:32:46 -0400
-Received: from kroah.org ([198.145.64.141]:32947 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:32:43 -0400
+Received: from kroah.org ([198.145.64.141]:32948 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754799AbZJBBcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754899AbZJBBcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 1 Oct 2009 21:32:41 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:08 2009
-Message-Id: <20091002012408.786364159@mini.kroah.org>
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:09 2009
+Message-Id: <20091002012408.943522261@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:16:08 -0700
+Date: Thu, 01 Oct 2009 18:16:09 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Serge Hallyn <serue@us.ibm.com>, Eric Sandeen <esandeen@redhat.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       ecryptfs-devel@lists.launchpad.net,
+       Serge Hallyn <serue@us.ibm.com>, ecryptfs-devel@lists.launchpad.net,
        Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-Subject: [020/136] eCryptfs: Check for O_RDONLY lower inodes when opening lower files
+Subject: [021/136] eCryptfs: Filename encryption only supports password auth tokens
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=ecryptfs-check-for-o_rdonly-lower-inodes-when-opening-lower-files.patch
+Content-Disposition: inline; filename=ecryptfs-filename-encryption-only-supports-password-auth-tokens.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -34,91 +32,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
 
-commit ac22ba23b659e34a5961aec8c945608e471b0d5b upstream.
+commit df6ad33ba1b9846bd5f0e2b9016c30c20bc2d948 upstream.
 
-If the lower inode is read-only, don't attempt to open the lower file
-read/write and don't hand off the open request to the privileged
-eCryptfs kthread for opening it read/write.  Instead, only try an
-unprivileged, read-only open of the file and give up if that fails.
-This patch fixes an oops when eCryptfs is mounted on top of a read-only
-mount.
+Returns -ENOTSUPP when attempting to use filename encryption with
+something other than a password authentication token, such as a private
+token from openssl.  Using filename encryption with a userspace eCryptfs
+key module is a future goal.  Until then, this patch handles the
+situation a little better than simply using a BUG_ON().
 
 Acked-by: Serge Hallyn <serue@us.ibm.com>
-Cc: Eric Sandeen <esandeen@redhat.com>
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
 Cc: ecryptfs-devel@lists.launchpad.net
 Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ecryptfs/kthread.c |   24 ++++++++----------------
- fs/ecryptfs/main.c    |    3 +--
- 2 files changed, 9 insertions(+), 18 deletions(-)
+ fs/ecryptfs/crypto.c   |    4 ++--
+ fs/ecryptfs/keystore.c |   14 ++++++++++++--
+ 2 files changed, 14 insertions(+), 4 deletions(-)
 
---- a/fs/ecryptfs/kthread.c
-+++ b/fs/ecryptfs/kthread.c
-@@ -136,6 +136,7 @@ int ecryptfs_privileged_open(struct file
- 			     const struct cred *cred)
- {
- 	struct ecryptfs_open_req *req;
-+	int flags = O_LARGEFILE;
- 	int rc = 0;
- 
- 	/* Corresponding dput() and mntput() are done when the
-@@ -143,10 +144,14 @@ int ecryptfs_privileged_open(struct file
- 	 * destroyed. */
- 	dget(lower_dentry);
- 	mntget(lower_mnt);
--	(*lower_file) = dentry_open(lower_dentry, lower_mnt,
--				    (O_RDWR | O_LARGEFILE), cred);
-+	flags |= IS_RDONLY(lower_dentry->d_inode) ? O_RDONLY : O_RDWR;
-+	(*lower_file) = dentry_open(lower_dentry, lower_mnt, flags, cred);
- 	if (!IS_ERR(*lower_file))
+--- a/fs/ecryptfs/crypto.c
++++ b/fs/ecryptfs/crypto.c
+@@ -1703,7 +1703,7 @@ ecryptfs_encrypt_filename(struct ecryptf
+ 	} else {
+ 		printk(KERN_ERR "%s: No support for requested filename "
+ 		       "encryption method in this release\n", __func__);
+-		rc = -ENOTSUPP;
++		rc = -EOPNOTSUPP;
  		goto out;
-+	if (flags & O_RDONLY) {
-+		rc = PTR_ERR((*lower_file));
-+		goto out;
-+	}
- 	req = kmem_cache_alloc(ecryptfs_open_req_cache, GFP_KERNEL);
- 	if (!req) {
- 		rc = -ENOMEM;
-@@ -180,21 +185,8 @@ int ecryptfs_privileged_open(struct file
- 		       __func__);
- 		goto out_unlock;
  	}
--	if (IS_ERR(*req->lower_file)) {
-+	if (IS_ERR(*req->lower_file))
- 		rc = PTR_ERR(*req->lower_file);
--		dget(lower_dentry);
--		mntget(lower_mnt);
--		(*lower_file) = dentry_open(lower_dentry, lower_mnt,
--					    (O_RDONLY | O_LARGEFILE), cred);
--		if (IS_ERR(*lower_file)) {
--			rc = PTR_ERR(*req->lower_file);
--			(*lower_file) = NULL;
--			printk(KERN_WARNING "%s: Error attempting privileged "
--			       "open of lower file with either RW or RO "
--			       "perms; rc = [%d]. Giving up.\n",
--			       __func__, rc);
--		}
--	}
- out_unlock:
- 	mutex_unlock(&req->mux);
- out_free:
---- a/fs/ecryptfs/main.c
-+++ b/fs/ecryptfs/main.c
-@@ -129,11 +129,10 @@ int ecryptfs_init_persistent_file(struct
- 		lower_dentry = ecryptfs_dentry_to_lower(ecryptfs_dentry);
- 		rc = ecryptfs_privileged_open(&inode_info->lower_file,
- 					      lower_dentry, lower_mnt, cred);
--		if (rc || IS_ERR(inode_info->lower_file)) {
-+		if (rc) {
- 			printk(KERN_ERR "Error opening lower persistent file "
- 			       "for lower_dentry [0x%p] and lower_mnt [0x%p]; "
- 			       "rc = [%d]\n", lower_dentry, lower_mnt, rc);
--			rc = PTR_ERR(inode_info->lower_file);
- 			inode_info->lower_file = NULL;
+ out:
+@@ -2167,7 +2167,7 @@ int ecryptfs_encrypt_and_encode_filename
+ 			(*encoded_name)[(*encoded_name_size)] = '\0';
+ 			(*encoded_name_size)++;
+ 		} else {
+-			rc = -ENOTSUPP;
++			rc = -EOPNOTSUPP;
  		}
+ 		if (rc) {
+ 			printk(KERN_ERR "%s: Error attempting to encode "
+--- a/fs/ecryptfs/keystore.c
++++ b/fs/ecryptfs/keystore.c
+@@ -612,7 +612,12 @@ ecryptfs_write_tag_70_packet(char *dest,
  	}
+ 	/* TODO: Support other key modules than passphrase for
+ 	 * filename encryption */
+-	BUG_ON(s->auth_tok->token_type != ECRYPTFS_PASSWORD);
++	if (s->auth_tok->token_type != ECRYPTFS_PASSWORD) {
++		rc = -EOPNOTSUPP;
++		printk(KERN_INFO "%s: Filename encryption only supports "
++		       "password tokens\n", __func__);
++		goto out_free_unlock;
++	}
+ 	sg_init_one(
+ 		&s->hash_sg,
+ 		(u8 *)s->auth_tok->token.password.session_key_encryption_key,
+@@ -910,7 +915,12 @@ ecryptfs_parse_tag_70_packet(char **file
+ 	}
+ 	/* TODO: Support other key modules than passphrase for
+ 	 * filename encryption */
+-	BUG_ON(s->auth_tok->token_type != ECRYPTFS_PASSWORD);
++	if (s->auth_tok->token_type != ECRYPTFS_PASSWORD) {
++		rc = -EOPNOTSUPP;
++		printk(KERN_INFO "%s: Filename encryption only supports "
++		       "password tokens\n", __func__);
++		goto out_free_unlock;
++	}
+ 	rc = crypto_blkcipher_setkey(
+ 		s->desc.tfm,
+ 		s->auth_tok->token.password.session_key_encryption_key,
 
 
