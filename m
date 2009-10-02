@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbZJBS0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbZJBS2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758050AbZJBS0x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZJBS0x
+	id S1758055AbZJBS2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbZJBS2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:26:53 -0400
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:35840 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757943AbZJBS0w convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:26:52 -0400
-X-SpamScore: -3
-X-BigFish: VPS-3(zz98dNzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KQWGKF-04-H3Y-02
-X-M-MSG: 
-Date: Fri, 2 Oct 2009 20:26:59 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] EDAC: carve out AMD MCE decoding logic
-Message-ID: <20091002182659.GA16436@aftab>
-References: <20090930230947.GA9346@elte.hu>
- <20091001141432.GA11410@aftab>
- <alpine.LFD.2.01.0910010731130.6996@localhost.localdomain>
- <20091001144637.GB11410@aftab>
- <20091001150046.GA21476@elte.hu>
- <20091001152140.GC11410@aftab>
- <20091001153250.GA25885@elte.hu>
- <20091002132101.GA28682@aftab>
- <20091002133148.GD28682@aftab>
- <20091002133954.GA29390@elte.hu>
+	Fri, 2 Oct 2009 14:28:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44856 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755048AbZJBS2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:28:16 -0400
+Date: Fri, 2 Oct 2009 18:27:59 GMT
+From: tip-bot for Matteo Croce <technoboy85@gmail.com>
+Cc: linux-kernel@vger.kernel.org, technoboy85@gmail.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, technoboy85@gmail.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+In-Reply-To: <40101cc30910010811v5d15ff4cx9dd57c9cc9b4b045@mail.gmail.com>
+References: <40101cc30910010811v5d15ff4cx9dd57c9cc9b4b045@mail.gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/cpu] x86: AMD Geode LX optimizations
+Message-ID: <tip-98059e3463383b18fd79181179cd539b74846b47@git.kernel.org>
+Git-Commit-ID: 98059e3463383b18fd79181179cd539b74846b47
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20091002133954.GA29390@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 02 Oct 2009 18:26:30.0565 (UTC) FILETIME=[DCB30550:01CA438D]
-X-Reverse-DNS: unknown
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 02 Oct 2009 18:28:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 03:39:54PM +0200, Ingo Molnar wrote:
-> I suspect this is fine currently because no two EDAC modules should be 
-> active at the same time. A followup cleanup patch would be nice 
-> nevertheless that uses a notifier chain here with proper 
-> register/unregister locking.
+Commit-ID:  98059e3463383b18fd79181179cd539b74846b47
+Gitweb:     http://git.kernel.org/tip/98059e3463383b18fd79181179cd539b74846b47
+Author:     Matteo Croce <technoboy85@gmail.com>
+AuthorDate: Thu, 1 Oct 2009 17:11:10 +0200
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Fri, 2 Oct 2009 11:24:28 -0700
 
-Please do elaborate for I can't seem to follow.
+x86: AMD Geode LX optimizations
 
-AFAICT, we are going to have max one MCE decoder at any one time so no
-need to notify it.
+Add CPU optimizations for AMD Geode LX.
 
-The x86_mce_decode_callback assignment probably needs locking just to be
-on the safe side. We can do a
+Signed-off-by: Matteo Croce <technoboy85@gmail.com>
+LKML-Reference: <40101cc30910010811v5d15ff4cx9dd57c9cc9b4b045@mail.gmail.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
-mce_set_decode_callback(void (*f)(struct mce*m))
 
-helper which falls back to default_decode_mce() whenever its being
-passed a NULL for *f using proper locking...
+---
+ arch/x86/Kconfig.cpu     |    2 +-
+ arch/x86/Makefile_32.cpu |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-I'm pretty sure I'm missing something though...
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 527519b..979de29 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -406,7 +406,7 @@ config X86_CMPXCHG64
+ # generates cmov.
+ config X86_CMOV
+ 	def_bool y
+-	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE || MEFFICEON || X86_64 || MATOM)
++	depends on (MK8 || MK7 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MVIAC3_2 || MVIAC7 || MCRUSOE || MEFFICEON || X86_64 || MATOM || MGEODE_LX)
+ 
+ config X86_MINIMUM_CPU_FAMILY
+ 	int
+diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
+index 30e9a26..cbf0776 100644
+--- a/arch/x86/Makefile_32.cpu
++++ b/arch/x86/Makefile_32.cpu
+@@ -41,7 +41,7 @@ cflags-$(CONFIG_X86_ELAN)	+= -march=i486
+ 
+ # Geode GX1 support
+ cflags-$(CONFIG_MGEODEGX1)	+= -march=pentium-mmx
+-
++cflags-$(CONFIG_MGEODE_LX)	+= $(call cc-option,-march=geode,-march=pentium-mmx)
+ # add at the end to overwrite eventual tuning options from earlier
+ # cpu entries
+ cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
