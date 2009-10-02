@@ -1,230 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbZJBSMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758019AbZJBSNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757916AbZJBSMr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 14:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbZJBSMq
+	id S1758019AbZJBSNm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757597AbZJBSNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 14:12:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54743
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756890AbZJBSMo convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 14:12:44 -0400
-Date: Fri, 02 Oct 2009 11:13:03 -0700 (PDT)
-Message-Id: <20091002.111303.204669603.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 2 Oct 2009 14:13:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50697 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757544AbZJBSNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:13:40 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/EOLtkLZHEwO0sjVGfqPbzkdqXCUFL8VSvyN7fQq
+	dI252n9PcExmLt
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+In-Reply-To: <20091002173732.GK31616@kernel.dk>
+References: <20091002080417.GG14918@kernel.dk>
+	 <20091002092409.GA19529@elte.hu> <20091002092839.GA26962@kernel.dk>
+	 <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain>
+	 <20091002145610.GD31616@kernel.dk>
+	 <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain>
+	 <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu>
+	 <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu>
+	 <20091002173732.GK31616@kernel.dk>
+Content-Type: text/plain
+Date: Fri, 02 Oct 2009 20:13:35 +0200
+Message-Id: <1254507215.8667.7.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.59
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-10-02 at 19:37 +0200, Jens Axboe wrote:
+> On Fri, Oct 02 2009, Ingo Molnar wrote:
+> > 
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Fri, Oct 02 2009, Ingo Molnar wrote:
+> > > > 
+> > > > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > 
+> > > > > It's not _that_ easy, it depends a lot on the access patterns. A 
+> > > > > good example of that is actually the idling that we already do. 
+> > > > > Say you have two applications, each starting up. If you start them 
+> > > > > both at the same time and just care for the dumb low latency, then 
+> > > > > you'll do one IO from each of them in turn. Latency will be good, 
+> > > > > but throughput will be aweful. And this means that in 20s they are 
+> > > > > both started, while with the slice idling and priority disk access 
+> > > > > that CFQ does, you'd hopefully have both up and running in 2s.
+> > > > > 
+> > > > > So latency is good, definitely, but sometimes you have to worry 
+> > > > > about the bigger picture too. Latency is more than single IOs, 
+> > > > > it's often for complete operation which may involve lots of IOs. 
+> > > > > Single IO latency is a benchmark thing, it's not a real life 
+> > > > > issue. And that's where it becomes complex and not so black and 
+> > > > > white. Mike's test is a really good example of that.
+> > > > 
+> > > > To the extent of you arguing that Mike's test is artificial (i'm not 
+> > > > sure you are arguing that) - Mike certainly did not do an artificial 
+> > > > test - he tested 'konsole' cache-cold startup latency, such as:
+> > > 
+> > > [snip]
+> > > 
+> > > I was saying the exact opposite, that Mike's test is a good example of 
+> > > a valid test. It's not measuring single IO latencies, it's doing a 
+> > > sequence of valid events and looking at the latency for those. It's 
+> > > benchmarking the bigger picture, not a microbenchmark.
+> > 
+> > Good, so we are in violent agreement :-)
+> 
+> Yes, perhaps that last sentence didn't provide enough evidence of which
+> category I put Mike's test into :-)
+> 
+> So to kick things off, I added an 'interactive' knob to CFQ and
+> defaulted it to on, along with re-enabling slice idling for hardware
+> that does tagged command queuing. This is almost completely identical to
+> what Vivek Goyal originally posted, it's just combined into one and uses
+> the term 'interactive' instead of 'fairness'. I think the former is a
+> better umbrella under which to add further tweaks that may sacrifice
+> throughput slightly, in the quest for better latency.
+> 
+> It's queued up in the for-linus branch.
 
-1) connector credentials fix patch set from Philipp Reisner
+FWIW, I did a matrix of Vivek's patch combined with my hack.  Seems we
+do lose a bit of dd throughput over stock with either or both.
 
-2) IXGBE bug fixes from Peter P Waskiewicz Jr,Ben Greear,
-   and Jiri Pirko.
+dd pre         65.1     65.4     67.5     64.8     65.1   65.5     fairness=1 overload_delay=1
+perf stat      1.70     1.94     1.32     1.89     1.87    1.7
+dd post        69.4     62.3     69.7     70.3     69.6   68.2
 
-3) sk->sk_mark not used consistently for routing lookups keys,
-   fix from Atis Elsts
+dd pre         67.0     67.8     64.7     64.7     64.9   65.8     fairness=1 overload_delay=0
+perf stat      4.89     3.13     2.98     2.71     2.17    3.1
+dd post        67.2     63.3     62.6     62.8     63.1   63.8
 
-4) splice() nonblocking fix, from Eric Dumazet
+dd pre         65.0     66.0     66.9     64.6     67.0   65.9     fairness=0 overload_delay=1
+perf stat      4.66     3.81     4.23     2.98     4.23    3.9
+dd post        62.0     60.8     62.4     61.4     62.2   61.7
 
-5) pktgen delay handling regressed, fix from Eric Dumazet
+dd pre         65.3     65.6     64.9     69.5     65.8   66.2     fairness=0 overload_delay=0
+perf stat     14.79     9.11    14.16     8.44    13.67   12.0
+dd post        64.1     66.5     64.0     66.5     64.4   65.1
 
-6) ks8851_mll ethernet driver, from David Choi
 
-7) TCP build warning fix from Andrew Morton
 
-8) be2net RX completion bug workaround from Ajit Khaparde
-
-9) Bonding doesn't set primary param properly, fix from Jiri Pirko.
-
-10) Even if window scale is zero, TCP should advertise the option
-    so that the other ends knows we support window scaling and thus
-    they can advertise a non-zero scale if they want to.
-
-    From Ori Finkelman.
-
-11) qlge bug fixes from Ron Mercer.
-
-12) SKY2 and SKGE irq names can conflict because the IRQ manages two devices
-    and if one of them gets it's name changed just right (by udev
-    or whatever) the request_irq() fails.  Fix from Stephen Hemminger
-    and Michal Schmidt.
-
-13) Wireless bug fixes via John Linville.
-
-Please pull, thanks a lot!
-
-The following changes since commit 817b33d38f81c8736d39283c35c886ae4668f1af:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/net-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Ajit Khaparde (1):
-      be2net: Workaround to fix a bug in Rx Completion processing.
-
-Andrew Morton (1):
-      net/ipv4/tcp.c: fix min() type mismatch warning
-
-Anton Vorontsov (1):
-      3c59x: Rework suspend and resume
-
-Atis Elsts (1):
-      net: Use sk_mark for routing lookup in more places
-
-Ben Greear (1):
-      ixgbe patch to provide NIC's tx/rx counters via ethtool
-
-Choi, David (1):
-      drivers/net: ks8851_mll ethernet network driver
-
-Christian Lamparter (1):
-      ar9170: fix bug in iq-auto calibration value calculation
-
-David S. Miller (1):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-
-Eric Dumazet (3):
-      pktgen: Fix delay handling
-      tg3: Remove prev_vlan_tag from struct tx_ring_info
-      net: splice() from tcp to pipe should take into account O_NONBLOCK
-
-Frans Pop (1):
-      e1000e/igb/ixgbe: Don't report an error if devices don't support AER
-
-Igor Perminov (1):
-      mac80211: Fix [re]association power saving issue on AP side
-
-Jean Delvare (1):
-      net: Fix wrong sizeof
-
-Jiri Pirko (2):
-      ixgbe: correct the parameter description
-      bonding: set primary param via sysfs
-
-Jouni Malinen (1):
-      mac80211_hwsim: Fix initial beacon timer configuration
-
-Michael Buesch (1):
-      b43: Always use block-I/O for the PIO data registers
-
-Michael Chan (1):
-      cnic: Fix NETDEV_UP event processing.
-
-Michal Schmidt (1):
-      skge: use unique IRQ name
-
-Michal Szalata (1):
-      rt2x00: Thrustmaster FunAccess WIFI USB and rt73usb
-
-Mike McCormack (1):
-      skge: Make sure both ports initialize correctly
-
-Ori Finkelman (1):
-      IPv4 TCP fails to send window scale option when window scale is zero
-
-Peter P Waskiewicz Jr (4):
-      ixgbe: Fix disabling of relaxed ordering with Tx DCA
-      ixgbe: Fix backplane flow control autoneg
-      ixgbe: Bump driver version number
-      ixgbe: Remove ATR computation for UDP traffic
-
-Philipp Reisner (8):
-      connector: Keep the skb in cn_callback_data
-      connector: Provide the sender's credentials to the callback
-      connector/dm: Fixed a compilation warning
-      connector: Removed the destruct_data callback since it is always kfree_skb()
-      dm/connector: Only process connector packages from privileged processes
-      dst/connector: Disallow unpliviged users to configure dst
-      pohmelfs/connector: Disallow unpliviged users to configure pohmelfs
-      uvesafb/connector: Disallow unpliviged users to send netlink packets
-
-Ralf Baechle (2):
-      NET: mkiss: Fix typo
-      Kconfig: STRIP: Remove stale bits of STRIP help text
-
-Ron Mercer (5):
-      qlge: Fix bad bit definitions.
-      qlge: Fix out of sync hardware semaphore.
-      qlge: Fix spin_lock warning.
-      qlge: Protect reset recovery with rtnl_lock().
-      qlge: Fix error exit for probe call.
-
-Stephen Hemminger (1):
-      sky2: irqname based on pci address
-
-Uwe Kleine-König (3):
-      don't use __devexit_p to wrap meth_remove
-      don't use __devexit_p to wrap sgiseeq_remove
-      move virtnet_remove to .devexit.text
-
-roel kluin (1):
-      bcm63xx_enet: timeout off by one in do_mdio_op()
-
- Documentation/connector/cn_test.c                  |    2 +-
- Documentation/connector/connector.txt              |    8 +-
- .../networking/timestamping/timestamping.c         |    2 +-
- drivers/connector/cn_queue.c                       |   12 +-
- drivers/connector/connector.c                      |   22 +-
- drivers/md/dm-log-userspace-transfer.c             |    6 +-
- drivers/net/3c59x.c                                |   77 +-
- drivers/net/Kconfig                                |    7 +
- drivers/net/Makefile                               |    1 +
- drivers/net/bcm63xx_enet.c                         |    2 +-
- drivers/net/benet/be.h                             |    1 +
- drivers/net/benet/be_cmds.c                        |    3 +-
- drivers/net/benet/be_cmds.h                        |    3 +-
- drivers/net/benet/be_main.c                        |   23 +-
- drivers/net/bonding/bond_sysfs.c                   |    1 +
- drivers/net/cnic.c                                 |    3 +-
- drivers/net/cnic_if.h                              |    4 +-
- drivers/net/e1000e/netdev.c                        |   13 +-
- drivers/net/hamradio/mkiss.c                       |    4 +-
- drivers/net/igb/igb_main.c                         |   13 +-
- drivers/net/iseries_veth.c                         |    2 +-
- drivers/net/ixgbe/ixgbe_82598.c                    |    2 +-
- drivers/net/ixgbe/ixgbe_common.c                   |  232 ++-
- drivers/net/ixgbe/ixgbe_ethtool.c                  |    4 +
- drivers/net/ixgbe/ixgbe_main.c                     |   52 +-
- drivers/net/ixgbe/ixgbe_type.h                     |    9 +
- drivers/net/ks8851_mll.c                           | 1697 ++++++++++++++++++++
- drivers/net/meth.c                                 |    2 +-
- drivers/net/qlge/qlge.h                            |   18 +-
- drivers/net/qlge/qlge_main.c                       |   26 +-
- drivers/net/sgiseeq.c                              |    2 +-
- drivers/net/skge.c                                 |   16 +-
- drivers/net/skge.h                                 |    2 +
- drivers/net/sky2.c                                 |    7 +-
- drivers/net/sky2.h                                 |    2 +
- drivers/net/tg3.h                                  |    1 -
- drivers/net/virtio_net.c                           |    2 +-
- drivers/net/wireless/Kconfig                       |   13 +-
- drivers/net/wireless/ath/ar9170/phy.c              |    6 +-
- drivers/net/wireless/b43/pio.c                     |   60 +-
- drivers/net/wireless/mac80211_hwsim.c              |    3 +
- drivers/net/wireless/rt2x00/rt73usb.c              |    1 +
- drivers/staging/dst/dcore.c                        |    7 +-
- drivers/staging/pohmelfs/config.c                  |    5 +-
- drivers/video/uvesafb.c                            |    5 +-
- drivers/w1/w1_netlink.c                            |    2 +-
- include/linux/connector.h                          |   11 +-
- net/core/pktgen.c                                  |    6 +-
- net/ipv4/af_inet.c                                 |    1 +
- net/ipv4/ip_output.c                               |    1 +
- net/ipv4/tcp.c                                     |    4 +-
- net/ipv4/tcp_output.c                              |   11 +-
- net/ipv4/udp.c                                     |    1 +
- net/mac80211/tx.c                                  |    5 +-
- 54 files changed, 2157 insertions(+), 268 deletions(-)
- create mode 100644 drivers/net/ks8851_mll.c
