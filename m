@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZJBO1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbZJBO2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756590AbZJBO1e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 10:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbZJBO1e
+	id S1757912AbZJBO2x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 10:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbZJBO2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 10:27:34 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:60722 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754904AbZJBO1d (ORCPT
+	Fri, 2 Oct 2009 10:28:52 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:36600 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755192AbZJBO2v convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 10:27:33 -0400
-Date: Fri, 2 Oct 2009 15:27:26 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Mike Frysinger <vapier@gentoo.org>,
-       tglx@linutronix.de, uclinux-dist-devel@blackfin.uclinux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Uclinux-dist-devel] [PATCH v2] mfd: ADP5520 Multifunction
-	LCDBacklight and Keypad Input Device Driver
-Message-ID: <20091002142725.GC11133@sirena.org.uk>
-References: <8A42379416420646B9BFAC9682273B6D0E33AC35@limkexm3.ad.analog.com> <8A42379416420646B9BFAC9682273B6D0E33B1AA@limkexm3.ad.analog.com>
+	Fri, 2 Oct 2009 10:28:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=r3rNQVXDdWIhdEZFtemjpiyNpkfjYPjAniliApw/nLhhvbthFa1w4bSk9f3Ecd5jJ3
+         2hqneBrYkJe10kYOCTgyupgFlxqQUCAgEKbiJIUUHmL8sFwxRXRcnfbCeIlaGBC3PXEl
+         d5gDKSs0pPO2LEiNKvvYYYyVgQ464aYKgI9A0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8A42379416420646B9BFAC9682273B6D0E33B1AA@limkexm3.ad.analog.com>
-X-Cookie: Zeus gave Leda the bird.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <1254384558-1018-20-git-send-email-tj@kernel.org>
+References: <1254384558-1018-1-git-send-email-tj@kernel.org>
+	 <1254384558-1018-20-git-send-email-tj@kernel.org>
+Date: Fri, 2 Oct 2009 16:28:54 +0200
+Message-ID: <c62985530910020728tf2cb581t5d7b7ef99f35395c@mail.gmail.com>
+Subject: Re: [PATCH 19/19] workqueue: implement concurrency managed workqueue
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 02:48:27PM +0100, Hennerich, Michael wrote:
+2009/10/1 Tejun Heo <tj@kernel.org>:
+> Currently each workqueue has its own dedicated worker pool.  This
+> causes the following problems.
+>
+> * Works which are dependent on each other can cause a deadlock by
+>  depending on the same execution resource.  This is bad because this
+>  type of dependency is quite difficult to find.
+>
+> * Works which may sleep and take long time to finish need to have
+>  separate workqueues so that it doesn't block other works.  Similarly
+>  works which want to be executed in timely manner often need to
+>  create it custom workqueue too to avoid being blocked by long
+>  running ones.  This leads to large number of workqueues and thus
+>  many workers.
+>
+> * The static one-per-cpu worker isn't good enough for jobs which
+>  require higher level of concurrency necessiating other worker pool
+>  mechanism.  slow-work and async are good examples and there are also
+>  some custom implementations buried in subsystems.
+>
+> * Combined, the above factors lead to many workqueues with large
+>  number of dedicated and mostly unused workers.  This also makes work
+>  processing less optimal as the dedicated workers end up switching
+>  among themselves costing scheduleing overhead and wasting cache
+>  footprint for their stacks and as the system gets busy, these
+>  workers end up competing with each other.
+>
+> To solve the above issues, this patch implements concurrency-managed
+> workqueue.
+>
+> There is single global cpu workqueue (gcwq) for each cpu which serves
+> all the workqueues.  gcwq maintains single pool of workers which is
+> shared by all cwqs on the cpu.
+>
+> gcwq keeps the number of concurrent active workers to minimum but no
+> less.  As long as there's one or more running workers on the cpu, no
+> new worker is scheduled so that works can be processed in batch as
+> much as possible but when the last running worker blocks, gcwq
+> immediately schedules new worker so that the cpu doesn't sit idle
+> while there are works to be processed.
 
-> Well the threaded irq handlers are no option here, since we use a Level
-> Sensitive Interrupt. 
-> The work queue here is to schedule the main irq handler outside hardirq
-> context.
-> I2C can't we invoked form none sleepy context, so we can't clear the
-> interrupt. 
-> This will cause that we execute the hardirq over and over again,
-> preventing the irq thread to be run.
 
-> The threaded irqs with its current implementation also doesn't allow me
-> to disable the irq in the hardirq handler.
 
-This should all work perfectly fine.  If you don't supply a hard IRQ
-handler then the genirq infrastructure will disable the IRQ and schedule
-the threaded handler, reenabling the IRQ when the threaded handler
-finishes.  The threaded handler runs in a non-atomic context so it can
-happily access I2C devices.
+That's really a cool thing.
+So once such new workers are created, what's the state/event that triggers their
+destruction?
 
-> There have been some discussions about this on lkml recently.
-> Until there is a way to workaround this issue (handle_level_oneshot_irq,
-> etc.),
-> I like to stick with: 
+Is it the following, propagated recursively?
 
-> >>> +	disable_irq_nosync(irq);
-> >>> +	schedule_work(&chip->irq_work);
-
-This is essentially what a threaded IRQ handler does with current
-mainline.  There were issues in 2.6.31 but I believe all Thomas' fixes
-have been merged now.
+    Worker A blocks.
+    B is created.
+    B has just finished a worklet and A has been woken up
+    Then destroy B
