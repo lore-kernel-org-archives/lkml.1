@@ -1,76 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZJBTqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756964AbZJBTrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbZJBTqW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 15:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbZJBTqW
+	id S1756964AbZJBTrP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 15:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756610AbZJBTrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 15:46:22 -0400
-Received: from ppp-145-20.adsl.restena.lu ([158.64.145.20]:60483 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755124AbZJBTqV convert rfc822-to-8bit (ORCPT
+	Fri, 2 Oct 2009 15:47:14 -0400
+Received: from smtp241.iad.emailsrvr.com ([207.97.245.241]:59696 "EHLO
+	smtp241.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756550AbZJBTrN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 15:46:21 -0400
-X-Greylist: delayed 554 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Oct 2009 15:46:21 EDT
-Date: Fri, 2 Oct 2009 21:45:50 +0200
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+	Fri, 2 Oct 2009 15:47:13 -0400
+Message-ID: <4AC658C2.6070406@librato.com>
+Date: Fri, 02 Oct 2009 15:47:14 -0400
+From: Oren Laadan <orenl@librato.com>
+Organization: Librato
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [Bug #13950] Oops when USB Serial disconnected while in use
-Message-ID: <20091002214550.6727df5c@neptune.home>
-In-Reply-To: <COE24pZSBH.A.VqC.POTxKB@chimera>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
- <COE24pZSBH.A.VqC.POTxKB@chimera>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+CC: Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, jeff@garzik.org,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
+       dhowells@redhat.com, arjan@linux.intel.com,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [PATCH 01/19] freezer: don't get over-anxious while waiting
+References: <1254384558-1018-1-git-send-email-tj@kernel.org> <1254384558-1018-2-git-send-email-tj@kernel.org> <20091001183655.GA9995@atrey.karlin.mff.cuni.cz> <200910012304.00720.rjw@sisk.pl>
+In-Reply-To: <200910012304.00720.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 01 October 2009 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.30 and 2.6.31.
+
+
+Rafael J. Wysocki wrote:
+> On Thursday 01 October 2009, Pavel Machek wrote:
+>>> Freezing isn't exactly the most latency sensitive operation and
+>>> there's no reason to burn cpu cycles and power waiting for it to
+>>> complete.  msleep(10) instead of yield().  This should improve
+>>> reliability of emergency hibernation.
+>> i don't see how it improves reliability, but its probably ok.
+>>
+>> Well... for hibernation anyway. I can imagine cgroup users where
+>> freeze is so fast that this matters. rjw cc-ed.		pavel
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.30 and 2.6.31.  Please verify if it still
-> should be listed and let me know (either way).
+> Thanks.  I'd like to hear from the cgroup freezer people about that.
 > 
+
+[Adding Matt Helsley to the CC list]
+
+To checkpoint or migrate an application, the cgroup to which it belongs
+must be frozen first.
+
+It's a bit down the road, but if one seeks minimum application downtime
+during application checkpoint and/or migration, then a (minimum of)
+10ms - or multiples of it - may result in a visible/undesired hick-up.
+
+Perhaps avoid it when freezing a cgroup ?  or maybe a way for the user
+to control this behavior per cgroup ?
+
+Oren.
+
+>>> Signed-off-by: Tejun Heo <tj@kernel.org>
+>>> ---
+>>>  kernel/power/process.c |   13 +++++++++----
+>>>  1 files changed, 9 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/kernel/power/process.c b/kernel/power/process.c
+>>> index cc2e553..9d26a0a 100644
+>>> --- a/kernel/power/process.c
+>>> +++ b/kernel/power/process.c
+>>> @@ -41,7 +41,7 @@ static int try_to_freeze_tasks(bool sig_only)
+>>>  	do_gettimeofday(&start);
+>>>  
+>>>  	end_time = jiffies + TIMEOUT;
+>>> -	do {
+>>> +	while (true) {
+>>>  		todo = 0;
+>>>  		read_lock(&tasklist_lock);
+>>>  		do_each_thread(g, p) {
+>>> @@ -62,10 +62,15 @@ static int try_to_freeze_tasks(bool sig_only)
+>>>  				todo++;
+>>>  		} while_each_thread(g, p);
+>>>  		read_unlock(&tasklist_lock);
+>>> -		yield();			/* Yield is okay here */
+>>> -		if (time_after(jiffies, end_time))
+>>> +		if (!todo || time_after(jiffies, end_time))
+>>>  			break;
+>>> -	} while (todo);
+>>> +
+>>> +		/*
+>>> +		 * We need to retry.  There's no reason to be
+>>> +		 * over-anxious about it and waste power.
+>>> +		 */
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13950
-> Subject	: Oops when USB Serial disconnected while in
-> use Submitter	: Bruno Prémont <bonbons@linux-vserver.org>
-> Date		: 2009-08-08 17:47 (55 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124975432900466&w=4
-> Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-
-This has been adressed with following commits:
-  41bd34ddd7aa46dbc03b5bb33896e0fa8100fe7b
-  usb-serial: change referencing of port and serial structures
-
-  f5b0953a89fa3407fb293cc54ead7d8feec489e4
-  usb-serial: put subroutines in logical order
-
-  8bc2c1b2daf95029658868cb1427baea2da87139
-  usb-serial: change logic of serial lookups
-
-  cc56cd0157753c04a987888a2f793803df661a40
-  usb-serial: acquire references when a new tty is installed
-
-  7e29bb4b779f4f35385e6f21994758845bf14d23
-  usb-serial: fix termios initialization logic
-
-  74556123e034c8337b69a3ebac2f3a5fc0a97032
-  usb-serial: rename subroutines
-
-  ff8324df1187b7280e507c976777df76c73a1ef1
-  usb-serial: add missing tests and debug lines
-
-  320348c8d5c9b591282633ddb8959b42f7fc7a1c
-  usb-serial: straighten out serial_open
-
-They went into 2.6.32-rc1 and are probably queued for 2.6.31.2 stable.
-
-Bruno
+> The comment above looks like it's only meaningful in the context of the patch.
+> After it's been applied the meaning of the comment won't be so obvious, I'm
+> afraid.
+> 
+>>> +		msleep(10);
+>>> +	}
+>>>  
+>>>  	do_gettimeofday(&end);
+>>>  	elapsed_csecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
+> 
+> Thanks,
+> Rafael
