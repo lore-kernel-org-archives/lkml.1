@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbZJBR1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbZJBSdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757676AbZJBR1c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbZJBR1b
+	id S1758100AbZJBSdt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 14:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758033AbZJBSds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:27:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35755 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753071AbZJBR1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:27:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [Bug #14297] console resume broken since ba15ab0e8d
-Date: Fri, 2 Oct 2009 19:29:10 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>, Deepak Saxena <dsaxena@laptop.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-References: <9UCePxij8cB.A.VCG.-3SxKB@chimera> <Q3xT3CnoTGE.A.slG.H4SxKB@chimera> <20091002062740.GG27039@pengutronix.de>
-In-Reply-To: <20091002062740.GG27039@pengutronix.de>
+	Fri, 2 Oct 2009 14:33:48 -0400
+Received: from smtp-out25.alice.it ([85.33.2.25]:1438 "EHLO
+	smtp-out25.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757866AbZJBSdr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 14:33:47 -0400
+Subject: Il primo portale VISUALE per Annunci Immobiliari in Italia
+To: linux-kernel@vger.kernel.org
+Message-ID: <OFECB06650.C4DB802A-ONC1257643.00603648-C1257643.006034CB@icase>
+From: no-replay@icase.com
+Date: Fri, 2 Oct 2009 19:30:53 +0200
+X-MIMETrack: Serialize by Notes Client on Fabio/Fabio(Release 6.5.3|September 14, 2004) at
+ 02/10/2009 20.33.49
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910021929.10341.rjw@sisk.pl>
+Content-type: text/plain; charset=ISO-8859-1
+Content-transfer-encoding: 8BIT
+X-OriginalArrivalTime: 02 Oct 2009 18:33:46.0354 (UTC) FILETIME=[E0732520:01CA438E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 October 2009, Sascha Hauer wrote:
-> Hi Rafael,
-> 
-> On Thu, Oct 01, 2009 at 09:38:46PM +0200, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.31.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14297
-> > Subject		: console resume broken since ba15ab0e8d
-> > Submitter	: Sascha Hauer <s.hauer@pengutronix.de>
-> > Date		: 2009-09-30 15:11 (2 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125432349404060&w=4
-> 
-> Thanks for reporting this. Yes, the entry is still valid.
+Gentile utente,
+Ti invitiamo a visitare www.icase.it/maps/index.aspx , consente di trovare
+gli immobili partendo da una comoda cartina riassuntiva.
 
-Thanks for the update.
+Trovare casa non è mai stato così facile!
 
-Rafael
+Ti aspettiamo !
+lo staff di iCase.it
+
+ www.icase.it ...  la semplicità è di casa
+
