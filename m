@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932303AbZJBBnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbZJBBmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932303AbZJBBnl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932289AbZJBBnj
+	id S932247AbZJBBmz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756967AbZJBBmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:43:39 -0400
-Received: from kroah.org ([198.145.64.141]:33420 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:42:52 -0400
+Received: from kroah.org ([198.145.64.141]:33425 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756843AbZJBBd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:33:57 -0400
+	id S1756847AbZJBBd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:33:58 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:23 2009
-Message-Id: <20091002012423.080836301@mini.kroah.org>
+Message-Id: <20091002012423.224351396@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:17:29 -0700
+Date: Thu, 01 Oct 2009 18:17:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [101/136] USB serial: update the console driver
+       Sarah Sharp <sarah.a.sharp@linux.intel.com>
+Subject: [102/136] USB: xhci: Work around for chain bit in link TRBs.
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=usb-serial-update-the-console-driver.patch
+Content-Disposition: inline; filename=usb-xhci-work-around-for-chain-bit-in-link-trbs.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,109 +29,145 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 
-commit 7bd032dc2793afcbaf4a350056768da84cdbd89b upstream.
+commit b0567b3f635db72c881a0d561cebb544ec085073 upstream.
 
-This patch (as1292) modifies the USB serial console driver, to make it
-compatible with the recent changes to the USB serial core.  The most
-important change is that serial->disc_mutex now has to be unlocked
-following a successful call to usb_serial_get_by_index().
+Different sections of the xHCI 0.95 specification had opposing
+requirements for the chain bit in a link transaction request buffer (TRB).
+The chain bit is used to designate that adjacent TRBs are all part of the
+same scatter gather list that should be sent to the device.  Link TRBs can
+be in the middle, or at the beginning or end of these chained TRBs.
 
-Other less notable changes include:
+Sections 4.11.5.1 and 6.4.4.1 both stated the link TRB "shall have the
+chain bit set to 1", meaning it is always chained to the next TRB.
+However, section 4.6.9 on the stop endpoint command has specific cases for
+what the hardware must do for a link TRB with the chain bit set to 0.  The
+0.96 specification errata later cleared up this issue by fixing the
+4.11.5.1 and 6.4.4.1 sections to state that a link TRB can have the chain
+bit set to 1 or 0.
 
-	Use the requested port number instead of port 0 always.
+The problem is that the xHCI cancellation code depends on the chain bit of
+the link TRB being cleared when it's at the end of a TD, and some 0.95
+xHCI hardware simply stops processing the ring when it encounters a link
+TRB with the chain bit cleared.
 
-	Prevent the serial device from being autosuspended.
+Allow users who are testing 0.95 xHCI prototypes to set a module parameter
+(link_quirk) to turn on this link TRB work around.  Cancellation may not
+work if the ring is stopped exactly on a link TRB with chain bit set, but
+cancellation should be a relatively uncommon case.
 
-	Use the ASYNCB_INITIALIZED flag bit to indicate when the
-	port hardware has been initialized.
-
-In spite of these changes, there's no question that the USB serial
-console code is still a big hack.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/console.c |   28 +++++++++++++++++++---------
- 1 file changed, 19 insertions(+), 9 deletions(-)
+ drivers/usb/host/xhci-hcd.c  |   12 ++++++++++++
+ drivers/usb/host/xhci-mem.c  |    3 +++
+ drivers/usb/host/xhci-ring.c |   15 +++++++++++----
+ drivers/usb/host/xhci.h      |    9 +++++++++
+ 4 files changed, 35 insertions(+), 4 deletions(-)
 
---- a/drivers/usb/serial/console.c
-+++ b/drivers/usb/serial/console.c
-@@ -16,6 +16,7 @@
- #include <linux/slab.h>
- #include <linux/tty.h>
- #include <linux/console.h>
-+#include <linux/serial.h>
- #include <linux/usb.h>
- #include <linux/usb/serial.h>
+--- a/drivers/usb/host/xhci.h
++++ b/drivers/usb/host/xhci.h
+@@ -1058,6 +1058,8 @@ struct xhci_hcd {
+ 	int			noops_submitted;
+ 	int			noops_handled;
+ 	int			error_bitmask;
++	unsigned int		quirks;
++#define	XHCI_LINK_TRB_QUIRK	(1 << 0)
+ };
  
-@@ -63,7 +64,7 @@ static int usb_console_setup(struct cons
- 	char *s;
- 	struct usb_serial *serial;
- 	struct usb_serial_port *port;
--	int retval = 0;
-+	int retval;
- 	struct tty_struct *tty = NULL;
- 	struct ktermios *termios = NULL, dummy;
- 
-@@ -116,13 +117,17 @@ static int usb_console_setup(struct cons
- 		return -ENODEV;
- 	}
- 
--	port = serial->port[0];
-+	retval = usb_autopm_get_interface(serial->interface);
-+	if (retval)
-+		goto error_get_interface;
-+
-+	port = serial->port[co->index - serial->minor];
- 	tty_port_tty_set(&port->port, NULL);
- 
- 	info->port = port;
- 
- 	++port->port.count;
--	if (port->port.count == 1) {
-+	if (!test_bit(ASYNCB_INITIALIZED, &port->port.flags)) {
- 		if (serial->type->set_termios) {
- 			/*
- 			 * allocate a fake tty so the driver can initialize
-@@ -168,6 +173,7 @@ static int usb_console_setup(struct cons
- 			kfree(termios);
- 			kfree(tty);
- 		}
-+		set_bit(ASYNCB_INITIALIZED, &port->port.flags);
- 	}
- 	/* Now that any required fake tty operations are completed restore
- 	 * the tty port count */
-@@ -175,18 +181,22 @@ static int usb_console_setup(struct cons
- 	/* The console is special in terms of closing the device so
- 	 * indicate this port is now acting as a system console. */
- 	port->console = 1;
--	retval = 0;
- 
--out:
-+	mutex_unlock(&serial->disc_mutex);
- 	return retval;
--free_termios:
-+
-+ free_termios:
- 	kfree(termios);
- 	tty_port_tty_set(&port->port, NULL);
--free_tty:
-+ free_tty:
- 	kfree(tty);
--reset_open_count:
-+ reset_open_count:
- 	port->port.count = 0;
--	goto out;
-+	usb_autopm_put_interface(serial->interface);
-+ error_get_interface:
-+	usb_serial_put(serial);
-+	mutex_unlock(&serial->disc_mutex);
-+	return retval;
+ /* For testing purposes */
+@@ -1136,6 +1138,13 @@ static inline void xhci_write_64(struct 
+ 	writel(val_hi, ptr + 1);
  }
  
- static void usb_console_write(struct console *co,
++static inline int xhci_link_trb_quirk(struct xhci_hcd *xhci)
++{
++	u32 temp = xhci_readl(xhci, &xhci->cap_regs->hc_capbase);
++	return ((HC_VERSION(temp) == 0x95) &&
++			(xhci->quirks & XHCI_LINK_TRB_QUIRK));
++}
++
+ /* xHCI debugging */
+ void xhci_print_ir_set(struct xhci_hcd *xhci, struct xhci_intr_reg *ir_set, int set_num);
+ void xhci_print_registers(struct xhci_hcd *xhci);
+--- a/drivers/usb/host/xhci-hcd.c
++++ b/drivers/usb/host/xhci-hcd.c
+@@ -22,12 +22,18 @@
+ 
+ #include <linux/irq.h>
+ #include <linux/module.h>
++#include <linux/moduleparam.h>
+ 
+ #include "xhci.h"
+ 
+ #define DRIVER_AUTHOR "Sarah Sharp"
+ #define DRIVER_DESC "'eXtensible' Host Controller (xHC) Driver"
+ 
++/* Some 0.95 hardware can't handle the chain bit on a Link TRB being cleared */
++static int link_quirk;
++module_param(link_quirk, int, S_IRUGO | S_IWUSR);
++MODULE_PARM_DESC(link_quirk, "Don't clear the chain bit on a link TRB");
++
+ /* TODO: copied from ehci-hcd.c - can this be refactored? */
+ /*
+  * handshake - spin reading hc until handshake completes or fails
+@@ -214,6 +220,12 @@ int xhci_init(struct usb_hcd *hcd)
+ 
+ 	xhci_dbg(xhci, "xhci_init\n");
+ 	spin_lock_init(&xhci->lock);
++	if (link_quirk) {
++		xhci_dbg(xhci, "QUIRK: Not clearing Link TRB chain bits.\n");
++		xhci->quirks |= XHCI_LINK_TRB_QUIRK;
++	} else {
++		xhci_dbg(xhci, "xHCI has no QUIRKS\n");
++	}
+ 	retval = xhci_mem_init(xhci, GFP_KERNEL);
+ 	xhci_dbg(xhci, "Finished xhci_init\n");
+ 
+--- a/drivers/usb/host/xhci-mem.c
++++ b/drivers/usb/host/xhci-mem.c
+@@ -94,6 +94,9 @@ static void xhci_link_segments(struct xh
+ 		val = prev->trbs[TRBS_PER_SEGMENT-1].link.control;
+ 		val &= ~TRB_TYPE_BITMASK;
+ 		val |= TRB_TYPE(TRB_LINK);
++		/* Always set the chain bit with 0.95 hardware */
++		if (xhci_link_trb_quirk(xhci))
++			val |= TRB_CHAIN;
+ 		prev->trbs[TRBS_PER_SEGMENT-1].link.control = val;
+ 	}
+ 	xhci_dbg(xhci, "Linking segment 0x%llx to segment 0x%llx (DMA)\n",
+--- a/drivers/usb/host/xhci-ring.c
++++ b/drivers/usb/host/xhci-ring.c
+@@ -172,8 +172,9 @@ static void inc_deq(struct xhci_hcd *xhc
+  * have their chain bit cleared (so that each Link TRB is a separate TD).
+  *
+  * Section 6.4.4.1 of the 0.95 spec says link TRBs cannot have the chain bit
+- * set, but other sections talk about dealing with the chain bit set.
+- * Assume section 6.4.4.1 is wrong, and the chain bit can be set in a Link TRB.
++ * set, but other sections talk about dealing with the chain bit set.  This was
++ * fixed in the 0.96 specification errata, but we have to assume that all 0.95
++ * xHCI hardware can't handle the chain bit being cleared on a link TRB.
+  */
+ static void inc_enq(struct xhci_hcd *xhci, struct xhci_ring *ring, bool consumer)
+ {
+@@ -191,8 +192,14 @@ static void inc_enq(struct xhci_hcd *xhc
+ 	while (last_trb(xhci, ring, ring->enq_seg, next)) {
+ 		if (!consumer) {
+ 			if (ring != xhci->event_ring) {
+-				next->link.control &= ~TRB_CHAIN;
+-				next->link.control |= chain;
++				/* If we're not dealing with 0.95 hardware,
++				 * carry over the chain bit of the previous TRB
++				 * (which may mean the chain bit is cleared).
++				 */
++				if (!xhci_link_trb_quirk(xhci)) {
++					next->link.control &= ~TRB_CHAIN;
++					next->link.control |= chain;
++				}
+ 				/* Give this link TRB to the hardware */
+ 				wmb();
+ 				if (next->link.control & TRB_CYCLE)
 
 
