@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbZJBVlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbZJBVo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754366AbZJBVlk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 17:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbZJBVlj
+	id S1754637AbZJBVo4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 17:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbZJBVo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 17:41:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36728 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753838AbZJBVlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 17:41:39 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Subject: Re: [Bug #13943] WARNING: at net/mac80211/mlme.c:2292 with ath5k
-Date: Fri, 2 Oct 2009 23:42:47 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910021917.31509.rjw@sisk.pl> <b637ec0b0910021437l5a011f13qfa4dd541607a6dfb@mail.gmail.com>
-In-Reply-To: <b637ec0b0910021437l5a011f13qfa4dd541607a6dfb@mail.gmail.com>
+	Fri, 2 Oct 2009 17:44:56 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:59780 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754447AbZJBVoz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 17:44:55 -0400
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] procfs: provide stack information for threads
+References: <1238511505.364.61.camel@matrix> <20090401193135.GA12316@elte.hu>
+	<1244146873.20012.6.camel@wall-e> <m2eipl7axx.fsf@igel.home>
+X-Yow: Well, O.K.  I'll compromise with my principles because of
+ EXISTENTIAL DESPAIR!
+Date: Fri, 02 Oct 2009 23:44:56 +0200
+In-Reply-To: <m2eipl7axx.fsf@igel.home> (Andreas Schwab's message of "Fri, 02
+	Oct 2009 23:17:14 +0200")
+Message-ID: <m2ws3djwrr.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910022342.47977.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 October 2009, Fabio Comolli wrote:
-> Hi.
-> 
-> On Fri, Oct 2, 2009 at 7:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Friday 02 October 2009, Fabio Comolli wrote:
-> >> Hi.
-> >> I suppose this is still valid. I had to work around it by rfkill-ing
-> >> the device during the suspend process and reenabling at resume time.
-> >
-> > Thanks for the update.
-> >
-> >> I can try to reproduce it with 2.6.31.1 if you want it.
-> >
-> > In fact I'm more interested in whether or not it's still present in the Linus'
-> > tree.
-> >
-> 
-> Well, I just tried 2.6.32-rc1-git3 and I have to say that it's mostly
-> useless with my eeepc. The warning didn't show up after resume but it
-> was impossible to reassociate with my AP and after some tentative the
-> screen went blank.
-> 
-> I was able to poweroff the netbook using the power button but I'm a
-> little scared to try again.
+That missed compat_do_execve.
 
-It shouldn't kill the system cold dead, so as long as you have your data
-backed up, you can do some debugging IMHO.
+Andreas.
 
-> Maybe I'll try with -rc3 or something.
+>From 2e81a4ab8da611f340a536aaaccbb274bfa0de5c Mon Sep 17 00:00:00 2001
+From: Andreas Schwab <schwab@linux-m68k.org>
+Date: Fri, 2 Oct 2009 23:43:47 +0200
+Subject: [PATCH] compat_do_execve: set current->stack_start as in do_execve
 
-I guess you should report the issues you have at the moment.  Then, it's
-actually more likely that someone will take care of fixing them.
+---
+ fs/compat.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Thanks,
-Rafael
+diff --git a/fs/compat.c b/fs/compat.c
+index d576b55..6c19040 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1532,6 +1532,8 @@ int compat_do_execve(char * filename,
+ 	if (retval < 0)
+ 		goto out;
+ 
++	current->stack_start = current->mm->start_stack;
++
+ 	/* execve succeeded */
+ 	current->fs->in_exec = 0;
+ 	current->in_execve = 0;
+-- 
+1.6.4.4
+
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
