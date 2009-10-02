@@ -1,18 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbZJBPcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbZJBPcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756999AbZJBPcU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 11:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbZJBPcU
+	id S1756811AbZJBPcJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 11:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbZJBPcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 11:32:20 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:39312 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756877AbZJBPcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 11:32:16 -0400
-Date: Fri, 2 Oct 2009 11:31:17 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
+	Fri, 2 Oct 2009 11:32:08 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45776 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755931AbZJBPcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 11:32:07 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1907+UvN8N0J9p1oNK4y+AtBiTaLj7158MXKQ7wiu
+	+sY2X40vcpwyWd
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
 To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>, Jens Axboe <jens.axboe@oracle.com>,
+Cc: Vivek Goyal <vgoyal@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
        Ingo Molnar <mingo@elte.hu>,
        Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
        linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
@@ -23,19 +26,23 @@ Cc: Mike Galbraith <efault@gmx.de>, Jens Axboe <jens.axboe@oracle.com>,
        righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
        akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
        torvalds@linux-foundation.org, riel@redhat.com
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20091002153117.GB4494@redhat.com>
-References: <200910021255.27689.czoccolo@gmail.com> <20091002124921.GA4494@redhat.com> <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <200910021255.27689.czoccolo@gmail.com>
+	 <20091002124921.GA4494@redhat.com>
+	 <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 02 Oct 2009 17:32:00 +0200
+Message-Id: <1254497520.10392.11.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 05:27:55PM +0200, Corrado Zoccolo wrote:
+On Fri, 2009-10-02 at 17:27 +0200, Corrado Zoccolo wrote:
 > On Fri, Oct 2, 2009 at 2:49 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
 > > On Fri, Oct 02, 2009 at 12:55:25PM +0200, Corrado Zoccolo wrote:
 > >
@@ -45,21 +52,40 @@ On Fri, Oct 02, 2009 at 05:27:55PM +0200, Corrado Zoccolo wrote:
 > I based my analisys on the original patch:
 > http://lkml.indiana.edu/hypermail/linux/kernel/0907.1/01793.html
 > 
-
-Oh.., you are talking about fairness for seeky process patch. I thought
-you are talking about current IO controller patches. Actually they both
-have this notion of "fairness=1" parameter but do different things in 
-patches, hence the confusion. 
-
-Thanks
-Vivek
-
-
 > Mike, can you confirm which version of the fairness patch did you use
 > in your tests?
-> 
-> Corrado
-> 
-> > Thanks
-> > Vivek
-> >
+
+That would be this one-liner.
+
+o CFQ provides fair access to disk in terms of disk time used to processes.
+  Fairness is provided for the applications which have their think time with
+  in slice_idle (8ms default) limit.
+
+o CFQ currently disables idling for seeky processes. So even if a process
+  has think time with-in slice_idle limits, it will still not get fair share
+  of disk. Disabling idling for a seeky process seems good from throughput
+  perspective but not necessarily from fairness perspecitve.
+
+0 Do not disable idling based on seek pattern of process if a user has set
+  /sys/block/<disk>/queue/iosched/fairness = 1.
+
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/cfq-iosched.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/block/cfq-iosched.c
+===================================================================
+--- linux-2.6.orig/block/cfq-iosched.c
++++ linux-2.6/block/cfq-iosched.c
+@@ -1953,7 +1953,7 @@ cfq_update_idle_window(struct cfq_data *
+ 	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
+ 
+ 	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
+-	    (cfqd->hw_tag && CIC_SEEKY(cic)))
++	    (!cfqd->cfq_fairness && cfqd->hw_tag && CIC_SEEKY(cic)))
+ 		enable_idle = 0;
+ 	else if (sample_valid(cic->ttime_samples)) {
+ 		if (cic->ttime_mean > cfqd->cfq_slice_idle)
+
+
