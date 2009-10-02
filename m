@@ -1,34 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932088AbZJBKTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbZJBK0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932088AbZJBKTP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 06:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbZJBKTO
+	id S1757550AbZJBK0l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 06:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbZJBK0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 06:19:14 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:33277 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756878AbZJBKTN convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;2:1>);
-	Fri, 2 Oct 2009 06:19:13 -0400
-Message-Id: <4AC5EFC50200007800017ABC@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Fri, 02 Oct 2009 11:19:17 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <adaplas@gmail.com>, <ilya.yanok@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: commit 68e5e9d734503695915734e50e9427624cf8f3b2 (Re: vfb: make
-	 virtual framebuffer mmapable)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 2 Oct 2009 06:26:41 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:2592 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756508AbZJBK0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 06:26:40 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19141.54587.207559.849751@pilspetsen.it.uu.se>
+Date: Fri, 2 Oct 2009 12:26:03 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Nick Piggin <npiggin@suse.de>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Patch "USB: Work around BIOS bugs by quiescing USB controllers earlier" causes MCEs
+In-Reply-To: <20091002073400.GV6327@wotan.suse.de>
+References: <20091002073400.GV6327@wotan.suse.de>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is there any particular reason why this change uses vmalloc_32()
-rather than simply vmalloc()? I can't see why the underlying physical
-address width would matter here in any way...
+Nick Piggin writes:
+ > Hi,
+ > 
+ > Your patch db8be50c4307dac2b37305fc59c8dc0f978d09ea is causing my
+ > ia64 Altix system to die with an MCE in early boot.
 
-Thanks, Jan
+The same commit has been confirmed by two people on the ARM list
+to cause boot failures on two different Intel XScale IOP machines.
+The machines have serial consoles, but only show
 
+Uncompressing Linux... done. Booting the kernel.
+
+before they hang.
