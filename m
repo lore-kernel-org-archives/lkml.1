@@ -1,107 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZJBPxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZJBPyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbZJBPxy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 11:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbZJBPxx
+	id S1755480AbZJBPyO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 11:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZJBPyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 11:53:53 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:43966 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754670AbZJBPxw (ORCPT
+	Fri, 2 Oct 2009 11:54:12 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:56859 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755165AbZJBPyL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 11:53:52 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-Content-type: text/plain; CHARSET=US-ASCII
-Date: Fri, 02 Oct 2009 11:53:43 -0400
-From: Jody McIntyre <scjody@sun.com>
-Subject: Re: [patch 4/4] [ext3] Add journal guided resync (data=declared	mode)
-In-reply-to: <19141.23743.35576.466246@notabene.brown>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-ext4@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andreas Dilger <adilger@sun.com>
-Message-id: <20091002155343.GA22539@clouds>
-References: <20091001223929.120106893@sun.com>
- <20091001224021.757201872@sun.com> <19141.23743.35576.466246@notabene.brown>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 2 Oct 2009 11:54:11 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
+Date: Fri, 2 Oct 2009 17:54:12 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.28-14-generic; KDE/4.2.4; i686; ; )
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, dm-devel@redhat.com,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       linux-fbdev-devel@lists.sourceforge.net
+References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com> <20091002135859.GA9383@kroah.com>
+In-Reply-To: <20091002135859.GA9383@kroah.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910021754.12940.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 11:51:59AM +1000, Neil Brown wrote:
+> On Fri, Oct 02, 2009 at 02:40:03PM +0200, Philipp Reisner wrote:
+> > Affected: All code that uses connector, in kernel and out of mainline
+> >
+> > The connector, as it is today, does not allow the in kernel receiving
+> > parts to do any checks on privileges of a message's sender.
+>
+> So, assume I know nothing about the connector architecture, what does
+> this mean in a security context?
+>
 
-> I have thought about this sort of thing from time to time and I have a
-> very different idea for how the necessary communication between the
-> filesystem and MD would happen.  I think my approach would completely
-> address this problem, and doesn't need to add any ioctls (which I am not
-> keen on).
-> 
-> I would add two new BIO_RW_ flags to be used with WRITE requests.
-> The first flag would mean "don't worry about a crash in the middle of
-> this write,  I will validate it after a crash before I rely on the
-> data."
-> The second would mean "last time I wrote data near here there might
-> have been a failure, be extra careful".
-> 
-> So the first flag would be used during normal filesystem writes for
-> every block that gets recorded in the journal, and for every write
-> to the journal.
-> 
-> The second flag is used after a crash to re-write every block that
-> could have been in-flight during the crash.  Some of those blocks will
-> be read from the journal and written to their proper home, other will
-> be read from wherever they are and written back there.
-> 
-> The first flag would be interpreted by MD as "don't set the bitmap
-> bit".  The second flag would be interpreted as "don't trust the
-> parity block, but do a reconstruct-write".
-> 
-> With this scheme you would still need a write-intent-bitmap on the MD
-> array, but no bits would ever be set if the filesystem were using the
-> new flags, so no performance impact.  You probably could run without a
-> bitmap, in which case the flag would me "don't mark the array as
-> active".
+Think of the connector as a layer on top of netlink that allows more
+than a hard coded number of subsystems to use netlink.
 
-That makes a lot of sense.  The original design used something similar to
-your second flag to do all the resync work.  I changed to an IOCTL approach
-because there's no good way for a flagged IO to return "the resync you
-requested could not be done so don't skip the automated resync."  But with
-your suggestion, there's no need to explicitly skip the automated resync at
-the end either - it just won't act on those blocks, assuming all blocks
-were previously written with the first flag.
+Netlink is used e.g. to modify routing tables in the kernel.
 
-I don't like the IOCTLs either :)
+As it is today, subsystem utilising the connector can not examine
+the capabilities of the user/program that sent the netlink message.
 
-> I'm not entirely sure about the second flag.  Maybe it would be better
-> to make it a flag for READ and have it mean "validate and correct any
-> redundancy information (duplicates or parity) for this block before
-> returning it.  Then we could have just one flag, which meant different
-> things for READ and WRITE.
+If the same would be true for netlink, than every unprivileged user
+could change the routing tables on your box.
 
-Yes, it needs to be a READ flag to avoid an unnecessary read-write cycle.
-The list of declare blocks in the ext3 journal just lists the block
-numbers, not their contents (this is equivalent to data=ordered, not
-data=journaled).
+> > I know, there are not many out there that like connector, but as
+> > long as it is in the kernel, we have to fix the security issues it has!
+>
+> And what specifically are the security issues?
+>
 
-It would be nice to also have a WRITE flag though, for those cases
-(metadata) where we do know what's being written to the block.
+unprivileged users can trigger operations that are supposed to be only
+accessible to users having CAP_SYS_ADMIN (or some other CAP_XXX)
 
-In any case, I think it's less confusing to have two flags: the "don't
-worry about this block for now" flag and the "resync this block now" flag.
+> > Please either drop connector, or someone who feels a bit responsible
+> > and has our beloved dictator's blessing, PLEASE PLEASE PLEASE take
+> > this into your tree, and send the pull request to Linus.
+> >
+> > Patches 1 to 4 are already Acked-by Evgeny, the connector's maintainer.
+> > Patches 5 to 7 are the obvious fixes to the connector user's code.
+>
+> Obvious in what way?
+>
 
-There's still one complication though, and an IOCTL may still be necessary:
-at fsck time, we need to perform a journal recovery from e2fsck (userland.)
-Clearly, resyncing the declared blocks (plus the journal and affected
-metadata blocks) must be done before e2fsck does any writes to these
-blocks.  An IOCTL seemed to be the best way to do that, but I'm open to
-other suggestions.
+They limit processing of connector/netlink messages in these subsystems
+to messages sent from root (or some user having CAP_SYS_ADMIN).
 
-> What do you think?
+That is obvious for dst, because device setup and destruction is done by
+connector messages.
 
-I'll send a new patchset, hopefully today.
+This is obvious for pohmelfs becuase these connector messages are
+used there to change some configuration.
 
-Cheers,
-Jody
+This is obvious for uvesafb because the connector messages are used 
+there to delegate some video bios emulation to userspace. 
 
-> NeilBrown
+Last not least dm's dirty logging in user space, should be immune to
+some crafted netlink packets sent by some unprivileged user.
+
+Patches 1 to 4 fix the framework, should be merged as soon as possible.
+
+Patches 5 to 8 (not 7) should probably be blessed by the affected
+subsystem's maintainers. I think I have put all on CC. 
+
+HTH.
+
+-phil
