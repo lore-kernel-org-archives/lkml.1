@@ -1,111 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZJBXjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbZJBXlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbZJBXjD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 19:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZJBXjC
+	id S1754368AbZJBXlO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 19:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbZJBXlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 19:39:02 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:60448 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753001AbZJBXjB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 19:39:01 -0400
-Message-ID: <4AC68F13.8050601@us.ibm.com>
-Date: Fri, 02 Oct 2009 16:38:59 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Anirban Sinha <ASinha@zeugmasystems.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: futex question
-References: <DDFD17CC94A9BD49A82147DDF7D545C501FD7F97@exchange.ZeugmaSystems.local> <20091001092218.GH15345@elte.hu> <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local>
-In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 2 Oct 2009 19:41:14 -0400
+Received: from dovecot.org ([82.118.211.50]:36392 "EHLO dovecot.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753033AbZJBXlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 19:41:13 -0400
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <9ECCBC96-C88C-456B-B8BF-606156461E18@iki.fi>
+From: Timo Sirainen <tss@iki.fi>
+To: Bryan Donlan <bdonlan@gmail.com>
+In-Reply-To: <3e8340490910021553ua53ab26gdb3f96af80cec768@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: setproctitle()
+Date: Fri, 2 Oct 2009 19:41:13 -0400
+References: <1254519449.4605.33.camel@timo-desktop> <3e8340490910021553ua53ab26gdb3f96af80cec768@mail.gmail.com>
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anirban Sinha wrote:
->> Should we not just clear the pointer (and
->>> it's compat version) within do_execve()?
-> 
-> 
-> In our private repository, applying the following patch resolved the
-> issues I mentioned. I no longer see messages like this:
-> 
->  [futex] ("ifconfig")(pid=2509) exit_robust_list:unable to fetch robust
-> entry. uaddr=0x000000002abbc4f0
-> 
-> from my instrumented kernel within exit_robust_list(). My
-> instrumentation looked something like this:
+On Oct 2, 2009, at 6:53 PM, Bryan Donlan wrote:
 
-> 
-> if (fetch_robust_entry(...)) {
-> printk(...);
-> return;
-> }
-> 
-> Just tossing the patch in the community in case someone is interested
+> On Fri, Oct 2, 2009 at 5:37 PM, Timo Sirainen <tss@iki.fi> wrote:
+>> I'd like to get BSD's setproctitle() implemented for glibc so that  
+>> more
+>> programs could start using it. The current method of messing around  
+>> with
+>> argv and environment to implement it is horribly ugly, fragile and I
+>> find it dangerous enough that I haven't dared to use it in my  
+>> programs.
+>>
+>> Any chance of making all this easier so it could actually be  
+>> implemented
+>> in a generic and safe way in glibc?
+>
+> Interestingly, there is some code that purports to handle
+> setproctitle(): (fs/proc/base.c)
+>    res = access_process_vm(task, mm->arg_start, buffer, len, 0);
+>
+>    // If the nul at the end of args has been overwritten, then
+>    // assume application is using setproctitle(3).
 
+Yes, I saw this. It's especially interesting that it mentions  
+setproctitle(3), which doesn't exist in Linux.
 
-Thanks for sending the patch.  I'm looking into it now.  Couple questions:
+>    if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
+>        len = strnlen(buffer, res);
+>        if (len < res) {
+>            res = len;
+>        } else {
+>            len = mm->env_end - mm->env_start;
+>            if (len > PAGE_SIZE - res)
+>                len = PAGE_SIZE - res;
+>            res += access_process_vm(task, mm->env_start, buffer+res,  
+> len, 0);
+>            res = strnlen(buffer, res);
+>        }
+>    }
+>
+> This would seem to allow the argument space to be extended up until
+> the end of the environment variable area (although it seems to have a
+> bug where it will ignore errors when reading this extra bit!)
 
-1) What caused you to instrument this path in the first place?  Were you 
-seeing some unexpected behavior?
+That is the ugliness I referred to in my previous mail. It also looks  
+to me like if the environment is very small, the process title length  
+is also very limited.
 
-2) I wonder why we would need to clear the robust list, but I don't see 
-other things like pi_blocked_on, etc. in execve being cleared.  I'm 
-looking into this now (perhaps we don't do the same cleanup, need to 
-check).... have to get on the plane...
+> Nevertheless, if one were to insist on a more controllable method, a
+> better way might be to simply define a syscall that userspace can use
+> to select a new command line buffer. Overwrite mm->arg_end and
+> mm->arg_start, and there you go. Of course, the logic over here needs
+> to be disabled in this case, as env variables will no longer be found
+> immediately after the argument vector.
 
---
-Darren Hart
-
-> ...
-> 
-> 
-> 
-> Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
-> ---
->  fs/compat.c |    3 +++
->  fs/exec.c   |    3 +++
->  2 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/compat.c b/fs/compat.c
-> index 6d6f98f..c3d117c 100644
-> --- a/fs/compat.c
-> +++ b/fs/compat.c
-> @@ -1510,6 +1510,9 @@ int compat_do_execve(char * filename,
->         if (retval)
->                 goto out_file;
-> 
-> +#ifdef CONFIG_FUTEX
-> +       current->compat_robust_list = NULL;
-> +#endif
->         bprm->argc = compat_count(argv, MAX_ARG_STRINGS);
->         if ((retval = bprm->argc) < 0)
->                 goto out;
-> diff --git a/fs/exec.c b/fs/exec.c
-> index 172ceb6..e9334b8 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -1323,6 +1323,9 @@ int do_execve(char * filename,
->         retval = bprm_mm_init(bprm);
->         if (retval)
->                 goto out_file;
-> +#ifdef CONFIG_FUTEX
-> +       current->robust_list = NULL;
-> +#endif
-> 
->         bprm->argc = count(argv, MAX_ARG_STRINGS);
->         if ((retval = bprm->argc) < 0)
-> 
-> 
-
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+That sounds good to me. Someone else mentioned prctl(PR_SET_NAME) that  
+does something related already, so perhaps a new flag for prctl()?  
+Something like: prctl(PR_SET_PROCTITLE, proctitle_start,  
+proctitle_end). I could try implementing that this weekend (with my  
+almost non-existent kernel coding skills) if no one else wants to.
