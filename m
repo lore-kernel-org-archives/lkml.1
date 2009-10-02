@@ -1,124 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbZJBWoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932122AbZJBWo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbZJBWoT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 18:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbZJBWoS
+	id S932122AbZJBWo2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 18:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbZJBWo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 18:44:18 -0400
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:50264 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756108AbZJBWoR (ORCPT
+	Fri, 2 Oct 2009 18:44:27 -0400
+Received: from outbound-mail-153.bluehost.com ([67.222.39.33]:40524 "HELO
+	outbound-mail-153.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756646AbZJBWoZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 18:44:17 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 67.160.239.110
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19m95rGiK2tOxa+MazYF+eI
-Subject: [PATCH 6/8] omapfb: Condition mutex acquisition
-To: linux-arm-kernel@lists.infradead.org
-From: Tony Lindgren <tony@atomide.com>
-Cc: Imre Deak <imre.deak@nokia.com>, Sergio Aguirre <saaguirre@ti.com>,
-       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Date: Fri, 02 Oct 2009 15:44:13 -0700
-Message-ID: <20091002224413.11962.12302.stgit@localhost>
-In-Reply-To: <20091002223510.11962.21751.stgit@localhost>
-References: <20091002223510.11962.21751.stgit@localhost>
-User-Agent: StGit/0.14.3.347.g594a
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Fri, 2 Oct 2009 18:44:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=fUbS1XnK+bGylaCnN5CAx2OpVccxRr7nFx3Yd5y4TdVO++Xw1Lb3ipZMk++9jXPP6+6SWe12DflT9pdCL47kmAQAMMKKlb7TIQAqHlN0VqGfm9doINg3apXIKi1Tsmi+;
+Date: Fri, 2 Oct 2009 15:44:24 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400
+ laptops
+Message-ID: <20091002154424.331f82a6@jbarnes-g45>
+In-Reply-To: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
+References: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sergio Aguirre <saaguirre@ti.com>
+On Fri, 02 Oct 2009 18:40:27 -0400
+"Theodore Ts'o" <tytso@mit.edu> wrote:
 
-This fixes a bug introduced by this commit ID:
+> Hi, 
+> 
+> In recent kernels, my X display (running with a KMS-enabled X server)
+> has been very jittery and with lots of glitching and tearing --- sorry
+> if this isn't the correct technical term, not sure what it is --- on
+> my T400 Lenovo laptop.   It seems related to what is on the desktop,
+> and moving the mouse does seem to affect the rate and percentage of
+> the screen which jitters --- which is enough to be very distracting,
+> although I can still read the contents of the windows where the screen
+> is tearing/glitching/flashing.
+> 
+> I bisected it down to this commit:
+> 
+> 74dff282237ea8c0a5df1afd8526eac4b6cee063 is the first bad commit
+> commit 74dff282237ea8c0a5df1afd8526eac4b6cee063
+> Author: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Date:   Mon Sep 14 15:39:40 2009 -0700
+> 
+>     drm/i915: framebuffer compression for GM45+
+>     
+>     Add support for framebuffer compression on GM45 and above.
+> Removes some unnecessary I915_HAS_FBC checks as well (this is now
+> part of the FBC display function).
+>     
+>     Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+>     Signed-off-by: Eric Anholt <eric@anholt.net>
+> 
+> ... and taking the latest git mainline, and I confirmed that the
+> problem was still present, and then after reverting this commit, the
+> problem went away.
+> 
+> I've included my Xorg.0.log file in case that's helpful.  Please let
+> me know if there's anything else you need.
 
-  commit 537a1bf059fa312355696fa6db80726e655e7f17
-  Author: Krzysztof Helt <krzysztof.h1@wp.pl>
-  Date:   Tue Jun 30 11:41:29 2009 -0700
+Yeah I've had a couple of other reports of flicker pointing to this
+commit... I'll be able to look into it next week.
 
-    fbdev: add mutex for fb_mmap locking
-
-In which a mutex was added when changing smem_start and smem_len fields,
-so the mutex inside the fb_mmap() call is actually used.
-
-The problem was that set_fb_fix, which modifies the above 2 fields,
-was called before and after registering the framebuffer,
-which when used before registration, lead to a failed attempt to
-use an uninitialized mutex.
-
-Solution: Don't use mutex before framebuffer registration.
-
-Signed-off-by: Sergio Aguirre <saaguirre@ti.com>
-Acked-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Acked-by: Imre Deak <imre.deak@nokia.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- drivers/video/omap/omapfb_main.c |   22 ++++++++++++++--------
- 1 files changed, 14 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
-index 125e605..0d0c8c8 100644
---- a/drivers/video/omap/omapfb_main.c
-+++ b/drivers/video/omap/omapfb_main.c
-@@ -393,7 +393,7 @@ static void omapfb_sync(struct fb_info *fbi)
-  * Set fb_info.fix fields and also updates fbdev.
-  * When calling this fb_info.var must be set up already.
-  */
--static void set_fb_fix(struct fb_info *fbi)
-+static void set_fb_fix(struct fb_info *fbi, int from_init)
- {
- 	struct fb_fix_screeninfo *fix = &fbi->fix;
- 	struct fb_var_screeninfo *var = &fbi->var;
-@@ -403,10 +403,16 @@ static void set_fb_fix(struct fb_info *fbi)
- 
- 	rg = &plane->fbdev->mem_desc.region[plane->idx];
- 	fbi->screen_base	= rg->vaddr;
--	mutex_lock(&fbi->mm_lock);
--	fix->smem_start		= rg->paddr;
--	fix->smem_len		= rg->size;
--	mutex_unlock(&fbi->mm_lock);
-+
-+	if (!from_init) {
-+		mutex_lock(&fbi->mm_lock);
-+		fix->smem_start		= rg->paddr;
-+		fix->smem_len		= rg->size;
-+		mutex_unlock(&fbi->mm_lock);
-+	} else {
-+		fix->smem_start		= rg->paddr;
-+		fix->smem_len		= rg->size;
-+	}
- 
- 	fix->type = FB_TYPE_PACKED_PIXELS;
- 	bpp = var->bits_per_pixel;
-@@ -704,7 +710,7 @@ static int omapfb_set_par(struct fb_info *fbi)
- 	int r = 0;
- 
- 	omapfb_rqueue_lock(fbdev);
--	set_fb_fix(fbi);
-+	set_fb_fix(fbi, 0);
- 	r = ctrl_change_mode(fbi);
- 	omapfb_rqueue_unlock(fbdev);
- 
-@@ -904,7 +910,7 @@ static int omapfb_setup_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
- 		if (old_size != size) {
- 			if (size) {
- 				memcpy(&fbi->var, new_var, sizeof(fbi->var));
--				set_fb_fix(fbi);
-+				set_fb_fix(fbi, 0);
- 			} else {
- 				/*
- 				 * Set these explicitly to indicate that the
-@@ -1504,7 +1510,7 @@ static int fbinfo_init(struct omapfb_device *fbdev, struct fb_info *info)
- 	var->bits_per_pixel = fbdev->panel->bpp;
- 
- 	set_fb_var(info, var);
--	set_fb_fix(info);
-+	set_fb_fix(info, 1);
- 
- 	r = fb_alloc_cmap(&info->cmap, 16, 0);
- 	if (r != 0)
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
