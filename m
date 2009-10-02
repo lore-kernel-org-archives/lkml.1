@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZJBPmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbZJBPcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbZJBPmO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 11:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbZJBPmM
+	id S1756999AbZJBPcU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 11:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbZJBPcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 11:42:12 -0400
-Received: from mfbichi11.ns.itscom.net ([219.110.2.189]:45629 "EHLO
-	mfbichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754107AbZJBPmJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 11:42:09 -0400
-X-Greylist: delayed 644 seconds by postgrey-1.27 at vger.kernel.org; Fri, 02 Oct 2009 11:42:08 EDT
-From: hooanon05@yahoo.co.jp
-Subject: Re: [RFC] Union mounts/writable overlays design 
-To: Valerie Aurora <vaurora@redhat.com>
-Cc: Jan Blunck <jblunck@suse.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andy Whitcroft <apw@canonical.com>,
-       Scott James Remnant <scott@canonical.com>,
-       Sandu Popa Marius <sandupopamarius@gmail.com>,
-       Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
-       Arnd Bergmann <arnd@arndb.de>, Vladimir Dronnikov <dronnikov@gmail.com>,
-       Felix Fietkau <nbd@openwrt.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091001145547.GA29152@shell>
-References: <20091001145547.GA29152@shell>
-Date: Sat, 03 Oct 2009 00:30:42 +0900
-Message-ID: <15604.1254497442@jrobl>
+	Fri, 2 Oct 2009 11:32:20 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:39312 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756877AbZJBPcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 11:32:16 -0400
+Date: Fri, 2 Oct 2009 11:31:17 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>, Jens Axboe <jens.axboe@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091002153117.GB4494@redhat.com>
+References: <200910021255.27689.czoccolo@gmail.com> <20091002124921.GA4494@redhat.com> <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-Valerie Aurora:
-> Writable overlays (formerly union mounts)
-> =========================================
+On Fri, Oct 02, 2009 at 05:27:55PM +0200, Corrado Zoccolo wrote:
+> On Fri, Oct 2, 2009 at 2:49 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > On Fri, Oct 02, 2009 at 12:55:25PM +0200, Corrado Zoccolo wrote:
+> >
+> > Actually I am not touching this code. Looking at the V10, I have not
+> > changed anything here in idling code.
 > 
-> In this document:
->  - Overview of writable overlays
->  - Terminology
->  - VFS implementation
-	:::
+> I based my analisys on the original patch:
+> http://lkml.indiana.edu/hypermail/linux/kernel/0907.1/01793.html
+> 
 
-While I don't remember exactly when I first read the source files of
-UnionMount, I think it is promising. And I have written to Val and Jan
-some of my comments or reviews about UnionMount.
-Recently I noticed another issue about stat(2) and mountpoint(1). The
-latter is a part of 'initscripts' package.
+Oh.., you are talking about fairness for seeky process patch. I thought
+you are talking about current IO controller patches. Actually they both
+have this notion of "fairness=1" parameter but do different things in 
+patches, hence the confusion. 
 
-For example,
-- you have a union-ed directory, /u = /rw + /ro
-- /ro/usr dir exists
-- /rw/usr dir does NOT exist
-- of course, /u/usr exists
-
-As far as I know, UnionMount is expected to handle /u/usr directory
-as if it exists under /u dir.
-(I may be wrong since it totally depends upon the design of UnionMount)
-
-In this case, stat(2) for /u and /u/usr will return different st_dev
-from each other. eg. stat(/u/usr) returns the st_dev value of /ro,
-stat(/u) returns the one for /rw.
-This behaviour may make /bin/mountpoint confused, particulary in the
-chroot/switch_root-ed environment.
-/bin/mountpoint issues stat(2) for the specified dir and its parent, and
-compares their st_dev. If they differ from each other, the utility
-handles the specified dir as a "mountpoint". I am afraid it will make
-some init-scripts crazy because /u/usr is NOT a mountpoint actually.
-
-One possible solution will be setting a hook to vfs_stat(), which
-handles the vfsmount set UNION flag differently and returns the pseudo
-st_dev for the entires in UnionMount. But it may lead to the duplicated
-inode number situation which may make applications crazy.
-For instance,
-- /ro/fileA is hardlinked to /ro/fileB.
-- the inode number of them is i100.
-- /rw/fileC is handlinked to /rw/fileD.
-- the inode number of them is i100 too.
-
-Since /ro and /rw are different, the same inode number is not a
-problem natively. But if UnionMount takes an approach above, they all
-have the same st_dev value. And I am afraid some applications may
-handle them as a single hardlink unexpectedly.
-
-So UnionMount should maintain its inode numbers by itself?
-No, it goes to the filesystem-type implementation. It should not be the
-way of UnionMount.
-Are there any ideas to solve this problem?
+Thanks
+Vivek
 
 
-J. R. Okajima
+> Mike, can you confirm which version of the fairness patch did you use
+> in your tests?
+> 
+> Corrado
+> 
+> > Thanks
+> > Vivek
+> >
