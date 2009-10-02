@@ -1,42 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757981AbZJBRdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbZJBRkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757981AbZJBRdN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 13:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757969AbZJBRdK
+	id S1757636AbZJBRkN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 13:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbZJBRkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 13:33:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35801 "EHLO ogre.sisk.pl"
+	Fri, 2 Oct 2009 13:40:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49923 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757965AbZJBRdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 13:33:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: 2.6.32-rc1-git2: Reported regressions from 2.6.31
-Date: Fri, 2 Oct 2009 19:34:40 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-References: <9UCePxij8cB.A.VCG.-3SxKB@chimera> <1254437336.3885.68.camel@mulgrave.site>
-In-Reply-To: <1254437336.3885.68.camel@mulgrave.site>
+	id S1754727AbZJBRkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 13:40:12 -0400
+Date: Fri, 2 Oct 2009 10:35:47 -0700
+From: Greg KH <gregkh@suse.de>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: Greg KH <greg@kroah.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [109/136] USB: xhci: Make TRB completion code
+ comparison readable.
+Message-ID: <20091002173547.GA18950@suse.de>
+References: <20091002011548.335611824@mini.kroah.org>
+ <20091002012424.339883108@mini.kroah.org>
+ <4AC62C8C.4060906@csr.com>
+ <20091002165316.GB3890@kroah.com>
+ <4AC636F7.2000506@csr.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910021934.40289.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AC636F7.2000506@csr.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 October 2009, James Bottomley wrote:
-> On Thu, 2009-10-01 at 21:26 +0200, Rafael J. Wysocki wrote:
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14214
-> > Subject         : BUG at drivers/scsi/scsi_lib.c:1108!
-> > Submitter       : Plamen Petrov <pvp-lsts@fs.ru.acad.bg>
-> > Date            : 2009-09-23 11:13 (9 days old)
+On Fri, Oct 02, 2009 at 06:23:03PM +0100, David Vrabel wrote:
+> Greg KH wrote:
+> > On Fri, Oct 02, 2009 at 05:38:36PM +0100, David Vrabel wrote:
+> >> Greg KH wrote:
+> >>> 2.6.31-stable review patch.  If anyone has any objections, please let us know.
+> >>>
+> >>> ------------------
+> >>> From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+> >>>
+> >>> commit 66d1eebce5cca916e0b08d961690bb01c64751ef upstream.
+> >>>
+> >>> Use trb_comp_code instead of getting the completion code from the transfer
+> >>> event every time.
+> >> Are all these xhci patches really candidates for the stable tree?  XHCI
+> >> support is marked as EXPERIMENTAL, the xhci standard is still at the
+> >> draft stage, and I don't believe there are any xhci products available
+> >> on the market yet.
+> > 
+> > Did you read the 000/136 message where I explained why I was accepting
+> > all of these xhci patches into the -stable tree?
 > 
-> This one is fixed (as confirmed by the bug report).
+> I have now, sorry.  It just seemed odd that XHCI patches where added to
+> stable releases whilst essential WHCI patches don't even make it into
+> the current rc tree.
 
-Thanks, closed.
+The WHCI patches were submitted much after the XHCI patches.  The XHCI
+patches were in my tree, and the -next and -mm patches for weeks, it was
+my fault that they didn't make it to Linus earlier.  This is quite
+different from the WHCI patches.
 
-Rafael
+thanks,
+
+greg k-h
