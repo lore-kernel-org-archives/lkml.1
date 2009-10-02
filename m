@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZJBBcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZJBB45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbZJBBcx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 1 Oct 2009 21:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbZJBBcu
+	id S1757244AbZJBB45 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 1 Oct 2009 21:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbZJBBcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 1 Oct 2009 21:32:50 -0400
-Received: from kroah.org ([198.145.64.141]:32994 "EHLO coco.kroah.org"
+	Thu, 1 Oct 2009 21:32:53 -0400
+Received: from kroah.org ([198.145.64.141]:33000 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755064AbZJBBcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 1 Oct 2009 21:32:48 -0400
+	id S1755204AbZJBBct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 1 Oct 2009 21:32:49 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Oct  1 18:24:10 2009
-Message-Id: <20091002012410.020718738@mini.kroah.org>
+Message-Id: <20091002012410.183180872@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 01 Oct 2009 18:16:16 -0700
+Date: Thu, 01 Oct 2009 18:16:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [028/136] xen: check EFER for NX before setting up GDT mapping
+       Ian Schram <ischram@telenet.be>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [029/136] perf_counter: Fix perf_copy_attr() pointer arithmetic
 References: <20091002011548.335611824@mini.kroah.org>
-Content-Disposition: inline; filename=xen-check-efer-for-nx-before-setting-up-gdt-mapping.patch
+Content-Disposition: inline; filename=perf_counter-fix-perf_copy_attr-pointer-arithmetic.patch
 In-Reply-To: <20091002012911.GA18542@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,60 +33,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+From: Ian Schram <ischram@telenet.be>
 
-commit b75fe4e5b869f8dbebd36df64a7fcda0c5b318ed upstream.
+commit cdf8073d6b2c6c5a3cd6ce0e6c1297157f7f99ba upstream.
 
-x86-64 assumes NX is available by default, so we need to
-explicitly check for it before using NX.  Some first-generation
-Intel x86-64 processors didn't support NX, and even recent systems
-allow it to be disabled in BIOS.
+There is still some weird code in per_copy_attr(). Which supposedly
+checks that all bytes trailing a struct are zero.
 
-[ Impact: prevent Xen crash on NX-less 64-bit machines ]
+It doesn't seem to get pointer arithmetic right. Since it
+increments an iterating pointer by sizeof(unsigned long) rather
+than 1.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Ian Schram <ischram@telenet.be>
+[ v2: clean up the messy PTR_ALIGN logic as well. ]
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <4AB3DEE2.3030600@telenet.be>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/Makefile     |    1 +
- arch/x86/xen/enlighten.c |   10 +++++-----
- 2 files changed, 6 insertions(+), 5 deletions(-)
+ kernel/perf_counter.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
---- a/arch/x86/mm/Makefile
-+++ b/arch/x86/mm/Makefile
-@@ -4,6 +4,7 @@ obj-y	:=  init.o init_$(BITS).o fault.o 
- # Make sure __phys_addr has no stackprotector
- nostackp := $(call cc-option, -fno-stack-protector)
- CFLAGS_ioremap.o		:= $(nostackp)
-+CFLAGS_init.o			:= $(nostackp)
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -4143,8 +4143,8 @@ done:
+ static int perf_copy_attr(struct perf_counter_attr __user *uattr,
+ 			  struct perf_counter_attr *attr)
+ {
+-	int ret;
+ 	u32 size;
++	int ret;
  
- obj-$(CONFIG_SMP)		+= tlb.o
+ 	if (!access_ok(VERIFY_WRITE, uattr, PERF_ATTR_SIZE_VER0))
+ 		return -EFAULT;
+@@ -4169,19 +4169,19 @@ static int perf_copy_attr(struct perf_co
  
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1083,6 +1083,11 @@ asmlinkage void __init xen_start_kernel(
- 
- 	__supported_pte_mask |= _PAGE_IOMAP;
- 
-+#ifdef CONFIG_X86_64
-+	/* Work out if we support NX */
-+	check_efer();
-+#endif
-+
- 	xen_setup_features();
- 
- 	/* Get mfn list */
-@@ -1123,11 +1128,6 @@ asmlinkage void __init xen_start_kernel(
- 
- 	pgd = (pgd_t *)xen_start_info->pt_base;
- 
--#ifdef CONFIG_X86_64
--	/* Work out if we support NX */
--	check_efer();
--#endif
+ 	/*
+ 	 * If we're handed a bigger struct than we know of,
+-	 * ensure all the unknown bits are 0.
++	 * ensure all the unknown bits are 0 - i.e. new
++	 * user-space does not rely on any kernel feature
++	 * extensions we dont know about yet.
+ 	 */
+ 	if (size > sizeof(*attr)) {
+-		unsigned long val;
+-		unsigned long __user *addr;
+-		unsigned long __user *end;
 -
- 	/* Don't do the full vcpu_info placement stuff until we have a
- 	   possible map and a non-dummy shared_info. */
- 	per_cpu(xen_vcpu, 0) = &HYPERVISOR_shared_info->vcpu_info[0];
+-		addr = PTR_ALIGN((void __user *)uattr + sizeof(*attr),
+-				sizeof(unsigned long));
+-		end  = PTR_ALIGN((void __user *)uattr + size,
+-				sizeof(unsigned long));
++		unsigned char __user *addr;
++		unsigned char __user *end;
++		unsigned char val;
++
++		addr = (void __user *)uattr + sizeof(*attr);
++		end  = (void __user *)uattr + size;
+ 
+-		for (; addr < end; addr += sizeof(unsigned long)) {
++		for (; addr < end; addr++) {
+ 			ret = get_user(val, addr);
+ 			if (ret)
+ 				return ret;
 
 
