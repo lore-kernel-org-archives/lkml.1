@@ -1,97 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbZJCGGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751422AbZJCGLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752455AbZJCGGa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 02:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbZJCGG3
+	id S1751422AbZJCGLW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 02:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbZJCGLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 02:06:29 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:8365 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbZJCGG3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 02:06:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:date:message-id:subject:from:to:content-type;
-        b=Q9hBMBMXXeF7LLYFbRJ6rtfZxbv5RR6hbqF8ruAMZIE9AVnm9m/eTY4gKc+nrG7tIx
-         mP/5mtp2aUp2R7PAR9jepYJRqEutr8sXWk7ABBDF9Qasn3cb7vUQh/KP8Ga04JN9MJWr
-         WHL0qqNZKbMN0erODZxYQA34Ss9Gnt406rpaE=
+	Sat, 3 Oct 2009 02:11:21 -0400
+Received: from mga14.intel.com ([143.182.124.37]:23979 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750753AbZJCGLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 02:11:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,499,1249282800"; 
+   d="scan'208";a="194672781"
+Date: Sat, 3 Oct 2009 14:10:44 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Subject: Re: regression in page writeback
+Message-ID: <20091003061044.GA3791@localhost>
+References: <20090928071507.GA20068@localhost> <20090928130804.GA25880@infradead.org> <20090928140756.GC17514@mit.edu> <20090930052657.GA17268@localhost> <20090930141158.GG24383@mit.edu> <20091001151429.GB9469@localhost> <20091001215438.GY24383@mit.edu> <20091002025502.GA14246@localhost> <20091002081953.GA14529@localhost> <20091002172620.GB8161@mit.edu>
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-Date: Sat, 3 Oct 2009 08:06:32 +0200
-Message-ID: <cfd18e0f0910022306x2b5fd7ccief4422b145ef051e@mail.gmail.com>
-Subject: man-pages-3.23 is released
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091002172620.GB8161@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+On Sat, Oct 03, 2009 at 01:26:20AM +0800, Theodore Ts'o wrote:
+> On Fri, Oct 02, 2009 at 04:19:53PM +0800, Wu Fengguang wrote:
+> > > > The big writes, if they are contiguous, could take 1-2 seconds
+> > > > on a very slow, ancient laptop disk, and that will hold up any kind of 
+> > > > small synchornous activities --- such as either a disk read or a firefox-
+> > > > triggered fsync().
+> > > 
+> > > Yes, that's a problem. The SYNC/ASYNC elevator queues can help here.
+> 
+> The SYNC/ASYNC queues will partially help, up to the whatever the
+> largest I/O that can issued as a single chunk times the queue depth
+> for those disks that support NCQ. 
+> 
+> > > There's still the problem of IO submission time != IO completion time,
+> > > due to fluctuations of randomness and more. However that's a general
+> > > and unavoidable problem.  Both the wbc.timeout scheme and the
+> > > "wbc.nr_to_write based on estimated throughput" scheme are based on
+> > > _past_ requests and it's simply impossible to have a 100% accurate
+> > > scheme. In principle, wbc.timeout will only be inferior at IO startup
+> > > time. In the steady state of 100% full queue, it is actually estimating
+> > > the IO throughput implicitly :)
+> > 
+> > Another difference between wbc.timeout and adaptive wbc.nr_to_write
+> > is, when there comes many _read_ requests or fsync, these SYNC rw
+> > requests will significant lower the ASYNC writeback throughput, if
+> > it's not completely stalled. So with timeout, the inode will be
+> > aborted with few pages written; with nr_to_write, the inode will be
+> > written a good number of pages, at the cost of taking up long time.
+> > 
+> > IMHO the nr_to_write behavior seems more efficient. What do you think?
+> 
+> I agree, adaptively changing nr_to_write seems like the right thing to
 
-I've released man-pages-3.23.tar.gz - man pages for Linux
+I'd like to estimate the writeback throughput in bdi_writeback_wakeup(),
+where the queue is not starved and the estimation would reflect the max
+device capability (unless there are busy reads, in which case we need
+lower nr_to_write anyway).
 
-This release is now available for download at:
+> do.  For bonus points, we could also monitor how often synchronous I/O
+> operations are happening, allow nr_to_write to go up by some amount if
+> there aren't many synchronous operations happening at the moment.  So
+> that might be another opportunity to do auto-tuning, although this
+> might be a hueristic that might need to be configurable for certain
+> specialized workloads.  For many other workloads, the it should be
+> possible to detect regular pattern of reads and/or synchronous writes,
+> and if so, use a lower nr_to_write versus if there isn't many
+> synchronous I/O operations happening on that particular block device.
 
-http://www.kernel.org/pub/linux/docs/man-pages
-or ftp://ftp.kernel.org/pub/linux/docs/man-pages
+It's not easy to get state of the art SYNC read/write busyness.
+However it is possible to "feel" them through the progress of ASYNC
+writes.
 
-man-pages nowadays also has a public git repository at
+- setup a per-file timeout=3*HZ
+- check this in write_cache_pages:
 
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+        if (half nr_to_write pages written && timeout)
+                break;
 
-The online changelog is available at
-http://www.kernel.org/doc/man-pages/changelog.html
-(blogged at
-http://linux-man-pages.blogspot.com/2009/10/man-pages-323-release-my-book.html )
-and the current version of the pages is browsable at
-http://www.kernel.org/doc/man-pages/
+In this way we back off to nr_to_write/2 if the writeback is blocked
+by some busy READs.
 
-This release consists entirely of fixes to existing pages. An abridged
-list changes that may be of interest to readers of this list is
-provided below.
+I'd choose to implement this advanced feature some time later :)
 
-Cheers,
-
-Michael
-
-==================== Changes in man-pages-3.23 ====================
-
-Released: 2009-09-30, Munich
-
-
-getrusage.2
-    Michael Kerrisk
-        ru_inblock and ru_oublock are now implemented
-            These fields of the rusage structure are filled in since
-            Linux 2.6.22.
-
-mmap.2
-    Michael Kerrisk
-        Add brief documentation of MAP_HUGETLB
-            This flag is new in 2.6.32, and serves a similar
-            purpose to the shmget() SHM_HUGETLB flag.
-
-open.2
-    Christoph Hellwig
-        add some comments on O_SYNC and friends
-
-splice.2
-tee.2
-vmsplice.2
-    Mark Hills
-        Fix return type
-            Since glibc 2.7, the return type for these functions
-            is ssize_t (formerly it was long).
-
-mq_overview.7
-    Michael Kerrisk
-        Change documented ranges for msg_max and msgsize_max
-            Linux 2.6.28 changed the permissible ranges for
-            these /proc files.
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-Author of "The Linux Programming Interface" http://blog.man7.org/
+Thanks,
+Fengguang
