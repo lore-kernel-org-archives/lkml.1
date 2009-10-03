@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbZJCPN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbZJCPPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754294AbZJCPN1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 11:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbZJCPN0
+	id S1756088AbZJCPPY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 11:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbZJCPPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 11:13:26 -0400
-Received: from z2.cat.iki.fi ([212.16.98.133]:58441 "EHLO z2.cat.iki.fi"
+	Sat, 3 Oct 2009 11:15:23 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:44726 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750896AbZJCPNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 11:13:25 -0400
-Date: Sat, 3 Oct 2009 18:12:43 +0300
-From: Matti Aarnio <matti.aarnio@zmailer.org>
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Subject: Re: How to disable drm/kms actions during boot?
-Message-ID: <20091003151243.GG32486@mea-ext.zmailer.org>
-References: <20091003121958.GD32486@mea-ext.zmailer.org> <a728f9f90910030738q4341611fm4ccd680b51201f6d@mail.gmail.com>
+	id S1751019AbZJCPPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 11:15:23 -0400
+Date: Sat, 3 Oct 2009 17:14:45 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Re: Do not overload dispatch queue (Was: Re: IO scheduler based IO
+	controller V10)
+Message-ID: <20091003151445.GF31616@kernel.dk>
+References: <20091002181903.GN31616@kernel.dk> <1254548931.8299.18.camel@marge.simson.net> <1254549378.8299.21.camel@marge.simson.net> <20091003112915.GA12925@redhat.com> <20091003124049.GB12925@redhat.com> <20091003132115.GB31616@kernel.dk> <20091003135623.GD12925@redhat.com> <1254578553.7499.5.camel@marge.simson.net> <20091003142840.GE31616@kernel.dk> <1254581496.8293.8.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a728f9f90910030738q4341611fm4ccd680b51201f6d@mail.gmail.com>
+In-Reply-To: <1254581496.8293.8.camel@marge.simson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 03, 2009 at 10:38:12AM -0400, Alex Deucher wrote:
-> From: Alex Deucher <alexdeucher@gmail.com>
+On Sat, Oct 03 2009, Mike Galbraith wrote:
+> On Sat, 2009-10-03 at 16:28 +0200, Jens Axboe wrote:
+> > On Sat, Oct 03 2009, Mike Galbraith wrote:
+> > > On Sat, 2009-10-03 at 09:56 -0400, Vivek Goyal wrote:
+> > > 
+> > > > I have kept the overload delay period as "cfq_slice_sync" same as Mike had
+> > > > done. We shall have to experiment what is a good waiting perioed. Is 100ms
+> > > > too long if we are waiting for a request from same process which recently
+> > > > finished IO and we did not enable idle on it.
+> > > > 
+> > > > I guess we can tweak the delay period as we move along.
+> > > 
+> > > I kept the delay period very short to minimize possible damage. Without
+> > > the idle thing, it wasn't enough, but with, worked a treat, as does your
+> > > patch.
+> > 
+> > Can you test the current line up of patches in for-linus? It has the
+> > ramp up I talked about included as well.
 > 
-> On Sat, Oct 3, 2009 at 8:19 AM, Matti Aarnio <matti.aarnio@zmailer.org> wrote:
-> > I have a display card + display combination that has recently had much problems
-> > during system boot.  Some system versions boot just fine to very large text mode,
-> > others create entirely black display.
-> >
-> > Is there any way to forbid the DRM from doing "maximize the text display area"
-> > operation at all during the boot?  I do want the DRM/KMS to happen latter, but
-> > NOT during system boot!
+> Well, it hasn't hit git.kernel.org yet, it's at...
 > 
-> Boot with nomodeset or radeon.modeset=0 on the kernel command line.
-> That will disable kernel modesetting at boot.  You can then manually
-> load the modules with or without modesetting once the system is
-> booted.  drm-next also recently got support for forcing the console
-> mode.
+> * block-for-linus        1d22351 cfq-iosched: add a knob for desktop interactiveness
 
-Thanks, that saved the day.  The kernel boots to text console just fine, and when
-I am happy, log in as my non-privileged self and start X, firmware loading and mode
-settings are working correctly.
+It's the top three patches here, kernel.org sync sometimes takes a
+while...
 
-Of course I would be happier without these boot commandline extras, so
-current Fedora 12 (Beta) kernel has some bad radeon drm/dri/kms bits on it.
-Couple of weeks ago things did work just fine with modesetting happening
-early in the boot.  Four weeks ago things failed, and six weeks ago this
-modesetting thing did not exist...
+http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=refs/heads/for-linus
 
-Current kernel is:
-  2.6.31.1-56.fc12.x86_64 #1 SMP
+-- 
+Jens Axboe
 
-> Alex
-
-/Matti Aarnio
