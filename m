@@ -1,137 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZJCPt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbZJCP6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbZJCPt6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 11:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbZJCPt5
+	id S1756303AbZJCP6E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 11:58:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbZJCP6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 11:49:57 -0400
-Received: from mga05.intel.com ([192.55.52.89]:4195 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753047AbZJCPt4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 11:49:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,499,1249282800"; 
-   d="scan'208";a="732742087"
-Date: Sat, 3 Oct 2009 08:48:44 -0700
-From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Subject: Re: Annoying problems with lacie external hd (JMicron 0x2339?)
-Message-ID: <20091003154844.GA24819@xanatos>
-References: <94a0d4530910030335p2eae17a6wddf6d87b7f60b712@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <94a0d4530910030335p2eae17a6wddf6d87b7f60b712@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 3 Oct 2009 11:58:03 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51149 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752335AbZJCP6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 11:58:03 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/v6lcjzMbvTqAc0nNzLosQcj1gjPfAapZlHt2qEs
+	kRroAsJXmzjtWe
+Subject: Re: Do not overload dispatch queue (Was: Re: IO scheduler based IO
+ controller V10)
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+In-Reply-To: <20091003151445.GF31616@kernel.dk>
+References: <20091002181903.GN31616@kernel.dk>
+	 <1254548931.8299.18.camel@marge.simson.net>
+	 <1254549378.8299.21.camel@marge.simson.net>
+	 <20091003112915.GA12925@redhat.com> <20091003124049.GB12925@redhat.com>
+	 <20091003132115.GB31616@kernel.dk> <20091003135623.GD12925@redhat.com>
+	 <1254578553.7499.5.camel@marge.simson.net>
+	 <20091003142840.GE31616@kernel.dk>
+	 <1254581496.8293.8.camel@marge.simson.net>
+	 <20091003151445.GF31616@kernel.dk>
+Content-Type: text/plain
+Date: Sat, 03 Oct 2009 17:57:00 +0200
+Message-Id: <1254585420.7539.2.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 03, 2009 at 01:35:58PM +0300, Felipe Contreras wrote:
-> Hi,
+On Sat, 2009-10-03 at 17:14 +0200, Jens Axboe wrote:
+> On Sat, Oct 03 2009, Mike Galbraith wrote:
+> > On Sat, 2009-10-03 at 16:28 +0200, Jens Axboe wrote:
+> > > On Sat, Oct 03 2009, Mike Galbraith wrote:
+> > > > On Sat, 2009-10-03 at 09:56 -0400, Vivek Goyal wrote:
+> > > > 
+> > > > > I have kept the overload delay period as "cfq_slice_sync" same as Mike had
+> > > > > done. We shall have to experiment what is a good waiting perioed. Is 100ms
+> > > > > too long if we are waiting for a request from same process which recently
+> > > > > finished IO and we did not enable idle on it.
+> > > > > 
+> > > > > I guess we can tweak the delay period as we move along.
+> > > > 
+> > > > I kept the delay period very short to minimize possible damage. Without
+> > > > the idle thing, it wasn't enough, but with, worked a treat, as does your
+> > > > patch.
+> > > 
+> > > Can you test the current line up of patches in for-linus? It has the
+> > > ramp up I talked about included as well.
+> > 
+> > Well, it hasn't hit git.kernel.org yet, it's at...
+> > 
+> > * block-for-linus        1d22351 cfq-iosched: add a knob for desktop interactiveness
 > 
-> This is with 2.6.31.1.
+> It's the top three patches here, kernel.org sync sometimes takes a
+> while...
 > 
-> I'm having a lot of problems with a lacie external hd[1]. It seems the
-> actual disk is a seagate ST375064, and the bridge is a JMicron 2339.
-> 
-> In normal usage what I see is that if I don't use the disk after a
-> while hear a loud click (as if something got stuck) and then I cannot
-> use it any more; I have to turn it off and on again.
-> 
-> But then I started to see some problems on one fs, so I ran badblocks
-> and I noticed a lot of strange behavior. It seems once I get a
-> read/write error then I get more of them in a row, and after a while I
-> hear another loud click, and then I only get read/write errors
-> constantly.
-> 
-> I noticed in 'unusual_devs.h' there's already a quirk for another
-> JMicron product, so I tried to do the same:
-> 
-> +UNUSUAL_DEV(  0x152d, 0x2339, 0x0000, 0xffff,
-> +               "JMicron",
-> +               "USB to ATA/ATAPI Bridge",
-> +               US_SC_DEVICE, US_PR_DEVICE, NULL,
-> +               US_FL_IGNORE_RESIDUE | US_FL_SANE_SENSE ),
-> 
-> This seemed to help with the consecutive errors, but not with the loud click.
-> 
-> This is what I get when this click happens:
-> 
-> Oct  3 13:14:54 annwn kernel: [  351.099096] usb 1-1: reset high speed
-> USB device using ehci_hcd and address 3
-> Oct  3 13:14:54 annwn kernel: [  351.213541] usb 1-1: device firmware changed
-> Oct  3 13:14:54 annwn kernel: [  351.213588] usb 1-1: USB disconnect, address 3
-> Oct  3 13:14:54 annwn kernel: [  351.213633] sd 4:0:0:0: Device
-> offlined - not ready after error recovery
-> Oct  3 13:14:54 annwn kernel: [  351.213650] sd 4:0:0:0: [sdb]
-> Unhandled error code
-> Oct  3 13:14:54 annwn kernel: [  351.213655] sd 4:0:0:0: [sdb] Result:
-> hostbyte=DID_ABORT driverbyte=DRIVER_OK
-> Oct  3 13:14:54 annwn kernel: [  351.213663] end_request: I/O error,
-> dev sdb, sector 8596352
-> Oct  3 13:14:54 annwn kernel: [  351.213774] sd 4:0:0:0: rejecting I/O
-> to offline device
-> Oct  3 13:14:54 annwn kernel: [  351.213816] sd 4:0:0:0: rejecting I/O
-> to offline device
-> Oct  3 13:14:54 annwn kernel: [  351.213852] sd 4:0:0:0: rejecting I/O
-> to offline device
-> Oct  3 13:14:54 annwn kernel: [  351.213891] sd 4:0:0:0: rejecting I/O
-> to offline device
-> Oct  3 13:14:54 annwn kernel: [  351.213927] sd 4:0:0:0: rejecting I/O
-> to offline device
-> Oct  3 13:14:54 annwn kernel: [  351.213962] sd 4:0:0:0: rejecting I/O
-> to offline device
-> Oct  3 13:14:54 annwn kernel: [  351.213997] sd 4:0:0:0: rejecting I/O
-> to offline device
-> Oct  3 13:14:54 annwn kernel: [  351.214202] sd 4:0:0:0: rejecting I/O
-> to offline device
-> Oct  3 13:14:55 annwn kernel: [  351.317278] usb 1-1: new high speed
-> USB device using ehci_hcd and address 4
-> Oct  3 13:14:55 annwn kernel: [  351.432192] usb 1-1: New USB device
-> found, idVendor=152d, idProduct=2339
-> Oct  3 13:14:55 annwn kernel: [  351.432196] usb 1-1: New USB device
-> strings: Mfr=1, Product=2, SerialNumber=5
-> Oct  3 13:14:55 annwn kernel: [  351.432199] usb 1-1: Product: USB to
-> ATA/ATAPI Bridge
-> Oct  3 13:14:55 annwn kernel: [  351.432202] usb 1-1: Manufacturer: JMicron
-> Oct  3 13:14:55 annwn kernel: [  351.432204] usb 1-1: SerialNumber: 5D27FFFFFFFF
-> Oct  3 13:14:55 annwn kernel: [  351.432321] usb 1-1: configuration #1
-> chosen from 1 choice
-> Oct  3 13:14:55 annwn kernel: [  351.432791] scsi5 : SCSI emulation
-> for USB Mass Storage devices
-> 
-> Can anyone help? This disk is important for me =/
+> http://git.kernel.dk/?p=linux-2.6-block.git;a=shortlog;h=refs/heads/for-linus
 
-The log shows the device just disconnected from the system.  You should
-post more of the logfile before the disconnect so we can see if it's an
-issue with the USB core.  Did it work with a previous kernel?
+Ok, already had the first two in, added the last.
 
-It could be that your disk is just dying, and occasionally
-disconnecting.  Or you could have a bad cable or a hub that's
-introducing noise.  Can you try a different USB cable?
+Entered uncharted territory for konsole -e exit, but lost a bit of
+throughput for home-brew concurrent git test.
 
-Sarah Sharp
+perf stat      1.70     1.94     1.32     1.89     1.87    1.7     fairness=1 overload_delay=1
+               1.55     1.79     1.38     1.53     1.57    1.5     desktop=1 +last_end_sync
+               1.09     0.87     1.11     0.96     1.11    1.0     block-for-linus
 
-> T:  Bus=01 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#= 62 Spd=480 MxCh= 0
-> D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
-> P:  Vendor=152d ProdID=2339 Rev= 1.00
-> S:  Manufacturer=JMicron
-> S:  Product=USB to ATA/ATAPI Bridge
-> S:  SerialNumber=152D203380B6
-> C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr=  2mA
-> I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
-> E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-> E:  Ad=02(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-> 
-> [1] http://www.lacie.com/us/products/product.htm?pid=11016
-> 
-> -- 
-> Felipe Contreras
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+perf stat testo.sh                               Avg
+108.12   106.33    106.34    97.00    106.52   104.8  1.000 fairness=0 overload_delay=0
+ 93.98   102.44     94.47    97.70     98.90    97.4   .929 fairness=0 overload_delay=1
+ 90.87    95.40     95.79    93.09     94.25    93.8   .895 fairness=1 overload_delay=0
+ 89.93    90.57     89.13    93.43     93.72    91.3   .871 fairness=1 overload_delay=1
+ 89.81    88.82     91.56    96.57     89.38    91.2   .870 desktop=1 +last_end_sync
+ 92.61    94.60     92.35    93.17     94.05    93.3   .890 block-for-linus
+
+	-Mike
+
