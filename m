@@ -1,74 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751924AbZJCGYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbZJCGbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751924AbZJCGYv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 02:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbZJCGYu
+	id S1752948AbZJCGbR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 02:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZJCGbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 02:24:50 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:62985 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbZJCGYt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 02:24:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=nx2OAi5ihYmTlNemnXhiFfIHqj77qCwu0lQLEibYdj5cJQbFxcJTJoQMlKEu3/iKlb
-         FjEfd2d3rtRxbsKpKa6L+qcIpf8DgkdWgVhTMqMx/zs1ZIt2aJmWDfyIi02+sH19OcNx
-         fs6mdsX6X161MsjCuupqCbkkkkHef1kXMiFVQ=
-MIME-Version: 1.0
-Date: Sat, 3 Oct 2009 12:24:53 +0600
-Message-ID: <b9df5fa10910022324u1d91b4d0oe051ef45dd347cbc@mail.gmail.com>
-Subject: [Resend][PATCH] eeepc-laptop: Properly annote eeepc_enable_camera().
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: corentincj@iksaif.net
-Cc: acpi4asus-user@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 3 Oct 2009 02:31:16 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51152 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751542AbZJCGbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 02:31:15 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18Vxbhr2I4VKSdYE8VrnMyHNquUdv32lydywlViSm
+	YNwQf1bRk8DSK9
+Subject: tweaking IO latency [was Re: IO scheduler based IO controller V10]
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+In-Reply-To: <1254549378.8299.21.camel@marge.simson.net>
+References: <20091002092839.GA26962@kernel.dk>
+	 <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain>
+	 <20091002145610.GD31616@kernel.dk>
+	 <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain>
+	 <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu>
+	 <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu>
+	 <20091002173732.GK31616@kernel.dk>
+	 <1254507215.8667.7.camel@marge.simson.net>
+	 <20091002181903.GN31616@kernel.dk>
+	 <1254548931.8299.18.camel@marge.simson.net>
+	 <1254549378.8299.21.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Sat, 03 Oct 2009 08:31:06 +0200
+Message-Id: <1254551466.7716.4.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Currently the annotation for function eeepc_enable_camera() is
-__init, and refers to a
-function eeepc_hotk_add() which is non-init. Use __devinit for both
-functions which is
-more appropriate and fixes a section mismatch warning.
+P.S.  now may be a good time to finally exit thread (and maybe trim cc?)
 
- We were warned by the following warning:
+On Sat, 2009-10-03 at 07:56 +0200, Mike Galbraith wrote:
+> On Sat, 2009-10-03 at 07:49 +0200, Mike Galbraith wrote:
+> > On Fri, 2009-10-02 at 20:19 +0200, Jens Axboe wrote:
+> > 
+> > > If you could do a cleaned up version of your overload patch based on
+> > > this:
+> > > 
+> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=1d2235152dc745c6d94bedb550fea84cffdbf768
+> > > 
+> > > then lets take it from there.
+> 
+> Note to self: build the darn thing after last minute changes.
+> 
+> Block:  Delay overloading of CFQ queues to improve read latency.
+> 
+> Introduce a delay maximum dispatch timestamp, and stamp it when:
+>         1. we encounter a known seeky or possibly new sync IO queue.
+>         2. the current queue may go idle and we're draining async IO.
+>         3. we have sync IO in flight and are servicing an async queue.
+>         4  we are not the sole user of disk.
+> Disallow exceeding quantum if any of these events have occurred recently.
+> 
+> Protect this behavioral change with a "desktop_dispatch" knob and default
+> it to "on".. providing an easy means of regression verification prior to
+> hate-mail dispatch :) to CC list.
+> 
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> ... others who let somewhat hacky tweak slip by
+> 
+> ---
+>  block/cfq-iosched.c |   45 +++++++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 41 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/block/cfq-iosched.c
+> ===================================================================
+> --- linux-2.6.orig/block/cfq-iosched.c
+> +++ linux-2.6/block/cfq-iosched.c
+> @@ -174,6 +174,9 @@ struct cfq_data {
+>  	unsigned int cfq_slice_async_rq;
+>  	unsigned int cfq_slice_idle;
+>  	unsigned int cfq_desktop;
+> +	unsigned int cfq_desktop_dispatch;
+> +
+> +	unsigned long desktop_dispatch_ts;
+>  
+>  	struct list_head cic_list;
+>  
+> @@ -1283,6 +1286,7 @@ static int cfq_dispatch_requests(struct
+>  	struct cfq_data *cfqd = q->elevator->elevator_data;
+>  	struct cfq_queue *cfqq;
+>  	unsigned int max_dispatch;
+> +	unsigned long delay;
+>  
+>  	if (!cfqd->busy_queues)
+>  		return 0;
+> @@ -1297,19 +1301,26 @@ static int cfq_dispatch_requests(struct
+>  	/*
+>  	 * Drain async requests before we start sync IO
+>  	 */
+> -	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
+> +	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC]) {
+> +		cfqd->desktop_dispatch_ts = jiffies;
+>  		return 0;
+> +	}
+>  
+>  	/*
+>  	 * If this is an async queue and we have sync IO in flight, let it wait
+>  	 */
+> -	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
+> +	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq)) {
+> +		cfqd->desktop_dispatch_ts = jiffies;
+>  		return 0;
+> +	}
+>  
+>  	max_dispatch = cfqd->cfq_quantum;
+>  	if (cfq_class_idle(cfqq))
+>  		max_dispatch = 1;
+>  
+> +	if (cfqd->busy_queues > 1)
+> +		cfqd->desktop_dispatch_ts = jiffies;
+> +
+>  	/*
+>  	 * Does this cfqq already have too much IO in flight?
+>  	 */
+> @@ -1327,6 +1338,16 @@ static int cfq_dispatch_requests(struct
+>  			return 0;
+>  
+>  		/*
+> +		 * Don't start overloading until we've been alone for a bit.
+> +		 */
+> +		if (cfqd->cfq_desktop_dispatch) {
+> +			delay = cfqd->desktop_dispatch_ts + cfq_slice_sync;
+> +
+> +			if (time_before(jiffies, max_delay))
+> +				return 0;
+> +		}
+> +
+> +		/*
+>  		 * we are the only queue, allow up to 4 times of 'quantum'
+>  		 */
+>  		if (cfqq->dispatched >= 4 * max_dispatch)
+> @@ -1942,7 +1963,7 @@ static void
+>  cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>  		       struct cfq_io_context *cic)
+>  {
+> -	int old_idle, enable_idle;
+> +	int old_idle, enable_idle, seeky = 0;
+>  
+>  	/*
+>  	 * Don't idle for async or idle io prio class
+> @@ -1950,10 +1971,20 @@ cfq_update_idle_window(struct cfq_data *
+>  	if (!cfq_cfqq_sync(cfqq) || cfq_class_idle(cfqq))
+>  		return;
+>  
+> +	if (cfqd->hw_tag) {
+> +		if (CIC_SEEKY(cic))
+> +			seeky = 1;
+> +		/*
+> +		 * If seeky or incalculable seekiness, delay overloading.
+> +		 */
+> +		if (seeky || !sample_valid(cic->seek_samples))
+> +			cfqd->desktop_dispatch_ts = jiffies;
+> +	}
+> +
+>  	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
+>  
+>  	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
+> -	    (!cfqd->cfq_desktop && cfqd->hw_tag && CIC_SEEKY(cic)))
+> +	    (!cfqd->cfq_desktop && seeky))
+>  		enable_idle = 0;
+>  	else if (sample_valid(cic->ttime_samples)) {
+>  		if (cic->ttime_mean > cfqd->cfq_slice_idle)
+> @@ -2483,6 +2514,9 @@ static void *cfq_init_queue(struct reque
+>  	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
+>  	cfqd->cfq_slice_idle = cfq_slice_idle;
+>  	cfqd->cfq_desktop = 1;
+> +	cfqd->cfq_desktop_dispatch = 1;
+> +
+> +	cfqd->desktop_dispatch_ts = INITIAL_JIFFIES;
+>  	cfqd->hw_tag = 1;
+>  
+>  	return cfqd;
+> @@ -2553,6 +2587,7 @@ SHOW_FUNCTION(cfq_slice_sync_show, cfqd-
+>  SHOW_FUNCTION(cfq_slice_async_show, cfqd->cfq_slice[0], 1);
+>  SHOW_FUNCTION(cfq_slice_async_rq_show, cfqd->cfq_slice_async_rq, 0);
+>  SHOW_FUNCTION(cfq_desktop_show, cfqd->cfq_desktop, 0);
+> +SHOW_FUNCTION(cfq_desktop_dispatch_show, cfqd->cfq_desktop_dispatch, 0);
+>  #undef SHOW_FUNCTION
+>  
+>  #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
+> @@ -2585,6 +2620,7 @@ STORE_FUNCTION(cfq_slice_async_store, &c
+>  STORE_FUNCTION(cfq_slice_async_rq_store, &cfqd->cfq_slice_async_rq, 1,
+>  		UINT_MAX, 0);
+>  STORE_FUNCTION(cfq_desktop_store, &cfqd->cfq_desktop, 0, 1, 0);
+> +STORE_FUNCTION(cfq_desktop_dispatch_store, &cfqd->cfq_desktop_dispatch, 0, 1, 0);
+>  #undef STORE_FUNCTION
+>  
+>  #define CFQ_ATTR(name) \
+> @@ -2601,6 +2637,7 @@ static struct elv_fs_entry cfq_attrs[] =
+>  	CFQ_ATTR(slice_async_rq),
+>  	CFQ_ATTR(slice_idle),
+>  	CFQ_ATTR(desktop),
+> +	CFQ_ATTR(desktop_dispatch),
+>  	__ATTR_NULL
+>  };
+>  
+> 
 
-  LD      drivers/platform/x86/built-in.o
-WARNING: drivers/platform/x86/built-in.o(.text+0x12e1): Section
-mismatch in reference from the function eeepc_hotk_add() to the
-function .init.text:eeepc_enable_camera()
-The function eeepc_hotk_add() references
-the function __init eeepc_enable_camera().
-This is often because eeepc_hotk_add lacks a __init
-annotation or the annotation of eeepc_enable_camera is wrong.
-
----
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-
---- linus/drivers/platform/x86/eeepc-laptop.c	2009-10-03
-12:44:40.000000000 +0600
-+++ rakib/drivers/platform/x86/eeepc-laptop.c	2009-10-03
-12:48:42.000000000 +0600
-@@ -350,7 +350,7 @@ static const struct rfkill_ops eeepc_rfk
- 	.set_block = eeepc_rfkill_set,
- };
-
--static void __init eeepc_enable_camera(void)
-+static void __devinit eeepc_enable_camera(void)
- {
- 	/*
- 	 * If the following call to set_acpi() fails, it's because there's no
-@@ -1189,7 +1189,7 @@ static int eeepc_input_init(struct devic
- 	return 0;
- }
-
--static int eeepc_hotk_add(struct acpi_device *device)
-+static int __devinit eeepc_hotk_add(struct acpi_device *device)
- {
- 	struct device *dev;
- 	int result;
