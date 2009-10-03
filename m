@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbZJCTeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbZJCTfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756938AbZJCTeJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 15:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbZJCTeI
+	id S1757062AbZJCTfp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 15:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbZJCTfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 15:34:08 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48043 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756865AbZJCTeI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 15:34:08 -0400
-Message-ID: <4AC7A6FF.8040002@cs.helsinki.fi>
-Date: Sat, 03 Oct 2009 22:33:19 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Sat, 3 Oct 2009 15:35:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39664 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756890AbZJCTfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 15:35:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 01/19] freezer: don't get over-anxious while waiting
+Date: Sat, 3 Oct 2009 21:36:36 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Matt Helsley <matthltc@us.ibm.com>, Oren Laadan <orenl@librato.com>,
+       Pavel Machek <pavel@ucw.cz>, jeff@garzik.org, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       jens.axboe@oracle.com, rusty@rustcorp.com.au, cl@linux-foundation.org,
+       dhowells@redhat.com, arjan@linux.intel.com,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <1254384558-1018-1-git-send-email-tj@kernel.org> <200910022321.11796.rjw@sisk.pl> <4AC69E3F.80301@kernel.org>
+In-Reply-To: <4AC69E3F.80301@kernel.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: cl@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       rusty@rustcorp.com.au
-Subject: Re: [this_cpu_xx V4 02/20] this_cpu: X86 optimized this_cpu	operations
-References: <20091001212521.123389189@gentwo.org> <20091001212557.963565363@gentwo.org> <20091002095916.GA26201@elte.hu>
-In-Reply-To: <20091002095916.GA26201@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910032136.36691.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Ingo Molnar wrote:
-> * cl@linux-foundation.org <cl@linux-foundation.org> wrote:
+On Saturday 03 October 2009, Tejun Heo wrote:
+> Hello, Rafael.
 > 
->> Basically the existing percpu ops can be used for this_cpu variants 
->> that allow operations also on dynamically allocated percpu data. 
->> However, we do not pass a reference to a percpu variable in. Instead a 
->> dynamically or statically allocated percpu variable is provided.
->>
->> Preempt, the non preempt and the irqsafe operations generate the same 
->> code. It will always be possible to have the requires per cpu 
->> atomicness in a single RMW instruction with segment override on x86.
->>
->> 64 bit this_cpu operations are not supported on 32 bit.
->>
->> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> Rafael J. Wysocki wrote:
+> > Tejun, do you want me to take the patch or is it more convenient to you to
+> > push it yourself?
 > 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
+> Please take the patch.  As long as it's in a stable git tree, it
+> should be fine for me.
 
-I haven't looked at the series in detail but AFAICT the SLUB patches 
-depend on the x86 ones. Any suggestions how to get all this into 
-linux-next? Should I make a topic branch in slab.git on top of -tip or 
-something?
+OK, I'll put it into suspend-2.6/for-linus, but first it'll stay in
+suspend-2.6/linux-next for a few days.
 
-			Pekka
+> > Also, care to respond to my previous comment?
+> 
+> About the comment?  Dropping it is fine.  Do you want me to resend the
+> patch w/o the comment?
+
+No, thanks. 
+
+Best,
+Rafael
