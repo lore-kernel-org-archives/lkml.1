@@ -1,88 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZJCOuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbZJCOwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753599AbZJCOuA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 10:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbZJCOt7
+	id S1755126AbZJCOwc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 10:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZJCOwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 10:49:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52919 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751237AbZJCOt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 10:49:58 -0400
-Date: Sat, 3 Oct 2009 16:49:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: drago01 <drago01@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       kernel list <linux-kernel@vger.kernel.org>, mingo@redhat.com,
-       Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: sched regression introduced by NO_NEW_FAIR_SLEEPERS
-Message-ID: <20091003144957.GA27943@elte.hu>
-References: <f6ca9fed0909271247k7fad64b1g1c4c65544196d7ac@mail.gmail.com> <f6ca9fed0909271250h61e2ce94n31c9f23e835f802c@mail.gmail.com> <20091003104723.GC15919@elte.hu> <f6ca9fed0910030623m3cde192br7e1a3256b3cf7838@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <f6ca9fed0910030623m3cde192br7e1a3256b3cf7838@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 3 Oct 2009 10:52:31 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53872 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752376AbZJCOwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 10:52:30 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18vhPwhdRcvRM7gK7Guw0Uw+bt8ruWs2GdppsXg+9
+	w3r67kgSALKFMh
+Subject: Re: Do not overload dispatch queue (Was: Re: IO scheduler based IO
+ controller V10)
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+In-Reply-To: <20091003142840.GE31616@kernel.dk>
+References: <20091002173732.GK31616@kernel.dk>
+	 <1254507215.8667.7.camel@marge.simson.net>
+	 <20091002181903.GN31616@kernel.dk>
+	 <1254548931.8299.18.camel@marge.simson.net>
+	 <1254549378.8299.21.camel@marge.simson.net>
+	 <20091003112915.GA12925@redhat.com> <20091003124049.GB12925@redhat.com>
+	 <20091003132115.GB31616@kernel.dk> <20091003135623.GD12925@redhat.com>
+	 <1254578553.7499.5.camel@marge.simson.net>
+	 <20091003142840.GE31616@kernel.dk>
+Content-Type: text/plain
+Date: Sat, 03 Oct 2009 16:51:36 +0200
+Message-Id: <1254581496.8293.8.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* drago01 <drago01@gmail.com> wrote:
-
-> On Sat, Oct 3, 2009 at 12:47 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * drago01 <drago01@gmail.com> wrote:
-> >
-> >> On Sun, Sep 27, 2009 at 9:47 PM, drago01 <drago01@gmail.com> wrote:
-> >> > Hi,
-> >> >
-> >> > Chuck has backported some scheduler patches from 2.6.32 to the fedora kernel.
-> >> >
-> >> > I did the following test to test the new scheduler (cpu is a core i7
-> >> > 920 4 cores + HT).
-> >> >
-> >> > run 8 "md5sum /dev/urandom" task and try to use the desktop (compiz).
-> >> >
-> >> > The result was that moving windows or rotating the cube is very slow.
-> >> > (same happens with pure metacity but is is worse in compiz).
-> >> >
-> >> > Mounting debugfs and doing "echo NEW_FAIR_SLEEPERS > sched_features"
-> >> > results into a useable desktop while the 8 md5sum tasks are running
-> >> > (ie. the system behaves as if they where not running at all from an
-> >> > interactivity pov).
-> >> >
-> >> >
-> >> > P.S: please CC me when replying.
-> >> >
-> >>
-> >> With "NEW_FAIR_SLEEPERS" I can even run 100(!)  "md5sum" task without
-> >> any effect on interactivity. (still have not found a number of tasks
-> >> needed to make the system unresponsive as with 8 with
-> >> "NO_NEW_FAIR_SLEEPERS".
-> >
-> > Can you try the latest -tip tree please:
-> >
-> >  http://people.redhat.com/mingo/tip.git/README
-> >
-> > There we default to FAIR_SLEEPERS + GENTLE_FAIR_SLEEPERS - which should
-> > give much of the new-fair-sleepers advantage.
+On Sat, 2009-10-03 at 16:28 +0200, Jens Axboe wrote:
+> On Sat, Oct 03 2009, Mike Galbraith wrote:
+> > On Sat, 2009-10-03 at 09:56 -0400, Vivek Goyal wrote:
+> > 
+> > > I have kept the overload delay period as "cfq_slice_sync" same as Mike had
+> > > done. We shall have to experiment what is a good waiting perioed. Is 100ms
+> > > too long if we are waiting for a request from same process which recently
+> > > finished IO and we did not enable idle on it.
+> > > 
+> > > I guess we can tweak the delay period as we move along.
+> > 
+> > I kept the delay period very short to minimize possible damage. Without
+> > the idle thing, it wasn't enough, but with, worked a treat, as does your
+> > patch.
 > 
-> OK, with this kernel it works fine (can spam the system with md5sum 
-> tasks and the desktop is still responsive).
->
-> Was able to use the system with 129 "md5sum /dev/urandom" running.
+> Can you test the current line up of patches in for-linus? It has the
+> ramp up I talked about included as well.
 
-ok, great!
+Well, it hasn't hit git.kernel.org yet, it's at...
 
-Those changes are in Linus's latest tree as well.
+* block-for-linus        1d22351 cfq-iosched: add a knob for desktop interactiveness
 
-	Ingo
+	-Mike
+
