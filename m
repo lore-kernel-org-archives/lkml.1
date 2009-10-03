@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751684AbZJCGXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751924AbZJCGYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751684AbZJCGXo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 02:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbZJCGXn
+	id S1751924AbZJCGYv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 02:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbZJCGYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 02:23:43 -0400
-Received: from mail-px0-f179.google.com ([209.85.216.179]:39358 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbZJCGXn (ORCPT
+	Sat, 3 Oct 2009 02:24:50 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:62985 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbZJCGYt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 02:23:43 -0400
+	Sat, 3 Oct 2009 02:24:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Mj+Zmr1G0K2o3/b1MzxbBvAA259BEJAdqZr/uPt1x4qOCBD9hK6xMUhE+t5EHL05b3
-         +jN357dvR4xUHguyfcqfPFVp8kwOgW88mQ4XB9J2f7sqaE4Cg63Pr/+NwjxNm9AH3Id1
-         E4HC0nKhquh1mej8NvYpaj3qCbbIf1a4PmiEw=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=nx2OAi5ihYmTlNemnXhiFfIHqj77qCwu0lQLEibYdj5cJQbFxcJTJoQMlKEu3/iKlb
+         FjEfd2d3rtRxbsKpKa6L+qcIpf8DgkdWgVhTMqMx/zs1ZIt2aJmWDfyIi02+sH19OcNx
+         fs6mdsX6X161MsjCuupqCbkkkkHef1kXMiFVQ=
 MIME-Version: 1.0
-In-Reply-To: <200910021535.27820.corentincj@iksaif.net>
-References: <b9df5fa10910012231u38f49eeeoe1d0bcc9eafd53d6@mail.gmail.com>
-	 <200910021535.27820.corentincj@iksaif.net>
-Date: Sat, 3 Oct 2009 12:23:46 +0600
-Message-ID: <b9df5fa10910022323x1031c183ka1f2d540a6e1226e@mail.gmail.com>
-Subject: Re: [PATCH] eeepc_laptop: Properly annote eeepc_enable_camera().
+Date: Sat, 3 Oct 2009 12:24:53 +0600
+Message-ID: <b9df5fa10910022324u1d91b4d0oe051ef45dd347cbc@mail.gmail.com>
+Subject: [Resend][PATCH] eeepc-laptop: Properly annote eeepc_enable_camera().
 From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Corentin Chary <corentincj@iksaif.net>
-Cc: acpi4asus-user@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+To: corentincj@iksaif.net
+Cc: acpi4asus-user@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/2/09, Corentin Chary <corentincj@iksaif.net> wrote:
->  Hi,
->  Your patch is broken, probably due to wordwrap.
+ Currently the annotation for function eeepc_enable_camera() is
+__init, and refers to a
+function eeepc_hotk_add() which is non-init. Use __devinit for both
+functions which is
+more appropriate and fixes a section mismatch warning.
 
-Hi Corentin, not sure how it got broken. On my system it applies well.
-And this is the way I usually send patches.
+ We were warned by the following warning:
 
->  $ git am /tmp/\[PATCH\]\ eeepc_laptop\:\ Properly\ annote\ eeepc_enable_camera\(\)
->  Applying: eeepc_laptop: Properly annote eeepc_enable_camera().
->  fatal: patch fragment without header at line 5: @@ -350,7 +350,7 @@ static const struct rfkill_ops eeepc_rfk
->  Patch failed at 0001 eeepc_laptop: Properly annote eeepc_enable_camera().
->
->  Please re-send it (you can use git send-emails).
-Okay, I'm re-sending it.
->  Also, please name it eeepc-laptop, not eeepc_laptop
->  Thanks,
+  LD      drivers/platform/x86/built-in.o
+WARNING: drivers/platform/x86/built-in.o(.text+0x12e1): Section
+mismatch in reference from the function eeepc_hotk_add() to the
+function .init.text:eeepc_enable_camera()
+The function eeepc_hotk_add() references
+the function __init eeepc_enable_camera().
+This is often because eeepc_hotk_add lacks a __init
+annotation or the annotation of eeepc_enable_camera is wrong.
 
-Thanks,
-Rakib
+---
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
 
->  --
->  Corentin Chary
->  http://xf.iksaif.net
->
+--- linus/drivers/platform/x86/eeepc-laptop.c	2009-10-03
+12:44:40.000000000 +0600
++++ rakib/drivers/platform/x86/eeepc-laptop.c	2009-10-03
+12:48:42.000000000 +0600
+@@ -350,7 +350,7 @@ static const struct rfkill_ops eeepc_rfk
+ 	.set_block = eeepc_rfkill_set,
+ };
+
+-static void __init eeepc_enable_camera(void)
++static void __devinit eeepc_enable_camera(void)
+ {
+ 	/*
+ 	 * If the following call to set_acpi() fails, it's because there's no
+@@ -1189,7 +1189,7 @@ static int eeepc_input_init(struct devic
+ 	return 0;
+ }
+
+-static int eeepc_hotk_add(struct acpi_device *device)
++static int __devinit eeepc_hotk_add(struct acpi_device *device)
+ {
+ 	struct device *dev;
+ 	int result;
