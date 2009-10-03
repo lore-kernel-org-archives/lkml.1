@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbZJCKV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbZJCK32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754727AbZJCKV2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 06:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbZJCKV1
+	id S1754770AbZJCK32 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 06:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbZJCK32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 06:21:27 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:58569 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754490AbZJCKV0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 06:21:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Uz6J3OFjQgsb3Z6VaELFg1C8JJ7pl2jDaEVxSYTEBuUZhRMRV+N+XVpq8ZGu+d7KrY
-         AsYP7edXc1oJp+zg/AmBB4khS7MptuNX6railPdUr04H0m5Bs8KgeZaYttaKlnAasmtZ
-         sN7AGrXrnCIYHazLbrv3l6xh2mxNdb8FUwPBM=
-Date: Sat, 3 Oct 2009 12:21:25 +0200
-From: Johan Hovold <jhovold@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Johan Hovold <jhovold@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
-       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
-Message-ID: <20091003102125.GA605@localhost>
-References: <200909242103.48562.oliver@neukum.org>
- <20090924202107.4730f2af@lxorguk.ukuu.org.uk>
- <20090924211459.GB27963@localhost>
- <4ABD020B.4040901@gandalf.sssup.it>
- <20090929145514.GF2152@localhost>
- <20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
- <m163ayzevu.fsf@fess.ebiederm.org>
- <20091002084755.GA7382@localhost>
- <20091002173308.6158d734@lxorguk.ukuu.org.uk>
- <m11vllxwd7.fsf@fess.ebiederm.org>
+	Sat, 3 Oct 2009 06:29:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50799 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751401AbZJCK31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 06:29:27 -0400
+Message-ID: <4AC7279B.3050901@kernel.org>
+Date: Sat, 03 Oct 2009 19:29:47 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m11vllxwd7.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: cl@linux-foundation.org
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu, rusty@rustcorp.com.au,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [this_cpu_xx V4 12/20] Move early initialization of pagesets
+ out of zone_wait_table_init()
+References: <20091001212521.123389189@gentwo.org> <20091001212559.879284755@gentwo.org>
+In-Reply-To: <20091001212559.879284755@gentwo.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 03 Oct 2009 10:28:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 03:29:56PM -0700, Eric W. Biederman wrote:
-> The code doesn't fall over immediately in my testing.  So at first glance
-> this appears to be as good as removing low_latency.
+cl@linux-foundation.org wrote:
+> Explicitly initialize the pagesets after the per cpu areas have been
+> initialized. This is necessary in order to be able to use per cpu
+> operations in later patches.
+> 
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+> ---
+>  arch/ia64/kernel/setup.c       |    1 +
+>  arch/powerpc/kernel/setup_64.c |    1 +
+>  arch/sparc/kernel/smp_64.c     |    1 +
+>  arch/x86/kernel/setup_percpu.c |    2 ++
+>  include/linux/mm.h             |    1 +
+>  mm/page_alloc.c                |   40 +++++++++++++++++++++++++++++-----------
+>  mm/percpu.c                    |    2 ++
 
-The patch wasn't intended as a replacement for removing low_latency. It
-still calls tty_flip_buffer_push from interrupt context.
+Hmmm... why not call this function from start_kernel() after calling
+setup_per_cpu_areas() instead of modifying every implementation of
+setup_per_cpu_areas()?
 
-/Johan
+Thanks.
 
+-- 
+tejun
