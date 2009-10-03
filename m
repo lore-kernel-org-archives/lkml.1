@@ -1,114 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZJCWzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZJCXjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbZJCWzd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 18:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755658AbZJCWzc
+	id S1754767AbZJCXjw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 19:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZJCXjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 18:55:32 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40034 "EHLO ogre.sisk.pl"
+	Sat, 3 Oct 2009 19:39:52 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:16047 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755389AbZJCWzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 18:55:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alex Chiang <achiang@hp.com>, Danny Feng <dfeng@redhat.com>
-Subject: Re: [PATCH] acpi: pci_root: fix NULL pointer deref after resume from suspend
-Date: Sun, 4 Oct 2009 00:56:00 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-rjw; KDE/4.3.1; x86_64; ; )
-Cc: lenb@kernel.org, bjorn.helgaas@hp.com, andrew.patterson@hp.com,
-       jbarnes@virtuousgeek.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <1254119480-9730-1-git-send-email-dfeng@redhat.com> <4AC16682.50207@redhat.com> <20091001200522.GF31915@ldl.fc.hp.com>
-In-Reply-To: <20091001200522.GF31915@ldl.fc.hp.com>
+	id S1753841AbZJCXjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 19:39:51 -0400
+Date: Sat, 3 Oct 2009 20:30:48 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] perf tools: Remove show_mask bitmask
+Message-ID: <20091003233048.GA30535@ghostprotocols.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910040056.00247.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 October 2009, Alex Chiang wrote:
-> Hi Danny,
-> 
-> * Danny Feng <dfeng@redhat.com>:
-> > Call Trace:
-> >  [<ffffffff81254193>] acpi_get_pci_dev+0x106/0x167
-> >  [<ffffffff8125545a>] acpi_pci_bind+0x1c/0x86
-> >  [<ffffffff8116230a>] ? sysfs_create_file+0x2a/0x2c
-> >  [<ffffffff8125141f>] acpi_add_single_object+0x964/0xa0c
-> >  [<ffffffff812515a7>] acpi_bus_check_add+0xe0/0x138
-> >  [<ffffffff81251667>] acpi_bus_scan+0x68/0xa0
-> >  [<ffffffff812516f4>] acpi_bus_add+0x2a/0x2e
-> >  [<ffffffff81252c59>] hotplug_dock_devices+0x114/0x13e
-> >  [<ffffffff8125301a>] acpi_dock_deferred_cb+0xbf/0x192
-> >  [<ffffffff8124d6ca>] acpi_os_execute_deferred+0x29/0x36
-> >  [<ffffffff8106a244>] worker_thread+0x251/0x347
-> >  [<ffffffff8106a1ef>] ? worker_thread+0x1fc/0x347
-> >  [<ffffffff8124d6a1>] ? acpi_os_execute_deferred+0x0/0x36
-> >  [<ffffffff8106e426>] ? autoremove_wake_function+0x0/0x39
-> >  [<ffffffff81069ff3>] ? worker_thread+0x0/0x347
-> >  [<ffffffff8106e0e0>] kthread+0x7f/0x87
-> >  [<ffffffff81012cea>] child_rip+0xa/0x20
-> >  [<ffffffff81012650>] ? restore_args+0x0/0x30
-> >  [<ffffffff8106e061>] ? kthread+0x0/0x87
-> >  [<ffffffff81012ce0>] ? child_rip+0x0/0x20
-> > Code: ff 49 89 fc 41 89 f5 a9 00 ff ff 07 74 11 be 87 00 00 00 48 c7 c7  
-> > 45 6d 5a 81 e8 f6 2b e3 ff 48 c7 c7 30 ab 68 81 e8 29 77 20 00 <49> 8b  
-> > 5c 24 28 49 83 c4 28 eb 09 44 39 6b 38 74 10 48 89 c3 48
-> > RIP  [<ffffffff812217e7>] pci_get_slot+0x4c/0x8c
-> >  RSP <ffff88022ee69aa0>
-> > CR2: 0000000000000028
-> > ---[ end trace b5a7793bd9db2a4d ]---
-> 
-> Can you please reproduce with this debug patch? I'm guessing that
-> we're dying because we have a NULL parent device, but I'm curious
-> as to what causes this situation to occur.
+As it was not being exposed via any command line and with --dsos/--comms
+we can do this and even more, like asking for just kernel + some module:
 
-If we had a NULL parent, acpi_get_parent() would return an error.  Also, if we
-one of the devices is NULL at the PCI level, pci_get_slot() will return NULL.
-The only possibility left is that one of the buses we find in the ACPI tables
-doesn't have a secondary PCI bus.
+[root@doppio linux-2.6-tip]# perf report --dsos \[kernel\],\[drm\]
+--vmlinux /home/acme/git/build/tip-recvmmsg/vmlinux --modules | head -15
+ # Samples: 619669
+ #
+ # Overhead          Command  Shared Object  Symbol
+ # ........  ...............  .............  ......
+ #
+      7.12%          swapper  [kernel]       [k] read_hpet
+      6.86%             init  [kernel]       [k] read_hpet
+      6.22%             init  [kernel]       [k] mwait_idle_with_hints
+      5.34%          swapper  [kernel]       [k] mwait_idle_with_hints
+      3.01%          firefox  [kernel]       [.] vread_hpet
+      2.14%             Xorg  [drm]          [k] drm_clflush_pages
+      2.09%           pidgin  [kernel]       [.] vread_hpet
+      1.58%     npviewer.bin  [kernel]       [.] vread_hpet
+      1.37%          swapper  [kernel]       [k] hpet_next_event
+      1.23%             Xorg  [kernel]       [k] read_hpet
+[root@doppio linux-2.6-tip]#
 
-I think what happens is that on resume we get a dock notification
-(via dock_acpi_notifier registered in dock_init()) for a dock station device
-that is present in the ACPI tables, but not physically accessible at the moment
-(I guess that falls into the "BIOS bug" category, but we can fix this easily in
-the kernel).
-
-So, IMO, the appended patch is the right fix.
-
-Danny, please test it and report back (in particular, please tell us if you see
-the "Secondary bus not present" message in dmesg).
-
-Thanks,
-Rafael
-
-
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- drivers/acpi/pci_root.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ tools/perf/Makefile           |    1 +
+ tools/perf/builtin-annotate.c |   15 ++++-----------
+ tools/perf/builtin-report.c   |   35 +++++++++++++----------------------
+ tools/perf/util/event.h       |    6 ------
+ 4 files changed, 18 insertions(+), 39 deletions(-)
 
-Index: linux-2.6/drivers/acpi/pci_root.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/pci_root.c
-+++ linux-2.6/drivers/acpi/pci_root.c
-@@ -389,6 +389,18 @@ struct pci_dev *acpi_get_pci_dev(acpi_ha
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index b063396..5a42996 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -323,6 +323,7 @@ LIB_H += ../../include/linux/rbtree.h
+ LIB_H += ../../include/linux/list.h
+ LIB_H += util/include/linux/list.h
+ LIB_H += perf.h
++LIB_H += util/event.h
+ LIB_H += util/types.h
+ LIB_H += util/levenshtein.h
+ LIB_H += util/parse-options.h
+diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
+index 8550942..35ed97b 100644
+--- a/tools/perf/builtin-annotate.c
++++ b/tools/perf/builtin-annotate.c
+@@ -29,7 +29,6 @@ static char		const *input_name = "perf.data";
  
- 		pbus = pdev->subordinate;
- 		pci_dev_put(pdev);
-+
-+		/*
-+		 * During resume from a sleep state we can get a dock
-+		 * notification for a device that is present in ACPI tables,
-+		 * but not physically accessible at the moment, so tell the
-+		 * caller it's not present.
-+		 */
-+		if (!pbus) {
-+			dev_info(&pdev->dev, "Secondary bus not present\n");
-+			pdev = NULL;
-+			break;
-+		}
+ static int		force;
+ static int		input;
+-static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+ 
+ static int		full_paths;
+ 
+@@ -97,7 +96,6 @@ static int
+ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+ 	char level;
+-	int show = 0;
+ 	struct thread *thread;
+ 	u64 ip = event->ip.ip;
+ 	struct map *map = NULL;
+@@ -121,13 +119,11 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
  	}
- out:
- 	list_for_each_entry_safe(node, tmp, &device_list, node)
+ 
+ 	if (event->header.misc & PERF_RECORD_MISC_KERNEL) {
+-		show = SHOW_KERNEL;
+ 		level = 'k';
+ 		sym = kernel_maps__find_symbol(ip, &map);
+ 		dump_printf(" ...... dso: %s\n",
+ 			    map ? map->dso->long_name : "<not found>");
+ 	} else if (event->header.misc & PERF_RECORD_MISC_USER) {
+-		show = SHOW_USER;
+ 		level = '.';
+ 		map = thread__find_map(thread, ip);
+ 		if (map != NULL) {
+@@ -153,17 +149,14 @@ got_map:
+ 		dump_printf(" ...... dso: %s\n",
+ 			    map ? map->dso->long_name : "<not found>");
+ 	} else {
+-		show = SHOW_HV;
+ 		level = 'H';
+ 		dump_printf(" ...... dso: [hypervisor]\n");
+ 	}
+ 
+-	if (show & show_mask) {
+-		if (hist_entry__add(thread, map, sym, ip, 1, level)) {
+-			fprintf(stderr,
+-		"problem incrementing symbol count, skipping event\n");
+-			return -1;
+-		}
++	if (hist_entry__add(thread, map, sym, ip, 1, level)) {
++		fprintf(stderr, "problem incrementing symbol count, "
++				"skipping event\n");
++		return -1;
+ 	}
+ 	total++;
+ 
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 0e83ffc..fe4aadc 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -38,7 +38,6 @@ static struct strlist	*dso_list, *comm_list, *sym_list;
+ 
+ static int		force;
+ static int		input;
+-static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+ 
+ static int		full_paths;
+ static int		show_nr_samples;
+@@ -600,7 +599,6 @@ static int
+ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+ 	char level;
+-	int show = 0;
+ 	struct symbol *sym = NULL;
+ 	struct thread *thread;
+ 	u64 ip = event->ip.ip;
+@@ -657,42 +655,35 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 	cpumode = event->header.misc & PERF_RECORD_MISC_CPUMODE_MASK;
+ 
+ 	if (cpumode == PERF_RECORD_MISC_KERNEL) {
+-		show = SHOW_KERNEL;
+ 		level = 'k';
+-
+ 		sym = kernel_maps__find_symbol(ip, &map);
+ 		dump_printf(" ...... dso: %s\n",
+ 			    map ? map->dso->long_name : "<not found>");
+ 	} else if (cpumode == PERF_RECORD_MISC_USER) {
+-
+-		show = SHOW_USER;
+ 		level = '.';
+ 		sym = resolve_symbol(thread, &map, &ip);
+ 
+ 	} else {
+-		show = SHOW_HV;
+ 		level = 'H';
+-
+ 		dump_printf(" ...... dso: [hypervisor]\n");
+ 	}
+ 
+-	if (show & show_mask) {
+-		if (dso_list &&
+-		    (!map || !map->dso ||
+-		     !(strlist__has_entry(dso_list, map->dso->short_name) ||
+-		       (map->dso->short_name != map->dso->long_name &&
+-			strlist__has_entry(dso_list, map->dso->long_name)))))
+-			return 0;
++	if (dso_list &&
++	    (!map || !map->dso ||
++	     !(strlist__has_entry(dso_list, map->dso->short_name) ||
++	       (map->dso->short_name != map->dso->long_name &&
++		strlist__has_entry(dso_list, map->dso->long_name)))))
++		return 0;
+ 
+-		if (sym_list && sym && !strlist__has_entry(sym_list, sym->name))
+-			return 0;
++	if (sym_list && sym && !strlist__has_entry(sym_list, sym->name))
++		return 0;
+ 
+-		if (hist_entry__add(thread, map, sym, ip,
+-				    chain, level, period)) {
+-			eprintf("problem incrementing symbol count, skipping event\n");
+-			return -1;
+-		}
++	if (hist_entry__add(thread, map, sym, ip,
++			    chain, level, period)) {
++		eprintf("problem incrementing symbol count, skipping event\n");
++		return -1;
+ 	}
++
+ 	total += period;
+ 
+ 	return 0;
+diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
+index a39520e..c2e62be 100644
+--- a/tools/perf/util/event.h
++++ b/tools/perf/util/event.h
+@@ -6,12 +6,6 @@
+ #include <linux/list.h>
+ #include <linux/rbtree.h>
+ 
+-enum {
+-	SHOW_KERNEL	= 1,
+-	SHOW_USER	= 2,
+-	SHOW_HV		= 4,
+-};
+-
+ /*
+  * PERF_SAMPLE_IP | PERF_SAMPLE_TID | *
+  */
+-- 
+1.6.2.5
+
