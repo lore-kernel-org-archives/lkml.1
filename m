@@ -1,79 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbZJCDj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbZJCDnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755384AbZJCDj5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 23:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZJCDj5
+	id S1755676AbZJCDnU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 23:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZJCDnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 23:39:57 -0400
-Received: from ara.aytolacoruna.es ([91.117.124.165]:37384 "EHLO
-	mx.aytolacoruna.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754024AbZJCDj4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 23:39:56 -0400
-Date: Sat, 3 Oct 2009 05:39:42 +0200
-From: Santiago Garcia Mantinan <manty@manty.net>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: kernel BUG at drivers/ide/ide-disk.c:187 (2.6.31)
-Message-ID: <20091003033942.GA8129@dis.manty.net>
-References: <20090930110529.GA3676@dis.manty.net>
- <20091001.114755.132624639.davem@davemloft.net>
- <20091001.115310.100974682.davem@davemloft.net>
+	Fri, 2 Oct 2009 23:43:19 -0400
+Received: from smtp.infotech.no ([82.134.31.41]:58310 "EHLO elrond.infotech.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754475AbZJCDnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 2 Oct 2009 23:43:18 -0400
+Message-ID: <4AC6C852.60400@interlog.com>
+Date: Fri, 02 Oct 2009 23:43:14 -0400
+From: Douglas Gilbert <dgilbert@interlog.com>
+Reply-To: dgilbert@interlog.com
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091001.115310.100974682.davem@davemloft.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: SCSI development list <linux-scsi@vger.kernel.org>
+CC: =?ISO-8859-1?Q?Dan_Hor=E1k?= <dhorak@redhat.com>,
+       Eric Schwartz <emschwar@debian.org>,
+       "Robin H. Johnson" <robbat2@gentoo.org>,
+       xiao li - Sun Microsystems - Beijing China 
+	<Xiao.L@Sun.COM>,
+       Martin Pitt <mpitt@debian.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [Announce] sg3_utils-1.28 available
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sorry, there's a small bug in the test patch, please use this one
-> instead.
+sg3_utils is a package of command line utilities for sending
+SCSI and some ATA commands to devices. This package targets
+the linux kernel (lk) 2.6 and lk 2.4 series. Also included are
+ports to FreeBSD, Tru64, Solaris, and Windows (cygwin and mingw).
 
-Applied it to 2.6.31.1, I'll wait and see what the weekend tells us.
+This version adds these utilities: sg_get_lba_status,
+sg_read_block_limits and sg_unmap . Various changes made by
+www.t10.org since April 2009 are reflected in this version.
+A lot more thin provisioning support has been added. There
+is a copy of ChangeLog below.
 
-BTW, I forgot to include info on the controller, disks, ... on the report,
-so here they go just in case they make any difference.
+For an overview of sg3_utils and downloads see this page:
+     http://sg.danny.cz/sg/sg3_utils.html
+The sg_dd utility has its own page at:
+     http://sg.danny.cz/sg/sg_dd.html
+The SG_IO ioctl is discussed at:
+     http://sg.danny.cz/sg/sg_io.html
+A full changelog can be found at:
+     http://sg.danny.cz/sg/p/sg3_utils.ChangeLog
 
-Uniform Multi-Platform E-IDE driver
-via82cxxx 0000:00:07.1: VIA vt82c596b (rev 23) IDE UDMA66
-via82cxxx 0000:00:07.1: IDE controller (0x1106:0x0571 rev 0x10)
-via82cxxx 0000:00:07.1: not 100% native mode: will probe irqs later
-    ide0: BM-DMA at 0xe800-0xe807
-    ide1: BM-DMA at 0xe808-0xe80f
-Probing IDE interface ide0...
-hda: HL-DT-STDVD-RAM GH22NP20, ATAPI CD/DVD-ROM drive
-hdb: ST3160021A, ATA DISK drive
-hda: host max PIO5 wanted PIO255(auto-tune) selected PIO4
-hda: UDMA/66 mode selected
-hdb: host max PIO5 wanted PIO255(auto-tune) selected PIO4
-hdb: UDMA/66 mode selected
-Probing IDE interface ide1...
-hdc: ST3160021A, ATA DISK drive
-hdc: host max PIO5 wanted PIO255(auto-tune) selected PIO4
-hdc: UDMA/66 mode selected
-ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-ide1 at 0x170-0x177,0x376 on irq 15
-ide-gd driver 1.18
-hdb: max request size: 512KiB
-hdb: Host Protected Area detected.
-        current capacity is 312579695 sectors (160040 MB)
-        native  capacity is 312581808 sectors (160041 MB)
-hdb: 312579695 sectors (160040 MB) w/2048KiB Cache, CHS=19457/255/63
-hdb: cache flushes supported
- hdb: hdb1 hdb2 hdb3
-hdc: max request size: 512KiB
-hdc: Host Protected Area detected.
-        current capacity is 312579695 sectors (160040 MB)
-        native  capacity is 312581808 sectors (160041 MB)
-hdc: 312579695 sectors (160040 MB) w/2048KiB Cache, CHS=19457/255/63
-hdc: cache flushes supported
- hdc: hdc1 hdc2 hdc3
-ide-cd driver 5.00
-ide-cd: hda: ATAPI 48X DVD-ROM DVD-R/RAM CD-R/RW drive, 2048kB Cache
-Uniform CD-ROM driver Revision: 3.20
+A release announcement will be sent to freshmeat.net .
 
-Regards...
--- 
-Manty/BestiaTester -> http://manty.net
+Changelog for sg3_utils-1.28 [20091002] [svn: r313]
+   - sg_unmap: new utility for thin provisioning
+     - add examples/sg_unmap_example.txt
+   - sg_get_lba_status: new utility for thin provisioning
+   - sg_read_block_limits: new utility for tape drives
+   - sg_logs: add cache memory statistics log (sub)page
+   - sg_vpd, sg_inq: extend Block limits VPD page (sbc3r19)
+   - sg_vpd: add Thin provisioning VPD page (sbc3r20) and
+             TapeAlert supported flags VPD page
+   - sg_inq: note VPD page support better in sg_vpd
+   - sg_persist: add transport specific transportID format
+     - allow transportIDs to be read from named file
+   - sg_opcodes: allow --opcode= option to take OP and SA
+     values (comma seperated)
+     - tweak print format, remove test code
+   - sg_requests: remove test code in progress calculation
+   - sg_reset: add target reset option
+   - sg_luns: reduce default maxlen to 8192 (for FreeBSD)
+   - sg_raw: extend max cdb length from 16 to 256 bytes
+     - align heap allocs to page boundaries
+   - sg_lib: sg_set_binary_mode() needs config.h included
+     - add progress indication sense data descriptor (0xa)
+     - change SG3_UTILS_* constants to SG_LIB_*
+     - decode service actions within persistent reserve in/out
+     - sync with spc4r21
+   - sg_cmds_extra: add sg_ll_unmap() and sg_ll_get_lba_status()
+   - sg_pt_linux: fix check condition but empty sense buffer; occurred
+     when sg v3 node used and /usr/include/linux/bsg.h visible
+     - major() macro grief, if present include <linux/kdev_t.h> and
+       use MAJOR() instead
+   - scripts/sas_disk_blink: moved from this package to sdparm
+   - utils/hxascdmp: in Windows set binary mode on read files
+   - examples/sg_persist_tst.sh: add PRIN read full status command
+   - sg_raw,sg_write_buffer,sg_write_long,sg_write_same: in Windows
+     set binary mode on read files
+   - sg_pt_win32: default to non-direct variant of SPT interface
+     - use './configure --enable-win32-spt-direct' to override
+     - non-direct data length set to 16 KB, extended if required
+   - debian: incorporate patch from debian sid
+
+Changelog for sg3_utils-1.27 [20090411] [svn: r250]
+....
+
+Doug Gilbert
