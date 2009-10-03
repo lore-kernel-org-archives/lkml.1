@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbZJCO5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZJCPA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755693AbZJCO5B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 10:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbZJCO5A
+	id S1756186AbZJCPA4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 11:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbZJCPA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 10:57:00 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:32802 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754702AbZJCO47 (ORCPT
+	Sat, 3 Oct 2009 11:00:56 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52600 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755546AbZJCPAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 10:56:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=Os7zWLjnN3YZxuVQKaZ7WlXssZuxis9TKQqVsqfcN3LhdLU5JG/+raXul3yD8npu4/
-         VkHPYKkkGSIxI+4ugOFP8oM2GHwXU7XaxW/k7++j6yTAu53KwPx1PBEv5lByLwl+QFIe
-         r+QcmQNwvM/JGaytzahlWjeJo2As2ZfMMGCeM=
-MIME-Version: 1.0
-In-Reply-To: <4AC75BC5.6030207@zytor.com>
-References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> 
-	<20091003072127.GC21407@elte.hu> <40101cc30910030253w70adc454r1bb38ff4424c7b14@mail.gmail.com> 
-	<4AC75BC5.6030207@zytor.com>
-From: Matteo Croce <technoboy85@gmail.com>
-Date: Sat, 3 Oct 2009 16:56:02 +0200
-Message-ID: <40101cc30910030756x64308423kffe340be4dae4d6d@mail.gmail.com>
-Subject: Re: i686 quirk for AMD Geode
+	Sat, 3 Oct 2009 11:00:55 -0400
+X-Sasl-enc: M4Wv/bHF2HtU89PWViZbkxn84t9IvLC4jySITh/0StuZ 1254582018
+Date: Sat, 3 Oct 2009 12:00:13 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: "Wang, Shane" <shane.wang@intel.com>, Pavel Machek <pavel@ucw.cz>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Cihula, Joseph" <joseph.cihula@intel.com>
+Subject: Re: [GIT PULL] x86/txt for v2.6.32
+Message-ID: <20091003150013.GD31552@khazad-dum.debian.net>
+References: <200909282307.56190.rjw@sisk.pl>
+ <4AC1267D.6020405@zytor.com>
+ <20090928211745.GA2119@elf.ucw.cz>
+ <4AC1AA61.8070408@intel.com>
+ <20090929171318.GC14405@elf.ucw.cz>
+ <20090929191951.18315e94@infradead.org>
+ <037F493892196B458CD3E193E8EBAD4F01ED9FE3B1@pdsmsx502.ccr.corp.intel.com>
+ <20090930065448.GB11652@elf.ucw.cz>
+ <037F493892196B458CD3E193E8EBAD4F01ED9FE6E3@pdsmsx502.ccr.corp.intel.com>
+ <4AC635D5.8080809@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AC635D5.8080809@zytor.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 3, 2009 at 4:12 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> On 10/03/2009 02:53 AM, Matteo Croce wrote:
->>
->> Sorry Ingo but if you read my last mail I wrote that the GEODE does
->> supports FCOMI but not NOPL
->> so i don't know if it's worth it, even is I haven't ANY binary in my
->> system with such instruction:
->>
->> # find /lib/tls/i686 /lib/i686 -type f |xargs objdump -d |grep -c nopl
->> 0
->
-> Recent gcc/binutils has been known to start to use them.
->
-> Either way, it's a user-space-visible difference, so at least the kernel
-> will not signal anything else based on existing precedent.
+On Fri, 02 Oct 2009, H. Peter Anvin wrote:
+> On 10/02/2009 10:02 AM, Wang, Shane wrote:
+> >> So I modify the RAM content so that BIOS does not think measured
+> >> environment existed before suspend?
+> > 
+> > Hi Pavel, what do you mean on this question? 
+> > When do you modify the RAM? before S3 sleep?
+> > 
+> 
+> He was talking earlier about a liquid nitrogen freeze attack.
 
-So it can't be applied, right?
+You wish one would need liquid nitrogen for it... frozen CO2 (dry ice) is
+more than cold enough for such an attack, and _MUCH_ easier to both acquire
+and handle than liquid nitrogen.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
