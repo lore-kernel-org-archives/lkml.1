@@ -1,123 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZJCC7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZJCDIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbZJCC7y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 22:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZJCC7x
+	id S1754814AbZJCDIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 23:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbZJCDIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 22:59:53 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:37298 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbZJCC7w convert rfc822-to-8bit (ORCPT
+	Fri, 2 Oct 2009 23:08:19 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:44236 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752153AbZJCDIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 22:59:52 -0400
+	Fri, 2 Oct 2009 23:08:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=uOz4HCJiMBEkAhHd/gz/lwXGefmpASXx8t9sWRN/28c2WUaIC2kI1keU5bv7SlQPt5
-         66y19FuUnbaffx9hV2PfVYvzocp+yavCHRFMkZL9+mpCXX9z2lUFRS6nRYHWGN1jXEh6
-         fxaHEi0YmWu4mGXZLyPgbpq9wi9JOlJSNWlK8=
+         :cc:content-type;
+        b=aXfAPRkH/xp+UNGeXiCg/NiLXJ9vMDOSxjKqE6RHphOdI9J5Qtwe2XgKzy1n3VWy4q
+         jv3tUY7lExURJyXf5WUAJAkqctkgGG5H7RkVBMpBxEHjT7jFmk2AWGwQGsL94jQClght
+         NcJmLPhXE+jUN9jSUdJGAoSGht7HQ6d3ITrKo=
 MIME-Version: 1.0
-In-Reply-To: <3DB386D4-C03F-4F2A-B0DD-7F4236325B4B@iki.fi>
-References: <1254518602.5050.4.camel@hurina> <3e8340490910021901i35ba8a5v7647b1e02b054270@mail.gmail.com> 
-	<3DB386D4-C03F-4F2A-B0DD-7F4236325B4B@iki.fi>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Fri, 2 Oct 2009 22:59:35 -0400
-Message-ID: <3e8340490910021959n304e6870r6df97cfd637283c4@mail.gmail.com>
-Subject: Re: [PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
-To: Timo Sirainen <tss@iki.fi>
-Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4AC6B822.1080703@zytor.com>
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> 
+	<4AC6B822.1080703@zytor.com>
+From: Matteo Croce <technoboy85@gmail.com>
+Date: Sat, 3 Oct 2009 05:08:02 +0200
+Message-ID: <40101cc30910022008r285fed55vbd92ba8854837cf2@mail.gmail.com>
+Subject: Re: i686 quirk for AMD Geode
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=00151761ca4876a82b0474ff319b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 2, 2009 at 10:47 PM, Timo Sirainen <tss@iki.fi> wrote:
+--00151761ca4876a82b0474ff319b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
->>> -       // If the nul at the end of args has been overwritten, then
->>> -       // assume application is using setproctitle(3).
->>> -       if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
->>> +       if (mm->arg_end != mm->env_start) {
->>> +               // PR_SET_PROCTITLE_AREA used
->>> +               res = strnlen(buffer, res);
+On Sat, Oct 3, 2009 at 4:34 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> On 10/02/2009 07:12 PM, Matteo Croce wrote:
+>> Hi,
 >>
->> Is this check really needed? Surely it's enough to simply state that
->> behavior if the area isn't null-terminated is undefined.
->
-> Well, that depends. I was hoping to use the syscall only once per process.
-> That would allow me to just update the process title whenever I feel like
-> it, possibly hundreds of times per second. This is much cheaper if I don't
-> have to use a syscall every time.
->
-> So if I'm setting the PR_SET_PROCTITLE_AREA initially to e.g. 1 kB memory
-> area, without the above code ps will show it entirely regardless of any \0
-> characters (because parameters are separated by \0).
-
-That makes sense - but note that it's not completely atomic still -
-with a syscall you could insert some kind of barrier (rwsem?) to
-ensure other processes don't see a halfway updated process name. With
-infrequent updates this isn't a problem, but if you're really
-intending to update it at a rate where syscall overhead becomes a
-problem, then you're also going to see these kinds of issues as well.
-
->
->>> +       } else if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
->>> +               // If the nul at the end of args has been overwritten,
->>> then
->>> +               // assume application is using old style setproctitle(3).
->>>               len = strnlen(buffer, res);
->>>               if (len < res) {
->>>                   res = len;
+>> the AMD GEode LX has an x86 id of 5 (i586) tought it's technically an i6=
+86:
 >>
->> Might want to fix the bug later on in that function while you're in
->> here - the second access_process_vm call is never checked for errors,
->> but (from my reading) it's possible that the page that the environment
->> is on could be unmapped between those two calls. The result could
->> either be a short read (not the end of the world) or a negative value
->> (error code + small original argument length) passed to strnlen.
 >
-> Hmm. Originally I thought it would have returned only -1, but if it's -errno
-> then I'm beginning to wonder if this is a security hole. If the original res
-> is small enough, and it looks like it can be, that code could get res to
-> negative, i.e. unlimited. But I can't follow the code right now if it also
-> means that userspace can read tons of data or if it gets caught by some "<
-> 0" check.
-
-By the time we get to the second read, len is definitely between 0 and
-PAGE_SIZE, so that's not a problem. What I'm worried about mostly is
-whether strnlen would interpret its argument (negative error + small
-positive value = negative value) as a large positive value, go running
-off into the woods and cause an OOPS. Which I suppose is a denial of
-service issue.
-
-That said, I'm not really sure why it's written the way it is anyway.
-Why not just unconditionally try to load all the way from arg_start to
-env_end (or to arg_start + PAGE_SIZE), then just figure out where the
-\0 is and you're done? It would seem to have the same effect...
-
->> That said, come to think of it, I'm not actually sure if this prctl
->> stuff is strictly necessary. Wouldn't it be enough for glibc to copy
->> the environment somewhere safe, and then have the kernel guarantee a
->> full PAGE_SIZE between arg_start and env_end, even if this means
->> padding out the environment? The process could then measure to make
->> sure it has this much space (in case of running on an old kernel) by
->> testing the difference between arg_start and the top of the stack, or
->> an auxiliary vector could be passed down from the kernel with the
->> maximum proctitle length.
+> a) Wrong place - it should be in cpu/amd.c.
+> b) You need to also make sure that it has FCOMI and the long NOP\
+> =A0 instructions.
 >
-> This would get around the potential "not enough space" problem, but not
-> really the ugliness. I can't really think of other potential problems with
-> it right now, but my main concern is actually getting setproctitle() to
-> glibc. Based on Ulrich's previous reply to me I don't know if he'd be
-> willing to accept that solution:
-> http://sources.redhat.com/ml/libc-alpha/2009-10/msg00000.html
+> =A0 =A0 =A0 =A0-hpa
+>
+> --
+> H. Peter Anvin, Intel Open Source Technology Center
+> I work for Intel. =A0I don't speak on their behalf.
+>
+>
 
-I don't think it's a particularly ugly solution - all it does is
-canonizes what programs are _already doing_, while at the same time
-giving more precise and useful guarantees. This means every old
-program which might, in theory, have been unreliable previously (due
-to assuming that its argument vector would be long enough) is now
-magically safe. And since if all goes well it'll get wrapped up in a
-nice C library wrapper eventually anyway, minor low-level ugliness
-shouldn't be a problem...
+I've run the attached files and I get this:
+
+root@alix:/usr/src# ./longnop
+Long NOPs supported: no
+root@alix:/usr/src# ./fcomi
+Long FCOMi supported: yes
+
+--00151761ca4876a82b0474ff319b
+Content-Type: text/x-csrc; charset=US-ASCII; name="longnop.c"
+Content-Disposition: attachment; filename="longnop.c"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g0bs86fx0
+
+I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzaWduYWwuaD4KI2luY2x1ZGUgPHNldGptcC5o
+PgoKc3RhdGljIHNpZ2ptcF9idWYgb3V0OwoKdm9pZCBzaWdpbGwoaW50IHNpZ25hbCkKewogIHNp
+Z2xvbmdqbXAob3V0LCAxKTsKfQoKaW50IG1haW4odm9pZCkKewogIGludCBkaWVkOwoKICBzaWdu
+YWwoU0lHSUxMLCBzaWdpbGwpOwoKICBkaWVkID0gc2lnc2V0am1wKG91dCwgMSk7CgogIGlmICgh
+ZGllZCkKICAgIGFzbSB2b2xhdGlsZSgibm9wbCAwKCVlYXgpIik7CgogIHByaW50ZigiTG9uZyBO
+T1BzIHN1cHBvcnRlZDogJXNcbiIsIGRpZWQgPyAibm8iIDogInllcyIpOwogIHJldHVybiBkaWVk
+Owp9Cg==
+--00151761ca4876a82b0474ff319b
+Content-Type: text/x-csrc; charset=US-ASCII; name="fcomi.c"
+Content-Disposition: attachment; filename="fcomi.c"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g0bs8h6j1
+
+I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzaWduYWwuaD4KI2luY2x1ZGUgPHNldGptcC5o
+PgoKc3RhdGljIHNpZ2ptcF9idWYgb3V0OwoKdm9pZCBzaWdpbGwoaW50IHNpZ25hbCkKewogIHNp
+Z2xvbmdqbXAob3V0LCAxKTsKfQoKaW50IG1haW4odm9pZCkKewogIGludCBkaWVkOwoKICBzaWdu
+YWwoU0lHSUxMLCBzaWdpbGwpOwoKICBkaWVkID0gc2lnc2V0am1wKG91dCwgMSk7CgogIGlmICgh
+ZGllZCkKICAgIGFzbSB2b2xhdGlsZSgiZmNvbWkgc3QoMCksIHN0KDEpIik7CgogIHByaW50Zigi
+TG9uZyBGQ09NaSBzdXBwb3J0ZWQ6ICVzXG4iLCBkaWVkID8gIm5vIiA6ICJ5ZXMiKTsKICByZXR1
+cm4gZGllZDsKfQo=
+--00151761ca4876a82b0474ff319b--
