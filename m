@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbZJCSQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbZJCRHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756799AbZJCSQu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 14:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbZJCSQu
+	id S1754234AbZJCRHT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 13:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZJCRHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 14:16:50 -0400
-Received: from vbn.0050556.lodgenet.net ([216.142.194.234]:34361 "EHLO
-	vbn.0050556.lodgenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756776AbZJCSQt (ORCPT
+	Sat, 3 Oct 2009 13:07:18 -0400
+Received: from bfexch.netexchange.int.netscalibur.it ([62.196.3.41]:35706 "EHLO
+	bfexch.netexchange.int.netscalibur.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752908AbZJCRHR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 14:16:49 -0400
-X-Greylist: delayed 2156 seconds by postgrey-1.27 at vger.kernel.org; Sat, 03 Oct 2009 14:16:49 EDT
-Subject: Re: [PATCH] lcd: Fix wrong sizeof
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-In-Reply-To: <20091002112818.54428c49@hyperion.delvare>
-References: <20091002112818.54428c49@hyperion.delvare>
-Content-Type: text/plain
-Date: Sat, 03 Oct 2009 18:01:49 +0100
-Message-Id: <1254589309.19472.6.camel@ted>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 3 Oct 2009 13:07:17 -0400
+Message-ID: <4AC78493.3020301@infracom.it>
+Date: Sat, 03 Oct 2009 19:06:27 +0200
+From: Roberto Oppedisano <roberto.oppedisano@infracom.it>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Markus Trippelsdorf <markus@trippelsdorf.de>
+CC: LKML <linux-kernel@vger.kernel.org>, tytso@mit.edu, adilger@sun.com,
+       linux-ext4@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: kernel BUG at fs/ext4/inode.c:1184!
+References: <4AC71ECC.2020104@infracom.it> <20091003111515.GA2032@phenom2.trippelsdorf.de>
+In-Reply-To: <20091003111515.GA2032@phenom2.trippelsdorf.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Oct 2009 17:06:39.0662 (UTC) FILETIME=[DF82FCE0:01CA444B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-02 at 11:28 +0200, Jean Delvare wrote:
-> Which is why I have always preferred sizeof(struct foo) over
-> sizeof(var).
-> 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> Cc: Richard Purdie <rpurdie@rpsys.net>
-> ---
-> Stable team, this one applies to 2.6.31, 2.6.30 and 2.6.27.
+Markus Trippelsdorf ha scritto, Il 03/10/2009 13:15:
+> On Sat, Oct 03, 2009 at 11:52:12AM +0200, Roberto Oppedisano wrote:
+>   
+>> This is 100% reproducible on current git kernel.
+>> After hitting the BUG the machine is still alive, but some processes
+>> refuse to start and /bin/sync stalls forever.
+>> Last known good kernel is 2.6.32-rc2-00087-g9c1fe83.
+>>
+>> [   74.971246] ------------[ cut here ]------------
+>> [   74.971303] kernel BUG at fs/ext4/inode.c:1184!
+>>     
+>
+> This is already fixed, see:
+> http://marc.info/?l=linux-ext4&m=125437926005433&w=4
+>
+> Unfortunately Linus has not pulled the fix yet.
+>   
+yep. The patch works for me.
 
-Queued in the backlight tree. I'll wait to see if any other fixes appear
-for backlights send to Linus in a few days.
+Thanks.
 
-Cheers,
-
-Richard
--- 
-Richard Purdie
-Intel Open Source Technology Centre
+R
 
