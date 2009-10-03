@@ -1,122 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbZJCKf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZJCKnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884AbZJCKf6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 06:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZJCKf5
+	id S1753902AbZJCKnr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 06:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZJCKnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 06:35:57 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:22325 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753714AbZJCKfz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 06:35:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=NNR4LikAylTVx04FAMsQ5uhdcQfBkMOrjYkTbRkG5h3vM+8Dt45QlD9uLPcAxTLfIf
-         T1LQsaPoH7dvUE/Kw/VjOhCGBCJju2HwRz/Tiu97FxiZqZ1ZS5NboNTBBgyn7Z+QaZw+
-         pcGsnkpTJ1yDdMvloZKRfC4kEiZO9ei7k1EXU=
+	Sat, 3 Oct 2009 06:43:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55533 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752909AbZJCKnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 06:43:46 -0400
+Date: Sat, 3 Oct 2009 12:43:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       tglx@linutronix.de, rostedt@goodmis.org, ak@suse.de, roland@redhat.com,
+       rth@redhat.com, mhiramat@redhat.com
+Subject: Re: [PATCH 1/4] jump label - make init_kernel_text() global
+Message-ID: <20091003104335.GB15919@elte.hu>
+References: <cover.1253831945.git.jbaron@redhat.com> <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com> <20091001112003.GA2962@elte.hu> <20091001203905.GD2660@redhat.com>
 MIME-Version: 1.0
-Date: Sat, 3 Oct 2009 13:35:58 +0300
-Message-ID: <94a0d4530910030335p2eae17a6wddf6d87b7f60b712@mail.gmail.com>
-Subject: Annoying problems with lacie external hd (JMicron 0x2339?)
-From: Felipe Contreras <felipe.contreras@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091001203905.GD2660@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-This is with 2.6.31.1.
+* Jason Baron <jbaron@redhat.com> wrote:
 
-I'm having a lot of problems with a lacie external hd[1]. It seems the
-actual disk is a seagate ST375064, and the bridge is a JMicron 2339.
+> On Thu, Oct 01, 2009 at 01:20:03PM +0200, Ingo Molnar wrote:
+> > * Jason Baron <jbaron@redhat.com> wrote:
+> > 
+> > > allow usage of init_kernel_text - we need this in jump labeling to 
+> > > avoid attemtpting to patch code that has been freed as in the __init 
+> > > sections
+> > 
+> > s/attemtpting/attempting
+> > 
+> > > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > > ---
+> > >  include/linux/kernel.h |    1 +
+> > >  kernel/extable.c       |    2 +-
+> > >  2 files changed, 2 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> > > index f61039e..9d3419f 100644
+> > > --- a/include/linux/kernel.h
+> > > +++ b/include/linux/kernel.h
+> > > @@ -295,6 +295,7 @@ extern int get_option(char **str, int *pint);
+> > >  extern char *get_options(const char *str, int nints, int *ints);
+> > >  extern unsigned long long memparse(const char *ptr, char **retptr);
+> > >  
+> > > +extern int init_kernel_text(unsigned long addr);
+> > >  extern int core_kernel_text(unsigned long addr);
+> > >  extern int __kernel_text_address(unsigned long addr);
+> > >  extern int kernel_text_address(unsigned long addr);
+> > > diff --git a/kernel/extable.c b/kernel/extable.c
+> > > index 7f8f263..f6893ad 100644
+> > > --- a/kernel/extable.c
+> > > +++ b/kernel/extable.c
+> > > @@ -52,7 +52,7 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
+> > >  	return e;
+> > >  }
+> > >  
+> > > -static inline int init_kernel_text(unsigned long addr)
+> > > +int init_kernel_text(unsigned long addr)
+> > >  {
+> > >  	if (addr >= (unsigned long)_sinittext &&
+> > >  	    addr <= (unsigned long)_einittext)
+> > 
+> > i'm confused. Later on jump_label_update() does:
+> > 
+> > +                       if (!(system_state == SYSTEM_RUNNING &&
+> > +                                       (init_kernel_text(iter->code))))
+> > +                               jump_label_transform(iter, type);
+> > 
+> > which is:
+> > 
+> > +                       if (system_state != SYSTEM_RUNNING ||
+> > +                                       !init_kernel_text(iter->code)))
+> > +                               jump_label_transform(iter, type);
+> > 
+> > What is the logic behind that? System going into SYSTEM_RUNNING does not 
+> > coincide with free_initmem() precisely.
+> > 
+> 
+> The specific case I hit was in modifying code in arch_kdebugfs_init()
+> which is '__init' after the system was up and running. The tracepoint is
+> in 'kmalloc()' which is marked as __always_inline.
+> 
+> 
+> > Also, do we ever want to patch init-text tracepoints? I think we want to 
+> > stay away from them as much as possible.
+> 
+> I was trying to make sure that tracepoints in init-text were honored.
+> 
+> > 
+> > It appears to me that what we want here is a straight:
+> > 
+> >                        if (kernel_text(iter->code))
+> >                                jump_label_transform(iter, type);
+> > 
+> > Also, maybe a WARN_ONCE(!kernel_text()) - we should never even attempt 
+> > to transform non-patchable code. If yes then we want to know about that 
+> > in a noisy way and not skip it silently.
+> > 
+> 
+> hmmm....indeed, kernel_text_address() does do what I want here (I must 
+> have mis-read its definition). Although, I'm not sure there isn't a 
+> race here betweeen freeing the init sections and possibly updating 
+> them. For modules, there is no race since the module init free code 
+> takes the module_mutex, and I do as well in this code...
+> 
+> I've now also tested this code on 32-bit x86 system, and it seems to 
+> perform nicely. I'm seeing a 15 cycle improvement per tracepoint.
+> 
+> I've based the text section updating on text_poke_fixup(), which has 
+> recently come into question about safety of cross modifying code. I 
+> could rebase my patches back to use stop_machine()? I guess I'm 
+> looking for some advice on how to proceed here.
 
-In normal usage what I see is that if I don't use the disk after a
-while hear a loud click (as if something got stuck) and then I cannot
-use it any more; I have to turn it off and on again.
+I think this very limited form of code patching that you are using here 
+(patching a JMP) _should_ be safe - so we can avoid stop_machine().
 
-But then I started to see some problems on one fs, so I ran badblocks
-and I noticed a lot of strange behavior. It seems once I get a
-read/write error then I get more of them in a row, and after a while I
-hear another loud click, and then I only get read/write errors
-constantly.
-
-I noticed in 'unusual_devs.h' there's already a quirk for another
-JMicron product, so I tried to do the same:
-
-+UNUSUAL_DEV(  0x152d, 0x2339, 0x0000, 0xffff,
-+               "JMicron",
-+               "USB to ATA/ATAPI Bridge",
-+               US_SC_DEVICE, US_PR_DEVICE, NULL,
-+               US_FL_IGNORE_RESIDUE | US_FL_SANE_SENSE ),
-
-This seemed to help with the consecutive errors, but not with the loud click.
-
-This is what I get when this click happens:
-
-Oct  3 13:14:54 annwn kernel: [  351.099096] usb 1-1: reset high speed
-USB device using ehci_hcd and address 3
-Oct  3 13:14:54 annwn kernel: [  351.213541] usb 1-1: device firmware changed
-Oct  3 13:14:54 annwn kernel: [  351.213588] usb 1-1: USB disconnect, address 3
-Oct  3 13:14:54 annwn kernel: [  351.213633] sd 4:0:0:0: Device
-offlined - not ready after error recovery
-Oct  3 13:14:54 annwn kernel: [  351.213650] sd 4:0:0:0: [sdb]
-Unhandled error code
-Oct  3 13:14:54 annwn kernel: [  351.213655] sd 4:0:0:0: [sdb] Result:
-hostbyte=DID_ABORT driverbyte=DRIVER_OK
-Oct  3 13:14:54 annwn kernel: [  351.213663] end_request: I/O error,
-dev sdb, sector 8596352
-Oct  3 13:14:54 annwn kernel: [  351.213774] sd 4:0:0:0: rejecting I/O
-to offline device
-Oct  3 13:14:54 annwn kernel: [  351.213816] sd 4:0:0:0: rejecting I/O
-to offline device
-Oct  3 13:14:54 annwn kernel: [  351.213852] sd 4:0:0:0: rejecting I/O
-to offline device
-Oct  3 13:14:54 annwn kernel: [  351.213891] sd 4:0:0:0: rejecting I/O
-to offline device
-Oct  3 13:14:54 annwn kernel: [  351.213927] sd 4:0:0:0: rejecting I/O
-to offline device
-Oct  3 13:14:54 annwn kernel: [  351.213962] sd 4:0:0:0: rejecting I/O
-to offline device
-Oct  3 13:14:54 annwn kernel: [  351.213997] sd 4:0:0:0: rejecting I/O
-to offline device
-Oct  3 13:14:54 annwn kernel: [  351.214202] sd 4:0:0:0: rejecting I/O
-to offline device
-Oct  3 13:14:55 annwn kernel: [  351.317278] usb 1-1: new high speed
-USB device using ehci_hcd and address 4
-Oct  3 13:14:55 annwn kernel: [  351.432192] usb 1-1: New USB device
-found, idVendor=152d, idProduct=2339
-Oct  3 13:14:55 annwn kernel: [  351.432196] usb 1-1: New USB device
-strings: Mfr=1, Product=2, SerialNumber=5
-Oct  3 13:14:55 annwn kernel: [  351.432199] usb 1-1: Product: USB to
-ATA/ATAPI Bridge
-Oct  3 13:14:55 annwn kernel: [  351.432202] usb 1-1: Manufacturer: JMicron
-Oct  3 13:14:55 annwn kernel: [  351.432204] usb 1-1: SerialNumber: 5D27FFFFFFFF
-Oct  3 13:14:55 annwn kernel: [  351.432321] usb 1-1: configuration #1
-chosen from 1 choice
-Oct  3 13:14:55 annwn kernel: [  351.432791] scsi5 : SCSI emulation
-for USB Mass Storage devices
-
-Can anyone help? This disk is important for me =/
-
-Cheers.
-
-T:  Bus=01 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#= 62 Spd=480 MxCh= 0
-D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
-P:  Vendor=152d ProdID=2339 Rev= 1.00
-S:  Manufacturer=JMicron
-S:  Product=USB to ATA/ATAPI Bridge
-S:  SerialNumber=152D203380B6
-C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr=  2mA
-I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
-E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=02(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-
-[1] http://www.lacie.com/us/products/product.htm?pid=11016
-
--- 
-Felipe Contreras
+	Ingo
