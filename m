@@ -1,68 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZJCLdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbZJCLg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbZJCLdS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 07:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbZJCLdS
+	id S1755368AbZJCLg3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 07:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbZJCLg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 07:33:18 -0400
-Received: from www84.your-server.de ([213.133.104.84]:55618 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752684AbZJCLdR (ORCPT
+	Sat, 3 Oct 2009 07:36:28 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:33719 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754992AbZJCLg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 07:33:17 -0400
-Subject: Re: [patch] procfs: provide stack information for threads
-From: Stefani Seibold <stefani@seibold.net>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <m263axq8ie.fsf@whitebox.home>
-References: <1238511505.364.61.camel@matrix>
-	 <20090401193135.GA12316@elte.hu> <1244146873.20012.6.camel@wall-e>
-	 <m2eipl7axx.fsf@igel.home> <m2ws3djwrr.fsf@igel.home>
-	 <m263axq8ie.fsf@whitebox.home>
-Content-Type: text/plain
-Date: Sat, 03 Oct 2009 13:33:31 +0200
-Message-Id: <1254569611.18659.4.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Sat, 3 Oct 2009 07:36:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=do451Zyas2zzfJqI/EltG/H/ZOYYd+uz2nbEPqVclM05/X/3C/BzxuCBrv/wiArBkB
+         rtsUY++Ir0KjBUpVfrcqHaWyCiNJGdb6hVxUtiho9ppRbvsbqcLrasgpc2xxNvnCf4WG
+         wHZJ9eEoY7XwyTZbZ2NAnQtR/l1kS//k1/LBk=
+Date: Sat, 3 Oct 2009 13:36:29 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [GIT PULL v2] bkl tracepoints + filter regex support
+Message-ID: <20091003113627.GA6366@nowhere>
+References: <20090924201622.GA15459@elte.hu> <1253824200.18939.173.camel@laptop> <20090924204357.GB8662@nowhere> <1253825489.18939.180.camel@laptop> <20090924213631.GA2661@nowhere> <1253866792.10287.0.camel@twins> <20090925091229.GB4686@nowhere> <1253871601.10287.23.camel@twins> <20090925103806.GA6467@nowhere> <1253961861.12145.148.camel@frodo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253961861.12145.148.camel@frodo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, i missed this. Good job ;-)
+On Sat, Sep 26, 2009 at 06:44:21AM -0400, Steven Rostedt wrote:
+> 
+> Perhaps when we put full perl regex into the kernel (my goal ;-) then we
+> should look to keep different kinds of equals.
+> 
+>   ==  - is direct match. Only use of strcmp is needed.
+> 
+>   ~ - is globing. We can add a '*' which means match anything.
+> 
+> and if we do add true regex...
+> 
+>   =~ could be that.  field =~ '^spin.*{lock|unlock}$'
 
-Am Samstag, den 03.10.2009, 08:47 +0200 schrieb Andreas Schwab: 
-> Here's the patch again properly signed.
+
+Ok.
+I'm personnally fine with it.
+
+
+
+> Perl is considered a much better language for regex. It has one of the
+> most (if not the most) powerful regex engines. I'm sure recordmcount.pl
+> would be much larger if I chose to do it in python. Same goes with
+> streamline_config.pl.  They both have strong needs for complex regex.
+
+
+Yeah, python was a joke. I mean I think it's a nice language
+but not a syntax for what we want to do. It's an object oriented
+language and I guess we don't want to do:
+
+import re
+
+r = re.compile("blah")
+m = r.match("string")
+m.group(1)
+....
+
+:-)
+
+
+> > 
+> > More seriously, as I said above, I think most developers are familiar with C
+> > syntax, so IMHO this is one of our best possibility.
+> > 
 > 
-> Andreas.
-> 
-> >From 9da252fd7d9a5cf84a477a35a6b52f927c85b280 Mon Sep 17 00:00:00 2001
-> From: Andreas Schwab <schwab@linux-m68k.org>
-> Date: Sat, 3 Oct 2009 08:19:43 +0200
-> Subject: [PATCH] compat_do_execve: set current->stack_start as in do_execve
-> 
-> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
-> ---
->  fs/compat.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/compat.c b/fs/compat.c
-> index d576b55..6c19040 100644
-> --- a/fs/compat.c
-> +++ b/fs/compat.c
-> @@ -1532,6 +1532,8 @@ int compat_do_execve(char * filename,
->  	if (retval < 0)
->  		goto out;
->  
-> +	current->stack_start = current->mm->start_stack;
-> +
->  	/* execve succeeded */
->  	current->fs->in_exec = 0;
->  	current->in_execve = 0;
-> -- 
-> 1.6.4.4
-> 
-> 
+> To avoid the Python vs Perl, I say we stick with sed/awk. That is also a
+> requirement for most unix developers.
+
+
+Yeah I'm fine with it. As long as this is something already familiar
+for most users.
+
+Let's then pick ~ for glob and ~= for regex
+
+I'll fix that soon.
+
+Thanks.
 
