@@ -1,58 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbZJCSgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbZJCSjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbZJCSgF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 14:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbZJCSgE
+	id S1756870AbZJCSjQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 14:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbZJCSjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 14:36:04 -0400
-Received: from bu3sch.de ([62.75.166.246]:32861 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756571AbZJCSgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 14:36:02 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Tilman Schmidt <tilman@imap.cc>
-Subject: Re: [PATCH RFC] isdn/capi: fix up CAPI subsystem workaround locking a bit
-Date: Sat, 3 Oct 2009 20:35:19 +0200
-User-Agent: KMail/1.9.9
-Cc: i4ldeveloper@listserv.isdn4linux.de, Carsten Paeth <calle@calle.de>,
-       Karsten Keil <isdn@linux-pingi.de>, Karsten Keil <keil@b1-systems.de>,
-       Armin Schindler <armin@melware.de>, isdn4linux@listserv.isdn4linux.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20091003120657.2228911186C@xenon.ts.pxnet.com> <200910032026.24451.mb@bu3sch.de>
-In-Reply-To: <200910032026.24451.mb@bu3sch.de>
-X-Move-Along: Nothing to see here. No, really... Nothing.
+	Sat, 3 Oct 2009 14:39:16 -0400
+Received: from mail-yx0-f199.google.com ([209.85.210.199]:43758 "EHLO
+	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756710AbZJCSjO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 14:39:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=UBBuTdMZhmcE+O3ZQFt4JXCbFYHtOg7IO4CUZunphhc/7GrQbQ+ngMAUhuea4zwZJ0
+         hcREzw10e8f9kEOck6n+lWdg8UvtUZuPPt02UkE0MwHlIYjmT0vgfLcibZne80Iu+wcV
+         VkFNqSimjWUbkyo9j+Wdin/QyAcVssro9s+8I=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910032035.21884.mb@bu3sch.de>
+In-Reply-To: <20091002224413.11962.12302.stgit@localhost>
+References: <20091002223510.11962.21751.stgit@localhost> <20091002224413.11962.12302.stgit@localhost>
+From: Cory Maccarrone <darkstar6262@gmail.com>
+Date: Sat, 3 Oct 2009 11:38:18 -0700
+Message-ID: <6cb013310910031138k6086d1faje44d1582e5db9422@mail.gmail.com>
+Subject: Re: [PATCH 6/8] omapfb: Condition mutex acquisition
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-arm-kernel@lists.infradead.org, Imre Deak <imre.deak@nokia.com>,
+       Sergio Aguirre <saaguirre@ti.com>, linux-omap@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 October 2009 20:26:22 Michael Buesch wrote:
-> On Saturday 03 October 2009 14:06:57 Tilman Schmidt wrote:
-> > Move calls to handle_minor_send() and handle_minor_recv() out of
-> > the sections locked by workaround_lock.
-> > - handle_minor_send() may call another CAPI function via the card
-> >   driver, deadlocking by trying to take workaround_lock again.
-> > - handle_minor_recv() calls the receive_buf method of the active
-> >   line discipline which may sleep.
-> 
-> I remember that handle_minor_send() and/or handle_minor_recv() showed up
-> in the crash backtraces. So if you move them out of the critical
-> section, you can as well remove the lock completely.
-> 
+On Fri, Oct 2, 2009 at 3:44 PM, Tony Lindgren <tony@atomide.com> wrote:
+>
+> From: Sergio Aguirre <saaguirre@ti.com>
+>
+> This fixes a bug introduced by this commit ID:
+>
+>  commit 537a1bf059fa312355696fa6db80726e655e7f17
+>  Author: Krzysztof Helt <krzysztof.h1@wp.pl>
+>  Date:   Tue Jun 30 11:41:29 2009 -0700
+>
+>    fbdev: add mutex for fb_mmap locking
+>
+> In which a mutex was added when changing smem_start and smem_len fields,
+> so the mutex inside the fb_mmap() call is actually used.
+>
+> The problem was that set_fb_fix, which modifies the above 2 fields,
+> was called before and after registering the framebuffer,
+> which when used before registration, lead to a failed attempt to
+> use an uninitialized mutex.
+>
+> Solution: Don't use mutex before framebuffer registration.
+>
+> Signed-off-by: Sergio Aguirre <saaguirre@ti.com>
+> Acked-by: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+> Acked-by: Imre Deak <imre.deak@nokia.com>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+>  drivers/video/omap/omapfb_main.c |   22 ++++++++++++++--------
+>  1 files changed, 14 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
+> index 125e605..0d0c8c8 100644
+> --- a/drivers/video/omap/omapfb_main.c
+> +++ b/drivers/video/omap/omapfb_main.c
+> @@ -393,7 +393,7 @@ static void omapfb_sync(struct fb_info *fbi)
+>  * Set fb_info.fix fields and also updates fbdev.
+>  * When calling this fb_info.var must be set up already.
+>  */
+> -static void set_fb_fix(struct fb_info *fbi)
+> +static void set_fb_fix(struct fb_info *fbi, int from_init)
+>  {
+>        struct fb_fix_screeninfo *fix = &fbi->fix;
+>        struct fb_var_screeninfo *var = &fbi->var;
+> @@ -403,10 +403,16 @@ static void set_fb_fix(struct fb_info *fbi)
+>
+>        rg = &plane->fbdev->mem_desc.region[plane->idx];
+>        fbi->screen_base        = rg->vaddr;
+> -       mutex_lock(&fbi->mm_lock);
+> -       fix->smem_start         = rg->paddr;
+> -       fix->smem_len           = rg->size;
+> -       mutex_unlock(&fbi->mm_lock);
+> +
+> +       if (!from_init) {
+> +               mutex_lock(&fbi->mm_lock);
+> +               fix->smem_start         = rg->paddr;
+> +               fix->smem_len           = rg->size;
+> +               mutex_unlock(&fbi->mm_lock);
+> +       } else {
+> +               fix->smem_start         = rg->paddr;
+> +               fix->smem_len           = rg->size;
+> +       }
+>
+>        fix->type = FB_TYPE_PACKED_PIXELS;
+>        bpp = var->bits_per_pixel;
+> @@ -704,7 +710,7 @@ static int omapfb_set_par(struct fb_info *fbi)
+>        int r = 0;
+>
+>        omapfb_rqueue_lock(fbdev);
+> -       set_fb_fix(fbi);
+> +       set_fb_fix(fbi, 0);
+>        r = ctrl_change_mode(fbi);
+>        omapfb_rqueue_unlock(fbdev);
+>
+> @@ -904,7 +910,7 @@ static int omapfb_setup_mem(struct fb_info *fbi, struct omapfb_mem_info *mi)
+>                if (old_size != size) {
+>                        if (size) {
+>                                memcpy(&fbi->var, new_var, sizeof(fbi->var));
+> -                               set_fb_fix(fbi);
+> +                               set_fb_fix(fbi, 0);
+>                        } else {
+>                                /*
+>                                 * Set these explicitly to indicate that the
+> @@ -1504,7 +1510,7 @@ static int fbinfo_init(struct omapfb_device *fbdev, struct fb_info *info)
+>        var->bits_per_pixel = fbdev->panel->bpp;
+>
+>        set_fb_var(info, var);
+> -       set_fb_fix(info);
+> +       set_fb_fix(info, 1);
+>
+>        r = fb_alloc_cmap(&info->cmap, 16, 0);
+>        if (r != 0)
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-here's my original mail:
-http://lkml.indiana.edu/hypermail/linux/kernel/0605.0/0455.html
+Tested-by: Cory Maccarrone <darkstar6262@gmail.com>
 
-Note the patch in that mail does _not_ fix the issue, as it turned out later.
-Then I did the workaround-lock patch, which _did_ fix it.
+This patch works beautifully for omap850-based devices.  I need only
+add a board file and LCD resolution parameters, and I get a fully
+working framebuffer.
 
-But in that mail you can see the original crash backtraces, which might be
-useful for finding out what _really_ happened.
+I have tested with linux-omap master (commit
+6469d1c660f8751ff39836c81970cdbe46953057), adding only the board/lcd
+files on HTC Herald.
 
--- 
-Greetings, Michael.
+- Cory
