@@ -1,113 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbZJCFoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbZJCFtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430AbZJCFoo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 01:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZJCFoo
+	id S1753105AbZJCFtB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 01:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZJCFtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 01:44:44 -0400
-Received: from vms173017pub.verizon.net ([206.46.173.17]:44119 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750916AbZJCFon (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 01:44:43 -0400
-Date: Sat, 03 Oct 2009 01:44:42 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       sfi-devel@simplefirmware.org
-Subject: [git pull request] SFI patches for 2.6.31-rc1
-Message-id: <alpine.LFD.2.00.0910030142370.25240@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 3 Oct 2009 01:49:00 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56559 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751001AbZJCFs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 01:48:59 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+Any0k0C2ASw0kR7tnYj3YshrQ8KwShxHUGhLo8s
+	jqjR+LtNb4K42I
+Subject: Re: IO scheduler based IO controller V10
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+In-Reply-To: <20091002181903.GN31616@kernel.dk>
+References: <20091002092839.GA26962@kernel.dk>
+	 <alpine.LFD.2.01.0910020715160.6996@localhost.localdomain>
+	 <20091002145610.GD31616@kernel.dk>
+	 <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain>
+	 <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu>
+	 <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu>
+	 <20091002173732.GK31616@kernel.dk>
+	 <1254507215.8667.7.camel@marge.simson.net>
+	 <20091002181903.GN31616@kernel.dk>
+Content-Type: text/plain
+Date: Sat, 03 Oct 2009 07:48:51 +0200
+Message-Id: <1254548931.8299.18.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.41
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri, 2009-10-02 at 20:19 +0200, Jens Axboe wrote:
 
-please pull from: 
+> If you could do a cleaned up version of your overload patch based on
+> this:
+> 
+> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=1d2235152dc745c6d94bedb550fea84cffdbf768
+> 
+> then lets take it from there.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-sfi-2.6.git sfi-release
+If take it from there ends up meaning apply, and see who squeaks, feel
+free to delete the "Not", and my somewhat defective sense of humor.
 
-This will update the files shown below.
+Block:  Delay overloading of CFQ queues to improve read latency.
 
-thanks!
+Introduce a delay maximum dispatch timestamp, and stamp it when:
+	1. we encounter a known seeky or possibly new sync IO queue.
+	2. the current queue may go idle and we're draining async IO.
+	3. we have sync IO in flight and are servicing an async queue.
+	4  we are not the sole user of disk.
+Disallow exceeding quantum if any of these events have occurred recently.
 
---
-Len Brown
-Intel Open Source Technology Center
+Protect this behavioral change with a "desktop_dispatch" knob and default
+it to "on".. providing an easy means of regression verification prior to
+hate-mail dispatch :) to CC list.
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+... others who let somewhat hacky tweak slip by
+
+LKML-Reference: <new-submission>
+
+---
+ block/cfq-iosched.c |   45 +++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 41 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/block/cfq-iosched.c
+===================================================================
+--- linux-2.6.orig/block/cfq-iosched.c
++++ linux-2.6/block/cfq-iosched.c
+@@ -174,6 +174,9 @@ struct cfq_data {
+ 	unsigned int cfq_slice_async_rq;
+ 	unsigned int cfq_slice_idle;
+ 	unsigned int cfq_desktop;
++	unsigned int cfq_desktop_dispatch;
++
++	unsigned long desktop_dispatch_ts;
+ 
+ 	struct list_head cic_list;
+ 
+@@ -1283,6 +1286,7 @@ static int cfq_dispatch_requests(struct
+ 	struct cfq_data *cfqd = q->elevator->elevator_data;
+ 	struct cfq_queue *cfqq;
+ 	unsigned int max_dispatch;
++	unsigned long delay;
+ 
+ 	if (!cfqd->busy_queues)
+ 		return 0;
+@@ -1297,19 +1301,26 @@ static int cfq_dispatch_requests(struct
+ 	/*
+ 	 * Drain async requests before we start sync IO
+ 	 */
+-	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
++	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC]) {
++		cfqd->desktop_dispatch_ts = jiffies;
+ 		return 0;
++	}
+ 
+ 	/*
+ 	 * If this is an async queue and we have sync IO in flight, let it wait
+ 	 */
+-	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
++	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq)) {
++		cfqd->desktop_dispatch_ts = jiffies;
+ 		return 0;
++	}
+ 
+ 	max_dispatch = cfqd->cfq_quantum;
+ 	if (cfq_class_idle(cfqq))
+ 		max_dispatch = 1;
+ 
++	if (cfqd->busy_queues > 1)
++		cfqd->desktop_dispatch_ts = jiffies;
++
+ 	/*
+ 	 * Does this cfqq already have too much IO in flight?
+ 	 */
+@@ -1327,6 +1338,16 @@ static int cfq_dispatch_requests(struct
+ 			return 0;
+ 
+ 		/*
++		 * Don't start overloading until we've been alone for a bit.
++		 */
++		if (cfqd->cfq_desktop_dispatch) {
++			delay = cfqd->desktop_dispatch_ts + cfq_slice_sync;
++
++			if (time_before(jiffies, max_delay))
++				return 0;
++		}
++
++		/*
+ 		 * we are the only queue, allow up to 4 times of 'quantum'
+ 		 */
+ 		if (cfqq->dispatched >= 4 * max_dispatch)
+@@ -1942,7 +1963,7 @@ static void
+ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		       struct cfq_io_context *cic)
+ {
+-	int old_idle, enable_idle;
++	int old_idle, enable_idle, seeky = 0;
+ 
+ 	/*
+ 	 * Don't idle for async or idle io prio class
+@@ -1950,10 +1971,20 @@ cfq_update_idle_window(struct cfq_data *
+ 	if (!cfq_cfqq_sync(cfqq) || cfq_class_idle(cfqq))
+ 		return;
+ 
++	if (cfqd->hw_tag) {
++		if (CIC_SEEKY(cic))
++			seeky = 1;
++		/*
++		 * If seeky or incalculable seekiness, delay overloading.
++		 */
++		if (seeky || !sample_valid(cic->seek_samples))
++			cfqd->desktop_dispatch_ts = jiffies;
++	}
++
+ 	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
+ 
+ 	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
+-	    (!cfqd->cfq_desktop && cfqd->hw_tag && CIC_SEEKY(cic)))
++	    (!cfqd->cfq_desktop && seeky))
+ 		enable_idle = 0;
+ 	else if (sample_valid(cic->ttime_samples)) {
+ 		if (cic->ttime_mean > cfqd->cfq_slice_idle)
+@@ -2483,6 +2514,9 @@ static void *cfq_init_queue(struct reque
+ 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
+ 	cfqd->cfq_slice_idle = cfq_slice_idle;
+ 	cfqd->cfq_desktop = 1;
++	cfqd->cfq_desktop_dispatch = 1;
++
++	cfqd->desktop_dispatch_ts = INITIAL_JIFFIES;
+ 	cfqd->hw_tag = 1;
+ 
+ 	return cfqd;
+@@ -2553,6 +2587,7 @@ SHOW_FUNCTION(cfq_slice_sync_show, cfqd-
+ SHOW_FUNCTION(cfq_slice_async_show, cfqd->cfq_slice[0], 1);
+ SHOW_FUNCTION(cfq_slice_async_rq_show, cfqd->cfq_slice_async_rq, 0);
+ SHOW_FUNCTION(cfq_desktop_show, cfqd->cfq_desktop, 0);
++SHOW_FUNCTION(cfq_desktop_dispatch_show, cfqd->cfq_desktop_dispatch, 0);
+ #undef SHOW_FUNCTION
+ 
+ #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
+@@ -2585,6 +2620,7 @@ STORE_FUNCTION(cfq_slice_async_store, &c
+ STORE_FUNCTION(cfq_slice_async_rq_store, &cfqd->cfq_slice_async_rq, 1,
+ 		UINT_MAX, 0);
+ STORE_FUNCTION(cfq_desktop_store, &cfqd->cfq_desktop, 0, 1, 0);
++STORE_FUNCTION(cfq_desktop_dispatch_store, &cfqd->cfq_desktop_dispatch, 0, 1, 0);
+ #undef STORE_FUNCTION
+ 
+ #define CFQ_ATTR(name) \
+@@ -2601,6 +2637,7 @@ static struct elv_fs_entry cfq_attrs[] =
+ 	CFQ_ATTR(slice_async_rq),
+ 	CFQ_ATTR(slice_idle),
+ 	CFQ_ATTR(desktop),
++	CFQ_ATTR(desktop_dispatch),
+ 	__ATTR_NULL
+ };
+ 
 
 
-ps. individual patches are available on sfi-devel@simplefirmware.org
-and a consolidated plain patch is available here:
-http://ftp.kernel.org/pub/linux/kernel/people/lenb/sfi/patches/2.6.32/acpi-sfi-release-20090903-2.6.32-rc2.diff.gz
-
- drivers/sfi/sfi_core.c |   17 +++++++++++++----
- 1 files changed, 13 insertions(+), 4 deletions(-)
-
-through these commits:
-
-Arjan van de Ven (1):
-      SFI: remove __init from sfi_verify_table
-
-Rakib Mullick (1):
-      SFI: fix section mismatch warnings in sfi_core.c
-
-with this log:
-
-commit 011a606d0670196c17110b6770e39cc0865aa614
-Author: Arjan van de Ven <arjan@infradead.org>
-Date:   Fri Oct 2 07:29:47 2009 -0700
-
-    SFI: remove __init from sfi_verify_table
-    
-    sfi_verify_table() is called at runtime, and thus cannot be __init
-    
-    Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 01674da6f587a3f3940eedf2c1e97d51c35b994e
-Author: Rakib Mullick <rakib.mullick@gmail.com>
-Date:   Wed Sep 30 16:09:55 2009 -0700
-
-    SFI: fix section mismatch warnings in sfi_core.c
-    
-    The function sfi_map_memory/sfi_unmap_memory uses
-    early_ioremap/early_iounmap respectively, which refers to a __init
-    function.  And function sfi_check_table also refers to a __init function
-    sfi_verify_table.  Since the references are valid, so use __ref to get rid
-    of the warnings.
-    
-     We were warned by the following warnings:
-    
-      LD      vmlinux.o
-      MODPOST vmlinux.o
-    WARNING: vmlinux.o(.text+0xb6ba3a): Section mismatch in reference from
-    the function sfi_map_memory() to the function
-    .init.text:early_ioremap()
-    The function sfi_map_memory() references
-    the function __init early_ioremap().
-    This is often because sfi_map_memory lacks a __init
-    annotation or the annotation of early_ioremap is wrong.
-    
-    WARNING: vmlinux.o(.text+0xb6bab6): Section mismatch in reference from
-    the function sfi_unmap_memory() to the function
-    .init.text:early_iounmap()
-    The function sfi_unmap_memory() references
-    the function __init early_iounmap().
-    This is often because sfi_unmap_memory lacks a __init
-    annotation or the annotation of early_iounmap is wrong.
-    
-    WARNING: vmlinux.o(.text+0xb6be30): Section mismatch in reference from
-    the function sfi_check_table() to the function
-    .init.text:sfi_verify_table()
-    The function sfi_check_table() references
-    the function __init sfi_verify_table().
-    This is often because sfi_check_table lacks a __init
-    annotation or the annotation of sfi_verify_table is wrong.
-    
-    Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Len Brown <len.brown@intel.com>
