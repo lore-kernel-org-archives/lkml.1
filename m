@@ -1,110 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZJCHT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbZJCHU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbZJCHT2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 03:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbZJCHT1
+	id S1753462AbZJCHU6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 03:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZJCHU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 03:19:27 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:39036 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbZJCHT1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 03:19:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=yBaOIqOSQY0npVwlL731gOFMgOq2xUKQCWVaAcajptbbMgL2TS5GOnCyvLv80+RBBH
-         jBB4KMR1sIbuzJbJbv/HyvWe1Zot1WzcgNX2zDQWwaEoWOnGJBs8lAyFndobhA12PQLx
-         Xj+raYMhJt4FB0/3L+K2ARs/4kMBqPCdoeA3o=
-From: Corentin Chary <corentincj@iksaif.net>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Subject: Re: [Resend][PATCH] eeepc-laptop: Properly annote eeepc_enable_camera().
-Date: Sat, 3 Oct 2009 09:20:18 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-gentoo; KDE/4.3.1; x86_64; ; )
-Cc: acpi4asus-user@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <b9df5fa10910022324u1d91b4d0oe051ef45dd347cbc@mail.gmail.com>
-In-Reply-To: <b9df5fa10910022324u1d91b4d0oe051ef45dd347cbc@mail.gmail.com>
+	Sat, 3 Oct 2009 03:20:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35568 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752795AbZJCHU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 03:20:57 -0400
+Date: Sat, 3 Oct 2009 09:20:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091003072021.GB21407@elte.hu>
+References: <20091002145610.GD31616@kernel.dk> <alpine.LFD.2.01.0910020811490.6996@localhost.localdomain> <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu> <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu> <20091002173732.GK31616@kernel.dk> <1254507215.8667.7.camel@marge.simson.net> <20091002181903.GN31616@kernel.dk> <1254548931.8299.18.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910030920.18591.corentincj@iksaif.net>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254548931.8299.18.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 October 2009 08:24:53 Rakib Mullick wrote:
->  Currently the annotation for function eeepc_enable_camera() is
-> __init, and refers to a
-> function eeepc_hotk_add() which is non-init. Use __devinit for both
-> functions which is
-> more appropriate and fixes a section mismatch warning.
-> 
->  We were warned by the following warning:
-> 
->   LD      drivers/platform/x86/built-in.o
-> WARNING: drivers/platform/x86/built-in.o(.text+0x12e1): Section
-> mismatch in reference from the function eeepc_hotk_add() to the
-> function .init.text:eeepc_enable_camera()
-> The function eeepc_hotk_add() references
-> the function __init eeepc_enable_camera().
-> This is often because eeepc_hotk_add lacks a __init
-> annotation or the annotation of eeepc_enable_camera is wrong.
-> 
-> ---
-> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-> 
-> --- linus/drivers/platform/x86/eeepc-laptop.c	2009-10-03
-> 12:44:40.000000000 +0600
-> +++ rakib/drivers/platform/x86/eeepc-laptop.c	2009-10-03
-> 12:48:42.000000000 +0600
-> @@ -350,7 +350,7 @@ static const struct rfkill_ops eeepc_rfk
->  	.set_block = eeepc_rfkill_set,
->  };
-> 
-> -static void __init eeepc_enable_camera(void)
-> +static void __devinit eeepc_enable_camera(void)
->  {
->  	/*
->  	 * If the following call to set_acpi() fails, it's because there's no
-> @@ -1189,7 +1189,7 @@ static int eeepc_input_init(struct devic
->  	return 0;
->  }
-> 
-> -static int eeepc_hotk_add(struct acpi_device *device)
-> +static int __devinit eeepc_hotk_add(struct acpi_device *device)
->  {
->  	struct device *dev;
->  	int result;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
 
-Hi,
-The patch is broken again, 
-The section 
-> --- linus/drivers/platform/x86/eeepc-laptop.c	2009-10-03
-> 12:44:40.000000000 +0600
-> +++ rakib/drivers/platform/x86/eeepc-laptop.c	2009-10-03
-> 12:48:42.000000000 +0600
-is line-wrapped by mail client when you send it. It happens because 
-rakib/drivers/platform/x86/eeepc-laptop.c is a very long patch.
+* Mike Galbraith <efault@gmx.de> wrote:
 
-The Signed-off-by also should be before ---
+>  	unsigned int cfq_desktop;
+> +	unsigned int cfq_desktop_dispatch;
 
-Anyway I fixed it and applied your patch in acpi4asus tree.
-I'll try to get it merged into 2.6.32.
+> -	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
+> +	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC]) {
+> +		cfqd->desktop_dispatch_ts = jiffies;
+>  		return 0;
+> +	}
 
-Please read Documentation/email-clients.txt to fix your mail client
-or just use git send-email.
+btw., i hope all those desktop_ things will be named latency_ pretty 
+soon as the consensus seems to be - the word 'desktop' feels so wrong in 
+this context.
 
-Thanks,
--- 
-Corentin Chary
-http://xf.iksaif.net
+'desktop' is a form of use of computers and the implication of good 
+latencies goes far beyond that category of systems.
+
+	Ingo
