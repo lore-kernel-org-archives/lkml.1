@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbZJCOMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbZJCOQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275AbZJCOMa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 10:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbZJCOM3
+	id S932284AbZJCOQo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 10:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932250AbZJCOQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 10:12:29 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35208 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbZJCOM2 (ORCPT
+	Sat, 3 Oct 2009 10:16:44 -0400
+Received: from smtp-cpk.frontbridge.com ([204.231.192.41]:22472 "EHLO
+	WA2EHSNDR001.bigfish.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932227AbZJCOQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 10:12:28 -0400
-Message-ID: <4AC75BC5.6030207@zytor.com>
-Date: Sat, 03 Oct 2009 07:12:21 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Sat, 3 Oct 2009 10:16:43 -0400
+X-BigFish: VPS89(zz13ddRzz1202hzzz2dh87h6bha7iu221ln)
+X-FB-OUTBOUND-SPAM: yes
+X-SpamScore: 89
+X-FB-DOMAIN-IP-MATCH: fail
+Reply-To: <Henrypeters@mail2dotcom.com>
+From: Henry Peters <Henrypeterss@mail2dotcom.com>
+Subject: Job Offer!!!.
+Date: Sat, 3 Oct 2009 07:16:45 -0700
 MIME-Version: 1.0
-To: Matteo Croce <technoboy85@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: i686 quirk for AMD Geode
-References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> 	<20091003072127.GC21407@elte.hu> <40101cc30910030253w70adc454r1bb38ff4424c7b14@mail.gmail.com>
-In-Reply-To: <40101cc30910030253w70adc454r1bb38ff4424c7b14@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="Windows-1251"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2600.0000
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
+Message-ID: <OM01neAzdfTVSxzW23400006644@mail.fluidequip.com>
+X-OriginalArrivalTime: 03 Oct 2009 14:16:59.0437 (UTC) FILETIME=[2B9FEDD0:01CA4434]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.5.1027-16314.001
+X-TM-AS-Result: Yes-24.542200-5.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
+X-Reverse-DNS: mail.fluidequip.com
+To: undisclosed-recipients:;
+X-SMTP-Mail-From: Henrypeterss@mail2dotcom.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/03/2009 02:53 AM, Matteo Croce wrote:
-> 
-> Sorry Ingo but if you read my last mail I wrote that the GEODE does
-> supports FCOMI but not NOPL
-> so i don't know if it's worth it, even is I haven't ANY binary in my
-> system with such instruction:
-> 
-> # find /lib/tls/i686 /lib/i686 -type f |xargs objdump -d |grep -c nopl
-> 0
 
-Recent gcc/binutils has been known to start to use them.
+A new job opening in your area, It's a work from home/office position and you are not required to pay any registration fee or pay for any application form before you get employed. Job details (what you'll be doing):
 
-Either way, it's a user-space-visible difference, so at least the kernel
-will not signal anything else based on existing precedent.
+1.Collect payment from Customers.
 
-	-hpa
+2. Cash Payments at your Bank.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+3. Deduct 1/10 which is your commission/Payment on check cashed.
+
+4. Forward the remaining 9/10 to the information that will be provided later on. fill application:
+
+I would be glad if you accept my proposal  for an opportunity to make up 10% of each transaction completed.  Please reply via email with complete information as requested:
+
+A. NAME,B. STREET ADDRESS (NOT P.O BOX),C. CITY:D. STATE:E. ZIP CODE F. COUNTRY G. MOBILE  NUMBER,H. AGE,I. SEX,J. OCCUPATION K. E MAIL
+All replies should be sent to  Henrypeters@mail2dotcom.com
+
+kindly reply immediately.
+
+Please email me back as soon as possible.
+
+Regards,
+Henry Peters
 
