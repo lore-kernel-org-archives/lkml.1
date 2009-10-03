@@ -1,99 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbZJCQHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbZJCQBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755677AbZJCQHX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 12:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbZJCQHW
+	id S1756580AbZJCQBW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 12:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbZJCQBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 12:07:22 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:52834 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751360AbZJCQHV convert rfc822-to-8bit (ORCPT
+	Sat, 3 Oct 2009 12:01:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46889 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756239AbZJCQBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 12:07:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=GVL22WQ1k4CADT2PNsK/mXlZA8//oC9HuOdUZNAba1Z8Odgve2St2iF0Gkz+hYqpNx
-         eQ3b76TcsCeniy+jw9jbeONkpXeuWByLefzAwPJlqaw6fvmDAYcGucI5jfYa8P2lq/QH
-         yOKHdkCXLzok+3lnG4e6sHjyzsNA85YbfxY8U=
-MIME-Version: 1.0
-In-Reply-To: <200910022337.42283.rjw@sisk.pl>
-References: <cb0375e10910021044n182d696dy8fd566925e46b134@mail.gmail.com>
-	 <cb0375e10910021229x7924ec56o61627ec0f625a70c@mail.gmail.com>
-	 <200910022337.42283.rjw@sisk.pl>
-Date: Sat, 3 Oct 2009 11:58:58 -0400
-X-Google-Sender-Auth: aedb069849a91303
-Message-ID: <cb0375e10910030858i63051557j5fad3312d3bd3a4c@mail.gmail.com>
-Subject: Re: High power consumption after suspend/resume cycle
-From: Andrew Lutomirski <luto@mit.edu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-thinkpad@linux-thinkpad.org,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 3 Oct 2009 12:01:21 -0400
+Subject: Re: ftrace WARNING during boot
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Matti Aarnio <matti.aarnio@zmailer.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20091003112850.GC32486@mea-ext.zmailer.org>
+References: <20091003105318.GB32486@mea-ext.zmailer.org>
+	 <20091003110002.GA6162@nowhere>
+	 <20091003112850.GC32486@mea-ext.zmailer.org>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Sat, 03 Oct 2009 11:59:21 -0400
+Message-Id: <1254585561.12892.3.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 2, 2009 at 5:37 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday 02 October 2009, Andrew Lutomirski wrote:
->> [Adding cc's to linux-pm and linux-acpi and ]
->>
->> On Fri, Oct 2, 2009 at 1:44 PM, Andrew Lutomirski <luto@mit.edu> wrote:
->> > Hi all-
->> >
->> > I'm running a git kernel that's slightly newer than 2.6.32-rc1.
->> >
->> > First, thanks for all the great work everywhere on laptop power
->> > consumption -- on my Lenovo X200s, it looks like Linux is getting
->> > close to Windows (Windows wins by about 0.7W, except that its power
->> > usage frequently spikes since Windows apparently still doesn't know
->> > how to sit still and do nothing, whereas Linux's seems more stable.),
->> > even running KDE with compositing enabled and
->> > while connected to wifi, at least after some tweaking.
->>
->> [fixed irrelevant typo above, too.]
->>
->> >
->> > There's a catch, though: after a suspend/resume cycle, power
->> > consumption goes up by over well over a watt.  (On a system that draws
->> > about 7 watts before suspending, that's a big deal.)  I've tried
->> > turning off X, suspending with 'echo mem > /sys/power/state' to avoid
->> > any distro scripts running, and manually restoring SATA power saving
->> > settings, but it still happens.  I even tried unbinding e1000e and
->> > both USB drivers, unloading the i2400 (wimax) driver, iwlagn, and
->> > iwlcore, and it still happens.  This is 100% reproducible, and I'd be
->> > happy to test things.
->> >
->> > This could be a BIOS bug I suppose (although I'm running the latest
->> > BIOS), but Windows 7 does not have this problem at all.
->> >
->> > Any ideas about what to try or what subsystem to blame?
->
-> It's quite hard to say.  Most likely one of devices is put into the full power
-> state during resume and not put back into the low power state it was in before.
->
-> That may be a result of the PCI core handling of resume, which puts all devices
-> into D0 in order to restore their standard config registers and doesn't put
-> them into low power states afterwards.
+On Sat, 2009-10-03 at 14:28 +0300, Matti Aarnio wrote:
 
-I don't think that's the problem at all -- I diffed the output of
-lspci -vvvvxxxx before and after suspend and none of the differences
-looked interesting.  Everything was in D0 both before and after.  One
-of the EHCI devices had PME asserted after resume, but clearing that
-with setpci made no difference.
+> > >   .....................
+> > >  kernel: rtc_cmos 00:04: setting system clock to 2009-10-02 23:21:17 UTC (1254525677)
+> > >  kernel: Initalizing network drop monitor service
+> > >  kernel: Freeing unused kernel memory: 3196k freed
+> > >  kernel: NX-protecting the kernel data: ffffffff8150e000, 4469 pages
+> > >  kernel: Write protecting the kernel read-only data: 7392k
+> > >  kernel: dracut: dracut-002-2.gitc53acc30.fc12
+> > >  kernel: udev: starting version 145
+> > >  kernel: usb 1-5: new high speed USB device using ehci_hcd and address 4
+> > >  kernel: ------------[ cut here ]------------
+> > >  kernel: WARNING: at kernel/trace/ftrace.c:1003 ftrace_bug+0x198/0x27e() (Not tainted)
+> > >  kernel: Hardware name: System Product Name
+> > >  kernel: Modules linked in: i2c_core(+)
+> > >  kernel: Pid: 87, comm: modprobe Not tainted 2.6.31-33.fc12.x86_64 #1
+> > >  kernel: Call Trace:
+> > >  kernel: [<ffffffff810642ec>] warn_slowpath_common+0x95/0xc3
+> > >  kernel: [<ffffffffa0003072>] ? i2c_new_dummy+0x8/0x5e [i2c_core]
+> > >  kernel: [<ffffffff81064341>] warn_slowpath_null+0x27/0x3d
+> > >  kernel: [<ffffffff810d4ace>] ftrace_bug+0x198/0x27e
+> > >  kernel: [<ffffffffa0003072>] ? i2c_new_dummy+0x8/0x5e [i2c_core]
+> > >  kernel: [<ffffffff810d5d26>] ftrace_convert_nops+0x201/0x2b9
+> > >  kernel: [<ffffffffa0003072>] ? i2c_new_dummy+0x8/0x5e [i2c_core]
+> > >  kernel: [<ffffffff810d5e2a>] ftrace_module_notify+0x4c/0x7f
+> > >  kernel: [<ffffffff81509c65>] notifier_call_chain+0x72/0xba
+> > >  kernel: [<ffffffff81086e71>] ? __blocking_notifier_call_chain+0x4c/0x8e
+> > >  kernel: [<ffffffff81086e88>] __blocking_notifier_call_chain+0x63/0x8e
+> > >  kernel: [<ffffffff81086eda>] blocking_notifier_call_chain+0x27/0x3d
+> > >  kernel: [<ffffffff810a472a>] sys_init_module+0xb7/0x249
+> > >  kernel: [<ffffffff81011f42>] system_call_fastpath+0x16/0x1b
+> > >  kernel: ---[ end trace fbf9054ae0f212c7 ]---
+> > >  kernel: ftrace faulted on writing [<ffffffffa0003072>] i2c_new_dummy+0x8/0x5e [i2c_core]
 
-I did some more experiments that make it look like it's a bug in i915.
- I'll email the maintainers.
+This means the update to modify the call to mcount to a nop failed.
+Everything else passed (the read and compare). I think I saw some
+patches go by that works on making the text in modules read only.
 
->
-> If that's really the case, PCI run-time PM should help here once implemented,
-> although that's going to take some time to achieve.
+The ftrace update for text in core kernel makes the text writable for
+the small window where we call kstop machine and update the text. Then
+it makes that code read only again. At the time this code was written,
+the modules were always read/write. If this has changed, I believe the
+ftrace update needs to be fixed too.
 
-I'm looking forward to another little bit of power savings there, too :)
+-- Steve
 
-Thanks,
-Andy
+
+> > >  kernel: usb 1-5: New USB device found, idVendor=0424, idProduct=2504
+> > >  kernel: usb 1-5: New USB device strings: Mfr=0, Product=0, SerialNumber=0
+> > >  kernel: usb 1-5: configuration #1 chosen from 1 choice
+> > >  kernel: hub 1-5:1.0: USB hub found
+> > >  kernel: hub 1-5:1.0: 4 ports detected
+
+
