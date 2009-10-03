@@ -1,132 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZJCPUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZJCPt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbZJCPUw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 11:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZJCPUv
+	id S1756130AbZJCPt6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 11:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbZJCPt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 11:20:51 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:58891 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751163AbZJCPUv convert rfc822-to-8bit (ORCPT
+	Sat, 3 Oct 2009 11:49:57 -0400
+Received: from mga05.intel.com ([192.55.52.89]:4195 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753047AbZJCPt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 11:20:51 -0400
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Organization: Mandriva
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [079/136] [CPUFREQ] Fix NULL ptr regression in powernow-k8
-Date: Sat, 3 Oct 2009 12:19:08 -0300
-User-Agent: KMail/1.12.1 (Linux/2.6.31.1-desktop-1mnb; KDE/4.3.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dave Jones <davej@redhat.com>
-References: <20091002011548.335611824@mini.kroah.org> <20091002012418.981922186@mini.kroah.org>
-In-Reply-To: <20091002012418.981922186@mini.kroah.org>
+	Sat, 3 Oct 2009 11:49:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,499,1249282800"; 
+   d="scan'208";a="732742087"
+Date: Sat, 3 Oct 2009 08:48:44 -0700
+From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Subject: Re: Annoying problems with lacie external hd (JMicron 0x2339?)
+Message-ID: <20091003154844.GA24819@xanatos>
+References: <94a0d4530910030335p2eae17a6wddf6d87b7f60b712@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200910031219.08574.herton@mandriva.com.br>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <94a0d4530910030335p2eae17a6wddf6d87b7f60b712@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Qui 01 Out 2009, às 22:17:07, Greg KH escreveu:
-> 2.6.31-stable review patch.  If anyone has any objections, please let us know.
+On Sat, Oct 03, 2009 at 01:35:58PM +0300, Felipe Contreras wrote:
+> Hi,
 > 
-> ------------------
-> From: Kurt Roeckx <kurt@roeckx.be>
+> This is with 2.6.31.1.
 > 
-> commit f0adb134d8dc9993a9998dc50845ec4f6ff4fadc upstream.
+> I'm having a lot of problems with a lacie external hd[1]. It seems the
+> actual disk is a seagate ST375064, and the bridge is a JMicron 2339.
 > 
-> Fixes bugzilla #13780
+> In normal usage what I see is that if I don't use the disk after a
+> while hear a loud click (as if something got stuck) and then I cannot
+> use it any more; I have to turn it off and on again.
 > 
-> From: Kurt Roeckx <kurt@roeckx.be>
-> Signed-off-by: Dave Jones <davej@redhat.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> But then I started to see some problems on one fs, so I ran badblocks
+> and I noticed a lot of strange behavior. It seems once I get a
+> read/write error then I get more of them in a row, and after a while I
+> hear another loud click, and then I only get read/write errors
+> constantly.
 > 
-> ---
->  arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   15 ++++++++-------
->  1 file changed, 8 insertions(+), 7 deletions(-)
+> I noticed in 'unusual_devs.h' there's already a quirk for another
+> JMicron product, so I tried to do the same:
 > 
-> --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> @@ -605,9 +605,10 @@ static int check_pst_table(struct powern
->  	return 0;
->  }
->  
-> -static void invalidate_entry(struct powernow_k8_data *data, unsigned int entry)
-> +static void invalidate_entry(struct cpufreq_frequency_table *powernow_table,
-> +		unsigned int entry)
->  {
-> -	data->powernow_table[entry].frequency = CPUFREQ_ENTRY_INVALID;
-> +	powernow_table[entry].frequency = CPUFREQ_ENTRY_INVALID;
->  }
->  
->  static void print_basics(struct powernow_k8_data *data)
-> @@ -914,13 +915,13 @@ static int fill_powernow_table_pstate(st
->  					"bad value %d.\n", i, index);
->  			printk(KERN_ERR PFX "Please report to BIOS "
->  					"manufacturer\n");
-> -			invalidate_entry(data, i);
-> +			invalidate_entry(powernow_table, i);
->  			continue;
->  		}
->  		rdmsr(MSR_PSTATE_DEF_BASE + index, lo, hi);
->  		if (!(hi & HW_PSTATE_VALID_MASK)) {
->  			dprintk("invalid pstate %d, ignoring\n", index);
-> -			invalidate_entry(data, i);
-> +			invalidate_entry(powernow_table, i);
->  			continue;
->  		}
->  
-> @@ -970,7 +971,7 @@ static int fill_powernow_table_fidvid(st
->  		/* verify frequency is OK */
->  		if ((freq > (MAX_FREQ * 1000)) || (freq < (MIN_FREQ * 1000))) {
->  			dprintk("invalid freq %u kHz, ignoring\n", freq);
-> -			invalidate_entry(data, i);
-> +			invalidate_entry(powernow_table, i);
->  			continue;
->  		}
->  
-> @@ -978,7 +979,7 @@ static int fill_powernow_table_fidvid(st
->  		 * BIOSs are using "off" to indicate invalid */
->  		if (vid == VID_OFF) {
->  			dprintk("invalid vid %u, ignoring\n", vid);
-> -			invalidate_entry(data, i);
-> +			invalidate_entry(powernow_table, i);
->  			continue;
->  		}
->  
-> @@ -1009,7 +1010,7 @@ static int fill_powernow_table_fidvid(st
->  				(unsigned int)
->  				(data->acpi_data.states[i].core_frequency
->  				 * 1000));
-> -			invalidate_entry(data, i);
-> +			invalidate_entry(powernow_table, i);
->  			continue;
->  		}
->  	}
+> +UNUSUAL_DEV(  0x152d, 0x2339, 0x0000, 0xffff,
+> +               "JMicron",
+> +               "USB to ATA/ATAPI Bridge",
+> +               US_SC_DEVICE, US_PR_DEVICE, NULL,
+> +               US_FL_IGNORE_RESIDUE | US_FL_SANE_SENSE ),
 > 
+> This seemed to help with the consecutive errors, but not with the loud click.
+> 
+> This is what I get when this click happens:
+> 
+> Oct  3 13:14:54 annwn kernel: [  351.099096] usb 1-1: reset high speed
+> USB device using ehci_hcd and address 3
+> Oct  3 13:14:54 annwn kernel: [  351.213541] usb 1-1: device firmware changed
+> Oct  3 13:14:54 annwn kernel: [  351.213588] usb 1-1: USB disconnect, address 3
+> Oct  3 13:14:54 annwn kernel: [  351.213633] sd 4:0:0:0: Device
+> offlined - not ready after error recovery
+> Oct  3 13:14:54 annwn kernel: [  351.213650] sd 4:0:0:0: [sdb]
+> Unhandled error code
+> Oct  3 13:14:54 annwn kernel: [  351.213655] sd 4:0:0:0: [sdb] Result:
+> hostbyte=DID_ABORT driverbyte=DRIVER_OK
+> Oct  3 13:14:54 annwn kernel: [  351.213663] end_request: I/O error,
+> dev sdb, sector 8596352
+> Oct  3 13:14:54 annwn kernel: [  351.213774] sd 4:0:0:0: rejecting I/O
+> to offline device
+> Oct  3 13:14:54 annwn kernel: [  351.213816] sd 4:0:0:0: rejecting I/O
+> to offline device
+> Oct  3 13:14:54 annwn kernel: [  351.213852] sd 4:0:0:0: rejecting I/O
+> to offline device
+> Oct  3 13:14:54 annwn kernel: [  351.213891] sd 4:0:0:0: rejecting I/O
+> to offline device
+> Oct  3 13:14:54 annwn kernel: [  351.213927] sd 4:0:0:0: rejecting I/O
+> to offline device
+> Oct  3 13:14:54 annwn kernel: [  351.213962] sd 4:0:0:0: rejecting I/O
+> to offline device
+> Oct  3 13:14:54 annwn kernel: [  351.213997] sd 4:0:0:0: rejecting I/O
+> to offline device
+> Oct  3 13:14:54 annwn kernel: [  351.214202] sd 4:0:0:0: rejecting I/O
+> to offline device
+> Oct  3 13:14:55 annwn kernel: [  351.317278] usb 1-1: new high speed
+> USB device using ehci_hcd and address 4
+> Oct  3 13:14:55 annwn kernel: [  351.432192] usb 1-1: New USB device
+> found, idVendor=152d, idProduct=2339
+> Oct  3 13:14:55 annwn kernel: [  351.432196] usb 1-1: New USB device
+> strings: Mfr=1, Product=2, SerialNumber=5
+> Oct  3 13:14:55 annwn kernel: [  351.432199] usb 1-1: Product: USB to
+> ATA/ATAPI Bridge
+> Oct  3 13:14:55 annwn kernel: [  351.432202] usb 1-1: Manufacturer: JMicron
+> Oct  3 13:14:55 annwn kernel: [  351.432204] usb 1-1: SerialNumber: 5D27FFFFFFFF
+> Oct  3 13:14:55 annwn kernel: [  351.432321] usb 1-1: configuration #1
+> chosen from 1 choice
+> Oct  3 13:14:55 annwn kernel: [  351.432791] scsi5 : SCSI emulation
+> for USB Mass Storage devices
+> 
+> Can anyone help? This disk is important for me =/
 
-With this applied I get following warning:
-arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1001: warning: passing argument 1 of 'invalidate_entry' from incompatible pointer type
+The log shows the device just disconnected from the system.  You should
+post more of the logfile before the disconnect so we can see if it's an
+issue with the USB core.  Did it work with a previous kernel?
 
-There is a missing data->powernow_table change, following diff on top fixes it:
+It could be that your disk is just dying, and occasionally
+disconnecting.  Or you could have a bad cable or a hub that's
+introducing noise.  Can you try a different USB cable?
 
-diff -p -up linux-2.6.31/arch/x86/kernel/cpu/cpufreq/powernow-k8.c.orig linux-2.6.31/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
---- linux-2.6.31/arch/x86/kernel/cpu/cpufreq/powernow-k8.c.orig	2009-10-03 12:06:38.000000000 -0300
-+++ linux-2.6.31/arch/x86/kernel/cpu/cpufreq/powernow-k8.c	2009-10-03 12:08:34.000000000 -0300
-@@ -998,7 +998,7 @@ static int fill_powernow_table_fidvid(st
- 
- 				dprintk("double low frequency table entry, "
- 						"ignoring it.\n");
--				invalidate_entry(data, i);
-+				invalidate_entry(powernow_table, i);
- 				continue;
- 			} else
- 				cntlofreq = i;
+Sarah Sharp
 
-
--- 
-[]'s
-Herton
+> T:  Bus=01 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#= 62 Spd=480 MxCh= 0
+> D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+> P:  Vendor=152d ProdID=2339 Rev= 1.00
+> S:  Manufacturer=JMicron
+> S:  Product=USB to ATA/ATAPI Bridge
+> S:  SerialNumber=152D203380B6
+> C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr=  2mA
+> I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
+> E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
+> E:  Ad=02(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
+> 
+> [1] http://www.lacie.com/us/products/product.htm?pid=11016
+> 
+> -- 
+> Felipe Contreras
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
