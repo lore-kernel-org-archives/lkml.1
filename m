@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbZJCOQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbZJCO2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932284AbZJCOQo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 10:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932250AbZJCOQo
+	id S1753487AbZJCO2i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 10:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZJCO2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 10:16:44 -0400
-Received: from smtp-cpk.frontbridge.com ([204.231.192.41]:22472 "EHLO
-	WA2EHSNDR001.bigfish.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932227AbZJCOQn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 10:16:43 -0400
-X-BigFish: VPS89(zz13ddRzz1202hzzz2dh87h6bha7iu221ln)
-X-FB-OUTBOUND-SPAM: yes
-X-SpamScore: 89
-X-FB-DOMAIN-IP-MATCH: fail
-Reply-To: <Henrypeters@mail2dotcom.com>
-From: Henry Peters <Henrypeterss@mail2dotcom.com>
-Subject: Job Offer!!!.
-Date: Sat, 3 Oct 2009 07:16:45 -0700
+	Sat, 3 Oct 2009 10:28:37 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:35217 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751622AbZJCO2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 10:28:37 -0400
+Date: Sat, 3 Oct 2009 16:28:40 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Re: Do not overload dispatch queue (Was: Re: IO scheduler based IO
+	controller V10)
+Message-ID: <20091003142840.GE31616@kernel.dk>
+References: <20091002173732.GK31616@kernel.dk> <1254507215.8667.7.camel@marge.simson.net> <20091002181903.GN31616@kernel.dk> <1254548931.8299.18.camel@marge.simson.net> <1254549378.8299.21.camel@marge.simson.net> <20091003112915.GA12925@redhat.com> <20091003124049.GB12925@redhat.com> <20091003132115.GB31616@kernel.dk> <20091003135623.GD12925@redhat.com> <1254578553.7499.5.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="Windows-1251"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2600.0000
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
-Message-ID: <OM01neAzdfTVSxzW23400006644@mail.fluidequip.com>
-X-OriginalArrivalTime: 03 Oct 2009 14:16:59.0437 (UTC) FILETIME=[2B9FEDD0:01CA4434]
-X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.5.1027-16314.001
-X-TM-AS-Result: Yes-24.542200-5.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
-X-Reverse-DNS: mail.fluidequip.com
-To: undisclosed-recipients:;
-X-SMTP-Mail-From: Henrypeterss@mail2dotcom.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254578553.7499.5.camel@marge.simson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Oct 03 2009, Mike Galbraith wrote:
+> On Sat, 2009-10-03 at 09:56 -0400, Vivek Goyal wrote:
+> 
+> > I have kept the overload delay period as "cfq_slice_sync" same as Mike had
+> > done. We shall have to experiment what is a good waiting perioed. Is 100ms
+> > too long if we are waiting for a request from same process which recently
+> > finished IO and we did not enable idle on it.
+> > 
+> > I guess we can tweak the delay period as we move along.
+> 
+> I kept the delay period very short to minimize possible damage. Without
+> the idle thing, it wasn't enough, but with, worked a treat, as does your
+> patch.
 
-A new job opening in your area, It's a work from home/office position and you are not required to pay any registration fee or pay for any application form before you get employed. Job details (what you'll be doing):
+Can you test the current line up of patches in for-linus? It has the
+ramp up I talked about included as well.
 
-1.Collect payment from Customers.
-
-2. Cash Payments at your Bank.
-
-3. Deduct 1/10 which is your commission/Payment on check cashed.
-
-4. Forward the remaining 9/10 to the information that will be provided later on. fill application:
-
-I would be glad if you accept my proposal  for an opportunity to make up 10% of each transaction completed.  Please reply via email with complete information as requested:
-
-A. NAME,B. STREET ADDRESS (NOT P.O BOX),C. CITY:D. STATE:E. ZIP CODE F. COUNTRY G. MOBILE  NUMBER,H. AGE,I. SEX,J. OCCUPATION K. E MAIL
-All replies should be sent to  Henrypeters@mail2dotcom.com
-
-kindly reply immediately.
-
-Please email me back as soon as possible.
-
-Regards,
-Henry Peters
+-- 
+Jens Axboe
 
