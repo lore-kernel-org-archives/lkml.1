@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbZJCHSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZJCHTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752967AbZJCHSW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 03:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbZJCHSV
+	id S1753352AbZJCHTw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 03:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZJCHTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 03:18:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34089 "EHLO mx3.mail.elte.hu"
+	Sat, 3 Oct 2009 03:19:50 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:60839 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752526AbZJCHSU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 03:18:20 -0400
-Date: Sat, 3 Oct 2009 09:18:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Borislav Petkov <petkovbb@googlemail.com>,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] EDAC: carve out AMD MCE decoding logic
-Message-ID: <20091003071807.GA21407@elte.hu>
-References: <20091001144637.GB11410@aftab> <20091001150046.GA21476@elte.hu> <20091001152140.GC11410@aftab> <20091001153250.GA25885@elte.hu> <20091002132101.GA28682@aftab> <20091002133148.GD28682@aftab> <20091002133954.GA29390@elte.hu> <20091002182659.GA16436@aftab> <20091002184714.GA21509@elte.hu> <20091003065752.GA8935@liondog.tnic>
-MIME-Version: 1.0
+	id S1751398AbZJCHTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 03:19:49 -0400
+To: James.Bottomley@suse.de, michael@ellerman.id.au
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kay.sievers@vrfy.org
+Subject: Re: [2.6.31] Memory leak in SCSI initialization?
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200909221318.IFD17141.OQLtSFJVOOFFMH@I-love.SAKURA.ne.jp>
+	<1253625194.5923.10.camel@concordia>
+	<1254508208.3874.131.camel@mulgrave.site>
+In-Reply-To: <1254508208.3874.131.camel@mulgrave.site>
+Message-Id: <200910031619.GHF86400.QSVFFFLOMOtHOJ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Sat, 3 Oct 2009 16:19:47 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091003065752.GA8935@liondog.tnic>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Borislav Petkov <petkovbb@googlemail.com> wrote:
+James Bottomley wrote:
+> Can we verify this fixes the memory leak?
+I tested this patch on 2.6.31.1 and verified that
+the memory leak was solved by this patch.
 
-> On Fri, Oct 02, 2009 at 08:47:14PM +0200, Ingo Molnar wrote:
-> > No, the locking was all that i meant. Using atomic_notifier would solve 
-> > that. Make the default decoder low-prio, that way there's no need to do 
-> > the callback save/restore sequence either.
+Thank you.
 > 
-> Ok, how's that for starters, it has been only compile-tested and it
-> looks straight-forward enough to me...
-
-looks good at first sight. There's two further simplifications you could 
-do:
-
-> +int mce_register_decoder_notifier(struct notifier_block *nb);
-> +int mce_unregister_decoder_notifier(struct notifier_block *nb);
-
-expose the notifier list itself and dont create new register/unregister 
-APIs. Doing:
-
-	atomic_notifier_chain_register(&x86_mce_decoder_chain, nb);
-
-straight from the EDAC code is clean enough.
-
-plus:
-
-> +static struct notifier_block amd_mce_dec_nb = {
-> +	.notifier_call	= amd_decode_mce,
-> +	.priority	= 100,
-> +};
-> +
-
-it's better to set the default notifier to negative priority, and let 
-the EDAC notifier(s) be at the default 0 priority. The 100 is arbitrary 
-and ugly - that line can then be left out altogether.
-
-	Ingo
+> ---
+> diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+> index c447838..0547a7f 100644
+> --- a/drivers/scsi/scsi_scan.c
+> +++ b/drivers/scsi/scsi_scan.c
+> @@ -317,6 +317,7 @@ static struct scsi_device *scsi_alloc_sdev(struct scsi_target *starget,
+>  out_device_destroy:
+>  	scsi_device_set_state(sdev, SDEV_DEL);
+>  	transport_destroy_device(&sdev->sdev_gendev);
+> +	put_device(&sdev->sdev_dev);
+>  	put_device(&sdev->sdev_gendev);
+>  out:
+>  	if (display_failure_msg)
+> @@ -957,6 +958,7 @@ static inline void scsi_destroy_sdev(struct scsi_device *sdev)
+>  	if (sdev->host->hostt->slave_destroy)
+>  		sdev->host->hostt->slave_destroy(sdev);
+>  	transport_destroy_device(&sdev->sdev_gendev);
+> +	put_device(&sdev->sdev_dev);
+>  	put_device(&sdev->sdev_gendev);
+>  }
+>  
+> diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+> index fde5453..5c7eb63 100644
+> --- a/drivers/scsi/scsi_sysfs.c
+> +++ b/drivers/scsi/scsi_sysfs.c
+> @@ -864,10 +864,6 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+>  		goto clean_device;
+>  	}
+>  
+> -	/* take a reference for the sdev_dev; this is
+> -	 * released by the sdev_class .release */
+> -	get_device(&sdev->sdev_gendev);
+> -
+>  	/* create queue files, which may be writable, depending on the host */
+>  	if (sdev->host->hostt->change_queue_depth)
+>  		error = device_create_file(&sdev->sdev_gendev, &sdev_attr_queue_depth_rw);
+> @@ -917,6 +913,7 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+>  
+>  	device_del(&sdev->sdev_gendev);
+>  	transport_destroy_device(&sdev->sdev_gendev);
+> +	put_device(&sdev->sdev_dev);
+>  	put_device(&sdev->sdev_gendev);
+>  
+>  	return error;
+> @@ -1065,7 +1062,7 @@ void scsi_sysfs_device_initialize(struct scsi_device *sdev)
+>  		     sdev->host->host_no, sdev->channel, sdev->id, sdev->lun);
+>  
+>  	device_initialize(&sdev->sdev_dev);
+> -	sdev->sdev_dev.parent = &sdev->sdev_gendev;
+> +	sdev->sdev_dev.parent = get_device(&sdev->sdev_gendev);
+>  	sdev->sdev_dev.class = &sdev_class;
+>  	dev_set_name(&sdev->sdev_dev, "%d:%d:%d:%d",
+>  		     sdev->host->host_no, sdev->channel, sdev->id, sdev->lun);
