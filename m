@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZJCKnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbZJCKrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbZJCKnr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 06:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZJCKnr
+	id S1754308AbZJCKrc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 06:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbZJCKrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 06:43:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55533 "EHLO mx3.mail.elte.hu"
+	Sat, 3 Oct 2009 06:47:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51494 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752909AbZJCKnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 06:43:46 -0400
-Date: Sat, 3 Oct 2009 12:43:35 +0200
+	id S1752046AbZJCKrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 06:47:31 -0400
+Date: Sat, 3 Oct 2009 12:47:23 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       tglx@linutronix.de, rostedt@goodmis.org, ak@suse.de, roland@redhat.com,
-       rth@redhat.com, mhiramat@redhat.com
-Subject: Re: [PATCH 1/4] jump label - make init_kernel_text() global
-Message-ID: <20091003104335.GB15919@elte.hu>
-References: <cover.1253831945.git.jbaron@redhat.com> <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com> <20091001112003.GA2962@elte.hu> <20091001203905.GD2660@redhat.com>
+To: drago01 <drago01@gmail.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>
+Cc: kernel list <linux-kernel@vger.kernel.org>, mingo@redhat.com,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: sched regression introduced by NO_NEW_FAIR_SLEEPERS
+Message-ID: <20091003104723.GC15919@elte.hu>
+References: <f6ca9fed0909271247k7fad64b1g1c4c65544196d7ac@mail.gmail.com> <f6ca9fed0909271250h61e2ce94n31c9f23e835f802c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091001203905.GD2660@redhat.com>
+In-Reply-To: <f6ca9fed0909271250h61e2ce94n31c9f23e835f802c@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -35,101 +35,74 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jason Baron <jbaron@redhat.com> wrote:
+* drago01 <drago01@gmail.com> wrote:
 
-> On Thu, Oct 01, 2009 at 01:20:03PM +0200, Ingo Molnar wrote:
-> > * Jason Baron <jbaron@redhat.com> wrote:
-> > 
-> > > allow usage of init_kernel_text - we need this in jump labeling to 
-> > > avoid attemtpting to patch code that has been freed as in the __init 
-> > > sections
-> > 
-> > s/attemtpting/attempting
-> > 
-> > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > ---
-> > >  include/linux/kernel.h |    1 +
-> > >  kernel/extable.c       |    2 +-
-> > >  2 files changed, 2 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> > > index f61039e..9d3419f 100644
-> > > --- a/include/linux/kernel.h
-> > > +++ b/include/linux/kernel.h
-> > > @@ -295,6 +295,7 @@ extern int get_option(char **str, int *pint);
-> > >  extern char *get_options(const char *str, int nints, int *ints);
-> > >  extern unsigned long long memparse(const char *ptr, char **retptr);
-> > >  
-> > > +extern int init_kernel_text(unsigned long addr);
-> > >  extern int core_kernel_text(unsigned long addr);
-> > >  extern int __kernel_text_address(unsigned long addr);
-> > >  extern int kernel_text_address(unsigned long addr);
-> > > diff --git a/kernel/extable.c b/kernel/extable.c
-> > > index 7f8f263..f6893ad 100644
-> > > --- a/kernel/extable.c
-> > > +++ b/kernel/extable.c
-> > > @@ -52,7 +52,7 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
-> > >  	return e;
-> > >  }
-> > >  
-> > > -static inline int init_kernel_text(unsigned long addr)
-> > > +int init_kernel_text(unsigned long addr)
-> > >  {
-> > >  	if (addr >= (unsigned long)_sinittext &&
-> > >  	    addr <= (unsigned long)_einittext)
-> > 
-> > i'm confused. Later on jump_label_update() does:
-> > 
-> > +                       if (!(system_state == SYSTEM_RUNNING &&
-> > +                                       (init_kernel_text(iter->code))))
-> > +                               jump_label_transform(iter, type);
-> > 
-> > which is:
-> > 
-> > +                       if (system_state != SYSTEM_RUNNING ||
-> > +                                       !init_kernel_text(iter->code)))
-> > +                               jump_label_transform(iter, type);
-> > 
-> > What is the logic behind that? System going into SYSTEM_RUNNING does not 
-> > coincide with free_initmem() precisely.
-> > 
+> On Sun, Sep 27, 2009 at 9:47 PM, drago01 <drago01@gmail.com> wrote:
+> > Hi,
+> >
+> > Chuck has backported some scheduler patches from 2.6.32 to the fedora kernel.
+> >
+> > I did the following test to test the new scheduler (cpu is a core i7
+> > 920 4 cores + HT).
+> >
+> > run 8 "md5sum /dev/urandom" task and try to use the desktop (compiz).
+> >
+> > The result was that moving windows or rotating the cube is very slow.
+> > (same happens with pure metacity but is is worse in compiz).
+> >
+> > Mounting debugfs and doing "echo NEW_FAIR_SLEEPERS > sched_features"
+> > results into a useable desktop while the 8 md5sum tasks are running
+> > (ie. the system behaves as if they where not running at all from an
+> > interactivity pov).
+> >
+> >
+> > P.S: please CC me when replying.
+> >
 > 
-> The specific case I hit was in modifying code in arch_kdebugfs_init()
-> which is '__init' after the system was up and running. The tracepoint is
-> in 'kmalloc()' which is marked as __always_inline.
-> 
-> 
-> > Also, do we ever want to patch init-text tracepoints? I think we want to 
-> > stay away from them as much as possible.
-> 
-> I was trying to make sure that tracepoints in init-text were honored.
-> 
-> > 
-> > It appears to me that what we want here is a straight:
-> > 
-> >                        if (kernel_text(iter->code))
-> >                                jump_label_transform(iter, type);
-> > 
-> > Also, maybe a WARN_ONCE(!kernel_text()) - we should never even attempt 
-> > to transform non-patchable code. If yes then we want to know about that 
-> > in a noisy way and not skip it silently.
-> > 
-> 
-> hmmm....indeed, kernel_text_address() does do what I want here (I must 
-> have mis-read its definition). Although, I'm not sure there isn't a 
-> race here betweeen freeing the init sections and possibly updating 
-> them. For modules, there is no race since the module init free code 
-> takes the module_mutex, and I do as well in this code...
-> 
-> I've now also tested this code on 32-bit x86 system, and it seems to 
-> perform nicely. I'm seeing a 15 cycle improvement per tracepoint.
-> 
-> I've based the text section updating on text_poke_fixup(), which has 
-> recently come into question about safety of cross modifying code. I 
-> could rebase my patches back to use stop_machine()? I guess I'm 
-> looking for some advice on how to proceed here.
+> With "NEW_FAIR_SLEEPERS" I can even run 100(!)  "md5sum" task without 
+> any effect on interactivity. (still have not found a number of tasks 
+> needed to make the system unresponsive as with 8 with 
+> "NO_NEW_FAIR_SLEEPERS".
 
-I think this very limited form of code patching that you are using here 
-(patching a JMP) _should_ be safe - so we can avoid stop_machine().
+Can you try the latest -tip tree please:
+
+  http://people.redhat.com/mingo/tip.git/README
+
+There we default to FAIR_SLEEPERS + GENTLE_FAIR_SLEEPERS - which should 
+give much of the new-fair-sleepers advantage.
+
+There's also a new tool, 'perf sched', which you can install via:
+
+  cd tools/perf/
+  make -j install
+
+And use like this to measure latencies in the system:
+
+ $ perf sched record sleep 1
+ [ perf record: Woken up 1 times to write data ]
+ [ perf record: Captured and wrote 0.059 MB perf.data (~2563 samples) ]
+
+ $ perf sched latency
+
+ -----------------------------------------------------------------------------------------
+  Task                  |   Runtime ms  | Switches | Average delay ms | Maximum delay ms |
+ -----------------------------------------------------------------------------------------
+  events/12:47          |      0.007 ms |        1 | avg:    0.054 ms | max:    0.054 ms |
+  events/2:37           |      0.128 ms |        1 | avg:    0.016 ms | max:    0.016 ms |
+  at-spi-registry:3292  |      0.752 ms |       20 | avg:    0.015 ms | max:    0.023 ms |
+  Xorg:3161             |      0.519 ms |       20 | avg:    0.015 ms | max:    0.024 ms |
+  perf:19070            |     21.241 ms |        5 | avg:    0.012 ms | max:    0.019 ms |
+  events/1:36           |      0.009 ms |        1 | avg:    0.009 ms | max:    0.009 ms |
+  hald-addon-stor:2790  |      0.204 ms |        9 | avg:    0.009 ms | max:    0.011 ms |
+  scsi_eh_5:1072        |      0.200 ms |       12 | avg:    0.009 ms | max:    0.009 ms |
+  events/0:35           |      0.007 ms |        1 | avg:    0.008 ms | max:    0.008 ms |
+  ksoftirqd/12:28       |      0.088 ms |        5 | avg:    0.005 ms | max:    0.009 ms |
+  sleep:19071           |      0.668 ms |        3 | avg:    0.005 ms | max:    0.008 ms |
+  migration/13:29       |      0.000 ms |        1 | avg:    0.003 ms | max:    0.003 ms |
+ -----------------------------------------------------------------------------------------
+  TOTAL:                |     23.824 ms |       79 |
+ ---------------------------------------------------
+
+Thanks,
 
 	Ingo
