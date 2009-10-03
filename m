@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbZJCNXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbZJCN0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932129AbZJCNXN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 09:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbZJCNXM
+	id S1756328AbZJCN0A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 09:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbZJCNZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 09:23:12 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:48935 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755926AbZJCNXM convert rfc822-to-8bit (ORCPT
+	Sat, 3 Oct 2009 09:25:59 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:38099 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754944AbZJCNZ6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 09:23:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=AvU1QqSLlSnItTn7AXeigpFtfaI3uYJ3bPTRHvOAiRCdqhRY99povCNvooxvdJxwcK
-         LV0NEg6G3piHK0hF27zQZuSjz6syV1B3aQeewVGAEhcT8RPcyb1mhukL04A2WM4kq+jw
-         JGtxZPLqkBeA8V+hUKHUWPsTMR2c6IUi7V6og=
+	Sat, 3 Oct 2009 09:25:58 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
+Date: Sat, 3 Oct 2009 15:27:43 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.31-rc9-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Johan Hovold <jhovold@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
+       linux-usb@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <20090924154023.GA27480@localhost> <20091003114229.GB605@localhost> <20091003141807.1dc27e4e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091003141807.1dc27e4e@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <20091003104723.GC15919@elte.hu>
-References: <f6ca9fed0909271247k7fad64b1g1c4c65544196d7ac@mail.gmail.com>
-	 <f6ca9fed0909271250h61e2ce94n31c9f23e835f802c@mail.gmail.com>
-	 <20091003104723.GC15919@elte.hu>
-Date: Sat, 3 Oct 2009 15:23:15 +0200
-Message-ID: <f6ca9fed0910030623m3cde192br7e1a3256b3cf7838@mail.gmail.com>
-Subject: Re: sched regression introduced by NO_NEW_FAIR_SLEEPERS
-From: drago01 <drago01@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       kernel list <linux-kernel@vger.kernel.org>, mingo@redhat.com,
-       Chuck Ebbert <cebbert@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200910031527.43660.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 3, 2009 at 12:47 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * drago01 <drago01@gmail.com> wrote:
->
->> On Sun, Sep 27, 2009 at 9:47 PM, drago01 <drago01@gmail.com> wrote:
->> > Hi,
->> >
->> > Chuck has backported some scheduler patches from 2.6.32 to the fedora kernel.
->> >
->> > I did the following test to test the new scheduler (cpu is a core i7
->> > 920 4 cores + HT).
->> >
->> > run 8 "md5sum /dev/urandom" task and try to use the desktop (compiz).
->> >
->> > The result was that moving windows or rotating the cube is very slow.
->> > (same happens with pure metacity but is is worse in compiz).
->> >
->> > Mounting debugfs and doing "echo NEW_FAIR_SLEEPERS > sched_features"
->> > results into a useable desktop while the 8 md5sum tasks are running
->> > (ie. the system behaves as if they where not running at all from an
->> > interactivity pov).
->> >
->> >
->> > P.S: please CC me when replying.
->> >
->>
->> With "NEW_FAIR_SLEEPERS" I can even run 100(!)  "md5sum" task without
->> any effect on interactivity. (still have not found a number of tasks
->> needed to make the system unresponsive as with 8 with
->> "NO_NEW_FAIR_SLEEPERS".
->
-> Can you try the latest -tip tree please:
->
->  http://people.redhat.com/mingo/tip.git/README
->
-> There we default to FAIR_SLEEPERS + GENTLE_FAIR_SLEEPERS - which should
-> give much of the new-fair-sleepers advantage.
+Am Samstag, 3. Oktober 2009 15:18:07 schrieb Alan Cox:
+> The generic driver is a very bad example to follow in some areas but
+> this looks a big improvement. There are some patches reworking the
+> generic code to use kfifo on the output side which make it vastly better.
+> Not sure where the relevant google submissions went ?
 
-OK, with this kernel it works fine (can spam the system with md5sum
-tasks and the desktop is still responsive).
-Was able to use the system with 129 "md5sum /dev/urandom" running.
+They have been included into rc1.
+
+> > -     spin_lock_irqsave(&priv->rx_lock, flags);
+> > -     priv->rx_flags &= ~(THROTTLED | ACTUALLY_THROTTLED);
+> > -     spin_unlock_irqrestore(&priv->rx_lock, flags);
+> > +     spin_lock_irqsave(&port->lock, flags);
+> > +     port->throttled = 0;
+> > +     spin_unlock_irqrestore(&port->lock, flags);
+>
+> If you only have a single bit use the set_bit/clear_bit/test_and_xxx_bit
+> stuff as it's faster on most boxes
+
+I think we cannot do with less than two flags, whose transition has
+to be atomic here.
+
+	Regards
+		Oliver
+
