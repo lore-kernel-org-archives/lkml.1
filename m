@@ -1,97 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbZJCMgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932099AbZJCMjC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756063AbZJCMgK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 08:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbZJCMgK
+	id S932099AbZJCMjC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 08:39:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbZJCMjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 08:36:10 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:45708 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755884AbZJCMgJ (ORCPT
+	Sat, 3 Oct 2009 08:39:01 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:53931 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755926AbZJCMjA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 08:36:09 -0400
-Subject: Re: [PATCH][UHCI-DEBUG] Don't kmalloc with BKL held
-From: Sven-Thorsten Dietrich <sdietrich@novell.com>
-To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-In-Reply-To: <20091002092021.GA25083@gambetta>
-References: <1254474744.28661.2.camel@sven.thebigcorporation.com>
-	 <20091002092021.GA25083@gambetta>
-Content-Type: text/plain
-Organization: Novell
-Date: Sat, 03 Oct 2009 05:35:59 -0700
-Message-Id: <1254573359.11691.0.camel@sven.thebigcorporation.com>
+	Sat, 3 Oct 2009 08:39:00 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtsEANbdxkpMROOX/2dsb2JhbACBUdB6hCwE
+Date: Sat, 3 Oct 2009 08:39:00 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, rostedt@goodmis.org, ak@suse.de, roland@redhat.com,
+       rth@redhat.com, mhiramat@redhat.com
+Subject: Re: [PATCH 1/4] jump label - make init_kernel_text() global
+Message-ID: <20091003123900.GA22046@Krystal>
+References: <cover.1253831945.git.jbaron@redhat.com> <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com> <20091001112003.GA2962@elte.hu> <20091001203905.GD2660@redhat.com> <20091003104335.GB15919@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091003104335.GB15919@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 08:29:44 up 45 days, 23:19,  2 users,  load average: 0.32, 0.34,
+	0.28
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-02 at 09:20 +0000, Frederik Deweerdt wrote:
-> Hi Sven-Thorsten,
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> On Fri, Oct 02, 2009 at 11:12:24AM +0200, Sven-Thorsten Dietrich wrote:
-> > Subject: Don't kmalloc with BKL held.
-> > From: Sven-Thorsten Dietrich <sdietrich@suse.de>
+> * Jason Baron <jbaron@redhat.com> wrote:
+> 
+> > On Thu, Oct 01, 2009 at 01:20:03PM +0200, Ingo Molnar wrote:
+> > > * Jason Baron <jbaron@redhat.com> wrote:
+> > > 
+> > > > allow usage of init_kernel_text - we need this in jump labeling to 
+> > > > avoid attemtpting to patch code that has been freed as in the __init 
+> > > > sections
+> > > 
+> > > s/attemtpting/attempting
+> > > 
+> > > > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > > > ---
+> > > >  include/linux/kernel.h |    1 +
+> > > >  kernel/extable.c       |    2 +-
+> > > >  2 files changed, 2 insertions(+), 1 deletions(-)
+> > > > 
+> > > > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> > > > index f61039e..9d3419f 100644
+> > > > --- a/include/linux/kernel.h
+> > > > +++ b/include/linux/kernel.h
+> > > > @@ -295,6 +295,7 @@ extern int get_option(char **str, int *pint);
+> > > >  extern char *get_options(const char *str, int nints, int *ints);
+> > > >  extern unsigned long long memparse(const char *ptr, char **retptr);
+> > > >  
+> > > > +extern int init_kernel_text(unsigned long addr);
+> > > >  extern int core_kernel_text(unsigned long addr);
+> > > >  extern int __kernel_text_address(unsigned long addr);
+> > > >  extern int kernel_text_address(unsigned long addr);
+> > > > diff --git a/kernel/extable.c b/kernel/extable.c
+> > > > index 7f8f263..f6893ad 100644
+> > > > --- a/kernel/extable.c
+> > > > +++ b/kernel/extable.c
+> > > > @@ -52,7 +52,7 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
+> > > >  	return e;
+> > > >  }
+> > > >  
+> > > > -static inline int init_kernel_text(unsigned long addr)
+> > > > +int init_kernel_text(unsigned long addr)
+> > > >  {
+> > > >  	if (addr >= (unsigned long)_sinittext &&
+> > > >  	    addr <= (unsigned long)_einittext)
+> > > 
+> > > i'm confused. Later on jump_label_update() does:
+> > > 
+> > > +                       if (!(system_state == SYSTEM_RUNNING &&
+> > > +                                       (init_kernel_text(iter->code))))
+> > > +                               jump_label_transform(iter, type);
+> > > 
+> > > which is:
+> > > 
+> > > +                       if (system_state != SYSTEM_RUNNING ||
+> > > +                                       !init_kernel_text(iter->code)))
+> > > +                               jump_label_transform(iter, type);
+> > > 
+> > > What is the logic behind that? System going into SYSTEM_RUNNING does not 
+> > > coincide with free_initmem() precisely.
+> > > 
 > > 
-> > I'm eyeballing this file for complete removal of lock_kernel but 
-> > at first glance, we definitely don't need BKL to kmalloc(). 
-> You need to move the unlock_kernel() above the out: label too.
+> > The specific case I hit was in modifying code in arch_kdebugfs_init()
+> > which is '__init' after the system was up and running. The tracepoint is
+> > in 'kmalloc()' which is marked as __always_inline.
+> > 
+> > 
+> > > Also, do we ever want to patch init-text tracepoints? I think we want to 
+> > > stay away from them as much as possible.
+> > 
+> > I was trying to make sure that tracepoints in init-text were honored.
+> > 
+> > > 
+> > > It appears to me that what we want here is a straight:
+> > > 
+> > >                        if (kernel_text(iter->code))
+> > >                                jump_label_transform(iter, type);
+> > > 
+> > > Also, maybe a WARN_ONCE(!kernel_text()) - we should never even attempt 
+> > > to transform non-patchable code. If yes then we want to know about that 
+> > > in a noisy way and not skip it silently.
+> > > 
+> > 
+> > hmmm....indeed, kernel_text_address() does do what I want here (I must 
+> > have mis-read its definition). Although, I'm not sure there isn't a 
+> > race here betweeen freeing the init sections and possibly updating 
+> > them. For modules, there is no race since the module init free code 
+> > takes the module_mutex, and I do as well in this code...
+> > 
+> > I've now also tested this code on 32-bit x86 system, and it seems to 
+> > perform nicely. I'm seeing a 15 cycle improvement per tracepoint.
+> > 
+> > I've based the text section updating on text_poke_fixup(), which has 
+> > recently come into question about safety of cross modifying code. I 
+> > could rebase my patches back to use stop_machine()? I guess I'm 
+> > looking for some advice on how to proceed here.
+> 
+> I think this very limited form of code patching that you are using here 
+> (patching a JMP) _should_ be safe - so we can avoid stop_machine().
 > 
 
-How about this ?
+I might be missing a bit of context here, I just want to make sure we
+are on the same page: patching a jmp instruction is safe on UP, safe
+with stop_machine(), is very likely safe with the breakpoint-ipi
+approach (but we need the confirmation from Intel, which hpa is trying
+to get), but is definitely _not_ safe if neither of these methods are
+used on a SMP system. If a non-aligned multi-word jump is modified while
+another CPU is fetching the instruction, bad things could happen.
 
-Subject: Don't kmalloc with BKL held.
-From: Sven-Thorsten Dietrich sdietrich@suse.de Sat Oct 3 01:27:27 2009 -0700
-Date: Sat Oct 3 01:27:27 2009 -0700:
-Git: 4f62eb81e827eb857129101e49757d84ac9ee7eb
+BTW, patching kernel and module init sections can be done without
+sop_machine(), because only one CPU is ever accessing the init code.
 
-We don't need BKL to kmalloc
+But again, I might be missing some context. If so, sorry for the noise.
 
-diff --git a/drivers/usb/host/uhci-debug.c b/drivers/usb/host/uhci-debug.c
-index e52b954..3fd5602 100644
---- a/drivers/usb/host/uhci-debug.c
-+++ b/drivers/usb/host/uhci-debug.c
-@@ -494,32 +494,30 @@ static int uhci_debug_open(struct inode *inode, struct file *file)
- {
- 	struct uhci_hcd *uhci = inode->i_private;
- 	struct uhci_debug *up;
--	int ret = -ENOMEM;
- 	unsigned long flags;
- 
--	lock_kernel();
- 	up = kmalloc(sizeof(*up), GFP_KERNEL);
- 	if (!up)
--		goto out;
-+		return -ENOMEM;
- 
- 	up->data = kmalloc(MAX_OUTPUT, GFP_KERNEL);
- 	if (!up->data) {
- 		kfree(up);
--		goto out;
-+		return -ENOMEM;
- 	}
- 
- 	up->size = 0;
-+
-+	lock_kernel();
- 	spin_lock_irqsave(&uhci->lock, flags);
- 	if (uhci->is_initialized)
- 		up->size = uhci_sprint_schedule(uhci, up->data, MAX_OUTPUT);
- 	spin_unlock_irqrestore(&uhci->lock, flags);
- 
- 	file->private_data = up;
--
--	ret = 0;
--out:
- 	unlock_kernel();
--	return ret;
-+
-+	return 0;
- }
- 
- static loff_t uhci_debug_lseek(struct file *file, loff_t off, int whence)
+Thanks,
 
+Mathieu
 
+> 	Ingo
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
