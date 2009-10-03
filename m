@@ -1,67 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933403AbZKAAaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933403AbZKAAaz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Oct 2009 20:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933366AbZKAAaz
+	id S1755844AbZJCMRM (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 3 Oct 2009 08:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbZJCMRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Oct 2009 20:30:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38168 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933364AbZKAAay (ORCPT
+	Sat, 3 Oct 2009 08:17:11 -0400
+Received: from xm20.infosec.fedex.com ([199.81.217.42]:52015 "EHLO
+	xm20.infosec.fedex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755097AbZJCMRL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Oct 2009 20:30:54 -0400
-Date: Sat, 31 Oct 2009 17:30:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Huang Ying <ying.huang@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
-       Daniel Walker <dwalker@fifo99.com>
-Subject: Re: [PATCH -v4] crypto: Add PCLMULQDQ accelerated GHASH
- implementation
-Message-Id: <20091031173015.69e8e9f8.akpm@linux-foundation.org>
-In-Reply-To: <20091019025332.GA26624@gondor.apana.org.au>
-References: <1253064946.15717.372.camel@yhuang-dev.sh.intel.com>
-	<20091019025332.GA26624@gondor.apana.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Oct 2009 08:17:11 -0400
+X-Greylist: delayed 1800 seconds by postgrey-1.27 at vger.kernel.org; Sat, 03 Oct 2009 08:17:10 EDT
+X-AuditID: c751825c-b7c22ae000004e14-00-4ac739bd183c
+Date: Sat, 03 Oct 2009 07:46:53 -0500
+Subject: Order your rep rolex submariner now
+From: "Weldon Mercado" <kim@kiwi.apac.fedex.com>
+To: "Essie Keyes" <kim@silk.corp.fedex.com>
+Message-ID: <ceTY9qK1l5ex2ykkim@silk.corp.fedex.com>
+Content-Type: text/plain;
+Content-Transfer-Encoding: 7Bit
+X-Brightmail-Tracker: AAAAAwDr1TQRCddEEQnhCg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Oct 2009 11:53:33 +0900 Herbert Xu <herbert@gondor.apana.org.au> wrote:
+We have brand new models of precious rep watches... They are here http://blushsign.com/
 
-> On Wed, Sep 16, 2009 at 09:35:46AM +0800, Huang Ying wrote:
-> > PCLMULQDQ is used to accelerate the most time-consuming part of GHASH,
-> > carry-less multiplication. More information about PCLMULQDQ can be
-> > found at:
-> > 
-> > http://software.intel.com/en-us/articles/carry-less-multiplication-and-its-usage-for-computing-the-gcm-mode/
-> > 
-> > Because PCLMULQDQ changes XMM state, its usage must be enclosed with
-> > kernel_fpu_begin/end, which can be used only in process context, the
-> > acceleration is implemented as crypto_ahash. That is, request in soft
-> > IRQ context will be defered to the cryptd kernel thread.
-> > 
-> > v4:
-> >  - Fix some style issues.
-> > 
-> > v3:
-> >  - Revise GHASH implementation, performance increase about 2x.
-> > 
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> 
-> Patch applied to cryptodev.  Thanks!
 
-x86_64 allmodconfig, GNU assembler 2.16.1:
 
-arch/x86/crypto/ghash-clmulni-intel_asm.S: Assembler messages:
-arch/x86/crypto/ghash-clmulni-intel_asm.S:103: Error: no such instruction: `pshufb %xmm5,%xmm0'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:105: Error: no such instruction: `pshufb %xmm5,%xmm0'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:119: Error: no such instruction: `pshufb %xmm5,%xmm0'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:123: Error: no such instruction: `pshufb %xmm5,%xmm6'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:130: Error: no such instruction: `pshufb %xmm5,%xmm0'
-arch/x86/crypto/ghash-clmulni-intel_asm.S:143: Error: no such instruction: `pshufb %xmm5,%xmm0'
 
