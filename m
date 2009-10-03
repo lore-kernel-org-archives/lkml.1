@@ -1,48 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbZJCKvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbZJCKw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbZJCKvt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 06:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZJCKvs
+	id S1755006AbZJCKw5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 06:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbZJCKw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 06:51:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56142 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753833AbZJCKvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 06:51:47 -0400
-Message-ID: <4AC72CEE.4010705@kernel.org>
-Date: Sat, 03 Oct 2009 19:52:30 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sat, 3 Oct 2009 06:52:57 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:45002 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754553AbZJCKw4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 06:52:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=aUGoUDSxgPHSX1RS0VDuisz0R6XzAMm3/UpmlswO/dMhKhqcJCnskUnFMRC72q1Y75
+         2cGCpGL4cXeHrR52AKe1MmNDJbh2WKZ6QcFsda4mBWKYgMDJd2ZRmmuqCf4x9L01Kg2A
+         SiqEa8kfQ+lTwVQwUKy5GEeEsXYfmYQgCtbG8=
+Message-ID: <4AC72D09.3040907@tuffmail.co.uk>
+Date: Sat, 03 Oct 2009 11:52:57 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-To: cl@linux-foundation.org
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, mingo@elte.hu,
-       rusty@rustcorp.com.au, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [this_cpu_xx V4 11/20] RCU: Use this_cpu operations
-References: <20091001212521.123389189@gentwo.org> <20091001212559.690311062@gentwo.org>
-In-Reply-To: <20091001212559.690311062@gentwo.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Eric Anholt <eric@anholt.net>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       linux acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: 2.6.32-rc1: spurious error message from "ACPI button: provide lid
+ status functions"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 03 Oct 2009 10:51:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cl@linux-foundation.org wrote:
-> RCU does not do dynamic allocations but it increments per cpu variables
-> a lot. These instructions results in a move to a register and then back
-> to memory. This patch will make it use the inc/dec instructions on x86
-> that do not need a register.
-> 
-> Acked-by: Tejun Heo <tj@kernel.org>
-> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+ACPI: Waking up from system sleep state S4
+PM: Device PNP0C0D:00 failed to thaw: error 1
 
-Patch titles slightly cleaned up and 0001-0011 are committed and
-published to percpu#for-next.
+The device appears to be the acpi lid "button".  The error comes from
+calling acpi_lid_send_state():
 
-Thanks.
+    @@ -242,7 +272,12 @@ static int acpi_lid_send_state(struct
+    acpi_device *device)
+         /* input layer checks if event is redundant */
+         input_report_switch(button->input, SW_LID, !state);
+         input_sync(button->input);
+    -    return 0;
+    +
+    +    ret = blocking_notifier_call_chain(&acpi_lid_notifier, state,
+    device);
+    +    if (ret == NOTIFY_DONE)
+    +        ret = blocking_notifier_call_chain(&acpi_lid_notifier, state,
+    +                           device);
+    +    return ret;
+     }
 
--- 
-tejun
+
+The "error 1" is actually NOTIFY_OK.
+
+    @include/linux/notify.h:
+    #define NOTIFY_DONE        0x0000        /* Don't care */
+    #define NOTIFY_OK        0x0001        /* Suits me */
+    #define NOTIFY_STOP_MASK    0x8000        /* Don't call further */
+    #define NOTIFY_BAD        (NOTIFY_STOP_MASK|0x0002)
+                            /* Bad/Veto action */
+    /*
+     * Clean way to return from the notifier and stop further calls.
+     */
+    #define NOTIFY_STOP        (NOTIFY_OK|NOTIFY_STOP_MASK)
+
+
+Clearly acpi_lid_send_state() should return 0 for NOTIFY_OK.  I guess
+NOTIFY_STOP can be ignored until someone says they need it.
+
+But I don't understand the NOTIFY_DONE case, so I'm not sure.  I can't
+find any users to reverse engineer it.  IMO it either needs to be
+removed or commented.
+
+Can you please sort this out, so we don't see this error message on a
+completely successful resume?
+
+Thanks!
+Alan
