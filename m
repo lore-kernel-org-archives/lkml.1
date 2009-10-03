@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbZJCNrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbZJCNuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932203AbZJCNrs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 09:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932176AbZJCNrl
+	id S932190AbZJCNuo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 09:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932171AbZJCNun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 09:47:41 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:35853 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932124AbZJCNrb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 09:47:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=saN5bLNm33iJA6R2gHuVUH0mWglyOPyZ+gfn4sUML01gYmU87ph8ex8gzMgIXANQb1
-         crWITSegnKXESX4CD+uMRKG46UQvA0xXyKfBAvlJLnKbEFox8BfTGXb3XGCJceAxhbFv
-         EcseUW4fgNJeM40vem0yZtTiY1mWTN6T2lGGc=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 2/2] tracing: Use free_percpu instead of kfree
-Date: Sat,  3 Oct 2009 15:47:30 +0200
-Message-Id: <1254577650-5623-3-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <19140.13582.223629.56214@cargo.ozlabs.ibm.com>
-References: <19140.13582.223629.56214@cargo.ozlabs.ibm.com>
+	Sat, 3 Oct 2009 09:50:43 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:42225 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932159AbZJCNum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 09:50:42 -0400
+Date: Sat, 3 Oct 2009 15:50:46 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH] cfq: enable idle for seeky processes on rotational NCQ
+	devices
+Message-ID: <20091003135046.GD31616@kernel.dk>
+References: <200910031057.41695.czoccolo@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910031057.41695.czoccolo@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the event->profile_enable() failure path, we release the per cpu
-buffers using kfree which is wrong because they are per cpu pointers.
-Although free_percpu only wraps kfree for now, that may change in the
-future so lets use the correct way.
+On Sat, Oct 03 2009, Corrado Zoccolo wrote:
+> Idle window is currently disabled for seeky processes on all NCQ devices.
+> This is causing large latencies when seeky processes are competing with async writes,
+> for rotational NCQ devices.
+> 
+> This patch, based on Vivek Goyal's original idea (http://lkml.org/lkml/2009/7/12/110),
+> enables idle window for seeky processes on rotational NCQ devices.
+> As for non-NCQ devices, a smaller idle window (2ms) is used
+> for seeky processes compared to normal I/O (8ms).
+> 
+> RAIDs should be marked as non-rotational as well (and probably a better flag
+> name should be devised), since they can carry multiple operations in parallel.
+> 
+> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+> ---
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 1ca813b..7116f11 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1951,10 +1951,12 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>  	enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
+>  
+>  	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
+> -	    (cfqd->hw_tag && CIC_SEEKY(cic)))
+> +	    (blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag && CIC_SEEKY(cic)))
+>  		enable_idle = 0;
+>  	else if (sample_valid(cic->ttime_samples)) {
+> -		if (cic->ttime_mean > cfqd->cfq_slice_idle)
+> +		unsigned idle_time = CIC_SEEKY(cic) ? CFQ_MIN_TT
+> +			: cfqd->cfq_slice_idle;
+> +		if (cic->ttime_mean > idle_time)
+>  			enable_idle = 0;
+>  		else
+>  			enable_idle = 1;
 
-Reported-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/trace_event_profile.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Please don't use the ?: constructs, they are not very readable
+(especially not with multi-lines).
 
-diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-index e52784b..8d5c171 100644
---- a/kernel/trace/trace_event_profile.c
-+++ b/kernel/trace/trace_event_profile.c
-@@ -53,8 +53,8 @@ static int ftrace_profile_enable_event(struct ftrace_event_call *event)
- 
- fail_buf_nmi:
- 	if (!total_profile_count) {
--		kfree(trace_profile_buf_nmi);
--		kfree(trace_profile_buf);
-+		free_percpu(trace_profile_buf_nmi);
-+		free_percpu(trace_profile_buf);
- 		trace_profile_buf_nmi = NULL;
- 		trace_profile_buf = NULL;
- 	}
+Can you resend this on top of the current for-linus branch, it has a few
+cfq patches that cause this not to apply anyway.
+
 -- 
-1.6.2.3
+Jens Axboe
 
