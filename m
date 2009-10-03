@@ -1,117 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbZJCN5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932208AbZJCN4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbZJCN5D (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 09:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932171AbZJCN5A
+	id S932208AbZJCN4x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 09:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932171AbZJCN4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 09:57:00 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:22012 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932212AbZJCN46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 09:56:58 -0400
-Date: Sat, 3 Oct 2009 09:56:23 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       riel@redhat.com
-Subject: Re: Do not overload dispatch queue (Was: Re: IO scheduler based IO
-	controller V10)
-Message-ID: <20091003135623.GD12925@redhat.com>
-References: <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu> <20091002173732.GK31616@kernel.dk> <1254507215.8667.7.camel@marge.simson.net> <20091002181903.GN31616@kernel.dk> <1254548931.8299.18.camel@marge.simson.net> <1254549378.8299.21.camel@marge.simson.net> <20091003112915.GA12925@redhat.com> <20091003124049.GB12925@redhat.com> <20091003132115.GB31616@kernel.dk>
+	Sat, 3 Oct 2009 09:56:53 -0400
+Received: from mail-iw0-f190.google.com ([209.85.223.190]:49776 "EHLO
+	mail-iw0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932167AbZJCN4w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 09:56:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=v4Te36z4e0rA4VYV4KLyst3mqk6v0scSqMM/uIeaPtw5UJyts7828EAGD5v41tKZ1+
+         Z3aLgoD8yObE/iiCzykR3W/W/o/Mt59FuyTHRtIyCe91LCPxfiycbLQaOHHaoc5cd6Ze
+         SZ7KO6SxK6xSZSgiChW1+7o+yHmd68vvSiFVU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091003132115.GB31616@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091002233837.GA3638@cmpxchg.org>
+References: <1254344964-8124-1-git-send-email-hannes@cmpxchg.org>
+	 <1254344964-8124-3-git-send-email-hannes@cmpxchg.org>
+	 <20091002100838.5F5A.A69D9226@jp.fujitsu.com>
+	 <20091002233837.GA3638@cmpxchg.org>
+Date: Sat, 3 Oct 2009 22:56:55 +0900
+X-Google-Sender-Auth: b003227a757a9889
+Message-ID: <2f11576a0910030656l73c9811w18e0f224fb3d98af@mail.gmail.com>
+Subject: Re: [rfc patch 3/3] mm: munlock COW pages on truncation unmap
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Mel Gorman <mel@csn.ul.ie>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 03, 2009 at 03:21:15PM +0200, Jens Axboe wrote:
-> On Sat, Oct 03 2009, Vivek Goyal wrote:
-> > On Sat, Oct 03, 2009 at 07:29:15AM -0400, Vivek Goyal wrote:
-> > > On Sat, Oct 03, 2009 at 07:56:18AM +0200, Mike Galbraith wrote:
-> > > > On Sat, 2009-10-03 at 07:49 +0200, Mike Galbraith wrote:
-> > > > > On Fri, 2009-10-02 at 20:19 +0200, Jens Axboe wrote:
-> > > > > 
-> > > > > > If you could do a cleaned up version of your overload patch based on
-> > > > > > this:
-> > > > > > 
-> > > > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=1d2235152dc745c6d94bedb550fea84cffdbf768
-> > > > > > 
-> > > > > > then lets take it from there.
-> > > > 
-> > > 
-> > > > Note to self: build the darn thing after last minute changes.
-> > > > 
-> > > > Block:  Delay overloading of CFQ queues to improve read latency.
-> > > > 
-> > > > Introduce a delay maximum dispatch timestamp, and stamp it when:
-> > > >         1. we encounter a known seeky or possibly new sync IO queue.
-> > > >         2. the current queue may go idle and we're draining async IO.
-> > > >         3. we have sync IO in flight and are servicing an async queue.
-> > > >         4  we are not the sole user of disk.
-> > > > Disallow exceeding quantum if any of these events have occurred recently.
-> > > > 
-> > > 
-> > > So it looks like primarily the issue seems to be that we done lot of
-> > > dispatch from async queue and if some sync queue comes in now, it will
-> > > experience latencies.
-> > > 
-> > > For a ongoing seeky sync queue issue will be solved up to some extent
-> > > because previously we did not choose to idle for that queue now we will
-> > > idle, hence async queue will not get a chance to overload the dispatch
-> > > queue.
-> > > 
-> > > For the sync queues where we choose not to enable idle, we still will see
-> > > the latencies. Instead of time stamping on all the above events, can we 
-> > > just keep track of last sync request completed in the system and don't
-> > > allow async queue to flood/overload the dispatch queue with-in certain 
-> > > time limit of that last sync request completion. This just gives a buffer
-> > > period to that sync queue to come back and submit more requests and
-> > > still not suffer large latencies?
-> > > 
-> > > Thanks
-> > > Vivek
-> > > 
-> > 
-> > Hi Mike,
-> > 
-> > Following is a quick hack patch for the above idea. It is just compile and
-> > boot tested. Can you please see if it helps in your scenario.
-> > 
-> > Thanks
-> > Vivek
-> > 
-> > 
-> > o Do not allow more than max_dispatch requests from an async queue, if some
-> >   sync request has finished recently. This is in the hope that sync activity
-> >   is still going on in the system and we might receive a sync request soon.
-> >   Most likely from a sync queue which finished a request and we did not enable
-> >   idling on it.
-> 
-> This is pretty much identical to the scheme I described, except for the
-> ramping of queue depth. I've applied it, it's nice and simple and I
-> believe this will get rid of the worst of the problem.
-> 
-> Things probably end up being a bit simplistic, but we can always tweak
-> around later.
+>> Umm..
+>> I haven't understand this.
+>>
+>> (1) unmap_mapping_range() is called twice.
+>>
+>>       unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+>>       truncate_inode_pages(mapping, new);
+>>       unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+>>
+>> (2) PG_mlock is turned on from mlock() and vmscan.
+>> (3) vmscan grab anon_vma, but mlock don't grab anon_vma.
+>
+> You are right, I was so focused on the LRU side that I missed an
+> obvious window here: an _explicit_ mlock can still happen between the
+> PG_mlocked clearing section and releasing the page.
+>
+> If we race with it, the put_page() in __mlock_vma_pages_range() might
+> free the freshly mlocked page.
+>
+>> (4) after truncate_inode_pages(), we don't need to think vs-COW, because
+>>     find_get_page() never success. but first unmap_mapping_range()
+>>     have vs-COW racing.
+>
+> Yes, we can race with COW breaking, but I can not see a problem there.
+> It clears the old page's mlock, but also with an atomic
+> TestClearPageMlocked().  And the new page is mapped and mlocked under
+> pte lock and only if we didn't clear the pte in the meantime.
 
-I have kept the overload delay period as "cfq_slice_sync" same as Mike had
-done. We shall have to experiment what is a good waiting perioed. Is 100ms
-too long if we are waiting for a request from same process which recently
-finished IO and we did not enable idle on it.
+Ah, You are right.
 
-I guess we can tweak the delay period as we move along.
 
-Thanks
-Vivek
+>> So, Is anon_vma grabbing really sufficient?
+>
+> No, the explicit mlocking race exists, I think.
+>
+>> Or, you intent to the following?
+>>
+>>       unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 0);
+>>       truncate_inode_pages(mapping, new);
+>>       unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+>
+> As mentioned above, I don't see how it would make a difference.
+
+Yes, sorry. please forget this.
+
+
+>> > @@ -544,6 +544,13 @@ redo:
+>> >              */
+>> >             lru = LRU_UNEVICTABLE;
+>> >             add_page_to_unevictable_list(page);
+>> > +           /*
+>> > +            * See the TestClearPageMlocked() in zap_pte_range():
+>> > +            * if a racing unmapper did not see the above setting
+>> > +            * of PG_lru, we must see its clearing of PG_locked
+>> > +            * and move the page back to the evictable list.
+>> > +            */
+>> > +           smp_mb();
+>> >     }
+>>
+>> add_page_to_unevictable() have a spin lock. Why do we need additionl
+>> explicit memory barrier?
+>
+> It sets PG_lru under spinlock and tests PG_mlocked after the unlock.
+> The following sections from memory-barriers.txt made me nervous:
+>
+>  (5) LOCK operations.
+>
+>     This acts as a one-way permeable barrier.  It guarantees that all memory
+>     operations after the LOCK operation will appear to happen after the LOCK
+>     operation with respect to the other components of the system.
+>
+>  (6) UNLOCK operations.
+>
+>     This also acts as a one-way permeable barrier.  It guarantees that all
+>     memory operations before the UNLOCK operation will appear to happen before
+>     the UNLOCK operation with respect to the other components of the system.
+>
+>     Memory operations that occur after an UNLOCK operation may appear to
+>     happen before it completes.
+>
+> So the only garuantee this gives us is that both PG_lru setting and
+> PG_mlocked testing happen after LOCK and PG_lru setting finishes
+> before UNLOCK, no?  I wanted to make sure this does not happen:
+>
+>        LOCK, test PG_mlocked, set PG_lru, UNLOCK
+>
+> I don't know whether there is a data dependency between those two
+> operations.  They go to the same word, but I could also imagine
+> setting one bit is independent of reading another one.  Humm.  Help.
+
+Ahh, Yes! you are right.
+We really need this barrier.
+
+However, I think this issue doesn't depend on zap_pte_range patch.
+Other TestClearPageMlocked(page) caller have the same problem, because
+putback_lru_page() doesn't have any exclusion, right?
