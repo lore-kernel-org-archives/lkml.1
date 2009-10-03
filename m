@@ -1,93 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756947AbZJCTul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZJCUGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756947AbZJCTul (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 15:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZJCTuk
+	id S1757020AbZJCUGL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 16:06:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756990AbZJCUGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 15:50:40 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54028 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752174AbZJCTuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 15:50:40 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+Opt5IiruOFswNRI2MPv9ZEnaDEETmS6CAcMDBzN
-	XZY6x/FP1VVtyp
-Subject: Re: Do not overload dispatch queue (Was: Re: IO scheduler based IO
- controller V10)
-From: Mike Galbraith <efault@gmx.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       riel@redhat.com
-In-Reply-To: <20091003192321.GA26573@kernel.dk>
-References: <20091003124049.GB12925@redhat.com>
-	 <20091003132115.GB31616@kernel.dk> <20091003135623.GD12925@redhat.com>
-	 <1254578553.7499.5.camel@marge.simson.net>
-	 <20091003142840.GE31616@kernel.dk>
-	 <1254581496.8293.8.camel@marge.simson.net>
-	 <20091003151445.GF31616@kernel.dk>
-	 <1254585420.7539.2.camel@marge.simson.net>
-	 <20091003173532.GG31616@kernel.dk>
-	 <1254596864.7153.9.camel@marge.simson.net>
-	 <20091003192321.GA26573@kernel.dk>
-Content-Type: text/plain
-Date: Sat, 03 Oct 2009 21:49:46 +0200
-Message-Id: <1254599386.7153.46.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.61
+	Sat, 3 Oct 2009 16:06:10 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:43141 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756974AbZJCUGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 16:06:09 -0400
+Date: Sat, 3 Oct 2009 17:05:19 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/4] KVM: introduce "xinterface" API for external
+	interaction with guests
+Message-ID: <20091003200519.GB6601@amt.cnet>
+References: <20091002201159.4014.33268.stgit@dev.haskins.net> <20091002201927.4014.29432.stgit@dev.haskins.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091002201927.4014.29432.stgit@dev.haskins.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-03 at 21:23 +0200, Jens Axboe wrote:
-> On Sat, Oct 03 2009, Mike Galbraith wrote:
-
-> > > So that's pure goodness, at least.
-> > 
-> > Yeah, but it's a double edged sword, _maybe_ cut too far in the other
-> > direction.  (impression)
+On Fri, Oct 02, 2009 at 04:19:27PM -0400, Gregory Haskins wrote:
+> What: xinterface is a mechanism that allows kernel modules external to
+> the kvm.ko proper to interface with a running guest.  It accomplishes
+> this by creating an abstracted interface which does not expose any
+> private details of the guest or its related KVM structures, and provides
+> a mechanism to find and bind to this interface at run-time.
 > 
-> How can it be too fast? IOW, I think you'll have to quantify that
-> statement :-)
-
-Oh boy.  It it were perfectly fair, it should be roughly twice the time
-it takes to load seekily when running solo, which it's exceeded
-considerably.  I'm not complaining mind you, just being a worry wart.
-Previously the reader was suffering the pains of hell, which the two
-dinky changes made match my expectations nearly perfectly (1.7 sec is
-real close to 1.8, which is real close to the 0.9 it takes to get the
-bugger loaded cold)
-
-> > > So far that looks like a winner. The dictator wanted good latency, he's
-> > > getting good latency. I'll continue working on this on monday, while I'm
-> > > waiting for delivery of the Trabant.
-> > 
-> > I'm unsure feel wise.  Disk is sounding too seeky, which worries me.
+> Why: There are various subsystems that would like to interact with a KVM
+> guest which are ideally suited to exist outside the domain of the kvm.ko
+> core logic. For instance, external pci-passthrough, virtual-bus, and
+> virtio-net modules are currently under development.  In order for these
+> modules to successfully interact with the guest, they need, at the very
+> least, various interfaces for signaling IO events, pointer translation,
+> and possibly memory mapping.
 > 
-> Care to elaborate on the feel? Seekiness is not good of course,
-> depending on timing the async delay could cause some skipping back and
-> forth. But remember that when you don't hear the disk, it could likely
-> be doing the async IO which will make the disk very quiet (since it's
-> just a streamed write). The konsole test is bound to cause seeks, when
-> it's juggling async IO too. Even alone it's likely pretty seeky. So is
-> the seekiness persistent, or just shortly when starting konsole?
+> The signaling case is covered by the recent introduction of the
+> irqfd/ioeventfd mechanisms.  This patch provides a mechanism to cover the
+> other cases.  Note that today we only expose pointer-translation related
+> functions, but more could be added at a future date as needs arise.
+> 
+> Example usage: QEMU instantiates a guest, and an external module "foo"
+> that desires the ability to interface with the guest (say via
+> open("/dev/foo")).  QEMU may then pass the kvmfd to foo via an
+> ioctl, such as: ioctl(foofd, FOO_SET_VMID, &kvmfd).  Upon receipt, the
+> foo module can issue kvm_xinterface_bind(kvmfd) to acquire
+> the proper context.  Internally, the struct kvm* and associated
+> struct module* will remain pinned at least until the foo module calls
+> kvm_xinterface_put().
 
-It's a huge winner for sure, and there's no way to quantify.  I'm just
-afraid the other shoe will drop from what I see/hear.  I should have
-kept my trap shut and waited really, but the impression was strong.
-Sorry for making unquantifiable noise.  Ignore me.  I've been
-watching/feeling tests for too many hours and hours and hours ;-)
+> --- /dev/null
+> +++ b/virt/kvm/xinterface.c
+> @@ -0,0 +1,409 @@
+> +/*
+> + * KVM module interface - Allows external modules to interface with a guest
+> + *
+> + * Copyright 2009 Novell.  All Rights Reserved.
+> + *
+> + * Author:
+> + *      Gregory Haskins <ghaskins@novell.com>
+> + *
+> + * This file is free software; you can redistribute it and/or modify
+> + * it under the terms of version 2 of the GNU General Public License
+> + * as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software Foundation,
+> + * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
+> + */
+> +
+> +#include <linux/mm.h>
+> +#include <linux/vmalloc.h>
+> +#include <linux/highmem.h>
+> +#include <linux/module.h>
+> +#include <linux/mmu_context.h>
+> +#include <linux/kvm_host.h>
+> +#include <linux/kvm_xinterface.h>
+> +
+> +struct _xinterface {
+> +	struct kvm             *kvm;
+> +	struct task_struct     *task;
+> +	struct mm_struct       *mm;
+> +	struct kvm_xinterface   intf;
+> +	struct kvm_memory_slot *slotcache[NR_CPUS];
+> +};
+> +
+> +struct _xvmap {
+> +	struct kvm_memory_slot    *memslot;
+> +	unsigned long              npages;
+> +	struct kvm_xvmap           vmap;
+> +};
+> +
+> +static struct _xinterface *
+> +to_intf(struct kvm_xinterface *intf)
+> +{
+> +	return container_of(intf, struct _xinterface, intf);
+> +}
+> +
+> +#define _gfn_to_hva(gfn, memslot) \
+> +	(memslot->userspace_addr + (gfn - memslot->base_gfn) * PAGE_SIZE)
+> +
+> +/*
+> + * gpa_to_hva() - translate a guest-physical to host-virtual using
+> + * a per-cpu cache of the memslot.
+> + *
+> + * The gfn_to_memslot() call is relatively expensive, and the gpa access
+> + * patterns exhibit a high degree of locality.  Therefore, lets cache
+> + * the last slot used on a per-cpu basis to optimize the lookup
+> + *
+> + * assumes slots_lock held for read
+> + */
+> +static unsigned long
+> +gpa_to_hva(struct _xinterface *_intf, unsigned long gpa)
+> +{
+> +	int                     cpu     = get_cpu();
+> +	unsigned long           gfn     = gpa >> PAGE_SHIFT;
+> +	struct kvm_memory_slot *memslot = _intf->slotcache[cpu];
+> +	unsigned long           addr    = 0;
+> +
+> +	if (!memslot
+> +	    || gfn < memslot->base_gfn
+> +	    || gfn >= memslot->base_gfn + memslot->npages) {
+> +
+> +		memslot = gfn_to_memslot(_intf->kvm, gfn);
+> +		if (!memslot)
+> +			goto out;
+> +
+> +		_intf->slotcache[cpu] = memslot;
+> +	}
+> +
+> +	addr = _gfn_to_hva(gfn, memslot) + offset_in_page(gpa);
+> +
+> +out:
+> +	put_cpu();
+> +
+> +	return addr;
 
-	-Mike
+Please optimize gfn_to_memslot() instead, so everybody benefits. It
+shows very often on profiles.
+
+> +
+> +	page_list = (struct page **) __get_free_page(GFP_KERNEL);
+> +	if (!page_list)
+> +		return NULL;
+> +
+> +	down_write(&mm->mmap_sem);
+> +
+> +	ret = get_user_pages(p, mm, addr, npages, 1, 0, page_list, NULL);
+> +	if (ret < 0)
+> +		goto out;
+> +
+> +	ptr = vmap(page_list, npages, VM_MAP, PAGE_KERNEL);
+> +	if (ptr)
+> +		mm->locked_vm += npages;
+
+Why don't you use gfn_to_page (here and elsewhere in the patch).
 
