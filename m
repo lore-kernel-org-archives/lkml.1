@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbZJCOwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbZJCO5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755126AbZJCOwc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 10:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZJCOwb
+	id S1755693AbZJCO5B (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 10:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbZJCO5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 10:52:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53872 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752376AbZJCOwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 10:52:30 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18vhPwhdRcvRM7gK7Guw0Uw+bt8ruWs2GdppsXg+9
-	w3r67kgSALKFMh
-Subject: Re: Do not overload dispatch queue (Was: Re: IO scheduler based IO
- controller V10)
-From: Mike Galbraith <efault@gmx.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       riel@redhat.com
-In-Reply-To: <20091003142840.GE31616@kernel.dk>
-References: <20091002173732.GK31616@kernel.dk>
-	 <1254507215.8667.7.camel@marge.simson.net>
-	 <20091002181903.GN31616@kernel.dk>
-	 <1254548931.8299.18.camel@marge.simson.net>
-	 <1254549378.8299.21.camel@marge.simson.net>
-	 <20091003112915.GA12925@redhat.com> <20091003124049.GB12925@redhat.com>
-	 <20091003132115.GB31616@kernel.dk> <20091003135623.GD12925@redhat.com>
-	 <1254578553.7499.5.camel@marge.simson.net>
-	 <20091003142840.GE31616@kernel.dk>
-Content-Type: text/plain
-Date: Sat, 03 Oct 2009 16:51:36 +0200
-Message-Id: <1254581496.8293.8.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.64
+	Sat, 3 Oct 2009 10:57:00 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:32802 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754702AbZJCO47 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 10:56:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=Os7zWLjnN3YZxuVQKaZ7WlXssZuxis9TKQqVsqfcN3LhdLU5JG/+raXul3yD8npu4/
+         VkHPYKkkGSIxI+4ugOFP8oM2GHwXU7XaxW/k7++j6yTAu53KwPx1PBEv5lByLwl+QFIe
+         r+QcmQNwvM/JGaytzahlWjeJo2As2ZfMMGCeM=
+MIME-Version: 1.0
+In-Reply-To: <4AC75BC5.6030207@zytor.com>
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> 
+	<20091003072127.GC21407@elte.hu> <40101cc30910030253w70adc454r1bb38ff4424c7b14@mail.gmail.com> 
+	<4AC75BC5.6030207@zytor.com>
+From: Matteo Croce <technoboy85@gmail.com>
+Date: Sat, 3 Oct 2009 16:56:02 +0200
+Message-ID: <40101cc30910030756x64308423kffe340be4dae4d6d@mail.gmail.com>
+Subject: Re: i686 quirk for AMD Geode
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-03 at 16:28 +0200, Jens Axboe wrote:
-> On Sat, Oct 03 2009, Mike Galbraith wrote:
-> > On Sat, 2009-10-03 at 09:56 -0400, Vivek Goyal wrote:
-> > 
-> > > I have kept the overload delay period as "cfq_slice_sync" same as Mike had
-> > > done. We shall have to experiment what is a good waiting perioed. Is 100ms
-> > > too long if we are waiting for a request from same process which recently
-> > > finished IO and we did not enable idle on it.
-> > > 
-> > > I guess we can tweak the delay period as we move along.
-> > 
-> > I kept the delay period very short to minimize possible damage. Without
-> > the idle thing, it wasn't enough, but with, worked a treat, as does your
-> > patch.
-> 
-> Can you test the current line up of patches in for-linus? It has the
-> ramp up I talked about included as well.
+On Sat, Oct 3, 2009 at 4:12 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> On 10/03/2009 02:53 AM, Matteo Croce wrote:
+>>
+>> Sorry Ingo but if you read my last mail I wrote that the GEODE does
+>> supports FCOMI but not NOPL
+>> so i don't know if it's worth it, even is I haven't ANY binary in my
+>> system with such instruction:
+>>
+>> # find /lib/tls/i686 /lib/i686 -type f |xargs objdump -d |grep -c nopl
+>> 0
+>
+> Recent gcc/binutils has been known to start to use them.
+>
+> Either way, it's a user-space-visible difference, so at least the kernel
+> will not signal anything else based on existing precedent.
 
-Well, it hasn't hit git.kernel.org yet, it's at...
-
-* block-for-linus        1d22351 cfq-iosched: add a knob for desktop interactiveness
-
-	-Mike
-
+So it can't be applied, right?
