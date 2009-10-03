@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZJCRUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbZJCRUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbZJCRUM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 13:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbZJCRUG
+	id S1756685AbZJCRUl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 13:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756571AbZJCRUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 13:20:06 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:34926 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754414AbZJCRUB (ORCPT
+	Sat, 3 Oct 2009 13:20:39 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:38851 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755926AbZJCRUi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 13:20:01 -0400
+	Sat, 3 Oct 2009 13:20:38 -0400
 From: manfred@colorfullife.com
 To: linux-kernel@vger.kernel.org
 Cc: Manfred Spraul <manfred@colorfullife.com>
-Subject: [PATCH 5/7] ipc/sem.c: add a per-semaphore pending list
-Date: Sat,  3 Oct 2009 19:19:22 +0200
-Message-Id: <1254590364-2876-3-git-send-email-manfred@colorfullife.com>
+Subject: [PATCH 6/7] ipc/sem.c: optimize single semop operations
+Date: Sat,  3 Oct 2009 19:19:23 +0200
+Message-Id: <1254590364-2876-4-git-send-email-manfred@colorfullife.com>
 X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1254590364-2876-2-git-send-email-manfred@colorfullife.com>
+In-Reply-To: <1254590364-2876-3-git-send-email-manfred@colorfullife.com>
 References: <1254590364-2876-1-git-send-email-manfred@colorfullife.com>
  <1254590364-2876-2-git-send-email-manfred@colorfullife.com>
+ <1254590364-2876-3-git-send-email-manfred@colorfullife.com>
 To: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,147 +28,118 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Manfred Spraul <manfred@colorfullife.com>
 
-Based on Nick's findings:
-
 sysv sem has the concept of semaphore arrays that consist out of multiple
 semaphores. Atomic operations that affect multiple semaphores are supported.
 
-The patch is the first step for optimizing simple, single semaphore operations:
-In addition to the global list of all pending operations, a 2nd, per-semaphore
-list with the simple operations is added.
+The patch optimizes single semaphore operation calls that affect only one
+semaphore: It's not necessary to scan all pending operations, it is sufficient
+to scan the per-semaphore list.
 
-Note: this patch does not make sense by itself, the new list is used nowhere.
+The idea is from Nick Piggin version of an ipc sem improvement, the
+implementation is different:
+The code tries to keep as much common code as possible.
+
+As the result, the patch is simpler, but optimizes fewer cases.
 
 Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
 ---
- include/linux/sem.h |    5 ++++-
- ipc/sem.c           |   37 ++++++++++++++++++++++++++++++++-----
- 2 files changed, 36 insertions(+), 6 deletions(-)
+ ipc/sem.c |   51 ++++++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 40 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/sem.h b/include/linux/sem.h
-index 1b191c1..8a4adbe 100644
---- a/include/linux/sem.h
-+++ b/include/linux/sem.h
-@@ -86,6 +86,7 @@ struct task_struct;
- struct sem {
- 	int	semval;		/* current value */
- 	int	sempid;		/* pid of last operation */
-+	struct list_head sem_pending; /* pending single-sop operations */
- };
- 
- /* One sem_array data structure for each set of semaphores in the system. */
-@@ -96,11 +97,13 @@ struct sem_array {
- 	struct sem		*sem_base;	/* ptr to first semaphore in array */
- 	struct list_head	sem_pending;	/* pending operations to be processed */
- 	struct list_head	list_id;	/* undo requests on this array */
--	unsigned long		sem_nsems;	/* no. of semaphores in array */
-+	int			sem_nsems;	/* no. of semaphores in array */
-+	int			complex_count;	/* pending complex operations */
- };
- 
- /* One queue for each sleeping process in the system. */
- struct sem_queue {
-+	struct list_head	simple_list; /* queue of pending operations */
- 	struct list_head	list;	 /* queue of pending operations */
- 	struct task_struct	*sleeper; /* this process */
- 	struct sem_undo		*undo;	 /* undo structure */
 diff --git a/ipc/sem.c b/ipc/sem.c
-index 9425817..0cad759 100644
+index 0cad759..66192c2 100644
 --- a/ipc/sem.c
 +++ b/ipc/sem.c
-@@ -240,6 +240,7 @@ static int newary(struct ipc_namespace *ns, struct ipc_params *params)
- 	key_t key = params->key;
- 	int nsems = params->u.nsems;
- 	int semflg = params->flg;
-+	int i;
- 
- 	if (!nsems)
- 		return -EINVAL;
-@@ -272,6 +273,11 @@ static int newary(struct ipc_namespace *ns, struct ipc_params *params)
- 	ns->used_sems += nsems;
- 
- 	sma->sem_base = (struct sem *) &sma[1];
-+
-+	for (i = 0; i < nsems; i++)
-+		INIT_LIST_HEAD(&sma->sem_base[i].sem_pending);
-+
-+	sma->complex_count = 0;
- 	INIT_LIST_HEAD(&sma->sem_pending);
- 	INIT_LIST_HEAD(&sma->list_id);
- 	sma->sem_nsems = nsems;
-@@ -418,6 +424,15 @@ static void wake_up_sem_queue(struct sem_queue *q, int error)
- 	preempt_enable();
+@@ -433,17 +433,45 @@ static void unlink_queue(struct sem_array *sma, struct sem_queue *q)
+ 		sma->complex_count--;
  }
  
-+static void unlink_queue(struct sem_array *sma, struct sem_queue *q)
-+{
-+	list_del(&q->list);
-+	if (q->nsops == 1)
-+		list_del(&q->simple_list);
-+	else
-+		sma->complex_count--;
-+}
+-/* Go through the pending queue for the indicated semaphore
+- * looking for tasks that can be completed.
 +
- /* Go through the pending queue for the indicated semaphore
-  * looking for tasks that can be completed.
++/**
++ * update_queue(sma, semnum): Look for tasks that can be completed.
++ * @sma: semaphore array.
++ * @semnum: semaphore that was modified.
++ *
++ * update_queue must be called after a semaphore in a semaphore array
++ * was modified. If multiple semaphore were modified, then @semnum
++ * must be set to -1.
   */
-@@ -437,7 +452,7 @@ again:
- 		if (error > 0)
- 			continue;
+-static void update_queue (struct sem_array * sma)
++static void update_queue(struct sem_array *sma, int semnum)
+ {
+-	struct sem_queue *q, *tq;
++	struct sem_queue *q;
++	struct list_head *walk;
++	struct list_head *pending_list;
++	int offset;
++
++	/* if there are complex operations around, then knowing the semaphore
++	 * that was modified doesn't help us. Assume that multiple semaphores
++	 * were modified.
++	 */
++	if (sma->complex_count)
++		semnum = -1;
++
++	if (semnum == -1) {
++		pending_list = &sma->sem_pending;
++		offset = offsetof(struct sem_queue, list);
++	} else {
++		pending_list = &sma->sem_base[semnum].sem_pending;
++		offset = offsetof(struct sem_queue, simple_list);
++	}
  
--		list_del(&q->list);
-+		unlink_queue(sma, q);
+ again:
+-	list_for_each_entry_safe(q, tq, &sma->sem_pending, list) {
+-		int error;
+-		int alter;
++	walk = pending_list->next;
++	while (walk != pending_list) {
++		int error, alter;
++
++		q = (struct sem_queue *)((char *)walk - offset);
++		walk = walk->next;
  
- 		/*
- 		 * The next operation that must be checked depends on the type
-@@ -531,8 +546,7 @@ static void freeary(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
- 
- 	/* Wake up all pending processes and let them fail with EIDRM. */
- 	list_for_each_entry_safe(q, tq, &sma->sem_pending, list) {
--		list_del(&q->list);
--
-+		unlink_queue(sma, q);
- 		wake_up_sem_queue(q, -EIDRM);
+ 		error = try_atomic_semop(sma, q->sops, q->nsops,
+ 					 q->undo, q->pid);
+@@ -768,7 +796,7 @@ static int semctl_main(struct ipc_namespace *ns, int semid, int semnum,
+ 		}
+ 		sma->sem_ctime = get_seconds();
+ 		/* maybe some queued-up processes were waiting for this */
+-		update_queue(sma);
++		update_queue(sma, -1);
+ 		err = 0;
+ 		goto out_unlock;
+ 	}
+@@ -810,7 +838,7 @@ static int semctl_main(struct ipc_namespace *ns, int semid, int semnum,
+ 		curr->sempid = task_tgid_vnr(current);
+ 		sma->sem_ctime = get_seconds();
+ 		/* maybe some queued-up processes were waiting for this */
+-		update_queue(sma);
++		update_queue(sma, semnum);
+ 		err = 0;
+ 		goto out_unlock;
+ 	}
+@@ -1186,7 +1214,8 @@ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
+ 	error = try_atomic_semop (sma, sops, nsops, un, task_tgid_vnr(current));
+ 	if (error <= 0) {
+ 		if (alter && error == 0)
+-			update_queue (sma);
++			update_queue(sma, (nsops == 1) ? sops[0].sem_num : -1);
++
+ 		goto out_unlock_free;
  	}
  
-@@ -1190,6 +1204,19 @@ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
- 	else
- 		list_add(&queue.list, &sma->sem_pending);
+@@ -1387,7 +1416,7 @@ void exit_sem(struct task_struct *tsk)
+ 		}
+ 		sma->sem_otime = get_seconds();
+ 		/* maybe some queued-up processes were waiting for this */
+-		update_queue(sma);
++		update_queue(sma, -1);
+ 		sem_unlock(sma);
  
-+	if (nsops == 1) {
-+		struct sem *curr;
-+		curr = &sma->sem_base[sops->sem_num];
-+
-+		if (alter)
-+			list_add_tail(&queue.simple_list, &curr->sem_pending);
-+		else
-+			list_add(&queue.simple_list, &curr->sem_pending);
-+	} else {
-+		INIT_LIST_HEAD(&queue.simple_list);
-+		sma->complex_count++;
-+	}
-+
- 	queue.status = -EINTR;
- 	queue.sleeper = current;
- 	current->state = TASK_INTERRUPTIBLE;
-@@ -1231,7 +1258,7 @@ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
- 	 */
- 	if (timeout && jiffies_left == 0)
- 		error = -EAGAIN;
--	list_del(&queue.list);
-+	unlink_queue(sma, &queue);
- 
- out_unlock_free:
- 	sem_unlock(sma);
-@@ -1374,7 +1401,7 @@ static int sysvipc_sem_proc_show(struct seq_file *s, void *it)
- 	struct sem_array *sma = it;
- 
- 	return seq_printf(s,
--			  "%10d %10d  %4o %10lu %5u %5u %5u %5u %10lu %10lu\n",
-+			  "%10d %10d  %4o %10u %5u %5u %5u %5u %10lu %10lu\n",
- 			  sma->sem_perm.key,
- 			  sma->sem_perm.id,
- 			  sma->sem_perm.mode,
+ 		call_rcu(&un->rcu, free_un);
 -- 
 1.6.2.5
 
