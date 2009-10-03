@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbZJCDnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750945AbZJCEHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755676AbZJCDnU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 23:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZJCDnT
+	id S1750945AbZJCEHS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 00:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbZJCEHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 23:43:19 -0400
-Received: from smtp.infotech.no ([82.134.31.41]:58310 "EHLO elrond.infotech.no"
+	Sat, 3 Oct 2009 00:07:17 -0400
+Received: from dovecot.org ([82.118.211.50]:47683 "EHLO dovecot.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754475AbZJCDnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 23:43:18 -0400
-Message-ID: <4AC6C852.60400@interlog.com>
-Date: Fri, 02 Oct 2009 23:43:14 -0400
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: SCSI development list <linux-scsi@vger.kernel.org>
-CC: =?ISO-8859-1?Q?Dan_Hor=E1k?= <dhorak@redhat.com>,
-       Eric Schwartz <emschwar@debian.org>,
-       "Robin H. Johnson" <robbat2@gentoo.org>,
-       xiao li - Sun Microsystems - Beijing China 
-	<Xiao.L@Sun.COM>,
-       Martin Pitt <mpitt@debian.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [Announce] sg3_utils-1.28 available
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1750749AbZJCEHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 00:07:17 -0400
+Subject: [PATCH] proc/pid/cmdline: Handle invalid cmdline change failures
+ correctly.
+From: Timo Sirainen <tss@iki.fi>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sat, 03 Oct 2009 00:07:12 -0400
+Message-Id: <1254542832.5405.6.camel@hurina>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sg3_utils is a package of command line utilities for sending
-SCSI and some ATA commands to devices. This package targets
-the linux kernel (lk) 2.6 and lk 2.4 series. Also included are
-ports to FreeBSD, Tru64, Solaris, and Windows (cygwin and mingw).
+Handle access_process_vm() failures correctly in /proc/pid/cmdline.
+This bug might have leaked kernel memory to userspace.
 
-This version adds these utilities: sg_get_lba_status,
-sg_read_block_limits and sg_unmap . Various changes made by
-www.t10.org since April 2009 are reflected in this version.
-A lot more thin provisioning support has been added. There
-is a copy of ChangeLog below.
+Signed-off-by: Timo Sirainen <tss@iki.fi>
+---
+ fs/proc/base.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-For an overview of sg3_utils and downloads see this page:
-     http://sg.danny.cz/sg/sg3_utils.html
-The sg_dd utility has its own page at:
-     http://sg.danny.cz/sg/sg_dd.html
-The SG_IO ioctl is discussed at:
-     http://sg.danny.cz/sg/sg_io.html
-A full changelog can be found at:
-     http://sg.danny.cz/sg/p/sg3_utils.ChangeLog
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 837469a..f66cc4c 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -252,7 +252,7 @@ struct mm_struct *mm_for_maps(struct task_struct *task)
+ 
+ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
+ {
+-	int res = 0;
++	int res = 0, res2;
+ 	unsigned int len;
+ 	struct mm_struct *mm = get_task_mm(task);
+ 	if (!mm)
+@@ -277,8 +277,9 @@ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
+ 			len = mm->env_end - mm->env_start;
+ 			if (len > PAGE_SIZE - res)
+ 				len = PAGE_SIZE - res;
+-			res += access_process_vm(task, mm->env_start, buffer+res, len, 0);
+-			res = strnlen(buffer, res);
++			res2 = access_process_vm(task, mm->env_start, buffer+res, len, 0);
++			if (res2 > 0)
++				res = strnlen(buffer, res + res2);
+ 		}
+ 	}
+ out_mm:
+-- 
+1.6.3.3
 
-A release announcement will be sent to freshmeat.net .
 
-Changelog for sg3_utils-1.28 [20091002] [svn: r313]
-   - sg_unmap: new utility for thin provisioning
-     - add examples/sg_unmap_example.txt
-   - sg_get_lba_status: new utility for thin provisioning
-   - sg_read_block_limits: new utility for tape drives
-   - sg_logs: add cache memory statistics log (sub)page
-   - sg_vpd, sg_inq: extend Block limits VPD page (sbc3r19)
-   - sg_vpd: add Thin provisioning VPD page (sbc3r20) and
-             TapeAlert supported flags VPD page
-   - sg_inq: note VPD page support better in sg_vpd
-   - sg_persist: add transport specific transportID format
-     - allow transportIDs to be read from named file
-   - sg_opcodes: allow --opcode= option to take OP and SA
-     values (comma seperated)
-     - tweak print format, remove test code
-   - sg_requests: remove test code in progress calculation
-   - sg_reset: add target reset option
-   - sg_luns: reduce default maxlen to 8192 (for FreeBSD)
-   - sg_raw: extend max cdb length from 16 to 256 bytes
-     - align heap allocs to page boundaries
-   - sg_lib: sg_set_binary_mode() needs config.h included
-     - add progress indication sense data descriptor (0xa)
-     - change SG3_UTILS_* constants to SG_LIB_*
-     - decode service actions within persistent reserve in/out
-     - sync with spc4r21
-   - sg_cmds_extra: add sg_ll_unmap() and sg_ll_get_lba_status()
-   - sg_pt_linux: fix check condition but empty sense buffer; occurred
-     when sg v3 node used and /usr/include/linux/bsg.h visible
-     - major() macro grief, if present include <linux/kdev_t.h> and
-       use MAJOR() instead
-   - scripts/sas_disk_blink: moved from this package to sdparm
-   - utils/hxascdmp: in Windows set binary mode on read files
-   - examples/sg_persist_tst.sh: add PRIN read full status command
-   - sg_raw,sg_write_buffer,sg_write_long,sg_write_same: in Windows
-     set binary mode on read files
-   - sg_pt_win32: default to non-direct variant of SPT interface
-     - use './configure --enable-win32-spt-direct' to override
-     - non-direct data length set to 16 KB, extended if required
-   - debian: incorporate patch from debian sid
-
-Changelog for sg3_utils-1.27 [20090411] [svn: r250]
-....
-
-Doug Gilbert
