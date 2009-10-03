@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbZJCCBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbZJCCNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754423AbZJCCBf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 22:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZJCCBe
+	id S1756391AbZJCCNG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 22:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453AbZJCCNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 22:01:34 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:40339 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751262AbZJCCBe convert rfc822-to-8bit (ORCPT
+	Fri, 2 Oct 2009 22:13:05 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:61867 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753648AbZJCCNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 22:01:34 -0400
+	Fri, 2 Oct 2009 22:13:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=p8AvMCdmyFEH8fjlTXIVKUVNNa04OpUXyLTTpgGAycW00AzVByL0FuLYDI4MfGC3ZQ
-         vYnmKW9KtOUscUT8PGeuUJ1RE1qzEOc9CBhn8g4t5EL/bQ8EGflQ7ultKsEWjQTqnGNB
-         ZUTNbZ/4VoYZUDapM8lkX2J/L1zWkuMsZ/eCU=
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=jv2vy1gk6IEW39Sk/liuoQWoww9WtWVcjXYh84feBaczWAaln1w7YahzFe+ys5tges
+         vRF7MhkIXDCSpY1KktoOYVGmju2+aYUtkqH9NBifM26cRxWcbptjLOk1eWzOMRAZ2iJy
+         XKmXtgP1tKkysdRghVjydJ231ru9uQnYslYXk=
 MIME-Version: 1.0
-In-Reply-To: <1254518602.5050.4.camel@hurina>
-References: <1254518602.5050.4.camel@hurina>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Fri, 2 Oct 2009 22:01:17 -0400
-Message-ID: <3e8340490910021901i35ba8a5v7647b1e02b054270@mail.gmail.com>
-Subject: Re: [PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
-To: Timo Sirainen <tss@iki.fi>
+From: Matteo Croce <technoboy85@gmail.com>
+Date: Sat, 3 Oct 2009 04:12:47 +0200
+Message-ID: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com>
+Subject: i686 quirk for AMD Geode
+To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 2, 2009 at 5:23 PM, Timo Sirainen <tss@iki.fi> wrote:
-> PR_SET_PROCTITLE_AREA updates mm_struct->arg_start and arg_end to the
-> given pointers, which makes it possible for user space to implement
-> setproctitle(3) cleanly.
+Hi,
 
+the AMD GEode LX has an x86 id of 5 (i586) tought it's technically an i686:
 
-> @@ -267,9 +267,12 @@ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
->
->        res = access_process_vm(task, mm->arg_start, buffer, len, 0);
->
-> -       // If the nul at the end of args has been overwritten, then
-> -       // assume application is using setproctitle(3).
-> -       if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
-> +       if (mm->arg_end != mm->env_start) {
-> +               // PR_SET_PROCTITLE_AREA used
-> +               res = strnlen(buffer, res);
+root@alix:/usr/src# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 5
+model           : 10
+model name      : Geode(TM) Integrated Processor by AMD PCS
+stepping        : 2
+cpu MHz         : 498.060
+cache size      : 128 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu de pse tsc msr cx8 sep pge cmov clflush mmx
+mmxext 3dnowext 3dnow
+bogomips        : 996.12
+clflush size    : 32
+cache_alignment : 32
+address sizes   : 32 bits physical, 32 bits virtual
+power management:
 
-Is this check really needed? Surely it's enough to simply state that
-behavior if the area isn't null-terminated is undefined.
+indeed it has mmx, mmxext and cmov.
+So I added the quirk below and I can confirm that the system is running fine.
+I did an x264 encode to trigger any SIGILL due to missing opcodes, but
+it worked.
 
-> +       } else if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
-> +               // If the nul at the end of args has been overwritten, then
-> +               // assume application is using old style setproctitle(3).
->                len = strnlen(buffer, res);
->                if (len < res) {
->                    res = len;
+I also did this simple test which gives a ~2.5x speed boost:
+http://pastebin.ca/1590089
 
-Might want to fix the bug later on in that function while you're in
-here - the second access_process_vm call is never checked for errors,
-but (from my reading) it's possible that the page that the environment
-is on could be unmapped between those two calls. The result could
-either be a short read (not the end of the world) or a negative value
-(error code + small original argument length) passed to strnlen.
+I wish some feedback from someone, I really dunno why AMD set the
+cpuid value to 5
 
-That said, come to think of it, I'm not actually sure if this prctl
-stuff is strictly necessary. Wouldn't it be enough for glibc to copy
-the environment somewhere safe, and then have the kernel guarantee a
-full PAGE_SIZE between arg_start and env_end, even if this means
-padding out the environment? The process could then measure to make
-sure it has this much space (in case of running on an old kernel) by
-testing the difference between arg_start and the top of the stack, or
-an auxiliary vector could be passed down from the kernel with the
-maximum proctitle length.
+--- a/arch/x86/kernel/cpu/bugs.c	2009-10-03 03:43:02.399323313 +0200
++++ b/arch/x86/kernel/cpu/bugs.c	2009-10-03 03:54:22.582205090 +0200
+@@ -151,6 +151,12 @@
+ #endif
+ }
+
++static void __init check_geode_i586(void)
++{
++	if(boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
++	   boot_cpu_data.x86_model == 10 && boot_cpu_data.x86 == 5)
++		boot_cpu_data.x86 = 6;
++}
+
+ void __init check_bugs(void)
+ {
+@@ -163,6 +169,7 @@
+ 	check_fpu();
+ 	check_hlt();
+ 	check_popad();
++	check_geode_i586();
+ 	init_utsname()->machine[1] =
+ 		'0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
+ 	alternative_instructions();
