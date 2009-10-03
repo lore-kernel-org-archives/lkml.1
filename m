@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbZJCKex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbZJCKfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbZJCKex (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 06:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbZJCKew
+	id S1754717AbZJCKfr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 06:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbZJCKfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 06:34:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50498 "EHLO mx3.mail.elte.hu"
+	Sat, 3 Oct 2009 06:35:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50700 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754605AbZJCKew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 06:34:52 -0400
-Date: Sat, 3 Oct 2009 12:34:41 +0200
+	id S1750750AbZJCKfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 06:35:45 -0400
+Date: Sat, 3 Oct 2009 12:35:38 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [regressions] Re: kbuild: save ARCH & CROSS_COMPILE when building
-	a kernel
-Message-ID: <20091003103441.GA10874@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [GIT PULL] tracing/kprobes: kprobes fixes
+Message-ID: <20091003103538.GA12263@elte.hu>
+References: <1254537091-4993-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1254537091-4993-1-git-send-email-fweisbec@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.5
+X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.5 required=5.9 tests=BAYES_40 autolearn=no SpamAssassin version=3.2.5
-	0.5 BAYES_40               BODY: Bayesian spam probability is 20 to 40%
-	[score: 0.3791]
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Sam,
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-that arch-cache thing introduced in:
+> Ingo,
+> 
+> Please pull the tracing/kprobes tree that can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> 	tracing/kprobes
+> 
+> (I'm just waiting a bit before pushing the perf probe patches
+> while we discuss some syntax things).
+> 
+> Thanks.
+> 
+> Masami Hiramatsu (3):
+>       tracing/kprobes: Use global event perf buffers in kprobe tracer
+>       x86: Add VIA processor instructions in opcodes decoder
+>       tracing/ftrace: Fix to check create_event_dir() when adding new events
+> 
+>  arch/x86/lib/x86-opcode-map.txt |    8 +++-
+>  kernel/trace/trace_events.c     |   25 +++++----
+>  kernel/trace/trace_kprobe.c     |  115 +++++++++++++++++++++++++--------------
+>  3 files changed, 94 insertions(+), 54 deletions(-)
 
- 5755433: kbuild: save ARCH & CROSS_COMPILE when building a kernel
-
-isnt working very well in my experience.
-
-1) it's a nuisance in cross-builds (it broke several cross-build scripts 
-   of mine)
-
-2) it makes it hard to switch from 32-bit x86 builds to 64-bit ones: 
-   previously i only needed 'make ARCH=i386 defconfig' and off we went - 
-   now i have to add a 'make mrproper' step.
-
-3) it can also get stuck:
-
-  phoenix:~/linux/linux> make mrproper
-  Makefile:571: /home/mingo/tip/arch/no/Makefile: No such file or directory
-  make: *** No rule to make target `/home/mingo/tip/arch/no/Makefile'.  Stop.
-
-  phoenix:~/linux/linux> cat include/generated/*
-  no
-
-  phoenix:~/linux/linux> 
-
- There's no way out of this state, only if i manually remove 
- include/generated. (i suspect this is fixable)
-
-Dunno - why isnt the .config enough in terms of determining which 
-architecture we are on? If we want more info we should put it into the 
-.config - not some other hidden state. I do think a single file should 
-carry all 'configuration state' - that makes it easier to reproduce 
-things, etc. etc. Everything else is really just hindering us.
+Pulled, thanks!
 
 	Ingo
