@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZJCV6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbZJCWFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbZJCV6F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 17:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZJCV6E
+	id S1755060AbZJCWFE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 18:05:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZJCWFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 17:58:04 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43523 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751878AbZJCV6D (ORCPT
+	Sat, 3 Oct 2009 18:05:03 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:54098 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752521AbZJCWFC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 17:58:03 -0400
-X-Sasl-enc: +B/raO3rqgAjsLVV2l4Rq+Ho96kyIVfnt1i8wHO4m76Q 1254607019
-Date: Sat, 3 Oct 2009 18:56:53 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Wang, Shane" <shane.wang@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>
-Subject: Re: [GIT PULL] x86/txt for v2.6.32
-Message-ID: <20091003215653.GA4011@khazad-dum.debian.net>
-References: <20090928211745.GA2119@elf.ucw.cz>
- <4AC1AA61.8070408@intel.com>
- <20090929171318.GC14405@elf.ucw.cz>
- <20090929191951.18315e94@infradead.org>
- <037F493892196B458CD3E193E8EBAD4F01ED9FE3B1@pdsmsx502.ccr.corp.intel.com>
- <20090930065448.GB11652@elf.ucw.cz>
- <037F493892196B458CD3E193E8EBAD4F01ED9FE6E3@pdsmsx502.ccr.corp.intel.com>
- <20091003201959.GA16047@elf.ucw.cz>
- <20091003203619.GA27182@khazad-dum.debian.net>
- <20091003141052.3767a371@infradead.org>
+	Sat, 3 Oct 2009 18:05:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=XNB/wOttOqbVof0p1eA+isUcJNlQZVh1LAz8yHEnQZ+2v6xJHzJDpnA/9sepe5LDdZ
+         NfF0xL0e3UBQcvu7RujduQ5RwpvW6vlJIDsbcJmiXFMPPI/DUjO4kJD8rSmb2Wrg4nsj
+         9LKqRGTRfQp/VS3jVZnVMuGX6MnJlwhnM7FS4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091003141052.3767a371@infradead.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091003110546.78958508@infradead.org>
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> 
+	<20091003110546.78958508@infradead.org>
+From: Matteo Croce <technoboy85@gmail.com>
+Date: Sun, 4 Oct 2009 00:04:03 +0200
+Message-ID: <40101cc30910031504pa9f8536k82dbd7668dfa643d@mail.gmail.com>
+Subject: Re: i686 quirk for AMD Geode
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 03 Oct 2009, Arjan van de Ven wrote:
-> On Sat, 3 Oct 2009 17:36:20 -0300
-> Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
-> > On Sat, 03 Oct 2009, Pavel Machek wrote:
-> > > On Sat 2009-10-03 01:02:52, Wang, Shane wrote:
-> > > > > So I modify the RAM content so that BIOS does not think measured
-> > > > > environment existed before suspend?
-> > > > > 									Pavel
-> > > > 
-> > > > Hi Pavel, what do you mean on this question? 
-> > > > When do you modify the RAM? before S3 sleep?
-> > > 
-> > > During the sleep, using something cold and second machine.
-> > 
-> > And it is ridiculously easy to pull off, too:
-> > http://www.engadget.com/2008/02/21/cold-boot-disk-encryption-attack-is-shockingly-effective/
-> > 
-> > Shows the attack being used to read sensitive keys, but you can use
-> > it also to *modify* system running state (it will be more difficult,
-> > as you need to remove and replace the RAM while on S3 instead of S5,
-> > but it should be doable by someone who knows what he is doing).
-> 
-> that assumes all state is in ram, and not some bit in the TPM..
+On Sat, Oct 3, 2009 at 8:05 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Sat, 3 Oct 2009 04:12:47 +0200
+> Matteo Croce <technoboy85@gmail.com> wrote:
+>>
+>> I also did this simple test which gives a ~2.5x speed boost:
+>> http://pastebin.ca/1590089
+>
+> the number that is exposed in /proc/cpuinfo does not control
+> if cmov is used... so the patch and the benchmark are totally unrelated.
+>
+> Anything that needs to know if cmov can be used will need to read the
+> flags line..
+>
+> (since technically cmov is also optional for generation 6 and later)
+>
+> While I can't say anything against your patch, I do need to say that it
+> is something purely cosmetic on first sight...
+>
+> --
+> Arjan van de Ven        Intel Open Source Technology Centre
+> For development, discussion and tips for power savings,
+> visit http://www.lesswatts.org
+>
 
-Indeed, it does.
-
-> (and as for that "we can steal the content"... that's confusing DRM
-> with TXT. TXT is integrity, DRM is. well evil ;-)
-
-Agreed :)  But TXT itself (or the BIOS, but not the kernel) needs to recheck
-RAM content signatures on resume.  Does it?  If it doesn't, it is easy to
-"fix" too, just drop all previous atestation before suspend/restart/shutdown
-:P
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+yes cmov and i686 are unrelated but some distros (Debian & co.)
+compiles libraries for two archs:
+i486 and i686-cmov so only i686 machines does benefit from cmov.
+This is why I cared about having an i686 aware userspace but it seems
+that for a missing instruction I can't do that
