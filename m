@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZJCCbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbZJCCbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbZJCCbl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 22:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbZJCCbe
+	id S1754164AbZJCCbo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 22:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZJCCbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 22:31:34 -0400
+	Fri, 2 Oct 2009 22:31:42 -0400
 Received: from mail-ew0-f211.google.com ([209.85.219.211]:60874 "EHLO
 	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751082AbZJCCbc (ORCPT
+	with ESMTP id S1752669AbZJCCbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 22:31:32 -0400
+	Fri, 2 Oct 2009 22:31:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=JuI3AAqvTFWdAsI0SHvfRDBLDVETvgwPWZM4L+Zr+EQxBEWFq1HxiwZ8caWtE2DpoM
-         qyU8MI7UEmca8l9zsWTPhOzbIeGCfayAsPcPf6VZ4FB8PPKfokgOxzuoF/ta3sSgUd7C
-         Wknu+WVJRh6fPY4UhEtOH8fIt4hRXCUbXk5Ng=
+        b=bMiNo0Cehq0/X40o3WCQ2MC03VMtkGeZoRdhBA2YBcksc2YNTGNLDsWCCmmywlGr/2
+         zUYkW8RGYBgbmk3Vv7SJ7fwcrNbjOGuujfcBy2aX+FRFPB9gPofcJ2Tpz/YHjNQ6n8KN
+         oOqtUksrFA5fBS1TSA1+3pFYR3MdgFB+D5gQ8=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -31,9 +31,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Tom Zanussi <tzanussi@gmail.com>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 1/3] tracing/kprobes: Use global event perf buffers in kprobe tracer
-Date: Sat,  3 Oct 2009 04:31:29 +0200
-Message-Id: <1254537091-4993-2-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 2/3] x86: Add VIA processor instructions in opcodes decoder
+Date: Sat,  3 Oct 2009 04:31:30 +0200
+Message-Id: <1254537091-4993-3-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1254537091-4993-1-git-send-email-fweisbec@gmail.com>
 References: <1254537091-4993-1-git-send-email-fweisbec@gmail.com>
@@ -43,9 +43,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Masami Hiramatsu <mhiramat@redhat.com>
 
-Use new percpu global event buffer instead of stack in kprobe
-tracer while tracing through perf.
+Add VIA processor's Padlock instructions(MONTMUL, XSHA1, XSHA256)
+as parts of the kernel may use them.
 
+This fixes the following crash in opcodes decoder selftests:
+
+ make[2]: `scripts/unifdef' is up to date.
+   TEST    posttest
+ Error: c145cf71:        f3 0f a6 d0             repz xsha256
+ Error: objdump says 4 bytes, but insn_get_length() says 3 (attr:0)
+ make[1]: *** [posttest] Error 2
+ make: *** [bzImage] Error 2
+
+Reported-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Acked-by: Steven Rostedt <rostedt@goodmis.org>
 Acked-by: Ingo Molnar <mingo@elte.hu>
@@ -62,159 +72,38 @@ Cc: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Tom Zanussi <tzanussi@gmail.com>
-LKML-Reference: <20090925182011.10157.60140.stgit@omoto>
+LKML-Reference: <20090925182037.10157.3180.stgit@omoto>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/trace_kprobe.c |  115 +++++++++++++++++++++++++++----------------
- 1 files changed, 73 insertions(+), 42 deletions(-)
+ arch/x86/lib/x86-opcode-map.txt |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 09cba27..97309d4 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -1149,35 +1149,49 @@ static __kprobes int kprobe_profile_func(struct kprobe *kp,
- 	struct trace_probe *tp = container_of(kp, struct trace_probe, rp.kp);
- 	struct ftrace_event_call *call = &tp->call;
- 	struct kprobe_trace_entry *entry;
--	int size, __size, i, pc;
-+	struct trace_entry *ent;
-+	int size, __size, i, pc, __cpu;
- 	unsigned long irq_flags;
-+	char *raw_data;
+diff --git a/arch/x86/lib/x86-opcode-map.txt b/arch/x86/lib/x86-opcode-map.txt
+index 59e20d5..78a0daf 100644
+--- a/arch/x86/lib/x86-opcode-map.txt
++++ b/arch/x86/lib/x86-opcode-map.txt
+@@ -469,7 +469,7 @@ a2: CPUID
+ a3: BT Ev,Gv
+ a4: SHLD Ev,Gv,Ib
+ a5: SHLD Ev,Gv,CL
+-a6:
++a6: GrpPDLK
+ a7: GrpRNG
+ a8: PUSH GS (d64)
+ a9: POP GS (d64)
+@@ -803,6 +803,12 @@ GrpTable: Grp16
+ 3: prefetch T2
+ EndTable
  
--	local_save_flags(irq_flags);
- 	pc = preempt_count();
--
- 	__size = SIZEOF_KPROBE_TRACE_ENTRY(tp->nr_args);
- 	size = ALIGN(__size + sizeof(u32), sizeof(u64));
- 	size -= sizeof(u32);
-+	if (WARN_ONCE(size > FTRACE_MAX_PROFILE_SIZE,
-+		     "profile buffer not large enough"))
-+		return 0;
- 
--	do {
--		char raw_data[size];
--		struct trace_entry *ent;
--		/*
--		 * Zero dead bytes from alignment to avoid stack leak
--		 * to userspace
--		 */
--		*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
--		entry = (struct kprobe_trace_entry *)raw_data;
--		ent = &entry->ent;
--
--		tracing_generic_entry_update(ent, irq_flags, pc);
--		ent->type = call->id;
--		entry->nargs = tp->nr_args;
--		entry->ip = (unsigned long)kp->addr;
--		for (i = 0; i < tp->nr_args; i++)
--			entry->args[i] = call_fetch(&tp->args[i].fetch, regs);
--		perf_tp_event(call->id, entry->ip, 1, entry, size);
--	} while (0);
-+	/*
-+	 * Protect the non nmi buffer
-+	 * This also protects the rcu read side
-+	 */
-+	local_irq_save(irq_flags);
-+	__cpu = smp_processor_id();
++GrpTable: GrpPDLK
++0: MONTMUL
++1: XSHA1
++2: XSHA2
++EndTable
 +
-+	if (in_nmi())
-+		raw_data = rcu_dereference(trace_profile_buf_nmi);
-+	else
-+		raw_data = rcu_dereference(trace_profile_buf);
-+
-+	if (!raw_data)
-+		goto end;
-+
-+	raw_data = per_cpu_ptr(raw_data, __cpu);
-+	/* Zero dead bytes from alignment to avoid buffer leak to userspace */
-+	*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
-+	entry = (struct kprobe_trace_entry *)raw_data;
-+	ent = &entry->ent;
-+
-+	tracing_generic_entry_update(ent, irq_flags, pc);
-+	ent->type = call->id;
-+	entry->nargs = tp->nr_args;
-+	entry->ip = (unsigned long)kp->addr;
-+	for (i = 0; i < tp->nr_args; i++)
-+		entry->args[i] = call_fetch(&tp->args[i].fetch, regs);
-+	perf_tp_event(call->id, entry->ip, 1, entry, size);
-+end:
-+	local_irq_restore(irq_flags);
- 	return 0;
- }
- 
-@@ -1188,33 +1202,50 @@ static __kprobes int kretprobe_profile_func(struct kretprobe_instance *ri,
- 	struct trace_probe *tp = container_of(ri->rp, struct trace_probe, rp);
- 	struct ftrace_event_call *call = &tp->call;
- 	struct kretprobe_trace_entry *entry;
--	int size, __size, i, pc;
-+	struct trace_entry *ent;
-+	int size, __size, i, pc, __cpu;
- 	unsigned long irq_flags;
-+	char *raw_data;
- 
--	local_save_flags(irq_flags);
- 	pc = preempt_count();
--
- 	__size = SIZEOF_KRETPROBE_TRACE_ENTRY(tp->nr_args);
- 	size = ALIGN(__size + sizeof(u32), sizeof(u64));
- 	size -= sizeof(u32);
-+	if (WARN_ONCE(size > FTRACE_MAX_PROFILE_SIZE,
-+		     "profile buffer not large enough"))
-+		return 0;
-+
-+	/*
-+	 * Protect the non nmi buffer
-+	 * This also protects the rcu read side
-+	 */
-+	local_irq_save(irq_flags);
-+	__cpu = smp_processor_id();
-+
-+	if (in_nmi())
-+		raw_data = rcu_dereference(trace_profile_buf_nmi);
-+	else
-+		raw_data = rcu_dereference(trace_profile_buf);
-+
-+	if (!raw_data)
-+		goto end;
-+
-+	raw_data = per_cpu_ptr(raw_data, __cpu);
-+	/* Zero dead bytes from alignment to avoid buffer leak to userspace */
-+	*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
-+	entry = (struct kretprobe_trace_entry *)raw_data;
-+	ent = &entry->ent;
- 
--	do {
--		char raw_data[size];
--		struct trace_entry *ent;
--
--		*(u64 *)(&raw_data[size - sizeof(u64)]) = 0ULL;
--		entry = (struct kretprobe_trace_entry *)raw_data;
--		ent = &entry->ent;
--
--		tracing_generic_entry_update(ent, irq_flags, pc);
--		ent->type = call->id;
--		entry->nargs = tp->nr_args;
--		entry->func = (unsigned long)tp->rp.kp.addr;
--		entry->ret_ip = (unsigned long)ri->ret_addr;
--		for (i = 0; i < tp->nr_args; i++)
--			entry->args[i] = call_fetch(&tp->args[i].fetch, regs);
--		perf_tp_event(call->id, entry->ret_ip, 1, entry, size);
--	} while (0);
-+	tracing_generic_entry_update(ent, irq_flags, pc);
-+	ent->type = call->id;
-+	entry->nargs = tp->nr_args;
-+	entry->func = (unsigned long)tp->rp.kp.addr;
-+	entry->ret_ip = (unsigned long)ri->ret_addr;
-+	for (i = 0; i < tp->nr_args; i++)
-+		entry->args[i] = call_fetch(&tp->args[i].fetch, regs);
-+	perf_tp_event(call->id, entry->ret_ip, 1, entry, size);
-+end:
-+	local_irq_restore(irq_flags);
- 	return 0;
- }
- 
+ GrpTable: GrpRNG
+ 0: xstore-rng
+ 1: xcrypt-ecb
 -- 
 1.6.2.3
 
