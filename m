@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbZJCHf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbZJCHkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbZJCHf5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 03:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbZJCHf4
+	id S1753858AbZJCHkQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 03:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZJCHkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 03:35:56 -0400
-Received: from mail01a.mail.t-online.hu ([84.2.40.6]:57982 "EHLO
-	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754005AbZJCHfy (ORCPT
+	Sat, 3 Oct 2009 03:40:15 -0400
+Received: from www84.your-server.de ([213.133.104.84]:41726 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751417AbZJCHkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 03:35:54 -0400
-Message-ID: <4AC6FEDA.30804@freemail.hu>
-Date: Sat, 03 Oct 2009 09:35:54 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: Jean-Francois Moine <moinejf@free.fr>,
-       Thomas Kaiser <thomas@kaiser-linux.li>
-CC: V4L Mailing List <linux-media@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] pac7311: remove magic value for USB_BUF_SZ
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32711; Body=4 Fuz1=4
-	Fuz2=4
+	Sat, 3 Oct 2009 03:40:14 -0400
+Subject: Re: [patch] procfs: provide stack information for threads
+From: Stefani Seibold <stefani@seibold.net>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <m263axq8ie.fsf@whitebox.home>
+References: <1238511505.364.61.camel@matrix>
+	 <20090401193135.GA12316@elte.hu> <1244146873.20012.6.camel@wall-e>
+	 <m2eipl7axx.fsf@igel.home> <m2ws3djwrr.fsf@igel.home>
+	 <m263axq8ie.fsf@whitebox.home>
+Content-Type: text/plain
+Date: Sat, 03 Oct 2009 09:40:26 +0200
+Message-Id: <1254555626.24924.2.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+Sorry, i missed this. Good job ;-)
 
-The length check in reg_w_var() function is because the buffer contents
-is copied to gspca_dev->usb_buf which has the size of USB_BUF_SZ bytes as
-defined in drivers/media/video/gspca/gspca.h. Replace the number with
-symbol for better readability and maintainability.
+Stefani
 
-The change was tested with Labtec Webcam 2200.
+Am Samstag, den 03.10.2009, 08:47 +0200 schrieb Andreas Schwab:
+> Here's the patch again properly signed.
+> 
+> Andreas.
+> 
+> >From 9da252fd7d9a5cf84a477a35a6b52f927c85b280 Mon Sep 17 00:00:00 2001
+> From: Andreas Schwab <schwab@linux-m68k.org>
+> Date: Sat, 3 Oct 2009 08:19:43 +0200
+> Subject: [PATCH] compat_do_execve: set current->stack_start as in do_execve
+> 
+> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+> ---
+>  fs/compat.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/compat.c b/fs/compat.c
+> index d576b55..6c19040 100644
+> --- a/fs/compat.c
+> +++ b/fs/compat.c
+> @@ -1532,6 +1532,8 @@ int compat_do_execve(char * filename,
+>  	if (retval < 0)
+>  		goto out;
+>  
+> +	current->stack_start = current->mm->start_stack;
+> +
+>  	/* execve succeeded */
+>  	current->fs->in_exec = 0;
+>  	current->in_execve = 0;
+> -- 
+> 1.6.4.4
+> 
+> 
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
-diff -upr c/drivers/media/video/gspca/pac7311.c d/drivers/media/video/gspca/pac7311.c
---- c/drivers/media/video/gspca/pac7311.c	2009-10-03 08:47:30.000000000 +0200
-+++ d/drivers/media/video/gspca/pac7311.c	2009-10-03 09:02:31.000000000 +0200
-@@ -474,7 +474,7 @@ static void reg_w_var(struct gspca_dev *
- 			reg_w_page(gspca_dev, page3_7302, sizeof page3_7302);
- 			break;
- 		default:
--			if (len > 64) {
-+			if (len > USB_BUF_SZ) {
- 				PDEBUG(D_ERR|D_STREAM,
- 					"Incorrect variable sequence");
- 				return;
