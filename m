@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbZJCCah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752404AbZJCCbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752145AbZJCCah (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 2 Oct 2009 22:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbZJCCag
+	id S1752404AbZJCCbb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 2 Oct 2009 22:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZJCCbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 2 Oct 2009 22:30:36 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38273 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbZJCCag (ORCPT
+	Fri, 2 Oct 2009 22:31:31 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:60874 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071AbZJCCba (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 2 Oct 2009 22:30:36 -0400
-Date: Sat, 3 Oct 2009 04:30:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: jcm@jonmasters.org, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [NEXT] Remove "default m" from hardware latency detector
-Message-ID: <20091003023038.GA28521@basil.fritz.box>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 2 Oct 2009 22:31:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=TWw1bhb09xCzUwEFhHN/Thj/nCJitaG9XhGXNUbbOoMji0hh1eInJ46HcTCL2Bgao7
+         LzK9q/uRMOw9pEOvZ1lmUZ+NiKShisF6rNcvUQCAS02NGmxxBHSMiaN6BI9ZvnGKWfnp
+         NgD+EGwBzoxryxgnvAq1ASMpmDwR1IToOdwYI=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: [GIT PULL] tracing/kprobes: kprobes fixes
+Date: Sat,  3 Oct 2009 04:31:28 +0200
+Message-Id: <1254537091-4993-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed this while doing make oldconfig on today's linux-next
-default ms are usually wrong.
+Ingo,
 
----
+Please pull the tracing/kprobes tree that can be found at:
 
-No reason at all why this should be default anything except n.
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/kprobes
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
----
- drivers/misc/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+(I'm just waiting a bit before pushing the perf probe patches
+while we discuss some syntax things).
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 040765f..fe60d8d 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -80,7 +80,6 @@ config HWLAT_DETECTOR
- 	tristate "Testing module to detect hardware-induced latencies"
- 	depends on DEBUG_FS
- 	depends on RING_BUFFER
--	default m
- 	---help---
- 	  A simple hardware latency detector. Use this module to detect
- 	  large latencies introduced by the behavior of the underlying
--- 
-1.6.0.2
+Thanks.
 
+Masami Hiramatsu (3):
+      tracing/kprobes: Use global event perf buffers in kprobe tracer
+      x86: Add VIA processor instructions in opcodes decoder
+      tracing/ftrace: Fix to check create_event_dir() when adding new events
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+ arch/x86/lib/x86-opcode-map.txt |    8 +++-
+ kernel/trace/trace_events.c     |   25 +++++----
+ kernel/trace/trace_kprobe.c     |  115 +++++++++++++++++++++++++--------------
+ 3 files changed, 94 insertions(+), 54 deletions(-)
