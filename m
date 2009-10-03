@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbZJCVLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbZJCV12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757145AbZJCVLk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 17:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbZJCVLj
+	id S1757206AbZJCV12 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 17:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757179AbZJCV11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 17:11:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42082 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752267AbZJCVLj (ORCPT
+	Sat, 3 Oct 2009 17:27:27 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:43801 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757128AbZJCV11 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 17:11:39 -0400
-Date: Sat, 3 Oct 2009 14:10:52 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Pavel Machek <pavel@ucw.cz>, "Wang, Shane" <shane.wang@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>
-Subject: Re: [GIT PULL] x86/txt for v2.6.32
-Message-ID: <20091003141052.3767a371@infradead.org>
-In-Reply-To: <20091003203619.GA27182@khazad-dum.debian.net>
-References: <200909282307.56190.rjw@sisk.pl>
-	<4AC1267D.6020405@zytor.com>
-	<20090928211745.GA2119@elf.ucw.cz>
-	<4AC1AA61.8070408@intel.com>
-	<20090929171318.GC14405@elf.ucw.cz>
-	<20090929191951.18315e94@infradead.org>
-	<037F493892196B458CD3E193E8EBAD4F01ED9FE3B1@pdsmsx502.ccr.corp.intel.com>
-	<20090930065448.GB11652@elf.ucw.cz>
-	<037F493892196B458CD3E193E8EBAD4F01ED9FE6E3@pdsmsx502.ccr.corp.intel.com>
-	<20091003201959.GA16047@elf.ucw.cz>
-	<20091003203619.GA27182@khazad-dum.debian.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 3 Oct 2009 17:27:27 -0400
+Date: Sat, 3 Oct 2009 17:26:50 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Felipe Contreras <felipe.contreras@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: Annoying problems with lacie external hd (JMicron 0x2339?)
+In-Reply-To: <94a0d4530910030335p2eae17a6wddf6d87b7f60b712@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0910031720590.18843-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Oct 2009 17:36:20 -0300
-Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
+On Sat, 3 Oct 2009, Felipe Contreras wrote:
 
-> On Sat, 03 Oct 2009, Pavel Machek wrote:
-> > On Sat 2009-10-03 01:02:52, Wang, Shane wrote:
-> > > > So I modify the RAM content so that BIOS does not think measured
-> > > > environment existed before suspend?
-> > > > 									Pavel
-> > > 
-> > > Hi Pavel, what do you mean on this question? 
-> > > When do you modify the RAM? before S3 sleep?
-> > 
-> > During the sleep, using something cold and second machine.
+> Hi,
 > 
-> And it is ridiculously easy to pull off, too:
-> http://www.engadget.com/2008/02/21/cold-boot-disk-encryption-attack-is-shockingly-effective/
+> This is with 2.6.31.1.
 > 
-> Shows the attack being used to read sensitive keys, but you can use
-> it also to *modify* system running state (it will be more difficult,
-> as you need to remove and replace the RAM while on S3 instead of S5,
-> but it should be doable by someone who knows what he is doing).
+> I'm having a lot of problems with a lacie external hd[1]. It seems the
+> actual disk is a seagate ST375064, and the bridge is a JMicron 2339.
 > 
+> In normal usage what I see is that if I don't use the disk after a
+> while hear a loud click (as if something got stuck) and then I cannot
+> use it any more; I have to turn it off and on again.
 
-that assumes all state is in ram, and not some bit in the TPM..
+This sounds very much like a hardware problem, either in the drive or
+in the bridge chip.  There's no direct way to tell which; you would
+have to try attaching the drive to a different chip or the chip to a
+different drive.
 
-(and as for that "we can steal the content"... that's confusing DRM
-with TXT. TXT is integrity, DRM is. well evil ;-)
+The two places where your listings showed the Serial number (the kernel
+log and the /sys/kernel/debug/usb/devices file) have different values,
+suggesting that the chip is at fault.  But this isn't definitive.
+
+Alan Stern
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
