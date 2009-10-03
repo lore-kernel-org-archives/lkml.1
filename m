@@ -1,226 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZJCXjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbZJCXwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbZJCXjw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 19:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZJCXjw
+	id S1755095AbZJCXwU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 19:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZJCXwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 19:39:52 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16047 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753841AbZJCXjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 19:39:51 -0400
-Date: Sat, 3 Oct 2009 20:30:48 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1] perf tools: Remove show_mask bitmask
-Message-ID: <20091003233048.GA30535@ghostprotocols.net>
+	Sat, 3 Oct 2009 19:52:20 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:46658 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752190AbZJCXwS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 19:52:18 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Johan Hovold <jhovold@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
+       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <20090924154023.GA27480@localhost>
+	<200909242103.48562.oliver@neukum.org>
+	<20090924202107.4730f2af@lxorguk.ukuu.org.uk>
+	<20090924211459.GB27963@localhost> <4ABD020B.4040901@gandalf.sssup.it>
+	<20090929145514.GF2152@localhost>
+	<20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
+	<m163ayzevu.fsf@fess.ebiederm.org> <20091002084755.GA7382@localhost>
+	<20091002173308.6158d734@lxorguk.ukuu.org.uk>
+	<m1ske1wgdi.fsf@fess.ebiederm.org>
+	<20091003140902.38628d8a@lxorguk.ukuu.org.uk>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sat, 03 Oct 2009 16:51:32 -0700
+In-Reply-To: <20091003140902.38628d8a@lxorguk.ukuu.org.uk> (Alan Cox's message of "Sat\, 3 Oct 2009 14\:09\:02 +0100")
+Message-ID: <m1iqewvxx7.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Alan Cox <alan@lxorguk.ukuu.org.uk>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 T_TooManySym_03 6+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.0 T_TooManySym_02 5+ unique symbols in subject
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As it was not being exposed via any command line and with --dsos/--comms
-we can do this and even more, like asking for just kernel + some module:
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-[root@doppio linux-2.6-tip]# perf report --dsos \[kernel\],\[drm\]
---vmlinux /home/acme/git/build/tip-recvmmsg/vmlinux --modules | head -15
- # Samples: 619669
- #
- # Overhead          Command  Shared Object  Symbol
- # ........  ...............  .............  ......
- #
-      7.12%          swapper  [kernel]       [k] read_hpet
-      6.86%             init  [kernel]       [k] read_hpet
-      6.22%             init  [kernel]       [k] mwait_idle_with_hints
-      5.34%          swapper  [kernel]       [k] mwait_idle_with_hints
-      3.01%          firefox  [kernel]       [.] vread_hpet
-      2.14%             Xorg  [drm]          [k] drm_clflush_pages
-      2.09%           pidgin  [kernel]       [.] vread_hpet
-      1.58%     npviewer.bin  [kernel]       [.] vread_hpet
-      1.37%          swapper  [kernel]       [k] hpet_next_event
-      1.23%             Xorg  [kernel]       [k] read_hpet
-[root@doppio linux-2.6-tip]#
+> On Fri, 02 Oct 2009 16:00:41 -0700
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+>
+>> 
+>> 
+>> I have seen a hang in:
+>>   /bin/stty (changing the baud rate)
+>>     set_termios
+>>       tty_wait_until_sent
+>>         tty_chars_in_buffer
+>>           ftdi_chars_in_buffer
+>> 
+>> Where the driver wedged for a serial port and no progress
+>> was made.
+>> 
+>> This happened to me several times with 2.6.31.  My initial
+>> hypothesis was this was a hardware error (as it only happened
+>> on single piece of hardware).  With all of the driver problems
+>> I suspect it could be a driver bug.
+>
+> Driver bug I would think - or setup. If you've genuinely got the port
+> flow controlled then a request to set the termios after the I/O will wait
+> until a signal or carrier change (or indeed forever) quite correctly.
 
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/Makefile           |    1 +
- tools/perf/builtin-annotate.c |   15 ++++-----------
- tools/perf/builtin-report.c   |   35 +++++++++++++----------------------
- tools/perf/util/event.h       |    6 ------
- 4 files changed, 18 insertions(+), 39 deletions(-)
+Not setup.  Neither hardware flow control or software flow control are
+used on that port.
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index b063396..5a42996 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -323,6 +323,7 @@ LIB_H += ../../include/linux/rbtree.h
- LIB_H += ../../include/linux/list.h
- LIB_H += util/include/linux/list.h
- LIB_H += perf.h
-+LIB_H += util/event.h
- LIB_H += util/types.h
- LIB_H += util/levenshtein.h
- LIB_H += util/parse-options.h
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 8550942..35ed97b 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -29,7 +29,6 @@ static char		const *input_name = "perf.data";
- 
- static int		force;
- static int		input;
--static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
- 
- static int		full_paths;
- 
-@@ -97,7 +96,6 @@ static int
- process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- {
- 	char level;
--	int show = 0;
- 	struct thread *thread;
- 	u64 ip = event->ip.ip;
- 	struct map *map = NULL;
-@@ -121,13 +119,11 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- 	}
- 
- 	if (event->header.misc & PERF_RECORD_MISC_KERNEL) {
--		show = SHOW_KERNEL;
- 		level = 'k';
- 		sym = kernel_maps__find_symbol(ip, &map);
- 		dump_printf(" ...... dso: %s\n",
- 			    map ? map->dso->long_name : "<not found>");
- 	} else if (event->header.misc & PERF_RECORD_MISC_USER) {
--		show = SHOW_USER;
- 		level = '.';
- 		map = thread__find_map(thread, ip);
- 		if (map != NULL) {
-@@ -153,17 +149,14 @@ got_map:
- 		dump_printf(" ...... dso: %s\n",
- 			    map ? map->dso->long_name : "<not found>");
- 	} else {
--		show = SHOW_HV;
- 		level = 'H';
- 		dump_printf(" ...... dso: [hypervisor]\n");
- 	}
- 
--	if (show & show_mask) {
--		if (hist_entry__add(thread, map, sym, ip, 1, level)) {
--			fprintf(stderr,
--		"problem incrementing symbol count, skipping event\n");
--			return -1;
--		}
-+	if (hist_entry__add(thread, map, sym, ip, 1, level)) {
-+		fprintf(stderr, "problem incrementing symbol count, "
-+				"skipping event\n");
-+		return -1;
- 	}
- 	total++;
- 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 0e83ffc..fe4aadc 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -38,7 +38,6 @@ static struct strlist	*dso_list, *comm_list, *sym_list;
- 
- static int		force;
- static int		input;
--static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
- 
- static int		full_paths;
- static int		show_nr_samples;
-@@ -600,7 +599,6 @@ static int
- process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- {
- 	char level;
--	int show = 0;
- 	struct symbol *sym = NULL;
- 	struct thread *thread;
- 	u64 ip = event->ip.ip;
-@@ -657,42 +655,35 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- 	cpumode = event->header.misc & PERF_RECORD_MISC_CPUMODE_MASK;
- 
- 	if (cpumode == PERF_RECORD_MISC_KERNEL) {
--		show = SHOW_KERNEL;
- 		level = 'k';
--
- 		sym = kernel_maps__find_symbol(ip, &map);
- 		dump_printf(" ...... dso: %s\n",
- 			    map ? map->dso->long_name : "<not found>");
- 	} else if (cpumode == PERF_RECORD_MISC_USER) {
--
--		show = SHOW_USER;
- 		level = '.';
- 		sym = resolve_symbol(thread, &map, &ip);
- 
- 	} else {
--		show = SHOW_HV;
- 		level = 'H';
--
- 		dump_printf(" ...... dso: [hypervisor]\n");
- 	}
- 
--	if (show & show_mask) {
--		if (dso_list &&
--		    (!map || !map->dso ||
--		     !(strlist__has_entry(dso_list, map->dso->short_name) ||
--		       (map->dso->short_name != map->dso->long_name &&
--			strlist__has_entry(dso_list, map->dso->long_name)))))
--			return 0;
-+	if (dso_list &&
-+	    (!map || !map->dso ||
-+	     !(strlist__has_entry(dso_list, map->dso->short_name) ||
-+	       (map->dso->short_name != map->dso->long_name &&
-+		strlist__has_entry(dso_list, map->dso->long_name)))))
-+		return 0;
- 
--		if (sym_list && sym && !strlist__has_entry(sym_list, sym->name))
--			return 0;
-+	if (sym_list && sym && !strlist__has_entry(sym_list, sym->name))
-+		return 0;
- 
--		if (hist_entry__add(thread, map, sym, ip,
--				    chain, level, period)) {
--			eprintf("problem incrementing symbol count, skipping event\n");
--			return -1;
--		}
-+	if (hist_entry__add(thread, map, sym, ip,
-+			    chain, level, period)) {
-+		eprintf("problem incrementing symbol count, skipping event\n");
-+		return -1;
- 	}
-+
- 	total += period;
- 
- 	return 0;
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index a39520e..c2e62be 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -6,12 +6,6 @@
- #include <linux/list.h>
- #include <linux/rbtree.h>
- 
--enum {
--	SHOW_KERNEL	= 1,
--	SHOW_USER	= 2,
--	SHOW_HV		= 4,
--};
--
- /*
-  * PERF_SAMPLE_IP | PERF_SAMPLE_TID | *
-  */
--- 
-1.6.2.5
+What was truly puzzling is that it was the only one out of about 50 in
+essentially the same configuration where I saw the problem.
+
+Eric
 
