@@ -1,52 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZJCWzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZJCWzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755153AbZJCWzD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 18:55:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZJCWzC
+	id S1756104AbZJCWzd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 18:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755658AbZJCWzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 18:55:02 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:40698 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753472AbZJCWzB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 18:55:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=LncuscPl6/ZvXUdH6g36zA7K6dojME6T3suviVjvVkJPyDqfKV1ETnqKnPzrpU/6JS
-         239jKgXRBj+RVcd1iReLhFVc2WH4kbUu0h1dPRcRKXRh6VmW2IaakUzSWAjEffDgG1sv
-         gdnifrK5WW+LJPP8jvbzNXafk6mS9bhhg0KNg=
-MIME-Version: 1.0
-In-Reply-To: <20091003223210.GA4193@boogie.lpds.sztaki.hu>
-References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com> 
-	<20091003110546.78958508@infradead.org> <40101cc30910031504pa9f8536k82dbd7668dfa643d@mail.gmail.com> 
-	<20091003223210.GA4193@boogie.lpds.sztaki.hu>
-From: Matteo Croce <technoboy85@gmail.com>
-Date: Sun, 4 Oct 2009 00:54:03 +0200
-Message-ID: <40101cc30910031554w40a0f93ata5decac55cbcba5c@mail.gmail.com>
-Subject: Re: i686 quirk for AMD Geode
-To: Gabor Gombas <gombasg@sztaki.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+	Sat, 3 Oct 2009 18:55:32 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40034 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755389AbZJCWzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 18:55:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alex Chiang <achiang@hp.com>, Danny Feng <dfeng@redhat.com>
+Subject: Re: [PATCH] acpi: pci_root: fix NULL pointer deref after resume from suspend
+Date: Sun, 4 Oct 2009 00:56:00 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-rjw; KDE/4.3.1; x86_64; ; )
+Cc: lenb@kernel.org, bjorn.helgaas@hp.com, andrew.patterson@hp.com,
+       jbarnes@virtuousgeek.org, linux-acpi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+References: <1254119480-9730-1-git-send-email-dfeng@redhat.com> <4AC16682.50207@redhat.com> <20091001200522.GF31915@ldl.fc.hp.com>
+In-Reply-To: <20091001200522.GF31915@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910040056.00247.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 4, 2009 at 12:32 AM, Gabor Gombas <gombasg@sztaki.hu> wrote:
-> On Sun, Oct 04, 2009 at 12:04:03AM +0200, Matteo Croce wrote:
->
->> yes cmov and i686 are unrelated but some distros (Debian & co.)
->> compiles libraries for two archs:
->> i486 and i686-cmov so only i686 machines does benefit from cmov.
->> This is why I cared about having an i686 aware userspace but it seems
->> that for a missing instruction I can't do that
->
-> You could emulate the missing instruction. As long as it is not really
-> used, the performance cost of the emulation should not matter. Of course
-> if userspace starts to use long NOPs extensively then it becomes a
-> problem.
+On Thursday 01 October 2009, Alex Chiang wrote:
+> Hi Danny,
+> 
+> * Danny Feng <dfeng@redhat.com>:
+> > Call Trace:
+> >  [<ffffffff81254193>] acpi_get_pci_dev+0x106/0x167
+> >  [<ffffffff8125545a>] acpi_pci_bind+0x1c/0x86
+> >  [<ffffffff8116230a>] ? sysfs_create_file+0x2a/0x2c
+> >  [<ffffffff8125141f>] acpi_add_single_object+0x964/0xa0c
+> >  [<ffffffff812515a7>] acpi_bus_check_add+0xe0/0x138
+> >  [<ffffffff81251667>] acpi_bus_scan+0x68/0xa0
+> >  [<ffffffff812516f4>] acpi_bus_add+0x2a/0x2e
+> >  [<ffffffff81252c59>] hotplug_dock_devices+0x114/0x13e
+> >  [<ffffffff8125301a>] acpi_dock_deferred_cb+0xbf/0x192
+> >  [<ffffffff8124d6ca>] acpi_os_execute_deferred+0x29/0x36
+> >  [<ffffffff8106a244>] worker_thread+0x251/0x347
+> >  [<ffffffff8106a1ef>] ? worker_thread+0x1fc/0x347
+> >  [<ffffffff8124d6a1>] ? acpi_os_execute_deferred+0x0/0x36
+> >  [<ffffffff8106e426>] ? autoremove_wake_function+0x0/0x39
+> >  [<ffffffff81069ff3>] ? worker_thread+0x0/0x347
+> >  [<ffffffff8106e0e0>] kthread+0x7f/0x87
+> >  [<ffffffff81012cea>] child_rip+0xa/0x20
+> >  [<ffffffff81012650>] ? restore_args+0x0/0x30
+> >  [<ffffffff8106e061>] ? kthread+0x0/0x87
+> >  [<ffffffff81012ce0>] ? child_rip+0x0/0x20
+> > Code: ff 49 89 fc 41 89 f5 a9 00 ff ff 07 74 11 be 87 00 00 00 48 c7 c7  
+> > 45 6d 5a 81 e8 f6 2b e3 ff 48 c7 c7 30 ab 68 81 e8 29 77 20 00 <49> 8b  
+> > 5c 24 28 49 83 c4 28 eb 09 44 39 6b 38 74 10 48 89 c3 48
+> > RIP  [<ffffffff812217e7>] pci_get_slot+0x4c/0x8c
+> >  RSP <ffff88022ee69aa0>
+> > CR2: 0000000000000028
+> > ---[ end trace b5a7793bd9db2a4d ]---
+> 
+> Can you please reproduce with this debug patch? I'm guessing that
+> we're dying because we have a NULL parent device, but I'm curious
+> as to what causes this situation to occur.
 
-Emulate? I can replace it with two plain NOPs.
-How can I do the "emulation"? trapping SIGILL?
+If we had a NULL parent, acpi_get_parent() would return an error.  Also, if we
+one of the devices is NULL at the PCI level, pci_get_slot() will return NULL.
+The only possibility left is that one of the buses we find in the ACPI tables
+doesn't have a secondary PCI bus.
+
+I think what happens is that on resume we get a dock notification
+(via dock_acpi_notifier registered in dock_init()) for a dock station device
+that is present in the ACPI tables, but not physically accessible at the moment
+(I guess that falls into the "BIOS bug" category, but we can fix this easily in
+the kernel).
+
+So, IMO, the appended patch is the right fix.
+
+Danny, please test it and report back (in particular, please tell us if you see
+the "Secondary bus not present" message in dmesg).
+
+Thanks,
+Rafael
+
+
+---
+ drivers/acpi/pci_root.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+Index: linux-2.6/drivers/acpi/pci_root.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_root.c
++++ linux-2.6/drivers/acpi/pci_root.c
+@@ -389,6 +389,18 @@ struct pci_dev *acpi_get_pci_dev(acpi_ha
+ 
+ 		pbus = pdev->subordinate;
+ 		pci_dev_put(pdev);
++
++		/*
++		 * During resume from a sleep state we can get a dock
++		 * notification for a device that is present in ACPI tables,
++		 * but not physically accessible at the moment, so tell the
++		 * caller it's not present.
++		 */
++		if (!pbus) {
++			dev_info(&pdev->dev, "Secondary bus not present\n");
++			pdev = NULL;
++			break;
++		}
+ 	}
+ out:
+ 	list_for_each_entry_safe(node, tmp, &device_list, node)
