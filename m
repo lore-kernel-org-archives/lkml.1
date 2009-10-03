@@ -1,160 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932099AbZJCMjC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbZJCMsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932099AbZJCMjC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 08:39:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbZJCMjB
+	id S932083AbZJCMsV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 08:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZJCMsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 08:39:01 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:53931 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755926AbZJCMjA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 08:39:00 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtsEANbdxkpMROOX/2dsb2JhbACBUdB6hCwE
-Date: Sat, 3 Oct 2009 08:39:00 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, rostedt@goodmis.org, ak@suse.de, roland@redhat.com,
-       rth@redhat.com, mhiramat@redhat.com
-Subject: Re: [PATCH 1/4] jump label - make init_kernel_text() global
-Message-ID: <20091003123900.GA22046@Krystal>
-References: <cover.1253831945.git.jbaron@redhat.com> <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com> <20091001112003.GA2962@elte.hu> <20091001203905.GD2660@redhat.com> <20091003104335.GB15919@elte.hu>
-Mime-Version: 1.0
+	Sat, 3 Oct 2009 08:48:20 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:40755 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752694AbZJCMsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 08:48:20 -0400
+Date: Sat, 3 Oct 2009 08:40:49 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Do not overload dispatch queue (Was: Re: IO scheduler based IO
+	controller V10)
+Message-ID: <20091003124049.GB12925@redhat.com>
+References: <20091002171129.GG31616@kernel.dk> <20091002172046.GA2376@elte.hu> <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu> <20091002173732.GK31616@kernel.dk> <1254507215.8667.7.camel@marge.simson.net> <20091002181903.GN31616@kernel.dk> <1254548931.8299.18.camel@marge.simson.net> <1254549378.8299.21.camel@marge.simson.net> <20091003112915.GA12925@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091003104335.GB15919@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 08:29:44 up 45 days, 23:19,  2 users,  load average: 0.32, 0.34,
-	0.28
+In-Reply-To: <20091003112915.GA12925@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Jason Baron <jbaron@redhat.com> wrote:
-> 
-> > On Thu, Oct 01, 2009 at 01:20:03PM +0200, Ingo Molnar wrote:
-> > > * Jason Baron <jbaron@redhat.com> wrote:
+On Sat, Oct 03, 2009 at 07:29:15AM -0400, Vivek Goyal wrote:
+> On Sat, Oct 03, 2009 at 07:56:18AM +0200, Mike Galbraith wrote:
+> > On Sat, 2009-10-03 at 07:49 +0200, Mike Galbraith wrote:
+> > > On Fri, 2009-10-02 at 20:19 +0200, Jens Axboe wrote:
 > > > 
-> > > > allow usage of init_kernel_text - we need this in jump labeling to 
-> > > > avoid attemtpting to patch code that has been freed as in the __init 
-> > > > sections
-> > > 
-> > > s/attemtpting/attempting
-> > > 
-> > > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > > ---
-> > > >  include/linux/kernel.h |    1 +
-> > > >  kernel/extable.c       |    2 +-
-> > > >  2 files changed, 2 insertions(+), 1 deletions(-)
+> > > > If you could do a cleaned up version of your overload patch based on
+> > > > this:
 > > > > 
-> > > > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> > > > index f61039e..9d3419f 100644
-> > > > --- a/include/linux/kernel.h
-> > > > +++ b/include/linux/kernel.h
-> > > > @@ -295,6 +295,7 @@ extern int get_option(char **str, int *pint);
-> > > >  extern char *get_options(const char *str, int nints, int *ints);
-> > > >  extern unsigned long long memparse(const char *ptr, char **retptr);
-> > > >  
-> > > > +extern int init_kernel_text(unsigned long addr);
-> > > >  extern int core_kernel_text(unsigned long addr);
-> > > >  extern int __kernel_text_address(unsigned long addr);
-> > > >  extern int kernel_text_address(unsigned long addr);
-> > > > diff --git a/kernel/extable.c b/kernel/extable.c
-> > > > index 7f8f263..f6893ad 100644
-> > > > --- a/kernel/extable.c
-> > > > +++ b/kernel/extable.c
-> > > > @@ -52,7 +52,7 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
-> > > >  	return e;
-> > > >  }
-> > > >  
-> > > > -static inline int init_kernel_text(unsigned long addr)
-> > > > +int init_kernel_text(unsigned long addr)
-> > > >  {
-> > > >  	if (addr >= (unsigned long)_sinittext &&
-> > > >  	    addr <= (unsigned long)_einittext)
-> > > 
-> > > i'm confused. Later on jump_label_update() does:
-> > > 
-> > > +                       if (!(system_state == SYSTEM_RUNNING &&
-> > > +                                       (init_kernel_text(iter->code))))
-> > > +                               jump_label_transform(iter, type);
-> > > 
-> > > which is:
-> > > 
-> > > +                       if (system_state != SYSTEM_RUNNING ||
-> > > +                                       !init_kernel_text(iter->code)))
-> > > +                               jump_label_transform(iter, type);
-> > > 
-> > > What is the logic behind that? System going into SYSTEM_RUNNING does not 
-> > > coincide with free_initmem() precisely.
-> > > 
+> > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=1d2235152dc745c6d94bedb550fea84cffdbf768
+> > > > 
+> > > > then lets take it from there.
 > > 
-> > The specific case I hit was in modifying code in arch_kdebugfs_init()
-> > which is '__init' after the system was up and running. The tracepoint is
-> > in 'kmalloc()' which is marked as __always_inline.
-> > 
-> > 
-> > > Also, do we ever want to patch init-text tracepoints? I think we want to 
-> > > stay away from them as much as possible.
-> > 
-> > I was trying to make sure that tracepoints in init-text were honored.
-> > 
-> > > 
-> > > It appears to me that what we want here is a straight:
-> > > 
-> > >                        if (kernel_text(iter->code))
-> > >                                jump_label_transform(iter, type);
-> > > 
-> > > Also, maybe a WARN_ONCE(!kernel_text()) - we should never even attempt 
-> > > to transform non-patchable code. If yes then we want to know about that 
-> > > in a noisy way and not skip it silently.
-> > > 
-> > 
-> > hmmm....indeed, kernel_text_address() does do what I want here (I must 
-> > have mis-read its definition). Although, I'm not sure there isn't a 
-> > race here betweeen freeing the init sections and possibly updating 
-> > them. For modules, there is no race since the module init free code 
-> > takes the module_mutex, and I do as well in this code...
-> > 
-> > I've now also tested this code on 32-bit x86 system, and it seems to 
-> > perform nicely. I'm seeing a 15 cycle improvement per tracepoint.
-> > 
-> > I've based the text section updating on text_poke_fixup(), which has 
-> > recently come into question about safety of cross modifying code. I 
-> > could rebase my patches back to use stop_machine()? I guess I'm 
-> > looking for some advice on how to proceed here.
 > 
-> I think this very limited form of code patching that you are using here 
-> (patching a JMP) _should_ be safe - so we can avoid stop_machine().
+> > Note to self: build the darn thing after last minute changes.
+> > 
+> > Block:  Delay overloading of CFQ queues to improve read latency.
+> > 
+> > Introduce a delay maximum dispatch timestamp, and stamp it when:
+> >         1. we encounter a known seeky or possibly new sync IO queue.
+> >         2. the current queue may go idle and we're draining async IO.
+> >         3. we have sync IO in flight and are servicing an async queue.
+> >         4  we are not the sole user of disk.
+> > Disallow exceeding quantum if any of these events have occurred recently.
+> > 
+> 
+> So it looks like primarily the issue seems to be that we done lot of
+> dispatch from async queue and if some sync queue comes in now, it will
+> experience latencies.
+> 
+> For a ongoing seeky sync queue issue will be solved up to some extent
+> because previously we did not choose to idle for that queue now we will
+> idle, hence async queue will not get a chance to overload the dispatch
+> queue.
+> 
+> For the sync queues where we choose not to enable idle, we still will see
+> the latencies. Instead of time stamping on all the above events, can we 
+> just keep track of last sync request completed in the system and don't
+> allow async queue to flood/overload the dispatch queue with-in certain 
+> time limit of that last sync request completion. This just gives a buffer
+> period to that sync queue to come back and submit more requests and
+> still not suffer large latencies?
+> 
+> Thanks
+> Vivek
 > 
 
-I might be missing a bit of context here, I just want to make sure we
-are on the same page: patching a jmp instruction is safe on UP, safe
-with stop_machine(), is very likely safe with the breakpoint-ipi
-approach (but we need the confirmation from Intel, which hpa is trying
-to get), but is definitely _not_ safe if neither of these methods are
-used on a SMP system. If a non-aligned multi-word jump is modified while
-another CPU is fetching the instruction, bad things could happen.
+Hi Mike,
 
-BTW, patching kernel and module init sections can be done without
-sop_machine(), because only one CPU is ever accessing the init code.
+Following is a quick hack patch for the above idea. It is just compile and
+boot tested. Can you please see if it helps in your scenario.
 
-But again, I might be missing some context. If so, sorry for the noise.
+Thanks
+Vivek
 
-Thanks,
 
-Mathieu
+o Do not allow more than max_dispatch requests from an async queue, if some
+  sync request has finished recently. This is in the hope that sync activity
+  is still going on in the system and we might receive a sync request soon.
+  Most likely from a sync queue which finished a request and we did not enable
+  idling on it.
 
-> 	Ingo
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/cfq-iosched.c |   18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Index: linux22/block/cfq-iosched.c
+===================================================================
+--- linux22.orig/block/cfq-iosched.c	2009-10-03 08:20:26.000000000 -0400
++++ linux22/block/cfq-iosched.c	2009-10-03 08:23:24.000000000 -0400
+@@ -181,6 +181,8 @@ struct cfq_data {
+ 	 * Fallback dummy cfqq for extreme OOM conditions
+ 	 */
+ 	struct cfq_queue oom_cfqq;
++
++	unsigned long last_end_sync_rq;
+ };
+ 
+ enum cfqq_state_flags {
+@@ -1314,6 +1316,8 @@ static int cfq_dispatch_requests(struct 
+ 	 * Does this cfqq already have too much IO in flight?
+ 	 */
+ 	if (cfqq->dispatched >= max_dispatch) {
++		unsigned long load_at = cfqd->last_end_sync_rq + cfq_slice_sync;
++
+ 		/*
+ 		 * idle queue must always only have a single IO in flight
+ 		 */
+@@ -1327,6 +1331,14 @@ static int cfq_dispatch_requests(struct 
+ 			return 0;
+ 
+ 		/*
++		 * If a sync request has completed recently, don't overload
++		 * the dispatch queue yet with async requests.
++		 */
++		if (cfqd->cfq_desktop && !cfq_cfqq_sync(cfqq)
++		    && time_before(jiffies, load_at))
++			return 0;
++
++		/*
+ 		 * we are the only queue, allow up to 4 times of 'quantum'
+ 		 */
+ 		if (cfqq->dispatched >= 4 * max_dispatch)
+@@ -2158,8 +2170,10 @@ static void cfq_completed_request(struct
+ 	if (cfq_cfqq_sync(cfqq))
+ 		cfqd->sync_flight--;
+ 
+-	if (sync)
++	if (sync) {
+ 		RQ_CIC(rq)->last_end_request = now;
++		cfqd->last_end_sync_rq = now;
++	}
+ 
+ 	/*
+ 	 * If this is the active queue, check if it needs to be expired,
+@@ -2483,7 +2497,7 @@ static void *cfq_init_queue(struct reque
+ 	cfqd->cfq_slice_idle = cfq_slice_idle;
+ 	cfqd->cfq_desktop = 1;
+ 	cfqd->hw_tag = 1;
+-
++	cfqd->last_end_sync_rq = jiffies;
+ 	return cfqd;
+ }
+ 
+
