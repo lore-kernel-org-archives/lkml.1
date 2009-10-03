@@ -1,97 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbZJCNQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbZJCNSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbZJCNQu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 09:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbZJCNQt
+	id S1756213AbZJCNSX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 09:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755858AbZJCNSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 09:16:49 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57467 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751210AbZJCNQs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 09:16:48 -0400
-Date: Sat, 3 Oct 2009 14:18:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Johan Hovold <jhovold@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
-       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
-Message-ID: <20091003141807.1dc27e4e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091003114229.GB605@localhost>
-References: <20090924154023.GA27480@localhost>
-	<200909242103.48562.oliver@neukum.org>
-	<20090924202107.4730f2af@lxorguk.ukuu.org.uk>
-	<20090924211459.GB27963@localhost>
-	<4ABD020B.4040901@gandalf.sssup.it>
-	<20090929145514.GF2152@localhost>
-	<20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
-	<m163ayzevu.fsf@fess.ebiederm.org>
-	<20091002084755.GA7382@localhost>
-	<20091002173308.6158d734@lxorguk.ukuu.org.uk>
-	<20091003114229.GB605@localhost>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 3 Oct 2009 09:18:23 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:43575 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752689AbZJCNSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 09:18:22 -0400
+Date: Sat, 3 Oct 2009 15:18:26 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091003131826.GA31616@kernel.dk>
+References: <20091002172554.GJ31616@kernel.dk> <20091002172842.GA4884@elte.hu> <20091002173732.GK31616@kernel.dk> <1254507215.8667.7.camel@marge.simson.net> <20091002181903.GN31616@kernel.dk> <1254548931.8299.18.camel@marge.simson.net> <1254549378.8299.21.camel@marge.simson.net> <20091003072401.GV31616@kernel.dk> <1254560434.17052.14.camel@marge.simson.net> <4e5e476b0910030212y50f97d97nc2e17c35d855cc63@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b0910030212y50f97d97nc2e17c35d855cc63@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Oct 2009 13:42:29 +0200
-Johan Hovold <jhovold@gmail.com> wrote:
-
-> On Fri, Oct 02, 2009 at 05:33:08PM +0100, Alan Cox wrote:
-> > For upstream how does this look as a tidy up
+On Sat, Oct 03 2009, Corrado Zoccolo wrote:
+> Hi,
+> On Sat, Oct 3, 2009 at 11:00 AM, Mike Galbraith <efault@gmx.de> wrote:
+> > On Sat, 2009-10-03 at 09:24 +0200, Jens Axboe wrote:
+> >
+> >> After shutting down the computer yesterday, I was thinking a bit about
+> >> this issue and how to solve it without incurring too much delay. If we
+> >> add a stricter control of the depth, that may help. So instead of
+> >> allowing up to max_quantum (or larger) depths, only allow gradual build
+> >> up of that the farther we get away from a dispatch from the sync IO
+> >> queues. For example, when switching to an async or seeky sync queue,
+> >> initially allow just 1 in flight. For the next round, if there still
+> >> hasn't been sync activity, allow 2, then 4, etc. If we see sync IO queue
+> >> again, immediately drop to 1.
+> >>
 > 
-> I found a couple of issues: 
+> I would limit just async I/O. Seeky sync queues are automatically
+> throttled by being sync, and have already high latency, so we
+> shouldn't increase it artificially. I think, instead, that we should
+> send multiple seeky requests (possibly coming from different queues)
+> at once. They will help especially with raid devices, where the seeks
+> for requests going to different disks will happen in parallel.
 > 
->  - The patch breaks unthrottling, as it checks THROTTLE before resubmitting
->    urb whereas unthrottle checks ACTUALLY_UNTROTTLED which is never set.
-> 
->  - The countread stuff should also be removed from
->    ftdi_read_bulk_callback as they where only used for updating
->    rx_bytes,
-> 
-> And, obviously, this doesn't solve the problem of tty_flip_buffer_push
-> being called from interrupt context (but I assume that was never the
-> intention).
+Async is the prime offendor, definitely.
 
-Calling tty_flip_buffer_push from an interrupt is perfectly acceptable
-providing tty->low_latency isn't set: which it isn't.
- 
-> I've actually been working on cleaning up ftdi_sio inspired by the
-> generic driver. I also threw out the work queue, but had not noticed the
-> unused rx_byte yet. I also used the generic drivers scheme of not
-> pushing to tty until unthrottled, but as you point out this is not really
-> needed anymore.
+> >> It could tie in with (or partly replace) the overload feature. The key
+> >> to good latency and decent throughput is knowing when to allow queue
+> >> build up and when not to.
+> >
+> > Hm.  Starting at 1 sounds a bit thin (like IDLE), multiple iterations to
+> > build/unleash any sizable IO, but that's just my gut talking.
+> >
+> On the other hand, sending 1 write first and then waiting it to
+> complete before submitting new ones, will help performing more merges,
+> so the subsequent requests will be bigger and thus more efficient.
 
-The generic driver is a very bad example to follow in some areas but
-this looks a big improvement. There are some patches reworking the
-generic code to use kfifo on the output side which make it vastly better.
-Not sure where the relevant google submissions went ?
+Usually async writes stack up very quickly, so as long as you don't
+drain completely, the merging will happen automagically anyway.
 
-> -	spin_lock_irqsave(&priv->rx_lock, flags);
-> -	priv->rx_flags &= ~(THROTTLED | ACTUALLY_THROTTLED);
-> -	spin_unlock_irqrestore(&priv->rx_lock, flags);
-> +	spin_lock_irqsave(&port->lock, flags);
-> +	port->throttled = 0;
-> +	spin_unlock_irqrestore(&port->lock, flags);
+-- 
+Jens Axboe
 
-If you only have a single bit use the set_bit/clear_bit/test_and_xxx_bit
-stuff as it's faster on most boxes
-
-> +	 * The per character mucking around with sysrq path it too slow, so
-> +	 * shortcircuit it in the 99.9999999% of cases where the USB serial is
-> +	 * not a console anyway.
-> +	 */
-> +	ch = packet + 2;
-> +	len -= 2;
-> +	if (!port->console || !port->sysrq)
-
-You need && flag == TTY_NORMAL ?
-
-Definitely a move in the right direction
