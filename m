@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbZJCNBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbZJCNHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756109AbZJCNBj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 09:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbZJCNBj
+	id S1756201AbZJCNHu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 09:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbZJCNHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 09:01:39 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:59444 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752813AbZJCNBi (ORCPT
+	Sat, 3 Oct 2009 09:07:50 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43402 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756054AbZJCNHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 09:01:38 -0400
-Date: Sat, 3 Oct 2009 08:01:39 -0500
-From: David Fries <david@fries.net>
-To: d.stussy@yahoo.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [bisected] 2.6.31 regression sis5513 PIO Mode 0 hang
-Message-ID: <20091003130139.GT21612@spacedout.fries.net>
-References: <20091003025415.GA28295@spacedout.fries.net> <328926.65135.qm@web84205.mail.re3.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <328926.65135.qm@web84205.mail.re3.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Sat, 03 Oct 2009 08:01:41 -0500 (CDT)
+	Sat, 3 Oct 2009 09:07:49 -0400
+Date: Sat, 3 Oct 2009 14:09:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Johan Hovold <jhovold@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
+       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
+Message-ID: <20091003140902.38628d8a@lxorguk.ukuu.org.uk>
+In-Reply-To: <m1ske1wgdi.fsf@fess.ebiederm.org>
+References: <20090924154023.GA27480@localhost>
+	<200909242103.48562.oliver@neukum.org>
+	<20090924202107.4730f2af@lxorguk.ukuu.org.uk>
+	<20090924211459.GB27963@localhost>
+	<4ABD020B.4040901@gandalf.sssup.it>
+	<20090929145514.GF2152@localhost>
+	<20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
+	<m163ayzevu.fsf@fess.ebiederm.org>
+	<20091002084755.GA7382@localhost>
+	<20091002173308.6158d734@lxorguk.ukuu.org.uk>
+	<m1ske1wgdi.fsf@fess.ebiederm.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 10:30:56PM -0700, - wrote:
-> Thank you for finding the problem.  The kernel is way too complex
-> for someone who's not familiar with it (like me) to track these
-> things down.
+On Fri, 02 Oct 2009 16:00:41 -0700
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-If you do a reverse apply on the patch, does it work for you?  The
-below is already reversed, so apply it normally, or just open the file
-with an editor and comment out those lines.
+> 
+> 
+> I have seen a hang in:
+>   /bin/stty (changing the baud rate)
+>     set_termios
+>       tty_wait_until_sent
+>         tty_chars_in_buffer
+>           ftdi_chars_in_buffer
+> 
+> Where the driver wedged for a serial port and no progress
+> was made.
+> 
+> This happened to me several times with 2.6.31.  My initial
+> hypothesis was this was a hardware error (as it only happened
+> on single piece of hardware).  With all of the driver problems
+> I suspect it could be a driver bug.
 
->From 6029336426a2b43e4bc6f4a84be8789a047d139e Mon Sep 17 00:00:00 2001
-From: Joao Ramos <joao.ramos@inov.pt>
-Date: Sun, 17 May 2009 17:22:54 +0200
-Subject: [PATCH] ide: try to use PIO Mode 0 during probe if possible
-
-Initially set PIO Mode 0 for all host drivers that have a 'set_pio_mode'
-method before the IDE core figures out the most suited PIO mode for the
-attached device.
-
-Signed-off-by: Joao Ramos <joao.ramos@inov.pt>
-Cc: Sergei Shtylyov <sshtylyov@ru.montavista.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-probe.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index 7f264ed..b609a58 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -1032,15 +1032,6 @@ static void ide_port_init_devices(ide_hwif_t *hwif)
- 		if (port_ops && port_ops->init_dev)
- 			port_ops->init_dev(drive);
- 	}
--
--	ide_port_for_each_dev(i, drive, hwif) {
--		/*
--		 * default to PIO Mode 0 before we figure out
--		 * the most suited mode for the attached device
--		 */
--		if (port_ops && port_ops->set_pio_mode)
--			port_ops->set_pio_mode(drive, 0);
--	}
- }
- 
- static void ide_init_port(ide_hwif_t *hwif, unsigned int port,
--- 
-1.5.6.5
-
-
--- 
-David Fries <david@fries.net>
-http://fries.net/~david/ (PGP encryption key available)
+Driver bug I would think - or setup. If you've genuinely got the port
+flow controlled then a request to set the termios after the I/O will wait
+until a signal or carrier change (or indeed forever) quite correctly.
