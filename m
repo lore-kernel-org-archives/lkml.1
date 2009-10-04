@@ -1,128 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbZJDMxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbZJDMxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756956AbZJDMxz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756098AbZJDMxd
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1756234AbZJDMxd (ORCPT <rfc822;w@1wt.eu>);
 	Sun, 4 Oct 2009 08:53:33 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:60082 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754474AbZJDMxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbZJDMxb
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 4 Oct 2009 08:53:31 -0400
-Message-Id: <20091004125327.457898741@I-love.SAKURA.ne.jp>
+Received: from wine.ocn.ne.jp ([122.1.235.145]:60092 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754596AbZJDMxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 08:53:31 -0400
+Message-Id: <20091004125327.997524942@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:49:48 +0900
+Date: Sun, 04 Oct 2009 21:49:49 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 02/25] LSM: Add security_path_chroot().
-Content-Disposition: inline; filename=lsm-add-chroot-hook.patch
+Subject: [TOMOYO #16 03/25] LSM: Pass original mount flags to security_sb_mount().
+Content-Disposition: inline; filename=lsm-pass-original-mount-flags.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows pathname based LSM modules to check chroot() operations.
+This patch allows LSM modules to determine based on original mount flags
+passed to mount(). A LSM module can get masked mount flags (if needed) by
 
-This hook is used by TOMOYO.
+	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
+		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT |
+		   MS_STRICTATIME);
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- fs/open.c                |    3 +++
- include/linux/security.h |   11 +++++++++++
- security/capability.c    |    6 ++++++
- security/security.c      |    5 +++++
- 4 files changed, 25 insertions(+)
+ fs/namespace.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
---- security-testing-2.6.orig/fs/open.c
-+++ security-testing-2.6/fs/open.c
-@@ -587,6 +587,9 @@ SYSCALL_DEFINE1(chroot, const char __use
- 	error = -EPERM;
- 	if (!capable(CAP_SYS_CHROOT))
- 		goto dput_and_out;
-+	error = security_path_chroot(&path);
-+	if (error)
-+		goto dput_and_out;
+--- security-testing-2.6.orig/fs/namespace.c
++++ security-testing-2.6/fs/namespace.c
+@@ -1921,6 +1921,16 @@ long do_mount(char *dev_name, char *dir_
+ 	if (data_page)
+ 		((char *)data_page)[PAGE_SIZE - 1] = 0;
  
- 	set_fs_root(current->fs, &path);
- 	error = 0;
---- security-testing-2.6.orig/include/linux/security.h
-+++ security-testing-2.6/include/linux/security.h
-@@ -459,6 +459,10 @@ static inline void security_free_mnt_opt
-  *	@uid contains new owner's ID.
-  *	@gid contains new group's ID.
-  *	Return 0 if permission is granted.
-+ * @path_chroot:
-+ *	Check for permission to change root directory.
-+ *	@path contains the path structure.
-+ *	Return 0 if permission is granted.
-  * @inode_readlink:
-  *	Check the permission to read the symbolic link.
-  *	@dentry contains the dentry structure for the file link.
-@@ -1503,6 +1507,7 @@ struct security_operations {
- 	int (*path_chmod) (struct dentry *dentry, struct vfsmount *mnt,
- 			   mode_t mode);
- 	int (*path_chown) (struct path *path, uid_t uid, gid_t gid);
-+	int (*path_chroot) (struct path *path);
- #endif
- 
- 	int (*inode_alloc_security) (struct inode *inode);
-@@ -2970,6 +2975,7 @@ int security_path_rename(struct path *ol
- int security_path_chmod(struct dentry *dentry, struct vfsmount *mnt,
- 			mode_t mode);
- int security_path_chown(struct path *path, uid_t uid, gid_t gid);
-+int security_path_chroot(struct path *path);
- #else	/* CONFIG_SECURITY_PATH */
- static inline int security_path_unlink(struct path *dir, struct dentry *dentry)
- {
-@@ -3031,6 +3037,11 @@ static inline int security_path_chown(st
- {
- 	return 0;
- }
++	/* ... and get the mountpoint */
++	retval = kern_path(dir_name, LOOKUP_FOLLOW, &path);
++	if (retval)
++		return retval;
 +
-+static inline int security_path_chroot(struct path *path)
-+{
-+	return 0;
-+}
- #endif	/* CONFIG_SECURITY_PATH */
- 
- #ifdef CONFIG_KEYS
---- security-testing-2.6.orig/security/capability.c
-+++ security-testing-2.6/security/capability.c
-@@ -319,6 +319,11 @@ static int cap_path_chown(struct path *p
- {
- 	return 0;
- }
++	retval = security_sb_mount(dev_name, &path,
++				   type_page, flags, data_page);
++	if (retval)
++		goto dput_out;
 +
-+static int cap_path_chroot(struct path *root)
-+{
-+	return 0;
-+}
- #endif
+ 	/* Default to relatime unless overriden */
+ 	if (!(flags & MS_NOATIME))
+ 		mnt_flags |= MNT_RELATIME;
+@@ -1945,16 +1955,6 @@ long do_mount(char *dev_name, char *dir_
+ 		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT |
+ 		   MS_STRICTATIME);
  
- static int cap_file_permission(struct file *file, int mask)
-@@ -990,6 +995,7 @@ void security_fixup_ops(struct security_
- 	set_to_cap_if_null(ops, path_truncate);
- 	set_to_cap_if_null(ops, path_chmod);
- 	set_to_cap_if_null(ops, path_chown);
-+	set_to_cap_if_null(ops, path_chroot);
- #endif
- 	set_to_cap_if_null(ops, file_permission);
- 	set_to_cap_if_null(ops, file_alloc_security);
---- security-testing-2.6.orig/security/security.c
-+++ security-testing-2.6/security/security.c
-@@ -449,6 +449,11 @@ int security_path_chown(struct path *pat
- 		return 0;
- 	return security_ops->path_chown(path, uid, gid);
- }
-+
-+int security_path_chroot(struct path *path)
-+{
-+	return security_ops->path_chroot(path);
-+}
- #endif
- 
- int security_inode_create(struct inode *dir, struct dentry *dentry, int mode)
+-	/* ... and get the mountpoint */
+-	retval = kern_path(dir_name, LOOKUP_FOLLOW, &path);
+-	if (retval)
+-		return retval;
+-
+-	retval = security_sb_mount(dev_name, &path,
+-				   type_page, flags, data_page);
+-	if (retval)
+-		goto dput_out;
+-
+ 	if (flags & MS_REMOUNT)
+ 		retval = do_remount(&path, flags & ~MS_REMOUNT, mnt_flags,
+ 				    data_page);
 
 -- 
