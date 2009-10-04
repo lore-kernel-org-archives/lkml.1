@@ -1,166 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZJDJQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbZJDJR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753468AbZJDJQE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 05:16:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZJDJQD
+	id S1754144AbZJDJR5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 05:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbZJDJR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 05:16:03 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:58720 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751201AbZJDJQA (ORCPT
+	Sun, 4 Oct 2009 05:17:57 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:55544 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbZJDJRz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 05:16:00 -0400
+	Sun, 4 Oct 2009 05:17:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=WDH2W/+WMtOvp5L862nVVCCAN2hGCfV58C/oaAs/QI6TinyXT9Azaq06Za2CMYBSsV
-         Yp/J5pF1NrDIUm2FfTHps1FNPo1ahOF8I042mgA6wux8KGfj2c5UkZNlatugMBilLjUa
-         xjXKC9C08paoPoMwY86n3NvHQZccrRW1M2DMc=
-MIME-Version: 1.0
-In-Reply-To: <20091003133810.GC12925@redhat.com>
-References: <200910021255.27689.czoccolo@gmail.com>
-	 <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com>
-	 <1254497520.10392.11.camel@marge.simson.net>
-	 <20091002154020.GC4494@redhat.com>
-	 <12774.1254502217@turing-police.cc.vt.edu>
-	 <20091002195815.GE4494@redhat.com>
-	 <4e5e476b0910021514i1b461229t667bed94fd67f140@mail.gmail.com>
-	 <20091002222756.GG4494@redhat.com>
-	 <4e5e476b0910030543o776fb505ka0ce38da9d83b33c@mail.gmail.com>
-	 <20091003133810.GC12925@redhat.com>
-Date: Sun, 4 Oct 2009 11:15:24 +0200
-Message-ID: <4e5e476b0910040215m35af5c99pf2c3a463a5cb61dd@mail.gmail.com>
-Subject: Re: Do we support ioprio on SSDs with NCQ (Was: Re: IO scheduler 
-	based IO controller V10)
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Valdis.Kletnieks@vt.edu, Mike Galbraith <efault@gmx.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, riel@redhat.com
-Content-Type: text/plain; charset=UTF-8
+        d=googlemail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer;
+        b=WYZ+BWPdLK7w8k+azc/Pdbf5sfKMelehpHvtBOom92OpJmAa5R8AvlBBw1HGKT96T4
+         8R74BG19keWRi7l0avfsfWZMWUqhOMf+NBzPXLxPjAUjLHrh+Tr+L5z1RujIvs16qxoC
+         knMLxf8zhjrt5Rj8oR1xNoi63OsgAfK1RaTlM=
+Subject: Re: High power consumption after suspend/resume cycle
+From: The Holy ettlz <theholyettlz@googlemail.com>
+To: Andrew Lutomirski <luto@mit.edu>
+Cc: linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+In-Reply-To: <cb0375e10910021229x7924ec56o61627ec0f625a70c@mail.gmail.com>
+References: <cb0375e10910021044n182d696dy8fd566925e46b134@mail.gmail.com>
+	 <cb0375e10910021229x7924ec56o61627ec0f625a70c@mail.gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-tm9hUJjLwqFNzr1bH6Qz"
+Date: Sun, 04 Oct 2009 10:17:13 +0100
+Message-Id: <1254647833.3845.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
-On Sat, Oct 3, 2009 at 3:38 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> On Sat, Oct 03, 2009 at 02:43:14PM +0200, Corrado Zoccolo wrote:
->> On Sat, Oct 3, 2009 at 12:27 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
->> > On Sat, Oct 03, 2009 at 12:14:28AM +0200, Corrado Zoccolo wrote:
->> >> In fact I think that the 'rotating' flag name is misleading.
->> >> All the checks we are doing are actually checking if the device truly
->> >> supports multiple parallel operations, and this feature is shared by
->> >> hardware raids and NCQ enabled SSDs, but not by cheap SSDs or single
->> >> NCQ-enabled SATA disk.
->> >>
->> >
->> > While we are at it, what happens to notion of priority of tasks on SSDs?
->> This is not changed by proposed patch w.r.t. current CFQ.
->
-> This is a general question irrespective of current patch. Want to know
-> what is our statement w.r.t ioprio and what it means for user? When do
-> we support it and when do we not.
->
->> > Without idling there is not continuous time slice and there is no
->> > fairness. So ioprio is out of the window for SSDs?
->> I haven't NCQ enabled SSDs here, so I can't test it, but it seems to
->> me that the way in which queues are sorted in the rr tree may still
->> provide some sort of fairness and service differentiation for
->> priorities, in terms of number of IOs.
->
-> I have a NCQ enabled SSD. Sometimes I see the difference sometimes I do
-> not. I guess this happens because sometimes idling is enabled and sometmes
-> not because of dyanamic nature of hw_tag.
->
-My guess is that the formula that is used to handle this case is not
-very stable.
-The culprit code is (in cfq_service_tree_add):
-        } else if (!add_front) {
-                rb_key = cfq_slice_offset(cfqd, cfqq) + jiffies;
-                rb_key += cfqq->slice_resid;
-                cfqq->slice_resid = 0;
-        } else
 
-cfq_slice_offset is defined as:
+--=-tm9hUJjLwqFNzr1bH6Qz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-static unsigned long cfq_slice_offset(struct cfq_data *cfqd,
-                                      struct cfq_queue *cfqq)
-{
-        /*
-         * just an approximation, should be ok.
-         */
-	return (cfqd->busy_queues - 1) * (cfq_prio_slice(cfqd, 1, 0) -
-                       cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
-}
+Hello,
 
-Can you try changing the latter to a simpler (we already observed that
-busy_queues is unstable, and I think that here it is not needed at
-all):
-	return -cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
-and remove the 'rb_key += cfqq->slice_resid; ' from the former.
+> > There's a catch, though: after a suspend/resume cycle, power
+> > consumption goes up by over well over a watt.  (On a system that draws
+> > about 7 watts before suspending, that's a big deal.)  I've tried
+> > turning off X, suspending with 'echo mem > /sys/power/state' to avoid
+> > any distro scripts running, and manually restoring SATA power saving
+> > settings, but it still happens.  I even tried unbinding e1000e and
+> > both USB drivers, unloading the i2400 (wimax) driver, iwlagn, and
+> > iwlcore, and it still happens.  This is 100% reproducible, and I'd be
+> > happy to test things.
 
-This should give a higher probability of being first on the queue to
-larger slice tasks, so it will work if we don't idle, but it needs
-some adjustment if we idle.
-
-> I ran three fio reads for 10 seconds. First job is prio0, second prio4 and
-> third prio7.
->
-> (prio 0) read : io=978MiB, bw=100MiB/s, iops=25,023, runt= 10005msec
-> (prio 4) read : io=953MiB, bw=99,950KiB/s, iops=24,401, runt= 10003msec
-> (prio 7) read : io=74,228KiB, bw=7,594KiB/s, iops=1,854, runt= 10009msec
->
-> Note there is almost no difference between prio 0 and prio 4 job and prio7
-> job has been penalized heavily (gets less than 10% BW of prio 4 job).
->
->> Non-NCQ SSDs, instead, will still have the idle window enabled, so it
->> is not an issue for them.
->
-> Agree.
->
->> >
->> > On SSDs, will it make more sense to provide fairness in terms of number or
->> > IO or size of IO and not in terms of time slices.
->> Not on all SSDs. There are still ones that have a non-negligible
->> penalty on non-sequential access pattern (hopefully the ones without
->> NCQ, but if we find otherwise, then we will have to benchmark access
->> time in I/O scheduler to select the best policy). For those, time
->> based may still be needed.
->
-> Ok.
->
-> So on better SSDs out there with NCQ, we probably don't support the notion of
-> ioprio? Or, I am missing something.
-
-I think we try, but the current formula is simply not good enough.
+Just out of curiosity: does it make any difference whether tickless mode
+is enabled or not, and do you see an excess of wakeups with no apparent
+origin, a la http://bugzilla.kernel.org/show_bug.cgi?id=3D12788 ?
 
 Thanks,
-Corrado
+James.
 
->
-> Thanks
-> Vivek
->
+--=20
+The Holy ettlz                              TheHolyettlz@googlemail.com
+PGP key ID: 03F94B5D
+-----------------------------------------------------------------------
 
 
+--=-tm9hUJjLwqFNzr1bH6Qz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
--- 
-__________________________________________________________________________
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
-The self-confidence of a warrior is not the self-confidence of the average
-man. The average man seeks certainty in the eyes of the onlooker and calls
-that self-confidence. The warrior seeks impeccability in his own eyes and
-calls that humbleness.
-                               Tales of Power - C. Castaneda
+iEYEABECAAYFAkrIaBcACgkQL/Is9AP5S10vUACeKYrLazVLr7XSaA68H2xh5E41
+7NAAoIgskYfkaJuOkCnfbJk01RqtcSvy
+=qrlP
+-----END PGP SIGNATURE-----
+
+--=-tm9hUJjLwqFNzr1bH6Qz--
+
