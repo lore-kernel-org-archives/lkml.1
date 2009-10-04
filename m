@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbZJDFWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbZJDHaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752473AbZJDFWp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 01:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbZJDFWo
+	id S1753050AbZJDHaV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 03:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZJDHaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 01:22:44 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:45547 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750882AbZJDFWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 01:22:44 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: [PATCH] Input: ad7879: pass up error codes from probe functions
-Date: Sun,  4 Oct 2009 01:22:05 -0400
-Message-Id: <1254633725-20479-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.rc2
+	Sun, 4 Oct 2009 03:30:20 -0400
+Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:55181 "EHLO
+	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbZJDHaU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 03:30:20 -0400
+Date: Sun, 4 Oct 2009 09:29:43 +0200
+From: Gabor Gombas <gombasg@sztaki.hu>
+To: Matteo Croce <technoboy85@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091004072942.GA5934@boogie.lpds.sztaki.hu>
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com>
+ <20091003110546.78958508@infradead.org>
+ <40101cc30910031504pa9f8536k82dbd7668dfa643d@mail.gmail.com>
+ <20091003223210.GA4193@boogie.lpds.sztaki.hu>
+ <40101cc30910031554w40a0f93ata5decac55cbcba5c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <40101cc30910031554w40a0f93ata5decac55cbcba5c@mail.gmail.com>
+X-Copyright: Forwarding or publishing without permission is prohibited.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+On Sun, Oct 04, 2009 at 12:54:03AM +0200, Matteo Croce wrote:
 
-If the sub-probe functions fail, we need to pass up the error code to the
-higher levels from the probe function.  We currently always return 0 even
-if there was an error so higher levels don't report problems.
+> Emulate? I can replace it with two plain NOPs.
+> How can I do the "emulation"? trapping SIGILL?
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/input/touchscreen/ad7879.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+No, emulate it in the kernel, so userspace never notices.
 
-diff --git a/drivers/input/touchscreen/ad7879.c b/drivers/input/touchscreen/ad7879.c
-index f06332c..c21e6d3 100644
---- a/drivers/input/touchscreen/ad7879.c
-+++ b/drivers/input/touchscreen/ad7879.c
-@@ -645,7 +645,7 @@ static int __devinit ad7879_probe(struct spi_device *spi)
- 		kfree(ts);
- 	}
- 
--	return 0;
-+	return error;
- }
- 
- static int __devexit ad7879_remove(struct spi_device *spi)
-@@ -732,7 +732,7 @@ static int __devinit ad7879_probe(struct i2c_client *client,
- 		kfree(ts);
- 	}
- 
--	return 0;
-+	return error;
- }
- 
- static int __devexit ad7879_remove(struct i2c_client *client)
+Gabor
+
 -- 
-1.6.5.rc2
-
+     ---------------------------------------------------------
+     MTA SZTAKI Computer and Automation Research Institute
+                Hungarian Academy of Sciences
+     ---------------------------------------------------------
