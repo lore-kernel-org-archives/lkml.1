@@ -1,72 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZJDRKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbZJDRXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757500AbZJDRKj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 13:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbZJDRKi
+	id S1757516AbZJDRXQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 13:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbZJDRXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 13:10:38 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:47071 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752175AbZJDRKi (ORCPT
+	Sun, 4 Oct 2009 13:23:16 -0400
+Received: from smtp-grey.Stanford.EDU ([171.67.219.80]:60237 "EHLO
+	smtp-grey.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752982AbZJDRXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 13:10:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:mime-version:content-disposition
-         :message-id:content-type:content-transfer-encoding;
-        b=qh1mxiaXYBSmsPDXdy90sbyHOaBpwc1KqI1sJ+QsOZFR1v9dvGd9JFAbzjxkxJMPLt
-         FL4T3h93nsNhr6Jgl+QjcxlErFnqsRnXfFJkQssTZshQG2H2PfSGwmR/1CGxufbzxiBT
-         vCvxKfz2dHRATso+EIZS6xgoAw+5Jd5i/qEUY=
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>
-Subject: cfq: fix possible problem with jiffies wraparound
-Date: Sun, 4 Oct 2009 19:09:07 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.32cz; KDE/4.2.4; i686; ; )
+	Sun, 4 Oct 2009 13:23:15 -0400
+X-Greylist: delayed 623 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Oct 2009 13:23:15 EDT
+Date: Sun, 4 Oct 2009 10:11:52 -0700 (PDT)
+From: TOYOTA AWARD <czarina@stanford.edu>
+Reply-To: TOYOTA AWARD <toyota2@9.cn>
+Message-ID: <535565808.432851254676312206.JavaMail.root@zm08.stanford.edu>
+Subject: 750,000.00 Pounds
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200910041909.08282.czoccolo@gmail.com>
-Content-Type: Text/Plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: [65.120.57.68]
+X-Mailer: Zimbra 5.0.18_GA_3038.RHEL4_64 (zclient/5.0.18_GA_3038.RHEL4_64)
+X-Authenticated-User: czarina@stanford.edu
+To: undisclosed-recipients:;
+X-Grey: yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The RR service tree is indexed by a key that is relative to current jiffies.
-This can cause problems on jiffies wraparound.
-
-The patch fixes it using time_before comparison, and changing
-the add_front path to use a relative number, too.
-
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
----
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 576e92d..495b16d 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -512,8 +512,11 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
-                rb_key = cfq_slice_offset(cfqd, cfqq) + jiffies;
-                rb_key += cfqq->slice_resid;
-                cfqq->slice_resid = 0;
--       } else
--               rb_key = 0;
-+       } else {
-+               rb_key = -HZ;
-+               __cfqq = cfq_rb_first(&cfqd->service_tree);
-+               rb_key += __cfqq ? __cfqq->rb_key : jiffies;
-+       }
- 
-        if (!RB_EMPTY_NODE(&cfqq->rb_node)) {
-                /*
-@@ -547,7 +550,7 @@ static void cfq_service_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq,
-                        n = &(*p)->rb_left;
-                else if (cfq_class_idle(cfqq) > cfq_class_idle(__cfqq))
-                        n = &(*p)->rb_right;
--               else if (rb_key < __cfqq->rb_key)
-+               else if (time_before(rb_key, __cfqq->rb_key))
-                        n = &(*p)->rb_left;
-                else
-                        n = &(*p)->rb_right;
-
-
+The sum of 750,000.00 Pounds was Awarded to you in the UK toyota Award Program. Reply with your Names,Address,Country,Age,
