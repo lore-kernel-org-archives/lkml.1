@@ -1,238 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbZJDMzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932147AbZJDMzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756828AbZJDMzv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbZJDMy6
+	id S932147AbZJDMzg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932110AbZJDMzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:54:58 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:51522 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 08:55:00 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:51555 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756128AbZJDMy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756323AbZJDMy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 Oct 2009 08:54:56 -0400
-Message-Id: <20091004125332.625848751@I-love.SAKURA.ne.jp>
+Message-Id: <20091004125332.899378759@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:50:02 +0900
+Date: Sun, 04 Oct 2009 21:50:03 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 16/25] TOMOYO: Add environment variables restriction.
-Content-Disposition: inline; filename=tomoyo-add-environ.patch
+Subject: [TOMOYO #16 17/25] TOMOYO: Add capability support.
+Content-Disposition: inline; filename=tomoyo-add-capability.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains code for checking environment variable's names passed to
-an execve() operation.
+This patch contains code for checking non-posix capability.
 
-This functionality is for protecting programs to be executed from dangerous
-environment variables such as LD_PRELOAD.
+TOMOYO is ready to support 65536 types of non-posix capabilities.
+But I can't utilize TOMOYO's ability because
 
-You can use "if" clause if you want to check not only names but also values.
+ (1) Hooks are missing.
+   or
+ (2) Posix's capability and functionality are not one to one mapping.
+     Therefore I can't derive functionality the caller wants to use from
+     posix's capability number (e.g. CAP_SYS_ADMIN).
+   or
+ (3) Hooks are provided but it is not permitted to sleep (e.g. CAP_SYS_NICE)
+     while TOMOYO needs hooks where it is permitted to sleep.
+   or
+ (4) System calls and device drivers use the same posix's capability number.
+     Thus whether MAC's policy suits or not depends on hardware the system
+     is running. TOMOYO wants to distinguish requests from userland
+     applications and requests from kernel drivers, but I can't distinguish
+     it from posix's capability number.
 
-  allow_execute /bin/sh if exec.envp["HOME"]="/"
-
-You can use execute handler if you want to check not only names but also values
-and/or add/remove/modify envp[]. The execute handler is executed with envp[]
-moved to argv[] so that the execute handler will not be affected by dangerous
-environment variables.
-
-  execute_handler /bin/check_param_and_exec
+Therefore, LSM version of TOMOYO has very poor support compared to non-LSM
+version of TOMOYO. I hope this problem is solved in the future.
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/environ.c |  232 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 232 insertions(+)
+ security/tomoyo/capability.c |  141 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 141 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6/security/tomoyo/environ.c
-@@ -0,0 +1,232 @@
++++ security-testing-2.6/security/tomoyo/capability.c
+@@ -0,0 +1,141 @@
 +/*
-+ * security/tomoyo/environ.c
++ * security/tomoyo/capability.c
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + */
 +#include "internal.h"
 +
 +/**
-+ * tomoyo_audit_env_log - Audit environment variable name log.
++ * tomoyo_audit_capability_log - Audit capability log.
 + *
 + * @r:          Pointer to "struct tomoyo_request_info".
-+ * @env:        The name of environment variable.
++ * @operation:  Type of operation.
 + * @is_granted: True if this is a granted log.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static int tomoyo_audit_env_log(struct tomoyo_request_info *r, const char *env,
-+				const bool is_granted)
++static int tomoyo_audit_capability_log(struct tomoyo_request_info *r,
++				       const u8 operation,
++				       const bool is_granted)
 +{
 +	if (!is_granted)
-+		tomoyo_warn_log(r, "environ %s", env);
-+	return tomoyo_write_audit_log(is_granted, r, TOMOYO_KEYWORD_ALLOW_ENV
-+				      "%s\n", env);
++		tomoyo_warn_log(r, "capability %s",
++				tomoyo_cap2keyword(operation));
++	return tomoyo_write_audit_log(is_granted, r,
++				      TOMOYO_KEYWORD_ALLOW_CAPABILITY "%s\n",
++				      tomoyo_cap2keyword(operation));
 +}
 +
-+/* The list for "struct tomoyo_globally_usable_env_entry". */
-+LIST_HEAD(tomoyo_globally_usable_env_list);
-+
 +/**
-+ * tomoyo_is_globally_usable_env - Check whether the given environment variable is acceptable for all domains.
++ * tomoyo_capable - Check permission for capability.
 + *
-+ * @env: The name of environment variable.
++ * @operation: Type of operation.
 + *
-+ * Returns true if @env is globally permitted environment variable's name,
-+ * false otherwise.
++ * Returns true on success, false otherwise.
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+static bool tomoyo_is_globally_usable_env(const struct tomoyo_path_info *env)
++static bool tomoyo_capable2(const u8 operation)
 +{
-+	struct tomoyo_globally_usable_env_entry *ptr;
-+	bool found = false;
-+	list_for_each_entry_rcu(ptr, &tomoyo_globally_usable_env_list, list) {
-+		if (ptr->is_deleted || !tomoyo_path_matches_pattern(env,
-+								    ptr->env))
-+			continue;
-+		found = true;
-+		break;
-+	}
-+	return found;
-+}
-+
-+/**
-+ * tomoyo_write_globally_usable_env_policy - Write "struct tomoyo_globally_usable_env_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int tomoyo_write_globally_usable_env_policy(char *data, const bool is_delete)
-+{
-+	struct tomoyo_globally_usable_env_entry *entry = NULL;
-+	struct tomoyo_globally_usable_env_entry e = { };
-+	struct tomoyo_globally_usable_env_entry *ptr;
-+	int error = is_delete ? -ENOENT : -ENOMEM;
-+	if (!tomoyo_is_correct_path(data, 0, 0, 0) || strchr(data, '='))
-+		return -EINVAL;
-+	e.env = tomoyo_get_name(data);
-+	if (!e.env)
-+		return error;
-+	if (!is_delete)
-+		entry = kmalloc(sizeof(e), GFP_KERNEL);
-+	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(ptr, &tomoyo_globally_usable_env_list, list) {
-+		if (ptr->env != e.env)
-+			continue;
-+		ptr->is_deleted = is_delete;
-+		error = 0;
-+		break;
-+	}
-+	if (!is_delete && error && tomoyo_commit_ok(entry, &e, sizeof(e))) {
-+		list_add_tail_rcu(&entry->list,
-+				  &tomoyo_globally_usable_env_list);
-+		entry = NULL;
-+		error = 0;
-+	}
-+	mutex_unlock(&tomoyo_policy_lock);
-+	tomoyo_put_name(e.env);
-+	kfree(entry);
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_read_globally_usable_env_policy - Read "struct tomoyo_globally_usable_env_entry" list.
-+ *
-+ * @head: Pointer to "struct tomoyo_io_buffer".
-+ *
-+ * Returns 0 on success, false otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+bool tomoyo_read_globally_usable_env_policy(struct tomoyo_io_buffer *head)
-+{
-+	struct list_head *pos;
-+	bool done = true;
-+	list_for_each_cookie(pos, head->read_var2,
-+			     &tomoyo_globally_usable_env_list) {
-+		struct tomoyo_globally_usable_env_entry *ptr;
-+		ptr = list_entry(pos, struct tomoyo_globally_usable_env_entry,
-+				 list);
-+		if (ptr->is_deleted)
-+			continue;
-+		done = tomoyo_io_printf(head, TOMOYO_KEYWORD_ALLOW_ENV "%s\n",
-+					ptr->env->name);
-+		if (!done)
-+			break;
-+	}
-+	return done;
-+}
-+
-+/**
-+ * tomoyo_env_acl - Check permission for environment variable's name.
-+ *
-+ * @r:       Pointer to "struct tomoyo_request_info".
-+ * @environ: The name of environment variable.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+static int tomoyo_env_acl(struct tomoyo_request_info *r, const char *environ)
-+{
-+	const struct tomoyo_domain_info *domain = r->domain;
-+	int error = -EPERM;
++	struct tomoyo_request_info r;
 +	struct tomoyo_acl_info *ptr;
-+	struct tomoyo_path_info env;
-+	env.name = environ;
-+	tomoyo_fill_path_info(&env);
-+	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_env_acl *acl;
-+		if (ptr->is_deleted || ptr->type != TOMOYO_TYPE_ENV_ACL)
-+			continue;
-+		acl = container_of(ptr, struct tomoyo_env_acl, head);
-+		if (!tomoyo_condition(r, ptr) ||
-+		    !tomoyo_path_matches_pattern(&env, acl->env))
-+			continue;
-+		r->cond = ptr->cond;
-+		error = 0;
-+		break;
-+	}
-+	if (error && !domain->ignore_global_allow_env &&
-+	    tomoyo_is_globally_usable_env(&env))
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_env_perm - Check permission for environment variable's name.
-+ *
-+ * @r:       Pointer to "struct tomoyo_request_info".
-+ * @env:     The name of environment variable.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+int tomoyo_env_perm(struct tomoyo_request_info *r, const char *env)
-+{
 +	int error;
-+	if (!env || !*env)
-+		return 0;
++	if (tomoyo_init_request_info(&r, NULL, TOMOYO_MAX_MAC_INDEX +
++				     operation) == TOMOYO_CONFIG_DISABLED)
++		return true;
 +	do {
-+		error = tomoyo_env_acl(r, env);
-+		tomoyo_audit_env_log(r, env, !error);
++		error = -EPERM;
++		list_for_each_entry_rcu(ptr, &r.domain->acl_info_list, list) {
++			struct tomoyo_capability_acl *acl;
++			if (ptr->is_deleted ||
++			    ptr->type != TOMOYO_TYPE_CAPABILITY_ACL)
++				continue;
++			acl = container_of(ptr, struct tomoyo_capability_acl,
++					   head);
++			if (acl->operation != operation ||
++			    !tomoyo_condition(&r, ptr))
++				continue;
++			r.cond = ptr->cond;
++			error = 0;
++			break;
++		}
++		tomoyo_audit_capability_log(&r, operation, !error);
 +		if (!error)
 +			break;
-+		error = tomoyo_supervisor(r, TOMOYO_KEYWORD_ALLOW_ENV "%s\n",
-+					  env);
++		error = tomoyo_supervisor(&r, TOMOYO_KEYWORD_ALLOW_CAPABILITY
++					  "%s\n",
++					  tomoyo_cap2keyword(operation));
 +	} while (error == 1);
++	return !error;
++}
++
++/**
++ * tomoyo_capable - Check permission for capability.
++ *
++ * @operation: Type of operation.
++ *
++ * Returns true on success, false otherwise.
++ */
++bool tomoyo_capable(const u8 operation)
++{
++	const int idx = tomoyo_read_lock();
++	const int error = tomoyo_capable2(operation);
++	tomoyo_read_unlock(idx);
 +	return error;
 +}
 +
 +/**
-+ * tomoyo_write_env_policy - Write "struct tomoyo_env_acl" list.
++ * tomoyo_write_capability_policy - Write "struct tomoyo_capability_acl" list.
 + *
 + * @data:      String to parse.
 + * @domain:    Pointer to "struct tomoyo_domain_info".
@@ -241,30 +150,37 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int tomoyo_write_env_policy(char *data, struct tomoyo_domain_info *domain,
-+			    struct tomoyo_condition *condition,
-+			    const bool is_delete)
++int tomoyo_write_capability_policy(char *data,
++				   struct tomoyo_domain_info *domain,
++				   struct tomoyo_condition *condition,
++				   const bool is_delete)
 +{
-+	struct tomoyo_env_acl *entry = NULL;
-+	struct tomoyo_acl_info *ptr;
-+	struct tomoyo_env_acl e = {
-+		.head.type = TOMOYO_TYPE_ENV_ACL,
-+		.head.cond = condition
++	struct tomoyo_capability_acl e = {
++		.head.type = TOMOYO_TYPE_CAPABILITY_ACL,
++		.head.cond = condition,
 +	};
++	struct tomoyo_capability_acl *entry = NULL;
++	struct tomoyo_acl_info *ptr;
 +	int error = is_delete ? -ENOENT : -ENOMEM;
-+	if (!tomoyo_is_correct_path(data, 0, 0, 0) || strchr(data, '='))
++	u8 capability;
++	for (capability = 0; capability < TOMOYO_MAX_CAPABILITY_INDEX;
++	     capability++) {
++		if (strcmp(data, tomoyo_cap2keyword(capability)))
++			continue;
++		break;
++	}
++	if (capability == TOMOYO_MAX_CAPABILITY_INDEX)
 +		return -EINVAL;
-+	e.env = tomoyo_get_name(data);
-+	if (!e.env)
-+		return error;
++	e.operation = capability;
 +	if (!is_delete)
 +		entry = kmalloc(sizeof(e), GFP_KERNEL);
 +	mutex_lock(&tomoyo_policy_lock);
 +	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_env_acl *acl =
-+			container_of(ptr, struct tomoyo_env_acl, head);
-+		if (ptr->type != TOMOYO_TYPE_ENV_ACL || ptr->cond != condition
-+		    || acl->env != e.env)
++		struct tomoyo_capability_acl *acl =
++			container_of(ptr, struct tomoyo_capability_acl,
++				     head);
++		if (ptr->type != TOMOYO_TYPE_CAPABILITY_ACL ||
++		    ptr->cond != condition || acl->operation != capability)
 +			continue;
 +		ptr->is_deleted = is_delete;
 +		error = 0;
@@ -276,7 +192,6 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +		error = 0;
 +	}
 +	mutex_unlock(&tomoyo_policy_lock);
-+	tomoyo_put_name(e.env);
 +	kfree(entry);
 +	return error;
 +}
