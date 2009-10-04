@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbZJDMy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbZJDM4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbZJDMy1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757262AbZJDMyZ
+	id S1757272AbZJDM4t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbZJDMyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:54:25 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63905 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 08:54:17 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63952 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757116AbZJDMyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757128AbZJDMyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 Oct 2009 08:54:13 -0400
-Message-Id: <20091004125329.855452624@I-love.SAKURA.ne.jp>
+Message-Id: <20091004125330.248909085@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:49:54 +0900
+Date: Sun, 04 Oct 2009 21:49:55 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 08/25] TOMOYO: Add number_group keyword support.
-Content-Disposition: inline; filename=tomoyo-add-number_group.patch
+Subject: [TOMOYO #16 09/25] TOMOYO: Add address_group keyword support.
+Content-Disposition: inline; filename=tomoyo-add-address_group.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains code for handling numeric values grouping.
-To be able to specify value ranges more flexibly, I want to add numeric values
-grouping support into TOMOYO 2.3.0.
+This patch contains code for handling IPv4/IPv6 address grouping.
+To be able to specify IP addresses more flexibly,
+I want to add IP address grouping support into TOMOYO 2.3.0.
 
-  number_group UIDS_ALLOWED_TO_EXECUTE_SHELL 100-2000
-  number_group UIDS_ALLOWED_TO_EXECUTE_SHELL 10000-20000
+  address_group TRUSTED_CLIENTS 192.168.1.1
+  address_group TRUSTED_CLIENTS 127.0.0.1
+  address_group TRUSTED_CLIENTS 0:0:0:0:0:0:0:1
+  address_group UNTRUSTED_CLIENTS 192.168.2.1-192.168.2.255
               +
-  allow_execute /bin/sh if task.uid=@UIDS_ALLOWED_TO_EXECUTE_SHELL
-
-  number_group PERMISSIONS_FOR_CREATE 0644
-  number_group PERMISSIONS_FOR_CREATE 0600
-              +
-  allow_create /tmp/file @PERMISSIONS_FOR_CREATE
+  allow_network TCP accept @TRUSTED_CLIENTS 1024-65535 ; set task.state[0]=1
+  allow_network TCP accept @UNTRUSTED_CLIENTS 1024-65535 ; set task.state[0]=0
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/number_group.c |  212 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 212 insertions(+)
+ security/tomoyo/address_group.c |  270 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 270 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6/security/tomoyo/number_group.c
-@@ -0,0 +1,212 @@
++++ security-testing-2.6/security/tomoyo/address_group.c
+@@ -0,0 +1,270 @@
 +/*
-+ * security/tomoyo/number_group.c
++ * security/tomoyo/address_group.c
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + */
 +#include "internal.h"
 +
-+/* The list for "struct tomoyo_number_group". */
-+LIST_HEAD(tomoyo_number_group_list);
++/* The list for "struct tomoyo_address_group". */
++LIST_HEAD(tomoyo_address_group_list);
 +
 +/**
-+ * tomoyo_get_number_group - Allocate memory for "struct tomoyo_number_group".
++ * tomoyo_get_address_group - Allocate memory for "struct tomoyo_address_group".
 + *
-+ * @group_name: The name of number group.
++ * @group_name: The name of address group.
 + *
-+ * Returns pointer to "struct tomoyo_number_group" on success,
++ * Returns pointer to "struct tomoyo_address_group" on success,
 + * NULL otherwise.
 + */
-+struct tomoyo_number_group *tomoyo_get_number_group(const char *group_name)
++struct tomoyo_address_group *tomoyo_get_address_group(const char *group_name)
 +{
-+	struct tomoyo_number_group *entry = NULL;
-+	struct tomoyo_number_group *group;
++	struct tomoyo_address_group *entry = NULL;
++	struct tomoyo_address_group *group;
 +	const struct tomoyo_path_info *saved_group_name;
 +	int error = -ENOMEM;
 +	if (!tomoyo_is_correct_path(group_name, 0, 0, 0) ||
@@ -77,7 +75,7 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +		return NULL;
 +	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
 +	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(group, &tomoyo_number_group_list, list) {
++	list_for_each_entry_rcu(group, &tomoyo_address_group_list, list) {
 +		if (saved_group_name != group->group_name)
 +			continue;
 +		atomic_inc(&group->users);
@@ -89,7 +87,7 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +		entry->group_name = saved_group_name;
 +		saved_group_name = NULL;
 +		atomic_set(&entry->users, 1);
-+		list_add_tail_rcu(&entry->list, &tomoyo_number_group_list);
++		list_add_tail_rcu(&entry->list, &tomoyo_address_group_list);
 +		group = entry;
 +		entry = NULL;
 +		error = 0;
@@ -101,14 +99,14 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +}
 +
 +/**
-+ * tomoyo_put_number_group - Delete memory for "struct tomoyo_number_group".
++ * tomoyo_put_address_group - Delete memory for "struct tomoyo_address_group".
 + *
-+ * @group: Pointer to "struct tomoyo_number_group".
++ * @group: Pointer to "struct tomoyo_address_group".
 + */
-+void tomoyo_put_number_group(struct tomoyo_number_group *group)
++void tomoyo_put_address_group(struct tomoyo_address_group *group)
 +{
-+	struct tomoyo_number_group_member *member;
-+	struct tomoyo_number_group_member *next_member;
++	struct tomoyo_address_group_member *member;
++	struct tomoyo_address_group_member *next_member;
 +	LIST_HEAD(q);
 +	bool can_delete_group = false;
 +	if (!group)
@@ -130,6 +128,10 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +	mutex_unlock(&tomoyo_policy_lock);
 +	list_for_each_entry_safe(member, next_member, &q, list) {
 +		list_del(&member->list);
++		if (member->is_ipv6) {
++			tomoyo_put_ipv6_address(member->min.ipv6);
++			tomoyo_put_ipv6_address(member->max.ipv6);
++		}
 +		tomoyo_memory_free(member, sizeof(*member));
 +	}
 +	if (can_delete_group) {
@@ -139,37 +141,51 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +}
 +
 +/**
-+ * tomoyo_write_number_group_policy - Write "struct tomoyo_number_group" list.
++ * tomoyo_write_address_group_policy - Write "struct tomoyo_address_group" list.
 + *
 + * @data:      String to parse.
 + * @is_delete: True if it is a delete request.
 + *
-+ * Returns 0 on success, nagative value otherwise.
++ * Returns 0 on success, negative value otherwise.
 + */
-+int tomoyo_write_number_group_policy(char *data, const bool is_delete)
++int tomoyo_write_address_group_policy(char *data, const bool is_delete)
 +{
-+	struct tomoyo_number_group *group;
-+	struct tomoyo_number_group_member *entry = NULL;
-+	struct tomoyo_number_group_member e = { };
-+	struct tomoyo_number_group_member *member;
++	struct tomoyo_address_group *group;
++	struct tomoyo_address_group_member *entry = NULL;
++	struct tomoyo_address_group_member *member;
++	struct tomoyo_address_group_member e = { };
 +	int error = is_delete ? -ENOENT : -ENOMEM;
++	u16 min_address[8];
++	u16 max_address[8];
 +	char *w[2];
-+	if (!tomoyo_tokenize(data, w, sizeof(w)))
++	if (!tomoyo_tokenize(data, w, sizeof(w)) || !w[1][0])
 +		return -EINVAL;
-+	if (!tomoyo_parse_number_union(w[1], &e.number))
-+		return -EINVAL;
-+	if (e.number.is_group || e.number.values[0] > e.number.values[1]) {
-+		tomoyo_put_number_union(&e.number);
-+		return -EINVAL;
-+	}
-+	group = tomoyo_get_number_group(w[0]);
++	group = tomoyo_get_address_group(w[0]);
 +	if (!group)
 +		return -ENOMEM;
++	switch (tomoyo_parse_ip_address(w[1], min_address, max_address)) {
++	case 2:
++		e.is_ipv6 = true;
++		e.min.ipv6 = tomoyo_get_ipv6_address((struct in6_addr *)
++						     min_address);
++		e.max.ipv6 = tomoyo_get_ipv6_address((struct in6_addr *)
++						     max_address);
++		if (!e.min.ipv6 || !e.max.ipv6)
++			goto out;
++		break;
++	case 1:
++		e.min.ipv4 = ntohl(*(u32 *) min_address);
++		e.max.ipv4 = ntohl(*(u32 *) max_address);
++		break;
++	default:
++		goto out;
++	}
 +	if (!is_delete)
 +		entry = kmalloc(sizeof(e), GFP_KERNEL);
 +	mutex_lock(&tomoyo_policy_lock);
 +	list_for_each_entry_rcu(member, &group->member_list, list) {
-+		if (memcmp(&member->number, &e.number, sizeof(e.number)))
++		if (tomoyo_memcmp(member, &e, offsetof(typeof(e), is_ipv6),
++				  sizeof(e)))
 +			continue;
 +		member->is_deleted = is_delete;
 +		error = 0;
@@ -181,13 +197,17 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +		error = 0;
 +	}
 +	mutex_unlock(&tomoyo_policy_lock);
-+	tomoyo_put_number_group(group);
-+	kfree(entry);
++ out:
++	if (e.is_ipv6) {
++		tomoyo_put_ipv6_address(e.min.ipv6);
++		tomoyo_put_ipv6_address(e.max.ipv6);
++	}
++	tomoyo_put_address_group(group);
 +	return error;
 +}
 +
 +/**
-+ * tomoyo_read_number_group_policy - Read "struct tomoyo_number_group" list.
++ * tomoyo_read_address_group_policy - Read "struct tomoyo_address_group" list.
 + *
 + * @head: Pointer to "struct tomoyo_io_buffer".
 + *
@@ -195,65 +215,101 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+bool tomoyo_read_number_group_policy(struct tomoyo_io_buffer *head)
++bool tomoyo_read_address_group_policy(struct tomoyo_io_buffer *head)
 +{
 +	struct list_head *gpos;
 +	struct list_head *mpos;
 +	bool done = true;
 +	list_for_each_cookie(gpos, head->read_var1,
-+			     &tomoyo_number_group_list) {
-+		struct tomoyo_number_group *group;
-+		const char *name;
-+		group = list_entry(gpos, struct tomoyo_number_group, list);
-+		name = group->group_name->name;
++			     &tomoyo_address_group_list) {
++		struct tomoyo_address_group *group;
++		group = list_entry(gpos, struct tomoyo_address_group, list);
 +		list_for_each_cookie(mpos, head->read_var2,
 +				     &group->member_list) {
-+			int pos;
-+			const struct tomoyo_number_group_member *member
-+				= list_entry(mpos,
-+					     struct tomoyo_number_group_member,
-+					     list);
++			char buf[128];
++			struct tomoyo_address_group_member *member;
++			member = list_entry(mpos,
++					    struct tomoyo_address_group_member,
++					    list);
 +			if (member->is_deleted)
 +				continue;
-+			pos = head->read_avail;
-+			if (!tomoyo_io_printf(head, TOMOYO_KEYWORD_NUMBER_GROUP
-+					      "%s", name) ||
-+			    !tomoyo_print_number_union(head, &member->number)
-+			    || !tomoyo_io_printf(head, "\n")) {
-+				head->read_avail = pos;
-+				done = false;
-+				break;
++			if (member->is_ipv6) {
++				const struct in6_addr *min_address
++					= member->min.ipv6;
++				const struct in6_addr *max_address
++					= member->max.ipv6;
++				tomoyo_print_ipv6(buf, sizeof(buf),
++						  min_address);
++				if (min_address != max_address) {
++					int len;
++					char *cp = buf + strlen(buf);
++					*cp++ = '-';
++					len = strlen(buf);
++					tomoyo_print_ipv6(cp,
++							  sizeof(buf) - len,
++							  max_address);
++				}
++			} else {
++				const u32 min_address = member->min.ipv4;
++				const u32 max_address = member->max.ipv4;
++				memset(buf, 0, sizeof(buf));
++				snprintf(buf, sizeof(buf) - 1, "%u.%u.%u.%u",
++					 HIPQUAD(min_address));
++				if (min_address != max_address) {
++					const int len = strlen(buf);
++					snprintf(buf + len,
++						 sizeof(buf) - 1 - len,
++						 "-%u.%u.%u.%u",
++						 HIPQUAD(max_address));
++				}
 +			}
++			done = tomoyo_io_printf(head,
++						TOMOYO_KEYWORD_ADDRESS_GROUP
++						"%s %s\n",
++						group->group_name->name, buf);
++			if (!done)
++				break;
 +		}
++		if (!done)
++			break;
 +	}
 +	return done;
 +}
 +
 +/**
-+ * tomoyo_number_matches_group - Check whether the given number matches members of the given number group.
++ * tomoyo_address_matches_group - Check whether the given address matches members of the given address group.
 + *
-+ * @min:   Min number.
-+ * @max:   Max number.
-+ * @group: Pointer to "struct tomoyo_number_group".
++ * @is_ipv6: True if @address is an IPv6 address.
++ * @address: An IPv4 or IPv6 address.
++ * @group:   Pointer to "struct tomoyo_address_group".
 + *
-+ * Returns true if @min and @max partially overlaps @group, false otherwise.
++ * Returns true if @address matches addresses in @group group, false otherwise.
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+bool tomoyo_number_matches_group(const unsigned long min,
-+				 const unsigned long max,
-+				 const struct tomoyo_number_group *group)
++bool tomoyo_address_matches_group(const bool is_ipv6, const u32 *address,
++				  const struct tomoyo_address_group *group)
 +{
-+	struct tomoyo_number_group_member *member;
++	struct tomoyo_address_group_member *member;
++	const u32 ip = ntohl(*address);
 +	bool matched = false;
 +	list_for_each_entry_rcu(member, &group->member_list, list) {
 +		if (member->is_deleted)
 +			continue;
-+		if (min > member->number.values[1] ||
-+		    max < member->number.values[0])
-+			continue;
-+		matched = true;
-+		break;
++		if (member->is_ipv6) {
++			if (is_ipv6 &&
++			    memcmp(member->min.ipv6, address, 16) <= 0 &&
++			    memcmp(address, member->max.ipv6, 16) <= 0) {
++				matched = true;
++				break;
++			}
++		} else {
++			if (!is_ipv6 &&
++			    member->min.ipv4 <= ip && ip <= member->max.ipv4) {
++				matched = true;
++				break;
++			}
++		}
 +	}
 +	return matched;
 +}
