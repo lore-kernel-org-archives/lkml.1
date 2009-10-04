@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757001AbZJDCZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbZJDCZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757001AbZJDCZm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 22:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbZJDCZl
+	id S1757200AbZJDCZn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 22:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757179AbZJDCZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sat, 3 Oct 2009 22:25:42 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36307 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752933AbZJDCZl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 3 Oct 2009 22:25:41 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:38214 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752439AbZJDCZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 22:25:41 -0400
-Date: Sun, 4 Oct 2009 04:20:50 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] signals: kill force_sig_specific()
-Message-ID: <20091004022050.GE21006@redhat.com>
-References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091004021844.GA21006@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Sat, 3 Oct 2009 19:25:24 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Matteo Croce <technoboy85@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: i686 quirk for AMD Geode
+Message-ID: <20091003192524.2ca2bd9e@infradead.org>
+In-Reply-To: <40101cc30910031504pa9f8536k82dbd7668dfa643d@mail.gmail.com>
+References: <40101cc30910021912r17b3a08bue1b9412e4fa47d89@mail.gmail.com>
+	<20091003110546.78958508@infradead.org>
+	<40101cc30910031504pa9f8536k82dbd7668dfa643d@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kill force_sig_specific(), this trivial wrapper has no callers.
+On Sun, 4 Oct 2009 00:04:03 +0200
+Matteo Croce <technoboy85@gmail.com> wrote:
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
+> >
+> > the number that is exposed in /proc/cpuinfo does not control
+> > if cmov is used... so the patch and the benchmark are totally
+> > unrelated.
+> >
+> 
+> yes cmov and i686 are unrelated but some distros (Debian & co.)
+> compiles libraries for two archs:
+> i486 and i686-cmov so only i686 machines does benefit from cmov.
+> This is why I cared about having an i686 aware userspace but it seems
+> that for a missing instruction I can't do that
 
- include/linux/sched.h |    1 -
- kernel/signal.c       |    6 ------
- 2 files changed, 7 deletions(-)
+I'm surprised that "i686" in debian depends on the family flag
+in /proc/cpuinfo.. but hey.. weirder things have been done.
 
---- TTT_32/include/linux/sched.h~4_KILL_force_sig_specific	2009-10-04 02:21:49.000000000 +0200
-+++ TTT_32/include/linux/sched.h	2009-10-04 04:08:01.000000000 +0200
-@@ -2062,7 +2062,6 @@ extern int kill_proc_info(int, struct si
- extern int do_notify_parent(struct task_struct *, int);
- extern void __wake_up_parent(struct task_struct *p, struct task_struct *parent);
- extern void force_sig(int, struct task_struct *);
--extern void force_sig_specific(int, struct task_struct *);
- extern int send_sig(int, struct task_struct *, int);
- extern void zap_other_threads(struct task_struct *p);
- extern struct sigqueue *sigqueue_alloc(void);
---- TTT_32/kernel/signal.c~4_KILL_force_sig_specific	2009-10-04 03:48:48.000000000 +0200
-+++ TTT_32/kernel/signal.c	2009-10-04 04:08:36.000000000 +0200
-@@ -1032,12 +1032,6 @@ force_sig_info(int sig, struct siginfo *
- 	return ret;
- }
- 
--void
--force_sig_specific(int sig, struct task_struct *t)
--{
--	force_sig_info(sig, SEND_SIG_FORCED, t);
--}
--
- /*
-  * Nuke all other threads in the group.
-  */
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
