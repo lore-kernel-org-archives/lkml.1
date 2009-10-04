@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbZJDRjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZJDRjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757554AbZJDRjQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 13:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbZJDRjP
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 13:39:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49725 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756098AbZJDRjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756916AbZJDRjM (ORCPT <rfc822;w@1wt.eu>);
 	Sun, 4 Oct 2009 13:39:12 -0400
-Date: Sun, 4 Oct 2009 19:38:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Chris Wilson <chris@chris-wilson.co.uk>, Mike Galbraith <efault@gmx.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf: Propagate term signal to child
-Message-ID: <20091004173806.GA24418@elte.hu>
-References: <1254616502-4728-1-git-send-email-chris@chris-wilson.co.uk>
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZJDRjL
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 4 Oct 2009 13:39:11 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:40566 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752753AbZJDRjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 13:39:10 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254616502-4728-1-git-send-email-chris@chris-wilson.co.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.5
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.4942]
+Content-Transfer-Encoding: 7bit
+Message-ID: <19144.56721.786457.979953@pilspetsen.it.uu.se>
+Date: Sun, 4 Oct 2009 19:38:25 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Mikael Pettersson" <mikpe@it.uu.se>
+Subject: Re: [Bug #14256] kernel BUG at fs/ext3/super.c:435
+In-Reply-To: <COE24pZSBH.A.ot.9MTxKB@chimera>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
+	<COE24pZSBH.A.ot.9MTxKB@chimera>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Chris Wilson <chris@chris-wilson.co.uk> wrote:
-
-> If we launch the child on behalf of the user, ensure that it dies along
-> with ourselves when we are interrupted.
+Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> be listed and let me know (either way).
 > 
-> Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
-> ---
->  tools/perf/builtin-record.c |    6 ++++++
->  tools/perf/builtin-stat.c   |    8 +++++++-
->  2 files changed, 13 insertions(+), 1 deletions(-)
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14256
+> Subject		: kernel BUG at fs/ext3/super.c:435
+> Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+> Date		: 2009-09-21 7:29 (11 days old)
+> References	: http://marc.info/?l=3Dlinux-kernel&m=3D125351816109264&w=3D4
 
-Applied, thanks Chris!
-
-	Ingo
+The exact same bug (same cause, same symptom) just hit me again in 2.6.32-rc1.
