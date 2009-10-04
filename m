@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757250AbZJDMyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbZJDMy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757250AbZJDMyU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbZJDMyT
+	id S1757322AbZJDMy1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757262AbZJDMyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:54:19 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63904 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 08:54:25 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63905 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757118AbZJDMyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757116AbZJDMyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 Oct 2009 08:54:13 -0400
-Message-Id: <20091004125329.526434987@I-love.SAKURA.ne.jp>
+Message-Id: <20091004125329.855452624@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:49:53 +0900
+Date: Sun, 04 Oct 2009 21:49:54 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 07/25] TOMOYO: Add path_group keyword support.
-Content-Disposition: inline; filename=tomoyo-add-path_group.patch
+Subject: [TOMOYO #16 08/25] TOMOYO: Add number_group keyword support.
+Content-Disposition: inline; filename=tomoyo-add-number_group.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains code for handling pathname grouping.
-To be able to specify pathnames more flexibly, I want to add pathname grouping
-support into TOMOYO 2.3.0.
+This patch contains code for handling numeric values grouping.
+To be able to specify value ranges more flexibly, I want to add numeric values
+grouping support into TOMOYO 2.3.0.
 
-  path_group APACHE_READABLE_FILES /var/www/html/\*.html
-  path_group APACHE_READABLE_FILES /var/www/html/\*.jpg
-  path_group APACHE_READABLE_FILES /var/www/html/\*.png
-  path_group APACHE_READABLE_FILES /var/www/html/\{\*\}/\*.html
-  path_group APACHE_READABLE_FILES /var/www/html/\{\*\}/\*.jpg
-  path_group APACHE_READABLE_FILES /var/www/html/\{\*\}/\*.png
-            +
-  allow_read @APACHE_READABLE_FILES
+  number_group UIDS_ALLOWED_TO_EXECUTE_SHELL 100-2000
+  number_group UIDS_ALLOWED_TO_EXECUTE_SHELL 10000-20000
+              +
+  allow_execute /bin/sh if task.uid=@UIDS_ALLOWED_TO_EXECUTE_SHELL
+
+  number_group PERMISSIONS_FOR_CREATE 0644
+  number_group PERMISSIONS_FOR_CREATE 0600
+              +
+  allow_create /tmp/file @PERMISSIONS_FOR_CREATE
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/path_group.c |  210 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 210 insertions(+)
+ security/tomoyo/number_group.c |  212 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 212 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6/security/tomoyo/path_group.c
-@@ -0,0 +1,210 @@
++++ security-testing-2.6/security/tomoyo/number_group.c
+@@ -0,0 +1,212 @@
 +/*
-+ * security/tomoyo/path_group.c
++ * security/tomoyo/number_group.c
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + */
 +#include "internal.h"
 +
-+/* The list for "struct tomoyo_path_group". */
-+LIST_HEAD(tomoyo_path_group_list);
++/* The list for "struct tomoyo_number_group". */
++LIST_HEAD(tomoyo_number_group_list);
 +
 +/**
-+ * tomoyo_get_path_group - Allocate memory for "struct tomoyo_path_group".
++ * tomoyo_get_number_group - Allocate memory for "struct tomoyo_number_group".
 + *
-+ * @group_name: The name of pathname group.
++ * @group_name: The name of number group.
 + *
-+ * Returns pointer to "struct tomoyo_path_group" on success, NULL otherwise.
++ * Returns pointer to "struct tomoyo_number_group" on success,
++ * NULL otherwise.
 + */
-+struct tomoyo_path_group *tomoyo_get_path_group(const char *group_name)
++struct tomoyo_number_group *tomoyo_get_number_group(const char *group_name)
 +{
-+	struct tomoyo_path_group *entry = NULL;
-+	struct tomoyo_path_group *group;
++	struct tomoyo_number_group *entry = NULL;
++	struct tomoyo_number_group *group;
 +	const struct tomoyo_path_info *saved_group_name;
 +	int error = -ENOMEM;
 +	if (!tomoyo_is_correct_path(group_name, 0, 0, 0) ||
@@ -75,7 +77,7 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +		return NULL;
 +	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
 +	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(group, &tomoyo_path_group_list, list) {
++	list_for_each_entry_rcu(group, &tomoyo_number_group_list, list) {
 +		if (saved_group_name != group->group_name)
 +			continue;
 +		atomic_inc(&group->users);
@@ -87,7 +89,7 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +		entry->group_name = saved_group_name;
 +		saved_group_name = NULL;
 +		atomic_set(&entry->users, 1);
-+		list_add_tail_rcu(&entry->list, &tomoyo_path_group_list);
++		list_add_tail_rcu(&entry->list, &tomoyo_number_group_list);
 +		group = entry;
 +		entry = NULL;
 +		error = 0;
@@ -99,14 +101,14 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +}
 +
 +/**
-+ * tomoyo_put_path_group - Delete memory for "struct tomoyo_path_group".
++ * tomoyo_put_number_group - Delete memory for "struct tomoyo_number_group".
 + *
-+ * @group: Pointer to "struct tomoyo_path_group".
++ * @group: Pointer to "struct tomoyo_number_group".
 + */
-+void tomoyo_put_path_group(struct tomoyo_path_group *group)
++void tomoyo_put_number_group(struct tomoyo_number_group *group)
 +{
-+	struct tomoyo_path_group_member *member;
-+	struct tomoyo_path_group_member *next_member;
++	struct tomoyo_number_group_member *member;
++	struct tomoyo_number_group_member *next_member;
 +	LIST_HEAD(q);
 +	bool can_delete_group = false;
 +	if (!group)
@@ -128,7 +130,6 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +	mutex_unlock(&tomoyo_policy_lock);
 +	list_for_each_entry_safe(member, next_member, &q, list) {
 +		list_del(&member->list);
-+		tomoyo_put_name(member->member_name);
 +		tomoyo_memory_free(member, sizeof(*member));
 +	}
 +	if (can_delete_group) {
@@ -138,34 +139,37 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +}
 +
 +/**
-+ * tomoyo_write_path_group_policy - Write "struct tomoyo_path_group" list.
++ * tomoyo_write_number_group_policy - Write "struct tomoyo_number_group" list.
 + *
 + * @data:      String to parse.
 + * @is_delete: True if it is a delete request.
 + *
 + * Returns 0 on success, nagative value otherwise.
 + */
-+int tomoyo_write_path_group_policy(char *data, const bool is_delete)
++int tomoyo_write_number_group_policy(char *data, const bool is_delete)
 +{
-+	struct tomoyo_path_group *group;
-+	struct tomoyo_path_group_member *entry = NULL;
-+	struct tomoyo_path_group_member *member;
-+	struct tomoyo_path_group_member e = { };
++	struct tomoyo_number_group *group;
++	struct tomoyo_number_group_member *entry = NULL;
++	struct tomoyo_number_group_member e = { };
++	struct tomoyo_number_group_member *member;
 +	int error = is_delete ? -ENOENT : -ENOMEM;
 +	char *w[2];
-+	if (!tomoyo_tokenize(data, w, sizeof(w)) || !w[1][0])
++	if (!tomoyo_tokenize(data, w, sizeof(w)))
 +		return -EINVAL;
-+	group = tomoyo_get_path_group(w[0]);
++	if (!tomoyo_parse_number_union(w[1], &e.number))
++		return -EINVAL;
++	if (e.number.is_group || e.number.values[0] > e.number.values[1]) {
++		tomoyo_put_number_union(&e.number);
++		return -EINVAL;
++	}
++	group = tomoyo_get_number_group(w[0]);
 +	if (!group)
 +		return -ENOMEM;
-+	e.member_name = tomoyo_get_name(w[1]);
-+	if (!e.member_name)
-+		goto out;
 +	if (!is_delete)
 +		entry = kmalloc(sizeof(e), GFP_KERNEL);
 +	mutex_lock(&tomoyo_policy_lock);
 +	list_for_each_entry_rcu(member, &group->member_list, list) {
-+		if (member->member_name != e.member_name)
++		if (memcmp(&member->number, &e.number, sizeof(e.number)))
 +			continue;
 +		member->is_deleted = is_delete;
 +		error = 0;
@@ -177,15 +181,13 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +		error = 0;
 +	}
 +	mutex_unlock(&tomoyo_policy_lock);
-+ out:
-+	tomoyo_put_name(e.member_name);
-+	tomoyo_put_path_group(group);
++	tomoyo_put_number_group(group);
 +	kfree(entry);
 +	return error;
 +}
 +
 +/**
-+ * tomoyo_read_path_group_policy - Read "struct tomoyo_path_group" list.
++ * tomoyo_read_number_group_policy - Read "struct tomoyo_number_group" list.
 + *
 + * @head: Pointer to "struct tomoyo_io_buffer".
 + *
@@ -193,61 +195,62 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+bool tomoyo_read_path_group_policy(struct tomoyo_io_buffer *head)
++bool tomoyo_read_number_group_policy(struct tomoyo_io_buffer *head)
 +{
 +	struct list_head *gpos;
 +	struct list_head *mpos;
 +	bool done = true;
-+	list_for_each_cookie(gpos, head->read_var1, &tomoyo_path_group_list) {
-+		struct tomoyo_path_group *group;
-+		group = list_entry(gpos, struct tomoyo_path_group, list);
++	list_for_each_cookie(gpos, head->read_var1,
++			     &tomoyo_number_group_list) {
++		struct tomoyo_number_group *group;
++		const char *name;
++		group = list_entry(gpos, struct tomoyo_number_group, list);
++		name = group->group_name->name;
 +		list_for_each_cookie(mpos, head->read_var2,
 +				     &group->member_list) {
-+			struct tomoyo_path_group_member *member;
-+			member = list_entry(mpos,
-+					    struct tomoyo_path_group_member,
-+					    list);
++			int pos;
++			const struct tomoyo_number_group_member *member
++				= list_entry(mpos,
++					     struct tomoyo_number_group_member,
++					     list);
 +			if (member->is_deleted)
 +				continue;
-+			done = tomoyo_io_printf(head, TOMOYO_KEYWORD_PATH_GROUP
-+						"%s %s\n",
-+						group->group_name->name,
-+						member->member_name->name);
-+			if (!done)
++			pos = head->read_avail;
++			if (!tomoyo_io_printf(head, TOMOYO_KEYWORD_NUMBER_GROUP
++					      "%s", name) ||
++			    !tomoyo_print_number_union(head, &member->number)
++			    || !tomoyo_io_printf(head, "\n")) {
++				head->read_avail = pos;
++				done = false;
 +				break;
++			}
 +		}
 +	}
 +	return done;
 +}
 +
 +/**
-+ * tomoyo_path_matches_group - Check whether the given pathname matches members of the given pathname group.
++ * tomoyo_number_matches_group - Check whether the given number matches members of the given number group.
 + *
-+ * @pathname:        The name of pathname.
-+ * @group:           Pointer to "struct tomoyo_path_group".
-+ * @may_use_pattern: True if wild card is permitted.
++ * @min:   Min number.
++ * @max:   Max number.
++ * @group: Pointer to "struct tomoyo_number_group".
 + *
-+ * Returns true if @pathname matches pathnames in @group, false otherwise.
++ * Returns true if @min and @max partially overlaps @group, false otherwise.
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+bool tomoyo_path_matches_group(const struct tomoyo_path_info *pathname,
-+			       const struct tomoyo_path_group *group,
-+			       const bool may_use_pattern)
++bool tomoyo_number_matches_group(const unsigned long min,
++				 const unsigned long max,
++				 const struct tomoyo_number_group *group)
 +{
-+	struct tomoyo_path_group_member *member;
++	struct tomoyo_number_group_member *member;
 +	bool matched = false;
 +	list_for_each_entry_rcu(member, &group->member_list, list) {
 +		if (member->is_deleted)
 +			continue;
-+		if (!member->member_name->is_patterned) {
-+			if (tomoyo_pathcmp(pathname, member->member_name))
-+				continue;
-+		} else if (may_use_pattern) {
-+			if (!tomoyo_path_matches_pattern(pathname,
-+							 member->member_name))
-+				continue;
-+		} else
++		if (min > member->number.values[1] ||
++		    max < member->number.values[0])
 +			continue;
 +		matched = true;
 +		break;
