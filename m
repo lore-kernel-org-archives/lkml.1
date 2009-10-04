@@ -1,428 +1,681 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbZJDMyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932085AbZJDMym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757360AbZJDMyc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZJDMy1
+	id S932085AbZJDMym (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZJDMyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:54:27 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63996 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 08:54:39 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:64157 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757150AbZJDMyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 08:54:14 -0400
-Message-Id: <20091004125331.207349269@I-love.SAKURA.ne.jp>
+	id S1757193AbZJDMyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 08:54:17 -0400
+Message-Id: <20091004125331.547310329@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:49:58 +0900
+Date: Sun, 04 Oct 2009 21:49:59 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 12/25] TOMOYO: Memory management support.
-Content-Disposition: inline; filename=tomoyo-add-mm.patch
+Subject: [TOMOYO #16 13/25] TOMOYO: Add garbage collector support.
+Content-Disposition: inline; filename=tomoyo-add-gc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains memory management code for TOMOYO.
+This patch contains code for SRCU based garbage collector.
+
+Both writers and GC process take tomoyo_policy_lock mutex when updating list
+elements. All readers use srcu_read_lock()/srcu_read_unlock() to protect list
+elements against the GC process. The removed list elements are kfree()d by GC
+process after synchronize_srcu().
+
+Special care is taken when garbage collecting "struct tomoyo_domain_info".
+When GC process finds that FOO->is_deleted == true, GC process traverses the
+tasklist to verify that "struct tomoyo_task_struct *"->tomoyo_domain_info !=
+FOO before removing FOO from the tomoyo_domain_list list.
+But there is a race window shown below.
+
+ (1) Reader process who is doing an execve() operation calls srcu_read_lock().
+
+ (2) Reader process reaches FOO because FOO->is_deleted == false.
+
+ (3) Writer process changes FOO->is_deleted to true.
+
+ (4) GC process finds that FOO->is_deleted == true and also finds that all
+     thread's "struct tomoyo_task_struct *"->tomoyo_domain_info != FOO , and
+     removes FOO from the tomoyo_domain_list list.
+
+ (5) GC process calls synchronize_srcu().
+
+ (6) Reader process sets current->tomoyo_domain_info to FOO .
+
+ (7) Reader process calls srcu_read_unlock().
+
+ (8) GC process calls kfree(FOO).
+
+Therefore, before doing (8), GC process rechecks that all thread's
+"struct tomoyo_task_struct *"->tomoyo_domain_info != FOO by traversing the
+tasklist.
+
+Traversing the tasklist might be heavy, but this event seldom happens because
+users unlikely delete FOO.
+Thus, this approach can avoid use of atomic variables for counting FOO users
+and simplify the reader's code.
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/memory.c |  391 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 391 insertions(+)
+ security/tomoyo/gc.c |  606 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 606 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6/security/tomoyo/memory.c
-@@ -0,0 +1,391 @@
++++ security-testing-2.6/security/tomoyo/gc.c
+@@ -0,0 +1,606 @@
 +/*
-+ * security/tomoyo/memory.c
++ * security/tomoyo/gc.c
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + */
 +#include "internal.h"
++#include <linux/kthread.h>
 +
-+void tomoyo_warn_oom(const char *function)
-+{
-+	/* Reduce error messages. */
-+	static pid_t tomoyo_last_pid;
-+	const pid_t pid = current->pid;
-+	if (tomoyo_last_pid != pid) {
-+		printk(KERN_WARNING "ERROR: Out of memory at %s.\n",
-+		       function);
-+		tomoyo_last_pid = pid;
-+	}
-+	if (!tomoyo_policy_loaded)
-+		panic("MAC Initialization failed.\n");
-+}
-+
-+static atomic_t tomoyo_policy_memory_size;
-+static unsigned int tomoyo_quota_for_policy;
-+
-+/**
-+ * tomoyo_memory_ok - Check memory quota.
-+ *
-+ * @ptr:  Pointer to allocated memory.
-+ * @size: Size in byte.
-+ *
-+ * Returns true if @ptr is not NULL and quota not exceeded, false otehrwise.
-+ */
-+bool tomoyo_memory_ok(const void *ptr, const unsigned int size)
-+{
-+	size_t s = tomoyo_round2(size);
-+	atomic_add(s, &tomoyo_policy_memory_size);
-+	if (ptr && (!tomoyo_quota_for_policy ||
-+		    atomic_read(&tomoyo_policy_memory_size)
-+		    <= tomoyo_quota_for_policy))
-+		return true;
-+	atomic_sub(s, &tomoyo_policy_memory_size);
-+	tomoyo_warn_oom(__func__);
-+	return false;
-+}
-+
-+/**
-+ * tomoyo_commit_ok - Check memory quota.
-+ *
-+ * @ptr:    Pointer to allocated memory.
-+ * @data:   Data to copy from.
-+ * @size:   Size in byte.
-+ *
-+ * Returns true if @ptr is not NULL and quota not exceeded, false otehrwise.
-+ */
-+bool tomoyo_commit_ok(void *ptr, void *data, const unsigned int size)
-+{
-+	if (tomoyo_memory_ok(ptr, size)) {
-+		memmove(ptr, data, size);
-+		memset(data, 0, size);
-+		return true;
-+	}
-+	return false;
-+}
-+
-+
-+/**
-+ * tomoyo_memory_free - Free memory for elements.
-+ *
-+ * @ptr:  Pointer to allocated memory.
-+ * @size: Size in byte.
-+ */
-+void tomoyo_memory_free(const void *ptr, size_t size)
-+{
-+	atomic_sub(tomoyo_round2(size), &tomoyo_policy_memory_size);
-+	kfree(ptr);
-+}
-+
-+static LIST_HEAD(tomoyo_address_list);
-+
-+/**
-+ * tomoyo_get_ipv6_address - Keep the given IPv6 address on the RAM.
-+ *
-+ * @addr: Pointer to "struct in6_addr".
-+ *
-+ * Returns pointer to "struct in6_addr" on success, NULL otherwise.
-+ *
-+ * The RAM is shared, so NEVER try to modify or kfree() the returned address.
-+ */
-+const struct in6_addr *tomoyo_get_ipv6_address(const struct in6_addr *addr)
-+{
-+	struct tomoyo_ipv6addr_entry *entry;
-+	struct tomoyo_ipv6addr_entry *ptr;
-+	int error = -ENOMEM;
-+	if (!addr)
-+		return NULL;
-+	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
-+	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry(ptr, &tomoyo_address_list, list) {
-+		if (memcmp(&ptr->addr, addr, sizeof(*addr)))
-+			continue;
-+		atomic_inc(&ptr->users);
-+		error = 0;
-+		break;
-+	}
-+	if (error && tomoyo_memory_ok(entry, sizeof(*entry))) {
-+		ptr = entry;
-+		ptr->addr = *addr;
-+		atomic_set(&ptr->users, 1);
-+		list_add_tail(&ptr->list, &tomoyo_address_list);
-+		entry = NULL;
-+	}
-+	mutex_unlock(&tomoyo_policy_lock);
-+	kfree(entry);
-+	return ptr ? &ptr->addr : NULL;
-+}
-+
-+/**
-+ * tomoyo_put_ipv6_address - Delete the given IPv6 address on the RAM.
-+ *
-+ * @addr: Pointer to "struct in6_addr".
-+ */
-+void tomoyo_put_ipv6_address(const struct in6_addr *addr)
-+{
-+	struct tomoyo_ipv6addr_entry *ptr;
-+	bool can_delete = false;
-+	if (!addr)
-+		return;
-+	ptr = container_of(addr, struct tomoyo_ipv6addr_entry, addr);
-+	mutex_lock(&tomoyo_policy_lock);
-+	if (atomic_dec_and_test(&ptr->users)) {
-+		list_del(&ptr->list);
-+		can_delete = true;
-+	}
-+	mutex_unlock(&tomoyo_policy_lock);
-+	if (can_delete)
-+		tomoyo_memory_free(ptr, sizeof(*ptr));
-+}
-+
-+/**
-+ * tomoyo_put_condition - Delete memory for "struct tomoyo_condition".
-+ *
-+ * @cond: Pointer to "struct tomoyo_condition".
-+ */
-+void tomoyo_put_condition(struct tomoyo_condition *cond)
-+{
-+	const struct tomoyo_condition_element *condp;
-+	struct tomoyo_number_union *numbers_p;
-+	struct tomoyo_name_union *names_p;
-+	const struct tomoyo_argv_entry *argv;
-+	const struct tomoyo_envp_entry *envp;
-+	u16 condc;
-+	u16 numbers_count;
-+	u16 names_count;
-+	u16 argc;
-+	u16 envc;
-+	u16 i;
-+	bool can_delete = false;
-+	if (!cond)
-+		return;
-+	BUG_ON(atomic_read(&cond->users) <= 0);
-+	mutex_lock(&tomoyo_policy_lock);
-+	if (atomic_dec_and_test(&cond->users)) {
-+		list_del(&cond->list);
-+		can_delete = true;
-+	}
-+	mutex_unlock(&tomoyo_policy_lock);
-+	if (!can_delete)
-+		return;
-+	condc = cond->condc;
-+	numbers_count = cond->numbers_count;
-+	names_count = cond->names_count;
-+	argc = cond->argc;
-+	envc = cond->envc;
-+	condp = (const struct tomoyo_condition_element *) (cond + 1);
-+	numbers_p = (struct tomoyo_number_union *) (condp + condc);
-+	names_p = (struct tomoyo_name_union *) (numbers_p + numbers_count);
-+	argv = (const struct tomoyo_argv_entry *) (names_p + names_count);
-+	envp = (const struct tomoyo_envp_entry *) (argv + argc);
-+	for (i = 0; i < numbers_count; i++)
-+		tomoyo_put_number_union(numbers_p++);
-+	for (i = 0; i < names_count; i++)
-+		tomoyo_put_name_union(names_p++);
-+	for (i = 0; i < argc; argv++, i++)
-+		tomoyo_put_name(argv->value);
-+	for (i = 0; i < envc; envp++, i++) {
-+		tomoyo_put_name(envp->name);
-+		tomoyo_put_name(envp->value);
-+	}
-+	tomoyo_memory_free(cond, cond->size);
-+}
-+
-+/*
-+ * TOMOYO uses this hash only when appending a string into the string
-+ * table. Frequency of appending strings is very low. So we don't need
-+ * large (e.g. 64k) hash size. 256 will be sufficient.
-+ */
-+#define TOMOYO_MAX_HASH 256
-+
-+/*
-+ * tomoyo_name_entry is a structure which is used for linking
-+ * "struct tomoyo_path_info" into tomoyo_name_list .
-+ */
-+struct tomoyo_name_entry {
-+	struct list_head list;
-+	atomic_t users;
-+	int size;
-+	struct tomoyo_path_info entry;
++enum tomoyo_gc_id {
++	TOMOYO_ID_ADDRESS_GROUP,
++	TOMOYO_ID_ADDRESS_GROUP_MEMBER,
++	TOMOYO_ID_PATH_GROUP,
++	TOMOYO_ID_PATH_GROUP_MEMBER,
++	TOMOYO_ID_NUMBER_GROUP,
++	TOMOYO_ID_NUMBER_GROUP_MEMBER,
++	TOMOYO_ID_GLOBAL_ENV,
++	TOMOYO_ID_AGGREGATOR,
++	TOMOYO_ID_DOMAIN_INITIALIZER,
++	TOMOYO_ID_DOMAIN_KEEPER,
++	TOMOYO_ID_GLOBALLY_READABLE,
++	TOMOYO_ID_PATTERN,
++	TOMOYO_ID_NO_REWRITE,
++	TOMOYO_ID_MANAGER,
++	TOMOYO_ID_ACL,
++	TOMOYO_ID_DOMAIN
 +};
 +
-+/*
-+ * tomoyo_name_list is used for holding string data used by TOMOYO.
-+ * Since same string data is likely used for multiple times (e.g.
-+ * "/lib/libc-2.5.so"), TOMOYO shares string data in the form of
-+ * "const struct tomoyo_path_info *".
-+ */
-+static struct list_head tomoyo_name_list[TOMOYO_MAX_HASH];
-+static DEFINE_MUTEX(tomoyo_name_list_lock);
++struct tomoyo_gc_entry {
++	struct list_head list;
++	int type;
++	void *element;
++};
++static LIST_HEAD(tomoyo_gc_queue);
++static DEFINE_MUTEX(tomoyo_gc_mutex);
++
++/* Caller holds tomoyo_policy_lock mutex. */
++static bool tomoyo_add_to_gc(const int type, void *element)
++{
++	struct tomoyo_gc_entry *entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
++	if (!entry)
++		return false;
++	entry->type = type;
++	entry->element = element;
++	list_add(&entry->list, &tomoyo_gc_queue);
++	return true;
++}
++
++static size_t tomoyo_del_allow_read
++(struct tomoyo_globally_readable_file_entry *ptr)
++{
++	tomoyo_put_name(ptr->filename);
++	return sizeof(*ptr);
++}
++
++static size_t tomoyo_del_allow_env
++(struct tomoyo_globally_usable_env_entry *ptr)
++{
++	tomoyo_put_name(ptr->env);
++	return sizeof(*ptr);
++}
++
++static size_t tomoyo_del_file_pattern(struct tomoyo_pattern_entry *ptr)
++{
++	tomoyo_put_name(ptr->pattern);
++	return sizeof(*ptr);
++}
++
++static size_t tomoyo_del_no_rewrite(struct tomoyo_no_rewrite_entry *ptr)
++{
++	tomoyo_put_name(ptr->pattern);
++	return sizeof(*ptr);
++}
++
++static size_t tomoyo_del_domain_initializer
++(struct tomoyo_domain_initializer_entry *ptr)
++{
++	tomoyo_put_name(ptr->domainname);
++	tomoyo_put_name(ptr->program);
++	return sizeof(*ptr);
++}
++
++static size_t tomoyo_del_domain_keeper(struct tomoyo_domain_keeper_entry *ptr)
++{
++	tomoyo_put_name(ptr->domainname);
++	tomoyo_put_name(ptr->program);
++	return sizeof(*ptr);
++}
++
++static size_t tomoyo_del_aggregator(struct tomoyo_aggregator_entry *ptr)
++{
++	tomoyo_put_name(ptr->original_name);
++	tomoyo_put_name(ptr->aggregated_name);
++	return sizeof(*ptr);
++}
++
++static size_t tomoyo_del_manager(struct tomoyo_policy_manager_entry *ptr)
++{
++	tomoyo_put_name(ptr->manager);
++	return sizeof(*ptr);
++}
 +
 +/**
-+ * tomoyo_get_name - Allocate memory for string data.
++ * tomoyo_used_by_task - Check whether the given pointer is referenced by a task.
 + *
-+ * @name: The string to store into the permernent memory.
++ * @domain: Pointer to "struct tomoyo_domain_info".
 + *
-+ * Returns pointer to "struct tomoyo_path_info" on success, NULL otherwise.
++ * Returns true if @domain is in use, false otherwise.
 + */
-+const struct tomoyo_path_info *tomoyo_get_name(const char *name)
++static bool tomoyo_used_by_task(struct tomoyo_domain_info *domain)
 +{
-+	struct tomoyo_name_entry *ptr;
-+	unsigned int hash;
-+	int len;
-+	int allocated_len;
-+
-+	if (!name)
-+		return NULL;
-+	len = strlen(name) + 1;
-+	hash = full_name_hash((const unsigned char *) name, len - 1);
-+	mutex_lock(&tomoyo_name_list_lock);
-+	list_for_each_entry(ptr, &tomoyo_name_list[hash % TOMOYO_MAX_HASH],
-+			    list) {
-+		if (hash != ptr->entry.hash || strcmp(name, ptr->entry.name))
-+			continue;
-+		atomic_inc(&ptr->users);
++	bool in_use = false;
++	/*
++	 * Don't delete this domain if somebody is doing execve().
++	 *
++	 * Since tomoyo_finish_execve() first reverts tomoyo_domain_info and
++	 * then updates tomoyo_flags , we need smp_mb() to make sure that GC
++	 * first checks tomoyo_flags and then checks tomoyo_domain_info .
++	 */
++	struct task_struct *g;
++	struct task_struct *t;
++	read_lock(&tasklist_lock);
++	do_each_thread(g, t) {
++		if (!(t->tomoyo_flags & TOMOYO_TASK_IS_IN_EXECVE)) {
++			smp_mb(); /* Avoid out of order execution. */
++			if (t->tomoyo_domain_info != domain)
++				continue;
++		}
++		in_use = true;
 +		goto out;
-+	}
-+	allocated_len = tomoyo_round2(sizeof(*ptr) + len);
-+	ptr = kzalloc(allocated_len, GFP_KERNEL);
-+	if (!ptr || (tomoyo_quota_for_policy &&
-+		     atomic_read(&tomoyo_policy_memory_size) + allocated_len
-+		     > tomoyo_quota_for_policy)) {
-+		kfree(ptr);
-+		ptr = NULL;
-+		tomoyo_warn_oom(__func__);
-+		goto out;
-+	}
-+	atomic_add(allocated_len, &tomoyo_policy_memory_size);
-+	ptr->entry.name = ((char *) ptr) + sizeof(*ptr);
-+	memmove((char *) ptr->entry.name, name, len);
-+	atomic_set(&ptr->users, 1);
-+	tomoyo_fill_path_info(&ptr->entry);
-+	ptr->size = allocated_len;
-+	list_add_tail(&ptr->list, &tomoyo_name_list[hash % TOMOYO_MAX_HASH]);
++	} while_each_thread(g, t);
 + out:
-+	mutex_unlock(&tomoyo_name_list_lock);
-+	return ptr ? &ptr->entry : NULL;
++	read_unlock(&tasklist_lock);
++	return in_use;
 +}
 +
-+/**
-+ * tomoyo_put_name - Delete shared memory for string data.
-+ *
-+ * @name: Pointer to "struct tomoyo_path_info".
-+ */
-+void tomoyo_put_name(const struct tomoyo_path_info *name)
++static size_t tomoyo_del_acl(struct tomoyo_acl_info *acl)
 +{
-+	struct tomoyo_name_entry *ptr;
-+	bool can_delete = false;
-+	if (!name)
-+		return;
-+	ptr = container_of(name, struct tomoyo_name_entry, entry);
-+	mutex_lock(&tomoyo_name_list_lock);
-+	if (atomic_dec_and_test(&ptr->users)) {
-+		list_del(&ptr->list);
-+		can_delete = true;
++	size_t size;
++	tomoyo_put_condition(acl->cond);
++	switch (acl->type) {
++	case TOMOYO_TYPE_PATH_ACL:
++		{
++			struct tomoyo_path_acl *entry;
++			size = sizeof(*entry);
++			entry = container_of(acl, typeof(*entry), head);
++			tomoyo_put_name_union(&entry->name);
++		}
++		break;
++	case TOMOYO_TYPE_PATH_NUMBER3_ACL:
++		{
++			struct tomoyo_path_number3_acl *entry;
++			size = sizeof(*entry);
++			entry = container_of(acl, typeof(*entry), head);
++			tomoyo_put_name_union(&entry->name);
++			tomoyo_put_number_union(&entry->mode);
++			tomoyo_put_number_union(&entry->major);
++			tomoyo_put_number_union(&entry->minor);
++		}
++		break;
++	case TOMOYO_TYPE_PATH2_ACL:
++		{
++			struct tomoyo_path2_acl *entry;
++			size = sizeof(*entry);
++			entry = container_of(acl, typeof(*entry), head);
++			tomoyo_put_name_union(&entry->name1);
++			tomoyo_put_name_union(&entry->name2);
++		}
++		break;
++	case TOMOYO_TYPE_IP_NETWORK_ACL:
++		{
++			struct tomoyo_ip_network_acl *entry;
++			size = sizeof(*entry);
++			entry = container_of(acl, typeof(*entry), head);
++			switch (entry->address_type) {
++			case TOMOYO_IP_ADDRESS_TYPE_ADDRESS_GROUP:
++				tomoyo_put_address_group(entry->address.group);
++				break;
++			case TOMOYO_IP_ADDRESS_TYPE_IPv6:
++				tomoyo_put_ipv6_address(entry->
++							address.ipv6.min);
++				tomoyo_put_ipv6_address(entry->
++							address.ipv6.max);
++				break;
++			}
++			tomoyo_put_number_union(&entry->port);
++		}
++		break;
++	case TOMOYO_TYPE_PATH_NUMBER_ACL:
++		{
++			struct tomoyo_path_number_acl *entry;
++			size = sizeof(*entry);
++			entry = container_of(acl, typeof(*entry), head);
++			tomoyo_put_name_union(&entry->name);
++			tomoyo_put_number_union(&entry->number);
++		}
++		break;
++	case TOMOYO_TYPE_ENV_ACL:
++		{
++			struct tomoyo_env_acl *entry;
++			size = sizeof(*entry);
++			entry = container_of(acl, typeof(*entry), head);
++			tomoyo_put_name(entry->env);
++		}
++		break;
++	case TOMOYO_TYPE_CAPABILITY_ACL:
++		{
++			struct tomoyo_capability_acl *entry;
++			size = sizeof(*entry);
++			entry = container_of(acl, typeof(*entry), head);
++		}
++		break;
++	case TOMOYO_TYPE_EXECUTE_HANDLER:
++	case TOMOYO_TYPE_DENIED_EXECUTE_HANDLER:
++		{
++			struct tomoyo_execute_handler_record *entry;
++			size = sizeof(*entry);
++			entry = container_of(acl, typeof(*entry), head);
++			tomoyo_put_name(entry->handler);
++		}
++		break;
++	case TOMOYO_TYPE_MOUNT_ACL:
++		{
++			struct tomoyo_mount_acl *entry;
++			size = sizeof(*entry);
++			entry = container_of(acl, typeof(*entry), head);
++			tomoyo_put_name_union(&entry->dev_name);
++			tomoyo_put_name_union(&entry->dir_name);
++			tomoyo_put_name_union(&entry->fs_type);
++			tomoyo_put_number_union(&entry->flags);
++		}
++		break;
++	default:
++		size = 0;
++		printk(KERN_WARNING "Unknown type\n");
++		break;
 +	}
-+	mutex_unlock(&tomoyo_name_list_lock);
-+	if (can_delete) {
-+		atomic_sub(ptr->size, &tomoyo_policy_memory_size);
-+		kfree(ptr);
-+	}
++	return size;
 +}
 +
++static size_t tomoyo_del_domain(struct tomoyo_domain_info *domain)
++{
++	struct tomoyo_acl_info *acl;
++	struct tomoyo_acl_info *tmp;
++	if (tomoyo_used_by_task(domain))
++		return 0;
++	list_for_each_entry_safe(acl, tmp, &domain->acl_info_list, list) {
++		size_t size = tomoyo_del_acl(acl);
++		tomoyo_memory_free(acl, size);
++	}
++	tomoyo_put_name(domain->domainname);
++	return sizeof(*domain);
++}
++
++static size_t tomoyo_del_path_group_member
++(struct tomoyo_path_group_member *member)
++{
++	tomoyo_put_name(member->member_name);
++	return sizeof(*member);
++}
++
++static size_t tomoyo_del_path_group(struct tomoyo_path_group *group)
++{
++	tomoyo_put_name(group->group_name);
++	return sizeof(*group);
++}
++
++static size_t tomoyo_del_address_group_member
++(struct tomoyo_address_group_member *member)
++{
++	if (member->is_ipv6) {
++		tomoyo_put_ipv6_address(member->min.ipv6);
++		tomoyo_put_ipv6_address(member->max.ipv6);
++	}
++	return sizeof(*member);
++}
++
++static size_t tomoyo_del_address_group(struct tomoyo_address_group *group)
++{
++	tomoyo_put_name(group->group_name);
++	return sizeof(*group);
++}
++
++static size_t tomoyo_del_number_group_member
++(struct tomoyo_number_group_member *member)
++{
++	return sizeof(*member);
++}
++
++static size_t tomoyo_del_number_group(struct tomoyo_number_group *group)
++{
++	tomoyo_put_name(group->group_name);
++	return sizeof(*group);
++}
++
++/* Lock for GC. */
++static struct srcu_struct tomoyo_ss;
++
 +/**
-+ * tomoyo_mm_init - Initialize mm code.
++ * tomoyo_gc_init - Initialize garbage collector.
 + *
 + * Returns 0.
 + */
-+static int __init tomoyo_mm_init(void)
++static int __init tomoyo_gc_init(void)
 +{
-+	int i;
-+	if (!tomoyo_registered)
-+		return 0;
-+	for (i = 0; i < TOMOYO_MAX_HASH; i++)
-+		INIT_LIST_HEAD(&tomoyo_name_list[i]);
-+	INIT_LIST_HEAD(&tomoyo_kernel_domain.acl_info_list);
-+	tomoyo_kernel_domain.domainname = tomoyo_get_name(ROOT_NAME);
-+	list_add_tail_rcu(&tomoyo_kernel_domain.list, &tomoyo_domain_list);
-+	if (tomoyo_find_domain(ROOT_NAME) != &tomoyo_kernel_domain)
-+		panic("Can't register tomoyo_kernel_domain");
-+#ifdef CONFIG_SECURITY_TOMOYO_BUILTIN_INITIALIZERS
++	if (init_srcu_struct(&tomoyo_ss))
++		panic("Out of memory.");
++	return 0;
++}
++core_initcall(tomoyo_gc_init);
++
++int tomoyo_read_lock(void)
++{
++	return srcu_read_lock(&tomoyo_ss);
++}
++
++void tomoyo_read_unlock(const int idx)
++{
++	srcu_read_unlock(&tomoyo_ss, idx);
++}
++
++static inline void tomoyo_synchronize_srcu(void)
++{
++	synchronize_srcu(&tomoyo_ss);
++}
++
++static int tomoyo_gc_thread(void *unused)
++{
++	daemonize("GC for TOMOYO");
++	if (!mutex_trylock(&tomoyo_gc_mutex))
++		goto out;
++	mutex_lock(&tomoyo_policy_lock);
 +	{
-+		/* Load built-in policy. */
-+		static char tomoyo_builtin_initializers[] __initdata
-+			= CONFIG_SECURITY_TOMOYO_BUILTIN_INITIALIZERS;
-+		char *cp = tomoyo_builtin_initializers;
-+		tomoyo_normalize_line(cp);
-+		while (cp && *cp) {
-+			char *cp2 = strchr(cp, ' ');
-+			if (cp2)
-+				*cp2++ = '\0';
-+			tomoyo_write_domain_initializer_policy(cp, false,
-+							       false);
-+			cp = cp2;
++		struct tomoyo_globally_readable_file_entry *ptr;
++		list_for_each_entry_rcu(ptr, &tomoyo_globally_readable_list,
++					list) {
++			if (!ptr->is_deleted)
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_GLOBALLY_READABLE, ptr))
++				list_del_rcu(&ptr->list);
++			else
++				break;
 +		}
 +	}
-+#endif
-+	return 0;
-+}
-+core_initcall(tomoyo_mm_init);
-+
-+unsigned int tomoyo_audit_log_memory_size;
-+unsigned int tomoyo_quota_for_audit_log;
-+
-+unsigned int tomoyo_query_memory_size;
-+unsigned int tomoyo_quota_for_query;
-+
-+/**
-+ * tomoyo_read_memory_counter - Check for memory usage.
-+ *
-+ * @head: Pointer to "struct tomoyo_io_buffer".
-+ */
-+void tomoyo_read_memory_counter(struct tomoyo_io_buffer *head)
-+{
-+	const unsigned int usage[3] = {
-+		atomic_read(&tomoyo_policy_memory_size),
-+		tomoyo_audit_log_memory_size,
-+		tomoyo_query_memory_size
-+	};
-+	const unsigned int quota[3] = {
-+		tomoyo_quota_for_policy,
-+		tomoyo_quota_for_audit_log,
-+		tomoyo_quota_for_query
-+	};
-+	static const char *header[4] = {
-+		"Policy:     ",
-+		"Audit logs: ",
-+		"Query lists:",
-+		"Total:      "
-+	};
-+	unsigned int total = 0;
-+	int i;
-+	if (head->read_eof)
-+		return;
-+	for (i = 0; i < 3; i++) {
-+		total += usage[i];
-+		tomoyo_io_printf(head, "%s %10u", header[i], usage[i]);
-+		if (quota[i])
-+			tomoyo_io_printf(head, "   (Quota: %10u)", quota[i]);
-+		tomoyo_io_printf(head, "\n");
++	{
++		struct tomoyo_globally_usable_env_entry *ptr;
++		list_for_each_entry_rcu(ptr, &tomoyo_globally_usable_env_list,
++					list) {
++			if (!ptr->is_deleted)
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_GLOBAL_ENV, ptr))
++				list_del_rcu(&ptr->list);
++			else
++				break;
++		}
 +	}
-+	tomoyo_io_printf(head, "%s %10u\n", header[3], total);
-+	head->read_eof = true;
++	{
++		struct tomoyo_pattern_entry *ptr;
++		list_for_each_entry_rcu(ptr, &tomoyo_pattern_list, list) {
++			if (!ptr->is_deleted)
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_PATTERN, ptr))
++				list_del_rcu(&ptr->list);
++			else
++				break;
++		}
++	}
++	{
++		struct tomoyo_no_rewrite_entry *ptr;
++		list_for_each_entry_rcu(ptr, &tomoyo_no_rewrite_list, list) {
++			if (!ptr->is_deleted)
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_NO_REWRITE, ptr))
++				list_del_rcu(&ptr->list);
++			else
++				break;
++		}
++	}
++	{
++		struct tomoyo_domain_initializer_entry *ptr;
++		list_for_each_entry_rcu(ptr, &tomoyo_domain_initializer_list,
++					list) {
++			if (!ptr->is_deleted)
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_DOMAIN_INITIALIZER,
++					     ptr))
++				list_del_rcu(&ptr->list);
++			else
++				break;
++		}
++	}
++	{
++		struct tomoyo_domain_keeper_entry *ptr;
++		list_for_each_entry_rcu(ptr, &tomoyo_domain_keeper_list,
++					list) {
++			if (!ptr->is_deleted)
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_DOMAIN_KEEPER, ptr))
++				list_del_rcu(&ptr->list);
++			else
++				break;
++		}
++	}
++	{
++		struct tomoyo_policy_manager_entry *ptr;
++		list_for_each_entry_rcu(ptr, &tomoyo_policy_manager_list,
++					list) {
++			if (!ptr->is_deleted)
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_MANAGER, ptr))
++				list_del_rcu(&ptr->list);
++			else
++				break;
++		}
++	}
++	{
++		struct tomoyo_aggregator_entry *ptr;
++		list_for_each_entry_rcu(ptr, &tomoyo_aggregator_list, list) {
++			if (!ptr->is_deleted)
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_AGGREGATOR, ptr))
++				list_del_rcu(&ptr->list);
++			else
++				break;
++		}
++	}
++	{
++		struct tomoyo_domain_info *domain;
++		list_for_each_entry_rcu(domain, &tomoyo_domain_list, list) {
++			struct tomoyo_acl_info *acl;
++			list_for_each_entry_rcu(acl, &domain->acl_info_list,
++						list) {
++				if (!acl->is_deleted)
++					continue;
++				if (tomoyo_add_to_gc(TOMOYO_ID_ACL, acl))
++					list_del_rcu(&acl->list);
++				else
++					break;
++			}
++			if (!domain->is_deleted ||
++			    tomoyo_used_by_task(domain))
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_DOMAIN, domain))
++				list_del_rcu(&domain->list);
++			else
++				break;
++		}
++	}
++	{
++		struct tomoyo_path_group *group;
++		list_for_each_entry_rcu(group, &tomoyo_path_group_list, list) {
++			struct tomoyo_path_group_member *member;
++			list_for_each_entry_rcu(member, &group->member_list,
++						list) {
++				if (!member->is_deleted)
++					continue;
++				if (tomoyo_add_to_gc
++				    (TOMOYO_ID_PATH_GROUP_MEMBER, member))
++					list_del_rcu(&member->list);
++				else
++					break;
++			}
++			if (!list_empty(&group->member_list) ||
++			    atomic_read(&group->users))
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_PATH_GROUP, group))
++				list_del_rcu(&group->list);
++			else
++				break;
++		}
++	}
++	{
++		struct tomoyo_address_group *group;
++		list_for_each_entry_rcu(group, &tomoyo_address_group_list,
++					list) {
++			struct tomoyo_address_group_member *member;
++			list_for_each_entry_rcu(member, &group->member_list,
++						list) {
++				if (!member->is_deleted)
++					break;
++				if (tomoyo_add_to_gc
++				    (TOMOYO_ID_ADDRESS_GROUP_MEMBER, member))
++					list_del_rcu(&member->list);
++				else
++					break;
++			}
++			if (!list_empty(&group->member_list) ||
++			    atomic_read(&group->users))
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_ADDRESS_GROUP, group))
++				list_del_rcu(&group->list);
++			else
++				break;
++		}
++	}
++	{
++		struct tomoyo_number_group *group;
++		list_for_each_entry_rcu(group, &tomoyo_number_group_list,
++					list) {
++			struct tomoyo_number_group_member *member;
++			list_for_each_entry_rcu(member, &group->member_list,
++						list) {
++				if (!member->is_deleted)
++					continue;
++				if (tomoyo_add_to_gc
++				    (TOMOYO_ID_NUMBER_GROUP_MEMBER, member))
++					list_del_rcu(&member->list);
++				else
++					break;
++			}
++			if (!list_empty(&group->member_list) ||
++			    atomic_read(&group->users))
++				continue;
++			if (tomoyo_add_to_gc(TOMOYO_ID_NUMBER_GROUP, group))
++				list_del_rcu(&group->list);
++			else
++				break;
++		}
++	}
++	mutex_unlock(&tomoyo_policy_lock);
++	if (list_empty(&tomoyo_gc_queue))
++		goto done;
++	tomoyo_synchronize_srcu();
++	{
++		struct tomoyo_gc_entry *p;
++		struct tomoyo_gc_entry *tmp;
++		size_t size = 0;
++		list_for_each_entry_safe(p, tmp, &tomoyo_gc_queue, list) {
++			switch (p->type) {
++			case TOMOYO_ID_DOMAIN_INITIALIZER:
++				size = tomoyo_del_domain_initializer(p->
++								     element);
++				break;
++			case TOMOYO_ID_DOMAIN_KEEPER:
++				size = tomoyo_del_domain_keeper(p->element);
++				break;
++			case TOMOYO_ID_GLOBALLY_READABLE:
++				size = tomoyo_del_allow_read(p->element);
++				break;
++			case TOMOYO_ID_PATTERN:
++				size = tomoyo_del_file_pattern(p->element);
++				break;
++			case TOMOYO_ID_NO_REWRITE:
++				size = tomoyo_del_no_rewrite(p->element);
++				break;
++			case TOMOYO_ID_MANAGER:
++				size = tomoyo_del_manager(p->element);
++				break;
++			case TOMOYO_ID_GLOBAL_ENV:
++				size = tomoyo_del_allow_env(p->element);
++				break;
++			case TOMOYO_ID_AGGREGATOR:
++				size = tomoyo_del_aggregator(p->element);
++				break;
++			case TOMOYO_ID_PATH_GROUP_MEMBER:
++				size = tomoyo_del_path_group_member(p->
++								    element);
++				break;
++			case TOMOYO_ID_PATH_GROUP:
++				size = tomoyo_del_path_group(p->element);
++				break;
++			case TOMOYO_ID_ADDRESS_GROUP_MEMBER:
++				size = tomoyo_del_address_group_member(p->
++								       element
++								       );
++				break;
++			case TOMOYO_ID_ADDRESS_GROUP:
++				size = tomoyo_del_address_group(p->element);
++				break;
++			case TOMOYO_ID_NUMBER_GROUP_MEMBER:
++				size = tomoyo_del_number_group_member(p->
++								      element);
++				break;
++			case TOMOYO_ID_NUMBER_GROUP:
++				size = tomoyo_del_number_group(p->element);
++				break;
++			case TOMOYO_ID_ACL:
++				size = tomoyo_del_acl(p->element);
++				break;
++			case TOMOYO_ID_DOMAIN:
++				size = tomoyo_del_domain(p->element);
++				if (!size)
++					continue;
++				break;
++			default:
++				size = 0;
++				printk(KERN_WARNING "Unknown type\n");
++				break;
++			}
++			tomoyo_memory_free(p->element, size);
++			list_del(&p->list);
++			kfree(p);
++		}
++	}
++ done:
++	mutex_unlock(&tomoyo_gc_mutex);
++ out:
++	do_exit(0);
 +}
 +
-+/**
-+ * tomoyo_write_memory_quota - Set memory quota.
-+ *
-+ * @head: Pointer to "struct tomoyo_io_buffer".
-+ *
-+ * Returns 0.
-+ */
-+int tomoyo_write_memory_quota(struct tomoyo_io_buffer *head)
++void tomoyo_run_gc(void)
 +{
-+	char *data = head->write_buf;
-+	unsigned int size;
-+	if (sscanf(data, "Policy: %u", &size) == 1)
-+		tomoyo_quota_for_policy = size;
-+	else if (sscanf(data, "Audit logs: %u", &size) == 1)
-+		tomoyo_quota_for_audit_log = size;
-+	else if (sscanf(data, "Query lists: %u", &size) == 1)
-+		tomoyo_quota_for_query = size;
-+	return 0;
++	struct task_struct *task = kthread_create(tomoyo_gc_thread, NULL,
++						  "GC for TOMOYO");
++	if (!IS_ERR(task))
++		wake_up_process(task);
 +}
 
 -- 
