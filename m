@@ -1,176 +1,331 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbZJDMM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZJDMMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755659AbZJDMM6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbZJDMM6
+	id S1755396AbZJDMMS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZJDMMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:12:58 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16752 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbZJDMM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 08:12:57 -0400
-Date: Sun, 4 Oct 2009 08:11:22 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Valdis.Kletnieks@vt.edu, Mike Galbraith <efault@gmx.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, riel@redhat.com
-Subject: Re: Do we support ioprio on SSDs with NCQ (Was: Re: IO scheduler
-	based IO controller V10)
-Message-ID: <20091004121122.GB18778@redhat.com>
-References: <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com> <1254497520.10392.11.camel@marge.simson.net> <20091002154020.GC4494@redhat.com> <12774.1254502217@turing-police.cc.vt.edu> <20091002195815.GE4494@redhat.com> <4e5e476b0910021514i1b461229t667bed94fd67f140@mail.gmail.com> <20091002222756.GG4494@redhat.com> <4e5e476b0910030543o776fb505ka0ce38da9d83b33c@mail.gmail.com> <20091003133810.GC12925@redhat.com> <4e5e476b0910040215m35af5c99pf2c3a463a5cb61dd@mail.gmail.com>
+	Sun, 4 Oct 2009 08:12:18 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:55706 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbZJDMMR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 08:12:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=T82vthw378l19zC+Pu0cTnlqskClgp1AvxeTASIJSIZO0HinvuBDPhekzOa1Ry+j/F
+         I4vw8ic/TO9Eoiz/GlFYgEEEFAfa8r/ZQGqf85aUpm+/DvQ5tDeShpLS0R7kYqv6iNFx
+         xLDykob7RDbOV/QYm2n69gzlyXLZyMmEWmegU=
+Date: Sun, 4 Oct 2009 16:11:37 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] headers: remove sched.h from poll.h
+Message-ID: <20091004121137.GA4662@x200>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4e5e476b0910040215m35af5c99pf2c3a463a5cb61dd@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 04, 2009 at 11:15:24AM +0200, Corrado Zoccolo wrote:
-> Hi Vivek,
-> On Sat, Oct 3, 2009 at 3:38 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > On Sat, Oct 03, 2009 at 02:43:14PM +0200, Corrado Zoccolo wrote:
-> >> On Sat, Oct 3, 2009 at 12:27 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> >> > On Sat, Oct 03, 2009 at 12:14:28AM +0200, Corrado Zoccolo wrote:
-> >> >> In fact I think that the 'rotating' flag name is misleading.
-> >> >> All the checks we are doing are actually checking if the device truly
-> >> >> supports multiple parallel operations, and this feature is shared by
-> >> >> hardware raids and NCQ enabled SSDs, but not by cheap SSDs or single
-> >> >> NCQ-enabled SATA disk.
-> >> >>
-> >> >
-> >> > While we are at it, what happens to notion of priority of tasks on SSDs?
-> >> This is not changed by proposed patch w.r.t. current CFQ.
-> >
-> > This is a general question irrespective of current patch. Want to know
-> > what is our statement w.r.t ioprio and what it means for user? When do
-> > we support it and when do we not.
-> >
-> >> > Without idling there is not continuous time slice and there is no
-> >> > fairness. So ioprio is out of the window for SSDs?
-> >> I haven't NCQ enabled SSDs here, so I can't test it, but it seems to
-> >> me that the way in which queues are sorted in the rr tree may still
-> >> provide some sort of fairness and service differentiation for
-> >> priorities, in terms of number of IOs.
-> >
-> > I have a NCQ enabled SSD. Sometimes I see the difference sometimes I do
-> > not. I guess this happens because sometimes idling is enabled and sometmes
-> > not because of dyanamic nature of hw_tag.
-> >
-> My guess is that the formula that is used to handle this case is not
-> very stable.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-In general I agree that formula to calculate the slice offset is very 
-puzzling as busy_queues varies and that changes the position of the task
-sometimes.
+ drivers/char/dtlk.c                    |    1 +
+ drivers/char/ipmi/ipmi_devintf.c       |    1 +
+ drivers/char/ipmi/ipmi_msghandler.c    |    1 +
+ drivers/firewire/core-cdev.c           |    1 +
+ drivers/hid/hidraw.c                   |    1 +
+ drivers/infiniband/core/ucm.c          |    1 +
+ drivers/infiniband/core/user_mad.c     |    1 +
+ drivers/infiniband/core/uverbs_main.c  |    1 +
+ drivers/input/evdev.c                  |    1 +
+ drivers/input/input.c                  |    1 +
+ drivers/input/joydev.c                 |    1 +
+ drivers/input/misc/uinput.c            |    1 +
+ drivers/input/mousedev.c               |    1 +
+ drivers/isdn/divert/divert_procfs.c    |    1 +
+ drivers/media/dvb/dvb-core/dmxdev.c    |    1 +
+ drivers/media/dvb/dvb-core/dvb_demux.c |    1 +
+ drivers/media/radio/radio-cadet.c      |    1 +
+ drivers/media/video/cpia.c             |    1 +
+ drivers/mfd/ucb1400_core.c             |    1 +
+ drivers/usb/gadget/inode.c             |    1 +
+ drivers/xen/xenfs/xenbus.c             |    1 +
+ fs/anon_inodes.c                       |    2 ++
+ fs/coda/psdev.c                        |    1 +
+ fs/select.c                            |    1 +
+ include/linux/poll.h                   |    2 +-
+ net/rfkill/core.c                      |    1 +
+ 26 files changed, 27 insertions(+), 1 deletion(-)
 
-> The culprit code is (in cfq_service_tree_add):
->         } else if (!add_front) {
->                 rb_key = cfq_slice_offset(cfqd, cfqq) + jiffies;
->                 rb_key += cfqq->slice_resid;
->                 cfqq->slice_resid = 0;
->         } else
-> 
-> cfq_slice_offset is defined as:
-> 
-> static unsigned long cfq_slice_offset(struct cfq_data *cfqd,
->                                       struct cfq_queue *cfqq)
-> {
->         /*
->          * just an approximation, should be ok.
->          */
-> 	return (cfqd->busy_queues - 1) * (cfq_prio_slice(cfqd, 1, 0) -
->                        cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
-> }
-> 
-> Can you try changing the latter to a simpler (we already observed that
-> busy_queues is unstable, and I think that here it is not needed at
-> all):
-> 	return -cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
-> and remove the 'rb_key += cfqq->slice_resid; ' from the former.
-> 
-> This should give a higher probability of being first on the queue to
-> larger slice tasks, so it will work if we don't idle, but it needs
-> some adjustment if we idle.
-
-I am not sure what's the intent here by removing busy_queues stuff. I have
-got two questions though.
-
-- Why don't we keep it simple round robin where a task is simply placed at
-  the end of service tree.
-
-- Secondly, CFQ provides full slice length to queues only which are
-  idling (in case of sequenatial reader). If we do not enable idling, as
-  in case of NCQ enabled SSDs, then CFQ will expire the queue almost 
-  immediately and put the queue at the end of service tree (almost).
-
-So if we don't enable idling, at max we can provide fairness, we
-esseitially just let every queue dispatch one request and put  at the end
-of the end of service tree. Hence no fairness....
-
-Thanks
-Vivek
-
-> 
-> > I ran three fio reads for 10 seconds. First job is prio0, second prio4 and
-> > third prio7.
-> >
-> > (prio 0) read : io=978MiB, bw=100MiB/s, iops=25,023, runt= 10005msec
-> > (prio 4) read : io=953MiB, bw=99,950KiB/s, iops=24,401, runt= 10003msec
-> > (prio 7) read : io=74,228KiB, bw=7,594KiB/s, iops=1,854, runt= 10009msec
-> >
-> > Note there is almost no difference between prio 0 and prio 4 job and prio7
-> > job has been penalized heavily (gets less than 10% BW of prio 4 job).
-> >
-> >> Non-NCQ SSDs, instead, will still have the idle window enabled, so it
-> >> is not an issue for them.
-> >
-> > Agree.
-> >
-> >> >
-> >> > On SSDs, will it make more sense to provide fairness in terms of number or
-> >> > IO or size of IO and not in terms of time slices.
-> >> Not on all SSDs. There are still ones that have a non-negligible
-> >> penalty on non-sequential access pattern (hopefully the ones without
-> >> NCQ, but if we find otherwise, then we will have to benchmark access
-> >> time in I/O scheduler to select the best policy). For those, time
-> >> based may still be needed.
-> >
-> > Ok.
-> >
-> > So on better SSDs out there with NCQ, we probably don't support the notion of
-> > ioprio? Or, I am missing something.
-> 
-> I think we try, but the current formula is simply not good enough.
-> 
-> Thanks,
-> Corrado
-> 
-> >
-> > Thanks
-> > Vivek
-> >
-> 
-> 
-> 
-> -- 
-> __________________________________________________________________________
-> 
-> dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-> PhD - Department of Computer Science - University of Pisa, Italy
-> --------------------------------------------------------------------------
-> The self-confidence of a warrior is not the self-confidence of the average
-> man. The average man seeks certainty in the eyes of the onlooker and calls
-> that self-confidence. The warrior seeks impeccability in his own eyes and
-> calls that humbleness.
->                                Tales of Power - C. Castaneda
+--- a/drivers/char/ipmi/ipmi_devintf.c
++++ b/drivers/char/ipmi/ipmi_devintf.c
+@@ -36,6 +36,7 @@
+ #include <linux/errno.h>
+ #include <asm/system.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/ipmi.h>
+--- a/drivers/char/ipmi/ipmi_msghandler.c
++++ b/drivers/char/ipmi/ipmi_msghandler.c
+@@ -35,6 +35,7 @@
+ #include <linux/errno.h>
+ #include <asm/system.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
+--- a/drivers/firewire/core-cdev.c
++++ b/drivers/firewire/core-cdev.c
+@@ -33,6 +33,7 @@
+ #include <linux/mutex.h>
+ #include <linux/poll.h>
+ #include <linux/preempt.h>
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/time.h>
+ #include <linux/uaccess.h>
+--- a/drivers/hid/hidraw.c
++++ b/drivers/hid/hidraw.c
+@@ -30,6 +30,7 @@
+ #include <linux/major.h>
+ #include <linux/hid.h>
+ #include <linux/mutex.h>
++#include <linux/sched.h>
+ #include <linux/smp_lock.h>
+ 
+ #include <linux/hidraw.h>
+--- a/drivers/infiniband/core/ucm.c
++++ b/drivers/infiniband/core/ucm.c
+@@ -38,6 +38,7 @@
+ #include <linux/device.h>
+ #include <linux/err.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/file.h>
+ #include <linux/mount.h>
+ #include <linux/cdev.h>
+--- a/drivers/infiniband/core/user_mad.c
++++ b/drivers/infiniband/core/user_mad.c
+@@ -44,6 +44,7 @@
+ #include <linux/mutex.h>
+ #include <linux/kref.h>
+ #include <linux/compat.h>
++#include <linux/sched.h>
+ #include <linux/semaphore.h>
+ 
+ #include <asm/uaccess.h>
+--- a/drivers/infiniband/core/uverbs_main.c
++++ b/drivers/infiniband/core/uverbs_main.c
+@@ -40,6 +40,7 @@
+ #include <linux/err.h>
+ #include <linux/fs.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/file.h>
+ #include <linux/mount.h>
+ #include <linux/cdev.h>
+--- a/drivers/input/evdev.c
++++ b/drivers/input/evdev.c
+@@ -13,6 +13,7 @@
+ #define EVDEV_BUFFER_SIZE	64
+ 
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -17,6 +17,7 @@
+ #include <linux/random.h>
+ #include <linux/major.h>
+ #include <linux/proc_fs.h>
++#include <linux/sched.h>
+ #include <linux/seq_file.h>
+ #include <linux/poll.h>
+ #include <linux/device.h>
+--- a/drivers/input/joydev.c
++++ b/drivers/input/joydev.c
+@@ -18,6 +18,7 @@
+ #include <linux/input.h>
+ #include <linux/kernel.h>
+ #include <linux/major.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/mm.h>
+ #include <linux/miscdevice.h>
+--- a/drivers/input/misc/uinput.c
++++ b/drivers/input/misc/uinput.c
+@@ -30,6 +30,7 @@
+  *		- first public version
+  */
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+--- a/drivers/input/mousedev.c
++++ b/drivers/input/mousedev.c
+@@ -13,6 +13,7 @@
+ #define MOUSEDEV_MINORS		32
+ #define MOUSEDEV_MIX		31
+ 
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/smp_lock.h>
+ #include <linux/poll.h>
+--- a/drivers/isdn/divert/divert_procfs.c
++++ b/drivers/isdn/divert/divert_procfs.c
+@@ -16,6 +16,7 @@
+ #else
+ #include <linux/fs.h>
+ #endif
++#include <linux/sched.h>
+ #include <linux/isdnif.h>
+ #include <net/net_namespace.h>
+ #include "isdn_divert.h"
+--- a/drivers/media/dvb/dvb-core/dmxdev.c
++++ b/drivers/media/dvb/dvb-core/dmxdev.c
+@@ -20,6 +20,7 @@
+  *
+  */
+ 
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/vmalloc.h>
+--- a/drivers/media/dvb/dvb-core/dvb_demux.c
++++ b/drivers/media/dvb/dvb-core/dvb_demux.c
+@@ -21,6 +21,7 @@
+  *
+  */
+ 
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/vmalloc.h>
+--- a/drivers/media/video/cpia.c
++++ b/drivers/media/video/cpia.c
+@@ -31,6 +31,7 @@
+ #include <linux/init.h>
+ #include <linux/fs.h>
+ #include <linux/vmalloc.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/proc_fs.h>
+ #include <linux/ctype.h>
+--- a/drivers/mfd/ucb1400_core.c
++++ b/drivers/mfd/ucb1400_core.c
+@@ -21,6 +21,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/sched.h>
+ #include <linux/ucb1400.h>
+ 
+ unsigned int ucb1400_adc_read(struct snd_ac97 *ac97, u16 adc_channel,
+--- a/drivers/usb/gadget/inode.c
++++ b/drivers/usb/gadget/inode.c
+@@ -30,6 +30,7 @@
+ #include <linux/wait.h>
+ #include <linux/compiler.h>
+ #include <asm/uaccess.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/poll.h>
+ #include <linux/smp_lock.h>
+--- a/drivers/xen/xenfs/xenbus.c
++++ b/drivers/xen/xenfs/xenbus.c
+@@ -43,6 +43,7 @@
+ #include <linux/fs.h>
+ #include <linux/poll.h>
+ #include <linux/mutex.h>
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/mount.h>
+ #include <linux/pagemap.h>
+--- a/fs/anon_inodes.c
++++ b/fs/anon_inodes.c
+@@ -8,8 +8,10 @@
+  *
+  */
+ 
++#include <linux/cred.h>
+ #include <linux/file.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/fs.h>
+--- a/fs/coda/psdev.c
++++ b/fs/coda/psdev.c
+@@ -22,6 +22,7 @@
+ #include <linux/kernel.h>
+ #include <linux/major.h>
+ #include <linux/time.h>
++#include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/ioport.h>
+ #include <linux/fcntl.h>
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -15,6 +15,7 @@
+  */
+ 
+ #include <linux/kernel.h>
++#include <linux/sched.h>
+ #include <linux/syscalls.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
+--- a/include/linux/poll.h
++++ b/include/linux/poll.h
+@@ -6,10 +6,10 @@
+ #ifdef __KERNEL__
+ 
+ #include <linux/compiler.h>
++#include <linux/ktime.h>
+ #include <linux/wait.h>
+ #include <linux/string.h>
+ #include <linux/fs.h>
+-#include <linux/sched.h>
+ #include <asm/uaccess.h>
+ 
+ /* ~832 bytes of stack space used max in sys_select/sys_poll before allocating
+--- a/net/rfkill/core.c
++++ b/net/rfkill/core.c
+@@ -27,6 +27,7 @@
+ #include <linux/list.h>
+ #include <linux/mutex.h>
+ #include <linux/rfkill.h>
++#include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/miscdevice.h>
+ #include <linux/wait.h>
+--- a/drivers/char/dtlk.c
++++ b/drivers/char/dtlk.c
+@@ -56,6 +56,7 @@
+ #include <linux/errno.h>	/* for -EBUSY */
+ #include <linux/ioport.h>	/* for request_region */
+ #include <linux/delay.h>	/* for loops_per_jiffy */
++#include <linux/sched.h>
+ #include <linux/smp_lock.h>	/* cycle_kernel_lock() */
+ #include <asm/io.h>		/* for inb_p, outb_p, inb, outb, etc. */
+ #include <asm/uaccess.h>	/* for get_user, etc. */
+--- a/drivers/media/radio/radio-cadet.c
++++ b/drivers/media/radio/radio-cadet.c
+@@ -38,6 +38,7 @@
+ #include <linux/videodev2.h>	/* V4L2 API defs		*/
+ #include <linux/param.h>
+ #include <linux/pnp.h>
++#include <linux/sched.h>
+ #include <linux/io.h>		/* outb, outb_p			*/
+ #include <media/v4l2-device.h>
+ #include <media/v4l2-ioctl.h>
