@@ -1,185 +1,336 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbZJDNBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbZJDNBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbZJDNBL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 09:01:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbZJDNBH
+	id S1757445AbZJDNBv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 09:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbZJDNBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 09:01:07 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:52871 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 09:01:49 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:56608 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757106AbZJDNBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 09:01:03 -0400
-Message-Id: <20091004125334.269163576@I-love.SAKURA.ne.jp>
+	id S1756906AbZJDNBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 09:01:46 -0400
+Message-Id: <20091004125334.599777498@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:50:07 +0900
+Date: Sun, 04 Oct 2009 21:50:08 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 21/25] TOMOYO: Add securityfs interface.
-Content-Disposition: inline; filename=tomoyo-add-securityfs-interface.patch
+Subject: [TOMOYO #16 22/25] TOMOYO: Add pathname calculation functions.
+Content-Disposition: inline; filename=tomoyo-add-new-realpath.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains code for creating /sys/kernel/security/tomoyo/ interface.
+This patch contains code for getting canonicalized pathnames used by TOMOYO.
+TOMOYO 2.2.0 uses __d_path() for getting canonicalized pathnames, but there are
+several issues.
+
+(1) The " (deleted)" is appended to the returned pathname if the pathname was
+    deleted. This causes TOMOYO to check
+
+      allow_truncate /tmp/file
+
+    for
+
+      int fd = open("/tmp/file", O_WRONLY | O_CREAT, 0600);
+      ftruncate(fd, 0);
+      unlink("/tmp/file");
+      close(fd);
+
+    sequence and
+
+      allow_truncate /tmp/file\040(deleted)
+
+    for
+
+      int fd = open("/tmp/file", O_WRONLY | O_CREAT, 0600);
+      unlink("/tmp/file");
+      ftruncate(fd, 0);
+      close(fd);
+
+    sequence, although these sequences are doing the same operations in
+    different order. Since this is annoying for policy developers, I want
+    to avoid trailing " (deleted)".
+
+(2) __d_path() does not replace /proc/PID/ with /proc/self/ if PID is equals to
+    the current process's PID. Pathname based access control can prevent
+    current process from accessing other process's information if we can map
+    /proc/PID/ to /proc/self/ . The caller of __d_path() can't replace "PID"
+    with "self" after returning from __d_path() because the caller cannot tell
+    whether the numeric part of the returned pathname is a PID or not.
+    To tell whether the numeric part of the returned pathname is a PID or not,
+    the caller has to do dentry/vfsmount traversal by its own, and that makes
+    use of __d_path() meaningless.
+
+(3) The pathname for socket is in "socket:[%u]" format. But such pathname is
+    too useless for pathname based access control.
+    I want to use pathnames in "socket:[family=%u:type=%u:protocol=%u]" format.
+    The best pathname might include socket's peer address information, but it
+    would be difficult to fetch and represent address information.
+
+To solve these issues, I'd like to introduce custom __d_path() functions
+(or add some flags to __d_path()).
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/securityfs_if.c |  148 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 148 insertions(+)
+ security/tomoyo/new-realpath.c |  251 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 251 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6/security/tomoyo/securityfs_if.c
-@@ -0,0 +1,148 @@
++++ security-testing-2.6/security/tomoyo/new-realpath.c
+@@ -0,0 +1,251 @@
 +/*
-+ * security/tomoyo/securityfs_if.c
++ * security/tomoyo/realpath.c
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + */
 +#include "internal.h"
++#include <net/sock.h>
++#include <linux/magic.h>
++#include <linux/namei.h>
++#include <linux/mount.h>
 +
 +/**
-+ * tomoyo_open - open() for /sys/kernel/security/tomoyo/ interface.
++ * tomoyo_get_absolute_path - Get the path of a dentry but ignores chroot'ed root.
 + *
-+ * @inode: Pointer to "struct inode".
-+ * @file:  Pointer to "struct file".
++ * @path:   Pointer to "struct path".
++ * @buffer: Pointer to buffer to return value in.
++ * @buflen: Sizeof @buffer.
++ *
++ * Returns the buffer on success, an error code otherwise.
++ *
++ * Caller holds the dcache_lock and vfsmount_lock.
++ * Based on __d_path() in fs/dcache.c
++ *
++ * If dentry is a directory, trailing '/' is appended.
++ * /proc/pid is represented as /proc/self if pid is current.
++ */
++static char *tomoyo_get_absolute_path(struct path *path, char * const buffer,
++				      const int buflen)
++{
++	char *pos = buffer + buflen - 1;
++	struct dentry *dentry = path->dentry;
++	struct vfsmount *vfsmnt = path->mnt;
++	bool is_dir = (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode));
++	const char *name;
++	int len;
++
++	if (buflen < 256)
++		goto out;
++
++	*pos = '\0';
++	for (;;) {
++		struct dentry *parent;
++		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
++			if (vfsmnt->mnt_parent == vfsmnt)
++				break;
++			dentry = vfsmnt->mnt_mountpoint;
++			vfsmnt = vfsmnt->mnt_parent;
++			continue;
++		}
++		if (is_dir) {
++			is_dir = false;
++			*--pos = '/';
++		}
++		parent = dentry->d_parent;
++		name = dentry->d_name.name;
++		len = dentry->d_name.len;
++		if (IS_ROOT(parent) && *name > '0' && *name <= '9' &&
++		    parent->d_sb &&
++		    parent->d_sb->s_magic == PROC_SUPER_MAGIC) {
++			char *ep;
++			const pid_t pid = (pid_t) simple_strtoul(name, &ep,
++								 10);
++			const pid_t tgid = task_tgid_nr_ns(current,
++							   dentry->d_sb->
++							   s_fs_info);
++			if (!*ep && pid == tgid && tgid) {
++				name = "self";
++				len = 4;
++			}
++		}
++		pos -= len;
++		if (pos <= buffer)
++			goto out;
++		memmove(pos, name, len);
++		*--pos = '/';
++		dentry = parent;
++	}
++	if (*pos == '/')
++		pos++;
++	len = dentry->d_name.len;
++	pos -= len;
++	if (pos < buffer)
++		goto out;
++	memmove(pos, dentry->d_name.name, len);
++	return pos;
++ out:
++	return ERR_PTR(-ENOMEM);
++}
++
++#define SOCKFS_MAGIC 0x534F434B
++
++/**
++ * tomoyo_realpath_from_path - Returns realpath(3) of the given pathname but ignores chroot'ed root.
++ *
++ * @path: Pointer to "struct path".
++ *
++ * Returns the realpath of the given @path on success, NULL otherwise.
++ *
++ * This function uses kzalloc(), so caller must kfree() if this function
++ * didn't return NULL.
++ */
++char *tomoyo_realpath_from_path(struct path *path)
++{
++	char *buf = NULL;
++	char *name = NULL;
++	unsigned int buf_len = PAGE_SIZE / 2;
++	struct dentry *dentry = path->dentry;
++	if (!dentry)
++		return NULL;
++	while (1) {
++		char *pos;
++		buf_len <<= 1;
++		kfree(buf);
++		buf = kmalloc(buf_len, GFP_KERNEL);
++		if (!buf)
++			break;
++		/* Get better name for socket. */
++		if (dentry->d_sb && dentry->d_sb->s_magic == SOCKFS_MAGIC) {
++			struct inode *inode = dentry->d_inode;
++			struct socket *sock = inode ? SOCKET_I(inode) : NULL;
++			struct sock *sk = sock ? sock->sk : NULL;
++			if (sk) {
++				snprintf(buf, buf_len - 1, "socket:[family=%u:"
++					 "type=%u:protocol=%u]", sk->sk_family,
++					 sk->sk_type, sk->sk_protocol);
++			} else {
++				snprintf(buf, buf_len - 1, "socket:[unknown]");
++			}
++			name = tomoyo_encode(buf);
++			break;
++		}
++		/* For "socket:[\$]" and "pipe:[\$]". */
++		if (dentry->d_op && dentry->d_op->d_dname) {
++			pos = dentry->d_op->d_dname(dentry, buf, buf_len - 1);
++			if (IS_ERR(pos))
++				continue;
++			name = tomoyo_encode(pos);
++			break;
++		}
++		if (!path->mnt)
++			break;
++		path_get(path);
++		spin_lock(&dcache_lock);
++		spin_lock(&vfsmount_lock);
++		pos = tomoyo_get_absolute_path(path, buf, buf_len - 1);
++		spin_unlock(&vfsmount_lock);
++		spin_unlock(&dcache_lock);
++		path_put(path);
++		if (IS_ERR(pos))
++			continue;
++		name = tomoyo_encode(pos);
++		break;
++	}
++	kfree(buf);
++	if (!name)
++		tomoyo_warn_oom(__func__);
++	return name;
++}
++
++/**
++ * tomoyo_symlink_path - Get symlink's pathname.
++ *
++ * @pathname: The pathname to solve.
++ * @name:     Pointer to "struct tomoyo_path_info".
 + *
 + * Returns 0 on success, negative value otherwise.
++ *
++ * This function uses kzalloc(), so caller must kfree() if this function
++ * didn't return NULL.
 + */
-+static int tomoyo_open(struct inode *inode, struct file *file)
++int tomoyo_symlink_path(const char *pathname, struct tomoyo_path_info *name)
 +{
-+	const int key = ((u8 *) file->f_path.dentry->d_inode->i_private)
-+		- ((u8 *) NULL);
-+	return tomoyo_open_control(key, file);
-+}
-+
-+/**
-+ * tomoyo_release - close() for /sys/kernel/security/tomoyo/ interface.
-+ *
-+ * @inode: Pointer to "struct inode".
-+ * @file:  Pointer to "struct file".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_release(struct inode *inode, struct file *file)
-+{
-+	return tomoyo_close_control(file);
-+}
-+
-+/**
-+ * tomoyo_poll - poll() for /sys/kernel/security/tomoyo/ interface.
-+ *
-+ * @file: Pointer to "struct file".
-+ * @wait: Pointer to "poll_table".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static unsigned int tomoyo_poll(struct file *file, poll_table *wait)
-+{
-+	return tomoyo_poll_control(file, wait);
-+}
-+
-+/**
-+ * tomoyo_read - read() for /sys/kernel/security/tomoyo/ interface.
-+ *
-+ * @file:  Pointer to "struct file".
-+ * @buf:   Pointer to buffer.
-+ * @count: Size of @buf.
-+ * @ppos:  Unused.
-+ *
-+ * Returns bytes read on success, negative value otherwise.
-+ */
-+static ssize_t tomoyo_read(struct file *file, char __user *buf, size_t count,
-+			   loff_t *ppos)
-+{
-+	return tomoyo_read_control(file, buf, count);
-+}
-+
-+/**
-+ * tomoyo_write - write() for /sys/kernel/security/tomoyo/ interface.
-+ *
-+ * @file:  Pointer to "struct file".
-+ * @buf:   Pointer to buffer.
-+ * @count: Size of @buf.
-+ * @ppos:  Unused.
-+ *
-+ * Returns @count on success, negative value otherwise.
-+ */
-+static ssize_t tomoyo_write(struct file *file, const char __user *buf,
-+			    size_t count, loff_t *ppos)
-+{
-+	return tomoyo_write_control(file, buf, count);
-+}
-+
-+/* Operations for /sys/kernel/security/tomoyo/interface. */
-+static const struct file_operations tomoyo_operations = {
-+	.open    = tomoyo_open,
-+	.release = tomoyo_release,
-+	.poll    = tomoyo_poll,
-+	.read    = tomoyo_read,
-+	.write   = tomoyo_write,
-+};
-+
-+/**
-+ * tomoyo_create_entry - Create interface files under /sys/kernel/security/tomoyo/ directory.
-+ *
-+ * @name:   The name of the interface file.
-+ * @mode:   The permission of the interface file.
-+ * @parent: The parent directory.
-+ * @key:    Type of interface.
-+ *
-+ * Returns nothing.
-+ */
-+static void __init tomoyo_create_entry(const char *name, const mode_t mode,
-+				       struct dentry *parent, const u8 key)
-+{
-+	securityfs_create_file(name, mode, parent, ((u8 *) NULL) + key,
-+			       &tomoyo_operations);
-+}
-+
-+/**
-+ * tomoyo_securityfs_init - Initialize /sys/kernel/security/tomoyo/ interface.
-+ *
-+ * Returns 0.
-+ */
-+static int __init tomoyo_securityfs_init(void)
-+{
-+	struct dentry *tomoyo_dir;
-+	if (!tomoyo_registered)
++	char *buf;
++	struct path path;
++	if (!pathname || kern_path(pathname, 0, &path))
++		return -ENOENT;
++	buf = tomoyo_realpath_from_path(&path);
++	path_put(&path);
++	if (buf) {
++		name->name = buf;
++		tomoyo_fill_path_info(name);
 +		return 0;
-+	tomoyo_dir = securityfs_create_dir("tomoyo", NULL);
-+	tomoyo_create_entry("query",            0600, tomoyo_dir,
-+			    TOMOYO_QUERY);
-+	tomoyo_create_entry("domain_policy",    0600, tomoyo_dir,
-+			    TOMOYO_DOMAINPOLICY);
-+	tomoyo_create_entry("exception_policy", 0600, tomoyo_dir,
-+			    TOMOYO_EXCEPTIONPOLICY);
-+#ifdef CONFIG_SECURITY_TOMOYO_AUDIT
-+	tomoyo_create_entry("grant_log",        0400, tomoyo_dir,
-+			    TOMOYO_GRANTLOG);
-+	tomoyo_create_entry("reject_log",       0400, tomoyo_dir,
-+			    TOMOYO_REJECTLOG);
-+#endif
-+	tomoyo_create_entry("self_domain",      0400, tomoyo_dir,
-+			    TOMOYO_SELFDOMAIN);
-+	tomoyo_create_entry(".domain_status",   0600, tomoyo_dir,
-+			    TOMOYO_DOMAIN_STATUS);
-+	tomoyo_create_entry(".process_status",  0600, tomoyo_dir,
-+			    TOMOYO_PROCESS_STATUS);
-+	tomoyo_create_entry("meminfo",          0600, tomoyo_dir,
-+			    TOMOYO_MEMINFO);
-+	tomoyo_create_entry("profile",          0600, tomoyo_dir,
-+			    TOMOYO_PROFILE);
-+	tomoyo_create_entry("manager",          0600, tomoyo_dir,
-+			    TOMOYO_MANAGER);
-+	tomoyo_create_entry("version",          0400, tomoyo_dir,
-+			    TOMOYO_VERSION);
-+	tomoyo_create_entry(".execute_handler", 0666, tomoyo_dir,
-+			    TOMOYO_EXECUTE_HANDLER);
++	}
++	return -ENOMEM;
++}
++
++/**
++ * tomoyo_encode: Encode binary string to ascii string.
++ *
++ * @str: String in binary format.
++ *
++ * Returns pointer to @str in ascii format on success, NULL otherwise.
++ *
++ * This function uses kzalloc(), so caller must kfree() if this function
++ * didn't return NULL.
++ */
++char *tomoyo_encode(const char *str)
++{
++	int len = 0;
++	const char *p = str;
++	char *cp;
++	char *cp0;
++	if (!p)
++		return NULL;
++	while (*p) {
++		const unsigned char c = *p++;
++		if (c == '\\')
++			len += 2;
++		else if (c > ' ' && c < 127)
++			len++;
++		else
++			len += 4;
++	}
++	len++;
++	/* Reserve space for appending "/". */
++	cp = kzalloc(len + 10, GFP_KERNEL);
++	if (!cp)
++		return NULL;
++	cp0 = cp;
++	p = str;
++	while (*p) {
++		const unsigned char c = *p++;
++		if (c == '\\') {
++			*cp++ = '\\';
++			*cp++ = '\\';
++		} else if (c > ' ' && c < 127) {
++			*cp++ = c;
++		} else {
++			*cp++ = '\\';
++			*cp++ = (c >> 6) + '0';
++			*cp++ = ((c >> 3) & 7) + '0';
++			*cp++ = (c & 7) + '0';
++		}
++	}
++	return cp0;
++}
++
++/**
++ * tomoyo_get_path - Get dentry/vfsmmount of a pathname.
++ *
++ * @pathname: The pathname to solve.
++ * @path:     Pointer to "struct path".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int tomoyo_get_path(const char *pathname, struct path *path)
++{
++	if (!pathname || kern_path(pathname, LOOKUP_FOLLOW, path))
++		return -ENOENT;
 +	return 0;
 +}
-+fs_initcall(tomoyo_securityfs_init);
 
 -- 
