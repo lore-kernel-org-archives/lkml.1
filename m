@@ -1,111 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbZJDPY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbZJDPof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757171AbZJDPY5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 11:24:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbZJDPY4
+	id S1757391AbZJDPof (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 11:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbZJDPoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 11:24:56 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:59786 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbZJDPYz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 11:24:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=x9Bvxx56PRscgPdiFXzHl362aYO+jIhiMVDtWjn/P8Je2y8teHJSMJq7uTg3q3DUwT
-         aCm6z/t7683+d0wIPf5OGMntCivpg02Tn2rn5YvhfdM46K9ron0q2l62zQgrK8Xk/494
-         ySlwIfaJWo01CUYUik2jpNIahVCC7ZZT1zYZY=
-Subject: [PATCH] battery: Fix charge_now returned by broken batteries
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-To: astarikovskiy@suse.de
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sun, 04 Oct 2009 17:24:13 +0200
-Message-Id: <1254669853.26496.0.camel@carter>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Oct 2009 11:44:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54488 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754596AbZJDPod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 11:44:33 -0400
+Date: Sun, 4 Oct 2009 15:43:06 GMT
+From: tip-bot for Marin Mitov <mitov@issp.bas.bg>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       joerg.roedel@amd.com, tglx@linutronix.de, jesse.brandeburg@intel.com,
+       mitov@issp.bas.bg, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       joerg.roedel@amd.com, tglx@linutronix.de, jesse.brandeburg@intel.com,
+       mitov@issp.bas.bg, mingo@elte.hu
+In-Reply-To: <200910032045.02523.mitov@issp.bas.bg>
+References: <200910032045.02523.mitov@issp.bas.bg>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, pci: Correct spelling in a comment
+Message-ID: <tip-e3be785fb59f92c0df685037062d041619653b7a@git.kernel.org>
+Git-Commit-ID: e3be785fb59f92c0df685037062d041619653b7a
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 04 Oct 2009 15:43:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some broken batteries like my DELL NR2227 or a friend's DELL GK4798 return
-the design_capacity (charge_full_design) as capacity_now (charge_now)
-when completely charged.
+Commit-ID:  e3be785fb59f92c0df685037062d041619653b7a
+Gitweb:     http://git.kernel.org/tip/e3be785fb59f92c0df685037062d041619653b7a
+Author:     Marin Mitov <mitov@issp.bas.bg>
+AuthorDate: Sat, 3 Oct 2009 20:45:02 +0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 3 Oct 2009 20:35:16 +0200
 
-I noticed this when looking at a battery plugin that reported "127% charged".
-Some of these plugins have already "fixed" this in userspace by coding
-something like min(percentage, 100)).
+x86, pci: Correct spelling in a comment
 
-Reading /sys/class/power_supply/BAT0/* my battery reported:
+Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+LKML-Reference: <200910032045.02523.mitov@issp.bas.bg>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+======================================================
 
-	charge_full = 5980000
-	charge_full_design = 7650000
 
-I let my battery discharge a little bit and then I started charging it.
-At the same time, I read charge_now every second:
-
-...
-5850000 (charging)
-5850000 (charging)
-5850000 (charging)
-...
-5900000 (charging)
-5900000 (charging)
-5900000 (charging)
-...
-5950000 (charging)
-5950000 (charging)
-5950000 (charging)
-7650000 (charged)
-7650000 (charged)
-7650000 (charged)
-7650000 (charged)
-...
-
-So I discovered that the battery wrongly returns charge_full_design when
-completely charged instead of charge_full.
-
-This patch fixes this by returning min(capacity_now, full_charge_capacity)
-on both procfs and sysfs.
-
-Now the userspace plugins report the correct 100% and their userspace check
-may not be needed (if this error is the only one producing >100% results).
-
-Signed-off-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 ---
- drivers/acpi/battery.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ arch/x86/kernel/pci-dma.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---- linux-2.6.31.1/drivers/acpi/battery.c.old	2009-10-04 15:50:37.743999621 +0200
-+++ linux-2.6.31.1/drivers/acpi/battery.c	2009-10-04 16:33:47.843696066 +0200
-@@ -210,7 +210,10 @@ static int acpi_battery_get_property(str
- 		break;
- 	case POWER_SUPPLY_PROP_CHARGE_NOW:
- 	case POWER_SUPPLY_PROP_ENERGY_NOW:
--		val->intval = battery->capacity_now * 1000;
-+		/* broken batteries return the design_capacity
-+		as capacity_now when completely charged */
-+		val->intval = min(battery->capacity_now,
-+				  battery->full_charge_capacity) * 1000;
- 		break;
- 	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		val->strval = battery->model_number;
-@@ -617,8 +620,12 @@ static int acpi_battery_print_state(stru
- 	if (battery->capacity_now == ACPI_BATTERY_VALUE_UNKNOWN)
- 		seq_printf(seq, "remaining capacity:      unknown\n");
- 	else
-+		/* broken batteries return the design_capacity
-+		as capacity_now when completely charged */
- 		seq_printf(seq, "remaining capacity:      %d %sh\n",
--			   battery->capacity_now, acpi_battery_units(battery));
-+			   min(battery->capacity_now,
-+			       battery->full_charge_capacity),
-+			   acpi_battery_units(battery));
- 	if (battery->voltage_now == ACPI_BATTERY_VALUE_UNKNOWN)
- 		seq_printf(seq, "present voltage:         unknown\n");
- 	else
-
-
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 64b838e..d20009b 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -35,7 +35,7 @@ int iommu_detected __read_mostly = 0;
+ 
+ /*
+  * This variable becomes 1 if iommu=pt is passed on the kernel command line.
+- * If this variable is 1, IOMMU implementations do no DMA ranslation for
++ * If this variable is 1, IOMMU implementations do no DMA translation for
+  * devices and allow every device to access to whole physical memory. This is
+  * useful if a user want to use an IOMMU only for KVM device assignment to
+  * guests and not for driver dma translation.
