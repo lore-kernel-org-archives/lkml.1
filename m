@@ -1,211 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbZJDRm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbZJDRrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757536AbZJDRm2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 13:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbZJDRm1
+	id S1757296AbZJDRrV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 13:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZJDRrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 13:42:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38389 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752753AbZJDRm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 13:42:26 -0400
-Date: Sun, 4 Oct 2009 19:41:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Justin Mattock <justinmattock@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: system gets stuck in a lock during boot
-Message-ID: <20091004174113.GB24418@elte.hu>
-References: <4A922F82.9080000@cn.fujitsu.com> <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com> <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com> <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com> <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com> <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com> <20091002211211.GA2633@redhat.com>
+	Sun, 4 Oct 2009 13:47:20 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:50842 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752995AbZJDRrT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 13:47:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=iaSH3TmIMZsGzhPGMBeD/1fALGcHDbIwN7p2UABSaCg/JqBkBgNKfRrgs6aHHrAnXM
+         yYs81iPsNPT3UhkkfLaKzGxLcmr3MhU6Nr4hVpvSL8s4jJCzagfH61NCRSJNrcBMEVGr
+         XajtPPZsF/qwI+fiHSn1eq2tXNHzkAhfXbNi0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091002211211.GA2633@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091004164553.GD10505@khazad-dum.debian.net>
+References: <1254669853.26496.0.camel@carter>
+	 <20091004164553.GD10505@khazad-dum.debian.net>
+Date: Sun, 4 Oct 2009 19:46:42 +0200
+Message-ID: <ca2dc2820910041046i47a1c3dhba82266bb14a440c@mail.gmail.com>
+Subject: Re: [PATCH] battery: Fix charge_now returned by broken batteries
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Oct 4, 2009 at 6:45 PM, Henrique de Moraes Holschuh
+<hmh@hmh.eng.br> wrote:
+> On Sun, 04 Oct 2009, Miguel Ojeda wrote:
+>> Some broken batteries like my DELL NR2227 or a friend's DELL GK4798 return
+>> the design_capacity (charge_full_design) as capacity_now (charge_now)
+>> when completely charged.
+>>
+>> I noticed this when looking at a battery plugin that reported "127% charged".
+>> Some of these plugins have already "fixed" this in userspace by coding
+>> something like min(percentage, 100)).
+>
+> A battery can be charged above 100%.  It just depends what you call 100%,
+> and the "I am full" level *varies* in a non-monotonic way during the battery
+> lifetime...
+>
+> So, if you don't want to see > 100%, you have to clamp it to 100% and lose
+> information (when your "100%" level is actually increasing as the thing
+> keeps charging and you keep raising the baseline so that it doesn't go over
+> 100%).
 
-* Jason Baron <jbaron@redhat.com> wrote:
+If the 100% level increased, then full_charge_capacity (a.k.a. "_last_
+full capacity" as seen in /proc) will increase as well, won't it? If
+the battery went over that 100% that means there is a "new" 100%, why
+are we losing information?.
 
-> On Mon, Sep 07, 2009 at 02:49:44PM -0700, Justin Mattock wrote:
-> > >>
-> > >> * Justin P. Mattock<justinmattock@gmail.com>  wrote:
-> > >>
-> > >>
-> > >>>
-> > >>> Ingo Molnar wrote:
-> > >>>
-> > >>>>
-> > >>>> * Justin Mattock<justinmattock@gmail.com>   wrote:
-> > >>>>
-> > >>>>
-> > >>>>
-> > >>>>>
-> > >>>>> O.K. I feel better, deleted
-> > >>>>> my system, and threw in a minimal built system
-> > >>>>> with only the bare essentials to boot.
-> > >>>>> (just to make sure things are correct).
-> > >>>>>
-> > >>>>> unfortunately after building rc6 I'm still hitting
-> > >>>>> this. really am not sure why this is happening.
-> > >>>>>
-> > >>>>>
-> > >>>>
-> > >>>> Could you please double-check the bisection result by doing this:
-> > >>>>
-> > >>>>   git revert af6af30c0f
-> > >>>>
-> > >>>> on the latest kernel and seeing whether that fixes the lockup?
-> > >>>>
-> > >>>> Bisections are very efficient and hence very sensitive as well to
-> > >>>> minimal errors. Just one small mistake near the end of a bisection
-> > >>>> can blame the wrong commit.
-> > >>>>
-> > >>>> So the best way to double-check such 100%-triggerable crashes is to
-> > >>>> do the revert. I tried the revert and it can be done fine here.
-> > >>>>
-> > >>>> [ _If_ that does not fix the bug then to save time you can
-> > >>>>     'backtrack' the bisection, instead of re-doing it completely.
-> > >>>>     I.e. you have your bisection log, re-check the final steps going
-> > >>>>     backwards. Once you find a discrepancy (i.e. a 'bad' point that
-> > >>>>     is 'good' or the other way around), redo the bisection log
-> > >>>>     commands up to that point and continue it up to the end. ]
-> > >>>>
-> > >>>>        Ingo
-> > >>>>
-> > >>>>
-> > >>>>
-> > >>>
-> > >>> shoot, I did not see your post here. when looking at my bisect
-> > >>> log, I guess after a git bisect reset it clears?
-> > >>>
-> > >>> Anyways after git bisect had finished I looked manually at the
-> > >>> commits that it had generated the one which I had sent in a post
-> > >>> previously, and this one:
-> > >>>
-> > >>>  9424edc2da097c8589fcc24a72552d33e54be161
-> > >>>
-> > >>
-> > >> (this commit has no effect on your kernel image, at all.)
-> > >>
-> > >>
-> > >
-> > > yep. but it was worth a try.
-> > >>>
-> > >>> at the time looking at the commit, I see this to be more of the
-> > >>> cause because of it being related to elf as so forth, but as soon
-> > >>> as I reverted this on rc6 made no difference.(the previous commit
-> > >>> fixes this for me, on a regular tar.ball as well as in git.
-> > >>>
-> > >>> I think at this point since this system is a fresh from scratch
-> > >>> build, I think something might be wrong that I'm doing (all the
-> > >>> CFLAGS, and such are in a previous post).
-> > >>>
-> > >>> At the moment I don't have a problem applying a patch to the
-> > >>> kernel for this. especially since I'm the only one that seems to
-> > >>> be hitting this, then if more and more reports of this happen then
-> > >>> we can go from there.
-> > >>>
-> > >>
-> > >> What would be nice is to verify your bisection end result, i.e. do
-> > >> what i suggested:
-> > >>
-> > >>
-> > >
-> > > yeah I've done this on both kernels three to be exact, and all boot after
-> > > reverting
-> > > Fix perf-tracepoint OOPS.
-> > >
-> > > As for my system, I'm still convinced that I might be doing something wrong
-> > > over here.
-> > >
-> > >>>> Could you please double-check the bisection result by doing this:
-> > >>>>
-> > >>>>   git revert af6af30c0f
-> > >>>>
-> > >>>> on the latest kernel and seeing whether that fixes the lockup?
-> > >>>>
-> > >>
-> > >> if this doesnt fix it on latest -git then this commit is not the
-> > >> cause of the lockup.
-> > >>
-> > >>        Ingo
-> > >>
-> > >>
-> > >
-> > > This commit(Fix perf-tracepoint OOPS.)does fix my stuckage, but I'm left, as
-> > > well as others asking
-> > > the question of why.
-> > > In any case I still think I'm setting something wrong with either gcc, or
-> > > something
-> > > that might be causing this from userland.
-> > >
-> > > Justin P. Mattock
-> > >
-> > 
-> > O.k. here something awkward about this issue I was
-> > experiencing. at the moment I have two imac's
-> > here the descriptions:
-> > 
-> > imac A) the one with the problem
-> > 
-> > OS: built from the clfs book
-> > x86_64 multilib with only lib64
-> > 
-> > built everything with these flags:
-> > CFLAGS="-m64 -mtune=core2 -march=core2
-> > -mfpmath=both -O2 -pipe -fomit-frame-pointer
-> > -fstack-protection"
-> > CXXFLAGS="${CFLAGS}" MAKEOPTS="{-j3}"
-> > while compiling everything with
-> > gcc version: 4.5.0 20090730
-> > 
-> > 
-> > imac B) the one that works
-> > 
-> > OS: clfs(just built a few days ago)
-> > x86_64 pure64 bit build
-> > (lib with a symlink to lib64)
-> > CFLAGS="-m64 -mtune=core2 -march=core2
-> >  -O2 -pipe -fomit-frame-pointer"
-> > CXXFLAGS="${CFLAGS}" MAKEOPTS="{-j3}"
-> > gcc version: 4.4.1 (GCC for Cross-LFS 4.4.1.20090722)
-> > 
-> > The only things I can think of is either I hit something
-> > because of gcc, something goes wrong with the libraries,
-> > or there something happening with either the option
-> > of mfpmath=both or stackprotection.
-> > 
-> > At this point since the kernel seems to be running fine,
-> > is to just trash the system that has this issue and just leave
-> > it at, I was hitting some weird anomaly.
-> > 
-> 
-> hi Justin,
-> 
-> I've been playing around with gcc '4.5' as well and hit a panic that
-> looks very similar to what you've seen with stock 2.6.31 - I haven't
-> seen it anywhere else. Anyways, it seems to be some sort of alignment
-> issue with the 'struct ftrace_event_call'. I'm not sure yet if this is a
-> compiler or kernel issue. But the following kernel patch fixes the issue
-> for me. It would be interesting to verify if the patch also resolves the
-> issue for you.
+I am asking, I am not an expert on battery stuff.
 
-Would be nice to know precisely what kind of problem is being hit here - 
-we'd like to fix either the kernel or GCC - depending on where the bug 
-lies.
+>
+>> So I discovered that the battery wrongly returns charge_full_design when
+>> completely charged instead of charge_full.
+>
+> Ick.
+>
+>> This patch fixes this by returning min(capacity_now, full_charge_capacity)
+>> on both procfs and sysfs.
+>
+> What will it cause on non-broken batteries?  Or during gauge reset, when any
+> battery that updates full_charge_capacity only at the end of the cycle will
+> really have capacity_now > full_charge_capacity ?
 
-	Ingo
+Well, does it make sense to have capacity_now higher than
+full_charge_capacity? Wouldn't that information be broken too?
+
+Again, I am just wondering.
+
+>
+>> Now the userspace plugins report the correct 100% and their userspace check
+>> may not be needed (if this error is the only one producing >100% results).
+>
+> Like I said, > 100% can happen, unless what you define to be 100% is very
+> elastic (and gets updated all the time).
+
+I still think it does not make sense to have a battery charged over
+its 100% capacity whatever the definition of 100% is. Maybe I do not
+understand your point.
+
+>
+> --
+>  "One disk to rule them all, One disk to find them. One disk to bring
+>  them all and in the darkness grind them. In the Land of Redmond
+>  where the shadows lie." -- The Silicon Valley Tarot
+>  Henrique Holschuh
+>
