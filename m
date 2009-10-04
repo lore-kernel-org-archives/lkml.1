@@ -1,90 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbZJDMP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZJDMQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755548AbZJDMP0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbZJDMPZ
+	id S1755435AbZJDMQr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZJDMQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:15:25 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:56095 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752255AbZJDMPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 08:15:24 -0400
-Message-ID: <4AC891B4.20407@msgid.tls.msk.ru>
-Date: Sun, 04 Oct 2009 16:14:44 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Sun, 4 Oct 2009 08:16:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:48933 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbZJDMQp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 08:16:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=WNfF1d5VHt1nh6Tkh0WTlFH2dzkGfm5R3mPtcOaDGyBWuwR8UtXfOUJYzA14wL5/V2
+         P133dT4laOhPITlNSpTzBzzeGeYtSZT+dFs38LZH1PXyJSApNC8jdIH5muTDg3CVquuj
+         a/DG2wAp32DdGMcCg+RiwdCl+Sctt4eQAQa2k=
+Message-ID: <4AC891B9.7090108@gmail.com>
+Date: Sun, 04 Oct 2009 14:14:49 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #14270] Cannot boot on a PIII Celeron
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>	 <COE24pZSBH.A.7sH.xMTxKB@chimera>	 <aa79d98a0910020130p4d3c5b5fh9597ea435db7f872@mail.gmail.com>	 <4AC5C42E.9070909@msgid.tls.msk.ru>	 <4AC5D810.3080307@msgid.tls.msk.ru> <aa79d98a0910020355r31b37ea0v1fef7286f7a71508@mail.gmail.com> <4AC5DCFD.4010107@msgid.tls.msk.ru>
-In-Reply-To: <4AC5DCFD.4010107@msgid.tls.msk.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Neil Horman <nhorman@tuxdriver.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/3] extend get/setrlimit to support setting rlimits external
+ to a process (v3)
+References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org> <20091001171644.GC2456@hmsreliant.think-freely.org>
+In-Reply-To: <20091001171644.GC2456@hmsreliant.think-freely.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev wrote:
-> Cyrill Gorcunov wrote:
->> On 10/2/09, Michael Tokarev <mjt@tls.msk.ru> wrote:
->>> Michael Tokarev wrote:
->>>> Cyrill Gorcunov wrote:
->>>>> On 10/1/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>>>>> This message has been generated automatically as a part of a report
->>>>>> of regressions introduced between 2.6.30 and 2.6.31.
->>>>>>
->>>>>> The following bug entry is on the current list of known regressions
->>>>>> introduced between 2.6.30 and 2.6.31.  Please verify if it still 
->>>>>> should
->>>>>> be listed and let me know (either way).
->>>>> Michael has been asked to bisect it (if possible). I cant reproduce it
->>>>> in kvm unfortunately.
->>>> Yes, and that's what I'll be trying to do shortly.
->>>> I had other issues to sort out and wasn't able to
->>>> get to it in few last days.
->>>>
->>>> Also I've a few other suspects.  For example, in this .31
->>>> config I changed from bzip to lzma compression - and that's
->>>> where (or near) kernel is rebooting.
->>> And that was the problem.  After switching from LZMA
->>> to BZIP2 kernel boots again.
->>>
->>> Dunno if it can be treated as a regression, but it's
->>> definitely a bug.
->>
->> thanks for tracking it down Michael!
->> Rafael, who is responsible for LZMA now?
->> Cc him please.
-> 
-> Please hold on for a while.
-> 
-> I switched to BZIP2, it booted fine.  I switched back to LZMA -
-> and that one now boots too.  Original bzImage, which were built
-> by the same compiler from the same source using the same
-> options reboots.
-> 
-> So um... I'm now trying to reproduce it ;)
+Neil Horman wrote:
+> Augment /proc/<pid>/limits file to support limit setting
+>(...)
+>  /* Display limits for a process */
+> -static int proc_pid_limits(struct task_struct *task, char *buffer)
+> +static ssize_t proc_pid_limit_read(struct file *file, char __user *buf,
+> +			size_t count, loff_t *ppos)
+>  {
+>  	unsigned int i;
+> -	int count = 0;
+>  	unsigned long flags;
+> -	char *bufptr = buffer;
+> +	char *bufptr;
+> +	size_t bcount = 0;
+> +	size_t ccount = 0;
+> +	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
+>  
+>  	struct rlimit rlim[RLIM_NLIMITS];
+>  
+> +	bufptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
+> +	if (!bufptr)
+> +		goto out;
+> +
+>  	if (!lock_task_sighand(task, &flags))
+> -		return 0;
+> +		goto out;
 
-I performed about 20 kernel recompiles, and finally have some "statistics".
-The problem is almost reproduceable, in a sense that I was able to get 6
-more cases behaving the same way (rebooting right at early boot on a cel).
-And all 3 "non-working" cases were with ccache.  Ie, about half out of ~25
-compiles done with ccache, and 7 of the resulting kernels are buggy.  No
-single failure without ccache so far.
+memory leak (bufptr)
 
-Maybe it's some stale .o file cached by ccache (and it indeed looks like
-that) -- I didn't try to remove the cache yet (but my guess is that I
-wont be able to reproduce the issue with clean cache anymore).
+>  	memcpy(rlim, task->signal->rlim, sizeof(struct rlimit) * RLIM_NLIMITS);
+>  	unlock_task_sighand(task, &flags);
+>  
+>  	/*
+>  	 * print the file header
+>  	 */
+> -	count += sprintf(&bufptr[count], "%-25s %-20s %-20s %-10s\n",
+> +	bcount += sprintf(&bufptr[bcount], "%-25s %-20s %-20s %-10s\n",
+>  			"Limit", "Soft Limit", "Hard Limit", "Units");
+>  
+>  	for (i = 0; i < RLIM_NLIMITS; i++) {
+>  		if (rlim[i].rlim_cur == RLIM_INFINITY)
+> -			count += sprintf(&bufptr[count], "%-25s %-20s ",
+> +			bcount += sprintf(&bufptr[bcount], "%-25s %-20s ",
+>  					 lnames[i].name, "unlimited");
+>  		else
+> -			count += sprintf(&bufptr[count], "%-25s %-20lu ",
+> +			bcount += sprintf(&bufptr[bcount], "%-25s %-20lu ",
+>  					 lnames[i].name, rlim[i].rlim_cur);
+>  
+>  		if (rlim[i].rlim_max == RLIM_INFINITY)
+> -			count += sprintf(&bufptr[count], "%-20s ", "unlimited");
+> +			bcount += sprintf(&bufptr[bcount], "%-20s ",
+> +					 "unlimited");
+>  		else
+> -			count += sprintf(&bufptr[count], "%-20lu ",
+> +			bcount += sprintf(&bufptr[bcount], "%-20lu ",
+>  					 rlim[i].rlim_max);
+>  
+>  		if (lnames[i].unit)
+> -			count += sprintf(&bufptr[count], "%-10s\n",
+> +			bcount += sprintf(&bufptr[bcount], "%-10s\n",
+>  					 lnames[i].unit);
+>  		else
+> -			count += sprintf(&bufptr[count], "\n");
+> +			bcount += sprintf(&bufptr[bcount], "\n");
+> +	}
+> +
+> +	if (*ppos >= bcount)
+> +		goto out_task;
 
-What puzzles me most is the "failure mode".  The difference between the
-two processors is minimal.  Having a corrupt .o file and almost-working
-kernel is almost impossible by its own.  And hitting this difference with
-a corrupt .o file is.. unbelievable.
+again
 
-So I'm declaring it's a false alarm for now, and closing the bug.
+> +
+> +	ccount = min(count, (size_t)(bcount-(*ppos)));
+> +	ccount = ccount - copy_to_user(buf, &bufptr[*ppos], ccount);
+> +	*ppos += ccount;
+> +	kfree(bufptr);
+> +out_task:
+> +	put_task_struct(task);
+> +out:
+> +	return ccount;
+> +}
+> +
+> +static ssize_t proc_pid_limit_write(struct file *file, const char __user *buf,
+> +		size_t count, loff_t *ppos)
+> +{
+> +	char *buffer;
+> +	char *element, *vmc, *vmm;
+> +	struct rlimit new_rlim;
+> +	unsigned long flags;
+> +	int i;
+> +	int index = -1;
+> +	size_t wcount = 0;
+> +	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
+> +
+> +
+> +	if (*ppos != 0)
+> +		goto out;
+> +
+> +	if (count > 128)
+> +		goto out;
+> +	buffer = kzalloc(128, GFP_KERNEL);
+> +
+> +	if (!buffer)
+> +		goto out;
 
-/mjt
+element, vmc, vmm are not initialized and you kfree them in this case
+
+> +
+> +	element = kzalloc(sizeof(buffer), GFP_KERNEL);
+> +	vmc = kzalloc(sizeof(buffer), GFP_KERNEL);
+> +	vmm = kzalloc(sizeof(buffer), GFP_KERNEL);
+
+sizeof(buffer) == 4 or 8 - pretty short buffer...
+
+> +
+> +	if (!element || !vmm || !vmc)
+> +		goto out_free;
+> +
+> +	wcount = count - copy_from_user(buffer, buf, count);
+> +	if (wcount < count)
+> +		goto out_free;
+
+copy_from_user usage usually looks like:
+if (copy_from_user()) {
+	ret = -EFAULT;
+	goto err;
+}
+you don't seem to use copy_from_user return value for anything useful
+
+> +
+> +	i = sscanf(buffer, "%s %s %s", element, vmc, vmm);
+
+what if user pass strings longer than size of buffers?
+
+> +
+> +	if (i < 3)
+> +		goto out_free;
+> +
+> +	for (i = 0; i <= strlen(element); i++)
+> +		element[i] = tolower(element[i]);
+
+it's harmless, but should be "i < strlen"
+
+> +
+> +	if (!strncmp(vmc, "unlimited", 9))
+> +		new_rlim.rlim_cur = RLIM_INFINITY;
+> +	else
+> +		new_rlim.rlim_cur = simple_strtoull(vmc, NULL, 10);
+> +
+> +	if (!strncmp(vmm, "unlimited", 9))
+> +		new_rlim.rlim_max = RLIM_INFINITY;
+> +	else
+> +		new_rlim.rlim_max = simple_strtoull(vmm, NULL, 10);
+> +
+> +	for (i = 0; i < RLIM_NLIMITS; i++) {
+> +		if ((lnames[i].match) &&
+> +		    !strncmp(element, lnames[i].match,
+> +		     strlen(lnames[i].match))) {
+> +			index = i;
+> +			break;
+> +		}
+>  	}
+>  
+> +	if (!lock_task_sighand(task, &flags))
+> +		goto out_free;
+> +
+> +	if ((index >= 0) && (index < RLIM_NLIMITS))
+> +		do_setrlimit(index, &new_rlim, task);
+> +
+> +	unlock_task_sighand(task, &flags);
+> +
+> +out_free:
+> +	kfree(element);
+> +	kfree(vmc);
+> +	kfree(vmm);
+> +	kfree(buffer);
+> +out:
+> +	*ppos += count;
+> +	put_task_struct(task);
+>  	return count;
+>  }
+>  
+> (...)
