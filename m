@@ -1,80 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbZJDNol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbZJDOiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbZJDNol (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 09:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbZJDNok
+	id S1753577AbZJDOiZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 10:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZJDOiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 09:44:40 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:45357 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756674AbZJDNoj convert rfc822-to-8bit (ORCPT
+	Sun, 4 Oct 2009 10:38:24 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:40803 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752528AbZJDOiX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 09:44:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=TZ5j5Gm0hxK2Ru1jGLlE4KIHffgyArtb87+uYmfUtmKZ3JdbZo7qQgHS+eXPgb5Oah
-         OZ3ZiVbLAnHKgCvheeTt5SjwvOMMxM9KN3FyLNAu9Dk6abscg7LriCtam3MtZLgVroTs
-         PMNQjE7JxcdgsGr2UCXuXeB275VdfQ0otRJk0=
-From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400 laptops
-Date: Sun, 4 Oct 2009 15:43:57 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-rc2; KDE/4.3.2; x86_64; ; )
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Eric Anholt <eric@anholt.net>
-References: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
-In-Reply-To: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200910041543.57479.a.miskiewicz@gmail.com>
+	Sun, 4 Oct 2009 10:38:23 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgkFAHdLyEpMROOX/2dsb2JhbACBUs4FhCoE
+Date: Sun, 4 Oct 2009 10:37:45 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Userspace RCU: (ab)using futexes to save cpu cycles and
+	energy
+Message-ID: <20091004143745.GA19785@Krystal>
+References: <20090923174820.GA12827@Krystal> <20091001144037.GB6205@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091001144037.GB6205@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 10:16:01 up 47 days,  1:05,  2 users,  load average: 0.96, 0.38,
+	0.23
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 03 of October 2009, Theodore Ts'o wrote:
-> Hi,
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Wed, Sep 23, 2009 at 01:48:20PM -0400, Mathieu Desnoyers wrote:
+> > Hi,
+> > 
+> > When implementing the call_rcu() "worker thread" in userspace, I ran
+> > into the problem that it had to be woken up periodically to check if
+> > there are any callbacks to execute. However, I easily imagine that this
+> > does not fit well with the "green computing" definition.
+> > 
+> > Therefore, I've looked at ways to have the call_rcu() callers waking up
+> > this worker thread when callbacks are enqueued. However, I don't want to
+> > take any lock and the fast path (when no wake up is required) should not
+> > cause any cache-line exchange.
+> > 
+> > Here are the primitives I've created. I'd like to have feedback on my
+> > futex use, just to make sure I did not do any incorrect assumptions.
+> > 
+> > This could also be eventually used in the QSBR Userspace RCU quiescent
+> > state and in mb/signal userspace RCU when exiting RCU read-side C.S. to
+> > ensure synchronize_rcu() does not busy-wait for too long.
+> > 
+> > /*
+> >  * Wake-up any waiting defer thread. Called from many concurrent threads.
+> >  */
+> > static void wake_up_defer(void)
+> > {
+> >         if (unlikely(atomic_read(&defer_thread_futex) == -1))
+> >                 atomic_set(&defer_thread_futex, 0);
+> >                 futex(&defer_thread_futex, FUTEX_WAKE,
+> >                       0, NULL, NULL, 0);
+> > }
+> > 
+> > /*
+> >  * Defer thread waiting. Single thread.
+> >  */
+> > static void wait_defer(void)
+> > {
+> >         atomic_dec(&defer_thread_futex);
+> >         if (atomic_read(&defer_thread_futex) == -1)
+> >                 futex(&defer_thread_futex, FUTEX_WAIT, -1,
+> >                       NULL, NULL, 0);
+> > }
 > 
-> In recent kernels, my X display (running with a KMS-enabled X server)
-> has been very jittery and with lots of glitching and tearing --- sorry
-> if this isn't the correct technical term, not sure what it is --- on my
-> T400 Lenovo laptop.   It seems related to what is on the desktop, and
-> moving the mouse does seem to affect the rate and percentage of the
-> screen which jitters --- which is enough to be very distracting,
-> although I can still read the contents of the windows where the screen
-> is tearing/glitching/flashing.
-> 
-> I bisected it down to this commit:
-> 
-> 74dff282237ea8c0a5df1afd8526eac4b6cee063 is the first bad commit
-> commit 74dff282237ea8c0a5df1afd8526eac4b6cee063
-> Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Date:   Mon Sep 14 15:39:40 2009 -0700
-> 
->     drm/i915: framebuffer compression for GM45+
+> The standard approach would be to use pthread_cond_wait() and
+> pthread_cond_broadcast().  Unfortunately, this would require holding a
+> pthread_mutex_lock across both operations, which would not necessarily
+> be so good for wake-up-side scalability.
 
-Disabling compression works fine (as temporary workaround until the issue is 
-solved).
+The pthread_cond_broadcast() mutex is really a bugger when it comes to
+execute it at each rcu_read_unlock(). We could as well use a mutex to
+protect the whole read-side.. :-(
 
-diff --git a/drivers/gpu/drm/i915/intel_display.c 
-b/drivers/gpu/drm/i915/intel_display.c
-index 7a5fb79..075092b 100644
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -4165,7 +4165,7 @@ static void intel_init_display(struct drm_device *dev)
- 
- 	/* Only mobile has FBC, leave pointers NULL for other chips */
- 	if (IS_MOBILE(dev)) {
--		if (IS_GM45(dev)) {
-+		if (0 && IS_GM45(dev)) {
- 			dev_priv->display.fbc_enabled = g4x_fbc_enabled;
- 			dev_priv->display.enable_fbc = g4x_enable_fbc;
- 			dev_priv->display.disable_fbc = g4x_disable_fbc;
+> 
+> That said, without this sort of heavy-locking approach, wakeup races
+> are quite difficult to avoid.
+> 
 
+I did a formal model of my futex-based wait/wakeup. The main idea is
+that the waiter:
+
+- Set itself to "waiting"
+- Checks the "real condition" for which it will wait (e.g. queues empty
+  when used for rcu callbacks, no more ongoing old reader thread C.S.
+  when used in synchronize_rcu())
+- Calls sys_futex if the variable have not changed.
+
+And the waker:
+- sets the "real condition" waking up the waiter (enqueuing, or
+  rcu_read_unlock())
+- check if the waiter must be woken up, if so, wake it up by setting the
+  state to "running" and calling sys_futex.
+
+But as you say, wakeup races are difficult (but not impossible!) to
+avoid. This is why I resorted to a formal model of the wait/wakeup
+scheme to ensure that we cannot end up in a situation where a waker
+races with the waiter and does not wake it up when it should. This is
+nothing fancy (does not model memory and instruction reordering
+automatically), but I figure that memory barriers are required between
+almost every steps of this algorithm, so by adding smp_mb() I end up
+ensure sequential behavior. I added test cases in the model to ensure
+that incorrect memory reordering _would_ cause errors by doing the
+reordering by hand in error-injection runs.
+
+The model is available at:
+http://www.lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=tree;f=futex-wakeup;h=4ddeaeb2784165cb0465d4ca9f7d27acb562eae3;hb=refs/heads/formal-model
+
+(this is in the formal-model branch of the urcu tree, futex-wakeup
+subdir)
+
+This is modeling this snippet of code :
+
+static int defer_thread_futex;
+
+/*
+ * Wake-up any waiting defer thread. Called from many concurrent threads.
+ */
+static void wake_up_defer(void)
+{
+        if (unlikely(uatomic_read(&defer_thread_futex) == -1)) {
+                uatomic_set(&defer_thread_futex, 0);
+                futex(&defer_thread_futex, FUTEX_WAKE, 1,
+                      NULL, NULL, 0);
+        }
+}
+
+static void enqueue(void *callback)	/* not the actual types */
+{
+	add_to_queue(callback);
+	smp_mb();
+	wake_up_defer();
+}
+
+/*
+ * rcu_defer_num_callbacks() returns the total number of callbacks
+ * enqueued.
+ */
+
+/*
+ * Defer thread waiting. Single thread.
+ */
+static void wait_defer(void)
+{
+        uatomic_dec(&defer_thread_futex);
+        smp_mb();       /* Write futex before read queue */
+        if (rcu_defer_num_callbacks()) {
+                smp_mb();       /* Read queue before write futex */
+                /* Callbacks are queued, don't wait. */
+                uatomic_set(&defer_thread_futex, 0);
+        } else {
+                smp_rmb();      /* Read queue before read futex */
+                if (uatomic_read(&defer_thread_futex) == -1)
+                        futex(&defer_thread_futex, FUTEX_WAIT, -1,
+                              NULL, NULL, 0);
+        }
+}
+
+
+Comments are welcome,
+
+Thanks,
+
+Mathieu
+
+> 							Thanx, Paul
 
 -- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
