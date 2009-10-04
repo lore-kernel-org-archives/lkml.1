@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbZJDSG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbZJDSYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbZJDSG6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 14:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbZJDSG5
+	id S1757539AbZJDSYl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 14:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbZJDSYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 14:06:57 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:41590 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbZJDSG5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 14:06:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=HibhI1IIsXg45vTEJOGoOrOeTLF2ABxrWvYAm9P7uJeB1BDTwREkb7uYX3bQA7b0YC
-         GP7yFbu/x4ZD9LP+dBYJfWNj2BUtDi1V3H0PU6+QLnjvMN/o0eGKEw1zBwzxJDZ6MMx2
-         YZB9ndvaUVc2NWYYuvL6LEhMKou1V/sxBoUXA=
-MIME-Version: 1.0
-In-Reply-To: <2f11576a0910040744u575d3afbwd2e27e811060f206@mail.gmail.com>
-References: <1254518602.5050.4.camel@hurina> <3e8340490910021901i35ba8a5v7647b1e02b054270@mail.gmail.com> 
-	<3DB386D4-C03F-4F2A-B0DD-7F4236325B4B@iki.fi> <3e8340490910021959n304e6870r6df97cfd637283c4@mail.gmail.com> 
-	<2f11576a0910040744u575d3afbwd2e27e811060f206@mail.gmail.com>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Sun, 4 Oct 2009 14:05:59 -0400
-Message-ID: <3e8340490910041105p327396e8v39b1a3454c0922bf@mail.gmail.com>
-Subject: Re: [PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
-To: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
-Cc: Timo Sirainen <tss@iki.fi>, linux-kernel@vger.kernel.org,
-       Ulrich Drepper <drepper@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 4 Oct 2009 14:24:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45488 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752464AbZJDSYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 14:24:40 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/xlM0Zd3fxdN/3+XgB5zvY1FmFpXtXkMiryMZoyg
+	VM+W8e5gjs6zB4
+Subject: Re: Do not overload dispatch queue (Was: Re: IO scheduler based IO
+ controller V10)
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       riel@redhat.com
+In-Reply-To: <20091004173901.GD26573@kernel.dk>
+References: <1254578553.7499.5.camel@marge.simson.net>
+	 <20091003142840.GE31616@kernel.dk>
+	 <1254581496.8293.8.camel@marge.simson.net>
+	 <20091003151445.GF31616@kernel.dk>
+	 <1254585420.7539.2.camel@marge.simson.net>
+	 <20091003173532.GG31616@kernel.dk>
+	 <1254596864.7153.9.camel@marge.simson.net>
+	 <20091003192321.GA26573@kernel.dk>
+	 <1254599386.7153.46.camel@marge.simson.net>
+	 <1254653434.7237.18.camel@marge.simson.net>
+	 <20091004173901.GD26573@kernel.dk>
+Content-Type: text/plain
+Date: Sun, 04 Oct 2009 20:23:42 +0200
+Message-Id: <1254680622.27889.2.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.72
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 4, 2009 at 10:44 AM, KOSAKI Motohiro
-<kosaki.motohiro@gmail.com> wrote:
-> Hi
->
->
->>>>> -       // If the nul at the end of args has been overwritten, then
->>>>> -       // assume application is using setproctitle(3).
->>>>> -       if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
->>>>> +       if (mm->arg_end != mm->env_start) {
->>>>> +               // PR_SET_PROCTITLE_AREA used
->>>>> +               res = strnlen(buffer, res);
->>>>
->>>> Is this check really needed? Surely it's enough to simply state that
->>>> behavior if the area isn't null-terminated is undefined.
->>>
->>> Well, that depends. I was hoping to use the syscall only once per process.
->>> That would allow me to just update the process title whenever I feel like
->>> it, possibly hundreds of times per second. This is much cheaper if I don't
->>> have to use a syscall every time.
->>>
->>> So if I'm setting the PR_SET_PROCTITLE_AREA initially to e.g. 1 kB memory
->>> area, without the above code ps will show it entirely regardless of any \0
->>> characters (because parameters are separated by \0).
->>
->> That makes sense - but note that it's not completely atomic still -
->> with a syscall you could insert some kind of barrier (rwsem?) to
->> ensure other processes don't see a halfway updated process name. With
->> infrequent updates this isn't a problem, but if you're really
->> intending to update it at a rate where syscall overhead becomes a
->> problem, then you're also going to see these kinds of issues as well.
->
->
-> Yes.  this patch seems buggy. The lock is necessary.
-> following scenario makes disaster, I think.
->
-> CPU0 (prctl caller)                                CPU1 (ps)
-> -------------------------------------------------------------------------------------------
-> mm->arg_start = arg2;
->                                                                len =
-> mm->arg_end - mm->arg_start; in proc_pid_cmdline()
-> mm->arg_end = arg3;
->
+On Sun, 2009-10-04 at 19:39 +0200, Jens Axboe wrote:
 
-Since len is unsigned and clamped to PAGE_SIZE, the worst this will do
-is expose one page of userspace memory starting at the new value of
-arg_start. Note that this can also happen currently, exposing one env
-variable, when all NULs in the argument array have been overwritten,
-but before the new NUL has been written (that is, there is no NUL
-terminator from arg_start until the end of envp[0]).
+> So I'll commit a change that doesn't do the delay at all, basically it
+> just offset the current code by one slice.
 
-It is, however, still undesirable, of course, particularly if
-userspace isn't prepared for this kind of thing to happen.
+Ok, when it hits block-for-linus, I'll take it out for a spin.
+
+	-Mike
+
