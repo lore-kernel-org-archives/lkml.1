@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932128AbZJDTD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbZJDTHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932128AbZJDTD4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 15:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbZJDTDz
+	id S1757794AbZJDTHb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 15:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757753AbZJDTHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 15:03:55 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48487 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756834AbZJDTDy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 15:03:54 -0400
-Date: Sun, 4 Oct 2009 21:03:04 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: Andreas Dilger <adilger@sun.com>, Valdis.Kletnieks@vt.edu,
-       linux@treblig.org, agruen@suse.de, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vfs: new O_NODE open flag
-Message-ID: <20091004190304.GJ1378@ucw.cz>
-References: <E1Mqpfq-0003uZ-Pw@pomaz-ex.szeredi.hu> <200909250223.58664.agruen@suse.de> <E1Mr3jF-0005G4-Sf@pomaz-ex.szeredi.hu> <20090925123747.GA31228@gallifrey> <9988.1253899252@turing-police.cc.vt.edu> <20090925183523.GA6065@gallifrey> <19645.1253913514@turing-police.cc.vt.edu> <E1MsDQ6-0001cY-92@pomaz-ex.szeredi.hu> <20090928152128.GA3384@webber.adilger.int> <E1MsIhu-0002AY-F2@pomaz-ex.szeredi.hu>
+	Sun, 4 Oct 2009 15:07:30 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:39631 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757748AbZJDTHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 15:07:30 -0400
+Date: Sun, 4 Oct 2009 21:06:53 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>, knikanth@suse.de
+Subject: Re: [bisected] commit: a9327cac440be4d8333bba975cbbf76045096275
+	causes   iostat output
+Message-ID: <20091004190653.GH26573@kernel.dk>
+References: <4e5e476b0910040349l21b69a97o7a11b2138bc8f573@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1MsIhu-0002AY-F2@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4e5e476b0910040349l21b69a97o7a11b2138bc8f573@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-09-28 18:04:10, Miklos Szeredi wrote:
-> On Mon, 28 Sep 2009, Andreas Dilger wrote:
-> > On Sep 28, 2009  12:25 +0200, Miklos Szeredi wrote:
-> > > BTW I just checked, and it is possible to re-open or promote an fd
-> > > opened with O_NODE like this:
-> > > 
-> > > 	char tmp[64];
-> > > 
-> > > 	fd = open(filename, O_NODE | O_NOACCESS);
-> > > 	/* ... */
-> > > 	sprintf(tmp, "/proc/self/fd/%i", fd);
-> > > 	fd_rw = open(tmp, O_RDWR);
-> > > 
-> > > Now fd_rw is guaranteed to refer to the same inode as fd.
-> > 
-> > It seems very unpleasant to require applications using O_NODE to
-> > reopen files using /proc.
+On Sun, Oct 04 2009, Corrado Zoccolo wrote:
+> Hi,
+> with 2.6.32-rc1 I started getting the following strange output from
+> "iostat -kx 2":
+> Linux 2.6.31bisect (et2) 	04/10/2009 	_i686_	(2 CPU)
 > 
-> The point of the above example was that reopening a file descriptor
-> with upgraded (or downgraded) access mode is even now possible.  Which
-> either means:
+> avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+>           10,70    0,00    3,16   15,75    0,00   70,38
 > 
->  a) the current permission model under /proc/PID/fd has a security
->     hole (which Jamie is worried about)
+> Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s
+> avgrq-sz avgqu-sz   await  svctm  %util
+> sda              18,22     0,00    0,67    0,01    14,77     0,02
+> 43,94     0,01   10,53 39043915,03 2629219,87
+> sdb              60,89     9,68   50,79    3,04  1724,43    50,52
+> 65,95     0,70   13,06 488437,47 2629219,87
+> 
+> avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+>            2,72    0,00    0,74    0,00    0,00   96,53
+> 
+> Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s
+> avgrq-sz avgqu-sz   await  svctm  %util
+> sda               0,00     0,00    0,00    0,00     0,00     0,00
+> 0,00     0,00    0,00   0,00 100,00
+> sdb               0,00     0,00    0,00    0,00     0,00     0,00
+> 0,00     0,00    0,00   0,00 100,00
+> 
+> avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+>            6,68    0,00    0,99    0,00    0,00   92,33
+> 
+> Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s
+> avgrq-sz avgqu-sz   await  svctm  %util
+> sda               0,00     0,00    0,00    0,00     0,00     0,00
+> 0,00     0,00    0,00   0,00 100,00
+> sdb               0,00     0,00    0,00    0,00     0,00     0,00
+> 0,00     0,00    0,00   0,00 100,00
+> 
+> avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+>            4,40    0,00    0,73    1,47    0,00   93,40
+> 
+> Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s
+> avgrq-sz avgqu-sz   await  svctm  %util
+> sda               0,00     0,00    0,00    0,00     0,00     0,00
+> 0,00     0,00    0,00   0,00 100,00
+> sdb               0,00     4,00    0,00    3,00     0,00    28,00
+> 18,67     0,06   19,50 333,33 100,00
+> 
+> Global values for service time and utilization are garbage. For
+> interval values, utilization is always 100%, and service time is
+> higher than normal.
+> 
+> I bisected it down to:
+> [a9327cac440be4d8333bba975cbbf76045096275] Seperate read and write
+> statistics of in_flight requests
+> and verified that reverting just that commit indeed solves the issue
+> on 2.6.32-rc1.
 
-I believe its bugtraq time. Being able to reopen file with additional
-permissions looks like  a security problem...
-
-Jamie, do you have some test script? And do you want your 15 minutes
- of bugtraq fame? ;-).
- 
-									Pavel
+I've reverted this commit since the next -rc is close, then we can debug
+and potentially re-introduce this change after that. Thanks a lot for
+reporting and bisecting it, too!
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jens Axboe
+
