@@ -1,185 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbZJDOiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbZJDOn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577AbZJDOiZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 10:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZJDOiY
+	id S1757068AbZJDOn2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 10:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbZJDOn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 10:38:24 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:40803 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752528AbZJDOiX (ORCPT
+	Sun, 4 Oct 2009 10:43:27 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:52887 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753654AbZJDOnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 10:38:23 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgkFAHdLyEpMROOX/2dsb2JhbACBUs4FhCoE
-Date: Sun, 4 Oct 2009 10:37:45 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Userspace RCU: (ab)using futexes to save cpu cycles and
-	energy
-Message-ID: <20091004143745.GA19785@Krystal>
-References: <20090923174820.GA12827@Krystal> <20091001144037.GB6205@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 4 Oct 2009 10:43:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=u+bluVUOojChKURQnEYc4zR3fieux1yUAR2p8suXQaD1hLFwYUAw7W62PkzadBZSAA
+         /PGOarKumy1BGchZWT/VLk2lue8toGTtzF6WKj6Gagb0oGJdogYBzs7MtaD0vzjCM+VT
+         E5yyJAwVzCwb2qx0V400XNoERuEEW89XhZD0s=
+Message-ID: <4AC8B4A8.3050601@tuffmail.co.uk>
+Date: Sun, 04 Oct 2009 15:43:52 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+MIME-Version: 1.0
+To: pm list <linux-pm@lists.linux-foundation.org>
+CC: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.32-rc1: various BUGs on resume from hibernation
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20091001144037.GB6205@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:16:01 up 47 days,  1:05,  2 users,  load average: 0.96, 0.38,
-	0.23
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Wed, Sep 23, 2009 at 01:48:20PM -0400, Mathieu Desnoyers wrote:
-> > Hi,
-> > 
-> > When implementing the call_rcu() "worker thread" in userspace, I ran
-> > into the problem that it had to be woken up periodically to check if
-> > there are any callbacks to execute. However, I easily imagine that this
-> > does not fit well with the "green computing" definition.
-> > 
-> > Therefore, I've looked at ways to have the call_rcu() callers waking up
-> > this worker thread when callbacks are enqueued. However, I don't want to
-> > take any lock and the fast path (when no wake up is required) should not
-> > cause any cache-line exchange.
-> > 
-> > Here are the primitives I've created. I'd like to have feedback on my
-> > futex use, just to make sure I did not do any incorrect assumptions.
-> > 
-> > This could also be eventually used in the QSBR Userspace RCU quiescent
-> > state and in mb/signal userspace RCU when exiting RCU read-side C.S. to
-> > ensure synchronize_rcu() does not busy-wait for too long.
-> > 
-> > /*
-> >  * Wake-up any waiting defer thread. Called from many concurrent threads.
-> >  */
-> > static void wake_up_defer(void)
-> > {
-> >         if (unlikely(atomic_read(&defer_thread_futex) == -1))
-> >                 atomic_set(&defer_thread_futex, 0);
-> >                 futex(&defer_thread_futex, FUTEX_WAKE,
-> >                       0, NULL, NULL, 0);
-> > }
-> > 
-> > /*
-> >  * Defer thread waiting. Single thread.
-> >  */
-> > static void wait_defer(void)
-> > {
-> >         atomic_dec(&defer_thread_futex);
-> >         if (atomic_read(&defer_thread_futex) == -1)
-> >                 futex(&defer_thread_futex, FUTEX_WAIT, -1,
-> >                       NULL, NULL, 0);
-> > }
-> 
-> The standard approach would be to use pthread_cond_wait() and
-> pthread_cond_broadcast().  Unfortunately, this would require holding a
-> pthread_mutex_lock across both operations, which would not necessarily
-> be so good for wake-up-side scalability.
+I'm seeing a variety of BUGs on my EeePC 701 after hibernation.  
+Sometimes they cause a hang during resume; sometimes they happen just 
+after resume.  It doesn't happen all the time either -  I've just 
+hibernated three times in a row with no problems.  It's most perplexing.
 
-The pthread_cond_broadcast() mutex is really a bugger when it comes to
-execute it at each rcu_read_unlock(). We could as well use a mutex to
-protect the whole read-side.. :-(
+One resume hang showed a series of SCSI backtraces and errors.  
+Unfortunately I wasn't able to capture it at the time.  They were most 
+probably related to the root device, an SSD controlled by ata_piix.
 
-> 
-> That said, without this sort of heavy-locking approach, wakeup races
-> are quite difficult to avoid.
-> 
+Today on latest -git I captured this "bad swap file entry" problem.  I 
+use a swap file for hibernation (I don't have a swap partition).
 
-I did a formal model of my futex-based wait/wakeup. The main idea is
-that the waiter:
+    Restarting tasks ... done.
+    PM: Basic memory bitmaps freed
+    swap_dup: Bad swap file entry 50055555
+    swap_free: Bad swap file entry 50055555
+    BUG: Bad page map in process kded4  pte:aaaaaa00aaaaaa pmd:173a1067
+    addr:b2c71000 vm_flags:08100073 anon_vma:d77ff710 mapping:ddfdc74c
+    index:a
+    vma->vm_ops->fault: filemap_fault+0x0/0x2d2
+    vma->vm_file->f_op->mmap: ext4_file_mmap+0x0/0x3f
+    Pid: 2558, comm: kded4 Not tainted 2.6.32-rc2eeepc-test #505
+    Call Trace:
+    print_bad_pte+0x1f5/0x207
+    unmap_vmas+0x389/0x5a6
+    exit_mmap+0x81/0xe8
+    mmput+0x23/0x81
+    flush_old_exec+0x30c/0x54c
+    ? kernel_read+0x2e/0x3e
+    load_elf_binary+0x338/0x10ca
+    ? get_user_pages+0x39/0x41
+    ? get_arg_page+0x32/0x82
+    ? put_arg_page+0x8/0xa
+    search_binary_handler+0xb2/0x212
+    ? load_elf_binary+0x0/0x10ca
+    do_execve+0x198/0x250
+    sys_execve+0x26/0x49
+    sysenter_do_call+0x12/0x28
+    Disabling lock debugging due to kernel taint
+    ...
+    (several similar traces here)
 
-- Set itself to "waiting"
-- Checks the "real condition" for which it will wait (e.g. queues empty
-  when used for rcu callbacks, no more ongoing old reader thread C.S.
-  when used in synchronize_rcu())
-- Calls sys_futex if the variable have not changed.
+Previously, on a slightly older kernel (still after 32-rc1), I captured 
+this BUG in fget_light():
 
-And the waker:
-- sets the "real condition" waking up the waiter (enqueuing, or
-  rcu_read_unlock())
-- check if the waiter must be woken up, if so, wake it up by setting the
-  state to "running" and calling sys_futex.
+Restarting tasks ...
+BUG: unable to handle kernel NULL pointer dereference at (null)
+fget_light+0x39/0x79
+*pdpt = 000000001be15001 *pde = 0000000000000000
 
-But as you say, wakeup races are difficult (but not impossible!) to
-avoid. This is why I resorted to a formal model of the wait/wakeup
-scheme to ensure that we cannot end up in a situation where a waker
-races with the waiter and does not wake it up when it should. This is
-nothing fancy (does not model memory and instruction reordering
-automatically), but I figure that memory barriers are required between
-almost every steps of this algorithm, so by adding smp_mb() I end up
-ensure sequential behavior. I added test cases in the model to ensure
-that incorrect memory reordering _would_ cause errors by doing the
-reordering by hand in error-injection runs.
+last sysfs file: 
+/sys/devices/pci0000:00/0000:00:1b.0/sound/card0/controlC0/uevent
+Modules linked in: cpufreq_stats freq_table af_packet fbcon tileblit 
+font bitblit softcursor i915 drm_kms_helper drm i2c_algo_bit cfbcopyarea 
+cfbimgblt cfbfillrect ipv6 loop joydev snd_hda_codec_realtek 
+snd_hda_intel snd_hda_codec snd_hwdep snd_pcm_oss snd_mixer_oss ath5k 
+snd_pcm mac80211 ath uvcvideo snd_timer snd cfg80211 psmouse i2c_i801 
+videodev v4l1_compat eeepc_laptop serio_raw pcspkr i2c_core rfkill 
+snd_page_alloc battery ac processor pci_hotplug evdev intel_agp video 
+agpgart backlight output button thermal fan [last unloaded: scsi_wait_scan]
 
-The model is available at:
-http://www.lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=tree;f=futex-wakeup;h=4ddeaeb2784165cb0465d4ca9f7d27acb562eae3;hb=refs/heads/formal-model
+Pid: 2199, comm: klauncher Not tainted (2.6.32-rc2eeepc-test #483) 701
+EFLAGS: 00010296 CPU: 0
+EIP is at fget_light+0x39/0x79
+EAX: ffffffff EBX: 00000003 ECX: 00000000 EDX: dbe23f7c
+ESI: dbe23f7c EDI: b6092ff4 EBP: dbe23bd8 ESP: dbe23bd0
+ DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+Process klauncher (pid: 2199, ti=dbe22000 task=dbc61840 task.ti=dbe22000)
+Stack:
+ 00000020 dbe23e7c dbe23f8c c01a62bd 00000001 d759c400 dbc61840 00000000
+<0> 08088728 08088750 00000000 dbe23e74 dbe23ea4 00000000 00000000 00000000
+<0> dbe23c18 00c7afc0 c01a6eb1 ffffffff 00000000 dbc61840 00000000 00000000
+Call Trace:
+? do_sys_poll+0x1be/0x39b
+? __pollwait+0x0/0xaf
+? pollwake+0x0/0x59
+? pollwake+0x0/0x59
+? pollwake+0x0/0x59
+? pollwake+0x0/0x59
+? pollwake+0x0/0x59
+? sched_clock_cpu+0xab/0xbf
+? check_preempt_wakeup+0x1c6/0x1ee
+? default_wake_function+0xb/0xd
+? pollwake+0x4c/0x59
+? default_wake_function+0x0/0xd
+? __wake_up_common+0x2e/0x54
+? unix_stream_recvmsg+0x2fc/0x3c2
+? __wake_up_sync_key+0x2b/0x3c
+? __wake_up_sync+0xa/0xd
+? skb_release_data+0x81/0x85
+? update_curr+0xa1/0x11a
+? rb_erase+0x10a/0x218
+? __switch_to+0xcc/0x15e
+? finish_task_switch+0x26/0x63
+? schedule+0x3c5/0x3e6
+? get_signal_to_deliver+0xa7/0x2dc
+? do_notify_resume+0x83/0x6b6
+? autoremove_wake_function+0x0/0x30
+? ktime_get_ts+0xc3/0xcd
+? do_restart_poll+0x2e/0x43
+? sys_restart_syscall+0x11/0x13
+? sysenter_do_call+0x12/0x28
+Code: 8b 88 a0 03 00 00 c7 02 00 00 00 00 8b 01 48 75 17 8b 49 04 31 d2 
+3b 19 73 4b 8d 04 9d 00 00 00 00 03 41 04 8b 10 eb 3d 8b 49 04 <3b> 19 
+73 34 8d 04 9d 00 00 00 00 03 41 04 8b 10 85 d2 74 26 8b
+fget_light+0x39/0x79 SS:ESP 0068:dbe23bd0
+CR2: 0000000000000000
+---[ end trace f0a940e691d70c2d ]---
+done.
+PM: Basic memory bitmaps freed
+...
+(several similar traces here)
 
-(this is in the formal-model branch of the urcu tree, futex-wakeup
-subdir)
+I have full dmesgs for both of these.
 
-This is modeling this snippet of code :
+I'm afraid I can't work out how to get line numbers in my backtraces, 
+despite having the obvious two options enabled -
 
-static int defer_thread_futex;
+    CONFIG_DEBUG_BUGVERBOSE=y
+    CONFIG_DEBUG_INFO=y
 
-/*
- * Wake-up any waiting defer thread. Called from many concurrent threads.
- */
-static void wake_up_defer(void)
-{
-        if (unlikely(uatomic_read(&defer_thread_futex) == -1)) {
-                uatomic_set(&defer_thread_futex, 0);
-                futex(&defer_thread_futex, FUTEX_WAKE, 1,
-                      NULL, NULL, 0);
-        }
-}
+I will keep the vmlinux for my current kernel around and try 
+markup_oops.pl as soon as I capture something it can handle.
 
-static void enqueue(void *callback)	/* not the actual types */
-{
-	add_to_queue(callback);
-	smp_mb();
-	wake_up_defer();
-}
-
-/*
- * rcu_defer_num_callbacks() returns the total number of callbacks
- * enqueued.
- */
-
-/*
- * Defer thread waiting. Single thread.
- */
-static void wait_defer(void)
-{
-        uatomic_dec(&defer_thread_futex);
-        smp_mb();       /* Write futex before read queue */
-        if (rcu_defer_num_callbacks()) {
-                smp_mb();       /* Read queue before write futex */
-                /* Callbacks are queued, don't wait. */
-                uatomic_set(&defer_thread_futex, 0);
-        } else {
-                smp_rmb();      /* Read queue before read futex */
-                if (uatomic_read(&defer_thread_futex) == -1)
-                        futex(&defer_thread_futex, FUTEX_WAIT, -1,
-                              NULL, NULL, 0);
-        }
-}
-
-
-Comments are welcome,
-
-Thanks,
-
-Mathieu
-
-> 							Thanx, Paul
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+All suggestions gratefully recieved :-)
+Alan
