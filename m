@@ -1,53 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbZJDCbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbZJDDCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756842AbZJDCbA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 3 Oct 2009 22:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbZJDCbA
+	id S1756989AbZJDDCm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 3 Oct 2009 23:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756804AbZJDDCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 3 Oct 2009 22:31:00 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:27794 "EHLO mx1.redhat.com"
+	Sat, 3 Oct 2009 23:02:41 -0400
+Received: from mga14.intel.com ([143.182.124.37]:54150 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754304AbZJDCa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 3 Oct 2009 22:30:59 -0400
-Date: Sun, 4 Oct 2009 04:25:56 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] signals: SEND_SIG_NOINFO should be considered as
-	SI_FROMUSER()
-Message-ID: <20091004022556.GF21006@redhat.com>
-References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com> <20091004021918.GB21006@redhat.com>
+	id S1756763AbZJDDCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 3 Oct 2009 23:02:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,501,1249282800"; 
+   d="scan'208";a="194828529"
+Date: Sun, 4 Oct 2009 11:01:53 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org
+Subject: [PATCH] NFS: introduce writeback wait queue
+Message-ID: <20091004030153.GA20327@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091004021918.GB21006@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/04, Oleg Nesterov wrote:
->
-> No changes in compiled code. The patch adds the new helper, si_fromuser()
-> and changes check_kill_permission() to use this helper.
->
-> The real effect of this patch is that from now we "officially" consider
-> SEND_SIG_NOINFO signal as "from user-space" signals. This is already true
-> if we look at the code which uses SEND_SIG_NOINFO, except __send_signal()
-> has another opinion - see the next patch.
->
-> The naming of these special SEND_SIG_XXX siginfo's is really bad imho.
-> From __send_signal()'s pov they mean
->
-> 	SEND_SIG_NOINFO		from user
+The generic writeback routines are departing from congestion_wait()
+in preference of get_request_wait(), aka. to wait on the block queues.
 
-To clarify, "from user" for SEND_SIG_NOINFO/SI_USER mean: sent by kernel
-on behalf of some process. We should check permissions, sub-namespace,
-we should fill si_pid/uid, etc.
+Introduce the missing writeback wait queue for NFS, otherwise its
+writeback pages will grow out of control.
 
-Oleg.
+The SYNC writes can use the full queue space (2*nfs_congestion_kb), while
+the ASYNC writes can only use half queue space. This way SYNC writes won't
+be blocked by the ASYNC ones at all.
 
+We'll be waiting inside the NFS_INO_FLUSHING lock, hence also be
+blocking possible dirtiers.  This should not be a bit problem.
+And we should be able to obsolete the NFS_INO_FLUSHING with more
+general writeback improvements in long term.
+
+CC: Jens Axboe <jens.axboe@oracle.com> 
+CC: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/nfs/client.c           |    2 
+ fs/nfs/write.c            |   73 +++++++++++++++++++++++++++++-------
+ include/linux/nfs_fs_sb.h |    1 
+ 3 files changed, 62 insertions(+), 14 deletions(-)
+
+--- linux.orig/fs/nfs/write.c	2009-10-04 08:47:16.000000000 +0800
++++ linux/fs/nfs/write.c	2009-10-04 10:55:32.000000000 +0800
+@@ -189,24 +189,58 @@ static int wb_priority(struct writeback_
+ 
+ int nfs_congestion_kb;
+ 
++/*
++ * SYNC requests will be blocked on NFS_SYNC_*_THRESH
++ * ASYNC requests will be blocked on NFS_CONGESTION_*_THRESH
++ */
++#define NFS_SYNC_WAIT_THRESH 	(nfs_congestion_kb >> (PAGE_SHIFT-11))
++#define NFS_SYNC_WAKEUP_THRESH	\
++	(NFS_SYNC_WAIT_THRESH - (NFS_SYNC_WAIT_THRESH >> 2))
++
+ #define NFS_CONGESTION_ON_THRESH 	(nfs_congestion_kb >> (PAGE_SHIFT-10))
+ #define NFS_CONGESTION_OFF_THRESH	\
+ 	(NFS_CONGESTION_ON_THRESH - (NFS_CONGESTION_ON_THRESH >> 2))
+ 
+-static int nfs_set_page_writeback(struct page *page)
++static void nfs_writeback_wait(struct page *page, struct writeback_control *wbc)
+ {
+-	int ret = test_set_page_writeback(page);
++	struct inode *inode = page->mapping->host;
++	struct nfs_server *nfss = NFS_SERVER(inode);
++	int is_sync = wbc->sync_mode == WB_SYNC_NONE;
++	DEFINE_WAIT(wait);
+ 
+-	if (!ret) {
+-		struct inode *inode = page->mapping->host;
+-		struct nfs_server *nfss = NFS_SERVER(inode);
++	if (atomic_long_inc_return(&nfss->writeback) < NFS_CONGESTION_ON_THRESH)
++		return;
+ 
+-		if (atomic_long_inc_return(&nfss->writeback) >
+-				NFS_CONGESTION_ON_THRESH) {
+-			set_bdi_congested(&nfss->backing_dev_info,
+-						BLK_RW_ASYNC);
+-		}
++	set_bdi_congested(&nfss->backing_dev_info, BLK_RW_ASYNC);
++
++	if (is_sync && atomic_long_read(&nfss->writeback) <
++	    NFS_SYNC_WAIT_THRESH)
++		return;
++
++	for (;;) {
++		prepare_to_wait_exclusive(&nfss->writeback_wait[is_sync], &wait,
++					  TASK_UNINTERRUPTIBLE);
++
++		io_schedule();
++
++		finish_wait(&nfss->writeback_wait[is_sync], &wait);
++
++		if (atomic_long_read(&nfss->writeback) <
++		    NFS_CONGESTION_OFF_THRESH)
++			break;
++		if (is_sync && atomic_long_read(&nfss->writeback) <
++		    NFS_SYNC_WAKEUP_THRESH)
++			break;
+ 	}
++}
++
++static int nfs_set_page_writeback(struct page *page, struct writeback_control *wbc)
++{
++	int ret = test_set_page_writeback(page);
++
++	if (!ret)
++		nfs_writeback_wait(page, wbc);
++
+ 	return ret;
+ }
+ 
+@@ -216,8 +250,18 @@ static void nfs_end_page_writeback(struc
+ 	struct nfs_server *nfss = NFS_SERVER(inode);
+ 
+ 	end_page_writeback(page);
+-	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH)
+-		clear_bdi_congested(&nfss->backing_dev_info, BLK_RW_ASYNC);
++
++	if (atomic_long_dec_return(&nfss->writeback) < NFS_SYNC_WAKEUP_THRESH) {
++		if (waitqueue_active(&nfss->writeback_wait[1]))
++			wake_up(&nfss->writeback_wait[1]);
++		if (atomic_long_read(&nfss->writeback) <
++		    NFS_CONGESTION_OFF_THRESH) {
++			clear_bdi_congested(&nfss->backing_dev_info, BLK_RW_ASYNC);
++			if (waitqueue_active(&nfss->writeback_wait[0]))
++				wake_up(&nfss->writeback_wait[0]);
++		}
++	}
++
+ }
+ 
+ static struct nfs_page *nfs_find_and_lock_request(struct page *page)
+@@ -254,6 +298,7 @@ static struct nfs_page *nfs_find_and_loc
+  * May return an error if the user signalled nfs_wait_on_request().
+  */
+ static int nfs_page_async_flush(struct nfs_pageio_descriptor *pgio,
++				struct writeback_control *wbc,
+ 				struct page *page)
+ {
+ 	struct nfs_page *req;
+@@ -266,7 +311,7 @@ static int nfs_page_async_flush(struct n
+ 	if (IS_ERR(req))
+ 		goto out;
+ 
+-	ret = nfs_set_page_writeback(page);
++	ret = nfs_set_page_writeback(page, wbc);
+ 	BUG_ON(ret != 0);
+ 	BUG_ON(test_bit(PG_CLEAN, &req->wb_flags));
+ 
+@@ -286,7 +331,7 @@ static int nfs_do_writepage(struct page 
+ 	nfs_add_stats(inode, NFSIOS_WRITEPAGES, 1);
+ 
+ 	nfs_pageio_cond_complete(pgio, page->index);
+-	return nfs_page_async_flush(pgio, page);
++	return nfs_page_async_flush(pgio, wbc, page);
+ }
+ 
+ /*
+--- linux.orig/include/linux/nfs_fs_sb.h	2009-10-04 09:31:25.000000000 +0800
++++ linux/include/linux/nfs_fs_sb.h	2009-10-04 09:58:11.000000000 +0800
+@@ -108,6 +108,7 @@ struct nfs_server {
+ 	struct nfs_iostats *	io_stats;	/* I/O statistics */
+ 	struct backing_dev_info	backing_dev_info;
+ 	atomic_long_t		writeback;	/* number of writeback pages */
++	wait_queue_head_t	writeback_wait[2];
+ 	int			flags;		/* various flags */
+ 	unsigned int		caps;		/* server capabilities */
+ 	unsigned int		rsize;		/* read size */
+--- linux.orig/fs/nfs/client.c	2009-10-04 09:59:46.000000000 +0800
++++ linux/fs/nfs/client.c	2009-10-04 10:00:55.000000000 +0800
+@@ -991,6 +991,8 @@ static struct nfs_server *nfs_alloc_serv
+ 	INIT_LIST_HEAD(&server->master_link);
+ 
+ 	atomic_set(&server->active, 0);
++	init_waitqueue_head(&server->writeback_wait[BLK_RW_SYNC]);
++	init_waitqueue_head(&server->writeback_wait[BLK_RW_ASYNC]);
+ 
+ 	server->io_stats = nfs_alloc_iostats();
+ 	if (!server->io_stats) {
