@@ -1,83 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbZJDXkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZJDXx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754896AbZJDXkO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 19:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbZJDXkN
+	id S1755691AbZJDXx5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 19:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbZJDXxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 19:40:13 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:45862 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753636AbZJDXkL (ORCPT
+	Sun, 4 Oct 2009 19:53:55 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:58017 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbZJDXxy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 19:40:11 -0400
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
-       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <4ABD020B.4040901@gandalf.sssup.it>
-	<20090929145514.GF2152@localhost>
-	<20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
-	<m163ayzevu.fsf@fess.ebiederm.org> <20091002084755.GA7382@localhost>
-	<20091002173308.6158d734@lxorguk.ukuu.org.uk>
-	<20091003114229.GB605@localhost>
-	<20091003141807.1dc27e4e@lxorguk.ukuu.org.uk>
-	<20091003140522.GA8725@localhost>
-	<20091003173324.315855ac@lxorguk.ukuu.org.uk>
-	<20091004194822.GD24079@localhost>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 04 Oct 2009 16:39:22 -0700
-In-Reply-To: <20091004194822.GD24079@localhost> (Johan Hovold's message of "Sun\, 4 Oct 2009 21\:48\:22 +0200")
-Message-ID: <m1d452wwyd.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 4 Oct 2009 19:53:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TMtcmpjWL486ELChNV6zBSlQE/POo+Z7pSH1lYVoXYS9b4tu8ureDpznhN/VXykps6
+         afHGTt+SqpoV6kF9BaECoSma3V5WSlrHy7Yhoi2Wgu6iMsCoUbqIgN6cJOfX/+A/k8s4
+         iGPZ6QlyOajHGoGp/ozg52KAyPudKDrbkgaSo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Johan Hovold <jhovold@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 T_TooManySym_03 6+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 T_TooManySym_02 5+ unique symbols in subject
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+In-Reply-To: <4AC923F4.9050100@suse.de>
+References: <1254669853.26496.0.camel@carter>
+	 <ca2dc2820910041046i47a1c3dhba82266bb14a440c@mail.gmail.com>
+	 <4AC8F02B.6080209@suse.de> <200910042246.23712.rjw@sisk.pl>
+	 <4AC91578.2020807@suse.de>
+	 <ca2dc2820910041455h18ece909rc2280a40f1899c0a@mail.gmail.com>
+	 <4AC923F4.9050100@suse.de>
+Date: Mon, 5 Oct 2009 01:53:16 +0200
+Message-ID: <ca2dc2820910041653o29d4b253n69270d231e56e447@mail.gmail.com>
+Subject: Re: [PATCH] battery: Fix charge_now returned by broken batteries
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johan Hovold <jhovold@gmail.com> writes:
-
->> > > > +	 * The per character mucking around with sysrq path it too slow, so
->> > > > +	 * shortcircuit it in the 99.9999999% of cases where the USB serial is
->> > > > +	 * not a console anyway.
->> > > > +	 */
->> > > > +	ch = packet + 2;
->> > > > +	len -= 2;
->> > > > +	if (!port->console || !port->sysrq)
->> > > 
->> > > You need && flag == TTY_NORMAL ?
->> > 
->> > You tell me. :-) Are we interested in them unless port->console is set?
->> 
->> Yes - we don;t care about the sysrq but we care about error characters
->> being reported ot the line discipline properly.
+On Mon, Oct 5, 2009 at 12:38 AM, Alexey Starikovskiy
+<astarikovskiy@suse.de> wrote:
+> Miguel Ojeda пишет:
+>>
+>> On Sun, Oct 4, 2009 at 11:36 PM, Alexey Starikovskiy
+>> <astarikovskiy@suse.de> wrote:
+>>>
+>>> Hi Rafael,
+>>>
+>>> This is not my rule, it was/is the rule of power device class. If you do
+>>> not
+>>> agree to it, please change
+>>> appropriate documentation.
+>>
+>> Oh, I did not know that. Thank you for pointing it out. I think you
+>> are refering to:
+>>
+>>  158Q: Suppose, my battery monitoring chip/firmware does not provides
+>> capacity
+>>  159   in percents, but provides charge_{now,full,empty}. Should I
+>> calculate
+>>  160   percentage capacity manually, inside the driver, and register
+>> CAPACITY
+>>  161   attribute? The same question about time_to_empty/time_to_full.
+>>  162A: Most likely, no. This class is designed to export properties which
+>> are
+>>  163   directly measurable by the specific hardware available.
+>>  164
+>>  165   Inferring not available properties using some heuristics or
+>> mathematical
+>>  166   model is not subject of work for a battery driver. Such
+>> functionality
+>>  167   should be factored out, and in fact, apm_power, the driver to serve
+>>  168   legacy APM API on top of power supply class, uses a simple
+>> heuristic of
+>>  169   approximating remaining battery capacity based on its charge,
+>> current,
+>>  170   voltage and so on. But full-fledged battery model is likely not
+>> subject
+>>  171   for kernel at all, as it would require floating point calculation
+>> to deal
+>>  172   with things like differential equations and Kalman filters. This is
+>>  173   better be handled by batteryd/libbattery, yet to be written.
+>>
+>> We are not calculating anything new just by the pleasure of doing it,
+>> we are correcting a wrong value provided by the hardware.
 >
-> Wasn't thinking.. Here's an update which always passes error characters.
-> It also uses ASYNCB_INITIALIZED (instead of ASYNCB_CLOSING) in unthrottle.
+> You are guessing that normal battery can not jump charge value, and on this
+> assumption you
+> cap charge_now with last full_charge. Immediate problem is that full_charge
+> is not fixed value,
+> this is why it is separated from design_full_charge.
+> During battery life full_charge may go down and up, depending on outside
+> temperature, battery discharge (full or partial).
+> I've seen batteries on some new machines reporting full charge of more than
+> design charge.
+> Obviously, your patch will fail in some of the above situations.
 
-To test this what should I be applying this on top of?
-There have been a lot of patches flying around.
+I don't see why. The patch compares against full_charge every time
+(which is updated as you say), not against design_full_charge.
 
+1. full_charge > design_full_charge => OK, design_full_charge is not
+involved in the min() operation.
+2. full_charge goes down => If charge_now > full_charge then hardware
+is wrong and we should read full_charge. OK.
+3. full_charge goes up => Same.
 
-Eric
+ What do you mean by failing in such situations? My point is that,
+AFAIK charge_now shouldn't be higher than full_charge *. The patch
+does not care about design_full_charge, neither the original code.
+
+* I do not know about some overcharging issues that Henrique mentioned.
+
+> Currently, reading from the driver is "last resort" to get un-interpreted
+> value, if you have any doubts on it. With
+> your patch, this is gone, and user space will have to interpret results of
+> kernel interpreter.
+>
+> Return to the "bug still exists". We are referring to the value, which can
+> not be measured directly with any known device.
+> Thus, it may be completely sane that battery manufacturer provides you with
+> some charge curve, but knows only two values on it
+> which he may trust -- point where he can not get any power out of it
+> (complete discharge) and point where he can not put any additional charge
+> into the battery (due to various stop conditions (battery temperature being
+> one)). In such a case manufacturer may choose to adjust charge curve to end
+> up always at design_full_charge point, no matter how much of adjustment this
+> requires.
+
+I understand that and you may be right; however, AFAIK, a userspace
+application has no way to know that it should compare against
+full_charge every time _except_ when in "charged" state, has it? Is
+there any kind of protocol/documentation that establish what an
+userspace application should do?
+
+The battery reports correctly full_charge in order to compare with
+charge_now (and as I checked, some userspace plugins always check
+against that full_charge, not design_full_charge, which seems to be
+the logical thing to do, who cares what the design full charge level
+was when reporting the actual charge level?).
+
+>
+> Do you have the same jump from >100% to 99% on discharge?
+
+Yes: When in "charged" state, the battery reports a fixed value
+(desing_full_charge, it is always the same). In "charging" or
+"discharging" it correctly reports the current charge. It also
+correctly reports full_charge, not matter what state.
+
+So, maybe the battery works as you suggested; still, the kernel should
+provide a common meaning to its interfaces. If some batteries report
+full_charge when in "charged" state and others report
+design_full_charge, then the kernel should convert all of them into
+one unique convention, or there is no sane way to write userspace
+applications.
+
+>
+> Regards,
+> Alex.
+>
