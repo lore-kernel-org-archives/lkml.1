@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbZJDUtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZJDUzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758027AbZJDUtP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 16:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757933AbZJDUtP
+	id S1758030AbZJDUzW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 16:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758002AbZJDUzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 16:49:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42843 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757928AbZJDUtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 16:49:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [Bug #14256] kernel BUG at fs/ext3/super.c:435
-Date: Sun, 4 Oct 2009 22:49:54 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.ot.9MTxKB@chimera> <19144.56721.786457.979953@pilspetsen.it.uu.se>
-In-Reply-To: <19144.56721.786457.979953@pilspetsen.it.uu.se>
+	Sun, 4 Oct 2009 16:55:21 -0400
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:60462 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757998AbZJDUzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 16:55:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=cBIlexhlUYV9ANrnFOXeqGdd2AZKnuRPKeYHh6LtjAJbqEYvKn5nKg0+mMK29xG22n
+         OuKOdP43G6B/VX1+VbAocSoJrqT1BFCsGqKkLYyVU2x3yQAhezyVP//8bqMNvn05PFOj
+         CN6v5CcU4/CCKY38y/+oUhYXGv4ptqiuqJn6Y=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910042249.54639.rjw@sisk.pl>
+Date: Sun, 4 Oct 2009 22:54:44 +0200
+Message-ID: <4e5e476b0910041354o54c95626g974264976adaf53c@mail.gmail.com>
+Subject: bug in elevator/cfq regarding start_time?
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 04 October 2009, Mikael Pettersson wrote:
-> Rafael J. Wysocki wrote:
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14256
-> > Subject		: kernel BUG at fs/ext3/super.c:435
-> > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
-> > Date		: 2009-09-21 7:29 (11 days old)
-> > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125351816109264&w=3D4
-> 
-> The exact same bug (same cause, same symptom) just hit me again in 2.6.32-rc1.
+Hi Jens,
+I found that the start_time is not monotonic in the cfqq fifo_list.
+The problem seems to be that:
+* attempt_merge overrides one of the start_time:
+        if (time_after(req->start_time, next->start_time))
+                req->start_time = next->start_time;
+* then it calls elv_merge_requests, that in turn invokes cfq's
+elevator_merge_req_fn, i.e. cfq_merged_requests
+* cfq_merged_requests checks start_times to decide whether requests
+need to be repositioned
+        if (!list_empty(&rq->queuelist) && !list_empty(&next->queuelist) &&
+            time_before(next->start_time, rq->start_time))
+                list_move(&rq->queuelist, &next->queuelist);
 
-Thanks for the update.
+Other I/O schedulers are not affected, since none of them uses
+start_time explicitly, but they have a copy in one of the private
+fields.
 
-Could you check the current Linus' tree, please?  There are some known
-regression fixes in there.
+Corrado
 
-Best,
-Rafael
+-- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
