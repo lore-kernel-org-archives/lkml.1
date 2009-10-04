@@ -1,1379 +1,611 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbZJDMyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbZJDMyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757280AbZJDMyY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757262AbZJDMyX
+	id S1757383AbZJDMyc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbZJDMya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:54:23 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63953 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 08:54:30 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63989 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757131AbZJDMyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757143AbZJDMyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 Oct 2009 08:54:14 -0400
-Message-Id: <20091004125330.532153719@I-love.SAKURA.ne.jp>
+Message-Id: <20091004125330.877390176@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:49:56 +0900
+Date: Sun, 04 Oct 2009 21:49:57 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 10/25] TOMOYO: Add conditional ACL support.
-Content-Disposition: inline; filename=tomoyo-add-condition.patch
+Subject: [TOMOYO #16 11/25] TOMOYO: Add auditing support.
+Content-Disposition: inline; filename=tomoyo-add-audit.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains code for handling "if" clause of a permission.
-TOMOYO is a pathname based access control system, but also deals some of non
-pathname attributes.
+This patch adds auditing code used by TOMOYO.
 
-TOMOYO supports conditional permissions based on process's UID/GID etc. and/or
-requested pathname's UID/GID.
+TOMOYO generates audit logs ( /sys/kernel/security/tomoyo/grant_log and
+/sys/kernel/security/tomoyo/reject_log ) in the form of domain policy
+( /sys/kernel/security/domain_policy ).
 
-Regarding symlink(), you can check symlink's contents.
+Users can configure whether to generate audit logs or not via profile
+( /sys/kernel/security/tomoyo/profile ). By default all information usable for
+"if" clause is audited. Users can suppress unneeded information.
+Memory quota for audit logs is configurable via profile and meminfo interface
+ ( /sys/kernel/security/tomoyo/meminfo ).
 
-Regarding execve(), you can check argv[]/envp[] conditions.
-If you need to examine argv[]/envp[] more deeply, you can use execute handler.
+tomoyo_profile()->audit is guaranteed to point to either default configuration
+( tomoyo_default_profile ) or per profile configuration.
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/condition.c | 1332 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 1332 insertions(+)
+ security/tomoyo/audit.c |  561 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 561 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6/security/tomoyo/condition.c
-@@ -0,0 +1,1332 @@
++++ security-testing-2.6/security/tomoyo/audit.c
+@@ -0,0 +1,561 @@
 +/*
-+ * security/tomoyo/condition.c
++ * security/tomoyo/audit.c
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + */
 +#include "internal.h"
 +
 +/**
-+ * tomoyo_argv - Check argv[] in "struct linux_binbrm".
++ * tomoyo_print_bprm - Print "struct linux_binprm" for auditing.
 + *
-+ * @index:   Index number of @arg_ptr.
-+ * @arg_ptr: Contents of argv[@index].
-+ * @argc:    Length of @argv.
-+ * @argv:    Pointer to "struct tomoyo_argv_entry".
-+ * @checked: Set to true if @argv[@index] was found.
++ * @bprm: Pointer to "struct linux_binprm".
++ * @dump: Pointer to "struct tomoyo_page_dump".
 + *
-+ * Returns true on success, false otherwise.
++ * Returns the contents of @bprm on success, NULL otherwise.
 + */
-+static bool tomoyo_argv(const unsigned int index, const char *arg_ptr,
-+			const int argc, const struct tomoyo_argv_entry *argv,
-+			u8 *checked)
++static char *tomoyo_print_bprm(struct linux_binprm *bprm,
++			       struct tomoyo_page_dump *dump)
 +{
-+	int i;
-+	struct tomoyo_path_info arg;
-+	arg.name = arg_ptr;
-+	for (i = 0; i < argc; argv++, checked++, i++) {
-+		bool result;
-+		if (index != argv->index)
-+			continue;
-+		*checked = 1;
-+		tomoyo_fill_path_info(&arg);
-+		result = tomoyo_path_matches_pattern(&arg, argv->value);
-+		if (argv->is_not)
-+			result = !result;
-+		if (!result)
-+			return false;
-+	}
-+	return true;
-+}
-+
-+/**
-+ * tomoyo_envp - Check envp[] in "struct linux_binbrm".
-+ *
-+ * @env_name:  The name of environment variable.
-+ * @env_value: The value of environment variable.
-+ * @envc:      Length of @envp.
-+ * @envp:      Pointer to "struct tomoyo_envp_entry".
-+ * @checked:   Set to true if @envp[@env_name] was found.
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+static bool tomoyo_envp(const char *env_name, const char *env_value,
-+			const int envc, const struct tomoyo_envp_entry *envp,
-+			u8 *checked)
-+{
-+	int i;
-+	struct tomoyo_path_info name;
-+	struct tomoyo_path_info value;
-+	name.name = env_name;
-+	tomoyo_fill_path_info(&name);
-+	value.name = env_value;
-+	tomoyo_fill_path_info(&value);
-+	for (i = 0; i < envc; envp++, checked++, i++) {
-+		bool result;
-+		if (!tomoyo_path_matches_pattern(&name, envp->name))
-+			continue;
-+		*checked = 1;
-+		if (envp->value) {
-+			result = tomoyo_path_matches_pattern(&value,
-+							     envp->value);
-+			if (envp->is_not)
-+				result = !result;
-+		} else {
-+			result = true;
-+			if (!envp->is_not)
-+				result = !result;
-+		}
-+		if (!result)
-+			return false;
-+	}
-+	return true;
-+}
-+
-+/**
-+ * tomoyo_scan_bprm - Scan "struct linux_binprm".
-+ *
-+ * @ee:   Pointer to "struct tomoyo_execve_entry".
-+ * @argc: Length of @argc.
-+ * @argv: Pointer to "struct tomoyo_argv_entry".
-+ * @envc: Length of @envp.
-+ * @envp: Poiner to "struct tomoyo_envp_entry".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+static bool tomoyo_scan_bprm(struct tomoyo_execve_entry *ee, const u16 argc,
-+			     const struct tomoyo_argv_entry *argv,
-+			     const u16 envc,
-+			     const struct tomoyo_envp_entry *envp)
-+{
-+	/*
-+	  if exec.argc=3
-+	  if (argc == 3)
-+	  if exec.argv[1]="-c"
-+	  if (argc >= 2 && !strcmp(argv[1], "-c"))
-+	  if exec.argv[1]!="-c"
-+	  if (argc < 2 || strcmp(argv[1], "-c"))
-+	  if exec.envc=10-20
-+	  if (envc >= 10 && envc <= 20)
-+	  if exec.envc!=10-20
-+	  if (envc < 10 || envc > 20)
-+	  if exec.envp["HOME"]!=NULL
-+	  if (getenv("HOME"))
-+	  if exec.envp["HOME"]=NULL
-+	  if (!getenv("HOME"))
-+	  if exec.envp["HOME"]="/"
-+	  if (getenv("HOME") && !strcmp(getenv("HOME"), "/"))
-+	  if exec.envp["HOME"]!="/"
-+	  if (!getenv("HOME") || strcmp(getenv("HOME", "/"))
-+	*/
-+	struct linux_binprm *bprm = ee->bprm;
-+	struct tomoyo_page_dump *dump = &ee->dump;
-+	char *arg_ptr = ee->tmp;
-+	int arg_len = 0;
++	static const int tomoyo_buffer_len = 4096 * 2;
++	char *buffer = kzalloc(tomoyo_buffer_len, GFP_KERNEL);
++	char *cp;
++	char *last_start;
++	int len;
 +	unsigned long pos = bprm->p;
 +	int offset = pos % PAGE_SIZE;
 +	int argv_count = bprm->argc;
 +	int envp_count = bprm->envc;
-+	bool result = true;
-+	u8 local_checked[32];
-+	u8 *checked;
-+	if (argc + envc <= sizeof(local_checked)) {
-+		checked = local_checked;
-+		memset(local_checked, 0, sizeof(local_checked));
-+	} else {
-+		checked = kzalloc(argc + envc, GFP_KERNEL);
-+		if (!checked)
-+			return false;
++	bool truncated = false;
++	if (!buffer)
++		return NULL;
++	len = snprintf(buffer, tomoyo_buffer_len - 1, "argv[]={ ");
++	cp = buffer + len;
++	if (!argv_count) {
++		memmove(cp, "} envp[]={ ", 11);
++		cp += 11;
 +	}
++	last_start = cp;
 +	while (argv_count || envp_count) {
-+		if (!tomoyo_dump_page(bprm, pos, dump)) {
-+			result = false;
++		if (!tomoyo_dump_page(bprm, pos, dump))
 +			goto out;
-+		}
 +		pos += PAGE_SIZE - offset;
++		/* Read. */
 +		while (offset < PAGE_SIZE) {
-+			/* Read. */
-+			struct tomoyo_path_info arg;
 +			const char *kaddr = dump->data;
 +			const unsigned char c = kaddr[offset++];
-+			arg.name = arg_ptr;
-+			if (c && arg_len < TOMOYO_EXEC_TMPSIZE - 10) {
-+				if (c == '\\') {
-+					arg_ptr[arg_len++] = '\\';
-+					arg_ptr[arg_len++] = '\\';
-+				} else if (c > ' ' && c < 127) {
-+					arg_ptr[arg_len++] = c;
-+				} else {
-+					arg_ptr[arg_len++] = '\\';
-+					arg_ptr[arg_len++] = (c >> 6) + '0';
-+					arg_ptr[arg_len++] =
-+						((c >> 3) & 7) + '0';
-+					arg_ptr[arg_len++] = (c & 7) + '0';
-+				}
++			if (cp == last_start)
++				*cp++ = '"';
++			if (cp >= buffer + tomoyo_buffer_len - 32) {
++				/* Reserve some room for "..." string. */
++				truncated = true;
++			} else if (c == '\\') {
++				*cp++ = '\\';
++				*cp++ = '\\';
++			} else if (c > ' ' && c < 127) {
++				*cp++ = c;
++			} else if (!c) {
++				*cp++ = '"';
++				*cp++ = ' ';
++				last_start = cp;
 +			} else {
-+				arg_ptr[arg_len] = '\0';
++				*cp++ = '\\';
++				*cp++ = (c >> 6) + '0';
++				*cp++ = ((c >> 3) & 7) + '0';
++				*cp++ = (c & 7) + '0';
 +			}
 +			if (c)
 +				continue;
-+			/* Check. */
 +			if (argv_count) {
-+				if (!tomoyo_argv(bprm->argc - argv_count,
-+						 arg_ptr, argc, argv,
-+						 checked)) {
-+					result = false;
-+					break;
++				if (--argv_count == 0) {
++					if (truncated) {
++						cp = last_start;
++						memmove(cp, "... ", 4);
++						cp += 4;
++					}
++					memmove(cp, "} envp[]={ ", 11);
++					cp += 11;
++					last_start = cp;
++					truncated = false;
 +				}
-+				argv_count--;
 +			} else if (envp_count) {
-+				char *cp = strchr(arg_ptr, '=');
-+				if (cp) {
-+					*cp = '\0';
-+					if (!tomoyo_envp(arg_ptr, cp + 1,
-+							 envc, envp,
-+							 checked + argc)) {
-+						result = false;
-+						break;
++				if (--envp_count == 0) {
++					if (truncated) {
++						cp = last_start;
++						memmove(cp, "... ", 4);
++						cp += 4;
 +					}
 +				}
-+				envp_count--;
-+			} else {
-+				break;
 +			}
-+			arg_len = 0;
++			if (!argv_count && !envp_count)
++				break;
 +		}
 +		offset = 0;
-+		if (!result)
-+			break;
 +	}
++	*cp++ = '}';
++	*cp = '\0';
++	return buffer;
 + out:
-+	if (result) {
-+		int i;
-+		/* Check not-yet-checked entries. */
-+		for (i = 0; i < argc; i++) {
-+			if (checked[i])
-+				continue;
-+			/*
-+			 * Return true only if all unchecked indexes in
-+			 * bprm->argv[] are not matched.
-+			 */
-+			if (argv[i].is_not)
-+				continue;
-+			result = false;
-+			break;
-+		}
-+		for (i = 0; i < envc; envp++, i++) {
-+			if (checked[argc + i])
-+				continue;
-+			/*
-+			 * Return true only if all unchecked environ variables
-+			 * in bprm->envp[] are either undefined or not matched.
-+			 */
-+			if ((!envp->value && !envp->is_not) ||
-+			    (envp->value && envp->is_not))
-+				continue;
-+			result = false;
-+			break;
-+		}
-+	}
-+	if (checked != local_checked)
-+		kfree(checked);
-+	return result;
-+}
-+
-+static bool tomoyo_scan_exec_realpath(struct file *file,
-+				      const struct tomoyo_name_union *ptr,
-+				      const bool match)
-+{
-+	bool result;
-+	struct tomoyo_path_info exe;
-+	if (!file)
-+		return false;
-+	exe.name = tomoyo_realpath_from_path(&file->f_path);
-+	if (!exe.name)
-+		return false;
-+	tomoyo_fill_path_info(&exe);
-+	result = tomoyo_compare_name_union(&exe, ptr);
-+	kfree(exe.name);
-+	return result == match;
-+}
-+
-+static bool tomoyo_parse_name_union_quoted(char *filename,
-+					   struct tomoyo_name_union *ptr)
-+{
-+	bool result;
-+	char *cp = NULL;
-+	if (*filename == '"') {
-+		cp = filename + strlen(filename) - 1;
-+		if (*cp != '"')
-+			return false;
-+		*cp = '\0';
-+		filename++;
-+	}
-+	result = tomoyo_parse_name_union(filename, ptr);
-+	if (cp)
-+		*cp = '"';
-+	return result;
++	snprintf(buffer, tomoyo_buffer_len - 1,
++		 "argv[]={ ... } envp[]= { ... }");
++	return buffer;
 +}
 +
 +/**
-+ * tomoyo_get_dqword - tomoyo_get_name() for a quoted string.
++ * tomoyo_filetype - Get string representation of file type.
 + *
-+ * @start: String to save.
++ * @mode: Mode value for stat().
 + *
-+ * Returns pointer to "struct tomoyo_path_info" on success, NULL otherwise.
++ * Returns header line on success, NULL otherwise.
 + */
-+static const struct tomoyo_path_info *tomoyo_get_dqword(char *start)
++static const char *tomoyo_filetype(const mode_t mode)
 +{
-+	char *cp;
-+	if (*start++ != '"')
++	switch (mode & S_IFMT) {
++	case S_IFREG:
++	case 0:
++		return "file";
++	case S_IFDIR:
++		return "directory";
++	case S_IFLNK:
++		return "symlink";
++	case S_IFIFO:
++		return "fifo";
++	case S_IFSOCK:
++		return "socket";
++	case S_IFBLK:
++		return "block";
++	case S_IFCHR:
++		return "char";
++	}
++	return "unknown"; /* This should not happen. */
++}
++
++/**
++ * tomoyo_print_header - Get header line of audit log.
++ *
++ * @r: Pointer to "struct tomoyo_request_info".
++ *
++ * Returns string representation.
++ */
++static char *tomoyo_print_header(struct tomoyo_request_info *r)
++{
++	static const char *tomoyo_mode_4[4] = {
++		"disabled", "learning", "permissive", "enforcing"
++	};
++	struct timeval tv;
++	unsigned int dev;
++	mode_t mode;
++	struct tomoyo_obj_info *obj = r->obj;
++	const u32 tomoyo_flags = current->tomoyo_flags;
++	static const int tomoyo_buffer_len = 4096;
++	char *buffer = kmalloc(tomoyo_buffer_len, GFP_KERNEL);
++	int pos;
++	if (!buffer)
 +		return NULL;
-+	cp = start;
-+	while (1) {
-+		const char c = *cp++;
-+		if (!c)
-+			return NULL;
-+		if (c != '"' || *cp)
-+			continue;
-+		*(cp - 1) = '\0';
-+		break;
++	do_gettimeofday(&tv);
++	pos = snprintf(buffer, tomoyo_buffer_len - 1,
++		       "#timestamp=%lu profile=%u mode=%s "
++		       "(global-pid=%u)", tv.tv_sec, r->profile,
++		       tomoyo_mode_4[r->mode], task_pid_nr(current));
++	if (tomoyo_profile(r->profile)->audit->audit_task_info) {
++		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
++				" task={ pid=%u ppid=%u uid=%u gid=%u euid=%u"
++				" egid=%u suid=%u sgid=%u fsuid=%u fsgid=%u"
++				" state[0]=%u state[1]=%u state[2]=%u"
++				" type%s=execute_handler }",
++				(pid_t) sys_getpid(), (pid_t) sys_getppid(),
++				current_uid(), current_gid(), current_euid(),
++				current_egid(), current_suid(), current_sgid(),
++				current_fsuid(), current_fsgid(),
++				(u8) (tomoyo_flags >> 24),
++				(u8) (tomoyo_flags >> 16),
++				(u8) (tomoyo_flags >> 8), tomoyo_flags &
++				TOMOYO_TASK_IS_EXECUTE_HANDLER ? "" : "!");
 +	}
-+	if (!tomoyo_is_correct_path(start, 0, 0, 0))
-+		return NULL;
-+	return tomoyo_get_name(start);
-+}
-+
-+/**
-+ * tomoyo_parse_argv - Parse an argv[] condition part.
-+ *
-+ * @start: String to parse.
-+ * @argv:  Pointer to "struct tomoyo_argv_entry".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+static bool tomoyo_parse_argv(char *start, struct tomoyo_argv_entry *argv)
-+{
-+	unsigned long index;
-+	const struct tomoyo_path_info *value;
-+	bool is_not;
-+	char c;
-+	if (tomoyo_parse_ulong(&index, &start) != TOMOYO_VALUE_TYPE_DECIMAL)
-+		goto out;
-+	if (*start++ != ']')
-+		goto out;
-+	c = *start++;
-+	if (c == '=')
-+		is_not = false;
-+	else if (c == '!' && *start++ == '=')
-+		is_not = true;
-+	else
-+		goto out;
-+	value = tomoyo_get_dqword(start);
-+	if (!value)
-+		goto out;
-+	argv->index = index;
-+	argv->is_not = is_not;
-+	argv->value = value;
-+	return true;
-+ out:
-+	return false;
-+}
-+
-+/**
-+ * tomoyo_parse_envp - Parse an envp[] condition part.
-+ *
-+ * @start: String to parse.
-+ * @envp:  Pointer to "struct tomoyo_envp_entry".
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+static bool tomoyo_parse_envp(char *start, struct tomoyo_envp_entry *envp)
-+{
-+	const struct tomoyo_path_info *name;
-+	const struct tomoyo_path_info *value;
-+	bool is_not;
-+	char *cp = start;
-+	/*
-+	 * Since environment variable names don't
-+	 * contain '=', I can treat '"]=' and '"]!='
-+	 * sequences as delimiters.
-+	 */
-+	while (1) {
-+		if (!strncmp(start, "\"]=", 3)) {
-+			is_not = false;
-+			*start = '\0';
-+			start += 3;
-+			break;
-+		} else if (!strncmp(start, "\"]!=", 4)) {
-+			is_not = true;
-+			*start = '\0';
-+			start += 4;
-+			break;
-+		} else if (!*start++) {
-+			goto out;
-+		}
++	if (!obj || !tomoyo_profile(r->profile)->audit->audit_path_info)
++		goto no_obj_info;
++	if (!obj->validate_done) {
++		tomoyo_get_attributes(obj);
++		obj->validate_done = true;
 +	}
-+	if (!*cp || !tomoyo_is_correct_path(cp, 0, 0, 0))
-+		goto out;
-+	name = tomoyo_get_name(cp);
-+	if (!name)
-+		goto out;
-+	if (!strcmp(start, "NULL")) {
-+		value = NULL;
-+	} else {
-+		value = tomoyo_get_dqword(start);
-+		if (!value)
-+			goto out;
++	if (obj->path1_valid) {
++		dev = obj->path1_stat.dev;
++		mode = obj->path1_stat.mode;
++		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
++				" path1={ uid=%u gid=%u ino=%lu major=%u"
++				" minor=%u perm=0%o type=%s",
++				obj->path1_stat.uid, obj->path1_stat.gid,
++				(unsigned long) obj->path1_stat.ino,
++				MAJOR(dev), MINOR(dev), mode & S_IALLUGO,
++				tomoyo_filetype(mode & S_IFMT));
++		if (S_ISCHR(mode) || S_ISBLK(mode)) {
++			dev = obj->path1_stat.rdev;
++			pos += snprintf(buffer + pos,
++					tomoyo_buffer_len - 1 - pos,
++					" dev_major=%u dev_minor=%u",
++					MAJOR(dev), MINOR(dev));
++		}
++		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
++				" }");
 +	}
-+	envp->name = name;
-+	envp->is_not = is_not;
-+	envp->value = value;
-+	return true;
-+ out:
-+	return false;
-+}
-+
-+/* The list for "struct tomoyo_condition". */
-+static LIST_HEAD(tomoyo_condition_list);
-+
-+const char *tomoyo_condition_keyword[TOMOYO_MAX_CONDITION_KEYWORD] = {
-+	[TOMOYO_TASK_UID]             = "task.uid",
-+	[TOMOYO_TASK_EUID]            = "task.euid",
-+	[TOMOYO_TASK_SUID]            = "task.suid",
-+	[TOMOYO_TASK_FSUID]           = "task.fsuid",
-+	[TOMOYO_TASK_GID]             = "task.gid",
-+	[TOMOYO_TASK_EGID]            = "task.egid",
-+	[TOMOYO_TASK_SGID]            = "task.sgid",
-+	[TOMOYO_TASK_FSGID]           = "task.fsgid",
-+	[TOMOYO_TASK_PID]             = "task.pid",
-+	[TOMOYO_TASK_PPID]            = "task.ppid",
-+	[TOMOYO_EXEC_ARGC]            = "exec.argc",
-+	[TOMOYO_EXEC_ENVC]            = "exec.envc",
-+	[TOMOYO_TASK_STATE_0]         = "task.state[0]",
-+	[TOMOYO_TASK_STATE_1]         = "task.state[1]",
-+	[TOMOYO_TASK_STATE_2]         = "task.state[2]",
-+	[TOMOYO_TYPE_IS_SOCKET]       = "socket",
-+	[TOMOYO_TYPE_IS_SYMLINK]      = "symlink",
-+	[TOMOYO_TYPE_IS_FILE]         = "file",
-+	[TOMOYO_TYPE_IS_BLOCK_DEV]    = "block",
-+	[TOMOYO_TYPE_IS_DIRECTORY]    = "directory",
-+	[TOMOYO_TYPE_IS_CHAR_DEV]     = "char",
-+	[TOMOYO_TYPE_IS_FIFO]         = "fifo",
-+	[TOMOYO_MODE_SETUID]          = "setuid",
-+	[TOMOYO_MODE_SETGID]          = "setgid",
-+	[TOMOYO_MODE_STICKY]          = "sticky",
-+	[TOMOYO_MODE_OWNER_READ]      = "owner_read",
-+	[TOMOYO_MODE_OWNER_WRITE]     = "owner_write",
-+	[TOMOYO_MODE_OWNER_EXECUTE]   = "owner_execute",
-+	[TOMOYO_MODE_GROUP_READ]      = "group_read",
-+	[TOMOYO_MODE_GROUP_WRITE]     = "group_write",
-+	[TOMOYO_MODE_GROUP_EXECUTE]   = "group_execute",
-+	[TOMOYO_MODE_OTHERS_READ]     = "others_read",
-+	[TOMOYO_MODE_OTHERS_WRITE]    = "others_write",
-+	[TOMOYO_MODE_OTHERS_EXECUTE]  = "others_execute",
-+	[TOMOYO_TASK_TYPE]            = "task.type",
-+	[TOMOYO_TASK_EXECUTE_HANDLER] = "execute_handler",
-+	[TOMOYO_EXEC_REALPATH]        = "exec.realpath",
-+	[TOMOYO_SYMLINK_TARGET]       = "symlink.target",
-+	[TOMOYO_PATH1_UID]            = "path1.uid",
-+	[TOMOYO_PATH1_GID]            = "path1.gid",
-+	[TOMOYO_PATH1_INO]            = "path1.ino",
-+	[TOMOYO_PATH1_MAJOR]          = "path1.major",
-+	[TOMOYO_PATH1_MINOR]          = "path1.minor",
-+	[TOMOYO_PATH1_PERM]           = "path1.perm",
-+	[TOMOYO_PATH1_TYPE]           = "path1.type",
-+	[TOMOYO_PATH1_DEV_MAJOR]      = "path1.dev_major",
-+	[TOMOYO_PATH1_DEV_MINOR]      = "path1.dev_minor",
-+	[TOMOYO_PATH2_UID]            = "path2.uid",
-+	[TOMOYO_PATH2_GID]            = "path2.gid",
-+	[TOMOYO_PATH2_INO]            = "path2.ino",
-+	[TOMOYO_PATH2_MAJOR]          = "path2.major",
-+	[TOMOYO_PATH2_MINOR]          = "path2.minor",
-+	[TOMOYO_PATH2_PERM]           = "path2.perm",
-+	[TOMOYO_PATH2_TYPE]           = "path2.type",
-+	[TOMOYO_PATH2_DEV_MAJOR]      = "path2.dev_major",
-+	[TOMOYO_PATH2_DEV_MINOR]      = "path2.dev_minor",
-+	[TOMOYO_PATH1_PARENT_UID]     = "path1.parent.uid",
-+	[TOMOYO_PATH1_PARENT_GID]     = "path1.parent.gid",
-+	[TOMOYO_PATH1_PARENT_INO]     = "path1.parent.ino",
-+	[TOMOYO_PATH1_PARENT_PERM]    = "path1.parent.perm",
-+	[TOMOYO_PATH2_PARENT_UID]     = "path2.parent.uid",
-+	[TOMOYO_PATH2_PARENT_GID]     = "path2.parent.gid",
-+	[TOMOYO_PATH2_PARENT_INO]     = "path2.parent.ino",
-+	[TOMOYO_PATH2_PARENT_PERM]    = "path2.parent.perm",
-+};
-+
-+/**
-+ * tomoyo_parse_post_condition - Parse post-condition part.
-+ *
-+ * @condition:  String to parse.
-+ * @post_state: Buffer to store post-condition part.
-+ *
-+ * Returns true on success, false otherwise.
-+ */
-+static bool tomoyo_parse_post_condition(char * const condition,
-+					u8 post_state[4])
-+{
-+	char *start = strstr(condition, "; set ");
-+	if (!start)
-+		return true;
-+	*start = '\0';
-+	start += 6;
-+	while (1) {
-+		int i;
-+		unsigned long value;
-+		while (*start == ' ')
-+			start++;
-+		if (!*start)
-+			break;
-+		if (!strncmp(start, "task.state[0]=", 14))
-+			i = 0;
-+		else if (!strncmp(start, "task.state[1]=", 14))
-+			i = 1;
-+		else if (!strncmp(start, "task.state[2]=", 14))
-+			i = 2;
-+		else
-+			goto out;
-+		start += 14;
-+		if (post_state[3] & (1 << i))
-+			goto out;
-+		post_state[3] |= 1 << i;
-+		if (!tomoyo_parse_ulong(&value, &start) || value > 255)
-+			goto out;
-+		post_state[i] = (u8) value;
++	if (obj->path1_parent_valid) {
++		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
++				" path1.parent={ uid=%u gid=%u ino=%lu"
++				" perm=0%o }", obj->path1_parent_stat.uid,
++				obj->path1_parent_stat.gid,
++				obj->path1_parent_stat.ino,
++				obj->path1_parent_stat.mode & S_IALLUGO);
 +	}
-+	return true;
-+ out:
-+	return false;
-+}
-+
-+/**
-+ * tomoyo_get_condition - Parse condition part.
-+ *
-+ * @condition: Pointer to string to parse.
-+ *
-+ * Returns pointer to "struct tomoyo_condition" on success, NULL otherwise.
-+ */
-+struct tomoyo_condition *tomoyo_get_condition(char * const condition)
-+{
-+	static const bool debug;
-+	char *start = condition;
-+	struct tomoyo_condition *entry = NULL;
-+	struct tomoyo_condition *ptr;
-+	struct tomoyo_condition_element *condp;
-+	struct tomoyo_number_union *numbers_p;
-+	struct tomoyo_name_union *names_p;
-+	struct tomoyo_argv_entry *argv;
-+	struct tomoyo_envp_entry *envp;
-+	u32 size;
-+	u8 i;
-+	bool found = false;
-+	u16 condc = 0;
-+	u16 numbers_count = 0;
-+	u16 names_count = 0;
-+	u16 argc = 0;
-+	u16 envc = 0;
-+	u8 post_state[4] = { 0, 0, 0, 0 };
-+	char *end_of_string;
-+	if (!tomoyo_parse_post_condition(start, post_state))
-+		goto out;
-+	start = condition;
-+	if (!strncmp(start, "if ", 3))
-+		start += 3;
-+	else if (*start)
-+		return NULL;
-+	end_of_string = start + strlen(start);
-+	while (1) {
-+		u8 left;
-+		u8 right;
-+		char *word = start;
-+		char *cp;
-+		char *eq;
-+		bool is_not = false;
-+		if (!*word)
-+			break;
-+		cp = strchr(start, ' ');
-+		if (cp) {
-+			*cp = '\0';
-+			start = cp + 1;
-+		} else {
-+			start = "";
++	if (obj->path2_valid) {
++		dev = obj->path2_stat.dev;
++		mode = obj->path2_stat.mode;
++		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
++				" path2={ uid=%u gid=%u ino=%lu major=%u"
++				" minor=%u perm=0%o type=%s",
++				obj->path2_stat.uid, obj->path2_stat.gid,
++				(unsigned long) obj->path2_stat.ino,
++				MAJOR(dev), MINOR(dev), mode & S_IALLUGO,
++				tomoyo_filetype(mode & S_IFMT));
++		if (S_ISCHR(mode) || S_ISBLK(mode)) {
++			dev = obj->path2_stat.rdev;
++			pos += snprintf(buffer + pos,
++					tomoyo_buffer_len - 1 - pos,
++					" dev_major=%u dev_minor=%u",
++					MAJOR(dev), MINOR(dev));
 +		}
-+		if (debug)
-+			printk(KERN_WARNING "%u: <%s>\n", __LINE__, word);
-+		if (!strncmp(word, "exec.argv[", 10)) {
-+			argc++;
-+			condc++;
-+			continue;
-+		} else if (!strncmp(word, "exec.envp[\"", 11)) {
-+			envc++;
-+			condc++;
-+			continue;
-+		}
-+		eq = strchr(word, '=');
-+		if (!eq)
-+			goto out;
-+		if (eq > word && *(eq - 1) == '!') {
-+			is_not = true;
-+			eq--;
-+		}
-+		*eq = '\0';
-+		for (left = 0; left < TOMOYO_MAX_CONDITION_KEYWORD; left++) {
-+			if (strcmp(word, tomoyo_condition_keyword[left]))
-+				continue;
-+			break;
-+		}
-+		if (debug)
-+			printk(KERN_WARNING "%u: <%s> left=%u\n", __LINE__,
-+			       word, left);
-+		if (left == TOMOYO_MAX_CONDITION_KEYWORD)
-+			numbers_count++;
-+		*eq = is_not ? '!' : '=';
-+		word = eq + 1;
-+		if (is_not)
-+			word++;
-+		condc++;
-+		if (debug)
-+			printk(KERN_WARNING "%u: <%s> left=%u\n", __LINE__,
-+			       word, left);
-+		if (left == TOMOYO_EXEC_REALPATH ||
-+		    left == TOMOYO_SYMLINK_TARGET) {
-+			names_count++;
-+			continue;
-+		}
-+		for (right = 0; right < TOMOYO_MAX_CONDITION_KEYWORD;
-+		     right++) {
-+			if (strcmp(word, tomoyo_condition_keyword[right]))
-+				continue;
-+			break;
-+		}
-+		if (debug)
-+			printk(KERN_WARNING "%u: <%s> right=%u\n", __LINE__,
-+			       word, right);
-+		if (right == TOMOYO_MAX_CONDITION_KEYWORD)
-+			numbers_count++;
++		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
++				" }");
 +	}
-+	if (debug)
-+		printk(KERN_DEBUG "%u: cond=%u numbers=%u names=%u ac=%u "
-+		       "ec=%u\n", __LINE__, condc, numbers_count, names_count,
-+		       argc, envc);
-+	size = sizeof(*entry)
-+		+ condc * sizeof(struct tomoyo_condition_element)
-+		+ numbers_count * sizeof(struct tomoyo_number_union)
-+		+ names_count * sizeof(struct tomoyo_name_union)
-+		+ argc * sizeof(struct tomoyo_argv_entry)
-+		+ envc * sizeof(struct tomoyo_envp_entry);
-+	entry = kzalloc(size, GFP_KERNEL);
-+	if (!entry)
-+		return NULL;
-+	atomic_set(&entry->users, 1);
-+	INIT_LIST_HEAD(&entry->list);
-+	for (i = 0; i < 4; i++)
-+		entry->post_state[i] = post_state[i];
-+	entry->condc = condc;
-+	entry->numbers_count = numbers_count;
-+	entry->names_count = names_count;
-+	entry->argc = argc;
-+	entry->envc = envc;
-+	condp = (struct tomoyo_condition_element *) (entry + 1);
-+	numbers_p = (struct tomoyo_number_union *) (condp + condc);
-+	names_p = (struct tomoyo_name_union *) (numbers_p + numbers_count);
-+	argv = (struct tomoyo_argv_entry *) (names_p + names_count);
-+	envp = (struct tomoyo_envp_entry *) (argv + argc);
-+	for (start = condition; start < end_of_string; start++)
-+		if (!*start)
-+			*start = ' ';
-+	start = condition;
-+	if (!strncmp(start, "if ", 3))
-+		start += 3;
-+	else if (*start)
-+		goto out;
-+	while (1) {
-+		u8 left;
-+		u8 right;
-+		char *word = start;
-+		char *cp;
-+		char *eq;
-+		bool is_not = false;
-+		if (!*word)
-+			break;
-+		cp = strchr(start, ' ');
-+		if (cp) {
-+			*cp = '\0';
-+			start = cp + 1;
-+		} else {
-+			start = "";
-+		}
-+		if (debug)
-+			printk(KERN_WARNING "%u: <%s>\n", __LINE__, word);
-+		if (!strncmp(word, "exec.argv[", 10)) {
-+			if (!tomoyo_parse_argv(word + 10, argv))
-+				goto out;
-+			argv++;
-+			argc--;
-+			condc--;
-+			left = TOMOYO_ARGV_ENTRY;
-+			right = -1;
-+			goto store_value;
-+		} else if (!strncmp(word, "exec.envp[\"", 11)) {
-+			if (!tomoyo_parse_envp(word + 11, envp))
-+				goto out;
-+			envp++;
-+			envc--;
-+			condc--;
-+			left = TOMOYO_ENVP_ENTRY;
-+			right = -1;
-+			goto store_value;
-+		}
-+		eq = strchr(word, '=');
-+		if (!eq) {
-+			if (debug)
-+				printk(KERN_WARNING "%u: No operator.\n",
-+				       __LINE__);
-+			goto out;
-+		}
-+		if (eq > word && *(eq - 1) == '!') {
-+			is_not = true;
-+			eq--;
-+		}
-+		*eq = '\0';
-+		for (left = 0; left < TOMOYO_MAX_CONDITION_KEYWORD; left++) {
-+			if (strcmp(word, tomoyo_condition_keyword[left]))
-+				continue;
-+			break;
-+		}
-+		if (debug)
-+			printk(KERN_WARNING "%u: <%s> left=%u\n", __LINE__,
-+			       word, left);
-+		if (left == TOMOYO_MAX_CONDITION_KEYWORD) {
-+			left = TOMOYO_NUMBER_UNION;
-+			if (!tomoyo_parse_number_union(word, numbers_p))
-+				goto out;
-+			if (numbers_p->is_group)
-+				goto out;
-+			numbers_p++;
-+			numbers_count--;
-+		}
-+		*eq = is_not ? '!' : '=';
-+		word = eq + 1;
-+		if (is_not)
-+			word++;
-+		condc--;
-+		if (debug)
-+			printk(KERN_WARNING "%u: <%s> left=%u\n", __LINE__,
-+			       word, left);
-+		if (left == TOMOYO_EXEC_REALPATH ||
-+		    left == TOMOYO_SYMLINK_TARGET) {
-+			right = TOMOYO_NAME_UNION;
-+			if (!tomoyo_parse_name_union_quoted(word, names_p++))
-+				goto out;
-+			names_count--;
-+			goto store_value;
-+		}
-+		for (right = 0; right < TOMOYO_MAX_CONDITION_KEYWORD;
-+		     right++) {
-+			if (strcmp(word, tomoyo_condition_keyword[right]))
-+				continue;
-+			break;
-+		}
-+		if (right == TOMOYO_MAX_CONDITION_KEYWORD) {
-+			right = TOMOYO_NUMBER_UNION;
-+			if (!tomoyo_parse_number_union(word, numbers_p++))
-+				goto out;
-+			numbers_count--;
-+		}
-+ store_value:
-+		condp->left = left;
-+		condp->right = right;
-+		condp->equals = !is_not;
-+		if (debug)
-+			printk(KERN_WARNING "%u: left=%u right=%u match=%u\n",
-+			       __LINE__, condp->left, condp->right,
-+			       condp->equals);
-+		condp++;
++	if (obj->path2_parent_valid) {
++		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
++				" path2.parent={ uid=%u gid=%u ino=%lu"
++				" perm=0%o }", obj->path2_parent_stat.uid,
++				obj->path2_parent_stat.gid,
++				obj->path2_parent_stat.ino,
++				obj->path2_parent_stat.mode & S_IALLUGO);
 +	}
-+	if (debug) {
-+		for (start = condition; start < end_of_string; start++)
-+			if (!*start)
-+				*start = ' ';
-+		printk(KERN_DEBUG "%u: <%s> cond=%u numbers=%u names=%u ac=%u "
-+		       "ec=%u\n", __LINE__, condition, condc, numbers_count,
-+		       names_count, argc, envc);
-+	}
-+	BUG_ON(names_count);
-+	BUG_ON(numbers_count);
-+	BUG_ON(argc);
-+	BUG_ON(envc);
-+	BUG_ON(condc);
-+	entry->size = size;
-+	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(ptr, &tomoyo_condition_list, list) {
-+		if (tomoyo_memcmp(ptr, entry, offsetof(typeof(*entry), size),
-+				  size))
-+			continue;
-+		/* Same entry found. Share this entry. */
-+		atomic_inc(&ptr->users);
-+		found = true;
-+		break;
-+	}
-+	if (!found) {
-+		if (tomoyo_memory_ok(entry, size)) {
-+			list_add_rcu(&entry->list, &tomoyo_condition_list);
-+		} else {
-+			found = true;
-+			ptr = NULL;
-+		}
-+	}
-+	mutex_unlock(&tomoyo_policy_lock);
-+	if (found) {
-+		entry->size = 0;
-+		tomoyo_put_condition(entry);
-+		entry = ptr;
-+	}
-+	return entry;
-+ out:
-+	if (debug)
-+		printk(KERN_WARNING "%u: %s failed\n", __LINE__, __func__);
-+	tomoyo_put_condition(entry);
++ no_obj_info:
++	if (pos < tomoyo_buffer_len - 1)
++		return buffer;
++	kfree(buffer);
 +	return NULL;
 +}
 +
 +/**
-+ * tomoyo_get_attributes - Revalidate "struct inode".
++ * tomoyo_init_audit_log - Allocate buffer for audit logs.
 + *
-+ * @obj: Pointer to "struct tomoyo_obj_info".
++ * @len: Required size.
++ * @r:   Pointer to "struct tomoyo_request_info".
 + *
-+ * Returns nothing.
++ * Returns pointer to allocated memory.
++ *
++ * The @len is updated to add the header lines' size on success.
 + */
-+void tomoyo_get_attributes(struct tomoyo_obj_info *obj)
++char *tomoyo_init_audit_log(int *len, struct tomoyo_request_info *r)
 +{
-+	struct vfsmount *mnt;
-+	struct dentry *dentry;
-+	struct inode *inode;
-+	struct kstat stat;
-+
-+	if (!obj->path1.mnt)
-+		goto no_path1;
-+
-+	/* Get information on "path1". */
-+	mnt = obj->path1.mnt;
-+	dentry = obj->path1.dentry;
-+	inode = dentry->d_inode;
-+	if (inode) {
-+		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
-+			/* Nothing to do. */
-+		} else {
-+			obj->path1_stat.uid = stat.uid;
-+			obj->path1_stat.gid = stat.gid;
-+			obj->path1_stat.ino = stat.ino;
-+			obj->path1_stat.mode = stat.mode;
-+			obj->path1_stat.dev = stat.dev;
-+			obj->path1_stat.rdev = stat.rdev;
-+			obj->path1_valid = true;
-+		}
++	char *buf = NULL;
++	char *bprm_info = NULL;
++	char *realpath = NULL;
++	const char *symlink = NULL;
++	const char *header = NULL;
++	int pos;
++	const char *domainname;
++	if (!r->domain)
++		r->domain = tomoyo_current_domain();
++	domainname = r->domain->domainname->name;
++	header = tomoyo_print_header(r);
++	if (!header)
++		return NULL;
++	*len += strlen(domainname) + strlen(header) + 10;
++	if (r->ee) {
++		struct file *file = r->ee->bprm->file;
++		realpath = tomoyo_realpath_from_path(&file->f_path);
++		bprm_info = tomoyo_print_bprm(r->ee->bprm, &r->ee->dump);
++		if (!realpath || !bprm_info)
++			goto out;
++		*len += strlen(realpath) + 64 + strlen(bprm_info);
++	} else if (r->obj && r->obj->symlink_target) {
++		symlink = r->obj->symlink_target->name;
++		*len += 18 + strlen(symlink);
 +	}
-+
-+	/* Get information on "path1.parent". */
-+	dentry = dget_parent(obj->path1.dentry);
-+	inode = dentry->d_inode;
-+	if (inode) {
-+		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
-+			/* Nothing to do. */
-+		} else {
-+			obj->path1_parent_stat.uid = stat.uid;
-+			obj->path1_parent_stat.gid = stat.gid;
-+			obj->path1_parent_stat.ino = stat.ino;
-+			obj->path1_parent_stat.mode = stat.mode;
-+			obj->path1_parent_stat.dev = stat.dev;
-+			obj->path1_parent_stat.rdev = stat.rdev;
-+			obj->path1_parent_valid = true;
-+		}
-+	}
-+	dput(dentry);
-+
-+ no_path1:
-+	mnt = obj->path2.mnt;
-+	if (!mnt)
-+		return;
-+
-+	/* Get information on "path2". */
-+	dentry = obj->path2.dentry;
-+	inode = dentry->d_inode;
-+	if (inode) {
-+		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
-+			/* Nothing to do. */
-+		} else {
-+			obj->path2_stat.uid = stat.uid;
-+			obj->path2_stat.gid = stat.gid;
-+			obj->path2_stat.ino = stat.ino;
-+			obj->path2_stat.mode = stat.mode;
-+			obj->path2_stat.dev = stat.dev;
-+			obj->path2_stat.rdev = stat.rdev;
-+			obj->path2_valid = true;
-+		}
-+	}
-+
-+	/* Get information on "path2.parent". */
-+	dentry = dget_parent(obj->path2.dentry);
-+	inode = dentry->d_inode;
-+	if (inode) {
-+		if (!inode->i_op || vfs_getattr(mnt, dentry, &stat)) {
-+			/* Nothing to do. */
-+		} else {
-+			obj->path2_parent_stat.uid = stat.uid;
-+			obj->path2_parent_stat.gid = stat.gid;
-+			obj->path2_parent_stat.ino = stat.ino;
-+			obj->path2_parent_stat.mode = stat.mode;
-+			obj->path2_parent_stat.dev = stat.dev;
-+			obj->path2_parent_stat.rdev = stat.rdev;
-+			obj->path2_parent_valid = true;
-+		}
-+	}
-+	dput(dentry);
++	buf = kzalloc(*len, GFP_KERNEL);
++	if (!buf)
++		goto out;
++	pos = snprintf(buf, (*len) - 1, "%s", header);
++	if (realpath) {
++		struct linux_binprm *bprm = r->ee->bprm;
++		pos += snprintf(buf + pos, (*len) - 1 - pos,
++				" exec={ realpath=\"%s\" argc=%d envc=%d %s }",
++				realpath, bprm->argc, bprm->envc, bprm_info);
++	} else if (symlink)
++		pos += snprintf(buf + pos, (*len) - 1 - pos,
++				" symlink.target=\"%s\"", symlink);
++	snprintf(buf + pos, (*len) - 1 - pos, "\n%s\n", domainname);
++ out:
++	kfree(realpath);
++	kfree(bprm_info);
++	kfree(header);
++	return buf;
 +}
 +
 +/**
-+ * tomoyo_condition - Check condition part.
++ * tomoyo_update_task_state - Update task's state.
 + *
-+ * @r:    Pointer to "struct tomoyo_request_info".
-+ * @acl: Pointer to "struct tomoyo_acl_info".
-+ *
-+ * Returns true on success, false otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
++ * @r: Pointer to "struct tomoyo_request_info".
 + */
-+bool tomoyo_condition(struct tomoyo_request_info *r,
-+		      const struct tomoyo_acl_info *acl)
++static void tomoyo_update_task_state(struct tomoyo_request_info *r)
 +{
-+	const struct task_struct *task = current;
-+	u32 i;
-+	unsigned long left_min = 0;
-+	unsigned long left_max = 0;
-+	unsigned long right_min = 0;
-+	unsigned long right_max = 0;
-+	const struct tomoyo_condition_element *condp;
-+	const struct tomoyo_number_union *numbers_p;
-+	const struct tomoyo_name_union *names_p;
-+	const struct tomoyo_argv_entry *argv;
-+	const struct tomoyo_envp_entry *envp;
-+	struct tomoyo_obj_info *obj;
-+	u16 condc;
-+	u16 argc;
-+	u16 envc;
-+	struct linux_binprm *bprm = NULL;
-+	const struct tomoyo_condition *cond = acl->cond;
-+	if (!cond)
-+		return true;
-+	condc = cond->condc;
-+	argc = cond->argc;
-+	envc = cond->envc;
-+	obj = r->obj;
-+	if (r->ee)
-+		bprm = r->ee->bprm;
-+	if (!bprm && (argc || envc))
-+		return false;
-+	condp = (struct tomoyo_condition_element *) (cond + 1);
-+	numbers_p = (const struct tomoyo_number_union *) (condp + condc);
-+	names_p = (const struct tomoyo_name_union *)
-+		(numbers_p + cond->numbers_count);
-+	argv = (const struct tomoyo_argv_entry *) (names_p +
-+						   cond->names_count);
-+	envp = (const struct tomoyo_envp_entry *) (argv + argc);
-+	for (i = 0; i < condc; i++) {
-+		const bool match = condp->equals;
-+		const u8 left = condp->left;
-+		const u8 right = condp->right;
-+		bool left_is_bitop = false;
-+		bool right_is_bitop = false;
-+		u8 j;
-+		condp++;
-+		/* Check argv[] and envp[] later. */
-+		if (left == TOMOYO_ARGV_ENTRY || left == TOMOYO_ENVP_ENTRY)
-+			continue;
-+		/* Check string expressions. */
-+		if (right == TOMOYO_NAME_UNION) {
-+			const struct tomoyo_name_union *ptr = names_p++;
-+			switch (left) {
-+				struct tomoyo_path_info *symlink;
-+				struct tomoyo_execve_entry *ee;
-+				struct file *file;
-+			case TOMOYO_SYMLINK_TARGET:
-+				symlink = obj->symlink_target;
-+				if (!symlink ||
-+				    tomoyo_compare_name_union(symlink, ptr)
-+				    != match)
-+					goto out;
-+				break;
-+			case TOMOYO_EXEC_REALPATH:
-+				ee = r->ee;
-+				file = ee ? ee->bprm->file : NULL;
-+				if (!tomoyo_scan_exec_realpath(file, ptr,
-+							       match))
-+					goto out;
-+				break;
-+			}
-+			continue;
++	/*
++	 * Don't change the lowest byte because it is reserved for
++	 * TOMOYO_TASK_IS_IN_EXECVE /
++	 * TOMOYO_DONT_SLEEP_ON_ENFORCE_ERROR /
++	 * TOMOYO_TASK_IS_EXECUTE_HANDLER / TOMOYO_TASK_IS_POLICY_MANAGER .
++	 */
++	const struct tomoyo_condition *ptr = r->cond;
++	if (ptr) {
++		struct task_struct *task = current;
++		const u8 flags = ptr->post_state[3];
++		u32 tomoyo_flags = task->tomoyo_flags;
++		if (flags & 1) {
++			tomoyo_flags &= ~0xFF000000;
++			tomoyo_flags |= ptr->post_state[0] << 24;
 +		}
-+		/* Check numeric or bit-op expressions. */
-+		for (j = 0; j < 2; j++) {
-+			const u8 index = j ? right : left;
-+			unsigned long value = 0;
-+			bool is_bitop = false;
-+			switch (index) {
-+			case TOMOYO_TASK_UID:
-+				value = current_uid();
-+				break;
-+			case TOMOYO_TASK_EUID:
-+				value = current_euid();
-+				break;
-+			case TOMOYO_TASK_SUID:
-+				value = current_suid();
-+				break;
-+			case TOMOYO_TASK_FSUID:
-+				value = current_fsuid();
-+				break;
-+			case TOMOYO_TASK_GID:
-+				value = current_gid();
-+				break;
-+			case TOMOYO_TASK_EGID:
-+				value = current_egid();
-+				break;
-+			case TOMOYO_TASK_SGID:
-+				value = current_sgid();
-+				break;
-+			case TOMOYO_TASK_FSGID:
-+				value = current_fsgid();
-+				break;
-+			case TOMOYO_TASK_PID:
-+				value = sys_getpid();
-+				break;
-+			case TOMOYO_TASK_PPID:
-+				value = sys_getppid();
-+				break;
-+			case TOMOYO_TYPE_IS_SOCKET:
-+				value = S_IFSOCK;
-+				break;
-+			case TOMOYO_TYPE_IS_SYMLINK:
-+				value = S_IFLNK;
-+				break;
-+			case TOMOYO_TYPE_IS_FILE:
-+				value = S_IFREG;
-+				break;
-+			case TOMOYO_TYPE_IS_BLOCK_DEV:
-+				value = S_IFBLK;
-+				break;
-+			case TOMOYO_TYPE_IS_DIRECTORY:
-+				value = S_IFDIR;
-+				break;
-+			case TOMOYO_TYPE_IS_CHAR_DEV:
-+				value = S_IFCHR;
-+				break;
-+			case TOMOYO_TYPE_IS_FIFO:
-+				value = S_IFIFO;
-+				break;
-+			case TOMOYO_MODE_SETUID:
-+				value = S_ISUID;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_SETGID:
-+				value = S_ISGID;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_STICKY:
-+				value = S_ISVTX;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_OWNER_READ:
-+				value = S_IRUSR;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_OWNER_WRITE:
-+				value = S_IWUSR;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_OWNER_EXECUTE:
-+				value = S_IXUSR;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_GROUP_READ:
-+				value = S_IRGRP;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_GROUP_WRITE:
-+				value = S_IWGRP;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_GROUP_EXECUTE:
-+				value = S_IXGRP;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_OTHERS_READ:
-+				value = S_IROTH;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_OTHERS_WRITE:
-+				value = S_IWOTH;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_MODE_OTHERS_EXECUTE:
-+				value = S_IXOTH;
-+				is_bitop = true;
-+				break;
-+			case TOMOYO_EXEC_ARGC:
-+				if (!bprm)
-+					goto out;
-+				value = bprm->argc;
-+				break;
-+			case TOMOYO_EXEC_ENVC:
-+				if (!bprm)
-+					goto out;
-+				value = bprm->envc;
-+				break;
-+			case TOMOYO_TASK_STATE_0:
-+				value = (u8) (task->tomoyo_flags >> 24);
-+				break;
-+			case TOMOYO_TASK_STATE_1:
-+				value = (u8) (task->tomoyo_flags >> 16);
-+				break;
-+			case TOMOYO_TASK_STATE_2:
-+				value = (u8) (task->tomoyo_flags >> 8);
-+				break;
-+			case TOMOYO_TASK_TYPE:
-+				value = ((u8) task->tomoyo_flags)
-+					& TOMOYO_TASK_IS_EXECUTE_HANDLER;
-+				break;
-+			case TOMOYO_TASK_EXECUTE_HANDLER:
-+				value = TOMOYO_TASK_IS_EXECUTE_HANDLER;
-+				break;
-+			case TOMOYO_NUMBER_UNION:
-+				/* Fetch values later. */
-+				break;
-+			default:
-+				if (!obj)
-+					goto out;
-+				if (!obj->validate_done) {
-+					tomoyo_get_attributes(obj);
-+					obj->validate_done = true;
-+				}
-+				switch (index) {
-+				case TOMOYO_PATH1_UID:
-+					if (!obj->path1_valid)
-+						goto out;
-+					value = obj->path1_stat.uid;
-+					break;
-+				case TOMOYO_PATH1_GID:
-+					if (!obj->path1_valid)
-+						goto out;
-+					value = obj->path1_stat.gid;
-+					break;
-+				case TOMOYO_PATH1_INO:
-+					if (!obj->path1_valid)
-+						goto out;
-+					value = obj->path1_stat.ino;
-+					break;
-+				case TOMOYO_PATH1_MAJOR:
-+					if (!obj->path1_valid)
-+						goto out;
-+					value = MAJOR(obj->path1_stat.dev);
-+					break;
-+				case TOMOYO_PATH1_MINOR:
-+					if (!obj->path1_valid)
-+						goto out;
-+					value = MINOR(obj->path1_stat.dev);
-+					break;
-+				case TOMOYO_PATH1_TYPE:
-+					if (!obj->path1_valid)
-+						goto out;
-+					value = obj->path1_stat.mode & S_IFMT;
-+					break;
-+				case TOMOYO_PATH1_DEV_MAJOR:
-+					if (!obj->path1_valid)
-+						goto out;
-+					value = MAJOR(obj->path1_stat.rdev);
-+					break;
-+				case TOMOYO_PATH1_DEV_MINOR:
-+					if (!obj->path1_valid)
-+						goto out;
-+					value = MINOR(obj->path1_stat.rdev);
-+					break;
-+				case TOMOYO_PATH1_PERM:
-+					if (!obj->path1_valid)
-+						goto out;
-+					value = obj->path1_stat.mode
-+						& S_IALLUGO;
-+					break;
-+				case TOMOYO_PATH2_UID:
-+					if (!obj->path2_valid)
-+						goto out;
-+					value = obj->path2_stat.uid;
-+					break;
-+				case TOMOYO_PATH2_GID:
-+					if (!obj->path2_valid)
-+						goto out;
-+					value = obj->path2_stat.gid;
-+					break;
-+				case TOMOYO_PATH2_INO:
-+					if (!obj->path2_valid)
-+						goto out;
-+					value = obj->path2_stat.ino;
-+					break;
-+				case TOMOYO_PATH2_MAJOR:
-+					if (!obj->path2_valid)
-+						goto out;
-+					value = MAJOR(obj->path2_stat.dev);
-+					break;
-+				case TOMOYO_PATH2_MINOR:
-+					if (!obj->path2_valid)
-+						goto out;
-+					value = MINOR(obj->path2_stat.dev);
-+					break;
-+				case TOMOYO_PATH2_TYPE:
-+					if (!obj->path2_valid)
-+						goto out;
-+					value = obj->path2_stat.mode & S_IFMT;
-+					break;
-+				case TOMOYO_PATH2_DEV_MAJOR:
-+					if (!obj->path2_valid)
-+						goto out;
-+					value = MAJOR(obj->path2_stat.rdev);
-+					break;
-+				case TOMOYO_PATH2_DEV_MINOR:
-+					if (!obj->path2_valid)
-+						goto out;
-+					value = MINOR(obj->path2_stat.rdev);
-+					break;
-+				case TOMOYO_PATH2_PERM:
-+					if (!obj->path2_valid)
-+						goto out;
-+					value = obj->path2_stat.mode
-+						& S_IALLUGO;
-+					break;
-+				case TOMOYO_PATH1_PARENT_UID:
-+					if (!obj->path1_parent_valid)
-+						goto out;
-+					value = obj->path1_parent_stat.uid;
-+					break;
-+				case TOMOYO_PATH1_PARENT_GID:
-+					if (!obj->path1_parent_valid)
-+						goto out;
-+					value = obj->path1_parent_stat.gid;
-+					break;
-+				case TOMOYO_PATH1_PARENT_INO:
-+					if (!obj->path1_parent_valid)
-+						goto out;
-+					value = obj->path1_parent_stat.ino;
-+					break;
-+				case TOMOYO_PATH1_PARENT_PERM:
-+					if (!obj->path1_parent_valid)
-+						goto out;
-+					value = obj->path1_parent_stat.mode
-+						& S_IALLUGO;
-+					break;
-+				case TOMOYO_PATH2_PARENT_UID:
-+					if (!obj->path2_parent_valid)
-+						goto out;
-+					value = obj->path2_parent_stat.uid;
-+					break;
-+				case TOMOYO_PATH2_PARENT_GID:
-+					if (!obj->path2_parent_valid)
-+						goto out;
-+					value = obj->path2_parent_stat.gid;
-+					break;
-+				case TOMOYO_PATH2_PARENT_INO:
-+					if (!obj->path2_parent_valid)
-+						goto out;
-+					value = obj->path2_parent_stat.ino;
-+					break;
-+				case TOMOYO_PATH2_PARENT_PERM:
-+					if (!obj->path2_parent_valid)
-+						goto out;
-+					value = obj->path2_parent_stat.mode
-+						& S_IALLUGO;
-+					break;
-+				}
-+				break;
-+			}
-+			value = value;
-+			if (j) {
-+				right_max = value;
-+				right_min = value;
-+				right_is_bitop = is_bitop;
-+			} else {
-+				left_max = value;
-+				left_min = value;
-+				left_is_bitop = is_bitop;
-+			}
++		if (flags & 2) {
++			tomoyo_flags &= ~0x00FF0000;
++			tomoyo_flags |= ptr->post_state[1] << 16;
 +		}
-+		if (left == TOMOYO_NUMBER_UNION) {
-+			/* Fetch values now. */
-+			const struct tomoyo_number_union *ptr = numbers_p++;
-+			left_min = ptr->values[0];
-+			left_max = ptr->values[1];
++		if (flags & 4) {
++			tomoyo_flags &= ~0x0000FF00;
++			tomoyo_flags |= ptr->post_state[2] << 8;
 +		}
-+		if (right == TOMOYO_NUMBER_UNION) {
-+			/* Fetch values now. */
-+			const struct tomoyo_number_union *ptr = numbers_p++;
-+			if (ptr->is_group) {
-+				if (tomoyo_number_matches_group(left_min,
-+								left_max,
-+								ptr->group)
-+				    == match)
-+					continue;
-+			} else {
-+				if ((left_min <= ptr->values[1] &&
-+				     left_max >= ptr->values[0]) == match)
-+					continue;
-+			}
-+			goto out;
-+		}
-+		/*
-+		 * Bit operation is valid only when counterpart value
-+		 * represents permission.
-+		 */
-+		if (left_is_bitop && right_is_bitop)
-+			goto out;
-+		if (left_is_bitop) {
-+			switch (right) {
-+			case TOMOYO_PATH1_PERM:
-+			case TOMOYO_PATH1_PARENT_PERM:
-+			case TOMOYO_PATH2_PERM:
-+			case TOMOYO_PATH2_PARENT_PERM:
-+				if (match) {
-+					if ((right_max & left_max))
-+						continue;
-+				} else {
-+					if (!(right_max & left_max))
-+						continue;
-+				}
-+			}
-+			goto out;
-+		}
-+		if (right_is_bitop) {
-+			switch (left) {
-+			case TOMOYO_PATH1_PERM:
-+			case TOMOYO_PATH1_PARENT_PERM:
-+			case TOMOYO_PATH2_PERM:
-+			case TOMOYO_PATH2_PARENT_PERM:
-+				if (match) {
-+					if ((left_max & right_max))
-+						continue;
-+				} else {
-+					if (!(left_max & right_max))
-+						continue;
-+				}
-+			}
-+			goto out;
-+		}
-+		/* Normal value range comparison. */
-+		if (match) {
-+			if (left_min <= right_max && left_max >= right_min)
-+				continue;
-+		} else {
-+			if (left_min > right_max || left_max < right_min)
-+				continue;
-+		}
-+ out:
-+		return false;
++		task->tomoyo_flags = tomoyo_flags;
++		r->cond = NULL;
 +	}
-+	/* Check argv[] and envp[] now. */
-+	if (r->ee && (argc || envc))
-+		return tomoyo_scan_bprm(r->ee, argc, argv, envc, envp);
-+	return true;
 +}
++
++#ifndef CONFIG_SECURITY_TOMOYO_AUDIT
++
++/**
++ * tomoyo_write_audit_log - Write audit log.
++ *
++ * @is_granted: True if this is a granted log.
++ * @r:          Pointer to "struct tomoyo_request_info".
++ * @fmt:        The printf()'s format string, followed by parameters.
++ *
++ * Returns 0 on success, -ENOMEM otherwise.
++ */
++int tomoyo_write_audit_log(const bool is_granted,
++			   struct tomoyo_request_info *r, const char *fmt, ...)
++{
++	tomoyo_update_task_state(r);
++	return 0;
++}
++
++#else
++
++static DECLARE_WAIT_QUEUE_HEAD(tomoyo_grant_log_wait);
++static DECLARE_WAIT_QUEUE_HEAD(tomoyo_reject_log_wait);
++
++static DEFINE_SPINLOCK(tomoyo_audit_log_lock);
++
++/* Structure for audit log. */
++struct tomoyo_log_entry {
++	struct list_head list;
++	char *log;
++	int size;
++};
++
++/* The list for "struct tomoyo_log_entry". */
++static LIST_HEAD(tomoyo_grant_log);
++
++/* The list for "struct tomoyo_log_entry". */
++static LIST_HEAD(tomoyo_reject_log);
++
++static unsigned int tomoyo_grant_log_count;
++static unsigned int tomoyo_reject_log_count;
++
++/**
++ * tomoyo_write_audit_log - Write audit log.
++ *
++ * @is_granted: True if this is a granted log.
++ * @r:          Pointer to "struct tomoyo_request_info".
++ * @fmt:        The printf()'s format string, followed by parameters.
++ *
++ * Returns 0 on success, -ENOMEM otherwise.
++ */
++int tomoyo_write_audit_log(const bool is_granted,
++			   struct tomoyo_request_info *r, const char *fmt, ...)
++{
++	va_list args;
++	int error = -ENOMEM;
++	int pos;
++	int len;
++	char *buf;
++	struct tomoyo_log_entry *new_entry;
++	bool quota_exceeded = false;
++	if (!r->domain)
++		r->domain = tomoyo_current_domain();
++	if (is_granted) {
++		if (tomoyo_grant_log_count >=
++		    tomoyo_profile(r->domain->profile)->
++		    audit->audit_max_grant_log
++		    || !tomoyo_get_audit(r->profile, r->type, true))
++			goto out;
++	} else {
++		if (tomoyo_reject_log_count >=
++		    tomoyo_profile(r->domain->profile)->
++		    audit->audit_max_reject_log
++		    || !tomoyo_get_audit(r->profile, r->type, false))
++			goto out;
++	}
++	va_start(args, fmt);
++	len = vsnprintf((char *) &pos, sizeof(pos) - 1, fmt, args) + 32;
++	va_end(args);
++	buf = tomoyo_init_audit_log(&len, r);
++	if (!buf)
++		goto out;
++	pos = strlen(buf);
++	va_start(args, fmt);
++	vsnprintf(buf + pos, len - pos - 1, fmt, args);
++	va_end(args);
++	new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
++	if (!new_entry) {
++		kfree(buf);
++		goto out;
++	}
++	new_entry->log = buf;
++	/*
++	 * The new_entry->size is used for memory quota checks.
++	 * Don't go beyond strlen(new_entry->log).
++	 */
++	new_entry->size = tomoyo_round2(len) +
++		tomoyo_round2(sizeof(*new_entry));
++	spin_lock(&tomoyo_audit_log_lock);
++	if (tomoyo_quota_for_audit_log && tomoyo_audit_log_memory_size
++	    + new_entry->size >= tomoyo_quota_for_audit_log) {
++		quota_exceeded = true;
++	} else {
++		tomoyo_audit_log_memory_size += new_entry->size;
++		if (is_granted) {
++			list_add_tail(&new_entry->list, &tomoyo_grant_log);
++			tomoyo_grant_log_count++;
++		} else {
++			list_add_tail(&new_entry->list, &tomoyo_reject_log);
++			tomoyo_reject_log_count++;
++		}
++	}
++	spin_unlock(&tomoyo_audit_log_lock);
++	if (quota_exceeded) {
++		kfree(buf);
++		kfree(new_entry);
++		goto out;
++	}
++	if (is_granted)
++		wake_up(&tomoyo_grant_log_wait);
++	else
++		wake_up(&tomoyo_reject_log_wait);
++	error = 0;
++ out:
++	tomoyo_update_task_state(r);
++	return error;
++}
++
++/**
++ * tomoyo_read_grant_log - Read a grant log.
++ *
++ * @head: Pointer to "struct tomoyo_io_buffer".
++ */
++void tomoyo_read_grant_log(struct tomoyo_io_buffer *head)
++{
++	struct tomoyo_log_entry *ptr = NULL;
++	if (head->read_avail)
++		return;
++	if (head->read_buf) {
++		kfree(head->read_buf);
++		head->read_buf = NULL;
++		head->readbuf_size = 0;
++	}
++	spin_lock(&tomoyo_audit_log_lock);
++	if (!list_empty(&tomoyo_grant_log)) {
++		ptr = list_entry(tomoyo_grant_log.next,
++				 struct tomoyo_log_entry, list);
++		list_del(&ptr->list);
++		tomoyo_grant_log_count--;
++		tomoyo_audit_log_memory_size -= ptr->size;
++	}
++	spin_unlock(&tomoyo_audit_log_lock);
++	if (ptr) {
++		head->read_buf = ptr->log;
++		head->read_avail = strlen(ptr->log) + 1;
++		head->readbuf_size = head->read_avail;
++		kfree(ptr);
++	}
++}
++
++/**
++ * tomoyo_poll_grant_log - Wait for a grant log.
++ *
++ * @file: Pointer to "struct file".
++ * @wait: Pointer to "poll_table".
++ *
++ * Returns POLLIN | POLLRDNORM when ready to read a grant log.
++ */
++int tomoyo_poll_grant_log(struct file *file, poll_table *wait)
++{
++	if (tomoyo_grant_log_count)
++		return POLLIN | POLLRDNORM;
++	poll_wait(file, &tomoyo_grant_log_wait, wait);
++	if (tomoyo_grant_log_count)
++		return POLLIN | POLLRDNORM;
++	return 0;
++}
++
++/**
++ * tomoyo_read_reject_log - Read a reject log.
++ *
++ * @head: Pointer to "struct tomoyo_io_buffer".
++ */
++void tomoyo_read_reject_log(struct tomoyo_io_buffer *head)
++{
++	struct tomoyo_log_entry *ptr = NULL;
++	if (head->read_avail)
++		return;
++	if (head->read_buf) {
++		kfree(head->read_buf);
++		head->read_buf = NULL;
++		head->readbuf_size = 0;
++	}
++	spin_lock(&tomoyo_audit_log_lock);
++	if (!list_empty(&tomoyo_reject_log)) {
++		ptr = list_entry(tomoyo_reject_log.next,
++				 struct tomoyo_log_entry, list);
++		list_del(&ptr->list);
++		tomoyo_reject_log_count--;
++		tomoyo_audit_log_memory_size -= ptr->size;
++	}
++	spin_unlock(&tomoyo_audit_log_lock);
++	if (ptr) {
++		head->read_buf = ptr->log;
++		head->read_avail = strlen(ptr->log) + 1;
++		head->readbuf_size = head->read_avail;
++		kfree(ptr);
++	}
++}
++
++/**
++ * tomoyo_poll_reject_log - Wait for a reject log.
++ *
++ * @file: Pointer to "struct file".
++ * @wait: Pointer to "poll_table".
++ *
++ * Returns POLLIN | POLLRDNORM when ready to read a reject log.
++ */
++int tomoyo_poll_reject_log(struct file *file, poll_table *wait)
++{
++	if (tomoyo_reject_log_count)
++		return POLLIN | POLLRDNORM;
++	poll_wait(file, &tomoyo_reject_log_wait, wait);
++	if (tomoyo_reject_log_count)
++		return POLLIN | POLLRDNORM;
++	return 0;
++}
++#endif
 
 -- 
