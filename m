@@ -1,458 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbZJDNAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756480AbZJDNA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757012AbZJDNAc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 09:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbZJDNA3
+	id S1756480AbZJDNA0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 09:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbZJDNAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 09:00:29 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:64687 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 09:00:23 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:64663 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752438AbZJDNAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752721AbZJDNAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 Oct 2009 09:00:19 -0400
-Message-Id: <20091004125334.984188780@I-love.SAKURA.ne.jp>
+Message-Id: <20091004125335.327042086@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:50:09 +0900
+Date: Sun, 04 Oct 2009 21:50:10 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 23/25] TOMOYO: Add file access restriction.
-Content-Disposition: inline; filename=tomoyo-add-new-file.patch
+Subject: [TOMOYO #16 24/25] TOMOYO: Add domain transition handler.
+Content-Disposition: inline; filename=tomoyo-add-new-domain.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains code for checking file access.
+This patch contains code for handling domain transition.
 
-Functions are separated by type of parameters.
+tomoyo_read_lock()/tomoyo_read_unlock() protects the data against the garbage
+collector. I call tomoyo_read_lock() when an execve() operation starts and
+call tomoyo_read_unlock() when an execve() operation finishes rather than
+calling tomoyo_read_lock()/tomoyo_read_unlock() upon individual list traversal.
+In this way, the pointer saved in "struct tomoyo_execve_entry" is guaranteed
+to be valid. Please ignore
 
-(1) Hooks which take one pathname.
-    They are read/write/execute/unlink/rmdir/truncate/symlink/rewrite/chroot/
-    umount.
+  warning: context imbalance in 'tomoyo_start_execve' - wrong count at exit
+  warning: context imbalance in 'tomoyo_finish_execve' - unexpected unlock
 
-(2) Hooks which take one pathname and three numeric parameters.
-    They are mkblock/mkchar.
-
-(3) Hooks which take two pathnames.
-    They are link/rename/pivot_root.
-
-(4) Hooks which take one pathname and one numeric parameter.
-    They are create/mkdir/mkfifo/mksock/ioctl/chmod/chown/chgrp.
-
-(5) Hooks which take three pathname and one numeric parameter.
-    That is mount, and handled by separate patch.
-
-I want to call may_create() and may_delete() for directory modification
-operations in order to perform DAC checks before MAC. (For now, I'm not calling
-may_create() and may_delete().)
+messages when built with "C=1" option.
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/new-file.c | 2249 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 2249 insertions(+)
+ security/tomoyo/new-domain.c | 1354 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1354 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6/security/tomoyo/new-file.c
-@@ -0,0 +1,2249 @@
++++ security-testing-2.6/security/tomoyo/new-domain.c
+@@ -0,0 +1,1354 @@
 +/*
-+ * security/tomoyo/file.c
++ * security/tomoyo/domain.c
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + */
 +#include "internal.h"
 +#include <linux/mount.h>
-+#include <asm/ioctls.h>
-+#include <linux/falloc.h>
++#include <linux/highmem.h>
++#include <linux/fs_struct.h>
++#include <linux/file.h>
 +
-+#define ACC_MODE(x) ("\000\004\002\006"[(x)&O_ACCMODE])
++/* Variables definitions.*/
 +
-+static const char *tomoyo_path_keyword[TOMOYO_MAX_PATH_OPERATION] = {
-+	[TOMOYO_TYPE_READ_WRITE] = "read/write",
-+	[TOMOYO_TYPE_EXECUTE]    = "execute",
-+	[TOMOYO_TYPE_READ]       = "read",
-+	[TOMOYO_TYPE_WRITE]      = "write",
-+	[TOMOYO_TYPE_UNLINK]     = "unlink",
-+	[TOMOYO_TYPE_RMDIR]      = "rmdir",
-+	[TOMOYO_TYPE_TRUNCATE]   = "truncate",
-+	[TOMOYO_TYPE_SYMLINK]    = "symlink",
-+	[TOMOYO_TYPE_REWRITE]    = "rewrite",
-+	[TOMOYO_TYPE_CHROOT]     = "chroot",
-+	[TOMOYO_TYPE_UMOUNT]     = "unmount",
-+};
-+
-+static const char *
-+tomoyo_path_number3_keyword[TOMOYO_MAX_PATH_NUMBER3_OPERATION] = {
-+	[TOMOYO_TYPE_MKBLOCK]    = "mkblock",
-+	[TOMOYO_TYPE_MKCHAR]     = "mkchar",
-+};
-+
-+static const char *tomoyo_path2_keyword[TOMOYO_MAX_PATH2_OPERATION] = {
-+	[TOMOYO_TYPE_LINK]       = "link",
-+	[TOMOYO_TYPE_RENAME]     = "rename",
-+	[TOMOYO_TYPE_PIVOT_ROOT] = "pivot_root",
-+};
-+
-+static const char *
-+tomoyo_path_number_keyword[TOMOYO_MAX_PATH_NUMBER_OPERATION] = {
-+	[TOMOYO_TYPE_CREATE] = "create",
-+	[TOMOYO_TYPE_MKDIR]  = "mkdir",
-+	[TOMOYO_TYPE_MKFIFO] = "mkfifo",
-+	[TOMOYO_TYPE_MKSOCK] = "mksock",
-+	[TOMOYO_TYPE_IOCTL]  = "ioctl",
-+	[TOMOYO_TYPE_CHMOD]  = "chmod",
-+	[TOMOYO_TYPE_CHOWN]  = "chown",
-+	[TOMOYO_TYPE_CHGRP]  = "chgrp",
-+};
-+
-+static const u8 tomoyo_p2mac[TOMOYO_MAX_PATH_OPERATION] = {
-+	[TOMOYO_TYPE_READ_WRITE] = TOMOYO_MAC_FILE_OPEN,
-+	[TOMOYO_TYPE_EXECUTE]    = TOMOYO_MAC_FILE_EXECUTE,
-+	[TOMOYO_TYPE_READ]       = TOMOYO_MAC_FILE_OPEN,
-+	[TOMOYO_TYPE_WRITE]      = TOMOYO_MAC_FILE_OPEN,
-+	[TOMOYO_TYPE_UNLINK]     = TOMOYO_MAC_FILE_UNLINK,
-+	[TOMOYO_TYPE_RMDIR]      = TOMOYO_MAC_FILE_RMDIR,
-+	[TOMOYO_TYPE_TRUNCATE]   = TOMOYO_MAC_FILE_TRUNCATE,
-+	[TOMOYO_TYPE_SYMLINK]    = TOMOYO_MAC_FILE_SYMLINK,
-+	[TOMOYO_TYPE_REWRITE]    = TOMOYO_MAC_FILE_REWRITE,
-+	[TOMOYO_TYPE_CHROOT]     = TOMOYO_MAC_FILE_CHROOT,
-+	[TOMOYO_TYPE_UMOUNT]     = TOMOYO_MAC_FILE_UMOUNT,
-+};
-+
-+static const u8 tomoyo_pnnn2mac[TOMOYO_MAX_PATH_NUMBER3_OPERATION] = {
-+	[TOMOYO_TYPE_MKBLOCK] = TOMOYO_MAC_FILE_MKBLOCK,
-+	[TOMOYO_TYPE_MKCHAR]  = TOMOYO_MAC_FILE_MKCHAR,
-+};
-+
-+static const u8 tomoyo_pp2mac[TOMOYO_MAX_PATH2_OPERATION] = {
-+	[TOMOYO_TYPE_LINK]       = TOMOYO_MAC_FILE_LINK,
-+	[TOMOYO_TYPE_RENAME]     = TOMOYO_MAC_FILE_RENAME,
-+	[TOMOYO_TYPE_PIVOT_ROOT] = TOMOYO_MAC_FILE_PIVOT_ROOT,
-+};
-+
-+static const u8 tomoyo_pn2mac[TOMOYO_MAX_PATH_NUMBER_OPERATION] = {
-+	[TOMOYO_TYPE_CREATE] = TOMOYO_MAC_FILE_CREATE,
-+	[TOMOYO_TYPE_MKDIR]  = TOMOYO_MAC_FILE_MKDIR,
-+	[TOMOYO_TYPE_MKFIFO] = TOMOYO_MAC_FILE_MKFIFO,
-+	[TOMOYO_TYPE_MKSOCK] = TOMOYO_MAC_FILE_MKSOCK,
-+	[TOMOYO_TYPE_IOCTL]  = TOMOYO_MAC_FILE_IOCTL,
-+	[TOMOYO_TYPE_CHMOD]  = TOMOYO_MAC_FILE_CHMOD,
-+	[TOMOYO_TYPE_CHOWN]  = TOMOYO_MAC_FILE_CHOWN,
-+	[TOMOYO_TYPE_CHGRP]  = TOMOYO_MAC_FILE_CHGRP,
-+};
-+
-+
-+void tomoyo_put_name_union(struct tomoyo_name_union *ptr)
-+{
-+	if (!ptr)
-+		return;
-+	if (ptr->is_group)
-+		tomoyo_put_path_group(ptr->group);
-+	else
-+		tomoyo_put_name(ptr->filename);
-+}
-+
-+void tomoyo_put_number_union(struct tomoyo_number_union *ptr)
-+{
-+	if (ptr && ptr->is_group)
-+		tomoyo_put_number_group(ptr->group);
-+}
-+
-+bool tomoyo_compare_number_union(const unsigned long value,
-+				 const struct tomoyo_number_union *ptr)
-+{
-+	if (ptr->is_group)
-+		return tomoyo_number_matches_group(value, value, ptr->group);
-+	return value >= ptr->values[0] && value <= ptr->values[1];
-+}
-+
-+bool tomoyo_compare_name_union(const struct tomoyo_path_info *name,
-+			       const struct tomoyo_name_union *ptr)
-+{
-+	if (ptr->is_group)
-+		return tomoyo_path_matches_group(name, ptr->group, 1);
-+	return tomoyo_path_matches_pattern(name, ptr->filename);
-+}
-+
-+static bool tomoyo_compare_name_union_pattern
-+(const struct tomoyo_path_info *name, const struct tomoyo_name_union *ptr,
-+ const bool may_use_pattern)
-+{
-+	if (ptr->is_group)
-+		return tomoyo_path_matches_group(name, ptr->group,
-+						 may_use_pattern);
-+	if (may_use_pattern || !ptr->filename->is_patterned)
-+		return tomoyo_path_matches_pattern(name, ptr->filename);
-+	return false;
-+}
-+
-+/**
-+ * tomoyo_path2keyword - Get the name of single path operation.
-+ *
-+ * @operation: Type of operation.
-+ *
-+ * Returns the name of single path operation.
-+ */
-+const char *tomoyo_path2keyword(const u8 operation)
-+{
-+	return (operation < TOMOYO_MAX_PATH_OPERATION)
-+		? tomoyo_path_keyword[operation] : NULL;
-+}
-+
-+/**
-+ * tomoyo_path_number32keyword - Get the name of mkdev operation.
-+ *
-+ * @operation: Type of operation.
-+ *
-+ * Returns the name of mkdev operation.
-+ */
-+const char *tomoyo_path_number32keyword(const u8 operation)
-+{
-+	return (operation < TOMOYO_MAX_PATH_NUMBER3_OPERATION)
-+		? tomoyo_path_number3_keyword[operation] : NULL;
-+}
-+
-+/**
-+ * tomoyo_path22keyword - Get the name of double path operation.
-+ *
-+ * @operation: Type of operation.
-+ *
-+ * Returns the name of double path operation.
-+ */
-+const char *tomoyo_path22keyword(const u8 operation)
-+{
-+	return (operation < TOMOYO_MAX_PATH2_OPERATION)
-+		? tomoyo_path2_keyword[operation] : NULL;
-+}
-+
-+const char *tomoyo_path_number2keyword(const u8 operation)
-+{
-+	return (operation < TOMOYO_MAX_PATH_NUMBER_OPERATION)
-+		? tomoyo_path_number_keyword[operation] : NULL;
-+}
-+
-+static void tomoyo_add_slash(struct tomoyo_path_info *buf)
-+{
-+	if (buf->is_dir)
-+		return;
-+	/*
-+	 * This is OK because tomoyo_encode() reserves space for appending "/".
-+	 */
-+	strcat((char *) buf->name, "/");
-+	tomoyo_fill_path_info(buf);
-+}
-+
-+/**
-+ * tomoyo_strendswith - Check whether the token ends with the given token.
-+ *
-+ * @name: The token to check.
-+ * @tail: The token to find.
-+ *
-+ * Returns true if @name ends with @tail, false otherwise.
-+ */
-+static bool tomoyo_strendswith(const char *name, const char *tail)
-+{
-+	int len;
-+	if (!name || !tail)
-+		return false;
-+	len = strlen(name) - strlen(tail);
-+	return len >= 0 && !strcmp(name + len, tail);
-+}
-+
-+/**
-+ * tomoyo_get_realpath - Get realpath.
-+ *
-+ * @buf:    Pointer to "struct tomoyo_path_info".
-+ * @dentry: Pointer to "struct dentry".
-+ * @mnt:    Pointer to "struct vfsmount".
-+ *
-+ * Returns true success, false otherwise.
-+ */
-+static bool tomoyo_get_realpath(struct tomoyo_path_info *buf,
-+				struct dentry *dentry, struct vfsmount *mnt)
-+{
-+	struct path path = { mnt, dentry };
-+	buf->name = tomoyo_realpath_from_path(&path);
-+	if (buf->name) {
-+		tomoyo_fill_path_info(buf);
-+		return true;
-+	}
-+	return false;
-+}
-+
-+static int tomoyo_update_path_acl(const u8 type, const char *filename,
-+				  struct tomoyo_domain_info * const domain,
-+				  struct tomoyo_condition *condition,
-+				  const bool is_delete);
-+
-+/**
-+ * tomoyo_audit_path_log - Audit single path request log.
-+ *
-+ * @r:          Pointer to "struct tomoyo_request_info".
-+ * @operation:  The name of operation.
-+ * @filename:   Pathname.
-+ * @is_granted: True if this is a granted log.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_audit_path_log(struct tomoyo_request_info *r,
-+				 const char *operation, const char *filename,
-+				 const bool is_granted)
-+{
-+	if (!is_granted)
-+		tomoyo_warn_log(r, "%s %s", operation, filename);
-+	return tomoyo_write_audit_log(is_granted, r, "allow_%s %s\n",
-+				      operation, filename);
-+}
-+
-+/**
-+ * tomoyo_audit_path2_log - Audit double path request log.
-+ *
-+ * @r:          Pointer to "struct tomoyo_request_info".
-+ * @operation:  The name of operation.
-+ * @filename1:  First pathname.
-+ * @filename2:  Second pathname.
-+ * @is_granted: True if this is a granted log.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_audit_path2_log(struct tomoyo_request_info *r,
-+				  const char *operation, const char *filename1,
-+				  const char *filename2, const bool is_granted)
-+{
-+	if (!is_granted)
-+		tomoyo_warn_log(r, "%s %s %s", operation, filename1,
-+				filename2);
-+	return tomoyo_write_audit_log(is_granted, r, "allow_%s %s %s\n",
-+				      operation, filename1, filename2);
-+}
-+
-+/**
-+ * tomoyo_audit_path_number3_log - Audit mkdev request log.
-+ *
-+ * @r:          Pointer to "struct tomoyo_request_info".
-+ * @operation:  The name of operation.
-+ * @filename:   First pathname.
-+ * @mode:       Create mode.
-+ * @major:      Device major number.
-+ * @minor:      Device minor number.
-+ * @is_granted: True if this is a granted log.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_audit_path_number3_log(struct tomoyo_request_info *r,
-+					 const char *operation,
-+					 const char *filename,
-+					 const unsigned int mode,
-+					 const unsigned int major,
-+					 const unsigned int minor,
-+					 const bool is_granted)
-+{
-+	if (!is_granted)
-+		tomoyo_warn_log(r, "%s %s 0%o %u %u", operation, filename,
-+				mode, major, minor);
-+	return tomoyo_write_audit_log(is_granted, r, "allow_%s %s 0%o %u %u\n",
-+				      operation, filename, mode, major, minor);
-+}
-+
-+/**
-+ * tomoyo_audit_path_number_log - Audit ioctl/chmod/chown/chgrp related request log.
-+ *
-+ * @r:          Pointer to "struct tomoyo_request_info".
-+ * @type:       Type of operation.
-+ * @filename:   Pathname.
-+ * @value:      Value.
-+ * @is_granted: True if this is a granted log.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_audit_path_number_log(struct tomoyo_request_info *r,
-+					const char *operation,
-+					const char *filename,
-+					const char *value,
-+					const bool is_granted)
-+{
-+	if (!is_granted)
-+		tomoyo_warn_log(r, "%s %s %s", operation, filename, value);
-+	return tomoyo_write_audit_log(is_granted, r, "allow_%s %s %s\n",
-+				      operation, filename, value);
-+}
++/* The initial domain. */
++struct tomoyo_domain_info tomoyo_kernel_domain;
 +
 +/*
-+ * tomoyo_globally_readable_list is used for holding list of pathnames which
-+ * are by default allowed to be open()ed for reading by any process.
++ * tomoyo_domain_list is used for holding list of domains.
++ * The ->acl_info_list of "struct tomoyo_domain_info" is used for holding
++ * permissions (e.g. "allow_read /lib/libc-2.5.so") given to each domain.
 + *
 + * An entry is added by
 + *
-+ * # echo 'allow_read /lib/libc-2.5.so' >				\
++ * # ( echo "<kernel>"; echo "allow_execute /sbin/init" ) > \
++ *                                  /sys/kernel/security/tomoyo/domain_policy
++ *
++ * and is deleted by
++ *
++ * # ( echo "<kernel>"; echo "delete allow_execute /sbin/init" ) > \
++ *                                  /sys/kernel/security/tomoyo/domain_policy
++ *
++ * and all entries are retrieved by
++ *
++ * # cat /sys/kernel/security/tomoyo/domain_policy
++ *
++ * A domain is added by
++ *
++ * # echo "<kernel>" > /sys/kernel/security/tomoyo/domain_policy
++ *
++ * and is deleted by
++ *
++ * # echo "delete <kernel>" > /sys/kernel/security/tomoyo/domain_policy
++ *
++ * and all domains are retrieved by
++ *
++ * # grep '^<kernel>' /sys/kernel/security/tomoyo/domain_policy
++ *
++ * Normally, a domainname is monotonically getting longer because a domainname
++ * which the process will belong to if an execve() operation succeeds is
++ * defined as a concatenation of "current domainname" + "pathname passed to
++ * execve()".
++ * See tomoyo_domain_initializer_list and tomoyo_domain_keeper_list for
++ * exceptions.
++ */
++LIST_HEAD(tomoyo_domain_list);
++
++/**
++ * tomoyo_audit_execute_handler_log - Audit execute_handler log.
++ *
++ * @ee:         Pointer to "struct tomoyo_execve_entry".
++ * @is_default: True if it is "execute_handler" log.
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int tomoyo_audit_execute_handler_log(struct tomoyo_execve_entry *ee,
++					    const bool is_default)
++{
++	struct tomoyo_request_info *r = &ee->r;
++	const char *handler = ee->handler->name;
++	r->mode = tomoyo_get_mode(r->profile, TOMOYO_MAC_FILE_EXECUTE);
++	return tomoyo_write_audit_log(true, r, "%s %s\n",
++				      is_default ?
++				      TOMOYO_KEYWORD_EXECUTE_HANDLER :
++				      TOMOYO_KEYWORD_DENIED_EXECUTE_HANDLER,
++				      handler);
++}
++
++/**
++ * tomoyo_audit_domain_creation_log - Audit domain creation log.
++ *
++ * @domain:  Pointer to "struct tomoyo_domain_info".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int tomoyo_audit_domain_creation_log(struct tomoyo_domain_info *domain)
++{
++	int error;
++	struct tomoyo_request_info r;
++	tomoyo_init_request_info(&r, domain, TOMOYO_MAC_FILE_EXECUTE);
++	error = tomoyo_write_audit_log(false, &r, "use_profile %u\n",
++				       r.profile);
++	return error;
++}
++
++/*
++ * tomoyo_domain_initializer_list is used for holding list of programs which
++ * triggers reinitialization of domainname. Normally, a domainname is
++ * monotonically getting longer. But sometimes, we restart daemon programs.
++ * It would be convenient for us that "a daemon started upon system boot" and
++ * "the daemon restarted from console" belong to the same domain. Thus, TOMOYO
++ * provides a way to shorten domainnames.
++ *
++ * An entry is added by
++ *
++ * # echo 'initialize_domain /usr/sbin/httpd' > \
 + *                               /sys/kernel/security/tomoyo/exception_policy
 + *
 + * and is deleted by
 + *
-+ * # echo 'delete allow_read /lib/libc-2.5.so' >			\
++ * # echo 'delete initialize_domain /usr/sbin/httpd' > \
 + *                               /sys/kernel/security/tomoyo/exception_policy
 + *
 + * and all entries are retrieved by
 + *
-+ * # grep ^allow_read /sys/kernel/security/tomoyo/exception_policy
++ * # grep ^initialize_domain /sys/kernel/security/tomoyo/exception_policy
 + *
-+ * In the example above, any process is allowed to
-+ * open("/lib/libc-2.5.so", O_RDONLY).
-+ * One exception is, if the domain which current process belongs to is marked
-+ * as "ignore_global_allow_read", current process can't do so unless explicitly
-+ * given "allow_read /lib/libc-2.5.so" to the domain which current process
-+ * belongs to.
++ * In the example above, /usr/sbin/httpd will belong to
++ * "<kernel> /usr/sbin/httpd" domain.
++ *
++ * You may specify a domainname using "from" keyword.
++ * "initialize_domain /usr/sbin/httpd from <kernel> /etc/rc.d/init.d/httpd"
++ * will cause "/usr/sbin/httpd" executed from "<kernel> /etc/rc.d/init.d/httpd"
++ * domain to belong to "<kernel> /usr/sbin/httpd" domain.
++ *
++ * You may add "no_" prefix to "initialize_domain".
++ * "initialize_domain /usr/sbin/httpd" and
++ * "no_initialize_domain /usr/sbin/httpd from <kernel> /etc/rc.d/init.d/httpd"
++ * will cause "/usr/sbin/httpd" to belong to "<kernel> /usr/sbin/httpd" domain
++ * unless executed from "<kernel> /etc/rc.d/init.d/httpd" domain.
 + */
-+LIST_HEAD(tomoyo_globally_readable_list);
++LIST_HEAD(tomoyo_domain_initializer_list);
 +
 +/**
-+ * tomoyo_is_globally_readable_file - Check if the file is unconditionnaly permitted to be open()ed for reading.
++ * tomoyo_update_domain_initializer_entry - Update "struct tomoyo_domain_initializer_entry" list.
 + *
-+ * @filename: The filename to check.
-+ *
-+ * Returns true if any domain can open @filename for reading, false otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+static bool tomoyo_is_globally_readable_file
-+(const struct tomoyo_path_info *filename)
-+{
-+	struct tomoyo_globally_readable_file_entry *ptr;
-+	bool found = false;
-+	list_for_each_entry_rcu(ptr, &tomoyo_globally_readable_list, list) {
-+		if (ptr->is_deleted ||
-+		    !tomoyo_path_matches_pattern(filename, ptr->filename))
-+			continue;
-+		found = true;
-+		break;
-+	}
-+	return found;
-+}
-+
-+/**
-+ * tomoyo_write_globally_readable_policy - Write "struct tomoyo_globally_readable_file_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
++ * @domainname: The name of domain. May be NULL.
++ * @program:    The name of program.
++ * @is_not:     True if it is "no_initialize_domain" entry.
++ * @is_delete:  True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int tomoyo_write_globally_readable_policy(char *data, const bool is_delete)
++static int tomoyo_update_domain_initializer_entry(const char *domainname,
++						  const char *program,
++						  const bool is_not,
++						  const bool is_delete)
 +{
-+	struct tomoyo_globally_readable_file_entry *entry = NULL;
-+	struct tomoyo_globally_readable_file_entry *ptr;
-+	struct tomoyo_globally_readable_file_entry e = { };
++	struct tomoyo_domain_initializer_entry *entry = NULL;
++	struct tomoyo_domain_initializer_entry *ptr;
++	struct tomoyo_domain_initializer_entry e = { .is_not = is_not };
 +	int error = is_delete ? -ENOENT : -ENOMEM;
-+	if (!tomoyo_is_correct_path(data, 1, 0, -1))
-+		return -EINVAL;
-+	e.filename = tomoyo_get_name(data);
-+	if (!e.filename)
-+		return -ENOMEM;
++	if (!tomoyo_is_correct_path(program, 1, -1, -1))
++		return -EINVAL; /* No patterns allowed. */
++	if (domainname) {
++		if (!tomoyo_is_domain_def(domainname) &&
++		    tomoyo_is_correct_path(domainname, 1, -1, -1))
++			e.is_last_name = true;
++		else if (!tomoyo_is_correct_domain(domainname))
++			return -EINVAL;
++		e.domainname = tomoyo_get_name(domainname);
++		if (!e.domainname)
++			goto out;
++	}
++	e.program = tomoyo_get_name(program);
++	if (!e.program)
++		goto out;
 +	if (!is_delete)
 +		entry = kmalloc(sizeof(e), GFP_KERNEL);
 +	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(ptr, &tomoyo_globally_readable_list, list) {
-+		if (ptr->filename != e.filename)
++	list_for_each_entry_rcu(ptr, &tomoyo_domain_initializer_list, list) {
++		if (tomoyo_memcmp(ptr, &e, offsetof(typeof(e), is_not),
++				  sizeof(e)))
 +			continue;
 +		ptr->is_deleted = is_delete;
 +		error = 0;
@@ -460,141 +224,20 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +	}
 +	if (!is_delete && error && tomoyo_commit_ok(entry, &e, sizeof(e))) {
 +		list_add_tail_rcu(&entry->list,
-+				  &tomoyo_globally_readable_list);
-+		entry = NULL;
-+		error = 0;
-+	}
-+	mutex_unlock(&tomoyo_policy_lock);
-+	tomoyo_put_name(e.filename);
-+	kfree(entry);
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_read_globally_readable_policy - Read "struct tomoyo_globally_readable_file_entry" list.
-+ *
-+ * @head: Pointer to "struct tomoyo_io_buffer".
-+ *
-+ * Returns true on success, false otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+bool tomoyo_read_globally_readable_policy(struct tomoyo_io_buffer *head)
-+{
-+	struct list_head *pos;
-+	bool done = true;
-+	list_for_each_cookie(pos, head->read_var2,
-+			     &tomoyo_globally_readable_list) {
-+		struct tomoyo_globally_readable_file_entry *ptr;
-+		ptr = list_entry(pos,
-+				 struct tomoyo_globally_readable_file_entry,
-+				 list);
-+		if (ptr->is_deleted)
-+			continue;
-+		done = tomoyo_io_printf(head, TOMOYO_KEYWORD_ALLOW_READ "%s\n",
-+					ptr->filename->name);
-+		if (!done)
-+			break;
-+	}
-+	return done;
-+}
-+
-+/*
-+ * tomoyo_pattern_list is used for holding list of pathnames which are used for
-+ * converting pathnames to pathname patterns during learning mode.
-+ *
-+ * An entry is added by
-+ *
-+ * # echo 'file_pattern /proc/\$/mounts' > \
-+ *                             /sys/kernel/security/tomoyo/exception_policy
-+ *
-+ * and is deleted by
-+ *
-+ * # echo 'delete file_pattern /proc/\$/mounts' > \
-+ *                             /sys/kernel/security/tomoyo/exception_policy
-+ *
-+ * and all entries are retrieved by
-+ *
-+ * # grep ^file_pattern /sys/kernel/security/tomoyo/exception_policy
-+ *
-+ * In the example above, if a process which belongs to a domain which is in
-+ * learning mode requested open("/proc/1/mounts", O_RDONLY),
-+ * "allow_read /proc/\$/mounts" is automatically added to the domain which that
-+ * process belongs to.
-+ */
-+LIST_HEAD(tomoyo_pattern_list);
-+
-+/**
-+ * tomoyo_file_pattern - Get patterned pathname.
-+ *
-+ * @filename: Pointer to "struct tomoyo_path_info".
-+ *
-+ * Returns pointer to patterned pathname.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+const char *tomoyo_file_pattern(const struct tomoyo_path_info *filename)
-+{
-+	struct tomoyo_pattern_entry *ptr;
-+	const struct tomoyo_path_info *pattern = NULL;
-+	list_for_each_entry_rcu(ptr, &tomoyo_pattern_list, list) {
-+		if (ptr->is_deleted)
-+			continue;
-+		if (!tomoyo_path_matches_pattern(filename, ptr->pattern))
-+			continue;
-+		pattern = ptr->pattern;
-+		if (tomoyo_strendswith(pattern->name, "/\\*")) {
-+			/* Do nothing. Try to find the better match. */
-+		} else {
-+			/* This would be the better match. Use this. */
-+			break;
-+		}
-+	}
-+	return pattern ? pattern->name : filename->name;
-+}
-+
-+/**
-+ * tomoyo_write_pattern_policy - Write "struct tomoyo_pattern_entry" list.
-+ *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int tomoyo_write_pattern_policy(char *data, const bool is_delete)
-+{
-+	struct tomoyo_pattern_entry *entry = NULL;
-+	struct tomoyo_pattern_entry *ptr;
-+	struct tomoyo_pattern_entry e = { .pattern = tomoyo_get_name(data) };
-+	int error = is_delete ? -ENOENT : -ENOMEM;
-+	if (!e.pattern)
-+		return error;
-+	if (!e.pattern->is_patterned)
-+		goto out;
-+	if (!is_delete)
-+		entry = kmalloc(sizeof(e), GFP_KERNEL);
-+	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(ptr, &tomoyo_pattern_list, list) {
-+		if (e.pattern != ptr->pattern)
-+			continue;
-+		ptr->is_deleted = is_delete;
-+		error = 0;
-+		break;
-+	}
-+	if (!is_delete && error && tomoyo_commit_ok(entry, &e, sizeof(e))) {
-+		list_add_tail_rcu(&entry->list, &tomoyo_pattern_list);
++				  &tomoyo_domain_initializer_list);
 +		entry = NULL;
 +		error = 0;
 +	}
 +	mutex_unlock(&tomoyo_policy_lock);
 + out:
-+	tomoyo_put_name(e.pattern);
++	tomoyo_put_name(e.domainname);
++	tomoyo_put_name(e.program);
 +	kfree(entry);
 +	return error;
 +}
 +
 +/**
-+ * tomoyo_read_file_pattern - Read "struct tomoyo_pattern_entry" list.
++ * tomoyo_read_domain_initializer_policy - Read "struct tomoyo_domain_initializer_entry" list.
 + *
 + * @head: Pointer to "struct tomoyo_io_buffer".
 + *
@@ -602,114 +245,221 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+bool tomoyo_read_file_pattern(struct tomoyo_io_buffer *head)
++bool tomoyo_read_domain_initializer_policy(struct tomoyo_io_buffer *head)
 +{
 +	struct list_head *pos;
 +	bool done = true;
-+	list_for_each_cookie(pos, head->read_var2, &tomoyo_pattern_list) {
-+		struct tomoyo_pattern_entry *ptr;
-+		ptr = list_entry(pos, struct tomoyo_pattern_entry, list);
++	list_for_each_cookie(pos, head->read_var2,
++			     &tomoyo_domain_initializer_list) {
++		const char *no;
++		const char *from = "";
++		const char *domain = "";
++		struct tomoyo_domain_initializer_entry *ptr;
++		ptr = list_entry(pos, struct tomoyo_domain_initializer_entry,
++				 list);
 +		if (ptr->is_deleted)
 +			continue;
-+		done = tomoyo_io_printf(head, TOMOYO_KEYWORD_FILE_PATTERN
-+					"%s\n", ptr->pattern->name);
++		no = ptr->is_not ? "no_" : "";
++		if (ptr->domainname) {
++			from = " from ";
++			domain = ptr->domainname->name;
++		}
++		done = tomoyo_io_printf(head, "%s"
++					TOMOYO_KEYWORD_INITIALIZE_DOMAIN
++					"%s%s%s\n", no, ptr->program->name,
++					from, domain);
 +		if (!done)
 +			break;
 +	}
 +	return done;
 +}
 +
-+/*
-+ * tomoyo_no_rewrite_list is used for holding list of pathnames which are by
-+ * default forbidden to modify already written content of a file.
++/**
++ * tomoyo_write_domain_initializer_policy - Write "struct tomoyo_domain_initializer_entry" list.
 + *
-+ * An entry is added by
++ * @data:      String to parse.
++ * @is_not:    True if it is "no_initialize_domain" entry.
++ * @is_delete: True if it is a delete request.
 + *
-+ * # echo 'deny_rewrite /var/log/messages' > \
-+ *                              /sys/kernel/security/tomoyo/exception_policy
-+ *
-+ * and is deleted by
-+ *
-+ * # echo 'delete deny_rewrite /var/log/messages' > \
-+ *                              /sys/kernel/security/tomoyo/exception_policy
-+ *
-+ * and all entries are retrieved by
-+ *
-+ * # grep ^deny_rewrite /sys/kernel/security/tomoyo/exception_policy
-+ *
-+ * In the example above, if a process requested to rewrite /var/log/messages ,
-+ * the process can't rewrite unless the domain which that process belongs to
-+ * has "allow_rewrite /var/log/messages" entry.
++ * Returns 0 on success, negative value otherwise.
 + */
-+LIST_HEAD(tomoyo_no_rewrite_list);
++int tomoyo_write_domain_initializer_policy(char *data, const bool is_not,
++					   const bool is_delete)
++{
++	char *cp = strstr(data, " from ");
++	if (cp) {
++		*cp = '\0';
++		return tomoyo_update_domain_initializer_entry(cp + 6, data,
++							      is_not,
++							      is_delete);
++	}
++	return tomoyo_update_domain_initializer_entry(NULL, data, is_not,
++						      is_delete);
++}
 +
 +/**
-+ * tomoyo_is_no_rewrite_file - Check if the given pathname is not permitted to be rewrited.
++ * tomoyo_is_domain_initializer - Check whether the given program causes domainname reinitialization.
 + *
-+ * @filename: Filename to check.
++ * @domainname: The name of domain.
++ * @program:    The name of program.
++ * @last_name:  The last component of @domainname.
 + *
-+ * Returns true if @filename is specified by "deny_rewrite" directive,
++ * Returns true if executing @program reinitializes domain transition,
 + * false otherwise.
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+static bool tomoyo_is_no_rewrite_file(const struct tomoyo_path_info *filename)
++static bool tomoyo_is_domain_initializer
++(const struct tomoyo_path_info *domainname,
++ const struct tomoyo_path_info *program,
++ const struct tomoyo_path_info *last_name)
 +{
-+	struct tomoyo_no_rewrite_entry *ptr;
-+	bool matched = false;
-+	list_for_each_entry_rcu(ptr, &tomoyo_no_rewrite_list, list) {
++	struct tomoyo_domain_initializer_entry *ptr;
++	bool flag = false;
++	list_for_each_entry_rcu(ptr, &tomoyo_domain_initializer_list, list) {
 +		if (ptr->is_deleted)
 +			continue;
-+		if (!tomoyo_path_matches_pattern(filename, ptr->pattern))
++		if (ptr->domainname) {
++			if (!ptr->is_last_name) {
++				if (ptr->domainname != domainname)
++					continue;
++			} else {
++				if (tomoyo_pathcmp(ptr->domainname, last_name))
++					continue;
++			}
++		}
++		if (tomoyo_pathcmp(ptr->program, program))
 +			continue;
-+		matched = true;
-+		break;
++		if (ptr->is_not) {
++			flag = false;
++			break;
++		}
++		flag = true;
 +	}
-+	return matched;
++	return flag;
 +}
 +
-+/**
-+ * tomoyo_write_no_rewrite_policy - Write "struct tomoyo_no_rewrite_entry" list.
++/*
++ * tomoyo_domain_keeper_list is used for holding list of domainnames which
++ * suppresses domain transition. Normally, a domainname is monotonically
++ * getting longer. But sometimes, we want to suppress domain transition.
++ * It would be convenient for us that programs executed from a login session
++ * belong to the same domain. Thus, TOMOYO provides a way to suppress domain
++ * transition.
 + *
-+ * @data:      String to parse.
-+ * @is_delete: True if it is a delete request.
++ * An entry is added by
++ *
++ * # echo 'keep_domain <kernel> /usr/sbin/sshd /bin/bash' > \
++ *                              /sys/kernel/security/tomoyo/exception_policy
++ *
++ * and is deleted by
++ *
++ * # echo 'delete keep_domain <kernel> /usr/sbin/sshd /bin/bash' > \
++ *                              /sys/kernel/security/tomoyo/exception_policy
++ *
++ * and all entries are retrieved by
++ *
++ * # grep ^keep_domain /sys/kernel/security/tomoyo/exception_policy
++ *
++ * In the example above, any process which belongs to
++ * "<kernel> /usr/sbin/sshd /bin/bash" domain will remain in that domain,
++ * unless explicitly specified by "initialize_domain" or "no_keep_domain".
++ *
++ * You may specify a program using "from" keyword.
++ * "keep_domain /bin/pwd from <kernel> /usr/sbin/sshd /bin/bash"
++ * will cause "/bin/pwd" executed from "<kernel> /usr/sbin/sshd /bin/bash"
++ * domain to remain in "<kernel> /usr/sbin/sshd /bin/bash" domain.
++ *
++ * You may add "no_" prefix to "keep_domain".
++ * "keep_domain <kernel> /usr/sbin/sshd /bin/bash" and
++ * "no_keep_domain /usr/bin/passwd from <kernel> /usr/sbin/sshd /bin/bash" will
++ * cause "/usr/bin/passwd" to belong to
++ * "<kernel> /usr/sbin/sshd /bin/bash /usr/bin/passwd" domain, unless
++ * explicitly specified by "initialize_domain".
++ */
++LIST_HEAD(tomoyo_domain_keeper_list);
++
++/**
++ * tomoyo_update_domain_keeper_entry - Update "struct tomoyo_domain_keeper_entry" list.
++ *
++ * @domainname: The name of domain.
++ * @program:    The name of program. May be NULL.
++ * @is_not:     True if it is "no_keep_domain" entry.
++ * @is_delete:  True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int tomoyo_write_no_rewrite_policy(char *data, const bool is_delete)
++static int tomoyo_update_domain_keeper_entry(const char *domainname,
++					     const char *program,
++					     const bool is_not,
++					     const bool is_delete)
 +{
-+	struct tomoyo_no_rewrite_entry *entry = NULL;
-+	struct tomoyo_no_rewrite_entry *ptr;
-+	struct tomoyo_no_rewrite_entry e = { };
++	struct tomoyo_domain_keeper_entry *entry = NULL;
++	struct tomoyo_domain_keeper_entry *ptr;
++	struct tomoyo_domain_keeper_entry e = { .is_not = is_not };
 +	int error = is_delete ? -ENOENT : -ENOMEM;
-+	if (!tomoyo_is_correct_path(data, 0, 0, 0))
++	if (!tomoyo_is_domain_def(domainname) &&
++	    tomoyo_is_correct_path(domainname, 1, -1, -1))
++		e.is_last_name = true;
++	else if (!tomoyo_is_correct_domain(domainname))
 +		return -EINVAL;
-+	e.pattern = tomoyo_get_name(data);
-+	if (!e.pattern)
-+		return error;
++	if (program) {
++		if (!tomoyo_is_correct_path(program, 1, -1, -1))
++			return -EINVAL;
++		e.program = tomoyo_get_name(program);
++		if (!e.program)
++			goto out;
++	}
++	e.domainname = tomoyo_get_name(domainname);
++	if (!e.domainname)
++		goto out;
 +	if (!is_delete)
 +		entry = kmalloc(sizeof(e), GFP_KERNEL);
 +	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(ptr, &tomoyo_no_rewrite_list, list) {
-+		if (ptr->pattern != e.pattern)
++	list_for_each_entry_rcu(ptr, &tomoyo_domain_keeper_list, list) {
++		if (tomoyo_memcmp(ptr, &e, offsetof(typeof(e), is_not),
++				  sizeof(e)))
 +			continue;
 +		ptr->is_deleted = is_delete;
 +		error = 0;
 +		break;
 +	}
 +	if (!is_delete && error && tomoyo_commit_ok(entry, &e, sizeof(e))) {
-+		list_add_tail_rcu(&entry->list, &tomoyo_no_rewrite_list);
++		list_add_tail_rcu(&entry->list, &tomoyo_domain_keeper_list);
 +		entry = NULL;
 +		error = 0;
 +	}
 +	mutex_unlock(&tomoyo_policy_lock);
-+	tomoyo_put_name(e.pattern);
++ out:
++	tomoyo_put_name(e.domainname);
++	tomoyo_put_name(e.program);
 +	kfree(entry);
 +	return error;
 +}
 +
 +/**
-+ * tomoyo_read_no_rewrite_policy - Read "struct tomoyo_no_rewrite_entry" list.
++ * tomoyo_write_domain_keeper_policy - Write "struct tomoyo_domain_keeper_entry" list.
++ *
++ * @data:      String to parse.
++ * @is_not:    True if it is "no_keep_domain" entry.
++ * @is_delete: True if it is a delete request.
++ *
++ */
++int tomoyo_write_domain_keeper_policy(char *data, const bool is_not,
++				      const bool is_delete)
++{
++	char *cp = strstr(data, " from ");
++	if (cp) {
++		*cp = '\0';
++		return tomoyo_update_domain_keeper_entry(cp + 6, data,
++							 is_not, is_delete);
++	}
++	return tomoyo_update_domain_keeper_entry(data, NULL, is_not,
++						 is_delete);
++}
++
++/**
++ * tomoyo_read_domain_keeper_policy - Read "struct tomoyo_domain_keeper_entry" list.
 + *
 + * @head: Pointer to "struct tomoyo_io_buffer".
 + *
@@ -717,18 +467,27 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+bool tomoyo_read_no_rewrite_policy(struct tomoyo_io_buffer *head)
++bool tomoyo_read_domain_keeper_policy(struct tomoyo_io_buffer *head)
 +{
 +	struct list_head *pos;
 +	bool done = true;
 +	list_for_each_cookie(pos, head->read_var2,
-+			     &tomoyo_no_rewrite_list) {
-+		struct tomoyo_no_rewrite_entry *ptr;
-+		ptr = list_entry(pos, struct tomoyo_no_rewrite_entry, list);
++			     &tomoyo_domain_keeper_list) {
++		struct tomoyo_domain_keeper_entry *ptr;
++		const char *no;
++		const char *from = "";
++		const char *program = "";
++		ptr = list_entry(pos, struct tomoyo_domain_keeper_entry, list);
 +		if (ptr->is_deleted)
 +			continue;
-+		done = tomoyo_io_printf(head, TOMOYO_KEYWORD_DENY_REWRITE
-+					"%s\n", ptr->pattern->name);
++		no = ptr->is_not ? "no_" : "";
++		if (ptr->program) {
++			from = " from ";
++			program = ptr->program->name;
++		}
++		done = tomoyo_io_printf(head, "%s" TOMOYO_KEYWORD_KEEP_DOMAIN
++					"%s%s%s\n", no, program, from,
++					ptr->domainname->name);
 +		if (!done)
 +			break;
 +	}
@@ -736,1573 +495,909 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +}
 +
 +/**
-+ * tomoyo_update_file_acl - Update file's read/write/execute ACL.
++ * tomoyo_is_domain_keeper - Check whether the given program causes domain transition suppression.
 + *
-+ * @perm:      Permission (between 1 to 7).
-+ * @filename:  Filename.
-+ * @domain:    Pointer to "struct tomoyo_domain_info".
-+ * @condition: Pointer to "struct tomoyo_condition". May be NULL.
-+ * @is_delete: True if it is a delete request.
++ * @domainname: The name of domain.
++ * @program:    The name of program.
++ * @last_name:  The last component of @domainname.
 + *
-+ * Returns 0 on success, negative value otherwise.
-+ *
-+ * This is legacy support interface for older policy syntax.
-+ * Current policy syntax uses "allow_read/write" instead of "6",
-+ * "allow_read" instead of "4", "allow_write" instead of "2",
-+ * "allow_execute" instead of "1".
-+ */
-+static inline int tomoyo_update_file_acl
-+(u8 perm, const char *filename, struct tomoyo_domain_info * const domain,
-+ struct tomoyo_condition *condition, const bool is_delete)
-+{
-+	if (perm > 7 || !perm)
-+		return -EINVAL;
-+	if (filename[0] != '@' && tomoyo_strendswith(filename, "/"))
-+		/*
-+		 * Only 'allow_mkdir' and 'allow_rmdir' are valid for
-+		 * directory permissions.
-+		 */
-+		return 0;
-+	if (perm & 4)
-+		tomoyo_update_path_acl(TOMOYO_TYPE_READ, filename, domain,
-+				       condition, is_delete);
-+	if (perm & 2)
-+		tomoyo_update_path_acl(TOMOYO_TYPE_WRITE, filename,
-+				       domain, condition, is_delete);
-+	if (perm & 1)
-+		tomoyo_update_path_acl(TOMOYO_TYPE_EXECUTE, filename,
-+				       domain, condition, is_delete);
-+	return 0;
-+}
-+
-+/**
-+ * tomoyo_path_acl - Check permission for single path operation.
-+ *
-+ * @r:               Pointer to "struct tomoyo_request_info".
-+ * @filename:        Filename to check.
-+ * @perm:            Permission.
-+ * @may_use_pattern: True if patterned ACL is permitted.
-+ *
-+ * Returns 0 on success, -EPERM otherwise.
++ * Returns true if executing @program supresses domain transition,
++ * false otherwise.
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+static int tomoyo_path_acl(struct tomoyo_request_info *r,
-+			   const struct tomoyo_path_info *filename,
-+			   const u16 perm,
-+			   const bool may_use_pattern)
++static bool tomoyo_is_domain_keeper(const struct tomoyo_path_info *domainname,
++				    const struct tomoyo_path_info *program,
++				    const struct tomoyo_path_info *last_name)
 +{
-+	struct tomoyo_domain_info *domain = r->domain;
-+	struct tomoyo_acl_info *ptr;
-+	int error = -EPERM;
-+	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_path_acl *acl;
-+		if (ptr->is_deleted || ptr->type != TOMOYO_TYPE_PATH_ACL)
++	struct tomoyo_domain_keeper_entry *ptr;
++	bool flag = false;
++	list_for_each_entry_rcu(ptr, &tomoyo_domain_keeper_list, list) {
++		if (ptr->is_deleted)
 +			continue;
-+		acl = container_of(ptr, struct tomoyo_path_acl,
-+				   head);
-+		if (!(acl->perm & perm) || !tomoyo_condition(r, ptr) ||
-+		    !tomoyo_compare_name_union_pattern(filename, &acl->name,
-+						       may_use_pattern))
++		if (!ptr->is_last_name) {
++			if (ptr->domainname != domainname)
++				continue;
++		} else {
++			if (tomoyo_pathcmp(ptr->domainname, last_name))
++				continue;
++		}
++		if (ptr->program && tomoyo_pathcmp(ptr->program, program))
 +			continue;
-+		r->cond = ptr->cond;
-+		error = 0;
-+		break;
-+	}
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_path_number3_acl - Check permission for mkdev operation.
-+ *
-+ * @r:        Pointer to "struct tomoyo_request_info".
-+ * @filename: Filename to check.
-+ * @perm:     Permission.
-+ * @mode:     Create mode.
-+ * @major:    Device major number.
-+ * @minor:    Device minor number.
-+ *
-+ * Returns 0 on success, -EPERM otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+static int tomoyo_path_number3_acl(struct tomoyo_request_info *r,
-+				   const struct tomoyo_path_info *filename,
-+				   const u16 perm, const unsigned int mode,
-+				   const unsigned int major,
-+				   const unsigned int minor)
-+{
-+	struct tomoyo_domain_info *domain = r->domain;
-+	struct tomoyo_acl_info *ptr;
-+	int error = -EPERM;
-+	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_path_number3_acl *acl;
-+		if (ptr->is_deleted ||
-+		    ptr->type != TOMOYO_TYPE_PATH_NUMBER3_ACL)
-+			continue;
-+		acl = container_of(ptr, struct tomoyo_path_number3_acl, head);
-+		if (!tomoyo_compare_number_union(mode, &acl->mode))
-+			continue;
-+		if (!tomoyo_compare_number_union(major, &acl->major))
-+			continue;
-+		if (!tomoyo_compare_number_union(minor, &acl->minor))
-+			continue;
-+		if (!(acl->perm & perm) || !tomoyo_condition(r, ptr))
-+			continue;
-+		if (!tomoyo_compare_name_union(filename, &acl->name))
-+			continue;
-+		r->cond = ptr->cond;
-+		error = 0;
-+		break;
-+	}
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_file_perm - Check permission for opening files.
-+ *
-+ * @r:         Pointer to "strct tomoyo_request_info".
-+ * @filename:  Filename to check.
-+ * @mode:      Mode ("read" or "write" or "read/write" or "execute").
-+ *
-+ * Returns 0 on success, 1 on retry, negative value otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+int tomoyo_file_perm(struct tomoyo_request_info *r,
-+		     const struct tomoyo_path_info *filename, const u8 mode)
-+{
-+	const char *msg = "<unknown>";
-+	int error = 0;
-+	u16 perm = 0;
-+	if (!filename)
-+		return 0;
-+	if (mode == 6) {
-+		msg = tomoyo_path2keyword(TOMOYO_TYPE_READ_WRITE);
-+		perm = 1 << TOMOYO_TYPE_READ_WRITE;
-+	} else if (mode == 4) {
-+		msg = tomoyo_path2keyword(TOMOYO_TYPE_READ);
-+		perm = 1 << TOMOYO_TYPE_READ;
-+	} else if (mode == 2) {
-+		msg = tomoyo_path2keyword(TOMOYO_TYPE_WRITE);
-+		perm = 1 << TOMOYO_TYPE_WRITE;
-+	} else if (mode == 1) {
-+		msg = tomoyo_path2keyword(TOMOYO_TYPE_EXECUTE);
-+		perm = 1 << TOMOYO_TYPE_EXECUTE;
-+	} else
-+		BUG();
-+	do {
-+		error = tomoyo_path_acl(r, filename, perm, mode != 1);
-+		if (error && mode == 4 && !r->domain->ignore_global_allow_read
-+		    && tomoyo_is_globally_readable_file(filename))
-+			error = 0;
-+		tomoyo_audit_path_log(r, msg, filename->name, !error);
-+		if (!error)
++		if (ptr->is_not) {
++			flag = false;
 +			break;
-+		error = tomoyo_supervisor(r, "allow_%s %s\n", msg,
-+					  mode == 1 ? filename->name :
-+					  tomoyo_file_pattern(filename));
-+		/*
-+		 * Do not retry for execute request, for aggregator may have
-+		 * changed.
-+		 */
-+	} while (error == 1 && !r->ee);
-+	if (r->mode != TOMOYO_CONFIG_ENFORCING)
-+		error = 0;
-+	return error;
++		}
++		flag = true;
++	}
++	return flag;
 +}
 +
++/* The list for "struct tomoyo_aggregator_entry". */
++LIST_HEAD(tomoyo_aggregator_list);
++
 +/**
-+ * tomoyo_update_execute_handler - Update "struct tomoyo_execute_handler_record" list.
++ * tomoyo_update_aggregator_entry - Update "struct tomoyo_aggregator_entry" list.
 + *
-+ * @type:      Type of execute handler.
-+ * @filename:  Pathname to the execute handler.
-+ * @domain:    Pointer to "struct tomoyo_domain_info".
-+ * @is_delete: True if it is a delete request.
++ * @original_name:   The original program's name.
++ * @aggregated_name: The aggregated program's name.
++ * @is_delete:       True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static inline int tomoyo_update_execute_handler
-+(const u8 type, const char *filename, struct tomoyo_domain_info * const domain,
-+ const bool is_delete)
++static int tomoyo_update_aggregator_entry(const char *original_name,
++					  const char *aggregated_name,
++					  const bool is_delete)
 +{
-+	struct tomoyo_acl_info *ptr;
-+	struct tomoyo_execute_handler_record e = { .head.type = type };
-+	struct tomoyo_execute_handler_record *entry = NULL;
++	struct tomoyo_aggregator_entry *entry = NULL;
++	struct tomoyo_aggregator_entry *ptr;
++	struct tomoyo_aggregator_entry e = { };
 +	int error = is_delete ? -ENOENT : -ENOMEM;
-+	if (!domain)
++	if (!tomoyo_is_correct_path(original_name, 1, 0, -1) ||
++	    !tomoyo_is_correct_path(aggregated_name, 1, -1, -1))
 +		return -EINVAL;
-+	if (!tomoyo_is_correct_path(filename, 1, -1, -1))
-+		return -EINVAL;
-+	e.handler = tomoyo_get_name(filename);
-+	if (!e.handler)
-+		return -ENOMEM;
++	e.original_name = tomoyo_get_name(original_name);
++	e.aggregated_name = tomoyo_get_name(aggregated_name);
++	if (!e.original_name || !e.aggregated_name)
++		goto out;
 +	if (!is_delete)
 +		entry = kmalloc(sizeof(e), GFP_KERNEL);
 +	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_execute_handler_record *acl;
-+		if (ptr->type != type)
++	list_for_each_entry_rcu(ptr, &tomoyo_aggregator_list, list) {
++		if (tomoyo_memcmp(ptr, &e, offsetof(typeof(e), original_name),
++				  sizeof(e)))
 +			continue;
-+		/* Condition not supported. */
-+		acl = container_of(ptr, struct tomoyo_execute_handler_record,
-+				   head);
-+		if (acl->handler != e.handler)
-+			continue;
-+		if (!is_delete) {
-+			/* Only one entry can exist in a domain. */
-+			struct tomoyo_acl_info *ptr2;
-+			list_for_each_entry_rcu(ptr2, &domain->acl_info_list,
-+						list) {
-+				if (ptr2->type == type)
-+					ptr2->is_deleted = true;
-+			}
-+		}
 +		ptr->is_deleted = is_delete;
 +		error = 0;
 +		break;
 +	}
 +	if (!is_delete && error && tomoyo_commit_ok(entry, &e, sizeof(e))) {
-+		/* Only one entry can exist in a domain. */
-+		list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+			if (ptr->type == type)
-+				ptr->is_deleted = true;
-+		}
-+		tomoyo_add_domain_acl(domain, &entry->head);
-+		entry = NULL;
-+		error = 0;
-+	}
-+	mutex_unlock(&tomoyo_policy_lock);
-+	tomoyo_put_name(e.handler);
-+	kfree(entry);
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_update_path_acl - Update "struct tomoyo_path_acl" list.
-+ *
-+ * @type:      Type of operation.
-+ * @filename:  Filename.
-+ * @domain:    Pointer to "struct tomoyo_domain_info".
-+ * @condition: Pointer to "struct tomoyo_condition". May be NULL.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_update_path_acl(const u8 type, const char *filename,
-+				  struct tomoyo_domain_info * const domain,
-+				  struct tomoyo_condition *condition,
-+				  const bool is_delete)
-+{
-+	static const u16 tomoyo_rw_mask =
-+		(1 << TOMOYO_TYPE_READ) | (1 << TOMOYO_TYPE_WRITE);
-+	const u16 perm = 1 << type;
-+	struct tomoyo_acl_info *ptr;
-+	struct tomoyo_path_acl e = {
-+		.head.type = TOMOYO_TYPE_PATH_ACL,
-+		.head.cond = condition,
-+		.perm = perm
-+	};
-+	struct tomoyo_path_acl *entry = NULL;
-+	int error = is_delete ? -ENOENT : -ENOMEM;
-+	if (type == TOMOYO_TYPE_READ_WRITE)
-+		e.perm |= tomoyo_rw_mask;
-+	if (!tomoyo_parse_name_union(filename, &e.name))
-+		return -EINVAL;
-+	if (!is_delete)
-+		entry = kmalloc(sizeof(e), GFP_KERNEL);
-+	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_path_acl *acl =
-+			container_of(ptr, struct tomoyo_path_acl,
-+				     head);
-+		if (ptr->type != TOMOYO_TYPE_PATH_ACL ||
-+		    ptr->cond != condition ||
-+		    tomoyo_memcmp(acl, &e, offsetof(typeof(e), name),
-+				  sizeof(e)))
-+			continue;
-+		if (is_delete) {
-+			acl->perm &= ~perm;
-+			if ((acl->perm & tomoyo_rw_mask) != tomoyo_rw_mask)
-+				acl->perm &= ~(1 << TOMOYO_TYPE_READ_WRITE);
-+			else if (!(acl->perm & (1 << TOMOYO_TYPE_READ_WRITE)))
-+				acl->perm &= ~tomoyo_rw_mask;
-+			if (!acl->perm)
-+				ptr->is_deleted = true;
-+		} else {
-+			if (ptr->is_deleted)
-+				acl->perm = 0;
-+			acl->perm |= perm;
-+			if ((acl->perm & tomoyo_rw_mask) == tomoyo_rw_mask)
-+				acl->perm |= 1 << TOMOYO_TYPE_READ_WRITE;
-+			else if (acl->perm & (1 << TOMOYO_TYPE_READ_WRITE))
-+				acl->perm |= tomoyo_rw_mask;
-+			ptr->is_deleted = false;
-+		}
-+		error = 0;
-+		break;
-+	}
-+	if (!is_delete && error && tomoyo_commit_ok(entry, &e, sizeof(e))) {
-+		tomoyo_add_domain_acl(domain, &entry->head);
-+		entry = NULL;
-+		error = 0;
-+	}
-+	mutex_unlock(&tomoyo_policy_lock);
-+	tomoyo_put_name_union(&e.name);
-+	kfree(entry);
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_update_path_number3_acl - Update "struct tomoyo_path_number3_acl" list.
-+ *
-+ * @type:      Type of operation.
-+ * @filename:  Filename.
-+ * @mode:      Create mode.
-+ * @major:     Device major number.
-+ * @minor:     Device minor number.
-+ * @domain:    Pointer to "struct tomoyo_domain_info".
-+ * @condition: Pointer to "struct tomoyo_condition". May be NULL.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static inline int tomoyo_update_path_number3_acl
-+(const u8 type, const char *filename, char *mode, char *major, char *minor,
-+ struct tomoyo_domain_info * const domain, struct tomoyo_condition *condition,
-+ const bool is_delete)
-+{
-+	const u8 perm = 1 << type;
-+	struct tomoyo_acl_info *ptr;
-+	struct tomoyo_path_number3_acl e = {
-+		.head.type = TOMOYO_TYPE_PATH_NUMBER3_ACL,
-+		.head.cond = condition,
-+		.perm = perm
-+	};
-+	struct tomoyo_path_number3_acl *entry = NULL;
-+	int error = is_delete ? -ENOENT : -ENOMEM;
-+	if (!tomoyo_parse_name_union(filename, &e.name) ||
-+	    !tomoyo_parse_number_union(mode, &e.mode) ||
-+	    !tomoyo_parse_number_union(major, &e.major) ||
-+	    !tomoyo_parse_number_union(minor, &e.minor))
-+		goto out;
-+	if (!is_delete)
-+		entry = kmalloc(sizeof(e), GFP_KERNEL);
-+	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_path_number3_acl *acl =
-+			container_of(ptr, struct tomoyo_path_number3_acl,
-+				     head);
-+		if (ptr->type != TOMOYO_TYPE_PATH_NUMBER3_ACL ||
-+		    ptr->cond != condition ||
-+		    tomoyo_memcmp(acl, &e, offsetof(typeof(e), name),
-+				  sizeof(e)))
-+			continue;
-+		if (is_delete) {
-+			acl->perm &= ~perm;
-+			if (!acl->perm)
-+				ptr->is_deleted = true;
-+		} else {
-+			if (ptr->is_deleted)
-+				acl->perm = 0;
-+			acl->perm |= perm;
-+			ptr->is_deleted = false;
-+		}
-+		error = 0;
-+		break;
-+	}
-+	if (!is_delete && error && tomoyo_commit_ok(entry, &e, sizeof(e))) {
-+		tomoyo_add_domain_acl(domain, &entry->head);
++		list_add_tail_rcu(&entry->list, &tomoyo_aggregator_list);
 +		entry = NULL;
 +		error = 0;
 +	}
 +	mutex_unlock(&tomoyo_policy_lock);
 + out:
-+	tomoyo_put_name_union(&e.name);
-+	tomoyo_put_number_union(&e.mode);
-+	tomoyo_put_number_union(&e.major);
-+	tomoyo_put_number_union(&e.minor);
++	tomoyo_put_name(e.original_name);
++	tomoyo_put_name(e.aggregated_name);
 +	kfree(entry);
 +	return error;
 +}
 +
 +/**
-+ * tomoyo_update_path2_acl - Update "struct tomoyo_path2_acl" list.
++ * tomoyo_read_aggregator_policy - Read "struct tomoyo_aggregator_entry" list.
 + *
-+ * @type:      Type of operation.
-+ * @filename1: First filename.
-+ * @filename2: Second filename.
-+ * @domain:    Pointer to "struct tomoyo_domain_info".
-+ * @condition: Pointer to "struct tomoyo_condition". May be NULL.
-+ * @is_delete: True if it is a delete request.
++ * @head: Pointer to "struct tomoyo_io_buffer".
 + *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static inline int tomoyo_update_path2_acl
-+(const u8 type, const char *filename1, const char *filename2,
-+ struct tomoyo_domain_info * const domain, struct tomoyo_condition *condition,
-+ const bool is_delete)
-+{
-+	const u8 perm = 1 << type;
-+	struct tomoyo_acl_info *ptr;
-+	struct tomoyo_path2_acl e = {
-+		.head.type = TOMOYO_TYPE_PATH2_ACL,
-+		.head.cond = condition,
-+		.perm = perm
-+	};
-+	struct tomoyo_path2_acl *entry = NULL;
-+	int error = is_delete ? -ENOENT : -ENOMEM;
-+	if (!tomoyo_parse_name_union(filename1, &e.name1) ||
-+	    !tomoyo_parse_name_union(filename2, &e.name2))
-+		goto out;
-+	if (!is_delete)
-+		entry = kmalloc(sizeof(e), GFP_KERNEL);
-+	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_path2_acl *acl =
-+			container_of(ptr, struct tomoyo_path2_acl,
-+				     head);
-+		if (ptr->type != TOMOYO_TYPE_PATH2_ACL ||
-+		    ptr->cond != condition ||
-+		    tomoyo_memcmp(acl, &e, offsetof(typeof(e), name1),
-+				  sizeof(e)))
-+			continue;
-+		if (is_delete) {
-+			acl->perm &= ~perm;
-+			if (!acl->perm)
-+				ptr->is_deleted = true;
-+		} else {
-+			if (ptr->is_deleted)
-+				acl->perm = 0;
-+			acl->perm |= perm;
-+			ptr->is_deleted = false;
-+		}
-+		error = 0;
-+		break;
-+	}
-+	if (!is_delete && error && tomoyo_commit_ok(entry, &e, sizeof(e))) {
-+		tomoyo_add_domain_acl(domain, &entry->head);
-+		entry = NULL;
-+		error = 0;
-+	}
-+	mutex_unlock(&tomoyo_policy_lock);
-+ out:
-+	tomoyo_put_name_union(&e.name1);
-+	tomoyo_put_name_union(&e.name2);
-+	kfree(entry);
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_path2_acl - Check permission for double path operation.
-+ *
-+ * @r:         Pointer to "struct tomoyo_request_info".
-+ * @type:      Type of operation.
-+ * @filename1: First filename to check.
-+ * @filename2: Second filename to check.
-+ *
-+ * Returns 0 on success, -EPERM otherwise.
++ * Returns true on success, false otherwise.
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+static int tomoyo_path2_acl(struct tomoyo_request_info *r, const u8 type,
-+			    const struct tomoyo_path_info *filename1,
-+			    const struct tomoyo_path_info *filename2)
++bool tomoyo_read_aggregator_policy(struct tomoyo_io_buffer *head)
 +{
-+	const struct tomoyo_domain_info *domain = r->domain;
-+	struct tomoyo_acl_info *ptr;
-+	const u8 perm = 1 << type;
-+	int error = -EPERM;
-+	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_path2_acl *acl;
-+		if (ptr->is_deleted || ptr->type != TOMOYO_TYPE_PATH2_ACL)
++	struct list_head *pos;
++	bool done = true;
++	list_for_each_cookie(pos, head->read_var2, &tomoyo_aggregator_list) {
++		struct tomoyo_aggregator_entry *ptr;
++		ptr = list_entry(pos, struct tomoyo_aggregator_entry, list);
++		if (ptr->is_deleted)
 +			continue;
-+		acl = container_of(ptr, struct tomoyo_path2_acl,
-+				   head);
-+		if (!(acl->perm & perm) || !tomoyo_condition(r, ptr) ||
-+		    !tomoyo_compare_name_union(filename1, &acl->name1) ||
-+		    !tomoyo_compare_name_union(filename2, &acl->name2))
-+			continue;
-+		r->cond = ptr->cond;
-+		error = 0;
-+		break;
-+	}
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_path_permission - Check permission for single path operation.
-+ *
-+ * @r:         Pointer to "struct tomoyo_request_info".
-+ * @operation: Type of operation.
-+ * @filename:  Filename to check.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+static int tomoyo_path_permission(struct tomoyo_request_info *r,
-+				  u8 operation,
-+				  const struct tomoyo_path_info *
-+				  filename)
-+{
-+	const char *msg;
-+	int error;
-+ repeat:
-+	r->mode = tomoyo_get_mode(r->profile, tomoyo_p2mac[operation]);
-+	if (r->mode == TOMOYO_CONFIG_DISABLED)
-+		return 0;
-+	do {
-+		error = tomoyo_path_acl(r, filename, 1 << operation, 1);
-+		msg = tomoyo_path2keyword(operation);
-+		tomoyo_audit_path_log(r, msg, filename->name, !error);
-+		if (!error)
++		done = tomoyo_io_printf(head, TOMOYO_KEYWORD_AGGREGATOR
++					"%s %s\n", ptr->original_name->name,
++					ptr->aggregated_name->name);
++		if (!done)
 +			break;
-+		error = tomoyo_supervisor(r, "allow_%s %s\n", msg,
-+					  tomoyo_file_pattern(filename));
-+	} while (error == 1);
-+	if (r->mode != TOMOYO_CONFIG_ENFORCING)
-+		error = 0;
-+	/*
-+	 * Since "allow_truncate" doesn't imply "allow_rewrite" permission,
-+	 * we need to check "allow_rewrite" permission if the filename is
-+	 * specified by "deny_rewrite" keyword.
-+	 */
-+	if (!error && operation == TOMOYO_TYPE_TRUNCATE &&
-+	    tomoyo_is_no_rewrite_file(filename)) {
-+		operation = TOMOYO_TYPE_REWRITE;
-+		goto repeat;
 +	}
-+	return error;
++	return done;
 +}
 +
 +/**
-+ * tomoyo_path_number3_perm2 - Check permission for mkdev operation.
-+ *
-+ * @r:         Pointer to "struct tomoyo_request_info".
-+ * @operation: Type of operation.
-+ * @filename:  Filename to check.
-+ * @mode:      Create mode.
-+ * @dev:       Device number.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+static int tomoyo_path_number3_perm2(struct tomoyo_request_info *r,
-+				     const u8 operation,
-+				     const struct tomoyo_path_info *filename,
-+				     const unsigned int mode,
-+				     const unsigned int dev)
-+{
-+	int error;
-+	const char *msg = tomoyo_path_number32keyword(operation);
-+	const unsigned int major = MAJOR(dev);
-+	const unsigned int minor = MINOR(dev);
-+	if (!r->mode)
-+		return 0;
-+	do {
-+		error = tomoyo_path_number3_acl(r, filename, 1 << operation,
-+						mode, major, minor);
-+		tomoyo_audit_path_number3_log(r, msg, filename->name, mode,
-+					      major, minor, !error);
-+		if (!error)
-+			break;
-+		error = tomoyo_supervisor(r, "allow_%s %s 0%o %u %u\n", msg,
-+					  tomoyo_file_pattern(filename), mode,
-+					  major, minor);
-+	} while (error == 1);
-+	if (r->mode != TOMOYO_CONFIG_ENFORCING)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_exec_perm - Check permission for "execute".
-+ *
-+ * @r:        Pointer to "struct tomoyo_request_info".
-+ * @filename: Check permission for "execute".
-+ *
-+ * Returns 0 on success, 1 on retry, negative value otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+int tomoyo_exec_perm(struct tomoyo_request_info *r,
-+		     const struct tomoyo_path_info *filename)
-+{
-+	if (r->mode == TOMOYO_CONFIG_DISABLED)
-+		return 0;
-+	return tomoyo_file_perm(r, filename, 1);
-+}
-+
-+/**
-+ * tomoyo_open_permission - Check permission for "read" and "write".
-+ *
-+ * @dentry: Pointer to "struct dentry".
-+ * @mnt:    Pointer to "struct vfsmount".
-+ * @flag:   Flags for open().
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int tomoyo_open_permission(struct dentry *dentry, struct vfsmount *mnt,
-+			   const int flag)
-+{
-+	struct tomoyo_request_info r;
-+	struct tomoyo_obj_info obj = {
-+		.path1.dentry = dentry,
-+		.path1.mnt = mnt
-+	};
-+	struct task_struct * const task = current;
-+	const u8 acc_mode = ACC_MODE(flag);
-+	int error = 0;
-+	struct tomoyo_path_info buf;
-+	int idx;
-+	if (task->in_execve &&
-+	    !(task->tomoyo_flags & TOMOYO_TASK_IS_IN_EXECVE))
-+		return 0;
-+	if (!mnt || (dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode)))
-+		return 0;
-+	buf.name = NULL;
-+	r.mode = 0;
-+	idx = tomoyo_read_lock();
-+	/*
-+	 * If the filename is specified by "deny_rewrite" keyword,
-+	 * we need to check "allow_rewrite" permission when the filename is not
-+	 * opened for append mode or the filename is truncated at open time.
-+	 */
-+	if ((acc_mode & MAY_WRITE) && !(flag & O_APPEND)
-+	    && tomoyo_init_request_info(&r, NULL, TOMOYO_MAC_FILE_REWRITE)
-+	    != TOMOYO_CONFIG_DISABLED) {
-+		if (!tomoyo_get_realpath(&buf, dentry, mnt)) {
-+			error = -ENOMEM;
-+			goto out;
-+		}
-+		if (tomoyo_is_no_rewrite_file(&buf)) {
-+			r.obj = &obj;
-+			error = tomoyo_path_permission(&r, TOMOYO_TYPE_REWRITE,
-+						       &buf);
-+		}
-+	}
-+	if (!error && acc_mode &&
-+	    tomoyo_init_request_info(&r, NULL, TOMOYO_MAC_FILE_OPEN)
-+	    != TOMOYO_CONFIG_DISABLED) {
-+		if (!buf.name && !tomoyo_get_realpath(&buf, dentry, mnt)) {
-+			error = -ENOMEM;
-+			goto out;
-+		}
-+		r.obj = &obj;
-+		error = tomoyo_file_perm(&r, &buf, acc_mode);
-+	}
-+ out:
-+	kfree(buf.name);
-+	tomoyo_read_unlock(idx);
-+	if (r.mode != TOMOYO_CONFIG_ENFORCING)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_path_perm - Check permission for "unlink", "rmdir", "truncate", "symlink", "chroot" and "unmount".
-+ *
-+ * @operation: Type of operation.
-+ * @dentry:    Pointer to "struct dentry".
-+ * @mnt:       Pointer to "struct vfsmount".
-+ * @target:    Symlink's target if @operation is TOMOYO_TYPE_SYMLINK.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_path_perm(const u8 operation, struct dentry *dentry,
-+			    struct vfsmount *mnt, const char *target)
-+{
-+	struct tomoyo_request_info r;
-+	struct tomoyo_obj_info obj = {
-+		.path1.dentry = dentry,
-+		.path1.mnt = mnt
-+	};
-+	int error = -ENOMEM;
-+	struct tomoyo_path_info buf;
-+	bool is_enforce = false;
-+	struct tomoyo_path_info symlink_target;
-+	int idx;
-+	buf.name = NULL;
-+	symlink_target.name = NULL;
-+	idx = tomoyo_read_lock();
-+	if (!mnt || tomoyo_init_request_info(&r, NULL, tomoyo_p2mac[operation])
-+	    == TOMOYO_CONFIG_DISABLED) {
-+		error = 0;
-+		goto out;
-+	}
-+	is_enforce = (r.mode == TOMOYO_CONFIG_ENFORCING);
-+	if (!tomoyo_get_realpath(&buf, dentry, mnt))
-+		goto out;
-+	r.obj = &obj;
-+	switch (operation) {
-+	case TOMOYO_TYPE_RMDIR:
-+	case TOMOYO_TYPE_CHROOT:
-+	case TOMOYO_TYPE_UMOUNT:
-+		tomoyo_add_slash(&buf);
-+		break;
-+	case TOMOYO_TYPE_SYMLINK:
-+		symlink_target.name = tomoyo_encode(target);
-+		if (!symlink_target.name)
-+			goto out;
-+		tomoyo_fill_path_info(&symlink_target);
-+		obj.symlink_target = &symlink_target;
-+		break;
-+	}
-+	error = tomoyo_path_permission(&r, operation, &buf);
-+	if (operation == TOMOYO_TYPE_SYMLINK)
-+		kfree(symlink_target.name);
-+ out:
-+	kfree(buf.name);
-+	tomoyo_read_unlock(idx);
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_path_number3_perm - Check permission for "mkblock" and "mkchar".
-+ *
-+ * @operation: Type of operation. (TOMOYO_TYPE_MKCHAR or TOMOYO_TYPE_MKBLOCK)
-+ * @dentry:    Pointer to "struct dentry".
-+ * @mnt:       Pointer to "struct vfsmount".
-+ ` @mode:      Create mode.
-+ * @dev:       Device number.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_path_number3_perm(const u8 operation, struct dentry *dentry,
-+				    struct vfsmount *mnt,
-+				    const unsigned int mode,
-+				    const unsigned int dev)
-+{
-+	struct tomoyo_request_info r;
-+	struct tomoyo_obj_info obj = {
-+		.path1.dentry = dentry,
-+		.path1.mnt = mnt,
-+		.dev = dev
-+	};
-+	int error = -ENOMEM;
-+	struct tomoyo_path_info buf;
-+	int idx;
-+	buf.name = NULL;
-+	idx = tomoyo_read_lock();
-+	if (!mnt || tomoyo_init_request_info(&r, NULL,
-+					     tomoyo_pnnn2mac[operation])
-+	    == TOMOYO_CONFIG_DISABLED) {
-+		error = 0;
-+		goto out;
-+	}
-+	if (!tomoyo_get_realpath(&buf, dentry, mnt))
-+		goto out;
-+	r.obj = &obj;
-+	error = tomoyo_path_number3_perm2(&r, operation, &buf, mode, dev);
-+ out:
-+	kfree(buf.name);
-+	tomoyo_read_unlock(idx);
-+	if (r.mode != TOMOYO_CONFIG_ENFORCING)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_rewrite_permission - Check permission for "rewrite".
-+ *
-+ * @filp: Pointer to "struct file".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int tomoyo_rewrite_permission(struct file *filp)
-+{
-+	struct tomoyo_request_info r;
-+	struct tomoyo_obj_info obj = {
-+		.path1.dentry = filp->f_dentry,
-+		.path1.mnt = filp->f_vfsmnt
-+	};
-+	int error = -ENOMEM;
-+	bool is_enforce = false;
-+	struct tomoyo_path_info buf;
-+	int idx;
-+	buf.name = NULL;
-+	idx = tomoyo_read_lock();
-+	if (!filp->f_vfsmnt ||
-+	    tomoyo_init_request_info(&r, NULL, TOMOYO_MAC_FILE_REWRITE)
-+	    == TOMOYO_CONFIG_DISABLED) {
-+		error = 0;
-+		goto out;
-+	}
-+	is_enforce = (r.mode == TOMOYO_CONFIG_ENFORCING);
-+	if (!tomoyo_get_realpath(&buf, filp->f_dentry, filp->f_vfsmnt))
-+		goto out;
-+	if (!tomoyo_is_no_rewrite_file(&buf)) {
-+		error = 0;
-+		goto out;
-+	}
-+	r.obj = &obj;
-+	error = tomoyo_path_permission(&r, TOMOYO_TYPE_REWRITE, &buf);
-+ out:
-+	kfree(buf.name);
-+	tomoyo_read_unlock(idx);
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_path2_perm - Check permission for "rename", "link" and "pivot_root".
-+ *
-+ * @operation: Type of operation.
-+ * @dentry1:   Pointer to "struct dentry".
-+ * @mnt1:      Pointer to "struct vfsmount".
-+ * @dentry2:   Pointer to "struct dentry".
-+ * @mnt2:      Pointer to "struct vfsmount".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_path2_perm(const u8 operation, struct dentry *dentry1,
-+			     struct vfsmount *mnt1, struct dentry *dentry2,
-+			     struct vfsmount *mnt2)
-+{
-+	struct tomoyo_request_info r;
-+	int error = -ENOMEM;
-+	const char *msg = tomoyo_path22keyword(operation);
-+	struct tomoyo_path_info buf1;
-+	struct tomoyo_path_info buf2;
-+	bool is_enforce = false;
-+	struct tomoyo_obj_info obj = {
-+		.path1.dentry = dentry1,
-+		.path1.mnt = mnt1,
-+		.path2.dentry = dentry2,
-+		.path2.mnt = mnt2
-+	};
-+	int idx;
-+	buf1.name = NULL;
-+	buf2.name = NULL;
-+	idx = tomoyo_read_lock();
-+	if (!mnt1 || !mnt2 ||
-+	    tomoyo_init_request_info(&r, NULL, tomoyo_pp2mac[operation])
-+	    == TOMOYO_CONFIG_DISABLED) {
-+		error = 0;
-+		goto out;
-+	}
-+	is_enforce = (r.mode == TOMOYO_CONFIG_ENFORCING);
-+	if (!tomoyo_get_realpath(&buf1, dentry1, mnt1) ||
-+	    !tomoyo_get_realpath(&buf2, dentry2, mnt2))
-+		goto out;
-+	switch (operation) {
-+	case TOMOYO_TYPE_RENAME:
-+	case TOMOYO_TYPE_LINK:
-+		if (!dentry1->d_inode || !S_ISDIR(dentry1->d_inode->i_mode))
-+			break;
-+		/* fall through */
-+	case TOMOYO_TYPE_PIVOT_ROOT:
-+		tomoyo_add_slash(&buf1);
-+		tomoyo_add_slash(&buf2);
-+	}
-+	r.obj = &obj;
-+	do {
-+		error = tomoyo_path2_acl(&r, operation, &buf1, &buf2);
-+		tomoyo_audit_path2_log(&r, msg, buf1.name, buf2.name, !error);
-+		if (!error)
-+			break;
-+		error = tomoyo_supervisor(&r, "allow_%s %s %s\n", msg,
-+					  tomoyo_file_pattern(&buf1),
-+					  tomoyo_file_pattern(&buf2));
-+	} while (error == 1);
-+ out:
-+	kfree(buf1.name);
-+	kfree(buf2.name);
-+	tomoyo_read_unlock(idx);
-+	if (!is_enforce)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_update_path_number_acl - Update ioctl/chmod/chown/chgrp ACL.
-+ *
-+ * @type:      Type of operation.
-+ * @filename:  Filename.
-+ * @number:    Number.
-+ * @domain:    Pointer to "struct tomoyo_domain_info".
-+ * @condition: Pointer to "struct tomoyo_condition". May be NULL.
-+ * @is_delete: True if it is a delete request.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static inline int tomoyo_update_path_number_acl
-+(const u8 type, const char *filename, char *number,
-+ struct tomoyo_domain_info * const domain, struct tomoyo_condition *condition,
-+ const bool is_delete)
-+{
-+	const u8 perm = 1 << type;
-+	struct tomoyo_acl_info *ptr;
-+	struct tomoyo_path_number_acl e = {
-+		.head.type = TOMOYO_TYPE_PATH_NUMBER_ACL,
-+		.head.cond = condition,
-+		.perm = perm
-+	};
-+	struct tomoyo_path_number_acl *entry = NULL;
-+	int error = is_delete ? -ENOENT : -ENOMEM;
-+	if (!domain)
-+		return -EINVAL;
-+	if (!tomoyo_parse_name_union(filename, &e.name))
-+		return -EINVAL;
-+	if (!tomoyo_parse_number_union(number, &e.number))
-+		goto out;
-+	if (!is_delete)
-+		entry = kmalloc(sizeof(e), GFP_KERNEL);
-+	mutex_lock(&tomoyo_policy_lock);
-+	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_path_number_acl *acl =
-+			container_of(ptr, struct tomoyo_path_number_acl,
-+				     head);
-+		if (ptr->type != TOMOYO_TYPE_PATH_NUMBER_ACL ||
-+		    ptr->cond != condition ||
-+		    tomoyo_memcmp(acl, &e, offsetof(typeof(e), name),
-+				  sizeof(e)))
-+			continue;
-+		if (is_delete) {
-+			acl->perm &= ~perm;
-+			if (!acl->perm)
-+				ptr->is_deleted = true;
-+		} else {
-+			if (ptr->is_deleted)
-+				acl->perm = 0;
-+			acl->perm |= perm;
-+			ptr->is_deleted = false;
-+		}
-+		error = 0;
-+		break;
-+	}
-+	if (!is_delete && error && tomoyo_commit_ok(entry, &e, sizeof(e))) {
-+		tomoyo_add_domain_acl(domain, &entry->head);
-+		entry = NULL;
-+		error = 0;
-+	}
-+	mutex_unlock(&tomoyo_policy_lock);
-+ out:
-+	tomoyo_put_name_union(&e.name);
-+	tomoyo_put_number_union(&e.number);
-+	kfree(entry);
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_path_number_acl - Check permission for ioctl/chmod/chown/chgrp operation.
-+ *
-+ * @r:        Pointer to "struct tomoyo_request_info".
-+ * @type:     Operation.
-+ * @filename: Filename to check.
-+ * @number:   Number.
-+ *
-+ * Returns 0 on success, -EPERM otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+static int tomoyo_path_number_acl(struct tomoyo_request_info *r, const u8 type,
-+				  const struct tomoyo_path_info *filename,
-+				  const unsigned long number)
-+{
-+	struct tomoyo_domain_info *domain = r->domain;
-+	struct tomoyo_acl_info *ptr;
-+	const u8 perm = 1 << type;
-+	int error = -EPERM;
-+	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_path_number_acl *acl;
-+		if (ptr->is_deleted ||
-+		    ptr->type != TOMOYO_TYPE_PATH_NUMBER_ACL)
-+			continue;
-+		acl = container_of(ptr, struct tomoyo_path_number_acl,
-+				   head);
-+		if (!(acl->perm & perm) || !tomoyo_condition(r, ptr) ||
-+		    !tomoyo_compare_number_union(number, &acl->number) ||
-+		    !tomoyo_compare_name_union(filename, &acl->name))
-+			continue;
-+		r->cond = ptr->cond;
-+		error = 0;
-+		break;
-+	}
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_path_number_perm2 - Check permission for "create", "mkdir", "mkfifo", "mksock", "ioctl", "chmod", "chown", "chgrp".
-+ *
-+ * @r:        Pointer to "strct tomoyo_request_info".
-+ * @filename: Filename to check.
-+ * @numr:     Number.
-+ *
-+ * Returns 0 on success, 1 on retry, negative value otherwise.
-+ *
-+ * Caller holds tomoyo_read_lock().
-+ */
-+static int tomoyo_path_number_perm2(struct tomoyo_request_info *r,
-+				    const u8 type,
-+				    const struct tomoyo_path_info *filename,
-+				    const unsigned long number)
-+{
-+	char buffer[64];
-+	int error;
-+	u8 radix;
-+	const char *msg = tomoyo_path_number2keyword(type);
-+	if (!filename)
-+		return 0;
-+	switch (type) {
-+	case TOMOYO_TYPE_CREATE:
-+	case TOMOYO_TYPE_MKDIR:
-+	case TOMOYO_TYPE_MKFIFO:
-+	case TOMOYO_TYPE_MKSOCK:
-+	case TOMOYO_TYPE_CHMOD:
-+		radix = TOMOYO_VALUE_TYPE_OCTAL;
-+		break;
-+	case TOMOYO_TYPE_IOCTL:
-+		radix = TOMOYO_VALUE_TYPE_HEXADECIMAL;
-+		break;
-+	default:
-+		radix = TOMOYO_VALUE_TYPE_DECIMAL;
-+		break;
-+	}
-+	tomoyo_print_ulong(buffer, sizeof(buffer), number, radix);
-+	do {
-+		error = tomoyo_path_number_acl(r, type, filename, number);
-+		tomoyo_audit_path_number_log(r, msg, filename->name, buffer,
-+					     !error);
-+		if (!error)
-+			return 0;
-+		error = tomoyo_supervisor(r, "allow_%s %s %s\n", msg,
-+					  tomoyo_file_pattern(filename),
-+					  buffer);
-+	} while (error == 1);
-+	if (r->mode != TOMOYO_CONFIG_ENFORCING)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_path_number_perm - Check permission for "create", "mkdir", "mkfifo", "mksock", "ioctl", "chmod", "chown", "chgrp".
-+ *
-+ * @dentry: Pointer to "struct dentry".
-+ * @vfsmnt: Pointer to "struct vfsmount".
-+ * @number: Number.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_path_number_perm(const u8 type, struct dentry *dentry,
-+				   struct vfsmount *vfsmnt,
-+				   unsigned long number)
-+{
-+	struct tomoyo_request_info r;
-+	struct tomoyo_obj_info obj = {
-+		.path1.dentry = dentry,
-+		.path1.mnt = vfsmnt
-+	};
-+	int error = -ENOMEM;
-+	struct tomoyo_path_info buf;
-+	int idx;
-+	if (!vfsmnt || !dentry)
-+		return 0;
-+	buf.name = NULL;
-+	idx = tomoyo_read_lock();
-+	if (tomoyo_init_request_info(&r, NULL, tomoyo_pn2mac[type])
-+	    == TOMOYO_CONFIG_DISABLED) {
-+		error = 0;
-+		goto out;
-+	}
-+	if (!tomoyo_get_realpath(&buf, dentry, vfsmnt))
-+		goto out;
-+	r.obj = &obj;
-+	if (type == TOMOYO_TYPE_MKDIR)
-+		tomoyo_add_slash(&buf);
-+	error = tomoyo_path_number_perm2(&r, type, &buf, number);
-+ out:
-+	kfree(buf.name);
-+	tomoyo_read_unlock(idx);
-+	if (r.mode != TOMOYO_CONFIG_ENFORCING)
-+		error = 0;
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_ioctl_permission - Check permission for "ioctl".
-+ *
-+ * @file: Pointer to "struct file".
-+ * @cmd:  Ioctl command number.
-+ * @arg:  Param for @cmd .
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int tomoyo_ioctl_permission(struct file *filp, unsigned int cmd,
-+			    unsigned long arg)
-+{
-+	int error = tomoyo_path_number_perm(TOMOYO_TYPE_IOCTL, filp->f_dentry,
-+					    filp->f_vfsmnt, cmd);
-+	if (error)
-+		goto out;
-+	switch (cmd) {
-+	case FIOCLEX:
-+	case FIONCLEX:
-+	case FIONBIO:
-+	case FIOASYNC:
-+	case FIOQSIZE:
-+	case FIFREEZE:
-+	case FITHAW:
-+	case FS_IOC_FIEMAP:
-+	case FIGETBSZ:
-+		goto out;
-+	}
-+	if (S_ISREG(filp->f_path.dentry->d_inode->i_mode)) {
-+		switch (cmd) {
-+		case FIBMAP:
-+		case FIONREAD:
-+		case FS_IOC_RESVSP:
-+		case FS_IOC_RESVSP64:
-+			goto out;
-+		}
-+	}
-+	/* Check permission to call vfs_ioctl(). */
-+	if (!tomoyo_capable(TOMOYO_SYS_IOCTL))
-+		error = -EPERM;
-+ out:
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_chmod_permission - Check permission for "chmod".
-+ *
-+ * @dentry: Pointer to "struct dentry".
-+ * @vfsmnt: Pointer to "struct vfsmount".
-+ * @mode:   Mode.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int tomoyo_chmod_permission(struct dentry *dentry, struct vfsmount *vfsmnt,
-+			    mode_t mode)
-+{
-+	if (mode == (mode_t) -1)
-+		return 0;
-+	if (!tomoyo_capable(TOMOYO_SYS_CHMOD))
-+		return -EPERM;
-+	return tomoyo_path_number_perm(TOMOYO_TYPE_CHMOD, dentry, vfsmnt,
-+				       mode & S_IALLUGO);
-+}
-+
-+/**
-+ * tomoyo_chown_permission - Check permission for "chown/chgrp".
-+ *
-+ * @dentry: Pointer to "struct dentry".
-+ * @vfsmnt: Pointer to "struct vfsmount".
-+ * @user:   User ID.
-+ * @group:  Group ID.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int tomoyo_chown_permission(struct dentry *dentry, struct vfsmount *vfsmnt,
-+			    uid_t user, gid_t group)
-+{
-+	int error = 0;
-+	if (user == (uid_t) -1 && group == (gid_t) -1)
-+		return 0;
-+	if (!tomoyo_capable(TOMOYO_SYS_CHOWN))
-+		return -EPERM;
-+	if (user != (uid_t) -1)
-+		error = tomoyo_path_number_perm(TOMOYO_TYPE_CHOWN, dentry,
-+						vfsmnt, user);
-+	if (!error && group != (gid_t) -1)
-+		error = tomoyo_path_number_perm(TOMOYO_TYPE_CHGRP, dentry,
-+						vfsmnt, group);
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_pivot_root_permission - Check permission for pivot_root().
-+ *
-+ * @old_path: Pointer to "struct path".
-+ * @new_path: Pointer to "struct path".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int tomoyo_pivot_root_permission(struct path *old_path, struct path*new_path)
-+{
-+	if (!tomoyo_capable(TOMOYO_SYS_PIVOT_ROOT))
-+		return -EPERM;
-+	return tomoyo_path2_perm(TOMOYO_TYPE_PIVOT_ROOT, new_path->dentry,
-+				 new_path->mnt, old_path->dentry,
-+				 old_path->mnt);
-+}
-+
-+/**
-+ * tomoyo_chroot_permission - Check permission for chroot().
-+ *
-+ * @path: Pointer to "struct path".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int tomoyo_chroot_permission(struct path *path)
-+{
-+	if (!tomoyo_capable(TOMOYO_SYS_CHROOT))
-+		return -EPERM;
-+	return tomoyo_path_perm(TOMOYO_TYPE_CHROOT, path->dentry, path->mnt,
-+				NULL);
-+}
-+
-+/**
-+ * tomoyo_umount_permission - Check permission for unmount.
-+ *
-+ * @mnt:   Pointer to "struct vfsmount".
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+int tomoyo_umount_permission(struct vfsmount *mnt)
-+{
-+	if (!tomoyo_capable(TOMOYO_SYS_UMOUNT))
-+		return -EPERM;
-+	return tomoyo_path_perm(TOMOYO_TYPE_UMOUNT, mnt->mnt_root, mnt, NULL);
-+}
-+
-+/**
-+ * tomoyo_write_file_policy - Update file related list.
++ * tomoyo_write_aggregator_policy - Write "struct tomoyo_aggregator_entry" list.
 + *
 + * @data:      String to parse.
-+ * @domain:    Pointer to "struct tomoyo_domain_info".
-+ * @condition: Pointer to "struct tomoyo_condition". May be NULL.
 + * @is_delete: True if it is a delete request.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int tomoyo_write_file_policy(char *data, struct tomoyo_domain_info *domain,
-+			     struct tomoyo_condition *condition,
-+			     const bool is_delete)
++int tomoyo_write_aggregator_policy(char *data, const bool is_delete)
 +{
-+	char *w[5];
-+	unsigned int perm;
-+	u8 type;
++	char *w[2];
 +	if (!tomoyo_tokenize(data, w, sizeof(w)) || !w[1][0])
 +		return -EINVAL;
-+	if (strncmp(w[0], "allow_", 6)) {
-+		if (sscanf(w[0], "%u", &perm) == 1)
-+			return tomoyo_update_file_acl((u8) perm, w[1], domain,
-+						      condition, is_delete);
-+		if (!strcmp(w[0], TOMOYO_KEYWORD_EXECUTE_HANDLER))
-+			type = TOMOYO_TYPE_EXECUTE_HANDLER;
-+		else if (!strcmp(w[0], TOMOYO_KEYWORD_DENIED_EXECUTE_HANDLER))
-+			type = TOMOYO_TYPE_DENIED_EXECUTE_HANDLER;
-+		else
++	return tomoyo_update_aggregator_entry(w[0], w[1], is_delete);
++}
++
++/* Domain create/delete handler. */
++
++/**
++ * tomoyo_delete_domain - Delete a domain.
++ *
++ * @domainname: The name of domain.
++ *
++ * Returns 0.
++ */
++int tomoyo_delete_domain(char *domainname)
++{
++	struct tomoyo_domain_info *domain;
++	struct tomoyo_path_info name;
++	name.name = domainname;
++	tomoyo_fill_path_info(&name);
++	mutex_lock(&tomoyo_policy_lock);
++	/* Is there an active domain? */
++	list_for_each_entry_rcu(domain, &tomoyo_domain_list, list) {
++		/* Never delete tomoyo_kernel_domain */
++		if (domain == &tomoyo_kernel_domain)
++			continue;
++		if (domain->is_deleted ||
++		    tomoyo_pathcmp(domain->domainname, &name))
++			continue;
++		domain->is_deleted = true;
++		break;
++	}
++	mutex_unlock(&tomoyo_policy_lock);
++	return 0;
++}
++
++/**
++ * tomoyo_find_or_assign_new_domain - Create a domain.
++ *
++ * @domainname: The name of domain.
++ * @profile:    Profile number to assign if the domain was newly created.
++ *
++ * Returns pointer to "struct tomoyo_domain_info" on success, NULL otherwise.
++ */
++struct tomoyo_domain_info *tomoyo_find_or_assign_new_domain
++(const char *domainname, const u8 profile)
++{
++	struct tomoyo_domain_info *entry;
++	struct tomoyo_domain_info *domain;
++	const struct tomoyo_path_info *saved_domainname;
++	bool found = false;
++
++	if (!tomoyo_is_correct_domain(domainname))
++		return NULL;
++	saved_domainname = tomoyo_get_name(domainname);
++	if (!saved_domainname)
++		return NULL;
++	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++	mutex_lock(&tomoyo_policy_lock);
++	list_for_each_entry_rcu(domain, &tomoyo_domain_list, list) {
++		if (domain->is_deleted ||
++		    tomoyo_pathcmp(saved_domainname, domain->domainname))
++			continue;
++		found = true;
++		break;
++	}
++	if (!found && tomoyo_memory_ok(entry, sizeof(*entry))) {
++		INIT_LIST_HEAD(&entry->acl_info_list);
++		entry->domainname = saved_domainname;
++		saved_domainname = NULL;
++		entry->profile = profile;
++		list_add_tail_rcu(&entry->list, &tomoyo_domain_list);
++		domain = entry;
++		entry = NULL;
++		found = true;
++	}
++	mutex_unlock(&tomoyo_policy_lock);
++	tomoyo_put_name(saved_domainname);
++	kfree(entry);
++	return found ? domain : NULL;
++}
++
++/**
++ * tomoyo_find_next_domain - Find a domain.
++ *
++ * @ee: Pointer to "struct tomoyo_execve_entry".
++ *
++ * Returns 0 on success, negative value otherwise.
++ *
++ * Caller holds tomoyo_read_lock().
++ */
++static int tomoyo_find_next_domain(struct tomoyo_execve_entry *ee)
++{
++	struct tomoyo_request_info *r = &ee->r;
++	const struct tomoyo_path_info *handler = ee->handler;
++	struct tomoyo_domain_info *domain = NULL;
++	const char *old_domain_name = r->domain->domainname->name;
++	struct linux_binprm *bprm = ee->bprm;
++	const u32 tomoyo_flags = current->tomoyo_flags;
++	struct tomoyo_path_info rn = { }; /* real name */
++	struct tomoyo_path_info ln; /* last name */
++	int retval;
++	bool need_kfree = false;
++	ln.name = tomoyo_last_word(old_domain_name);
++	tomoyo_fill_path_info(&ln);
++ retry:
++	current->tomoyo_flags = tomoyo_flags;
++	r->cond = NULL;
++	if (need_kfree) {
++		kfree(rn.name);
++		need_kfree = false;
++	}
++
++	/* Get symlink's pathname of program. */
++	retval = tomoyo_symlink_path(bprm->filename, &rn);
++	if (retval < 0)
++		goto out;
++	need_kfree = true;
++
++	if (handler) {
++		if (tomoyo_pathcmp(&rn, handler)) {
++			/* Failed to verify execute handler. */
++			static u8 counter = 20;
++			if (counter) {
++				counter--;
++				printk(KERN_WARNING "Failed to verify: %s\n",
++				       handler->name);
++			}
 +			goto out;
-+		return tomoyo_update_execute_handler(type, w[1], domain,
-+						     is_delete);
++		}
++	} else {
++		struct tomoyo_aggregator_entry *ptr;
++		/* Check 'aggregator' directive. */
++		list_for_each_entry_rcu(ptr, &tomoyo_aggregator_list, list) {
++			if (ptr->is_deleted ||
++			    !tomoyo_path_matches_pattern(&rn,
++							 ptr->original_name))
++				continue;
++			kfree(rn.name);
++			need_kfree = false;
++			/* This is OK because it is read only. */
++			rn = *ptr->aggregated_name;
++			break;
++		}
++
++		/* Check execute permission. */
++		retval = tomoyo_exec_perm(r, &rn);
++		if (retval == 1)
++			goto retry;
++		if (retval < 0)
++			goto out;
 +	}
-+	w[0] += 6;
-+	for (type = 0; type < TOMOYO_MAX_PATH_OPERATION; type++) {
-+		if (strcmp(w[0], tomoyo_path_keyword[type]))
-+			continue;
-+		return tomoyo_update_path_acl(type, w[1], domain, condition,
-+					      is_delete);
++
++	/* Calculate domain to transit to. */
++	if (tomoyo_is_domain_initializer(r->domain->domainname, &rn, &ln)) {
++		/* Transit to the child of tomoyo_kernel_domain domain. */
++		snprintf(ee->tmp, TOMOYO_EXEC_TMPSIZE - 1, ROOT_NAME " " "%s",
++			 rn.name);
++	} else if (r->domain == &tomoyo_kernel_domain &&
++		   !tomoyo_policy_loaded) {
++		/*
++		 * Needn't to transit from kernel domain before starting
++		 * /sbin/init. But transit from kernel domain if executing
++		 * initializers because they might start before /sbin/init.
++		 */
++		domain = r->domain;
++	} else if (tomoyo_is_domain_keeper(r->domain->domainname, &rn, &ln)) {
++		/* Keep current domain. */
++		domain = r->domain;
++	} else {
++		/* Normal domain transition. */
++		snprintf(ee->tmp, TOMOYO_EXEC_TMPSIZE - 1, "%s %s",
++			 old_domain_name, rn.name);
 +	}
-+	if (!w[2][0])
-+		goto out;
-+	for (type = 0; type < TOMOYO_MAX_PATH2_OPERATION; type++) {
-+		if (strcmp(w[0], tomoyo_path2_keyword[type]))
-+			continue;
-+		return tomoyo_update_path2_acl(type, w[1], w[2], domain,
-+					       condition, is_delete);
++	if (domain || strlen(ee->tmp) >= TOMOYO_EXEC_TMPSIZE - 10)
++		goto done;
++	domain = tomoyo_find_domain(ee->tmp);
++	if (domain)
++		goto done;
++	if (r->mode == TOMOYO_CONFIG_ENFORCING) {
++		int error = tomoyo_supervisor(r, "# wants to create domain\n"
++					      "%s\n", ee->tmp);
++		if (error == 1)
++			goto retry;
++		if (error < 0)
++			goto done;
 +	}
-+	for (type = 0; type < TOMOYO_MAX_PATH_NUMBER_OPERATION; type++) {
-+		if (strcmp(w[0], tomoyo_path_number_keyword[type]))
-+			continue;
-+		return tomoyo_update_path_number_acl(type, w[1], w[2], domain,
-+						     condition, is_delete);
-+	}
-+	if (!w[3][0] || !w[4][0])
-+		goto out;
-+	for (type = 0; type < TOMOYO_MAX_PATH_NUMBER3_OPERATION; type++) {
-+		if (strcmp(w[0], tomoyo_path_number3_keyword[type]))
-+			continue;
-+		return tomoyo_update_path_number3_acl(type, w[1], w[2], w[3],
-+						      w[4], domain, condition,
-+						      is_delete);
++	domain = tomoyo_find_or_assign_new_domain(ee->tmp, r->profile);
++	if (domain)
++		tomoyo_audit_domain_creation_log(r->domain);
++ done:
++	if (!domain) {
++		printk(KERN_WARNING "ERROR: Domain '%s' not defined.\n",
++		       ee->tmp);
++		if (r->mode == TOMOYO_CONFIG_ENFORCING)
++			retval = -EPERM;
++		else {
++			retval = 0;
++			r->domain->domain_transition_failed = true;
++		}
++	} else {
++		retval = 0;
 +	}
 + out:
-+	return -EINVAL;
++	if (domain)
++		r->domain = domain;
++	if (need_kfree)
++		kfree(rn.name);
++	return retval;
 +}
 +
-+/*
-+ * Below part contains copy of some of VFS helper functions.
++/**
++ * tomoyo_environ - Check permission for environment variable names.
 + *
-+ * Since TOMOYO Linux requires "struct vfsmount" parameter to calculate
-+ * an absolute pathname of the requested "struct dentry" parameter
-+ * but the VFS helper functions don't receive "struct vfsmount" parameter,
-+ * TOMOYO Linux checks permission outside VFS helper functions.
-+ * To keep the DAC's permission checks are performed before the
-+ * TOMOYO Linux's permission checks are performed, I'd like to call
-+ * may_create() and may_delete() from LSM.
++ * @ee: Pointer to "struct tomoyo_execve_entry".
++ *
++ * Returns 0 on success, negative value otherwise.
 + */
-+
-+static inline int tomoyo_may_create(struct inode *dir, struct dentry *dentry)
++static int tomoyo_environ(struct tomoyo_execve_entry *ee)
 +{
-+	/* return may_create(dir, dentry); */
-+	return 0;
-+}
-+
-+static inline int tomoyo_may_delete(struct inode *dir, struct dentry *dentry,
-+				    int is_dir)
-+{
-+	/* return may_delete(dir, dentry, is_dir); */
-+	return 0;
-+}
-+
-+/* Permission checks from vfs_create(). */
-+static int tomoyo_pre_vfs_create(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = tomoyo_may_create(dir, dentry);
-+	if (error)
-+		return error;
-+	if (!dir->i_op || !dir->i_op->create)
-+		return -EACCES; /* shouldn't it be ENOSYS? */
-+	return 0;
-+}
-+
-+/* Permission checks from vfs_mknod(). */
-+static int tomoyo_pre_vfs_mknod(struct inode *dir, struct dentry *dentry,
-+				int mode)
-+{
-+	int error = tomoyo_may_create(dir, dentry);
-+	if (error)
-+		return error;
-+	if ((S_ISCHR(mode) || S_ISBLK(mode)) && !capable(CAP_MKNOD))
-+		return -EPERM;
-+	if (!dir->i_op || !dir->i_op->mknod)
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Permission checks from vfs_mkdir(). */
-+static int tomoyo_pre_vfs_mkdir(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = tomoyo_may_create(dir, dentry);
-+	if (error)
-+		return error;
-+	if (!dir->i_op || !dir->i_op->mkdir)
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Permission checks from vfs_rmdir(). */
-+static int tomoyo_pre_vfs_rmdir(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = tomoyo_may_delete(dir, dentry, 1);
-+	if (error)
-+		return error;
-+	if (!dir->i_op || !dir->i_op->rmdir)
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Permission checks from vfs_unlink(). */
-+static int tomoyo_pre_vfs_unlink(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = tomoyo_may_delete(dir, dentry, 0);
-+	if (error)
-+		return error;
-+	if (!dir->i_op || !dir->i_op->unlink)
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Permission checks from vfs_link(). */
-+static int tomoyo_pre_vfs_link(struct dentry *old_dentry, struct inode *dir,
-+			       struct dentry *new_dentry)
-+{
-+	struct inode *inode = old_dentry->d_inode;
-+	int error;
-+	if (!inode)
-+		return -ENOENT;
-+	error = tomoyo_may_create(dir, new_dentry);
-+	if (error)
-+		return error;
-+	if (dir->i_sb != inode->i_sb)
-+		return -EXDEV;
-+	if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-+		return -EPERM;
-+	if (!dir->i_op || !dir->i_op->link)
-+		return -EPERM;
-+	if (S_ISDIR(old_dentry->d_inode->i_mode))
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Permission checks from vfs_symlink(). */
-+static int tomoyo_pre_vfs_symlink(struct inode *dir, struct dentry *dentry)
-+{
-+	int error = tomoyo_may_create(dir, dentry);
-+	if (error)
-+		return error;
-+	if (!dir->i_op || !dir->i_op->symlink)
-+		return -EPERM;
-+	return 0;
-+}
-+
-+/* Permission checks from vfs_rename(). */
-+static int tomoyo_pre_vfs_rename(struct inode *old_dir,
-+				 struct dentry *old_dentry,
-+				 struct inode *new_dir,
-+				 struct dentry *new_dentry)
-+{
-+	int error;
-+	const int is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
-+	if (old_dentry->d_inode == new_dentry->d_inode)
++	struct tomoyo_request_info *r = &ee->r;
++	struct linux_binprm *bprm = ee->bprm;
++	char *arg_ptr = ee->tmp;
++	int arg_len = 0;
++	unsigned long pos = bprm->p;
++	int offset = pos % PAGE_SIZE;
++	int argv_count = bprm->argc;
++	int envp_count = bprm->envc;
++	/* printk(KERN_DEBUG "start %d %d\n", argv_count, envp_count); */
++	int error = -ENOMEM;
++	if (!r->mode || !envp_count)
 +		return 0;
-+	error = tomoyo_may_delete(old_dir, old_dentry, is_dir);
-+	if (error)
-+		return error;
-+	if (!new_dentry->d_inode)
-+		error = tomoyo_may_create(new_dir, new_dentry);
-+	else
-+		error = tomoyo_may_delete(new_dir, new_dentry, is_dir);
-+	if (error)
-+		return error;
-+	if (!old_dir->i_op || !old_dir->i_op->rename)
-+		return -EPERM;
-+	if (is_dir && new_dir != old_dir)
-+		error = inode_permission(old_dentry->d_inode, MAY_WRITE);
-+	return error;
-+}
-+
-+/* Permission checks from vfs_mknod(). */
-+int tomoyo_mknod_permission(struct inode *dir, struct dentry *dentry,
-+			    struct vfsmount *mnt, const unsigned int mode,
-+			    unsigned int dev)
-+{
-+	int error;
-+	if (S_ISCHR(mode) && !tomoyo_capable(TOMOYO_CREATE_CHAR_DEV))
-+		return -EPERM;
-+	if (S_ISBLK(mode) && !tomoyo_capable(TOMOYO_CREATE_BLOCK_DEV))
-+		return -EPERM;
-+	if (S_ISFIFO(mode) && !tomoyo_capable(TOMOYO_CREATE_FIFO))
-+		return -EPERM;
-+	if (S_ISSOCK(mode) && !tomoyo_capable(TOMOYO_CREATE_UNIX_SOCKET))
-+		return -EPERM;
-+	switch (mode & S_IFMT) {
-+	case 0:
-+	case S_IFREG:
-+		error = tomoyo_pre_vfs_create(dir, dentry);
-+		if (!error)
-+			error = tomoyo_path_number_perm(TOMOYO_TYPE_CREATE,
-+							dentry,	mnt,
-+							mode & S_IALLUGO);
-+		return error;
++	while (error == -ENOMEM) {
++		if (!tomoyo_dump_page(bprm, pos, &ee->dump))
++			goto out;
++		pos += PAGE_SIZE - offset;
++		/* Read. */
++		while (argv_count && offset < PAGE_SIZE) {
++			const char *kaddr = ee->dump.data;
++			if (!kaddr[offset++])
++				argv_count--;
++		}
++		if (argv_count) {
++			offset = 0;
++			continue;
++		}
++		while (offset < PAGE_SIZE) {
++			const char *kaddr = ee->dump.data;
++			const unsigned char c = kaddr[offset++];
++			if (c && arg_len < TOMOYO_EXEC_TMPSIZE - 10) {
++				if (c == '=') {
++					arg_ptr[arg_len++] = '\0';
++				} else if (c == '\\') {
++					arg_ptr[arg_len++] = '\\';
++					arg_ptr[arg_len++] = '\\';
++				} else if (c > ' ' && c < 127) {
++					arg_ptr[arg_len++] = c;
++				} else {
++					arg_ptr[arg_len++] = '\\';
++					arg_ptr[arg_len++] = (c >> 6) + '0';
++					arg_ptr[arg_len++]
++						= ((c >> 3) & 7) + '0';
++					arg_ptr[arg_len++] = (c & 7) + '0';
++				}
++			} else {
++				arg_ptr[arg_len] = '\0';
++			}
++			if (c)
++				continue;
++			if (tomoyo_env_perm(r, arg_ptr)) {
++				error = -EPERM;
++				break;
++			}
++			if (!--envp_count) {
++				error = 0;
++				break;
++			}
++			arg_len = 0;
++		}
++		offset = 0;
 +	}
-+	error = tomoyo_pre_vfs_mknod(dir, dentry, mode);
-+	dev = new_decode_dev(dev);
-+	if (error)
-+		return error;
-+	switch (mode & S_IFMT) {
-+	case S_IFCHR:
-+		error = tomoyo_path_number3_perm(TOMOYO_TYPE_MKCHAR, dentry,
-+						 mnt, mode & S_IALLUGO, dev);
-+		break;
-+	case S_IFBLK:
-+		error = tomoyo_path_number3_perm(TOMOYO_TYPE_MKBLOCK, dentry,
-+						 mnt, mode & S_IALLUGO, dev);
-+		break;
-+	case S_IFIFO:
-+		error = tomoyo_path_number_perm(TOMOYO_TYPE_MKFIFO, dentry,
-+						mnt, mode & S_IALLUGO);
-+		break;
-+	case S_IFSOCK:
-+		error = tomoyo_path_number_perm(TOMOYO_TYPE_MKSOCK, dentry,
-+						mnt, mode & S_IALLUGO);
++ out:
++	if (r->mode != 3)
++		error = 0;
++	return error;
++}
++
++/**
++ * tomoyo_unescape - Unescape escaped string.
++ *
++ * @dest: String to unescape.
++ *
++ * Returns nothing.
++ */
++static void tomoyo_unescape(unsigned char *dest)
++{
++	unsigned char *src = dest;
++	unsigned char c;
++	unsigned char d;
++	unsigned char e;
++	while (1) {
++		c = *src++;
++		if (!c)
++			break;
++		if (c != '\\') {
++			*dest++ = c;
++			continue;
++		}
++		c = *src++;
++		if (c == '\\') {
++			*dest++ = c;
++			continue;
++		}
++		if (c < '0' || c > '3')
++			break;
++		d = *src++;
++		if (d < '0' || d > '7')
++			break;
++		e = *src++;
++		if (e < '0' || e > '7')
++			break;
++		*dest++ = ((c - '0') << 6) + ((d - '0') << 3) + (e - '0');
++	}
++	*dest = '\0';
++}
++
++/**
++ * tomoyo_root_depth - Get number of directories to strip.
++ *
++ * @dentry: Pointer to "struct dentry".
++ * @vfsmnt: Pointer to "struct vfsmount".
++ *
++ * Returns number of directories to strip.
++ */
++static inline int tomoyo_root_depth(struct dentry *dentry,
++				    struct vfsmount *vfsmnt)
++{
++	int depth = 0;
++	spin_lock(&dcache_lock);
++	spin_lock(&vfsmount_lock);
++	for (;;) {
++		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
++			/* Global root? */
++			if (vfsmnt->mnt_parent == vfsmnt)
++				break;
++			dentry = vfsmnt->mnt_mountpoint;
++			vfsmnt = vfsmnt->mnt_parent;
++			continue;
++		}
++		dentry = dentry->d_parent;
++		depth++;
++	}
++	spin_unlock(&vfsmount_lock);
++	spin_unlock(&dcache_lock);
++	return depth;
++}
++
++/**
++ * tomoyo_get_root_depth - return the depth of root directory.
++ *
++ * Returns number of directories to strip.
++ */
++static int tomoyo_get_root_depth(void)
++{
++	int depth;
++	struct dentry *dentry;
++	struct vfsmount *vfsmnt;
++	struct path root;
++	read_lock(&current->fs->lock);
++	root = current->fs->root;
++	path_get(&current->fs->root);
++	dentry = root.dentry;
++	vfsmnt = root.mnt;
++	read_unlock(&current->fs->lock);
++	depth = tomoyo_root_depth(dentry, vfsmnt);
++	path_put(&root);
++	return depth;
++}
++
++/**
++ * tomoyo_try_alt_exec - Try to start execute handler.
++ *
++ * @ee: Pointer to "struct tomoyo_execve_entry".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++static int tomoyo_try_alt_exec(struct tomoyo_execve_entry *ee)
++{
++	/*
++	 * Contents of modified bprm.
++	 * The envp[] in original bprm is moved to argv[] so that
++	 * the alternatively executed program won't be affected by
++	 * some dangerous environment variables like LD_PRELOAD.
++	 *
++	 * modified bprm->argc
++	 *    = original bprm->argc + original bprm->envc + 7
++	 * modified bprm->envc
++	 *    = 0
++	 *
++	 * modified bprm->argv[0]
++	 *    = the program's name specified by execute_handler
++	 * modified bprm->argv[1]
++	 *    = tomoyo_current_domain()->domainname->name
++	 * modified bprm->argv[2]
++	 *    = the current process's name
++	 * modified bprm->argv[3]
++	 *    = the current process's information (e.g. uid/gid).
++	 * modified bprm->argv[4]
++	 *    = original bprm->filename
++	 * modified bprm->argv[5]
++	 *    = original bprm->argc in string expression
++	 * modified bprm->argv[6]
++	 *    = original bprm->envc in string expression
++	 * modified bprm->argv[7]
++	 *    = original bprm->argv[0]
++	 *  ...
++	 * modified bprm->argv[bprm->argc + 6]
++	 *     = original bprm->argv[bprm->argc - 1]
++	 * modified bprm->argv[bprm->argc + 7]
++	 *     = original bprm->envp[0]
++	 *  ...
++	 * modified bprm->argv[bprm->envc + bprm->argc + 6]
++	 *     = original bprm->envp[bprm->envc - 1]
++	 */
++	struct linux_binprm *bprm = ee->bprm;
++	struct file *filp;
++	int retval;
++	const int original_argc = bprm->argc;
++	const int original_envc = bprm->envc;
++	struct task_struct *task = current;
++
++	/* Close the requested program's dentry. */
++	ee->obj.path1.dentry = NULL;
++	ee->obj.path1.mnt = NULL;
++	ee->obj.validate_done = false;
++	allow_write_access(bprm->file);
++	fput(bprm->file);
++	bprm->file = NULL;
++
++	/* Invalidate page dump cache. */
++	ee->dump.page = NULL;
++
++	/* Move envp[] to argv[] */
++	bprm->argc += bprm->envc;
++	bprm->envc = 0;
++
++	/* Set argv[6] */
++	{
++		char *cp = ee->tmp;
++		snprintf(ee->tmp, TOMOYO_EXEC_TMPSIZE - 1, "%d",
++			 original_envc);
++		retval = copy_strings_kernel(1, &cp, bprm);
++		if (retval < 0)
++			goto out;
++		bprm->argc++;
++	}
++
++	/* Set argv[5] */
++	{
++		char *cp = ee->tmp;
++		snprintf(ee->tmp, TOMOYO_EXEC_TMPSIZE - 1, "%d",
++			 original_argc);
++		retval = copy_strings_kernel(1, &cp, bprm);
++		if (retval < 0)
++			goto out;
++		bprm->argc++;
++	}
++
++	/* Set argv[4] */
++	{
++		retval = copy_strings_kernel(1, &bprm->filename, bprm);
++		if (retval < 0)
++			goto out;
++		bprm->argc++;
++	}
++
++	/* Set argv[3] */
++	{
++		char *cp = ee->tmp;
++		const u32 tomoyo_flags = task->tomoyo_flags;
++		snprintf(ee->tmp, TOMOYO_EXEC_TMPSIZE - 1,
++			 "pid=%d uid=%d gid=%d euid=%d egid=%d suid=%d "
++			 "sgid=%d fsuid=%d fsgid=%d state[0]=%u "
++			 "state[1]=%u state[2]=%u",
++			 (pid_t) sys_getpid(), current_uid(), current_gid(),
++			 current_euid(), current_egid(), current_suid(),
++			 current_sgid(), current_fsuid(), current_fsgid(),
++			 (u8) (tomoyo_flags >> 24), (u8) (tomoyo_flags >> 16),
++			 (u8) (tomoyo_flags >> 8));
++		retval = copy_strings_kernel(1, &cp, bprm);
++		if (retval < 0)
++			goto out;
++		bprm->argc++;
++	}
++
++	/* Set argv[2] */
++	{
++		char *exe = (char *) tomoyo_get_exe();
++		if (exe) {
++			retval = copy_strings_kernel(1, &exe, bprm);
++			kfree(exe);
++		} else {
++			exe = ee->tmp;
++			snprintf(ee->tmp, TOMOYO_EXEC_TMPSIZE - 1,
++				 "<unknown>");
++			retval = copy_strings_kernel(1, &exe, bprm);
++		}
++		if (retval < 0)
++			goto out;
++		bprm->argc++;
++	}
++
++	/* Set argv[1] */
++	{
++		char *cp = ee->tmp;
++		snprintf(ee->tmp, TOMOYO_EXEC_TMPSIZE - 1, "%s",
++			 tomoyo_current_domain()->domainname->name);
++		retval = copy_strings_kernel(1, &cp, bprm);
++		if (retval < 0)
++			goto out;
++		bprm->argc++;
++	}
++
++	/* Set argv[0] */
++	{
++		int depth = tomoyo_get_root_depth();
++		int len = strlen(ee->handler->name) + 1;
++		char *cp = kmalloc(len, GFP_KERNEL);
++		if (!cp) {
++			retval = -ENOMEM;
++			goto out;
++		}
++		ee->handler_path = cp;
++		memmove(cp, ee->handler->name, len);
++		tomoyo_unescape(cp);
++		retval = -ENOENT;
++		if (!*cp || *cp != '/')
++			goto out;
++		/* Adjust root directory for open_exec(). */
++		while (depth) {
++			cp = strchr(cp + 1, '/');
++			if (!cp)
++				goto out;
++			depth--;
++		}
++		memmove(ee->handler_path, cp, strlen(cp) + 1);
++		cp = ee->handler_path;
++		retval = copy_strings_kernel(1, &cp, bprm);
++		if (retval < 0)
++			goto out;
++		bprm->argc++;
++	}
++
++	/*
++	 * OK, now restart the process with execute handler program's dentry.
++	 */
++	filp = open_exec(ee->handler_path);
++	if (IS_ERR(filp)) {
++		retval = PTR_ERR(filp);
++		goto out;
++	}
++	ee->obj.path1.dentry = filp->f_dentry;
++	ee->obj.path1.mnt = filp->f_vfsmnt;
++	bprm->file = filp;
++	bprm->filename = ee->handler_path;
++	bprm->interp = bprm->filename;
++	retval = prepare_binprm(bprm);
++	if (retval < 0)
++		goto out;
++	task->tomoyo_flags |= TOMOYO_DONT_SLEEP_ON_ENFORCE_ERROR;
++	retval = tomoyo_find_next_domain(ee);
++	task->tomoyo_flags &= ~TOMOYO_DONT_SLEEP_ON_ENFORCE_ERROR;
++ out:
++	return retval;
++}
++
++/**
++ * tomoyo_find_execute_handler - Find an execute handler.
++ *
++ * @ee:   Pointer to "struct tomoyo_execve_entry".
++ * @type: Type of execute handler.
++ *
++ * Returns true if found, false otherwise.
++ *
++ * Caller holds tomoyo_read_lock().
++ */
++static bool tomoyo_find_execute_handler(struct tomoyo_execve_entry *ee,
++					const u8 type)
++{
++	struct task_struct *task = current;
++	const struct tomoyo_domain_info *domain = tomoyo_current_domain();
++	struct tomoyo_acl_info *ptr;
++	bool found = false;
++	/*
++	 * Don't use execute handler if the current process is
++	 * marked as execute handler to avoid infinite execute handler loop.
++	 */
++	if (task->tomoyo_flags & TOMOYO_TASK_IS_EXECUTE_HANDLER)
++		return false;
++	list_for_each_entry(ptr, &domain->acl_info_list, list) {
++		struct tomoyo_execute_handler_record *acl;
++		if (ptr->type != type)
++			continue;
++		acl = container_of(ptr, struct tomoyo_execute_handler_record,
++				   head);
++		ee->handler = acl->handler;
++		found = true;
 +		break;
 +	}
-+	return error;
++	return found;
 +}
 +
-+/* Permission checks for vfs_mkdir(). */
-+int tomoyo_mkdir_permission(struct inode *dir, struct dentry *dentry,
-+			    struct vfsmount *mnt, unsigned int mode)
++/**
++ * tomoyo_dump_page - Dump a page to buffer.
++ *
++ * @bprm: Pointer to "struct linux_binprm".
++ * @pos:  Location to dump.
++ * @dump: Poiner to "struct tomoyo_page_dump".
++ *
++ * Returns true on success, false otherwise.
++ */
++bool tomoyo_dump_page(struct linux_binprm *bprm, unsigned long pos,
++		      struct tomoyo_page_dump *dump)
 +{
-+	int error = tomoyo_pre_vfs_mkdir(dir, dentry);
-+	if (!error)
-+		error = tomoyo_path_number_perm(TOMOYO_TYPE_MKDIR, dentry, mnt,
-+						mode);
-+	return error;
++	struct page *page;
++	/* dump->data is released by tomoyo_finish_execve(). */
++	if (!dump->data) {
++		dump->data = kzalloc(PAGE_SIZE, GFP_KERNEL);
++		if (!dump->data)
++			return false;
++	}
++	/* Same with get_arg_page(bprm, pos, 0) in fs/exec.c */
++#if defined(CONFIG_MMU)
++	if (get_user_pages(current, bprm->mm, pos, 1, 0, 1, &page, NULL) <= 0)
++		return false;
++#else
++	page = bprm->page[pos / PAGE_SIZE];
++#endif
++	if (page != dump->page) {
++		const unsigned int offset = pos % PAGE_SIZE;
++		/*
++		 * Maybe kmap()/kunmap() should be used here.
++		 * But remove_arg_zero() uses kmap_atomic()/kunmap_atomic().
++		 * So do I.
++		 */
++		char *kaddr = kmap_atomic(page, KM_USER0);
++		dump->page = page;
++		memcpy(dump->data + offset, kaddr + offset,
++		       PAGE_SIZE - offset);
++		kunmap_atomic(kaddr, KM_USER0);
++	}
++	/* Same with put_arg_page(page) in fs/exec.c */
++#if defined(CONFIG_MMU)
++	put_page(page);
++#endif
++	return true;
 +}
 +
-+/* Permission checks for vfs_rmdir(). */
-+int tomoyo_rmdir_permission(struct inode *dir, struct dentry *dentry,
-+			    struct vfsmount *mnt)
++/**
++ * tomoyo_start_execve - Prepare for execve() operation.
++ *
++ * @bprm: Pointer to "struct linux_binprm".
++ *
++ * Returns 0 on success, negative value otherwise.
++ */
++int tomoyo_start_execve(struct linux_binprm *bprm)
 +{
-+	int error = tomoyo_pre_vfs_rmdir(dir, dentry);
-+	if (!error)
-+		error = tomoyo_path_perm(TOMOYO_TYPE_RMDIR, dentry, mnt,
-+					 NULL);
-+	return error;
++	int retval;
++	struct task_struct *task = current;
++	struct tomoyo_execve_entry *ee;
++	if (!tomoyo_policy_loaded)
++		tomoyo_load_policy(bprm->filename);
++	ee = kzalloc(sizeof(*ee), GFP_KERNEL);
++	if (!ee)
++		return -ENOMEM;
++	ee->tmp = kzalloc(TOMOYO_EXEC_TMPSIZE, GFP_KERNEL);
++	if (!ee->tmp) {
++		kfree(ee);
++		return -ENOMEM;
++	}
++	/* This lock is released at tomoyo_finish_execve(). */
++	ee->reader_idx = tomoyo_read_lock();
++	/* ee->dump->data is allocated by tomoyo_dump_page(). */
++	ee->previous_domain = task->tomoyo_domain_info;
++	/* Clear manager flag. */
++	task->tomoyo_flags &= ~TOMOYO_TASK_IS_POLICY_MANAGER;
++	/* Tell GC that I started execve(). */
++	task->tomoyo_flags |= TOMOYO_TASK_IS_IN_EXECVE;
++	/*
++	 * Make task->tomoyo_flags visible to GC before changing
++	 * task->tomoyo_domain_info .
++	 */
++	smp_mb();
++	bprm->cred->security = ee;
++	atomic_set(&ee->cred_users, 1);
++	tomoyo_init_request_info(&ee->r, NULL, TOMOYO_MAC_FILE_EXECUTE);
++	ee->r.ee = ee;
++	ee->bprm = bprm;
++	ee->r.obj = &ee->obj;
++	ee->obj.path1.dentry = bprm->file->f_dentry;
++	ee->obj.path1.mnt = bprm->file->f_vfsmnt;
++	if (tomoyo_find_execute_handler(ee, TOMOYO_TYPE_EXECUTE_HANDLER)) {
++		retval = tomoyo_try_alt_exec(ee);
++		if (!retval)
++			tomoyo_audit_execute_handler_log(ee, true);
++		goto ok;
++	}
++	retval = tomoyo_find_next_domain(ee);
++	if (retval != -EPERM)
++		goto ok;
++	if (tomoyo_find_execute_handler(ee,
++					TOMOYO_TYPE_DENIED_EXECUTE_HANDLER)) {
++		retval = tomoyo_try_alt_exec(ee);
++		if (!retval)
++			tomoyo_audit_execute_handler_log(ee, false);
++	}
++ ok:
++	if (retval < 0)
++		goto out;
++	/*
++	 * Proceed to the next domain in order to allow reaching via PID.
++	 * It will be reverted if execve() failed. Reverting is not good.
++	 * But it is better than being unable to reach via PID in interactive
++	 * enforcing mode.
++	 */
++	task->tomoyo_domain_info = ee->r.domain;
++	ee->r.mode = tomoyo_get_mode(ee->r.domain->profile,
++				     TOMOYO_MAC_ENVIRON);
++	retval = tomoyo_environ(ee);
++	if (retval < 0)
++		goto out;
++	retval = 0;
++ out:
++	if (retval) {
++		tomoyo_finish_execve(ee, true);
++		bprm->cred->security = NULL;
++	}
++	return retval;
 +}
 +
-+/* Permission checks for vfs_unlink(). */
-+int tomoyo_unlink_permission(struct inode *dir, struct dentry *dentry,
-+			     struct vfsmount *mnt)
++/**
++ * tomoyo_finish_execve - Clean up execve() operation.
++ *
++ * @ee:       Pointer to "struct tomoyo_execve_entry".
++ * @rollback: True if need to rollback.
++ *
++ * Caller holds tomoyo_read_lock().
++ */
++void tomoyo_finish_execve(struct tomoyo_execve_entry *ee, const bool rollback)
 +{
-+	int error;
-+	if (!tomoyo_capable(TOMOYO_SYS_UNLINK))
-+		return -EPERM;
-+	error = tomoyo_pre_vfs_unlink(dir, dentry);
-+	if (!error)
-+		error = tomoyo_path_perm(TOMOYO_TYPE_UNLINK, dentry, mnt,
-+					 NULL);
-+	return error;
-+}
-+
-+/* Permission checks for vfs_symlink(). */
-+int tomoyo_symlink_permission(struct inode *dir, struct dentry *dentry,
-+			      struct vfsmount *mnt, const char *from)
-+{
-+	int error;
-+	if (!tomoyo_capable(TOMOYO_SYS_SYMLINK))
-+		return -EPERM;
-+	error = tomoyo_pre_vfs_symlink(dir, dentry);
-+	if (!error)
-+		error = tomoyo_path_perm(TOMOYO_TYPE_SYMLINK, dentry, mnt,
-+					 from);
-+	return error;
-+}
-+
-+/* Permission checks for notify_change(). */
-+int tomoyo_truncate_permission(struct dentry *dentry, struct vfsmount *mnt,
-+			       loff_t length, unsigned int time_attrs)
-+{
-+	return tomoyo_path_perm(TOMOYO_TYPE_TRUNCATE, dentry, mnt, NULL);
-+}
-+
-+/* Permission checks for vfs_rename(). */
-+int tomoyo_rename_permission(struct inode *old_dir, struct dentry *old_dentry,
-+			     struct inode *new_dir, struct dentry *new_dentry,
-+			     struct vfsmount *mnt)
-+{
-+	int error;
-+	if (!tomoyo_capable(TOMOYO_SYS_RENAME))
-+		return -EPERM;
-+	error = tomoyo_pre_vfs_rename(old_dir, old_dentry, new_dir,
-+				      new_dentry);
-+	if (!error)
-+		error = tomoyo_path2_perm(TOMOYO_TYPE_RENAME, old_dentry, mnt,
-+					  new_dentry, mnt);
-+	return error;
-+}
-+
-+/* Permission checks for vfs_link(). */
-+int tomoyo_link_permission(struct dentry *old_dentry, struct inode *new_dir,
-+			   struct dentry *new_dentry, struct vfsmount *mnt)
-+{
-+	int error;
-+	if (!tomoyo_capable(TOMOYO_SYS_LINK))
-+		return -EPERM;
-+	error = tomoyo_pre_vfs_link(old_dentry, new_dir, new_dentry);
-+	if (!error)
-+		error = tomoyo_path2_perm(TOMOYO_TYPE_LINK, old_dentry, mnt,
-+					  new_dentry, mnt);
-+	return error;
++	struct task_struct *task = current;
++	if (!ee)
++		return;
++	if (rollback) {
++		task->tomoyo_domain_info = ee->previous_domain;
++		/*
++		 * Make task->tomoyo_domain_info visible to GC before changing
++		 * task->tomoyo_flags .
++		 */
++		smp_mb();
++	} else {
++		/* Mark the current process as execute handler. */
++		if (ee->handler)
++			task->tomoyo_flags |= TOMOYO_TASK_IS_EXECUTE_HANDLER;
++		/* Mark the current process as normal process. */
++		else
++			task->tomoyo_flags &= ~TOMOYO_TASK_IS_EXECUTE_HANDLER;
++	}
++	/* Tell GC that I finished execve(). */
++	task->tomoyo_flags &= ~TOMOYO_TASK_IS_IN_EXECVE;
++	/* This lock is acquired at tomoyo_start_execve(). */
++	tomoyo_read_unlock(ee->reader_idx);
++	kfree(ee->handler_path);
++	kfree(ee->tmp);
++	kfree(ee->dump.data);
++	kfree(ee);
 +}
 
 -- 
