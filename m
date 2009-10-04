@@ -1,609 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZJDMyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757250AbZJDMyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbZJDMyh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757387AbZJDMye
+	id S1757250AbZJDMyU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbZJDMyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:54:34 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63879 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 08:54:19 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63904 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757106AbZJDMyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757118AbZJDMyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 Oct 2009 08:54:13 -0400
-Message-Id: <20091004125329.187564048@I-love.SAKURA.ne.jp>
+Message-Id: <20091004125329.526434987@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:49:52 +0900
+Date: Sun, 04 Oct 2009 21:49:53 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 06/25] TOMOYO: Add LSM adaptor.
-Content-Disposition: inline; filename=tomoyo-add-lsm.patch
+Subject: [TOMOYO #16 07/25] TOMOYO: Add path_group keyword support.
+Content-Disposition: inline; filename=tomoyo-add-path_group.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since TOMOYO uses per task_struct variables, I have nothing to store into
-"struct cred *"->security except "struct linux_binprm *"->cred->security.
+This patch contains code for handling pathname grouping.
+To be able to specify pathnames more flexibly, I want to add pathname grouping
+support into TOMOYO 2.3.0.
 
-To support execute handler functionality, TOMOYO needs to keep memory for
-holding execute handler's pathname valid until search_binary_handler()
-finishes. Therefore, to release memory, TOMOYO needs a hook which is called
-after an execve() finished. But there is no such hook. As a workaround,
-TOMOYO releases memory when "struct linux_binprm *"->cred is discarded (either
-security_bprm_committing_creds() (which means execve() succeeded) or
-security_cred_free() (which means execve() failed)).
-
-If I'm permitted to add a hook which is called after an execve() finished,
-I can avoid such tricky usage of "struct cred *"->security.
-
-
-
-Since TOMOYO is not a label based access control, I have nothing to store into
-various object's "void *security" field except the one for socket.
-
-To support incoming TCP connection filtering functionality, TOMOYO needs a hook
-which is called after accept(). But such hook is not acceptable.
-As a workaround, TOMOYO performs TCP connection filtering after returning from
-accept(). To do so, I assign special tag to SOCK_INODE(socket)->i_security if
-the socket is an accept()ed socket at security_socket_accept(), and I check
-permission inside subsequent system calls if SOCK_INODE(socket)->i_security
-has the special value.
-
-
-
-As of now, hooks for supporting incoming UDP/RAW packet filtering remain
-missing. Unlike TCP connection filtering, it is too late to perform filtering
-after returning from recvmsg().
-
-As of now, hooks for supporting signal transmission restriction remain missing.
-I can't use security_task_kill() because it is called in a context that is not
-permitted to sleep. I want hooks which are called in a context that is
-permitted to sleep in order to support interactive enforcement mode.
-The interactive enforcement is a mode which allows administrators to
-interactively judge whether the request should be permitted or not. This mode
-is designed for handling unexpected requests caused by software updates.
-
-As of now, many of hooks for supporting TOMOYO's original (i.e. non-POSIX)
-capability remain missing. TOMOYO is ready to support 65536 types of
-non-POSIX capability but the caller passes only 32 (or so) types of POSIX
-capability. I need to introduce mapping table for converting from non-POSIX
-capability to POSIX capability. Also, I can't use security_capable() because it
-is called in a context that is not permitted to sleep.
-
-Except the missing hooks listed above, this LSM adaptor can provide almost the
-same functionality which non-LSM version of TOMOYO provides.
+  path_group APACHE_READABLE_FILES /var/www/html/\*.html
+  path_group APACHE_READABLE_FILES /var/www/html/\*.jpg
+  path_group APACHE_READABLE_FILES /var/www/html/\*.png
+  path_group APACHE_READABLE_FILES /var/www/html/\{\*\}/\*.html
+  path_group APACHE_READABLE_FILES /var/www/html/\{\*\}/\*.jpg
+  path_group APACHE_READABLE_FILES /var/www/html/\{\*\}/\*.png
+            +
+  allow_read @APACHE_READABLE_FILES
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/lsm.c |  523 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 523 insertions(+)
+ security/tomoyo/path_group.c |  210 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 210 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6/security/tomoyo/lsm.c
-@@ -0,0 +1,523 @@
++++ security-testing-2.6/security/tomoyo/path_group.c
+@@ -0,0 +1,210 @@
 +/*
-+ * security/tomoyo/lsm.c
-+ *
-+ * LSM hooks for TOMOYO Linux.
++ * security/tomoyo/path_group.c
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + */
 +#include "internal.h"
-+#include <net/sock.h>
 +
-+static int tomoyo_cred_alloc_blank(struct cred *new, gfp_t gfp)
-+{
-+	new->security = NULL;
-+	return 0;
-+}
++/* The list for "struct tomoyo_path_group". */
++LIST_HEAD(tomoyo_path_group_list);
 +
-+static int tomoyo_cred_prepare(struct cred *new, const struct cred *old,
-+			       gfp_t gfp)
++/**
++ * tomoyo_get_path_group - Allocate memory for "struct tomoyo_path_group".
++ *
++ * @group_name: The name of pathname group.
++ *
++ * Returns pointer to "struct tomoyo_path_group" on success, NULL otherwise.
++ */
++struct tomoyo_path_group *tomoyo_get_path_group(const char *group_name)
 +{
-+	/* Get ref if "struct linux_binprm *"->cred */
-+	struct tomoyo_execve_entry *ee = old->security;
-+	if (ee)
-+		atomic_inc(&ee->cred_users);
-+	new->security = ee;
-+	return 0;
-+}
-+
-+static void tomoyo_cred_transfer(struct cred *new, const struct cred *old)
-+{
-+	new->security = old->security;
-+}
-+
-+static void tomoyo_cred_free(struct cred *cred)
-+{
-+	struct tomoyo_execve_entry *ee = cred->security;
-+	/* Put ref if "struct linux_binprm *"->cred */
-+	if (ee && atomic_dec_and_test(&ee->cred_users)) {
-+		/*
-+		 * Reaching here means execve() failed, for
-+		 * "struct linux_binprm *"->cred is not shared between
-+		 * processes.
-+		 * Release memory allocated by tomoyo_start_execve().
-+		 */
-+		tomoyo_finish_execve(cred->security, true);
-+		cred->security = NULL;
++	struct tomoyo_path_group *entry = NULL;
++	struct tomoyo_path_group *group;
++	const struct tomoyo_path_info *saved_group_name;
++	int error = -ENOMEM;
++	if (!tomoyo_is_correct_path(group_name, 0, 0, 0) ||
++	    !group_name[0])
++		return NULL;
++	saved_group_name = tomoyo_get_name(group_name);
++	if (!saved_group_name)
++		return NULL;
++	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++	mutex_lock(&tomoyo_policy_lock);
++	list_for_each_entry_rcu(group, &tomoyo_path_group_list, list) {
++		if (saved_group_name != group->group_name)
++			continue;
++		atomic_inc(&group->users);
++		error = 0;
++		break;
 +	}
-+}
-+
-+static int tomoyo_bprm_check_security(struct linux_binprm *bprm)
-+{
-+	/*
-+	 * Execute permission is checked against pathname passed to do_execve()
-+	 * using current domain.
-+	 */
-+	if (!bprm->cred->security)
-+		return tomoyo_start_execve(bprm);
-+	/*
-+	 * Read permission is checked against interpreters using next domain.
-+	 * '1' is the result of open_to_namei_flags(O_RDONLY).
-+	 */
-+	return tomoyo_open_permission(bprm->file->f_path.dentry,
-+				      bprm->file->f_path.mnt, 1);
-+}
-+
-+static void tomoyo_bprm_committing_creds(struct linux_binprm *bprm)
-+{
-+	/* Release memory allocated by tomoyo_start_execve(). */
-+	tomoyo_finish_execve(bprm->cred->security, false);
-+	bprm->cred->security = NULL;
-+}
-+
-+#ifdef CONFIG_SYSCTL
-+
-+static int tomoyo_prepend(char **buffer, int *buflen, const char *str)
-+{
-+	int namelen = strlen(str);
-+
-+	if (*buflen < namelen)
-+		return -ENOMEM;
-+	*buflen -= namelen;
-+	*buffer -= namelen;
-+	memcpy(*buffer, str, namelen);
-+	return 0;
++	if (error && tomoyo_memory_ok(entry, sizeof(*entry))) {
++		INIT_LIST_HEAD(&entry->member_list);
++		entry->group_name = saved_group_name;
++		saved_group_name = NULL;
++		atomic_set(&entry->users, 1);
++		list_add_tail_rcu(&entry->list, &tomoyo_path_group_list);
++		group = entry;
++		entry = NULL;
++		error = 0;
++	}
++	mutex_unlock(&tomoyo_policy_lock);
++	tomoyo_put_name(saved_group_name);
++	kfree(entry);
++	return !error ? group : NULL;
 +}
 +
 +/**
-+ * tomoyo_sysctl_path - return the realpath of a ctl_table.
-+ * @table: pointer to "struct ctl_table".
++ * tomoyo_put_path_group - Delete memory for "struct tomoyo_path_group".
 + *
-+ * Returns realpath(3) of the @table on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function uses kzalloc(), so the caller must call kfree()
-+ * if this function didn't return NULL.
++ * @group: Pointer to "struct tomoyo_path_group".
 + */
-+static char *tomoyo_sysctl_path(struct ctl_table *table)
++void tomoyo_put_path_group(struct tomoyo_path_group *group)
 +{
-+	int buflen = 4096;
-+	char *cp = NULL;
-+	char *buf = kmalloc(buflen, GFP_KERNEL);
-+	char *end = buf + buflen;
-+
-+	if (!buf)
-+		return NULL;
-+
-+	*--end = '\0';
-+	buflen--;
-+	while (table) {
-+		char num[32];
-+		const char *sp = table->procname;
-+
-+		if (!sp) {
-+			memset(num, 0, sizeof(num));
-+			snprintf(num, sizeof(num) - 1, "=%d=",
-+				 table->ctl_name);
-+			sp = num;
++	struct tomoyo_path_group_member *member;
++	struct tomoyo_path_group_member *next_member;
++	LIST_HEAD(q);
++	bool can_delete_group = false;
++	if (!group)
++		return;
++	mutex_lock(&tomoyo_policy_lock);
++	if (atomic_dec_and_test(&group->users)) {
++		list_for_each_entry_safe(member, next_member,
++					 &group->member_list, list) {
++			if (!member->is_deleted)
++				break;
++			list_del(&member->list);
++			list_add(&member->list, &q);
 +		}
-+		if (tomoyo_prepend(&end, &buflen, sp) ||
-+		    tomoyo_prepend(&end, &buflen, "/"))
-+			goto out;
-+		table = table->parent;
++		if (list_empty(&group->member_list)) {
++			list_del(&group->list);
++			can_delete_group = true;
++		}
 +	}
-+	if (tomoyo_prepend(&end, &buflen, "/proc/sys"))
-+		goto out;
-+	cp = tomoyo_encode(end);
-+ out:
-+	kfree(buf);
-+	return cp;
++	mutex_unlock(&tomoyo_policy_lock);
++	list_for_each_entry_safe(member, next_member, &q, list) {
++		list_del(&member->list);
++		tomoyo_put_name(member->member_name);
++		tomoyo_memory_free(member, sizeof(*member));
++	}
++	if (can_delete_group) {
++		tomoyo_put_name(group->group_name);
++		tomoyo_memory_free(group, sizeof(*group));
++	}
 +}
 +
-+static int tomoyo_sysctl(struct ctl_table *table, int op)
++/**
++ * tomoyo_write_path_group_policy - Write "struct tomoyo_path_group" list.
++ *
++ * @data:      String to parse.
++ * @is_delete: True if it is a delete request.
++ *
++ * Returns 0 on success, nagative value otherwise.
++ */
++int tomoyo_write_path_group_policy(char *data, const bool is_delete)
 +{
-+	int error = 0;
-+	struct tomoyo_request_info r;
-+	struct tomoyo_path_info buf;
-+	int idx;
-+
-+	op &= MAY_READ | MAY_WRITE;
-+	if (!op)
-+		return 0;
-+
-+	idx = tomoyo_read_lock();
-+	if (tomoyo_init_request_info(&r, NULL, TOMOYO_MAC_FILE_OPEN)
-+	    == TOMOYO_CONFIG_DISABLED)
++	struct tomoyo_path_group *group;
++	struct tomoyo_path_group_member *entry = NULL;
++	struct tomoyo_path_group_member *member;
++	struct tomoyo_path_group_member e = { };
++	int error = is_delete ? -ENOENT : -ENOMEM;
++	char *w[2];
++	if (!tomoyo_tokenize(data, w, sizeof(w)) || !w[1][0])
++		return -EINVAL;
++	group = tomoyo_get_path_group(w[0]);
++	if (!group)
++		return -ENOMEM;
++	e.member_name = tomoyo_get_name(w[1]);
++	if (!e.member_name)
 +		goto out;
-+
-+	buf.name = tomoyo_sysctl_path(table);
-+	if (buf.name) {
-+		tomoyo_fill_path_info(&buf);
-+		error = tomoyo_file_perm(&r, &buf, op);
-+		kfree(buf.name);
-+	} else
-+		error = -ENOMEM;
++	if (!is_delete)
++		entry = kmalloc(sizeof(e), GFP_KERNEL);
++	mutex_lock(&tomoyo_policy_lock);
++	list_for_each_entry_rcu(member, &group->member_list, list) {
++		if (member->member_name != e.member_name)
++			continue;
++		member->is_deleted = is_delete;
++		error = 0;
++		break;
++	}
++	if (!is_delete && error && tomoyo_commit_ok(entry, &e, sizeof(e))) {
++		list_add_tail_rcu(&entry->list, &group->member_list);
++		entry = NULL;
++		error = 0;
++	}
++	mutex_unlock(&tomoyo_policy_lock);
 + out:
-+	tomoyo_read_unlock(idx);
++	tomoyo_put_name(e.member_name);
++	tomoyo_put_path_group(group);
++	kfree(entry);
 +	return error;
 +}
 +
-+#endif
-+
-+static int tomoyo_path_truncate(struct path *path, loff_t length,
-+				unsigned int time_attrs)
-+{
-+	return tomoyo_truncate_permission(path->dentry, path->mnt,
-+					  length, time_attrs);
-+}
-+
-+static int tomoyo_path_unlink(struct path *parent, struct dentry *dentry)
-+{
-+	return tomoyo_unlink_permission(parent->dentry->d_inode, dentry,
-+					parent->mnt);
-+}
-+
-+static int tomoyo_path_mkdir(struct path *parent, struct dentry *dentry,
-+			     int mode)
-+{
-+	return tomoyo_mkdir_permission(parent->dentry->d_inode, dentry,
-+				       parent->mnt, mode);
-+}
-+
-+static int tomoyo_path_rmdir(struct path *parent, struct dentry *dentry)
-+{
-+	return tomoyo_rmdir_permission(parent->dentry->d_inode, dentry,
-+				       parent->mnt);
-+}
-+
-+static int tomoyo_path_symlink(struct path *parent, struct dentry *dentry,
-+			       const char *old_name)
-+{
-+	return tomoyo_symlink_permission(parent->dentry->d_inode, dentry,
-+					 parent->mnt, old_name);
-+}
-+
-+static int tomoyo_path_mknod(struct path *parent, struct dentry *dentry,
-+			     int mode, unsigned int dev)
-+{
-+	return tomoyo_mknod_permission(parent->dentry->d_inode, dentry,
-+				       parent->mnt, mode, dev);
-+}
-+
-+static int tomoyo_path_link(struct dentry *old_dentry, struct path *new_dir,
-+			    struct dentry *new_dentry)
-+{
-+	return tomoyo_link_permission(old_dentry, new_dir->dentry->d_inode,
-+				      new_dentry, new_dir->mnt);
-+}
-+
-+static int tomoyo_path_rename(struct path *old_parent,
-+			      struct dentry *old_dentry,
-+			      struct path *new_parent,
-+			      struct dentry *new_dentry)
-+{
-+	return tomoyo_rename_permission(old_parent->dentry->d_inode,
-+					old_dentry,
-+					new_parent->dentry->d_inode,
-+					new_dentry, old_parent->mnt);
-+}
-+
-+static int tomoyo_path_chmod(struct dentry *dentry, struct vfsmount *mnt,
-+			     mode_t mode)
-+{
-+	return tomoyo_chmod_permission(dentry, mnt, mode);
-+}
-+
-+static int tomoyo_path_chown(struct path *path, uid_t uid, gid_t gid)
-+{
-+	return tomoyo_chown_permission(path->dentry, path->mnt, uid, gid);
-+}
-+
-+static int tomoyo_path_chroot(struct path *path)
-+{
-+	return tomoyo_chroot_permission(path);
-+}
-+
-+static int tomoyo_file_fcntl(struct file *file, unsigned int cmd,
-+			     unsigned long arg)
-+{
-+	if (cmd == F_SETFL && ((arg ^ file->f_flags) & O_APPEND))
-+		return tomoyo_rewrite_permission(file);
-+	return 0;
-+}
-+
-+static int tomoyo_dentry_open(struct file *f, const struct cred *cred)
-+{
-+	/* Don't check read permission here if called from do_execve(). */
-+	if (current->in_execve)
-+		return 0;
-+	/*
-+	 * TOMOYO does not check "allow_write" if
-+	 * open(path, O_TRUNC | O_RDONLY) was requested because write() is not
-+	 * permitted. Instead, TOMOYO checks "allow_truncate" if O_TRUNC is
-+	 * passed.
-+	 *
-+	 * TOMOYO does not check "allow_read/write" if open(path, 3) was
-+	 * requested because read()/write() are not permitted. Instead, TOMOYO
-+	 * checks "allow_ioctl" when ioctl() is requested.
-+	 */
-+	return tomoyo_open_permission(f->f_path.dentry, f->f_path.mnt,
-+				      f->f_flags + 1);
-+}
-+
-+static int tomoyo_sb_mount(char *dev_name, struct path *path,
-+			   char *type, unsigned long flags, void *data)
-+{
-+	return tomoyo_mount_permission(dev_name, path, type, flags);
-+}
-+
-+static int tomoyo_sb_umount(struct vfsmount *mnt, int flags)
-+{
-+	return tomoyo_umount_permission(mnt);
-+}
-+
-+static int tomoyo_sb_pivotroot(struct path *old_path, struct path *new_path)
-+{
-+	return tomoyo_pivot_root_permission(old_path, new_path);
-+}
-+
-+/* Magic constants for socket. Only address is used. */
-+/* This socket is created by kernel. Thus, no permission check. */
-+static const bool tomoyo_socket_kernel_socket;
-+/*
-+ * This socket is an accept()ed socket. Thus, I need to check acccept()
-+ * permission after returning from accept().
++/**
++ * tomoyo_read_path_group_policy - Read "struct tomoyo_path_group" list.
++ *
++ * @head: Pointer to "struct tomoyo_io_buffer".
++ *
++ * Returns true on success, false otherwise.
++ *
++ * Caller holds tomoyo_read_lock().
 + */
-+static const bool tomoyo_socket_not_yet_authorized;
-+/*
-+ * This socket is an accept()ed socket but permission denied. Thus, this socket
-+ * should be close()d.
-+ */
-+static const bool tomoyo_socket_not_yet_aborted;
-+
-+static inline bool tomoyo_kern_sock(struct socket *sock)
++bool tomoyo_read_path_group_policy(struct tomoyo_io_buffer *head)
 +{
-+	return SOCK_INODE(sock)->i_security == &tomoyo_socket_kernel_socket;
-+}
-+
-+static int tomoyo_dead_sock(struct socket *sock)
-+{
-+	if (!sock || !SOCK_INODE(sock) || !SOCK_INODE(sock)->i_security)
-+		return 0;
-+	if (SOCK_INODE(sock)->i_security
-+	    == &tomoyo_socket_not_yet_authorized) {
-+		/*
-+		 * This socket is an accept()ed socket, but not yet
-+		 * authorized. Check permission for accept() now.
-+		 */
-+		if (tomoyo_socket_accept_permission(sock) == 0) {
-+			SOCK_INODE(sock)->i_security = NULL;
-+			return 0;
-+		}
-+		/*
-+		 * Tell the caller that this socket should be close()ed
-+		 * immediately. But in case the caller does not close this
-+		 * socket immediately, I mark special tag so that I can give
-+		 * sleep() penalty for subsequent socket calls.
-+		 */
-+		SOCK_INODE(sock)->i_security =
-+			(void *) &tomoyo_socket_not_yet_aborted;
-+	} else {
-+		/*
-+		 * Give sleep() penalty.
-+		 *
-+		 * This penalty is intended for avoiding CPU resource
-+		 * consumption caused by select()/poll() saying "ready" and
-+		 * socket calls saying "not permitted" loop.
-+		 */
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ / 10);
-+	}
-+	return -EPERM;
-+}
-+
-+static int tomoyo_socket_create(int family, int type, int protocol, int kern)
-+{
-+	if (kern)
-+		return 0;
-+	return tomoyo_socket_create_permission(family, type, protocol);
-+}
-+
-+static int tomoyo_socket_post_create(struct socket *sock, int family, int type,
-+				     int protocol, int kern)
-+{
-+	if (kern)
-+		SOCK_INODE(sock)->i_security =
-+			(void *) &tomoyo_socket_kernel_socket;
-+	return 0;
-+}
-+
-+static int tomoyo_socket_accept(struct socket *sock, struct socket *newsock)
-+{
-+	if (tomoyo_kern_sock(sock))
-+		return 0;
-+	if (tomoyo_dead_sock(sock))
-+		return -EPERM;
-+	/* Check permission for accept() later. */
-+	SOCK_INODE(newsock)->i_security =
-+		(void *) &tomoyo_socket_not_yet_authorized;
-+	return 0;
-+}
-+
-+static int tomoyo_socket_bind(struct socket *sock, struct sockaddr *address,
-+			      int addrlen)
-+{
-+	if (tomoyo_kern_sock(sock))
-+		return 0;
-+	if (tomoyo_dead_sock(sock))
-+		return -EPERM;
-+	return tomoyo_socket_bind_permission(sock, address, addrlen);
-+}
-+
-+static int tomoyo_socket_connect(struct socket *sock, struct sockaddr *address,
-+				 int addrlen)
-+{
-+	if (tomoyo_kern_sock(sock))
-+		return 0;
-+	if (tomoyo_dead_sock(sock))
-+		return -EPERM;
-+	return tomoyo_socket_connect_permission(sock, address, addrlen);
-+}
-+
-+static int tomoyo_socket_listen(struct socket *sock, int backlog)
-+{
-+	if (tomoyo_kern_sock(sock))
-+		return 0;
-+	if (tomoyo_dead_sock(sock))
-+		return -EPERM;
-+	return tomoyo_socket_listen_permission(sock);
-+}
-+
-+static int tomoyo_socket_getsockname(struct socket *sock)
-+{
-+	if (tomoyo_kern_sock(sock))
-+		return 0;
-+	return tomoyo_dead_sock(sock);
-+}
-+
-+static int tomoyo_socket_getpeername(struct socket *sock)
-+{
-+	if (tomoyo_kern_sock(sock))
-+		return 0;
-+	return tomoyo_dead_sock(sock);
-+}
-+
-+static int tomoyo_socket_getsockopt(struct socket *sock, int level,
-+				    int optname)
-+{
-+	if (tomoyo_kern_sock(sock))
-+		return 0;
-+	return tomoyo_dead_sock(sock);
-+}
-+
-+static int tomoyo_socket_setsockopt(struct socket *sock, int level,
-+				    int optname)
-+{
-+	if (tomoyo_kern_sock(sock))
-+		return 0;
-+	return tomoyo_dead_sock(sock);
-+}
-+
-+static int tomoyo_socket_sendmsg(struct socket *sock, struct msghdr *msg,
-+				 int size)
-+{
-+	if (tomoyo_kern_sock(sock))
-+		return 0;
-+	if (tomoyo_dead_sock(sock))
-+		return -EPERM;
-+	return tomoyo_socket_sendmsg_permission(sock, msg);
-+}
-+
-+static int tomoyo_socket_recvmsg(struct socket *sock, struct msghdr *msg,
-+				 int size, int flags)
-+{
-+	if (tomoyo_kern_sock(sock))
-+		return 0;
-+	if (tomoyo_dead_sock(sock))
-+		return -EPERM;
-+	return 0;
-+}
-+
-+#define SOCKFS_MAGIC 0x534F434B
-+
-+static int tomoyo_file_ioctl(struct file *file, unsigned int cmd,
-+			     unsigned long arg)
-+{
-+	/* Check permission if this is a socket. */
-+	struct dentry *dentry = file->f_path.dentry;
-+	if (dentry && dentry->d_sb && dentry->d_sb->s_magic == SOCKFS_MAGIC) {
-+		struct inode *inode = dentry->d_inode;
-+		struct socket *sock = inode ? SOCKET_I(inode) : NULL;
-+		if (inode) {
-+			if (tomoyo_kern_sock(sock))
-+				return 0;
-+			if (tomoyo_dead_sock(sock))
-+				return -EPERM;
++	struct list_head *gpos;
++	struct list_head *mpos;
++	bool done = true;
++	list_for_each_cookie(gpos, head->read_var1, &tomoyo_path_group_list) {
++		struct tomoyo_path_group *group;
++		group = list_entry(gpos, struct tomoyo_path_group, list);
++		list_for_each_cookie(mpos, head->read_var2,
++				     &group->member_list) {
++			struct tomoyo_path_group_member *member;
++			member = list_entry(mpos,
++					    struct tomoyo_path_group_member,
++					    list);
++			if (member->is_deleted)
++				continue;
++			done = tomoyo_io_printf(head, TOMOYO_KEYWORD_PATH_GROUP
++						"%s %s\n",
++						group->group_name->name,
++						member->member_name->name);
++			if (!done)
++				break;
 +		}
 +	}
-+	return tomoyo_ioctl_permission(file, cmd, arg);
++	return done;
 +}
 +
-+/*
-+ * tomoyo_security_ops is a "struct security_operations" which is used for
-+ * registering TOMOYO.
++/**
++ * tomoyo_path_matches_group - Check whether the given pathname matches members of the given pathname group.
++ *
++ * @pathname:        The name of pathname.
++ * @group:           Pointer to "struct tomoyo_path_group".
++ * @may_use_pattern: True if wild card is permitted.
++ *
++ * Returns true if @pathname matches pathnames in @group, false otherwise.
++ *
++ * Caller holds tomoyo_read_lock().
 + */
-+static struct security_operations tomoyo_security_ops = {
-+	.name                  = "tomoyo",
-+	.cred_alloc_blank      = tomoyo_cred_alloc_blank,
-+	.cred_prepare          = tomoyo_cred_prepare,
-+	.cred_transfer         = tomoyo_cred_transfer,
-+	.bprm_check_security   = tomoyo_bprm_check_security,
-+	.bprm_committing_creds = tomoyo_bprm_committing_creds,
-+	.cred_free             = tomoyo_cred_free,
-+#ifdef CONFIG_SYSCTL
-+	.sysctl                = tomoyo_sysctl,
-+#endif
-+	.file_fcntl            = tomoyo_file_fcntl,
-+	.dentry_open           = tomoyo_dentry_open,
-+	.path_truncate         = tomoyo_path_truncate,
-+	.path_unlink           = tomoyo_path_unlink,
-+	.path_mkdir            = tomoyo_path_mkdir,
-+	.path_rmdir            = tomoyo_path_rmdir,
-+	.path_symlink          = tomoyo_path_symlink,
-+	.path_mknod            = tomoyo_path_mknod,
-+	.path_link             = tomoyo_path_link,
-+	.path_rename           = tomoyo_path_rename,
-+	.path_chmod            = tomoyo_path_chmod,
-+	.path_chown            = tomoyo_path_chown,
-+	.path_chroot           = tomoyo_path_chroot,
-+	.file_ioctl            = tomoyo_file_ioctl,
-+	.sb_pivotroot          = tomoyo_sb_pivotroot,
-+	.sb_mount              = tomoyo_sb_mount,
-+	.sb_umount             = tomoyo_sb_umount,
-+	.socket_create         = tomoyo_socket_create,
-+	.socket_bind           = tomoyo_socket_bind,
-+	.socket_listen         = tomoyo_socket_listen,
-+	.socket_connect        = tomoyo_socket_connect,
-+	.socket_accept         = tomoyo_socket_accept,
-+	.socket_sendmsg        = tomoyo_socket_sendmsg,
-+	.socket_recvmsg        = tomoyo_socket_recvmsg,
-+	.socket_post_create    = tomoyo_socket_post_create,
-+	.socket_getsockname    = tomoyo_socket_getsockname,
-+	.socket_getpeername    = tomoyo_socket_getpeername,
-+	.socket_getsockopt     = tomoyo_socket_getsockopt,
-+	.socket_setsockopt     = tomoyo_socket_setsockopt,
-+};
-+
-+/*
-+ * To tell tomoyo_mm_init()/tomoyo_securityfs_init() that TOMOYO was
-+ * registered.
-+ */
-+__initdata bool tomoyo_registered;
-+static int __init tomoyo_init(void)
++bool tomoyo_path_matches_group(const struct tomoyo_path_info *pathname,
++			       const struct tomoyo_path_group *group,
++			       const bool may_use_pattern)
 +{
-+	if (!security_module_enable(&tomoyo_security_ops))
-+		return 0;
-+	/* register ourselves with the security framework */
-+	if (register_security(&tomoyo_security_ops))
-+		panic("Failure registering TOMOYO Linux");
-+	printk(KERN_INFO "TOMOYO Linux initialized\n");
-+	/* call tomoyo_mm_init() and tomoyo_securityfs_init() later. */
-+	tomoyo_registered = true;
-+	return 0;
++	struct tomoyo_path_group_member *member;
++	bool matched = false;
++	list_for_each_entry_rcu(member, &group->member_list, list) {
++		if (member->is_deleted)
++			continue;
++		if (!member->member_name->is_patterned) {
++			if (tomoyo_pathcmp(pathname, member->member_name))
++				continue;
++		} else if (may_use_pattern) {
++			if (!tomoyo_path_matches_pattern(pathname,
++							 member->member_name))
++				continue;
++		} else
++			continue;
++		matched = true;
++		break;
++	}
++	return matched;
 +}
-+security_initcall(tomoyo_init);
 
 -- 
