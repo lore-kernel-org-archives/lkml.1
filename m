@@ -1,111 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbZJDWvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757838AbZJDW5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758151AbZJDWvN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 18:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757921AbZJDWvM
+	id S1757838AbZJDW5g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 18:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbZJDW5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 18:51:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43159 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758041AbZJDWvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 18:51:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: ath5k-devel@venema.h4ckr.net
-Subject: [PATCH] Wireless / ath5k: Simplify suspend and resume callbacks
-Date: Mon, 5 Oct 2009 00:52:09 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-rjw; KDE/4.3.1; x86_64; ; )
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, Bob Copeland <me@bobcopeland.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
+	Sun, 4 Oct 2009 18:57:35 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:46311 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756098AbZJDW5f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 18:57:35 -0400
+Message-ID: <4AC92837.80708@suse.de>
+Date: Mon, 05 Oct 2009 02:56:55 +0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910050052.09085.rjw@sisk.pl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] battery: Fix charge_now returned by broken batteries
+References: <1254669853.26496.0.camel@carter> <200910042246.23712.rjw@sisk.pl> <4AC91578.2020807@suse.de> <200910050043.56667.rjw@sisk.pl>
+In-Reply-To: <200910050043.56667.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Rafael J. Wysocki пишет:
+> On Sunday 04 October 2009, Alexey Starikovskiy wrote:
+>> Hi Rafael,
+> 
+> Alex,
+> 
+>> This is not my rule, it was/is the rule of power device class. If you do not agree to it, please change
+>> appropriate documentation.
+> 
+> I think we're talking about two different things.  One thing is that we
+> shouldn't put any _arbitrary_ interpretation rules into the kernel, which I
+> agree with.  The other one is that if there's a _known_ _broken_ hardware
+> and one possible way of handling it is to add a quirk into the kernel, we
+> should at least consider doing that.
+> 
+> In my opinion adding a quirk for a broken hardware is not equivalent to
+> "inferring not available properties using some heuristics or mathematical
+> model", if that's what you're referring to.
+No, this is not a clear "bug" and not a clear "fix". Please read my reply to Miguel.
 
-Simplify the suspend and resume callbacks of ath5k by converting the
-driver to struct dev_pm_ops and allowing the PCI PM core to do the
-PCI-specific suspend/resume handling.
+> 
+> That said, the patch should not change the _default_ code in order to handle
+> the quirky hardware correctly.  IMO, the quirky hardware should be recognized
+It will change behaviour of at least Samsung notebooks, for which I personally saw the 
+charge_now/full_charge being greater then design_charge.
+> during initialisation, if possible, and later handled in a special way.  If
+> it's not possible to detect the broken hardware reliably, I agree that there's
+> nothing we can do about that in the kernel.
+I am still not sure if we have a broken hardware here.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/wireless/ath/ath5k/base.c |   35 ++++++++++------------------------
- 1 file changed, 11 insertions(+), 24 deletions(-)
-
-Index: linux-2.6/drivers/net/wireless/ath/ath5k/base.c
-===================================================================
---- linux-2.6.orig/drivers/net/wireless/ath/ath5k/base.c
-+++ linux-2.6/drivers/net/wireless/ath/ath5k/base.c
-@@ -195,12 +195,13 @@ static int __devinit	ath5k_pci_probe(str
- 				const struct pci_device_id *id);
- static void __devexit	ath5k_pci_remove(struct pci_dev *pdev);
- #ifdef CONFIG_PM
--static int		ath5k_pci_suspend(struct pci_dev *pdev,
--					pm_message_t state);
--static int		ath5k_pci_resume(struct pci_dev *pdev);
-+static int		ath5k_pci_suspend(struct device *dev);
-+static int		ath5k_pci_resume(struct device *dev);
-+
-+SIMPLE_DEV_PM_OPS(ath5k_pm_ops, ath5k_pci_suspend, ath5k_pci_resume);
-+#define ATH5K_PM_OPS	(&ath5k_pm_ops)
- #else
--#define ath5k_pci_suspend NULL
--#define ath5k_pci_resume NULL
-+#define ATH5K_PM_OPS	NULL
- #endif /* CONFIG_PM */
- 
- static struct pci_driver ath5k_pci_driver = {
-@@ -208,8 +209,7 @@ static struct pci_driver ath5k_pci_drive
- 	.id_table	= ath5k_pci_id_table,
- 	.probe		= ath5k_pci_probe,
- 	.remove		= __devexit_p(ath5k_pci_remove),
--	.suspend	= ath5k_pci_suspend,
--	.resume		= ath5k_pci_resume,
-+	.driver.pm	= ATH5K_PM_OPS,
- };
- 
- 
-@@ -669,33 +669,20 @@ ath5k_pci_remove(struct pci_dev *pdev)
- }
- 
- #ifdef CONFIG_PM
--static int
--ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int ath5k_pci_suspend(struct device *dev)
- {
--	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
-+	struct ieee80211_hw *hw = pci_get_drvdata(to_pci_dev(dev));
- 	struct ath5k_softc *sc = hw->priv;
- 
- 	ath5k_led_off(sc);
--
--	pci_save_state(pdev);
--	pci_disable_device(pdev);
--	pci_set_power_state(pdev, PCI_D3hot);
--
- 	return 0;
- }
- 
--static int
--ath5k_pci_resume(struct pci_dev *pdev)
-+static int ath5k_pci_resume(struct device *dev)
- {
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
- 	struct ath5k_softc *sc = hw->priv;
--	int err;
--
--	pci_restore_state(pdev);
--
--	err = pci_enable_device(pdev);
--	if (err)
--		return err;
- 
- 	/*
- 	 * Suspend/Resume resets the PCI configuration space, so we have to
+Regards,
+Alex.
