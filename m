@@ -1,287 +1,353 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756323AbZJDMzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbZJDMzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756323AbZJDMzE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbZJDMyg
+	id S1757221AbZJDMzP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755947AbZJDMzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:54:36 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:64161 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 08:55:03 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:51504 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757201AbZJDMyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 08:54:17 -0400
-Message-Id: <20091004125331.935174891@I-love.SAKURA.ne.jp>
+	id S1756082AbZJDMy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 08:54:56 -0400
+Message-Id: <20091004125332.281661961@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:50:00 +0900
+Date: Sun, 04 Oct 2009 21:50:01 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 14/25] TOMOYO: Add network restriction.
-Content-Disposition: inline; filename=tomoyo-add-network.patch
+Subject: [TOMOYO #16 15/25] TOMOYO: Add mount restriction.
+Content-Disposition: inline; filename=tomoyo-add-mount.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains code for restricting IPV4/IPv6 network communications.
+This patch contains code for checking mount operations.
 
-The way how LSM version performs incoming TCP connections filtering (a.k.a.
-post accept() hook) is different from non-LSM version.
-LSM version does not add post accept() hook. Instead, do connection filtering
-upon first use of an accept()ed socket.
-
-As of now, LSM version does not perform incoming UDP/RAW packets filtering
-(a.k.a. post recvmsg() hook). I want to implement it in the future.
+Checking mount operations is a part of checking file operations, but the code
+is separated from file access because the code is complicated.
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/network.c |  757 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 757 insertions(+)
+ security/tomoyo/mount.c |  366 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 366 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6/security/tomoyo/network.c
-@@ -0,0 +1,757 @@
++++ security-testing-2.6/security/tomoyo/mount.c
+@@ -0,0 +1,366 @@
 +/*
-+ * security/tomoyo/network.c
++ * security/tomoyo/mount.c
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + */
 +#include "internal.h"
-+#include <net/ipv6.h>
++
++/* Keywords for mount restrictions. */
++
++/* Allow to call 'mount --bind /source_dir /dest_dir' */
++#define TOMOYO_MOUNT_BIND_KEYWORD                           "--bind"
++/* Allow to call 'mount --move /old_dir    /new_dir ' */
++#define TOMOYO_MOUNT_MOVE_KEYWORD                           "--move"
++/* Allow to call 'mount -o remount /dir             ' */
++#define TOMOYO_MOUNT_REMOUNT_KEYWORD                        "--remount"
++/* Allow to call 'mount --make-unbindable /dir'       */
++#define TOMOYO_MOUNT_MAKE_UNBINDABLE_KEYWORD                "--make-unbindable"
++/* Allow to call 'mount --make-private /dir'          */
++#define TOMOYO_MOUNT_MAKE_PRIVATE_KEYWORD                   "--make-private"
++/* Allow to call 'mount --make-slave /dir'            */
++#define TOMOYO_MOUNT_MAKE_SLAVE_KEYWORD                     "--make-slave"
++/* Allow to call 'mount --make-shared /dir'           */
++#define TOMOYO_MOUNT_MAKE_SHARED_KEYWORD                    "--make-shared"
 +
 +/**
-+ * tomoyo_audit_network_log - Audit network log.
++ * tomoyo_audit_mount_log - Audit mount log.
 + *
 + * @r:          Pointer to "struct tomoyo_request_info".
-+ * @operation:  The name of operation.
-+ * @address:    An IPv4 or IPv6 address.
-+ * @port:       Port number.
++ * @dev_name:   Device file.
++ * @dir_name:   Mount point.
++ * @type:       Filesystem type.
++ * @flags:      Mount flags.
 + * @is_granted: True if this is a granted log.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static int tomoyo_audit_network_log(struct tomoyo_request_info *r,
-+				    const char *operation, const char *address,
-+				    const u16 port, const bool is_granted)
++static int tomoyo_audit_mount_log(struct tomoyo_request_info *r,
++				  const char *dev_name, const char *dir_name,
++				  const char *type, const unsigned long flags,
++				  const bool is_granted)
 +{
-+	if (!is_granted)
-+		tomoyo_warn_log(r, "%s %s %u", operation, address, port);
-+	return tomoyo_write_audit_log(is_granted, r,
-+				      TOMOYO_KEYWORD_ALLOW_NETWORK
-+				      "%s %s %u\n", operation, address, port);
-+}
-+
-+/**
-+ * tomoyo_parse_ip_address - Parse an IP address.
-+ *
-+ * @address: String to parse.
-+ * @min:     Pointer to store min address.
-+ * @max:     Pointer to store max address.
-+ *
-+ * Returns 2 if @address is an IPv6, 1 if @address is an IPv4, 0 otherwise.
-+ */
-+int tomoyo_parse_ip_address(char *address, u16 *min, u16 *max)
-+{
-+	int count = sscanf(address, "%hx:%hx:%hx:%hx:%hx:%hx:%hx:%hx"
-+			   "-%hx:%hx:%hx:%hx:%hx:%hx:%hx:%hx",
-+			   &min[0], &min[1], &min[2], &min[3],
-+			   &min[4], &min[5], &min[6], &min[7],
-+			   &max[0], &max[1], &max[2], &max[3],
-+			   &max[4], &max[5], &max[6], &max[7]);
-+	if (count == 8 || count == 16) {
-+		u8 i;
-+		if (count == 8)
-+			memmove(max, min, sizeof(u16) * 8);
-+		for (i = 0; i < 8; i++) {
-+			min[i] = htons(min[i]);
-+			max[i] = htons(max[i]);
-+		}
-+		return 2;
++	if (!is_granted) {
++		if (!strcmp(type, TOMOYO_MOUNT_REMOUNT_KEYWORD))
++			tomoyo_warn_log(r, "mount -o remount %s 0x%lX",
++					dir_name, flags);
++		else if (!strcmp(type, TOMOYO_MOUNT_BIND_KEYWORD)
++			 || !strcmp(type, TOMOYO_MOUNT_MOVE_KEYWORD))
++			tomoyo_warn_log(r, "mount %s %s %s 0x%lX", type,
++					dev_name, dir_name, flags);
++		else if (!strcmp(type, TOMOYO_MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
++			 !strcmp(type, TOMOYO_MOUNT_MAKE_PRIVATE_KEYWORD) ||
++			 !strcmp(type, TOMOYO_MOUNT_MAKE_SLAVE_KEYWORD) ||
++			 !strcmp(type, TOMOYO_MOUNT_MAKE_SHARED_KEYWORD))
++			tomoyo_warn_log(r, "mount %s %s 0x%lX", type, dir_name,
++					flags);
++		else
++			tomoyo_warn_log(r, "mount -t %s %s %s 0x%lX", type,
++					dev_name, dir_name, flags);
 +	}
-+	count = sscanf(address, "%hu.%hu.%hu.%hu-%hu.%hu.%hu.%hu",
-+		       &min[0], &min[1], &min[2], &min[3],
-+		       &max[0], &max[1], &max[2], &max[3]);
-+	if (count == 4 || count == 8) {
-+		u32 ip = htonl((((u8) min[0]) << 24) + (((u8) min[1]) << 16)
-+			       + (((u8) min[2]) << 8) + (u8) min[3]);
-+		memmove(min, &ip, sizeof(ip));
-+		if (count == 8)
-+			ip = htonl((((u8) max[0]) << 24) +
-+				   (((u8) max[1]) << 16) + (((u8) max[2]) << 8)
-+				   + (u8) max[3]);
-+		memmove(max, &ip, sizeof(ip));
-+		return 1;
-+	}
-+	return 0;
++	return tomoyo_write_audit_log(is_granted, r, TOMOYO_KEYWORD_ALLOW_MOUNT
++				      "%s %s %s 0x%lu\n", dev_name, dir_name,
++				      type, flags);
 +}
 +
 +/**
-+ * tomoyo_print_ipv6 - Print an IPv6 address.
++ * tomoyo_mount_acl2 - Check permission for mount() operation.
 + *
-+ * @buffer:     Buffer to write to.
-+ * @buffer_len: Size of @buffer.
-+ * @ip:         Pointer to "struct in6_addr".
-+ *
-+ * This is different from "%pI6" and "%pI6c".
-+ *
-+ * Returns nothing.
-+ */
-+void tomoyo_print_ipv6(char *buffer, const int buffer_len,
-+		       const struct in6_addr *ip)
-+{
-+	memset(buffer, 0, buffer_len);
-+	snprintf(buffer, buffer_len - 1, "%x:%x:%x:%x:%x:%x:%x:%x",
-+		 ntohs(ip->s6_addr16[0]), ntohs(ip->s6_addr16[1]),
-+		 ntohs(ip->s6_addr16[2]), ntohs(ip->s6_addr16[3]),
-+		 ntohs(ip->s6_addr16[4]), ntohs(ip->s6_addr16[5]),
-+		 ntohs(ip->s6_addr16[6]), ntohs(ip->s6_addr16[7]));
-+}
-+
-+/**
-+ * tomoyo_net2keyword - Convert network operation index to network operation name.
-+ *
-+ * @operation: Type of operation.
-+ *
-+ * Returns the name of operation.
-+ */
-+const char *tomoyo_net2keyword(const u8 operation)
-+{
-+	const char *keyword = "unknown";
-+	switch (operation) {
-+	case TOMOYO_NETWORK_UDP_BIND:
-+		keyword = "UDP bind";
-+		break;
-+	case TOMOYO_NETWORK_UDP_CONNECT:
-+		keyword = "UDP connect";
-+		break;
-+	case TOMOYO_NETWORK_TCP_BIND:
-+		keyword = "TCP bind";
-+		break;
-+	case TOMOYO_NETWORK_TCP_LISTEN:
-+		keyword = "TCP listen";
-+		break;
-+	case TOMOYO_NETWORK_TCP_CONNECT:
-+		keyword = "TCP connect";
-+		break;
-+	case TOMOYO_NETWORK_TCP_ACCEPT:
-+		keyword = "TCP accept";
-+		break;
-+	case TOMOYO_NETWORK_RAW_BIND:
-+		keyword = "RAW bind";
-+		break;
-+	case TOMOYO_NETWORK_RAW_CONNECT:
-+		keyword = "RAW connect";
-+		break;
-+	}
-+	return keyword;
-+}
-+
-+/**
-+ * tomoyo_network_entry2 - Check permission for network operation.
-+ *
-+ * @is_ipv6:   True if @address is an IPv6 address.
-+ * @operation: Type of operation.
-+ * @address:   An IPv4 or IPv6 address.
-+ * @port:      Port number.
++ * @r:        Pointer to "struct tomoyo_request_info".
++ * @dev_name: Name of device file.
++ * @dir:      Pointer to "struct path".
++ * @type:     Name of filesystem type.
++ * @flags:    Mount options.
 + *
 + * Returns 0 on success, negative value otherwise.
 + *
 + * Caller holds tomoyo_read_lock().
 + */
-+static int tomoyo_network_entry2(const bool is_ipv6, const u8 operation,
-+				 const u32 *address, const u16 port)
++static int tomoyo_mount_acl2(struct tomoyo_request_info *r, char *dev_name,
++			     struct path *dir, char *type, unsigned long flags)
 +{
-+	struct tomoyo_request_info r;
++	struct tomoyo_obj_info obj = { };
++	struct path path;
 +	struct tomoyo_acl_info *ptr;
-+	const char *keyword = tomoyo_net2keyword(operation);
-+	const u16 perm = 1 << operation;
-+	/* using host byte order to allow u32 comparison than memcmp().*/
-+	const u32 ip = ntohl(*address);
-+	int error;
-+	char buf[64];
-+	if (tomoyo_init_request_info(&r, NULL,
-+				     TOMOYO_MAC_NETWORK_UDP_BIND + operation)
-+	    == TOMOYO_CONFIG_DISABLED)
-+		return 0;
-+	memset(buf, 0, sizeof(buf));
-+	if (is_ipv6)
-+		tomoyo_print_ipv6(buf, sizeof(buf), (const struct in6_addr *)
-+				  address);
-+	else
-+		snprintf(buf, sizeof(buf) - 1, "%u.%u.%u.%u", HIPQUAD(ip));
-+	do {
-+		error = -EPERM;
-+		list_for_each_entry_rcu(ptr, &r.domain->acl_info_list, list) {
-+			struct tomoyo_ip_network_acl *acl;
-+			if (ptr->is_deleted ||
-+			    ptr->type != TOMOYO_TYPE_IP_NETWORK_ACL)
-+				continue;
-+			acl = container_of(ptr, struct tomoyo_ip_network_acl,
-+					   head);
-+			if (!(acl->perm & perm))
-+				continue;
-+			if (!tomoyo_compare_number_union(port, &acl->port) ||
-+			    !tomoyo_condition(&r, ptr))
-+				continue;
-+			switch (acl->address_type) {
-+			case TOMOYO_IP_ADDRESS_TYPE_ADDRESS_GROUP:
-+				if (!tomoyo_address_matches_group(is_ipv6,
-+								  address,
-+								  acl->address.
-+								  group))
-+					continue;
-+				break;
-+			case TOMOYO_IP_ADDRESS_TYPE_IPv4:
-+				if (is_ipv6 || ip < acl->address.ipv4.min ||
-+				    acl->address.ipv4.max < ip)
-+					continue;
-+				break;
-+			default:
-+				if (!is_ipv6 ||
-+				    memcmp(acl->address.ipv6.min, address, 16)
-+				    > 0 ||
-+				    memcmp(address, acl->address.ipv6.max, 16)
-+				    > 0)
-+					continue;
-+				break;
-+			}
-+			r.cond = ptr->cond;
-+			error = 0;
-+			break;
++	struct file_system_type *fstype = NULL;
++	const char *requested_type = NULL;
++	const char *requested_dir_name = NULL;
++	const char *requested_dev_name = NULL;
++	struct tomoyo_path_info rtype;
++	struct tomoyo_path_info rdev;
++	struct tomoyo_path_info rdir;
++	int need_dev = 0;
++	int error = -ENOMEM;
++	r->obj = &obj;
++
++	/* Get fstype. */
++	requested_type = tomoyo_encode(type);
++	if (!requested_type)
++		goto out;
++	rtype.name = requested_type;
++	tomoyo_fill_path_info(&rtype);
++
++	/* Get mount point. */
++	obj.path2 = *dir;
++	requested_dir_name = tomoyo_realpath_from_path(dir);
++	if (!requested_dir_name) {
++		error = -ENOMEM;
++		goto out;
++	}
++	rdir.name = requested_dir_name;
++	tomoyo_fill_path_info(&rdir);
++
++	/* Compare fs name. */
++	if (!strcmp(type, TOMOYO_MOUNT_REMOUNT_KEYWORD)) {
++		/* dev_name is ignored. */
++	} else if (!strcmp(type, TOMOYO_MOUNT_MAKE_UNBINDABLE_KEYWORD) ||
++		   !strcmp(type, TOMOYO_MOUNT_MAKE_PRIVATE_KEYWORD) ||
++		   !strcmp(type, TOMOYO_MOUNT_MAKE_SLAVE_KEYWORD) ||
++		   !strcmp(type, TOMOYO_MOUNT_MAKE_SHARED_KEYWORD)) {
++		/* dev_name is ignored. */
++	} else if (!strcmp(type, TOMOYO_MOUNT_BIND_KEYWORD) ||
++		   !strcmp(type, TOMOYO_MOUNT_MOVE_KEYWORD)) {
++		need_dev = -1; /* dev_name is a directory */
++	} else {
++		fstype = get_fs_type(type);
++		if (!fstype) {
++			error = -ENODEV;
++			goto out;
 +		}
-+		tomoyo_audit_network_log(&r, keyword, buf, port, !error);
-+		if (!error)
-+			break;
-+		error = tomoyo_supervisor(&r, TOMOYO_KEYWORD_ALLOW_NETWORK
-+					  "%s %s %u\n", keyword, buf, port);
-+	} while (error == 1);
-+	if (r.mode != TOMOYO_CONFIG_ENFORCING)
++		if (fstype->fs_flags & FS_REQUIRES_DEV)
++			/* dev_name is a block device file. */
++			need_dev = 1;
++	}
++	if (need_dev) {
++		/* Get mount point or device file. */
++		if (tomoyo_get_path(dev_name, &path)) {
++			error = -ENOENT;
++			goto out;
++		}
++		obj.path1 = path;
++		requested_dev_name = tomoyo_realpath_from_path(&path);
++		if (!requested_dev_name) {
++			error = -ENOENT;
++			goto out;
++		}
++	} else {
++		/* Map dev_name to "<NULL>" if no dev_name given. */
++		if (!dev_name)
++			dev_name = "<NULL>";
++		requested_dev_name = tomoyo_encode(dev_name);
++		if (!requested_dev_name) {
++			error = -ENOMEM;
++			goto out;
++		}
++	}
++	rdev.name = requested_dev_name;
++	tomoyo_fill_path_info(&rdev);
++	list_for_each_entry_rcu(ptr, &r->domain->acl_info_list, list) {
++		struct tomoyo_mount_acl *acl;
++		if (ptr->is_deleted || ptr->type != TOMOYO_TYPE_MOUNT_ACL)
++			continue;
++		acl = container_of(ptr, struct tomoyo_mount_acl,
++				   head);
++		if (!tomoyo_compare_number_union(flags, &acl->flags) ||
++		    !tomoyo_compare_name_union(&rtype, &acl->fs_type) ||
++		    !tomoyo_compare_name_union(&rdir, &acl->dir_name) ||
++		    (need_dev &&
++		     !tomoyo_compare_name_union(&rdev, &acl->dev_name)) ||
++		    !tomoyo_condition(r, ptr))
++			continue;
++		r->cond = ptr->cond;
++		error = 0;
++		break;
++	}
++	tomoyo_audit_mount_log(r, requested_dev_name, requested_dir_name,
++			       requested_type, flags, !error);
++	if (error)
++		error = tomoyo_supervisor(r, TOMOYO_KEYWORD_ALLOW_MOUNT
++					  "%s %s %s 0x%lX\n",
++					  tomoyo_file_pattern(&rdev),
++					  tomoyo_file_pattern(&rdir),
++					  requested_type, flags);
++ out:
++	kfree(requested_dev_name);
++	kfree(requested_dir_name);
++	if (fstype)
++		put_filesystem(fstype);
++	kfree(requested_type);
++	/* Drop refcount obtained by tomoyo_get_path(). */
++	if (obj.path1.dentry)
++		path_put(&obj.path1);
++	return error;
++}
++
++/**
++ * tomoyo_mount_acl - Check permission for mount() operation.
++ *
++ * @r:        Pointer to "struct tomoyo_request_info".
++ * @dev_name: Name of device file.
++ * @dir:      Pointer to "struct path".
++ * @type:     Name of filesystem type.
++ * @flags:    Mount options.
++ *
++ * Returns 0 on success, negative value otherwise.
++ *
++ * Caller holds tomoyo_read_lock().
++ */
++static int tomoyo_mount_acl(struct tomoyo_request_info *r, char *dev_name,
++			    struct path *dir, char *type, unsigned long flags)
++{
++	int error;
++	error = -EPERM;
++	if ((flags & MS_MGC_MSK) == MS_MGC_VAL)
++		flags &= ~MS_MGC_MSK;
++	switch (flags & (MS_REMOUNT | MS_MOVE | MS_BIND)) {
++	case MS_REMOUNT:
++	case MS_MOVE:
++	case MS_BIND:
++	case 0:
++		break;
++	default:
++		printk(KERN_WARNING "ERROR: "
++		       "%s%s%sare given for single mount operation.\n",
++		       flags & MS_REMOUNT ? "'remount' " : "",
++		       flags & MS_MOVE    ? "'move' " : "",
++		       flags & MS_BIND    ? "'bind' " : "");
++		return -EINVAL;
++	}
++	switch (flags & (MS_UNBINDABLE | MS_PRIVATE | MS_SLAVE | MS_SHARED)) {
++	case MS_UNBINDABLE:
++	case MS_PRIVATE:
++	case MS_SLAVE:
++	case MS_SHARED:
++	case 0:
++		break;
++	default:
++		printk(KERN_WARNING "ERROR: "
++		       "%s%s%s%sare given for single mount operation.\n",
++		       flags & MS_UNBINDABLE ? "'unbindable' " : "",
++		       flags & MS_PRIVATE    ? "'private' " : "",
++		       flags & MS_SLAVE      ? "'slave' " : "",
++		       flags & MS_SHARED     ? "'shared' " : "");
++		return -EINVAL;
++	}
++	if (flags & MS_REMOUNT)
++		error = tomoyo_mount_acl(r, dev_name, dir,
++					 TOMOYO_MOUNT_REMOUNT_KEYWORD,
++					 flags & ~MS_REMOUNT);
++	else if (flags & MS_MOVE)
++		error = tomoyo_mount_acl(r, dev_name, dir,
++					 TOMOYO_MOUNT_MOVE_KEYWORD,
++					 flags & ~MS_MOVE);
++	else if (flags & MS_BIND)
++		error = tomoyo_mount_acl(r, dev_name, dir,
++					 TOMOYO_MOUNT_BIND_KEYWORD,
++					 flags & ~MS_BIND);
++	else if (flags & MS_UNBINDABLE)
++		error = tomoyo_mount_acl(r, dev_name, dir,
++					 TOMOYO_MOUNT_MAKE_UNBINDABLE_KEYWORD,
++					 flags & ~MS_UNBINDABLE);
++	else if (flags & MS_PRIVATE)
++		error = tomoyo_mount_acl(r, dev_name, dir,
++					 TOMOYO_MOUNT_MAKE_PRIVATE_KEYWORD,
++					 flags & ~MS_PRIVATE);
++	else if (flags & MS_SLAVE)
++		error = tomoyo_mount_acl(r, dev_name, dir,
++					 TOMOYO_MOUNT_MAKE_SLAVE_KEYWORD,
++					 flags & ~MS_SLAVE);
++	else if (flags & MS_SHARED)
++		error = tomoyo_mount_acl(r, dev_name, dir,
++					 TOMOYO_MOUNT_MAKE_SHARED_KEYWORD,
++					 flags & ~MS_SHARED);
++	else
++		do {
++			error = tomoyo_mount_acl2(r, dev_name, dir, type,
++						  flags);
++		} while (error == 1);
++	if (r->mode != TOMOYO_CONFIG_ENFORCING)
 +		error = 0;
 +	return error;
 +}
 +
 +/**
-+ * tomoyo_network_entry - Check permission for network operation.
++ * tomoyo_mount_permission - Check permission for mount() operation.
 + *
-+ * @is_ipv6:   True if @address is an IPv6 address.
-+ * @operation: Type of operation.
-+ * @address:   An IPv4 or IPv6 address.
-+ * @port:      Port number.
++ * @dev_name: Name of device file.
++ * @dir:      Pointer to "struct path".
++ * @type:     Name of filesystem type. May be NULL.
++ * @flags:    Mount options.
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+static int tomoyo_network_entry(const bool is_ipv6, const u8 operation,
-+				const u32 *address, const u16 port)
++int tomoyo_mount_permission(char *dev_name, struct path *dir, char *type,
++			    const unsigned long flags)
 +{
-+	const int idx = tomoyo_read_lock();
-+	const int error = tomoyo_network_entry2(is_ipv6, operation, address,
-+						port);
++	struct tomoyo_request_info r;
++	int error;
++	int idx;
++	if (!tomoyo_capable(TOMOYO_SYS_MOUNT))
++		return -EPERM;
++	if (tomoyo_init_request_info(&r, NULL, TOMOYO_MAC_FILE_MOUNT)
++	    == TOMOYO_CONFIG_DISABLED)
++		return 0;
++	if (!type)
++		type = "<NULL>";
++	idx = tomoyo_read_lock();
++	error = tomoyo_mount_acl(&r, dev_name, dir, type, flags);
 +	tomoyo_read_unlock(idx);
 +	return error;
 +}
 +
 +/**
-+ * tomoyo_write_network_policy - Write "struct tomoyo_ip_network_acl" list.
++ * tomoyo_write_mount_policy - Write "struct tomoyo_mount_acl" list.
 + *
 + * @data:      String to parse.
 + * @domain:    Pointer to "struct tomoyo_domain_info".
@@ -290,112 +356,35 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 + *
 + * Returns 0 on success, negative value otherwise.
 + */
-+int tomoyo_write_network_policy(char *data, struct tomoyo_domain_info *domain,
-+				struct tomoyo_condition *condition,
-+				const bool is_delete)
++int tomoyo_write_mount_policy(char *data, struct tomoyo_domain_info *domain,
++			      struct tomoyo_condition *condition,
++			      const bool is_delete)
 +{
-+	struct tomoyo_ip_network_acl *entry = NULL;
++	struct tomoyo_mount_acl *entry = NULL;
 +	struct tomoyo_acl_info *ptr;
-+	struct tomoyo_ip_network_acl e = {
-+		.head.type = TOMOYO_TYPE_IP_NETWORK_ACL,
-+		.head.cond = condition,
-+	};
-+	u16 min_address[8];
-+	u16 max_address[8];
++	struct tomoyo_mount_acl e = { .head.type = TOMOYO_TYPE_MOUNT_ACL,
++				      .head.cond = condition };
 +	int error = is_delete ? -ENOENT : -ENOMEM;
-+	u8 sock_type;
 +	char *w[4];
 +	if (!tomoyo_tokenize(data, w, sizeof(w)) || !w[3][0])
 +		return -EINVAL;
-+	if (!strcmp(w[0], "TCP"))
-+		sock_type = SOCK_STREAM;
-+	else if (!strcmp(w[0], "UDP"))
-+		sock_type = SOCK_DGRAM;
-+	else if (!strcmp(w[0], "RAW"))
-+		sock_type = SOCK_RAW;
-+	else
-+		return -EINVAL;
-+	if (!strcmp(w[1], "bind"))
-+		switch (sock_type) {
-+		case SOCK_STREAM:
-+			e.perm = 1 << TOMOYO_NETWORK_TCP_BIND;
-+			break;
-+		case SOCK_DGRAM:
-+			e.perm = 1 << TOMOYO_NETWORK_UDP_BIND;
-+			break;
-+		default:
-+			e.perm = 1 << TOMOYO_NETWORK_RAW_BIND;
-+			break;
-+		}
-+	else if (!strcmp(w[1], "connect"))
-+		switch (sock_type) {
-+		case SOCK_STREAM:
-+			e.perm = 1 << TOMOYO_NETWORK_TCP_CONNECT;
-+			break;
-+		case SOCK_DGRAM:
-+			e.perm = 1 << TOMOYO_NETWORK_UDP_CONNECT;
-+			break;
-+		default:
-+			e.perm = 1 << TOMOYO_NETWORK_RAW_CONNECT;
-+			break;
-+		}
-+	else if (sock_type == SOCK_STREAM && !strcmp(w[1], "listen"))
-+		e.perm = 1 << TOMOYO_NETWORK_TCP_LISTEN;
-+	else if (sock_type == SOCK_STREAM && !strcmp(w[1], "accept"))
-+		e.perm = 1 << TOMOYO_NETWORK_TCP_ACCEPT;
-+	else
-+		return -EINVAL;
-+	switch (tomoyo_parse_ip_address(w[2], min_address, max_address)) {
-+	case 2:
-+		e.address_type = TOMOYO_IP_ADDRESS_TYPE_IPv6;
-+		e.address.ipv6.min =
-+			tomoyo_get_ipv6_address((struct in6_addr *)
-+						min_address);
-+		e.address.ipv6.max =
-+			tomoyo_get_ipv6_address((struct in6_addr *)
-+						max_address);
-+		if (!e.address.ipv6.min || !e.address.ipv6.max)
-+			goto out;
-+		break;
-+	case 1:
-+		e.address_type = TOMOYO_IP_ADDRESS_TYPE_IPv4;
-+		/* use host byte order to allow u32 comparison.*/
-+		e.address.ipv4.min = ntohl(*(u32 *) min_address);
-+		e.address.ipv4.max = ntohl(*(u32 *) max_address);
-+		break;
-+	default:
-+		if (w[2][0] != '@')
-+			return -EINVAL;
-+		e.address_type = TOMOYO_IP_ADDRESS_TYPE_ADDRESS_GROUP;
-+		e.address.group = tomoyo_get_address_group(w[2] + 1);
-+		if (!e.address.group)
-+			return -ENOMEM;
-+		break;
-+	}
-+	if (!tomoyo_parse_number_union(w[3], &e.port))
++	if (!tomoyo_parse_name_union(w[0], &e.dev_name) ||
++	    !tomoyo_parse_name_union(w[1], &e.dir_name) ||
++	    !tomoyo_parse_name_union(w[2], &e.fs_type) ||
++	    !tomoyo_parse_number_union(w[3], &e.flags))
 +		goto out;
 +	if (!is_delete)
 +		entry = kmalloc(sizeof(e), GFP_KERNEL);
 +	mutex_lock(&tomoyo_policy_lock);
 +	list_for_each_entry_rcu(ptr, &domain->acl_info_list, list) {
-+		struct tomoyo_ip_network_acl *acl =
-+			container_of(ptr, struct tomoyo_ip_network_acl,
-+				     head);
-+		if (ptr->type != TOMOYO_TYPE_IP_NETWORK_ACL ||
-+		    ptr->cond != condition ||
-+		    tomoyo_memcmp(acl, &e, offsetof(typeof(e), address_type),
-+				  sizeof(e)))
++		struct tomoyo_mount_acl *acl =
++			container_of(ptr, struct tomoyo_mount_acl, head);
++		if (ptr->type != TOMOYO_TYPE_MOUNT_ACL ||
++		    ptr->cond != condition
++		    || tomoyo_memcmp(acl, &e, offsetof(typeof(e), dev_name),
++				     sizeof(e)))
 +			continue;
-+		if (is_delete) {
-+			acl->perm &= ~e.perm;
-+			if (!acl->perm)
-+				ptr->is_deleted = true;
-+		} else {
-+			if (ptr->is_deleted)
-+				acl->perm = 0;
-+			acl->perm |= e.perm;
-+			ptr->is_deleted = false;
-+		}
++		ptr->is_deleted = is_delete;
 +		error = 0;
 +		break;
 +	}
@@ -406,396 +395,11 @@ Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 +	}
 +	mutex_unlock(&tomoyo_policy_lock);
 + out:
-+	if (w[2][0] == '@')
-+		tomoyo_put_address_group(e.address.group);
-+	else if (e.address_type == TOMOYO_IP_ADDRESS_TYPE_IPv6) {
-+		tomoyo_put_ipv6_address(e.address.ipv6.min);
-+		tomoyo_put_ipv6_address(e.address.ipv6.max);
-+	}
-+	tomoyo_put_number_union(&e.port);
++	tomoyo_put_name_union(&e.dev_name);
++	tomoyo_put_name_union(&e.dir_name);
++	tomoyo_put_name_union(&e.fs_type);
++	tomoyo_put_number_union(&e.flags);
 +	kfree(entry);
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_network_listen_acl - Check permission for listen() operation.
-+ *
-+ * @is_ipv6: True if @address is an IPv6 address.
-+ * @address: An IPv4 or IPv6 address.
-+ * @port:    Port number.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static inline int tomoyo_network_listen_acl(const bool is_ipv6,
-+					    const u8 *address, const u16 port)
-+{
-+	return tomoyo_network_entry(is_ipv6, TOMOYO_NETWORK_TCP_LISTEN,
-+				    (const u32 *) address, ntohs(port));
-+}
-+
-+/**
-+ * tomoyo_network_connect_acl - Check permission for connect() operation.
-+ *
-+ * @is_ipv6:   True if @address is an IPv6 address.
-+ * @sock_type: Type of socket. (TCP or UDP or RAW)
-+ * @address:   An IPv4 or IPv6 address.
-+ * @port:      Port number.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static inline int tomoyo_network_connect_acl(const bool is_ipv6,
-+					     const int sock_type,
-+					     const u8 *address, const u16 port)
-+{
-+	u8 operation;
-+	switch (sock_type) {
-+	case SOCK_STREAM:
-+		operation = TOMOYO_NETWORK_TCP_CONNECT;
-+		break;
-+	case SOCK_DGRAM:
-+		operation = TOMOYO_NETWORK_UDP_CONNECT;
-+		break;
-+	default:
-+		operation = TOMOYO_NETWORK_RAW_CONNECT;
-+	}
-+	return tomoyo_network_entry(is_ipv6, operation,
-+				    (const u32 *) address, ntohs(port));
-+}
-+
-+/**
-+ * tomoyo_network_bind_acl - Check permission for bind() operation.
-+ *
-+ * @is_ipv6:   True if @address is an IPv6 address.
-+ * @sock_type: Type of socket. (TCP or UDP or RAW)
-+ * @address:   An IPv4 or IPv6 address.
-+ * @port:      Port number.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static int tomoyo_network_bind_acl(const bool is_ipv6, const int sock_type,
-+				   const u8 *address, const u16 port)
-+{
-+	u8 operation;
-+	switch (sock_type) {
-+	case SOCK_STREAM:
-+		operation = TOMOYO_NETWORK_TCP_BIND;
-+		break;
-+	case SOCK_DGRAM:
-+		operation = TOMOYO_NETWORK_UDP_BIND;
-+		break;
-+	default:
-+		operation = TOMOYO_NETWORK_RAW_BIND;
-+	}
-+	return tomoyo_network_entry(is_ipv6, operation,
-+				    (const u32 *) address, ntohs(port));
-+}
-+
-+/**
-+ * tomoyo_network_accept_acl - Check permission for accept() operation.
-+ *
-+ * @is_ipv6: True if @address is an IPv6 address.
-+ * @address: An IPv4 or IPv6 address.
-+ * @port:    Port number.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static inline int tomoyo_network_accept_acl(const bool is_ipv6,
-+					    const u8 *address, const u16 port)
-+{
-+	int retval;
-+	current->tomoyo_flags |= TOMOYO_DONT_SLEEP_ON_ENFORCE_ERROR;
-+	retval = tomoyo_network_entry(is_ipv6, TOMOYO_NETWORK_TCP_ACCEPT,
-+				      (const u32 *) address, ntohs(port));
-+	current->tomoyo_flags &= ~TOMOYO_DONT_SLEEP_ON_ENFORCE_ERROR;
-+	return retval;
-+}
-+
-+/**
-+ * tomoyo_network_sendmsg_acl - Check permission for sendmsg() operation.
-+ *
-+ * @is_ipv6:   True if @address is an IPv6 address.
-+ * @sock_type: Type of socket. (UDP or RAW)
-+ * @address:   An IPv4 or IPv6 address.
-+ * @port:      Port number.
-+ *
-+ * Returns 0 on success, negative value otherwise.
-+ */
-+static inline int tomoyo_network_sendmsg_acl(const bool is_ipv6,
-+					     const int sock_type,
-+					     const u8 *address, const u16 port)
-+{
-+	u8 operation;
-+	if (sock_type == SOCK_DGRAM)
-+		operation = TOMOYO_NETWORK_UDP_CONNECT;
-+	else
-+		operation = TOMOYO_NETWORK_RAW_CONNECT;
-+	return tomoyo_network_entry(is_ipv6, operation,
-+				    (const u32 *) address, ntohs(port));
-+}
-+
-+#define MAX_SOCK_ADDR 128 /* net/socket.c */
-+
-+/* Check permission for creating a socket. */
-+int tomoyo_socket_create_permission(int family, int type, int protocol)
-+{
-+	int error = 0;
-+	/* Nothing to do if I am a kernel service. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+	if (family == PF_PACKET && !tomoyo_capable(TOMOYO_USE_PACKET_SOCKET))
-+		return -EPERM;
-+	if (family == PF_ROUTE && !tomoyo_capable(TOMOYO_USE_ROUTE_SOCKET))
-+		return -EPERM;
-+	if (family != PF_INET && family != PF_INET6)
-+		return 0;
-+	switch (type) {
-+	case SOCK_STREAM:
-+		if (!tomoyo_capable(TOMOYO_INET_STREAM_SOCKET_CREATE))
-+			error = -EPERM;
-+		break;
-+	case SOCK_DGRAM:
-+		if (!tomoyo_capable(TOMOYO_USE_INET_DGRAM_SOCKET))
-+			error = -EPERM;
-+		break;
-+	case SOCK_RAW:
-+		if (!tomoyo_capable(TOMOYO_USE_INET_RAW_SOCKET))
-+			error = -EPERM;
-+		break;
-+	}
-+	return error;
-+}
-+
-+/* Check permission for listening a TCP socket. */
-+int tomoyo_socket_listen_permission(struct socket *sock)
-+{
-+	int error = 0;
-+	char addr[MAX_SOCK_ADDR];
-+	int addr_len;
-+	/* Nothing to do if I am a kernel service. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+	if (sock->type != SOCK_STREAM)
-+		return 0;
-+	switch (sock->sk->sk_family) {
-+	case PF_INET:
-+	case PF_INET6:
-+		break;
-+	default:
-+		return 0;
-+	}
-+	if (!tomoyo_capable(TOMOYO_INET_STREAM_SOCKET_LISTEN))
-+		return -EPERM;
-+	if (sock->ops->getname(sock, (struct sockaddr *) addr, &addr_len, 0))
-+		return -EPERM;
-+	switch (((struct sockaddr *) addr)->sa_family) {
-+		struct sockaddr_in6 *addr6;
-+		struct sockaddr_in *addr4;
-+	case AF_INET6:
-+		addr6 = (struct sockaddr_in6 *) addr;
-+		error = tomoyo_network_listen_acl(true,
-+						  addr6->sin6_addr.s6_addr,
-+						  addr6->sin6_port);
-+		break;
-+	case AF_INET:
-+		addr4 = (struct sockaddr_in *) addr;
-+		error = tomoyo_network_listen_acl(false,
-+						  (u8 *) &addr4->sin_addr,
-+						  addr4->sin_port);
-+		break;
-+	}
-+	return error;
-+}
-+
-+/* Check permission for setting the remote IP address/port pair of a socket. */
-+int tomoyo_socket_connect_permission(struct socket *sock,
-+				     struct sockaddr *addr, int addr_len)
-+{
-+	int error = 0;
-+	const unsigned int type = sock->type;
-+	/* Nothing to do if I am a kernel service. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+	switch (type) {
-+	case SOCK_STREAM:
-+	case SOCK_DGRAM:
-+	case SOCK_RAW:
-+		break;
-+	default:
-+		return 0;
-+	}
-+	switch (addr->sa_family) {
-+		struct sockaddr_in6 *addr6;
-+		struct sockaddr_in *addr4;
-+		u16 port;
-+	case AF_INET6:
-+		if (addr_len < SIN6_LEN_RFC2133)
-+			break;
-+		addr6 = (struct sockaddr_in6 *) addr;
-+		if (type != SOCK_RAW)
-+			port = addr6->sin6_port;
-+		else
-+			port = htons(sock->sk->sk_protocol);
-+		error = tomoyo_network_connect_acl(true, type,
-+						   addr6->sin6_addr.s6_addr,
-+						   port);
-+		break;
-+	case AF_INET:
-+		if (addr_len < sizeof(struct sockaddr_in))
-+			break;
-+		addr4 = (struct sockaddr_in *) addr;
-+		if (type != SOCK_RAW)
-+			port = addr4->sin_port;
-+		else
-+			port = htons(sock->sk->sk_protocol);
-+		error = tomoyo_network_connect_acl(false, type,
-+						   (u8 *) &addr4->sin_addr,
-+						   port);
-+		break;
-+	}
-+	if (type != SOCK_STREAM)
-+		return error;
-+	switch (sock->sk->sk_family) {
-+	case PF_INET:
-+	case PF_INET6:
-+		if (!tomoyo_capable(TOMOYO_INET_STREAM_SOCKET_CONNECT))
-+			error = -EPERM;
-+		break;
-+	}
-+	return error;
-+}
-+
-+/* Check permission for setting the local IP address/port pair of a socket. */
-+int tomoyo_socket_bind_permission(struct socket *sock, struct sockaddr *addr,
-+				  int addr_len)
-+{
-+	int error = 0;
-+	const unsigned int type = sock->type;
-+	/* Nothing to do if I am a kernel service. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+	switch (type) {
-+	case SOCK_STREAM:
-+	case SOCK_DGRAM:
-+	case SOCK_RAW:
-+		break;
-+	default:
-+		return 0;
-+	}
-+	switch (addr->sa_family) {
-+		struct sockaddr_in6 *addr6;
-+		struct sockaddr_in *addr4;
-+		u16 port;
-+	case AF_INET6:
-+		if (addr_len < SIN6_LEN_RFC2133)
-+			break;
-+		addr6 = (struct sockaddr_in6 *) addr;
-+		if (type != SOCK_RAW)
-+			port = addr6->sin6_port;
-+		else
-+			port = htons(sock->sk->sk_protocol);
-+		error = tomoyo_network_bind_acl(true, type,
-+						addr6->sin6_addr.s6_addr,
-+						port);
-+		break;
-+	case AF_INET:
-+		if (addr_len < sizeof(struct sockaddr_in))
-+			break;
-+		addr4 = (struct sockaddr_in *) addr;
-+		if (type != SOCK_RAW)
-+			port = addr4->sin_port;
-+		else
-+			port = htons(sock->sk->sk_protocol);
-+		error = tomoyo_network_bind_acl(false, type,
-+						(u8 *) &addr4->sin_addr, port);
-+		break;
-+	}
-+	return error;
-+}
-+
-+/*
-+ * Check permission for accepting a TCP socket.
-+ *
-+ * This hook is called by socket calls after accept().
-+ */
-+int tomoyo_socket_accept_permission(struct socket *sock)
-+{
-+	int error = 0;
-+	int addr_len;
-+	struct sockaddr_storage addr;
-+	/* Nothing to do if I am a kernel service. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+	switch (sock->sk->sk_family) {
-+	case PF_INET:
-+	case PF_INET6:
-+		break;
-+	default:
-+		return 0;
-+	}
-+	error = sock->ops->getname(sock, (struct sockaddr *) &addr, &addr_len,
-+				   2);
-+	if (error)
-+		return error;
-+	switch (((struct sockaddr *) &addr)->sa_family) {
-+		struct sockaddr_in6 *addr6;
-+		struct sockaddr_in *addr4;
-+	case AF_INET6:
-+		addr6 = (struct sockaddr_in6 *) &addr;
-+		error = tomoyo_network_accept_acl(true,
-+						  addr6->sin6_addr.s6_addr,
-+						  addr6->sin6_port);
-+		break;
-+	case AF_INET:
-+		addr4 = (struct sockaddr_in *) &addr;
-+		error = tomoyo_network_accept_acl(false,
-+						  (u8 *) &addr4->sin_addr,
-+						  addr4->sin_port);
-+		break;
-+	}
-+	return error;
-+}
-+
-+/* Check permission for sending a datagram via a UDP or RAW socket. */
-+int tomoyo_socket_sendmsg_permission(struct socket *sock, struct msghdr *msg)
-+{
-+	struct sockaddr *addr = msg->msg_name;
-+	const int addr_len = msg->msg_namelen;
-+	int error = 0;
-+	const int type = sock->type;
-+	/* Nothing to do if I am a kernel service. */
-+	if (segment_eq(get_fs(), KERNEL_DS))
-+		return 0;
-+	if (!addr || (type != SOCK_DGRAM && type != SOCK_RAW))
-+		return 0;
-+	switch (addr->sa_family) {
-+		struct sockaddr_in6 *addr6;
-+		struct sockaddr_in *addr4;
-+		u16 port;
-+	case AF_INET6:
-+		if (addr_len < SIN6_LEN_RFC2133)
-+			break;
-+		addr6 = (struct sockaddr_in6 *) addr;
-+		if (type == SOCK_DGRAM)
-+			port = addr6->sin6_port;
-+		else
-+			port = htons(sock->sk->sk_protocol);
-+		error = tomoyo_network_sendmsg_acl(true, type,
-+						   addr6->sin6_addr.s6_addr,
-+						   port);
-+		break;
-+	case AF_INET:
-+		if (addr_len < sizeof(struct sockaddr_in))
-+			break;
-+		addr4 = (struct sockaddr_in *) addr;
-+		if (type == SOCK_DGRAM)
-+			port = addr4->sin_port;
-+		else
-+			port = htons(sock->sk->sk_protocol);
-+		error = tomoyo_network_sendmsg_acl(false, type,
-+						   (u8 *) &addr4->sin_addr,
-+						   port);
-+		break;
-+	}
 +	return error;
 +}
 
