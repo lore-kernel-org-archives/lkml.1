@@ -1,141 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbZJDTSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbZJDT2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbZJDTSL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 15:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbZJDTSK
+	id S1757773AbZJDT2J (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 15:28:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757712AbZJDT2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 15:18:10 -0400
-Received: from [195.41.46.235] ([195.41.46.235]:53082 "EHLO pfepa.post.tele.dk"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757822AbZJDTSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 15:18:09 -0400
-Date: Sun, 4 Oct 2009 21:17:29 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [regressions] Re: kbuild: save ARCH & CROSS_COMPILE when
-	building a kernel
-Message-ID: <20091004191729.GA20203@merkur.ravnborg.org>
-References: <20091003103441.GA10874@elte.hu>
+	Sun, 4 Oct 2009 15:28:08 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:42576 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757644AbZJDT2H convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 15:28:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=JMdeu0V0Fu2kLNMV4IDrvTWksldcmZfNWV71BmK9lSC0hQHq/WnsZQzv877EuGza48
+         4b44bu7/9A1KKfBx+1q9N72WAkgHHCtBgg8RPKM0NI0pAqC1P4LSymp+vYJCRO1f1MSm
+         nxmSyvw10NkMALdu83Rn4MdRHq16oRg1XZarU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091003103441.GA10874@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091004163224.GA10493@elte.hu>
+References: <20091004163224.GA10493@elte.hu>
+Date: Sun, 4 Oct 2009 21:27:30 +0200
+Message-ID: <19f34abd0910041227k6855aemaf80c5a6a98a90f@mail.gmail.com>
+Subject: Re: [kmemcheck] visual_init(): Caught 32-bit read from unallocated 
+	memory (bf820028)
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 03, 2009 at 12:34:41PM +0200, Ingo Molnar wrote:
-> 
-> Sam,
-> 
-> that arch-cache thing introduced in:
-> 
->  5755433: kbuild: save ARCH & CROSS_COMPILE when building a kernel
-> 
-> isnt working very well in my experience.
-> 
-> 1) it's a nuisance in cross-builds (it broke several cross-build scripts 
->    of mine)
-On the contrary it has helped me big time on my cross builds.
-No need to script is all to remember to set the correct ARCH + CROSS_COMPILE
-settings.
+2009/10/4 Ingo Molnar <mingo@elte.hu>:
+>
+> hi,
+>
+> got this kmemcheck warning in -tip testing:
+>
+> [    0.000000] WARNING: kmemcheck: Caught 32-bit read from unallocated memory (bf820028)
+> [    0.000000] 0000000000000000000000000000000000000000000000000000000000000000
+> [    0.000000]  a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a
+> [    0.000000]                  ^
+> [    0.000000]
+> [    0.000000] Pid: 0, comm: swapper Not tainted (2.6.32-rc2-tip-01349-g1ade8d6-dirty #218) P4DC6
+> [    0.000000] EIP: 0060:[<812d78c0>] EFLAGS: 00010286 CPU: 0
+> [    0.000000] EIP is at visual_init+0x10/0x130
+> [    0.000000] EAX: bf820000 EBX: bf820000 ECX: 00000001 EDX: 00000000
+> [    0.000000] ESI: 00000200 EDI: 00000000 EBP: 81abdf7c ESP: 81c1a94c
+> [    0.000000]  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+> [    0.000000] CR0: 8005003b CR2: bf820028 CR3: 01c10000 CR4: 000006d0
+> [    0.000000] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+> [    0.000000] DR6: ffff4ff0 DR7: 00000400
+> [    0.000000]  [<81b99d82>] con_init+0xf2/0x2b0
+> [    0.000000]  [<81b99239>] console_init+0x19/0x30
+> [    0.000000]  [<81b7492d>] start_kernel+0x1cd/0x340
+> [    0.000000]  [<81b74091>] i386_start_kernel+0x61/0x90
+> [    0.000000]  [<ffffffff>] 0xffffffff
+> [    0.000000]   ok  |  ok  |  ok  |
+>
+> seems new at first glance. Config attached.
+>
+>        Ingo
+>
 
-We should make the default case easy. And I consider the default case when
-people fire up their shell and type:
+BTW, unallocated means "the page was allocated for use by SL*B, but
+the object has not been handed out to anyone yet".
 
-    make CROSS_COMPILE=arm-linux- ARCH=arm defconfig
+The memory access that triggers this warning is the first line of the function:
 
-When they hit something they fix it up and do a simple:
+00003350 <visual_init>:
+...
+    3366:       8b 47 28                mov    0x28(%edi),%eax
 
-    make
+$ addr2line -e drivers/char/vt.o -i 3366
+drivers/char/vt.c:721
 
-This is what this commit enables.
-This commit is know to break scripts that expect that they can
-seamlessly change CROSS_COMPILE or ARCH settings.
-More on that below.
+ 718 static void visual_init(struct vc_data *vc, int num, int init)
+ 719 {
+ 720         /* ++Geert: vc->vc_sw->con_init determines console size */
+ 721         if (vc->vc_sw)
 
-It is a nusiance that we have to instruct people to do a
+So apparently the "vc" we got is invalid. The caller:
 
-    make mrproper
+2833 static int __init con_init(void)
+2834 {
+...
+2870         for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
+2871                 vc_cons[currcons].d = vc = kzalloc(sizeof(struct
+vc_data), GFP_NOWAIT);
+2872                 INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+2873                 visual_init(vc, currcons, 1);
+...
+2897 }
+2898 console_initcall(con_init);
 
-But on the other hand what else can we do to make sure people base their
-work on a clean tree when the change either ARCH or CROSS_COMPILE.
-Albeit for the latter we could drop the check as kbuild would see the
-change in the commandline anyway.
+Not entirely sure about the rest of the story... It would seem that we
+are missing an if (!vc), but that doesn't explain how the pointer got
+to be 0xbf820000. What sort of address is that, anyway, isn't that a
+userspace pointer? Ah, you have CONFIG_VMSPLIT_2G=y. Can we see the
+kernel virtual memory map from the dmesg?
 
-
- 
-> 2) it makes it hard to switch from 32-bit x86 builds to 64-bit ones: 
->    previously i only needed 'make ARCH=i386 defconfig' and off we went - 
->    now i have to add a 'make mrproper' step.
-
-x86 is a mess in respect to ARCH setting.
-We have:
-
-ARCH=i386 =>
-		- ARCH is set to i386
-		- 64BIT is forced to n
-		- defconfig is i386_defconfig
-
-ARCH=x86 =>
-		- ARCH is set to x86
-		- 64BIT is configurable
-		- defconfig is set to x86_64_defconfig
-
-ARCH=x86_64 =>
-		- ARCH is set to x86_64
-		- 64BIT is forced y
-		- defconfig is set to x86_64_defconfig
-		
-ARCH=""
-		- let `uname -m` determine ARCH setting and follow rules above
-
-
-And now when um enters the scene everyone gets confused.
-I think the correct way to fix this is to always set ARCH=x86 in the x86 case.
-And i386/x86_64 is only a user-interface thing - not a valid ARCH setting.
-
-Pushing this to sparc and sh would also simplify a few things.
-
-We would loose one thing. The current ARCH setting is used to _remember_
-how we were started out. So if you once used ARCH=i386 you will not
-be allowed to change 64BIT to 'y'.
-But using ARCH to remember this is ackward at best and I guess very few people
-realise this.
-
-I will try to take a look at this in the hope that the current 'um'
-mess can be cleaned up as a side effect.
-
-> 3) it can also get stuck:
-> 
->   phoenix:~/linux/linux> make mrproper
->   Makefile:571: /home/mingo/tip/arch/no/Makefile: No such file or directory
->   make: *** No rule to make target `/home/mingo/tip/arch/no/Makefile'.  Stop.
-
-So you tried to configure a kernel with ARCH=no
-The version I have now will ask you to do a:
-
-    make mrporper ARCH=no
-
-But this is suboptimal.
-
-> Dunno - why isnt the .config enough in terms of determining which 
-> architecture we are on? If we want more info we should put it into the 
-> .config - not some other hidden state. I do think a single file should 
-> carry all 'configuration state' - that makes it easier to reproduce 
-> things, etc. etc. Everything else is really just hindering us.
-
-chicken and egg + a few other issues.
-If I want to have ARCH moved to Kconfig then this better be a true option.
-Which requires kconfig to read in Kconfig* for all architectures in one sweep.
-
-There is so many corner cases around this that I gave up last time
-I looked at it.
-But maybe the correct solution would be to move CROSS_COMPILE to Kconfig space.
-And only leave ARCH out...
+I can't really see how this is possible, which means that kmemcheck is
+probably at fault.
 
 
-	Sam
+Vegard
