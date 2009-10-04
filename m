@@ -1,115 +1,634 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbZJDTsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbZJDTtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757862AbZJDTsi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 15:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757664AbZJDTsh
+	id S1757898AbZJDTtW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 15:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757715AbZJDTtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 15:48:37 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39902 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757601AbZJDTsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 15:48:37 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/0yHhV9Hn0nJSzlnLfpNEPr5eHvvqdkIIHlSbLBE
-	865YESi97PSzjh
-Subject: Re: Do not overload dispatch queue (Was: Re: IO scheduler based IO
- controller V10)
-From: Mike Galbraith <efault@gmx.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       riel@redhat.com
-In-Reply-To: <20091004183822.GF26573@kernel.dk>
-References: <1254581496.8293.8.camel@marge.simson.net>
-	 <20091003151445.GF31616@kernel.dk>
-	 <1254585420.7539.2.camel@marge.simson.net>
-	 <20091003173532.GG31616@kernel.dk>
-	 <1254596864.7153.9.camel@marge.simson.net>
-	 <20091003192321.GA26573@kernel.dk>
-	 <1254599386.7153.46.camel@marge.simson.net>
-	 <1254653434.7237.18.camel@marge.simson.net>
-	 <20091004173901.GD26573@kernel.dk>
-	 <1254680622.27889.2.camel@marge.simson.net>
-	 <20091004183822.GF26573@kernel.dk>
-Content-Type: text/plain
-Date: Sun, 04 Oct 2009 21:47:18 +0200
-Message-Id: <1254685638.7637.6.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+	Sun, 4 Oct 2009 15:49:21 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:55330 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757664AbZJDTtT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 15:49:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NKQw8MpIk3ilQlO2uKQUbvcxfRkn1PY0dPwT9e2tB/0h9SDkAI10MEypAEmCdTcRdk
+         wogZIoSq+H0oOhgP/sqlT9Rhl/+oO3DMtr8O7Oi3iDo0DEurdWemi9pYgHo4jVVGzh8O
+         32gTZi2hhQ42G/dYfA+FNuGJZ8Wh07NEgFpzs=
+Date: Sun, 4 Oct 2009 21:48:22 +0200
+From: Johan Hovold <jhovold@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Johan Hovold <jhovold@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
+       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
+Message-ID: <20091004194822.GD24079@localhost>
+References: <4ABD020B.4040901@gandalf.sssup.it>
+ <20090929145514.GF2152@localhost>
+ <20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
+ <m163ayzevu.fsf@fess.ebiederm.org>
+ <20091002084755.GA7382@localhost>
+ <20091002173308.6158d734@lxorguk.ukuu.org.uk>
+ <20091003114229.GB605@localhost>
+ <20091003141807.1dc27e4e@lxorguk.ukuu.org.uk>
+ <20091003140522.GA8725@localhost>
+ <20091003173324.315855ac@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091003173324.315855ac@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-04 at 20:38 +0200, Jens Axboe wrote:
-> On Sun, Oct 04 2009, Mike Galbraith wrote:
-> > On Sun, 2009-10-04 at 19:39 +0200, Jens Axboe wrote:
+> > > > +	 * The per character mucking around with sysrq path it too slow, so
+> > > > +	 * shortcircuit it in the 99.9999999% of cases where the USB serial is
+> > > > +	 * not a console anyway.
+> > > > +	 */
+> > > > +	ch = packet + 2;
+> > > > +	len -= 2;
+> > > > +	if (!port->console || !port->sysrq)
+> > > 
+> > > You need && flag == TTY_NORMAL ?
 > > 
-> > > So I'll commit a change that doesn't do the delay at all, basically it
-> > > just offset the current code by one slice.
-> > 
-> > Ok, when it hits block-for-linus, I'll take it out for a spin.
+> > You tell me. :-) Are we interested in them unless port->console is set?
 > 
-> It's committed:
-> 
-> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=e00c54c36ac2024c3a8a37432e2e2698ff849594
+> Yes - we don;t care about the sysrq but we care about error characters
+> being reported ot the line discipline properly.
 
-Looks like a keeper to me :)
+Wasn't thinking.. Here's an update which always passes error characters.
+It also uses ASYNCB_INITIALIZED (instead of ASYNCB_CLOSING) in unthrottle.
 
-	-Mike
+Thanks,
+Johan
 
-dd vs konsole -e exit
-                                             Avg
- 1.70     1.94     1.32     1.89     1.87    1.7     fairness=1 overload_delay=1
- 1.55     1.79     1.38     1.53     1.57    1.5     desktop=1 +last_end_sync
- 1.09     0.87     1.11     0.96     1.11    1.0     block-for-linus-8e29675
- 1.29     2.18     1.16     1.21     1.24    1.4     block-for-linus-e00c54c
 
-concurrent git test
-                                                 Avg
-108.12   106.33    106.34    97.00    106.52   104.8  1.000 virgin
- 89.81    88.82     91.56    96.57     89.38    91.2   .870 desktop=1 +last_end_sync
- 92.61    94.60     92.35    93.17     94.05    93.3   .890 blk-for-linus-8e29675
- 88.73    89.02     88.10    90.84     88.30    88.9   .848 blk-for-linus-e00c54c
+From: Johan Hovold <jhovold@gmail.com>
+Date: Sun, 4 Oct 2009 21:41:07 +0200
+Subject: [PATCH] USB: ftdi_sio: Rewrite.
 
-read vs write test
+ - Remove work queue.
+ - Use urb status to determine when port is closed rather than port
+   count. (Fixes stalled reads due to open race on 2.6.31).
+ - Re-structure read processing.
+ - Use tty_insert_flip_string instead of per character push when
+   possible.
+ - Always process before throttling.
+ - Handle late call to unthrottle during serial_close by checking
+   ASYNCB_INITIALIZED.
+ - Remove rx_flags and lock and use flags in usb_serial_port instead.
+ - Remove unused rx_bytes counter.
+ - Remove obsolete error checks.
+---
+ drivers/usb/serial/ftdi_sio.c |  418 +++++++++++++----------------------------
+ 1 files changed, 130 insertions(+), 288 deletions(-)
 
-desktop=0                                Avg
-elapsed        98.23    91.97   91.77    93.9  sec   1.000
-30s-dd-read     48.5     49.6    49.1    49.0  mb/s  1.000
-30s-dd-write    23.1     27.3    31.3    27.2        1.000
-dd-read-total   49.4     50.1    49.6    49.7        1.000
-dd-write-total  34.5     34.9    34.9    34.7        1.000
-
-desktop=1 pop 8e296755                    Avg
-elapsed        93.30    92.77    90.11   92.0         .979
-30s-dd-read     50.5     50.4     51.8   50.9        1.038 
-30s-dd-write    22.7     26.4     27.7   25.6         .941
-dd-read-total   51.2     50.1     51.6   50.9        1.024 
-dd-write-total  34.2     34.5     35.6   34.7        1.000
-
-desktop=1 push 8e296755                   Avg
-elapsed       104.51   104.52   101.20  103.4        1.101
-30s-dd-read     43.0     43.6     44.5   43.7         .891
-30s-dd-write    21.4     23.9     28.9   24.7         .908
-dd-read-total   42.9     43.0     43.5   43.1         .867
-dd-write-total  30.4     30.3     31.5   30.7         .884
-
-latency=1 push e00c54c                   Avg
-elapsed        90.03    93.03    91.68   91.5         .974
-30s-dd-read     53.1     54.8     51.3   53.0        1.081
-30s-dd-write    20.0     23.3     28.2   23.8         .875
-dd-read-total   53.7     54.0     52.6   53.4        1.074
-dd-write-total  35.5     34.2     34.9   34.8        1.002
-
+diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
+index 0ac2c2f..eb6d978 100644
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -76,12 +76,7 @@ struct ftdi_private {
+ 	unsigned long last_dtr_rts;	/* saved modem control outputs */
+ 	wait_queue_head_t delta_msr_wait; /* Used for TIOCMIWAIT */
+ 	char prev_status, diff_status;        /* Used for TIOCMIWAIT */
+-	__u8 rx_flags;		/* receive state flags (throttling) */
+-	spinlock_t rx_lock;	/* spinlock for receive state */
+-	struct delayed_work rx_work;
+ 	struct usb_serial_port *port;
+-	int rx_processed;
+-	unsigned long rx_bytes;
+ 
+ 	__u16 interface;	/* FT2232C, FT2232H or FT4232H port interface
+ 				   (0 for FT232/245) */
+@@ -737,10 +732,6 @@ static const char *ftdi_chip_name[] = {
+ /* Constants for read urb and write urb */
+ #define BUFSZ 512
+ 
+-/* rx_flags */
+-#define THROTTLED		0x01
+-#define ACTUALLY_THROTTLED	0x02
+-
+ /* Used for TIOCMIWAIT */
+ #define FTDI_STATUS_B0_MASK	(FTDI_RS0_CTS | FTDI_RS0_DSR | FTDI_RS0_RI | FTDI_RS0_RLSD)
+ #define FTDI_STATUS_B1_MASK	(FTDI_RS_BI)
+@@ -763,7 +754,7 @@ static int  ftdi_write_room(struct tty_struct *tty);
+ static int  ftdi_chars_in_buffer(struct tty_struct *tty);
+ static void ftdi_write_bulk_callback(struct urb *urb);
+ static void ftdi_read_bulk_callback(struct urb *urb);
+-static void ftdi_process_read(struct work_struct *work);
++static void ftdi_process_read(struct usb_serial_port *port);
+ static void ftdi_set_termios(struct tty_struct *tty,
+ 			struct usb_serial_port *port, struct ktermios *old);
+ static int  ftdi_tiocmget(struct tty_struct *tty, struct file *file);
+@@ -1526,7 +1517,6 @@ static int ftdi_sio_port_probe(struct usb_serial_port *port)
+ 	}
+ 
+ 	kref_init(&priv->kref);
+-	spin_lock_init(&priv->rx_lock);
+ 	spin_lock_init(&priv->tx_lock);
+ 	init_waitqueue_head(&priv->delta_msr_wait);
+ 	/* This will push the characters through immediately rather
+@@ -1548,7 +1538,6 @@ static int ftdi_sio_port_probe(struct usb_serial_port *port)
+ 		port->read_urb->transfer_buffer_length = BUFSZ;
+ 	}
+ 
+-	INIT_DELAYED_WORK(&priv->rx_work, ftdi_process_read);
+ 	priv->port = port;
+ 
+ 	/* Free port's existing write urb and transfer buffer. */
+@@ -1685,6 +1674,26 @@ static int ftdi_sio_port_remove(struct usb_serial_port *port)
+ 	return 0;
+ }
+ 
++int ftdi_submit_read_urb(struct usb_serial_port *port, gfp_t mem_flags)
++{
++	struct urb *urb = port->read_urb;
++	struct usb_serial *serial = port->serial;
++	int result;
++
++	usb_fill_bulk_urb(urb, serial->dev,
++			   usb_rcvbulkpipe(serial->dev,
++					port->bulk_in_endpointAddress),
++			   urb->transfer_buffer,
++			   urb->transfer_buffer_length,
++			   ftdi_read_bulk_callback, port);
++	result = usb_submit_urb(urb, mem_flags);
++	if (result)
++		dev_err(&port->dev,
++			"%s - failed submitting read urb, error %d\n",
++							__func__, result);
++	return result;
++}
++
+ static int ftdi_open(struct tty_struct *tty, struct usb_serial_port *port)
+ { /* ftdi_open */
+ 	struct usb_device *dev = port->serial->dev;
+@@ -1699,9 +1708,6 @@ static int ftdi_open(struct tty_struct *tty, struct usb_serial_port *port)
+ 	spin_lock_irqsave(&priv->tx_lock, flags);
+ 	priv->tx_bytes = 0;
+ 	spin_unlock_irqrestore(&priv->tx_lock, flags);
+-	spin_lock_irqsave(&priv->rx_lock, flags);
+-	priv->rx_bytes = 0;
+-	spin_unlock_irqrestore(&priv->rx_lock, flags);
+ 
+ 	write_latency_timer(port);
+ 
+@@ -1721,23 +1727,14 @@ static int ftdi_open(struct tty_struct *tty, struct usb_serial_port *port)
+ 		ftdi_set_termios(tty, port, tty->termios);
+ 
+ 	/* Not throttled */
+-	spin_lock_irqsave(&priv->rx_lock, flags);
+-	priv->rx_flags &= ~(THROTTLED | ACTUALLY_THROTTLED);
+-	spin_unlock_irqrestore(&priv->rx_lock, flags);
++	spin_lock_irqsave(&port->lock, flags);
++	port->throttled = 0;
++	port->throttle_req = 0;
++	spin_unlock_irqrestore(&port->lock, flags);
+ 
+ 	/* Start reading from the device */
+-	priv->rx_processed = 0;
+-	usb_fill_bulk_urb(port->read_urb, dev,
+-			usb_rcvbulkpipe(dev, port->bulk_in_endpointAddress),
+-			port->read_urb->transfer_buffer,
+-				port->read_urb->transfer_buffer_length,
+-			ftdi_read_bulk_callback, port);
+-	result = usb_submit_urb(port->read_urb, GFP_KERNEL);
+-	if (result)
+-		dev_err(&port->dev,
+-			"%s - failed submitting read urb, error %d\n",
+-			__func__, result);
+-	else
++	result = ftdi_submit_read_urb(port, GFP_KERNEL);
++	if (!result)
+ 		kref_get(&priv->kref);
+ 
+ 	return result;
+@@ -1783,10 +1780,6 @@ static void ftdi_close(struct usb_serial_port *port)
+ 
+ 	dbg("%s", __func__);
+ 
+-
+-	/* cancel any scheduled reading */
+-	cancel_delayed_work_sync(&priv->rx_work);
+-
+ 	/* shutdown our bulk read */
+ 	usb_kill_urb(port->read_urb);
+ 	kref_put(&priv->kref, ftdi_sio_priv_release);
+@@ -2009,271 +2002,122 @@ static int ftdi_chars_in_buffer(struct tty_struct *tty)
+ 	return buffered;
+ }
+ 
+-static void ftdi_read_bulk_callback(struct urb *urb)
++static int ftdi_process_packet(struct tty_struct *tty,
++		struct usb_serial_port *port, struct ftdi_private *priv,
++		char *packet, int len)
+ {
+-	struct usb_serial_port *port = urb->context;
+-	struct tty_struct *tty;
+-	struct ftdi_private *priv;
+-	unsigned long countread;
+-	unsigned long flags;
+-	int status = urb->status;
+-
+-	if (urb->number_of_packets > 0) {
+-		dev_err(&port->dev, "%s transfer_buffer_length %d "
+-			"actual_length %d number of packets %d\n", __func__,
+-			urb->transfer_buffer_length,
+-			urb->actual_length, urb->number_of_packets);
+-		dev_err(&port->dev, "%s transfer_flags %x\n", __func__,
+-			urb->transfer_flags);
+-	}
++	int i;
++	char status;
++	char flag;
++	char *ch;
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+ 
+-	if (port->port.count <= 0)
+-		return;
+-
+-	tty = tty_port_tty_get(&port->port);
+-	if (!tty) {
+-		dbg("%s - bad tty pointer - exiting", __func__);
+-		return;
++	if (len < 2) {
++		dbg("malformed packet");
++		return 0;
+ 	}
+ 
+-	priv = usb_get_serial_port_data(port);
+-	if (!priv) {
+-		dbg("%s - bad port private data pointer - exiting", __func__);
+-		goto out;
++	/* Compare new line status to the old one, signal if different/
++	   N.B. packet may be processed more than once, but differences
++	   are only processed once.  */
++	status = packet[0] & FTDI_STATUS_B0_MASK;
++	if (status != priv->prev_status) {
++		priv->diff_status |= status ^ priv->prev_status;
++		wake_up_interruptible(&priv->delta_msr_wait);
++		priv->prev_status = status;
+ 	}
+ 
+-	if (urb != port->read_urb)
+-		dev_err(&port->dev, "%s - Not my urb!\n", __func__);
+-
+-	if (status) {
+-		/* This will happen at close every time so it is a dbg not an
+-		   err */
+-		dbg("(this is ok on close) nonzero read bulk status received: %d", status);
+-		goto out;
++	/*
++	 * Although the device uses a bitmask and hence can have multiple
++	 * errors on a packet - the order here sets the priority the error is
++	 * returned to the tty layer.
++	 */
++	flag = TTY_NORMAL;
++	if (packet[1] & FTDI_RS_OE) {
++		flag = TTY_OVERRUN;
++		dbg("OVERRRUN error");
++	}
++	if (packet[1] & FTDI_RS_BI) {
++		flag = TTY_BREAK;
++		dbg("BREAK received");
++		usb_serial_handle_break(port);
++	}
++	if (packet[1] & FTDI_RS_PE) {
++		flag = TTY_PARITY;
++		dbg("PARITY error");
++	}
++	if (packet[1] & FTDI_RS_FE) {
++		flag = TTY_FRAME;
++		dbg("FRAMING error");
+ 	}
+ 
+-	/* count data bytes, but not status bytes */
+-	countread = urb->actual_length;
+-	countread -= 2 * DIV_ROUND_UP(countread, priv->max_packet_size);
+-	spin_lock_irqsave(&priv->rx_lock, flags);
+-	priv->rx_bytes += countread;
+-	spin_unlock_irqrestore(&priv->rx_lock, flags);
+-
+-	ftdi_process_read(&priv->rx_work.work);
+-out:
+-	tty_kref_put(tty);
+-} /* ftdi_read_bulk_callback */
+-
++	len -= 2;
++	if (!len)
++		return 0;	/* status only */
++	ch = packet + 2;
++
++	if (!(port->console && port->sysrq) && flag == TTY_NORMAL)
++		tty_insert_flip_string(tty, ch, len);
++	else {
++		for (i = 0; i < len; i++, ch++) {
++			if (!usb_serial_handle_sysrq_char(tty, port, *ch))
++				tty_insert_flip_char(tty, *ch, flag);
++		}
++	}
++	return len;
++}
+ 
+-static void ftdi_process_read(struct work_struct *work)
+-{ /* ftdi_process_read */
+-	struct ftdi_private *priv =
+-		container_of(work, struct ftdi_private, rx_work.work);
+-	struct usb_serial_port *port = priv->port;
+-	struct urb *urb;
++static void ftdi_process_read(struct usb_serial_port *port)
++{
++	struct urb *urb = port->read_urb;
+ 	struct tty_struct *tty;
+-	char error_flag;
+-	unsigned char *data;
+-
++	struct ftdi_private *priv = usb_get_serial_port_data(port);
++	char *data = (char *)urb->transfer_buffer;
+ 	int i;
+-	int result;
+-	int need_flip;
+-	int packet_offset;
+-	unsigned long flags;
+-
+-	dbg("%s - port %d", __func__, port->number);
+-
+-	if (port->port.count <= 0)
+-		return;
++	int len;
++	int count = 0;
+ 
+ 	tty = tty_port_tty_get(&port->port);
+-	if (!tty) {
+-		dbg("%s - bad tty pointer - exiting", __func__);
++	if (!tty)
+ 		return;
+-	}
+-
+-	priv = usb_get_serial_port_data(port);
+-	if (!priv) {
+-		dbg("%s - bad port private data pointer - exiting", __func__);
+-		goto out;
+-	}
+-
+-	urb = port->read_urb;
+-	if (!urb) {
+-		dbg("%s - bad read_urb pointer - exiting", __func__);
+-		goto out;
+-	}
+ 
+-	data = urb->transfer_buffer;
+-
+-	if (priv->rx_processed) {
+-		dbg("%s - already processed: %d bytes, %d remain", __func__,
+-				priv->rx_processed,
+-				urb->actual_length - priv->rx_processed);
+-	} else {
+-		/* The first two bytes of every read packet are status */
+-		if (urb->actual_length > 2)
+-			usb_serial_debug_data(debug, &port->dev, __func__,
+-						urb->actual_length, data);
+-		else
+-			dbg("Status only: %03oo %03oo", data[0], data[1]);
++	for (i = 0; i < urb->actual_length; i += priv->max_packet_size) {
++		len = min_t(int, urb->actual_length - i, priv->max_packet_size);
++		count += ftdi_process_packet(tty, port, priv, &data[i], len);
+ 	}
+ 
+-
+-	/* TO DO -- check for hung up line and handle appropriately: */
+-	/*   send hangup  */
+-	/* See acm.c - you do a tty_hangup  - eg tty_hangup(tty) */
+-	/* if CD is dropped and the line is not CLOCAL then we should hangup */
+-
+-	need_flip = 0;
+-	for (packet_offset = priv->rx_processed;
+-		packet_offset < urb->actual_length; packet_offset += priv->max_packet_size) {
+-		int length;
+-
+-		/* Compare new line status to the old one, signal if different/
+-		   N.B. packet may be processed more than once, but differences
+-		   are only processed once.  */
+-		char new_status = data[packet_offset + 0] &
+-						FTDI_STATUS_B0_MASK;
+-		if (new_status != priv->prev_status) {
+-			priv->diff_status |=
+-				new_status ^ priv->prev_status;
+-			wake_up_interruptible(&priv->delta_msr_wait);
+-			priv->prev_status = new_status;
+-		}
+-
+-		length = min_t(u32, priv->max_packet_size, urb->actual_length-packet_offset)-2;
+-		if (length < 0) {
+-			dev_err(&port->dev, "%s - bad packet length: %d\n",
+-				__func__, length+2);
+-			length = 0;
+-		}
+-
+-		if (priv->rx_flags & THROTTLED) {
+-			dbg("%s - throttled", __func__);
+-			break;
+-		}
+-		if (tty_buffer_request_room(tty, length) < length) {
+-			/* break out & wait for throttling/unthrottling to
+-			   happen */
+-			dbg("%s - receive room low", __func__);
+-			break;
+-		}
+-
+-		/* Handle errors and break */
+-		error_flag = TTY_NORMAL;
+-		/* Although the device uses a bitmask and hence can have
+-		   multiple errors on a packet - the order here sets the
+-		   priority the error is returned to the tty layer  */
+-
+-		if (data[packet_offset+1] & FTDI_RS_OE) {
+-			error_flag = TTY_OVERRUN;
+-			dbg("OVERRRUN error");
+-		}
+-		if (data[packet_offset+1] & FTDI_RS_BI) {
+-			error_flag = TTY_BREAK;
+-			dbg("BREAK received");
+-			usb_serial_handle_break(port);
+-		}
+-		if (data[packet_offset+1] & FTDI_RS_PE) {
+-			error_flag = TTY_PARITY;
+-			dbg("PARITY error");
+-		}
+-		if (data[packet_offset+1] & FTDI_RS_FE) {
+-			error_flag = TTY_FRAME;
+-			dbg("FRAMING error");
+-		}
+-		if (length > 0) {
+-			for (i = 2; i < length+2; i++) {
+-				/* Note that the error flag is duplicated for
+-				   every character received since we don't know
+-				   which character it applied to */
+-				if (!usb_serial_handle_sysrq_char(tty, port,
+-						data[packet_offset + i]))
+-					tty_insert_flip_char(tty,
+-						data[packet_offset + i],
+-						error_flag);
+-			}
+-			need_flip = 1;
+-		}
+-
+-#ifdef NOT_CORRECT_BUT_KEEPING_IT_FOR_NOW
+-		/* if a parity error is detected you get status packets forever
+-		   until a character is sent without a parity error.
+-		   This doesn't work well since the application receives a
+-		   never ending stream of bad data - even though new data
+-		   hasn't been sent. Therefore I (bill) have taken this out.
+-		   However - this might make sense for framing errors and so on
+-		   so I am leaving the code in for now.
+-		*/
+-		else {
+-			if (error_flag != TTY_NORMAL) {
+-				dbg("error_flag is not normal");
+-				/* In this case it is just status - if that is
+-				   an error send a bad character */
+-				if (tty->flip.count >= TTY_FLIPBUF_SIZE)
+-					tty_flip_buffer_push(tty);
+-				tty_insert_flip_char(tty, 0xff, error_flag);
+-				need_flip = 1;
+-			}
+-		}
+-#endif
+-	} /* "for(packet_offset=0..." */
+-
+-	/* Low latency */
+-	if (need_flip)
++	if (count)
+ 		tty_flip_buffer_push(tty);
++	tty_kref_put(tty);
++}
+ 
+-	if (packet_offset < urb->actual_length) {
+-		/* not completely processed - record progress */
+-		priv->rx_processed = packet_offset;
+-		dbg("%s - incomplete, %d bytes processed, %d remain",
+-				__func__, packet_offset,
+-				urb->actual_length - packet_offset);
+-		/* check if we were throttled while processing */
+-		spin_lock_irqsave(&priv->rx_lock, flags);
+-		if (priv->rx_flags & THROTTLED) {
+-			priv->rx_flags |= ACTUALLY_THROTTLED;
+-			spin_unlock_irqrestore(&priv->rx_lock, flags);
+-			dbg("%s - deferring remainder until unthrottled",
+-					__func__);
+-			goto out;
+-		}
+-		spin_unlock_irqrestore(&priv->rx_lock, flags);
+-		/* if the port is closed stop trying to read */
+-		if (port->port.count > 0)
+-			/* delay processing of remainder */
+-			schedule_delayed_work(&priv->rx_work, 1);
+-		else
+-			dbg("%s - port is closed", __func__);
+-		goto out;
+-	}
+-
+-	/* urb is completely processed */
+-	priv->rx_processed = 0;
++static void ftdi_read_bulk_callback(struct urb *urb)
++{
++	struct usb_serial_port *port = urb->context;
++	int status = urb->status;
++	unsigned long flags;
+ 
+-	/* if the port is closed stop trying to read */
+-	if (port->port.count > 0) {
+-		/* Continue trying to always read  */
+-		usb_fill_bulk_urb(port->read_urb, port->serial->dev,
+-			usb_rcvbulkpipe(port->serial->dev,
+-					port->bulk_in_endpointAddress),
+-			port->read_urb->transfer_buffer,
+-			port->read_urb->transfer_buffer_length,
+-			ftdi_read_bulk_callback, port);
++	dbg("%s - port %d", __func__, port->number);
+ 
+-		result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
+-		if (result)
+-			dev_err(&port->dev,
+-				"%s - failed resubmitting read urb, error %d\n",
+-				__func__, result);
++	if (status) {
++		dbg("%s - nonzero read bulk status received: %d",
++							__func__, status);
++		return;
+ 	}
+-out:
+-	tty_kref_put(tty);
+-} /* ftdi_process_read */
+ 
++	usb_serial_debug_data(debug, &port->dev, __func__,
++				urb->actual_length, urb->transfer_buffer);
++	ftdi_process_read(port);
++
++	spin_lock_irqsave(&port->lock, flags);
++	port->throttled = port->throttle_req;
++	if (!port->throttled) {
++		spin_unlock_irqrestore(&port->lock, flags);
++		ftdi_submit_read_urb(port, GFP_ATOMIC);
++	} else
++		spin_unlock_irqrestore(&port->lock, flags);
++}
+ 
+ static void ftdi_break_ctl(struct tty_struct *tty, int break_state)
+ {
+@@ -2605,33 +2449,31 @@ static int ftdi_ioctl(struct tty_struct *tty, struct file *file,
+ static void ftdi_throttle(struct tty_struct *tty)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+-	struct ftdi_private *priv = usb_get_serial_port_data(port);
+ 	unsigned long flags;
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+ 
+-	spin_lock_irqsave(&priv->rx_lock, flags);
+-	priv->rx_flags |= THROTTLED;
+-	spin_unlock_irqrestore(&priv->rx_lock, flags);
++	spin_lock_irqsave(&port->lock, flags);
++	port->throttle_req = 1;
++	spin_unlock_irqrestore(&port->lock, flags);
+ }
+ 
+-
+-static void ftdi_unthrottle(struct tty_struct *tty)
++void ftdi_unthrottle(struct tty_struct *tty)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+-	struct ftdi_private *priv = usb_get_serial_port_data(port);
+-	int actually_throttled;
++	int was_throttled;
+ 	unsigned long flags;
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+ 
+-	spin_lock_irqsave(&priv->rx_lock, flags);
+-	actually_throttled = priv->rx_flags & ACTUALLY_THROTTLED;
+-	priv->rx_flags &= ~(THROTTLED | ACTUALLY_THROTTLED);
+-	spin_unlock_irqrestore(&priv->rx_lock, flags);
++	spin_lock_irqsave(&port->lock, flags);
++	was_throttled = port->throttled;
++	port->throttled = port->throttle_req = 0;
++	spin_unlock_irqrestore(&port->lock, flags);
+ 
+-	if (actually_throttled)
+-		schedule_delayed_work(&priv->rx_work, 0);
++	/* Resubmit urb if throttled and open. */
++	if (was_throttled && test_bit(ASYNCB_INITIALIZED, &port->port.flags))
++		ftdi_submit_read_urb(port, GFP_KERNEL);
+ }
+ 
+ static int __init ftdi_init(void)
+-- 
+1.6.4.2
 
