@@ -1,218 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbZJDMUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbZJDMM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbZJDMUO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZJDMUN
+	id S1755659AbZJDMM6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbZJDMM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:20:13 -0400
-Received: from fb2.tech.numericable.fr ([82.216.111.50]:48701 "EHLO
-	fb2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752995AbZJDMUL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 08:20:11 -0400
-X-Greylist: delayed 674 seconds by postgrey-1.27 at vger.kernel.org; Sun, 04 Oct 2009 08:20:11 EDT
-Subject: 2.6.32-rc1-git5 compilation warnings
-From: Rufus & Azrael <rufus-azrael@numericable.fr>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary="=-5wJGvLYEfNkHPHabnnla"
-Date: Sun, 04 Oct 2009 14:08:18 +0200
-Message-Id: <1254658098.547.1.camel@athlon64_X2_Gentoo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Sun, 4 Oct 2009 08:12:58 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:16752 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750760AbZJDMM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 08:12:57 -0400
+Date: Sun, 4 Oct 2009 08:11:22 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Valdis.Kletnieks@vt.edu, Mike Galbraith <efault@gmx.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, riel@redhat.com
+Subject: Re: Do we support ioprio on SSDs with NCQ (Was: Re: IO scheduler
+	based IO controller V10)
+Message-ID: <20091004121122.GB18778@redhat.com>
+References: <4e5e476b0910020827s23e827b1n847c64e355999d4a@mail.gmail.com> <1254497520.10392.11.camel@marge.simson.net> <20091002154020.GC4494@redhat.com> <12774.1254502217@turing-police.cc.vt.edu> <20091002195815.GE4494@redhat.com> <4e5e476b0910021514i1b461229t667bed94fd67f140@mail.gmail.com> <20091002222756.GG4494@redhat.com> <4e5e476b0910030543o776fb505ka0ce38da9d83b33c@mail.gmail.com> <20091003133810.GC12925@redhat.com> <4e5e476b0910040215m35af5c99pf2c3a463a5cb61dd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4e5e476b0910040215m35af5c99pf2c3a463a5cb61dd@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Oct 04, 2009 at 11:15:24AM +0200, Corrado Zoccolo wrote:
+> Hi Vivek,
+> On Sat, Oct 3, 2009 at 3:38 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > On Sat, Oct 03, 2009 at 02:43:14PM +0200, Corrado Zoccolo wrote:
+> >> On Sat, Oct 3, 2009 at 12:27 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> >> > On Sat, Oct 03, 2009 at 12:14:28AM +0200, Corrado Zoccolo wrote:
+> >> >> In fact I think that the 'rotating' flag name is misleading.
+> >> >> All the checks we are doing are actually checking if the device truly
+> >> >> supports multiple parallel operations, and this feature is shared by
+> >> >> hardware raids and NCQ enabled SSDs, but not by cheap SSDs or single
+> >> >> NCQ-enabled SATA disk.
+> >> >>
+> >> >
+> >> > While we are at it, what happens to notion of priority of tasks on SSDs?
+> >> This is not changed by proposed patch w.r.t. current CFQ.
+> >
+> > This is a general question irrespective of current patch. Want to know
+> > what is our statement w.r.t ioprio and what it means for user? When do
+> > we support it and when do we not.
+> >
+> >> > Without idling there is not continuous time slice and there is no
+> >> > fairness. So ioprio is out of the window for SSDs?
+> >> I haven't NCQ enabled SSDs here, so I can't test it, but it seems to
+> >> me that the way in which queues are sorted in the rr tree may still
+> >> provide some sort of fairness and service differentiation for
+> >> priorities, in terms of number of IOs.
+> >
+> > I have a NCQ enabled SSD. Sometimes I see the difference sometimes I do
+> > not. I guess this happens because sometimes idling is enabled and sometmes
+> > not because of dyanamic nature of hw_tag.
+> >
+> My guess is that the formula that is used to handle this case is not
+> very stable.
 
---=-5wJGvLYEfNkHPHabnnla
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+In general I agree that formula to calculate the slice offset is very 
+puzzling as busy_queues varies and that changes the position of the task
+sometimes.
 
-Hi all,
+> The culprit code is (in cfq_service_tree_add):
+>         } else if (!add_front) {
+>                 rb_key = cfq_slice_offset(cfqd, cfqq) + jiffies;
+>                 rb_key += cfqq->slice_resid;
+>                 cfqq->slice_resid = 0;
+>         } else
+> 
+> cfq_slice_offset is defined as:
+> 
+> static unsigned long cfq_slice_offset(struct cfq_data *cfqd,
+>                                       struct cfq_queue *cfqq)
+> {
+>         /*
+>          * just an approximation, should be ok.
+>          */
+> 	return (cfqd->busy_queues - 1) * (cfq_prio_slice(cfqd, 1, 0) -
+>                        cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
+> }
+> 
+> Can you try changing the latter to a simpler (we already observed that
+> busy_queues is unstable, and I think that here it is not needed at
+> all):
+> 	return -cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio));
+> and remove the 'rb_key += cfqq->slice_resid; ' from the former.
+> 
+> This should give a higher probability of being first on the queue to
+> larger slice tasks, so it will work if we don't idle, but it needs
+> some adjustment if we idle.
 
-Here are my compilation warnings for fresh 2.6.32-rc1-git5 kernel if it
-could help.
+I am not sure what's the intent here by removing busy_queues stuff. I have
+got two questions though.
 
-Thanks for all your job.
+- Why don't we keep it simple round robin where a task is simply placed at
+  the end of service tree.
 
+- Secondly, CFQ provides full slice length to queues only which are
+  idling (in case of sequenatial reader). If we do not enable idling, as
+  in case of NCQ enabled SSDs, then CFQ will expire the queue almost 
+  immediately and put the queue at the end of service tree (almost).
 
+So if we don't enable idling, at max we can provide fairness, we
+esseitially just let every queue dispatch one request and put  at the end
+of the end of service tree. Hence no fairness....
 
---=-5wJGvLYEfNkHPHabnnla
-Content-Disposition: attachment; filename="compilation_warnings_for_2_6_32_rc1_git5"
-Content-Type: text/plain; name="compilation_warnings_for_2_6_32_rc1_git5"; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Thanks
+Vivek
 
-_____________________________________________________________________________________________________________
-warn_unused_result warnings
-
-
-
-scripts/kconfig/conf.c: In function 'conf_askvalue':
-scripts/kconfig/conf.c:105: warning: ignoring return value of 'fgets', declared with attribute warn_unused_result
-
-scripts/kconfig/conf.c: In function 'conf_choice':
-scripts/kconfig/conf.c:307: warning: ignoring return value of 'fgets', declared with attribute warn_unused_result
-
-In file included from scripts/kconfig/zconf.tab.c:2486:
-scripts/kconfig/confdata.c: In function 'conf_write':
-scripts/kconfig/confdata.c:508: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
-
-scripts/kconfig/confdata.c: In function 'conf_write_autoconf':
-scripts/kconfig/confdata.c:745: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
-scripts/kconfig/confdata.c:746: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
-
-In file included from scripts/kconfig/zconf.tab.c:2487:
-scripts/kconfig/expr.c: In function 'expr_print_file_helper':
-scripts/kconfig/expr.c:1090: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
-
-scripts/mod/modpost.c: In function 'get_markers':
-scripts/mod/modpost.c:1562: warning: ignoring return value of 'asprintf', declared with attribute warn_unused_result
-
-scripts/mod/modpost.c: In function 'add_marker':
-scripts/mod/modpost.c:1982: warning: ignoring return value of 'asprintf', declared with attribute warn_unused_result
-
-scripts/kallsyms.c: In function 'read_symbol':
-scripts/kallsyms.c:112: warning: ignoring return value of 'fgets', declared with attribute warn_unused_result
-
-usr/gen_init_cpio.c: In function 'cpio_mkfile':
-usr/gen_init_cpio.c:357: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
-
-arch/x86/boot/compressed/mkpiggy.c: In function 'main':
-arch/x86/boot/compressed/mkpiggy.c:65: warning: ignoring return value of 'fread', declared with attribute warn_unused_result
-
-
-_____________________________________________________________________________________________________________
-section mismatches warnings
-
-
-
-WARNING: drivers/acpi/processor.o(.text+0xc35): Section mismatch in reference from the function acpi_processor_add() to the function .cpuinit.text:acpi_processor_power_init()
-The function acpi_processor_add() references
-the function __cpuinit acpi_processor_power_init().
-This is often because acpi_processor_add lacks a __cpuinit 
-annotation or the annotation of acpi_processor_power_init is wrong.
-
-WARNING: drivers/acpi/built-in.o(.text+0x35c71): Section mismatch in reference from the function acpi_processor_add() to the function .cpuinit.text:acpi_processor_power_init()
-The function acpi_processor_add() references
-the function __cpuinit acpi_processor_power_init().
-This is often because acpi_processor_add lacks a __cpuinit 
-annotation or the annotation of acpi_processor_power_init is wrong.
-
-WARNING: drivers/staging/comedi/drivers/cb_pcidio.o(.text+0x15b): Section mismatch in reference from the function pcidio_attach() to the variable .devinit.rodata:pcidio_pci_table
-The function pcidio_attach() references
-the variable __devinitconst pcidio_pci_table.
-This is often because pcidio_attach lacks a __devinitconst 
-annotation or the annotation of pcidio_pci_table is wrong.
-
-WARNING: drivers/staging/comedi/drivers/s626.o(.text+0x28a8): Section mismatch in reference from the function s626_attach() to the variable .devinit.rodata:s626_pci_table
-The function s626_attach() references
-the variable __devinitconst s626_pci_table.
-This is often because s626_attach lacks a __devinitconst 
-annotation or the annotation of s626_pci_table is wrong.
-
-WARNING: drivers/staging/comedi/drivers/s626.o(.text+0x28af): Section mismatch in reference from the function s626_attach() to the variable .devinit.rodata:s626_pci_table
-The function s626_attach() references
-the variable __devinitconst s626_pci_table.
-This is often because s626_attach lacks a __devinitconst 
-annotation or the annotation of s626_pci_table is wrong.
-
-WARNING: drivers/staging/comedi/drivers/s626.o(.text+0x28b9): Section mismatch in reference from the function s626_attach() to the variable .devinit.rodata:s626_pci_table
-The function s626_attach() references
-the variable __devinitconst s626_pci_table.
-This is often because s626_attach lacks a __devinitconst 
-annotation or the annotation of s626_pci_table is wrong.
-
-WARNING: drivers/staging/comedi/drivers/s626.o(.text+0x28c3): Section mismatch in reference from the function s626_attach() to the variable .devinit.rodata:s626_pci_table
-The function s626_attach() references
-the variable __devinitconst s626_pci_table.
-This is often because s626_attach lacks a __devinitconst 
-annotation or the annotation of s626_pci_table is wrong.
-
-WARNING: drivers/built-in.o(.text+0x9c5a1): Section mismatch in reference from the function acpi_processor_add() to the function .cpuinit.text:acpi_processor_power_init()
-The function acpi_processor_add() references
-the function __cpuinit acpi_processor_power_init().
-This is often because acpi_processor_add lacks a __cpuinit 
-annotation or the annotation of acpi_processor_power_init is wrong.
-
-WARNING: vmlinux.o(.text+0x2b2d39): Section mismatch in reference from the function acpi_processor_add() to the function .cpuinit.text:acpi_processor_power_init()
-The function acpi_processor_add() references
-the function __cpuinit acpi_processor_power_init().
-This is often because acpi_processor_add lacks a __cpuinit 
-annotation or the annotation of acpi_processor_power_init is wrong.
-
-_____________________________________________________________________________________________________________
-types of data warnings
-
-
-
-drivers/connector/cn_proc.c: In function 'cn_proc_init':
-drivers/connector/cn_proc.c:263: warning: passing argument 3 of 'cn_add_callback' from incompatible pointer type
-
-include/linux/connector.h:167: note: expected 'void (*)(struct cn_msg *, struct netlink_skb_parms *)' but argument is of type 'void (*)(struct cn_msg *)'
-
-drivers/staging/comedi/comedi_fops.c: In function 'resize_async_buffer':
-drivers/staging/comedi/comedi_fops.c:2339: warning: format '%d' expects type 'int', but argument 3 has type 'long int'
-
-drivers/staging/comedi/drivers/serial2002.c: In function 'serial_2002_open':
-drivers/staging/comedi/drivers/serial2002.c:680: warning: the frame size of 2160 bytes is larger than 2048 bytes
-
-_____________________________________________________________________________________________________________
-deprecated, unitialized and not_used variables warnings
-
-
-
-drivers/platform/x86/thinkpad_acpi.c:2224: warning: 'tpacpi_hotkey_driver_mask_set' defined but not used
-
-drivers/uwb/i1480/i1480-est.c:94: warning: 'i1480_est_id_table' defined but not used
-drivers/uwb/wlp/messages.c: In function 'wlp_parse_f0':
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[2]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[3]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[4]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[5]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[6]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[7]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[8]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[9]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[10]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[11]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[12]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[13]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[14]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[15]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[2]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[3]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[4]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[5]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[6]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[7]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[8]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[9]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[10]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[11]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[12]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[13]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[14]' may be used uninitialized in this function
-drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[15]' may be used uninitialized in this function
-
-drivers/uwb/whc-rc.c:450: warning: 'whcrc_id_table' defined but not used
-
-
-
-net/ethernet/eth.c:402: warning: 'print_mac' is deprecated (declared at net/ethernet/eth.c:397)
-net/ethernet/eth.c:402: warning: 'print_mac' is deprecated (declared at net/ethernet/eth.c:397)
-
-_____________________________________________________________________________________________________________
-other warnings
-
-
-
-drivers/video/console/fbcon.c: In function 'fbcon_takeover':
-drivers/video/console/fbcon.c:532: warning: unused variable 'info'
-drivers/video/console/fbcon.c: In function 'fbcon_modechanged':
-drivers/video/console/fbcon.c:2987: warning: ISO C90 forbids mixed declarations and code
-
-/var/tmp/kernel/linux-2.6.32-rc1/usr/include/scsi/scsi.h:159: userspace cannot call function or variable defined in the kernel
-/var/tmp/kernel/linux-2.6.32-rc1/usr/include/scsi/scsi.h:285: userspace cannot call function or variable defined in the kernel
-
---=-5wJGvLYEfNkHPHabnnla--
-
+> 
+> > I ran three fio reads for 10 seconds. First job is prio0, second prio4 and
+> > third prio7.
+> >
+> > (prio 0) read : io=978MiB, bw=100MiB/s, iops=25,023, runt= 10005msec
+> > (prio 4) read : io=953MiB, bw=99,950KiB/s, iops=24,401, runt= 10003msec
+> > (prio 7) read : io=74,228KiB, bw=7,594KiB/s, iops=1,854, runt= 10009msec
+> >
+> > Note there is almost no difference between prio 0 and prio 4 job and prio7
+> > job has been penalized heavily (gets less than 10% BW of prio 4 job).
+> >
+> >> Non-NCQ SSDs, instead, will still have the idle window enabled, so it
+> >> is not an issue for them.
+> >
+> > Agree.
+> >
+> >> >
+> >> > On SSDs, will it make more sense to provide fairness in terms of number or
+> >> > IO or size of IO and not in terms of time slices.
+> >> Not on all SSDs. There are still ones that have a non-negligible
+> >> penalty on non-sequential access pattern (hopefully the ones without
+> >> NCQ, but if we find otherwise, then we will have to benchmark access
+> >> time in I/O scheduler to select the best policy). For those, time
+> >> based may still be needed.
+> >
+> > Ok.
+> >
+> > So on better SSDs out there with NCQ, we probably don't support the notion of
+> > ioprio? Or, I am missing something.
+> 
+> I think we try, but the current formula is simply not good enough.
+> 
+> Thanks,
+> Corrado
+> 
+> >
+> > Thanks
+> > Vivek
+> >
+> 
+> 
+> 
+> -- 
+> __________________________________________________________________________
+> 
+> dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+> PhD - Department of Computer Science - University of Pisa, Italy
+> --------------------------------------------------------------------------
+> The self-confidence of a warrior is not the self-confidence of the average
+> man. The average man seeks certainty in the eyes of the onlooker and calls
+> that self-confidence. The warrior seeks impeccability in his own eyes and
+> calls that humbleness.
+>                                Tales of Power - C. Castaneda
