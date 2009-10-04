@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbZJDId2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZJDIjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbZJDId2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 04:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZJDId2
+	id S1754207AbZJDIjy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 04:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZJDIjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 04:33:28 -0400
-Received: from mail-px0-f179.google.com ([209.85.216.179]:42118 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbZJDId0 convert rfc822-to-8bit (ORCPT
+	Sun, 4 Oct 2009 04:39:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37407 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753284AbZJDIjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 04:33:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=rlTohUr6fHzxhnNcHyl4V6CfzToOEscKt6LnqxE/hirUFbpcMig8fCsrU19GMovCIp
-         AfRDwUZd3twa9KOIysHAKQWs7HK6Fbbs0dO4k3Hd6kAWEOuEsJYb5HBYOxOwR1z2+DqQ
-         hgNn8Fhl06o2tiDQgXbhs2Mb16pRHdMHa7W8s=
-MIME-Version: 1.0
-In-Reply-To: <20090930065326.GA13850@merkur.ravnborg.org>
-References: <1253119466-19488-1-git-send-email-tabbott@ksplice.com>
-	 <1253119466-19488-3-git-send-email-tabbott@ksplice.com>
-	 <10f740e80909270258o6bde0f3dk720bd5b5c091ed2f@mail.gmail.com>
-	 <m2ocowwngg.fsf@igel.home>
-	 <alpine.DEB.1.10.0909271351110.14151@dr-wily.mit.edu>
-	 <m3zl8dbron.fsf@hase.home>
-	 <20090930065326.GA13850@merkur.ravnborg.org>
-Date: Sun, 4 Oct 2009 10:32:48 +0200
-X-Google-Sender-Auth: 6a870580adfaf5f4
-Message-ID: <10f740e80910040132l2d5e212ch876bfee9142ab81b@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] m68k: Cleanup linker scripts using new linker 
-	script macros.
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andreas Schwab <schwab@redhat.com>, Tim Abbott <tabbott@ksplice.com>,
-       Roman Zippel <zippel@linux-m68k.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 4 Oct 2009 04:39:52 -0400
+Subject: Re: [RFC PATCHSET] workqueue: implement concurrency managed
+ workqueue
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
+In-Reply-To: <1254384558-1018-1-git-send-email-tj@kernel.org>
+References: <1254384558-1018-1-git-send-email-tj@kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sun, 04 Oct 2009 10:41:27 +0200
+Message-Id: <1254645687.26976.9.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 08:53, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Tue, Sep 29, 2009 at 07:12:56PM +0200, Andreas Schwab wrote:
->> Tim Abbott <tabbott@ksplice.com> writes:
->>
->> > Below is a new version of the second patch that attempts to address this
->> > by putting the ALIGN inside a section, so that _end is at the end of the
->> > load segment (I also did a bit more cleanup):
->> >
->> >   .init_end : {
->> >     /* This ALIGN be in a section so that _end is at the end of the
->> >        load segment. */
->> >     . = ALIGN(PAGE_SIZE);
->> >     __init_end = .;
->> >   }
->> >
->> >   _end = .;
->>
->> This works fine.
->
-> Thanks for testing Andreas.
->
-> Geert - I assume you take the corrected version and push to Linus?
+On Thu, 2009-10-01 at 17:08 +0900, Tejun Heo wrote:
+> Hello, all.
+> 
+> This rather large patchset implements concurrency managed workqueue.
+> It's not complete yet.  Singlethread workqueue handling needs more
+> work and workqueue users need to be audited and simplified and async
+> and slow-work should be reimplemented in terms of workqueue.  Although
+> this patchset currently adds ~2000 lines of code, I'm fairly
+> optimistic that after the whole conversion is done, it would be a net
+> decrease in lines of code.
+> 
+> This patchset reimplements workqueue such that it auto-regulates
+> concurrency and thus relieves its users from the managing duty.  It
+> works by managing single shared pool of per-cpu workers and hooking
+> into the scheduler to get notifications about workers going to sleep
+> and waking up.  Using the mechanism, workqueue implementation keeps
+> track of the current level of concurrency and schedules only the
+> necessary number of workers to keep the cpu occupied.
+> 
+> Concurrency managed workqueue has the following benefits.
+> 
+> * Workqueue users no longer have to worry about managing concurrency
+>   and, in most cases, deadlocks.  The workqueue will manage it
+>   automatically and unless the deadlock chain involves many (currently
+>   127) works, it won't happen.
+> 
+> * There's one single shared pool of workers per cpu and one rescuer
+>   for each workqueue which requires it, so there are far fewer number
+>   of kthreads.
+> 
+> * More efficient.  Although it adds considerable amount of code, the
+>   code added to hot path isn't big and works will be executed on the
+>   local cpu and in batch as much as possible using minimal number of
+>   kthreads leading to fewer task switches and lower cache
+>   footprint. <NEED SOME BACKING NUMBERS>
+> 
+> * As concurrency is no longer a problem, most types of asynchronous
+>   jobs can be done using generic workqueue and other async mechanisms,
+>   including slow-work, async and adhoc subsystem custom ones, can be
+>   removed.  ie. It can serve as the unified async thread pool
+>   mechanism.
+> 
+> Please read the patch description of the last patch for more details.
+> 
+> This patchset contains the following 19 patches and most of these are
+> not signed off yet.
 
-I will (eventually), but it probably won't make it for -rc2. Same for
-the other m68k patches I have still lying around.
-I hope to have more m68k development time in a month or so...
+Like Linus, I dislike the sched_class bits (as in really hate them).
 
-Gr{oetje,eeting}s,
+Also, from a quick look it looks like this scheme does not allow
+priority inheritance of worklets, like we used to do in -rt.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
