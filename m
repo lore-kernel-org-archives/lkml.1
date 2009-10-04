@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZJDIjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbZJDIp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbZJDIjy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 04:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZJDIjy
+	id S1752521AbZJDIp2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 04:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbZJDIp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 04:39:54 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37407 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753284AbZJDIjw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 04:39:52 -0400
-Subject: Re: [RFC PATCHSET] workqueue: implement concurrency managed
- workqueue
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: jeff@garzik.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
-       cl@linux-foundation.org, dhowells@redhat.com, arjan@linux.intel.com
-In-Reply-To: <1254384558-1018-1-git-send-email-tj@kernel.org>
-References: <1254384558-1018-1-git-send-email-tj@kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sun, 04 Oct 2009 10:41:27 +0200
-Message-Id: <1254645687.26976.9.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sun, 4 Oct 2009 04:45:28 -0400
+Received: from www.tglx.de ([62.245.132.106]:47921 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750785AbZJDIp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 04:45:27 -0400
+Date: Sun, 4 Oct 2009 10:44:32 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Darren Hart <dvhltc@us.ibm.com>
+cc: Anirban Sinha <ASinha@zeugmasystems.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: futex question
+In-Reply-To: <4AC68F13.8050601@us.ibm.com>
+Message-ID: <alpine.LFD.2.00.0910041031330.2646@localhost.localdomain>
+References: <DDFD17CC94A9BD49A82147DDF7D545C501FD7F97@exchange.ZeugmaSystems.local> <20091001092218.GH15345@elte.hu> <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local> <4AC68F13.8050601@us.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-01 at 17:08 +0900, Tejun Heo wrote:
-> Hello, all.
+On Fri, 2 Oct 2009, Darren Hart wrote:
+> Anirban Sinha wrote:
+> > > Should we not just clear the pointer (and
+> > > > it's compat version) within do_execve()?
+> > 
+> > 
+> > In our private repository, applying the following patch resolved the
+> > issues I mentioned. I no longer see messages like this:
+> > 
+> >  [futex] ("ifconfig")(pid=2509) exit_robust_list:unable to fetch robust
+> > entry. uaddr=0x000000002abbc4f0
+> > 
+> > from my instrumented kernel within exit_robust_list(). My
+> > instrumentation looked something like this:
 > 
-> This rather large patchset implements concurrency managed workqueue.
-> It's not complete yet.  Singlethread workqueue handling needs more
-> work and workqueue users need to be audited and simplified and async
-> and slow-work should be reimplemented in terms of workqueue.  Although
-> this patchset currently adds ~2000 lines of code, I'm fairly
-> optimistic that after the whole conversion is done, it would be a net
-> decrease in lines of code.
+> > 
+> > if (fetch_robust_entry(...)) {
+> > printk(...);
+> > return;
+> > }
+> > 
+> > Just tossing the patch in the community in case someone is interested
 > 
-> This patchset reimplements workqueue such that it auto-regulates
-> concurrency and thus relieves its users from the managing duty.  It
-> works by managing single shared pool of per-cpu workers and hooking
-> into the scheduler to get notifications about workers going to sleep
-> and waking up.  Using the mechanism, workqueue implementation keeps
-> track of the current level of concurrency and schedules only the
-> necessary number of workers to keep the cpu occupied.
 > 
-> Concurrency managed workqueue has the following benefits.
+> Thanks for sending the patch.  I'm looking into it now.  Couple questions:
 > 
-> * Workqueue users no longer have to worry about managing concurrency
->   and, in most cases, deadlocks.  The workqueue will manage it
->   automatically and unless the deadlock chain involves many (currently
->   127) works, it won't happen.
+> 1) What caused you to instrument this path in the first place?  Were you
+> seeing some unexpected behavior?
 > 
-> * There's one single shared pool of workers per cpu and one rescuer
->   for each workqueue which requires it, so there are far fewer number
->   of kthreads.
-> 
-> * More efficient.  Although it adds considerable amount of code, the
->   code added to hot path isn't big and works will be executed on the
->   local cpu and in batch as much as possible using minimal number of
->   kthreads leading to fewer task switches and lower cache
->   footprint. <NEED SOME BACKING NUMBERS>
-> 
-> * As concurrency is no longer a problem, most types of asynchronous
->   jobs can be done using generic workqueue and other async mechanisms,
->   including slow-work, async and adhoc subsystem custom ones, can be
->   removed.  ie. It can serve as the unified async thread pool
->   mechanism.
-> 
-> Please read the patch description of the last patch for more details.
-> 
-> This patchset contains the following 19 patches and most of these are
-> not signed off yet.
+> 2) I wonder why we would need to clear the robust list, but I don't see other
+> things like pi_blocked_on, etc. in execve being cleared.  I'm looking into
+> this now (perhaps we don't do the same cleanup, need to check).... have to get
+> on the plane...
 
-Like Linus, I dislike the sched_class bits (as in really hate them).
+Hmm, just setting the robust list pointer to NULL fixes the problem at
+hand, but I wonder whether we need to call exit_robust_list() as
+well. 
 
-Also, from a quick look it looks like this scheme does not allow
-priority inheritance of worklets, like we used to do in -rt.
+Vs. pi_blocked_on: If that's != NULL then you are not executing that
+code path because you hang in the scheduler waiting for the lock. 
 
+The interesting question is whether we need to call
+exit_pi_state_list() to fix up held locks.
+
+Thanks,
+
+	tglx
 
