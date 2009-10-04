@@ -1,100 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbZJDMxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbZJDMxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756437AbZJDMxf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 08:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZJDMxe
+	id S1756711AbZJDMxh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 08:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756489AbZJDMxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:53:34 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:60017 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 08:53:36 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:60038 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754425AbZJDMxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752721AbZJDMxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 Oct 2009 08:53:31 -0400
-Message-Id: <20091004124946.788396453@I-love.SAKURA.ne.jp>
+Message-Id: <20091004125327.105675949@I-love.SAKURA.ne.jp>
+References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:49:46 +0900
+Date: Sun, 04 Oct 2009 21:49:47 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [TOMOYO #16 00/25] Starting TOMOYO 2.3
+Cc: linux-kernel@vger.kernel.org,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Subject: [TOMOYO #16 01/25] LSM: Add security_path_chmod() and security_path_chown().
+Content-Disposition: inline; filename=lsm-add-chmod-chown-hooks.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+This patch allows pathname based LSM modules to check chmod()/chown()
+operations. Since notify_change() does not receive "struct vfsmount *",
+we add security_path_chmod() and security_path_chown() to the caller of
+notify_change().
 
-This is the beginning of TOMOYO 2.3. TOMOYO 2.2 (which is in kernel 2.6.30 and
-later) is terribly lacking in functionality (e.g. no audit logs, no network).
-I hope TOMOYO 2.3 can provide practically sufficient functionality.
+These hooks are used by TOMOYO.
 
-This patchset provides almost all functionality in TOMOYO 1.7.0 except
-(1) DAC before MAC checks for directory modification operations.
-(2) Incoming UDP/RAW packet filtering.
-(3) Signal transmission restriction.
-(4) Many of non-posix capabilities support.
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ fs/open.c                |   24 ++++++++++++++++++++----
+ include/linux/security.h |   30 ++++++++++++++++++++++++++++++
+ security/capability.c    |   13 +++++++++++++
+ security/security.c      |   15 +++++++++++++++
+ 4 files changed, 78 insertions(+), 4 deletions(-)
 
-Since this patchset is not yet accepted, I haven't written documentation for
-TOMOYO 2.3. You can see http://tomoyo.sourceforge.jp/1.7/policy-reference.html
-instead.
+--- security-testing-2.6.orig/fs/open.c
++++ security-testing-2.6/fs/open.c
+@@ -616,6 +616,9 @@ SYSCALL_DEFINE2(fchmod, unsigned int, fd
+ 	err = mnt_want_write_file(file);
+ 	if (err)
+ 		goto out_putf;
++	err = security_path_chmod(dentry, file->f_vfsmnt, mode);
++	if (err)
++		goto out_drop_write;
+ 	mutex_lock(&inode->i_mutex);
+ 	if (mode == (mode_t) -1)
+ 		mode = inode->i_mode;
+@@ -623,6 +626,7 @@ SYSCALL_DEFINE2(fchmod, unsigned int, fd
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 	err = notify_change(dentry, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
++out_drop_write:
+ 	mnt_drop_write(file->f_path.mnt);
+ out_putf:
+ 	fput(file);
+@@ -645,6 +649,9 @@ SYSCALL_DEFINE3(fchmodat, int, dfd, cons
+ 	error = mnt_want_write(path.mnt);
+ 	if (error)
+ 		goto dput_and_out;
++	error = security_path_chmod(path.dentry, path.mnt, mode);
++	if (error)
++		goto out_drop_write;
+ 	mutex_lock(&inode->i_mutex);
+ 	if (mode == (mode_t) -1)
+ 		mode = inode->i_mode;
+@@ -652,6 +659,7 @@ SYSCALL_DEFINE3(fchmodat, int, dfd, cons
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+ 	error = notify_change(path.dentry, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
++out_drop_write:
+ 	mnt_drop_write(path.mnt);
+ dput_and_out:
+ 	path_put(&path);
+@@ -700,7 +708,9 @@ SYSCALL_DEFINE3(chown, const char __user
+ 	error = mnt_want_write(path.mnt);
+ 	if (error)
+ 		goto out_release;
+-	error = chown_common(path.dentry, user, group);
++	error = security_path_chown(&path, user, group);
++	if (!error)
++		error = chown_common(path.dentry, user, group);
+ 	mnt_drop_write(path.mnt);
+ out_release:
+ 	path_put(&path);
+@@ -725,7 +735,9 @@ SYSCALL_DEFINE5(fchownat, int, dfd, cons
+ 	error = mnt_want_write(path.mnt);
+ 	if (error)
+ 		goto out_release;
+-	error = chown_common(path.dentry, user, group);
++	error = security_path_chown(&path, user, group);
++	if (!error)
++		error = chown_common(path.dentry, user, group);
+ 	mnt_drop_write(path.mnt);
+ out_release:
+ 	path_put(&path);
+@@ -744,7 +756,9 @@ SYSCALL_DEFINE3(lchown, const char __use
+ 	error = mnt_want_write(path.mnt);
+ 	if (error)
+ 		goto out_release;
+-	error = chown_common(path.dentry, user, group);
++	error = security_path_chown(&path, user, group);
++	if (!error)
++		error = chown_common(path.dentry, user, group);
+ 	mnt_drop_write(path.mnt);
+ out_release:
+ 	path_put(&path);
+@@ -767,7 +781,9 @@ SYSCALL_DEFINE3(fchown, unsigned int, fd
+ 		goto out_fput;
+ 	dentry = file->f_path.dentry;
+ 	audit_inode(NULL, dentry);
+-	error = chown_common(dentry, user, group);
++	error = security_path_chown(&file->f_path, user, group);
++	if (!error)
++		error = chown_common(dentry, user, group);
+ 	mnt_drop_write(file->f_path.mnt);
+ out_fput:
+ 	fput(file);
+--- security-testing-2.6.orig/include/linux/security.h
++++ security-testing-2.6/include/linux/security.h
+@@ -447,6 +447,18 @@ static inline void security_free_mnt_opt
+  *	@new_dir contains the path structure for parent of the new link.
+  *	@new_dentry contains the dentry structure of the new link.
+  *	Return 0 if permission is granted.
++ * @path_chmod:
++ *	Check for permission to change DAC's permission of a file or directory.
++ *	@dentry contains the dentry structure.
++ *	@mnt contains the vfsmnt structure.
++ *	@mode contains DAC's mode.
++ *	Return 0 if permission is granted.
++ * @path_chown:
++ *	Check for permission to change owner/group of a file or directory.
++ *	@path contains the path structure.
++ *	@uid contains new owner's ID.
++ *	@gid contains new group's ID.
++ *	Return 0 if permission is granted.
+  * @inode_readlink:
+  *	Check the permission to read the symbolic link.
+  *	@dentry contains the dentry structure for the file link.
+@@ -1488,6 +1500,9 @@ struct security_operations {
+ 			  struct dentry *new_dentry);
+ 	int (*path_rename) (struct path *old_dir, struct dentry *old_dentry,
+ 			    struct path *new_dir, struct dentry *new_dentry);
++	int (*path_chmod) (struct dentry *dentry, struct vfsmount *mnt,
++			   mode_t mode);
++	int (*path_chown) (struct path *path, uid_t uid, gid_t gid);
+ #endif
+ 
+ 	int (*inode_alloc_security) (struct inode *inode);
+@@ -2952,6 +2967,9 @@ int security_path_link(struct dentry *ol
+ 		       struct dentry *new_dentry);
+ int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
+ 			 struct path *new_dir, struct dentry *new_dentry);
++int security_path_chmod(struct dentry *dentry, struct vfsmount *mnt,
++			mode_t mode);
++int security_path_chown(struct path *path, uid_t uid, gid_t gid);
+ #else	/* CONFIG_SECURITY_PATH */
+ static inline int security_path_unlink(struct path *dir, struct dentry *dentry)
+ {
+@@ -3001,6 +3019,18 @@ static inline int security_path_rename(s
+ {
+ 	return 0;
+ }
++
++static inline int security_path_chmod(struct dentry *dentry,
++				      struct vfsmount *mnt,
++				      mode_t mode)
++{
++	return 0;
++}
++
++static inline int security_path_chown(struct path *path, uid_t uid, gid_t gid)
++{
++	return 0;
++}
+ #endif	/* CONFIG_SECURITY_PATH */
+ 
+ #ifdef CONFIG_KEYS
+--- security-testing-2.6.orig/security/capability.c
++++ security-testing-2.6/security/capability.c
+@@ -308,6 +308,17 @@ static int cap_path_truncate(struct path
+ {
+ 	return 0;
+ }
++
++static int cap_path_chmod(struct dentry *dentry, struct vfsmount *mnt,
++			  mode_t mode)
++{
++	return 0;
++}
++
++static int cap_path_chown(struct path *path, uid_t uid, gid_t gid)
++{
++	return 0;
++}
+ #endif
+ 
+ static int cap_file_permission(struct file *file, int mask)
+@@ -977,6 +988,8 @@ void security_fixup_ops(struct security_
+ 	set_to_cap_if_null(ops, path_link);
+ 	set_to_cap_if_null(ops, path_rename);
+ 	set_to_cap_if_null(ops, path_truncate);
++	set_to_cap_if_null(ops, path_chmod);
++	set_to_cap_if_null(ops, path_chown);
+ #endif
+ 	set_to_cap_if_null(ops, file_permission);
+ 	set_to_cap_if_null(ops, file_alloc_security);
+--- security-testing-2.6.orig/security/security.c
++++ security-testing-2.6/security/security.c
+@@ -434,6 +434,21 @@ int security_path_truncate(struct path *
+ 		return 0;
+ 	return security_ops->path_truncate(path, length, time_attrs);
+ }
++
++int security_path_chmod(struct dentry *dentry, struct vfsmount *mnt,
++			mode_t mode)
++{
++	if (unlikely(IS_PRIVATE(dentry->d_inode)))
++		return 0;
++	return security_ops->path_chmod(dentry, mnt, mode);
++}
++
++int security_path_chown(struct path *path, uid_t uid, gid_t gid)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_chown(path, uid, gid);
++}
+ #endif
+ 
+ int security_inode_create(struct inode *dir, struct dentry *dentry, int mode)
 
-Conventionally, patches should be submitted in the form of diff file.
-But this time, I submit in the form of entire file due to amount of changes.
-
-# diff -u security/tomoyo.2.2/realpath.c security/tomoyo/new-realpath.c | diffstat -f0
- new-realpath.c |  609  186 +   423 -   0 !
- 1 file changed, 186 insertions(+), 423 deletions(-)
-# wc -l security/tomoyo/new-realpath.c
-251 security/tomoyo/new-realpath.c
-
-# diff -u security/tomoyo.2.2/file.c security/tomoyo/new-file.c | diffstat -f0
- new-file.c | 2472      1693 +  779 -   0 !
- 1 file changed, 1693 insertions(+), 779 deletions(-)
-# wc -l security/tomoyo/new-file.c
-2249 security/tomoyo/new-file.c
-
-# diff -u security/tomoyo.2.2/domain.c security/tomoyo/new-domain.c | diffstat -f0
- new-domain.c | 1322    877 +   445 -   0 !
- 1 file changed, 877 insertions(+), 445 deletions(-)
-# wc -l security/tomoyo/new-domain.c
-1354 security/tomoyo/new-domain.c
-
-# diff -u security/tomoyo.2.2/tomoyo.c security/tomoyo/lsm.c | diffstat -f0
- lsm.c |  492   350 +   142 -   0 !
- 1 file changed, 350 insertions(+), 142 deletions(-)
-# wc -l security/tomoyo/lsm.c
-523 security/tomoyo/lsm.c
-
-# diff -Nur security/tomoyo.2.2/ security/tomoyo/ | diffstat -f0
- Kconfig         |   67         67 +    0 -     0 !
- Makefile        |    2         1 +     1 -     0 !
- address_group.c |  270         270 +   0 -     0 !
- audit.c         |  561         561 +   0 -     0 !
- capability.c    |  141         141 +   0 -     0 !
- common.c        | 2276         0 +     2276 -  0 !
- common.h        |  461         0 +     461 -   0 !
- condition.c     | 1332         1332 +  0 -     0 !
- domain.c        |  922         0 +     922 -   0 !
- environ.c       |  232         232 +   0 -     0 !
- file.c          | 1335         0 +     1335 -  0 !
- gc.c            |  606         606 +   0 -     0 !
- internal.h      | 1317         1317 +  0 -     0 !
- load_policy.c   |   97         97 +    0 -     0 !
- lsm.c           |  523         523 +   0 -     0 !
- memory.c        |  391         391 +   0 -     0 !
- mount.c         |  366         366 +   0 -     0 !
- network.c       |  757         757 +   0 -     0 !
- new-domain.c    | 1354         1354 +  0 -     0 !
- new-file.c      | 2249         2249 +  0 -     0 !
- new-realpath.c  |  251         251 +   0 -     0 !
- number_group.c  |  212         212 +   0 -     0 !
- path_group.c    |  210         210 +   0 -     0 !
- policy_io.c     | 2734         2734 +  0 -     0 !
- realpath.c      |  488         0 +     488 -   0 !
- realpath.h      |   66         0 +     66 -    0 !
- securityfs_if.c |  148         148 +   0 -     0 !
- tomoyo.c        |  315         0 +     315 -   0 !
- tomoyo.h        |   96         0 +     96 -    0 !
- util.c          | 1144         1144 +  0 -     0 !
- 30 files changed, 14963 insertions(+), 5960 deletions(-)
-
-Regards.
 -- 
