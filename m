@@ -1,99 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbZJDRrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbZJDSG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757296AbZJDRrV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 13:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZJDRrU
+	id S1757575AbZJDSG6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 14:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbZJDSG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 13:47:20 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:50842 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752995AbZJDRrT convert rfc822-to-8bit (ORCPT
+	Sun, 4 Oct 2009 14:06:57 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:41590 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbZJDSG5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 13:47:19 -0400
+	Sun, 4 Oct 2009 14:06:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
          :cc:content-type:content-transfer-encoding;
-        b=iaSH3TmIMZsGzhPGMBeD/1fALGcHDbIwN7p2UABSaCg/JqBkBgNKfRrgs6aHHrAnXM
-         yYs81iPsNPT3UhkkfLaKzGxLcmr3MhU6Nr4hVpvSL8s4jJCzagfH61NCRSJNrcBMEVGr
-         XajtPPZsF/qwI+fiHSn1eq2tXNHzkAhfXbNi0=
+        b=HibhI1IIsXg45vTEJOGoOrOeTLF2ABxrWvYAm9P7uJeB1BDTwREkb7uYX3bQA7b0YC
+         GP7yFbu/x4ZD9LP+dBYJfWNj2BUtDi1V3H0PU6+QLnjvMN/o0eGKEw1zBwzxJDZ6MMx2
+         YZB9ndvaUVc2NWYYuvL6LEhMKou1V/sxBoUXA=
 MIME-Version: 1.0
-In-Reply-To: <20091004164553.GD10505@khazad-dum.debian.net>
-References: <1254669853.26496.0.camel@carter>
-	 <20091004164553.GD10505@khazad-dum.debian.net>
-Date: Sun, 4 Oct 2009 19:46:42 +0200
-Message-ID: <ca2dc2820910041046i47a1c3dhba82266bb14a440c@mail.gmail.com>
-Subject: Re: [PATCH] battery: Fix charge_now returned by broken batteries
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: astarikovskiy@suse.de, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+In-Reply-To: <2f11576a0910040744u575d3afbwd2e27e811060f206@mail.gmail.com>
+References: <1254518602.5050.4.camel@hurina> <3e8340490910021901i35ba8a5v7647b1e02b054270@mail.gmail.com> 
+	<3DB386D4-C03F-4F2A-B0DD-7F4236325B4B@iki.fi> <3e8340490910021959n304e6870r6df97cfd637283c4@mail.gmail.com> 
+	<2f11576a0910040744u575d3afbwd2e27e811060f206@mail.gmail.com>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Sun, 4 Oct 2009 14:05:59 -0400
+Message-ID: <3e8340490910041105p327396e8v39b1a3454c0922bf@mail.gmail.com>
+Subject: Re: [PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
+To: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
+Cc: Timo Sirainen <tss@iki.fi>, linux-kernel@vger.kernel.org,
+       Ulrich Drepper <drepper@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 4, 2009 at 6:45 PM, Henrique de Moraes Holschuh
-<hmh@hmh.eng.br> wrote:
-> On Sun, 04 Oct 2009, Miguel Ojeda wrote:
->> Some broken batteries like my DELL NR2227 or a friend's DELL GK4798 return
->> the design_capacity (charge_full_design) as capacity_now (charge_now)
->> when completely charged.
+On Sun, Oct 4, 2009 at 10:44 AM, KOSAKI Motohiro
+<kosaki.motohiro@gmail.com> wrote:
+> Hi
+>
+>
+>>>>> -       // If the nul at the end of args has been overwritten, then
+>>>>> -       // assume application is using setproctitle(3).
+>>>>> -       if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
+>>>>> +       if (mm->arg_end != mm->env_start) {
+>>>>> +               // PR_SET_PROCTITLE_AREA used
+>>>>> +               res = strnlen(buffer, res);
+>>>>
+>>>> Is this check really needed? Surely it's enough to simply state that
+>>>> behavior if the area isn't null-terminated is undefined.
+>>>
+>>> Well, that depends. I was hoping to use the syscall only once per process.
+>>> That would allow me to just update the process title whenever I feel like
+>>> it, possibly hundreds of times per second. This is much cheaper if I don't
+>>> have to use a syscall every time.
+>>>
+>>> So if I'm setting the PR_SET_PROCTITLE_AREA initially to e.g. 1 kB memory
+>>> area, without the above code ps will show it entirely regardless of any \0
+>>> characters (because parameters are separated by \0).
 >>
->> I noticed this when looking at a battery plugin that reported "127% charged".
->> Some of these plugins have already "fixed" this in userspace by coding
->> something like min(percentage, 100)).
+>> That makes sense - but note that it's not completely atomic still -
+>> with a syscall you could insert some kind of barrier (rwsem?) to
+>> ensure other processes don't see a halfway updated process name. With
+>> infrequent updates this isn't a problem, but if you're really
+>> intending to update it at a rate where syscall overhead becomes a
+>> problem, then you're also going to see these kinds of issues as well.
 >
-> A battery can be charged above 100%.  It just depends what you call 100%,
-> and the "I am full" level *varies* in a non-monotonic way during the battery
-> lifetime...
 >
-> So, if you don't want to see > 100%, you have to clamp it to 100% and lose
-> information (when your "100%" level is actually increasing as the thing
-> keeps charging and you keep raising the baseline so that it doesn't go over
-> 100%).
+> Yes.  this patch seems buggy. The lock is necessary.
+> following scenario makes disaster, I think.
+>
+> CPU0 (prctl caller)                                CPU1 (ps)
+> -------------------------------------------------------------------------------------------
+> mm->arg_start = arg2;
+>                                                                len =
+> mm->arg_end - mm->arg_start; in proc_pid_cmdline()
+> mm->arg_end = arg3;
+>
 
-If the 100% level increased, then full_charge_capacity (a.k.a. "_last_
-full capacity" as seen in /proc) will increase as well, won't it? If
-the battery went over that 100% that means there is a "new" 100%, why
-are we losing information?.
+Since len is unsigned and clamped to PAGE_SIZE, the worst this will do
+is expose one page of userspace memory starting at the new value of
+arg_start. Note that this can also happen currently, exposing one env
+variable, when all NULs in the argument array have been overwritten,
+but before the new NUL has been written (that is, there is no NUL
+terminator from arg_start until the end of envp[0]).
 
-I am asking, I am not an expert on battery stuff.
-
->
->> So I discovered that the battery wrongly returns charge_full_design when
->> completely charged instead of charge_full.
->
-> Ick.
->
->> This patch fixes this by returning min(capacity_now, full_charge_capacity)
->> on both procfs and sysfs.
->
-> What will it cause on non-broken batteries?  Or during gauge reset, when any
-> battery that updates full_charge_capacity only at the end of the cycle will
-> really have capacity_now > full_charge_capacity ?
-
-Well, does it make sense to have capacity_now higher than
-full_charge_capacity? Wouldn't that information be broken too?
-
-Again, I am just wondering.
-
->
->> Now the userspace plugins report the correct 100% and their userspace check
->> may not be needed (if this error is the only one producing >100% results).
->
-> Like I said, > 100% can happen, unless what you define to be 100% is very
-> elastic (and gets updated all the time).
-
-I still think it does not make sense to have a battery charged over
-its 100% capacity whatever the definition of 100% is. Maybe I do not
-understand your point.
-
->
-> --
->  "One disk to rule them all, One disk to find them. One disk to bring
->  them all and in the darkness grind them. In the Land of Redmond
->  where the shadows lie." -- The Silicon Valley Tarot
->  Henrique Holschuh
->
+It is, however, still undesirable, of course, particularly if
+userspace isn't prepared for this kind of thing to happen.
