@@ -1,611 +1,428 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757383AbZJDMyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbZJDMyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757383AbZJDMyc (ORCPT <rfc822;w@1wt.eu>);
+	id S1757360AbZJDMyc (ORCPT <rfc822;w@1wt.eu>);
 	Sun, 4 Oct 2009 08:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757207AbZJDMya
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZJDMy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 08:54:30 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:63989 "EHLO smtp.wine.ocn.ne.jp"
+	Sun, 4 Oct 2009 08:54:27 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:63996 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757143AbZJDMyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757150AbZJDMyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 Oct 2009 08:54:14 -0400
-Message-Id: <20091004125330.877390176@I-love.SAKURA.ne.jp>
+Message-Id: <20091004125331.207349269@I-love.SAKURA.ne.jp>
 References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
 User-Agent: quilt/0.46-1
-Date: Sun, 04 Oct 2009 21:49:57 +0900
+Date: Sun, 04 Oct 2009 21:49:58 +0900
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 To: linux-security-module@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #16 11/25] TOMOYO: Add auditing support.
-Content-Disposition: inline; filename=tomoyo-add-audit.patch
+Subject: [TOMOYO #16 12/25] TOMOYO: Memory management support.
+Content-Disposition: inline; filename=tomoyo-add-mm.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds auditing code used by TOMOYO.
-
-TOMOYO generates audit logs ( /sys/kernel/security/tomoyo/grant_log and
-/sys/kernel/security/tomoyo/reject_log ) in the form of domain policy
-( /sys/kernel/security/domain_policy ).
-
-Users can configure whether to generate audit logs or not via profile
-( /sys/kernel/security/tomoyo/profile ). By default all information usable for
-"if" clause is audited. Users can suppress unneeded information.
-Memory quota for audit logs is configurable via profile and meminfo interface
- ( /sys/kernel/security/tomoyo/meminfo ).
-
-tomoyo_profile()->audit is guaranteed to point to either default configuration
-( tomoyo_default_profile ) or per profile configuration.
+This patch contains memory management code for TOMOYO.
 
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- security/tomoyo/audit.c |  561 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 561 insertions(+)
+ security/tomoyo/memory.c |  391 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 391 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6/security/tomoyo/audit.c
-@@ -0,0 +1,561 @@
++++ security-testing-2.6/security/tomoyo/memory.c
+@@ -0,0 +1,391 @@
 +/*
-+ * security/tomoyo/audit.c
++ * security/tomoyo/memory.c
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + */
 +#include "internal.h"
 +
-+/**
-+ * tomoyo_print_bprm - Print "struct linux_binprm" for auditing.
-+ *
-+ * @bprm: Pointer to "struct linux_binprm".
-+ * @dump: Pointer to "struct tomoyo_page_dump".
-+ *
-+ * Returns the contents of @bprm on success, NULL otherwise.
-+ */
-+static char *tomoyo_print_bprm(struct linux_binprm *bprm,
-+			       struct tomoyo_page_dump *dump)
++void tomoyo_warn_oom(const char *function)
 +{
-+	static const int tomoyo_buffer_len = 4096 * 2;
-+	char *buffer = kzalloc(tomoyo_buffer_len, GFP_KERNEL);
-+	char *cp;
-+	char *last_start;
-+	int len;
-+	unsigned long pos = bprm->p;
-+	int offset = pos % PAGE_SIZE;
-+	int argv_count = bprm->argc;
-+	int envp_count = bprm->envc;
-+	bool truncated = false;
-+	if (!buffer)
++	/* Reduce error messages. */
++	static pid_t tomoyo_last_pid;
++	const pid_t pid = current->pid;
++	if (tomoyo_last_pid != pid) {
++		printk(KERN_WARNING "ERROR: Out of memory at %s.\n",
++		       function);
++		tomoyo_last_pid = pid;
++	}
++	if (!tomoyo_policy_loaded)
++		panic("MAC Initialization failed.\n");
++}
++
++static atomic_t tomoyo_policy_memory_size;
++static unsigned int tomoyo_quota_for_policy;
++
++/**
++ * tomoyo_memory_ok - Check memory quota.
++ *
++ * @ptr:  Pointer to allocated memory.
++ * @size: Size in byte.
++ *
++ * Returns true if @ptr is not NULL and quota not exceeded, false otehrwise.
++ */
++bool tomoyo_memory_ok(const void *ptr, const unsigned int size)
++{
++	size_t s = tomoyo_round2(size);
++	atomic_add(s, &tomoyo_policy_memory_size);
++	if (ptr && (!tomoyo_quota_for_policy ||
++		    atomic_read(&tomoyo_policy_memory_size)
++		    <= tomoyo_quota_for_policy))
++		return true;
++	atomic_sub(s, &tomoyo_policy_memory_size);
++	tomoyo_warn_oom(__func__);
++	return false;
++}
++
++/**
++ * tomoyo_commit_ok - Check memory quota.
++ *
++ * @ptr:    Pointer to allocated memory.
++ * @data:   Data to copy from.
++ * @size:   Size in byte.
++ *
++ * Returns true if @ptr is not NULL and quota not exceeded, false otehrwise.
++ */
++bool tomoyo_commit_ok(void *ptr, void *data, const unsigned int size)
++{
++	if (tomoyo_memory_ok(ptr, size)) {
++		memmove(ptr, data, size);
++		memset(data, 0, size);
++		return true;
++	}
++	return false;
++}
++
++
++/**
++ * tomoyo_memory_free - Free memory for elements.
++ *
++ * @ptr:  Pointer to allocated memory.
++ * @size: Size in byte.
++ */
++void tomoyo_memory_free(const void *ptr, size_t size)
++{
++	atomic_sub(tomoyo_round2(size), &tomoyo_policy_memory_size);
++	kfree(ptr);
++}
++
++static LIST_HEAD(tomoyo_address_list);
++
++/**
++ * tomoyo_get_ipv6_address - Keep the given IPv6 address on the RAM.
++ *
++ * @addr: Pointer to "struct in6_addr".
++ *
++ * Returns pointer to "struct in6_addr" on success, NULL otherwise.
++ *
++ * The RAM is shared, so NEVER try to modify or kfree() the returned address.
++ */
++const struct in6_addr *tomoyo_get_ipv6_address(const struct in6_addr *addr)
++{
++	struct tomoyo_ipv6addr_entry *entry;
++	struct tomoyo_ipv6addr_entry *ptr;
++	int error = -ENOMEM;
++	if (!addr)
 +		return NULL;
-+	len = snprintf(buffer, tomoyo_buffer_len - 1, "argv[]={ ");
-+	cp = buffer + len;
-+	if (!argv_count) {
-+		memmove(cp, "} envp[]={ ", 11);
-+		cp += 11;
++	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++	mutex_lock(&tomoyo_policy_lock);
++	list_for_each_entry(ptr, &tomoyo_address_list, list) {
++		if (memcmp(&ptr->addr, addr, sizeof(*addr)))
++			continue;
++		atomic_inc(&ptr->users);
++		error = 0;
++		break;
 +	}
-+	last_start = cp;
-+	while (argv_count || envp_count) {
-+		if (!tomoyo_dump_page(bprm, pos, dump))
-+			goto out;
-+		pos += PAGE_SIZE - offset;
-+		/* Read. */
-+		while (offset < PAGE_SIZE) {
-+			const char *kaddr = dump->data;
-+			const unsigned char c = kaddr[offset++];
-+			if (cp == last_start)
-+				*cp++ = '"';
-+			if (cp >= buffer + tomoyo_buffer_len - 32) {
-+				/* Reserve some room for "..." string. */
-+				truncated = true;
-+			} else if (c == '\\') {
-+				*cp++ = '\\';
-+				*cp++ = '\\';
-+			} else if (c > ' ' && c < 127) {
-+				*cp++ = c;
-+			} else if (!c) {
-+				*cp++ = '"';
-+				*cp++ = ' ';
-+				last_start = cp;
-+			} else {
-+				*cp++ = '\\';
-+				*cp++ = (c >> 6) + '0';
-+				*cp++ = ((c >> 3) & 7) + '0';
-+				*cp++ = (c & 7) + '0';
-+			}
-+			if (c)
-+				continue;
-+			if (argv_count) {
-+				if (--argv_count == 0) {
-+					if (truncated) {
-+						cp = last_start;
-+						memmove(cp, "... ", 4);
-+						cp += 4;
-+					}
-+					memmove(cp, "} envp[]={ ", 11);
-+					cp += 11;
-+					last_start = cp;
-+					truncated = false;
-+				}
-+			} else if (envp_count) {
-+				if (--envp_count == 0) {
-+					if (truncated) {
-+						cp = last_start;
-+						memmove(cp, "... ", 4);
-+						cp += 4;
-+					}
-+				}
-+			}
-+			if (!argv_count && !envp_count)
-+				break;
-+		}
-+		offset = 0;
++	if (error && tomoyo_memory_ok(entry, sizeof(*entry))) {
++		ptr = entry;
++		ptr->addr = *addr;
++		atomic_set(&ptr->users, 1);
++		list_add_tail(&ptr->list, &tomoyo_address_list);
++		entry = NULL;
 +	}
-+	*cp++ = '}';
-+	*cp = '\0';
-+	return buffer;
-+ out:
-+	snprintf(buffer, tomoyo_buffer_len - 1,
-+		 "argv[]={ ... } envp[]= { ... }");
-+	return buffer;
++	mutex_unlock(&tomoyo_policy_lock);
++	kfree(entry);
++	return ptr ? &ptr->addr : NULL;
 +}
 +
 +/**
-+ * tomoyo_filetype - Get string representation of file type.
++ * tomoyo_put_ipv6_address - Delete the given IPv6 address on the RAM.
 + *
-+ * @mode: Mode value for stat().
-+ *
-+ * Returns header line on success, NULL otherwise.
++ * @addr: Pointer to "struct in6_addr".
 + */
-+static const char *tomoyo_filetype(const mode_t mode)
++void tomoyo_put_ipv6_address(const struct in6_addr *addr)
 +{
-+	switch (mode & S_IFMT) {
-+	case S_IFREG:
-+	case 0:
-+		return "file";
-+	case S_IFDIR:
-+		return "directory";
-+	case S_IFLNK:
-+		return "symlink";
-+	case S_IFIFO:
-+		return "fifo";
-+	case S_IFSOCK:
-+		return "socket";
-+	case S_IFBLK:
-+		return "block";
-+	case S_IFCHR:
-+		return "char";
++	struct tomoyo_ipv6addr_entry *ptr;
++	bool can_delete = false;
++	if (!addr)
++		return;
++	ptr = container_of(addr, struct tomoyo_ipv6addr_entry, addr);
++	mutex_lock(&tomoyo_policy_lock);
++	if (atomic_dec_and_test(&ptr->users)) {
++		list_del(&ptr->list);
++		can_delete = true;
 +	}
-+	return "unknown"; /* This should not happen. */
++	mutex_unlock(&tomoyo_policy_lock);
++	if (can_delete)
++		tomoyo_memory_free(ptr, sizeof(*ptr));
 +}
 +
 +/**
-+ * tomoyo_print_header - Get header line of audit log.
++ * tomoyo_put_condition - Delete memory for "struct tomoyo_condition".
 + *
-+ * @r: Pointer to "struct tomoyo_request_info".
-+ *
-+ * Returns string representation.
++ * @cond: Pointer to "struct tomoyo_condition".
 + */
-+static char *tomoyo_print_header(struct tomoyo_request_info *r)
++void tomoyo_put_condition(struct tomoyo_condition *cond)
 +{
-+	static const char *tomoyo_mode_4[4] = {
-+		"disabled", "learning", "permissive", "enforcing"
-+	};
-+	struct timeval tv;
-+	unsigned int dev;
-+	mode_t mode;
-+	struct tomoyo_obj_info *obj = r->obj;
-+	const u32 tomoyo_flags = current->tomoyo_flags;
-+	static const int tomoyo_buffer_len = 4096;
-+	char *buffer = kmalloc(tomoyo_buffer_len, GFP_KERNEL);
-+	int pos;
-+	if (!buffer)
-+		return NULL;
-+	do_gettimeofday(&tv);
-+	pos = snprintf(buffer, tomoyo_buffer_len - 1,
-+		       "#timestamp=%lu profile=%u mode=%s "
-+		       "(global-pid=%u)", tv.tv_sec, r->profile,
-+		       tomoyo_mode_4[r->mode], task_pid_nr(current));
-+	if (tomoyo_profile(r->profile)->audit->audit_task_info) {
-+		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
-+				" task={ pid=%u ppid=%u uid=%u gid=%u euid=%u"
-+				" egid=%u suid=%u sgid=%u fsuid=%u fsgid=%u"
-+				" state[0]=%u state[1]=%u state[2]=%u"
-+				" type%s=execute_handler }",
-+				(pid_t) sys_getpid(), (pid_t) sys_getppid(),
-+				current_uid(), current_gid(), current_euid(),
-+				current_egid(), current_suid(), current_sgid(),
-+				current_fsuid(), current_fsgid(),
-+				(u8) (tomoyo_flags >> 24),
-+				(u8) (tomoyo_flags >> 16),
-+				(u8) (tomoyo_flags >> 8), tomoyo_flags &
-+				TOMOYO_TASK_IS_EXECUTE_HANDLER ? "" : "!");
++	const struct tomoyo_condition_element *condp;
++	struct tomoyo_number_union *numbers_p;
++	struct tomoyo_name_union *names_p;
++	const struct tomoyo_argv_entry *argv;
++	const struct tomoyo_envp_entry *envp;
++	u16 condc;
++	u16 numbers_count;
++	u16 names_count;
++	u16 argc;
++	u16 envc;
++	u16 i;
++	bool can_delete = false;
++	if (!cond)
++		return;
++	BUG_ON(atomic_read(&cond->users) <= 0);
++	mutex_lock(&tomoyo_policy_lock);
++	if (atomic_dec_and_test(&cond->users)) {
++		list_del(&cond->list);
++		can_delete = true;
 +	}
-+	if (!obj || !tomoyo_profile(r->profile)->audit->audit_path_info)
-+		goto no_obj_info;
-+	if (!obj->validate_done) {
-+		tomoyo_get_attributes(obj);
-+		obj->validate_done = true;
++	mutex_unlock(&tomoyo_policy_lock);
++	if (!can_delete)
++		return;
++	condc = cond->condc;
++	numbers_count = cond->numbers_count;
++	names_count = cond->names_count;
++	argc = cond->argc;
++	envc = cond->envc;
++	condp = (const struct tomoyo_condition_element *) (cond + 1);
++	numbers_p = (struct tomoyo_number_union *) (condp + condc);
++	names_p = (struct tomoyo_name_union *) (numbers_p + numbers_count);
++	argv = (const struct tomoyo_argv_entry *) (names_p + names_count);
++	envp = (const struct tomoyo_envp_entry *) (argv + argc);
++	for (i = 0; i < numbers_count; i++)
++		tomoyo_put_number_union(numbers_p++);
++	for (i = 0; i < names_count; i++)
++		tomoyo_put_name_union(names_p++);
++	for (i = 0; i < argc; argv++, i++)
++		tomoyo_put_name(argv->value);
++	for (i = 0; i < envc; envp++, i++) {
++		tomoyo_put_name(envp->name);
++		tomoyo_put_name(envp->value);
 +	}
-+	if (obj->path1_valid) {
-+		dev = obj->path1_stat.dev;
-+		mode = obj->path1_stat.mode;
-+		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
-+				" path1={ uid=%u gid=%u ino=%lu major=%u"
-+				" minor=%u perm=0%o type=%s",
-+				obj->path1_stat.uid, obj->path1_stat.gid,
-+				(unsigned long) obj->path1_stat.ino,
-+				MAJOR(dev), MINOR(dev), mode & S_IALLUGO,
-+				tomoyo_filetype(mode & S_IFMT));
-+		if (S_ISCHR(mode) || S_ISBLK(mode)) {
-+			dev = obj->path1_stat.rdev;
-+			pos += snprintf(buffer + pos,
-+					tomoyo_buffer_len - 1 - pos,
-+					" dev_major=%u dev_minor=%u",
-+					MAJOR(dev), MINOR(dev));
-+		}
-+		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
-+				" }");
-+	}
-+	if (obj->path1_parent_valid) {
-+		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
-+				" path1.parent={ uid=%u gid=%u ino=%lu"
-+				" perm=0%o }", obj->path1_parent_stat.uid,
-+				obj->path1_parent_stat.gid,
-+				obj->path1_parent_stat.ino,
-+				obj->path1_parent_stat.mode & S_IALLUGO);
-+	}
-+	if (obj->path2_valid) {
-+		dev = obj->path2_stat.dev;
-+		mode = obj->path2_stat.mode;
-+		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
-+				" path2={ uid=%u gid=%u ino=%lu major=%u"
-+				" minor=%u perm=0%o type=%s",
-+				obj->path2_stat.uid, obj->path2_stat.gid,
-+				(unsigned long) obj->path2_stat.ino,
-+				MAJOR(dev), MINOR(dev), mode & S_IALLUGO,
-+				tomoyo_filetype(mode & S_IFMT));
-+		if (S_ISCHR(mode) || S_ISBLK(mode)) {
-+			dev = obj->path2_stat.rdev;
-+			pos += snprintf(buffer + pos,
-+					tomoyo_buffer_len - 1 - pos,
-+					" dev_major=%u dev_minor=%u",
-+					MAJOR(dev), MINOR(dev));
-+		}
-+		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
-+				" }");
-+	}
-+	if (obj->path2_parent_valid) {
-+		pos += snprintf(buffer + pos, tomoyo_buffer_len - 1 - pos,
-+				" path2.parent={ uid=%u gid=%u ino=%lu"
-+				" perm=0%o }", obj->path2_parent_stat.uid,
-+				obj->path2_parent_stat.gid,
-+				obj->path2_parent_stat.ino,
-+				obj->path2_parent_stat.mode & S_IALLUGO);
-+	}
-+ no_obj_info:
-+	if (pos < tomoyo_buffer_len - 1)
-+		return buffer;
-+	kfree(buffer);
-+	return NULL;
++	tomoyo_memory_free(cond, cond->size);
 +}
 +
-+/**
-+ * tomoyo_init_audit_log - Allocate buffer for audit logs.
-+ *
-+ * @len: Required size.
-+ * @r:   Pointer to "struct tomoyo_request_info".
-+ *
-+ * Returns pointer to allocated memory.
-+ *
-+ * The @len is updated to add the header lines' size on success.
++/*
++ * TOMOYO uses this hash only when appending a string into the string
++ * table. Frequency of appending strings is very low. So we don't need
++ * large (e.g. 64k) hash size. 256 will be sufficient.
 + */
-+char *tomoyo_init_audit_log(int *len, struct tomoyo_request_info *r)
-+{
-+	char *buf = NULL;
-+	char *bprm_info = NULL;
-+	char *realpath = NULL;
-+	const char *symlink = NULL;
-+	const char *header = NULL;
-+	int pos;
-+	const char *domainname;
-+	if (!r->domain)
-+		r->domain = tomoyo_current_domain();
-+	domainname = r->domain->domainname->name;
-+	header = tomoyo_print_header(r);
-+	if (!header)
-+		return NULL;
-+	*len += strlen(domainname) + strlen(header) + 10;
-+	if (r->ee) {
-+		struct file *file = r->ee->bprm->file;
-+		realpath = tomoyo_realpath_from_path(&file->f_path);
-+		bprm_info = tomoyo_print_bprm(r->ee->bprm, &r->ee->dump);
-+		if (!realpath || !bprm_info)
-+			goto out;
-+		*len += strlen(realpath) + 64 + strlen(bprm_info);
-+	} else if (r->obj && r->obj->symlink_target) {
-+		symlink = r->obj->symlink_target->name;
-+		*len += 18 + strlen(symlink);
-+	}
-+	buf = kzalloc(*len, GFP_KERNEL);
-+	if (!buf)
-+		goto out;
-+	pos = snprintf(buf, (*len) - 1, "%s", header);
-+	if (realpath) {
-+		struct linux_binprm *bprm = r->ee->bprm;
-+		pos += snprintf(buf + pos, (*len) - 1 - pos,
-+				" exec={ realpath=\"%s\" argc=%d envc=%d %s }",
-+				realpath, bprm->argc, bprm->envc, bprm_info);
-+	} else if (symlink)
-+		pos += snprintf(buf + pos, (*len) - 1 - pos,
-+				" symlink.target=\"%s\"", symlink);
-+	snprintf(buf + pos, (*len) - 1 - pos, "\n%s\n", domainname);
-+ out:
-+	kfree(realpath);
-+	kfree(bprm_info);
-+	kfree(header);
-+	return buf;
-+}
++#define TOMOYO_MAX_HASH 256
 +
-+/**
-+ * tomoyo_update_task_state - Update task's state.
-+ *
-+ * @r: Pointer to "struct tomoyo_request_info".
++/*
++ * tomoyo_name_entry is a structure which is used for linking
++ * "struct tomoyo_path_info" into tomoyo_name_list .
 + */
-+static void tomoyo_update_task_state(struct tomoyo_request_info *r)
-+{
-+	/*
-+	 * Don't change the lowest byte because it is reserved for
-+	 * TOMOYO_TASK_IS_IN_EXECVE /
-+	 * TOMOYO_DONT_SLEEP_ON_ENFORCE_ERROR /
-+	 * TOMOYO_TASK_IS_EXECUTE_HANDLER / TOMOYO_TASK_IS_POLICY_MANAGER .
-+	 */
-+	const struct tomoyo_condition *ptr = r->cond;
-+	if (ptr) {
-+		struct task_struct *task = current;
-+		const u8 flags = ptr->post_state[3];
-+		u32 tomoyo_flags = task->tomoyo_flags;
-+		if (flags & 1) {
-+			tomoyo_flags &= ~0xFF000000;
-+			tomoyo_flags |= ptr->post_state[0] << 24;
-+		}
-+		if (flags & 2) {
-+			tomoyo_flags &= ~0x00FF0000;
-+			tomoyo_flags |= ptr->post_state[1] << 16;
-+		}
-+		if (flags & 4) {
-+			tomoyo_flags &= ~0x0000FF00;
-+			tomoyo_flags |= ptr->post_state[2] << 8;
-+		}
-+		task->tomoyo_flags = tomoyo_flags;
-+		r->cond = NULL;
-+	}
-+}
-+
-+#ifndef CONFIG_SECURITY_TOMOYO_AUDIT
-+
-+/**
-+ * tomoyo_write_audit_log - Write audit log.
-+ *
-+ * @is_granted: True if this is a granted log.
-+ * @r:          Pointer to "struct tomoyo_request_info".
-+ * @fmt:        The printf()'s format string, followed by parameters.
-+ *
-+ * Returns 0 on success, -ENOMEM otherwise.
-+ */
-+int tomoyo_write_audit_log(const bool is_granted,
-+			   struct tomoyo_request_info *r, const char *fmt, ...)
-+{
-+	tomoyo_update_task_state(r);
-+	return 0;
-+}
-+
-+#else
-+
-+static DECLARE_WAIT_QUEUE_HEAD(tomoyo_grant_log_wait);
-+static DECLARE_WAIT_QUEUE_HEAD(tomoyo_reject_log_wait);
-+
-+static DEFINE_SPINLOCK(tomoyo_audit_log_lock);
-+
-+/* Structure for audit log. */
-+struct tomoyo_log_entry {
++struct tomoyo_name_entry {
 +	struct list_head list;
-+	char *log;
++	atomic_t users;
 +	int size;
++	struct tomoyo_path_info entry;
 +};
 +
-+/* The list for "struct tomoyo_log_entry". */
-+static LIST_HEAD(tomoyo_grant_log);
-+
-+/* The list for "struct tomoyo_log_entry". */
-+static LIST_HEAD(tomoyo_reject_log);
-+
-+static unsigned int tomoyo_grant_log_count;
-+static unsigned int tomoyo_reject_log_count;
++/*
++ * tomoyo_name_list is used for holding string data used by TOMOYO.
++ * Since same string data is likely used for multiple times (e.g.
++ * "/lib/libc-2.5.so"), TOMOYO shares string data in the form of
++ * "const struct tomoyo_path_info *".
++ */
++static struct list_head tomoyo_name_list[TOMOYO_MAX_HASH];
++static DEFINE_MUTEX(tomoyo_name_list_lock);
 +
 +/**
-+ * tomoyo_write_audit_log - Write audit log.
++ * tomoyo_get_name - Allocate memory for string data.
 + *
-+ * @is_granted: True if this is a granted log.
-+ * @r:          Pointer to "struct tomoyo_request_info".
-+ * @fmt:        The printf()'s format string, followed by parameters.
++ * @name: The string to store into the permernent memory.
 + *
-+ * Returns 0 on success, -ENOMEM otherwise.
++ * Returns pointer to "struct tomoyo_path_info" on success, NULL otherwise.
 + */
-+int tomoyo_write_audit_log(const bool is_granted,
-+			   struct tomoyo_request_info *r, const char *fmt, ...)
++const struct tomoyo_path_info *tomoyo_get_name(const char *name)
 +{
-+	va_list args;
-+	int error = -ENOMEM;
-+	int pos;
++	struct tomoyo_name_entry *ptr;
++	unsigned int hash;
 +	int len;
-+	char *buf;
-+	struct tomoyo_log_entry *new_entry;
-+	bool quota_exceeded = false;
-+	if (!r->domain)
-+		r->domain = tomoyo_current_domain();
-+	if (is_granted) {
-+		if (tomoyo_grant_log_count >=
-+		    tomoyo_profile(r->domain->profile)->
-+		    audit->audit_max_grant_log
-+		    || !tomoyo_get_audit(r->profile, r->type, true))
-+			goto out;
-+	} else {
-+		if (tomoyo_reject_log_count >=
-+		    tomoyo_profile(r->domain->profile)->
-+		    audit->audit_max_reject_log
-+		    || !tomoyo_get_audit(r->profile, r->type, false))
-+			goto out;
-+	}
-+	va_start(args, fmt);
-+	len = vsnprintf((char *) &pos, sizeof(pos) - 1, fmt, args) + 32;
-+	va_end(args);
-+	buf = tomoyo_init_audit_log(&len, r);
-+	if (!buf)
-+		goto out;
-+	pos = strlen(buf);
-+	va_start(args, fmt);
-+	vsnprintf(buf + pos, len - pos - 1, fmt, args);
-+	va_end(args);
-+	new_entry = kzalloc(sizeof(*new_entry), GFP_KERNEL);
-+	if (!new_entry) {
-+		kfree(buf);
++	int allocated_len;
++
++	if (!name)
++		return NULL;
++	len = strlen(name) + 1;
++	hash = full_name_hash((const unsigned char *) name, len - 1);
++	mutex_lock(&tomoyo_name_list_lock);
++	list_for_each_entry(ptr, &tomoyo_name_list[hash % TOMOYO_MAX_HASH],
++			    list) {
++		if (hash != ptr->entry.hash || strcmp(name, ptr->entry.name))
++			continue;
++		atomic_inc(&ptr->users);
 +		goto out;
 +	}
-+	new_entry->log = buf;
-+	/*
-+	 * The new_entry->size is used for memory quota checks.
-+	 * Don't go beyond strlen(new_entry->log).
-+	 */
-+	new_entry->size = tomoyo_round2(len) +
-+		tomoyo_round2(sizeof(*new_entry));
-+	spin_lock(&tomoyo_audit_log_lock);
-+	if (tomoyo_quota_for_audit_log && tomoyo_audit_log_memory_size
-+	    + new_entry->size >= tomoyo_quota_for_audit_log) {
-+		quota_exceeded = true;
-+	} else {
-+		tomoyo_audit_log_memory_size += new_entry->size;
-+		if (is_granted) {
-+			list_add_tail(&new_entry->list, &tomoyo_grant_log);
-+			tomoyo_grant_log_count++;
-+		} else {
-+			list_add_tail(&new_entry->list, &tomoyo_reject_log);
-+			tomoyo_reject_log_count++;
++	allocated_len = tomoyo_round2(sizeof(*ptr) + len);
++	ptr = kzalloc(allocated_len, GFP_KERNEL);
++	if (!ptr || (tomoyo_quota_for_policy &&
++		     atomic_read(&tomoyo_policy_memory_size) + allocated_len
++		     > tomoyo_quota_for_policy)) {
++		kfree(ptr);
++		ptr = NULL;
++		tomoyo_warn_oom(__func__);
++		goto out;
++	}
++	atomic_add(allocated_len, &tomoyo_policy_memory_size);
++	ptr->entry.name = ((char *) ptr) + sizeof(*ptr);
++	memmove((char *) ptr->entry.name, name, len);
++	atomic_set(&ptr->users, 1);
++	tomoyo_fill_path_info(&ptr->entry);
++	ptr->size = allocated_len;
++	list_add_tail(&ptr->list, &tomoyo_name_list[hash % TOMOYO_MAX_HASH]);
++ out:
++	mutex_unlock(&tomoyo_name_list_lock);
++	return ptr ? &ptr->entry : NULL;
++}
++
++/**
++ * tomoyo_put_name - Delete shared memory for string data.
++ *
++ * @name: Pointer to "struct tomoyo_path_info".
++ */
++void tomoyo_put_name(const struct tomoyo_path_info *name)
++{
++	struct tomoyo_name_entry *ptr;
++	bool can_delete = false;
++	if (!name)
++		return;
++	ptr = container_of(name, struct tomoyo_name_entry, entry);
++	mutex_lock(&tomoyo_name_list_lock);
++	if (atomic_dec_and_test(&ptr->users)) {
++		list_del(&ptr->list);
++		can_delete = true;
++	}
++	mutex_unlock(&tomoyo_name_list_lock);
++	if (can_delete) {
++		atomic_sub(ptr->size, &tomoyo_policy_memory_size);
++		kfree(ptr);
++	}
++}
++
++/**
++ * tomoyo_mm_init - Initialize mm code.
++ *
++ * Returns 0.
++ */
++static int __init tomoyo_mm_init(void)
++{
++	int i;
++	if (!tomoyo_registered)
++		return 0;
++	for (i = 0; i < TOMOYO_MAX_HASH; i++)
++		INIT_LIST_HEAD(&tomoyo_name_list[i]);
++	INIT_LIST_HEAD(&tomoyo_kernel_domain.acl_info_list);
++	tomoyo_kernel_domain.domainname = tomoyo_get_name(ROOT_NAME);
++	list_add_tail_rcu(&tomoyo_kernel_domain.list, &tomoyo_domain_list);
++	if (tomoyo_find_domain(ROOT_NAME) != &tomoyo_kernel_domain)
++		panic("Can't register tomoyo_kernel_domain");
++#ifdef CONFIG_SECURITY_TOMOYO_BUILTIN_INITIALIZERS
++	{
++		/* Load built-in policy. */
++		static char tomoyo_builtin_initializers[] __initdata
++			= CONFIG_SECURITY_TOMOYO_BUILTIN_INITIALIZERS;
++		char *cp = tomoyo_builtin_initializers;
++		tomoyo_normalize_line(cp);
++		while (cp && *cp) {
++			char *cp2 = strchr(cp, ' ');
++			if (cp2)
++				*cp2++ = '\0';
++			tomoyo_write_domain_initializer_policy(cp, false,
++							       false);
++			cp = cp2;
 +		}
 +	}
-+	spin_unlock(&tomoyo_audit_log_lock);
-+	if (quota_exceeded) {
-+		kfree(buf);
-+		kfree(new_entry);
-+		goto out;
-+	}
-+	if (is_granted)
-+		wake_up(&tomoyo_grant_log_wait);
-+	else
-+		wake_up(&tomoyo_reject_log_wait);
-+	error = 0;
-+ out:
-+	tomoyo_update_task_state(r);
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_read_grant_log - Read a grant log.
-+ *
-+ * @head: Pointer to "struct tomoyo_io_buffer".
-+ */
-+void tomoyo_read_grant_log(struct tomoyo_io_buffer *head)
-+{
-+	struct tomoyo_log_entry *ptr = NULL;
-+	if (head->read_avail)
-+		return;
-+	if (head->read_buf) {
-+		kfree(head->read_buf);
-+		head->read_buf = NULL;
-+		head->readbuf_size = 0;
-+	}
-+	spin_lock(&tomoyo_audit_log_lock);
-+	if (!list_empty(&tomoyo_grant_log)) {
-+		ptr = list_entry(tomoyo_grant_log.next,
-+				 struct tomoyo_log_entry, list);
-+		list_del(&ptr->list);
-+		tomoyo_grant_log_count--;
-+		tomoyo_audit_log_memory_size -= ptr->size;
-+	}
-+	spin_unlock(&tomoyo_audit_log_lock);
-+	if (ptr) {
-+		head->read_buf = ptr->log;
-+		head->read_avail = strlen(ptr->log) + 1;
-+		head->readbuf_size = head->read_avail;
-+		kfree(ptr);
-+	}
-+}
-+
-+/**
-+ * tomoyo_poll_grant_log - Wait for a grant log.
-+ *
-+ * @file: Pointer to "struct file".
-+ * @wait: Pointer to "poll_table".
-+ *
-+ * Returns POLLIN | POLLRDNORM when ready to read a grant log.
-+ */
-+int tomoyo_poll_grant_log(struct file *file, poll_table *wait)
-+{
-+	if (tomoyo_grant_log_count)
-+		return POLLIN | POLLRDNORM;
-+	poll_wait(file, &tomoyo_grant_log_wait, wait);
-+	if (tomoyo_grant_log_count)
-+		return POLLIN | POLLRDNORM;
-+	return 0;
-+}
-+
-+/**
-+ * tomoyo_read_reject_log - Read a reject log.
-+ *
-+ * @head: Pointer to "struct tomoyo_io_buffer".
-+ */
-+void tomoyo_read_reject_log(struct tomoyo_io_buffer *head)
-+{
-+	struct tomoyo_log_entry *ptr = NULL;
-+	if (head->read_avail)
-+		return;
-+	if (head->read_buf) {
-+		kfree(head->read_buf);
-+		head->read_buf = NULL;
-+		head->readbuf_size = 0;
-+	}
-+	spin_lock(&tomoyo_audit_log_lock);
-+	if (!list_empty(&tomoyo_reject_log)) {
-+		ptr = list_entry(tomoyo_reject_log.next,
-+				 struct tomoyo_log_entry, list);
-+		list_del(&ptr->list);
-+		tomoyo_reject_log_count--;
-+		tomoyo_audit_log_memory_size -= ptr->size;
-+	}
-+	spin_unlock(&tomoyo_audit_log_lock);
-+	if (ptr) {
-+		head->read_buf = ptr->log;
-+		head->read_avail = strlen(ptr->log) + 1;
-+		head->readbuf_size = head->read_avail;
-+		kfree(ptr);
-+	}
-+}
-+
-+/**
-+ * tomoyo_poll_reject_log - Wait for a reject log.
-+ *
-+ * @file: Pointer to "struct file".
-+ * @wait: Pointer to "poll_table".
-+ *
-+ * Returns POLLIN | POLLRDNORM when ready to read a reject log.
-+ */
-+int tomoyo_poll_reject_log(struct file *file, poll_table *wait)
-+{
-+	if (tomoyo_reject_log_count)
-+		return POLLIN | POLLRDNORM;
-+	poll_wait(file, &tomoyo_reject_log_wait, wait);
-+	if (tomoyo_reject_log_count)
-+		return POLLIN | POLLRDNORM;
-+	return 0;
-+}
 +#endif
++	return 0;
++}
++core_initcall(tomoyo_mm_init);
++
++unsigned int tomoyo_audit_log_memory_size;
++unsigned int tomoyo_quota_for_audit_log;
++
++unsigned int tomoyo_query_memory_size;
++unsigned int tomoyo_quota_for_query;
++
++/**
++ * tomoyo_read_memory_counter - Check for memory usage.
++ *
++ * @head: Pointer to "struct tomoyo_io_buffer".
++ */
++void tomoyo_read_memory_counter(struct tomoyo_io_buffer *head)
++{
++	const unsigned int usage[3] = {
++		atomic_read(&tomoyo_policy_memory_size),
++		tomoyo_audit_log_memory_size,
++		tomoyo_query_memory_size
++	};
++	const unsigned int quota[3] = {
++		tomoyo_quota_for_policy,
++		tomoyo_quota_for_audit_log,
++		tomoyo_quota_for_query
++	};
++	static const char *header[4] = {
++		"Policy:     ",
++		"Audit logs: ",
++		"Query lists:",
++		"Total:      "
++	};
++	unsigned int total = 0;
++	int i;
++	if (head->read_eof)
++		return;
++	for (i = 0; i < 3; i++) {
++		total += usage[i];
++		tomoyo_io_printf(head, "%s %10u", header[i], usage[i]);
++		if (quota[i])
++			tomoyo_io_printf(head, "   (Quota: %10u)", quota[i]);
++		tomoyo_io_printf(head, "\n");
++	}
++	tomoyo_io_printf(head, "%s %10u\n", header[3], total);
++	head->read_eof = true;
++}
++
++/**
++ * tomoyo_write_memory_quota - Set memory quota.
++ *
++ * @head: Pointer to "struct tomoyo_io_buffer".
++ *
++ * Returns 0.
++ */
++int tomoyo_write_memory_quota(struct tomoyo_io_buffer *head)
++{
++	char *data = head->write_buf;
++	unsigned int size;
++	if (sscanf(data, "Policy: %u", &size) == 1)
++		tomoyo_quota_for_policy = size;
++	else if (sscanf(data, "Audit logs: %u", &size) == 1)
++		tomoyo_quota_for_audit_log = size;
++	else if (sscanf(data, "Query lists: %u", &size) == 1)
++		tomoyo_quota_for_query = size;
++	return 0;
++}
 
 -- 
