@@ -1,105 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbZJDVbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbZJDVhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbZJDVbK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 17:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758031AbZJDVbI
+	id S1758113AbZJDVhh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 17:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbZJDVhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 17:31:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:52135 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758023AbZJDVbH (ORCPT
+	Sun, 4 Oct 2009 17:37:36 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:53102 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758036AbZJDVhg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 17:31:07 -0400
-Subject: Re: F_SETOWN_EX and F_GETLK64 conflict
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Joseph S. Myers" <joseph@codesourcery.com>
-Cc: linux-api@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <onestero@redhat.com>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Roland McGrath <roland@redhat.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.64.0910041229300.20203@digraph.polyomino.org.uk>
-References: <Pine.LNX.4.64.0910041229300.20203@digraph.polyomino.org.uk>
-Content-Type: text/plain
-Date: Sun, 04 Oct 2009 23:30:22 +0200
-Message-Id: <1254691822.21044.9.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 4 Oct 2009 17:37:36 -0400
+Message-ID: <4AC91578.2020807@suse.de>
+Date: Mon, 05 Oct 2009 01:36:56 +0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] battery: Fix charge_now returned by broken batteries
+References: <1254669853.26496.0.camel@carter> <ca2dc2820910041046i47a1c3dhba82266bb14a440c@mail.gmail.com> <4AC8F02B.6080209@suse.de> <200910042246.23712.rjw@sisk.pl>
+In-Reply-To: <200910042246.23712.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-04 at 12:35 +0000, Joseph S. Myers wrote:
-> In asm-generic/fcntl.h, F_SETOWN_EX and F_GETLK64 both have value 12, and 
-> F_GETOWN_EX and F_SETLK64 both have value 13.  I don't see how this is 
-> going to work correctly.  See 
-> <http://sourceware.org/ml/libc-ports/2009-10/msg00013.html>.
+Hi Rafael,
 
+This is not my rule, it was/is the rule of power device class. If you do not agree to it, please change
+appropriate documentation.
 
-Ugh,.. yeah, non obvious collision that.
+Regards,
+Alex.
 
-How about something like:
-
----
- arch/alpha/include/asm/fcntl.h |    4 ++--
- include/asm-generic/fcntl.h    |   19 +++++++++++--------
- 2 files changed, 13 insertions(+), 10 deletions(-)
-
-diff --git a/arch/alpha/include/asm/fcntl.h b/arch/alpha/include/asm/fcntl.h
-index e42823e..73126e4 100644
---- a/arch/alpha/include/asm/fcntl.h
-+++ b/arch/alpha/include/asm/fcntl.h
-@@ -26,8 +26,8 @@
- #define F_GETOWN	6	/*  for sockets. */
- #define F_SETSIG	10	/*  for sockets. */
- #define F_GETSIG	11	/*  for sockets. */
--#define F_SETOWN_EX	12
--#define F_GETOWN_EX	13
-+#define F_SETOWN_EX	15
-+#define F_GETOWN_EX	16
- 
- /* for posix fcntl() and lockf() */
- #define F_RDLCK		1
-diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
-index 0c3dd86..cd2d789 100644
---- a/include/asm-generic/fcntl.h
-+++ b/include/asm-generic/fcntl.h
-@@ -73,9 +73,18 @@
- #define F_SETSIG	10	/* for sockets. */
- #define F_GETSIG	11	/* for sockets. */
- #endif
-+
-+#ifndef CONFIG_64BIT
-+#ifndef F_GETLK64
-+#define F_GETLK64	12	/*  using 'struct flock64' */
-+#define F_SETLK64	13
-+#define F_SETLKW64	14
-+#endif
-+#endif
-+
- #ifndef F_SETOWN_EX
--#define F_SETOWN_EX	12
--#define F_GETOWN_EX	13
-+#define F_SETOWN_EX	15
-+#define F_GETOWN_EX	16
- #endif
- 
- #define F_OWNER_TID	0
-@@ -139,12 +148,6 @@ struct flock {
- 
- #ifndef CONFIG_64BIT
- 
--#ifndef F_GETLK64
--#define F_GETLK64	12	/*  using 'struct flock64' */
--#define F_SETLK64	13
--#define F_SETLKW64	14
--#endif
--
- #ifndef HAVE_ARCH_STRUCT_FLOCK64
- #ifndef __ARCH_FLOCK64_PAD
- #define __ARCH_FLOCK64_PAD
-
+Rafael J. Wysocki пишет:
+> On Sunday 04 October 2009, Alexey Starikovskiy wrote:
+>> Hi Miguel,
+> 
+> Hi Alex,
+> 
+>> I am going to reject your patch on the basis, that the battery driver should report only
+>> information it gained from battery hardware, not interpret it in any way.
+>> As your patch fall into "interpret" category, it does not belong in the kernel and battery
+>> driver in particular. You may suggest it to any/all user space battery monitoring applications,
+>> this is the place for "interpretations".
+> 
+> Well, we do quirks for PCI devices, suspend quirks etc. in the kernel, so I'm
+> not really sure we should use the "no interpretation" as a general rule.  IMO,
+> if there's a known broken system needing a quirk, it may just be more
+> reasonable to put the quirk into the kernel than to put it into every single
+> user application out there.
+> 
+> In this particular case we have an evidently quirky hardware (or BIOS) and it's
+> not a fundamentally wrong idea to try to address that problem in the kernel.
+> 
+> Thanks,
+> Rafael
 
