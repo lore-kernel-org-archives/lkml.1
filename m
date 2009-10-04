@@ -1,56 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZJDUzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbZJDU4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbZJDUzW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 16:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758002AbZJDUzV
+	id S1758065AbZJDU4M (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 16:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758040AbZJDU4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 16:55:21 -0400
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:60462 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757998AbZJDUzU (ORCPT
+	Sun, 4 Oct 2009 16:56:12 -0400
+Received: from mail00d.mail.t-online.hu ([84.2.42.5]:60483 "EHLO
+	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757971AbZJDU4L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 16:55:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=cBIlexhlUYV9ANrnFOXeqGdd2AZKnuRPKeYHh6LtjAJbqEYvKn5nKg0+mMK29xG22n
-         OuKOdP43G6B/VX1+VbAocSoJrqT1BFCsGqKkLYyVU2x3yQAhezyVP//8bqMNvn05PFOj
-         CN6v5CcU4/CCKY38y/+oUhYXGv4ptqiuqJn6Y=
+	Sun, 4 Oct 2009 16:56:11 -0400
+Message-ID: <4AC90BBF.9040803@freemail.hu>
+Date: Sun, 04 Oct 2009 22:55:27 +0200
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Date: Sun, 4 Oct 2009 22:54:44 +0200
-Message-ID: <4e5e476b0910041354o54c95626g974264976adaf53c@mail.gmail.com>
-Subject: bug in elevator/cfq regarding start_time?
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
+To: Jean-Francois Moine <moinejf@free.fr>,
+       Thomas Kaiser <thomas@kaiser-linux.li>, Kyle Guinn <elyk03@gmail.com>,
+       Theodore Kilgore <kilgota@auburn.edu>
+CC: V4L Mailing List <linux-media@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, ltp-list@lists.sourceforge.net
+Subject: [PATCH] pac_common: redesign function for finding Start Of Frame
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32710; Body=7 Fuz1=7
+	Fuz2=7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
-I found that the start_time is not monotonic in the cfqq fifo_list.
-The problem seems to be that:
-* attempt_merge overrides one of the start_time:
-        if (time_after(req->start_time, next->start_time))
-                req->start_time = next->start_time;
-* then it calls elv_merge_requests, that in turn invokes cfq's
-elevator_merge_req_fn, i.e. cfq_merged_requests
-* cfq_merged_requests checks start_times to decide whether requests
-need to be repositioned
-        if (!list_empty(&rq->queuelist) && !list_empty(&next->queuelist) &&
-            time_before(next->start_time, rq->start_time))
-                list_move(&rq->queuelist, &next->queuelist);
+From: Márton Németh <nm127@freemail.hu>
 
-Other I/O schedulers are not affected, since none of them uses
-start_time explicitly, but they have a copy in one of the private
-fields.
+The original implementation of pac_find_sof() does not always find
+the Start Of Frame (SOF) marker. Replace it with a state machine
+based design.
 
-Corrado
+The change was tested with Labtec Webcam 2200.
 
--- 
-__________________________________________________________________________
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+--- linux-2.6.32-rc1.orig/drivers/media/video/gspca/pac_common.h	2009-09-10 00:13:59.000000000 +0200
++++ linux-2.6.32-rc1/drivers/media/video/gspca/pac_common.h	2009-10-04 21:49:19.000000000 +0200
+@@ -33,6 +33,45 @@
+ static const unsigned char pac_sof_marker[5] =
+ 		{ 0xff, 0xff, 0x00, 0xff, 0x96 };
 
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
++/*
++   The following state machine finds the SOF marker sequence
++   0xff, 0xff, 0x00, 0xff, 0x96 in a byte stream.
++
++	   +----------+
++	   | 0: START |<---------------\
++	   +----------+<-\             |
++	     |       \---/otherwise    |
++	     v 0xff                    |
++	   +----------+ otherwise      |
++	   |     1    |--------------->*
++	   |          |                ^
++	   +----------+                |
++	     |                         |
++	     v 0xff                    |
++	   +----------+<-\0xff         |
++	/->|          |--/             |
++	|  |     2    |--------------->*
++	|  |          | otherwise      ^
++	|  +----------+                |
++	|    |                         |
++	|    v 0x00                    |
++	|  +----------+                |
++	|  |     3    |                |
++	|  |          |--------------->*
++	|  +----------+ otherwise      ^
++	|    |                         |
++   0xff |    v 0xff                    |
++	|  +----------+                |
++	\--|     4    |                |
++	   |          |----------------/
++	   +----------+ otherwise
++	     |
++	     v 0x96
++	   +----------+
++	   |  FOUND   |
++	   +----------+
++*/
++
+ static unsigned char *pac_find_sof(struct gspca_dev *gspca_dev,
+ 					unsigned char *m, int len)
+ {
+@@ -41,17 +80,54 @@ static unsigned char *pac_find_sof(struc
+
+ 	/* Search for the SOF marker (fixed part) in the header */
+ 	for (i = 0; i < len; i++) {
+-		if (m[i] == pac_sof_marker[sd->sof_read]) {
+-			sd->sof_read++;
+-			if (sd->sof_read == sizeof(pac_sof_marker)) {
++		switch (sd->sof_read) {
++		case 0:
++			if (m[i] == 0xff)
++				sd->sof_read = 1;
++			break;
++		case 1:
++			if (m[i] == 0xff)
++				sd->sof_read = 2;
++			else
++				sd->sof_read = 0;
++			break;
++		case 2:
++			switch (m[i]) {
++			case 0x00:
++				sd->sof_read = 3;
++				break;
++			case 0xff:
++				/* stay in this state */
++				break;
++			default:
++				sd->sof_read = 0;
++			}
++			break;
++		case 3:
++			if (m[i] == 0xff)
++				sd->sof_read = 4;
++			else
++				sd->sof_read = 0;
++			break;
++		case 4:
++			switch (m[i]) {
++			case 0x96:
++				/* Pattern found */
+ 				PDEBUG(D_FRAM,
+ 					"SOF found, bytes to analyze: %u."
+ 					" Frame starts at byte #%u",
+ 					len, i + 1);
+ 				sd->sof_read = 0;
+ 				return m + i + 1;
++				break;
++			case 0xff:
++				sd->sof_read = 2;
++				break;
++			default:
++				sd->sof_read = 0;
+ 			}
+-		} else {
++			break;
++		default:
+ 			sd->sof_read = 0;
+ 		}
+ 	}
