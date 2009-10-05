@@ -1,44 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932672AbZJELAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932684AbZJELBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932672AbZJELAt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 07:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932604AbZJELAs
+	id S932684AbZJELBz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 07:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932667AbZJELBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 07:00:48 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:58483 "EHLO kernel.dk"
+	Mon, 5 Oct 2009 07:01:55 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:2855 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932567AbZJELAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 07:00:47 -0400
-Date: Mon, 5 Oct 2009 13:00:11 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org
-Subject: Re: [PATCH] NFS: introduce writeback wait queue
-Message-ID: <20091005110010.GW26573@kernel.dk>
-References: <20091004030153.GA20327@localhost> <20091004030504.GA20644@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091004030504.GA20644@localhost>
+	id S932612AbZJELBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 07:01:53 -0400
+X-IronPort-AV: E=Sophos;i="4.44,505,1249282800"; 
+   d="scan'208";a="253528810"
+References: <20091004030153.GA20327@localhost> <20091005071026.GA19262@localhost>
+Message-ID: <86DD3A52-EE5C-4378-BEB6-6336E17CFCD5@netapp.com>
+From: "Myklebust, Trond" <Trond.Myklebust@netapp.com>
+To: "Wu Fengguang" <fengguang.wu@intel.com>
+Thread-Topic: [PATCH v2] NFS: introduce writeback wait queue
+Thread-Index: AcpFqykj2jfys+hNTQSivKfsHYeEIw==
+In-Reply-To: <20091005071026.GA19262@localhost>
+Content-Type: text/plain;
+	format=flowed;
+	delsp=yes;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0 (iPhone Mail 7C144)
+Subject: Re: [PATCH v2] NFS: introduce writeback wait queue
+Date: Mon, 5 Oct 2009 07:01:10 -0400
+Cc: <jens.axboe@oracle.com>, "Chris Mason" <chris.mason@oracle.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-fsdevel@vger.kernel.org>, "LKML" <linux-kernel@vger.kernel.org>,
+       <linux-nfs@vger.kernel.org>
+X-OriginalArrivalTime: 05 Oct 2009 11:01:17.0073 (UTC) FILETIME=[2974E010:01CA45AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 04 2009, Wu Fengguang wrote:
-> Hi Jens,
-> 
-> This is a bug fix for 2.6.32. Maybe other not block-queue based
-> filesystems will have similar issues ..
+On Oct 5, 2009, at 3:11, "Wu Fengguang" <fengguang.wu@intel.com> wrote:
 
-Not that I'm aware of, the NFS use is fairly special. Given that this is
-purely in the realm of nfs/, I'll let Trond decide how to include and
-push this (when a final patch is agreed upon).
+> Hi all,
+>
+> This version makes two standalone functions for easier reuse.
+>
+> Before patch, nr_writeback is near 1G on my 2GB laptop:
+>
+>     nr_writeback         nr_dirty      nr_unstable
+>           203994                2           154469
+>           203994                2           154469
+>
+> After patch, nr_writeback is limited to nfs_congestion_kb=42MB.
+>
+>     nr_writeback         nr_dirty      nr_unstable
+>            11180            34195            11754
+>             9865            36821             8234
+>            10137            36695             9338
+>
+> One minor problem I noticed is, NFS writeback is not very smooth.
+> This per 0.1s sampled trace shows that it can sometimes stuck for
+> up to 0.5s:
+>
+>     nr_writeback         nr_dirty      nr_unstable
+>            11055            37408             9599
+>            10311            37315            10529
+>            10869            35920            11459
+>            10869            35920            11459
+>            10869            35920            11459
+>            10869            35920            11459
+>            10869            35920            11459
+>            10838            35891            10042
+>            10466            35891            10414
+>            10900            34744            11437
+>            10249            34744            12088
+>            10249            34744            12088
+>            10249            34744            12088
+>            10249            34744            12088
+>            10249            34744            12088
+>            10249            34744            12088
+>            10133            34743            10663
+>            10505            34743            11035
+>            10970            34991            11345
+>            10691            34991            11593
+>            10691            34991            11593
+>            10691            34991            11593
+>            10691            34991            11593
+>            10691            34991            11593
+>
+> Trond, I guess nr_writeback/nr_unstable are decreased in async RPC
+> "complete" events. It is understandable that nr_dirty can sometimes
+> stuck on local waits, but the "local determined" nr_dirty and "remote
+> determined" nr_writeback/nr_unstable tend to stuck at the same time?
+> Did I miss something (that could be obvious to you)?
 
-Thanks for looking into this!
+It looks (at 7am in the morning after getting up at 4:30am) as though  
+the number of unstable pages is remaining constant, which would mean  
+that we're sending a lot of COMMIT requests (see nfsstat). Since  
+COMMIT is essentially an fsync call, it means that the server is going  
+to be slower.
 
--- 
-Jens Axboe
-
+Cheers
+     Trond
