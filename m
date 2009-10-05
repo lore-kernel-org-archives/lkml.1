@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbZJEN3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbZJENtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758524AbZJEN3M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 09:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594AbZJEN3L
+	id S1752878AbZJENtt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 09:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZJENts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 09:29:11 -0400
-Received: from www.tglx.de ([62.245.132.106]:44676 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbZJEN3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 09:29:11 -0400
-Date: Mon, 5 Oct 2009 15:28:16 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Anirban Sinha <ani@anirban.org>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
-       Kaz Kylheku <kaz@zeugmasystems.com>,
-       Anirban Sinha <asinha@zeugmasystems.com>
-Subject: Re: futex question
-In-Reply-To: <4AC9F06B.8020708@anirban.org>
-Message-ID: <alpine.LFD.2.00.0910051525560.2646@localhost.localdomain>
-References: <DDFD17CC94A9BD49A82147DDF7D545C501FD7F97@exchange.ZeugmaSystems.local>  <20091001092218.GH15345@elte.hu>  <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local>  <4AC68F13.8050601@us.ibm.com>  <alpine.LFD.2.00.0910041031330.2646@localhost.localdomain>
-  <DDFD17CC94A9BD49A82147DDF7D545C501F457C5@exchange.ZeugmaSystems.local>  <4AC8CF32.8060108@anirban.org>  <alpine.LFD.2.00.0910041853180.2646@localhost.localdomain>  <1254738974.26976.24.camel@twins>  <alpine.LFD.2.00.0910051251080.2646@localhost.localdomain>
- <1254741372.26976.35.camel@twins> <alpine.LFD.2.00.0910051346230.2646@localhost.localdomain> <4AC9F06B.8020708@anirban.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 5 Oct 2009 09:49:48 -0400
+Received: from if2-fnarfbargle.com ([93.93.128.64]:51294 "EHLO fnarfbargle.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752056AbZJENts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 09:49:48 -0400
+Message-ID: <4AC9F94B.3070701@wasp.net.au>
+Date: Mon, 05 Oct 2009 21:48:59 +0800
+From: Brad Campbell <brad@wasp.net.au>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michael Tokarev <mjt@tls.msk.ru>
+CC: Luca Tettamanti <kronos.it@gmail.com>, lm-sensors@lm-sensors.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [lm-sensors] it87 sensors need an ACPI driver (2.6.31)
+References: <c43b2e150909200120kf87cdc2oabafea8abbf01227@mail.gmail.com> <68676e00909200520s7730b516v4e0d6c17d529d0a7@mail.gmail.com> <4AC939BB.8090600@wasp.net.au> <4AC9B896.9080900@msgid.tls.msk.ru>
+In-Reply-To: <4AC9B896.9080900@msgid.tls.msk.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can you please fix your mail client to do proper line breaks at around
-78 chars ?
+Michael Tokarev wrote:
+> Brad Campbell wrote:
+> []
+>> Vanilla Kernel 2.6.31.1 fails to load it87 on my machine with the same 
+>> messages as posted above.
+>>
+>> [71916.534278] it87: Found IT8716F chip at 0x290, revision 0
+>> [71916.535783] it87: in3 is VCC (+5V)
+>> [71916.537239] it87: in7 is VCCH (+5V Stand-By)
+>> [71916.538763] ACPI: I/O resource it87 [0x295-0x296] conflicts with 
+>> ACPI region IP__ [0x295-0x296]
+>> [71916.540365] ACPI: Device needs an ACPI driver
+>>
+>> In addition, asus_atk0110 loads but leaves no trace in dmesg when loaded.
+> 
+> try acpi_enforce_resources=lax kernel command-line parameter.
 
-On Mon, 5 Oct 2009, Anirban Sinha wrote:
->
-> We need to clear those pointers regardless. After the exceve(), the
-> address values are meaningless under the new mm context.
+That certainly allows the it87 driver to load and function. I was more interested in seeing if the 
+motherboard was able to be supported in the asus driver, but whatever works.
 
-That's out of question. We just need to come to a decision whether we
-silently clean up callers dumbness or not.
+Cheers :)
 
-Thanks,
-
-	tglx
+Regards,
+Brad
+-- 
+Dolphins are so intelligent that within a few weeks they can
+train Americans to stand at the edge of the pool and throw them
+fish.
