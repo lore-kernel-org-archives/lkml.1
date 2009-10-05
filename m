@@ -1,198 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZJEMdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932396AbZJEMnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbZJEMdF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 08:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbZJEMdF
+	id S932396AbZJEMnk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 08:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZJEMnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 08:33:05 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:37028 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752539AbZJEMdE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 08:33:04 -0400
-Date: Mon, 5 Oct 2009 08:32:12 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       marcin.slusarz@gmail.com
-Subject: Re: [PATCH 2/3] extend get/setrlimit to support setting rlimits
-	external to a process (v4)
-Message-ID: <20091005123210.GA2898@localhost.localdomain>
-References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org> <20091005002617.GA5736@localhost.localdomain> <20091005005405.GB7180@localhost.localdomain> <20091005015756.GA2758@hack>
+	Mon, 5 Oct 2009 08:43:40 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36626 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753193AbZJEMnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 08:43:39 -0400
+Message-ID: <4AC9E9D5.6080809@suse.de>
+Date: Mon, 05 Oct 2009 14:43:01 +0200
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+To: Mike Miller <mike.miller@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Stephen M. Cameron" <scameron@beardog.cce.hp.com>,
+       James.Bottomley@HansenPartnership.com, axboe@kernel.dk,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Add hpsa driver for HP Smart Array controllers.
+References: <20091001211705.15591.76403.stgit@beardog.cce.hp.com> <20091001143035.a83a7564.akpm@linux-foundation.org> <20091001214239.GA15691@beardog.cce.hp.com>
+In-Reply-To: <20091001214239.GA15691@beardog.cce.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091005015756.GA2758@hack>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -4.6 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 05, 2009 at 09:57:56AM +0800, Américo Wang wrote:
-> On Sun, Oct 04, 2009 at 08:54:05PM -0400, Neil Horman wrote:
-> >Add syscall infrastructure for getprlimit/setprlimit
-> >
-> >This patch adds the definitions for the get/setprlimit syscalls.  They are
-> >identical to the get/setlimit calls, except that they allow the caller to
-> >manipulate limits for processes other than themselves.
-> >
-> >Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Mike Miller wrote:
+> On Thu, Oct 01, 2009 at 02:30:35PM -0700, Andrew Morton wrote:
+>> On Thu, 01 Oct 2009 16:25:30 -0500
+>> "Stephen M. Cameron" <scameron@beardog.cce.hp.com> wrote:
+>>
+>>> Add hpsa driver for HP Smart Array controllers.
+>>>
+>>> This driver supports a subset of HP Smart Array Controllers.
+>>> It is a SCSI alternative to the cciss driver.
+>> Does it support all the devices which cciss supports?
+>>
+>> IOW, do we have a plan here to remove the cciss driver or must we
+>> maintain both drivers indefinitely?
 > 
-> Hello, Neil.
+> Andrew,
+> The hpsa driver supports only the latest generation of Smart Array
+> controllers plus the P400 and P800. The goal was to have minimal overlap but
+> if we included only the very latest I suspect little testing would be done
+> because of the availability of new hardware.
 > 
-> What is your point of adding two new syscalls?
-> Why not add them to prctl(2)? :-)
+> No new controllers will be added to cciss once hpsa is accepted. We're
+> looking at supporting both drivers for 3 or 4 years until cciss can be
+> phased out completely.
 > 
-See the conversations between Andrew and I over the first two version of this
-changeset :).  Initially I was opposed to adding syscalls at all, but Andrew
-thought that this interface lent itself naturally to syscalls (given that
-setrlimit and getrlimit are already syscalls).  Since the core work here is
-applicable to both syscalls and the proc interface, I figured it didn't hurt to
-do both.
+Yeah!
 
-Best
-Neil
+Thanks, Mike and Stephen, for the effort you put into this.
+Very much appreciated.
 
-> 
-> Thanks.
-> 
-> >
-> >
-> > include/linux/syscalls.h |    4 ++
-> > kernel/sys.c             |   84 +++++++++++++++++++++++++++++++++++++++++++++++
-> > 2 files changed, 88 insertions(+)
-> >
-> >diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> >index 80de700..535210a 100644
-> >--- a/include/linux/syscalls.h
-> >+++ b/include/linux/syscalls.h
-> >@@ -584,11 +584,15 @@ asmlinkage long sys_newuname(struct new_utsname __user *name);
-> > 
-> > asmlinkage long sys_getrlimit(unsigned int resource,
-> > 				struct rlimit __user *rlim);
-> >+asmlinkage long sys_getprlimit(pid_t pid, unsigned int resource,
-> >+				struct rlimit __user *rlim);
-> > #if defined(COMPAT_RLIM_OLD_INFINITY) || !(defined(CONFIG_IA64))
-> > asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *rlim);
-> > #endif
-> > asmlinkage long sys_setrlimit(unsigned int resource,
-> > 				struct rlimit __user *rlim);
-> >+asmlinkage long	sys_setprlimit(pid_t pid, unsigned int resource,
-> >+				struct rlimit __user *rlim);
-> > asmlinkage long sys_getrusage(int who, struct rusage __user *ru);
-> > asmlinkage long sys_umask(int mask);
-> > 
-> >diff --git a/kernel/sys.c b/kernel/sys.c
-> >index 05bd22a..4fe1140 100644
-> >--- a/kernel/sys.c
-> >+++ b/kernel/sys.c
-> >@@ -1211,6 +1211,50 @@ SYSCALL_DEFINE2(getrlimit, unsigned int, resource, struct rlimit __user *, rlim)
-> > 	}
-> > }
-> > 
-> >+SYSCALL_DEFINE3(getprlimit, pid_t, pid, unsigned int, resource,
-> >+		struct rlimit __user *, rlim)
-> >+{
-> >+	unsigned long flags;
-> >+	struct task_struct *tsk;
-> >+	struct pid *ppid;
-> >+	int retval = -EINVAL;
-> >+
-> >+	ppid = find_get_pid(pid);
-> >+	if (!ppid)
-> >+		goto out;
-> >+
-> >+	tsk = get_pid_task(ppid, PIDTYPE_PID);
-> >+
-> >+	if (!tsk)
-> >+		goto out_put_pid;
-> >+
-> >+	if (resource >= RLIM_NLIMITS)
-> >+		goto out_put_all;
-> >+
-> >+	retval = -EBUSY;
-> >+	if (!lock_task_sighand(tsk, &flags))
-> >+		goto out_put_all;
-> >+
-> >+	else {
-> >+		struct rlimit val;
-> >+
-> >+		task_lock(tsk->group_leader);
-> >+		val = current->signal->rlim[resource];
-> >+		task_unlock(tsk->group_leader);
-> >+		retval = copy_to_user(rlim, &val, sizeof(*rlim)) ? -EFAULT : 0;
-> >+	}
-> >+
-> >+	unlock_task_sighand(tsk, &flags);
-> >+
-> >+out_put_all:
-> >+	put_task_struct(tsk);
-> >+out_put_pid:
-> >+	put_pid(ppid);
-> >+out:
-> >+	return retval;
-> >+}
-> >+
-> >+
-> > #ifdef __ARCH_WANT_SYS_OLD_GETRLIMIT
-> > 
-> > /*
-> >@@ -1301,6 +1345,46 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
-> > 	return do_setrlimit(resource, &new_rlim, current);
-> > }
-> > 
-> >+SYSCALL_DEFINE3(setprlimit, pid_t, pid, unsigned int, resource,
-> >+		struct rlimit __user *, rlim)
-> >+{
-> >+	struct task_struct *tsk;
-> >+	struct pid *ppid;
-> >+	unsigned long flags;
-> >+	struct rlimit new_rlim;
-> >+	int retval = -EINVAL;
-> >+
-> >+	ppid = find_get_pid(pid);
-> >+	if (!ppid)
-> >+		goto out;
-> >+
-> >+	tsk = get_pid_task(ppid, PIDTYPE_PID);
-> >+
-> >+	if (!tsk)
-> >+		goto out_put_pid;
-> >+
-> >+	if (resource >= RLIM_NLIMITS)
-> >+		goto out_put_all;
-> >+
-> >+	retval = -EFAULT;
-> >+	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
-> >+		goto out_put_all;
-> >+
-> >+	if (!lock_task_sighand(tsk, &flags))
-> >+		goto out_put_all;
-> >+
-> >+	retval = do_setrlimit(resource, &new_rlim, tsk);
-> >+
-> >+	unlock_task_sighand(tsk, &flags);
-> >+
-> >+out_put_all:
-> >+	put_task_struct(tsk);
-> >+out_put_pid:
-> >+	put_pid(ppid);
-> >+out:
-> >+	return retval;
-> >+}
-> >+
-> > /*
-> >  * It would make sense to put struct rusage in the task_struct,
-> >  * except that would make the task_struct be *really big*.  After
-> >--
-> >To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >the body of a message to majordomo@vger.kernel.org
-> >More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> -- 
-> Live like a child, think like the god.
->  
-> 
+Cheers,
+
+Hannes
+-- 
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
