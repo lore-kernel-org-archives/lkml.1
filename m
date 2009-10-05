@@ -1,72 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbZJEPiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZJEPpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753654AbZJEPiJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 11:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbZJEPiI
+	id S1753797AbZJEPpz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 11:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbZJEPpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 11:38:08 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:55283 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751218AbZJEPiH (ORCPT
+	Mon, 5 Oct 2009 11:45:54 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:37260 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753743AbZJEPpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 11:38:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=DArPmO8oJ26Ovuwo324Tl4ex5SngJq+jk9ymPqh0yzpEtFJe/SR5y8vzkLSXFCh6kb
-         U1k6PkPVQYdWTRzevRYDL9DMbzKI6MrZ4GP5mk1sASZM8QOW4WqmeA6l9f9XElkeex2L
-         cUbI8gIylUqtzua/OPqMb1TPq1OoyGZlqRTyA=
+	Mon, 5 Oct 2009 11:45:54 -0400
+Date: Mon, 5 Oct 2009 11:39:15 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Tejun Heo <tj@kernel.org>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu, rusty@rustcorp.com.au,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [this_cpu_xx V4 12/20] Move early initialization of pagesets
+ out of zone_wait_table_init()
+In-Reply-To: <4ACA13A1.4090107@kernel.org>
+Message-ID: <alpine.DEB.1.10.0910051138060.16359@gentwo.org>
+References: <20091001212521.123389189@gentwo.org> <20091001212559.879284755@gentwo.org> <4AC7279B.3050901@kernel.org> <alpine.DEB.1.10.0910051038410.16359@gentwo.org> <4ACA0A4F.3090004@kernel.org> <alpine.DEB.1.10.0910051105070.16359@gentwo.org>
+ <4ACA0EFD.4070607@kernel.org> <alpine.DEB.1.10.0910051126370.16359@gentwo.org> <4ACA13A1.4090107@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <4AC939BB.8090600@wasp.net.au>
-References: <c43b2e150909200120kf87cdc2oabafea8abbf01227@mail.gmail.com>
-	 <68676e00909200520s7730b516v4e0d6c17d529d0a7@mail.gmail.com>
-	 <4AC939BB.8090600@wasp.net.au>
-Date: Mon, 5 Oct 2009 17:37:29 +0200
-Message-ID: <68676e00910050837g2006bfb8j349891504e474a95@mail.gmail.com>
-Subject: Re: [lm-sensors] it87 sensors need an ACPI driver (2.6.31)
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Brad Campbell <brad@wasp.net.au>
-Cc: lm-sensors@lm-sensors.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 5, 2009 at 2:11 AM, Brad Campbell <brad@wasp.net.au> wrote:
-> Luca Tettamanti wrote:
->> On Sun, Sep 20, 2009 at 10:20 AM, wixor <wixorpeek@gmail.com> wrote:
->>> I have also discovered that dsdt contains description of what is
->>> connected to each it87 input. Maybe it has also some code to access
->>> the chip? In /proc/acpi I can read only one temperature, while the
->>> chip measures three temperatures, fan speeds and voltages. This is
->>> desktop pc with ASUS A8N1-E maniboard, athlon64 and nforce4 chipset.
->>
->> Try the asus_atk0110 driver, it handles the ACPI hwmon interface on
->> Asus motherboards. If it does not work then please send a dump of your
->> DSDT (/sys/firmware/acpi/tables/DSDT).
->
-> Vanilla Kernel 2.6.31.1 fails to load it87 on my machine with the same
-> messages as posted above.
->
-> [71916.534278] it87: Found IT8716F chip at 0x290, revision 0
-> [71916.535783] it87: in3 is VCC (+5V)
-> [71916.537239] it87: in7 is VCCH (+5V Stand-By)
-> [71916.538763] ACPI: I/O resource it87 [0x295-0x296] conflicts with ACPI
-> region IP__ [0x295-0x296]
-> [71916.540365] ACPI: Device needs an ACPI driver
->
-> In addition, asus_atk0110 loads but leaves no trace in dmesg when loaded.
+On Tue, 6 Oct 2009, Tejun Heo wrote:
 
-That's good ;-) The driver is quiet when everything is ok. You should
-see the corresponding entries under /sys/class/hwmon/hwmonN; upgrade
-lm-sensor package to version 3.1.1, older versions do not support ACPI
-devices.
+> I'm under the impression that ia64 needs its percpu areas setup
+> earlier during the boot so I'm not sure what you have in mind but as
+> long as the call isn't scattered over different setup_per_cpu_areas()
+> implementations, I'm okay.
 
-> Motherboard is an Asus M2N32-WS. DSDT attached.
+Currently it does. But there must be some way to untangle that mess.
 
->From a quick glance it should work. If it doesn't enable
-CONFIG_HWMON_DEBUG_CHIP.
-
-Luca
