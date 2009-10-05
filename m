@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbZJEC0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758356AbZJECYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758375AbZJEC0x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 22:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758364AbZJEC0x
+	id S1758356AbZJECYs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 22:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbZJECYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 22:26:53 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:39034 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758346AbZJEC0w (ORCPT
+	Sun, 4 Oct 2009 22:24:47 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42656 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758229AbZJECYq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 22:26:52 -0400
-Message-ID: <4AC95891.3000707@oracle.com>
-Date: Sun, 04 Oct 2009 19:23:13 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Sun, 4 Oct 2009 22:24:46 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Bryan Donlan <bdonlan@gmail.com>
+Subject: Re: [PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       KOSAKI Motohiro <kosaki.motohiro@gmail.com>, Timo Sirainen <tss@iki.fi>,
+       linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
+In-Reply-To: <3e8340490910041921p315f3726me0143f2516022f66@mail.gmail.com>
+References: <20091005105617.5F86.A69D9226@jp.fujitsu.com> <3e8340490910041921p315f3726me0143f2516022f66@mail.gmail.com>
+Message-Id: <20091005112314.5F89.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: trivial@kernel.org, nhorman@tuxdriver.com
-Subject: [PATCH trivial] docs: fix core_pipe_limit info
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4AC958FD.004D:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon,  5 Oct 2009 11:24:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+> On Sun, Oct 4, 2009 at 9:59 PM, KOSAKI Motohiro
+> <kosaki.motohiro@jp.fujitsu.com> wrote:
+> >> On Sun, Oct 4, 2009 at 9:38 PM, KOSAKI Motohiro
+> >> <kosaki.motohiro@jp.fujitsu.com> wrote:
+> >> >> The improvement idea is here.
+> >> >>
+> >> >> Changelog
+> >> >>   - Added task_lock() to prctl(PR_SET_PROCTITLE_AREA)
+> >> >>  -  Added small input sanity check to prctl(PR_SET_PROCTITLE_AREA)
+> >> >
+> >> > Doh, task_lock() is obviously wrong. please forget this.
+> >>
+> >> As another note, in general I think we'd need to hold a lock over the
+> >> entire operation. After all, if userspace changes its PROCTITLE_AREA,
+> >> and then reuses the memory for something else, we have an information
+> >> leak.
+> >
+> > if reusing occur, it's obviously userland fault. I don't think we need to care this.
+> > because current kernel also can be information leak by strcpy(argv[0], mypassword).
+> >
+> > I think they are userland bug both.
+> 
+> No, the scenario is:
+> 
+> Process B: Enter proc_pid_cmdline(), read arg_start and arg_end into
+> CPU registers
+> Process A: prctl(PR_SET_PROCTITLE_AREA)....
+> Process A: free(old_arg_area);
+> Process A: char *foo = malloc(...);
+> Process A: strcpy(foo, super_secret_password);
+> Process B: access_process_vm - using an area overlapping foo
+> 
+> Process B now has process A's secrets. This cannot be avoided by
+> process A, as it cannot control when process B will complete
+> proc_pid_cmdline(), and so the kernel must protect against this
+> scenario.  The only way a userspace process could prevent this is by
+> only using PR_SET_PROCTITLE_AREA once, and never reusing that memory,
+> ever. This does not seem like an appropriate restriction to pass down
+> to userspace for me...
+> 
+> Anyway, I'm working on a patch that uses the generation-counter approach now :)
 
-Fix typos in core_pipe_limit info.
+Ok, you are right.
+Plus, I've finished to made generation-counter approach patch :)
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Neil Horman <nhorman@tuxdriver.com>
----
- Documentation/sysctl/kernel.txt |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- linux-next-20090930.orig/Documentation/sysctl/kernel.txt
-+++ linux-next-20090930/Documentation/sysctl/kernel.txt
-@@ -139,9 +139,9 @@ core_pattern is used to specify a core d
- core_pipe_limit:
- 
- This sysctl is only applicable when core_pattern is configured to pipe core
--files to user space helper a (when the first character of core_pattern is a '|',
-+files to a user space helper (when the first character of core_pattern is a '|',
- see above).  When collecting cores via a pipe to an application, it is
--occasionally usefull for the collecting application to gather data about the
-+occasionally useful for the collecting application to gather data about the
- crashing process from its /proc/pid directory.  In order to do this safely, the
- kernel must wait for the collecting process to exit, so as not to remove the
- crashing processes proc files prematurely.  This in turn creates the possibility
-@@ -152,7 +152,7 @@ applications in parallel.  If this value
- processes above that value are noted via the kernel log and their cores are
- skipped.  0 is a special value, indicating that unlimited processes may be
- captured in parallel, but that no waiting will take place (i.e. the collecting
--process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
-+process is not guaranteed access to /proc/<crashing pid>/).  This value defaults
- to 0.
- 
- ==============================================================
+
