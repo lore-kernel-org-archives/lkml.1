@@ -1,20 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbZJEA5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbZJEA4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758320AbZJEA5Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 20:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932233AbZJEA5V
+	id S932306AbZJEA4Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 20:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758355AbZJEA4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 20:57:21 -0400
-Received: from mail.perches.com ([173.55.12.10]:1722 "EHLO mail.perches.com"
+	Sun, 4 Oct 2009 20:56:05 -0400
+Received: from mail.perches.com ([173.55.12.10]:1745 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758280AbZJEAzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 20:55:32 -0400
+	id S1758339AbZJEAz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 20:55:57 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Eric Biederman <ebiederm@xmission.com>, kexec@lists.infradead.org
-Subject: [PATCH 16/21] kernel/kexec.c: use pr_<level> and add pr_fmt(fmt)
-Date: Sun,  4 Oct 2009 17:53:43 -0700
-Message-Id: <40ffa7c5595f4afbba793919b397b5139cde901a.1254701151.git.joe@perches.com>
+Cc: Dan Williams <dan.j.williams@intel.com>,
+       Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org
+Subject: [PATCH 17/21] crypto/async_tx/raid6test.c: use pr_<level> and add pr_fmt(fmt)
+Date: Sun,  4 Oct 2009 17:53:44 -0700
+Message-Id: <537d5c767044ad3040eb8464a4b75536387ed159.1254701151.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1254701151.git.joe@perches.com>
 References: <cover.1254701151.git.joe@perches.com>
@@ -25,100 +28,91 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Added #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-Converted printk(KERN_<level> to pr_<level>(
-Added KERN_ERR to allocation failure message
+Converted pr( to pr_info(
+Removed #define pr pr_info("raid6test: "
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- kernel/kexec.c |   21 ++++++++++-----------
- 1 files changed, 10 insertions(+), 11 deletions(-)
+ crypto/async_tx/raid6test.c |   30 +++++++++++++++---------------
+ 1 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index f336e21..e805351 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -6,6 +6,8 @@
-  * Version 2.  See the file COPYING for more details.
+diff --git a/crypto/async_tx/raid6test.c b/crypto/async_tx/raid6test.c
+index 3ec27c7..bcf762c 100644
+--- a/crypto/async_tx/raid6test.c
++++ b/crypto/async_tx/raid6test.c
+@@ -19,12 +19,12 @@
+  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+  *
   */
- 
++
 +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
- #include <linux/capability.h>
- #include <linux/mm.h>
- #include <linux/file.h>
-@@ -245,13 +247,13 @@ static int kimage_normal_alloc(struct kimage **rimage, unsigned long entry,
- 	image->control_code_page = kimage_alloc_control_pages(image,
- 					   get_order(KEXEC_CONTROL_PAGE_SIZE));
- 	if (!image->control_code_page) {
--		printk(KERN_ERR "Could not allocate control_code_buffer\n");
-+		pr_err("Could not allocate control_code_buffer\n");
- 		goto out;
+ #include <linux/async_tx.h>
+ #include <linux/random.h>
+ 
+-#undef pr
+-#define pr(fmt, args...) pr_info("raid6test: " fmt, ##args)
+-
+ #define NDISKS 16 /* Including P and Q */
+ 
+ static struct page *dataptrs[NDISKS];
+@@ -121,12 +121,12 @@ static void raid6_dual_recov(int disks, size_t bytes, int faila, int failb, stru
+ 	async_tx_issue_pending(tx);
+ 
+ 	if (wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000)) == 0)
+-		pr("%s: timeout! (faila: %d failb: %d disks: %d)\n",
+-		   __func__, faila, failb, disks);
++		pr_info("%s: timeout! (faila: %d failb: %d disks: %d)\n",
++			__func__, faila, failb, disks);
+ 
+ 	if (result != 0)
+-		pr("%s: validation failure! faila: %d failb: %d sum_check_flags: %x\n",
+-		   __func__, faila, failb, result);
++		pr_info("%s: validation failure! faila: %d failb: %d sum_check_flags: %x\n",
++			__func__, faila, failb, result);
+ }
+ 
+ static int test_disks(int i, int j, int disks)
+@@ -144,9 +144,9 @@ static int test_disks(int i, int j, int disks)
+ 	erra = memcmp(page_address(data[i]), page_address(recovi), PAGE_SIZE);
+ 	errb = memcmp(page_address(data[j]), page_address(recovj), PAGE_SIZE);
+ 
+-	pr("%s(%d, %d): faila=%3d(%c)  failb=%3d(%c)  %s\n",
+-	   __func__, i, j, i, disk_type(i, disks), j, disk_type(j, disks),
+-	   (!erra && !errb) ? "OK" : !erra ? "ERRB" : !errb ? "ERRA" : "ERRAB");
++	pr_info("%s(%d, %d): faila=%3d(%c)  failb=%3d(%c)  %s\n",
++		__func__, i, j, i, disk_type(i, disks), j, disk_type(j, disks),
++		(!erra && !errb) ? "OK" : !erra ? "ERRB" : !errb ? "ERRA" : "ERRAB");
+ 
+ 	dataptrs[i] = data[i];
+ 	dataptrs[j] = data[j];
+@@ -179,11 +179,11 @@ static int test(int disks, int *tests)
+ 	async_tx_issue_pending(tx);
+ 
+ 	if (wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000)) == 0) {
+-		pr("error: initial gen_syndrome(%d) timed out\n", disks);
++		pr_info("error: initial gen_syndrome(%d) timed out\n", disks);
+ 		return 1;
  	}
  
- 	image->swap_page = kimage_alloc_control_pages(image, 0);
- 	if (!image->swap_page) {
--		printk(KERN_ERR "Could not allocate swap buffer\n");
-+		pr_err("Could not allocate swap buffer\n");
- 		goto out;
- 	}
+-	pr("testing the %d-disk case...\n", disks);
++	pr_info("testing the %d-disk case...\n", disks);
+ 	for (i = 0; i < disks-1; i++)
+ 		for (j = i+1; j < disks; j++) {
+ 			(*tests)++;
+@@ -216,9 +216,9 @@ static int raid6_test(void)
+ 		err += test(5, &tests);
+ 	err += test(NDISKS, &tests);
  
-@@ -320,7 +322,7 @@ static int kimage_crash_alloc(struct kimage **rimage, unsigned long entry,
- 	image->control_code_page = kimage_alloc_control_pages(image,
- 					   get_order(KEXEC_CONTROL_PAGE_SIZE));
- 	if (!image->control_code_page) {
--		printk(KERN_ERR "Could not allocate control_code_buffer\n");
-+		pr_err("Could not allocate control_code_buffer\n");
- 		goto out;
- 	}
+-	pr("\n");
+-	pr("complete (%d tests, %d failure%s)\n",
+-	   tests, err, err == 1 ? "" : "s");
++	pr_info("\n");
++	pr_info("complete (%d tests, %d failure%s)\n",
++		tests, err, err == 1 ? "" : "s");
  
-@@ -1141,8 +1143,7 @@ static int __init crash_notes_memory_init(void)
- 	/* Allocate memory for saving cpu registers. */
- 	crash_notes = alloc_percpu(note_buf_t);
- 	if (!crash_notes) {
--		printk("Kexec: Memory allocation for saving cpu register"
--		" states failed\n");
-+		pr_err("Memory allocation for saving cpu register states failed\n");
- 		return -ENOMEM;
- 	}
- 	return 0;
-@@ -1192,8 +1193,7 @@ static int __init parse_crashkernel_mem(char 			*cmdline,
- 		if (*cur != ':') {
- 			end = memparse(cur, &tmp);
- 			if (cur == tmp) {
--				pr_warning("crashkernel: Memory "
--						"value expected\n");
-+				pr_warning("crashkernel: Memory value expected\n");
- 				return -EINVAL;
- 			}
- 			cur = tmp;
-@@ -1211,7 +1211,7 @@ static int __init parse_crashkernel_mem(char 			*cmdline,
- 
- 		size = memparse(cur, &tmp);
- 		if (cur == tmp) {
--			pr_warning("Memory value expected\n");
-+			pr_warning("crashkernel: Memory value expected\n");
- 			return -EINVAL;
- 		}
- 		cur = tmp;
-@@ -1234,8 +1234,7 @@ static int __init parse_crashkernel_mem(char 			*cmdline,
- 			cur++;
- 			*crash_base = memparse(cur, &tmp);
- 			if (cur == tmp) {
--				pr_warning("Memory value expected "
--						"after '@'\n");
-+				pr_warning("crashkernel: Memory value expected after '@'\n");
- 				return -EINVAL;
- 			}
- 		}
-@@ -1473,7 +1472,7 @@ int kernel_kexec(void)
- #endif
- 	{
- 		kernel_restart_prepare(NULL);
--		printk(KERN_EMERG "Starting new kernel\n");
-+		pr_emerg("Starting new kernel\n");
- 		machine_shutdown();
- 	}
- 
+ 	for (i = 0; i < NDISKS+3; i++)
+ 		put_page(data[i]);
 -- 
 1.6.3.1.10.g659a0.dirty
 
