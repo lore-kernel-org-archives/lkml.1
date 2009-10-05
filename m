@@ -1,56 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752911AbZJEOov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbZJEOue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752911AbZJEOov (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 10:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZJEOou
+	id S1753120AbZJEOue (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 10:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZJEOud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 10:44:50 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56670 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751082AbZJEOot (ORCPT
+	Mon, 5 Oct 2009 10:50:33 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:49664 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753063AbZJEOuc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 10:44:49 -0400
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, Tejun Heo <tj@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: use near online node instead of round bin for numa
-From: Andi Kleen <andi@firstfloor.org>
-References: <4AC7974C.20304@kernel.org>
-Date: Mon, 05 Oct 2009 16:44:10 +0200
-In-Reply-To: <4AC7974C.20304@kernel.org> (Yinghai Lu's message of "Sat, 03 Oct 2009 11:26:20 -0700")
-Message-ID: <87my45yk79.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 5 Oct 2009 10:50:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=aAnjk5rgTpaH90grccXZV50TNXdG+Uqk66RFfHV9jQH9FypuDcEME2x28Kre9kE6e9
+         0TAMn4H45WH3lwhxchOvfEmpibODwFGEBrvBaUz09Y6GdoJ/RcdF81koMFwQksrFmLNp
+         8bP1psE5Mm7HsRqO4kZAD8hGI79HCF5RznAHE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <804dabb00910031908k68f91fdetfab8b34aa5e7a9a4@mail.gmail.com>
+References: <804dabb00910020707r9820d8bpe371baf1efb67c1@mail.gmail.com>
+	 <4AC7F411.1090305@gmail.com>
+	 <804dabb00910031908k68f91fdetfab8b34aa5e7a9a4@mail.gmail.com>
+Date: Mon, 5 Oct 2009 10:49:54 -0400
+Message-ID: <804dabb00910050749o10fa97cawbe4422efb030e4ac@mail.gmail.com>
+Subject: Re: /dev/sdb not detected anymore?
+From: Peter Teoh <htmldeveloper@gmail.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yinghai@kernel.org> writes:
+problem resolved:   the cause is due to the rootfs being 100% full,
+and that (*i think*) result in udev not behaving properly when loading
+all the devices.   just by toggling between 100% full vs not full for
+the rootfs, the /dev/sdb will become not detected vs detected.
 
-> cpu to node mapping is set in following sequence:
-> 1. numa_init_array: set up roundbin from cpu to online node
-> 2. init_cpu_to_node: set that according to apicid_to_node[] according to srat
-> 		  only handle that node is online, and leave other cpu on node
-> 		  without ram (aka not online) to still round-bin
-> 3. later srat_detect_node for intel/amd, will use first_online node or near by
->    node.
+On Sat, Oct 3, 2009 at 10:08 PM, Peter Teoh <htmldeveloper@gmail.com> wrote:
+> thank you for the response.   the bug report i just raised is this:
 >
-> problem is that setup_per_cpu_areas() is called between  2 and 3. the per_cpu
-> for cpu on node with ram is on different node. and could put that on node with
-> two hops away.
+> http://bugzilla.kernel.org/show_bug.cgi?id=14319
 >
-> so try add find_near_online_node() and call int init_cpu_to_node()
+> and attachment is:
+>
+> http://bugzilla.kernel.org/attachment.cgi?id=23255
+>
+> Thanks.
+>
+> On Sat, Oct 3, 2009 at 9:02 PM, Robert Hancock <hancockrwd@gmail.com> wrote:
+>> On 10/02/2009 08:07 AM, Peter Teoh wrote:
+>>>
+>>> I just built my 2.6.32-rc2 (from linus-git) yesterday, and repeated
+>>> today again, starting from "make mrproper", and consistently both
+>>> version cannot detect my /dev/sdb, which is the second SATA harddisk.
+>>>  The first SATA is detected as follows in dmesg:
+>>>
+>>>     742 [    4.595949] scsi 2:0:0:0: Direct-Access     ATA
+>>> ST3500630AS      3.AA PQ: 0 ANSI: 5
+>>>     743 [    4.596116] sd 2:0:0:0: [sda] 976773168 512-byte logical
+>>> blocks: (500 GB/465 GiB)
+>>>     744 [    4.596213] sd 2:0:0:0: [sda] Write Protect is off
+>>>     745 [    4.596216] sd 2:0:0:0: [sda] Mode Sense: 00 3a 00 00
+>>>     746 [    4.596258] sd 2:0:0:0: [sda] Write cache: enabled, read
+>>> cache: enabled, doesn't support DPO or FUA
+>>>     747 [    4.596467]  sda: sda1 sda2 sda3 sda4<  sda5 sda6 sda7 sda8
+>>> sda9>
+>>>     748 [    4.674607] sd 2:0:0:0: [sda] Attached SCSI disk
+>>>
+>>> And from sg_inq:
+>>>
+>>> standard INQUIRY:
+>>>   PQual=0  Device_type=0  RMB=0  version=0x05  [SPC-3]
+>>>   [AERC=0]  [TrmTsk=0]  NormACA=0  HiSUP=0  Resp_data_format=2
+>>>   SCCS=0  ACC=0  TPGS=0  3PC=0  Protect=0  BQue=0
+>>>   EncServ=0  MultiP=0  [MChngr=0]  [ACKREQQ=0]  Addr16=0
+>>>   [RelAdr=0]  WBus16=0  Sync=0  Linked=0  [TranDis=0]  CmdQue=0
+>>>   [SPI: Clocking=0x0  QAS=0  IUS=0]
+>>>     length=96 (0x60)   Peripheral device type: disk
+>>>  Vendor identification: ATA
+>>>  Product identification: ST3500630AS
+>>>  Product revision level: 3.AA
+>>>  Unit serial number:             9QG14T5Z
+>>>
+>>> But the second SATA (identical in type/model) is not detectable.
+>>> Upon rebooting to my previous 2.6.31 kernel version, it became
+>>> detected and usable - absolutely nothing else is touch.   So what is
+>>> it in the latest kernel which is giving the problem?
+>>
+>> We need more details, can you post the full boot log including the actual
+>> libata messages from the working and non-working kernels?
+>>
+>
+> and the full bootlog is here (not in bugzilla submission) (timestamp
+> removed for your easy comparison).
+>
+> --
+> Regards,
+> Peter Teoh
+>
 
-This fallback case should not really happen anyways, unless the BIOS is buggy
-(in this case it might better to completely reject the SRAT because
-more might be wrong).
 
-Do you have a system where this is needed?
-
--Andi
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Regards,
+Peter Teoh
