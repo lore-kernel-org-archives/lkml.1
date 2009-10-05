@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbZJELU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZJELSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758791AbZJELU2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 07:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758736AbZJELU2
+	id S1758051AbZJELSI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 07:18:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZJELSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 07:20:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44964 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756333AbZJELU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 07:20:27 -0400
-Date: Mon, 5 Oct 2009 13:19:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Anirban Sinha <ani@anirban.org>,
-       linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
-       Kaz Kylheku <kaz@zeugmasystems.com>,
-       Anirban Sinha <asinha@zeugmasystems.com>
-Subject: Re: futex question
-Message-ID: <20091005111933.GA25889@elte.hu>
-References: <20091001092218.GH15345@elte.hu> <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local> <4AC68F13.8050601@us.ibm.com> <alpine.LFD.2.00.0910041031330.2646@localhost.localdomain> <DDFD17CC94A9BD49A82147DDF7D545C501F457C5@exchange.ZeugmaSystems.local> <4AC8CF32.8060108@anirban.org> <alpine.LFD.2.00.0910041853180.2646@localhost.localdomain> <1254738974.26976.24.camel@twins> <alpine.LFD.2.00.0910051251080.2646@localhost.localdomain> <1254741372.26976.35.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254741372.26976.35.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 5 Oct 2009 07:18:07 -0400
+Received: from viefep18-int.chello.at ([62.179.121.38]:9985 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753053AbZJELSG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 07:18:06 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH] sched: Set correct normal_prio and prio values in
+ sched_fork()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Peter Williams <pwil3058@bigpond.net.au>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Linux Kernel Mailing <linux-kernel@vger.kernel.org>
+In-Reply-To: <f8f46736fd4e7f090ac0.1253774830@mudlark.pw.nest>
+References: <f8f46736fd4e7f090ac0.1253774830@mudlark.pw.nest>
+Content-Type: text/plain
+Date: Mon, 05 Oct 2009 13:20:22 +0200
+Message-Id: <1254741622.26976.37.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-09-24 at 06:47 +0000, Peter Williams wrote:
+> normal_prio should be updated if policy changes from RT to SCHED_MORMAL
+> or if static_prio/nice is changed.  Some paths through sched_fork()
+> ignore this requirement and may result in normal_prio having an invalid
+> value.
+> 
+> Fixing this issue allows the call to effective_prio() in
+> wake_up_new_task() to be removed.
+> 
+> Signed-off-by: Peter Williams <pwil3058@bigpond.net.au>
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+/me twists his brain into a pretsel, squints his eyes and sees its
+obvious ;-)
 
-> diff --git a/fs/exec.c b/fs/exec.c
-> index d49be6b..0812ba6 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -1295,6 +1295,22 @@ int do_execve(char * filename,
->  	bool clear_in_exec;
->  	int retval;
->  
-> +	retval = -EWOULDBLOCK;
-> +#ifdef CONFIG_FUTEX
-> +	if (unlikely(current->robust_list))
-> +		goto out_ret;
-> +#ifdef CONFIG_COMPAT
-> +	if (unlikely(current->compat_robust_list))
-> +		goto out_ret;
-> +#endif
-> +	spin_lock_irq(&current->pi_lock);
-> +	if (!list_empty(&current->pi_state_list)) {
-> +		spin_unlock_irq(&current->pi_lock);
-> +		goto out_ret;
-> +	}
-> +	spin_unlock_irq(&current->pi_lock);
-> +#endif
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-i suspect this should have the form of:
+Thank Peter!
 
-	retval = can_exec_robust_futexes();
-	if (retval)
-		goto out_ret
-
-  	retval = unshare_files(&displaced);
-  	if (retval)
-  		goto out_ret;
-
-	...
-
-but ... shouldnt we just do what exec normally does and zap any state 
-that shouldnt be carried over into the new context - instead of denying 
-the exec? Am i missing something?
-
-	Ingo
