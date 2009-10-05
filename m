@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbZJEDdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758477AbZJEDgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758461AbZJEDdm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 23:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758424AbZJEDdl
+	id S1758477AbZJEDgi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 23:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758426AbZJEDgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 23:33:41 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:50175 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758346AbZJEDdl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 23:33:41 -0400
-Date: Mon, 5 Oct 2009 09:02:56 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [git pull request] ACPI Processor Aggregator Driver for
- 2.6.32-rc1
-Message-ID: <20091005033256.GA26592@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <alpine.LFD.2.00.0910030145140.25240@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0910030145140.25240@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sun, 4 Oct 2009 23:36:37 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34725 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758346AbZJEDgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 23:36:36 -0400
+Date: Mon, 5 Oct 2009 14:35:52 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Philipp Reisner <philipp.reisner@linbit.com>, <drbd-dev@linbit.com>
+Subject: linux-next: block/drbd tree build failure
+Message-Id: <20091005143552.977a2d4d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__5_Oct_2009_14_35_52_+1100_2ZCHj9cMIv.fPR.Z"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Len Brown <lenb@kernel.org> [2009-10-03 01:56:32]:
+--Signature=_Mon__5_Oct_2009_14_35_52_+1100_2ZCHj9cMIv.fPR.Z
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->     This driver does not use the kernel's CPU hot-plug mechanism
->     because after the transient emergency is over, the system must
->     be returned to its normal state, and hotplug would permanently
->     break both cpusets and binding.
->     
+Hi Jens,
 
-Why does hotplug break cpusets and binding?
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
+drivers/block/drbd/drbd_req.c: In function '_drbd_start_io_acct':
+drivers/block/drbd/drbd_req.c:43: error: subscripted value is neither array=
+ nor pointer
+drivers/block/drbd/drbd_req.c: In function '_drbd_end_io_acct':
+drivers/block/drbd/drbd_req.c:56: error: subscripted value is neither array=
+ nor pointer
 
->     So to force idle, the driver creates a power saving thread.
->     The scheduler will migrate the thread to the preferred CPU.
->     The thread has max priority and has SCHED_RR policy,
->     so it can occupy one CPU.  To save power, the thread will
->     invoke the deep C-state entry instructions.
->     
->     To avoid starvation, the thread will sleep 5% of the time
->     time for every second (current RT scheduler has threshold
->     to avoid starvation, but if other CPUs are idle,
->     the CPU can borrow CPU timer from other,
->     which makes the mechanism not work here)
->     
->     Vaidyanathan Srinivasan has proposed scheduler enhancements
->     to allow injecting idle time into the system.  This driver doesn't
->     depend on those enhancements, but could cut over to them
->     when they are available.
->     
->     Peter Z. does not favor upstreaming this driver until
->     the those scheduler enhancements are in place.  However,
->     we favor upstreaming this driver now because it is useful
->     now, and can be enhanced over time.
->     
->     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
->     NACKed-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->     Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
->     Signed-off-by: Len Brown <len.brown@intel.com>
+I reported a similar error against the dbd tree, which was fixed, but now
+the commit that caused that error has been reverted and thus we get
+this :-(
 
-This is a first a patch with a NACKed-by, could we please have more
-discussion on the proposed design.
+I have reverted the drbd commits from the block tree for today.
 
--- 
-	Balbir
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__5_Oct_2009_14_35_52_+1100_2ZCHj9cMIv.fPR.Z
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrJaZgACgkQjjKRsyhoI8wJVACgqTXbwMTIz4i4e7dAsoonH1Rk
+gLUAn12cxosRRzbpeEeDygaWaFQVcSiq
+=xTzB
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__5_Oct_2009_14_35_52_+1100_2ZCHj9cMIv.fPR.Z--
