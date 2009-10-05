@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbZJEURX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbZJEUIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754774AbZJEURX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 16:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZJEURX
+	id S1754731AbZJEUIO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 16:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZJEUIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 16:17:23 -0400
-Received: from mail-yw0-f137.google.com ([209.85.211.137]:51369 "EHLO
-	mail-yw0-f137.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753982AbZJEURW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 16:17:22 -0400
+	Mon, 5 Oct 2009 16:08:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48722 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752145AbZJEUIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 16:08:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Justin Mattock <justinmattock@gmail.com>
+Subject: Re: [Bug #14267] Disassociating atheros wlan
+Date: Mon, 5 Oct 2009 22:09:10 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Kristoffer Ericson <kristoffer.ericson@gmail.com>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.oyH.yMTxKB@chimera> <dd18b0c30910041734l32d19e9dj4f32a12d29a45def@mail.gmail.com>
+In-Reply-To: <dd18b0c30910041734l32d19e9dj4f32a12d29a45def@mail.gmail.com>
 MIME-Version: 1.0
-Date: Mon, 5 Oct 2009 13:05:07 -0700 (PDT)
-In-Reply-To: <drYiu-Pj-15@gated-at.bofh.it>
-X-IP: 137.222.114.243
-References: <drYiu-Pj-15@gated-at.bofh.it>
-User-Agent: G2/1.0
-X-HTTP-UserAgent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.3) 
-	Gecko/20090924 Ubuntu/9.10 (karmic) Firefox/3.5.3,gzip(gfe),gzip(gfe)
-Message-ID: <f27af2f9-aabb-4627-8d11-b3c1296824c2@o21g2000vbl.googlegroups.com>
-Subject: Re: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910052209.10552.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Oct 5, 5:10 pm, Jeff Chua <jeff.chua.li...@gmail.com> wrote:
-> I've 3 systems with 4GB, 16GB and 64GB all running 32bit with these set:
-[snip]
-> Question is ... is there anyway to increase "low mem" without resorting to
-> migrating to 64bit? (Look... it only has 378MB total low mem vs 850MB on
-> the 4GB system). I've oracle installed on the 64GB system and it keeps
-> getting OOMs!
+On Monday 05 October 2009, Justin Mattock wrote:
+> On Thu, Oct 1, 2009 at 12:56 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.30 and 2.6.31.
+> >
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+> > be listed and let me know (either way).
+> >
+> >
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14267
+> > Subject         : Disassociating atheros wlan
+> > Submitter       : Kristoffer Ericson <kristoffer.ericson@gmail.com>
+> > Date            : 2009-09-24 10:16 (8 days old)
+> > References      : http://marc.info/?l=linux-kernel&m=125378723723384&w=4
+> >
+> >
+> >
+> 
+> Sorry for the delay
+> (spent some time in bodie).
+> yes it should be still open.
 
-Whilst linux may be able to address all 64GB of memory (running 32 or
-64-bit), every 32-bit process will be limited to ~3GB virtual address
-space, which may be the limiting factor for your out-of-memory issue
-with Oracle. The only solution is to run 64-bit Oracle, alas.
+Thanks for the update.
 
-Daniel
---
-Daniel J Blueman
+Rafael
