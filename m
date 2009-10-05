@@ -1,105 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbZJEWKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbZJEWJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755079AbZJEWKB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 18:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbZJEWKA
+	id S1755030AbZJEWJk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 18:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbZJEWJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 18:10:00 -0400
-Received: from bc.sympatico.ca ([209.226.175.184]:35410 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754615AbZJEWKA (ORCPT
+	Mon, 5 Oct 2009 18:09:39 -0400
+Received: from mail-ew0-f217.google.com ([209.85.219.217]:65358 "EHLO
+	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754366AbZJEWJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 18:10:00 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAMcIykpMROOX/2dsb2JhbACBUtBvhCoEhjU
-Date: Mon, 5 Oct 2009 18:08:50 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Josh Triplett <josh@joshtriplett.org>, Jon Bernard <jbernard@debian.org>,
-       Jan Blunck <jblunck@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Pierre Habouzit <madcoder@debian.org>,
-       Steven Munroe <munroesj@linux.vnet.ibm.com>,
-       Bert Wesarg <bert.wesarg@googlemail.com>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, rp@svcs.cs.pdx.edu,
-       ltt-dev@lists.casi.polymtl.ca
-Subject: [RELEASE] Userspace RCU library (liburcu) 0.2.2
-Message-ID: <20091005220850.GA21419@Krystal>
-References: <20090929210951.GC28427@Krystal> <20091001135611.GA12323@Krystal> <20091002170548.GA19796@Krystal>
-Mime-Version: 1.0
+	Mon, 5 Oct 2009 18:09:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=pNnItd9dMLnR165rW0TydHOeVb9UESt3aBZxrVk794UsHl+YPeqRQZx1nCJLjXD9ho
+         AKbZZAXi1SDDf8qFMX/tTJf/z4tgSxkm9c3RKXTvCkcVoZH4UXEX/VKzG1GF9ppuFO42
+         UZ5k0H0VVG66pGv22csX+s8dHAaPtOU7p2g5M=
+Date: Tue, 6 Oct 2009 00:09:00 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH tracing/kprobes v2 1/5] tracing/kprobes: Rename special
+	variables syntax
+Message-ID: <20091005220859.GI6071@nowhere>
+References: <20091002214842.30906.49220.stgit@dhcp-100-2-132.bos.redhat.com> <20091003015444.GE4828@nowhere> <4AC830F0.2010003@redhat.com> <20091005191829.GA6071@nowhere> <4ACA549F.9010300@redhat.com> <20091005205826.GE6071@nowhere> <4ACA60E9.30404@redhat.com> <20091005212137.GG6071@nowhere> <4ACA6660.7020607@redhat.com> <20091005215548.GH6071@nowhere>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091002170548.GA19796@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 18:06:46 up 48 days,  8:56,  3 users,  load average: 0.61, 0.27,
-	0.23
+In-Reply-To: <20091005215548.GH6071@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again,
+On Mon, Oct 05, 2009 at 11:55:50PM +0200, Frederic Weisbecker wrote:
+> In this case, we should rather have %%register and %arg0 :)
 
-New update. Userspace RCU 0.2.2:
+And the above construct would be so much not obvious in its self
+meaning, wrt its gcc inline inspiration.
 
-- Phases out rcu_publish_content() api.
-- Adds type checking to urcu-pointer.h pointer exchange primitives.
+/me should stop quibbling...
 
-Mathieu
-
-P.S.: maybe I should setup a mailing list for these announcements ?
-Comments ?
-
-* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> Hello,
-> 
-> Userspace RCU 0.2.1 includes:
-> 
-> - small header dependency fix for rculist.h.
-> - new "liburcu-bp.so" : "Bulletproof RCU", made especially for the UST
->   userspace tracer. It's a library that sacrifices a bit of read-side
->   performance for automatically monitoring thread creation/removal. See
->   README for details.
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> > Hi,
-> > 
-> > Here is a 0.2 version of the urcu library. It should clarify usage of
-> > 
-> > rcu_cmpxchg_pointer
-> > rcu_xchg_pointer
-> > rcu_set_pointer
-> > 
-> > which are the recommended primitives to deal with pointers.
-> > rcu_assign_pointer(ptr, new) is provided as compatibility layer with the
-> > Linux kernel semantic, but note that its semantic for the first
-> > parameter is IMHO odd and differs from rcu_{cmpxchg,xchg,set}_pointer.
-> > 
-> > Website URL:
-> > http://lttng.org/urcu
-> > 
-> > Direct link to the package:
-> > http://www.lttng.org/files/urcu/userspace-rcu-0.2.tar.gz
-> > 
-> > Thanks,
-> > 
-> > Mathieu
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
