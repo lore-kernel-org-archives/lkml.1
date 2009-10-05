@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbZJEV32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbZJEVbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923AbZJEV32 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 17:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZJEV31
+	id S1754952AbZJEVbb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 17:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbZJEVbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 17:29:27 -0400
-Received: from mail.perches.com ([173.55.12.10]:1887 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753681AbZJEV31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 17:29:27 -0400
-Subject: Re: [PATCH 21/21] drivers/net/tlan.h: Convert printk(KERN_DEBUG to
- pr_dbg(
-From: Joe Perches <joe@perches.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       chessman@tux.org, netdev@vger.kernel.org
-In-Reply-To: <200910052315.01357.rjw@sisk.pl>
-References: <cover.1254701151.git.joe@perches.com>
-	 <20091005.001240.111554671.davem@davemloft.net>
-	 <1254726974.1799.315.camel@Joe-Laptop.home>
-	 <200910052315.01357.rjw@sisk.pl>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 05 Oct 2009 14:28:49 -0700
-Message-Id: <1254778129.1799.591.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Mon, 5 Oct 2009 17:31:31 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:55602
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753795AbZJEVba (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 17:31:30 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Vladimir Dronnikov <dronnikov@gmail.com>
+Subject: Re: [PATCH 1/1] md: drivers/md/unroll.pl replaced with awk analog
+Date: Mon, 5 Oct 2009 16:30:50 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, neilb@suse.de
+References: <4aca1863.0a1ad00a.33bf.1017@mx.google.com>
+In-Reply-To: <4aca1863.0a1ad00a.33bf.1017@mx.google.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910051630.51039.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-05 at 23:15 +0200, Rafael J. Wysocki wrote:
-> Why don't you push the first patch first, then, and wait with the others until
-> it gets merged?  This way individual subsystem maintainers will be able to
-> merge them cleanly.
+On Monday 05 October 2009 11:01:39 Vladimir Dronnikov wrote:
+> From: Vladimir Dronnikov <dronnikov@gmail.com>
+>
+> drivers/md/unroll.pl replaced by awk script to drop build-time dependency
+> on perl
+>
+> Signed-off-by: Vladimir Dronnikov <dronnikov@gmail.com>
 
-Sometimes patch series get a bit more feedback than individual patches.
+Acked-by: Rob Landley <rob@landley.net>
 
-Original rfc suggestion: (1 comment)
-http://lkml.org/lkml/2009/10/1/399
+We already discussed this on another mailing list, thread starts at:
 
-Patch removing pr_fmt from driver (acked by Jiri):
-http://lkml.org/lkml/2009/10/1/418
+http://lists.impactlinux.com/pipermail/firmware-impactlinux.com/2009-October/000328.html
 
-cheers, Joe
+I've added this as patch #4 in the perl removal series I've submitted
+during the last few merge windows.
 
+Thanks,
+
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
