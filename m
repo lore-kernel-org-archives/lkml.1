@@ -1,171 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbZJEIZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbZJEHoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbZJEIZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 04:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758595AbZJEIZs
+	id S1758599AbZJEHoi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 03:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758587AbZJEHoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 04:25:48 -0400
-Received: from msr14.hinet.net ([168.95.4.114]:35226 "EHLO msr14.hinet.net"
+	Mon, 5 Oct 2009 03:44:37 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36596 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758367AbZJEIZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 04:25:48 -0400
-X-Greylist: delayed 2254 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Oct 2009 04:20:43 EDT
-From: Thomas Chou <thomas@wytron.com.tw>
-To: thierry.reding@avionic-design.de
-Cc: Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
-       linux-kernel@vger.kernel.org, Thomas Chou <thomas@wytron.com.tw>
-Subject: [PATCH 4/4] ethoc: use system memory as buffer
-Date: Mon,  5 Oct 2009 15:43:05 +0800
-Message-Id: <1254728585-31964-4-git-send-email-thomas@wytron.com.tw>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1254728585-31964-3-git-send-email-thomas@wytron.com.tw>
-References: <1254728585-31964-1-git-send-email-thomas@wytron.com.tw>
- <1254728585-31964-2-git-send-email-thomas@wytron.com.tw>
- <1254728585-31964-3-git-send-email-thomas@wytron.com.tw>
+	id S1758573AbZJEHog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 03:44:36 -0400
+Date: Mon, 5 Oct 2009 18:43:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: sparc tree build failure
+Message-Id: <20091005184357.a6f41165.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enabled the ethoc to allocate system memory as buffer
-when there is no dedicated buffer memory.
+Hi Dave,
 
-Some hardware designs may not have dedicated buffer memory such as
-on chip or off chip SRAM. In this case, only one memory resource is
-supplied in the platform data instead of two. Then a DMA buffer can
-be allocated from system memory and used for the transfer.
+Today's linux-next build (sparc64 defconfig) failed like this:
 
-Signed-off-by: Thomas Chou <thomas@wytron.com.tw>
+arch/sparc/oprofile/init.c: In function 'timer_start':
+arch/sparc/oprofile/init.c:46: error: 'HZ' undeclared (first use in this function)
+
+I have no idea why this just cropped up, but I have added the following
+patch for today.
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 5 Oct 2009 18:32:33 +1100
+Subject: [PATCH] sparc: using HZ needs an include of linux/param.h
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/net/ethoc.c |   64 +++++++++++++++++++++++++++++++++++----------------
- 1 files changed, 44 insertions(+), 20 deletions(-)
+ arch/sparc/oprofile/init.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/ethoc.c b/drivers/net/ethoc.c
-index 0c6c7f4..6d82dc6 100644
---- a/drivers/net/ethoc.c
-+++ b/drivers/net/ethoc.c
-@@ -19,6 +19,10 @@
- #include <linux/platform_device.h>
- #include <net/ethoc.h>
- 
-+static int buffer_size = 0x8000; /* 32 KBytes */
-+module_param(buffer_size, int, 0);
-+MODULE_PARM_DESC(buffer_size, "DMA buffer allocation size");
-+
- /* register offsets */
- #define	MODER		0x00
- #define	INT_SOURCE	0x04
-@@ -167,6 +171,7 @@
-  * struct ethoc - driver-private device structure
-  * @iobase:	pointer to I/O memory region
-  * @membase:	pointer to buffer memory region
-+ * @dma_alloc:	dma allocated buffer size
-  * @num_tx:	number of send buffers
-  * @cur_tx:	last send buffer written
-  * @dty_tx:	last buffer actually sent
-@@ -185,6 +190,7 @@
- struct ethoc {
- 	void __iomem *iobase;
- 	void __iomem *membase;
-+	int dma_alloc;
- 
- 	unsigned int num_tx;
- 	unsigned int cur_tx;
-@@ -906,22 +912,19 @@ static int ethoc_probe(struct platform_device *pdev)
- 
- 	/* obtain buffer memory space */
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
--	if (!res) {
--		dev_err(&pdev->dev, "cannot obtain memory space\n");
--		ret = -ENXIO;
--		goto free;
--	}
--
--	mem = devm_request_mem_region(&pdev->dev, res->start,
-+	if (res) {
-+		mem = devm_request_mem_region(&pdev->dev, res->start,
- 			res->end - res->start + 1, res->name);
--	if (!mem) {
--		dev_err(&pdev->dev, "cannot request memory space\n");
--		ret = -ENXIO;
--		goto free;
-+		if (!mem) {
-+			dev_err(&pdev->dev, "cannot request memory space\n");
-+			ret = -ENXIO;
-+			goto free;
-+		}
-+
-+		netdev->mem_start = mem->start;
-+		netdev->mem_end   = mem->end;
- 	}
- 
--	netdev->mem_start = mem->start;
--	netdev->mem_end   = mem->end;
- 
- 	/* obtain device IRQ number */
- 	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-@@ -936,6 +939,7 @@ static int ethoc_probe(struct platform_device *pdev)
- 	/* setup driver-private data */
- 	priv = netdev_priv(netdev);
- 	priv->netdev = netdev;
-+	priv->dma_alloc = 0;
- 
- 	priv->iobase = devm_ioremap_nocache(&pdev->dev, netdev->base_addr,
- 			mmio->end - mmio->start + 1);
-@@ -945,12 +949,27 @@ static int ethoc_probe(struct platform_device *pdev)
- 		goto error;
- 	}
- 
--	priv->membase = devm_ioremap_nocache(&pdev->dev, netdev->mem_start,
--			mem->end - mem->start + 1);
--	if (!priv->membase) {
--		dev_err(&pdev->dev, "cannot remap memory space\n");
--		ret = -ENXIO;
--		goto error;
-+	if (netdev->mem_end) {
-+		priv->membase = devm_ioremap_nocache(&pdev->dev,
-+			netdev->mem_start, mem->end - mem->start + 1);
-+		if (!priv->membase) {
-+			dev_err(&pdev->dev, "cannot remap memory space\n");
-+			ret = -ENXIO;
-+			goto error;
-+		}
-+	} else {
-+		/* Allocate buffer memory */
-+		priv->membase = dma_alloc_coherent(NULL,
-+			buffer_size, (void *)&netdev->mem_start,
-+			GFP_KERNEL);
-+		if (!priv->membase) {
-+			dev_err(&pdev->dev, "cannot allocate %dB buffer\n",
-+				buffer_size);
-+			ret = -ENOMEM;
-+			goto error;
-+		}
-+		netdev->mem_end = netdev->mem_start + buffer_size;
-+		priv->dma_alloc = buffer_size;
- 	}
- 
- 	/* Allow the platform setup code to pass in a MAC address. */
-@@ -1037,6 +1056,9 @@ free_mdio:
- 	kfree(priv->mdio->irq);
- 	mdiobus_free(priv->mdio);
- free:
-+	if (priv->dma_alloc)
-+		dma_free_coherent(NULL, priv->dma_alloc, priv->membase,
-+			netdev->mem_start);
- 	free_netdev(netdev);
- out:
- 	return ret;
-@@ -1062,7 +1084,9 @@ static int ethoc_remove(struct platform_device *pdev)
- 			kfree(priv->mdio->irq);
- 			mdiobus_free(priv->mdio);
- 		}
--
-+		if (priv->dma_alloc)
-+			dma_free_coherent(NULL, priv->dma_alloc, priv->membase,
-+				netdev->mem_start);
- 		unregister_netdev(netdev);
- 		free_netdev(netdev);
- 	}
+diff --git a/arch/sparc/oprofile/init.c b/arch/sparc/oprofile/init.c
+index f97cb8b..62f4120 100644
+--- a/arch/sparc/oprofile/init.c
++++ b/arch/sparc/oprofile/init.c
+@@ -11,7 +11,8 @@
+ #include <linux/oprofile.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
++#include <linux/param.h>	/* for HZ */
+  
+ #ifdef CONFIG_SPARC64
+ #include <linux/notifier.h>
+ #include <linux/rcupdate.h>
 -- 
-1.6.2.5
+1.6.4.3
 
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
