@@ -1,57 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbZJESLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbZJESLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406AbZJESLa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 14:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbZJESL3
+	id S1754472AbZJESLj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 14:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbZJESLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 14:11:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59652 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754254AbZJESL3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 14:11:29 -0400
-Message-ID: <4ACA3677.40407@kernel.org>
-Date: Mon, 05 Oct 2009 11:09:59 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 5 Oct 2009 14:11:39 -0400
+Received: from smtp.zeugmasystems.com ([70.79.96.174]:31963 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754443AbZJESLi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 14:11:38 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, Tejun Heo <tj@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: use near online node instead of round bin for numa
-References: <4AC7974C.20304@kernel.org> <87my45yk79.fsf@basil.nowhere.org>
-In-Reply-To: <87my45yk79.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: futex question
+Date: Mon, 5 Oct 2009 11:11:00 -0700
+Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501FD8752@exchange.ZeugmaSystems.local>
+In-Reply-To: <1254738974.26976.24.camel@twins>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: futex question
+Thread-Index: AcpFp1x/JKbp9PR2RPmNlfbRmdE46wAPs7AQ
+References: <DDFD17CC94A9BD49A82147DDF7D545C501FD7F97@exchange.ZeugmaSystems.local> <20091001092218.GH15345@elte.hu> <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local> <4AC68F13.8050601@us.ibm.com> <alpine.LFD.2.00.0910041031330.2646@localhost.localdomain> <DDFD17CC94A9BD49A82147DDF7D545C501F457C5@exchange.ZeugmaSystems.local> <4AC8CF32.8060108@anirban.org> <alpine.LFD.2.00.0910041853180.2646@localhost.localdomain> <1254738974.26976.24.camel@twins>
+From: "Anirban Sinha" <ASinha@zeugmasystems.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+Cc: "Anirban Sinha" <ani@anirban.org>, "Ingo Molnar" <mingo@elte.hu>,
+       <linux-kernel@vger.kernel.org>, "Darren Hart" <dvhltc@us.ibm.com>,
+       "Kaz Kylheku" <KKylheku@zeugmasystems.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Yinghai Lu <yinghai@kernel.org> writes:
-> 
->> cpu to node mapping is set in following sequence:
->> 1. numa_init_array: set up roundbin from cpu to online node
->> 2. init_cpu_to_node: set that according to apicid_to_node[] according to srat
->> 		  only handle that node is online, and leave other cpu on node
->> 		  without ram (aka not online) to still round-bin
->> 3. later srat_detect_node for intel/amd, will use first_online node or near by
->>    node.
->>
->> problem is that setup_per_cpu_areas() is called between  2 and 3. the per_cpu
->> for cpu on node with ram is on different node. and could put that on node with
->> two hops away.
->>
->> so try add find_near_online_node() and call int init_cpu_to_node()
-> 
-> This fallback case should not really happen anyways, unless the BIOS is buggy
-> (in this case it might better to completely reject the SRAT because
-> more might be wrong).
-SRAT is right, and some node has no ram installed.
-> 
-> Do you have a system where this is needed?
 
-sure.
+>
+>The problem with the patch send my Ani is that it clears the robust
+>lists before the point of no return, so on a failing execve() we'd have
+>messed up the state.
 
-YH
+Ah! yes. I should have added the lines after load_binary() succeeds:
+
+ fs/compat.c |    3 +++
+ fs/exec.c   |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/fs/compat.c b/fs/compat.c
+index 6d6f98f..7d1baf5 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1539,6 +1539,9 @@ int compat_do_execve(char * filename,
+        if (retval < 0)
+                goto out;
+
++#ifdef CONFIG_FUTEX
++       current->compat_robust_list = NULL;
++#endif
+        /* execve succeeded */
+        current->fs->in_exec = 0;
+        current->in_execve = 0;
+diff --git a/fs/exec.c b/fs/exec.c
+index 172ceb6..d7b4ca3 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1354,6 +1354,9 @@ int do_execve(char * filename,
+        if (retval < 0)
+                goto out;
+
++#ifdef CONFIG_FUTEX
++       current->robust_list = NULL;
++#endif
+        /* execve succeeded */
+        current->fs->in_exec = 0;
+        current->in_execve = 0;
+
+
+
+btw, by the same token, shouldn't we call sched_exec() after the exec()
+actually succeeds and the process has a new mm (thus having a smallest
+effective memory and cache footprint)? I know that I could be missing
+something subtle.
+
+Ani
+
