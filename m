@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbZJEOXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752491AbZJEOYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752144AbZJEOXG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 10:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZJEOXG
+	id S1752491AbZJEOYl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 10:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZJEOYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 10:23:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36797 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbZJEOXF (ORCPT
+	Mon, 5 Oct 2009 10:24:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48954 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbZJEOYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 10:23:05 -0400
-Date: Mon, 5 Oct 2009 07:22:01 -0700
-From: Greg KH <greg@kroah.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Colin Guthrie <cguthrie@mandriva.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: get_device_parent() race bug
-Message-ID: <20091005142201.GA21891@kroah.com>
-References: <4ABC7DB5.9010402@kernel.org> <4AC7EDD7.3080906@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AC7EDD7.3080906@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 5 Oct 2009 10:24:40 -0400
+Date: Mon, 5 Oct 2009 07:24:28 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-wireless@vger.kernel.org
+Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
+ CPU"
+Message-ID: <20091005072428.16ce40e4@infradead.org>
+In-Reply-To: <200910051613.32631.elendil@planet.nl>
+References: <200910051500.55875.elendil@planet.nl>
+	<200910051613.32631.elendil@planet.nl>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 04, 2009 at 09:35:35AM +0900, Tejun Heo wrote:
-> Tejun Heo wrote:
-> > Hello, Greg, Kay, Guthrie.
-> > 
-> > This problem was reported in bko#14023.  (aiee.. again, sorry about
-> > the delay)
-> > 
-> >   http://bugzilla.kernel.org/show_bug.cgi?id=14023
-> > 
-> > sysfs is creating several devices in cuse class concurrently and with
-> > CONFIG_SYSFS_DEPRECATED turned off, it triggers the following oops.
-> > 
-> >  BUG: unable to handle kernel NULL pointer dereference at 0000000000000038
+On Mon, 5 Oct 2009 16:13:31 +0200
+Frans Pop <elendil@planet.nl> wrote:
+
+> On Monday 05 October 2009, Frans Pop wrote:
+> > With .32-rc3 I'm getting occasional skips from amarok while playing
+> > music from an NFS share (3 today so far), something I've not had in
+> > a long time.
+> >
+> > The reason looks to be that latencytop consistently shows 'iwlagn'
+> > as the top affected process with "Scheduler: waiting for CPU".
+> > Values of 100-140 ms occur frequently, but I've also seen higher
+> > values (180, 207). I don't remember seeing iwlagn high in the list
+> > before, but I have not checked earlier kernels yet.
+> >
+> > Added to that 'phy0' also frequently shows high with values of
+> > 25-75 ms.
+> >
+> > The system is otherwise essentially idle. Other processes typically
+> > show a latency < 5 ms.
 > 
-> Ping.  This one needs to be fixed in -stable.  It can be triggered by
-> other char devices too.
+> If I give the system some work to do (like compiling a kernel), the 
+> latencies on iwlagn and phy0 disappear (values < 5 ms).
+> Is this related to ondemand frequency scaling?
 
-Sorry, been slowly catching up...
+shouldn't be.... but
 
-This can be triggered by char devices?  Huh?  How?  I don't see the
-failure path that is happening here.
+can you do a 5 second or so timechart recording of this?
+That will capture all scheduler delays as well as the P states etc....
 
-And char devices shouldn't really be using the kobject at all, except
-for a very basic reference count.
+(to do a timechart recording, first make sure debugfs is mounted, and
+then do in tools/perf 
 
-I keep threatening to rip kobject out of a char device and just use a
-kref, as that is all that is really needed.  Well, that and the kmap
-stuff, but again, it's not a "real" kobject being used there...
+./perf timechart record sleep 5
 
-Perhaps now is the time to do this.
+then you can turn it into an SVG with
 
-thanks,
+./perf timechart
 
-greg k-h
+)
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
