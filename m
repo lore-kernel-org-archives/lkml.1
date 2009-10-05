@@ -1,114 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932606AbZJEKiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932614AbZJEKir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932606AbZJEKiP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 06:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932549AbZJEKiO
+	id S932614AbZJEKir (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 06:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932551AbZJEKiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 06:38:14 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:59560 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932536AbZJEKiN (ORCPT
+	Mon, 5 Oct 2009 06:38:46 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:52466 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932539AbZJEKip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 06:38:13 -0400
-Date: Mon, 5 Oct 2009 16:07:33 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 0/2] memcg: improving scalability by reducing lock
- contention at charge/uncharge
-Message-ID: <20091005103733.GC3036@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 5 Oct 2009 06:38:45 -0400
+Date: Mon, 05 Oct 2009 19:38:08 +0900 (JST)
+Message-Id: <20091005.193808.104033719.ryov@valinux.co.jp>
+To: m-ikeda@ds.jp.nec.com
+Cc: vgoyal@redhat.com, nauman@google.com, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, agk@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
+       yoshikawa.takuya@oss.ntt.co.jp
+Subject: Re: IO scheduler based IO controller V10
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <4AC6623F.70600@ds.jp.nec.com>
+References: <20091001133109.GA4058@redhat.com>
+	<20091002025731.GA2738@redhat.com>
+	<4AC6623F.70600@ds.jp.nec.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-10-02 13:55:31]:
+Hi,
 
-> Hi,
+Munehiro Ikeda <m-ikeda@ds.jp.nec.com> wrote:
+> Vivek Goyal wrote, on 10/01/2009 10:57 PM:
+> > Before finishing this mail, will throw a whacky idea in the ring. I was
+> > going through the request based dm-multipath paper. Will it make sense
+> > to implement request based dm-ioband? So basically we implement all the
+> > group scheduling in CFQ and let dm-ioband implement a request function
+> > to take the request and break it back into bios. This way we can keep
+> > all the group control at one place and also meet most of the requirements.
+> >
+> > So request based dm-ioband will have a request in hand once that request
+> > has passed group control and prio control. Because dm-ioband is a device
+> > mapper target, one can put it on higher level devices (practically taking
+> > CFQ at higher level device), and provide fairness there. One can also
+> > put it on those SSDs which don't use IO scheduler (this is kind of forcing
+> > them to use the IO scheduler.)
+> >
+> > I am sure that will be many issues but one big issue I could think of that
+> > CFQ thinks that there is one device beneath it and dipsatches requests
+> > from one queue (in case of idling) and that would kill parallelism at
+> > higher layer and throughput will suffer on many of the dm/md configurations.
+> >
+> > Thanks
+> > Vivek
 > 
-> This patch is against mmotm + softlimit fix patches.
-> (which are now in -rc git tree.)
-> 
-> In the latest -rc series, the kernel avoids accessing res_counter when
-> cgroup is root cgroup. This helps scalabilty when memcg is not used.
-> 
-> It's necessary to improve scalabilty even when memcg is used. This patch
-> is for that. Previous Balbir's work shows that the biggest obstacles for
-> better scalabilty is memcg's res_counter. Then, there are 2 ways.
-> 
-> (1) make counter scale well.
-> (2) avoid accessing core counter as much as possible.
-> 
-> My first direction was (1). But no, there is no counter which is free
-> from false sharing when it needs system-wide fine grain synchronization.
-> And res_counter has several functionality...this makes (1) difficult.
-> spin_lock (in slow path) around counter means tons of invalidation will
-> happen even when we just access counter without modification.
-> 
-> This patch series is for (2). This implements charge/uncharge in bached manner.
-> This coalesces access to res_counter at charge/uncharge using nature of
-> access locality.
-> 
-> Tested for a month. And I got good reorts from Balbir and Nishimura, thanks.
-> One concern is that this adds some members to the bottom of task_struct.
-> Better idea is welcome.
-> 
-> Following is test result of continuous page-fault on my 8cpu box(x86-64).
-> 
-> A loop like this runs on all cpus in parallel for 60secs. 
-> ==
->         while (1) {
->                 x = mmap(NULL, MEGA, PROT_READ|PROT_WRITE,
->                         MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
-> 
->                 for (off = 0; off < MEGA; off += PAGE_SIZE)
->                         x[off]=0;
->                 munmap(x, MEGA);
->         }
-> ==
-> please see # of page faults. I think this is good improvement.
-> 
-> 
-> [Before]
->  Performance counter stats for './runpause.sh' (5 runs):
-> 
->   474539.756944  task-clock-msecs         #      7.890 CPUs    ( +-   0.015% )
->           10284  context-switches         #      0.000 M/sec   ( +-   0.156% )
->              12  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
->        18425800  page-faults              #      0.039 M/sec   ( +-   0.107% )
->   1486296285360  cycles                   #   3132.080 M/sec   ( +-   0.029% )
->    380334406216  instructions             #      0.256 IPC     ( +-   0.058% )
->      3274206662  cache-references         #      6.900 M/sec   ( +-   0.453% )
->      1272947699  cache-misses             #      2.682 M/sec   ( +-   0.118% )
-> 
->    60.147907341  seconds time elapsed   ( +-   0.010% )
-> 
-> [After]
->  Performance counter stats for './runpause.sh' (5 runs):
-> 
->   474658.997489  task-clock-msecs         #      7.891 CPUs    ( +-   0.006% )
->           10250  context-switches         #      0.000 M/sec   ( +-   0.020% )
->              11  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
->        33177858  page-faults              #      0.070 M/sec   ( +-   0.152% )
->   1485264748476  cycles                   #   3129.120 M/sec   ( +-   0.021% )
->    409847004519  instructions             #      0.276 IPC     ( +-   0.123% )
->      3237478723  cache-references         #      6.821 M/sec   ( +-   0.574% )
->      1182572827  cache-misses             #      2.491 M/sec   ( +-   0.179% )
-> 
->    60.151786309  seconds time elapsed   ( +-   0.014% )
->
+> As long as using CFQ, your idea is reasonable for me.  But how about for
+> other IO schedulers?  In my understanding, one of the keys to guarantee
+> group isolation in your patch is to have per-group IO scheduler internal
+> queue even with as, deadline, and noop scheduler.  I think this is
+> great idea, and to implement generic code for all IO schedulers was
+> concluded when we had so many IO scheduler specific proposals.
+> If we will still need per-group IO scheduler internal queues with
+> request-based dm-ioband, we have to modify elevator layer.  It seems
+> out of scope of dm.
+> I might miss something...
 
-I agree, I liked the previous patchset, let me re-review this one!
-Definitely a good candidate to -mm. 
+IIUC, the request based device-mapper could not break back a request
+into bio, so it could not work with block devices which don't use the
+IO scheduler.
 
--- 
-	Balbir
+How about adding a callback function to the higher level controller?
+CFQ calls it when the active queue runs out of time, then the higer
+level controller use it as a trigger or a hint to move IO group, so
+I think a time-based controller could be implemented at higher level.
+
+My requirements for IO controller are:
+- Implement s a higher level controller, which is located at block
+  layer and bio is grabbed in generic_make_request().
+- Can work with any type of IO scheduler.
+- Can work with any type of block devices.
+- Support multiple policies, proportional wegiht, max rate, time
+  based, ans so on.
+
+The IO controller mini-summit will be held in next week, and I'm
+looking forard to meet you all and discuss about IO controller.
+https://sourceforge.net/apps/trac/ioband/wiki/iosummit
+
+Thanks,
+Ryo Tsuruta
