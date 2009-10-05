@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbZJEXsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbZJEXys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755432AbZJEXsY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 19:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbZJEXsX
+	id S1754706AbZJEXys (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 19:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbZJEXyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 19:48:23 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:59873 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752531AbZJEXsX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 19:48:23 -0400
-Date: Mon, 5 Oct 2009 19:47:41 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH trivial] docs: fix core_pipe_limit info
-Message-ID: <20091005234741.GA7538@localhost.localdomain>
-References: <4AC95891.3000707@oracle.com> <alpine.LSU.2.00.0910060003310.10941@wotan.suse.de>
+	Mon, 5 Oct 2009 19:54:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49580 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754368AbZJEXyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 19:54:47 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: suspend tree build failure
+Date: Tue, 6 Oct 2009 01:55:18 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-rjw; KDE/4.3.1; x86_64; ; )
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20091005160044.d95daf41.sfr@canb.auug.org.au>
+In-Reply-To: <20091005160044.d95daf41.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LSU.2.00.0910060003310.10941@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -4.5 (----)
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910060155.18965.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 12:03:40AM +0200, Jiri Kosina wrote:
-> On Sun, 4 Oct 2009, Randy Dunlap wrote:
-> 
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Fix typos in core_pipe_limit info.
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > Cc: Neil Horman <nhorman@tuxdriver.com>
-> > ---
-> >  Documentation/sysctl/kernel.txt |    6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > 
-> > --- linux-next-20090930.orig/Documentation/sysctl/kernel.txt
-> > +++ linux-next-20090930/Documentation/sysctl/kernel.txt
-> > @@ -139,9 +139,9 @@ core_pattern is used to specify a core d
-> >  core_pipe_limit:
-> >  
-> >  This sysctl is only applicable when core_pattern is configured to pipe core
-> > -files to user space helper a (when the first character of core_pattern is a '|',
-> > +files to a user space helper (when the first character of core_pattern is a '|',
-> >  see above).  When collecting cores via a pipe to an application, it is
-> > -occasionally usefull for the collecting application to gather data about the
-> > +occasionally useful for the collecting application to gather data about the
-> >  crashing process from its /proc/pid directory.  In order to do this safely, the
-> >  kernel must wait for the collecting process to exit, so as not to remove the
-> >  crashing processes proc files prematurely.  This in turn creates the possibility
-> > @@ -152,7 +152,7 @@ applications in parallel.  If this value
-> >  processes above that value are noted via the kernel log and their cores are
-> >  skipped.  0 is a special value, indicating that unlimited processes may be
-> >  captured in parallel, but that no waiting will take place (i.e. the collecting
-> > -process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
-> > +process is not guaranteed access to /proc/<crashing pid>/).  This value defaults
-> >  to 0.
-> 
-> Applied to trivial queue, thanks Randy.
-> 
-Thank you Randy, Jiri.
-Neil
+On Monday 05 October 2009, Stephen Rothwell wrote:
+> Hi Rafael,
 
-> -- 
-> Jiri Kosina
-> SUSE Labs, Novell Inc.
+Hi,
+
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 > 
+> drivers/built-in.o: In function `.device_initialize':
+> (.text+0x95cf4): undefined reference to `.device_pm_init'
+> drivers/built-in.o: In function `.device_del':
+> (.text+0x95ec4): undefined reference to `.device_pm_remove'
+> drivers/built-in.o: In function `.device_add':
+> (.text+0x965cc): undefined reference to `.device_pm_add'
+> 
+> Caused by commit 1db698d9d2c5a2f4032e620dd18c75b61eaca2c8 ("PM: Introduce
+> PM links framework").  This build has CONFIG_PM not set.
+> 
+> I have used the suspend tree from next-20091002 for today.
+
+Thanks for the notification, I've just pushed the updated tree where this
+issue should be fixed.
+
+Best,
+Rafael
