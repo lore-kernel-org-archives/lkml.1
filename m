@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbZJEIMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbZJEIZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758663AbZJEIMd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 04:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758649AbZJEIMd
+	id S1758685AbZJEIZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 04:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758676AbZJEIZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 04:12:33 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48532 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758550AbZJEIMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 04:12:32 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX19iaWtXaspiQYluwWbHf6dzADEB0PJ8j+9bl6pfD+
-	C3h3vF54luoObi
-Date: Mon, 5 Oct 2009 10:11:50 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Greg KH <greg@kroah.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers-core: nullify private pointer on device-release
-In-Reply-To: <20091001141524.GA3355@kroah.com>
-Message-ID: <Pine.LNX.4.64.0910051011280.4337@axis700.grange>
-References: <Pine.LNX.4.64.0910010950330.4408@axis700.grange>
- <20091001132709.GA2221@kroah.com> <Pine.LNX.4.64.0910011533220.4408@axis700.grange>
- <20091001141524.GA3355@kroah.com>
+	Mon, 5 Oct 2009 04:25:56 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:31254 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758675AbZJEIZy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 04:25:54 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -14.389
+Message-ID: <4AC9AD68.7060801@tremplin-utc.net>
+Date: Mon, 05 Oct 2009 10:25:12 +0200
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20090830 Mandriva/2.0.0.23-2mdv2010.0 (2010.0) Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+To: Samu Onkalo <samu.p.onkalo@nokia.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2 try 2] LIS3LV02D I2C driver
+References: <1254727478-19802-1-git-send-email-samu.p.onkalo@nokia.com>
+In-Reply-To: <1254727478-19802-1-git-send-email-samu.p.onkalo@nokia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Oct 2009, Greg KH wrote:
-
-> On Thu, Oct 01, 2009 at 03:45:56PM +0200, Guennadi Liakhovetski wrote:
-> > On Thu, 1 Oct 2009, Greg KH wrote:
-> > 
-> > > On Thu, Oct 01, 2009 at 10:02:08AM +0200, Guennadi Liakhovetski wrote:
-> > > > Device structures can be reused over multiple device_add / device_release 
-> > > > cycles.
-> > > 
-> > > They shouldn't be as they should be dynamic, not static.
-> > 
-> > Should they? I'm pretty sure this is not the first time this comes up - 
-> > there are several drivers and / or subsystems, that re-use driver objects. 
+Op 05-10-09 09:24, Samu Onkalo schreef:
+> These patches add I2C bus support for LIS3LV02D accelerometer driver
+> and possibility to use platform configurability for
+> remapping of device axes.
 > 
-> Then those drivers and subsystems should be fixed, as that is incorrect.
-> 
-> > But finding in mail archives wouldn't be very easy. And it worked until 
-> > now - why should we break it?
-> 
-> I would argue that this code was always broken.
-> When did this problem show up for you?
+> Changes are tested on linux-omap environment.
+> Applies to 2.6.32-rc3.
+Looks good,
+Andrew, could you queue this series?
 
-Since commit b4028437876866aba4747a655ede00f892089e14
+Thanks,
+Eric
 
-> > > What device is having this problem?
-> > 
-> > My problem case is the soc-camera framework. There device struct is 
-> > embedded into the video client object, which are kept as long as the 
-> > driver is loaded.
+
 > 
-> struct device is a dynamic structure, it is supposed to be able to be
-> freed when the last reference goes away.  Static struct device usage is
-> wrong.  It sounds like the video client object code is incorrect, please
-> fix it.
+> Samu Onkalo (2):
+>   LIS3LV02D: axis remap and resource setup / release
+>   LIS3LV02D: I2C support
+> 
+>  drivers/hwmon/Kconfig         |   17 ++++
+>  drivers/hwmon/Makefile        |    1 +
+>  drivers/hwmon/lis3lv02d_i2c.c |  184 +++++++++++++++++++++++++++++++++++++++++
+>  include/linux/lis3lv02d.h     |   12 +++
+>  4 files changed, 214 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/hwmon/lis3lv02d_i2c.c
+> 
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
