@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbZJEL1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbZJELNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbZJEL1t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 07:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZJEL1s
+	id S1758780AbZJELNv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 07:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758727AbZJELNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 07:27:48 -0400
-Received: from relay04-haj2.antispameurope.com ([83.246.65.54]:33950 "EHLO
-	relay04-haj2.antispameurope.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751081AbZJEL1r (ORCPT
+	Mon, 5 Oct 2009 07:13:50 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:3613 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753527AbZJELNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 07:27:47 -0400
-X-Greylist: delayed 828 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Oct 2009 07:27:47 EDT
-Date: Mon, 05 Oct 2009 13:11:51 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: linux-kernel@vger.kernel.org, shawn.starr@rogers.com
-Subject: Re: [PROBLEM][2.6.31.1] - Cannot burn DVDs - PIONEER  DVD-RW
-  DVR-111D
-Message-ID: <4ac9d477.7gleZfWVJq3++UDn%Joerg.Schilling@fokus.fraunhofer.de>
-User-Agent: nail 11.22 3/20/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 05 Oct 2009 11:13:14.0452 (UTC) FILETIME=[D50C3940:01CA45AC]
+	Mon, 5 Oct 2009 07:13:50 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: futex question
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Anirban Sinha <ani@anirban.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
+       Kaz Kylheku <kaz@zeugmasystems.com>,
+       Anirban Sinha <asinha@zeugmasystems.com>
+In-Reply-To: <alpine.LFD.2.00.0910051251080.2646@localhost.localdomain>
+References: <DDFD17CC94A9BD49A82147DDF7D545C501FD7F97@exchange.ZeugmaSystems.local>
+	 <20091001092218.GH15345@elte.hu>
+	 <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local>
+	 <4AC68F13.8050601@us.ibm.com>
+	 <alpine.LFD.2.00.0910041031330.2646@localhost.localdomain>
+	 <DDFD17CC94A9BD49A82147DDF7D545C501F457C5@exchange.ZeugmaSystems.local>
+	 <4AC8CF32.8060108@anirban.org>
+	 <alpine.LFD.2.00.0910041853180.2646@localhost.localdomain>
+	 <1254738974.26976.24.camel@twins>
+	 <alpine.LFD.2.00.0910051251080.2646@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 05 Oct 2009 13:16:12 +0200
+Message-Id: <1254741372.26976.35.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Model is: 
->Unable to burn DVDs with 2.6.31.x
+On Mon, 2009-10-05 at 12:56 +0200, Thomas Gleixner wrote:
+> 
+> Looking more into that I think we should check whether the robust list
+> has an entry (lock held) in do_execve() and return -EWOULDBLOCK to
+> luser space. Same if pi_waiters is not empty. Holding a lock and
+> calling execve() is simply broken.
 
->ata7.00: ATAPI: PIONEER DVD-RW  DVR-111D, 1.29, max UDMA/66
->scsi 6:0:0:0: CD-ROM            PIONEER  DVD-RW  DVR-111D 1.29 PQ: 0 ANSI: 5
+Fine by me ;-)
 
->sr 6:0:0:0: [sr0] Unhandled sense 
->code                                                                                      
->sr 6:0:0:0: [sr0] Result: hostbyte=DID_OK 
->driverbyte=DRIVER_SENSE                                                           
->sr 6:0:0:0: [sr0] Sense Key : Medium Error 
->[current]                                                                        
->Info fld=0x0  
->sr 6:0:0:0: [sr0] Add. Sense: L-EC uncorrectable error
->end_request: I/O error, dev sr0, sector 0
->Buffer I/O error on device sr0, logical block 0
+something like the below?
 
->wodim (cdrecord):
+The question is of course what Ani was doing that triggered this in the
+first place and if he can live with this.. :-)
 
->Errno: 5 (Input/output error), reserve track scsi sendcmd: no error
->CDB:  53 00 00 00 00 00 1D 60 3C 00
->status: 0x2 (CHECK CONDITION)
->Sense Bytes: 70 00 05 00 00 00 00 0E 00 00 00 00 21 00 00 00
->Sense Key: 0x5 Illegal Request, Segment 0
->Sense Code: 0x21 Qual 0x00 (logical block address out of range) Fru 0x0
->Sense flags: Blk 0 (not valid)
->cmd finished after 0.006s timeout 40s
->wodim: Cannot open new session.
+---
+ fs/exec.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-Please note that this is not cdrecord but a defective fork where someone
-did rip off the working DVD support from the cdrecord original source and 
-replaced it with something half baken. Wodim (this is what you used)
-does not retrieve information about the medium and this is why it is
-very probable that wodim fails when trying to send a SCSi command that is
-related to the actual free size on the medium.
+diff --git a/fs/exec.c b/fs/exec.c
+index d49be6b..0812ba6 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1295,6 +1295,22 @@ int do_execve(char * filename,
+ 	bool clear_in_exec;
+ 	int retval;
+ 
++	retval = -EWOULDBLOCK;
++#ifdef CONFIG_FUTEX
++	if (unlikely(current->robust_list))
++		goto out_ret;
++#ifdef CONFIG_COMPAT
++	if (unlikely(current->compat_robust_list))
++		goto out_ret;
++#endif
++	spin_lock_irq(&current->pi_lock);
++	if (!list_empty(&current->pi_state_list)) {
++		spin_unlock_irq(&current->pi_lock);
++		goto out_ret;
++	}
++	spin_unlock_irq(&current->pi_lock);
++#endif
++
+ 	retval = unshare_files(&displaced);
+ 	if (retval)
+ 		goto out_ret;
 
-It is very likely that this problem does not occur with the original
-cdrecord from:
 
-ftp://ftp.berlios.de/pub/cdrecord/alpha/
-
-I've seen similar reports before in the net and reports from users that
-reported success after upgrading to the original software.
-
-Jörg
-
--- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       joerg.schilling@fokus.fraunhofer.de (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/private/ ftp://ftp.berlios.de/pub/schily
