@@ -1,179 +1,617 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbZJETcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZJETeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754640AbZJETcp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 15:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZJETco
+	id S1754656AbZJETeB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 15:34:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbZJETeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 15:32:44 -0400
-Received: from cmpxchg.org ([85.214.51.133]:51342 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752170AbZJETco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 15:32:44 -0400
-Date: Mon, 5 Oct 2009 21:32:00 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Mel Gorman <mel@csn.ul.ie>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [rfc patch 3/3] mm: munlock COW pages on truncation unmap
-Message-ID: <20091005193200.GA13040@cmpxchg.org>
-References: <1254344964-8124-1-git-send-email-hannes@cmpxchg.org> <1254344964-8124-3-git-send-email-hannes@cmpxchg.org> <20091002100838.5F5A.A69D9226@jp.fujitsu.com> <20091002233837.GA3638@cmpxchg.org> <2f11576a0910030656l73c9811w18e0f224fb3d98af@mail.gmail.com>
+	Mon, 5 Oct 2009 15:34:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48468 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753473AbZJETd7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 15:33:59 -0400
+Subject: Re: [PATCH] x86: Generate cmpxchg build failures
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <alpine.LFD.2.01.0910051210280.3432@localhost.localdomain>
+References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain>
+	 <4AC060AE.1090401@gmail.com>
+	 <alpine.LFD.2.01.0909280829100.3349@localhost.localdomain>
+	 <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com>
+	 <4AC10365.7090802@gmail.com> <4AC2712C.4080901@gmail.com>
+	 <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain>
+	 <1254758425.26976.126.camel@twins>
+	 <alpine.LFD.2.01.0910051210280.3432@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 05 Oct 2009 21:33:07 +0200
+Message-Id: <1254771187.21044.22.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2f11576a0910030656l73c9811w18e0f224fb3d98af@mail.gmail.com>
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sat, Oct 03, 2009 at 10:56:55PM +0900, KOSAKI Motohiro wrote:
-> >> Umm..
-> >> I haven't understand this.
-> >>
-> >> (1) unmap_mapping_range() is called twice.
-> >>
-> >>       unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
-> >>       truncate_inode_pages(mapping, new);
-> >>       unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
-> >>
-> >> (2) PG_mlock is turned on from mlock() and vmscan.
-> >> (3) vmscan grab anon_vma, but mlock don't grab anon_vma.
-> >
-> > You are right, I was so focused on the LRU side that I missed an
-> > obvious window here: an _explicit_ mlock can still happen between the
-> > PG_mlocked clearing section and releasing the page.
-
-Okay, so what are the opinions on this?  Would you consider my patches
-to fix the most likely issues?  Dropping them in favor of looking for
-a complete fix?  Revert the warning on freeing PG_mlocked pages?
-
-> >> > @@ -544,6 +544,13 @@ redo:
-> >> >              */
-> >> >             lru = LRU_UNEVICTABLE;
-> >> >             add_page_to_unevictable_list(page);
-> >> > +           /*
-> >> > +            * See the TestClearPageMlocked() in zap_pte_range():
-> >> > +            * if a racing unmapper did not see the above setting
-> >> > +            * of PG_lru, we must see its clearing of PG_locked
-> >> > +            * and move the page back to the evictable list.
-> >> > +            */
-> >> > +           smp_mb();
-> >> >     }
-> >>
-> >> add_page_to_unevictable() have a spin lock. Why do we need additionl
-> >> explicit memory barrier?
-> >
-> > It sets PG_lru under spinlock and tests PG_mlocked after the unlock.
-> > The following sections from memory-barriers.txt made me nervous:
-> >
-> >  (5) LOCK operations.
-> >
-> >     This acts as a one-way permeable barrier.  It guarantees that all memory
-> >     operations after the LOCK operation will appear to happen after the LOCK
-> >     operation with respect to the other components of the system.
-> >
-> >  (6) UNLOCK operations.
-> >
-> >     This also acts as a one-way permeable barrier.  It guarantees that all
-> >     memory operations before the UNLOCK operation will appear to happen before
-> >     the UNLOCK operation with respect to the other components of the system.
-> >
-> >     Memory operations that occur after an UNLOCK operation may appear to
-> >     happen before it completes.
-> >
-> > So the only garuantee this gives us is that both PG_lru setting and
-> > PG_mlocked testing happen after LOCK and PG_lru setting finishes
-> > before UNLOCK, no?  I wanted to make sure this does not happen:
-> >
-> >        LOCK, test PG_mlocked, set PG_lru, UNLOCK
-> >
-> > I don't know whether there is a data dependency between those two
-> > operations.  They go to the same word, but I could also imagine
-> > setting one bit is independent of reading another one.  Humm.  Help.
+On Mon, 2009-10-05 at 12:16 -0700, Linus Torvalds wrote:
 > 
-> Ahh, Yes! you are right.
-> We really need this barrier.
+> On Mon, 5 Oct 2009, Peter Zijlstra wrote:
 > 
-> However, I think this issue doesn't depend on zap_pte_range patch.
-> Other TestClearPageMlocked(page) caller have the same problem, because
-> putback_lru_page() doesn't have any exclusion, right?
+> > On Tue, 2009-09-29 at 14:17 -0700, Linus Torvalds wrote:
+> > 
+> > > And regardless, we should fix the silent cmpxchg failure, even if it's 
+> > > just a link-time failure or something.
+> > 
+> > Something like the below?
+> 
+> Looks good to me. This is also one of the cases where a macro will do 
+> better than an inline function, since the return value depends on the size 
+> of the pointer, and it doesn't do the whole 'unsigned long' thing any 
+> more.
 
-You are right, it's an issue on its own.  Please find a stand-alone
-patch below.
+Indeed, I was glad to see that go.
 
-Thanks,
+> It should also be fairly easy to make this now just do a cmpxchg8b for the 
+> 64-bit case (again, that wouldn't have worked sanely due to the fixed type 
+> in the inline function version - expanding that size to 64-bit would have 
+> been insane). But that's a separate issue (and maybe we don't want to do 
+> it, due to the whole "it's not DMA-atomic" etc issue - we may be better 
+> off with a build failure, and forcing people who really want 64-bit 
+> accesses to use the explicit cmpxchg64 thing)
 
-	Hannes
+Right, that would be a second patch if we think its a sane thing to do.
 
+> That said, I think that you should merge the insane three versions of this 
+> macro into one. Having separate versions for "__[sync_|local_|]cmpxchg()" 
+> is disgusting. I bet you can do it with a single macro, and just pass in 
+> the LOCK_PREFIX (or empty, or "lock;") to that as needed. Rather than 
+> duplicating it three times.
+
+You're right, what was I thinking doing all this copy/paste stuff.
+
+Here's a new one, still seems to build i386 and x86_64 defconfigs.
+
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
-From: Johannes Weiner <hannes@cmpxchg.org>
-Subject: mm: order evictable rescue in LRU putback
+ arch/x86/include/asm/cmpxchg_32.h |  218 ++++++++++++++---------------------
+ arch/x86/include/asm/cmpxchg_64.h |  234 ++++++++++++++----------------------
+ 2 files changed, 177 insertions(+), 275 deletions(-)
 
-Isolators putting a page back to the LRU do not hold the page lock,
-and if the page is mlocked, another thread might munlock it
-concurrently.
-
-Expecting this, the putback code re-checks the evictability of a page
-when it just moved it to the unevictable list in order to correct its
-decision.
-
-The problem, however, is that ordering is not garuanteed between
-setting PG_lru when moving the page to the list and checking
-PG_mlocked afterwards:
-
-	#0 putback			#1 munlock
-
-	spin_lock()
-					if (TestClearPageMlocked())
-					  if (PageLRU())
-					    move to evictable list
-	SetPageLRU()
-	spin_unlock()
-	if (!PageMlocked())
-	  move to evictable list
-
-The PageMlocked() reading may get reordered before SetPageLRU() in #0,
-resulting in #0 not moving the still mlocked page, and in #1 failing
-to isolate and move the page as well.  The evictable page is now
-stranded on the unevictable list.
-
-TestClearPageMlocked() in #1 already provides full memory barrier
-semantics.
-
-This patch adds an explicit full barrier to force ordering between
-SetPageLRU() and PageMlocked() in #0 so that either one of the
-competitors rescues the page.
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- mm/vmscan.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
-
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -544,6 +544,16 @@ redo:
- 		 */
- 		lru = LRU_UNEVICTABLE;
- 		add_page_to_unevictable_list(page);
-+		/*
-+		 * When racing with an mlock clearing (page is
-+		 * unlocked), make sure that if the other thread does
-+		 * not observe our setting of PG_lru and fails
-+		 * isolation, we see PG_mlocked cleared below and move
-+		 * the page back to the evictable list.
-+		 *
-+		 * The other side is TestClearPageMlocked().
-+		 */
-+		smp_mb();
- 	}
+diff --git a/arch/x86/include/asm/cmpxchg_32.h b/arch/x86/include/asm/cmpxchg_32.h
+index ee1931b..720c3d4 100644
+--- a/arch/x86/include/asm/cmpxchg_32.h
++++ b/arch/x86/include/asm/cmpxchg_32.h
+@@ -8,14 +8,50 @@
+  *       you need to test for the feature in boot_cpu_data.
+  */
  
- 	/*
+-#define xchg(ptr, v)							\
+-	((__typeof__(*(ptr)))__xchg((unsigned long)(v), (ptr), sizeof(*(ptr))))
++extern void __xchg_wrong_size(void);
++
++/*
++ * Note: no "lock" prefix even on SMP: xchg always implies lock anyway
++ * Note 2: xchg has side effect, so that attribute volatile is necessary,
++ *	  but generally the primitive is invalid, *ptr is output argument. --ANK
++ */
+ 
+ struct __xchg_dummy {
+ 	unsigned long a[100];
+ };
+ #define __xg(x) ((struct __xchg_dummy *)(x))
+ 
++#define __xchg(x, ptr, size)						\
++({									\
++ 	__typeof(*(ptr)) __x = (x);					\
++	switch (size) {							\
++ 	case 1:								\
++		asm volatile("xchgb %b0,%1"				\
++			     : "=q" (__x)				\
++			     : "m" (*__xg(ptr)), "0" (__x)		\
++			     : "memory");				\
++		break;							\
++	case 2:								\
++		asm volatile("xchgw %w0,%1"				\
++			     : "=r" (__x)				\
++			     : "m" (*__xg(ptr)), "0" (__x)		\
++			     : "memory");				\
++		break;							\
++	case 4:								\
++		asm volatile("xchgl %0,%1"				\
++			     : "=r" (__x)				\
++			     : "m" (*__xg(ptr)), "0" (__x)		\
++			     : "memory");				\
++		break;							\
++	default:							\
++		__xchg_wrong_size();					\
++	}								\
++	__x;								\
++})
++
++#define xchg(ptr, v)							\
++	__xchg((v), (ptr), sizeof(*ptr))
++
+ /*
+  * The semantics of XCHGCMP8B are a bit strange, this is why
+  * there is a loop and the loading of %%eax and %%edx has to
+@@ -71,57 +107,63 @@ static inline void __set_64bit_var(unsigned long long *ptr,
+ 		       (unsigned int)((value) >> 32))			\
+ 	 : __set_64bit(ptr, ll_low((value)), ll_high((value))))
+ 
+-/*
+- * Note: no "lock" prefix even on SMP: xchg always implies lock anyway
+- * Note 2: xchg has side effect, so that attribute volatile is necessary,
+- *	  but generally the primitive is invalid, *ptr is output argument. --ANK
+- */
+-static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
+-				   int size)
+-{
+-	switch (size) {
+-	case 1:
+-		asm volatile("xchgb %b0,%1"
+-			     : "=q" (x)
+-			     : "m" (*__xg(ptr)), "0" (x)
+-			     : "memory");
+-		break;
+-	case 2:
+-		asm volatile("xchgw %w0,%1"
+-			     : "=r" (x)
+-			     : "m" (*__xg(ptr)), "0" (x)
+-			     : "memory");
+-		break;
+-	case 4:
+-		asm volatile("xchgl %0,%1"
+-			     : "=r" (x)
+-			     : "m" (*__xg(ptr)), "0" (x)
+-			     : "memory");
+-		break;
+-	}
+-	return x;
+-}
++extern void __cmpxchg_wrong_size(void);
+ 
+ /*
+  * Atomic compare and exchange.  Compare OLD with MEM, if identical,
+  * store NEW in MEM.  Return the initial value in MEM.  Success is
+  * indicated by comparing RETURN with OLD.
+  */
++#define __raw_cmpxchg(ptr, old, new, size, lock)			\
++({									\
++ 	__typeof__(*(ptr)) __ret;					\
++ 	__typeof__(*(ptr)) __old = (old);				\
++ 	__typeof__(*(ptr)) __new = (new);				\
++	switch (size) {							\
++	case 1:								\
++		asm volatile(lock "cmpxchgb %b1,%2"			\
++			     : "=a"(__ret)				\
++			     : "q"(__new), "m"(*__xg(ptr)), "0"(__old)	\
++			     : "memory");				\
++ 		break;							\
++	case 2:								\
++		asm volatile(lock "cmpxchgw %w1,%2"			\
++			     : "=a"(__ret)				\
++			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
++			     : "memory");				\
++ 		break;							\
++	case 4:								\
++		asm volatile(lock "cmpxchgl %1,%2"			\
++			     : "=a"(__ret)				\
++			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
++			     : "memory");				\
++ 		break;							\
++	default:							\
++		__cmpxchg_wrong_size();					\
++	}								\
++	__ret;								\
++})
++
++#define __cmpxchg(ptr, old, new, size)					\
++	__raw_cmpxchg((ptr), (old), (new), (size), LOCK_PREFIX)
++
++#define __sync_cmpxchg(ptr, old, new, size)				\
++	__raw_cmpxchg((ptr), (old), (new), (size), "lock; ")
++
++#define __cmpxchg_local(ptr, old, new, size)				\
++	__raw_cmpxchg((ptr), (old), (new), (size), "")
+ 
+ #ifdef CONFIG_X86_CMPXCHG
+ #define __HAVE_ARCH_CMPXCHG 1
+-#define cmpxchg(ptr, o, n)						\
+-	((__typeof__(*(ptr)))__cmpxchg((ptr), (unsigned long)(o),	\
+-				       (unsigned long)(n),		\
+-				       sizeof(*(ptr))))
+-#define sync_cmpxchg(ptr, o, n)						\
+-	((__typeof__(*(ptr)))__sync_cmpxchg((ptr), (unsigned long)(o),	\
+-					    (unsigned long)(n),		\
+-					    sizeof(*(ptr))))
+-#define cmpxchg_local(ptr, o, n)					\
+-	((__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
+-					     (unsigned long)(n),	\
+-					     sizeof(*(ptr))))
++
++#define cmpxchg(ptr, old, new)						\
++	__cmpxchg((ptr), (old), (new), sizeof(*ptr))
++
++#define sync_cmpxchg(ptr, old, new)					\
++	__sync_cmpxchg((ptr), (old), (new), sizeof(*ptr))
++
++#define cmpxchg_local(ptr, old, new)					\
++	__cmpxchg_local((ptr), (old), (new), sizeof(*ptr))
+ #endif
+ 
+ #ifdef CONFIG_X86_CMPXCHG64
+@@ -133,94 +175,6 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
+ 					       (unsigned long long)(n)))
+ #endif
+ 
+-static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
+-				      unsigned long new, int size)
+-{
+-	unsigned long prev;
+-	switch (size) {
+-	case 1:
+-		asm volatile(LOCK_PREFIX "cmpxchgb %b1,%2"
+-			     : "=a"(prev)
+-			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 2:
+-		asm volatile(LOCK_PREFIX "cmpxchgw %w1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 4:
+-		asm volatile(LOCK_PREFIX "cmpxchgl %1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	}
+-	return old;
+-}
+-
+-/*
+- * Always use locked operations when touching memory shared with a
+- * hypervisor, since the system may be SMP even if the guest kernel
+- * isn't.
+- */
+-static inline unsigned long __sync_cmpxchg(volatile void *ptr,
+-					   unsigned long old,
+-					   unsigned long new, int size)
+-{
+-	unsigned long prev;
+-	switch (size) {
+-	case 1:
+-		asm volatile("lock; cmpxchgb %b1,%2"
+-			     : "=a"(prev)
+-			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 2:
+-		asm volatile("lock; cmpxchgw %w1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 4:
+-		asm volatile("lock; cmpxchgl %1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	}
+-	return old;
+-}
+-
+-static inline unsigned long __cmpxchg_local(volatile void *ptr,
+-					    unsigned long old,
+-					    unsigned long new, int size)
+-{
+-	unsigned long prev;
+-	switch (size) {
+-	case 1:
+-		asm volatile("cmpxchgb %b1,%2"
+-			     : "=a"(prev)
+-			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 2:
+-		asm volatile("cmpxchgw %w1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 4:
+-		asm volatile("cmpxchgl %1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	}
+-	return old;
+-}
+-
+ static inline unsigned long long __cmpxchg64(volatile void *ptr,
+ 					     unsigned long long old,
+ 					     unsigned long long new)
+diff --git a/arch/x86/include/asm/cmpxchg_64.h b/arch/x86/include/asm/cmpxchg_64.h
+index 52de72e..d565670 100644
+--- a/arch/x86/include/asm/cmpxchg_64.h
++++ b/arch/x86/include/asm/cmpxchg_64.h
+@@ -3,9 +3,6 @@
+ 
+ #include <asm/alternative.h> /* Provides LOCK_PREFIX */
+ 
+-#define xchg(ptr, v) ((__typeof__(*(ptr)))__xchg((unsigned long)(v), \
+-						 (ptr), sizeof(*(ptr))))
+-
+ #define __xg(x) ((volatile long *)(x))
+ 
+ static inline void set_64bit(volatile unsigned long *ptr, unsigned long val)
+@@ -15,167 +12,118 @@ static inline void set_64bit(volatile unsigned long *ptr, unsigned long val)
+ 
+ #define _set_64bit set_64bit
+ 
++extern void __xchg_wrong_size(void);
++extern void __cmpxchg_wrong_size(void);
++
+ /*
+  * Note: no "lock" prefix even on SMP: xchg always implies lock anyway
+  * Note 2: xchg has side effect, so that attribute volatile is necessary,
+  *	  but generally the primitive is invalid, *ptr is output argument. --ANK
+  */
+-static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
+-				   int size)
+-{
+-	switch (size) {
+-	case 1:
+-		asm volatile("xchgb %b0,%1"
+-			     : "=q" (x)
+-			     : "m" (*__xg(ptr)), "0" (x)
+-			     : "memory");
+-		break;
+-	case 2:
+-		asm volatile("xchgw %w0,%1"
+-			     : "=r" (x)
+-			     : "m" (*__xg(ptr)), "0" (x)
+-			     : "memory");
+-		break;
+-	case 4:
+-		asm volatile("xchgl %k0,%1"
+-			     : "=r" (x)
+-			     : "m" (*__xg(ptr)), "0" (x)
+-			     : "memory");
+-		break;
+-	case 8:
+-		asm volatile("xchgq %0,%1"
+-			     : "=r" (x)
+-			     : "m" (*__xg(ptr)), "0" (x)
+-			     : "memory");
+-		break;
+-	}
+-	return x;
+-}
++#define __xchg(x, ptr, size)						\
++({									\
++ 	__typeof(*(ptr)) __x = (x);					\
++	switch (size) {							\
++ 	case 1:								\
++		asm volatile("xchgb %b0,%1"				\
++			     : "=q" (__x)				\
++			     : "m" (*__xg(ptr)), "0" (__x)		\
++			     : "memory");				\
++		break;							\
++	case 2:								\
++		asm volatile("xchgw %w0,%1"				\
++			     : "=r" (__x)				\
++			     : "m" (*__xg(ptr)), "0" (__x)		\
++			     : "memory");				\
++		break;							\
++	case 4:								\
++		asm volatile("xchgl %k0,%1"				\
++			     : "=r" (__x)				\
++			     : "m" (*__xg(ptr)), "0" (__x)		\
++			     : "memory");				\
++		break;							\
++	case 8:								\
++		asm volatile("xchgq %0,%1"				\
++			     : "=r" (__x)				\
++			     : "m" (*__xg(ptr)), "0" (__x)		\
++			     : "memory");				\
++		break;							\
++	default:							\
++		__xchg_wrong_size();					\
++	}								\
++	__x;								\
++})
++
++#define xchg(ptr, v)							\
++	__xchg((v), (ptr), sizeof(*ptr))
++
++#define __HAVE_ARCH_CMPXCHG 1
+ 
+ /*
+  * Atomic compare and exchange.  Compare OLD with MEM, if identical,
+  * store NEW in MEM.  Return the initial value in MEM.  Success is
+  * indicated by comparing RETURN with OLD.
+  */
++#define __raw_cmpxchg(ptr, old, new, size, lock)			\
++({									\
++ 	__typeof__(*(ptr)) __ret;					\
++ 	__typeof__(*(ptr)) __old = (old);				\
++ 	__typeof__(*(ptr)) __new = (new);				\
++	switch (size) {							\
++	case 1:								\
++		asm volatile(lock "cmpxchgb %b1,%2"			\
++			     : "=a"(__ret)				\
++			     : "q"(__new), "m"(*__xg(ptr)), "0"(__old)	\
++			     : "memory");				\
++ 		break;							\
++	case 2:								\
++		asm volatile(lock "cmpxchgw %w1,%2"			\
++			     : "=a"(__ret)				\
++			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
++			     : "memory");				\
++ 		break;							\
++	case 4:								\
++		asm volatile(lock "cmpxchgl %k1,%2"			\
++			     : "=a"(__ret)				\
++			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
++			     : "memory");				\
++ 		break;							\
++	case 8:								\
++		asm volatile(lock "cmpxchgq %1,%2"			\
++			     : "=a"(__ret)				\
++			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
++			     : "memory");				\
++		break;							\
++	default:							\
++		__cmpxchg_wrong_size();					\
++	}								\
++	__ret;								\
++})
+ 
+-#define __HAVE_ARCH_CMPXCHG 1
++#define __cmpxchg(ptr, old, new, size)					\
++	__raw_cmpxchg((ptr), (old), (new), (size), LOCK_PREFIX)
+ 
+-static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
+-				      unsigned long new, int size)
+-{
+-	unsigned long prev;
+-	switch (size) {
+-	case 1:
+-		asm volatile(LOCK_PREFIX "cmpxchgb %b1,%2"
+-			     : "=a"(prev)
+-			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 2:
+-		asm volatile(LOCK_PREFIX "cmpxchgw %w1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 4:
+-		asm volatile(LOCK_PREFIX "cmpxchgl %k1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 8:
+-		asm volatile(LOCK_PREFIX "cmpxchgq %1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	}
+-	return old;
+-}
++#define __sync_cmpxchg(ptr, old, new, size)				\
++	__raw_cmpxchg((ptr), (old), (new), (size), "lock; ")
+ 
+-/*
+- * Always use locked operations when touching memory shared with a
+- * hypervisor, since the system may be SMP even if the guest kernel
+- * isn't.
+- */
+-static inline unsigned long __sync_cmpxchg(volatile void *ptr,
+-					   unsigned long old,
+-					   unsigned long new, int size)
+-{
+-	unsigned long prev;
+-	switch (size) {
+-	case 1:
+-		asm volatile("lock; cmpxchgb %b1,%2"
+-			     : "=a"(prev)
+-			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 2:
+-		asm volatile("lock; cmpxchgw %w1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 4:
+-		asm volatile("lock; cmpxchgl %1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	}
+-	return old;
+-}
++#define __cmpxchg_local(ptr, old, new, size)				\
++	__raw_cmpxchg((ptr), (old), (new), (size), "")
+ 
+-static inline unsigned long __cmpxchg_local(volatile void *ptr,
+-					    unsigned long old,
+-					    unsigned long new, int size)
+-{
+-	unsigned long prev;
+-	switch (size) {
+-	case 1:
+-		asm volatile("cmpxchgb %b1,%2"
+-			     : "=a"(prev)
+-			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 2:
+-		asm volatile("cmpxchgw %w1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 4:
+-		asm volatile("cmpxchgl %k1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	case 8:
+-		asm volatile("cmpxchgq %1,%2"
+-			     : "=a"(prev)
+-			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
+-			     : "memory");
+-		return prev;
+-	}
+-	return old;
+-}
++#define cmpxchg(ptr, old, new)						\
++	__cmpxchg((ptr), (old), (new), sizeof(*ptr))
++
++#define sync_cmpxchg(ptr, old, new)					\
++	__sync_cmpxchg((ptr), (old), (new), sizeof(*ptr))
++
++#define cmpxchg_local(ptr, old, new)					\
++	__cmpxchg_local((ptr), (old), (new), sizeof(*ptr))
+ 
+-#define cmpxchg(ptr, o, n)						\
+-	((__typeof__(*(ptr)))__cmpxchg((ptr), (unsigned long)(o),	\
+-				       (unsigned long)(n), sizeof(*(ptr))))
+ #define cmpxchg64(ptr, o, n)						\
+ ({									\
+ 	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
+ 	cmpxchg((ptr), (o), (n));					\
+ })
+-#define cmpxchg_local(ptr, o, n)					\
+-	((__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
+-					     (unsigned long)(n),	\
+-					     sizeof(*(ptr))))
+-#define sync_cmpxchg(ptr, o, n)						\
+-	((__typeof__(*(ptr)))__sync_cmpxchg((ptr), (unsigned long)(o),	\
+-					    (unsigned long)(n),		\
+-					    sizeof(*(ptr))))
++
+ #define cmpxchg64_local(ptr, o, n)					\
+ ({									\
+ 	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
+
+
