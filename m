@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbZJEPkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbZJEPmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643AbZJEPkv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 11:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZJEPku
+	id S1753755AbZJEPmn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 11:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbZJEPmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 11:40:50 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:58832 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbZJEPkt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 11:40:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=URIgi1uGpqY8au1Tbbq8MJuMQF4UPnFIVEcgRkB/m8169bOaH0xAA0Mu8iZizWSgE8
-         A3CLbugL5McCMZNWEJu7aBL2JNaHMrinXlXCAw51Ibz8bUIOqx+GGa2hgsPtbNpIci1r
-         R2fm06FxnCvv40IbGOFYNoE48DtLFWR6p+tgY=
-Message-ID: <4ACA1354.1000403@gmail.com>
-Date: Mon, 05 Oct 2009 17:40:04 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.1 Thunderbird/3.0b4
+	Mon, 5 Oct 2009 11:42:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59033 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753628AbZJEPmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 11:42:42 -0400
+Message-ID: <4ACA13A1.4090107@kernel.org>
+Date: Tue, 06 Oct 2009 00:41:21 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Alasdair G Kergon <agk@redhat.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Philipp Reisner <philipp.reisner@linbit.com>
-Subject: Re: linux-next: manual merge of the device-mapper tree with Linus'
- tree
-References: <20091005144102.8c012c56.sfr@canb.auug.org.au>
-In-Reply-To: <20091005144102.8c012c56.sfr@canb.auug.org.au>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-2
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu, rusty@rustcorp.com.au,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [this_cpu_xx V4 12/20] Move early initialization of pagesets
+ out of zone_wait_table_init()
+References: <20091001212521.123389189@gentwo.org> <20091001212559.879284755@gentwo.org> <4AC7279B.3050901@kernel.org> <alpine.DEB.1.10.0910051038410.16359@gentwo.org> <4ACA0A4F.3090004@kernel.org> <alpine.DEB.1.10.0910051105070.16359@gentwo.org> <4ACA0EFD.4070607@kernel.org> <alpine.DEB.1.10.0910051126370.16359@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0910051126370.16359@gentwo.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 05 Oct 2009 15:41:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/05/2009 05:41 AM, Stephen Rothwell wrote:
-> Today's linux-next merge of the device-mapper tree got a conflict in
-> drivers/md/dm-log-userspace-transfer.c between commit
-> 18366b05a00349c1606269ba7422bf9b3a357ff2 ("connector/dm: Fixed a
-> compilation warning") from Linus' tree and commit
-> 584ac98acfc033dfda338641e736b0100fd31909
-> ("dm-log-fix-cn_ulog_callback-declaration") from the device-mapper tree.
+Christoph Lameter wrote:
+> On Tue, 6 Oct 2009, Tejun Heo wrote:
 > 
-> The former commit (already in Linus' tree) supersedes the latter, so I
-> used the former.
+>>> There are various arch implementations that do their own implementation of
+>>> setup_per_cpu_areas() at their own time (Check sparc and ia64 for
+>>> example).
+>> sparc is doing everything on setup_per_cpu_areas().  ia64 is an
+>> exception.  Hmmm... I really don't like scattering mostly unrelated
+>> init call to every setup_per_cpu_areas() implementation.  How about
+>> adding "static bool initialized __initdata" to the function and allow
+>> it to be called earlier when necessary (only ia64 at the moment)?
+> 
+> It would be best to consolidate all setup_per_cpu_areas() to work at the
+> same time during bootup. How about having a single setup_per_cpu_areas()
+> function and then within the function allow arch specific processing. Try
+> to share as much code as possible?
 
-Hmm, great! I sent it month and a half earlier with proper changelog and
-meaningful subject. akpm sent it twice with davem in Cc. davem merged
-that one instead.
+I'm under the impression that ia64 needs its percpu areas setup
+earlier during the boot so I'm not sure what you have in mind but as
+long as the call isn't scattered over different setup_per_cpu_areas()
+implementations, I'm okay.
 
-/me demotivated to post such fixes again.
+Thanks.
+
+-- 
+tejun
+
