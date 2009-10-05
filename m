@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbZJEG3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZJEGcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753283AbZJEG3h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 02:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZJEG3g
+	id S1753795AbZJEGcQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 02:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbZJEGcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 02:29:36 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:19504 "EHLO mx1.redhat.com"
+	Mon, 5 Oct 2009 02:32:15 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:54042 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752648AbZJEG3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 02:29:36 -0400
-Message-ID: <4AC99292.5060502@redhat.com>
-Date: Mon, 05 Oct 2009 14:30:42 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
+	id S1752576AbZJEGcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 02:32:15 -0400
+Date: Mon, 5 Oct 2009 08:31:38 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Philipp Reisner <philipp.reisner@linbit.com>, drbd-dev@linbit.com
+Subject: Re: linux-next: block/drbd tree build failure
+Message-ID: <20091005063138.GO26573@kernel.dk>
+References: <20091005143552.977a2d4d.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: linux-kernel@vger.kernel.org, Brian Behlendorf <behlendorf1@llnl.gov>,
-       Ben Woodard <bwoodard@llnl.gov>, Stable Team <stable@kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: [Patch] rwsem: fix rwsem_is_locked() bug
-References: <20090930032138.3919.72085.sendpatchset@localhost.localdomain> <9705.1254400470@redhat.com>
-In-Reply-To: <9705.1254400470@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091005143552.977a2d4d.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
+On Mon, Oct 05 2009, Stephen Rothwell wrote:
+> Hi Jens,
 > 
-> Your patch would probably be better as:
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
 > 
-> -	woken = 0;
-> +	woken = ++sem->activity;
-> 	while (waiter->flags & RWSEM_WAITING_FOR_READ) {
-> 		struct list_head *next = waiter->list.next;
+> drivers/block/drbd/drbd_req.c: In function '_drbd_start_io_acct':
+> drivers/block/drbd/drbd_req.c:43: error: subscripted value is neither array nor pointer
+> drivers/block/drbd/drbd_req.c: In function '_drbd_end_io_acct':
+> drivers/block/drbd/drbd_req.c:56: error: subscripted value is neither array nor pointer
 > 
-> 		list_del(&waiter->list);
-> 		tsk = waiter->task;
-> 		smp_mb();
-> 		waiter->task = NULL;
-> 		wake_up_process(tsk);
-> 		put_task_struct(tsk);
-> 		woken++;
-> 		if (list_empty(&sem->wait_list))
-> 			break;
-> 		waiter = list_entry(next, struct rwsem_waiter, list);
-> 	}
+> I reported a similar error against the dbd tree, which was fixed, but now
+> the commit that caused that error has been reverted and thus we get
+> this :-(
 > 
-> -	sem->activity += woken;
-> +	sem->activity = woken;
+> I have reverted the drbd commits from the block tree for today.
 
-FYI, this seems wrong, probably even worse than what it is now.
-I tried this change, it breaks portmap.
+That's probably my fault, not drbd. I moved it to a new branch since it
+isn't going into 2.6.32, and perhaps dropped that fix along the way.
+I'll look into it.
+
+-- 
+Jens Axboe
 
