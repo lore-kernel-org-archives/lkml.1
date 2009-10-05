@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932273AbZJEHAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbZJEHDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932273AbZJEHAX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 03:00:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932236AbZJEHAX
+	id S1758072AbZJEHDK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 03:03:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZJEHDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 03:00:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49151 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932231AbZJEHAV (ORCPT
+	Mon, 5 Oct 2009 03:03:10 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:63817 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753919AbZJEHDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 03:00:21 -0400
-Subject: Re: [PATCH 1/2] intel-iommu: PCIe hot plug for Intel iommu - IOMMU
- API
-From: David Woodhouse <dwmw2@infradead.org>
-To: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Francois Isabelle <Francois.Isabelle@ca.kontron.com>,
-       Weidong Han <weidong.han@intel.com>, iommu@lists.linux-foundation.org,
-       Grant Grundler <grundler@parisc-linux.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091002211826.GA11326@linux-os.sc.intel.com>
-References: <A6AD88C3F2289247BE726C37303E1EB8BC06E356@orsmsx505.amr.corp.intel.com>
-	 <715D42877B251141A38726ABF5CABF2C05505A7433@pdsmsx503.ccr.corp.intel.com>
-	 <C2866F9FC4CB034EB51A633DF168598605E2D2EE@ssbarcelone>
-	 <20091002211826.GA11326@linux-os.sc.intel.com>
-Content-Type: text/plain
-Date: Mon, 05 Oct 2009 07:59:30 +0100
-Message-Id: <1254725970.3277.3096.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 5 Oct 2009 03:03:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UdRR9VW3UfjF8+evgd1lRnd67LgmdBNusyWs6MFB8qJZN73zVMVTPeVCt7aT1XLjx2
+         QPPlRp/WQyTA+JgcWptzGBuJOVXFnhBZ0iDDL35j5KOAFBBw9yhth9Npl5WMAKaTd7+C
+         Og9p63OIzoYYbs5MoT/X90BRzCzFDsPA2KHwI=
+Date: Mon, 5 Oct 2009 09:01:57 +0200
+From: Johan Hovold <jhovold@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Johan Hovold <jhovold@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Michael Trimarchi <trimarchi@gandalf.sssup.it>,
+       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: ftdi_sio: Remove tty->low_latency.
+Message-ID: <20091005070157.GA16267@localhost>
+References: <20090929235232.1ae6c63b@lxorguk.ukuu.org.uk>
+ <m163ayzevu.fsf@fess.ebiederm.org>
+ <20091002084755.GA7382@localhost>
+ <20091002173308.6158d734@lxorguk.ukuu.org.uk>
+ <20091003114229.GB605@localhost>
+ <20091003141807.1dc27e4e@lxorguk.ukuu.org.uk>
+ <20091003140522.GA8725@localhost>
+ <20091003173324.315855ac@lxorguk.ukuu.org.uk>
+ <20091004194822.GD24079@localhost>
+ <m1d452wwyd.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1d452wwyd.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-02 at 14:18 -0700, Fenghua Yu wrote:
-> We expand existing IOMMU API iommu_detach_device for PCIe hot remove. We don't
-> need IOMMU API for hot add.
+On Sun, Oct 04, 2009 at 04:39:22PM -0700, Eric W. Biederman wrote:
+> To test this what should I be applying this on top of?
+> There have been a lot of patches flying around.
 
+Only my initial removal of low_latency patch.
 
-I think this could do with more explanation. A hot remove will cause
-detach_device() to be called with a NULL domain parameter? Surely we
-shouldn't be printing an error with KERN_ERR just because such a device
-hasn't been used for DMA before it was removed?
-
-> Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
-> ---
-> 
->  drivers/pci/intel-iommu.c |   13 ++++++++++++-
->  1 files changed, 12 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-> index 855dd7c..5c12283 100644
-> --- a/drivers/pci/intel-iommu.c
-> +++ b/drivers/pci/intel-iommu.c
-> @@ -3559,9 +3559,20 @@ static int intel_iommu_attach_device(struct iommu_domain *domain,
->  static void intel_iommu_detach_device(struct iommu_domain *domain,
->  				      struct device *dev)
->  {
-> -	struct dmar_domain *dmar_domain = domain->priv;
-> +	struct dmar_domain *dmar_domain;
->  	struct pci_dev *pdev = to_pci_dev(dev);
->  
-> +	/* If domain=NULL, we'll find a valid domain for the device.*/
-> +	if (!domain) {
-> +		dmar_domain = find_domain(pdev);
-> +		if (!dmar_domain) {
-> +			printk(KERN_ERR "Can not find IOMMU domain for %s\n",
-> +			       pci_name(pdev));
-> +			return;
-> +		}
-> +	} else
-> +		dmar_domain = domain->priv;
-> +
->  	domain_remove_one_dev_info(dmar_domain, pdev);
->  }
->  
--- 
-dwmw2
+Thanks,
+Johan
 
