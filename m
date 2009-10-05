@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbZJENBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932623AbZJENJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757994AbZJENBe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 09:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594AbZJENBe
+	id S932623AbZJENJm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 09:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbZJENJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 09:01:34 -0400
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:63274 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751585AbZJENBd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 09:01:33 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [.32-rc3] scheduler: iwlagn consistently high in "waiting for CPU"
-Date: Mon, 5 Oct 2009 15:00:54 +0200
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
+	Mon, 5 Oct 2009 09:09:41 -0400
+Received: from mga03.intel.com ([143.182.124.21]:35967 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756596AbZJENJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 09:09:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,505,1249282800"; 
+   d="scan'208";a="195175300"
+Date: Mon, 5 Oct 2009 21:08:50 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Myklebust, Trond" <Trond.Myklebust@netapp.com>
+Cc: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
+Subject: Re: [PATCH v2] NFS: introduce writeback wait queue
+Message-ID: <20091005130849.GA17074@localhost>
+References: <20091004030153.GA20327@localhost> <20091005071026.GA19262@localhost> <20091005073551.GA23102@localhost> <20091005073959.GA23398@localhost> <F047DA72-75B3-4447-84EB-7115C77ECBA3@netapp.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910051500.55875.elendil@planet.nl>
-X-OriginalArrivalTime: 05 Oct 2009 13:00:55.0976 (UTC) FILETIME=[E06A8A80:01CA45BB]
+In-Reply-To: <F047DA72-75B3-4447-84EB-7115C77ECBA3@netapp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With .32-rc3 I'm getting occasional skips from amarok while playing music 
-from an NFS share (3 today so far), something I've not had in a long time.
+On Mon, Oct 05, 2009 at 06:55:54PM +0800, Myklebust, Trond wrote:
+> On Oct 5, 2009, at 3:40, "Wu Fengguang" <fengguang.wu@intel.com> wrote:
+> 
+> > On Mon, Oct 05, 2009 at 03:35:51PM +0800, Wu Fengguang wrote:
+> >> Trond, I see this trace on linux-next. There are no more dirty pages
+> >> when `cp' aborts after filling up the partition:
+> >>
+> >>        cp: writing `/mnt/test/zero3': No space left on device
+> >>
+> >> I noticed that since then nr_writeback is decreased very slowly
+> >> (~100 pages per second). Looks like an interesting behavior.
+> >
+> > In the mean time, there are constant 7-8MB/s writes in the NFS server.
+> > The network flow is much smaller ~400K/s. How can I debug this issue?
+> 
+> Hi Fengguang
+> 
+> This is deliberate behaviour. When asynchronous writes start recieving  
+> errors, then we switch to synchronous write mode until the error  
+> condition clears.
 
-The reason looks to be that latencytop consistently shows 'iwlagn' as the 
-top affected process with "Scheduler: waiting for CPU".
-Values of 100-140 ms occur frequently, but I've also seen higher values 
-(180, 207). I don't remember seeing iwlagn high in the list before, but I 
-have not checked earlier kernels yet.
+Ah yes. After ENOSPC, with nfsstat I saw the client side write/commit
+numbers remain constant, while the server side write number increases
+~200 per-second, and commit number also remain static. When all client
+side nr_writeback drops to 0, the server side write number also stops.
 
-Added to that 'phy0' also frequently shows high with values of 25-75 ms.
+> The reason is for doing so is firstly because some filesystems (XFS)  
+> perform very poorly under ENOSPC, and so it takes forever to write  
+> back pages (we don't want to cancel all writebacks for temporary  
+> conditions like ENOSPC). It also allows us to deliver the errors more  
+> promptly to the application.
 
-The system is otherwise essentially idle. Other processes typically show a 
-latency < 5 ms.
-
-System: HP 2510p notebook, x86_64, Core2 Duo, Debian stable
-
-Cheers,
-FJP
+Thanks,
+Fengguang
