@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752491AbZJEOYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbZJEOjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752491AbZJEOYl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 10:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZJEOYk
+	id S1752418AbZJEOjE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 10:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbZJEOjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 10:24:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48954 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbZJEOYk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 10:24:40 -0400
-Date: Mon, 5 Oct 2009 07:24:28 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
- CPU"
-Message-ID: <20091005072428.16ce40e4@infradead.org>
-In-Reply-To: <200910051613.32631.elendil@planet.nl>
-References: <200910051500.55875.elendil@planet.nl>
-	<200910051613.32631.elendil@planet.nl>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 5 Oct 2009 10:39:03 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:44325 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751722AbZJEOjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 10:39:02 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-ID: <19146.1202.511428.691521@pilspetsen.it.uu.se>
+Date: Mon, 5 Oct 2009 16:37:38 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: sata_via: SError: { UnrecovData Proto TrStaTrns }
+In-Reply-To: <m3my46yo5g.fsf@intrepid.localdomain>
+References: <m3my46yo5g.fsf@intrepid.localdomain>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Oct 2009 16:13:31 +0200
-Frans Pop <elendil@planet.nl> wrote:
+Krzysztof Halasa writes:
+ > Hi,
+ > 
+ > What could that be?
+ > VIA VT6421A mini-PCI card and SATA SSD from Transcend. IXP425 (ARM)
+ > little-endian CPU. 128 MB RAM - VT6421A can access only the first 64 MB
+ > of system RAM, but there is bounce buffering (a la swiotlb) for the
+ > rest.
+ > 
+ > Sometimes it produces:
+ > 
+ > ata1.00: exception Emask 0x12 SAct 0x0 SErr 0x1000500 action 0x6
+ > ata1.00: BMDMA stat 0x5
+ > ata1: SError: { UnrecovData Proto TrStaTrns }
+ > ata1.00: cmd c8/00:20:b7:18:38/00:00:00:00:00/e0 tag 0 dma 16384 in
+ >          res 51/40:20:b7:18:38/00:00:00:00:00/e0 Emask 0x12 (ATA bus error)
+ > ata1.00: status: { DRDY ERR }
+ > ata1.00: error: { UNC }
+ > ata1: hard resetting link
+ > ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ > ata1.00: configured for UDMA/100
+ > ata1: EH complete
+ > 
+ > Any ideas?
 
-> On Monday 05 October 2009, Frans Pop wrote:
-> > With .32-rc3 I'm getting occasional skips from amarok while playing
-> > music from an NFS share (3 today so far), something I've not had in
-> > a long time.
-> >
-> > The reason looks to be that latencytop consistently shows 'iwlagn'
-> > as the top affected process with "Scheduler: waiting for CPU".
-> > Values of 100-140 ms occur frequently, but I've also seen higher
-> > values (180, 207). I don't remember seeing iwlagn high in the list
-> > before, but I have not checked earlier kernels yet.
-> >
-> > Added to that 'phy0' also frequently shows high with values of
-> > 25-75 ms.
-> >
-> > The system is otherwise essentially idle. Other processes typically
-> > show a latency < 5 ms.
-> 
-> If I give the system some work to do (like compiling a kernel), the 
-> latencies on iwlagn and phy0 disappear (values < 5 ms).
-> Is this related to ondemand frequency scaling?
+Try again with a known good SATA disk instead of the SSD.
 
-shouldn't be.... but
-
-can you do a 5 second or so timechart recording of this?
-That will capture all scheduler delays as well as the P states etc....
-
-(to do a timechart recording, first make sure debugfs is mounted, and
-then do in tools/perf 
-
-./perf timechart record sleep 5
-
-then you can turn it into an SVG with
-
-./perf timechart
-
-)
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+What is the make and model of that mini-PCI card?
