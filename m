@@ -1,89 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758434AbZJELnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758512AbZJELr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758434AbZJELnL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 07:43:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757658AbZJELnL
+	id S1758512AbZJELr5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 07:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbZJELr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 07:43:11 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39201 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757257AbZJELnK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 07:43:10 -0400
-X-Sasl-enc: MnZ4t8Zwh4AoV6GAdz/HNvVpGQOEt6sYlZNuE1EZgueb 1254742952
-Message-ID: <4AC9DBA5.1090701@imap.cc>
-Date: Mon, 05 Oct 2009 13:42:29 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
+	Mon, 5 Oct 2009 07:47:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56752 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754425AbZJELrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 07:47:55 -0400
+Date: Mon, 5 Oct 2009 11:46:37 GMT
+From: tip-bot for john stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jkacur@redhat.com, williams@redhat.com, johnstul@us.ibm.com,
+       schwidefsky@de.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jkacur@redhat.com, johnstul@us.ibm.com, williams@redhat.com,
+       schwidefsky@de.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1254525473.7741.88.camel@localhost.localdomain>
+References: <1254525473.7741.88.camel@localhost.localdomain>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:timers/core] time: Implement logarithmic time accumulation
+Message-ID: <tip-8a45af8eb809a0d3512877296bd128e73fcee379@git.kernel.org>
+Git-Commit-ID: 8a45af8eb809a0d3512877296bd128e73fcee379
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Michael Buesch <mb@bu3sch.de>
-CC: i4ldeveloper@listserv.isdn4linux.de, Carsten Paeth <calle@calle.de>,
-       Karsten Keil <isdn@linux-pingi.de>, Karsten Keil <keil@b1-systems.de>,
-       Armin Schindler <armin@melware.de>, isdn4linux@listserv.isdn4linux.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH RFC] isdn/capi: fix up CAPI subsystem workaround locking
- a bit
-References: <20091003120657.2228911186C@xenon.ts.pxnet.com> <200910032026.24451.mb@bu3sch.de> <200910032035.21884.mb@bu3sch.de>
-In-Reply-To: <200910032035.21884.mb@bu3sch.de>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 05 Oct 2009 11:46:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Commit-ID:  8a45af8eb809a0d3512877296bd128e73fcee379
+Gitweb:     http://git.kernel.org/tip/8a45af8eb809a0d3512877296bd128e73fcee379
+Author:     john stultz <johnstul@us.ibm.com>
+AuthorDate: Fri, 2 Oct 2009 16:17:53 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 4 Oct 2009 19:31:39 +0200
 
-On Sat, 2009-10-03 20:35:19 +0200, Michael Buesch wrote:
+time: Implement logarithmic time accumulation
 
->> I remember that handle_minor_send() and/or handle_minor_recv() showed up
->> in the crash backtraces. So if you move them out of the critical
->> section, you can as well remove the lock completely.
-> 
-> here's my original mail:
-> http://lkml.indiana.edu/hypermail/linux/kernel/0605.0/0455.html
-> 
-> Note the patch in that mail does _not_ fix the issue, as it turned out later.
-> Then I did the workaround-lock patch, which _did_ fix it.
+Accumulating one tick at a time works well unless we're using NOHZ.
+Then it can be an issue, since we may have to run through the loop
+a few thousand times, which can increase timer interrupt caused
+latency.
 
-Thanks for the info. So do I understand correctly that after:
+The current solution was to accumulate in half-second intervals
+with NOHZ. This kept the number of loops down, however it did
+slightly change how we make NTP adjustments. While not an issue
+with NTPd users, as NTPd makes adjustments over a longer period of
+time, other adjtimex() users have noticed the half-second
+granularity with which we can apply frequency changes to the clock.
 
-commit 6aa65472d18703064898eefb5eb58f7ecd0d8912
-Author: Michael Buesch <mb@bu3sch.de>
-Date:   Mon Jun 26 00:25:30 2006 -0700
+For instance, if a application tries to apply a 100ppm frequency
+correction for 20ms to correct a 2us offset, with NOHZ they either
+get no correction, or a 50us correction.
 
-    [PATCH] CAPI crash / race condition
+Now, there will always be some granularity error for applying
+frequency corrections. However with users sensitive to this error
+have seen a 50-500x increase with NOHZ compared to running without
+NOHZ.
 
-you were actually still seeing LIST_POISON2 Oopses in
-capiminor_del_ack(), but after:
+So I figured I'd try another approach then just simply increasing
+the interval. My approach is to consume the time interval
+logarithmically. This reduces the number of times through the loop
+needed keeping latency down, while still preserving the original
+granularity error for adjtimex() changes.
 
-commit 053b47ff249b9e0a634dae807f81465205e7c228
-Author: Michael Buesch <mb@bu3sch.de>
-Date:   Mon Feb 12 00:53:26 2007 -0800
+Further, this change allows us to remove the xtime_cache code
+(patch to follow), as xtime is always within one tick of the
+current time, instead of the half-second updates it saw before.
 
-    [PATCH] Workaround CAPI subsystem locking issue
+An earlier version of this patch has been shipping to x86 users in
+the RedHat MRG releases for awhile without issue, but I've reworked
+this version to be even more careful about avoiding possible
+overflows if the shift value gets too large.
 
-they were gone? That's interesting. I'll try to wrap my mind around
-this. capiminor_del_ack() isn't that big, after all.
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+Cc: Clark Williams <williams@redhat.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <1254525473.7741.88.camel@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-It's unfortunate that these crashes only seem to occur with one specific
-device (FritzCard DSL) which I don't have. Can anyone shed some light on
-what that device is doing differently from other ISDN cards?
 
-Thanks,
-Tilman
+---
+ include/linux/timex.h     |    4 --
+ kernel/time/timekeeping.c |   85 +++++++++++++++++++++++++++++++-------------
+ 2 files changed, 60 insertions(+), 29 deletions(-)
 
-- --
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFKydulQ3+did9BuFsRAsYVAJ9e5azOPmNycMHZM6onfsDIY21a5wCffNh5
-14WY2tYjla7wmmVgCHe+qDo=
-=BgmY
------END PGP SIGNATURE-----
+diff --git a/include/linux/timex.h b/include/linux/timex.h
+index e6967d1..0c0ef7d 100644
+--- a/include/linux/timex.h
++++ b/include/linux/timex.h
+@@ -261,11 +261,7 @@ static inline int ntp_synced(void)
+ 
+ #define NTP_SCALE_SHIFT		32
+ 
+-#ifdef CONFIG_NO_HZ
+-#define NTP_INTERVAL_FREQ  (2)
+-#else
+ #define NTP_INTERVAL_FREQ  (HZ)
+-#endif
+ #define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
+ 
+ /* Returns how long ticks are at present, in ns / 2^NTP_SCALE_SHIFT. */
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index fb0f46f..5fdd78e 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -721,6 +721,51 @@ static void timekeeping_adjust(s64 offset)
+ 				timekeeper.ntp_error_shift;
+ }
+ 
++
++/**
++ * logarithmic_accumulation - shifted accumulation of cycles
++ *
++ * This functions accumulates a shifted interval of cycles into
++ * into a shifted interval nanoseconds. Allows for O(log) accumulation
++ * loop.
++ *
++ * Returns the unconsumed cycles.
++ */
++static cycle_t logarithmic_accumulation(cycle_t offset, int shift)
++{
++	u64 nsecps = (u64)NSEC_PER_SEC << timekeeper.shift;
++
++	/* If the offset is smaller then a shifted interval, do nothing */
++	if (offset < timekeeper.cycle_interval<<shift)
++		return offset;
++
++	/* Accumulate one shifted interval */
++	offset -= timekeeper.cycle_interval << shift;
++	timekeeper.clock->cycle_last += timekeeper.cycle_interval << shift;
++
++	timekeeper.xtime_nsec += timekeeper.xtime_interval << shift;
++	while (timekeeper.xtime_nsec >= nsecps) {
++		timekeeper.xtime_nsec -= nsecps;
++		xtime.tv_sec++;
++		second_overflow();
++	}
++
++	/* Accumulate into raw time */
++	raw_time.tv_nsec += timekeeper.raw_interval << shift;;
++	while (raw_time.tv_nsec >= NSEC_PER_SEC) {
++		raw_time.tv_nsec -= NSEC_PER_SEC;
++		raw_time.tv_sec++;
++	}
++
++	/* Accumulate error between NTP and clock interval */
++	timekeeper.ntp_error += tick_length << shift;
++	timekeeper.ntp_error -= timekeeper.xtime_interval <<
++				(timekeeper.ntp_error_shift + shift);
++
++	return offset;
++}
++
++
+ /**
+  * update_wall_time - Uses the current clocksource to increment the wall time
+  *
+@@ -731,6 +776,7 @@ void update_wall_time(void)
+ 	struct clocksource *clock;
+ 	cycle_t offset;
+ 	u64 nsecs;
++	int shift = 0, maxshift;
+ 
+ 	/* Make sure we're fully resumed: */
+ 	if (unlikely(timekeeping_suspended))
+@@ -744,33 +790,22 @@ void update_wall_time(void)
+ #endif
+ 	timekeeper.xtime_nsec = (s64)xtime.tv_nsec << timekeeper.shift;
+ 
+-	/* normally this loop will run just once, however in the
+-	 * case of lost or late ticks, it will accumulate correctly.
++	/*
++	 * With NO_HZ we may have to accumulate many cycle_intervals
++	 * (think "ticks") worth of time at once. To do this efficiently,
++	 * we calculate the largest doubling multiple of cycle_intervals
++	 * that is smaller then the offset. We then accumulate that
++	 * chunk in one go, and then try to consume the next smaller
++	 * doubled multiple.
+ 	 */
++	shift = ilog2(offset) - ilog2(timekeeper.cycle_interval);
++	shift = max(0, shift);
++	/* Bound shift to one less then what overflows tick_length */
++	maxshift = (8*sizeof(tick_length) - (ilog2(tick_length)+1)) - 1;
++	shift = min(shift, maxshift);
+ 	while (offset >= timekeeper.cycle_interval) {
+-		u64 nsecps = (u64)NSEC_PER_SEC << timekeeper.shift;
+-
+-		/* accumulate one interval */
+-		offset -= timekeeper.cycle_interval;
+-		clock->cycle_last += timekeeper.cycle_interval;
+-
+-		timekeeper.xtime_nsec += timekeeper.xtime_interval;
+-		if (timekeeper.xtime_nsec >= nsecps) {
+-			timekeeper.xtime_nsec -= nsecps;
+-			xtime.tv_sec++;
+-			second_overflow();
+-		}
+-
+-		raw_time.tv_nsec += timekeeper.raw_interval;
+-		if (raw_time.tv_nsec >= NSEC_PER_SEC) {
+-			raw_time.tv_nsec -= NSEC_PER_SEC;
+-			raw_time.tv_sec++;
+-		}
+-
+-		/* accumulate error between NTP and clock interval */
+-		timekeeper.ntp_error += tick_length;
+-		timekeeper.ntp_error -= timekeeper.xtime_interval <<
+-					timekeeper.ntp_error_shift;
++		offset = logarithmic_accumulation(offset, shift);
++		shift--;
+ 	}
+ 
+ 	/* correct the clock when NTP error is too big */
