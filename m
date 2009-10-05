@@ -1,75 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbZJER5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbZJER7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311AbZJER5l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 13:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZJER5k
+	id S1754336AbZJER7S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 13:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZJER7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 13:57:40 -0400
-Received: from mail.perches.com ([173.55.12.10]:1855 "EHLO mail.perches.com"
+	Mon, 5 Oct 2009 13:59:18 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:35303 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754208AbZJER5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 13:57:39 -0400
-Subject: Re: [PATCH 16/21] kernel/kexec.c: use pr_<level> and add
- pr_fmt(fmt)
-From: Joe Perches <joe@perches.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org
-In-Reply-To: <m163auvylv.fsf@fess.ebiederm.org>
-References: <cover.1254701151.git.joe@perches.com>
-	 <cover.1254701151.git.joe@perches.com>
-	 <40ffa7c5595f4afbba793919b397b5139cde901a.1254701151.git.joe@perches.com>
-	 <m163auvylv.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 05 Oct 2009 10:57:02 -0700
-Message-Id: <1254765422.1799.542.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	id S1754159AbZJER7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 13:59:17 -0400
+Date: Mon, 5 Oct 2009 10:58:55 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] signals: SEND_SIG_NOINFO should be considered as
+	SI_FROMUSER()
+Message-ID: <20091005175855.GB30442@us.ibm.com>
+References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com> <20091004021918.GB21006@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091004021918.GB21006@redhat.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-05 at 05:01 -0700, Eric W. Biederman wrote:
-> Joe Perches <joe@perches.com> writes:
-> > Added #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> > Converted printk(KERN_<level> to pr_<level>(
-> > Added KERN_ERR to allocation failure message
-> I'm dense and I haven't seen the discussions.  What
-> is the point of adding a prefix string where none exists
-> into a bunch of printks?
+Oleg Nesterov [oleg@redhat.com] wrote:
+| No changes in compiled code. The patch adds the new helper, si_fromuser()
+| and changes check_kill_permission() to use this helper.
+| 
+| The real effect of this patch is that from now we "officially" consider
+| SEND_SIG_NOINFO signal as "from user-space" signals. This is already true
+| if we look at the code which uses SEND_SIG_NOINFO, except __send_signal()
+| has another opinion - see the next patch.
+| 
+| The naming of these special SEND_SIG_XXX siginfo's is really bad imho.
 
-Hi Eric.
+I agree :-)
 
-There have been a few messages on lkml with little comment,
-so I thought I'd get a few more by submitting some patches.
+| >From __send_signal()'s pov they mean
+| 
+| 	SEND_SIG_NOINFO		from user
 
-There is a [0/21] message that you might have received directly.
-http://lkml.org/lkml/2009/10/4/198
+Just to complicate further, all 'SEND_SIG_NOINFO' signals are from user,
+but not all 'from user' signals are SEND_SIG_NOINFO.
 
-I believe these are some of the +/-'s of each approach:
-(copy/pasted from an earlier response)
+| 	SEND_SIG_PRIV		from kernel
 
-Current:
+SEND_SIG_PRIV also means there is no real info, just that sender is
+privileged.
 
-o Allows some messages to not have a prefix at all
-o Prefixes can vary inside a specific compilation unit
+| 	SEND_SIG_FORCED		no info
 
-Proposed:
+Are 'forced' signals considered 'from kernel' too ?
 
-o Consistent, smaller source code, with no typos
-  for instance: acpi/apic typos were found/fixed
-                kernel/power had messages without PM:
-                mce used "MCE: " and "mce: " prefixes
-o Compatible with KMSG_COMPONENT
-o All logging messages should have a prefix so
-  it could be easier to grep/categorize logs
-o Future:
-  - Doesn't require each compilation unit to #define pr_fmt
-  - Smaller objects without duplicated prefixes
-  - Extensible via some dynamic_debug like mechanism
-    to hide or show modname/__func__/offset without
-    significant overhead or any increase in object size
-    (printk would emit the prefix via some insertion
-     mechanism after "<level>")
+Separate from this patch, but would be good if we could fix the naming.
 
+| 
+| Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+| ---
+| 
+|  include/linux/sched.h |    5 -----
+|  kernel/signal.c       |   16 +++++++++++++---
+|  2 files changed, 13 insertions(+), 8 deletions(-)
+| 
+| --- TTT_32/include/linux/sched.h~FU_1_HELPER	2009-09-24 21:38:54.000000000 +0200
+| +++ TTT_32/include/linux/sched.h	2009-10-04 02:21:49.000000000 +0200
+| @@ -2081,11 +2081,6 @@ static inline int kill_cad_pid(int sig, 
+|  #define SEND_SIG_PRIV	((struct siginfo *) 1)
+|  #define SEND_SIG_FORCED	((struct siginfo *) 2)
+| 
+| -static inline int is_si_special(const struct siginfo *info)
+| -{
+| -	return info <= SEND_SIG_FORCED;
+| -}
+| -
+|  /* True if we are on the alternate signal stack.  */
+| 
+|  static inline int on_sig_stack(unsigned long sp)
+| --- TTT_32/kernel/signal.c~FU_1_HELPER	2009-09-24 21:38:54.000000000 +0200
+| +++ TTT_32/kernel/signal.c	2009-10-04 02:21:55.000000000 +0200
+| @@ -584,6 +584,17 @@ static int rm_from_queue(unsigned long m
+|  	return 1;
+|  }
+| 
+| +static inline int is_si_special(const struct siginfo *info)
+| +{
+| +	return info <= SEND_SIG_FORCED;
+| +}
+| +
+| +static inline bool si_fromuser(const struct siginfo *info)
+| +{
+| +	return info == SEND_SIG_NOINFO ||
+| +		(!is_si_special(info) && SI_FROMUSER(info));
+| +}
+| +
 
+This change makes sense, but can we even drop the SEND_SIG_NOINFO
+altogether and simply check for NULL:
+
+	return (!info || (is_si_special(info)) && SI_FROMUSER(info))
+
+Sukadev
