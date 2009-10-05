@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbZJEKul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932638AbZJEK44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbZJEKul (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 06:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932554AbZJEKul
+	id S932638AbZJEK44 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 06:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932611AbZJEK4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 06:50:41 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:42800 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932537AbZJEKuk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 06:50:40 -0400
-Date: Mon, 5 Oct 2009 16:19:55 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -tip] x86: hw-breakpoints: Actually flush thread
-	breakpoints in flush_thread().
-Message-ID: <20091005104955.GA14852@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20091005102306.GA7889@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091005102306.GA7889@linux-sh.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 5 Oct 2009 06:56:55 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:51546 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932596AbZJEK4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 06:56:54 -0400
+X-IronPort-AV: E=Sophos;i="4.44,505,1249282800"; 
+   d="scan'208";a="253526380"
+References: <20091004030153.GA20327@localhost> <20091005071026.GA19262@localhost> <20091005073551.GA23102@localhost> <20091005073959.GA23398@localhost>
+Message-ID: <F047DA72-75B3-4447-84EB-7115C77ECBA3@netapp.com>
+From: "Myklebust, Trond" <Trond.Myklebust@netapp.com>
+To: "Wu Fengguang" <fengguang.wu@intel.com>
+Thread-Topic: [PATCH v2] NFS: introduce writeback wait queue
+Thread-Index: AcpFqm0rrfkrkClgTnS5daP+Rc5a2w==
+In-Reply-To: <20091005073959.GA23398@localhost>
+Content-Type: text/plain;
+	format=flowed;
+	delsp=yes;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0 (iPhone Mail 7C144)
+Subject: Re: [PATCH v2] NFS: introduce writeback wait queue
+Date: Mon, 5 Oct 2009 06:55:54 -0400
+Cc: <jens.axboe@oracle.com>, "Chris Mason" <chris.mason@oracle.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-fsdevel@vger.kernel.org>, "LKML" <linux-kernel@vger.kernel.org>,
+       <linux-nfs@vger.kernel.org>
+X-OriginalArrivalTime: 05 Oct 2009 10:56:02.0265 (UTC) FILETIME=[6DD0FC90:01CA45AA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 05, 2009 at 07:23:06PM +0900, Paul Mundt wrote:
-> [ I noticed this whilst hacking up SH support, applies to the current
->   tracing/hw-breakpoints topic branch. ]
-> 
-> flush_thread() tries to do a TIF_DEBUG check before calling in to
-> flush_thread_hw_breakpoint() (which subsequently clears the thread flag),
-> but for some reason, the x86 code is manually clearing TIF_DEBUG
-> immediately before the test, so this path will never be taken.
-> 
-> This kills off the erroneous clear_tsk_thread_flag() and lets
-> flush_thread_hw_breakpoint() actually get invoked.
-> 
+On Oct 5, 2009, at 3:40, "Wu Fengguang" <fengguang.wu@intel.com> wrote:
 
-Yes, this is wrong and we missed it. Thanks for fixing!
+> On Mon, Oct 05, 2009 at 03:35:51PM +0800, Wu Fengguang wrote:
+>> Trond, I see this trace on linux-next. There are no more dirty pages
+>> when `cp' aborts after filling up the partition:
+>>
+>>        cp: writing `/mnt/test/zero3': No space left on device
+>>
+>> I noticed that since then nr_writeback is decreased very slowly
+>> (~100 pages per second). Looks like an interesting behavior.
+>
+> In the mean time, there are constant 7-8MB/s writes in the NFS server.
+> The network flow is much smaller ~400K/s. How can I debug this issue?
 
-> Presumably folks were getting lucky with testing and the
-> free_thread_info() -> free_thread_xstate() path was taking care of the
-> flush there.
-> 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Hi Fengguang
 
-Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
+This is deliberate behaviour. When asynchronous writes start recieving  
+errors, then we switch to synchronous write mode until the error  
+condition clears.
 
+The reason is for doing so is firstly because some filesystems (XFS)  
+perform very poorly under ENOSPC, and so it takes forever to write  
+back pages (we don't want to cancel all writebacks for temporary  
+conditions like ENOSPC). It also allows us to deliver the errors more  
+promptly to the application.
 
+Cheers
+      Trond
+
+>
