@@ -1,238 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751500AbZJEFOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbZJEFeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751500AbZJEFOm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 01:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbZJEFOl
+	id S1752164AbZJEFeA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 01:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbZJEFeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 01:14:41 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:52418 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750730AbZJEFOk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 01:14:40 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Date: Mon, 5 Oct 2009 07:13:58 +0200
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Mon, 5 Oct 2009 01:34:00 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:50796 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbZJEFd7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 01:33:59 -0400
+Date: Mon, 5 Oct 2009 11:03:10 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>, linux-mm@kvack.org
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.k2B.ZNTxKB@chimera> <200910021111.55749.elendil@planet.nl>
-In-Reply-To: <200910021111.55749.elendil@planet.nl>
+       linux-acpi@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Shaohua Li <shaohua.li@intel.com>
+Subject: Re: [git pull request] ACPI Processor Aggregator Driver for
+ 2.6.32-rc1
+Message-ID: <20091005053310.GB14222@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <alpine.LFD.2.00.0910030145140.25240@localhost.localdomain>
+ <20091005033256.GA26592@balbir.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200910050714.01908.elendil@planet.nl>
-X-OriginalArrivalTime: 05 Oct 2009 05:14:02.0304 (UTC) FILETIME=[A6F76C00:01CA457A]
+In-Reply-To: <20091005033256.GA26592@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 October 2009, Frans Pop wrote:
-> On Thursday 01 October 2009, Rafael J. Wysocki wrote:
-> > Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=14141
-> > Subject       : order 2 page allocation failures in iwlagn
-> > Submitter     : Frans Pop <elendil@planet.nl>
-> > Date          : 2009-09-06 7:40 (26 days old)
-> > References    : http://marc.info/?l=linux-kernel&m=125222287419691&w=4
-> > Handled-By    : Pekka Enberg <penberg@cs.helsinki.fi>
->
-> I'm not sure about this.
->
-> The error messages from failed allocations should now be a lot less as a
-> result of this commit:
-> commit f82a924cc88a5541df1d4b9d38a0968cd077a051
-> Author: Reinette Chatre <reinette.chatre@intel.com>
-> Date:   Thu Sep 17 10:43:56 2009 -0700
->     iwlwifi: reduce noise when skb allocation fails
->
-> That commit is in mainline, and I'm not sure if it is important enough
-> for a stable update (AFAICT it's not listed for 2.6.31.2).
->
-> That commit is mostly cosmetic, but possibly the real regression is not
-> in iwlagn but in the way memory is freed/defragmented. That aspect was
-> also reported by Bartlomiej (#14016) and was extensively discussed
-> (without a clear conclusion) here: http://lkml.org/lkml/2009/8/26/140.
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-10-05 09:02:56]:
 
-I may be getting somewhere with this. I just got the allocation failures
-included below on .32-rc3. Note that these are not the "fixable" failures
-that got suppressed with the commit referenced above, but the "this could
-affect networking" failures that are still reported.
+> * Len Brown <lenb@kernel.org> [2009-10-03 01:56:32]:
+> 
+> >     This driver does not use the kernel's CPU hot-plug mechanism
+> >     because after the transient emergency is over, the system must
+> >     be returned to its normal state, and hotplug would permanently
+> >     break both cpusets and binding.
+> >     
+> 
+> Why does hotplug break cpusets and binding?
+ 
+CPU hotplug will break any cpuset that is setup with that cpu.
+Userspace needs to register for notifications and redo the cpusets to
+get desired behaviour.  Since these emergencies are short durations,
+these may require constant re-creation of cpusets leading to an
+administrative overhead and added complexity.
 
-What I was doing when I got them is also interesting:
-- a kernel build
-- a gitk for the kernel tree (with full history this uses ~40% of memory)
-- by mistake I then started a _second_ gitk
+Hence Peter had suggested a transparent method to reduce system
+capacity and not really knock out a single cpu.  The goal is to run
+something like 6 cpus at a time in an 8 cpu system without starving
+any single cpu.  Also real time jobs should still allowed to be run
+since they will generally be very short running.
 
-The second gitk (which shows as 'wish8.5' in top) caused a massive swap
-out which brought the system to a standstill for a while (with huge
-latencies as well, including a completely stuck mouse cursor, which
-happens rarely).
-The system has 2GB RAM + 2GB swap, so IIUC there is no danger of getting
-into an OOM as the first gitk can be swapped out completely.
+In this patch series, the main design issue was about running
+a forced-idle thread that may affect scheduling fairness.
 
-I'll dig into this a bit more as it looks like this should be reproducible,
-probably even without the kernel build. Next step is to see how .30 behaves
-in the same situation.
+> >     So to force idle, the driver creates a power saving thread.
+> >     The scheduler will migrate the thread to the preferred CPU.
+> >     The thread has max priority and has SCHED_RR policy,
+> >     so it can occupy one CPU.  To save power, the thread will
+> >     invoke the deep C-state entry instructions.
+> >     
+> >     To avoid starvation, the thread will sleep 5% of the time
+> >     time for every second (current RT scheduler has threshold
+> >     to avoid starvation, but if other CPUs are idle,
+> >     the CPU can borrow CPU timer from other,
+> >     which makes the mechanism not work here)
+> >     
+> >     Vaidyanathan Srinivasan has proposed scheduler enhancements
+> >     to allow injecting idle time into the system.  This driver doesn't
+> >     depend on those enhancements, but could cut over to them
+> >     when they are available.
+> >     
+> >     Peter Z. does not favor upstreaming this driver until
+> >     the those scheduler enhancements are in place.  However,
+> >     we favor upstreaming this driver now because it is useful
+> >     now, and can be enhanced over time.
+> >     
+> >     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> >     NACKed-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> >     Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> >     Signed-off-by: Len Brown <len.brown@intel.com>
+> 
+> This is a first a patch with a NACKed-by, could we please have more
+> discussion on the proposed design.
 
-Even if it is reproducible with .30, I wonder if the kernel shouldn't be
-more robust in this situation. Currently it seems to allow one single
-process to claim so much memory before swapping out that "normal" operation
-of other processes is affected. I can understand that such a situation may
-be hard to avoid on a very busy system where multiple processes start
-claiming (a lot of) memory at roughly the same time, but I'd say it should
-be avoidable if a single process is the culprit.
+This is the most recent reference I have:
+http://marc.info/?l=linux-acpi&m=124650086915649&w=2
 
-BTW, the system recovered completely, although that took some time (the
-first gitk remained visible in top long after I closed its window; I think
-because the system was busy swapping it back in before terminating it).
+--Vaidy
 
-Cheers,
-FJP
-
-kcryptd: page allocation failure. order:2, mode:0x4020
-Pid: 1483, comm: kcryptd Not tainted 2.6.32-rc3 #22
-Call Trace:
- <IRQ>  [<ffffffff8107c3d5>] __alloc_pages_nodemask+0x5a2/0x5ec
- [<ffffffff81264892>] ? _spin_unlock+0x9/0xb
- [<ffffffff811e73cd>] ? __alloc_skb+0x3c/0x15b
- [<ffffffffa03202cb>] ? iwl_rx_allocate+0x8f/0x305 [iwlcore]
- [<ffffffff8107c431>] __get_free_pages+0x12/0x41
- [<ffffffff8109cb1a>] __kmalloc_track_caller+0x3b/0xed
- [<ffffffff811e73f7>] __alloc_skb+0x66/0x15b
- [<ffffffffa03202cb>] iwl_rx_allocate+0x8f/0x305 [iwlcore]
- [<ffffffffa0320557>] iwl_rx_replenish_now+0x16/0x23 [iwlcore]
- [<ffffffffa035c0c8>] iwl_rx_handle+0x3a8/0x3c1 [iwlagn]
- [<ffffffff81051add>] ? sched_clock_local+0x1c/0x80
- [<ffffffffa035c60d>] iwl_irq_tasklet_legacy+0x52c/0x7a4 [iwlagn]
- [<ffffffffa0317aaf>] ? __iwl_read32+0xa5/0xb4 [iwlcore]
- [<ffffffff8103efb8>] tasklet_action+0x71/0xbc
- [<ffffffff8103f837>] __do_softirq+0x96/0x11b
- [<ffffffff8100cabc>] call_softirq+0x1c/0x28
- [<ffffffff8100e5ef>] do_softirq+0x33/0x6b
- [<ffffffff8103f5c5>] irq_exit+0x36/0x75
- [<ffffffff8100dcf1>] do_IRQ+0xa3/0xba
- [<ffffffff8100c353>] ret_from_intr+0x0/0xa
- <EOI>  [<ffffffff811199dd>] ? scatterwalk_start+0x11/0x19
- [<ffffffff8111bbca>] ? blkcipher_walk_first+0x173/0x196
- [<ffffffff8111b67b>] ? blkcipher_walk_done+0xe6/0x1b8
- [<ffffffff8111bc35>] ? blkcipher_walk_virt+0x1a/0x1d
- [<ffffffffa02001cf>] ? crypto_cbc_encrypt+0x43/0x18e [cbc]
- [<ffffffff81127efd>] ? blk_recount_segments+0x1b/0x2c
- [<ffffffffa021371e>] ? aes_encrypt+0x0/0xf [aes_x86_64]
- [<ffffffff8111af64>] ? async_encrypt+0x38/0x3a
- [<ffffffffa01f7b54>] ? crypt_convert+0x1f9/0x28b [dm_crypt]
- [<ffffffffa01f8009>] ? kcryptd_crypt+0x423/0x449 [dm_crypt]
- [<ffffffffa01f7be6>] ? kcryptd_crypt+0x0/0x449 [dm_crypt]
- [<ffffffff81049bfd>] ? worker_thread+0x146/0x1d8
- [<ffffffff8104d706>] ? autoremove_wake_function+0x0/0x38
- [<ffffffff81049ab7>] ? worker_thread+0x0/0x1d8
- [<ffffffff8104d3f4>] ? kthread+0x7d/0x85
- [<ffffffff8100c9ba>] ? child_rip+0xa/0x20
- [<ffffffff8104d377>] ? kthread+0x0/0x85
- [<ffffffff8100c9b0>] ? child_rip+0x0/0x20
-Mem-Info:
-DMA per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-CPU    1: hi:    0, btch:   1 usd:   0
-DMA32 per-cpu:
-CPU    0: hi:  186, btch:  31 usd: 171
-CPU    1: hi:  186, btch:  31 usd: 177
-active_anon:298532 inactive_anon:100163 isolated_anon:52
- active_file:3993 inactive_file:4001 isolated_file:12
- unevictable:399 dirty:0 writeback:76102 unstable:0 buffer:125
- free:14107 slab_reclaimable:4510 slab_unreclaimable:20421
- mapped:7949 shmem:0 pagetables:4437 bounce:0
-DMA free:7928kB min:40kB low:48kB high:60kB active_anon:3340kB inactive_anon:3608kB active_file:384kB
-   inactive_file:472kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15336kB mlocked:0kB
-   dirty:0kB writeback:80kB mapped:256kB shmem:0kB slab_reclaimable:12kB slab_unreclaimable:104kB kernel_stack:0kB
-   pagetables:16kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 1976 1976 1976
-DMA32 free:48500kB min:5664kB low:7080kB high:8496kB active_anon:1190788kB inactive_anon:397044kB active_file:15588kB
-   inactive_file:15532kB unevictable:1596kB isolated(anon):208kB isolated(file):48kB present:2023748kB mlocked:1596kB
-   dirty:0kB writeback:304328kB mapped:31540kB shmem:0kB slab_reclaimable:18028kB slab_unreclaimable:81496kB kernel_stack:1672kB
-   pagetables:17732kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 19*4kB 13*8kB 3*16kB 7*32kB 11*64kB 11*128kB 5*256kB 0*512kB 0*1024kB 0*2048kB 1*4096kB = 7940kB
-DMA32: 9299*4kB 1341*8kB 4*16kB 0*32kB 0*64kB 0*128kB 0*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 48500kB
-98572 total pagecache pages
-90213 pages in swap cache
-Swap cache stats: add 175874, delete 85661, find 7850/8731
-Free swap  = 1425944kB
-Total swap = 2097144kB
-518064 pages RAM
-10350 pages reserved
-82388 pages shared
-437481 pages non-shared
-iwlagn 0000:10:00.0: Failed to allocate SKB buffer with GFP_ATOMIC. Only 0 free buffers remaining.
-swapper: page allocation failure. order:2, mode:0x4020
-Pid: 0, comm: swapper Not tainted 2.6.32-rc3 #22
-Call Trace:
- <IRQ>  [<ffffffff8107c3d5>] __alloc_pages_nodemask+0x5a2/0x5ec
- [<ffffffff81264892>] ? _spin_unlock+0x9/0xb
- [<ffffffff811e73cd>] ? __alloc_skb+0x3c/0x15b
- [<ffffffffa03202cb>] ? iwl_rx_allocate+0x8f/0x305 [iwlcore]
- [<ffffffff8107c431>] __get_free_pages+0x12/0x41
- [<ffffffff8109cb1a>] __kmalloc_track_caller+0x3b/0xed
- [<ffffffff811e73f7>] __alloc_skb+0x66/0x15b
- [<ffffffffa03202cb>] iwl_rx_allocate+0x8f/0x305 [iwlcore]
- [<ffffffffa0320557>] iwl_rx_replenish_now+0x16/0x23 [iwlcore]
- [<ffffffffa035c0c8>] iwl_rx_handle+0x3a8/0x3c1 [iwlagn]
- [<ffffffffa035c60d>] iwl_irq_tasklet_legacy+0x52c/0x7a4 [iwlagn]
- [<ffffffffa0317aaf>] ? __iwl_read32+0xa5/0xb4 [iwlcore]
- [<ffffffff8103efb8>] tasklet_action+0x71/0xbc
- [<ffffffff8103f837>] __do_softirq+0x96/0x11b
- [<ffffffff8100cabc>] call_softirq+0x1c/0x28
- [<ffffffff8100e5ef>] do_softirq+0x33/0x6b
- [<ffffffff8103f5c5>] irq_exit+0x36/0x75
- [<ffffffff8100dcf1>] do_IRQ+0xa3/0xba
- [<ffffffff8100c353>] ret_from_intr+0x0/0xa
- <EOI>  [<ffffffffa0278ec7>] ? acpi_idle_enter_simple+0xf9/0x127 [processor]
- [<ffffffffa0278ebd>] ? acpi_idle_enter_simple+0xef/0x127 [processor]
- [<ffffffff811da545>] ? cpuidle_idle_call+0x8c/0xc7
- [<ffffffff8100ae2e>] ? cpu_idle+0x55/0x8d
- [<ffffffff8125432d>] ? rest_init+0x61/0x63
- [<ffffffff81436c3e>] ? start_kernel+0x348/0x353
- [<ffffffff8143629a>] ? x86_64_start_reservations+0xaa/0xae
- [<ffffffff8143637f>] ? x86_64_start_kernel+0xe1/0xe8
-Mem-Info:
-DMA per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-CPU    1: hi:    0, btch:   1 usd:   0
-DMA32 per-cpu:
-CPU    0: hi:  186, btch:  31 usd: 171
-CPU    1: hi:  186, btch:  31 usd: 155
-active_anon:297901 inactive_anon:99948 isolated_anon:52
- active_file:3920 inactive_file:3948 isolated_file:12
- unevictable:399 dirty:0 writeback:34634 unstable:0 buffer:125
- free:23390 slab_reclaimable:4510 slab_unreclaimable:11714
- mapped:7819 shmem:0 pagetables:4437 bounce:0
-DMA free:7908kB min:40kB low:48kB high:60kB active_anon:3340kB inactive_anon:3608kB active_file:384kB
-   inactive_file:472kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15336kB mlocked:0kB
-   dirty:0kB writeback:36kB mapped:256kB shmem:0kB slab_reclaimable:12kB slab_unreclaimable:12kB kernel_stack:0kB
-   pagetables:16kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 1976 1976 1976
-DMA32 free:85652kB min:5664kB low:7080kB high:8496kB active_anon:1188264kB inactive_anon:396184kB active_file:15296kB
-   inactive_file:15320kB unevictable:1596kB isolated(anon):208kB isolated(file):48kB present:2023748kB mlocked:1596kB
-   dirty:0kB writeback:138500kB mapped:31020kB shmem:0kB slab_reclaimable:18028kB slab_unreclaimable:46844kB
-   kernel_stack:1672kB pagetables:17732kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 17*4kB 12*8kB 4*16kB 6*32kB 11*64kB 11*128kB 5*256kB 0*512kB 0*1024kB 0*2048kB 1*4096kB = 7908kB
-DMA32: 12419*4kB 4439*8kB 1*16kB 0*32kB 1*64kB 1*128kB 1*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 85652kB
-97616 total pagecache pages
-89394 pages in swap cache
-Swap cache stats: add 175906, delete 86512, find 7850/8733
-Free swap  = 1425864kB
-Total swap = 2097144kB
-518064 pages RAM
-10350 pages reserved
-82282 pages shared
-428383 pages non-shared
-iwlagn 0000:10:00.0: Failed to allocate SKB buffer with GFP_ATOMIC. Only 0 free buffers remaining.
