@@ -1,70 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZJETku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZJETkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbZJETku (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 15:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbZJETkt
+	id S1754701AbZJETkH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 15:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbZJETkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 15:40:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35437 "EHLO hera.kernel.org"
+	Mon, 5 Oct 2009 15:40:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48550 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754716AbZJETks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 15:40:48 -0400
-Date: Mon, 5 Oct 2009 19:39:41 GMT
-From: "tip-bot for Jayson R. King" <dev@jaysonking.com>
-Cc: linux-kernel@vger.kernel.org, dev@jaysonking.com, hpa@zytor.com,
-       mingo@redhat.com, trivial@kernel.org, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, dev@jaysonking.com,
-       linux-kernel@vger.kernel.org, trivial@kernel.org, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4AC9C8A6.6010209@jaysonking.com>
-References: <4AC9C8A6.6010209@jaysonking.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Remove obsolete comment in sched_init()
-Message-ID: <tip-cf82ff7ea7695b0e82ba07bc5e9f1bd03a74e1aa@git.kernel.org>
-Git-Commit-ID: cf82ff7ea7695b0e82ba07bc5e9f1bd03a74e1aa
-X-Mailer: tip-git-log-daemon
+	id S1753861AbZJETkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 15:40:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: [PATCH] Wireless / ath5k: Simplify suspend and resume callbacks
+Date: Mon, 5 Oct 2009 21:40:47 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-rjw; KDE/4.3.1; x86_64; ; )
+Cc: netdev@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, Bob Copeland <me@bobcopeland.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200910050052.09085.rjw@sisk.pl> <43e72e890910050921q7f516c67ofe17603d6d873c4@mail.gmail.com>
+In-Reply-To: <43e72e890910050921q7f516c67ofe17603d6d873c4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 05 Oct 2009 19:39:42 +0000 (UTC)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910052140.47372.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cf82ff7ea7695b0e82ba07bc5e9f1bd03a74e1aa
-Gitweb:     http://git.kernel.org/tip/cf82ff7ea7695b0e82ba07bc5e9f1bd03a74e1aa
-Author:     Jayson R. King <dev@jaysonking.com>
-AuthorDate: Mon, 5 Oct 2009 05:21:26 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 5 Oct 2009 21:37:22 +0200
+On Monday 05 October 2009, Luis R. Rodriguez wrote:
+> On Sun, Oct 4, 2009 at 10:52 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> >
+> > Simplify the suspend and resume callbacks of ath5k by converting the
+> > driver to struct dev_pm_ops and allowing the PCI PM core to do the
+> > PCI-specific suspend/resume handling.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Do you happen to know if the new dev_pm_ops thing handle WOL / WoW [1]?
+> 
+> [1] http://wireless.kernel.org/en/users/Documentation/WoW
 
-sched: Remove obsolete comment in sched_init()
+It does enable wake-up at the PCI level if so configured, so in principle it
+should handle it.  However, for WoL to work there are some things that the
+drivers is reponsible for, so I guess it will be analogous for WoW.
 
-Remove the comment about calling alloc_bootmem() as it is not
-called here since commit 36b7b6d465489c4754c4fd66fcec6086eba87896.
+Anyway, the PCI-specific mechanics is there.
 
-Signed-off-by: Jayson R. King <dev@jaysonking.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Jiri Kosina <trivial@kernel.org>
-LKML-Reference: <4AC9C8A6.6010209@jaysonking.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+> >  #ifdef CONFIG_PM
+> > -static int
+> > -ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+> > +static int ath5k_pci_suspend(struct device *dev)
+> >  {
+> > -       struct ieee80211_hw *hw = pci_get_drvdata(pdev);
+> > +       struct ieee80211_hw *hw = pci_get_drvdata(to_pci_dev(dev));
+> >        struct ath5k_softc *sc = hw->priv;
+> >
+> >        ath5k_led_off(sc);
+> > -
+> > -       pci_save_state(pdev);
+> > -       pci_disable_device(pdev);
+> 
+> For WoW right here we'd do
+> 
+> pci_prepare_to_sleep(pdev) and bail out.
+> 
+> > -       pci_set_power_state(pdev, PCI_D3hot);
+> 
+> And here we'd call something like this:
+> 
+> pci_wake_from_d3(pdev, !!sc->wow_triggers_enabled);
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 830967e..a56446d 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9322,10 +9322,6 @@ void __init sched_init(void)
- #ifdef CONFIG_CPUMASK_OFFSTACK
- 	alloc_size += num_possible_cpus() * cpumask_size();
- #endif
--	/*
--	 * As sched_init() is called before page_alloc is setup,
--	 * we use alloc_bootmem().
--	 */
- 	if (alloc_size) {
- 		ptr = (unsigned long)kzalloc(alloc_size, GFP_NOWAIT);
- 
+All of this is unnecessary, the PCI PM core should take care of this just
+fine.  In case it doesn't, it has to be fixed.
+
+> > -
+> >        return 0;
+> >  }
+> 
+> Are all drivers being converted?
+
+Generally, yes, but that's not a priority work for me.  I've just happened to
+have the patch ready, so here it goes.
+
+They should be converted, though, to be able to support PCI run-time PM.
+
+> It'll be a while before we get WoW enabled on ath5k but it is
+> technically possible, the work was tested for ath9k back in July [2]
+> but I never submitted this to be merged due to some inconsistent
+> issues I was noticing with the hardware.
+> 
+> [2] http://kernel.org/pub/linux/kernel/people/mcgrof/patches/wow-07-21.patch
+
+Thanks,
+Rafael
