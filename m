@@ -1,708 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZJEP6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbZJEQHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbZJEP6M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 11:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbZJEP6L
+	id S1753782AbZJEQHu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 12:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZJEQHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 11:58:11 -0400
-Received: from viefep17-int.chello.at ([62.179.121.37]:50610 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbZJEP6K (ORCPT
+	Mon, 5 Oct 2009 12:07:50 -0400
+Received: from mail-ew0-f225.google.com ([209.85.219.225]:40708 "EHLO
+	mail-ew0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752319AbZJEQHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 11:58:10 -0400
-X-SourceIP: 213.93.53.227
-Subject: [PATCH] x86: Generate cmpxchg build failures
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain>
-References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain>
-	 <4AC060AE.1090401@gmail.com>
-	 <alpine.LFD.2.01.0909280829100.3349@localhost.localdomain>
-	 <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com>
-	 <4AC10365.7090802@gmail.com> <4AC2712C.4080901@gmail.com>
-	 <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 05 Oct 2009 18:00:25 +0200
-Message-Id: <1254758425.26976.126.camel@twins>
+	Mon, 5 Oct 2009 12:07:48 -0400
+X-Greylist: delayed 329 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Oct 2009 12:07:47 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:to:cc:from:subject:mime-version:content-type;
+        b=sOS5C0kiBsCAUIPEQBi6FPhCxZyn+JrVjTgv+uWMenH09Zw3iLeQw4O/e5fP588Xm1
+         9bKz7uhMA0bG/PMgAp7AsYvbgKwGCaFh2CH4iy/8MUZrnlWRoLr3bZW5rQkucRBXQiLe
+         /f7NQ6zhVylr+bhAgZ7qSOkybvp9PQG7C/mS4=
+Message-ID: <4aca1863.0a1ad00a.33bf.1017@mx.google.com>
+Date: Mon, 05 Oct 2009 09:01:39 -0700 (PDT)
+To: linux-kernel@vger.kernel.org
+Cc: linux-raid@vger.kernel.org
+Cc: neilb@suse.de
+Cc: rob@landley.net
+Cc: firmware@impactlinux.com
+From: Vladimir Dronnikov <dronnikov@gmail.com>
+Subject: [PATCH 1/1] md: drivers/md/unroll.pl replaced with awk analog
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="1642018400-133199294-1842725581"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-29 at 14:17 -0700, Linus Torvalds wrote:
+--1642018400-133199294-1842725581
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="md-noperl.patch"
+Content-Transfer-Encoding: base64
 
-> And regardless, we should fix the silent cmpxchg failure, even if it's 
-> just a link-time failure or something.
-
-Something like the below?
-
-Seems to build defconfig-i386, defconfig-x86_64 and generates a build
-failure on i386 with the sched_clock cmpxchg64 thing undone.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- arch/x86/include/asm/cmpxchg_32.h |  274 ++++++++++++++++++----------------
- arch/x86/include/asm/cmpxchg_64.h |  296 +++++++++++++++++++-----------------
- 2 files changed, 298 insertions(+), 272 deletions(-)
-
-diff --git a/arch/x86/include/asm/cmpxchg_32.h b/arch/x86/include/asm/cmpxchg_32.h
-index ee1931b..45ed563 100644
---- a/arch/x86/include/asm/cmpxchg_32.h
-+++ b/arch/x86/include/asm/cmpxchg_32.h
-@@ -8,14 +8,50 @@
-  *       you need to test for the feature in boot_cpu_data.
-  */
- 
--#define xchg(ptr, v)							\
--	((__typeof__(*(ptr)))__xchg((unsigned long)(v), (ptr), sizeof(*(ptr))))
-+extern void __xchg_wrong_size(void);
-+
-+/*
-+ * Note: no "lock" prefix even on SMP: xchg always implies lock anyway
-+ * Note 2: xchg has side effect, so that attribute volatile is necessary,
-+ *	  but generally the primitive is invalid, *ptr is output argument. --ANK
-+ */
- 
- struct __xchg_dummy {
- 	unsigned long a[100];
- };
- #define __xg(x) ((struct __xchg_dummy *)(x))
- 
-+#define __xchg(x, ptr, size)						\
-+({									\
-+ 	__typeof(*(ptr)) __x = (x);					\
-+	switch (size) {							\
-+ 	case 1:								\
-+		asm volatile("xchgb %b0,%1"				\
-+			     : "=q" (__x)				\
-+			     : "m" (*__xg(ptr)), "0" (__x)		\
-+			     : "memory");				\
-+		break;							\
-+	case 2:								\
-+		asm volatile("xchgw %w0,%1"				\
-+			     : "=r" (__x)				\
-+			     : "m" (*__xg(ptr)), "0" (__x)		\
-+			     : "memory");				\
-+		break;							\
-+	case 4:								\
-+		asm volatile("xchgl %0,%1"				\
-+			     : "=r" (__x)				\
-+			     : "m" (*__xg(ptr)), "0" (__x)		\
-+			     : "memory");				\
-+		break;							\
-+	default:							\
-+		__xchg_wrong_size();					\
-+	}								\
-+	__x;								\
-+})
-+
-+#define xchg(ptr, v)							\
-+	__xchg((v), (ptr), sizeof(*ptr))
-+
- /*
-  * The semantics of XCHGCMP8B are a bit strange, this is why
-  * there is a loop and the loading of %%eax and %%edx has to
-@@ -71,57 +107,119 @@ static inline void __set_64bit_var(unsigned long long *ptr,
- 		       (unsigned int)((value) >> 32))			\
- 	 : __set_64bit(ptr, ll_low((value)), ll_high((value))))
- 
--/*
-- * Note: no "lock" prefix even on SMP: xchg always implies lock anyway
-- * Note 2: xchg has side effect, so that attribute volatile is necessary,
-- *	  but generally the primitive is invalid, *ptr is output argument. --ANK
-- */
--static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
--				   int size)
--{
--	switch (size) {
--	case 1:
--		asm volatile("xchgb %b0,%1"
--			     : "=q" (x)
--			     : "m" (*__xg(ptr)), "0" (x)
--			     : "memory");
--		break;
--	case 2:
--		asm volatile("xchgw %w0,%1"
--			     : "=r" (x)
--			     : "m" (*__xg(ptr)), "0" (x)
--			     : "memory");
--		break;
--	case 4:
--		asm volatile("xchgl %0,%1"
--			     : "=r" (x)
--			     : "m" (*__xg(ptr)), "0" (x)
--			     : "memory");
--		break;
--	}
--	return x;
--}
-+extern void __cmpxchg_wrong_size(void);
- 
- /*
-  * Atomic compare and exchange.  Compare OLD with MEM, if identical,
-  * store NEW in MEM.  Return the initial value in MEM.  Success is
-  * indicated by comparing RETURN with OLD.
-  */
-+#define __cmpxchg(ptr, old, new, size)					\
-+({									\
-+ 	__typeof__(*(ptr)) __ret;					\
-+ 	__typeof__(*(ptr)) __old = (old);				\
-+ 	__typeof__(*(ptr)) __new = (new);				\
-+	switch (size) {							\
-+	case 1:								\
-+		asm volatile(LOCK_PREFIX "cmpxchgb %b1,%2"		\
-+			     : "=a"(__ret)				\
-+			     : "q"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 2:								\
-+		asm volatile(LOCK_PREFIX "cmpxchgw %w1,%2"		\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 4:								\
-+		asm volatile(LOCK_PREFIX "cmpxchgl %1,%2"		\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	default:							\
-+		__cmpxchg_wrong_size();					\
-+	}								\
-+	__ret;								\
-+})
-+
-+/*
-+ * Always use locked operations when touching memory shared with a
-+ * hypervisor, since the system may be SMP even if the guest kernel
-+ * isn't.
-+ */
-+#define __sync_cmpxchg(ptr, old, new, size)				\
-+({									\
-+ 	__typeof__(*(ptr)) __ret;					\
-+ 	__typeof__(*(ptr)) __old = (old);				\
-+ 	__typeof__(*(ptr)) __new = (new);				\
-+	switch (size) {							\
-+	case 1:								\
-+		asm volatile("lock; cmpxchgb %b1,%2"			\
-+			     : "=a"(__ret)				\
-+			     : "q"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 2:								\
-+		asm volatile("lock; cmpxchgw %w1,%2"			\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 4:								\
-+		asm volatile("lock; cmpxchgl %1,%2"			\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	default:							\
-+		__cmpxchg_wrong_size();					\
-+	}								\
-+	__ret;								\
-+})
-+
-+#define __cmpxchg_local(ptr, old, new, size)				\
-+({									\
-+ 	__typeof__(*(ptr)) __ret;					\
-+ 	__typeof__(*(ptr)) __old = (old);				\
-+ 	__typeof__(*(ptr)) __new = (new);				\
-+	switch (size) {							\
-+	case 1:								\
-+		asm volatile("cmpxchgb %b1,%2"				\
-+			     : "=a"(__ret)				\
-+			     : "q"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 2:								\
-+		asm volatile("cmpxchgw %w1,%2"				\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 4:								\
-+		asm volatile("cmpxchgl %1,%2"				\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	default:							\
-+		__cmpxchg_wrong_size();					\
-+	}								\
-+	__ret;								\
-+})
- 
- #ifdef CONFIG_X86_CMPXCHG
- #define __HAVE_ARCH_CMPXCHG 1
--#define cmpxchg(ptr, o, n)						\
--	((__typeof__(*(ptr)))__cmpxchg((ptr), (unsigned long)(o),	\
--				       (unsigned long)(n),		\
--				       sizeof(*(ptr))))
--#define sync_cmpxchg(ptr, o, n)						\
--	((__typeof__(*(ptr)))__sync_cmpxchg((ptr), (unsigned long)(o),	\
--					    (unsigned long)(n),		\
--					    sizeof(*(ptr))))
--#define cmpxchg_local(ptr, o, n)					\
--	((__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
--					     (unsigned long)(n),	\
--					     sizeof(*(ptr))))
-+
-+#define cmpxchg(ptr, old, new)						\
-+	__cmpxchg((ptr), (old), (new), sizeof(*ptr))
-+
-+#define sync_cmpxchg(ptr, old, new)					\
-+	__sync_cmpxchg((ptr), (old), (new), sizeof(*ptr))
-+
-+#define cmpxchg_local(ptr, old, new)					\
-+	__cmpxchg_local((ptr), (old), (new), sizeof(*ptr))
- #endif
- 
- #ifdef CONFIG_X86_CMPXCHG64
-@@ -133,94 +231,6 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
- 					       (unsigned long long)(n)))
- #endif
- 
--static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
--				      unsigned long new, int size)
--{
--	unsigned long prev;
--	switch (size) {
--	case 1:
--		asm volatile(LOCK_PREFIX "cmpxchgb %b1,%2"
--			     : "=a"(prev)
--			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 2:
--		asm volatile(LOCK_PREFIX "cmpxchgw %w1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 4:
--		asm volatile(LOCK_PREFIX "cmpxchgl %1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	}
--	return old;
--}
--
--/*
-- * Always use locked operations when touching memory shared with a
-- * hypervisor, since the system may be SMP even if the guest kernel
-- * isn't.
-- */
--static inline unsigned long __sync_cmpxchg(volatile void *ptr,
--					   unsigned long old,
--					   unsigned long new, int size)
--{
--	unsigned long prev;
--	switch (size) {
--	case 1:
--		asm volatile("lock; cmpxchgb %b1,%2"
--			     : "=a"(prev)
--			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 2:
--		asm volatile("lock; cmpxchgw %w1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 4:
--		asm volatile("lock; cmpxchgl %1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	}
--	return old;
--}
--
--static inline unsigned long __cmpxchg_local(volatile void *ptr,
--					    unsigned long old,
--					    unsigned long new, int size)
--{
--	unsigned long prev;
--	switch (size) {
--	case 1:
--		asm volatile("cmpxchgb %b1,%2"
--			     : "=a"(prev)
--			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 2:
--		asm volatile("cmpxchgw %w1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 4:
--		asm volatile("cmpxchgl %1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	}
--	return old;
--}
--
- static inline unsigned long long __cmpxchg64(volatile void *ptr,
- 					     unsigned long long old,
- 					     unsigned long long new)
-diff --git a/arch/x86/include/asm/cmpxchg_64.h b/arch/x86/include/asm/cmpxchg_64.h
-index 52de72e..df20c6e 100644
---- a/arch/x86/include/asm/cmpxchg_64.h
-+++ b/arch/x86/include/asm/cmpxchg_64.h
-@@ -3,9 +3,6 @@
- 
- #include <asm/alternative.h> /* Provides LOCK_PREFIX */
- 
--#define xchg(ptr, v) ((__typeof__(*(ptr)))__xchg((unsigned long)(v), \
--						 (ptr), sizeof(*(ptr))))
--
- #define __xg(x) ((volatile long *)(x))
- 
- static inline void set_64bit(volatile unsigned long *ptr, unsigned long val)
-@@ -15,167 +12,186 @@ static inline void set_64bit(volatile unsigned long *ptr, unsigned long val)
- 
- #define _set_64bit set_64bit
- 
-+extern void __xchg_wrong_size(void);
-+extern void __cmpxchg_wrong_size(void);
-+
- /*
-  * Note: no "lock" prefix even on SMP: xchg always implies lock anyway
-  * Note 2: xchg has side effect, so that attribute volatile is necessary,
-  *	  but generally the primitive is invalid, *ptr is output argument. --ANK
-  */
--static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
--				   int size)
--{
--	switch (size) {
--	case 1:
--		asm volatile("xchgb %b0,%1"
--			     : "=q" (x)
--			     : "m" (*__xg(ptr)), "0" (x)
--			     : "memory");
--		break;
--	case 2:
--		asm volatile("xchgw %w0,%1"
--			     : "=r" (x)
--			     : "m" (*__xg(ptr)), "0" (x)
--			     : "memory");
--		break;
--	case 4:
--		asm volatile("xchgl %k0,%1"
--			     : "=r" (x)
--			     : "m" (*__xg(ptr)), "0" (x)
--			     : "memory");
--		break;
--	case 8:
--		asm volatile("xchgq %0,%1"
--			     : "=r" (x)
--			     : "m" (*__xg(ptr)), "0" (x)
--			     : "memory");
--		break;
--	}
--	return x;
--}
-+#define __xchg(x, ptr, size)						\
-+({									\
-+ 	__typeof(*(ptr)) __x = (x);					\
-+	switch (size) {							\
-+ 	case 1:								\
-+		asm volatile("xchgb %b0,%1"				\
-+			     : "=q" (__x)				\
-+			     : "m" (*__xg(ptr)), "0" (__x)		\
-+			     : "memory");				\
-+		break;							\
-+	case 2:								\
-+		asm volatile("xchgw %w0,%1"				\
-+			     : "=r" (__x)				\
-+			     : "m" (*__xg(ptr)), "0" (__x)		\
-+			     : "memory");				\
-+		break;							\
-+	case 4:								\
-+		asm volatile("xchgl %k0,%1"				\
-+			     : "=r" (__x)				\
-+			     : "m" (*__xg(ptr)), "0" (__x)		\
-+			     : "memory");				\
-+		break;							\
-+	case 8:								\
-+		asm volatile("xchgq %0,%1"				\
-+			     : "=r" (__x)				\
-+			     : "m" (*__xg(ptr)), "0" (__x)		\
-+			     : "memory");				\
-+		break;							\
-+	default:							\
-+		__xchg_wrong_size();					\
-+	}								\
-+	__x;								\
-+})
-+
-+#define xchg(ptr, v)							\
-+	__xchg((v), (ptr), sizeof(*ptr))
- 
- /*
-  * Atomic compare and exchange.  Compare OLD with MEM, if identical,
-  * store NEW in MEM.  Return the initial value in MEM.  Success is
-  * indicated by comparing RETURN with OLD.
-  */
--
--#define __HAVE_ARCH_CMPXCHG 1
--
--static inline unsigned long __cmpxchg(volatile void *ptr, unsigned long old,
--				      unsigned long new, int size)
--{
--	unsigned long prev;
--	switch (size) {
--	case 1:
--		asm volatile(LOCK_PREFIX "cmpxchgb %b1,%2"
--			     : "=a"(prev)
--			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 2:
--		asm volatile(LOCK_PREFIX "cmpxchgw %w1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 4:
--		asm volatile(LOCK_PREFIX "cmpxchgl %k1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 8:
--		asm volatile(LOCK_PREFIX "cmpxchgq %1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	}
--	return old;
--}
-+#define __cmpxchg(ptr, old, new, size)					\
-+({									\
-+ 	__typeof__(*(ptr)) __ret;					\
-+ 	__typeof__(*(ptr)) __old = (old);				\
-+ 	__typeof__(*(ptr)) __new = (new);				\
-+	switch (size) {							\
-+	case 1:								\
-+		asm volatile(LOCK_PREFIX "cmpxchgb %b1,%2"		\
-+			     : "=a"(__ret)				\
-+			     : "q"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 2:								\
-+		asm volatile(LOCK_PREFIX "cmpxchgw %w1,%2"		\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 4:								\
-+		asm volatile(LOCK_PREFIX "cmpxchgl %k1,%2"		\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 8:								\
-+		asm volatile(LOCK_PREFIX "cmpxchgq %1,%2"		\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+		break;							\
-+	default:							\
-+		__cmpxchg_wrong_size();					\
-+	}								\
-+	__ret;								\
-+})
- 
- /*
-  * Always use locked operations when touching memory shared with a
-  * hypervisor, since the system may be SMP even if the guest kernel
-  * isn't.
-  */
--static inline unsigned long __sync_cmpxchg(volatile void *ptr,
--					   unsigned long old,
--					   unsigned long new, int size)
--{
--	unsigned long prev;
--	switch (size) {
--	case 1:
--		asm volatile("lock; cmpxchgb %b1,%2"
--			     : "=a"(prev)
--			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 2:
--		asm volatile("lock; cmpxchgw %w1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 4:
--		asm volatile("lock; cmpxchgl %1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	}
--	return old;
--}
-+#define __sync_cmpxchg(ptr, old, new, size)				\
-+({									\
-+ 	__typeof__(*(ptr)) __ret;					\
-+ 	__typeof__(*(ptr)) __old = (old);				\
-+ 	__typeof__(*(ptr)) __new = (new);				\
-+	switch (size) {							\
-+	case 1:								\
-+		asm volatile("lock; cmpxchgb %b1,%2"			\
-+			     : "=a"(__ret)				\
-+			     : "q"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 2:								\
-+		asm volatile("lock; cmpxchgw %w1,%2"			\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 4:								\
-+		asm volatile("lock; cmpxchgl %k1,%2"			\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 8:								\
-+		asm volatile("lock; cmpxchgq %1,%2"			\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+		break;							\
-+	default:							\
-+		__cmpxchg_wrong_size();					\
-+	}								\
-+	__ret;								\
-+})
- 
--static inline unsigned long __cmpxchg_local(volatile void *ptr,
--					    unsigned long old,
--					    unsigned long new, int size)
--{
--	unsigned long prev;
--	switch (size) {
--	case 1:
--		asm volatile("cmpxchgb %b1,%2"
--			     : "=a"(prev)
--			     : "q"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 2:
--		asm volatile("cmpxchgw %w1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 4:
--		asm volatile("cmpxchgl %k1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	case 8:
--		asm volatile("cmpxchgq %1,%2"
--			     : "=a"(prev)
--			     : "r"(new), "m"(*__xg(ptr)), "0"(old)
--			     : "memory");
--		return prev;
--	}
--	return old;
--}
-+#define __cmpxchg_local(ptr, old, new, size)				\
-+({									\
-+ 	__typeof__(*(ptr)) __ret;					\
-+ 	__typeof__(*(ptr)) __old = (old);				\
-+ 	__typeof__(*(ptr)) __new = (new);				\
-+	switch (size) {							\
-+	case 1:								\
-+		asm volatile("cmpxchgb %b1,%2"				\
-+			     : "=a"(__ret)				\
-+			     : "q"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 2:								\
-+		asm volatile("cmpxchgw %w1,%2"				\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 4:								\
-+		asm volatile("cmpxchgl %k1,%2"				\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+ 		break;							\
-+	case 8:								\
-+		asm volatile("cmpxchgq %1,%2"				\
-+			     : "=a"(__ret)				\
-+			     : "r"(__new), "m"(*__xg(ptr)), "0"(__old)	\
-+			     : "memory");				\
-+		break;							\
-+	default:							\
-+		__cmpxchg_wrong_size();					\
-+	}								\
-+	__ret;								\
-+})
-+
-+#define __HAVE_ARCH_CMPXCHG 1
-+
-+#define cmpxchg(ptr, old, new)						\
-+	__cmpxchg((ptr), (old), (new), sizeof(*ptr))
-+
-+#define sync_cmpxchg(ptr, old, new)					\
-+	__sync_cmpxchg((ptr), (old), (new), sizeof(*ptr))
-+
-+#define cmpxchg_local(ptr, old, new)					\
-+	__cmpxchg_local((ptr), (old), (new), sizeof(*ptr))
- 
--#define cmpxchg(ptr, o, n)						\
--	((__typeof__(*(ptr)))__cmpxchg((ptr), (unsigned long)(o),	\
--				       (unsigned long)(n), sizeof(*(ptr))))
- #define cmpxchg64(ptr, o, n)						\
- ({									\
- 	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
- 	cmpxchg((ptr), (o), (n));					\
- })
--#define cmpxchg_local(ptr, o, n)					\
--	((__typeof__(*(ptr)))__cmpxchg_local((ptr), (unsigned long)(o),	\
--					     (unsigned long)(n),	\
--					     sizeof(*(ptr))))
--#define sync_cmpxchg(ptr, o, n)						\
--	((__typeof__(*(ptr)))__sync_cmpxchg((ptr), (unsigned long)(o),	\
--					    (unsigned long)(n),		\
--					    sizeof(*(ptr))))
-+
- #define cmpxchg64_local(ptr, o, n)					\
- ({									\
- 	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
-
+RnJvbTogVmxhZGltaXIgRHJvbm5pa292IDxkcm9ubmlrb3ZAZ21haWwuY29t
+PgoKZHJpdmVycy9tZC91bnJvbGwucGwgcmVwbGFjZWQgYnkgYXdrIHNjcmlw
+dCB0byBkcm9wIGJ1aWxkLXRpbWUgZGVwZW5kZW5jeSBvbiBwZXJsCgpTaWdu
+ZWQtb2ZmLWJ5OiBWbGFkaW1pciBEcm9ubmlrb3YgPGRyb25uaWtvdkBnbWFp
+bC5jb20+Ci0tLQoKIGRyaXZlcnMvbWQvTWFrZWZpbGUgICAgICAgICAgIHwg
+ICAyMiArKysrKysrKy0tLS0tLS0tCiBkcml2ZXJzL21kL3JhaWQ2YWx0aXZl
+Yy51YyAgICB8ICAgIDIgLQogZHJpdmVycy9tZC9yYWlkNmludC51YyAgICAg
+ICAgfCAgICAyIC0KIGRyaXZlcnMvbWQvcmFpZDZ0ZXN0L01ha2VmaWxlIHwg
+ICA0MiArKysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLQogZHJpdmVy
+cy9tZC91bnJvbGwuYXdrICAgICAgICAgfCAgIDIwICsrKysrKysrKysrKysr
+KwogZHJpdmVycy9tZC91bnJvbGwucGwgICAgICAgICAgfCAgIDI0IC0tLS0t
+LS0tLS0tLS0tLS0tLQogNiBmaWxlcyBjaGFuZ2VkLCA1NCBpbnNlcnRpb25z
+KCspLCA1OCBkZWxldGlvbnMoLSkKCi0tLSBsaW51eC0yLjYuMzEub3JpZy9k
+cml2ZXJzL21kL01ha2VmaWxlCVdlZCBTZXAgIDkgMjI6MTM6NTkgMjAwOQor
+KysgbGludXgtMi42LjMxL2RyaXZlcnMvbWQvTWFrZWZpbGUJTW9uIE9jdCAg
+NSAyMDoxMDoxNSAyMDA5CkBAIC00Niw3ICs0Niw3IEBACiBvYmotJChDT05G
+SUdfRE1fWkVSTykJCSs9IGRtLXplcm8ubwogCiBxdWlldF9jbWRfdW5yb2xs
+ID0gVU5ST0xMICAkQAotICAgICAgY21kX3Vucm9sbCA9ICQoUEVSTCkgJChz
+cmN0cmVlKS8kKHNyYykvdW5yb2xsLnBsICQoVU5ST0xMKSBcCisgICAgICBj
+bWRfdW5yb2xsID0gYXdrIC1mJChzcmN0cmVlKS8kKHNyYykvdW5yb2xsLmF3
+ayAtdk49JChVTlJPTEwpIFwKICAgICAgICAgICAgICAgICAgICA8ICQ8ID4g
+JEAgfHwgKCBybSAtZiAkQCAmJiBleGl0IDEgKQogCiBpZmVxICgkKENPTkZJ
+R19BTFRJVkVDKSx5KQpAQCAtNTksNTYgKzU5LDU2IEBACiAKIHRhcmdldHMg
+Kz0gcmFpZDZpbnQxLmMKICQob2JqKS9yYWlkNmludDEuYzogICBVTlJPTEwg
+Oj0gMQotJChvYmopL3JhaWQ2aW50MS5jOiAgICQoc3JjKS9yYWlkNmludC51
+YyAkKHNyYykvdW5yb2xsLnBsIEZPUkNFCiskKG9iaikvcmFpZDZpbnQxLmM6
+ICAgJChzcmMpL3JhaWQ2aW50LnVjICQoc3JjKS91bnJvbGwuYXdrIEZPUkNF
+CiAJJChjYWxsIGlmX2NoYW5nZWQsdW5yb2xsKQogCiB0YXJnZXRzICs9IHJh
+aWQ2aW50Mi5jCiAkKG9iaikvcmFpZDZpbnQyLmM6ICAgVU5ST0xMIDo9IDIK
+LSQob2JqKS9yYWlkNmludDIuYzogICAkKHNyYykvcmFpZDZpbnQudWMgJChz
+cmMpL3Vucm9sbC5wbCBGT1JDRQorJChvYmopL3JhaWQ2aW50Mi5jOiAgICQo
+c3JjKS9yYWlkNmludC51YyAkKHNyYykvdW5yb2xsLmF3ayBGT1JDRQogCSQo
+Y2FsbCBpZl9jaGFuZ2VkLHVucm9sbCkKIAogdGFyZ2V0cyArPSByYWlkNmlu
+dDQuYwogJChvYmopL3JhaWQ2aW50NC5jOiAgIFVOUk9MTCA6PSA0Ci0kKG9i
+aikvcmFpZDZpbnQ0LmM6ICAgJChzcmMpL3JhaWQ2aW50LnVjICQoc3JjKS91
+bnJvbGwucGwgRk9SQ0UKKyQob2JqKS9yYWlkNmludDQuYzogICAkKHNyYykv
+cmFpZDZpbnQudWMgJChzcmMpL3Vucm9sbC5hd2sgRk9SQ0UKIAkkKGNhbGwg
+aWZfY2hhbmdlZCx1bnJvbGwpCiAKIHRhcmdldHMgKz0gcmFpZDZpbnQ4LmMK
+ICQob2JqKS9yYWlkNmludDguYzogICBVTlJPTEwgOj0gOAotJChvYmopL3Jh
+aWQ2aW50OC5jOiAgICQoc3JjKS9yYWlkNmludC51YyAkKHNyYykvdW5yb2xs
+LnBsIEZPUkNFCiskKG9iaikvcmFpZDZpbnQ4LmM6ICAgJChzcmMpL3JhaWQ2
+aW50LnVjICQoc3JjKS91bnJvbGwuYXdrIEZPUkNFCiAJJChjYWxsIGlmX2No
+YW5nZWQsdW5yb2xsKQogCiB0YXJnZXRzICs9IHJhaWQ2aW50MTYuYwogJChv
+YmopL3JhaWQ2aW50MTYuYzogIFVOUk9MTCA6PSAxNgotJChvYmopL3JhaWQ2
+aW50MTYuYzogICQoc3JjKS9yYWlkNmludC51YyAkKHNyYykvdW5yb2xsLnBs
+IEZPUkNFCiskKG9iaikvcmFpZDZpbnQxNi5jOiAgJChzcmMpL3JhaWQ2aW50
+LnVjICQoc3JjKS91bnJvbGwuYXdrIEZPUkNFCiAJJChjYWxsIGlmX2NoYW5n
+ZWQsdW5yb2xsKQogCiB0YXJnZXRzICs9IHJhaWQ2aW50MzIuYwogJChvYmop
+L3JhaWQ2aW50MzIuYzogIFVOUk9MTCA6PSAzMgotJChvYmopL3JhaWQ2aW50
+MzIuYzogICQoc3JjKS9yYWlkNmludC51YyAkKHNyYykvdW5yb2xsLnBsIEZP
+UkNFCiskKG9iaikvcmFpZDZpbnQzMi5jOiAgJChzcmMpL3JhaWQ2aW50LnVj
+ICQoc3JjKS91bnJvbGwuYXdrIEZPUkNFCiAJJChjYWxsIGlmX2NoYW5nZWQs
+dW5yb2xsKQogCiBDRkxBR1NfcmFpZDZhbHRpdmVjMS5vICs9ICQoYWx0aXZl
+Y19mbGFncykKIHRhcmdldHMgKz0gcmFpZDZhbHRpdmVjMS5jCiAkKG9iaikv
+cmFpZDZhbHRpdmVjMS5jOiAgIFVOUk9MTCA6PSAxCi0kKG9iaikvcmFpZDZh
+bHRpdmVjMS5jOiAgICQoc3JjKS9yYWlkNmFsdGl2ZWMudWMgJChzcmMpL3Vu
+cm9sbC5wbCBGT1JDRQorJChvYmopL3JhaWQ2YWx0aXZlYzEuYzogICAkKHNy
+YykvcmFpZDZhbHRpdmVjLnVjICQoc3JjKS91bnJvbGwuYXdrIEZPUkNFCiAJ
+JChjYWxsIGlmX2NoYW5nZWQsdW5yb2xsKQogCiBDRkxBR1NfcmFpZDZhbHRp
+dmVjMi5vICs9ICQoYWx0aXZlY19mbGFncykKIHRhcmdldHMgKz0gcmFpZDZh
+bHRpdmVjMi5jCiAkKG9iaikvcmFpZDZhbHRpdmVjMi5jOiAgIFVOUk9MTCA6
+PSAyCi0kKG9iaikvcmFpZDZhbHRpdmVjMi5jOiAgICQoc3JjKS9yYWlkNmFs
+dGl2ZWMudWMgJChzcmMpL3Vucm9sbC5wbCBGT1JDRQorJChvYmopL3JhaWQ2
+YWx0aXZlYzIuYzogICAkKHNyYykvcmFpZDZhbHRpdmVjLnVjICQoc3JjKS91
+bnJvbGwuYXdrIEZPUkNFCiAJJChjYWxsIGlmX2NoYW5nZWQsdW5yb2xsKQog
+CiBDRkxBR1NfcmFpZDZhbHRpdmVjNC5vICs9ICQoYWx0aXZlY19mbGFncykK
+IHRhcmdldHMgKz0gcmFpZDZhbHRpdmVjNC5jCiAkKG9iaikvcmFpZDZhbHRp
+dmVjNC5jOiAgIFVOUk9MTCA6PSA0Ci0kKG9iaikvcmFpZDZhbHRpdmVjNC5j
+OiAgICQoc3JjKS9yYWlkNmFsdGl2ZWMudWMgJChzcmMpL3Vucm9sbC5wbCBG
+T1JDRQorJChvYmopL3JhaWQ2YWx0aXZlYzQuYzogICAkKHNyYykvcmFpZDZh
+bHRpdmVjLnVjICQoc3JjKS91bnJvbGwuYXdrIEZPUkNFCiAJJChjYWxsIGlm
+X2NoYW5nZWQsdW5yb2xsKQogCiBDRkxBR1NfcmFpZDZhbHRpdmVjOC5vICs9
+ICQoYWx0aXZlY19mbGFncykKIHRhcmdldHMgKz0gcmFpZDZhbHRpdmVjOC5j
+CiAkKG9iaikvcmFpZDZhbHRpdmVjOC5jOiAgIFVOUk9MTCA6PSA4Ci0kKG9i
+aikvcmFpZDZhbHRpdmVjOC5jOiAgICQoc3JjKS9yYWlkNmFsdGl2ZWMudWMg
+JChzcmMpL3Vucm9sbC5wbCBGT1JDRQorJChvYmopL3JhaWQ2YWx0aXZlYzgu
+YzogICAkKHNyYykvcmFpZDZhbHRpdmVjLnVjICQoc3JjKS91bnJvbGwuYXdr
+IEZPUkNFCiAJJChjYWxsIGlmX2NoYW5nZWQsdW5yb2xsKQogCiBxdWlldF9j
+bWRfbWt0YWJsZSA9IFRBQkxFICAgJEAKLS0tIGxpbnV4LTIuNi4zMS5vcmln
+L2RyaXZlcnMvbWQvcmFpZDZhbHRpdmVjLnVjCVdlZCBTZXAgIDkgMjI6MTM6
+NTkgMjAwOQorKysgbGludXgtMi42LjMxL2RyaXZlcnMvbWQvcmFpZDZhbHRp
+dmVjLnVjCU1vbiBPY3QgIDUgMjA6MTA6MTUgMjAwOQpAQCAtMTUsNyArMTUs
+NyBAQAogICoKICAqICQjLXdheSB1bnJvbGxlZCBwb3J0YWJsZSBpbnRlZ2Vy
+IG1hdGggUkFJRC02IGluc3RydWN0aW9uIHNldAogICoKLSAqIFRoaXMgZmls
+ZSBpcyBwb3N0cHJvY2Vzc2VkIHVzaW5nIHVucm9sbC5wbAorICogVGhpcyBm
+aWxlIGlzIHBvc3Rwcm9jZXNzZWQgdXNpbmcgdW5yb2xsLmF3awogICoKICAq
+IDxiZW5oPiBocGE6IGluIHByb2Nlc3MsCiAgKiB5b3UgY2FuIGp1c3QgInN0
+ZWFsIiB0aGUgdmVjIHVuaXQgd2l0aCBlbmFibGVfa2VybmVsX2FsdGl2ZWMo
+KSAoYnV0Ci0tLSBsaW51eC0yLjYuMzEub3JpZy9kcml2ZXJzL21kL3JhaWQ2
+aW50LnVjCVdlZCBTZXAgIDkgMjI6MTM6NTkgMjAwOQorKysgbGludXgtMi42
+LjMxL2RyaXZlcnMvbWQvcmFpZDZpbnQudWMJTW9uIE9jdCAgNSAyMDoxMDox
+NSAyMDA5CkBAIC0xNSw3ICsxNSw3IEBACiAgKgogICogJCMtd2F5IHVucm9s
+bGVkIHBvcnRhYmxlIGludGVnZXIgbWF0aCBSQUlELTYgaW5zdHJ1Y3Rpb24g
+c2V0CiAgKgotICogVGhpcyBmaWxlIGlzIHBvc3Rwcm9jZXNzZWQgdXNpbmcg
+dW5yb2xsLnBsCisgKiBUaGlzIGZpbGUgaXMgcG9zdHByb2Nlc3NlZCB1c2lu
+ZyB1bnJvbGwuYXdrCiAgKi8KIAogI2luY2x1ZGUgPGxpbnV4L3JhaWQvcHEu
+aD4KLS0tIGxpbnV4LTIuNi4zMS5vcmlnL2RyaXZlcnMvbWQvcmFpZDZ0ZXN0
+L01ha2VmaWxlCVdlZCBTZXAgIDkgMjI6MTM6NTkgMjAwOQorKysgbGludXgt
+Mi42LjMxL2RyaXZlcnMvbWQvcmFpZDZ0ZXN0L01ha2VmaWxlCU1vbiBPY3Qg
+IDUgMjA6MTA6MTUgMjAwOQpAQCAtNyw3ICs3LDcgQEAKIE9QVEZMQUdTID0g
+LU8yCQkJIyBBZGp1c3QgYXMgZGVzaXJlZAogQ0ZMQUdTCSA9IC1JLi4gLUkg
+Li4vLi4vLi4vaW5jbHVkZSAtZyAkKE9QVEZMQUdTKQogTEQJID0gbGQKLVBF
+UkwJID0gcGVybAorQVdLCSA9IGF3awogQVIJID0gYXIKIFJBTkxJQgkgPSBy
+YW5saWIKIApAQCAtMzUsMzUgKzM1LDM1IEBACiByYWlkNnRlc3Q6IHRlc3Qu
+YyByYWlkNi5hCiAJJChDQykgJChDRkxBR1MpIC1vIHJhaWQ2dGVzdCAkXgog
+Ci1yYWlkNmFsdGl2ZWMxLmM6IHJhaWQ2YWx0aXZlYy51YyAuLi91bnJvbGwu
+cGwKLQkkKFBFUkwpIC4uL3Vucm9sbC5wbCAxIDwgcmFpZDZhbHRpdmVjLnVj
+ID4gJEAKK3JhaWQ2YWx0aXZlYzEuYzogcmFpZDZhbHRpdmVjLnVjIC4uL3Vu
+cm9sbC5hd2sKKwkkKEFXSykgLi4vdW5yb2xsLmF3ayAxIDwgcmFpZDZhbHRp
+dmVjLnVjID4gJEAKIAotcmFpZDZhbHRpdmVjMi5jOiByYWlkNmFsdGl2ZWMu
+dWMgLi4vdW5yb2xsLnBsCi0JJChQRVJMKSAuLi91bnJvbGwucGwgMiA8IHJh
+aWQ2YWx0aXZlYy51YyA+ICRACityYWlkNmFsdGl2ZWMyLmM6IHJhaWQ2YWx0
+aXZlYy51YyAuLi91bnJvbGwuYXdrCisJJChBV0spIC4uL3Vucm9sbC5hd2sg
+MiA8IHJhaWQ2YWx0aXZlYy51YyA+ICRACiAKLXJhaWQ2YWx0aXZlYzQuYzog
+cmFpZDZhbHRpdmVjLnVjIC4uL3Vucm9sbC5wbAotCSQoUEVSTCkgLi4vdW5y
+b2xsLnBsIDQgPCByYWlkNmFsdGl2ZWMudWMgPiAkQAorcmFpZDZhbHRpdmVj
+NC5jOiByYWlkNmFsdGl2ZWMudWMgLi4vdW5yb2xsLmF3aworCSQoQVdLKSAu
+Li91bnJvbGwuYXdrIDQgPCByYWlkNmFsdGl2ZWMudWMgPiAkQAogCi1yYWlk
+NmFsdGl2ZWM4LmM6IHJhaWQ2YWx0aXZlYy51YyAuLi91bnJvbGwucGwKLQkk
+KFBFUkwpIC4uL3Vucm9sbC5wbCA4IDwgcmFpZDZhbHRpdmVjLnVjID4gJEAK
+K3JhaWQ2YWx0aXZlYzguYzogcmFpZDZhbHRpdmVjLnVjIC4uL3Vucm9sbC5h
+d2sKKwkkKEFXSykgLi4vdW5yb2xsLmF3ayA4IDwgcmFpZDZhbHRpdmVjLnVj
+ID4gJEAKIAotcmFpZDZpbnQxLmM6IHJhaWQ2aW50LnVjIC4uL3Vucm9sbC5w
+bAotCSQoUEVSTCkgLi4vdW5yb2xsLnBsIDEgPCByYWlkNmludC51YyA+ICRA
+CityYWlkNmludDEuYzogcmFpZDZpbnQudWMgLi4vdW5yb2xsLmF3aworCSQo
+QVdLKSAuLi91bnJvbGwuYXdrIDEgPCByYWlkNmludC51YyA+ICRACiAKLXJh
+aWQ2aW50Mi5jOiByYWlkNmludC51YyAuLi91bnJvbGwucGwKLQkkKFBFUkwp
+IC4uL3Vucm9sbC5wbCAyIDwgcmFpZDZpbnQudWMgPiAkQAorcmFpZDZpbnQy
+LmM6IHJhaWQ2aW50LnVjIC4uL3Vucm9sbC5hd2sKKwkkKEFXSykgLi4vdW5y
+b2xsLmF3ayAyIDwgcmFpZDZpbnQudWMgPiAkQAogCi1yYWlkNmludDQuYzog
+cmFpZDZpbnQudWMgLi4vdW5yb2xsLnBsCi0JJChQRVJMKSAuLi91bnJvbGwu
+cGwgNCA8IHJhaWQ2aW50LnVjID4gJEAKK3JhaWQ2aW50NC5jOiByYWlkNmlu
+dC51YyAuLi91bnJvbGwuYXdrCisJJChBV0spIC4uL3Vucm9sbC5hd2sgNCA8
+IHJhaWQ2aW50LnVjID4gJEAKIAotcmFpZDZpbnQ4LmM6IHJhaWQ2aW50LnVj
+IC4uL3Vucm9sbC5wbAotCSQoUEVSTCkgLi4vdW5yb2xsLnBsIDggPCByYWlk
+NmludC51YyA+ICRACityYWlkNmludDguYzogcmFpZDZpbnQudWMgLi4vdW5y
+b2xsLmF3aworCSQoQVdLKSAuLi91bnJvbGwuYXdrIDggPCByYWlkNmludC51
+YyA+ICRACiAKLXJhaWQ2aW50MTYuYzogcmFpZDZpbnQudWMgLi4vdW5yb2xs
+LnBsCi0JJChQRVJMKSAuLi91bnJvbGwucGwgMTYgPCByYWlkNmludC51YyA+
+ICRACityYWlkNmludDE2LmM6IHJhaWQ2aW50LnVjIC4uL3Vucm9sbC5hd2sK
+KwkkKEFXSykgLi4vdW5yb2xsLmF3ayAxNiA8IHJhaWQ2aW50LnVjID4gJEAK
+IAotcmFpZDZpbnQzMi5jOiByYWlkNmludC51YyAuLi91bnJvbGwucGwKLQkk
+KFBFUkwpIC4uL3Vucm9sbC5wbCAzMiA8IHJhaWQ2aW50LnVjID4gJEAKK3Jh
+aWQ2aW50MzIuYzogcmFpZDZpbnQudWMgLi4vdW5yb2xsLmF3aworCSQoQVdL
+KSAuLi91bnJvbGwuYXdrIDMyIDwgcmFpZDZpbnQudWMgPiAkQAogCiByYWlk
+NnRhYmxlcy5jOiBta3RhYmxlcwogCS4vbWt0YWJsZXMgPiByYWlkNnRhYmxl
+cy5jCi0tLSAvZGV2L251bGwJVGh1IEphbiAgMSAwMDowMDowMCAxOTcwCisr
+KyBsaW51eC0yLjYuMzEvZHJpdmVycy9tZC91bnJvbGwuYXdrCU1vbiBPY3Qg
+IDUgMjA6MTI6MjQgMjAwOQpAQCAtMCwwICsxLDIwIEBACisKKyMgVGhpcyBm
+aWx0ZXIgcmVxdWlyZXMgb25lIGNvbW1hbmQgbGluZSBhcmd1bWVudCAobikg
+d2hpY2ggbXVzdCBiZSBhCisjIGRlY2ltYWwgbnVtYmVyLgorIworIyBSZXBl
+YXQgZWFjaCBpbnB1dCBsaW5lIGNvbnRhaW5pbmcgJCQgbiB0aW1lcywgcmVw
+bGFjaW5nICQkIHdpdGggMC4uLm4tMS4KKyMgUmVwbGFjZSBlYWNoICQjIHdp
+dGggbiwgYW5kIGVhY2ggJCogd2l0aCBhIHNpbmdsZSAkLgorCitCRUdJTiB7
+CisJbiA9IE4gKyAwCit9Cit7CisJaWYgKC9cJFwkLykgeyByZXAgPSBuIH0g
+ZWxzZSB7IHJlcCA9IDEgfQorCWZvciAoaSA9IDA7IGkgPCByZXA7ICsraSkg
+eworCQl0bXAgPSAkMAorCQlnc3ViKC9cJFwkLywgaSwgdG1wKQorCQlnc3Vi
+KC9cJFwjLywgbiwgdG1wKQorCQlnc3ViKC9cJFwqLywgIiQiLCB0bXApCisJ
+CXByaW50IHRtcAorCX0KK30KLS0tIGxpbnV4LTIuNi4zMS5vcmlnL2RyaXZl
+cnMvbWQvdW5yb2xsLnBsCVdlZCBTZXAgIDkgMjI6MTM6NTkgMjAwOQorKysg
+L2Rldi9udWxsCVRodSBKYW4gIDEgMDA6MDA6MDAgMTk3MApAQCAtMSwyNCAr
+MCwwIEBACi0jIS91c3IvYmluL3BlcmwKLSMKLSMgVGFrZSBhIHBpZWNlIG9m
+IEMgY29kZSBhbmQgZm9yIGVhY2ggbGluZSB3aGljaCBjb250YWlucyB0aGUg
+c2VxdWVuY2UgJCQKLSMgcmVwZWF0IG4gdGltZXMgd2l0aCAkIHJlcGxhY2Vk
+IGJ5IDAuLi5uLTE7IHRoZSBzZXF1ZW5jZSAkIyBpcyByZXBsYWNlZAotIyBi
+eSB0aGUgdW5yb2xsaW5nIGZhY3RvciwgYW5kICQqIHdpdGggYSBzaW5nbGUg
+JAotIwotCi0oJG4pID0gQEFSR1Y7Ci0kbiArPSAwOwotCi13aGlsZSAoIGRl
+ZmluZWQoJGxpbmUgPSA8U1RESU4+KSApIHsKLSAgICBpZiAoICRsaW5lID1+
+IC9cJFwkLyApIHsKLQkkcmVwID0gJG47Ci0gICAgfSBlbHNlIHsKLQkkcmVw
+ID0gMTsKLSAgICB9Ci0gICAgZm9yICggJGkgPSAwIDsgJGkgPCAkcmVwIDsg
+JGkrKyApIHsKLQkkdG1wID0gJGxpbmU7Ci0JJHRtcCA9fiBzL1wkXCQvJGkv
+ZzsKLQkkdG1wID1+IHMvXCRcIy8kbi9nOwotCSR0bXAgPX4gcy9cJFwqL1wk
+L2c7Ci0JcHJpbnQgJHRtcDsKLSAgICB9Ci19Cg==
+--1642018400-133199294-1842725581--
 
