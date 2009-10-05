@@ -1,163 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbZJENav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbZJENXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758817AbZJENav (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 09:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbZJENau
+	id S1758841AbZJENXP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 09:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758829AbZJENXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 09:30:50 -0400
-Received: from mci007.btnet.de ([194.172.160.7]:32866 "EHLO relay.btnet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753510AbZJENat convert rfc822-to-8bit (ORCPT
+	Mon, 5 Oct 2009 09:23:15 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:38401 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758828AbZJENXO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 09:30:49 -0400
-X-Greylist: delayed 566 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Oct 2009 09:30:49 EDT
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: clock_nanosleep: cyclic POSIX thread freezes during time setting
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4325
-Date: Mon, 5 Oct 2009 15:20:42 +0200
-Message-ID: <40F775BBD072A346957E787B3D0DBE5F1C97AF@w2k3-46ex01.RITTER.LOCAL>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: clock_nanosleep: cyclic POSIX thread freezes during time setting
-thread-index: AcpFvuuOQ0Vf2PEBRHyyCD+gUgDR6A==
-From: "Mehlan, Markus" <Markus.Mehlan@ritter.info>
-To: <linux-kernel@vger.kernel.org>
+	Mon, 5 Oct 2009 09:23:14 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAHOKyUpMROOX/2dsb2JhbACBUs9zgiiCAgQ
+Date: Mon, 5 Oct 2009 09:22:36 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Michael Schnell <mschnell@lumino.de>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Userspace RCU: (ab)using futexes to save cpu cycles and
+	energy
+Message-ID: <20091005132236.GA7416@Krystal>
+References: <20090923174820.GA12827@Krystal> <20091001144037.GB6205@linux.vnet.ibm.com> <20091004143745.GA19785@Krystal> <4AC99D55.8000102@lumino.de> <20091005125533.GA1857@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091005125533.GA1857@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 09:21:21 up 48 days, 10 min,  2 users,  load average: 1.38, 0.67,
+	0.38
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+(added some CC's, given the length of the answer. Thanks for asking)  ;)
+(Sorry for duplicate, messed up LKML email in original post)
 
-I have the following problem on a MPC5200b customer board,
-tested with linux-2.6.24.7-rt11 and 2.6.26.8-rt16.
+* Michael Schnell (mschnell@lumino.de) wrote:
+> I still don't understand what the advantage of FUTEX is, if the thread
+> to be waked is always blocked, and thus the fast path is not in use.
+> 
+> -Michael
 
-I start the test application. Every 200ms I can see a new 
-line on the console ("ping"). Then I set the time with "date
-100509152009" a few times on
-a second console. The effect is that the output on the first console
-freezes and if I check
-the time with "date", the time doesn't progress during the "freeze
-time". After the 
-"freeze time" the time makes a jump of several seconds.
+Hrm, your assumption about the common case does not seem to fit my
+scenarios. Typically, the wakeup will find the waiter not blocked, and
+thus skip the call to sys_futex. Here is why.
 
-In the real application the "ping" should reset the watchdog-timer. The
-freezing causes
-an elapsing of the watchdog-timer and finally a reboot.
+I use this scheme in two different implementations:
 
-Has someone an idea?
+1) in call_rcu(), to wake up the worker thread after adding work to the
+queue.
 
-With friendly regards,
-Markus Mehlan
+This worker thread, when woken up, sleeps for a few milliseconds before
+starting to dequeue work. Therefore, if the system is relatively busy,
+call_rcu() will usually see the worker thread while it's sleeping (and
+therefore _not_ waiting on the futex). Also, if work is enqueued while
+the worker thread is executing past RCU callbacks, the worker thread
+will detect it and won't wait on the futex.
 
----------------------------------------------
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <time.h>
-#include <sys/time.h>
-#include <pthread.h>
-#include <sys/mman.h>
+Therefore, this is, by design, a very unlikely event to have call_rcu()
+calling sys_futex.
 
-#define CTRL_TASK_PRIORITY		5
-#define USEC_PER_SEC   1000000
-#define NSEC_PER_SEC   1000000000
+2) in rcu_read_unlock(), to wake up synchronize_rcu() waiting on past
+   reader's grace periods.
+
+Here, synchronize_rcu() busy-waits for the reader's G.P. to end, and if
+this does not work, after a few attempts (like the pthread mutexes), it
+adapts and uses sys_futex. The waker only need to call sys_futex if
+there is a synchronize_rcu() currently running which had to call
+sys_futex after a few active attempts failed.
+
+As you see, in both cases, the common case, "fast path", is to find the
+futex unlocked and not having to take any lock.
 
 
-static void tsnorm(struct timespec *ts)
+Now, about the slow path. I think it's worth discussing too. Indeed,
+sys_futex takes a per-address spinlock, which happens to serialize all
+sys_futex operations on the wakeup side. Therefore, for wakeup designs
+relying on calling sys_futex for wakeup very frequently, this is really
+bad.
+
+There might be ways to mitigate this problem though: changing the
+sys_futex implementation to use lock-free lists might help.
+
+One advantage of calling sys_futex without holding a userspace mutex is
+that the contention duration on the per-address spinlock is much shorter
+than the contention on the mutex, because of the system call execution
+overhead.
+
+We could probably turn the sys_futex-dependent locking scheme into
+something more portable and manage to keep the same fast-path behavior
+if we replace the way I use sys_futex by a pthread cond var, e.g. :
+
+Instead of having:
+
+
+static inline void wake_up_gp(void)
 {
-	while (ts->tv_nsec >= NSEC_PER_SEC)
-	{
-		ts->tv_nsec -= NSEC_PER_SEC;
-		ts->tv_sec++;       
+        if (unlikely(uatomic_read(&gp_futex) == -1)) {
+                uatomic_set(&gp_futex, 0);
+                futex(&gp_futex, FUTEX_WAKE, 1,
+                      NULL, NULL, 0);
+        }
+}
+
+static void wait_gp(void)
+{
+	uatomic_dec(&gp_futex);
+        smp_mb();
+	if (!num_old_reader_gp()) {
+        	smp_mb();
+		atomic_set(&gp_futex, 0);
+		return;
+	}
+        /* Read reader_gp before read futex */
+        smp_rmb();
+        if (uatomic_read(&gp_futex) == -1)
+                futex(&gp_futex, FUTEX_WAIT, -1,
+                      NULL, NULL, 0);
+}
+
+We could have:
+
+static inline void wake_up_gp(void)
+{
+	/* just released old reader gp */
+	smp_mb();
+        if (unlikely(uatomic_read(&gp_wait) == -1)) {
+                uatomic_set(&gp_wait, 0);
+                pthread_cond_broadcast(&rcucond);
+        }
+}
+
+static void wait_gp(void)
+{
+	uatomic_dec(&gp_wait);
+        smp_mb();
+	if (!num_old_reader_gp()) {
+        	smp_mb();
+		atomic_set(&gp_wait, 0);
+		goto unlock;
+	}
+        /* Read reader_gp before read futex */
+        smp_rmb();
+	pthread_mutex_lock(&rcumutex);
+        if (uatomic_read(&gp_wait) == -1) {
+                pthread_cond_wait(&rcucond, &rcumutex);
+		pthread_mutex_unlock(&rcumutex);
 	}
 }
 
-void *PingTask()
-{
-	static unsigned long ulHwWdgTime = 0;			
-	struct itimerspec timer;
-	int i;
-	unsigned long ulInterval = 1000; // = 1ms
-	
-	if(clock_gettime(CLOCK_MONOTONIC, &timer.it_value) < 0)
-	{
-		perror("TimerTask: clock_gettime() failed\n");
-		//return -1;
-	}
-	
-	timer.it_interval.tv_nsec = ulInterval % USEC_PER_SEC;
-	timer.it_interval.tv_nsec *= 1000;
-	timer.it_interval.tv_sec = ulInterval / USEC_PER_SEC;
-	
-	while(1) {
-		// 1ms-Task
-		timer.it_value.tv_sec += timer.it_interval.tv_sec;
-		timer.it_value.tv_nsec += timer.it_interval.tv_nsec;
-		tsnorm(&timer.it_value);
-		
-		if (ulHwWdgTime == 0)
-		{
-			ulHwWdgTime = 200; // 200ms		
-			clock_gettime(CLOCK_MONOTONIC,
-&timer2.it_value);
-			printf("ping\n");
-		}	
-		ulHwWdgTime--;
-		
-		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME,
-&timer.it_value, NULL);
-	}	
-}
+Is that what you had in mind ?
 
-int main(int argc, char **argv)
-{
-	pthread_attr_t attr;
-	pthread_t	threadHandle;
-	void *thread_result;
-	struct sched_param sched_param;
-	int res;
-	unsigned char byPriority = CTRL_TASK_PRIORITY;
-	  
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	   
- 	if (pthread_create(&threadHandle, &attr, PingTask, NULL) != 0)
-    {	
-    	printf("Fehler pthread_create\n");
-    	if (fd_drv_wdg)	
-    		close(fd_drv_wdg);
-    	return -3;
-    }
-    
-	sched_param.sched_priority =
-max(0,sched_get_priority_max(SCHED_FIFO) - (int)byPriority);
-	if ((res=pthread_setschedparam
-((pthread_t)threadHandle,SCHED_FIFO,&sched_param)))
-	{
-		printf("SysTaskSetPriority->pthread_setschedparam()
-failed:%s\n",strerror(res));
-		if (fd_drv_wdg)	
-			close(fd_drv_wdg);
-		return -4;
-	}
-  	pthread_attr_destroy(&attr);
-  	  	
-  	printf("Ende\n");
-  	getchar();
-	
-	if (fd_drv_wdg)				
-		close(fd_drv_wdg);
-	return 0;
-}
+Thanks,
 
-Sitz der Gesellschaft: Oberhausen
-Handelsregister Amtsgericht Duisburg HRB-Nr. 17168 UST ID-Nr. DE 814009849
-Geschaftsfuehrer: Manfred A. Wagner und Dr. Uwe Baader
+Mathieu
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
