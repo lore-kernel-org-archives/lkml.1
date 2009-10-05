@@ -1,156 +1,337 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbZJEJqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbZJEK3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbZJEJqB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 05:46:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758764AbZJEJqB
+	id S932561AbZJEK3c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 06:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbZJEK3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 05:46:01 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:39474 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758748AbZJEJqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 05:46:00 -0400
-Date: Mon, 5 Oct 2009 10:45:27 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, mingo@elte.hu, rusty@rustcorp.com.au,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [this_cpu_xx V4 13/20] this_cpu_ops: page allocator conversion
-Message-ID: <20091005094527.GB12681@csn.ul.ie>
-References: <20091001212521.123389189@gentwo.org> <20091001212600.068637154@gentwo.org> <20091002151437.GP21906@csn.ul.ie> <alpine.DEB.1.10.0910021331020.26189@gentwo.org>
+	Mon, 5 Oct 2009 06:29:31 -0400
+Received: from bosmailout11.eigbox.net ([66.96.188.11]:43644 "EHLO
+	bosmailout11.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932447AbZJEK3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 06:29:30 -0400
+X-Greylist: delayed 2526 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Oct 2009 06:29:30 EDT
+X-EN-OrigOutIP: 10.20.18.9
+X-EN-IMPSID: oxlQ1c0010BkY8i0000000
+Message-ID: <4AC9C043.1010802@jaysonking.com>
+Date: Mon, 05 Oct 2009 04:45:39 -0500
+From: "Jayson R. King" <dev@jaysonking.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0910021331020.26189@gentwo.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Con Kolivas <kernel@kolivas.org>
+Subject: [PATCH 1/4] fix scaled & unscaled cputime accounting
+References: <4AC9B97B.6070900@jaysonking.com>
+In-Reply-To: <4AC9B97B.6070900@jaysonking.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-EN-UserInfo: 06af1bc540adb20c3d2d7097199478a6:08dd1976e651f6e3791fbe97eaa5f898
+X-EN-AuthUser: jaysonking@jaysonking.com
+X-EN-OrigIP: 67.67.11.191
+X-EN-OrigHost: adsl-67-67-11-191.dsl.okcyok.swbell.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 01:39:28PM -0400, Christoph Lameter wrote:
-> On Fri, 2 Oct 2009, Mel Gorman wrote:
-> 
-> > On Thu, Oct 01, 2009 at 05:25:34PM -0400, cl@linux-foundation.org wrote:
-> > > Use the per cpu allocator functionality to avoid per cpu arrays in struct zone.
-> > >
-> > > This drastically reduces the size of struct zone for systems with large
-> > > amounts of processors and allows placement of critical variables of struct
-> > > zone in one cacheline even on very large systems.
-> > >
-> >
-> > This seems reasonably accurate. The largest shrink is on !NUMA configured
-> > systems but the NUMA case deletes a lot of pointers.
-> 
-> True, the !NUMA case will then avoid allocating pagesets for unused
-> zones. But the NUMA case will have the most benefit since the large arrays
-> in struct zone are gone.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Indeed. Out of curiousity, has this patchset been performance tested? I
-would expect there to be a small but measurable improvement. If there is
-a regression, it might point to poor placement of read/write fields in
-the zone.
+[upstream commit 457533a7d3402d1d91fbc125c8bd1bd16dcd3cd4]
 
-> Removing the pagesets from struct zone also
-> increases the cacheability of struct zone information. This is
-> particularly useful since the size of the pagesets grew with the addition
-> of the various types of allocation queues.
-> 
-> > > Another effect is that the pagesets of one processor are placed near one
-> > > another. If multiple pagesets from different zones fit into one cacheline
-> > > then additional cacheline fetches can be avoided on the hot paths when
-> > > allocating memory from multiple zones.
-> > >
-> >
-> > Out of curiousity, how common an occurance is it that a CPU allocate from
-> > multiple zones? I would have thought it was rare but I never checked
-> > either.
-> 
-> zone allocations are determined by their use. GFP_KERNEL allocs come from
-> ZONE_NORMAL whereas typical application pages may come from ZONE_HIGHMEM.
-> The mix depends on what the kernel and the application are doing.
-> 
+The utimescaled / stimescaled fields in the task structure and the
+global cpustat should be set on all architectures. On s390 the calls
+to account_user_time_scaled and account_system_time_scaled never have
+been added. In addition system time that is accounted as guest time
+to the user time of a process is accounted to the scaled system time
+instead of the scaled user time.
+To fix the bugs and to prevent future forgetfulness this patch merges
+account_system_time_scaled into account_system_time and
+account_user_time_scaled into account_user_time.
 
-I just wouldn't have expected a significant enough mix to make a measurable
-performance difference. It's no biggie.
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Chris Wright <chrisw@sous-sol.org>
+Cc: Michael Neuling <mikey@neuling.org>
+Acked-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-> > >  		pcp = &pset->pcp;
-> > > +	pcp = &this_cpu_ptr(zone->pageset)->pcp;
-> > >  	migratetype = get_pageblock_migratetype(page);
-> > >  	set_page_private(page, migratetype);
-> > >  	local_irq_save(flags);
-> > > @@ -1133,7 +1133,6 @@ static void free_hot_cold_page(struct pa
-> > >
-> > >  out:
-> > >  	local_irq_restore(flags);
-> > > -	put_cpu();
-> >
-> > Previously we get_cpu() to be preemption safe. We then disable
-> > interrupts and potentially take a spinlock later.
-> 
-> Right. WE need to move the local_irq_save() up two lines.
+---
+  arch/ia64/kernel/time.c     |   12 +++------
+  arch/powerpc/kernel/time.c  |    7 +----
+  arch/s390/kernel/vtime.c    |   10 ++++----
+  include/linux/kernel_stat.h |    6 +---
+  kernel/sched.c              |   41 +++++++++++++---------------------
+  kernel/time/tick-sched.c    |    5 ++--
+  kernel/timer.c              |   12 ++++-----
+  7 files changed, 37 insertions(+), 56 deletions(-)
 
-Just so I'm 100% clear, IRQ disabling is considered a preemption point?
+diff -udrNp linux-2.6.27.orig/arch/ia64/kernel/time.c linux-2.6.27/arch/ia64/kernel/time.c
+--- linux-2.6.27.orig/arch/ia64/kernel/time.c	2008-10-09 17:13:53.000000000 -0500
++++ linux-2.6.27/arch/ia64/kernel/time.c	2009-10-02 05:08:10.543580236 -0500
+@@ -93,13 +93,11 @@ void ia64_account_on_switch(struct task_
+  	now = ia64_get_itc();
 
-> Why disable
-> preempt and two instructions later disable interrupts? Isnt this bloating
-> the code?
-> 
+  	delta_stime = cycle_to_cputime(pi->ac_stime + (now - pi->ac_stamp));
+-	account_system_time(prev, 0, delta_stime);
+-	account_system_time_scaled(prev, delta_stime);
++	account_system_time(prev, 0, delta_stime, delta_stime);
 
-By and large, IRQs are disabled at the last possible moment with the minimum
-amount of code in between. While the current location does not make perfect
-sense, it was probably many small changes that placed it like this each
-person avoiding IRQ-disabling for too long without considering what the cost
-of get_cpu() was.
+  	if (pi->ac_utime) {
+  		delta_utime = cycle_to_cputime(pi->ac_utime);
+-		account_user_time(prev, delta_utime);
+-		account_user_time_scaled(prev, delta_utime);
++		account_user_time(prev, delta_utime, delta_utime);
+  	}
 
-Similar care needs to be taken with the other removals of get_cpu() in
-this patch to ensure it's still preemption-safe.
+  	pi->ac_stamp = ni->ac_stamp = now;
+@@ -122,8 +120,7 @@ void account_system_vtime(struct task_st
+  	now = ia64_get_itc();
 
-> > this_cpu_ptr() looks up PCP
-> > disable interrupts
-> > enable interrupts
-> 
-> Move disable interrupts before the this_cpu_ptr?
-> 
+  	delta_stime = cycle_to_cputime(ti->ac_stime + (now - ti->ac_stamp));
+-	account_system_time(tsk, 0, delta_stime);
+-	account_system_time_scaled(tsk, delta_stime);
++	account_system_time(tsk, 0, delta_stime, delta_stime);
+  	ti->ac_stime = 0;
 
-In this case, why not move this_cpu_ptr() down until its first use just
-before the if (cold) check? It'll still be within the IRQ disabling but
-without significantly increasing the amount of time the IRQ is disabled.
+  	ti->ac_stamp = now;
+@@ -143,8 +140,7 @@ void account_process_tick(struct task_st
 
-> > > +/*
-> > > + * Allocate per cpu pagesets and initialize them.
-> > > + * Before this call only boot pagesets were available.
-> > > + * Boot pagesets will no longer be used after this call is complete.
-> >
-> > If they are no longer used, do we get the memory back?
-> 
-> No we need to keep them for onlining new processors.
-> 
+  	if (ti->ac_utime) {
+  		delta_utime = cycle_to_cputime(ti->ac_utime);
+-		account_user_time(p, delta_utime);
+-		account_user_time_scaled(p, delta_utime);
++		account_user_time(p, delta_utime, delta_utime);
+  		ti->ac_utime = 0;
+  	}
+  }
+diff -udrNp linux-2.6.27.orig/arch/powerpc/kernel/time.c linux-2.6.27/arch/powerpc/kernel/time.c
+--- linux-2.6.27.orig/arch/powerpc/kernel/time.c	2008-10-09 17:13:53.000000000 -0500
++++ linux-2.6.27/arch/powerpc/kernel/time.c	2009-10-02 05:08:10.543580236 -0500
+@@ -258,8 +258,7 @@ void account_system_vtime(struct task_st
+  		delta += sys_time;
+  		get_paca()->system_time = 0;
+  	}
+-	account_system_time(tsk, 0, delta);
+-	account_system_time_scaled(tsk, deltascaled);
++	account_system_time(tsk, 0, delta, deltascaled);
+  	per_cpu(cputime_last_delta, smp_processor_id()) = delta;
+  	per_cpu(cputime_scaled_last_delta, smp_processor_id()) = deltascaled;
+  	local_irq_restore(flags);
+@@ -277,10 +276,8 @@ void account_process_tick(struct task_st
 
-That comment would appear to disagree.
+  	utime = get_paca()->user_time;
+  	get_paca()->user_time = 0;
+-	account_user_time(tsk, utime);
+-
+  	utimescaled = cputime_to_scaled(utime);
+-	account_user_time_scaled(tsk, utimescaled);
++	account_user_time(tsk, utime, utimescaled);
+  }
 
-> > > -	 * as it comes online
-> > > +		for_each_possible_cpu(cpu) {
-> > > +			struct per_cpu_pageset *pcp = per_cpu_ptr(zone->pageset, cpu);
-> > > +
-> > > +			setup_pageset(pcp, zone_batchsize(zone));
-> > > +
-> > > +			if (percpu_pagelist_fraction)
-> > > +				setup_pagelist_highmark(pcp,
-> > > +					(zone->present_pages /
-> > > +						percpu_pagelist_fraction));
-> > > +		}
-> > > +	}
-> >
-> > This would have been easier to review if you left process_zones() where it
-> > was and converted it to the new API. I'm assuming this is just shuffling
-> > code around.
-> 
-> Yes I think this was the result of reducing #ifdefs.
-> 
+  /*
+diff -udrNp linux-2.6.27.orig/arch/s390/kernel/vtime.c linux-2.6.27/arch/s390/kernel/vtime.c
+--- linux-2.6.27.orig/arch/s390/kernel/vtime.c	2008-10-09 17:13:53.000000000 -0500
++++ linux-2.6.27/arch/s390/kernel/vtime.c	2009-10-02 05:08:10.543580236 -0500
+@@ -51,12 +51,12 @@ void account_process_tick(struct task_st
+  	rcu_user_flag = cputime != 0;
+  	S390_lowcore.user_timer -= cputime << 12;
+  	S390_lowcore.steal_clock -= cputime << 12;
+-	account_user_time(tsk, cputime);
++	account_user_time(tsk, cputime, cputime);
 
-Ok.
+  	cputime =  S390_lowcore.system_timer >> 12;
+  	S390_lowcore.system_timer -= cputime << 12;
+  	S390_lowcore.steal_clock -= cputime << 12;
+-	account_system_time(tsk, HARDIRQ_OFFSET, cputime);
++	account_system_time(tsk, HARDIRQ_OFFSET, cputime, cputime);
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+  	cputime = S390_lowcore.steal_clock;
+  	if ((__s64) cputime > 0) {
+@@ -83,12 +83,12 @@ void account_vtime(struct task_struct *t
+  	cputime = S390_lowcore.user_timer >> 12;
+  	S390_lowcore.user_timer -= cputime << 12;
+  	S390_lowcore.steal_clock -= cputime << 12;
+-	account_user_time(tsk, cputime);
++	account_user_time(tsk, cputime, cputime);
+
+  	cputime =  S390_lowcore.system_timer >> 12;
+  	S390_lowcore.system_timer -= cputime << 12;
+  	S390_lowcore.steal_clock -= cputime << 12;
+-	account_system_time(tsk, 0, cputime);
++	account_system_time(tsk, 0, cputime, cputime);
+  }
+
+  /*
+@@ -108,7 +108,7 @@ void account_system_vtime(struct task_st
+  	cputime =  S390_lowcore.system_timer >> 12;
+  	S390_lowcore.system_timer -= cputime << 12;
+  	S390_lowcore.steal_clock -= cputime << 12;
+-	account_system_time(tsk, 0, cputime);
++	account_system_time(tsk, 0, cputime, cputime);
+  }
+  EXPORT_SYMBOL_GPL(account_system_vtime);
+
+diff -udrNp linux-2.6.27.orig/include/linux/kernel_stat.h linux-2.6.27/include/linux/kernel_stat.h
+--- linux-2.6.27.orig/include/linux/kernel_stat.h	2008-10-09 17:13:53.000000000 -0500
++++ linux-2.6.27/include/linux/kernel_stat.h	2009-10-02 05:08:10.543580236 -0500
+@@ -52,10 +52,8 @@ static inline int kstat_irqs(int irq)
+  	return sum;
+  }
+
+-extern void account_user_time(struct task_struct *, cputime_t);
+-extern void account_user_time_scaled(struct task_struct *, cputime_t);
+-extern void account_system_time(struct task_struct *, int, cputime_t);
+-extern void account_system_time_scaled(struct task_struct *, cputime_t);
++extern void account_user_time(struct task_struct *, cputime_t, cputime_t);
++extern void account_system_time(struct task_struct *, int, cputime_t, cputime_t);
+  extern void account_steal_time(struct task_struct *, cputime_t);
+
+  #endif /* _LINUX_KERNEL_STAT_H */
+diff -udrNp linux-2.6.27.orig/kernel/sched.c linux-2.6.27/kernel/sched.c
+--- linux-2.6.27.orig/kernel/sched.c	2009-10-02 05:07:46.098579687 -0500
++++ linux-2.6.27/kernel/sched.c	2009-10-02 05:08:10.545579395 -0500
+@@ -4063,13 +4063,17 @@ unsigned long long task_sched_runtime(st
+   * Account user cpu time to a process.
+   * @p: the process that the cpu time gets accounted to
+   * @cputime: the cpu time spent in user space since the last update
++ * @cputime_scaled: cputime scaled by cpu frequency
+   */
+-void account_user_time(struct task_struct *p, cputime_t cputime)
++void account_user_time(struct task_struct *p, cputime_t cputime,
++		       cputime_t cputime_scaled)
+  {
+  	struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
+  	cputime64_t tmp;
+
++	/* Add user time to process. */
+  	p->utime = cputime_add(p->utime, cputime);
++	p->utimescaled = cputime_add(p->utimescaled, cputime_scaled);
+
+  	/* Add user time to cpustat. */
+  	tmp = cputime_to_cputime64(cputime);
+@@ -4085,50 +4089,48 @@ void account_user_time(struct task_struc
+   * Account guest cpu time to a process.
+   * @p: the process that the cpu time gets accounted to
+   * @cputime: the cpu time spent in virtual machine since the last update
++ * @cputime_scaled: cputime scaled by cpu frequency
+   */
+-static void account_guest_time(struct task_struct *p, cputime_t cputime)
++static void account_guest_time(struct task_struct *p, cputime_t cputime,
++			       cputime_t cputime_scaled)
+  {
+  	cputime64_t tmp;
+  	struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
+
+  	tmp = cputime_to_cputime64(cputime);
+
++	/* Add guest time to process. */
+  	p->utime = cputime_add(p->utime, cputime);
++	p->utimescaled = cputime_add(p->utimescaled, cputime_scaled);
+  	p->gtime = cputime_add(p->gtime, cputime);
+
++	/* Add guest time to cpustat. */
+  	cpustat->user = cputime64_add(cpustat->user, tmp);
+  	cpustat->guest = cputime64_add(cpustat->guest, tmp);
+  }
+
+  /*
+- * Account scaled user cpu time to a process.
+- * @p: the process that the cpu time gets accounted to
+- * @cputime: the cpu time spent in user space since the last update
+- */
+-void account_user_time_scaled(struct task_struct *p, cputime_t cputime)
+-{
+-	p->utimescaled = cputime_add(p->utimescaled, cputime);
+-}
+-
+-/*
+   * Account system cpu time to a process.
+   * @p: the process that the cpu time gets accounted to
+   * @hardirq_offset: the offset to subtract from hardirq_count()
+   * @cputime: the cpu time spent in kernel space since the last update
++ * @cputime_scaled: cputime scaled by cpu frequency
+   */
+  void account_system_time(struct task_struct *p, int hardirq_offset,
+-			 cputime_t cputime)
++			 cputime_t cputime, cputime_t cputime_scaled)
+  {
+  	struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
+  	struct rq *rq = this_rq();
+  	cputime64_t tmp;
+
+  	if ((p->flags & PF_VCPU) && (irq_count() - hardirq_offset == 0)) {
+-		account_guest_time(p, cputime);
++		account_guest_time(p, cputime, cputime_scaled);
+  		return;
+  	}
+
++	/* Add system time to process. */
+  	p->stime = cputime_add(p->stime, cputime);
++	p->stimescaled = cputime_add(p->stimescaled, cputime_scaled);
+
+  	/* Add system time to cpustat. */
+  	tmp = cputime_to_cputime64(cputime);
+@@ -4147,17 +4149,6 @@ void account_system_time(struct task_str
+  }
+
+  /*
+- * Account scaled system cpu time to a process.
+- * @p: the process that the cpu time gets accounted to
+- * @hardirq_offset: the offset to subtract from hardirq_count()
+- * @cputime: the cpu time spent in kernel space since the last update
+- */
+-void account_system_time_scaled(struct task_struct *p, cputime_t cputime)
+-{
+-	p->stimescaled = cputime_add(p->stimescaled, cputime);
+-}
+-
+-/*
+   * Account for involuntary wait time.
+   * @p: the process from which the cpu time has been stolen
+   * @steal: the cpu time spent in involuntary wait
+diff -udrNp linux-2.6.27.orig/kernel/time/tick-sched.c linux-2.6.27/kernel/time/tick-sched.c
+--- linux-2.6.27.orig/kernel/time/tick-sched.c	2008-10-09 17:13:53.000000000 -0500
++++ linux-2.6.27/kernel/time/tick-sched.c	2009-10-02 05:08:10.546579540 -0500
+@@ -378,6 +378,7 @@ void tick_nohz_restart_sched_tick(void)
+  	int cpu = smp_processor_id();
+  	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+  	unsigned long ticks;
++	cputime_t cputime;
+  	ktime_t now;
+
+  	local_irq_disable();
+@@ -410,8 +411,8 @@ void tick_nohz_restart_sched_tick(void)
+  	 */
+  	if (ticks && ticks < LONG_MAX) {
+  		add_preempt_count(HARDIRQ_OFFSET);
+-		account_system_time(current, HARDIRQ_OFFSET,
+-				    jiffies_to_cputime(ticks));
++		cputime = jiffies_to_cputime(ticks);
++		account_system_time(current, HARDIRQ_OFFSET, cputime, cputime);
+  		sub_preempt_count(HARDIRQ_OFFSET);
+  	}
+
+diff -udrNp linux-2.6.27.orig/kernel/timer.c linux-2.6.27/kernel/timer.c
+--- linux-2.6.27.orig/kernel/timer.c	2009-10-02 05:07:46.108579580 -0500
++++ linux-2.6.27/kernel/timer.c	2009-10-02 05:08:10.546579540 -0500
+@@ -954,13 +954,11 @@ void account_process_tick(struct task_st
+  {
+  	cputime_t one_jiffy = jiffies_to_cputime(1);
+
+-	if (user_tick) {
+-		account_user_time(p, one_jiffy);
+-		account_user_time_scaled(p, cputime_to_scaled(one_jiffy));
+-	} else {
+-		account_system_time(p, HARDIRQ_OFFSET, one_jiffy);
+-		account_system_time_scaled(p, cputime_to_scaled(one_jiffy));
+-	}
++	if (user_tick)
++		account_user_time(p, one_jiffy, cputime_to_scaled(one_jiffy));
++	else
++		account_system_time(p, HARDIRQ_OFFSET, one_jiffy,
++				    cputime_to_scaled(one_jiffy));
+  }
+  #endif
+
+
