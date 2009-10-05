@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932623AbZJENJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbZJENM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932623AbZJENJm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 09:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbZJENJl
+	id S1758765AbZJENM5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 09:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758291AbZJENM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 09:09:41 -0400
-Received: from mga03.intel.com ([143.182.124.21]:35967 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756596AbZJENJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 09:09:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,505,1249282800"; 
-   d="scan'208";a="195175300"
-Date: Mon, 5 Oct 2009 21:08:50 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "Myklebust, Trond" <Trond.Myklebust@netapp.com>
-Cc: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
-Subject: Re: [PATCH v2] NFS: introduce writeback wait queue
-Message-ID: <20091005130849.GA17074@localhost>
-References: <20091004030153.GA20327@localhost> <20091005071026.GA19262@localhost> <20091005073551.GA23102@localhost> <20091005073959.GA23398@localhost> <F047DA72-75B3-4447-84EB-7115C77ECBA3@netapp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <F047DA72-75B3-4447-84EB-7115C77ECBA3@netapp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 5 Oct 2009 09:12:56 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:56772 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756757AbZJENM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 09:12:56 -0400
+Subject: Re: [PATCH 02/21] ftrace.c: Add #define pr_fmt(fmt) KBUILD_MODNAME
+ ": " fmt
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+In-Reply-To: <9b377eefae9e28c599dd4a17bdc81172965e9931.1254701151.git.joe@perches.com>
+References: <cover.1254701151.git.joe@perches.com>
+	 <9b377eefae9e28c599dd4a17bdc81172965e9931.1254701151.git.joe@perches.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 05 Oct 2009 09:10:56 -0400
+Message-Id: <1254748256.13160.0.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 05, 2009 at 06:55:54PM +0800, Myklebust, Trond wrote:
-> On Oct 5, 2009, at 3:40, "Wu Fengguang" <fengguang.wu@intel.com> wrote:
+On Sun, 2009-10-04 at 17:53 -0700, Joe Perches wrote:
+> Remove prefixes from pr_<level>, use pr_fmt(fmt)
+> No change in output.
 > 
-> > On Mon, Oct 05, 2009 at 03:35:51PM +0800, Wu Fengguang wrote:
-> >> Trond, I see this trace on linux-next. There are no more dirty pages
-> >> when `cp' aborts after filling up the partition:
-> >>
-> >>        cp: writing `/mnt/test/zero3': No space left on device
-> >>
-> >> I noticed that since then nr_writeback is decreased very slowly
-> >> (~100 pages per second). Looks like an interesting behavior.
-> >
-> > In the mean time, there are constant 7-8MB/s writes in the NFS server.
-> > The network flow is much smaller ~400K/s. How can I debug this issue?
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  arch/x86/kernel/ftrace.c |    8 +++++---
+>  1 files changed, 5 insertions(+), 3 deletions(-)
 > 
-> Hi Fengguang
-> 
-> This is deliberate behaviour. When asynchronous writes start recieving  
-> errors, then we switch to synchronous write mode until the error  
-> condition clears.
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 9dbb527..25e6f5f 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -9,6 +9,8 @@
+>   * the dangers of modifying code on the run.
+>   */
+>  
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-Ah yes. After ENOSPC, with nfsstat I saw the client side write/commit
-numbers remain constant, while the server side write number increases
-~200 per-second, and commit number also remain static. When all client
-side nr_writeback drops to 0, the server side write number also stops.
+What does KBUILD_MODNAME give us in the core code? This file does not
+belong to any module and is only compiled into the core kernel.
 
-> The reason is for doing so is firstly because some filesystems (XFS)  
-> perform very poorly under ENOSPC, and so it takes forever to write  
-> back pages (we don't want to cancel all writebacks for temporary  
-> conditions like ENOSPC). It also allows us to deliver the errors more  
-> promptly to the application.
+-- Steve
 
-Thanks,
-Fengguang
+> +
+>  #include <linux/spinlock.h>
+>  #include <linux/hardirq.h>
+>  #include <linux/uaccess.h>
+> @@ -336,15 +338,15 @@ int __init ftrace_dyn_arch_init(void *data)
+>  
+>  	switch (faulted) {
+>  	case 0:
+> -		pr_info("ftrace: converting mcount calls to 0f 1f 44 00 00\n");
+> +		pr_info("converting mcount calls to 0f 1f 44 00 00\n");
+>  		memcpy(ftrace_nop, ftrace_test_p6nop, MCOUNT_INSN_SIZE);
+>  		break;
+>  	case 1:
+> -		pr_info("ftrace: converting mcount calls to 66 66 66 66 90\n");
+> +		pr_info("converting mcount calls to 66 66 66 66 90\n");
+>  		memcpy(ftrace_nop, ftrace_test_nop5, MCOUNT_INSN_SIZE);
+>  		break;
+>  	case 2:
+> -		pr_info("ftrace: converting mcount calls to jmp . + 5\n");
+> +		pr_info("converting mcount calls to jmp . + 5\n");
+>  		memcpy(ftrace_nop, ftrace_test_jmp, MCOUNT_INSN_SIZE);
+>  		break;
+>  	}
+
