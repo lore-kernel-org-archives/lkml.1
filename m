@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbZJEA4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932278AbZJEA4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932306AbZJEA4Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 20:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758355AbZJEA4F
+	id S932278AbZJEA4G (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 20:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbZJEA4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 20:56:05 -0400
-Received: from mail.perches.com ([173.55.12.10]:1745 "EHLO mail.perches.com"
+	Sun, 4 Oct 2009 20:56:03 -0400
+Received: from mail.perches.com ([173.55.12.10]:1746 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758339AbZJEAz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758340AbZJEAz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 4 Oct 2009 20:55:57 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org
-Subject: [PATCH 17/21] crypto/async_tx/raid6test.c: use pr_<level> and add pr_fmt(fmt)
-Date: Sun,  4 Oct 2009 17:53:44 -0700
-Message-Id: <537d5c767044ad3040eb8464a4b75536387ed159.1254701151.git.joe@perches.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Subject: [PATCH 18/21] arch/x86/mm/mmio-mod.c: use pr_fmt
+Date: Sun,  4 Oct 2009 17:53:45 -0700
+Message-Id: <25fa7d4aeb74d7cb6b586353598e8e5f884f0d5b.1254701151.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1254701151.git.joe@perches.com>
 References: <cover.1254701151.git.joe@perches.com>
@@ -27,92 +25,228 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-Converted pr( to pr_info(
-Removed #define pr pr_info("raid6test: "
+Add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+Remove #define NAME
+Remove NAME from pr_<level>
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- crypto/async_tx/raid6test.c |   30 +++++++++++++++---------------
- 1 files changed, 15 insertions(+), 15 deletions(-)
+ arch/x86/mm/mmio-mod.c |   71 +++++++++++++++++++++++------------------------
+ 1 files changed, 35 insertions(+), 36 deletions(-)
 
-diff --git a/crypto/async_tx/raid6test.c b/crypto/async_tx/raid6test.c
-index 3ec27c7..bcf762c 100644
---- a/crypto/async_tx/raid6test.c
-+++ b/crypto/async_tx/raid6test.c
-@@ -19,12 +19,12 @@
-  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
+index 132772a..4c765e9 100644
+--- a/arch/x86/mm/mmio-mod.c
++++ b/arch/x86/mm/mmio-mod.c
+@@ -19,6 +19,9 @@
   *
+  * Derived from the read-mod example from relay-examples by Tom Zanussi.
   */
 +
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++#define pr_fmt(fmt) "mmiotrace: "
 +
- #include <linux/async_tx.h>
- #include <linux/random.h>
+ #define DEBUG 1
  
--#undef pr
--#define pr(fmt, args...) pr_info("raid6test: " fmt, ##args)
+ #include <linux/module.h>
+@@ -36,8 +39,6 @@
+ 
+ #include "pf_in.h"
+ 
+-#define NAME "mmiotrace: "
 -
- #define NDISKS 16 /* Including P and Q */
+ struct trap_reason {
+ 	unsigned long addr;
+ 	unsigned long ip;
+@@ -96,17 +97,18 @@ static void print_pte(unsigned long address)
+ 	pte_t *pte = lookup_address(address, &level);
  
- static struct page *dataptrs[NDISKS];
-@@ -121,12 +121,12 @@ static void raid6_dual_recov(int disks, size_t bytes, int faila, int failb, stru
- 	async_tx_issue_pending(tx);
- 
- 	if (wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000)) == 0)
--		pr("%s: timeout! (faila: %d failb: %d disks: %d)\n",
--		   __func__, faila, failb, disks);
-+		pr_info("%s: timeout! (faila: %d failb: %d disks: %d)\n",
-+			__func__, faila, failb, disks);
- 
- 	if (result != 0)
--		pr("%s: validation failure! faila: %d failb: %d sum_check_flags: %x\n",
--		   __func__, faila, failb, result);
-+		pr_info("%s: validation failure! faila: %d failb: %d sum_check_flags: %x\n",
-+			__func__, faila, failb, result);
- }
- 
- static int test_disks(int i, int j, int disks)
-@@ -144,9 +144,9 @@ static int test_disks(int i, int j, int disks)
- 	erra = memcmp(page_address(data[i]), page_address(recovi), PAGE_SIZE);
- 	errb = memcmp(page_address(data[j]), page_address(recovj), PAGE_SIZE);
- 
--	pr("%s(%d, %d): faila=%3d(%c)  failb=%3d(%c)  %s\n",
--	   __func__, i, j, i, disk_type(i, disks), j, disk_type(j, disks),
--	   (!erra && !errb) ? "OK" : !erra ? "ERRB" : !errb ? "ERRA" : "ERRAB");
-+	pr_info("%s(%d, %d): faila=%3d(%c)  failb=%3d(%c)  %s\n",
-+		__func__, i, j, i, disk_type(i, disks), j, disk_type(j, disks),
-+		(!erra && !errb) ? "OK" : !erra ? "ERRB" : !errb ? "ERRA" : "ERRAB");
- 
- 	dataptrs[i] = data[i];
- 	dataptrs[j] = data[j];
-@@ -179,11 +179,11 @@ static int test(int disks, int *tests)
- 	async_tx_issue_pending(tx);
- 
- 	if (wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000)) == 0) {
--		pr("error: initial gen_syndrome(%d) timed out\n", disks);
-+		pr_info("error: initial gen_syndrome(%d) timed out\n", disks);
- 		return 1;
+ 	if (!pte) {
+-		pr_err(NAME "Error in %s: no pte for page 0x%08lx\n",
+-							__func__, address);
++		pr_err("Error in %s: no pte for page 0x%08lx\n",
++		       __func__, address);
+ 		return;
  	}
  
--	pr("testing the %d-disk case...\n", disks);
-+	pr_info("testing the %d-disk case...\n", disks);
- 	for (i = 0; i < disks-1; i++)
- 		for (j = i+1; j < disks; j++) {
- 			(*tests)++;
-@@ -216,9 +216,9 @@ static int raid6_test(void)
- 		err += test(5, &tests);
- 	err += test(NDISKS, &tests);
+ 	if (level == PG_LEVEL_2M) {
+-		pr_emerg(NAME "4MB pages are not currently supported: "
+-							"0x%08lx\n", address);
++		pr_emerg("4MB pages are not currently supported: 0x%08lx\n",
++			 address);
+ 		BUG();
+ 	}
+-	pr_info(NAME "pte for 0x%lx: 0x%llx 0x%llx\n", address,
++	pr_info("pte for 0x%lx: 0x%llx 0x%llx\n",
++		address,
+ 		(unsigned long long)pte_val(*pte),
+ 		(unsigned long long)pte_val(*pte) & _PAGE_PRESENT);
+ }
+@@ -118,22 +120,21 @@ static void print_pte(unsigned long address)
+ static void die_kmmio_nesting_error(struct pt_regs *regs, unsigned long addr)
+ {
+ 	const struct trap_reason *my_reason = &get_cpu_var(pf_reason);
+-	pr_emerg(NAME "unexpected fault for address: 0x%08lx, "
+-					"last fault for address: 0x%08lx\n",
+-					addr, my_reason->addr);
++	pr_emerg("unexpected fault for address: 0x%08lx, last fault for address: 0x%08lx\n",
++		 addr, my_reason->addr);
+ 	print_pte(addr);
+ 	print_symbol(KERN_EMERG "faulting IP is at %s\n", regs->ip);
+ 	print_symbol(KERN_EMERG "last faulting IP was at %s\n", my_reason->ip);
+ #ifdef __i386__
+ 	pr_emerg("eax: %08lx   ebx: %08lx   ecx: %08lx   edx: %08lx\n",
+-			regs->ax, regs->bx, regs->cx, regs->dx);
++		 regs->ax, regs->bx, regs->cx, regs->dx);
+ 	pr_emerg("esi: %08lx   edi: %08lx   ebp: %08lx   esp: %08lx\n",
+-			regs->si, regs->di, regs->bp, regs->sp);
++		 regs->si, regs->di, regs->bp, regs->sp);
+ #else
+ 	pr_emerg("rax: %016lx   rcx: %016lx   rdx: %016lx\n",
+-					regs->ax, regs->cx, regs->dx);
++		 regs->ax, regs->cx, regs->dx);
+ 	pr_emerg("rsi: %016lx   rdi: %016lx   rbp: %016lx   rsp: %016lx\n",
+-				regs->si, regs->di, regs->bp, regs->sp);
++		 regs->si, regs->di, regs->bp, regs->sp);
+ #endif
+ 	put_cpu_var(pf_reason);
+ 	BUG();
+@@ -213,7 +214,7 @@ static void post(struct kmmio_probe *p, unsigned long condition,
+ 	/* this should always return the active_trace count to 0 */
+ 	my_reason->active_traces--;
+ 	if (my_reason->active_traces) {
+-		pr_emerg(NAME "unexpected post handler");
++		pr_emerg("unexpected post handler");
+ 		BUG();
+ 	}
  
--	pr("\n");
--	pr("complete (%d tests, %d failure%s)\n",
--	   tests, err, err == 1 ? "" : "s");
-+	pr_info("\n");
-+	pr_info("complete (%d tests, %d failure%s)\n",
-+		tests, err, err == 1 ? "" : "s");
+@@ -244,7 +245,7 @@ static void ioremap_trace_core(resource_size_t offset, unsigned long size,
+ 	};
  
- 	for (i = 0; i < NDISKS+3; i++)
- 		put_page(data[i]);
+ 	if (!trace) {
+-		pr_err(NAME "kmalloc failed in ioremap\n");
++		pr_err("kmalloc failed in ioremap\n");
+ 		return;
+ 	}
+ 
+@@ -282,8 +283,8 @@ void mmiotrace_ioremap(resource_size_t offset, unsigned long size,
+ 	if (!is_enabled()) /* recheck and proper locking in *_core() */
+ 		return;
+ 
+-	pr_debug(NAME "ioremap_*(0x%llx, 0x%lx) = %p\n",
+-				(unsigned long long)offset, size, addr);
++	pr_debug("ioremap_*(0x%llx, 0x%lx) = %p\n",
++		 (unsigned long long)offset, size, addr);
+ 	if ((filter_offset) && (offset != filter_offset))
+ 		return;
+ 	ioremap_trace_core(offset, size, addr);
+@@ -301,7 +302,7 @@ static void iounmap_trace_core(volatile void __iomem *addr)
+ 	struct remap_trace *tmp;
+ 	struct remap_trace *found_trace = NULL;
+ 
+-	pr_debug(NAME "Unmapping %p.\n", addr);
++	pr_debug("Unmapping %p.\n", addr);
+ 
+ 	spin_lock_irq(&trace_lock);
+ 	if (!is_enabled())
+@@ -363,9 +364,8 @@ static void clear_trace_list(void)
+ 	 * Caller also ensures is_enabled() cannot change.
+ 	 */
+ 	list_for_each_entry(trace, &trace_list, list) {
+-		pr_notice(NAME "purging non-iounmapped "
+-					"trace @0x%08lx, size 0x%lx.\n",
+-					trace->probe.addr, trace->probe.len);
++		pr_notice("purging non-iounmapped trace @0x%08lx, size 0x%lx.\n",
++			  trace->probe.addr, trace->probe.len);
+ 		if (!nommiotrace)
+ 			unregister_kmmio_probe(&trace->probe);
+ 	}
+@@ -387,7 +387,7 @@ static void enter_uniprocessor(void)
+ 
+ 	if (downed_cpus == NULL &&
+ 	    !alloc_cpumask_var(&downed_cpus, GFP_KERNEL)) {
+-		pr_notice(NAME "Failed to allocate mask\n");
++		pr_notice("Failed to allocate mask\n");
+ 		goto out;
+ 	}
+ 
+@@ -395,20 +395,19 @@ static void enter_uniprocessor(void)
+ 	cpumask_copy(downed_cpus, cpu_online_mask);
+ 	cpumask_clear_cpu(cpumask_first(cpu_online_mask), downed_cpus);
+ 	if (num_online_cpus() > 1)
+-		pr_notice(NAME "Disabling non-boot CPUs...\n");
++		pr_notice("Disabling non-boot CPUs...\n");
+ 	put_online_cpus();
+ 
+ 	for_each_cpu(cpu, downed_cpus) {
+ 		err = cpu_down(cpu);
+ 		if (!err)
+-			pr_info(NAME "CPU%d is down.\n", cpu);
++			pr_info("CPU%d is down.\n", cpu);
+ 		else
+-			pr_err(NAME "Error taking CPU%d down: %d\n", cpu, err);
++			pr_err("Error taking CPU%d down: %d\n", cpu, err);
+ 	}
+ out:
+ 	if (num_online_cpus() > 1)
+-		pr_warning(NAME "multiple CPUs still online, "
+-						"may miss events.\n");
++		pr_warning("multiple CPUs still online, may miss events.\n");
+ }
+ 
+ /* __ref because leave_uniprocessor calls cpu_up which is __cpuinit,
+@@ -420,13 +419,13 @@ static void __ref leave_uniprocessor(void)
+ 
+ 	if (downed_cpus == NULL || cpumask_weight(downed_cpus) == 0)
+ 		return;
+-	pr_notice(NAME "Re-enabling CPUs...\n");
++	pr_notice("Re-enabling CPUs...\n");
+ 	for_each_cpu(cpu, downed_cpus) {
+ 		err = cpu_up(cpu);
+ 		if (!err)
+-			pr_info(NAME "enabled CPU%d.\n", cpu);
++			pr_info("enabled CPU%d.\n", cpu);
+ 		else
+-			pr_err(NAME "cannot re-enable CPU%d: %d\n", cpu, err);
++			pr_err("cannot re-enable CPU%d: %d\n", cpu, err);
+ 	}
+ }
+ 
+@@ -434,8 +433,8 @@ static void __ref leave_uniprocessor(void)
+ static void enter_uniprocessor(void)
+ {
+ 	if (num_online_cpus() > 1)
+-		pr_warning(NAME "multiple CPUs are online, may miss events. "
+-			"Suggest booting with maxcpus=1 kernel argument.\n");
++		pr_warning("multiple CPUs are online, may miss events. "
++			   "Suggest booting with maxcpus=1 kernel argument.\n");
+ }
+ 
+ static void leave_uniprocessor(void)
+@@ -450,13 +449,13 @@ void enable_mmiotrace(void)
+ 		goto out;
+ 
+ 	if (nommiotrace)
+-		pr_info(NAME "MMIO tracing disabled.\n");
++		pr_info("MMIO tracing disabled.\n");
+ 	kmmio_init();
+ 	enter_uniprocessor();
+ 	spin_lock_irq(&trace_lock);
+ 	atomic_inc(&mmiotrace_enabled);
+ 	spin_unlock_irq(&trace_lock);
+-	pr_info(NAME "enabled.\n");
++	pr_info("enabled.\n");
+ out:
+ 	mutex_unlock(&mmiotrace_mutex);
+ }
+@@ -475,7 +474,7 @@ void disable_mmiotrace(void)
+ 	clear_trace_list(); /* guarantees: no more kmmio callbacks */
+ 	leave_uniprocessor();
+ 	kmmio_cleanup();
+-	pr_info(NAME "disabled.\n");
++	pr_info("disabled.\n");
+ out:
+ 	mutex_unlock(&mmiotrace_mutex);
+ }
 -- 
 1.6.3.1.10.g659a0.dirty
 
