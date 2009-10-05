@@ -1,176 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbZJEP0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbZJEP1K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752956AbZJEP0p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 11:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZJEP0p
+	id S1753488AbZJEP1K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 11:27:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZJEP1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 11:26:45 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:13282 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbZJEP0o (ORCPT
+	Mon, 5 Oct 2009 11:27:09 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:58707 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752999AbZJEP1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 11:26:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=QI81vdREvMBePDbrBi7sQWHxp0WeTZ9FaPvI420tEZ0vLd/TqpsWwE3kVzDtXngvby
-         wvaXKWloEkc7GuxAxr/Jg/SzNmTqjHIezkEWvSuspNgvv+zUU6lJXk5ovo2Hdd60H5ll
-         SasQOEIax6BHwG+pKevkKlnoTvDR0XNFIAeNU=
-Subject: [PATCH] fs: added KERNEL-DEBUG flag to printk statments
-From: Pete <greg.petr@gmail.com>
-To: kernel-janitors@vger.kernel.org
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1254753799.5279.37.camel@linux-k65f.site>
-References: <1254753799.5279.37.camel@linux-k65f.site>
-Content-Type: text/plain
-Date: Mon, 05 Oct 2009 20:54:45 +0530
-Message-Id: <1254756285.5279.39.camel@linux-k65f.site>
+	Mon, 5 Oct 2009 11:27:08 -0400
+Date: Mon, 5 Oct 2009 08:24:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: John Kacur <jkacur@redhat.com>
+Cc: john stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       Clark Williams <williams@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] time: logrithmic time accumulation
+Message-Id: <20091005082457.67411f48.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.LFD.2.00.0910051228420.5132@localhost.localdomain>
+References: <1254525473.7741.88.camel@localhost.localdomain>
+	<alpine.LFD.2.00.0910051228420.5132@localhost.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4ACA0FD0.0097:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 5 Oct 2009 12:43:37 +0200 (CEST) John Kacur wrote:
 
-Signed-off-by: Greg Petr <greg.petr@gmail.com>
+> 
+> 
+> On Fri, 2 Oct 2009, john stultz wrote:
+> 
+> > Accumulating one tick at a time works well unless we're using NOHZ. Then
+> > it can be an issue, since we may have to run through the loop a few
+> > thousand times, which can increase timer interrupt caused latency.
+> > 
+> > The current solution was to accumulate in half-second intervals with
+> > NOHZ. This kept the number of loops down, however it did slightly change
+> > how we make NTP adjustments. While not an issue with NTPd users, as NTPd
+> > makes adjustments over a longer period of time, other adjtimex() users
+> > have noticed the half-second granularity with which we can apply
+> > frequency changes to the clock.
+> > 
+> > For instance, if a application tries to apply a 100ppm frequency
+> > correction for 20ms to correct a 2us offset, with NOHZ they either get
+> > no correction, or a 50us correction.
+> > 
+> > Now, there will always be some granularity error for applying frequency
+> > corrections. However with users sensitive to this error have seen a
+> > 50-500x increase with NOHZ compared to running without NOHZ.
+> > 
+> > So I figured I'd try another approach then just simply increasing the
+> > interval. My approach is to consume the time interval logarithmically.
+> > This reduces the number of times  through the loop needed keeping
+> > latency down, while still preserving the original granularity error for
+> > adjtimex() changes.
+> > 
+> > Further, this change allows us to remove the xtime_cache code (patch to
+> > follow), as xtime is always within one tick of the current time, instead
+> > of the half-second updates it saw before.
+> > 
+> > An earlier version of this patch has been shipping to x86 users in the
+> > RedHat MRG releases for awhile without issue, but I've reworked this
+> > version to be even more careful about avoiding possible overflows if the
+> > shift value gets too large.
+> > 
+> > Since this is not the most trivial code, and its slightly different then
+> > whats been tested for  awhile, it would be good to get this into some
+> > trees for testing. Be it -tip or -mm, either would work. If there's no
+> > problems it could be a 2.6.33 or 2.6.34 item.
+> > 
+> > Any comments or feedback would be appreciated!
+> > 
+> > Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> > 
+> > diff --git a/include/linux/timex.h b/include/linux/timex.h
+> > index e6967d1..0c0ef7d 100644
+> > --- a/include/linux/timex.h
+> > +++ b/include/linux/timex.h
+> > @@ -261,11 +261,7 @@ static inline int ntp_synced(void)
+> >  
+> >  #define NTP_SCALE_SHIFT		32
+> >  
+> > -#ifdef CONFIG_NO_HZ
+> > -#define NTP_INTERVAL_FREQ  (2)
+> > -#else
+> >  #define NTP_INTERVAL_FREQ  (HZ)
+> > -#endif
+> >  #define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
+> >  
+> >  /* Returns how long ticks are at present, in ns / 2^NTP_SCALE_SHIFT. */
+> > diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+> > index fb0f46f..4cc5656 100644
+> > --- a/kernel/time/timekeeping.c
+> > +++ b/kernel/time/timekeeping.c
+> > @@ -721,6 +721,51 @@ static void timekeeping_adjust(s64 offset)
+> >  				timekeeper.ntp_error_shift;
+> >  }
+> >  
+> > +
+> > +/**
 
-Hi, 
-
-PS ignore the previous email.
-
-The following is a trivial patch which adds some KRENEL_DEBUG flags to
-the printk. This is my first patch, please review the same.
-
-
---- linux-2.6/fs/aio.c	2009-10-05 14:46:11.000000000 +0530
-+++ linux-2.6.test/fs/aio.c	2009-10-05 19:46:11.000000000 +0530
-@@ -129,7 +129,7 @@ static int aio_setup_ring(struct kioctx
- 	}
- 
- 	info->mmap_size = nr_pages * PAGE_SIZE;
--	dprintk("attempting mmap of %lu bytes\n", info->mmap_size);
-+	dprintk(KERNEL_DEBUG "attempting mmap of %lu bytes\n",
-info->mmap_size);
- 	down_write(&ctx->mm->mmap_sem);
- 	info->mmap_base = do_mmap(NULL, 0, info->mmap_size, 
- 				  PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE,
-@@ -141,7 +141,7 @@ static int aio_setup_ring(struct kioctx
- 		return -EAGAIN;
- 	}
- 
--	dprintk("mmap address: 0x%08lx\n", info->mmap_base);
-+	dprintk(KERNEL_DEBUG "mmap address: 0x%08lx\n", info->mmap_base);
- 	info->nr_pages = get_user_pages(current, ctx->mm,
- 					info->mmap_base, nr_pages, 
- 					1, 0, info->ring_pages, NULL);
-@@ -299,7 +299,7 @@ static struct kioctx *ioctx_alloc(unsign
- 	hlist_add_head_rcu(&ctx->list, &mm->ioctx_list);
- 	spin_unlock(&mm->ioctx_lock);
- 
--	dprintk("aio: allocated ioctx %p[%ld]: mm=%p mask=0x%x\n",
-+	dprintk(KERNEL_DEBUG "aio: allocated ioctx %p[%ld]: mm=%p mask=0x%x
-\n",
- 		ctx, ctx->user_id, current->mm, ctx->ring_info.nr);
- 	return ctx;
- 
-@@ -312,7 +312,7 @@ out_freectx:
- 	kmem_cache_free(kioctx_cachep, ctx);
- 	ctx = ERR_PTR(-ENOMEM);
- 
--	dprintk("aio: error allocating ioctx %p\n", ctx);
-+	dprintk(KERNEL_DEBUG "aio: error allocating ioctx %p\n", ctx);
- 	return ctx;
- }
- 
-@@ -407,7 +407,7 @@ void exit_aio(struct mm_struct *mm)
- 		cancel_work_sync(&ctx->wq.work);
- 
- 		if (1 != atomic_read(&ctx->users))
--			printk(KERN_DEBUG
-+			printk(KERN_DEBUG,
- 				"exit_aio:ioctx still alive: %d %d %d\n",
- 				atomic_read(&ctx->users), ctx->dead,
- 				ctx->reqs_active);
-@@ -952,7 +952,7 @@ int aio_complete(struct kiocb *iocb, lon
- 	event->res = res;
- 	event->res2 = res2;
- 
--	dprintk("aio_complete: %p[%lu]: %p: %p %Lx %lx %lx\n",
-+	dprintk(KERNEL_DEBUG "aio_complete: %p[%lu]: %p: %p %Lx %lx %lx\n",
- 		ctx, tail, iocb, iocb->ki_obj.user, iocb->ki_user_data,
- 		res, res2);
- 
-@@ -1011,7 +1011,7 @@ static int aio_read_evt(struct kioctx *i
- 	int ret = 0;
- 
- 	ring = kmap_atomic(info->ring_pages[0], KM_USER0);
--	dprintk("in aio_read_evt h%lu t%lu m%lu\n",
-+	dprintk(KERNEL_DEBUG "in aio_read_evt h%lu t%lu m%lu\n",
- 		 (unsigned long)ring->head, (unsigned long)ring->tail,
- 		 (unsigned long)ring->nr);
- 
-@@ -1034,7 +1034,7 @@ static int aio_read_evt(struct kioctx *i
- 
- out:
- 	kunmap_atomic(ring, KM_USER0);
--	dprintk("leaving aio_read_evt: %d  h%lu t%lu\n", ret,
-+	dprintk(KERNEL_DEBUG "leaving aio_read_evt: %d  h%lu t%lu\n", ret,
- 		 (unsigned long)ring->head, (unsigned long)ring->tail);
- 	return ret;
- }
-@@ -1100,13 +1100,13 @@ retry:
- 		if (unlikely(ret <= 0))
- 			break;
- 
--		dprintk("read event: %Lx %Lx %Lx %Lx\n",
-+		dprintk(KERNEL_DEBUG "read event: %Lx %Lx %Lx %Lx\n",
- 			ent.data, ent.obj, ent.res, ent.res2);
- 
- 		/* Could we split the check in two? */
- 		ret = -EFAULT;
- 		if (unlikely(copy_to_user(event, &ent, sizeof(ent)))) {
--			dprintk("aio: lost an event due to EFAULT.\n");
-+			dprintk(KERNEL_DEBUG "aio: lost an event due to EFAULT.\n");
- 			break;
- 		}
- 		ret = 0;
-@@ -1176,7 +1176,7 @@ retry:
- 
- 		ret = -EFAULT;
- 		if (unlikely(copy_to_user(event, &ent, sizeof(ent)))) {
--			dprintk("aio: lost an event due to EFAULT.\n");
-+			dprintk(KERNEL_DEBUG "aio: lost an event due to EFAULT.\n");
- 			break;
- 		}
- 
-@@ -1207,7 +1207,7 @@ static void io_destroy(struct kioctx *io
- 	hlist_del_rcu(&ioctx->list);
- 	spin_unlock(&mm->ioctx_lock);
- 
--	dprintk("aio_release(%p)\n", ioctx);
-+	dprintk(KERNEL_DEBUG "aio_release(%p)\n", ioctx);
- 	if (likely(!was_dead))
- 		put_ioctx(ioctx);	/* twice for the list */
- 
-@@ -1496,7 +1496,7 @@ static ssize_t aio_setup_iocb(struct kio
- 			kiocb->ki_retry = aio_fsync;
- 		break;
- 	default:
--		dprintk("EINVAL: io_submit: no operation provided\n");
-+		dprintk(KERNEL_DEBUG "EINVAL: io_submit: no operation provided\n");
- 		ret = -EINVAL;
- 	}
- 
-@@ -1581,7 +1581,7 @@ static int io_submit_one(struct kioctx *
- 
- 	ret = put_user(req->ki_key, &user_iocb->aio_key);
- 	if (unlikely(ret)) {
--		dprintk("EFAULT: aio_key\n");
-+		dprintk(KERNEL_DEBUG "EFAULT: aio_key\n");
- 		goto out_put_req;
- 	}
- 
+"/**" means "beginning of kernel-doc", so those function parameters
+need to be described here also...
 
 
+> > + * logarithmic_accumulation - shifted accumulation of cycles
+> > + *
+> > + * This functions accumulates a shifted interval of cycles into 
+> > + * into a shifted interval nanoseconds. Allows for O(log) accumulation
+> > + * loop.
+> > + * 
+> > + * Returns the unconsumed cycles.
+> > + */
+> > +static cycle_t logarithmic_accumulation(cycle_t offset, int shift)
+> > +{
+> > +	u64 nsecps = (u64)NSEC_PER_SEC << timekeeper.shift;
+> > +
+> > +	/* If the offset is smaller then a shifted interval, do nothing */
+> > +	if (offset < timekeeper.cycle_interval<<shift)
+> > +		return offset;
+> > +
+> > +	/* accumulate one shifted interval */
+> > +	offset -= timekeeper.cycle_interval << shift;
+> > +	timekeeper.clock->cycle_last += timekeeper.cycle_interval << shift;
+> > +	
+> > +	timekeeper.xtime_nsec += timekeeper.xtime_interval << shift;
+> > +	while (timekeeper.xtime_nsec >= nsecps) {
+> > +		timekeeper.xtime_nsec -= nsecps;
+> > +		xtime.tv_sec++;
+> > +		second_overflow();
+> > +	}
+> > +	
+> > +	/* accumulate into raw time */
+> > +	raw_time.tv_nsec += timekeeper.raw_interval << shift;;
+> > +	while (raw_time.tv_nsec >= NSEC_PER_SEC) {
+> > +		raw_time.tv_nsec -= NSEC_PER_SEC;
+> > +		raw_time.tv_sec++;
+> > +	}
+> > +
+> > +	/* accumulate error between NTP and clock interval */
+> > +	timekeeper.ntp_error += tick_length << shift;
+> > +	timekeeper.ntp_error -= timekeeper.xtime_interval <<
+> > +				(timekeeper.ntp_error_shift + shift);
+> > +
+> > +	return offset;
+> > +}
+> > +
+> > +
+> >  /**
+> >   * update_wall_time - Uses the current clocksource to increment the wall time
+> >   *
+> > @@ -731,6 +776,7 @@ void update_wall_time(void)
+> >  	struct clocksource *clock;
+> >  	cycle_t offset;
+> >  	u64 nsecs;
+> > +	int shift = 0, maxshift;
+> >  
+> >  	/* Make sure we're fully resumed: */
+> >  	if (unlikely(timekeeping_suspended))
+> > @@ -744,33 +790,22 @@ void update_wall_time(void)
+> >  #endif
+> >  	timekeeper.xtime_nsec = (s64)xtime.tv_nsec << timekeeper.shift;
+> >  
+> > -	/* normally this loop will run just once, however in the
+> > -	 * case of lost or late ticks, it will accumulate correctly.
+> > +	/*
+> > +	 * With NO_HZ we may have to accumulate many cycle_intervals
+> > +	 * (think "ticks") worth of time at once. To do this efficiently,
+> > +	 * we calculate the largest doubling multiple of cycle_intervals
+> > +	 * that is smaller then the offset. We then accumulate that 
+> > +	 * chunk in one go, and then try to consume the next smaller
+> > +	 * doubled multiple.
+> >  	 */
+> > +	shift = ilog2(offset) - ilog2(timekeeper.cycle_interval);
+> > +	shift = max(0, shift);
+> > +	/* Bound shift to one less then what overflows tick_length */
+> > +	maxshift = (8*sizeof(tick_length) - (ilog2(tick_length)+1)) - 1;
+> > +	shift = min(shift, maxshift);	
+> >  	while (offset >= timekeeper.cycle_interval) {
+> > -		u64 nsecps = (u64)NSEC_PER_SEC << timekeeper.shift;
+> > -
+> > -		/* accumulate one interval */
+> > -		offset -= timekeeper.cycle_interval;
+> > -		clock->cycle_last += timekeeper.cycle_interval;
+> > -
+> > -		timekeeper.xtime_nsec += timekeeper.xtime_interval;
+> > -		if (timekeeper.xtime_nsec >= nsecps) {
+> > -			timekeeper.xtime_nsec -= nsecps;
+> > -			xtime.tv_sec++;
+> > -			second_overflow();
+> > -		}
+> > -
+> > -		raw_time.tv_nsec += timekeeper.raw_interval;
+> > -		if (raw_time.tv_nsec >= NSEC_PER_SEC) {
+> > -			raw_time.tv_nsec -= NSEC_PER_SEC;
+> > -			raw_time.tv_sec++;
+> > -		}
+> > -
+> > -		/* accumulate error between NTP and clock interval */
+> > -		timekeeper.ntp_error += tick_length;
+> > -		timekeeper.ntp_error -= timekeeper.xtime_interval <<
+> > -					timekeeper.ntp_error_shift;
+> > +		offset = logarithmic_accumulation(offset, shift);
+> > +		shift--;
+> >  	}
+> >  
+> >  	/* correct the clock when NTP error is too big */
+> > 
+> > 
+> > 
+> 
+> There are several (6) trailing whitespace errors that checkpatch exposes, 
+> but other than that:
+> Signed-off-by: John Kacur <jkacur@redhat.com>
+
+
+---
+~Randy
