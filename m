@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbZJERun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbZJERyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbZJERun (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 13:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZJERum
+	id S1754252AbZJERyx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 13:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbZJERyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 13:50:42 -0400
-Received: from mail-qy0-f173.google.com ([209.85.221.173]:34614 "EHLO
-	mail-qy0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754152AbZJERul (ORCPT
+	Mon, 5 Oct 2009 13:54:53 -0400
+Received: from mail-ew0-f217.google.com ([209.85.219.217]:65518 "EHLO
+	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753776AbZJERyw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 13:50:41 -0400
+	Mon, 5 Oct 2009 13:54:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=rqAy0m092mSmMdyO9GQ8duS8HCxpomU7nUZZQlC8kGNPolBsF3DGBOVSRH4OWjPiwx
-         daKLaiAgxpyqsaYzs6svGRsVixMS5CCjjEHlHEbTEb8sJlrup9twe2gEK5cgBmCjvUNK
-         6aj7amGwqMADrDPH14Zmszyt+b3/2Sm+/SXiE=
-Subject: Re: [PATCH] fs: added KERNEL-DEBUG flag to printk statments
-From: Pete <greg.petr@gmail.com>
-To: Matthew Wilcox <matthew@wil.cx>, Joe Perches <joe@perches.com>
-Cc: kernel-janitors@vger.kernel.org, trivial@kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091005170903.GA9791@parisc-linux.org>
-References: <1254753799.5279.37.camel@linux-k65f.site>
-	 <1254756285.5279.39.camel@linux-k65f.site>
-	 <20091005170903.GA9791@parisc-linux.org>
-Content-Type: text/plain
-Date: Mon, 05 Oct 2009 23:19:12 +0530
-Message-Id: <1254764952.5279.60.camel@linux-k65f.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=D1Tq6J18ZgJuAIBZzfqSVeX3bqhJGLqXtXgJ/sngu1EZ/BbypnlB1879QA3i86IEs8
+         Sq6L99DvmfJ7TbU0ZjzGD5xtNeXx3jpSwidGAW1ysxP9i7cj/z7NdoqJ9KbwIZ3wJjcV
+         0YeDo1S8jfbvsprrsZKX0vTfT5zVd3FheIYAQ=
+Date: Mon, 5 Oct 2009 19:54:14 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [GIT PULL] tracing: Perf tracing fixes
+Message-ID: <20091005175411.GA5218@nowhere>
+References: <19140.13582.223629.56214@cargo.ozlabs.ibm.com> <1254577650-5623-1-git-send-email-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254577650-5623-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Oct 03, 2009 at 03:47:28PM +0200, Frederic Weisbecker wrote:
+> Ingo,
+> 
+> Please pull these .33 tracing fixes from
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> 	tracing/core
+> 
 
-> Pay special attention to getting DEBUG set in the right place, and
-> _at least_ compile-test your code, with and without DEBUG enabled.
-> You should really run your code (again, with and without DEBUG enabled)
-> and check that it does the right thing.
 
-ok - Thanks will redo, test and send a more generalized version of the
-patch which modifies the macro instead.
--Greg
+I've rebased it against latest Linus, you can pull it from
+
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	tracing/urgent
+
+Thanks!
+
+Frederic.
 
