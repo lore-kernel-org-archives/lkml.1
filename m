@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758329AbZJECWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbZJEC0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758329AbZJECWl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 22:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758110AbZJECWl
+	id S1758375AbZJEC0x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 22:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758364AbZJEC0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 22:22:41 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:33620 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758041AbZJECWk convert rfc822-to-8bit (ORCPT
+	Sun, 4 Oct 2009 22:26:53 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:39034 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758346AbZJEC0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 22:22:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=KauXt+n93XTu+XUpIF/guPsQrfHGAFZGeEuKQEo4T+7FmZZdmb5Q6YYovdI8SL9jHB
-         fh0RlqQJWSZOF3cCwQfj7VGhYex7OA/cGfKAN9j3s9d11dsMUvPwiOdjwUQcOUApBJ3W
-         snp0ORLclIamGA1vW5TA7KjdV0Zm6tyvipaXI=
+	Sun, 4 Oct 2009 22:26:52 -0400
+Message-ID: <4AC95891.3000707@oracle.com>
+Date: Sun, 04 Oct 2009 19:23:13 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-In-Reply-To: <20091005105617.5F86.A69D9226@jp.fujitsu.com>
-References: <20091005103744.5F83.A69D9226@jp.fujitsu.com> <3e8340490910041844w63720cfq7981c8f5364229de@mail.gmail.com> 
-	<20091005105617.5F86.A69D9226@jp.fujitsu.com>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Sun, 4 Oct 2009 22:21:12 -0400
-Message-ID: <3e8340490910041921p315f3726me0143f2516022f66@mail.gmail.com>
-Subject: Re: [PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@gmail.com>, Timo Sirainen <tss@iki.fi>,
-       linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
+To: LKML <linux-kernel@vger.kernel.org>
+CC: trivial@kernel.org, nhorman@tuxdriver.com
+Subject: [PATCH trivial] docs: fix core_pipe_limit info
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4AC958FD.004D:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 4, 2009 at 9:59 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->> On Sun, Oct 4, 2009 at 9:38 PM, KOSAKI Motohiro
->> <kosaki.motohiro@jp.fujitsu.com> wrote:
->> >> The improvement idea is here.
->> >>
->> >> Changelog
->> >>   - Added task_lock() to prctl(PR_SET_PROCTITLE_AREA)
->> >>  -  Added small input sanity check to prctl(PR_SET_PROCTITLE_AREA)
->> >
->> > Doh, task_lock() is obviously wrong. please forget this.
->>
->> As another note, in general I think we'd need to hold a lock over the
->> entire operation. After all, if userspace changes its PROCTITLE_AREA,
->> and then reuses the memory for something else, we have an information
->> leak.
->
-> if reusing occur, it's obviously userland fault. I don't think we need to care this.
-> because current kernel also can be information leak by strcpy(argv[0], mypassword).
->
-> I think they are userland bug both.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-No, the scenario is:
+Fix typos in core_pipe_limit info.
 
-Process B: Enter proc_pid_cmdline(), read arg_start and arg_end into
-CPU registers
-Process A: prctl(PR_SET_PROCTITLE_AREA)....
-Process A: free(old_arg_area);
-Process A: char *foo = malloc(...);
-Process A: strcpy(foo, super_secret_password);
-Process B: access_process_vm - using an area overlapping foo
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Neil Horman <nhorman@tuxdriver.com>
+---
+ Documentation/sysctl/kernel.txt |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Process B now has process A's secrets. This cannot be avoided by
-process A, as it cannot control when process B will complete
-proc_pid_cmdline(), and so the kernel must protect against this
-scenario.  The only way a userspace process could prevent this is by
-only using PR_SET_PROCTITLE_AREA once, and never reusing that memory,
-ever. This does not seem like an appropriate restriction to pass down
-to userspace for me...
-
-Anyway, I'm working on a patch that uses the generation-counter approach now :)
+--- linux-next-20090930.orig/Documentation/sysctl/kernel.txt
++++ linux-next-20090930/Documentation/sysctl/kernel.txt
+@@ -139,9 +139,9 @@ core_pattern is used to specify a core d
+ core_pipe_limit:
+ 
+ This sysctl is only applicable when core_pattern is configured to pipe core
+-files to user space helper a (when the first character of core_pattern is a '|',
++files to a user space helper (when the first character of core_pattern is a '|',
+ see above).  When collecting cores via a pipe to an application, it is
+-occasionally usefull for the collecting application to gather data about the
++occasionally useful for the collecting application to gather data about the
+ crashing process from its /proc/pid directory.  In order to do this safely, the
+ kernel must wait for the collecting process to exit, so as not to remove the
+ crashing processes proc files prematurely.  This in turn creates the possibility
+@@ -152,7 +152,7 @@ applications in parallel.  If this value
+ processes above that value are noted via the kernel log and their cores are
+ skipped.  0 is a special value, indicating that unlimited processes may be
+ captured in parallel, but that no waiting will take place (i.e. the collecting
+-process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
++process is not guaranteed access to /proc/<crashing pid>/).  This value defaults
+ to 0.
+ 
+ ==============================================================
