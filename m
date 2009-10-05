@@ -1,153 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZJEWz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbZJEWxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755465AbZJEWz4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 18:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbZJEWzz
+	id S1755585AbZJEWxu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 18:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbZJEWxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 18:55:55 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:49329 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755345AbZJEWxI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 18:53:08 -0400
-From: Sage Weil <sage@newdream.net>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: yehuda@newdream.net, Sage Weil <sage@newdream.net>
-Subject: [PATCH 21/21] ceph: Kconfig, Makefile
-Date: Mon,  5 Oct 2009 15:50:51 -0700
-Message-Id: <1254783051-26217-22-git-send-email-sage@newdream.net>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1254783051-26217-21-git-send-email-sage@newdream.net>
-References: <1254783051-26217-1-git-send-email-sage@newdream.net>
- <1254783051-26217-2-git-send-email-sage@newdream.net>
- <1254783051-26217-3-git-send-email-sage@newdream.net>
- <1254783051-26217-4-git-send-email-sage@newdream.net>
- <1254783051-26217-5-git-send-email-sage@newdream.net>
- <1254783051-26217-6-git-send-email-sage@newdream.net>
- <1254783051-26217-7-git-send-email-sage@newdream.net>
- <1254783051-26217-8-git-send-email-sage@newdream.net>
- <1254783051-26217-9-git-send-email-sage@newdream.net>
- <1254783051-26217-10-git-send-email-sage@newdream.net>
- <1254783051-26217-11-git-send-email-sage@newdream.net>
- <1254783051-26217-12-git-send-email-sage@newdream.net>
- <1254783051-26217-13-git-send-email-sage@newdream.net>
- <1254783051-26217-14-git-send-email-sage@newdream.net>
- <1254783051-26217-15-git-send-email-sage@newdream.net>
- <1254783051-26217-16-git-send-email-sage@newdream.net>
- <1254783051-26217-17-git-send-email-sage@newdream.net>
- <1254783051-26217-18-git-send-email-sage@newdream.net>
- <1254783051-26217-19-git-send-email-sage@newdream.net>
- <1254783051-26217-20-git-send-email-sage@newdream.net>
- <1254783051-26217-21-git-send-email-sage@newdream.net>
+	Mon, 5 Oct 2009 18:53:48 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55495 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755051AbZJEWxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 18:53:44 -0400
+From: Neil Brown <neilb@suse.de>
+To: Vladimir Dronnikov <dronnikov@gmail.com>
+Date: Tue, 6 Oct 2009 09:54:05 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19146.30989.928233.393339@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, rob@landley.net,
+       firmware@impactlinux.com
+Subject: Re: [PATCH 1/1] md: drivers/md/unroll.pl replaced with awk analog
+In-Reply-To: message from Vladimir Dronnikov on Monday October 5
+References: <4aca1863.0a1ad00a.33bf.1017@mx.google.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kconfig options and Makefile.
+On Monday October 5, dronnikov@gmail.com wrote:
+> From: Vladimir Dronnikov <dronnikov@gmail.com>
+> 
+> drivers/md/unroll.pl replaced by awk script to drop build-time dependency on perl
 
-Signed-off-by: Sage Weil <sage@newdream.net>
----
- MAINTAINERS      |    9 +++++++++
- fs/ceph/Kconfig  |   26 ++++++++++++++++++++++++++
- fs/ceph/Makefile |   36 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 71 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/Kconfig
- create mode 100644 fs/ceph/Makefile
+Thanks for the patch,
+and thanks to Rob Landley for the pointer to where this was discussed
+elsewhere.  The change makes sense to me.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 09a2028..a39545a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1314,6 +1314,15 @@ F:	arch/powerpc/include/asm/spu*.h
- F:	arch/powerpc/oprofile/*cell*
- F:	arch/powerpc/platforms/cell/
- 
-+CEPH DISTRIBUTED FILE SYSTEM CLIENT
-+M:	Sage Weil <sage@newdream.net>
-+L:	ceph-devel@lists.sourceforge.net
-+W:	http://ceph.newdream.net/
-+T:	git git://ceph.newdream.net/linux-ceph-client.git
-+S:	Supported
-+F:	Documentation/filesystems/ceph.txt
-+F:	fs/ceph
-+
- CERTIFIED WIRELESS USB (WUSB) SUBSYSTEM:
- M:	David Vrabel <david.vrabel@csr.com>
- L:	linux-usb@vger.kernel.org
-diff --git a/fs/ceph/Kconfig b/fs/ceph/Kconfig
-new file mode 100644
-index 0000000..bc1fbd9
---- /dev/null
-+++ b/fs/ceph/Kconfig
-@@ -0,0 +1,26 @@
-+config CEPH_FS
-+        tristate "Ceph distributed file system (EXPERIMENTAL)"
-+	depends on INET && EXPERIMENTAL
-+	select LIBCRC32C
-+	help
-+	  Choose Y or M here to include support for mounting the
-+	  experimental Ceph distributed file system.  Ceph is an extremely
-+	  scalable file system designed to provide high performance,
-+	  reliable access to petabytes of storage.
-+
-+	  More information at http://ceph.newdream.net/.
-+
-+	  If unsure, say N.
-+
-+config CEPH_FS_PRETTYDEBUG
-+	bool "Include file:line in ceph debug output"
-+	depends on CEPH_FS
-+	default n
-+	help
-+	  If you say Y here, debug output will include a filename and
-+	  line to aid debugging.  This icnreases kernel size and slows
-+	  execution slightly when debug call sites are enabled (e.g.,
-+	  via CONFIG_DYNAMIC_DEBUG).
-+
-+	  If unsure, say N.
-+
-diff --git a/fs/ceph/Makefile b/fs/ceph/Makefile
-new file mode 100644
-index 0000000..7da6d69
---- /dev/null
-+++ b/fs/ceph/Makefile
-@@ -0,0 +1,36 @@
-+#
-+# Makefile for CEPH filesystem.
-+#
-+
-+ifneq ($(KERNELRELEASE),)
-+
-+obj-$(CONFIG_CEPH_FS) += ceph.o
-+
-+ceph-objs := super.o inode.o dir.o file.o addr.o ioctl.o \
-+	export.o caps.o snap.o xattr.o \
-+	messenger.o msgpool.o buffer.o \
-+	mds_client.o mdsmap.o \
-+	mon_client.o \
-+	osd_client.o osdmap.o crush/crush.o crush/mapper.o \
-+	debugfs.o \
-+	ceph_fs.o ceph_strings.o ceph_frag.o
-+
-+else
-+#Otherwise we were called directly from the command
-+# line; invoke the kernel build system.
-+
-+KERNELDIR ?= /lib/modules/$(shell uname -r)/build
-+PWD := $(shell pwd)
-+
-+default: all
-+
-+all:
-+	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_CEPH_FS=m modules
-+
-+modules_install:
-+	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_CEPH_FS=m modules_install
-+
-+clean:
-+	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
-+
-+endif
--- 
-1.5.6.5
+Just a couple of little changes needed:
 
+>  quiet_cmd_unroll = UNROLL  $@
+> -      cmd_unroll = $(PERL) $(srctree)/$(src)/unroll.pl $(UNROLL) \
+> +      cmd_unroll = awk -f$(srctree)/$(src)/unroll.awk -vN=$(UNROLL) \
+>                     < $< > $@ || ( rm -f $@ && exit 1 )
+>  
+
+The top level Makefile defines
+AWK          = awk
+
+so I think $(AWK) should be used here, rather than a literal 'awk'.
+
+
+> --- linux-2.6.31.orig/drivers/md/raid6test/Makefile	Wed Sep  9 22:13:59 2009
+> +++ linux-2.6.31/drivers/md/raid6test/Makefile	Mon Oct  5 20:10:15 2009
+> @@ -7,7 +7,7 @@
+>  OPTFLAGS = -O2			# Adjust as desired
+>  CFLAGS	 = -I.. -I ../../../include -g $(OPTFLAGS)
+>  LD	 = ld
+> -PERL	 = perl
+> +AWK	 = awk
+>  AR	 = ar
+>  RANLIB	 = ranlib
+>  
+> @@ -35,35 +35,35 @@
+>  raid6test: test.c raid6.a
+>  	$(CC) $(CFLAGS) -o raid6test $^
+>  
+> -raid6altivec1.c: raid6altivec.uc ../unroll.pl
+> -	$(PERL) ../unroll.pl 1 < raid6altivec.uc > $@
+> +raid6altivec1.c: raid6altivec.uc ../unroll.awk
+> +	$(AWK) ../unroll.awk 1 < raid6altivec.uc > $@
+
+In the md/Makefile, you pass the unroll count as
+      -vN=$NUMBER
+
+in raid6test/Makefile you pass it as just
+      $NUMBER
+
+one of these is wrong.  Which one?
+
+Well.....
+
+> --- /dev/null	Thu Jan  1 00:00:00 1970
+> +++ linux-2.6.31/drivers/md/unroll.awk	Mon Oct  5 20:12:24 2009
+> @@ -0,0 +1,20 @@
+> +
+> +# This filter requires one command line argument (n) which must be a
+> +# decimal number.
+
+According to the comment, "$NUMBER" is correct. But
+
+> +#
+> +# Repeat each input line containing $$ n times, replacing $$ with 0...n-1.
+> +# Replace each $# with n, and each $* with a single $.
+> +
+> +BEGIN {
+> +	n = N + 0
+> +}
+
+according to the code  "-vN=$NUMBER" is correct.
+
+So you need to fix either the code or the comment, then fix one of the
+two Makefiles.
+
+You might like to try running the test in raid6test as well, just to 
+triple check that it all still works.
+
+Thanks,
+NeilBrown
+
+
+> +{
+> +	if (/\$\$/) { rep = n } else { rep = 1 }
+> +	for (i = 0; i < rep; ++i) {
+> +		tmp = $0
+> +		gsub(/\$\$/, i, tmp)
+> +		gsub(/\$\#/, n, tmp)
+> +		gsub(/\$\*/, "$", tmp)
+> +		print tmp
+> +	}
+> +}
+> --- linux-2.6.31.orig/drivers/md/unroll.pl	Wed Sep  9 22:13:59 2009
+> +++ /dev/null	Thu Jan  1 00:00:00 1970
+> @@ -1,24 +0,0 @@
+> -#!/usr/bin/perl
+> -#
+> -# Take a piece of C code and for each line which contains the sequence $$
+> -# repeat n times with $ replaced by 0...n-1; the sequence $# is replaced
+> -# by the unrolling factor, and $* with a single $
+> -#
+> -
+> -($n) = @ARGV;
+> -$n += 0;
+> -
+> -while ( defined($line = <STDIN>) ) {
+> -    if ( $line =~ /\$\$/ ) {
+> -	$rep = $n;
+> -    } else {
+> -	$rep = 1;
+> -    }
+> -    for ( $i = 0 ; $i < $rep ; $i++ ) {
+> -	$tmp = $line;
+> -	$tmp =~ s/\$\$/$i/g;
+> -	$tmp =~ s/\$\#/$n/g;
+> -	$tmp =~ s/\$\*/\$/g;
+> -	print $tmp;
+> -    }
+> -}
