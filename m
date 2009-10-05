@@ -1,79 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbZJEWSC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZJEWS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754283AbZJEWSC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 18:18:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZJEWSB
+	id S1754790AbZJEWS7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 18:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbZJEWS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 18:18:01 -0400
-Received: from relay01-haj2.antispameurope.com ([83.246.65.51]:49960 "EHLO
-	relay01-haj2.antispameurope.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754089AbZJEWSA (ORCPT
+	Mon, 5 Oct 2009 18:18:58 -0400
+Received: from vms173015pub.verizon.net ([206.46.173.15]:33839 "EHLO
+	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754207AbZJEWS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 18:18:00 -0400
-Date: Tue, 06 Oct 2009 00:15:48 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: Valdis.Kletnieks@vt.edu
-Cc: shawn.starr@rogers.com, linux-kernel@vger.kernel.org
-Subject: Re: [PROBLEM][2.6.31.1] - Cannot burn DVDs - PIONEER DVD-RW DVR-111D
-Message-ID: <4aca7014.bWkj1S1Z6N2kt4dr%Joerg.Schilling@fokus.fraunhofer.de>
-References: <4ac9d477.7gleZfWVJq3++UDn%Joerg.Schilling@fokus.fraunhofer.de>
- <172428.1254779700@turing-police.cc.vt.edu>
-In-Reply-To: <172428.1254779700@turing-police.cc.vt.edu>
-User-Agent: nail 11.22 3/20/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 05 Oct 2009 22:17:15.0099 (UTC) FILETIME=[97EC82B0:01CA4609]
+	Mon, 5 Oct 2009 18:18:57 -0400
+Date: Mon, 05 Oct 2009 18:17:56 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, balbir@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [git pull request] ACPI Processor Aggregator Driver for 2.6.32-rc1
+In-reply-to: <200910052351.53207.rjw@sisk.pl>
+Message-id: <alpine.LFD.2.00.0910051805500.32307@localhost.localdomain>
+References: <alpine.LFD.2.00.0910030145140.25240@localhost.localdomain>
+ <200910052159.24920.rjw@sisk.pl>
+ <alpine.LFD.2.01.0910051354450.3432@localhost.localdomain>
+ <200910052351.53207.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
+On Mon, 5 Oct 2009, Rafael J. Wysocki wrote:
 
-> > It is very likely that this problem does not occur with the original
-> > cdrecord from:
->
-> > ftp://ftp.berlios.de/pub/cdrecord/alpha/
->
-> Yes, but his distro probably feels it can't ship the original cdrecord
-> so it ships wodim instead.  And if it's indeed a kernel bug, replacing
-> a forked userspace program to work around a kernel bug is The Wrong Answer.
->
-> It forked 3 whole years ago, Joerg.  Let it go already. And if you can't
-> let it go, at least ask the user *helpful* questions, like Jeff Garzik did:
+> On Monday 05 October 2009, Linus Torvalds wrote:
+> > 
+> > On Mon, 5 Oct 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > This thing has already been merged, it appears: and it looks like a 
+> > > total breakage of rules to me.
+> > 
+> > Well, Len pointed out to me that the NAK is kind of pointless, since it 
+> > had no constructive alternatives to the issue. So he left it in as 
+> > documentation, but until the scheduler people can actually _do_ something 
+> > about the problem, their voice doesn't really matter, does it?
+> 
+> Well, for a patch that was objected to so strongly, I think it didn't get
+> enough review from other relevant people before being pushed upstream.
 
-Just in case you don't know:
+Originally we proposed various "cute" scheduler tricks to solve this 
+problem.  Peter objected strongly to all of them.
 
-It is the fork that cannot be distributed legally because the fork has been 
-made to be in conflict with the copyright law. And it is the fork that is still
-full of bugs that never have been in the original software. The fork did see 
-some speudo activity in the time between september 2006 and May 6th 2007 but it
-is dead since then. 
+So the patch evolved into something quite simple that
+doesn't touch the scheduler at all.  However, Peter's
+objection to the concept never went away.
 
-You can help: Ask your Linux distributor why he distributes an illegal and 
-buggy fork instead of the legal original software!
+> It looks like Balbir didn't see it before for one example.
 
-The fork is a problem caused by a hostile packetizer, see:
+Surprising, since Balbir is presumably in the same group
+as Vaidy at IBM, who is well informed on this topic
+and this thread.
 
-http://cdrecord.berlios.de/private/linux-dist.html
+> It's been lots of time since the patch was originally posted to send it to
+> the LKML for discussion and so on and to receive some comments that
+> might help to improve it.
 
-We, the OSS creators need to find a way to deal with hostile downstreams. Don't
-look away when free software is atackedby hostile downstreams....
+There was no more actionable feedback on the patch.
+The latest version was checked in in July, and has
+been waiting for the 2.6.32 merge window ever since.
 
-Back to the original topic: I cannot help you if you don't understand that
-I was of course answering to the problem of the OP and the only kernel problem
-I can see in the OP is that the kernel should of course not print such "error"
-messages at all as errors from SCSI pass through commands are not handled by 
-the kernel but by the application program that is the only instance that knows 
-whether a specific SCSI error should be exposed to the user.
+I don't claim that any code in Linux is either
+perfect or permanent, but I think this driver is
+useful and thus deserved to be upstream where it
+can be useful to the widest group of customers.
 
-As I mentioned before, the OP reported a problem that I've seen before elsewhere 
-and that problem was reported to disappear after upgrading to cdrecord.
+I'll be happy to have it re-written three times
+if Linux evolved to supply more sophisticated
+features to handle this situation.
 
-Jörg
+> I have no idea why that wasn't done and I suspect
+> there was some corporate pressure on Len to push it upstream as quickly as
+> possible.
 
--- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       joerg.schilling@fokus.fraunhofer.de (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/private/ ftp://ftp.berlios.de/pub/schily
+The driver has simply been waiting for the Linux merge window.
+
+cheers,
+-Len
+
