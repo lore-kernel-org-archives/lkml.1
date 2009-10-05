@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbZJEHTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758537AbZJEHUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758521AbZJEHTi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 03:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbZJEHTi
+	id S1758537AbZJEHUn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 03:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757312AbZJEHUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 03:19:38 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58260 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757911AbZJEHTh convert rfc822-to-8bit (ORCPT
+	Mon, 5 Oct 2009 03:20:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47827
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755675AbZJEHUm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 03:19:37 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Bryan Donlan <bdonlan@gmail.com>
-Subject: Re: [PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KOSAKI Motohiro <kosaki.motohiro@gmail.com>, Timo Sirainen <tss@iki.fi>,
-       linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
-In-Reply-To: <3e8340490910042039x54e175e7g48ec4fec2dfec6e1@mail.gmail.com>
-References: <20091005122551.5F8F.A69D9226@jp.fujitsu.com> <3e8340490910042039x54e175e7g48ec4fec2dfec6e1@mail.gmail.com>
-Message-Id: <20091005161816.5F94.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon,  5 Oct 2009 16:18:58 +0900 (JST)
+	Mon, 5 Oct 2009 03:20:42 -0400
+Date: Mon, 05 Oct 2009 00:20:36 -0700 (PDT)
+Message-Id: <20091005.002036.17911191.davem@davemloft.net>
+To: joe@perches.com
+Cc: linux-kernel@vger.kernel.org, chessman@tux.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 21/21] drivers/net/tlan.h: Convert printk(KERN_DEBUG to
+ pr_dbg(
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1254726974.1799.315.camel@Joe-Laptop.home>
+References: <29c66ee0bae26a0c352b4605e3f1fcbe0612f3a5.1254701151.git.joe@perches.com>
+	<20091005.001240.111554671.davem@davemloft.net>
+	<1254726974.1799.315.camel@Joe-Laptop.home>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, Oct 4, 2009 at 11:29 PM, KOSAKI Motohiro
-> <kosaki.motohiro@jp.fujitsu.com> wrote:
-> >> On Sun, Oct 4, 2009 at 10:48 PM, KOSAKI Motohiro
-> >> <kosaki.motohiro@jp.fujitsu.com> wrote:
-> >>
-> >> > +                       } else {
-> >> > +                               len = mm->env_end - mm->env_start;
-> >> > +                               if (len > PAGE_SIZE - res)
-> >> > +                                       len = PAGE_SIZE - res;
-> >> > +                               res += access_process_vm(task, mm->env_start,
-> >> > +                                                        buffer+res, len, 0);
-> >> > +                               res = strnlen(buffer, res);
-> >> > +                       }
-> >>
-> >>
-> >> This bug was in the original code, but since you're touching it
-> >> anyway, it should be fixed now; if this access_process_vm fails
-> >> (perhaps due to the target unmapping the page in question in between
-> >> the two calls), bad things might happen if (error code) + res < 0, as
-> >> then strnlen will get a huge value in its length (possibly leading to
-> >> OOPS etc). It should be changed to check for an error return here and
-> >> fail out properly if there is an error in this second check.
-> >
-> > AFAIK, access_process_vm() never return negative value.
+From: Joe Perches <joe@perches.com>
+Date: Mon, 05 Oct 2009 00:16:14 -0700
+
+> On Mon, 2009-10-05 at 00:12 -0700, David Miller wrote:
+>> From: Joe Perches <joe@perches.com>
+>> Date: Sun,  4 Oct 2009 17:53:48 -0700
+>> > Removed "TLAN: " prefix from debug printks, it's added by pr_fmt
+>> > Signed-off-by: Joe Perches <joe@perches.com>
+>> Applied to net-next-2.6
 > 
-> Ahh, okay, I had read the if (res > 0 && ...) bit in the original code
-> as an error test. Nevermind then.
+> Patches 20 and 21 depend on patch 1, which introduces pr_dbg
+> to kernel.h.  Compile failure otherwise.
 
-No problem. very thak you for your good reviewing :)
+Ok, I'll toss them then.
 
+Someone else merge this stuff:
 
+Acked-by: David S. Miller <davem@davemloft.net>
