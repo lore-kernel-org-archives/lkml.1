@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbZJEJtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932454AbZJEJtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469AbZJEJtr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 05:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932415AbZJEJtq
+	id S932454AbZJEJtj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 05:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932441AbZJEJti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 05:49:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33540 "EHLO mx2.mail.elte.hu"
+	Mon, 5 Oct 2009 05:49:38 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:36652 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932441AbZJEJtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 05:49:45 -0400
-Date: Mon, 5 Oct 2009 11:48:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] perf_core: provide a kernel-internal interface to
-	get to performance counters
-Message-ID: <20091005094849.GA10620@elte.hu>
-References: <20090925122556.2f8bd939@infradead.org> <y0mhbuplmlr.fsf@fche.csb> <20090926183246.GA4141@in.ibm.com> <20090926204848.0b2b48d2@infradead.org> <20091001072518.GA1502@elte.hu> <20091001081616.GA3636@in.ibm.com> <20091001085330.GC15345@elte.hu> <1254729210.26976.15.camel@twins> <20091005085551.GA31147@elte.hu> <c62985530910050224u5e755808jc2a25c3dd5c172da@mail.gmail.com>
+	id S932412AbZJEJti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 05:49:38 -0400
+Date: Mon, 5 Oct 2009 10:49:04 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       heiko.carstens@de.ibm.com, sachinp@in.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Tejun Heo <tj@kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/4] slqb: Record what node is local to a kmem_cache_cpu
+Message-ID: <20091005094904.GC12681@csn.ul.ie>
+References: <1253624054-10882-3-git-send-email-mel@csn.ul.ie> <84144f020909220638l79329905sf9a35286130e88d0@mail.gmail.com> <20090922135453.GF25965@csn.ul.ie> <84144f020909221154x820b287r2996480225692fad@mail.gmail.com> <20090922185608.GH25965@csn.ul.ie> <20090930144117.GA17906@csn.ul.ie> <alpine.DEB.1.10.0909301053550.9450@gentwo.org> <20090930220541.GA31530@csn.ul.ie> <alpine.DEB.1.10.0909301941570.11850@gentwo.org> <84144f020910040506l24a74660s508c828123c554cc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530910050224u5e755808jc2a25c3dd5c172da@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <84144f020910040506l24a74660s508c828123c554cc@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
-
-> 2009/10/5 Ingo Molnar <mingo@elte.hu>:
+On Sun, Oct 04, 2009 at 03:06:45PM +0300, Pekka Enberg wrote:
+> On Thu, Oct 1, 2009 at 2:45 AM, Christoph Lameter
+> <cl@linux-foundation.org> wrote:
+> >> This is essentially the "unqueued" nature of SLUB. It's objective "I have this
+> >> page here which I'm going to use until I can't use it no more and will depend
+> >> on the page allocator to sort my stuff out". I have to read up on SLUB up
+> >> more to see if it's compatible with SLQB or not though. In particular, how
+> >> does SLUB deal with frees from pages that are not the "current" page? SLQB
+> >> does not care what page the object belongs to as long as it's node-local
+> >> as the object is just shoved onto a LIFO for maximum hotness.
 > >
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> >> Non-trivial.
+> > Frees are done directly to the target slab page if they are not to the
+> > current active slab page. No centralized locks. Concurrent frees from
+> > processors on the same node to multiple other nodes (or different pages
+> > on the same node) can occur.
+> >
+> >> > SLAB deals with it in fallback_alloc(). It scans the nodes in zonelist
+> >> > order for free objects of the kmem_cache and then picks up from the
+> >> > nearest node. Ugly but it works. SLQB would have to do something similar
+> >> > since it also has the per node object bins that SLAB has.
+> >> >
 > >>
-> >> Something like this would imply a single output channel for all these
-> >> CPUs, and we've already seen that stuffing too many CPUs down one such
-> >> channel (using -M) leads to significant performance issues.
+> >> In a real sense, this is what the patch ends up doing. When it fails to
+> >> get something locally but sees that the local node is memoryless, it
+> >> will check the remote node lists in zonelist order. I think that's
+> >> reasonable behaviour but I'm biased because I just want the damn machine
+> >> to boot again. What do you think? Pekka, Nick?
 > >
-> > We could add internal per cpu buffering before it hits any globally 
-> > visible output channel. (That has come up when i talked to Frederic 
-> > about the function tracer.) We could even have page sized output 
-> > (via the introduction of a NOP event that fills up to the next page 
-> > edge).
+> > Look at fallback_alloc() in slab. You can likely copy much of it. It
+> > considers memory policies and cpuset constraints.
 > 
-> That looks good for the counting/sampling fast path, but would that 
-> scale once it comes to reordering in the globally visible output 
-> channel? Such a union has its costs.
+> Sorry for the delay. I went ahead and merged Mel's patch to make
+> things boot on PPC. Fallback policy needs a bit more work as Christoph
+> says but I'd really love to have Nick's input on this.
+> 
+> Mel, do you have a Kconfig patch laying around somewhere to enable
+> SLQB on PPC and S390?
+> 
 
-Well, reordering always has a cost, and we have multiple models 
-regarding to where to put that cost.
+It's patch 4 of this series.
 
-The first model is 'everything is per cpu' - i.e. completely separate 
-event buffers and the reordering is pushed to the user-space 
-post-processing stage. This is the most scalable solution - but it can 
-also lose information such as the true ordering of events.
-
-The second model is 'event multiplexing' - here we use a single output 
-buffer for events. This serializes all output on the same buffer and 
-hence is the least scalable one. It is the easiest to use one: just a 
-single channel of output to deal with. It is also the most precise 
-solution and it saves the post-processing stage from reordering hassles.
-
-What i suggested above is a third model: 'short-term per cpu, 
-multiplexed into an output channel with page granularity'. It has the 
-advantage of being per cpu on a page granular basis. It has the ease of 
-use of having a single output channel only.
-
-Neither solution can eliminate the costs and tradeoffs involved. What 
-they do is to offer an app a spectrum to choose from.
-
-	Ingo
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
