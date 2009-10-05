@@ -1,185 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbZJEPOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbZJEPQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbZJEPOM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 11:14:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZJEPOL
+	id S1753306AbZJEPQY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 11:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZJEPQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 11:14:11 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41633 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753114AbZJEPOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 11:14:10 -0400
-Subject: Re: [PATCH] scsi_lib.c: sleeping function called from invalid
- context
-From: James Bottomley <James.Bottomley@suse.de>
-To: iceberg <strakh@ispras.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, eric@andante.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
-In-Reply-To: <200910051835.51891.strakh@ispras.ru>
-References: <200909231758.47612.strakh@ispras.ru>
-	 <1253841816.5183.361.camel@mulgrave.site>
-	 <1254421936.3885.53.camel@mulgrave.site>
-	 <200910051835.51891.strakh@ispras.ru>
-Content-Type: text/plain
-Date: Mon, 05 Oct 2009 10:13:22 -0500
-Message-Id: <1254755602.3838.5.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Oct 2009 11:16:24 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:23908
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752223AbZJEPQX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 11:16:23 -0400
+X-SpamScore: -23
+X-BigFish: VPS-23(zz1432R14c3L98dN655Nzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KR1RP5-03-3S5-02
+X-M-MSG: 
+Date: Mon, 5 Oct 2009 17:15:37 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Borislav Petkov <petkovbb@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] EDAC: carve out AMD MCE decoding logic
+Message-ID: <20091005151537.GA21407@aftab>
+References: <20091001150046.GA21476@elte.hu>
+ <20091001152140.GC11410@aftab>
+ <20091001153250.GA25885@elte.hu>
+ <20091002132101.GA28682@aftab>
+ <20091002133148.GD28682@aftab>
+ <20091002133954.GA29390@elte.hu>
+ <20091002182659.GA16436@aftab>
+ <20091002184714.GA21509@elte.hu>
+ <20091003065752.GA8935@liondog.tnic>
+ <20091003071807.GA21407@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20091003071807.GA21407@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 05 Oct 2009 15:15:03.0823 (UTC) FILETIME=[9D4E89F0:01CA45CE]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-05 at 18:35 +0000, iceberg wrote:
-> On Thursday 01 October 2009 18:32:16 you wrote:
-> > On Thu, 2009-09-24 at 18:23 -0700, James Bottomley wrote:
-> > > On Thu, 2009-09-24 at 15:56 -0700, Andrew Morton wrote:
-> > > > On Wed, 23 Sep 2009 17:58:47 +0000
-> > > >
-> > > > iceberg <strakh@ispras.ru> wrote:
-> > > > > Driver scsi_lib.c might sleep in atomic context, because it calls
-> > > > > scsi_device_put under spin_lock_irqsave.
-> > > > > drivers/scsi/scsi_lib.c:356:
-> > > > > 	spin_lock_irqsave(shost->host_lock, flags);
-> > > > > 	scsi_device_put(sdev);
-> > > > > Path to might_sleep macro from scsi_device_put:
-> > > > > 1. scsi_device_put calls put_device at ./drivers/scsi/scsi.c:1111
-> > > > > 2. put_device calls kobject_put at ./drivers/base/core.c:1038
-> > > > > 3. kobject_put calls kref_put at ./lib/kobject.c
-> > > > > 4. kref_put may call callback function kobject_release at
-> > > > > ./lib/kref.c if refcount becomes zero, which might_sleep because it
-> > > > > calls user event. Details: 4.1 kobject_cleanup calls kobject_uevent
-> > > > > at ./lib/kobject.c:555 4.2 kobject_uevent calls kobject_uevent_env at
-> > > > >  ./lib/kobject_uevent.c:282 4.3 kobject_uevent_env calls
-> > > > > call_usermodehelper_exec at
-> > > > > ./include/linux/kmod.h:83
-> > > > > 	4.4 call_usermodehelper_exec calls wait_for_completion at
-> > > > > ./kernel/kmod.c:481
-> > > > > 	4.5 wait_for_completion calls wait_for_common at
-> > > > > ./kernel/sched.c:5710 4.5 wait_for_common calls might_sleep at
-> > > > > ./kernels/sched.c:5692
-> > > > >
-> > > > > Found by Linux Driver Verification project.
-> > > > >
-> > > > > Delete wrong sleeping function calls.
-> > > > >
-> > > > > Signed-off-by: Alexander Strakh <strakh@ispras.ru>
-> > > > >
-> > > > > ---
-> > > > > diff --git a/./a/drivers/scsi/scsi_lib.c
-> > > > > b/./b/drivers/scsi/scsi_lib.c index f3c4089..a8f8e2f 100644
-> > > > > --- a/./a/drivers/scsi/scsi_lib.c
-> > > > > +++ b/./b/drivers/scsi/scsi_lib.c
-> > > > > @@ -353,9 +353,9 @@ static void scsi_single_lun_run(struct
-> > > > > scsi_device *current_sdev)
-> > > > >
-> > > > >  		spin_unlock_irqrestore(shost->host_lock, flags);
-> > > > >  		blk_run_queue(sdev->request_queue);
-> > > > > -		spin_lock_irqsave(shost->host_lock, flags);
-> > > > >
-> > > > > -		scsi_device_put(sdev);
-> > > > > +		scsi_device_put(sdev);
-> > > > > +		spin_lock_irqsave(shost->host_lock, flags);
-> > > > >  	}
-> > > > >   out:
-> > > > >  	spin_unlock_irqrestore(shost->host_lock, flags);
-> > > >
-> > > > Well this is strange.  afacit all the code to which you refer is
-> > > > ancient, so why did this bug just pop up now?
-> > >
-> > > No idea.  I think the root cause of this is in the kobject code:  we
-> > > explicitly require the ability to call last put from interrupt context
-> > > (and that includes holding locks).  I'll talks to Greg and Kai about
-> > > this (they're both here at plumbers).  I think the fix is to indirect
-> > > the kobject uevent stuff via a usermode helper so we don't get this
-> > > problem.
-> >
-> > Hang on ... I looked at the bug report again: there's no actual kernel
-> > trace, just a theoretical function graph.
-> >
-> > Has this actually been seen or is it just the result of an analysis?
-> >
-> > If the latter (which I suspect), there's no actual problem.  The
-> > explicit design of the calls is that device_initialize() and
-> > put_device() can be called from interrupt context.  device_add() and
-> > device_del() must be called from user context.
-> >
-> > The path you seem to be showing is the put_device() path where there's
-> > been an error in the state model and the caller is doing last put on a
-> > visible device without having first called device_del().
-> >
-> > If you see the real kernel message about this, it means there's a bug in
-> > the device model handling somewhere in SCSI.  If you haven't seen the
-> > message, it's just a bug in the static analysis tool.
+On Sat, Oct 03, 2009 at 09:18:07AM +0200, Ingo Molnar wrote:
+> > > No, the locking was all that i meant. Using atomic_notifier would solve 
+> > > that. Make the default decoder low-prio, that way there's no need to do 
+> > > the callback save/restore sequence either.
+> > 
+> > Ok, how's that for starters, it has been only compile-tested and it
+> > looks straight-forward enough to me...
 > 
-> This bug report is the result of code inspection. I'm considering functions 
-> which can call might_sleep macro and consequently which can not be called from 
-> atomic context. 
-> I choose function scsi_device_put. There are two paths to might_sleep macro. 
-> First path was shown in the report, second is:
-> 1. scsi_device_put calls put_device at ./drivers/scsi/scsi.c:1111 
-> 2. put_device calls kobject_put at ./drivers/base/core.c:1038 
-> 3. kobject_put calls kref_put at ./lib/kobject.c
-> 4. kref_put may call callback function kobject_release at ./lib/kref.c if 
-> refcount becomes zero
-> 5. kobject_cleanup calls kobject_del at ./lib/kobject.c:562
+> looks good at first sight. There's two further simplifications you could 
+> do:
 
-only if state_in_sysfs is set.
+Ok, here we go, had to make sure we register the notifier only once
+(done on the BSP now) since mcheck_init() runs on each CPU.
 
-This is only set if the caller previously failed to call kobject_del
-(i.e. device_del).
+--
+>From 294358680f02b2a8998d2f6b04d99e343fc3b475 Mon Sep 17 00:00:00 2001
+From: Borislav Petkov <borislav.petkov@amd.com>
+Date: Sat, 3 Oct 2009 20:16:25 +0200
+Subject: [PATCH] mce, edac: use an atomic notifier for MCEs decoding
 
-As long as devices follow the proper create->add->del->put paths, the
-final put may be called from interrupt context.
+Add an atomic notifier which ensures proper locking when conveying MCE
+info to EDAC for decoding. The actual notifier call overrides a default,
+negative priority notifier.
 
-Your analysis is wrong because you're basing it on the exception cleanup
-paths not the correct calling paths.
+Note: make sure we register the default decoder only once since
+mcheck_init() runs on each CPU.
 
-James
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+---
+ arch/x86/include/asm/mce.h       |    3 ++-
+ arch/x86/kernel/cpu/mcheck/mce.c |   30 +++++++++++++++++++++---------
+ drivers/edac/edac_mce_amd.c      |   23 ++++++++++++++---------
+ 3 files changed, 37 insertions(+), 19 deletions(-)
 
-> 6. kobject_del calls sysfs_remove_dir at ./lib/kobject.c:516
-> 7. sysfs_remove_dir calls __sysfs_remove_dir at ./fs/sysfs/dir.c:821
-> 8. __sysfs_remove_dir calls sysfs_addrm_start at ./fs/sysfs/dir.c:789
-> 9. sysfs_addrm_start calls mutex_lock at ./fs/sysfs/dir.c:377, which 
-> might_sleep because it calls might_sleep macro.
-> 
-> As you wrote earlier, scsi_device_put was designed with the ability to call 
-> last put from interrupt context, but as we can see from the paths there might 
-> be situations where it is not true. Moreover, while analysing different usage 
-> patterns of scsi_device_put, I found that people are using scsi_device_put as 
-> if it can not be called from atomic context. Because before calling 
-> scsi_device_put, spin_locks are always released (i.e. spin_unlock is called 
-> before scsi_device_put and spin_lock is called after it). Examples are:
-> 1. drivers/scsi/dpt_i2o.c line 701
-> 2. drivers/ata/libata-scsi.c line 3626
-> 3. drivers/scsi/ipr.c line 2415
-> 
-> >The path you seem to be showing is the put_device() path where there's
-> >been an error in the state model and the caller is doing last put on a
-> >visible device without having first called device_del().
-> 
-> In scsi_lib.c  prior to scsi_device_put we always do scsi_device_get.  As far 
-> as I understand, if we are sure that scsi_device_put is always not last, then 
-> we can remove both calls to scsi_device_get and to scsi_device_put from the 
-> code without introducing races.
-> 
->  347         list_for_each_entry_safe(sdev, tmp, &starget->devices,
->  348                         same_target_siblings) {
->  349                 if (sdev == current_sdev)
->  350                         continue;
->  351                 if (scsi_device_get(sdev))
->  352                         continue;
->  353
->  354                 spin_unlock_irqrestore(shost->host_lock, flags);
->  355                 blk_run_queue(sdev->request_queue);
->  356                 spin_lock_irqsave(shost->host_lock, flags);
->  357
->  358                 scsi_device_put(sdev);
->  359         }
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
+index f1363b7..227a72d 100644
+--- a/arch/x86/include/asm/mce.h
++++ b/arch/x86/include/asm/mce.h
+@@ -108,6 +108,8 @@ struct mce_log {
+ #define K8_MCE_THRESHOLD_BANK_5    (MCE_THRESHOLD_BASE + 5 * 9)
+ #define K8_MCE_THRESHOLD_DRAM_ECC  (MCE_THRESHOLD_BANK_4 + 0)
+ 
++extern struct atomic_notifier_head x86_mce_decoder_chain;
++
+ #ifdef __KERNEL__
+ 
+ #include <linux/percpu.h>
+@@ -213,6 +215,5 @@ extern void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu);
+ void intel_init_thermal(struct cpuinfo_x86 *c);
+ 
+ void mce_log_therm_throt_event(__u64 status);
+-
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_X86_MCE_H */
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index b1598a9..09c2e2e 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -85,18 +85,26 @@ static DECLARE_WAIT_QUEUE_HEAD(mce_wait);
+ static DEFINE_PER_CPU(struct mce, mces_seen);
+ static int			cpu_missing;
+ 
+-static void default_decode_mce(struct mce *m)
++/*
++ * CPU/chipset specific EDAC code can register a notifier call here to print
++ * MCE errors in a human-readable form.
++ */
++ATOMIC_NOTIFIER_HEAD(x86_mce_decoder_chain);
++EXPORT_SYMBOL_GPL(x86_mce_decoder_chain);
++
++static int default_decode_mce(struct notifier_block *nb, unsigned long val,
++			       void *data)
+ {
+ 	pr_emerg("No human readable MCE decoding support on this CPU type.\n");
+ 	pr_emerg("Run the message through 'mcelog --ascii' to decode.\n");
++
++	return NOTIFY_STOP;
+ }
+ 
+-/*
+- * CPU/chipset specific EDAC code can register a callback here to print
+- * MCE errors in a human-readable form:
+- */
+-void (*x86_mce_decode_callback)(struct mce *m) = default_decode_mce;
+-EXPORT_SYMBOL(x86_mce_decode_callback);
++static struct notifier_block mce_dec_nb = {
++	.notifier_call = default_decode_mce,
++	.priority      = -1,
++};
+ 
+ /* MCA banks polled by the period polling timer for corrected events */
+ DEFINE_PER_CPU(mce_banks_t, mce_poll_banks) = {
+@@ -204,9 +212,9 @@ static void print_mce(struct mce *m)
+ 
+ 	/*
+ 	 * Print out human-readable details about the MCE error,
+-	 * (if the CPU has an implementation for that):
++	 * (if the CPU has an implementation for that)
+ 	 */
+-	x86_mce_decode_callback(m);
++	atomic_notifier_call_chain(&x86_mce_decoder_chain, 0, m);
+ }
+ 
+ static void print_mce_head(void)
+@@ -1420,6 +1428,10 @@ void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
+ 	mce_cpu_features(c);
+ 	mce_init_timer();
+ 	INIT_WORK(&__get_cpu_var(mce_work), mce_process_work);
++
++	if (raw_smp_processor_id() == 0)
++		atomic_notifier_chain_register(&x86_mce_decoder_chain,
++					       &mce_dec_nb);
+ }
+ 
+ /*
+diff --git a/drivers/edac/edac_mce_amd.c b/drivers/edac/edac_mce_amd.c
+index 713ed7d..6ee7529 100644
+--- a/drivers/edac/edac_mce_amd.c
++++ b/drivers/edac/edac_mce_amd.c
+@@ -3,7 +3,6 @@
+ 
+ static bool report_gart_errors;
+ static void (*nb_bus_decoder)(int node_id, struct err_regs *regs);
+-static void (*orig_mce_callback)(struct mce *m);
+ 
+ void amd_report_gart_errors(bool v)
+ {
+@@ -363,8 +362,10 @@ static inline void amd_decode_err_code(unsigned int ec)
+ 		pr_warning("Huh? Unknown MCE error 0x%x\n", ec);
+ }
+ 
+-static void amd_decode_mce(struct mce *m)
++static int amd_decode_mce(struct notifier_block *nb, unsigned long val,
++			   void *data)
+ {
++	struct mce *m = (struct mce *)data;
+ 	struct err_regs regs;
+ 	int node, ecc;
+ 
+@@ -420,20 +421,23 @@ static void amd_decode_mce(struct mce *m)
+ 	}
+ 
+ 	amd_decode_err_code(m->status & 0xffff);
++
++	return NOTIFY_STOP;
+ }
+ 
++static struct notifier_block amd_mce_dec_nb = {
++	.notifier_call	= amd_decode_mce,
++};
++
+ static int __init mce_amd_init(void)
+ {
+ 	/*
+ 	 * We can decode MCEs for Opteron and later CPUs:
+ 	 */
+ 	if ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
+-	    (boot_cpu_data.x86 >= 0xf)) {
+-		/* safe the default decode mce callback */
+-		orig_mce_callback = x86_mce_decode_callback;
+-
+-		x86_mce_decode_callback = amd_decode_mce;
+-	}
++	    (boot_cpu_data.x86 >= 0xf))
++		atomic_notifier_chain_register(&x86_mce_decoder_chain,
++					       &amd_mce_dec_nb);
+ 
+ 	return 0;
+ }
+@@ -442,7 +446,8 @@ early_initcall(mce_amd_init);
+ #ifdef MODULE
+ static void __exit mce_amd_exit(void)
+ {
+-	x86_mce_decode_callback = orig_mce_callback;
++	atomic_notifier_chain_unregister(&x86_mce_decoder_chain,
++					 &amd_mce_dec_nb);
+ }
+ 
+ MODULE_DESCRIPTION("AMD MCE decoder");
+-- 
+1.6.4.3
+
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
