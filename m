@@ -1,87 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZJESoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbZJESlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbZJESoy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 14:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbZJESoy
+	id S1754646AbZJESlt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 14:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZJESls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 14:44:54 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:55648 "EHLO mx1.redhat.com"
+	Mon, 5 Oct 2009 14:41:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60900 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753517AbZJESox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 14:44:53 -0400
-Date: Mon, 5 Oct 2009 20:39:47 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] signals: SEND_SIG_NOINFO should be considered as
-	SI_FROMUSER()
-Message-ID: <20091005183947.GB943@redhat.com>
-References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com> <20091004021918.GB21006@redhat.com> <20091005175855.GB30442@us.ibm.com>
+	id S1754528AbZJESls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 14:41:48 -0400
+Message-ID: <4ACA3DAE.6030300@kernel.org>
+Date: Mon, 05 Oct 2009 11:40:46 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091005175855.GB30442@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, Tejun Heo <tj@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: use near online node instead of round bin for numa
+References: <4AC7974C.20304@kernel.org> <87my45yk79.fsf@basil.nowhere.org> <4ACA3677.40407@kernel.org> <20091005183539.GR1656@one.firstfloor.org>
+In-Reply-To: <20091005183539.GR1656@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/05, Sukadev Bhattiprolu wrote:
->
-> Oleg Nesterov [oleg@redhat.com] wrote:
-> | >From __send_signal()'s pov they mean
-> |
-> | 	SEND_SIG_NOINFO		from user
->
-> Just to complicate further, all 'SEND_SIG_NOINFO' signals are from user,
-> but not all 'from user' signals are SEND_SIG_NOINFO.
+Andi Kleen wrote:
+> On Mon, Oct 05, 2009 at 11:09:59AM -0700, Yinghai Lu wrote:
+>> Andi Kleen wrote:
+>>> Yinghai Lu <yinghai@kernel.org> writes:
+>>>
+>>>> cpu to node mapping is set in following sequence:
+>>>> 1. numa_init_array: set up roundbin from cpu to online node
+>>>> 2. init_cpu_to_node: set that according to apicid_to_node[] according to srat
+>>>> 		  only handle that node is online, and leave other cpu on node
+>>>> 		  without ram (aka not online) to still round-bin
+>>>> 3. later srat_detect_node for intel/amd, will use first_online node or near by
+>>>>    node.
+>>>>
+>>>> problem is that setup_per_cpu_areas() is called between  2 and 3. the per_cpu
+>>>> for cpu on node with ram is on different node. and could put that on node with
+>>>> two hops away.
+>>>>
+>>>> so try add find_near_online_node() and call int init_cpu_to_node()
+>>> This fallback case should not really happen anyways, unless the BIOS is buggy
+>>> (in this case it might better to completely reject the SRAT because
+>>> more might be wrong).
+>> SRAT is right, and some node has no ram installed.
+> 
+> In this case there should be still a PXM to define the CPU locality -- your BIOS is broken.
+> Please fix it there.
 
-Yes, SEND_SIG_NOINFO means: sent by kernel on behalf of some process.
+I don't think so.
 
->
-> | 	SEND_SIG_PRIV		from kernel
->
-> SEND_SIG_PRIV also means there is no real info, just that sender is
-> privileged.
-
-Well. Unlike SEND_SIG_FORCED, SEND_SIG_NOINFO/SEND_SIG_NOINFO ask
-__send_signal() to allocate and queue "struct sigqueue". But
-SEND_SIG_PRIV and SEND_SIG_NOINFO both mean the real info, jut
-this info is filled by __send_signal().
-
-> | 	SEND_SIG_FORCED		no info
->
-> Are 'forced' signals considered 'from kernel' too ?
-
-I think yes.
-
-> | +static inline bool si_fromuser(const struct siginfo *info)
-> | +{
-> | +	return info == SEND_SIG_NOINFO ||
-> | +		(!is_si_special(info) && SI_FROMUSER(info));
-> | +}
-> | +
->
-> This change makes sense, but can we even drop the SEND_SIG_NOINFO
-> altogether and simply check for NULL:
->
-> 	return (!info || (is_si_special(info)) && SI_FROMUSER(info))
-
-IOW, you suggest to use NULL instead of SEND_SIG_NOINFO.
-
-Why?
-
-If we use NULL as a "special" info, then SEND_SIG_FORCED semantics
-makes more sense because __send_signal(SEND_SIG_FORCED) does not queue
-info.
-
-But I don't think we should use NULL. I think it is better to use the
-symbolic names instead of NULL which is in fact the "harcoded constant".
-But it would be nice to rename them.
-
-Oleg.
-
+YH
