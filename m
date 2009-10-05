@@ -1,138 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753738AbZJEQL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZJEQPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753738AbZJEQL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 12:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZJEQL5
+	id S1753811AbZJEQPQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 12:15:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZJEQPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 12:11:57 -0400
-Received: from kroah.org ([198.145.64.141]:41396 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752958AbZJEQL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 12:11:56 -0400
-Date: Mon, 5 Oct 2009 09:08:40 -0700
-From: Greg KH <greg@kroah.com>
-To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [079/136] [CPUFREQ] Fix NULL ptr regression in
- powernow-k8
-Message-ID: <20091005160839.GA13626@kroah.com>
-References: <20091002011548.335611824@mini.kroah.org>
- <20091002012418.981922186@mini.kroah.org>
- <200910031219.08574.herton@mandriva.com.br>
+	Mon, 5 Oct 2009 12:15:15 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53193 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751392AbZJEQPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 12:15:14 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/f+hRDKXzfUkXetPQ1AFOEKde3RHjsk7dR4YTw9a
+	ocA4Ayc8BKW8g6
+Date: Mon, 5 Oct 2009 18:14:37 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Greg KH <greg@kroah.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers-core: nullify private pointer on device-release
+In-Reply-To: <20091005160350.GA13522@kroah.com>
+Message-ID: <Pine.LNX.4.64.0910051811210.4337@axis700.grange>
+References: <Pine.LNX.4.64.0910010950330.4408@axis700.grange>
+ <20091001132709.GA2221@kroah.com> <Pine.LNX.4.64.0910011533220.4408@axis700.grange>
+ <20091001141524.GA3355@kroah.com> <Pine.LNX.4.64.0910051011280.4337@axis700.grange>
+ <20091005160350.GA13522@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200910031219.08574.herton@mandriva.com.br>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 03, 2009 at 12:19:08PM -0300, Herton Ronaldo Krzesinski wrote:
-> Em Qui 01 Out 2009, às 22:17:07, Greg KH escreveu:
-> > 2.6.31-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > From: Kurt Roeckx <kurt@roeckx.be>
-> > 
-> > commit f0adb134d8dc9993a9998dc50845ec4f6ff4fadc upstream.
-> > 
-> > Fixes bugzilla #13780
-> > 
-> > From: Kurt Roeckx <kurt@roeckx.be>
-> > Signed-off-by: Dave Jones <davej@redhat.com>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > ---
-> >  arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   15 ++++++++-------
-> >  1 file changed, 8 insertions(+), 7 deletions(-)
-> > 
-> > --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> > +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> > @@ -605,9 +605,10 @@ static int check_pst_table(struct powern
-> >  	return 0;
-> >  }
-> >  
-> > -static void invalidate_entry(struct powernow_k8_data *data, unsigned int entry)
-> > +static void invalidate_entry(struct cpufreq_frequency_table *powernow_table,
-> > +		unsigned int entry)
-> >  {
-> > -	data->powernow_table[entry].frequency = CPUFREQ_ENTRY_INVALID;
-> > +	powernow_table[entry].frequency = CPUFREQ_ENTRY_INVALID;
-> >  }
-> >  
-> >  static void print_basics(struct powernow_k8_data *data)
-> > @@ -914,13 +915,13 @@ static int fill_powernow_table_pstate(st
-> >  					"bad value %d.\n", i, index);
-> >  			printk(KERN_ERR PFX "Please report to BIOS "
-> >  					"manufacturer\n");
-> > -			invalidate_entry(data, i);
-> > +			invalidate_entry(powernow_table, i);
-> >  			continue;
-> >  		}
-> >  		rdmsr(MSR_PSTATE_DEF_BASE + index, lo, hi);
-> >  		if (!(hi & HW_PSTATE_VALID_MASK)) {
-> >  			dprintk("invalid pstate %d, ignoring\n", index);
-> > -			invalidate_entry(data, i);
-> > +			invalidate_entry(powernow_table, i);
-> >  			continue;
-> >  		}
-> >  
-> > @@ -970,7 +971,7 @@ static int fill_powernow_table_fidvid(st
-> >  		/* verify frequency is OK */
-> >  		if ((freq > (MAX_FREQ * 1000)) || (freq < (MIN_FREQ * 1000))) {
-> >  			dprintk("invalid freq %u kHz, ignoring\n", freq);
-> > -			invalidate_entry(data, i);
-> > +			invalidate_entry(powernow_table, i);
-> >  			continue;
-> >  		}
-> >  
-> > @@ -978,7 +979,7 @@ static int fill_powernow_table_fidvid(st
-> >  		 * BIOSs are using "off" to indicate invalid */
-> >  		if (vid == VID_OFF) {
-> >  			dprintk("invalid vid %u, ignoring\n", vid);
-> > -			invalidate_entry(data, i);
-> > +			invalidate_entry(powernow_table, i);
-> >  			continue;
-> >  		}
-> >  
-> > @@ -1009,7 +1010,7 @@ static int fill_powernow_table_fidvid(st
-> >  				(unsigned int)
-> >  				(data->acpi_data.states[i].core_frequency
-> >  				 * 1000));
-> > -			invalidate_entry(data, i);
-> > +			invalidate_entry(powernow_table, i);
-> >  			continue;
-> >  		}
-> >  	}
-> > 
-> 
-> With this applied I get following warning:
-> arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1001: warning: passing argument 1 of 'invalidate_entry' from incompatible pointer type
-> 
-> There is a missing data->powernow_table change, following diff on top fixes it:
-> 
-> diff -p -up linux-2.6.31/arch/x86/kernel/cpu/cpufreq/powernow-k8.c.orig linux-2.6.31/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> --- linux-2.6.31/arch/x86/kernel/cpu/cpufreq/powernow-k8.c.orig	2009-10-03 12:06:38.000000000 -0300
-> +++ linux-2.6.31/arch/x86/kernel/cpu/cpufreq/powernow-k8.c	2009-10-03 12:08:34.000000000 -0300
-> @@ -998,7 +998,7 @@ static int fill_powernow_table_fidvid(st
->  
->  				dprintk("double low frequency table entry, "
->  						"ignoring it.\n");
-> -				invalidate_entry(data, i);
-> +				invalidate_entry(powernow_table, i);
->  				continue;
->  			} else
->  				cntlofreq = i;
-> 
+On Mon, 5 Oct 2009, Greg KH wrote:
 
-Thanks, I've merged this into the original patch.  For some reason my
-build isn't letting me build this file so I didn't see the warning.
+> On Mon, Oct 05, 2009 at 10:11:50AM +0200, Guennadi Liakhovetski wrote:
+> > On Thu, 1 Oct 2009, Greg KH wrote:
+> > 
+> > > On Thu, Oct 01, 2009 at 03:45:56PM +0200, Guennadi Liakhovetski wrote:
+> > > > On Thu, 1 Oct 2009, Greg KH wrote:
+> > > > 
+> > > > > On Thu, Oct 01, 2009 at 10:02:08AM +0200, Guennadi Liakhovetski wrote:
+> > > > > > Device structures can be reused over multiple device_add / device_release 
+> > > > > > cycles.
+> > > > > 
+> > > > > They shouldn't be as they should be dynamic, not static.
+> > > > 
+> > > > Should they? I'm pretty sure this is not the first time this comes up - 
+> > > > there are several drivers and / or subsystems, that re-use driver objects. 
+> > > 
+> > > Then those drivers and subsystems should be fixed, as that is incorrect.
+> > > 
+> > > > But finding in mail archives wouldn't be very easy. And it worked until 
+> > > > now - why should we break it?
+> > > 
+> > > I would argue that this code was always broken.
+> > > When did this problem show up for you?
+> > 
+> > Since commit b4028437876866aba4747a655ede00f892089e14
+> 
+> Again, which driver/devices are having this problem?
 
-thanks again,
+Quoting my previous reply in this thread:
 
-greg k-h
+> > What device is having this problem?
+> 
+> My problem case is the soc-camera framework. There device struct is 
+> embedded into the video client object, which are kept as long as the 
+> driver is loaded.
+
+</quote>
+
+> The patch
+> referenced above had been in linux-next for almost 6 months with no
+> reported problems, so this is news to me :)
+
+Hm, really 6 months in linux-next? That surprises me too, that I didn't 
+notice it until now. But in any case, the aforementioned commit introduced 
+a regression. If you disagree, that it has to be fixed centrally as per 
+proposed patch, no problem, I'm pushing a patch tonight, that will fix 
+this for soc-camera. No idea about other drivers.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
