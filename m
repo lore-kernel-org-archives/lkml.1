@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZJEVqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbZJEVvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZJEVqU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 17:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbZJEVqT
+	id S1754682AbZJEVvH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 17:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbZJEVvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 17:46:19 -0400
-Received: from rtr.ca ([76.10.145.34]:34335 "EHLO mail.rtr.ca"
+	Mon, 5 Oct 2009 17:51:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49148 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754168AbZJEVqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 17:46:18 -0400
-Message-ID: <4ACA6904.1060509@rtr.ca>
-Date: Mon, 05 Oct 2009 17:45:40 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1752699AbZJEVvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 17:51:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git pull request] ACPI Processor Aggregator Driver for 2.6.32-rc1
+Date: Mon, 5 Oct 2009 23:51:53 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-rjw; KDE/4.3.1; x86_64; ; )
+Cc: balbir@linux.vnet.ibm.com, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+References: <alpine.LFD.2.00.0910030145140.25240@localhost.localdomain> <200910052159.24920.rjw@sisk.pl> <alpine.LFD.2.01.0910051354450.3432@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910051354450.3432@localhost.localdomain>
 MIME-Version: 1.0
-To: Bernie Innocenti <bernie@codewiz.org>
-Cc: linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       sysadmin <sysadmin@gnu.org>
-Subject: Re: sata_mv 0000:03:06.0: PCI ERROR; PCI IRQ cause=0x30000040
-References: <1254546642.1438.135.camel@giskard>
-In-Reply-To: <1254546642.1438.135.camel@giskard>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910052351.53207.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernie Innocenti wrote:
-> The error in the subject appears in the console immediately followed bv
-> a hard freeze of the machine.  The error occurs reproducibly on two
-> identical Opteron servers, each one equipped with two identical
-> controller cards:
+On Monday 05 October 2009, Linus Torvalds wrote:
 > 
-> 03:04.0 SCSI storage controller: Marvell Technology Group Ltd. MV88SX6081 8-port SATA II PCI-X Controller (rev 09)
-> 03:06.0 SCSI storage controller: Marvell Technology Group Ltd. MV88SX6081 8-port SATA II PCI-X Controller (rev 09)
+> On Mon, 5 Oct 2009, Rafael J. Wysocki wrote:
+> > 
+> > This thing has already been merged, it appears: and it looks like a 
+> > total breakage of rules to me.
 > 
-> We can trigger the problem within a few seconds by starting a
-> reconstruction on a drive hooked to port 4 (counting from 0) of the
-> second controller.  Oddly, every other drive works reliably and the
-> faulty drive works if we connect it to, for example, port 4 of the first
-> controller.
-> 
-> I'd like to stress that the problem occurs systematically, on two
-> completely distinct machines.  We swapped drives, cables and controllers
-> to exclude other possibilities.
-> 
-> Tested with Debian kernels 2.6.26-19 and 2.6.30-8.  Let me know if
-> further details are needed.
-..
-> 0000:03:06.0: PCI ERROR; PCI IRQ cause=0x30000040..
-..
+> Well, Len pointed out to me that the NAK is kind of pointless, since it 
+> had no constructive alternatives to the issue. So he left it in as 
+> documentation, but until the scheduler people can actually _do_ something 
+> about the problem, their voice doesn't really matter, does it?
 
-  0x30000040 here means "MRdPerr":
-    "bad data parity detected during PCI master read".
+Well, for a patch that was objected to so strongly, I think it didn't get
+enough review from other relevant people before being pushed upstream.
+It looks like Balbir didn't see it before for one example.
 
-Which means there that a data parity error happened
-during outgoing data transfer on the PCI-X bus.
-This could happen due to noise on the bus,
-dying capacitors, or (?) bad RAM (not sure about the last one).
+It's been lots of time since the patch was originally posted to send it to
+the LKML for discussion and so on and to receive some comments that
+might help to improve it.  I have no idea why that wasn't done and I suspect
+there was some corporate pressure on Len to push it upstream as quickly as
+possible.
 
-The expected behaviour here is for sata_mv to then perform
-perform a full SATA reset, after which the I/O will be reattempted.
-
-But it appears to lock up before that happens.
-The code does try and clear the PCI error interrupt,
-but perhaps it needs clearing in more than the one register
-where it currently does so.
-
-Looking over the code and the documentation I have (NDA),
-nothing obvious springs to view.  There are some extra registers
-we could be dumping out, to show exactly what PCI phase and address
-caused the error, but reading those won't cause or prevent a lockup.
-
-Best bet would be to try replacing the RAM in that box,
-and see if the problem goes away.
-
-Cheers
+Best,
+Rafael
