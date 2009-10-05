@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbZJETtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbZJEUAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117AbZJETtO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 15:49:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbZJETtN
+	id S1754705AbZJEUAj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 16:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbZJEUAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 15:49:13 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:12299 "EHLO mx1.redhat.com"
+	Mon, 5 Oct 2009 16:00:39 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:33455 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753589AbZJETtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 15:49:12 -0400
-Date: Mon, 5 Oct 2009 21:44:15 +0200
+	id S1753294AbZJEUAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 16:00:38 -0400
+Date: Mon, 5 Oct 2009 21:55:44 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -19,77 +19,36 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 2/4] signals: send_signal: use si_fromuser() to detect
 	from_ancestor_ns
-Message-ID: <20091005194415.GA4560@redhat.com>
-References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com> <20091004021954.GC21006@redhat.com> <20091005181255.GE30442@us.ibm.com> <20091005182536.GA943@redhat.com> <20091005193738.GF30442@us.ibm.com>
+Message-ID: <20091005195544.GA5377@redhat.com>
+References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com> <20091004021954.GC21006@redhat.com> <20091005181255.GE30442@us.ibm.com> <20091005182536.GA943@redhat.com> <20091005193738.GF30442@us.ibm.com> <20091005194415.GA4560@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091005193738.GF30442@us.ibm.com>
+In-Reply-To: <20091005194415.GA4560@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/05, Sukadev Bhattiprolu wrote:
+On 10/05, Oleg Nesterov wrote:
 >
-> Oleg Nesterov [oleg@redhat.com] wrote:
-> | On 10/05, Sukadev Bhattiprolu wrote:
-> | >
-> | > Oleg Nesterov [oleg@redhat.com] wrote:
-> | > |
-> | > | --- TTT_32/kernel/signal.c~FU_2_SEND_SIGNAL	2009-10-04 02:21:55.000000000 +0200
-> | > | +++ TTT_32/kernel/signal.c	2009-10-04 03:09:44.000000000 +0200
-> | > | @@ -928,9 +928,8 @@ static int send_signal(int sig, struct s
-> | > |  	int from_ancestor_ns = 0;
-> | > |
-> | > |  #ifdef CONFIG_PID_NS
-> | > | -	if (!is_si_special(info) && SI_FROMUSER(info) &&
-> | > | -			task_pid_nr_ns(current, task_active_pid_ns(t)) <= 0)
-> | > | -		from_ancestor_ns = 1;
-> | > | +	from_ancestor_ns = si_fromuser(info) &&
-> | > | +			   !task_pid_nr_ns(current, task_active_pid_ns(t));
-> | >
-> | > Makes sense. And we had mentioned earlier that container-init is immune
-> | > to suicide but should we add a check for 'current == t' above to cover the
-> | >
-> | > 	send_sig(SIGKILL, current, 0);
-> | >
-> | > in load_aout_binary() and friends
-> | >
-> | > 	from_ancestor_ns = si_fromuser(info) && (current == t ||
-> | > 				!task_pid_nr_ns(current, task_active_pid_ns(t)));
-> |
-> | I don't think so.
-> |
-> | First of all, this is just ugly. If we need this check we should change
-> | the callers, not send_signal().
+> On 10/05, Sukadev Bhattiprolu wrote:
+> >
+> > Oleg Nesterov [oleg@redhat.com] wrote:
 >
-> Well, all I am saying is that the check
+> > | So, imho this patch also fixes this case by accident,
+> >
+> > This part I am not sure.  But as mentioned above, from_ancestor_ns is 0
+> > and the SIGKILL will not queued right ?
 >
-> 	!task_pid_nr_ns(current, task_active_pid_ns(t)))
+> Yes, you are right, see above.
 >
-> excludes container-init sending signal to itself - task_pid_nr_ns() above
-> would return 1 for container-init and 'from_ancestor_ns' would be 0.
+> I meant, it fixes the from-user logic, not from_ancestor_ns logic.
 
-Ah, I misunderstood you, and I misread the "current == t" check above.
-I wrongly thought that you suggest to suppress "si_fromuser()" when
-the task sends a signal to itself.
+Hmm. When I re-read that email, I do not understand any longer
+what I reallly meant when I said "this patch also fixes this case" :)
 
-Sorry for confusion.
-
-> But sure, we could use force_sig_info() in caller.
-
-Yes, because this makes the code more explicit imho. And we can avoid
-the further complicatiions in send_signal() path.
-
-> | So, imho this patch also fixes this case by accident,
->
-> This part I am not sure.  But as mentioned above, from_ancestor_ns is 0
-> and the SIGKILL will not queued right ?
-
-Yes, you are right, see above.
-
-I meant, it fixes the from-user logic, not from_ancestor_ns logic.
+Anyway, you are right, thanks for correcting me.OH
 
 Oleg.
 
