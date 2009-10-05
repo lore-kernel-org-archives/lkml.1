@@ -1,100 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbZJEUkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZJEUrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754521AbZJEUkS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 16:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZJEUkQ
+	id S1753887AbZJEUrp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 16:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZJEUrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 16:40:16 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:49581 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754206AbZJEUkO (ORCPT
+	Mon, 5 Oct 2009 16:47:45 -0400
+Received: from mail-ew0-f213.google.com ([209.85.219.213]:47324 "EHLO
+	mail-ew0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753074AbZJEUro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 16:40:14 -0400
-Date: Tue, 6 Oct 2009 02:03:37 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [git pull request] ACPI Processor Aggregator Driver for
- 2.6.32-rc1
-Message-ID: <20091005203337.GB3551@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <alpine.LFD.2.00.0910030145140.25240@localhost.localdomain>
- <20091005033256.GA26592@balbir.in.ibm.com>
- <200910052159.24920.rjw@sisk.pl>
+	Mon, 5 Oct 2009 16:47:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PGuWCAnO8W4cFfZ9JuUNt1ongaCnTBTS0Qoh3ji3Jck7eYftycPXF9O9KCaRGMv3CF
+         BKPCUO4Q2x3di++tjHIQb9pxhmYTV8ENrrcPUYQWQE/3ElST2t58e0JtbIddqGbrPRTk
+         hjeH+/jAfKPMsb6bWoh5MpcvRkRIVeczS8Lps=
+Date: Mon, 5 Oct 2009 22:47:06 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] perf build questions
+Message-ID: <20091005204704.GD6071@nowhere>
+References: <20091005131729.78444bfb.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200910052159.24920.rjw@sisk.pl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091005131729.78444bfb.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rafael J. Wysocki <rjw@sisk.pl> [2009-10-05 21:59:24]:
-
-> On Monday 05 October 2009, Balbir Singh wrote:
-> > * Len Brown <lenb@kernel.org> [2009-10-03 01:56:32]:
-> > 
-> > >     This driver does not use the kernel's CPU hot-plug mechanism
-> > >     because after the transient emergency is over, the system must
-> > >     be returned to its normal state, and hotplug would permanently
-> > >     break both cpusets and binding.
-> > >     
-> > 
-> > Why does hotplug break cpusets and binding?
-> > 
-> > 
-> > >     So to force idle, the driver creates a power saving thread.
-> > >     The scheduler will migrate the thread to the preferred CPU.
-> > >     The thread has max priority and has SCHED_RR policy,
-> > >     so it can occupy one CPU.  To save power, the thread will
-> > >     invoke the deep C-state entry instructions.
-> > >     
-> > >     To avoid starvation, the thread will sleep 5% of the time
-> > >     time for every second (current RT scheduler has threshold
-> > >     to avoid starvation, but if other CPUs are idle,
-> > >     the CPU can borrow CPU timer from other,
-> > >     which makes the mechanism not work here)
-> > >     
-> > >     Vaidyanathan Srinivasan has proposed scheduler enhancements
-> > >     to allow injecting idle time into the system.  This driver doesn't
-> > >     depend on those enhancements, but could cut over to them
-> > >     when they are available.
-> > >     
-> > >     Peter Z. does not favor upstreaming this driver until
-> > >     the those scheduler enhancements are in place.  However,
-> > >     we favor upstreaming this driver now because it is useful
-> > >     now, and can be enhanced over time.
-> > >     
-> > >     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > >     NACKed-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > >     Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> > >     Signed-off-by: Len Brown <len.brown@intel.com>
-> > 
-> > This is a first a patch with a NACKed-by, could we please have more
-> > discussion on the proposed design.
+On Mon, Oct 05, 2009 at 01:17:29PM -0700, Randy Dunlap wrote:
+> Hi,
 > 
-> This thing has already been merged, it appears:
->
+> How do I build 'perf' for an i386 target when running on x86_64?
+> and how do I do 'perf' cross-builds in general?
+> 
 
-Yeah.. just saw it in my kernel compile today!
+
+I let someone else who knows that better than me answer to that.
+But you may need to override the CC var in the makefile for now.
+This is something we should make tunable.
+
  
-> commit 8e0af5141ab950b78b3ebbfaded5439dcf8b3a8d
-> Author: Shaohua Li <shaohua.li@intel.com>
-> Date:   Mon Jul 27 18:11:02 2009 -0400
+> Also, I see build errors/warnings (-Werror).  Others aren't seeing these?
+> Just due to my gcc version?
 > 
->     ACPI: create Processor Aggregator Device driver
+> Patch below.
 > 
-> and it looks like a total breakage of rules to me.
-> 
-> Thanks,
-> Rafael
+> Thanks.
 
--- 
-	Balbir
+
+Oh thanks. I've never seen them.
+
+The builtin-sched.c warning is right.
+But the util/trace-event-parse.c warnings are wrong since the parameters
+passed to these functions are always cast to char *
+
+But that is wrong too, these functions should take const char * and
+not char * as they never need to touch these strings.
+
+So your patch is correct, I'll just convert the callsites. It's
+my bad, I've put these casts to shutdown such warnings while integrating
+the trace-cmd lib. I was distracted by harder integration problems.
+
+Thanks.
+
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix perf build warnings/errors in function argument types:
+> 
+> builtin-sched.c:1894: warning: passing argument 1 of 'sort_dimension__add' discards qualifiers from pointer target type
+> util/trace-event-parse.c:685: warning: passing argument 2 of 'read_expected' discards qualifiers from pointer target type
+> util/trace-event-parse.c:741: warning: passing argument 4 of 'test_type_token' discards qualifiers from pointer target type
+> util/trace-event-parse.c:706: warning: passing argument 2 of 'read_expected_item' discards qualifiers from pointer target type
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  tools/perf/builtin-sched.c          |    2 +-
+>  tools/perf/util/trace-event-parse.c |    8 ++++----
+>  2 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> --- a/tools/perf/builtin-sched.c
+> +++ b/tools/perf/builtin-sched.c
+> @@ -1287,7 +1287,7 @@ static struct sort_dimension *available_
+>  
+>  static LIST_HEAD(sort_list);
+>  
+> -static int sort_dimension__add(char *tok, struct list_head *list)
+> +static int sort_dimension__add(const char *tok, struct list_head *list)
+>  {
+>  	int i;
+>  
+> --- a/tools/perf/util/trace-event-parse.c
+> +++ b/tools/perf/util/trace-event-parse.c
+> @@ -618,7 +618,7 @@ static int test_type(enum event_type typ
+>  }
+>  
+>  static int test_type_token(enum event_type type, char *token,
+> -		    enum event_type expect, char *expect_tok)
+> +		    enum event_type expect, const char *expect_tok)
+>  {
+>  	if (type != expect) {
+>  		die("Error: expected type %d but read %d",
+> @@ -650,7 +650,7 @@ static int read_expect_type(enum event_t
+>  	return __read_expect_type(expect, tok, 1);
+>  }
+>  
+> -static int __read_expected(enum event_type expect, char *str, int newline_ok)
+> +static int __read_expected(enum event_type expect, const char *str, int newline_ok)
+>  {
+>  	enum event_type type;
+>  	char *token;
+> @@ -668,12 +668,12 @@ static int __read_expected(enum event_ty
+>  	return 0;
+>  }
+>  
+> -static int read_expected(enum event_type expect, char *str)
+> +static int read_expected(enum event_type expect, const char *str)
+>  {
+>  	return __read_expected(expect, str, 1);
+>  }
+>  
+> -static int read_expected_item(enum event_type expect, char *str)
+> +static int read_expected_item(enum event_type expect, const char *str)
+>  {
+>  	return __read_expected(expect, str, 0);
+>  }
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
