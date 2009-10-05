@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbZJENOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbZJENTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932645AbZJENOt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 09:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932535AbZJENOs
+	id S1758613AbZJENTb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 09:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbZJENTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 09:14:48 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:39952 "EHLO mx1.redhat.com"
+	Mon, 5 Oct 2009 09:19:30 -0400
+Received: from khc.piap.pl ([195.187.100.11]:57252 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932389AbZJENOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 09:14:47 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20091005063919.3958.65581.sendpatchset@localhost.localdomain>
-References: <20091005063919.3958.65581.sendpatchset@localhost.localdomain>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       Brian Behlendorf <behlendorf1@llnl.gov>,
-       Ben Woodard <bwoodard@llnl.gov>, Stable Team <stable@kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: [Patch v2] rwsem: fix rwsem_is_locked() bugs
-Date: Mon, 05 Oct 2009 14:13:22 +0100
-Message-ID: <22214.1254748402@redhat.com>
+	id S1754030AbZJENT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 09:19:29 -0400
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: sata_via: SError: { UnrecovData Proto TrStaTrns }
+Date: Mon, 05 Oct 2009 15:18:51 +0200
+Message-ID: <m3my46yo5g.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang <amwang@redhat.com> wrote:
+Hi,
 
-> -	return (sem->activity != 0);
-> +	return !(sem->activity == 0 && list_empty(&sem->wait_list));
+What could that be?
+VIA VT6421A mini-PCI card and SATA SSD from Transcend. IXP425 (ARM)
+little-endian CPU. 128 MB RAM - VT6421A can access only the first 64 MB
+of system RAM, but there is bounce buffering (a la swiotlb) for the
+rest.
 
-This needs to be done in the opposite order with an smp_rmb() between[*], I
-think, because the someone releasing the lock will first reduce activity to
-zero, and then attempt to empty the list, so with your altered code as it
-stands, you can get:
+Sometimes it produces:
 
-	CPU 1				CPU 2
-	===============================	===============================
-	[sem is read locked, 1 queued writer]
-	-->up_read()
-	sem->activity--			-->rwsem_is_locked()
-	[sem->activity now 0]		sem->activity == 0 [true]
-					<interrupt>
-	-->__rwsem_do_wake()
-	sem->activity = -1
-	[sem->activity now !=0]
-	list_del()
-	[sem->wait_list now empty]	</interrupt>
-					list_empty(&sem->wait_list) [true]
-	wake_up_process()
-	<--__rwsem_do_wake()
-	<--up_read()
-	[sem is write locked]		return false [ie. sem is not locked]
+ata1.00: exception Emask 0x12 SAct 0x0 SErr 0x1000500 action 0x6
+ata1.00: BMDMA stat 0x5
+ata1: SError: { UnrecovData Proto TrStaTrns }
+ata1.00: cmd c8/00:20:b7:18:38/00:00:00:00:00/e0 tag 0 dma 16384 in
+         res 51/40:20:b7:18:38/00:00:00:00:00/e0 Emask 0x12 (ATA bus error)
+ata1.00: status: { DRDY ERR }
+ata1.00: error: { UNC }
+ata1: hard resetting link
+ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ata1.00: configured for UDMA/100
+ata1: EH complete
 
-In fact, I don't think even swapping things around addresses the problem.  You
-do not prevent the state inside the sem changing under you whilst you try to
-interpret it.
-
-[*] there would also need to be an smp_wmb() between the update of
-    sem->activity and the deletion from sem->wait_list to balance out the
-    smp_rmb().
-
-David
+Any ideas?
+-- 
+Krzysztof Halasa
