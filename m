@@ -1,62 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932581AbZJEKdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932606AbZJEKiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932581AbZJEKdy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 06:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932519AbZJEKdy
+	id S932606AbZJEKiP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 06:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932549AbZJEKiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 06:33:54 -0400
-Received: from viefep20-int.chello.at ([62.179.121.40]:45582 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932515AbZJEKdx (ORCPT
+	Mon, 5 Oct 2009 06:38:14 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:59560 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932536AbZJEKiN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 06:33:53 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: futex question
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Anirban Sinha <ani@anirban.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
-       Kaz Kylheku <kaz@zeugmasystems.com>,
-       Anirban Sinha <asinha@zeugmasystems.com>
-In-Reply-To: <alpine.LFD.2.00.0910041853180.2646@localhost.localdomain>
-References: <DDFD17CC94A9BD49A82147DDF7D545C501FD7F97@exchange.ZeugmaSystems.local>
-	 <20091001092218.GH15345@elte.hu>
-	 <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local>
-	 <4AC68F13.8050601@us.ibm.com>
-	 <alpine.LFD.2.00.0910041031330.2646@localhost.localdomain>
-	 <DDFD17CC94A9BD49A82147DDF7D545C501F457C5@exchange.ZeugmaSystems.local>
-	 <4AC8CF32.8060108@anirban.org>
-	 <alpine.LFD.2.00.0910041853180.2646@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 05 Oct 2009 12:36:14 +0200
-Message-Id: <1254738974.26976.24.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 5 Oct 2009 06:38:13 -0400
+Date: Mon, 5 Oct 2009 16:07:33 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 0/2] memcg: improving scalability by reducing lock
+ contention at charge/uncharge
+Message-ID: <20091005103733.GC3036@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-04 at 18:59 +0200, Thomas Gleixner wrote:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-10-02 13:55:31]:
 
-> > do. It does not feel right. Currently, with or without my change,
-> > such a thing would indefinitely block other waiters on the same
-> > futex.
+> Hi,
 > 
-> Right. Which completely defeats the purpose of the robust list. Will
-> have a look tomorrow.
+> This patch is against mmotm + softlimit fix patches.
+> (which are now in -rc git tree.)
+> 
+> In the latest -rc series, the kernel avoids accessing res_counter when
+> cgroup is root cgroup. This helps scalabilty when memcg is not used.
+> 
+> It's necessary to improve scalabilty even when memcg is used. This patch
+> is for that. Previous Balbir's work shows that the biggest obstacles for
+> better scalabilty is memcg's res_counter. Then, there are 2 ways.
+> 
+> (1) make counter scale well.
+> (2) avoid accessing core counter as much as possible.
+> 
+> My first direction was (1). But no, there is no counter which is free
+> from false sharing when it needs system-wide fine grain synchronization.
+> And res_counter has several functionality...this makes (1) difficult.
+> spin_lock (in slow path) around counter means tons of invalidation will
+> happen even when we just access counter without modification.
+> 
+> This patch series is for (2). This implements charge/uncharge in bached manner.
+> This coalesces access to res_counter at charge/uncharge using nature of
+> access locality.
+> 
+> Tested for a month. And I got good reorts from Balbir and Nishimura, thanks.
+> One concern is that this adds some members to the bottom of task_struct.
+> Better idea is welcome.
+> 
+> Following is test result of continuous page-fault on my 8cpu box(x86-64).
+> 
+> A loop like this runs on all cpus in parallel for 60secs. 
+> ==
+>         while (1) {
+>                 x = mmap(NULL, MEGA, PROT_READ|PROT_WRITE,
+>                         MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+> 
+>                 for (off = 0; off < MEGA; off += PAGE_SIZE)
+>                         x[off]=0;
+>                 munmap(x, MEGA);
+>         }
+> ==
+> please see # of page faults. I think this is good improvement.
+> 
+> 
+> [Before]
+>  Performance counter stats for './runpause.sh' (5 runs):
+> 
+>   474539.756944  task-clock-msecs         #      7.890 CPUs    ( +-   0.015% )
+>           10284  context-switches         #      0.000 M/sec   ( +-   0.156% )
+>              12  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
+>        18425800  page-faults              #      0.039 M/sec   ( +-   0.107% )
+>   1486296285360  cycles                   #   3132.080 M/sec   ( +-   0.029% )
+>    380334406216  instructions             #      0.256 IPC     ( +-   0.058% )
+>      3274206662  cache-references         #      6.900 M/sec   ( +-   0.453% )
+>      1272947699  cache-misses             #      2.682 M/sec   ( +-   0.118% )
+> 
+>    60.147907341  seconds time elapsed   ( +-   0.010% )
+> 
+> [After]
+>  Performance counter stats for './runpause.sh' (5 runs):
+> 
+>   474658.997489  task-clock-msecs         #      7.891 CPUs    ( +-   0.006% )
+>           10250  context-switches         #      0.000 M/sec   ( +-   0.020% )
+>              11  CPU-migrations           #      0.000 M/sec   ( +-   0.000% )
+>        33177858  page-faults              #      0.070 M/sec   ( +-   0.152% )
+>   1485264748476  cycles                   #   3129.120 M/sec   ( +-   0.021% )
+>    409847004519  instructions             #      0.276 IPC     ( +-   0.123% )
+>      3237478723  cache-references         #      6.821 M/sec   ( +-   0.574% )
+>      1182572827  cache-misses             #      2.491 M/sec   ( +-   0.179% )
+> 
+>    60.151786309  seconds time elapsed   ( +-   0.014% )
+>
 
-Right, so mm_release() which is meant to destroy the old mm context
-actually does exit_robust_list(), but the problem is that it does so on
-the new mm, not the old one that got passed down to mm_release().
+I agree, I liked the previous patchset, let me re-review this one!
+Definitely a good candidate to -mm. 
 
-The other detail is that exit_robust_list() doesn't clear
-current->robust_list.
-
-The problem with the patch send my Ani is that it clears the robust
-lists before the point of no return, so on a failing execve() we'd have
-messed up the state.
-
-Making exit_robust_list() deal with an mm that is not the current mm is
-interesting indeed.
-
+-- 
+	Balbir
