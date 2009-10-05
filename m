@@ -1,246 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbZJER37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZJER3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754231AbZJER37 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 13:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbZJER3p
+	id S1754206AbZJER3r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 13:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbZJER3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 13:29:45 -0400
-Received: from kroah.org ([198.145.64.141]:52593 "EHLO coco.kroah.org"
+	Mon, 5 Oct 2009 13:29:46 -0400
+Received: from kroah.org ([198.145.64.141]:52596 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753839AbZJER3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753946AbZJER3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 5 Oct 2009 13:29:43 -0400
-Date: Mon, 5 Oct 2009 10:23:49 -0700
+Date: Mon, 5 Oct 2009 10:25:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org, lwn@lwn.net
-Subject: Re: Linux 2.6.27.36
-Message-ID: <20091005172349.GB18332@kroah.com>
-References: <20091005172331.GA18332@kroah.com>
+       torvalds@linux-foundation.org, stable@kernel.org
+Cc: lwn@lwn.net
+Subject: Linux 2.6.30.9
+Message-ID: <20091005172531.GC18332@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091005172331.GA18332@kroah.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index 5768979..e7046ea 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 27
--EXTRAVERSION = .35
-+EXTRAVERSION = .36
- NAME = Trembling Tortoise
- 
- # *DOCUMENTATION*
-diff --git a/drivers/isdn/gigaset/bas-gigaset.c b/drivers/isdn/gigaset/bas-gigaset.c
-index fcec2df..3990eae 100644
---- a/drivers/isdn/gigaset/bas-gigaset.c
-+++ b/drivers/isdn/gigaset/bas-gigaset.c
-@@ -2140,8 +2140,16 @@ static int gigaset_initcshw(struct cardstate *cs)
- 	struct bas_cardstate *ucs;
- 
- 	cs->hw.bas = ucs = kmalloc(sizeof *ucs, GFP_KERNEL);
--	if (!ucs)
-+	if (!ucs) {
-+		pr_err("out of memory\n");
-+		return 0;
-+	}
-+	ucs->int_in_buf = kmalloc(IP_MSGSIZE, GFP_KERNEL);
-+	if (!ucs->int_in_buf) {
-+		kfree(ucs);
-+		pr_err("out of memory\n");
- 		return 0;
-+	}
- 
- 	ucs->urb_cmd_in = NULL;
- 	ucs->urb_cmd_out = NULL;
-@@ -2236,12 +2244,6 @@ static int gigaset_probe(struct usb_interface *interface,
- 		}
- 		hostif = interface->cur_altsetting;
- 	}
--	ucs->int_in_buf = kmalloc(IP_MSGSIZE, GFP_KERNEL);
--	if (!ucs->int_in_buf) {
--		kfree(ucs);
--		pr_err("out of memory\n");
--		return 0;
--	}
- 
- 	/* Reject application specific interfaces
- 	 */
-diff --git a/drivers/net/enc28j60.c b/drivers/net/enc28j60.c
-index aa0bf6e..49fc60d 100644
---- a/drivers/net/enc28j60.c
-+++ b/drivers/net/enc28j60.c
-@@ -919,7 +919,7 @@ static void enc28j60_hw_rx(struct net_device *ndev)
- 	if (netif_msg_rx_status(priv))
- 		enc28j60_dump_rsv(priv, __FUNCTION__, next_packet, len, rxstat);
- 
--	if (!RSV_GETBIT(rxstat, RSV_RXOK)) {
-+	if (!RSV_GETBIT(rxstat, RSV_RXOK) || len > MAX_FRAMELEN) {
- 		if (netif_msg_rx_err(priv))
- 			dev_err(&ndev->dev, "Rx Error (%04x)\n", rxstat);
- 		ndev->stats.rx_errors++;
-@@ -927,6 +927,8 @@ static void enc28j60_hw_rx(struct net_device *ndev)
- 			ndev->stats.rx_crc_errors++;
- 		if (RSV_GETBIT(rxstat, RSV_LENCHECKERR))
- 			ndev->stats.rx_frame_errors++;
-+		if (len > MAX_FRAMELEN)
-+			ndev->stats.rx_over_errors++;
- 	} else {
- 		skb = dev_alloc_skb(len + NET_IP_ALIGN);
- 		if (!skb) {
-diff --git a/drivers/net/pcmcia/pcnet_cs.c b/drivers/net/pcmcia/pcnet_cs.c
-index 7d6cf02..b429a0f 100644
---- a/drivers/net/pcmcia/pcnet_cs.c
-+++ b/drivers/net/pcmcia/pcnet_cs.c
-@@ -591,7 +591,7 @@ static int pcnet_config(struct pcmcia_device *link)
-     }
- 
-     if ((link->conf.ConfigBase == 0x03c0)
--	&& (link->manf_id == 0x149) && (link->card_id = 0xc1ab)) {
-+	&& (link->manf_id == 0x149) && (link->card_id == 0xc1ab)) {
- 	printk(KERN_INFO "pcnet_cs: this is an AX88190 card!\n");
- 	printk(KERN_INFO "pcnet_cs: use axnet_cs instead.\n");
- 	goto failed;
-diff --git a/drivers/net/wireless/p54/p54usb.c b/drivers/net/wireless/p54/p54usb.c
-index bfff6b5..b97a1c9 100644
---- a/drivers/net/wireless/p54/p54usb.c
-+++ b/drivers/net/wireless/p54/p54usb.c
-@@ -63,6 +63,7 @@ static struct usb_device_id p54u_table[] __devinitdata = {
- 	{USB_DEVICE(0x0bf8, 0x1009)},   /* FUJITSU E-5400 USB D1700*/
- 	{USB_DEVICE(0x0cde, 0x0006)},   /* Medion MD40900 */
- 	{USB_DEVICE(0x0cde, 0x0008)},	/* Sagem XG703A */
-+	{USB_DEVICE(0x0cde, 0x0015)},	/* Zcomax XG-705A */
- 	{USB_DEVICE(0x0d8e, 0x3762)},	/* DLink DWL-G120 Cohiba */
- 	{USB_DEVICE(0x09aa, 0x1000)},	/* Spinnaker Proto board */
- 	{USB_DEVICE(0x124a, 0x4025)},	/* IOGear GWU513 (GW3887IK chip) */
-diff --git a/fs/inode.c b/fs/inode.c
-index 7b2acc1..79777d9 100644
---- a/fs/inode.c
-+++ b/fs/inode.c
-@@ -590,13 +590,15 @@ void unlock_new_inode(struct inode *inode)
- 	}
- #endif
- 	/*
--	 * This is special!  We do not need the spinlock
--	 * when clearing I_LOCK, because we're guaranteed
--	 * that nobody else tries to do anything about the
--	 * state of the inode when it is locked, as we
--	 * just created it (so there can be no old holders
--	 * that haven't tested I_LOCK).
-+	 * This is special!  We do not need the spinlock when clearing I_LOCK,
-+	 * because we're guaranteed that nobody else tries to do anything about
-+	 * the state of the inode when it is locked, as we just created it (so
-+	 * there can be no old holders that haven't tested I_LOCK).
-+	 * However we must emit the memory barrier so that other CPUs reliably
-+	 * see the clearing of I_LOCK after the other inode initialisation has
-+	 * completed.
- 	 */
-+	smp_mb();
- 	WARN_ON((inode->i_state & (I_LOCK|I_NEW)) != (I_LOCK|I_NEW));
- 	inode->i_state &= ~(I_LOCK|I_NEW);
- 	wake_up_inode(inode);
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 2885674..3a08c5a 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -983,6 +983,7 @@ __attribute__((weak)) int alloc_bootmem_huge_page(struct hstate *h)
- 				NODE_DATA(h->hugetlb_next_nid),
- 				huge_page_size(h), huge_page_size(h), 0);
- 
-+		hstate_next_node(h);
- 		if (addr) {
- 			/*
- 			 * Use the beginning of the huge page to store the
-@@ -993,7 +994,6 @@ __attribute__((weak)) int alloc_bootmem_huge_page(struct hstate *h)
- 			if (m)
- 				goto found;
- 		}
--		hstate_next_node(h);
- 		nr_nodes--;
- 	}
- 	return 0;
-diff --git a/mm/memory.c b/mm/memory.c
-index 3856c36..1300b70 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2422,7 +2422,8 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 		goto oom_free_page;
- 
- 	entry = mk_pte(page, vma->vm_page_prot);
--	entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-+	if (vma->vm_flags & VM_WRITE)
-+		entry = pte_mkwrite(pte_mkdirty(entry));
- 
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
- 	if (!pte_none(*page_table))
-diff --git a/mm/mmap.c b/mm/mmap.c
-index d330758..8b5aa8e 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -575,9 +575,9 @@ again:			remove_next = 1 + (end > next->vm_end);
- 
- 	/*
- 	 * When changing only vma->vm_end, we don't really need
--	 * anon_vma lock: but is that case worth optimizing out?
-+	 * anon_vma lock.
- 	 */
--	if (vma->anon_vma)
-+	if (vma->anon_vma && (insert || importer || start != vma->vm_start))
- 		anon_vma = vma->anon_vma;
- 	if (anon_vma) {
- 		spin_lock(&anon_vma->lock);
-diff --git a/net/ax25/af_ax25.c b/net/ax25/af_ax25.c
-index 28c7157..cd9d526 100644
---- a/net/ax25/af_ax25.c
-+++ b/net/ax25/af_ax25.c
-@@ -539,7 +539,7 @@ static int ax25_setsockopt(struct socket *sock, int level, int optname,
- 	if (level != SOL_AX25)
- 		return -ENOPROTOOPT;
- 
--	if (optlen < sizeof(int))
-+	if (optlen < (int)sizeof(int))
- 		return -EINVAL;
- 
- 	if (get_user(opt, (int __user *)optval))
-diff --git a/net/bridge/br_netfilter.c b/net/bridge/br_netfilter.c
-index 9abd450..f908d68 100644
---- a/net/bridge/br_netfilter.c
-+++ b/net/bridge/br_netfilter.c
-@@ -358,7 +358,7 @@ static int br_nf_pre_routing_finish(struct sk_buff *skb)
- 				},
- 				.proto = 0,
- 			};
--			struct in_device *in_dev = in_dev_get(dev);
-+			struct in_device *in_dev = __in_dev_get_rcu(dev);
- 
- 			/* If err equals -EHOSTUNREACH the error is due to a
- 			 * martian destination or due to the fact that
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index 4b50878..ade1ebd 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -1500,7 +1500,7 @@ packet_setsockopt(struct socket *sock, int level, int optname, char __user *optv
- static int packet_getsockopt(struct socket *sock, int level, int optname,
- 			     char __user *optval, int __user *optlen)
- {
--	int len;
-+	unsigned int len;
- 	int val;
- 	struct sock *sk = sock->sk;
- 	struct packet_sock *po = pkt_sk(sk);
-@@ -1513,7 +1513,7 @@ static int packet_getsockopt(struct socket *sock, int level, int optname,
- 	if (get_user(len, optlen))
- 		return -EFAULT;
- 
--	if (len < 0)
-+	if ((int)len < 0)
- 		return -EINVAL;
- 
- 	switch(optname)	{
+I'm announcing the release of the 2.6.30.9 kernel.  All users of the
+2.6.30 kernel series are very strongly encouraged to upgrade.
+
+NOTE:
+	This is the last release of the 2.6.30-stable series.  Everyone
+	should now move to the 2.6.31 kernel tree.  If there are any
+	issues preventing people from doing this, please let me know!
+
+I'll also be replying to this message with a copy of the patch between
+2.6.30.8 and 2.6.30.9
+
+The updated 2.6.30.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.30.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.30.y.git;a=summary
+
+thanks,
+
+greg k-h
+
+------------
+
+ Makefile                                  |    2 
+ arch/powerpc/include/asm/pte-common.h     |    2 
+ arch/powerpc/mm/pgtable.c                 |   19 +++++-
+ arch/x86/include/asm/kvm_host.h           |    1 
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   15 ++---
+ arch/x86/kernel/kvmclock.c                |    4 -
+ arch/x86/kvm/lapic.c                      |    9 +++
+ arch/x86/kvm/mmu.c                        |    9 ---
+ arch/x86/kvm/vmx.c                        |   11 +--
+ arch/x86/kvm/x86.c                        |   31 ++++++++--
+ drivers/acpi/pci_slot.c                   |    4 -
+ drivers/ata/ahci.c                        |    4 -
+ drivers/net/wireless/p54/p54usb.c         |    1 
+ drivers/pcmcia/at91_cf.c                  |    2 
+ drivers/pcmcia/au1000_generic.c           |    2 
+ drivers/pcmcia/bfin_cf_pcmcia.c           |    2 
+ drivers/pcmcia/cs.c                       |    2 
+ drivers/pcmcia/i82092.c                   |    2 
+ drivers/pcmcia/i82365.c                   |    2 
+ drivers/pcmcia/m32r_cfc.c                 |    2 
+ drivers/pcmcia/m32r_pcc.c                 |    2 
+ drivers/pcmcia/m8xx_pcmcia.c              |    2 
+ drivers/pcmcia/omap_cf.c                  |    2 
+ drivers/pcmcia/pd6729.c                   |    2 
+ drivers/pcmcia/pxa2xx_base.c              |    2 
+ drivers/pcmcia/sa1100_generic.c           |    2 
+ drivers/pcmcia/sa1111_generic.c           |    2 
+ drivers/pcmcia/tcic.c                     |    2 
+ drivers/pcmcia/vrc4171_card.c             |    2 
+ drivers/pcmcia/yenta_socket.c             |   88 ++++++++++++++++--------------
+ drivers/platform/x86/thinkpad_acpi.c      |   74 ++++++++++++++++++++-----
+ fs/cifs/cifsglob.h                        |    4 -
+ fs/inode.c                                |   14 ++--
+ fs/nilfs2/btnode.c                        |    1 
+ fs/proc/kcore.c                           |    8 ++
+ fs/proc/uptime.c                          |    7 ++
+ include/linux/kvm_para.h                  |    1 
+ include/pcmcia/ss.h                       |    2 
+ mm/hugetlb.c                              |    2 
+ mm/memory.c                               |    3 -
+ mm/mmap.c                                 |    4 -
+ net/ax25/af_ax25.c                        |    2 
+ net/bridge/br_netfilter.c                 |    2 
+ net/bridge/netfilter/ebt_ulog.c           |    2 
+ net/ipv4/netfilter/nf_nat_core.c          |    2 
+ net/packet/af_packet.c                    |    4 -
+ scripts/kallsyms.c                        |    2 
+ 47 files changed, 237 insertions(+), 129 deletions(-)
+
+Alex Chiang (1):
+      ACPI: pci_slot.ko wants a 64-bit _SUN
+
+Arjan van de Ven (2):
+      net ax25: Fix signed comparison in the sockopt handler
+      net: Make the copy length in af_packet sockopt handler unsigned
+
+Avi Kivity (1):
+      KVM: VMX: Check cpl before emulating debug register access
+
+Christian Lamparter (1):
+      p54usb: add Zcomax XG-705A usbid
+
+Chuck Ebbert (1):
+      Re-enable Lanman security
+
+Glauber Costa (1):
+      KVM guest: fix bogus wallclock physical address calculation
+
+Gleb Natapov (1):
+      KVM: VMX: Fix cr8 exiting control clobbering by EPT
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.30.9
+
+Henrique de Moraes Holschuh (1):
+      thinkpad-acpi: fix incorrect use of TPACPI_BRGHT_MODE_ECNVRAM
+
+Hugh Dickins (1):
+      mm: fix anonymous dirtying
+
+Izik Eidus (1):
+      KVM: MMU: make __kvm_mmu_free_some_pages handle empty list
+
+Jan Kara (1):
+      fs: make sure data stored into inode is properly seen before unlocking new inode
+
+Jan Kiszka (1):
+      KVM: x86: Disallow hypercalls for guest callers in rings > 0
+
+KAMEZAWA Hiroyuki (1):
+      /proc/kcore: work around a BUG()
+
+Kurt Roeckx (1):
+      Fix NULL ptr regression in powernow-k8
+
+Lee Schermerhorn (2):
+      hugetlb: restore interleaving of bootmem huge pages (2.6.31)
+      mmap: avoid unnecessary anon_vma lock acquisition in vma_adjust()
+
+Marcelo Tosatti (4):
+      KVM: MMU: fix missing locking in alloc_mmu_pages
+      KVM: MMU: fix bogus alloc_mmu_pages assignment
+      KVM: limit lapic periodic timer frequency
+      Revert "KVM: x86: check for cr3 validity in ioctl_set_sregs"
+
+Mark McLoughlin (1):
+      KVM: fix cpuid E2BIG handling for extended request types
+
+Michael Abbott (1):
+      Fix idle time field in /proc/uptime
+
+Patrick McHardy (3):
+      netfilter: bridge: refcount fix
+      netfilter: ebt_ulog: fix checkentry return value
+      netfilter: nf_nat: fix inverted logic for persistent NAT mappings
+
+Paul Mundt (1):
+      kallsyms: fix segfault in prefix_underscores_count()
+
+Rafael J. Wysocki (2):
+      PM / PCMCIA: Drop second argument of pcmcia_socket_dev_suspend()
+      PM / yenta: Fix cardbus suspend/resume regression
+
+Rex Feany (1):
+      powerpc/8xx: Fix regression introduced by cache coherency rewrite
+
+Ryusuke Konishi (1):
+      nilfs2: fix missing zero-fill initialization of btree node cache
+
+Tejun Heo (1):
+      ahci: restore pci_intx() handling
+
+Weirich, Bernhard (1):
+      powerpc: Fix incorrect setting of __HAVE_ARCH_PTE_SPECIAL
+
