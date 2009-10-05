@@ -1,77 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbZJEUc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbZJEUkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754366AbZJEUc6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 16:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZJEUc6
+	id S1754521AbZJEUkS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 16:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZJEUkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 16:32:58 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:45995 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754156AbZJEUc5 (ORCPT
+	Mon, 5 Oct 2009 16:40:16 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:49581 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754206AbZJEUkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 16:32:57 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
-In-Reply-To: Your message of "Mon, 05 Oct 2009 21:42:09 +0200."
-             <4ACA4C11.9060107@wpkg.org>
-From: Valdis.Kletnieks@vt.edu
-References: <4ACA4C11.9060107@wpkg.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1254774707_3393P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 05 Oct 2009 16:31:47 -0400
-Message-ID: <168769.1254774707@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.35.168 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=vivi.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020208.4ACA57B6.005D,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+	Mon, 5 Oct 2009 16:40:14 -0400
+Date: Tue, 6 Oct 2009 02:03:37 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [git pull request] ACPI Processor Aggregator Driver for
+ 2.6.32-rc1
+Message-ID: <20091005203337.GB3551@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <alpine.LFD.2.00.0910030145140.25240@localhost.localdomain>
+ <20091005033256.GA26592@balbir.in.ibm.com>
+ <200910052159.24920.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <200910052159.24920.rjw@sisk.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1254774707_3393P
-Content-Type: text/plain; charset=us-ascii
+* Rafael J. Wysocki <rjw@sisk.pl> [2009-10-05 21:59:24]:
 
-On Mon, 05 Oct 2009 21:42:09 +0200, Tomasz Chmielewski said:
-> > Heh.  You've really squeezed yourself into a bad situation.  Go get a
-> > 64-bit kernel... please.  You should be able to run 32-bit userspace
-> > with a 64-bit kernel.  Do you have some 32-bit kernel component that you
-> > are relying on?
+> On Monday 05 October 2009, Balbir Singh wrote:
+> > * Len Brown <lenb@kernel.org> [2009-10-03 01:56:32]:
+> > 
+> > >     This driver does not use the kernel's CPU hot-plug mechanism
+> > >     because after the transient emergency is over, the system must
+> > >     be returned to its normal state, and hotplug would permanently
+> > >     break both cpusets and binding.
+> > >     
+> > 
+> > Why does hotplug break cpusets and binding?
+> > 
+> > 
+> > >     So to force idle, the driver creates a power saving thread.
+> > >     The scheduler will migrate the thread to the preferred CPU.
+> > >     The thread has max priority and has SCHED_RR policy,
+> > >     so it can occupy one CPU.  To save power, the thread will
+> > >     invoke the deep C-state entry instructions.
+> > >     
+> > >     To avoid starvation, the thread will sleep 5% of the time
+> > >     time for every second (current RT scheduler has threshold
+> > >     to avoid starvation, but if other CPUs are idle,
+> > >     the CPU can borrow CPU timer from other,
+> > >     which makes the mechanism not work here)
+> > >     
+> > >     Vaidyanathan Srinivasan has proposed scheduler enhancements
+> > >     to allow injecting idle time into the system.  This driver doesn't
+> > >     depend on those enhancements, but could cut over to them
+> > >     when they are available.
+> > >     
+> > >     Peter Z. does not favor upstreaming this driver until
+> > >     the those scheduler enhancements are in place.  However,
+> > >     we favor upstreaming this driver now because it is useful
+> > >     now, and can be enhanced over time.
+> > >     
+> > >     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > >     NACKed-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > >     Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> > >     Signed-off-by: Len Brown <len.brown@intel.com>
+> > 
+> > This is a first a patch with a NACKed-by, could we please have more
+> > discussion on the proposed design.
 > 
-> Note that in such setups (64 bit kernels and 32 bit userspace) *some* 
-> software will not work correctly (perhaps it's limited to tightly 
-> kernel-userspace integrated software).
+> This thing has already been merged, it appears:
+>
+
+Yeah.. just saw it in my kernel compile today!
+ 
+> commit 8e0af5141ab950b78b3ebbfaded5439dcf8b3a8d
+> Author: Shaohua Li <shaohua.li@intel.com>
+> Date:   Mon Jul 27 18:11:02 2009 -0400
 > 
-> One example is open-iscsi - you won't run 32 bit open-iscsi userspace on 
-> a 64 bit kernel (at least it was impossible a couple of months ago).
+>     ACPI: create Processor Aggregator Device driver
+> 
+> and it looks like a total breakage of rules to me.
+> 
+> Thanks,
+> Rafael
 
-Sounds like somebody blew it on 32/64 bit combatability on a syscall,
-most likely a parameter to an ioctl?
-
---==_Exmh_1254774707_3393P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKylezcC3lWbTT17ARArceAKCfOtk4q0lQKT93wLGJH/iAYgaGHgCeINjT
-SYolbs76Fy8uc/HV+17THYc=
-=PXHM
------END PGP SIGNATURE-----
-
---==_Exmh_1254774707_3393P--
-
+-- 
+	Balbir
