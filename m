@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932542AbZJEKQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932421AbZJEKUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932542AbZJEKQy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 06:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932513AbZJEKQy
+	id S932421AbZJEKUB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 06:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932359AbZJEKUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 06:16:54 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:23691 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932508AbZJEKQx convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;3:1>);
-	Mon, 5 Oct 2009 06:16:53 -0400
-Message-Id: <4AC9E38E0200007800017F57@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Mon, 05 Oct 2009 11:16:14 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] adjust gfp mask passed on nested vmalloc() invocation
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Mon, 5 Oct 2009 06:20:01 -0400
+Received: from mail-yw0-f173.google.com ([209.85.211.173]:51851 "EHLO
+	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932348AbZJEKUA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 06:20:00 -0400
+Message-ID: <4AC9C7F4.20401@monstr.eu>
+Date: Mon, 05 Oct 2009 12:18:28 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+MIME-Version: 1.0
+To: torvalds@linux-foundation.org
+CC: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] arch/microblaze fixes
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- fix a latent bug resulting from blindly or-ing in __GFP_ZERO, since
-  the combination of this and __GFP_HIGHMEM (possibly passed into the
-  function) is forbidden in interrupt context
-- avoid wasting more precious resources (DMA or DMA32 pools), when
-  being called through vmalloc_32{,_user}()
-- explicitly allow using high memory here even if the outer allocation
-  request doesn't allow it, unless is collides with __GFP_ZERO
+Hi Linus,
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+please pull these two changes.
 
----
- mm/vmalloc.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
---- linux-2.6.32-rc3/mm/vmalloc.c	2009-10-05 11:59:56.000000000 +0200
-+++ 2.6.32-rc3-vmalloc-nested-gfp/mm/vmalloc.c	2009-10-05 08:40:36.000000000 +0200
-@@ -1410,6 +1410,7 @@ static void *__vmalloc_area_node(struct 
- {
- 	struct page **pages;
- 	unsigned int nr_pages, array_size, i;
-+	gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
- 
- 	nr_pages = (area->size - PAGE_SIZE) >> PAGE_SHIFT;
- 	array_size = (nr_pages * sizeof(struct page *));
-@@ -1417,13 +1418,16 @@ static void *__vmalloc_area_node(struct 
- 	area->nr_pages = nr_pages;
- 	/* Please note that the recursion is strictly bounded. */
- 	if (array_size > PAGE_SIZE) {
--		pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
-+#ifdef CONFIG_HIGHMEM
-+		/* See the comment in prep_zero_page(). */
-+		if (!in_interrupt())
-+			nested_gfp |= __GFP_HIGHMEM;
-+#endif
-+		pages = __vmalloc_node(array_size, nested_gfp,
- 				PAGE_KERNEL, node, caller);
- 		area->flags |= VM_VPAGES;
- 	} else {
--		pages = kmalloc_node(array_size,
--				(gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO,
--				node);
-+		pages = kmalloc_node(array_size, nested_gfp, node);
- 	}
- 	area->pages = pages;
- 	area->caller = caller;
+Thanks,
+Michal
 
 
 
+The following changes since commit 374576a8b6f865022c0fd1ca62396889b23d66dd:
+   Linus Torvalds (1):
+         Linux 2.6.32-rc3
+
+are available in the git repository at:
+
+   git://git.monstr.eu/linux-2.6-microblaze.git fixes-for-linus
+
+Michal Simek (2):
+       microblaze: UMS is used only for MMU kernel
+       microblaze: Clear sticky FSR register after saving it to func 
+parametr
+
+  arch/microblaze/kernel/entry.S                |    2 ++
+  arch/microblaze/kernel/hw_exception_handler.S |    2 +-
+  arch/microblaze/kernel/process.c              |    2 ++
+  3 files changed, 5 insertions(+), 1 deletions(-)
