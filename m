@@ -1,195 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbZJEL4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbZJEL6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932435AbZJEL4P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 07:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758825AbZJEL4O
+	id S932583AbZJEL6j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 07:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932389AbZJEL6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 07:56:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33182 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758821AbZJEL4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 07:56:13 -0400
-Date: Mon, 5 Oct 2009 11:54:53 GMT
-From: tip-bot for john stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jkacur@redhat.com, williams@redhat.com, johnstul@us.ibm.com,
-       schwidefsky@de.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jkacur@redhat.com, johnstul@us.ibm.com, williams@redhat.com,
-       schwidefsky@de.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1254525855.7741.95.camel@localhost.localdomain>
-References: <1254525855.7741.95.camel@localhost.localdomain>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] time: Remove xtime_cache
-Message-ID: <tip-7bc7d637452383d56ba4368d4336b0dde1bb476d@git.kernel.org>
-Git-Commit-ID: 7bc7d637452383d56ba4368d4336b0dde1bb476d
-X-Mailer: tip-git-log-daemon
+	Mon, 5 Oct 2009 07:58:39 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:60769 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932336AbZJEL6h convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 07:58:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=A1tZvLjEDJWoe2yslveNEzxUebjdAdvozzqXINB2c09MWtTmzWZzufYPbgxGdwXyIt
+         lftMtJ3DUe7QZjpGCo4MH3GGZRFSHnIkTv8KAeBzwxYiGRgCP/jdB9M0pJNR1BKw7J8R
+         XO+BvxJH+jHKPEzS5ok1+ZeDz2liX7jgcRZLY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 05 Oct 2009 11:54:54 +0000 (UTC)
+In-Reply-To: <817ecb6f0909220849t2142f6bdhdeb0180dedc646d2@mail.gmail.com>
+References: <817ecb6f0909101950v2fc6dc6u5cbc40cd9a9dde77@mail.gmail.com>
+	 <20090921214046.GA17243@redhat.com>
+	 <817ecb6f0909220849t2142f6bdhdeb0180dedc646d2@mail.gmail.com>
+Date: Mon, 5 Oct 2009 07:57:59 -0400
+Message-ID: <817ecb6f0910050457v5db02550m62c742f679b26577@mail.gmail.com>
+Subject: Re: [PATCH v6] RO/NX protection for loadable kernel modules
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: Dave Jones <davej@redhat.com>, Siarhei Liakh <sliakh.lkml@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-next@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7bc7d637452383d56ba4368d4336b0dde1bb476d
-Gitweb:     http://git.kernel.org/tip/7bc7d637452383d56ba4368d4336b0dde1bb476d
-Author:     john stultz <johnstul@us.ibm.com>
-AuthorDate: Fri, 2 Oct 2009 16:24:15 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 5 Oct 2009 13:52:02 +0200
+On Tue, Sep 22, 2009 at 11:49 AM, Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
+>> Hi Siarhei,
+>>  I tried out this patch on 2.6.31, and got the following trace during bootup..
+>>
+>> ------------[ cut here ]------------
+>> WARNING: at kernel/trace/ftrace.c:1003 ftrace_bug+0x198/0x27e() (Not tainted)
+>> Hardware name: VGN-Z540N
+> ...
+>> ---[ end trace 95b33ebf87286ae6 ]---
+>> ftrace faulted on writing [<ffffffffa0000193>] video_output_register+0x11/0x10a [output]
+>>
+>>
+>> I guess ftrace is trying to NOP out something in the modules which
+>> are marked read-only ?
+>
+> Entirely possible. I will review ftrace and make sure the patch
+> accounts for this.
 
-time: Remove xtime_cache
+I've posted new version of the patch that also sets each module's text
+as RW when ftrace preps the kernel for modifications: [PATCH v7] RO/NX
+protection for loadable kernel modules
 
-With the prior logarithmic time accumulation patch, xtime will now
-always be within one "tick" of the current time, instead of
-possibly half a second off.
-
-This removes the need for the xtime_cache value, which always
-stored the time at the last interrupt, so this patch cleans that up
-removing the xtime_cache related code.
-
-This is a bit simpler, but still could use some wider testing.
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Reviewed-by: John Kacur <jkacur@redhat.com>
-Cc: Clark Williams <williams@redhat.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <1254525855.7741.95.camel@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/time.c             |    1 -
- kernel/time/timekeeping.c |   27 ++++-----------------------
- 2 files changed, 4 insertions(+), 24 deletions(-)
-
-diff --git a/kernel/time.c b/kernel/time.c
-index 2e2e469..2ef4fe2 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -136,7 +136,6 @@ static inline void warp_clock(void)
- 	write_seqlock_irq(&xtime_lock);
- 	wall_to_monotonic.tv_sec -= sys_tz.tz_minuteswest * 60;
- 	xtime.tv_sec += sys_tz.tz_minuteswest * 60;
--	update_xtime_cache(0);
- 	write_sequnlock_irq(&xtime_lock);
- 	clock_was_set();
- }
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 5fdd78e..96b3f0d 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -164,13 +164,6 @@ struct timespec raw_time;
- /* flag for if timekeeping is suspended */
- int __read_mostly timekeeping_suspended;
- 
--static struct timespec xtime_cache __attribute__ ((aligned (16)));
--void update_xtime_cache(u64 nsec)
--{
--	xtime_cache = xtime;
--	timespec_add_ns(&xtime_cache, nsec);
--}
--
- /* must hold xtime_lock */
- void timekeeping_leap_insert(int leapsecond)
- {
-@@ -331,8 +324,6 @@ int do_settimeofday(struct timespec *tv)
- 
- 	xtime = *tv;
- 
--	update_xtime_cache(0);
--
- 	timekeeper.ntp_error = 0;
- 	ntp_clear();
- 
-@@ -547,7 +538,6 @@ void __init timekeeping_init(void)
- 	}
- 	set_normalized_timespec(&wall_to_monotonic,
- 				-boot.tv_sec, -boot.tv_nsec);
--	update_xtime_cache(0);
- 	total_sleep_time.tv_sec = 0;
- 	total_sleep_time.tv_nsec = 0;
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
-@@ -581,7 +571,6 @@ static int timekeeping_resume(struct sys_device *dev)
- 		wall_to_monotonic = timespec_sub(wall_to_monotonic, ts);
- 		total_sleep_time = timespec_add_safe(total_sleep_time, ts);
- 	}
--	update_xtime_cache(0);
- 	/* re-base the last cycle value */
- 	timekeeper.clock->cycle_last = timekeeper.clock->read(timekeeper.clock);
- 	timekeeper.ntp_error = 0;
-@@ -721,7 +710,6 @@ static void timekeeping_adjust(s64 offset)
- 				timekeeper.ntp_error_shift;
- }
- 
--
- /**
-  * logarithmic_accumulation - shifted accumulation of cycles
-  *
-@@ -765,7 +753,6 @@ static cycle_t logarithmic_accumulation(cycle_t offset, int shift)
- 	return offset;
- }
- 
--
- /**
-  * update_wall_time - Uses the current clocksource to increment the wall time
-  *
-@@ -775,7 +762,6 @@ void update_wall_time(void)
- {
- 	struct clocksource *clock;
- 	cycle_t offset;
--	u64 nsecs;
- 	int shift = 0, maxshift;
- 
- 	/* Make sure we're fully resumed: */
-@@ -841,9 +827,6 @@ void update_wall_time(void)
- 	timekeeper.ntp_error +=	timekeeper.xtime_nsec <<
- 				timekeeper.ntp_error_shift;
- 
--	nsecs = clocksource_cyc2ns(offset, timekeeper.mult, timekeeper.shift);
--	update_xtime_cache(nsecs);
--
- 	/* check to see if there is a new clocksource to use */
- 	update_vsyscall(&xtime, timekeeper.clock);
- }
-@@ -880,13 +863,13 @@ void monotonic_to_bootbased(struct timespec *ts)
- 
- unsigned long get_seconds(void)
- {
--	return xtime_cache.tv_sec;
-+	return xtime.tv_sec;
- }
- EXPORT_SYMBOL(get_seconds);
- 
- struct timespec __current_kernel_time(void)
- {
--	return xtime_cache;
-+	return xtime;
- }
- 
- struct timespec current_kernel_time(void)
-@@ -896,8 +879,7 @@ struct timespec current_kernel_time(void)
- 
- 	do {
- 		seq = read_seqbegin(&xtime_lock);
--
--		now = xtime_cache;
-+		now = xtime;
- 	} while (read_seqretry(&xtime_lock, seq));
- 
- 	return now;
-@@ -911,8 +893,7 @@ struct timespec get_monotonic_coarse(void)
- 
- 	do {
- 		seq = read_seqbegin(&xtime_lock);
--
--		now = xtime_cache;
-+		now = xtime;
- 		mono = wall_to_monotonic;
- 	} while (read_seqretry(&xtime_lock, seq));
- 
+Let me know how that works for you.
+Thank you.
