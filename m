@@ -1,24 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbZJEAze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758231AbZJEA5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758302AbZJEAze (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 20:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932189AbZJEAz3
+	id S1758231AbZJEA5X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 20:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbZJEA5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 20:55:29 -0400
-Received: from mail.perches.com ([173.55.12.10]:1730 "EHLO mail.perches.com"
+	Sun, 4 Oct 2009 20:57:20 -0400
+Received: from mail.perches.com ([173.55.12.10]:1721 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758257AbZJEAzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 20:55:19 -0400
+	id S1758257AbZJEAzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 4 Oct 2009 20:55:32 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       linux-crypto@vger.kernel.org
-Subject: [PATCH 14/21] crypto/: use pr_<level> and add pr_fmt(fmt)
-Date: Sun,  4 Oct 2009 17:53:41 -0700
-Message-Id: <54b5f845a373de2c37933c2afd83cf7ee35b9c08.1254701151.git.joe@perches.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org
+Subject: [PATCH 15/21] kernel/power/: use pr_<level> and add pr_fmt(fmt)
+Date: Sun,  4 Oct 2009 17:53:42 -0700
+Message-Id: <17906d40d7b002380e893d49639ba3f1e7bdb3a0.1254701151.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1254701151.git.joe@perches.com>
 References: <cover.1254701151.git.joe@perches.com>
@@ -28,1194 +25,805 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added #define pr_fmt(fmt) as "alg: ", "PRNG: " and KBUILD_MODNAME ": " fmt
+Added #define pr_fmt(fmt) "PM: " fmt
 Converted printk(KERN_<level> to pr_<level>(
-Removed "alg: " and "PRNG: " prefixes
-Some files now use KBUILD_MODNAME
-print_hex_dump now uses KERN_CRIT instead of KERN_CONT
+Removed "PM: " prefix
+Added pr_fmt() to __initdata strings
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- crypto/algapi.c            |    4 +-
- crypto/ansi_cprng.c        |   39 +++----
- crypto/async_tx/async_tx.c |    5 +-
- crypto/fips.c              |    4 +-
- crypto/tcrypt.c            |   75 ++++++------
- crypto/testmgr.c           |  286 +++++++++++++++++++-------------------------
- crypto/xor.c               |   17 ++--
- 7 files changed, 198 insertions(+), 232 deletions(-)
+ kernel/power/hibernate.c     |   46 ++++++++++++++++++++---------------------
+ kernel/power/hibernate_nvs.c |    6 +++-
+ kernel/power/process.c       |   29 +++++++++++++------------
+ kernel/power/snapshot.c      |   36 +++++++++++++++++---------------
+ kernel/power/suspend.c       |   18 +++++++++-------
+ kernel/power/suspend_test.c  |   18 +++++++++-------
+ kernel/power/swap.c          |   42 +++++++++++++++++++-------------------
+ kernel/power/swsusp.c        |   10 +++++---
+ kernel/power/user.c          |    8 ++++--
+ 9 files changed, 112 insertions(+), 101 deletions(-)
 
-diff --git a/crypto/algapi.c b/crypto/algapi.c
-index f149b1c..c0d03cb 100644
---- a/crypto/algapi.c
-+++ b/crypto/algapi.c
-@@ -10,6 +10,8 @@
-  *
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 04b3a83..a20bcc3 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -9,6 +9,8 @@
+  * This file is released under the GPLv2.
   */
  
-+#define pr_fmt(fmt) "alg: " fmt
++#define pr_fmt(fmt) "PM: " fmt
 +
- #include <linux/err.h>
- #include <linux/errno.h>
- #include <linux/init.h>
-@@ -258,7 +260,7 @@ void crypto_alg_tested(const char *name, int err)
- 			goto found;
- 	}
- 
--	printk(KERN_ERR "alg: Unexpected test result for %s: %d\n", name, err);
-+	pr_err("Unexpected test result for %s: %d\n", name, err);
- 	goto unlock;
- 
- found:
-diff --git a/crypto/ansi_cprng.c b/crypto/ansi_cprng.c
-index 3aa6e38..9a7e50b 100644
---- a/crypto/ansi_cprng.c
-+++ b/crypto/ansi_cprng.c
-@@ -13,6 +13,8 @@
-  *
-  */
- 
-+#define pr_fmt(fmt) "PRNG: " fmt
-+
- #include <crypto/internal/rng.h>
- #include <linux/err.h>
- #include <linux/init.h>
-@@ -57,20 +59,18 @@ struct prng_context {
- 
- static int dbg;
- 
--static void hexdump(char *note, unsigned char *buf, unsigned int len)
-+static void hexdump(const char *note, const unsigned char *buf,
-+		    unsigned int len)
+ #include <linux/suspend.h>
+ #include <linux/syscalls.h>
+ #include <linux/reboot.h>
+@@ -84,7 +86,7 @@ EXPORT_SYMBOL(system_entering_hibernation);
+ #ifdef CONFIG_PM_DEBUG
+ static void hibernation_debug_sleep(void)
  {
- 	if (dbg) {
--		printk(KERN_CRIT "%s", note);
--		print_hex_dump(KERN_CONT, "", DUMP_PREFIX_OFFSET,
--				16, 1,
--				buf, len, false);
-+		print_hex_dump(KERN_CRIT, note, DUMP_PREFIX_OFFSET,
-+			       16, 1,
-+			       buf, len, false);
- 	}
+-	printk(KERN_INFO "hibernation debug: Waiting for 5 seconds.\n");
++	pr_info("hibernation debug: Waiting for 5 seconds.\n");
+ 	mdelay(5000);
  }
  
--#define dbgprint(format, args...) do {\
--if (dbg)\
--	printk(format, ##args);\
--} while (0)
-+#define dbgprint(format, args...) \
-+	do { if (dbg) pr_crit(format, ##args); } while (0)
- 
- static void xor_vectors(unsigned char *in1, unsigned char *in2,
- 			unsigned char *out, unsigned int size)
-@@ -92,8 +92,7 @@ static int _get_more_prng_bytes(struct prng_context *ctx)
- 	unsigned char *output = NULL;
- 
- 
--	dbgprint(KERN_CRIT "Calling _get_more_prng_bytes for context %p\n",
--		ctx);
-+	dbgprint("Calling _get_more_prng_bytes for context %p\n", ctx);
- 
- 	hexdump("Input DT: ", ctx->DT, DEFAULT_BLK_SZ);
- 	hexdump("Input I: ", ctx->I, DEFAULT_BLK_SZ);
-@@ -137,9 +136,8 @@ static int _get_more_prng_bytes(struct prng_context *ctx)
- 						ctx);
- 				}
- 
--				printk(KERN_ERR
--					"ctx %p Failed repetition check!\n",
--					ctx);
-+				pr_err("ctx %p Failed repetition check!\n",
-+				       ctx);
- 
- 				ctx->flags |= PRNG_NEED_RESET;
- 				return -EINVAL;
-@@ -214,8 +212,7 @@ static int get_prng_bytes(char *buf, size_t nbytes, struct prng_context *ctx)
- 
- 	err = byte_count;
- 
--	dbgprint(KERN_CRIT "getting %d random bytes for context %p\n",
--		byte_count, ctx);
-+	dbgprint("getting %d random bytes for context %p\n", byte_count, ctx);
- 
- 
- remainder:
-@@ -268,8 +265,7 @@ empty_rbuf:
- 
- done:
- 	spin_unlock_bh(&ctx->prng_lock);
--	dbgprint(KERN_CRIT "returning %d from get_prng_bytes in context %p\n",
--		err, ctx);
-+	dbgprint("returning %d from get_prng_bytes in context %p\n", err, ctx);
- 	return err;
- }
- 
-@@ -310,8 +306,8 @@ static int reset_prng_context(struct prng_context *ctx,
- 
- 	ret = crypto_cipher_setkey(ctx->tfm, prng_key, klen);
- 	if (ret) {
--		dbgprint(KERN_CRIT "PRNG: setkey() failed flags=%x\n",
--			crypto_cipher_get_flags(ctx->tfm));
-+		dbgprint("setkey() failed flags=%x\n",
-+			 crypto_cipher_get_flags(ctx->tfm));
- 		goto out;
- 	}
- 
-@@ -329,8 +325,7 @@ static int cprng_init(struct crypto_tfm *tfm)
- 	spin_lock_init(&ctx->prng_lock);
- 	ctx->tfm = crypto_alloc_cipher("aes", 0, 0);
- 	if (IS_ERR(ctx->tfm)) {
--		dbgprint(KERN_CRIT "Failed to alloc tfm for context %p\n",
--				ctx);
-+		dbgprint("Failed to alloc tfm for context %p\n", ctx);
- 		return PTR_ERR(ctx->tfm);
- 	}
- 
-diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
-index f9cdf04..e57e7a5 100644
---- a/crypto/async_tx/async_tx.c
-+++ b/crypto/async_tx/async_tx.c
-@@ -23,6 +23,9 @@
-  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-  *
-  */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/rculist.h>
- #include <linux/kernel.h>
- #include <linux/async_tx.h>
-@@ -32,7 +35,7 @@ static int __init async_tx_init(void)
- {
- 	async_dmaengine_get();
- 
--	printk(KERN_INFO "async_tx: api initialized (async)\n");
-+	pr_info("api initialized (async)\n");
- 
- 	return 0;
- }
-diff --git a/crypto/fips.c b/crypto/fips.c
-index 5539700..7ef178d 100644
---- a/crypto/fips.c
-+++ b/crypto/fips.c
-@@ -10,6 +10,8 @@
-  *
-  */
- 
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include "internal.h"
- 
- int fips_enabled;
-@@ -19,7 +21,7 @@ EXPORT_SYMBOL_GPL(fips_enabled);
- static int fips_enable(char *str)
- {
- 	fips_enabled = !!simple_strtol(str, NULL, 0);
--	printk(KERN_INFO "fips mode: %s\n",
-+	pr_info("fips mode: %s\n",
- 		fips_enabled ? "enabled" : "disabled");
- 	return 1;
- }
-diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
-index aa3f84c..dc5a2bd 100644
---- a/crypto/tcrypt.c
-+++ b/crypto/tcrypt.c
-@@ -15,6 +15,8 @@
-  *
-  */
- 
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <crypto/hash.h>
- #include <linux/err.h>
- #include <linux/init.h>
-@@ -78,8 +80,8 @@ static int test_cipher_jiffies(struct blkcipher_desc *desc, int enc,
- 			return ret;
- 	}
- 
--	printk("%d operations in %d seconds (%ld bytes)\n",
--	       bcount, sec, (long)bcount * blen);
-+	pr_info("%d operations in %d seconds (%ld bytes)\n",
-+		bcount, sec, (long)bcount * blen);
- 	return 0;
- }
- 
-@@ -126,8 +128,8 @@ out:
- 	local_bh_enable();
- 
- 	if (ret == 0)
--		printk("1 operation in %lu cycles (%d bytes)\n",
--		       (cycles + 4) / 8, blen);
-+		pr_info("1 operation in %lu cycles (%d bytes)\n",
-+			(cycles + 4) / 8, blen);
- 
- 	return ret;
- }
-@@ -150,13 +152,13 @@ static void test_cipher_speed(const char *algo, int enc, unsigned int sec,
- 	else
- 		e = "decryption";
- 
--	printk("\ntesting speed of %s %s\n", algo, e);
-+	pr_info("\ntesting speed of %s %s\n", algo, e);
- 
- 	tfm = crypto_alloc_blkcipher(algo, 0, CRYPTO_ALG_ASYNC);
- 
- 	if (IS_ERR(tfm)) {
--		printk("failed to load transform for %s: %ld\n", algo,
--		       PTR_ERR(tfm));
-+		pr_info("failed to load transform for %s: %ld\n",
-+			algo, PTR_ERR(tfm));
- 		return;
- 	}
- 	desc.tfm = tfm;
-@@ -170,14 +172,14 @@ static void test_cipher_speed(const char *algo, int enc, unsigned int sec,
- 			struct scatterlist sg[TVMEMSIZE];
- 
- 			if ((*keysize + *b_size) > TVMEMSIZE * PAGE_SIZE) {
--				printk("template (%u) too big for "
--				       "tvmem (%lu)\n", *keysize + *b_size,
--				       TVMEMSIZE * PAGE_SIZE);
-+				pr_info("template (%u) too big for tvmem (%lu)\n",
-+					*keysize + *b_size,
-+					TVMEMSIZE * PAGE_SIZE);
- 				goto out;
- 			}
- 
--			printk("test %u (%d bit key, %d byte blocks): ", i,
--					*keysize * 8, *b_size);
-+			pr_info("test %u (%d bit key, %d byte blocks): ",
-+				i, *keysize * 8, *b_size);
- 
- 			memset(tvmem[0], 0xff, PAGE_SIZE);
- 
-@@ -192,8 +194,8 @@ static void test_cipher_speed(const char *algo, int enc, unsigned int sec,
- 
- 			ret = crypto_blkcipher_setkey(tfm, key, *keysize);
- 			if (ret) {
--				printk("setkey() failed flags=%x\n",
--						crypto_blkcipher_get_flags(tfm));
-+				pr_info("setkey() failed flags=%x\n",
-+					crypto_blkcipher_get_flags(tfm));
- 				goto out;
- 			}
- 
-@@ -219,7 +221,8 @@ static void test_cipher_speed(const char *algo, int enc, unsigned int sec,
- 							 *b_size);
- 
- 			if (ret) {
--				printk("%s() failed flags=%x\n", e, desc.flags);
-+				pr_info("%s() failed flags=%x\n",
-+					e, desc.flags);
- 				break;
- 			}
- 			b_size++;
-@@ -247,8 +250,8 @@ static int test_hash_jiffies_digest(struct hash_desc *desc,
- 			return ret;
- 	}
- 
--	printk("%6u opers/sec, %9lu bytes/sec\n",
--	       bcount / sec, ((long)bcount * blen) / sec);
-+	pr_info("%6u opers/sec, %9lu bytes/sec\n",
-+		bcount / sec, ((long)bcount * blen) / sec);
- 
- 	return 0;
- }
-@@ -279,8 +282,8 @@ static int test_hash_jiffies(struct hash_desc *desc, struct scatterlist *sg,
- 			return ret;
- 	}
- 
--	printk("%6u opers/sec, %9lu bytes/sec\n",
--	       bcount / sec, ((long)bcount * blen) / sec);
-+	pr_info("%6u opers/sec, %9lu bytes/sec\n",
-+		bcount / sec, ((long)bcount * blen) / sec);
- 
- 	return 0;
- }
-@@ -324,8 +327,8 @@ out:
- 	if (ret)
- 		return ret;
- 
--	printk("%6lu cycles/operation, %4lu cycles/byte\n",
--	       cycles / 8, cycles / (8 * blen));
-+	pr_info("%6lu cycles/operation, %4lu cycles/byte\n",
-+		cycles / 8, cycles / (8 * blen));
- 
- 	return 0;
- }
-@@ -388,8 +391,8 @@ out:
- 	if (ret)
- 		return ret;
- 
--	printk("%6lu cycles/operation, %4lu cycles/byte\n",
--	       cycles / 8, cycles / (8 * blen));
-+	pr_info("%6lu cycles/operation, %4lu cycles/byte\n",
-+		cycles / 8, cycles / (8 * blen));
- 
- 	return 0;
- }
-@@ -404,13 +407,13 @@ static void test_hash_speed(const char *algo, unsigned int sec,
- 	int i;
- 	int ret;
- 
--	printk(KERN_INFO "\ntesting speed of %s\n", algo);
-+	pr_info("\ntesting speed of %s\n", algo);
- 
- 	tfm = crypto_alloc_hash(algo, 0, CRYPTO_ALG_ASYNC);
- 
- 	if (IS_ERR(tfm)) {
--		printk(KERN_ERR "failed to load transform for %s: %ld\n", algo,
--		       PTR_ERR(tfm));
-+		pr_err("failed to load transform for %s: %ld\n",
-+		       algo, PTR_ERR(tfm));
- 		return;
- 	}
- 
-@@ -418,7 +421,7 @@ static void test_hash_speed(const char *algo, unsigned int sec,
- 	desc.flags = 0;
- 
- 	if (crypto_hash_digestsize(tfm) > sizeof(output)) {
--		printk(KERN_ERR "digestsize(%u) > outputbuffer(%zu)\n",
-+		pr_err("digestsize(%u) > outputbuffer(%zu)\n",
- 		       crypto_hash_digestsize(tfm), sizeof(output));
- 		goto out;
- 	}
-@@ -431,15 +434,14 @@ static void test_hash_speed(const char *algo, unsigned int sec,
- 
- 	for (i = 0; speed[i].blen != 0; i++) {
- 		if (speed[i].blen > TVMEMSIZE * PAGE_SIZE) {
--			printk(KERN_ERR
--			       "template (%u) too big for tvmem (%lu)\n",
-+			pr_err("template (%u) too big for tvmem (%lu)\n",
- 			       speed[i].blen, TVMEMSIZE * PAGE_SIZE);
- 			goto out;
- 		}
- 
--		printk(KERN_INFO "test%3u "
--		       "(%5u byte blocks,%5u bytes per update,%4u updates): ",
--		       i, speed[i].blen, speed[i].plen, speed[i].blen / speed[i].plen);
-+		pr_info("test%3u (%5u byte blocks,%5u bytes per update,%4u updates): ",
-+			i, speed[i].blen,
-+			speed[i].plen, speed[i].blen / speed[i].plen);
- 
- 		if (sec)
- 			ret = test_hash_jiffies(&desc, sg, speed[i].blen,
-@@ -449,7 +451,7 @@ static void test_hash_speed(const char *algo, unsigned int sec,
- 					       speed[i].plen, output);
- 
- 		if (ret) {
--			printk(KERN_ERR "hashing failed ret=%d\n", ret);
-+			pr_err("hashing failed ret=%d\n", ret);
- 			break;
- 		}
- 	}
-@@ -463,9 +465,8 @@ static void test_available(void)
- 	char **name = check;
- 
- 	while (*name) {
--		printk("alg %s ", *name);
--		printk(crypto_has_alg(*name, 0, 0) ?
--		       "found\n" : "not found\n");
-+		pr_info("alg %s %sfound\n",
-+			*name, crypto_has_alg(*name, 0, 0) ? "" : "not ");
- 		name++;
- 	}
- }
-@@ -915,7 +916,7 @@ static int __init tcrypt_mod_init(void)
- 		err = do_test(mode);
- 
- 	if (err) {
--		printk(KERN_ERR "tcrypt: one or more tests failed!\n");
-+		pr_err("one or more tests failed!\n");
- 		goto err_free_tv;
- 	}
- 
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index 6d5b746..31ea9df 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -13,6 +13,8 @@
-  *
-  */
- 
-+#define pr_fmt(fmt) "alg: " fmt
-+
- #include <crypto/hash.h>
- #include <linux/err.h>
- #include <linux/module.h>
-@@ -173,8 +175,7 @@ static int test_hash(struct crypto_ahash *tfm, struct hash_testvec *template,
- 
- 	req = ahash_request_alloc(tfm, GFP_KERNEL);
- 	if (!req) {
--		printk(KERN_ERR "alg: hash: Failed to allocate request for "
--		       "%s\n", algo);
-+		pr_err("hash: Failed to allocate request for %s\n", algo);
- 		goto out_noreq;
- 	}
- 	ahash_request_set_callback(req, CRYPTO_TFM_REQ_MAY_BACKLOG,
-@@ -198,9 +199,8 @@ static int test_hash(struct crypto_ahash *tfm, struct hash_testvec *template,
- 			ret = crypto_ahash_setkey(tfm, template[i].key,
- 						  template[i].ksize);
- 			if (ret) {
--				printk(KERN_ERR "alg: hash: setkey failed on "
--				       "test %d for %s: ret=%d\n", j, algo,
--				       -ret);
-+				pr_err("hash: setkey failed on test %d for %s: ret=%d\n",
-+				       j, algo, -ret);
- 				goto out;
- 			}
- 		}
-@@ -220,14 +220,14 @@ static int test_hash(struct crypto_ahash *tfm, struct hash_testvec *template,
- 			}
- 			/* fall through */
- 		default:
--			printk(KERN_ERR "alg: hash: digest failed on test %d "
--			       "for %s: ret=%d\n", j, algo, -ret);
-+			pr_err("hash: digest failed on test %d for %s: ret=%d\n",
-+			       j, algo, -ret);
- 			goto out;
- 		}
- 
- 		if (memcmp(result, template[i].digest,
- 			   crypto_ahash_digestsize(tfm))) {
--			printk(KERN_ERR "alg: hash: Test %d failed for %s\n",
-+			pr_err("hash: Test %d failed for %s\n",
- 			       j, algo);
- 			hexdump(result, crypto_ahash_digestsize(tfm));
- 			ret = -EINVAL;
-@@ -263,10 +263,8 @@ static int test_hash(struct crypto_ahash *tfm, struct hash_testvec *template,
- 							  template[i].ksize);
- 
- 				if (ret) {
--					printk(KERN_ERR "alg: hash: setkey "
--					       "failed on chunking test %d "
--					       "for %s: ret=%d\n", j, algo,
--					       -ret);
-+					pr_err("hash: setkey failed on chunking test %d for %s: ret=%d\n",
-+					       j, algo, -ret);
- 					goto out;
- 				}
- 			}
-@@ -287,16 +285,15 @@ static int test_hash(struct crypto_ahash *tfm, struct hash_testvec *template,
- 				}
- 				/* fall through */
- 			default:
--				printk(KERN_ERR "alg: hash: digest failed "
--				       "on chunking test %d for %s: "
--				       "ret=%d\n", j, algo, -ret);
-+				pr_err("hash: digest failed on chunking test %d for %s: ret=%d\n",
-+				       j, algo, -ret);
- 				goto out;
- 			}
- 
- 			if (memcmp(result, template[i].digest,
- 				   crypto_ahash_digestsize(tfm))) {
--				printk(KERN_ERR "alg: hash: Chunking test %d "
--				       "failed for %s\n", j, algo);
-+				pr_err("hash: Chunking test %d failed for %s\n",
-+				       j, algo);
- 				hexdump(result, crypto_ahash_digestsize(tfm));
- 				ret = -EINVAL;
- 				goto out;
-@@ -348,8 +345,7 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 
- 	req = aead_request_alloc(tfm, GFP_KERNEL);
- 	if (!req) {
--		printk(KERN_ERR "alg: aead: Failed to allocate request for "
--		       "%s\n", algo);
-+		pr_err("aead: Failed to allocate request for %s\n", algo);
- 		goto out;
- 	}
- 
-@@ -388,9 +384,8 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 			ret = crypto_aead_setkey(tfm, key,
- 						 template[i].klen);
- 			if (!ret == template[i].fail) {
--				printk(KERN_ERR "alg: aead: setkey failed on "
--				       "test %d for %s: flags=%x\n", j, algo,
--				       crypto_aead_get_flags(tfm));
-+				pr_err("aead: setkey failed on test %d for %s: flags=%x\n",
-+				       j, algo, crypto_aead_get_flags(tfm));
- 				goto out;
- 			} else if (ret)
- 				continue;
-@@ -398,8 +393,7 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 			authsize = abs(template[i].rlen - template[i].ilen);
- 			ret = crypto_aead_setauthsize(tfm, authsize);
- 			if (ret) {
--				printk(KERN_ERR "alg: aead: Failed to set "
--				       "authsize to %u on test %d for %s\n",
-+				pr_err("aead: Failed to set authsize to %u on test %d for %s\n",
- 				       authsize, j, algo);
- 				goto out;
- 			}
-@@ -422,9 +416,7 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 			case 0:
- 				if (template[i].novrfy) {
- 					/* verification was supposed to fail */
--					printk(KERN_ERR "alg: aead: %s failed "
--					       "on test %d for %s: ret was 0, "
--					       "expected -EBADMSG\n",
-+					pr_err("aead: %s failed on test %d for %s: ret was 0, expected -EBADMSG\n",
- 					       e, j, algo);
- 					/* so really, we got a bad message */
- 					ret = -EBADMSG;
-@@ -445,15 +437,15 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 					continue;
- 				/* fall through */
- 			default:
--				printk(KERN_ERR "alg: aead: %s failed on test "
--				       "%d for %s: ret=%d\n", e, j, algo, -ret);
-+				pr_err("aead: %s failed on test %d for %s: ret=%d\n",
-+				       e, j, algo, -ret);
- 				goto out;
- 			}
- 
- 			q = input;
- 			if (memcmp(q, template[i].result, template[i].rlen)) {
--				printk(KERN_ERR "alg: aead: Test %d failed on "
--				       "%s for %s\n", j, e, algo);
-+				pr_err("aead: Test %d failed on %s for %s\n",
-+				       j, e, algo);
- 				hexdump(q, template[i].rlen);
- 				ret = -EINVAL;
- 				goto out;
-@@ -478,9 +470,8 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 
- 			ret = crypto_aead_setkey(tfm, key, template[i].klen);
- 			if (!ret == template[i].fail) {
--				printk(KERN_ERR "alg: aead: setkey failed on "
--				       "chunk test %d for %s: flags=%x\n", j,
--				       algo, crypto_aead_get_flags(tfm));
-+				pr_err("aead: setkey failed on chunk test %d for %s: flags=%x\n",
-+				       j, algo, crypto_aead_get_flags(tfm));
- 				goto out;
- 			} else if (ret)
- 				continue;
-@@ -512,9 +503,8 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 
- 			ret = crypto_aead_setauthsize(tfm, authsize);
- 			if (ret) {
--				printk(KERN_ERR "alg: aead: Failed to set "
--				       "authsize to %u on chunk test %d for "
--				       "%s\n", authsize, j, algo);
-+				pr_err("aead: Failed to set authsize to %u on chunk test %d for %s\n",
-+				       authsize, j, algo);
- 				goto out;
- 			}
- 
-@@ -558,9 +548,7 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 			case 0:
- 				if (template[i].novrfy) {
- 					/* verification was supposed to fail */
--					printk(KERN_ERR "alg: aead: %s failed "
--					       "on chunk test %d for %s: ret "
--					       "was 0, expected -EBADMSG\n",
-+					pr_err("aead: %s failed on chunk test %d for %s: ret was 0, expected -EBADMSG\n",
- 					       e, j, algo);
- 					/* so really, we got a bad message */
- 					ret = -EBADMSG;
-@@ -581,9 +569,8 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 					continue;
- 				/* fall through */
- 			default:
--				printk(KERN_ERR "alg: aead: %s failed on "
--				       "chunk test %d for %s: ret=%d\n", e, j,
--				       algo, -ret);
-+				pr_err("aead: %s failed on chunk test %d for %s: ret=%d\n",
-+				       e, j, algo, -ret);
- 				goto out;
- 			}
- 
-@@ -597,9 +584,8 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 					n += enc ? authsize : -authsize;
- 
- 				if (memcmp(q, template[i].result + temp, n)) {
--					printk(KERN_ERR "alg: aead: Chunk "
--					       "test %d failed on %s at page "
--					       "%u for %s\n", j, e, k, algo);
-+					pr_err("aead: Chunk test %d failed on %s at page %u for %s\n",
-+					       j, e, k, algo);
- 					hexdump(q, n);
- 					goto out;
- 				}
-@@ -617,11 +603,8 @@ static int test_aead(struct crypto_aead *tfm, int enc,
- 						;
- 				}
- 				if (n) {
--					printk(KERN_ERR "alg: aead: Result "
--					       "buffer corruption in chunk "
--					       "test %d on %s at page %u for "
--					       "%s: %u bytes:\n", j, e, k,
--					       algo, n);
-+					pr_err("aead: Result buffer corruption in chunk test %d on %s at page %u for %s: %u bytes:\n",
-+					       j, e, k, algo, n);
- 					hexdump(q, n);
- 					goto out;
- 				}
-@@ -682,9 +665,8 @@ static int test_cipher(struct crypto_cipher *tfm, int enc,
- 		ret = crypto_cipher_setkey(tfm, template[i].key,
- 					   template[i].klen);
- 		if (!ret == template[i].fail) {
--			printk(KERN_ERR "alg: cipher: setkey failed "
--			       "on test %d for %s: flags=%x\n", j,
--			       algo, crypto_cipher_get_flags(tfm));
-+			pr_err("cipher: setkey failed on test %d for %s: flags=%x\n",
-+			       j, algo, crypto_cipher_get_flags(tfm));
- 			goto out;
- 		} else if (ret)
- 			continue;
-@@ -701,8 +683,8 @@ static int test_cipher(struct crypto_cipher *tfm, int enc,
- 
- 		q = data;
- 		if (memcmp(q, template[i].result, template[i].rlen)) {
--			printk(KERN_ERR "alg: cipher: Test %d failed "
--			       "on %s for %s\n", j, e, algo);
-+			pr_err("cipher: Test %d failed on %s for %s\n",
-+			       j, e, algo);
- 			hexdump(q, template[i].rlen);
- 			ret = -EINVAL;
- 			goto out;
-@@ -745,8 +727,7 @@ static int test_skcipher(struct crypto_ablkcipher *tfm, int enc,
- 
- 	req = ablkcipher_request_alloc(tfm, GFP_KERNEL);
- 	if (!req) {
--		printk(KERN_ERR "alg: skcipher: Failed to allocate request "
--		       "for %s\n", algo);
-+		pr_err("skcipher: Failed to allocate request for %s\n", algo);
- 		goto out;
- 	}
- 
-@@ -778,9 +759,9 @@ static int test_skcipher(struct crypto_ablkcipher *tfm, int enc,
- 			ret = crypto_ablkcipher_setkey(tfm, template[i].key,
- 						       template[i].klen);
- 			if (!ret == template[i].fail) {
--				printk(KERN_ERR "alg: skcipher: setkey failed "
--				       "on test %d for %s: flags=%x\n", j,
--				       algo, crypto_ablkcipher_get_flags(tfm));
-+				pr_err("skcipher: setkey failed on test %d for %s: flags=%x\n",
-+				       j, algo,
-+				       crypto_ablkcipher_get_flags(tfm));
- 				goto out;
- 			} else if (ret)
- 				continue;
-@@ -806,16 +787,15 @@ static int test_skcipher(struct crypto_ablkcipher *tfm, int enc,
- 				}
- 				/* fall through */
- 			default:
--				printk(KERN_ERR "alg: skcipher: %s failed on "
--				       "test %d for %s: ret=%d\n", e, j, algo,
--				       -ret);
-+				pr_err("skcipher: %s failed on test %d for %s: ret=%d\n",
-+				       e, j, algo, -ret);
- 				goto out;
- 			}
- 
- 			q = data;
- 			if (memcmp(q, template[i].result, template[i].rlen)) {
--				printk(KERN_ERR "alg: skcipher: Test %d "
--				       "failed on %s for %s\n", j, e, algo);
-+				pr_err("skcipher: Test %d failed on %s for %s\n",
-+				       j, e, algo);
- 				hexdump(q, template[i].rlen);
- 				ret = -EINVAL;
- 				goto out;
-@@ -842,8 +822,7 @@ static int test_skcipher(struct crypto_ablkcipher *tfm, int enc,
- 			ret = crypto_ablkcipher_setkey(tfm, template[i].key,
- 						       template[i].klen);
- 			if (!ret == template[i].fail) {
--				printk(KERN_ERR "alg: skcipher: setkey failed "
--				       "on chunk test %d for %s: flags=%x\n",
-+				pr_err("skcipher: setkey failed on chunk test %d for %s: flags=%x\n",
- 				       j, algo,
- 				       crypto_ablkcipher_get_flags(tfm));
- 				goto out;
-@@ -893,9 +872,8 @@ static int test_skcipher(struct crypto_ablkcipher *tfm, int enc,
- 				}
- 				/* fall through */
- 			default:
--				printk(KERN_ERR "alg: skcipher: %s failed on "
--				       "chunk test %d for %s: ret=%d\n", e, j,
--				       algo, -ret);
-+				pr_err("skcipher: %s failed on chunk test %d for %s: ret=%d\n",
-+				       e, j, algo, -ret);
- 				goto out;
- 			}
- 
-@@ -907,9 +885,8 @@ static int test_skcipher(struct crypto_ablkcipher *tfm, int enc,
- 
- 				if (memcmp(q, template[i].result + temp,
- 					   template[i].tap[k])) {
--					printk(KERN_ERR "alg: skcipher: Chunk "
--					       "test %d failed on %s at page "
--					       "%u for %s\n", j, e, k, algo);
-+					pr_err("skcipher: Chunk test %d failed on %s at page %u for %s\n",
-+					       j, e, k, algo);
- 					hexdump(q, template[i].tap[k]);
- 					goto out;
- 				}
-@@ -918,11 +895,8 @@ static int test_skcipher(struct crypto_ablkcipher *tfm, int enc,
- 				for (n = 0; offset_in_page(q + n) && q[n]; n++)
- 					;
- 				if (n) {
--					printk(KERN_ERR "alg: skcipher: "
--					       "Result buffer corruption in "
--					       "chunk test %d on %s at page "
--					       "%u for %s: %u bytes:\n", j, e,
--					       k, algo, n);
-+					pr_err("skcipher: Result buffer corruption in chunk test %d on %s at page %u for %s: %u bytes:\n",
-+					       j, e, k, algo, n);
- 					hexdump(q, n);
- 					goto out;
- 				}
-@@ -958,23 +932,21 @@ static int test_comp(struct crypto_comp *tfm, struct comp_testvec *ctemplate,
- 		ret = crypto_comp_compress(tfm, ctemplate[i].input,
- 		                           ilen, result, &dlen);
- 		if (ret) {
--			printk(KERN_ERR "alg: comp: compression failed "
--			       "on test %d for %s: ret=%d\n", i + 1, algo,
--			       -ret);
-+			pr_err("comp: compression failed on test %d for %s: ret=%d\n",
-+			       i + 1, algo, -ret);
- 			goto out;
- 		}
- 
- 		if (dlen != ctemplate[i].outlen) {
--			printk(KERN_ERR "alg: comp: Compression test %d "
--			       "failed for %s: output len = %d\n", i + 1, algo,
--			       dlen);
-+			pr_err("comp: Compression test %d failed for %s: output len = %d\n",
-+			       i + 1, algo, dlen);
- 			ret = -EINVAL;
- 			goto out;
- 		}
- 
- 		if (memcmp(result, ctemplate[i].output, dlen)) {
--			printk(KERN_ERR "alg: comp: Compression test %d "
--			       "failed for %s\n", i + 1, algo);
-+			pr_err("comp: Compression test %d failed for %s\n",
-+			       i + 1, algo);
- 			hexdump(result, dlen);
- 			ret = -EINVAL;
- 			goto out;
-@@ -991,23 +963,21 @@ static int test_comp(struct crypto_comp *tfm, struct comp_testvec *ctemplate,
- 		ret = crypto_comp_decompress(tfm, dtemplate[i].input,
- 		                             ilen, result, &dlen);
- 		if (ret) {
--			printk(KERN_ERR "alg: comp: decompression failed "
--			       "on test %d for %s: ret=%d\n", i + 1, algo,
--			       -ret);
-+			pr_err("comp: decompression failed on test %d for %s: ret=%d\n",
-+			       i + 1, algo, -ret);
- 			goto out;
- 		}
- 
- 		if (dlen != dtemplate[i].outlen) {
--			printk(KERN_ERR "alg: comp: Decompression test %d "
--			       "failed for %s: output len = %d\n", i + 1, algo,
--			       dlen);
-+			pr_err("comp: Decompression test %d failed for %s: output len = %d\n",
-+			       i + 1, algo, dlen);
- 			ret = -EINVAL;
- 			goto out;
- 		}
- 
- 		if (memcmp(result, dtemplate[i].output, dlen)) {
--			printk(KERN_ERR "alg: comp: Decompression test %d "
--			       "failed for %s\n", i + 1, algo);
-+			pr_err("comp: Decompression test %d failed for %s\n",
-+			       i + 1, algo);
- 			hexdump(result, dlen);
- 			ret = -EINVAL;
- 			goto out;
-@@ -1037,15 +1007,15 @@ static int test_pcomp(struct crypto_pcomp *tfm,
- 		res = crypto_compress_setup(tfm, ctemplate[i].params,
- 					    ctemplate[i].paramsize);
- 		if (res) {
--			pr_err("alg: pcomp: compression setup failed on test "
--			       "%d for %s: error=%d\n", i + 1, algo, res);
-+			pr_err("pcomp: compression setup failed on test %d for %s: error=%d\n",
-+			       i + 1, algo, res);
- 			return res;
- 		}
- 
- 		res = crypto_compress_init(tfm);
- 		if (res) {
--			pr_err("alg: pcomp: compression init failed on test "
--			       "%d for %s: error=%d\n", i + 1, algo, res);
-+			pr_err("pcomp: compression init failed on test %d for %s: error=%d\n",
-+			       i + 1, algo, res);
- 			return res;
- 		}
- 
-@@ -1058,8 +1028,8 @@ static int test_pcomp(struct crypto_pcomp *tfm,
- 
- 		res = crypto_compress_update(tfm, &req);
- 		if (res < 0 && (res != -EAGAIN || req.avail_in)) {
--			pr_err("alg: pcomp: compression update failed on test "
--			       "%d for %s: error=%d\n", i + 1, algo, res);
-+			pr_err("pcomp: compression update failed on test %d for %s: error=%d\n",
-+			       i + 1, algo, res);
- 			return res;
- 		}
- 		if (res > 0)
-@@ -1070,8 +1040,8 @@ static int test_pcomp(struct crypto_pcomp *tfm,
- 
- 		res = crypto_compress_update(tfm, &req);
- 		if (res < 0 && (res != -EAGAIN || req.avail_in)) {
--			pr_err("alg: pcomp: compression update failed on test "
--			       "%d for %s: error=%d\n", i + 1, algo, res);
-+			pr_err("pcomp: compression update failed on test %d for %s: error=%d\n",
-+			       i + 1, algo, res);
- 			return res;
- 		}
- 		if (res > 0)
-@@ -1082,30 +1052,29 @@ static int test_pcomp(struct crypto_pcomp *tfm,
- 
- 		res = crypto_compress_final(tfm, &req);
- 		if (res < 0) {
--			pr_err("alg: pcomp: compression final failed on test "
--			       "%d for %s: error=%d\n", i + 1, algo, res);
-+			pr_err("pcomp: compression final failed on test %d for %s: error=%d\n",
-+			       i + 1, algo, res);
- 			return res;
- 		}
- 		produced += res;
- 
- 		if (COMP_BUF_SIZE - req.avail_out != ctemplate[i].outlen) {
--			pr_err("alg: comp: Compression test %d failed for %s: "
--			       "output len = %d (expected %d)\n", i + 1, algo,
-+			pr_err("comp: Compression test %d failed for %s: output len = %d (expected %d)\n",
-+			       i + 1, algo,
- 			       COMP_BUF_SIZE - req.avail_out,
- 			       ctemplate[i].outlen);
- 			return -EINVAL;
- 		}
- 
- 		if (produced != ctemplate[i].outlen) {
--			pr_err("alg: comp: Compression test %d failed for %s: "
--			       "returned len = %u (expected %d)\n", i + 1,
--			       algo, produced, ctemplate[i].outlen);
-+			pr_err("comp: Compression test %d failed for %s: returned len = %u (expected %d)\n",
-+			       i + 1, algo, produced, ctemplate[i].outlen);
- 			return -EINVAL;
- 		}
- 
- 		if (memcmp(result, ctemplate[i].output, ctemplate[i].outlen)) {
--			pr_err("alg: pcomp: Compression test %d failed for "
--			       "%s\n", i + 1, algo);
-+			pr_err("pcomp: Compression test %d failed for %s\n",
-+			       i + 1, algo);
- 			hexdump(result, ctemplate[i].outlen);
- 			return -EINVAL;
- 		}
-@@ -1118,15 +1087,15 @@ static int test_pcomp(struct crypto_pcomp *tfm,
- 		res = crypto_decompress_setup(tfm, dtemplate[i].params,
- 					      dtemplate[i].paramsize);
- 		if (res) {
--			pr_err("alg: pcomp: decompression setup failed on "
--			       "test %d for %s: error=%d\n", i + 1, algo, res);
-+			pr_err("pcomp: decompression setup failed on test %d for %s: error=%d\n",
-+			       i + 1, algo, res);
- 			return res;
- 		}
- 
- 		res = crypto_decompress_init(tfm);
- 		if (res) {
--			pr_err("alg: pcomp: decompression init failed on test "
--			       "%d for %s: error=%d\n", i + 1, algo, res);
-+			pr_err("pcomp: decompression init failed on test %d for %s: error=%d\n",
-+			       i + 1, algo, res);
- 			return res;
- 		}
- 
-@@ -1139,8 +1108,8 @@ static int test_pcomp(struct crypto_pcomp *tfm,
- 
- 		res = crypto_decompress_update(tfm, &req);
- 		if (res < 0 && (res != -EAGAIN || req.avail_in)) {
--			pr_err("alg: pcomp: decompression update failed on "
--			       "test %d for %s: error=%d\n", i + 1, algo, res);
-+			pr_err("pcomp: decompression update failed on test %d for %s: error=%d\n",
-+			       i + 1, algo, res);
- 			return res;
- 		}
- 		if (res > 0)
-@@ -1151,8 +1120,8 @@ static int test_pcomp(struct crypto_pcomp *tfm,
- 
- 		res = crypto_decompress_update(tfm, &req);
- 		if (res < 0 && (res != -EAGAIN || req.avail_in)) {
--			pr_err("alg: pcomp: decompression update failed on "
--			       "test %d for %s: error=%d\n", i + 1, algo, res);
-+			pr_err("pcomp: decompression update failed on test %d for %s: error=%d\n",
-+			       i + 1, algo, res);
- 			return res;
- 		}
- 		if (res > 0)
-@@ -1163,31 +1132,30 @@ static int test_pcomp(struct crypto_pcomp *tfm,
- 
- 		res = crypto_decompress_final(tfm, &req);
- 		if (res < 0 && (res != -EAGAIN || req.avail_in)) {
--			pr_err("alg: pcomp: decompression final failed on "
--			       "test %d for %s: error=%d\n", i + 1, algo, res);
-+			pr_err("pcomp: decompression final failed on test %d for %s: error=%d\n",
-+			       i + 1, algo, res);
- 			return res;
- 		}
- 		if (res > 0)
- 			produced += res;
- 
- 		if (COMP_BUF_SIZE - req.avail_out != dtemplate[i].outlen) {
--			pr_err("alg: comp: Decompression test %d failed for "
--			       "%s: output len = %d (expected %d)\n", i + 1,
--			       algo, COMP_BUF_SIZE - req.avail_out,
-+			pr_err("comp: Decompression test %d failed for %s: output len = %d (expected %d)\n",
-+			       i + 1, algo,
-+			       COMP_BUF_SIZE - req.avail_out,
- 			       dtemplate[i].outlen);
- 			return -EINVAL;
- 		}
- 
- 		if (produced != dtemplate[i].outlen) {
--			pr_err("alg: comp: Decompression test %d failed for "
--			       "%s: returned len = %u (expected %d)\n", i + 1,
--			       algo, produced, dtemplate[i].outlen);
-+			pr_err("comp: Decompression test %d failed for %s: returned len = %u (expected %d)\n",
-+			       i + 1, algo, produced, dtemplate[i].outlen);
- 			return -EINVAL;
- 		}
- 
- 		if (memcmp(result, dtemplate[i].output, dtemplate[i].outlen)) {
--			pr_err("alg: pcomp: Decompression test %d failed for "
--			       "%s\n", i + 1, algo);
-+			pr_err("pcomp: Decompression test %d failed for %s\n",
-+			       i + 1, algo);
- 			hexdump(result, dtemplate[i].outlen);
- 			return -EINVAL;
- 		}
-@@ -1209,8 +1177,7 @@ static int test_cprng(struct crypto_rng *tfm, struct cprng_testvec *template,
- 
- 	seed = kmalloc(seedsize, GFP_KERNEL);
- 	if (!seed) {
--		printk(KERN_ERR "alg: cprng: Failed to allocate seed space "
--		       "for %s\n", algo);
-+		pr_err("cprng: Failed to allocate seed space for %s\n", algo);
- 		return -ENOMEM;
- 	}
- 
-@@ -1225,8 +1192,7 @@ static int test_cprng(struct crypto_rng *tfm, struct cprng_testvec *template,
- 
- 		err = crypto_rng_reset(tfm, seed, seedsize);
- 		if (err) {
--			printk(KERN_ERR "alg: cprng: Failed to reset rng "
--			       "for %s\n", algo);
-+			pr_err("cprng: Failed to reset rng for %s\n", algo);
- 			goto out;
- 		}
- 
-@@ -1234,10 +1200,8 @@ static int test_cprng(struct crypto_rng *tfm, struct cprng_testvec *template,
- 			err = crypto_rng_get_bytes(tfm, result,
- 						   template[i].rlen);
- 			if (err != template[i].rlen) {
--				printk(KERN_ERR "alg: cprng: Failed to obtain "
--				       "the correct amount of random data for "
--				       "%s (requested %d, got %d)\n", algo,
--				       template[i].rlen, err);
-+				pr_err("cprng: Failed to obtain the correct amount of random data for %s (requested %d, got %d)\n",
-+				       algo, template[i].rlen, err);
- 				goto out;
- 			}
- 		}
-@@ -1245,8 +1209,7 @@ static int test_cprng(struct crypto_rng *tfm, struct cprng_testvec *template,
- 		err = memcmp(result, template[i].result,
- 			     template[i].rlen);
- 		if (err) {
--			printk(KERN_ERR "alg: cprng: Test %d failed for %s\n",
--			       i, algo);
-+			pr_err("cprng: Test %d failed for %s\n", i, algo);
- 			hexdump(result, template[i].rlen);
- 			err = -EINVAL;
- 			goto out;
-@@ -1266,8 +1229,8 @@ static int alg_test_aead(const struct alg_test_desc *desc, const char *driver,
- 
- 	tfm = crypto_alloc_aead(driver, type, mask);
- 	if (IS_ERR(tfm)) {
--		printk(KERN_ERR "alg: aead: Failed to load transform for %s: "
--		       "%ld\n", driver, PTR_ERR(tfm));
-+		pr_err("aead: Failed to load transform for %s: %ld\n",
-+		       driver, PTR_ERR(tfm));
- 		return PTR_ERR(tfm);
- 	}
- 
-@@ -1295,8 +1258,8 @@ static int alg_test_cipher(const struct alg_test_desc *desc,
- 
- 	tfm = crypto_alloc_cipher(driver, type, mask);
- 	if (IS_ERR(tfm)) {
--		printk(KERN_ERR "alg: cipher: Failed to load transform for "
--		       "%s: %ld\n", driver, PTR_ERR(tfm));
-+		pr_err("cipher: Failed to load transform for %s: %ld\n",
-+		       driver, PTR_ERR(tfm));
- 		return PTR_ERR(tfm);
- 	}
- 
-@@ -1324,8 +1287,8 @@ static int alg_test_skcipher(const struct alg_test_desc *desc,
- 
- 	tfm = crypto_alloc_ablkcipher(driver, type, mask);
- 	if (IS_ERR(tfm)) {
--		printk(KERN_ERR "alg: skcipher: Failed to load transform for "
--		       "%s: %ld\n", driver, PTR_ERR(tfm));
-+		pr_err("skcipher: Failed to load transform for %s: %ld\n",
-+		       driver, PTR_ERR(tfm));
- 		return PTR_ERR(tfm);
- 	}
- 
-@@ -1353,8 +1316,8 @@ static int alg_test_comp(const struct alg_test_desc *desc, const char *driver,
- 
- 	tfm = crypto_alloc_comp(driver, type, mask);
- 	if (IS_ERR(tfm)) {
--		printk(KERN_ERR "alg: comp: Failed to load transform for %s: "
--		       "%ld\n", driver, PTR_ERR(tfm));
-+		pr_err("comp: Failed to load transform for %s: %ld\n",
-+		       driver, PTR_ERR(tfm));
- 		return PTR_ERR(tfm);
- 	}
- 
-@@ -1375,7 +1338,7 @@ static int alg_test_pcomp(const struct alg_test_desc *desc, const char *driver,
- 
- 	tfm = crypto_alloc_pcomp(driver, type, mask);
- 	if (IS_ERR(tfm)) {
--		pr_err("alg: pcomp: Failed to load transform for %s: %ld\n",
-+		pr_err("pcomp: Failed to load transform for %s: %ld\n",
- 		       driver, PTR_ERR(tfm));
- 		return PTR_ERR(tfm);
- 	}
-@@ -1397,7 +1360,7 @@ static int alg_test_hash(const struct alg_test_desc *desc, const char *driver,
- 
- 	tfm = crypto_alloc_ahash(driver, type, mask);
- 	if (IS_ERR(tfm)) {
--		printk(KERN_ERR "alg: hash: Failed to load transform for %s: "
-+		pr_err("hash: Failed to load transform for %s: "
- 		       "%ld\n", driver, PTR_ERR(tfm));
- 		return PTR_ERR(tfm);
- 	}
-@@ -1421,8 +1384,8 @@ static int alg_test_crc32c(const struct alg_test_desc *desc,
- 
- 	tfm = crypto_alloc_shash(driver, type, mask);
- 	if (IS_ERR(tfm)) {
--		printk(KERN_ERR "alg: crc32c: Failed to load transform for %s: "
--		       "%ld\n", driver, PTR_ERR(tfm));
-+		pr_err("crc32c: Failed to load transform for %s: %ld\n",
-+		       driver, PTR_ERR(tfm));
- 		err = PTR_ERR(tfm);
- 		goto out;
- 	}
-@@ -1439,14 +1402,13 @@ static int alg_test_crc32c(const struct alg_test_desc *desc,
- 		*(u32 *)sdesc.ctx = le32_to_cpu(420553207);
- 		err = crypto_shash_final(&sdesc.shash, (u8 *)&val);
- 		if (err) {
--			printk(KERN_ERR "alg: crc32c: Operation failed for "
--			       "%s: %d\n", driver, err);
-+			pr_err("crc32c: Operation failed for %s: %d\n",
-+			       driver, err);
- 			break;
- 		}
- 
- 		if (val != ~420553207) {
--			printk(KERN_ERR "alg: crc32c: Test failed for %s: "
--			       "%d\n", driver, val);
-+			pr_err("crc32c: Test failed for %s: %d\n", driver, val);
- 			err = -EINVAL;
- 		}
- 	} while (0);
-@@ -1465,8 +1427,8 @@ static int alg_test_cprng(const struct alg_test_desc *desc, const char *driver,
- 
- 	rng = crypto_alloc_rng(driver, type, mask);
- 	if (IS_ERR(rng)) {
--		printk(KERN_ERR "alg: cprng: Failed to load transform for %s: "
--		       "%ld\n", driver, PTR_ERR(rng));
-+		pr_err("cprng: Failed to load transform for %s: %ld\n",
-+		       driver, PTR_ERR(rng));
- 		return PTR_ERR(rng);
- 	}
- 
-@@ -2393,16 +2355,16 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
- 
- test_done:
- 	if (fips_enabled && rc)
--		panic("%s: %s alg self test failed in fips mode!\n", driver, alg);
-+		panic("%s: %s alg self test failed in fips mode!\n",
-+		      driver, alg);
- 
- 	if (fips_enabled && !rc)
--		printk(KERN_INFO "alg: self-tests for %s (%s) passed\n",
--		       driver, alg);
-+		pr_info("self-tests for %s (%s) passed\n", driver, alg);
- 
- 	return rc;
- 
- notest:
--	printk(KERN_INFO "alg: No test for %s (%s)\n", alg, driver);
-+	pr_info("No test for %s (%s)\n", alg, driver);
- 	return 0;
- non_fips_alg:
- 	return -EINVAL;
-diff --git a/crypto/xor.c b/crypto/xor.c
-index fc5b836..4aea14d 100644
---- a/crypto/xor.c
-+++ b/crypto/xor.c
-@@ -16,6 +16,8 @@
-  * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
- 
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #define BH_TRACE 0
- #include <linux/module.h>
- #include <linux/raid/xor.h>
-@@ -91,8 +93,8 @@ do_xor_speed(struct xor_block_template *tmpl, void *b1, void *b2)
- 	speed = max * (HZ * BENCH_SIZE / 1024);
- 	tmpl->speed = speed;
- 
--	printk(KERN_INFO "   %-10s: %5d.%03d MB/sec\n", tmpl->name,
--	       speed / 1000, speed % 1000);
-+	pr_info("   %-10s: %5d.%03d MB/sec\n", tmpl->name,
-+		speed / 1000, speed % 1000);
- }
- 
- static int __init
-@@ -108,7 +110,7 @@ calibrate_xor_blocks(void)
+@@ -223,8 +225,7 @@ static int create_image(int platform_mode)
  	 */
- 	b1 = (void *) __get_free_pages(GFP_KERNEL | __GFP_NOTRACK, 2);
- 	if (!b1) {
--		printk(KERN_WARNING "xor: Yikes!  No memory available.\n");
-+		pr_warning("Yikes!  No memory available.\n");
+ 	error = dpm_suspend_noirq(PMSG_FREEZE);
+ 	if (error) {
+-		printk(KERN_ERR "PM: Some devices failed to power down, "
+-			"aborting hibernation\n");
++		pr_err("Some devices failed to power down, aborting hibernation\n");
+ 		return error;
+ 	}
+ 
+@@ -241,8 +242,7 @@ static int create_image(int platform_mode)
+ 
+ 	error = sysdev_suspend(PMSG_FREEZE);
+ 	if (error) {
+-		printk(KERN_ERR "PM: Some system devices failed to power down, "
+-			"aborting hibernation\n");
++		pr_err("Some system devices failed to power down, aborting hibernation\n");
+ 		goto Enable_irqs;
+ 	}
+ 
+@@ -253,8 +253,7 @@ static int create_image(int platform_mode)
+ 	save_processor_state();
+ 	error = swsusp_arch_suspend();
+ 	if (error)
+-		printk(KERN_ERR "PM: Error %d creating hibernation image\n",
+-			error);
++		pr_err("Error %d creating hibernation image\n", error);
+ 	/* Restore control flow magically appears here */
+ 	restore_processor_state();
+ 	if (!in_suspend)
+@@ -345,8 +344,7 @@ static int resume_target_kernel(bool platform_mode)
+ 
+ 	error = dpm_suspend_noirq(PMSG_QUIESCE);
+ 	if (error) {
+-		printk(KERN_ERR "PM: Some devices failed to power down, "
+-			"aborting resume\n");
++		pr_err("Some devices failed to power down, aborting resume\n");
+ 		return error;
+ 	}
+ 
+@@ -523,7 +521,7 @@ static void power_down(void)
+ 	 * Valid image is on the disk, if we continue we risk serious data
+ 	 * corruption after resume.
+ 	 */
+-	printk(KERN_CRIT "PM: Please power down manually\n");
++	pr_crit("Please power down manually\n");
+ 	while(1);
+ }
+ 
+@@ -567,9 +565,9 @@ int hibernate(void)
+ 	if (error)
+ 		goto Exit;
+ 
+-	printk(KERN_INFO "PM: Syncing filesystems ... ");
++	pr_info("Syncing filesystems ... ");
+ 	sys_sync();
+-	printk("done.\n");
++	pr_cont("done.\n");
+ 
+ 	error = prepare_processes();
+ 	if (error)
+@@ -590,13 +588,13 @@ int hibernate(void)
+ 
+ 		if (hibernation_mode == HIBERNATION_PLATFORM)
+ 			flags |= SF_PLATFORM_MODE;
+-		pr_debug("PM: writing image.\n");
++		pr_debug("writing image.\n");
+ 		error = swsusp_write(flags);
+ 		swsusp_free();
+ 		if (!error)
+ 			power_down();
+ 	} else {
+-		pr_debug("PM: Image restored successfully.\n");
++		pr_debug("Image restored successfully.\n");
+ 	}
+ 
+  Thaw:
+@@ -657,7 +655,7 @@ static int software_resume(void)
+ 		goto Unlock;
+ 	}
+ 
+-	pr_debug("PM: Checking image partition %s\n", resume_file);
++	pr_debug("Checking image partition %s\n", resume_file);
+ 
+ 	/* Check if the device is there */
+ 	swsusp_resume_device = name_to_dev_t(resume_file);
+@@ -682,10 +680,10 @@ static int software_resume(void)
+ 	}
+ 
+  Check_image:
+-	pr_debug("PM: Resume from partition %d:%d\n",
+-		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
++	pr_debug("Resume from partition %d:%d\n",
++		 MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
+ 
+-	pr_debug("PM: Checking hibernation image.\n");
++	pr_debug("Checking hibernation image.\n");
+ 	error = swsusp_check();
+ 	if (error)
+ 		goto Unlock;
+@@ -709,20 +707,20 @@ static int software_resume(void)
+ 	if (error)
+ 		goto Finish;
+ 
+-	pr_debug("PM: Preparing processes for restore.\n");
++	pr_debug("Preparing processes for restore.\n");
+ 	error = prepare_processes();
+ 	if (error) {
+ 		swsusp_close(FMODE_READ);
+ 		goto Done;
+ 	}
+ 
+-	pr_debug("PM: Reading hibernation image.\n");
++	pr_debug("Reading hibernation image.\n");
+ 
+ 	error = swsusp_read(&flags);
+ 	if (!error)
+ 		hibernation_restore(flags & SF_PLATFORM_MODE);
+ 
+-	printk(KERN_ERR "PM: Restore failed, recovering.\n");
++	pr_err("Restore failed, recovering.\n");
+ 	swsusp_free();
+ 	thaw_processes();
+  Done:
+@@ -735,7 +733,7 @@ static int software_resume(void)
+ 	/* For success case, the suspend path will release the lock */
+  Unlock:
+ 	mutex_unlock(&pm_mutex);
+-	pr_debug("PM: Resume from disk failed.\n");
++	pr_debug("Resume from disk failed.\n");
+ 	return error;
+ }
+ 
+@@ -845,7 +843,7 @@ static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 		error = -EINVAL;
+ 
+ 	if (!error)
+-		pr_debug("PM: Hibernation mode set to '%s'\n",
++		pr_debug("Hibernation mode set to '%s'\n",
+ 			 hibernation_modes[mode]);
+ 	mutex_unlock(&pm_mutex);
+ 	return error ? error : n;
+@@ -877,7 +875,7 @@ static ssize_t resume_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 	mutex_lock(&pm_mutex);
+ 	swsusp_resume_device = res;
+ 	mutex_unlock(&pm_mutex);
+-	printk(KERN_INFO "PM: Starting manual resume from disk\n");
++	pr_info("Starting manual resume from disk\n");
+ 	noresume = 0;
+ 	software_resume();
+ 	ret = n;
+diff --git a/kernel/power/hibernate_nvs.c b/kernel/power/hibernate_nvs.c
+index 39ac698..13bf5cf 100644
+--- a/kernel/power/hibernate_nvs.c
++++ b/kernel/power/hibernate_nvs.c
+@@ -6,6 +6,8 @@
+  * This file is released under the GPLv2.
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+@@ -108,7 +110,7 @@ void hibernate_nvs_save(void)
+ {
+ 	struct nvs_page *entry;
+ 
+-	printk(KERN_INFO "PM: Saving platform NVS memory\n");
++	pr_info("Saving platform NVS memory\n");
+ 
+ 	list_for_each_entry(entry, &nvs_list, node)
+ 		if (entry->data) {
+@@ -127,7 +129,7 @@ void hibernate_nvs_restore(void)
+ {
+ 	struct nvs_page *entry;
+ 
+-	printk(KERN_INFO "PM: Restoring platform NVS memory\n");
++	pr_info("Restoring platform NVS memory\n");
+ 
+ 	list_for_each_entry(entry, &nvs_list, node)
+ 		if (entry->data)
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index cc2e553..07ba856 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -5,6 +5,7 @@
+  * Originally from swsusp.
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
+ 
+ #undef DEBUG
+ 
+@@ -78,23 +79,23 @@ static int try_to_freeze_tasks(bool sig_only)
+ 		 * and caller must call thaw_processes() if something fails),
+ 		 * but it cleans up leftover PF_FREEZE requests.
+ 		 */
+-		printk("\n");
+-		printk(KERN_ERR "Freezing of tasks failed after %d.%02d seconds "
+-				"(%d tasks refusing to freeze):\n",
+-				elapsed_csecs / 100, elapsed_csecs % 100, todo);
++		pr_cont("\n");
++		pr_err("Freezing of tasks failed after %d.%02d seconds "
++		       "(%d tasks refusing to freeze):\n",
++		       elapsed_csecs / 100, elapsed_csecs % 100, todo);
+ 		show_state();
+ 		read_lock(&tasklist_lock);
+ 		do_each_thread(g, p) {
+ 			task_lock(p);
+ 			if (freezing(p) && !freezer_should_skip(p))
+-				printk(KERN_ERR " %s\n", p->comm);
++				pr_err(" %s\n", p->comm);
+ 			cancel_freezing(p);
+ 			task_unlock(p);
+ 		} while_each_thread(g, p);
+ 		read_unlock(&tasklist_lock);
+ 	} else {
+-		printk("(elapsed %d.%02d seconds) ", elapsed_csecs / 100,
+-			elapsed_csecs % 100);
++		pr_cont("(elapsed %d.%02d seconds) ",
++			elapsed_csecs / 100, elapsed_csecs % 100);
+ 	}
+ 
+ 	return todo ? -EBUSY : 0;
+@@ -107,22 +108,22 @@ int freeze_processes(void)
+ {
+ 	int error;
+ 
+-	printk("Freezing user space processes ... ");
++	pr_info("Freezing user space processes ... ");
+ 	error = try_to_freeze_tasks(true);
+ 	if (error)
+ 		goto Exit;
+-	printk("done.\n");
++	pr_cont("done.\n");
+ 
+-	printk("Freezing remaining freezable tasks ... ");
++	pr_info("Freezing remaining freezable tasks ... ");
+ 	error = try_to_freeze_tasks(false);
+ 	if (error)
+ 		goto Exit;
+-	printk("done.");
++	pr_cont("done.");
+ 
+ 	oom_killer_disable();
+  Exit:
+ 	BUG_ON(in_atomic());
+-	printk("\n");
++	pr_cont("\n");
+ 
+ 	return error;
+ }
+@@ -151,10 +152,10 @@ void thaw_processes(void)
+ {
+ 	oom_killer_enable();
+ 
+-	printk("Restarting tasks ... ");
++	pr_info("Restarting tasks ... ");
+ 	thaw_tasks(true);
+ 	thaw_tasks(false);
+ 	schedule();
+-	printk("done.\n");
++	pr_cont("done.\n");
+ }
+ 
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 36cb168..8a77def 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -10,6 +10,8 @@
+  *
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/version.h>
+ #include <linux/module.h>
+ #include <linux/mm.h>
+@@ -624,7 +626,7 @@ __register_nosave_region(unsigned long start_pfn, unsigned long end_pfn,
+ 	region->end_pfn = end_pfn;
+ 	list_add_tail(&region->list, &nosave_regions);
+  Report:
+-	printk(KERN_INFO "PM: Registered nosave memory: %016lx - %016lx\n",
++	pr_info("Registered nosave memory: %016lx - %016lx\n",
+ 		start_pfn << PAGE_SHIFT, end_pfn << PAGE_SHIFT);
+ }
+ 
+@@ -693,9 +695,9 @@ static void mark_nosave_pages(struct memory_bitmap *bm)
+ 	list_for_each_entry(region, &nosave_regions, list) {
+ 		unsigned long pfn;
+ 
+-		pr_debug("PM: Marking nosave pages: %016lx - %016lx\n",
+-				region->start_pfn << PAGE_SHIFT,
+-				region->end_pfn << PAGE_SHIFT);
++		pr_debug("Marking nosave pages: %016lx - %016lx\n",
++			 region->start_pfn << PAGE_SHIFT,
++			 region->end_pfn << PAGE_SHIFT);
+ 
+ 		for (pfn = region->start_pfn; pfn < region->end_pfn; pfn++)
+ 			if (pfn_valid(pfn)) {
+@@ -745,7 +747,7 @@ int create_basic_memory_bitmaps(void)
+ 	free_pages_map = bm2;
+ 	mark_nosave_pages(forbidden_pages_map);
+ 
+-	pr_debug("PM: Basic memory bitmaps created\n");
++	pr_debug("Basic memory bitmaps created\n");
+ 
+ 	return 0;
+ 
+@@ -780,7 +782,7 @@ void free_basic_memory_bitmaps(void)
+ 	memory_bm_free(bm2, PG_UNSAFE_CLEAR);
+ 	kfree(bm2);
+ 
+-	pr_debug("PM: Basic memory bitmaps freed\n");
++	pr_debug("Basic memory bitmaps freed\n");
+ }
+ 
+ /**
+@@ -1261,7 +1263,7 @@ int hibernate_preallocate_memory(void)
+ 	struct timeval start, stop;
+ 	int error;
+ 
+-	printk(KERN_INFO "PM: Preallocating image memory... ");
++	pr_info("Preallocating image memory... ");
+ 	do_gettimeofday(&start);
+ 
+ 	error = memory_bm_create(&orig_bm, GFP_IMAGE, PG_ANY);
+@@ -1354,13 +1356,13 @@ int hibernate_preallocate_memory(void)
+ 
+  out:
+ 	do_gettimeofday(&stop);
+-	printk(KERN_CONT "done (allocated %lu pages)\n", pages);
++	pr_cont("done (allocated %lu pages)\n", pages);
+ 	swsusp_show_speed(&start, &stop, pages, "Allocated");
+ 
+ 	return 0;
+ 
+  err_out:
+-	printk(KERN_CONT "\n");
++	pr_cont("\n");
+ 	swsusp_free();
+ 	return -ENOMEM;
+ }
+@@ -1402,8 +1404,8 @@ static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
+ 			free += zone_page_state(zone, NR_FREE_PAGES);
+ 
+ 	nr_pages += count_pages_for_highmem(nr_highmem);
+-	pr_debug("PM: Normal pages needed: %u + %u, available pages: %u\n",
+-		nr_pages, PAGES_FOR_IO, free);
++	pr_debug("Normal pages needed: %u + %u, available pages: %u\n",
++		 nr_pages, PAGES_FOR_IO, free);
+ 
+ 	return free > nr_pages + PAGES_FOR_IO;
+ }
+@@ -1500,20 +1502,20 @@ asmlinkage int swsusp_save(void)
+ {
+ 	unsigned int nr_pages, nr_highmem;
+ 
+-	printk(KERN_INFO "PM: Creating hibernation image: \n");
++	pr_info("Creating hibernation image: \n");
+ 
+ 	drain_local_pages(NULL);
+ 	nr_pages = count_data_pages();
+ 	nr_highmem = count_highmem_pages();
+-	printk(KERN_INFO "PM: Need to copy %u pages\n", nr_pages + nr_highmem);
++	pr_info("Need to copy %u pages\n", nr_pages + nr_highmem);
+ 
+ 	if (!enough_free_mem(nr_pages, nr_highmem)) {
+-		printk(KERN_ERR "PM: Not enough free memory\n");
++		pr_err("Not enough free memory\n");
  		return -ENOMEM;
  	}
- 	b2 = b1 + 2*PAGE_SIZE + BENCH_SIZE;
-@@ -127,12 +129,11 @@ calibrate_xor_blocks(void)
- #define xor_speed(templ)	do_xor_speed((templ), b1, b2)
  
- 	if (fastest) {
--		printk(KERN_INFO "xor: automatically using best "
--			"checksumming function: %s\n",
-+		pr_info("automatically using best checksumming function: %s\n",
- 			fastest->name);
- 		xor_speed(fastest);
- 	} else {
--		printk(KERN_INFO "xor: measuring software checksum speed\n");
-+		pr_info("measuring software checksum speed\n");
- 		XOR_TRY_TEMPLATES;
- 		fastest = template_list;
- 		for (f = fastest; f; f = f->next)
-@@ -140,8 +141,8 @@ calibrate_xor_blocks(void)
- 				fastest = f;
+ 	if (swsusp_alloc(&orig_bm, &copy_bm, nr_pages, nr_highmem)) {
+-		printk(KERN_ERR "PM: Memory allocation failed\n");
++		pr_err("Memory allocation failed\n");
+ 		return -ENOMEM;
  	}
  
--	printk(KERN_INFO "xor: using function: %s (%d.%03d MB/sec)\n",
--	       fastest->name, fastest->speed / 1000, fastest->speed % 1000);
-+	pr_info("using function: %s (%d.%03d MB/sec)\n",
-+		fastest->name, fastest->speed / 1000, fastest->speed % 1000);
+@@ -1533,7 +1535,7 @@ asmlinkage int swsusp_save(void)
+ 	nr_copy_pages = nr_pages;
+ 	nr_meta_pages = DIV_ROUND_UP(nr_pages * sizeof(long), PAGE_SIZE);
  
- #undef xor_speed
+-	printk(KERN_INFO "PM: Hibernation image created (%d pages copied)\n",
++	pr_info("Hibernation image created (%d pages copied)\n",
+ 		nr_pages);
  
+ 	return 0;
+@@ -1733,7 +1735,7 @@ static int check_header(struct swsusp_info *info)
+ 	if (!reason && info->num_physpages != num_physpages)
+ 		reason = "memory size";
+ 	if (reason) {
+-		printk(KERN_ERR "PM: Image mismatch: %s\n", reason);
++		pr_err("Image mismatch: %s\n", reason);
+ 		return -EPERM;
+ 	}
+ 	return 0;
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 6f10dfc..14e83cd 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -8,6 +8,8 @@
+  * This file is released under the GPLv2.
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/string.h>
+ #include <linux/delay.h>
+ #include <linux/errno.h>
+@@ -61,7 +63,7 @@ static int suspend_test(int level)
+ {
+ #ifdef CONFIG_PM_DEBUG
+ 	if (pm_test_level == level) {
+-		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
++		pr_info("suspend debug: Waiting for 5 seconds.\n");
+ 		mdelay(5000);
+ 		return 1;
+ 	}
+@@ -134,7 +136,7 @@ static int suspend_enter(suspend_state_t state)
+ 
+ 	error = dpm_suspend_noirq(PMSG_SUSPEND);
+ 	if (error) {
+-		printk(KERN_ERR "PM: Some devices failed to power down\n");
++		pr_err("Some devices failed to power down\n");
+ 		goto Platfrom_finish;
+ 	}
+ 
+@@ -202,7 +204,7 @@ int suspend_devices_and_enter(suspend_state_t state)
+ 	suspend_test_start();
+ 	error = dpm_suspend_start(PMSG_SUSPEND);
+ 	if (error) {
+-		printk(KERN_ERR "PM: Some devices failed to suspend\n");
++		pr_err("Some devices failed to suspend\n");
+ 		goto Recover_platform;
+ 	}
+ 	suspend_test_finish("suspend devices");
+@@ -261,11 +263,11 @@ int enter_state(suspend_state_t state)
+ 	if (!mutex_trylock(&pm_mutex))
+ 		return -EBUSY;
+ 
+-	printk(KERN_INFO "PM: Syncing filesystems ... ");
++	pr_info("Syncing filesystems ... ");
+ 	sys_sync();
+-	printk("done.\n");
++	pr_cont("done.\n");
+ 
+-	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
++	pr_debug("Preparing system for %s sleep\n", pm_states[state]);
+ 	error = suspend_prepare();
+ 	if (error)
+ 		goto Unlock;
+@@ -273,11 +275,11 @@ int enter_state(suspend_state_t state)
+ 	if (suspend_test(TEST_FREEZER))
+ 		goto Finish;
+ 
+-	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
++	pr_debug("Entering %s sleep\n", pm_states[state]);
+ 	error = suspend_devices_and_enter(state);
+ 
+  Finish:
+-	pr_debug("PM: Finishing wakeup.\n");
++	pr_debug("Finishing wakeup.\n");
+ 	suspend_finish();
+  Unlock:
+ 	mutex_unlock(&pm_mutex);
+diff --git a/kernel/power/suspend_test.c b/kernel/power/suspend_test.c
+index 17d8bb1..f3d7394 100644
+--- a/kernel/power/suspend_test.c
++++ b/kernel/power/suspend_test.c
+@@ -6,6 +6,8 @@
+  * This file is released under the GPLv2.
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/init.h>
+ #include <linux/rtc.h>
+ 
+@@ -38,8 +40,8 @@ void suspend_test_finish(const char *label)
+ 	unsigned msec;
+ 
+ 	msec = jiffies_to_msecs(abs(nj));
+-	pr_info("PM: %s took %d.%03d seconds\n", label,
+-			msec / 1000, msec % 1000);
++	pr_info("%s took %d.%03d seconds\n",
++		label, msec / 1000, msec % 1000);
+ 
+ 	/* Warning on suspend means the RTC alarm period needs to be
+ 	 * larger -- the system was sooo slooowwww to suspend that the
+@@ -60,13 +62,13 @@ void suspend_test_finish(const char *label)
+ static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
+ {
+ 	static char err_readtime[] __initdata =
+-		KERN_ERR "PM: can't read %s time, err %d\n";
++		KERN_ERR pr_fmt("can't read %s time, err %d\n");
+ 	static char err_wakealarm [] __initdata =
+-		KERN_ERR "PM: can't set %s wakealarm, err %d\n";
++		KERN_ERR pr_fmt("can't set %s wakealarm, err %d\n");
+ 	static char err_suspend[] __initdata =
+-		KERN_ERR "PM: suspend test failed, error %d\n";
++		KERN_ERR pr_fmt("suspend test failed, error %d\n");
+ 	static char info_test[] __initdata =
+-		KERN_INFO "PM: test RTC wakeup from '%s' suspend\n";
++		KERN_INFO pr_fmt("test RTC wakeup from '%s' suspend\n");
+ 
+ 	unsigned long		now;
+ 	struct rtc_wkalrm	alm;
+@@ -132,7 +134,7 @@ static int __init has_wakealarm(struct device *dev, void *name_ptr)
+ static suspend_state_t test_state __initdata = PM_SUSPEND_ON;
+ 
+ static char warn_bad_state[] __initdata =
+-	KERN_WARNING "PM: can't test '%s' suspend state\n";
++	KERN_WARNING pr_fmt("can't test '%s' suspend state\n");
+ 
+ static int __init setup_test_suspend(char *value)
+ {
+@@ -156,7 +158,7 @@ __setup("test_suspend", setup_test_suspend);
+ static int __init test_suspend(void)
+ {
+ 	static char		warn_no_rtc[] __initdata =
+-		KERN_WARNING "PM: no wakealarm-capable RTC driver is ready\n";
++		KERN_WARNING pr_fmt("no wakealarm-capable RTC driver is ready\n");
+ 
+ 	char			*pony = NULL;
+ 	struct rtc_device	*rtc = NULL;
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index b101cdc..b76f054 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -11,6 +11,8 @@
+  *
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/module.h>
+ #include <linux/file.h>
+ #include <linux/delay.h>
+@@ -68,8 +70,7 @@ static int submit(int rw, pgoff_t page_off, struct page *page,
+ 	bio->bi_end_io = end_swap_bio_read;
+ 
+ 	if (bio_add_page(bio, page, PAGE_SIZE, 0) < PAGE_SIZE) {
+-		printk(KERN_ERR "PM: Adding page to bio failed at %ld\n",
+-			page_off);
++		pr_err("Adding page to bio failed at %ld\n", page_off);
+ 		bio_put(bio);
+ 		return -EFAULT;
+ 	}
+@@ -149,7 +150,7 @@ static int mark_swapfiles(sector_t start, unsigned int flags)
+ 		error = bio_write_page(swsusp_resume_block,
+ 					swsusp_header, NULL);
+ 	} else {
+-		printk(KERN_ERR "PM: Swap header not found!\n");
++		pr_err("Swap header not found!\n");
+ 		error = -ENODEV;
+ 	}
+ 	return error;
+@@ -321,7 +322,7 @@ static int save_image(struct swap_map_handle *handle,
+ 	struct timeval start;
+ 	struct timeval stop;
+ 
+-	printk(KERN_INFO "PM: Saving image data pages (%u pages) ...     ",
++	pr_info("Saving image data pages (%u pages) ...     ",
+ 		nr_to_write);
+ 	m = nr_to_write / 100;
+ 	if (!m)
+@@ -337,7 +338,7 @@ static int save_image(struct swap_map_handle *handle,
+ 			if (error)
+ 				break;
+ 			if (!(nr_pages % m))
+-				printk("\b\b\b\b%3d%%", nr_pages / m);
++				pr_cont("\b\b\b\b%3d%%", nr_pages / m);
+ 			nr_pages++;
+ 		}
+ 	} while (ret > 0);
+@@ -346,7 +347,7 @@ static int save_image(struct swap_map_handle *handle,
+ 	if (!error)
+ 		error = err2;
+ 	if (!error)
+-		printk("\b\b\b\bdone\n");
++		pr_cont("\b\b\b\bdone\n");
+ 	swsusp_show_speed(&start, &stop, nr_to_write, "Wrote");
+ 	return error;
+ }
+@@ -362,7 +363,7 @@ static int enough_swap(unsigned int nr_pages)
+ {
+ 	unsigned int free_swap = count_swap_pages(root_swap, 1);
+ 
+-	pr_debug("PM: Free swap pages: %u\n", free_swap);
++	pr_debug("Free swap pages: %u\n", free_swap);
+ 	return free_swap > nr_pages + PAGES_FOR_IO;
+ }
+ 
+@@ -385,8 +386,7 @@ int swsusp_write(unsigned int flags)
+ 
+ 	error = swsusp_swap_check();
+ 	if (error) {
+-		printk(KERN_ERR "PM: Cannot find swap device, try "
+-				"swapon -a.\n");
++		pr_err("Cannot find swap device, try swapon -a.\n");
+ 		return error;
+ 	}
+ 	memset(&snapshot, 0, sizeof(struct snapshot_handle));
+@@ -399,7 +399,7 @@ int swsusp_write(unsigned int flags)
+ 	}
+ 	header = (struct swsusp_info *)data_of(snapshot);
+ 	if (!enough_swap(header->pages)) {
+-		printk(KERN_ERR "PM: Not enough free swap\n");
++		pr_err("Not enough free swap\n");
+ 		error = -ENOSPC;
+ 		goto out;
+ 	}
+@@ -414,9 +414,9 @@ int swsusp_write(unsigned int flags)
+ 
+ 		if (!error) {
+ 			flush_swap_writer(&handle);
+-			printk(KERN_INFO "PM: S");
++			pr_info("S");
+ 			error = mark_swapfiles(start, flags);
+-			printk("|\n");
++			pr_cont("|\n");
+ 		}
+ 	}
+ 	if (error)
+@@ -504,7 +504,7 @@ static int load_image(struct swap_map_handle *handle,
+ 	int err2;
+ 	unsigned nr_pages;
+ 
+-	printk(KERN_INFO "PM: Loading image data pages (%u pages) ...     ",
++	pr_info("Loading image data pages (%u pages) ...     ",
+ 		nr_to_read);
+ 	m = nr_to_read / 100;
+ 	if (!m)
+@@ -524,7 +524,7 @@ static int load_image(struct swap_map_handle *handle,
+ 		if (error)
+ 			break;
+ 		if (!(nr_pages % m))
+-			printk("\b\b\b\b%3d%%", nr_pages / m);
++			pr_cont("\b\b\b\b%3d%%", nr_pages / m);
+ 		nr_pages++;
+ 	}
+ 	err2 = wait_on_bio_chain(&bio);
+@@ -532,7 +532,7 @@ static int load_image(struct swap_map_handle *handle,
+ 	if (!error)
+ 		error = err2;
+ 	if (!error) {
+-		printk("\b\b\b\bdone\n");
++		pr_cont("\b\b\b\bdone\n");
+ 		snapshot_write_finalize(snapshot);
+ 		if (!snapshot_image_loaded(snapshot))
+ 			error = -ENODATA;
+@@ -556,7 +556,7 @@ int swsusp_read(unsigned int *flags_p)
+ 
+ 	*flags_p = swsusp_header->flags;
+ 	if (IS_ERR(resume_bdev)) {
+-		pr_debug("PM: Image device not initialised\n");
++		pr_debug("Image device not initialised\n");
+ 		return PTR_ERR(resume_bdev);
+ 	}
+ 
+@@ -575,9 +575,9 @@ int swsusp_read(unsigned int *flags_p)
+ 	blkdev_put(resume_bdev, FMODE_READ);
+ 
+ 	if (!error)
+-		pr_debug("PM: Image successfully loaded\n");
++		pr_debug("Image successfully loaded\n");
+ 	else
+-		pr_debug("PM: Error %d resuming\n", error);
++		pr_debug("Error %d resuming\n", error);
+ 	return error;
+ }
+ 
+@@ -609,13 +609,13 @@ int swsusp_check(void)
+ 		if (error)
+ 			blkdev_put(resume_bdev, FMODE_READ);
+ 		else
+-			pr_debug("PM: Signature found, resuming\n");
++			pr_debug("Signature found, resuming\n");
+ 	} else {
+ 		error = PTR_ERR(resume_bdev);
+ 	}
+ 
+ 	if (error)
+-		pr_debug("PM: Error %d checking image file\n", error);
++		pr_debug("Error %d checking image file\n", error);
+ 
+ 	return error;
+ }
+@@ -627,7 +627,7 @@ int swsusp_check(void)
+ void swsusp_close(fmode_t mode)
+ {
+ 	if (IS_ERR(resume_bdev)) {
+-		pr_debug("PM: Image device not initialised\n");
++		pr_debug("Image device not initialised\n");
+ 		return;
+ 	}
+ 
+diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
+index 6a07f4d..ce169ce 100644
+--- a/kernel/power/swsusp.c
++++ b/kernel/power/swsusp.c
+@@ -38,6 +38,8 @@
+  * For TODOs,FIXMEs also look in Documentation/power/swsusp.txt
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/mm.h>
+ #include <linux/suspend.h>
+ #include <linux/spinlock.h>
+@@ -181,8 +183,8 @@ void swsusp_show_speed(struct timeval *start, struct timeval *stop,
+ 		centisecs = 1;	/* avoid div-by-zero */
+ 	k = nr_pages * (PAGE_SIZE / 1024);
+ 	kps = (k * 100) / centisecs;
+-	printk(KERN_INFO "PM: %s %d kbytes in %d.%02d seconds (%d.%02d MB/s)\n",
+-			msg, k,
+-			centisecs / 100, centisecs % 100,
+-			kps / 1000, (kps % 1000) / 10);
++	pr_info("%s %d kbytes in %d.%02d seconds (%d.%02d MB/s)\n",
++		msg, k,
++		centisecs / 100, centisecs % 100,
++		kps / 1000, (kps % 1000) / 10);
+ }
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index bf0014d..382d3c2 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -9,6 +9,8 @@
+  *
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/suspend.h>
+ #include <linux/syscalls.h>
+ #include <linux/reboot.h>
+@@ -221,9 +223,9 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 		if (data->frozen)
+ 			break;
+ 
+-		printk("Syncing filesystems ... ");
++		pr_info("Syncing filesystems ... ");
+ 		sys_sync();
+-		printk("done.\n");
++		pr_cont("done.\n");
+ 
+ 		error = usermodehelper_disable();
+ 		if (error)
+@@ -382,7 +384,7 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 			break;
+ 
+ 		default:
+-			printk(KERN_ERR "SNAPSHOT_PMOPS: invalid argument %ld\n", arg);
++			pr_err("SNAPSHOT_PMOPS: invalid argument %ld\n", arg);
+ 
+ 		}
+ 		break;
 -- 
 1.6.3.1.10.g659a0.dirty
 
