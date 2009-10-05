@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbZJEU1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760AbZJEUcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754051AbZJEU1c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 16:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbZJEU1b
+	id S1753760AbZJEUcH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 16:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZJEUcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 16:27:31 -0400
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:49326 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752204AbZJEU1b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 16:27:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=vE9pG4s7wDHbbb2+DGGIstXv+sLIU1iOZabv78IJgVfs2vM+daXnMdutcb6rwITF51
-         ab0u4jYoZ/Iub4vLJ3ohidtmH7TioqULeAE1SHR3IiLqQE63ND3uz0l/r1RnCAuSsEWm
-         0qeZtI1a4+7Kzve24tbQJ/u4ht4bEbo6DU83o=
-MIME-Version: 1.0
-In-Reply-To: <4e5e476b0910050808k3a26aad8r19a145fc60e1da6b@mail.gmail.com>
-References: <4e5e476b0910041354o54c95626g974264976adaf53c@mail.gmail.com>
-	 <20091004205955.GM26573@kernel.dk>
-	 <4e5e476b0910050808k3a26aad8r19a145fc60e1da6b@mail.gmail.com>
-Date: Mon, 5 Oct 2009 22:26:52 +0200
-Message-ID: <4e5e476b0910051326g559bf135ma3cf82219ade497@mail.gmail.com>
-Subject: Re: bug in elevator/cfq regarding start_time?
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 5 Oct 2009 16:32:06 -0400
+Received: from mail.perches.com ([173.55.12.10]:1875 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752441AbZJEUcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 16:32:05 -0400
+Subject: Re: [PATCH 15/21] kernel/power/: use pr_<level> and add pr_fmt(fmt)
+From: Joe Perches <joe@perches.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <len.brown@intel.com>, linux-pm@lists.linux-foundation.org
+In-Reply-To: <200910052143.37985.rjw@sisk.pl>
+References: <cover.1254701151.git.joe@perches.com>
+	 <17906d40d7b002380e893d49639ba3f1e7bdb3a0.1254701151.git.joe@perches.com>
+	 <200910052143.37985.rjw@sisk.pl>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 05 Oct 2009 13:31:27 -0700
+Message-Id: <1254774687.1799.566.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 5, 2009 at 5:08 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> On Sun, Oct 4, 2009 at 10:59 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
->> Good spotting! So we can either add the same copy in cfq, or we can just
->> move the ->start_time check and assignment in attempt_merge() to post
->> the elv_merge_requests() call. I think the latter would work fine, but
->> I'll check and fix tomorrow.
->
-> I think there is still something buggy regarding those timestamps.
-False alarm. I just found that the list was not yet filled at that
-place in the code.
+On Mon, 2009-10-05 at 21:43 +0200, Rafael J. Wysocki wrote:
+> On Monday 05 October 2009, Joe Perches wrote:
+> > Added #define pr_fmt(fmt) "PM: " fmt
+> > Converted printk(KERN_<level> to pr_<level>(
+> > Removed "PM: " prefix
+> > Added pr_fmt() to __initdata strings
+> 
+> Well, can you please tell me what actually is wrong with the current code?
 
-Corrado
+Not much.  There were a couple of trivial corrections,
+but perhaps the changes add a bit more flexibility and
+regularity.
+
+Effective trivial changes:
+
+o Added KERN_CONT (pr_cont) to a couple of messages
+o Added "PM: " (pr_info) to an #ifdef'd message
+o Added "PM: " (pr_info) to a printk "Syncing filesystems ..."
+  in power/user.c
+
+cheers, Joe
+
