@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZJEWw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZJEWzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755334AbZJEWw6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 18:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbZJEWw5
+	id S1755236AbZJEWzM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 18:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396AbZJEWx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 18:52:57 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:49334 "EHLO
+	Mon, 5 Oct 2009 18:53:26 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:49335 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755274AbZJEWww (ORCPT
+	with ESMTP id S1755278AbZJEWww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 5 Oct 2009 18:52:52 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: yehuda@newdream.net, Sage Weil <sage@newdream.net>
-Subject: [PATCH 12/21] ceph: CRUSH mapping algorithm
-Date: Mon,  5 Oct 2009 15:50:42 -0700
-Message-Id: <1254783051-26217-13-git-send-email-sage@newdream.net>
+Subject: [PATCH 13/21] ceph: monitor client
+Date: Mon,  5 Oct 2009 15:50:43 -0700
+Message-Id: <1254783051-26217-14-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1254783051-26217-12-git-send-email-sage@newdream.net>
+In-Reply-To: <1254783051-26217-13-git-send-email-sage@newdream.net>
 References: <1254783051-26217-1-git-send-email-sage@newdream.net>
  <1254783051-26217-2-git-send-email-sage@newdream.net>
  <1254783051-26217-3-git-send-email-sage@newdream.net>
@@ -30,1092 +30,837 @@ References: <1254783051-26217-1-git-send-email-sage@newdream.net>
  <1254783051-26217-10-git-send-email-sage@newdream.net>
  <1254783051-26217-11-git-send-email-sage@newdream.net>
  <1254783051-26217-12-git-send-email-sage@newdream.net>
+ <1254783051-26217-13-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CRUSH is a pseudorandom data distribution function designed to map
-inputs onto a dynamic hierarchy of devices, while minimizing the
-extent to which inputs are remapped when the devices are added or
-removed.  It includes some features that are specifically useful for
-storage, most notably the ability to map each input onto a set of N
-devices that are separated across administrator-defined failure
-domains.  CRUSH is used to distribute data across the cluster of Ceph
-storage nodes.
-
-More information about CRUSH can be found in this paper:
-
-    http://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf
+The monitor cluster is responsible for managing cluster membership
+and state.  The monitor client handles what minimal interaction
+the Ceph client has with it: checking for updated versions of the
+MDS and OSD maps, getting statfs() information, and unmounting.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/crush/crush.c  |  140 ++++++++++++
- fs/ceph/crush/crush.h  |  188 +++++++++++++++
- fs/ceph/crush/hash.h   |   90 ++++++++
- fs/ceph/crush/mapper.c |  589 ++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ceph/crush/mapper.h |   20 ++
- 5 files changed, 1027 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/crush/crush.c
- create mode 100644 fs/ceph/crush/crush.h
- create mode 100644 fs/ceph/crush/hash.h
- create mode 100644 fs/ceph/crush/mapper.c
- create mode 100644 fs/ceph/crush/mapper.h
+ fs/ceph/mon_client.c |  694 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ceph/mon_client.h |  109 ++++++++
+ 2 files changed, 803 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/mon_client.c
+ create mode 100644 fs/ceph/mon_client.h
 
-diff --git a/fs/ceph/crush/crush.c b/fs/ceph/crush/crush.c
+diff --git a/fs/ceph/mon_client.c b/fs/ceph/mon_client.c
 new file mode 100644
-index 0000000..13755cd
+index 0000000..b0c95ce
 --- /dev/null
-+++ b/fs/ceph/crush/crush.c
-@@ -0,0 +1,140 @@
-+
-+#ifdef __KERNEL__
-+# include <linux/slab.h>
-+#else
-+# include <stdlib.h>
-+# include <assert.h>
-+# define kfree(x) do { if (x) free(x); } while (0)
-+# define BUG_ON(x) assert(!(x))
-+#endif
-+
-+#include "crush.h"
-+
-+/**
-+ * crush_get_bucket_item_weight - Get weight of an item in given bucket
-+ * @b: bucket pointer
-+ * @p: item index in bucket
-+ */
-+int crush_get_bucket_item_weight(struct crush_bucket *b, int p)
-+{
-+	if (p >= b->size)
-+		return 0;
-+
-+	switch (b->alg) {
-+	case CRUSH_BUCKET_UNIFORM:
-+		return ((struct crush_bucket_uniform *)b)->item_weight;
-+	case CRUSH_BUCKET_LIST:
-+		return ((struct crush_bucket_list *)b)->item_weights[p];
-+	case CRUSH_BUCKET_TREE:
-+		if (p & 1)
-+			return ((struct crush_bucket_tree *)b)->node_weights[p];
-+		return 0;
-+	case CRUSH_BUCKET_STRAW:
-+		return ((struct crush_bucket_straw *)b)->item_weights[p];
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * crush_calc_parents - Calculate parent vectors for the given crush map.
-+ * @map: crush_map pointer
-+ */
-+void crush_calc_parents(struct crush_map *map)
-+{
-+	int i, b, c;
-+
-+	for (b = 0; b < map->max_buckets; b++) {
-+		if (map->buckets[b] == NULL)
-+			continue;
-+		for (i = 0; i < map->buckets[b]->size; i++) {
-+			c = map->buckets[b]->items[i];
-+			BUG_ON(c >= map->max_devices ||
-+			       c < -map->max_buckets);
-+			if (c >= 0)
-+				map->device_parents[c] = map->buckets[b]->id;
-+			else
-+				map->bucket_parents[-1-c] = map->buckets[b]->id;
-+		}
-+	}
-+}
-+
-+void crush_destroy_bucket_uniform(struct crush_bucket_uniform *b)
-+{
-+	kfree(b->h.perm);
-+	kfree(b->h.items);
-+	kfree(b);
-+}
-+
-+void crush_destroy_bucket_list(struct crush_bucket_list *b)
-+{
-+	kfree(b->item_weights);
-+	kfree(b->sum_weights);
-+	kfree(b->h.perm);
-+	kfree(b->h.items);
-+	kfree(b);
-+}
-+
-+void crush_destroy_bucket_tree(struct crush_bucket_tree *b)
-+{
-+	kfree(b->node_weights);
-+	kfree(b);
-+}
-+
-+void crush_destroy_bucket_straw(struct crush_bucket_straw *b)
-+{
-+	kfree(b->straws);
-+	kfree(b->item_weights);
-+	kfree(b->h.perm);
-+	kfree(b->h.items);
-+	kfree(b);
-+}
-+
-+void crush_destroy_bucket(struct crush_bucket *b)
-+{
-+	switch (b->alg) {
-+	case CRUSH_BUCKET_UNIFORM:
-+		crush_destroy_bucket_uniform((struct crush_bucket_uniform *)b);
-+		break;
-+	case CRUSH_BUCKET_LIST:
-+		crush_destroy_bucket_list((struct crush_bucket_list *)b);
-+		break;
-+	case CRUSH_BUCKET_TREE:
-+		crush_destroy_bucket_tree((struct crush_bucket_tree *)b);
-+		break;
-+	case CRUSH_BUCKET_STRAW:
-+		crush_destroy_bucket_straw((struct crush_bucket_straw *)b);
-+		break;
-+	}
-+}
-+
-+/**
-+ * crush_destroy - Destroy a crush_map
-+ * @map: crush_map pointer
-+ */
-+void crush_destroy(struct crush_map *map)
-+{
-+	int b;
-+
-+	/* buckets */
-+	if (map->buckets) {
-+		for (b = 0; b < map->max_buckets; b++) {
-+			if (map->buckets[b] == NULL)
-+				continue;
-+			crush_destroy_bucket(map->buckets[b]);
-+		}
-+		kfree(map->buckets);
-+	}
-+
-+	/* rules */
-+	if (map->rules) {
-+		for (b = 0; b < map->max_rules; b++)
-+			kfree(map->rules[b]);
-+		kfree(map->rules);
-+	}
-+
-+	kfree(map->bucket_parents);
-+	kfree(map->device_parents);
-+	kfree(map);
-+}
-+
-+
-diff --git a/fs/ceph/crush/crush.h b/fs/ceph/crush/crush.h
-new file mode 100644
-index 0000000..9ac7e09
---- /dev/null
-+++ b/fs/ceph/crush/crush.h
-@@ -0,0 +1,188 @@
-+#ifndef _CRUSH_CRUSH_H
-+#define _CRUSH_CRUSH_H
++++ b/fs/ceph/mon_client.c
+@@ -0,0 +1,694 @@
++#include "ceph_debug.h"
 +
 +#include <linux/types.h>
++#include <linux/random.h>
++#include <linux/sched.h>
++
++#include "mon_client.h"
++#include "super.h"
++#include "decode.h"
 +
 +/*
-+ * CRUSH is a pseudo-random data distribution algorithm that
-+ * efficiently distributes input values (typically, data objects)
-+ * across a heterogeneous, structured storage cluster.
++ * Interact with Ceph monitor cluster.  Handle requests for new map
++ * versions, and periodically resend as needed.  Also implement
++ * statfs() and umount().
 + *
-+ * The algorithm was originally described in detail in this paper
-+ * (although the algorithm has evolved somewhat since then):
++ * A small cluster of Ceph "monitors" are responsible for managing critical
++ * cluster configuration and state information.  An odd number (e.g., 3, 5)
++ * of cmon daemons use a modified version of the Paxos part-time parliament
++ * algorithm to manage the MDS map (mds cluster membership), OSD map, and
++ * list of clients who have mounted the file system.
 + *
-+ *     http://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf
-+ *
-+ * LGPL2
++ * We maintain an open, active session with a monitor at all times in order to
++ * receive timely MDSMap updates.  We periodically send a keepalive byte on the
++ * TCP socket to ensure we detect a failure.  If the connection does break, we
++ * randomly hunt for a new monitor.  Once the connection is reestablished, we
++ * resend any outstanding requests.
 + */
 +
-+
-+#define CRUSH_MAGIC 0x00010000ul   /* for detecting algorithm revisions */
-+
-+
-+#define CRUSH_MAX_DEPTH 10  /* max crush hierarchy depth */
-+#define CRUSH_MAX_SET   10  /* max size of a mapping result */
-+
++const static struct ceph_connection_operations mon_con_ops;
 +
 +/*
-+ * CRUSH uses user-defined "rules" to describe how inputs should be
-+ * mapped to devices.  A rule consists of sequence of steps to perform
-+ * to generate the set of output devices.
++ * Decode a monmap blob (e.g., during mount).
 + */
-+struct crush_rule_step {
-+	__u32 op;
-+	__s32 arg1;
-+	__s32 arg2;
-+};
-+
-+/* step op codes */
-+enum {
-+	CRUSH_RULE_NOOP = 0,
-+	CRUSH_RULE_TAKE = 1,          /* arg1 = value to start with */
-+	CRUSH_RULE_CHOOSE_FIRSTN = 2, /* arg1 = num items to pick */
-+				      /* arg2 = type */
-+	CRUSH_RULE_CHOOSE_INDEP = 3,  /* same */
-+	CRUSH_RULE_EMIT = 4,          /* no args */
-+	CRUSH_RULE_CHOOSE_LEAF_FIRSTN = 6,
-+	CRUSH_RULE_CHOOSE_LEAF_INDEP = 7,
-+};
-+
-+/*
-+ * for specifying choose num (arg1) relative to the max parameter
-+ * passed to do_rule
-+ */
-+#define CRUSH_CHOOSE_N            0
-+#define CRUSH_CHOOSE_N_MINUS(x)   (-(x))
-+
-+/*
-+ * The rule mask is used to describe what the rule is intended for.
-+ * Given a ruleset and size of output set, we search through the
-+ * rule list for a matching rule_mask.
-+ */
-+struct crush_rule_mask {
-+	__u8 ruleset;
-+	__u8 type;
-+	__u8 min_size;
-+	__u8 max_size;
-+};
-+
-+struct crush_rule {
-+	__u32 len;
-+	struct crush_rule_mask mask;
-+	struct crush_rule_step steps[0];
-+};
-+
-+#define crush_rule_size(len) (sizeof(struct crush_rule) + \
-+			      (len)*sizeof(struct crush_rule_step))
-+
-+
-+
-+/*
-+ * A bucket is a named container of other items (either devices or
-+ * other buckets).  Items within a bucket are chosen using one of a
-+ * few different algorithms.  The table summarizes how the speed of
-+ * each option measures up against mapping stability when items are
-+ * added or removed.
-+ *
-+ *  Bucket Alg     Speed       Additions    Removals
-+ *  ------------------------------------------------
-+ *  uniform         O(1)       poor         poor
-+ *  list            O(n)       optimal      poor
-+ *  tree            O(log n)   good         good
-+ *  straw           O(n)       optimal      optimal
-+ */
-+enum {
-+	CRUSH_BUCKET_UNIFORM = 1,
-+	CRUSH_BUCKET_LIST = 2,
-+	CRUSH_BUCKET_TREE = 3,
-+	CRUSH_BUCKET_STRAW = 4
-+};
-+static inline const char *crush_bucket_alg_name(int alg)
++struct ceph_monmap *ceph_monmap_decode(void *p, void *end)
 +{
-+	switch (alg) {
-+	case CRUSH_BUCKET_UNIFORM: return "uniform";
-+	case CRUSH_BUCKET_LIST: return "list";
-+	case CRUSH_BUCKET_TREE: return "tree";
-+	case CRUSH_BUCKET_STRAW: return "straw";
-+	default: return "unknown";
-+	}
++	struct ceph_monmap *m = NULL;
++	int i, err = -EINVAL;
++	struct ceph_fsid fsid;
++	u32 epoch, num_mon;
++	u16 version;
++
++	dout("monmap_decode %p %p len %d\n", p, end, (int)(end-p));
++
++	ceph_decode_16_safe(&p, end, version, bad);
++
++	ceph_decode_need(&p, end, sizeof(fsid) + 2*sizeof(u32), bad);
++	ceph_decode_copy(&p, &fsid, sizeof(fsid));
++	ceph_decode_32(&p, epoch);
++
++	ceph_decode_32(&p, num_mon);
++	ceph_decode_need(&p, end, num_mon*sizeof(m->mon_inst[0]), bad);
++
++	if (num_mon >= CEPH_MAX_MON)
++		goto bad;
++	m = kmalloc(sizeof(*m) + sizeof(m->mon_inst[0])*num_mon, GFP_NOFS);
++	if (m == NULL)
++		return ERR_PTR(-ENOMEM);
++	m->fsid = fsid;
++	m->epoch = epoch;
++	m->num_mon = num_mon;
++	ceph_decode_copy(&p, m->mon_inst, num_mon*sizeof(m->mon_inst[0]));
++
++	if (p != end)
++		goto bad;
++
++	dout("monmap_decode epoch %d, num_mon %d\n", m->epoch,
++	     m->num_mon);
++	for (i = 0; i < m->num_mon; i++)
++		dout("monmap_decode  mon%d is %s\n", i,
++		     pr_addr(&m->mon_inst[i].addr.in_addr));
++	return m;
++
++bad:
++	dout("monmap_decode failed with %d\n", err);
++	kfree(m);
++	return ERR_PTR(err);
 +}
 +
-+struct crush_bucket {
-+	__s32 id;        /* this'll be negative */
-+	__u16 type;      /* non-zero; type=0 is reserved for devices */
-+	__u16 alg;       /* one of CRUSH_BUCKET_* */
-+	__u32 weight;    /* 16-bit fixed point */
-+	__u32 size;      /* num items */
-+	__s32 *items;
-+
-+	/*
-+	 * cached random permutation: used for uniform bucket and for
-+	 * the linear search fallback for the other bucket types.
-+	 */
-+	__u32 perm_x;  /* @x for which *perm is defined */
-+	__u32 perm_n;  /* num elements of *perm that are permuted/defined */
-+	__u32 *perm;
-+};
-+
-+struct crush_bucket_uniform {
-+	struct crush_bucket h;
-+	__u32 item_weight;  /* 16-bit fixed point; all items equally weighted */
-+};
-+
-+struct crush_bucket_list {
-+	struct crush_bucket h;
-+	__u32 *item_weights;  /* 16-bit fixed point */
-+	__u32 *sum_weights;   /* 16-bit fixed point.  element i is sum
-+				 of weights 0..i, inclusive */
-+};
-+
-+struct crush_bucket_tree {
-+	struct crush_bucket h;  /* note: h.size is _tree_ size, not number of
-+				   actual items */
-+	__u8 num_nodes;
-+	__u32 *node_weights;
-+};
-+
-+struct crush_bucket_straw {
-+	struct crush_bucket h;
-+	__u32 *item_weights;   /* 16-bit fixed point */
-+	__u32 *straws;         /* 16-bit fixed point */
-+};
-+
-+
-+
 +/*
-+ * CRUSH map includes all buckets, rules, etc.
++ * return true if *addr is included in the monmap.
 + */
-+struct crush_map {
-+	struct crush_bucket **buckets;
-+	struct crush_rule **rules;
-+
-+	/*
-+	 * Parent pointers to identify the parent bucket a device or
-+	 * bucket in the hierarchy.  If an item appears more than
-+	 * once, this is the _last_ time it appeared (where buckets
-+	 * are processed in bucket id order, from -1 on down to
-+	 * -max_buckets.
-+	 */
-+	__u32 *bucket_parents;
-+	__u32 *device_parents;
-+
-+	__s32 max_buckets;
-+	__u32 max_rules;
-+	__s32 max_devices;
-+};
-+
-+
-+/* crush.c */
-+extern int crush_get_bucket_item_weight(struct crush_bucket *b, int pos);
-+extern void crush_calc_parents(struct crush_map *map);
-+extern void crush_destroy_bucket_uniform(struct crush_bucket_uniform *b);
-+extern void crush_destroy_bucket_list(struct crush_bucket_list *b);
-+extern void crush_destroy_bucket_tree(struct crush_bucket_tree *b);
-+extern void crush_destroy_bucket_straw(struct crush_bucket_straw *b);
-+extern void crush_destroy_bucket(struct crush_bucket *b);
-+extern void crush_destroy(struct crush_map *map);
-+
-+#endif
-diff --git a/fs/ceph/crush/hash.h b/fs/ceph/crush/hash.h
-new file mode 100644
-index 0000000..42f3312
---- /dev/null
-+++ b/fs/ceph/crush/hash.h
-@@ -0,0 +1,90 @@
-+#ifndef _CRUSH_HASH_H
-+#define _CRUSH_HASH_H
-+
-+/*
-+ * Robert Jenkins' function for mixing 32-bit values
-+ * http://burtleburtle.net/bob/hash/evahash.html
-+ * a, b = random bits, c = input and output
-+ */
-+#define crush_hashmix(a, b, c) do {			\
-+		a = a-b;  a = a-c;  a = a^(c>>13);	\
-+		b = b-c;  b = b-a;  b = b^(a<<8);	\
-+		c = c-a;  c = c-b;  c = c^(b>>13);	\
-+		a = a-b;  a = a-c;  a = a^(c>>12);	\
-+		b = b-c;  b = b-a;  b = b^(a<<16);	\
-+		c = c-a;  c = c-b;  c = c^(b>>5);	\
-+		a = a-b;  a = a-c;  a = a^(c>>3);	\
-+		b = b-c;  b = b-a;  b = b^(a<<10);	\
-+		c = c-a;  c = c-b;  c = c^(b>>15);	\
-+	} while (0)
-+
-+#define crush_hash_seed 1315423911
-+
-+static inline __u32 crush_hash32(__u32 a)
-+{
-+	__u32 hash = crush_hash_seed ^ a;
-+	__u32 b = a;
-+	__u32 x = 231232;
-+	__u32 y = 1232;
-+	crush_hashmix(b, x, hash);
-+	crush_hashmix(y, a, hash);
-+	return hash;
-+}
-+
-+static inline __u32 crush_hash32_2(__u32 a, __u32 b)
-+{
-+	__u32 hash = crush_hash_seed ^ a ^ b;
-+	__u32 x = 231232;
-+	__u32 y = 1232;
-+	crush_hashmix(a, b, hash);
-+	crush_hashmix(x, a, hash);
-+	crush_hashmix(b, y, hash);
-+	return hash;
-+}
-+
-+static inline __u32 crush_hash32_3(__u32 a, __u32 b, __u32 c)
-+{
-+	__u32 hash = crush_hash_seed ^ a ^ b ^ c;
-+	__u32 x = 231232;
-+	__u32 y = 1232;
-+	crush_hashmix(a, b, hash);
-+	crush_hashmix(c, x, hash);
-+	crush_hashmix(y, a, hash);
-+	crush_hashmix(b, x, hash);
-+	crush_hashmix(y, c, hash);
-+	return hash;
-+}
-+
-+static inline __u32 crush_hash32_4(__u32 a, __u32 b, __u32 c,
-+				   __u32 d)
-+{
-+	__u32 hash = crush_hash_seed ^ a ^ b ^ c ^ d;
-+	__u32 x = 231232;
-+	__u32 y = 1232;
-+	crush_hashmix(a, b, hash);
-+	crush_hashmix(c, d, hash);
-+	crush_hashmix(a, x, hash);
-+	crush_hashmix(y, b, hash);
-+	crush_hashmix(c, x, hash);
-+	crush_hashmix(y, d, hash);
-+	return hash;
-+}
-+
-+static inline __u32 crush_hash32_5(__u32 a, __u32 b, __u32 c,
-+				   __u32 d, __u32 e)
-+{
-+	__u32 hash = crush_hash_seed ^ a ^ b ^ c ^ d ^ e;
-+	__u32 x = 231232;
-+	__u32 y = 1232;
-+	crush_hashmix(a, b, hash);
-+	crush_hashmix(c, d, hash);
-+	crush_hashmix(e, x, hash);
-+	crush_hashmix(y, a, hash);
-+	crush_hashmix(b, x, hash);
-+	crush_hashmix(y, c, hash);
-+	crush_hashmix(d, x, hash);
-+	crush_hashmix(y, e, hash);
-+	return hash;
-+}
-+
-+#endif
-diff --git a/fs/ceph/crush/mapper.c b/fs/ceph/crush/mapper.c
-new file mode 100644
-index 0000000..0f0730c
---- /dev/null
-+++ b/fs/ceph/crush/mapper.c
-@@ -0,0 +1,589 @@
-+
-+#ifdef __KERNEL__
-+# include <linux/string.h>
-+# include <linux/slab.h>
-+# include <linux/bug.h>
-+# include <linux/kernel.h>
-+# ifndef dprintk
-+#  define dprintk(args...)
-+# endif
-+#else
-+# include <string.h>
-+# include <stdio.h>
-+# include <stdlib.h>
-+# include <assert.h>
-+# define BUG_ON(x) assert(!(x))
-+# define dprintk(args...) /* printf(args) */
-+# define kmalloc(x, f) malloc(x)
-+# define kfree(x) free(x)
-+#endif
-+
-+#include "crush.h"
-+#include "hash.h"
-+
-+/*
-+ * Implement the core CRUSH mapping algorithm.
-+ */
-+
-+/**
-+ * crush_find_rule - find a crush_rule id for a given ruleset, type, and size.
-+ * @map: the crush_map
-+ * @ruleset: the storage ruleset id (user defined)
-+ * @type: storage ruleset type (user defined)
-+ * @size: output set size
-+ */
-+int crush_find_rule(struct crush_map *map, int ruleset, int type, int size)
++int ceph_monmap_contains(struct ceph_monmap *m, struct ceph_entity_addr *addr)
 +{
 +	int i;
 +
-+	for (i = 0; i < map->max_rules; i++) {
-+		if (map->rules[i] &&
-+		    map->rules[i]->mask.ruleset == ruleset &&
-+		    map->rules[i]->mask.type == type &&
-+		    map->rules[i]->mask.min_size <= size &&
-+		    map->rules[i]->mask.max_size >= size)
-+			return i;
-+	}
-+	return -1;
-+}
-+
-+
-+/*
-+ * bucket choose methods
-+ *
-+ * For each bucket algorithm, we have a "choose" method that, given a
-+ * crush input @x and replica position (usually, position in output set) @r,
-+ * will produce an item in the bucket.
-+ */
-+
-+/*
-+ * Choose based on a random permutation of the bucket.
-+ *
-+ * We used to use some prime number arithmetic to do this, but it
-+ * wasn't very random, and had some other bad behaviors.  Instead, we
-+ * calculate an actual random permutation of the bucket members.
-+ * Since this is expensive, we optimize for the r=0 case, which
-+ * captures the vast majority of calls.
-+ */
-+static int bucket_perm_choose(struct crush_bucket *bucket,
-+			      int x, int r)
-+{
-+	unsigned pr = r % bucket->size;
-+	unsigned i, s;
-+
-+	/* start a new permutation if @x has changed */
-+	if (bucket->perm_x != x || bucket->perm_n == 0) {
-+		dprintk("bucket %d new x=%d\n", bucket->id, x);
-+		bucket->perm_x = x;
-+
-+		/* optimize common r=0 case */
-+		if (pr == 0) {
-+			s = crush_hash32_3(x, bucket->id, 0) %
-+				bucket->size;
-+			bucket->perm[0] = s;
-+			bucket->perm_n = 0xffff;   /* magic value, see below */
-+			goto out;
-+		}
-+
-+		for (i = 0; i < bucket->size; i++)
-+			bucket->perm[i] = i;
-+		bucket->perm_n = 0;
-+	} else if (bucket->perm_n == 0xffff) {
-+		/* clean up after the r=0 case above */
-+		for (i = 1; i < bucket->size; i++)
-+			bucket->perm[i] = i;
-+		bucket->perm[bucket->perm[0]] = 0;
-+		bucket->perm_n = 1;
-+	}
-+
-+	/* calculate permutation up to pr */
-+	for (i = 0; i < bucket->perm_n; i++)
-+		dprintk(" perm_choose have %d: %d\n", i, bucket->perm[i]);
-+	while (bucket->perm_n <= pr) {
-+		unsigned p = bucket->perm_n;
-+		/* no point in swapping the final entry */
-+		if (p < bucket->size - 1) {
-+			i = crush_hash32_3(x, bucket->id, p) %
-+				(bucket->size - p);
-+			if (i) {
-+				unsigned t = bucket->perm[p + i];
-+				bucket->perm[p + i] = bucket->perm[p];
-+				bucket->perm[p] = t;
-+			}
-+			dprintk(" perm_choose swap %d with %d\n", p, p+i);
-+		}
-+		bucket->perm_n++;
-+	}
-+	for (i = 0; i < bucket->size; i++)
-+		dprintk(" perm_choose  %d: %d\n", i, bucket->perm[i]);
-+
-+	s = bucket->perm[pr];
-+out:
-+	dprintk(" perm_choose %d sz=%d x=%d r=%d (%d) s=%d\n", bucket->id,
-+		bucket->size, x, r, pr, s);
-+	return bucket->items[s];
-+}
-+
-+/* uniform */
-+static int bucket_uniform_choose(struct crush_bucket_uniform *bucket,
-+				 int x, int r)
-+{
-+	return bucket_perm_choose(&bucket->h, x, r);
-+}
-+
-+/* list */
-+static int bucket_list_choose(struct crush_bucket_list *bucket,
-+			      int x, int r)
-+{
-+	int i;
-+
-+	for (i = bucket->h.size-1; i >= 0; i--) {
-+		__u64 w = crush_hash32_4(x, bucket->h.items[i], r,
-+					 bucket->h.id);
-+		w &= 0xffff;
-+		dprintk("list_choose i=%d x=%d r=%d item %d weight %x "
-+			"sw %x rand %llx",
-+			i, x, r, bucket->h.items[i], bucket->item_weights[i],
-+			bucket->sum_weights[i], w);
-+		w *= bucket->sum_weights[i];
-+		w = w >> 16;
-+		/*dprintk(" scaled %llx\n", w);*/
-+		if (w < bucket->item_weights[i])
-+			return bucket->h.items[i];
-+	}
-+
-+	BUG_ON(1);
++	for (i = 0; i < m->num_mon; i++)
++		if (ceph_entity_addr_equal(addr, &m->mon_inst[i].addr))
++			return 1;
 +	return 0;
 +}
 +
-+
-+/* (binary) tree */
-+static int height(int n)
++/*
++ * Close monitor session, if any.
++ */
++static void __close_session(struct ceph_mon_client *monc)
 +{
-+	int h = 0;
-+	while ((n & 1) == 0) {
-+		h++;
-+		n = n >> 1;
-+	}
-+	return h;
-+}
-+
-+static int left(int x)
-+{
-+	int h = height(x);
-+	return x - (1 << (h-1));
-+}
-+
-+static int right(int x)
-+{
-+	int h = height(x);
-+	return x + (1 << (h-1));
-+}
-+
-+static int terminal(int x)
-+{
-+	return x & 1;
-+}
-+
-+static int bucket_tree_choose(struct crush_bucket_tree *bucket,
-+			      int x, int r)
-+{
-+	int n, l;
-+	__u32 w;
-+	__u64 t;
-+
-+	/* start at root */
-+	n = bucket->num_nodes >> 1;
-+
-+	while (!terminal(n)) {
-+		/* pick point in [0, w) */
-+		w = bucket->node_weights[n];
-+		t = (__u64)crush_hash32_4(x, n, r, bucket->h.id) * (__u64)w;
-+		t = t >> 32;
-+
-+		/* descend to the left or right? */
-+		l = left(n);
-+		if (t < bucket->node_weights[l])
-+			n = l;
-+		else
-+			n = right(n);
-+	}
-+
-+	return bucket->h.items[n >> 1];
-+}
-+
-+
-+/* straw */
-+
-+static int bucket_straw_choose(struct crush_bucket_straw *bucket,
-+			       int x, int r)
-+{
-+	int i;
-+	int high = 0;
-+	__u64 high_draw = 0;
-+	__u64 draw;
-+
-+	for (i = 0; i < bucket->h.size; i++) {
-+		draw = crush_hash32_3(x, bucket->h.items[i], r);
-+		draw &= 0xffff;
-+		draw *= bucket->straws[i];
-+		if (i == 0 || draw > high_draw) {
-+			high = i;
-+			high_draw = draw;
-+		}
-+	}
-+	return bucket->h.items[high];
-+}
-+
-+static int crush_bucket_choose(struct crush_bucket *in, int x, int r)
-+{
-+	dprintk("choose %d x=%d r=%d\n", in->id, x, r);
-+	switch (in->alg) {
-+	case CRUSH_BUCKET_UNIFORM:
-+		return bucket_uniform_choose((struct crush_bucket_uniform *)in,
-+					  x, r);
-+	case CRUSH_BUCKET_LIST:
-+		return bucket_list_choose((struct crush_bucket_list *)in,
-+					  x, r);
-+	case CRUSH_BUCKET_TREE:
-+		return bucket_tree_choose((struct crush_bucket_tree *)in,
-+					  x, r);
-+	case CRUSH_BUCKET_STRAW:
-+		return bucket_straw_choose((struct crush_bucket_straw *)in,
-+					   x, r);
-+	default:
-+		BUG_ON(1);
-+/* 		return in->items[0] */;
++	if (monc->con) {
++		dout("__close_session closing mon%d\n", monc->cur_mon);
++		ceph_con_close(monc->con);
++		monc->cur_mon = -1;
 +	}
 +}
 +
 +/*
-+ * true if device is marked "out" (failed, fully offloaded)
-+ * of the cluster
++ * Open a session with a (new) monitor.
 + */
-+static int is_out(struct crush_map *map, __u32 *weight, int item, int x)
++static int __open_session(struct ceph_mon_client *monc)
 +{
-+	if (weight[item] >= 0x1000)
-+		return 0;
-+	if (weight[item] == 0)
-+		return 1;
-+	if ((crush_hash32_2(x, item) & 0xffff) < weight[item])
-+		return 0;
-+	return 1;
++	char r;
++
++	if (monc->cur_mon < 0) {
++		get_random_bytes(&r, 1);
++		monc->cur_mon = r % monc->monmap->num_mon;
++		dout("open_session num=%d r=%d -> mon%d\n",
++		     monc->monmap->num_mon, r, monc->cur_mon);
++		monc->sub_sent = 0;
++		monc->sub_renew_after = jiffies;  /* i.e., expired */
++		monc->want_next_osdmap = !!monc->want_next_osdmap;
++
++		dout("open_session mon%d opening\n", monc->cur_mon);
++		monc->con->peer_name.type = CEPH_ENTITY_TYPE_MON;
++		monc->con->peer_name.num = cpu_to_le64(monc->cur_mon);
++		ceph_con_open(monc->con,
++			      &monc->monmap->mon_inst[monc->cur_mon].addr);
++	} else {
++		dout("open_session mon%d already open\n", monc->cur_mon);
++	}
++	return 0;
 +}
 +
-+/**
-+ * crush_choose - choose numrep distinct items of given type
-+ * @map: the crush_map
-+ * @bucket: the bucket we are choose an item from
-+ * @x: crush input value
-+ * @numrep: the number of items to choose
-+ * @type: the type of item to choose
-+ * @out: pointer to output vector
-+ * @outpos: our position in that vector
-+ * @firstn: true if choosing "first n" items, false if choosing "indep"
-+ * @recurse_to_leaf: true if we want one device under each item of given type
-+ * @out2: second output vector for leaf items (if @recurse_to_leaf)
-+ */
-+static int crush_choose(struct crush_map *map,
-+			struct crush_bucket *bucket,
-+			__u32 *weight,
-+			int x, int numrep, int type,
-+			int *out, int outpos,
-+			int firstn, int recurse_to_leaf,
-+			int *out2)
++static bool __sub_expired(struct ceph_mon_client *monc)
 +{
-+	int rep;
-+	int ftotal, flocal;
-+	int retry_descent, retry_bucket, skip_rep;
-+	struct crush_bucket *in = bucket;
-+	int r;
-+	int i;
-+	int item;
-+	int itemtype;
-+	int collide, reject;
-+	const int orig_tries = 5; /* attempts before we fall back to search */
-+	dprintk("choose bucket %d x %d outpos %d\n", bucket->id, x, outpos);
++	return time_after_eq(jiffies, monc->sub_renew_after);
++}
 +
-+	for (rep = outpos; rep < numrep; rep++) {
-+		/* keep trying until we get a non-out, non-colliding item */
-+		ftotal = 0;
-+		skip_rep = 0;
-+		do {
-+			retry_descent = 0;
-+			in = bucket;               /* initial bucket */
++/*
++ * Reschedule delayed work timer.
++ */
++static void __schedule_delayed(struct ceph_mon_client *monc)
++{
++	unsigned delay;
 +
-+			/* choose through intervening buckets */
-+			flocal = 0;
-+			do {
-+				retry_bucket = 0;
-+				r = rep;
-+				if (in->alg == CRUSH_BUCKET_UNIFORM) {
-+					/* be careful */
-+					if (firstn || numrep >= in->size)
-+						/* r' = r + f_total */
-+						r += ftotal;
-+					else if (in->size % numrep == 0)
-+						/* r'=r+(n+1)*f_local */
-+						r += (numrep+1) *
-+							(flocal+ftotal);
-+					else
-+						/* r' = r + n*f_local */
-+						r += numrep * (flocal+ftotal);
-+				} else {
-+					if (firstn)
-+						/* r' = r + f_total */
-+						r += ftotal;
-+					else
-+						/* r' = r + n*f_local */
-+						r += numrep * (flocal+ftotal);
-+				}
++	if (monc->cur_mon < 0 || monc->want_mount || __sub_expired(monc))
++		delay = 10 * HZ;
++	else
++		delay = 20 * HZ;
++	dout("__schedule_delayed after %u\n", delay);
++	schedule_delayed_work(&monc->delayed_work, delay);
++}
 +
-+				/* bucket choose */
-+				if (flocal >= (in->size>>1) &&
-+				    flocal > orig_tries)
-+					item = bucket_perm_choose(in, x, r);
-+				else
-+					item = crush_bucket_choose(in, x, r);
-+				BUG_ON(item >= map->max_devices);
++/*
++ * Send subscribe request for mdsmap and/or osdmap.
++ */
++static void __send_subscribe(struct ceph_mon_client *monc)
++{
++	dout("__send_subscribe sub_sent=%u exp=%u want_osd=%d\n",
++	     (unsigned)monc->sub_sent, __sub_expired(monc),
++	     monc->want_next_osdmap);
++	if ((__sub_expired(monc) && !monc->sub_sent) ||
++	    monc->want_next_osdmap == 1) {
++		struct ceph_msg *msg;
++		struct ceph_mon_subscribe_item *i;
++		void *p, *end;
 +
-+				/* desired type? */
-+				if (item < 0)
-+					itemtype = map->buckets[-1-item]->type;
-+				else
-+					itemtype = 0;
-+				dprintk("  item %d type %d\n", item, itemtype);
++		msg = ceph_msg_new(CEPH_MSG_MON_SUBSCRIBE, 64, 0, 0, NULL);
++		if (!msg)
++			return;
 +
-+				/* keep going? */
-+				if (itemtype != type) {
-+					BUG_ON(item >= 0 ||
-+					       (-1-item) >= map->max_buckets);
-+					in = map->buckets[-1-item];
-+					continue;
-+				}
++		p = msg->front.iov_base;
++		end = p + msg->front.iov_len;
 +
-+				/* collision? */
-+				collide = 0;
-+				for (i = 0; i < outpos; i++) {
-+					if (out[i] == item) {
-+						collide = 1;
-+						break;
-+					}
-+				}
-+
-+				if (recurse_to_leaf &&
-+				    item < 0 &&
-+				    crush_choose(map, map->buckets[-1-item],
-+						 weight,
-+						 x, outpos+1, 0,
-+						 out2, outpos,
-+						 firstn, 0, NULL) <= outpos) {
-+					reject = 1;
-+				} else {
-+					/* out? */
-+					if (itemtype == 0)
-+						reject = is_out(map, weight,
-+								item, x);
-+					else
-+						reject = 0;
-+				}
-+
-+				if (reject || collide) {
-+					ftotal++;
-+					flocal++;
-+
-+					if (collide && flocal < 3)
-+						/* retry locally a few times */
-+						retry_bucket = 1;
-+					else if (flocal < in->size + orig_tries)
-+						/* exhaustive bucket search */
-+						retry_bucket = 1;
-+					else if (ftotal < 20)
-+						/* then retry descent */
-+						retry_descent = 1;
-+					else
-+						/* else give up */
-+						skip_rep = 1;
-+					dprintk("  reject %d  collide %d  "
-+						"ftotal %d  flocal %d\n",
-+						reject, collide, ftotal,
-+						flocal);
-+				}
-+			} while (retry_bucket);
-+		} while (retry_descent);
-+
-+		if (skip_rep) {
-+			dprintk("skip rep\n");
-+			continue;
++		dout("__send_subscribe to 'mdsmap' %u+\n",
++		     (unsigned)monc->have_mdsmap);
++		if (monc->want_next_osdmap) {
++			dout("__send_subscribe to 'osdmap' %u\n",
++			     (unsigned)monc->have_osdmap);
++			ceph_encode_32(&p, 2);
++			ceph_encode_string(&p, end, "osdmap", 6);
++			i = p;
++			i->have = cpu_to_le64(monc->have_osdmap);
++			i->onetime = 1;
++			p += sizeof(*i);
++			monc->want_next_osdmap = 2;  /* requested */
++		} else {
++			ceph_encode_32(&p, 1);
 +		}
++		ceph_encode_string(&p, end, "mdsmap", 6);
++		i = p;
++		i->have = cpu_to_le64(monc->have_mdsmap);
++		i->onetime = 0;
++		p += sizeof(*i);
 +
-+		dprintk("choose got %d\n", item);
-+		out[outpos] = item;
-+		outpos++;
++		msg->front.iov_len = p - msg->front.iov_base;
++		msg->hdr.front_len = cpu_to_le32(msg->front.iov_len);
++		ceph_con_send(monc->con, msg);
++
++		monc->sub_sent = jiffies | 1;  /* never 0 */
 +	}
++}
 +
-+	dprintk("choose returns %d\n", outpos);
-+	return outpos;
++static void handle_subscribe_ack(struct ceph_mon_client *monc,
++				 struct ceph_msg *msg)
++{
++	unsigned seconds;
++	void *p = msg->front.iov_base;
++	void *end = p + msg->front.iov_len;
++
++	ceph_decode_32_safe(&p, end, seconds, bad);
++	mutex_lock(&monc->mutex);
++	if (monc->hunting) {
++		pr_info("mon%d %s session established\n",
++			monc->cur_mon, pr_addr(&monc->con->peer_addr.in_addr));
++		monc->hunting = false;
++	}
++	dout("handle_subscribe_ack after %d seconds\n", seconds);
++	monc->sub_renew_after = monc->sub_sent + seconds*HZ - 1;
++	monc->sub_sent = 0;
++	mutex_unlock(&monc->mutex);
++	return;
++bad:
++	pr_err("got corrupt subscribe-ack msg\n");
++}
++
++/*
++ * Keep track of which maps we have
++ */
++int ceph_monc_got_mdsmap(struct ceph_mon_client *monc, u32 got)
++{
++	mutex_lock(&monc->mutex);
++	monc->have_mdsmap = got;
++	mutex_unlock(&monc->mutex);
++	return 0;
++}
++
++int ceph_monc_got_osdmap(struct ceph_mon_client *monc, u32 got)
++{
++	mutex_lock(&monc->mutex);
++	monc->have_osdmap = got;
++	monc->want_next_osdmap = 0;
++	mutex_unlock(&monc->mutex);
++	return 0;
++}
++
++/*
++ * Register interest in the next osdmap
++ */
++void ceph_monc_request_next_osdmap(struct ceph_mon_client *monc)
++{
++	dout("request_next_osdmap have %u\n", monc->have_osdmap);
++	mutex_lock(&monc->mutex);
++	if (!monc->want_next_osdmap)
++		monc->want_next_osdmap = 1;
++	if (monc->want_next_osdmap < 2)
++		__send_subscribe(monc);
++	mutex_unlock(&monc->mutex);
 +}
 +
 +
-+/**
-+ * crush_do_rule - calculate a mapping with the given input and rule
-+ * @map: the crush_map
-+ * @ruleno: the rule id
-+ * @x: hash input
-+ * @result: pointer to result vector
-+ * @result_max: maximum result size
-+ * @force: force initial replica choice; -1 for none
++/*
++ * mount
 + */
-+int crush_do_rule(struct crush_map *map,
-+		  int ruleno, int x, int *result, int result_max,
-+		  int force, __u32 *weight)
++static void __request_mount(struct ceph_mon_client *monc)
 +{
-+	int result_len;
-+	int force_context[CRUSH_MAX_DEPTH];
-+	int force_pos = -1;
-+	int a[CRUSH_MAX_SET];
-+	int b[CRUSH_MAX_SET];
-+	int c[CRUSH_MAX_SET];
-+	int recurse_to_leaf;
-+	int *w;
-+	int wsize = 0;
-+	int *o;
-+	int osize;
-+	int *tmp;
-+	struct crush_rule *rule;
-+	int step;
-+	int i, j;
-+	int numrep;
-+	int firstn;
-+	int rc = -1;
++	struct ceph_msg *msg;
++	struct ceph_client_mount *h;
++	int err;
 +
-+	BUG_ON(ruleno >= map->max_rules);
++	dout("__request_mount\n");
++	err = __open_session(monc);
++	if (err)
++		return;
++	msg = ceph_msg_new(CEPH_MSG_CLIENT_MOUNT, sizeof(*h), 0, 0, NULL);
++	if (IS_ERR(msg))
++		return;
++	h = msg->front.iov_base;
++	h->have_version = 0;
++	ceph_con_send(monc->con, msg);
++}
 +
-+	rule = map->rules[ruleno];
-+	result_len = 0;
-+	w = a;
-+	o = b;
-+
-+	/*
-+	 * determine hierarchical context of force, if any.  note
-+	 * that this may or may not correspond to the specific types
-+	 * referenced by the crush rule.
-+	 */
-+	if (force >= 0) {
-+		if (force >= map->max_devices ||
-+		    map->device_parents[force] == 0) {
-+			/*dprintk("CRUSH: forcefed device dne\n");*/
-+			rc = -1;  /* force fed device dne */
-+			goto out;
-+		}
-+		if (!is_out(map, weight, force, x)) {
-+			while (1) {
-+				force_context[++force_pos] = force;
-+				if (force >= 0)
-+					force = map->device_parents[force];
-+				else
-+					force = map->bucket_parents[-1-force];
-+				if (force == 0)
-+					break;
-+			}
-+		}
++int ceph_monc_request_mount(struct ceph_mon_client *monc)
++{
++	if (!monc->con) {
++		monc->con = kmalloc(sizeof(*monc->con), GFP_KERNEL);
++		if (!monc->con)
++			return -ENOMEM;
++		ceph_con_init(monc->client->msgr, monc->con);
++		monc->con->private = monc;
++		monc->con->ops = &mon_con_ops;
 +	}
 +
-+	for (step = 0; step < rule->len; step++) {
-+		firstn = 0;
-+		switch (rule->steps[step].op) {
-+		case CRUSH_RULE_TAKE:
-+			w[0] = rule->steps[step].arg1;
-+			if (force_pos >= 0) {
-+				BUG_ON(force_context[force_pos] != w[0]);
-+				force_pos--;
-+			}
-+			wsize = 1;
-+			break;
++	mutex_lock(&monc->mutex);
++	__request_mount(monc);
++	__schedule_delayed(monc);
++	mutex_unlock(&monc->mutex);
++	return 0;
++}
 +
-+		case CRUSH_RULE_CHOOSE_LEAF_FIRSTN:
-+		case CRUSH_RULE_CHOOSE_FIRSTN:
-+			firstn = 1;
-+		case CRUSH_RULE_CHOOSE_LEAF_INDEP:
-+		case CRUSH_RULE_CHOOSE_INDEP:
-+			BUG_ON(wsize == 0);
++/*
++ * The monitor responds with mount ack indicate mount success.  The
++ * included client ticket allows the client to talk to MDSs and OSDs.
++ */
++static void handle_mount_ack(struct ceph_mon_client *monc, struct ceph_msg *msg)
++{
++	struct ceph_client *client = monc->client;
++	struct ceph_monmap *monmap = NULL, *old = monc->monmap;
++	void *p, *end;
++	s32 result;
++	u32 len;
++	s64 cnum;
++	int err = -EINVAL;
 +
-+			recurse_to_leaf =
-+				rule->steps[step].op ==
-+				 CRUSH_RULE_CHOOSE_LEAF_FIRSTN ||
-+				rule->steps[step].op ==
-+				CRUSH_RULE_CHOOSE_LEAF_INDEP;
-+
-+			/* reset output */
-+			osize = 0;
-+
-+			for (i = 0; i < wsize; i++) {
-+				/*
-+				 * see CRUSH_N, CRUSH_N_MINUS macros.
-+				 * basically, numrep <= 0 means relative to
-+				 * the provided result_max
-+				 */
-+				numrep = rule->steps[step].arg1;
-+				if (numrep <= 0) {
-+					numrep += result_max;
-+					if (numrep <= 0)
-+						continue;
-+				}
-+				j = 0;
-+				if (osize == 0 && force_pos >= 0) {
-+					/* skip any intermediate types */
-+					while (force_pos &&
-+					       force_context[force_pos] < 0 &&
-+					       rule->steps[step].arg2 !=
-+					       map->buckets[-1 -
-+					       force_context[force_pos]]->type)
-+						force_pos--;
-+					o[osize] = force_context[force_pos];
-+					if (recurse_to_leaf)
-+						c[osize] = force_context[0];
-+					j++;
-+					force_pos--;
-+				}
-+				osize += crush_choose(map,
-+						      map->buckets[-1-w[i]],
-+						      weight,
-+						      x, numrep,
-+						      rule->steps[step].arg2,
-+						      o+osize, j,
-+						      firstn,
-+						      recurse_to_leaf, c+osize);
-+			}
-+
-+			if (recurse_to_leaf)
-+				/* copy final _leaf_ values to output set */
-+				memcpy(o, c, osize*sizeof(*o));
-+
-+			/* swap t and w arrays */
-+			tmp = o;
-+			o = w;
-+			w = tmp;
-+			wsize = osize;
-+			break;
-+
-+
-+		case CRUSH_RULE_EMIT:
-+			for (i = 0; i < wsize && result_len < result_max; i++) {
-+				result[result_len] = w[i];
-+				result_len++;
-+			}
-+			wsize = 0;
-+			break;
-+
-+		default:
-+			BUG_ON(1);
-+		}
++	if (client->whoami >= 0) {
++		dout("handle_mount_ack - already mounted\n");
++		return;
 +	}
-+	rc = result_len;
 +
++	mutex_lock(&monc->mutex);
++
++	dout("handle_mount_ack\n");
++	p = msg->front.iov_base;
++	end = p + msg->front.iov_len;
++
++	ceph_decode_64_safe(&p, end, cnum, bad);
++	ceph_decode_32_safe(&p, end, result, bad);
++	ceph_decode_32_safe(&p, end, len, bad);
++	if (result) {
++		pr_err("mount denied: %.*s (%d)\n", len, (char *)p,
++		       result);
++		err = result;
++		goto out;
++	}
++	p += len;
++
++	ceph_decode_32_safe(&p, end, len, bad);
++	ceph_decode_need(&p, end, len, bad);
++	monmap = ceph_monmap_decode(p, p + len);
++	if (IS_ERR(monmap)) {
++		pr_err("problem decoding monmap, %d\n",
++		       (int)PTR_ERR(monmap));
++		err = -EINVAL;
++		goto out;
++	}
++	p += len;
++
++	client->monc.monmap = monmap;
++	kfree(old);
++
++	client->signed_ticket = NULL;
++	client->signed_ticket_len = 0;
++
++	monc->want_mount = false;
++
++	client->whoami = cnum;
++	client->msgr->inst.name.type = CEPH_ENTITY_TYPE_CLIENT;
++	client->msgr->inst.name.num = cpu_to_le64(cnum);
++	pr_info("client%lld fsid " FSID_FORMAT "\n",
++		client->whoami, PR_FSID(&client->monc.monmap->fsid));
++
++	ceph_debugfs_client_init(client);
++	__send_subscribe(monc);
++
++	err = 0;
++	goto out;
++
++bad:
++	pr_err("error decoding mount_ack message\n");
 +out:
-+	return rc;
++	client->mount_err = err;
++	mutex_unlock(&monc->mutex);
++	wake_up(&client->mount_wq);
 +}
 +
 +
-diff --git a/fs/ceph/crush/mapper.h b/fs/ceph/crush/mapper.h
-new file mode 100644
-index 0000000..98e9004
---- /dev/null
-+++ b/fs/ceph/crush/mapper.h
-@@ -0,0 +1,20 @@
-+#ifndef _CRUSH_MAPPER_H
-+#define _CRUSH_MAPPER_H
++
 +
 +/*
-+ * CRUSH functions for find rules and then mapping an input to an
-+ * output set.
-+ *
-+ * LGPL2
++ * statfs
 + */
++static void handle_statfs_reply(struct ceph_mon_client *monc,
++				struct ceph_msg *msg)
++{
++	struct ceph_mon_statfs_request *req;
++	struct ceph_mon_statfs_reply *reply = msg->front.iov_base;
++	u64 tid;
 +
-+#include "crush.h"
++	if (msg->front.iov_len != sizeof(*reply))
++		goto bad;
++	tid = le64_to_cpu(reply->tid);
++	dout("handle_statfs_reply %p tid %llu\n", msg, tid);
 +
-+extern int crush_find_rule(struct crush_map *map, int pool, int type, int size);
-+extern int crush_do_rule(struct crush_map *map,
-+			 int ruleno,
-+			 int x, int *result, int result_max,
-+			 int forcefeed,    /* -1 for none */
-+			 __u32 *weights);
++	mutex_lock(&monc->mutex);
++	req = radix_tree_lookup(&monc->statfs_request_tree, tid);
++	if (req) {
++		*req->buf = reply->st;
++		req->result = 0;
++	}
++	mutex_unlock(&monc->mutex);
++	if (req)
++		complete(&req->completion);
++	return;
++
++bad:
++	pr_err("corrupt statfs reply, no tid\n");
++}
++
++/*
++ * (re)send a statfs request
++ */
++static int send_statfs(struct ceph_mon_client *monc,
++		       struct ceph_mon_statfs_request *req)
++{
++	struct ceph_msg *msg;
++	struct ceph_mon_statfs *h;
++	int err;
++
++	dout("send_statfs tid %llu\n", req->tid);
++	err = __open_session(monc);
++	if (err)
++		return err;
++	msg = ceph_msg_new(CEPH_MSG_STATFS, sizeof(*h), 0, 0, NULL);
++	if (IS_ERR(msg))
++		return PTR_ERR(msg);
++	req->request = msg;
++	h = msg->front.iov_base;
++	h->have_version = 0;
++	h->fsid = monc->monmap->fsid;
++	h->tid = cpu_to_le64(req->tid);
++	ceph_con_send(monc->con, msg);
++	return 0;
++}
++
++/*
++ * Do a synchronous statfs().
++ */
++int ceph_monc_do_statfs(struct ceph_mon_client *monc, struct ceph_statfs *buf)
++{
++	struct ceph_mon_statfs_request req;
++	int err;
++
++	req.buf = buf;
++	init_completion(&req.completion);
++
++	/* allocate memory for reply */
++	err = ceph_msgpool_resv(&monc->msgpool_statfs_reply, 1);
++	if (err)
++		return err;
++
++	/* register request */
++	mutex_lock(&monc->mutex);
++	req.tid = ++monc->last_tid;
++	req.last_attempt = jiffies;
++	req.delay = BASE_DELAY_INTERVAL;
++	if (radix_tree_insert(&monc->statfs_request_tree, req.tid, &req) < 0) {
++		mutex_unlock(&monc->mutex);
++		pr_err("ENOMEM in do_statfs\n");
++		return -ENOMEM;
++	}
++	monc->num_statfs_requests++;
++	mutex_unlock(&monc->mutex);
++
++	/* send request and wait */
++	err = send_statfs(monc, &req);
++	if (!err)
++		err = wait_for_completion_interruptible(&req.completion);
++
++	mutex_lock(&monc->mutex);
++	radix_tree_delete(&monc->statfs_request_tree, req.tid);
++	monc->num_statfs_requests--;
++	ceph_msgpool_resv(&monc->msgpool_statfs_reply, -1);
++	mutex_unlock(&monc->mutex);
++
++	if (!err)
++		err = req.result;
++	return err;
++}
++
++/*
++ * Resend pending statfs requests.
++ */
++static void __resend_statfs(struct ceph_mon_client *monc)
++{
++	u64 next_tid = 0;
++	int got;
++	int did = 0;
++	struct ceph_mon_statfs_request *req;
++
++	while (1) {
++		got = radix_tree_gang_lookup(&monc->statfs_request_tree,
++					     (void **)&req,
++					     next_tid, 1);
++		if (got == 0)
++			break;
++		did++;
++		next_tid = req->tid + 1;
++
++		send_statfs(monc, req);
++	}
++}
++
++/*
++ * Delayed work.  If we haven't mounted yet, retry.  Otherwise,
++ * renew/retry subscription as needed (in case it is timing out, or we
++ * got an ENOMEM).  And keep the monitor connection alive.
++ */
++static void delayed_work(struct work_struct *work)
++{
++	struct ceph_mon_client *monc =
++		container_of(work, struct ceph_mon_client, delayed_work.work);
++
++	dout("monc delayed_work\n");
++	mutex_lock(&monc->mutex);
++	if (monc->want_mount) {
++		__request_mount(monc);
++	} else {
++		if (__sub_expired(monc)) {
++			__close_session(monc);
++			__open_session(monc);  /* continue hunting */
++		} else {
++			ceph_con_keepalive(monc->con);
++		}
++	}
++	__send_subscribe(monc);
++	__schedule_delayed(monc);
++	mutex_unlock(&monc->mutex);
++}
++
++int ceph_monc_init(struct ceph_mon_client *monc, struct ceph_client *cl)
++{
++	int err = 0;
++
++	dout("init\n");
++	memset(monc, 0, sizeof(*monc));
++	monc->client = cl;
++	monc->monmap = NULL;
++	mutex_init(&monc->mutex);
++
++	monc->con = NULL;
++
++	/* msg pools */
++	err = ceph_msgpool_init(&monc->msgpool_mount_ack, 4096, 1, false);
++	if (err < 0)
++		goto out;
++	err = ceph_msgpool_init(&monc->msgpool_subscribe_ack, 8, 1, false);
++	if (err < 0)
++		goto out;
++	err = ceph_msgpool_init(&monc->msgpool_statfs_reply,
++				sizeof(struct ceph_mon_statfs_reply), 0, false);
++	if (err < 0)
++		goto out;
++
++	monc->cur_mon = -1;
++	monc->hunting = false;  /* not really */
++	monc->sub_renew_after = jiffies;
++	monc->sub_sent = 0;
++
++	INIT_DELAYED_WORK(&monc->delayed_work, delayed_work);
++	INIT_RADIX_TREE(&monc->statfs_request_tree, GFP_NOFS);
++	monc->num_statfs_requests = 0;
++	monc->last_tid = 0;
++
++	monc->have_mdsmap = 0;
++	monc->have_osdmap = 0;
++	monc->want_next_osdmap = 1;
++	monc->want_mount = true;
++out:
++	return err;
++}
++
++void ceph_monc_stop(struct ceph_mon_client *monc)
++{
++	dout("stop\n");
++	cancel_delayed_work_sync(&monc->delayed_work);
++
++	mutex_lock(&monc->mutex);
++	__close_session(monc);
++	if (monc->con) {
++		monc->con->private = NULL;
++		monc->con->ops->put(monc->con);
++		monc->con = NULL;
++	}
++	mutex_unlock(&monc->mutex);
++
++	ceph_msgpool_destroy(&monc->msgpool_mount_ack);
++	ceph_msgpool_destroy(&monc->msgpool_subscribe_ack);
++	ceph_msgpool_destroy(&monc->msgpool_statfs_reply);
++
++	kfree(monc->monmap);
++}
++
++
++/*
++ * handle incoming message
++ */
++static void dispatch(struct ceph_connection *con, struct ceph_msg *msg)
++{
++	struct ceph_mon_client *monc = con->private;
++	int type = le16_to_cpu(msg->hdr.type);
++
++	if (!monc)
++		return;
++
++	switch (type) {
++	case CEPH_MSG_CLIENT_MOUNT_ACK:
++		handle_mount_ack(monc, msg);
++		break;
++
++	case CEPH_MSG_MON_SUBSCRIBE_ACK:
++		handle_subscribe_ack(monc, msg);
++		break;
++
++	case CEPH_MSG_STATFS_REPLY:
++		handle_statfs_reply(monc, msg);
++		break;
++
++	case CEPH_MSG_MDS_MAP:
++		ceph_mdsc_handle_map(&monc->client->mdsc, msg);
++		break;
++
++	case CEPH_MSG_OSD_MAP:
++		ceph_osdc_handle_map(&monc->client->osdc, msg);
++		break;
++
++	default:
++		pr_err("received unknown message type %d %s\n", type,
++		       ceph_msg_type_name(type));
++	}
++	ceph_msg_put(msg);
++}
++
++/*
++ * Allocate memory for incoming message
++ */
++static struct ceph_msg *mon_alloc_msg(struct ceph_connection *con,
++				      struct ceph_msg_header *hdr)
++{
++	struct ceph_mon_client *monc = con->private;
++	int type = le16_to_cpu(hdr->type);
++
++	switch (type) {
++	case CEPH_MSG_CLIENT_MOUNT_ACK:
++		return ceph_msgpool_get(&monc->msgpool_mount_ack);
++	case CEPH_MSG_MON_SUBSCRIBE_ACK:
++		return ceph_msgpool_get(&monc->msgpool_subscribe_ack);
++	case CEPH_MSG_STATFS_REPLY:
++		return ceph_msgpool_get(&monc->msgpool_statfs_reply);
++	}
++	return ceph_alloc_msg(con, hdr);
++}
++
++/*
++ * If the monitor connection resets, pick a new monitor and resubmit
++ * any pending requests.
++ */
++static void mon_fault(struct ceph_connection *con)
++{
++	struct ceph_mon_client *monc = con->private;
++
++	if (!monc)
++		return;
++
++	dout("mon_fault\n");
++	mutex_lock(&monc->mutex);
++	if (!con->private)
++		goto out;
++
++	if (monc->con && !monc->hunting)
++		pr_info("mon%d %s session lost, "
++			"hunting for new mon\n", monc->cur_mon,
++			pr_addr(&monc->con->peer_addr.in_addr));
++
++	__close_session(monc);
++	if (!monc->hunting) {
++		/* start hunting */
++		monc->hunting = true;
++		if (__open_session(monc) == 0) {
++			__send_subscribe(monc);
++			__resend_statfs(monc);
++		}
++	} else {
++		/* already hunting, let's wait a bit */
++		__schedule_delayed(monc);
++	}
++out:
++	mutex_unlock(&monc->mutex);
++}
++
++const static struct ceph_connection_operations mon_con_ops = {
++	.get = ceph_con_get,
++	.put = ceph_con_put,
++	.dispatch = dispatch,
++	.fault = mon_fault,
++	.alloc_msg = mon_alloc_msg,
++	.alloc_middle = ceph_alloc_middle,
++};
+diff --git a/fs/ceph/mon_client.h b/fs/ceph/mon_client.h
+new file mode 100644
+index 0000000..5258c56
+--- /dev/null
++++ b/fs/ceph/mon_client.h
+@@ -0,0 +1,109 @@
++#ifndef _FS_CEPH_MON_CLIENT_H
++#define _FS_CEPH_MON_CLIENT_H
++
++#include <linux/completion.h>
++#include <linux/radix-tree.h>
++
++#include "messenger.h"
++#include "msgpool.h"
++
++struct ceph_client;
++struct ceph_mount_args;
++
++/*
++ * The monitor map enumerates the set of all monitors.
++ */
++struct ceph_monmap {
++	struct ceph_fsid fsid;
++	u32 epoch;
++	u32 num_mon;
++	struct ceph_entity_inst mon_inst[0];
++};
++
++struct ceph_mon_client;
++struct ceph_mon_statfs_request;
++
++
++/*
++ * Generic mechanism for resending monitor requests.
++ */
++typedef void (*ceph_monc_request_func_t)(struct ceph_mon_client *monc,
++					 int newmon);
++
++/* a pending monitor request */
++struct ceph_mon_request {
++	struct ceph_mon_client *monc;
++	struct delayed_work delayed_work;
++	unsigned long delay;
++	ceph_monc_request_func_t do_request;
++};
++
++/*
++ * statfs() is done a bit differently because we need to get data back
++ * to the caller
++ */
++struct ceph_mon_statfs_request {
++	u64 tid;
++	int result;
++	struct ceph_statfs *buf;
++	struct completion completion;
++	unsigned long last_attempt, delay; /* jiffies */
++	struct ceph_msg *request;  /* original request */
++};
++
++struct ceph_mon_client {
++	struct ceph_client *client;
++	struct ceph_monmap *monmap;
++
++	struct mutex mutex;
++	struct delayed_work delayed_work;
++
++	bool hunting;
++	int cur_mon;                       /* last monitor i contacted */
++	unsigned long sub_sent, sub_renew_after;
++	struct ceph_connection *con;
++
++	/* msg pools */
++	struct ceph_msgpool msgpool_mount_ack;
++	struct ceph_msgpool msgpool_subscribe_ack;
++	struct ceph_msgpool msgpool_statfs_reply;
++
++	/* pending statfs requests */
++	struct radix_tree_root statfs_request_tree;
++	int num_statfs_requests;
++	u64 last_tid;
++
++	/* mds/osd map or mount requests */
++	bool want_mount;
++	int want_next_osdmap; /* 1 = want, 2 = want+asked */
++	u32 have_osdmap, have_mdsmap;
++
++	struct dentry *debugfs_file;
++};
++
++extern struct ceph_monmap *ceph_monmap_decode(void *p, void *end);
++extern int ceph_monmap_contains(struct ceph_monmap *m,
++				struct ceph_entity_addr *addr);
++
++extern int ceph_monc_init(struct ceph_mon_client *monc, struct ceph_client *cl);
++extern void ceph_monc_stop(struct ceph_mon_client *monc);
++
++/*
++ * The model here is to indicate that we need a new map of at least
++ * epoch @want, and also call in when we receive a map.  We will
++ * periodically rerequest the map from the monitor cluster until we
++ * get what we want.
++ */
++extern int ceph_monc_got_mdsmap(struct ceph_mon_client *monc, u32 have);
++extern int ceph_monc_got_osdmap(struct ceph_mon_client *monc, u32 have);
++
++extern void ceph_monc_request_next_osdmap(struct ceph_mon_client *monc);
++
++extern int ceph_monc_request_mount(struct ceph_mon_client *monc);
++
++extern int ceph_monc_do_statfs(struct ceph_mon_client *monc,
++			       struct ceph_statfs *buf);
++
++
 +
 +#endif
 -- 
