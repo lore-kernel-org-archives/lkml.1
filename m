@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932421AbZJEKUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbZJEKXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932421AbZJEKUB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 06:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932359AbZJEKUB
+	id S1758768AbZJEKXG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 06:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758622AbZJEKXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 06:20:01 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:51851 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932348AbZJEKUA (ORCPT
+	Mon, 5 Oct 2009 06:23:05 -0400
+Received: from bosmailout17.eigbox.net ([66.96.184.17]:35453 "EHLO
+	bosmailout17.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758557AbZJEKXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 06:20:00 -0400
-Message-ID: <4AC9C7F4.20401@monstr.eu>
-Date: Mon, 05 Oct 2009 12:18:28 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Mon, 5 Oct 2009 06:23:05 -0400
+X-EN-OrigOutIP: 10.20.18.2
+X-EN-IMPSID: oyM41c00902gpmq0000000
+Message-ID: <4AC9C8A6.6010209@jaysonking.com>
+Date: Mon, 05 Oct 2009 05:21:26 -0500
+From: "Jayson R. King" <dev@jaysonking.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-To: torvalds@linux-foundation.org
-CC: linux-kernel@vger.kernel.org
-Subject: [GIT PULL] arch/microblaze fixes
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>, Jiri Kosina <trivial@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: Remove obsolete comment in sched_init()
+References: <4AC98F4A.7070303@jaysonking.com> <20091005100203.GA3211@elte.hu>
+In-Reply-To: <20091005100203.GA3211@elte.hu>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-EN-UserInfo: 06af1bc540adb20c3d2d7097199478a6:08dd1976e651f6e3791fbe97eaa5f898
+X-EN-AuthUser: jaysonking@jaysonking.com
+X-EN-OrigIP: 67.67.11.191
+X-EN-OrigHost: adsl-67-67-11-191.dsl.okcyok.swbell.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Remove the comment about calling alloc_bootmem() as it is not called
+here since commit 36b7b6d465489c4754c4fd66fcec6086eba87896.
 
-please pull these two changes.
+Signed-off-by: Jayson R. King <dev@jaysonking.com>
+---
+ sched.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-Thanks,
-Michal
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 1535f38..d68ac0e 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9334,10 +9334,6 @@ void __init sched_init(void)
+ #ifdef CONFIG_CPUMASK_OFFSTACK
+ 	alloc_size += num_possible_cpus() * cpumask_size();
+ #endif
+-	/*
+-	 * As sched_init() is called before page_alloc is setup,
+-	 * we use alloc_bootmem().
+-	 */
+ 	if (alloc_size) {
+ 		ptr = (unsigned long)kzalloc(alloc_size, GFP_NOWAIT);
 
 
 
-The following changes since commit 374576a8b6f865022c0fd1ca62396889b23d66dd:
-   Linus Torvalds (1):
-         Linux 2.6.32-rc3
 
-are available in the git repository at:
-
-   git://git.monstr.eu/linux-2.6-microblaze.git fixes-for-linus
-
-Michal Simek (2):
-       microblaze: UMS is used only for MMU kernel
-       microblaze: Clear sticky FSR register after saving it to func 
-parametr
-
-  arch/microblaze/kernel/entry.S                |    2 ++
-  arch/microblaze/kernel/hw_exception_handler.S |    2 +-
-  arch/microblaze/kernel/process.c              |    2 ++
-  3 files changed, 5 insertions(+), 1 deletions(-)
