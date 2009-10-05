@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZJEPRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbZJEPW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753594AbZJEPRR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 11:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZJEPRQ
+	id S1752888AbZJEPW5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 11:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbZJEPW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 11:17:16 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44126 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752934AbZJEPRP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 11:17:15 -0400
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUGFIX -v7] x86, MCE: Fix bugs and issues of MCE log ring buffer
-From: Andi Kleen <andi@firstfloor.org>
-References: <1253269241.15717.525.camel@yhuang-dev.sh.intel.com>
-	<4AC990E1.7030708@jp.fujitsu.com>
-	<c62985530910050151u78b46fa4l6ec0184f4f75be27@mail.gmail.com>
-Date: Mon, 05 Oct 2009 17:16:37 +0200
-In-Reply-To: <c62985530910050151u78b46fa4l6ec0184f4f75be27@mail.gmail.com>
- (=?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker's message of "Mon, 5 Oct 2009
- 10:51:46 +0200")
-Message-ID: <87iqetyip6.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 5 Oct 2009 11:22:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52087 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751021AbZJEPW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 11:22:56 -0400
+Message-ID: <4ACA0EFD.4070607@kernel.org>
+Date: Tue, 06 Oct 2009 00:21:33 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu, rusty@rustcorp.com.au,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [this_cpu_xx V4 12/20] Move early initialization of pagesets
+ out of zone_wait_table_init()
+References: <20091001212521.123389189@gentwo.org> <20091001212559.879284755@gentwo.org> <4AC7279B.3050901@kernel.org> <alpine.DEB.1.10.0910051038410.16359@gentwo.org> <4ACA0A4F.3090004@kernel.org> <alpine.DEB.1.10.0910051105070.16359@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0910051105070.16359@gentwo.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 05 Oct 2009 15:21:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frédéric Weisbecker <fweisbec@gmail.com> writes:
+Christoph Lameter wrote:
+> On Tue, 6 Oct 2009, Tejun Heo wrote:
+> 
+>>> Because it has to be called immediately after per cpu areas become
+>>> available. Otherwise page allocator uses will fail.
+>> But... setup_per_cpu_area() isn't supposed to call page allocator and
+>> start_kernel() is the only caller of setup_per_cpu_areas().
+> 
+> setup_per_cpu_areas() is not calling the page allocator. However, any
+> caller after that can call the page allocator.
+> 
+> There are various arch implementations that do their own implementation of
+> setup_per_cpu_areas() at their own time (Check sparc and ia64 for
+> example).
 
-> So the need is to have a more stable ring buffer. But this one is an ad-hoc one.
+sparc is doing everything on setup_per_cpu_areas().  ia64 is an
+exception.  Hmmm... I really don't like scattering mostly unrelated
+init call to every setup_per_cpu_areas() implementation.  How about
+adding "static bool initialized __initdata" to the function and allow
+it to be called earlier when necessary (only ia64 at the moment)?
 
-It was designed to do one job and does it well with minimal overhead.
-That seems all positive to me.
-
-> We already have a general purpose per-cpu/lockless ring buffer implementation in
-> kernel/trace/ring_buffer.c
-> And it's not only used by tracing, it's generally available.
-
-That trace ring buffer is significantly larger than the all rest of the MCE 
-code together:
-
-andi@basil:~/lsrc/git/obj> size kernel/trace/ring_buffer.o 
-   text    data     bss     dec     hex filename
-  14241      21      12   14274    37c2 kernel/trace/ring_buffer.o
-andi@basil:~/lsrc/git/obj> size arch/x86/kernel/cpu/mcheck/mce.o 
-   text    data     bss     dec     hex filename
-  11098    4480     224   15802    3dba arch/x86/kernel/cpu/mcheck/mce.o
-
-Basically you're proposing to more than double the code footprint of the 
-MCE handler for a small kernel configuration, just to avoid a few lines
-of code.
-
-It might be that all of its features are needed for tracing, but they
-are definitely not needed for MCE handling and it would need 
-to be put on a significant diet before core code like the MCE handler
-could even think to start relying on it. In addition the ring-buffer.c
-currently doesn't even directly do what mce needs and would need
-significant glue code to fit into the existing interfaces and likely
-modifications to the ring buffer itself too (e.g. to stop
-trace_stop from messing with error handling)
-
-Error handling code like the MCE handler has to be always compiled in
-unlike tracing and other debugging options and I don't think it can
-really afford to use such oversized code, especially since it doesn't
-really need any of its fancy features.  Linux has enough problems with
-code size growth recently, no need to make it worse with proposals
-like this. Also the requirements of error handling are quite different
-from other tracing and debugging and the ring-buffer doesn't even fit
-well recently.
-
-If the code should be converted to use a generic buffer kernel/kfifo.o
-would be the right target and size:
-
-andi@basil:~/lsrc/git/obj> size kernel/kfifo.o 
-   text    data     bss     dec     hex filename
-    734       0       0     734     2de kernel/kfifo.o
-
-Unfortunately this needs Stefanie's lockless kfifo changes first to make 
-happen and they didn't make it into 2.6.32-rc*
-
-If they make it into 2.6.33 and there's really a strong desire to use
-some generalized buffer I think that would be a suitable solution.
-But frankly just keeping Ying's buffer around would also be quite reasonable
-
-Short term Ying's simple alternative is the only good solution.
-
--Andi
+Thanks.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+tejun
