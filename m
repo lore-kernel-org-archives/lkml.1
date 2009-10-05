@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbZJETAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZJES6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594AbZJETAs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 15:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZJETAs
+	id S1754570AbZJES6a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 14:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZJES63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 15:00:48 -0400
-Received: from eagle.jhcloos.com ([207.210.242.212]:1563 "EHLO
-	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754465AbZJETAr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 15:00:47 -0400
-From: James Cloos <cloos@jhcloos.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.32-rc3
-In-Reply-To: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> (Linus
-	Torvalds's message of "Sun, 4 Oct 2009 17:44:43 -0700 (PDT)")
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.50 (gnu/linux)
-Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
- REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
- eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
- FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
-Copyright: Copyright 2009 James Cloos
-OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
-OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
-Date: Mon, 05 Oct 2009 14:55:40 -0400
-Message-ID: <m3y6npacvv.fsf@lugabout.jhcloos.org>
+	Mon, 5 Oct 2009 14:58:29 -0400
+Received: from www.tglx.de ([62.245.132.106]:50964 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754396AbZJES63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 14:58:29 -0400
+Date: Mon, 5 Oct 2009 20:57:46 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Mehlan, Markus" <Markus.Mehlan@ritter.info>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: clock_nanosleep: cyclic POSIX thread freezes during time
+ setting
+In-Reply-To: <40F775BBD072A346957E787B3D0DBE5F1C97AF@w2k3-46ex01.RITTER.LOCAL>
+Message-ID: <alpine.LFD.2.00.0910052044410.2646@localhost.localdomain>
+References: <40F775BBD072A346957E787B3D0DBE5F1C97AF@w2k3-46ex01.RITTER.LOCAL>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Hashcash: 1:29:091005:linux-kernel@vger.kernel.org::0g+NSoxKVxLJpTMA:00000000000000000000000000000000qcRiI
-X-Hashcash: 1:29:091005:torvalds@linux-foundation.org::y2FI1dX9nvosLcO1:0000000000000000000000000000000flssJ
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote earlier, in a reply on the Poor desktop responsiveness with
-background I/O-operations thread, that sometime between .30-rc6 and
-the .31 tag all of the recent improvements in perceived performance
-has been lost.
+Markus,
 
-I'm happy to report that as of the cmpexch64 fix, that regression
-is gone.  Performance under load -- and particularly with significant
-paging -- shows a vast improvement (on my aging, 32-bit laptop).
+On Mon, 5 Oct 2009, Mehlan, Markus wrote:
+> I have the following problem on a MPC5200b customer board,
+> tested with linux-2.6.24.7-rt11 and 2.6.26.8-rt16.
+> 
+> I start the test application. Every 200ms I can see a new 
+> line on the console ("ping"). Then I set the time with "date
+> 100509152009" a few times on
+> a second console. The effect is that the output on the first console
+> freezes and if I check
+> the time with "date", the time doesn't progress during the "freeze
+> time". After the 
+> "freeze time" the time makes a jump of several seconds.
+> 
+> In the real application the "ping" should reset the watchdog-timer. The
+> freezing causes
+> an elapsing of the watchdog-timer and finally a reboot.
+> 
+> Has someone an idea?
 
--JimC
--- 
-James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+Just tested on a MPC5200 board with cyclictest and setting date on a
+second console. Unfortunately I cannot reproduce that problem. Can you
+try to activate the function tracer and capture what the system is
+doing. That might us give some clue about the problem.
+
+Thanks,
+
+	tglx
+
+
+ 
+
