@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbZJEXZK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZJEX27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755042AbZJEXZK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 19:25:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbZJEXZK
+	id S1755117AbZJEX27 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 19:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbZJEX27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 19:25:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57558 "EHLO
+	Mon, 5 Oct 2009 19:28:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50590 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754263AbZJEXZI (ORCPT
+	by vger.kernel.org with ESMTP id S1754505AbZJEX26 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 19:25:08 -0400
-Date: Mon, 5 Oct 2009 16:23:12 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Len Brown <lenb@kernel.org>, rjw@sisk.pl, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       a.p.zijlstra@chello.nl, shaohua.li@intel.com, svaidy@linux.vnet.ibm.com
-Subject: Re: [git pull request] ACPI Processor Aggregator Driver for
- 2.6.32-rc1
-In-Reply-To: <20091005154021.129a8f9f.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.01.0910051614510.3432@localhost.localdomain>
-References: <alpine.LFD.2.00.0910030145140.25240@localhost.localdomain> <20091005033256.GA26592@balbir.in.ibm.com> <200910052159.24920.rjw@sisk.pl> <20091005140415.57f1db5e.akpm@linux-foundation.org> <alpine.LFD.2.00.0910051818130.32307@localhost.localdomain>
- <20091005154021.129a8f9f.akpm@linux-foundation.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 5 Oct 2009 19:28:58 -0400
+Date: Mon, 5 Oct 2009 16:27:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stanislav Brabec <utx@penguin.cz>
+Cc: linux@arm.linux.org.uk, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       alan@lxorguk.ukuu.org.uk, s.hauer@pengutronix.de, saxena@laptop.org,
+       gregkh@suse.de
+Subject: Re: [PATCH] serial-core: resume serial hardware with
+ no_console_suspend
+Message-Id: <20091005162741.599a1be9.akpm@linux-foundation.org>
+In-Reply-To: <1253872547.13257.18.camel@hammer.suse.cz>
+References: <1253021938.6597.16.camel@hammer.suse.cz>
+	<20090924170503.37cbe4ed.akpm@linux-foundation.org>
+	<20090925073617.GA5856@n2100.arm.linux.org.uk>
+	<1253872547.13257.18.camel@hammer.suse.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 25 Sep 2009 11:55:47 +0200
+Stanislav Brabec <utx@penguin.cz> wrote:
 
-
-On Mon, 5 Oct 2009, Andrew Morton wrote:
+> Russell King - ARM Linux wrote:
+> > On Thu, Sep 24, 2009 at 05:05:03PM -0700, Andrew Morton wrote:
+> > > On Tue, 15 Sep 2009 15:38:58 +0200
+> > > Stanislav Brabec <utx@penguin.cz> wrote:
+> > > 
+> > > > Hardware may need re-initialization to get serial port working after
+> > > > resume. It does not happen with no_console_suspend. Attached patch
+> > > > attempts to fix it.
+> > > > 
+> > > > The patch attempts to keep hardware running before suspend and run
+> > > > hardware re-initialization after resume. Maybe simpler approach is
+> > > > possible.
+> > > 
+> > > The patch doesn't apply any more and seems like a rather hacky thing to do.
 > 
-> But it's all too late now, isn't it.  This is the first time that
-> non-linux-acpi readers knew of the existence of this driver.
+> Yes, but no_console_suspend itself is a bit hacky. You need to save
+> console state but keep it running as long as possible afterwards and
+> resume it after return from the sleep.
+> 
+> I was not sure, what exactly should be skipped and what must be run, so
+> I experimented a bit.
+> 
+> Not calling hardware suspend/resume (current implementation) breaks
+> serial port in hardware that need resume.
+> 
+> Calling of resume without suspend seems to be dangerous. Not calling
+> suspend at all and standard initialization on resume would probably
+> reset the port setting and maybe cause memory leak.
+> 
+> > > It appears that you have specific serial hardware which doesn't resume
+> > > correctly?  If so, that's a bug, so how about we start with a bug
+> > > report/description?
+> 
+> The hardware resumes correctly. But no_console_suspend breaks its
+> resume.
+> 
+> > It's something that I did point out when the no_console_suspend patch
+> > appeared, but I was overruled/ignored.
+> > 
+> > The problem is that on ARM hardware, there is no BIOS to re-initialize
+> > hardware.  The kernel has to do restore the entire system hardware
+> > state upon resume.  Unfortunately, no_console_suspend not only prevents
+> > the console from being suspended but _also_ resumed.
+> > 
+> > The result of that is the console UART is left in a totally uninitialized
+> > state.
+> 
+> Exactly, my ARM hardware is PXA270 on Zaurus SL-C3200.
 
-Why do people even care? This driver is not going to be used in any 
-situation where any regular person will _ever_ care. And if you don't 
-like it, you don't have to enable it at all.
+hm, well.  We can't go much further without a patch and the one you
+sent won't apply.  Can you please redo against current mainline and
+resend?
 
-That driver is ACPI-specific, is not very complex, is marked EXPERIMENTAL, 
-and everybody including Len has said that _if_ the scheduler people can 
-ever solve it at that level, it would be good. But as it is, it has 
-NOTHING to do with the scheduler, and why _should_ any non-ACPI people 
-know about the existence of that driver?
+Do you expect that my some miracle, your patch will also fix
+http://lkml.org/lkml/2009/9/30/164 ?
 
-In fact, the only reason the scheduler people even know about it is that 
-Len at first tried to do something more invasive, and was shot down. Now 
-it's just a driver, and the scheduler people can _try_ to do it some other 
-way if they really care, but that's _their_ problem. Not the driver.
 
-In the meantime, I personally suspect we probably never want to even try 
-to solve it in the scheduler, because why the hell should we care and add 
-complex logic for something like that? At least not until we end up having 
-the same issue on some other architecture too, and it turns from a hacky 
-ACPI thing into something more.
-
-As it is, the driver is entirely self-contained and doesn't affect any 
-other subsystem. 
-
-				Linus
