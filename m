@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbZJESEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754366AbZJESIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754434AbZJESEu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 14:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbZJESEt
+	id S1754366AbZJESIJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 14:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbZJESII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 14:04:49 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:59595 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754374AbZJESEt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 14:04:49 -0400
-Date: Mon, 5 Oct 2009 11:04:28 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>, roland@redhat.com,
+	Mon, 5 Oct 2009 14:08:08 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:40419 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752600AbZJESIH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 14:08:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=Of9vwY6ENcq8G/h1ku06n6+YcOxFwfzeftBSNPH2AC/V4iZ2CNWvSXEbAbJt84Su53
+         ybXouM7zIzfS0bcrG8zu14Xr9d/blRJbyVlSLLdPAKRvGDTW9Ag6Ul+rWh8iwvn8Es9r
+         myHxe2SUXL4Jpypi/yu/HjNnHSkYDlQN0HFYQ=
+Subject: [PATCH 1/1, revised] fs: added KERN-DEBUG flag to dprintk macro
+From: Pete <greg.petr@gmail.com>
+To: kernel-janitors@vger.kernel.org, trivial@kernel.org
+Cc: Matthew Wilcox <matthew@wil.cx>, Joe Perches <joe@perches.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] signals: kill force_sig_specific()
-Message-ID: <20091005180428.GD30442@us.ibm.com>
-References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com> <20091004022050.GE21006@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091004022050.GE21006@redhat.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain
+Date: Mon, 05 Oct 2009 23:35:15 +0530
+Message-Id: <1254765915.5279.77.camel@linux-k65f.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@redhat.com] wrote:
-| Kill force_sig_specific(), this trivial wrapper has no callers.
-| 
-| Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-Reviewed-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-| ---
-| 
-|  include/linux/sched.h |    1 -
-|  kernel/signal.c       |    6 ------
-|  2 files changed, 7 deletions(-)
-| 
-| --- TTT_32/include/linux/sched.h~4_KILL_force_sig_specific	2009-10-04 02:21:49.000000000 +0200
-| +++ TTT_32/include/linux/sched.h	2009-10-04 04:08:01.000000000 +0200
-| @@ -2062,7 +2062,6 @@ extern int kill_proc_info(int, struct si
-|  extern int do_notify_parent(struct task_struct *, int);
-|  extern void __wake_up_parent(struct task_struct *p, struct task_struct *parent);
-|  extern void force_sig(int, struct task_struct *);
-| -extern void force_sig_specific(int, struct task_struct *);
-|  extern int send_sig(int, struct task_struct *, int);
-|  extern void zap_other_threads(struct task_struct *p);
-|  extern struct sigqueue *sigqueue_alloc(void);
-| --- TTT_32/kernel/signal.c~4_KILL_force_sig_specific	2009-10-04 03:48:48.000000000 +0200
-| +++ TTT_32/kernel/signal.c	2009-10-04 04:08:36.000000000 +0200
-| @@ -1032,12 +1032,6 @@ force_sig_info(int sig, struct siginfo *
-|  	return ret;
-|  }
-| 
-| -void
-| -force_sig_specific(int sig, struct task_struct *t)
-| -{
-| -	force_sig_info(sig, SEND_SIG_FORCED, t);
-| -}
-| -
-|  /*
-|   * Nuke all other threads in the group.
-|   */
+Signed-off-by: Greg Petr <greg.petr@gmail.com>
+
+Hi, 
+
+The following is a trivial patch which adds KERN_DEBUG flag to the
+dprintk macro. Made this a more generalized version. 
+
+
+--- linux-2.6/fs/aio.c	2009-10-05 14:46:11.000000000 +0530
++++ linux-2.6.test/fs/aio.c	2009-10-05 23:30:26.000000000 +0530
+@@ -37,7 +37,7 @@
+ #include <asm/uaccess.h>
+ 
+ #if DEBUG > 1
+-#define dprintk		printk
++#define dprintk(x...)		printk(KERN_DEBUG x)
+ #else
+ #define dprintk(x...)	do { ; } while (0)
+ #endif
+@@ -530,7 +530,7 @@ static void aio_fput_routine(struct work
+  */
+ static int __aio_put_req(struct kioctx *ctx, struct kiocb *req)
+ {
+-	dprintk(KERN_DEBUG "aio_put(%p): f_count=%ld\n",
++	dprintk("aio_put(%p): f_count=%ld\n",
+ 		req, atomic_long_read(&req->ki_filp->f_count));
+ 
+ 	assert_spin_locked(&ctx->ctx_lock);
+
+
