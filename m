@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932487AbZJEKCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbZJEKbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932487AbZJEKCv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 06:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932477AbZJEKCv
+	id S932570AbZJEKbR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 06:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932490AbZJEKbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 06:02:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38456 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932475AbZJEKCu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 06:02:50 -0400
-Date: Mon, 5 Oct 2009 12:02:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Jayson R. King" <dev@jaysonking.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jiri Kosina <trivial@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sched: Remove obsolete comment in sched_init()
-Message-ID: <20091005100203.GA3211@elte.hu>
-References: <4AC98F4A.7070303@jaysonking.com>
+	Mon, 5 Oct 2009 06:31:16 -0400
+Received: from bosmailout08.eigbox.net ([66.96.186.8]:59748 "EHLO
+	bosmailout08.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932334AbZJEKbQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 06:31:16 -0400
+X-EN-OrigOutIP: 10.20.18.12
+X-EN-IMPSID: oy2a1c00B0FdZ9W0000000
+Message-ID: <4AC9C453.4060405@jaysonking.com>
+Date: Mon, 05 Oct 2009 05:02:59 -0500
+From: "Jayson R. King" <dev@jaysonking.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AC98F4A.7070303@jaysonking.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Con Kolivas <kernel@kolivas.org>
+Subject: Re: [PATCH 0/4] BFS backport to 2.6.27
+References: <4AC9B97B.6070900@jaysonking.com>
+In-Reply-To: <4AC9B97B.6070900@jaysonking.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-EN-UserInfo: 06af1bc540adb20c3d2d7097199478a6:08dd1976e651f6e3791fbe97eaa5f898
+X-EN-AuthUser: jaysonking@jaysonking.com
+X-EN-OrigIP: 67.67.11.191
+X-EN-OrigHost: adsl-67-67-11-191.dsl.okcyok.swbell.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The patch files are also now available for download here:
 
-* Jayson R. King <dev@jaysonking.com> wrote:
+http://jaysonking.com/bfs-2.6.27-backport/
 
-> Remove the comment about calling alloc_bootmem() as it is not called
-> here since commit 36b7b6d465489c4754c4fd66fcec6086eba87896.
->
-> Signed-off-by: Jayson R. King <dev@jaysonking.com>
-> ---
->  kernel/sched.c |    4 ----
->  1 file changed, 4 deletions(-)
->
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 1535f38..d68ac0e 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -9334,10 +9334,6 @@ void __init sched_init(void)
->  #ifdef CONFIG_CPUMASK_OFFSTACK
->         alloc_size += num_possible_cpus() * cpumask_size();
->  #endif
-> -       /*
-> -        * As sched_init() is called before page_alloc is setup,
-> -        * we use alloc_bootmem().
-> -        */
->         if (alloc_size) {
->                 ptr = (unsigned long)kzalloc(alloc_size, GFP_NOWAIT);
 
-Looks good. The patch is whitespace damaged though (all tabs are spaces) 
-- please consult Documentation/email-clients.txt and resend the patch.
 
-Thanks,
+Jayson
 
-	Ingo
+
