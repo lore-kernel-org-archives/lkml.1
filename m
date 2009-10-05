@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbZJEK2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932594AbZJEKei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932545AbZJEK2B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 06:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbZJEK2B
+	id S932594AbZJEKei (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 06:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932536AbZJEKei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 06:28:01 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:38267 "EHLO mx1.redhat.com"
+	Mon, 5 Oct 2009 06:34:38 -0400
+Received: from www.tglx.de ([62.245.132.106]:51925 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932394AbZJEK2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 06:28:00 -0400
-Message-ID: <4AC9CA10.5000105@redhat.com>
-Date: Mon, 05 Oct 2009 12:27:28 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S932526AbZJEKeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 06:34:37 -0400
+Date: Mon, 5 Oct 2009 12:33:27 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Remy Bohmer <linux@bohmer.net>
+cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31-rt11 freeze on userland start on ARM
+In-Reply-To: <3efb10970910041359m1db64926pcf83ebd98a8b1bdd@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0910051228041.2646@localhost.localdomain>
+References: <3efb10970909211136g4e74c8b3vc339d548cdd0959f@mail.gmail.com>  <alpine.LFD.2.00.0909301448030.2518@nanos>  <3efb10970909300911j44638434mc22adfd64aaef421@mail.gmail.com>  <alpine.LFD.2.00.0910041202110.2646@localhost.localdomain>
+ <3efb10970910041359m1db64926pcf83ebd98a8b1bdd@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: KVM list <kvm@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] KVM updates for 2.6.32-rc3
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please find in
+B1;2005;0cOn Sun, 4 Oct 2009, Remy Bohmer wrote:
 
-   git://git.kernel.org/pub/scm/virt/kvm/kvm.git kvm-updates/2.6.32
+> Hi,
+> 
+> 2009/10/4 Thomas Gleixner <tglx@linutronix.de>:
+> > On Wed, 30 Sep 2009, Remy Bohmer wrote:
+> >> > The serial irq cannot run in hard irq context.
+> >>
+> >> Indeed most drivers cannot, but for this particular handler can you
+> >> please explain me why?
+> >> Maybe I am missing some new mechanism that prevents it that was not
+> >> there on older RT-kernels (tested up-to latest 2.6.24-rt +
+> >> 2.6.26-rt)...
+> >
+> > Which had the same problem ....
+> 
+> what problem...?
 
-some KVM fixes, most notably an EPT TLB fix on vcpu migration.  Also
-included is glue code for ksm.  While KVM will work without this code,
-any shared pages will be removed from the shadow page tables and unshared
-on the next guest access, resulting in much thrashing.  With the new code,
-the shadow ptes are simply downgraded to read-only access.
+The tasklet conversion happened after .24 and the hard interrupt
+context receive loop has introduced quite nasty latencies in
+.26. There was some other warning problem in .26 which I forgot.
+ 
+> I will adapt the atmel-serial driver to this new irq-threading model
+> and provide a patch for it, it seems cleaner and makes the tasklet
+> stuff obsolete for this driver.
 
-Aurelien Jarno (1):
-       KVM: fix LAPIC timer period overflow
+Great, that code really looks ugly.
 
-Avi Kivity (1):
-       KVM: Prevent overflow in KVM_GET_SUPPORTED_CPUID
+> >> TOL: could the generic interrupt code not check for this? It can see
+> >> the timer interrupt handler not returning 'IRQ_HANDLED', and still see
+> >> the interrupt being active, and know that there is a IRQ thread on the
+> >> same line, so it can conclude itself to mask the source in the
+> >> interrupt controller and wake the thread... Or am I wrong?
+> >
+> > What happens if both are active at the same time ? Also masking the
+> > interrupt line will block your timer interrupts until the threaded
+> > handler has completed.
+> 
+> That is indeed true, and proves once again that shared interrupt
+> handlers are really annoying, especially on -rt...
+> 
+> The old way we did in 2.6.24-rt + 2.6.26-rt was to adapt the handler
+> to allow it to run in hard-irq context for -rt as well as mainline.
+> The new way handles this differently... Since a -rt-friendly generic
+> solution seems not possible, I guess before -rt ever becomes mainline
+> _all_ interrupt handlers that are shared with a nodelay interrupt in
+> some configuration must be adapted to the new threaded_irq model... A
+> huge job...
 
-Christian Borntraeger (1):
-       KVM: s390: fix memsize >= 4G
+Don't think so. ATx seems to be one of the weirder pieces of hardware :)
 
-Izik Eidus (3):
-       KVM: MMU: dont hold pagecount reference for mapped sptes pages
-       KVM: MMU: add SPTE_HOST_WRITEABLE flag to the shadow ptes
-       KVM: add support for change_pte mmu notifiers
+Thanks,
 
-Joerg Roedel (2):
-       KVM: SVM: Fix tsc offset adjustment when running nested
-       KVM: SVM: Handle tsc in svm_get_msr/svm_set_msr correctly
-
-Marcelo Tosatti (1):
-       KVM: VMX: flush TLB with INVEPT on cpu migration
-
-  arch/s390/kvm/kvm-s390.h        |    2 +-
-  arch/x86/include/asm/kvm_host.h |    1 +
-  arch/x86/kvm/lapic.c            |    2 +-
-  arch/x86/kvm/mmu.c              |   84 
-++++++++++++++++++++++++++++++--------
-  arch/x86/kvm/paging_tmpl.h      |   18 +++++++-
-  arch/x86/kvm/svm.c              |   25 +++++++++---
-  arch/x86/kvm/vmx.c              |    2 +-
-  arch/x86/kvm/x86.c              |    2 +
-  virt/kvm/kvm_main.c             |   14 ++++++
-  9 files changed, 120 insertions(+), 30 deletions(-)
-
--- 
-error compiling committee.c: too many arguments to function
-
+	tglx
