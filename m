@@ -1,98 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbZJEFeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbZJEHAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752164AbZJEFeA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 01:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbZJEFeA
+	id S932186AbZJEHAJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 03:00:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757821AbZJEHAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 01:34:00 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:50796 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbZJEFd7 (ORCPT
+	Mon, 5 Oct 2009 03:00:08 -0400
+Received: from bosmailout10.eigbox.net ([66.96.190.10]:37220 "EHLO
+	bosmailout10.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757619AbZJEHAH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 01:33:59 -0400
-Date: Mon, 5 Oct 2009 11:03:10 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [git pull request] ACPI Processor Aggregator Driver for
- 2.6.32-rc1
-Message-ID: <20091005053310.GB14222@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <alpine.LFD.2.00.0910030145140.25240@localhost.localdomain>
- <20091005033256.GA26592@balbir.in.ibm.com>
+	Mon, 5 Oct 2009 03:00:07 -0400
+X-Greylist: delayed 2500 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Oct 2009 03:00:07 EDT
+X-EN-OrigOutIP: 10.20.18.16
+X-EN-IMPSID: ouGP1c0030LoEWa0000000
+Message-ID: <4AC98F4A.7070303@jaysonking.com>
+Date: Mon, 05 Oct 2009 01:16:42 -0500
+From: "Jayson R. King" <dev@jaysonking.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20091005033256.GA26592@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+CC: Jiri Kosina <trivial@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: Remove obsolete comment in sched_init()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-EN-UserInfo: 06af1bc540adb20c3d2d7097199478a6:08dd1976e651f6e3791fbe97eaa5f898
+X-EN-AuthUser: jaysonking@jaysonking.com
+X-EN-OrigIP: 67.67.11.191
+X-EN-OrigHost: adsl-67-67-11-191.dsl.okcyok.swbell.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-10-05 09:02:56]:
+Remove the comment about calling alloc_bootmem() as it is not called
+here since commit 36b7b6d465489c4754c4fd66fcec6086eba87896.
 
-> * Len Brown <lenb@kernel.org> [2009-10-03 01:56:32]:
-> 
-> >     This driver does not use the kernel's CPU hot-plug mechanism
-> >     because after the transient emergency is over, the system must
-> >     be returned to its normal state, and hotplug would permanently
-> >     break both cpusets and binding.
-> >     
-> 
-> Why does hotplug break cpusets and binding?
- 
-CPU hotplug will break any cpuset that is setup with that cpu.
-Userspace needs to register for notifications and redo the cpusets to
-get desired behaviour.  Since these emergencies are short durations,
-these may require constant re-creation of cpusets leading to an
-administrative overhead and added complexity.
+Signed-off-by: Jayson R. King <dev@jaysonking.com>
+---
+  kernel/sched.c |    4 ----
+  1 file changed, 4 deletions(-)
 
-Hence Peter had suggested a transparent method to reduce system
-capacity and not really knock out a single cpu.  The goal is to run
-something like 6 cpus at a time in an 8 cpu system without starving
-any single cpu.  Also real time jobs should still allowed to be run
-since they will generally be very short running.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 1535f38..d68ac0e 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9334,10 +9334,6 @@ void __init sched_init(void)
+  #ifdef CONFIG_CPUMASK_OFFSTACK
+         alloc_size += num_possible_cpus() * cpumask_size();
+  #endif
+-       /*
+-        * As sched_init() is called before page_alloc is setup,
+-        * we use alloc_bootmem().
+-        */
+         if (alloc_size) {
+                 ptr = (unsigned long)kzalloc(alloc_size, GFP_NOWAIT);
 
-In this patch series, the main design issue was about running
-a forced-idle thread that may affect scheduling fairness.
 
-> >     So to force idle, the driver creates a power saving thread.
-> >     The scheduler will migrate the thread to the preferred CPU.
-> >     The thread has max priority and has SCHED_RR policy,
-> >     so it can occupy one CPU.  To save power, the thread will
-> >     invoke the deep C-state entry instructions.
-> >     
-> >     To avoid starvation, the thread will sleep 5% of the time
-> >     time for every second (current RT scheduler has threshold
-> >     to avoid starvation, but if other CPUs are idle,
-> >     the CPU can borrow CPU timer from other,
-> >     which makes the mechanism not work here)
-> >     
-> >     Vaidyanathan Srinivasan has proposed scheduler enhancements
-> >     to allow injecting idle time into the system.  This driver doesn't
-> >     depend on those enhancements, but could cut over to them
-> >     when they are available.
-> >     
-> >     Peter Z. does not favor upstreaming this driver until
-> >     the those scheduler enhancements are in place.  However,
-> >     we favor upstreaming this driver now because it is useful
-> >     now, and can be enhanced over time.
-> >     
-> >     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> >     NACKed-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> >     Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> >     Signed-off-by: Len Brown <len.brown@intel.com>
-> 
-> This is a first a patch with a NACKed-by, could we please have more
-> discussion on the proposed design.
 
-This is the most recent reference I have:
-http://marc.info/?l=linux-acpi&m=124650086915649&w=2
 
---Vaidy
 
