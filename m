@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZJESvD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZJESwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754743AbZJESvD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 14:51:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZJESvB
+	id S1754721AbZJESwZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 14:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbZJESwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 14:51:01 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40377 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754681AbZJESvB (ORCPT
+	Mon, 5 Oct 2009 14:52:25 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:51096 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754408AbZJESwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 14:51:01 -0400
-Date: Mon, 5 Oct 2009 20:50:24 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, Tejun Heo <tj@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: use near online node instead of round bin for numa
-Message-ID: <20091005185024.GS1656@one.firstfloor.org>
-References: <4AC7974C.20304@kernel.org> <87my45yk79.fsf@basil.nowhere.org> <4ACA3677.40407@kernel.org> <20091005183539.GR1656@one.firstfloor.org> <4ACA3DAE.6030300@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ACA3DAE.6030300@kernel.org>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 5 Oct 2009 14:52:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=bD2yUXhVczV/b6Unpz44VwSEwIarETlCFluTZGwsnKdTLzpdhAHjjFw71BnBhIwHpd
+         vtFGGCN1/xJJss1tZxjCQkqvfJ84R+J/JVrlXMCMSqnfFV+2GcqJwwBZWHYNLOZo11dW
+         HpWupzFc51Rtl+IMSGiTzhj/Q9TMm5J5qNBIk=
+MIME-Version: 1.0
+In-Reply-To: <1254758425.26976.126.camel@twins>
+References: <alpine.LFD.2.01.0909271511190.3349@localhost.localdomain>
+	 <4AC060AE.1090401@gmail.com>
+	 <alpine.LFD.2.01.0909280829100.3349@localhost.localdomain>
+	 <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com>
+	 <4AC10365.7090802@gmail.com> <4AC2712C.4080901@gmail.com>
+	 <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain>
+	 <1254758425.26976.126.camel@twins>
+Date: Mon, 5 Oct 2009 11:51:46 -0700
+Message-ID: <55a4f86e0910051151y26ec6f92m541a8f1f5f323a14@mail.gmail.com>
+Subject: Re: [PATCH] x86: Generate cmpxchg build failures
+From: =?UTF-8?Q?Maciej_=C5=BBenczykowski?= <zenczykowski@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 05, 2009 at 11:40:46AM -0700, Yinghai Lu wrote:
-> Andi Kleen wrote:
-> > On Mon, Oct 05, 2009 at 11:09:59AM -0700, Yinghai Lu wrote:
-> >> Andi Kleen wrote:
-> >>> Yinghai Lu <yinghai@kernel.org> writes:
-> >>>
-> >>>> cpu to node mapping is set in following sequence:
-> >>>> 1. numa_init_array: set up roundbin from cpu to online node
-> >>>> 2. init_cpu_to_node: set that according to apicid_to_node[] according to srat
-> >>>> 		  only handle that node is online, and leave other cpu on node
-> >>>> 		  without ram (aka not online) to still round-bin
-> >>>> 3. later srat_detect_node for intel/amd, will use first_online node or near by
-> >>>>    node.
-> >>>>
-> >>>> problem is that setup_per_cpu_areas() is called between  2 and 3. the per_cpu
-> >>>> for cpu on node with ram is on different node. and could put that on node with
-> >>>> two hops away.
-> >>>>
-> >>>> so try add find_near_online_node() and call int init_cpu_to_node()
-> >>> This fallback case should not really happen anyways, unless the BIOS is buggy
-> >>> (in this case it might better to completely reject the SRAT because
-> >>> more might be wrong).
-> >> SRAT is right, and some node has no ram installed.
-> > 
-> > In this case there should be still a PXM to define the CPU locality -- your BIOS is broken.
-> > Please fix it there.
-> 
-> I don't think so.
+Strictly speaking isn't there a cmpxchg8b on newer than ancient cpus...
 
-Let's put it like this: your BIOS does not describe the full system
-topology which is a severe BIOS bug. Putting hacks into Linux
-to work around that is not the right solution.
+I'm guessing that it's deliberately not supported/used?
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Maciej
