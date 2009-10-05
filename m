@@ -1,59 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbZJEPmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZJEP6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753755AbZJEPmn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 11:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbZJEPmm
+	id S1753671AbZJEP6Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 11:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbZJEP6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 11:42:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59033 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753628AbZJEPmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 11:42:42 -0400
-Message-ID: <4ACA13A1.4090107@kernel.org>
-Date: Tue, 06 Oct 2009 00:41:21 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 5 Oct 2009 11:58:16 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:40893 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753101AbZJEP6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 11:58:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:message-id:mime-version
+         :content-type;
+        b=VtfhVV2E2cCbglfSBNlvhRXjGmqOGx8KZ6HFkGQlGMRt/LNVAFOiN4SRv1ooWH4rua
+         erpEdFbtKitvnfBBb9o2RiDdWg6M/RqXeIhy2kYJZVJg2WYNdGWDEHSnxur6duGuBbcK
+         S5kMck94+8ViuJxU5/4kycIT9t+uEKtzyeshA=
+Date: Mon, 5 Oct 2009 23:57:24 +0800 (SGT)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+X-X-Sender: root@boston.corp.fedex.com
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
+Message-ID: <Pine.LNX.4.64.0910052334480.17655@boston.corp.fedex.com>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu, rusty@rustcorp.com.au,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [this_cpu_xx V4 12/20] Move early initialization of pagesets
- out of zone_wait_table_init()
-References: <20091001212521.123389189@gentwo.org> <20091001212559.879284755@gentwo.org> <4AC7279B.3050901@kernel.org> <alpine.DEB.1.10.0910051038410.16359@gentwo.org> <4ACA0A4F.3090004@kernel.org> <alpine.DEB.1.10.0910051105070.16359@gentwo.org> <4ACA0EFD.4070607@kernel.org> <alpine.DEB.1.10.0910051126370.16359@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0910051126370.16359@gentwo.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 05 Oct 2009 15:41:24 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 6 Oct 2009, Tejun Heo wrote:
-> 
->>> There are various arch implementations that do their own implementation of
->>> setup_per_cpu_areas() at their own time (Check sparc and ia64 for
->>> example).
->> sparc is doing everything on setup_per_cpu_areas().  ia64 is an
->> exception.  Hmmm... I really don't like scattering mostly unrelated
->> init call to every setup_per_cpu_areas() implementation.  How about
->> adding "static bool initialized __initdata" to the function and allow
->> it to be called earlier when necessary (only ia64 at the moment)?
-> 
-> It would be best to consolidate all setup_per_cpu_areas() to work at the
-> same time during bootup. How about having a single setup_per_cpu_areas()
-> function and then within the function allow arch specific processing. Try
-> to share as much code as possible?
 
-I'm under the impression that ia64 needs its percpu areas setup
-earlier during the boot so I'm not sure what you have in mind but as
-long as the call isn't scattered over different setup_per_cpu_areas()
-implementations, I'm okay.
 
-Thanks.
+I've 3 systems with 4GB, 16GB and 64GB all running 32bit with these set:
 
--- 
-tejun
+ 	CONFIG_X86_32=y
+ 	CONFIG_X86=y
+ 	CONFIG_ZONE_DMA=y
+ 	# CONFIG_ZONE_DMA32 is not set
+ 	CONFIG_SPARSEMEM_MANUAL=y
+ 	CONFIG_SPARSEMEM=y
+ 	CONFIG_HIGHMEM64G=y
+ 	CONFIG_HIGHMEM=y
+ 	CONFIG_X86_PAE=y
+ 	CONFIG_KSM=y
+ 	CONFIG_HIGHPTE=y
 
+
+# using "free -lm" ...
+
+# with 4GB
+              total       used       free     shared    buffers     cached
+Mem:          3983       3862        120          0        112       3542
+Low:           850        738        112
+High:         3132       3123          8
+-/+ buffers/cache:        207       3775
+Swap:         8008          0       8008
+
+
+# with 16GB
+              total       used       free     shared    buffers     cached
+Mem:         16244       6570       9673          0        320       5559
+Low:           750        717         33
+High:        15493       5853       9640
+-/+ buffers/cache:        690      15554
+Swap:        26709          0      26709
+
+
+# with 64GB
+              total       used       free     shared    buffers     cached
+Mem:         63995        524      63470          0          4        365
+Low:           378         32        345
+High:        63616        492      63124
+-/+ buffers/cache:        154      63840
+Swap:        28003          0      28003
+
+
+Question is ... is there anyway to increase "low mem" without resorting to 
+migrating to 64bit? (Look... it only has 378MB total low mem vs 850MB on 
+the 4GB system). I've oracle installed on the 64GB system and it keeps 
+getting OOMs!
+
+I thought CONFIG_HIGHPTE (Allocate 3rd-level pagetables from highmem) is 
+supposed to help with low mem as stated here ...
+
+  CONFIG_HIGHPTE:
+ 	The VM uses one page table entry for each page of physical memory.
+ 	For systems with a lot of RAM, this can be wasteful of precious
+ 	low memory.  Setting this option will put user-space page table
+ 	entries in high memory.
+
+
+Anything I should do? Slow death using sysctl like this ...
+ 	vm.min_free_kbytes = 16384
+ 	vm.overcommit_memory = 2
+ 	vm.overcommit_ratio = 75
+ 	vm.vfs_cache_pressure = 10000
+
+
+Thanks,
+Jeff.
+
+P.S.  I was trying to "cross-compile" a gcc compiler, but didn't get far. 
+That's a different topic ... offline, please write to me directly if 
+you've done this ... would need binutil 64 (compile ok), gcc 64 (stucked 
+... seems to be looking for libc 64bit) ...
