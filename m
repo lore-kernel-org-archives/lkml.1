@@ -1,87 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbZJESLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbZJESMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754472AbZJESLj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 14:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbZJESLj
+	id S1754525AbZJESMw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 14:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZJESMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 14:11:39 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:31963 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754443AbZJESLi convert rfc822-to-8bit (ORCPT
+	Mon, 5 Oct 2009 14:12:52 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:34280 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754260AbZJESMs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 14:11:38 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 5 Oct 2009 14:12:48 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=qqfIuAvk53k2nWnPCU2iZQvDVrO8Xfc/GCsJYJM+fIjytGutopNDZsMZU2TMiFlXC
+	WaMswxUBa9JZ5BCY1D9dg==
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+In-Reply-To: <20091005171023.GG22143@redhat.com>
+References: <4AC6623F.70600@ds.jp.nec.com>
+	 <20091005.193808.104033719.ryov@valinux.co.jp>
+	 <20091005123148.GB22143@redhat.com>
+	 <20091005.235535.193690928.ryov@valinux.co.jp>
+	 <20091005171023.GG22143@redhat.com>
+Date: Mon, 5 Oct 2009 11:11:35 -0700
+Message-ID: <e98e18940910051111r110dc776l5105bf931761b842@mail.gmail.com>
+Subject: Re: IO scheduler based IO controller V10
+From: Nauman Rafique <nauman@google.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Ryo Tsuruta <ryov@valinux.co.jp>, m-ikeda@ds.jp.nec.com,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, agk@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
+       yoshikawa.takuya@oss.ntt.co.jp
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Subject: RE: futex question
-Date: Mon, 5 Oct 2009 11:11:00 -0700
-Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501FD8752@exchange.ZeugmaSystems.local>
-In-Reply-To: <1254738974.26976.24.camel@twins>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: futex question
-Thread-Index: AcpFp1x/JKbp9PR2RPmNlfbRmdE46wAPs7AQ
-References: <DDFD17CC94A9BD49A82147DDF7D545C501FD7F97@exchange.ZeugmaSystems.local> <20091001092218.GH15345@elte.hu> <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local> <4AC68F13.8050601@us.ibm.com> <alpine.LFD.2.00.0910041031330.2646@localhost.localdomain> <DDFD17CC94A9BD49A82147DDF7D545C501F457C5@exchange.ZeugmaSystems.local> <4AC8CF32.8060108@anirban.org> <alpine.LFD.2.00.0910041853180.2646@localhost.localdomain> <1254738974.26976.24.camel@twins>
-From: "Anirban Sinha" <ASinha@zeugmasystems.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-Cc: "Anirban Sinha" <ani@anirban.org>, "Ingo Molnar" <mingo@elte.hu>,
-       <linux-kernel@vger.kernel.org>, "Darren Hart" <dvhltc@us.ibm.com>,
-       "Kaz Kylheku" <KKylheku@zeugmasystems.com>
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 5, 2009 at 10:10 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Mon, Oct 05, 2009 at 11:55:35PM +0900, Ryo Tsuruta wrote:
+>> Hi Vivek,
+>>
+>> Vivek Goyal <vgoyal@redhat.com> wrote:
+>> > On Mon, Oct 05, 2009 at 07:38:08PM +0900, Ryo Tsuruta wrote:
+>> > > Hi,
+>> > >
+>> > > Munehiro Ikeda <m-ikeda@ds.jp.nec.com> wrote:
+>> > > > Vivek Goyal wrote, on 10/01/2009 10:57 PM:
+>> > > > > Before finishing this mail, will throw a whacky idea in the ring. I was
+>> > > > > going through the request based dm-multipath paper. Will it make sense
+>> > > > > to implement request based dm-ioband? So basically we implement all the
+>> > > > > group scheduling in CFQ and let dm-ioband implement a request function
+>> > > > > to take the request and break it back into bios. This way we can keep
+>> > > > > all the group control at one place and also meet most of the requirements.
+>> > > > >
+>> > > > > So request based dm-ioband will have a request in hand once that request
+>> > > > > has passed group control and prio control. Because dm-ioband is a device
+>> > > > > mapper target, one can put it on higher level devices (practically taking
+>> > > > > CFQ at higher level device), and provide fairness there. One can also
+>> > > > > put it on those SSDs which don't use IO scheduler (this is kind of forcing
+>> > > > > them to use the IO scheduler.)
+>> > > > >
+>> > > > > I am sure that will be many issues but one big issue I could think of that
+>> > > > > CFQ thinks that there is one device beneath it and dipsatches requests
+>> > > > > from one queue (in case of idling) and that would kill parallelism at
+>> > > > > higher layer and throughput will suffer on many of the dm/md configurations.
+>> > > > >
+>> > > > > Thanks
+>> > > > > Vivek
+>> > > >
+>> > > > As long as using CFQ, your idea is reasonable for me.  But how about for
+>> > > > other IO schedulers?  In my understanding, one of the keys to guarantee
+>> > > > group isolation in your patch is to have per-group IO scheduler internal
+>> > > > queue even with as, deadline, and noop scheduler.  I think this is
+>> > > > great idea, and to implement generic code for all IO schedulers was
+>> > > > concluded when we had so many IO scheduler specific proposals.
+>> > > > If we will still need per-group IO scheduler internal queues with
+>> > > > request-based dm-ioband, we have to modify elevator layer.  It seems
+>> > > > out of scope of dm.
+>> > > > I might miss something...
+>> > >
+>> > > IIUC, the request based device-mapper could not break back a request
+>> > > into bio, so it could not work with block devices which don't use the
+>> > > IO scheduler.
+>> > >
+>> >
+>> > I think current request based multipath drvier does not do it but can't it
+>> > be implemented that requests are broken back into bio?
+>>
+>> I guess it would be hard to implement it, and we need to hold requests
+>> and throttle them at there and it would break the ordering by CFQ.
+>>
+>> > Anyway, I don't feel too strongly about this approach as it might
+>> > introduce more serialization at higher layer.
+>>
+>> Yes, I know it.
+>>
+>> > > How about adding a callback function to the higher level controller?
+>> > > CFQ calls it when the active queue runs out of time, then the higer
+>> > > level controller use it as a trigger or a hint to move IO group, so
+>> > > I think a time-based controller could be implemented at higher level.
+>> > >
+>> >
+>> > Adding a call back should not be a big issue. But that means you are
+>> > planning to run only one group at higher layer at one time and I think
+>> > that's the problem because than we are introducing serialization at higher
+>> > layer. So any higher level device mapper target which has multiple
+>> > physical disks under it, we might be underutilizing these even more and
+>> > take a big hit on overall throughput.
+>> >
+>> > The whole design of doing proportional weight at lower layer is optimial
+>> > usage of system.
+>>
+>> But I think that the higher level approch makes easy to configure
+>> against striped software raid devices.
+>
+> How does it make easier to configure in case of higher level controller?
+>
+> In case of lower level design, one just have to create cgroups and assign
+> weights to cgroups. This mininum step will be required in higher level
+> controller also. (Even if you get rid of dm-ioband device setup step).
+>
+>> If one would like to
+>> combine some physical disks into one logical device like a dm-linear,
+>> I think one should map the IO controller on each physical device and
+>> combine them into one logical device.
+>>
+>
+> In fact this sounds like a more complicated step where one has to setup
+> one dm-ioband device on top of each physical device. But I am assuming
+> that this will go away once you move to per reuqest queue like implementation.
+>
+> I think it should be same in principal as my initial implementation of IO
+> controller on request queue and I stopped development on it because of FIFO
+> dispatch.
+>
+> So you seem to be suggesting that you will move dm-ioband to request queue
+> so that setting up additional device setup is gone. You will also enable
+> it to do time based groups policy, so that we don't run into issues on
+> seeky media. Will also enable dispatch from one group only at a time so
+> that we don't run into isolation issues and can do time accounting
+> accruately.
+
+Will that approach solve the problem of doing bandwidth control on
+logical devices? What would be the advantages compared to Vivek's
+current patches?
 
 >
->The problem with the patch send my Ani is that it clears the robust
->lists before the point of no return, so on a failing execve() we'd have
->messed up the state.
-
-Ah! yes. I should have added the lines after load_binary() succeeds:
-
- fs/compat.c |    3 +++
- fs/exec.c   |    3 +++
- 2 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/fs/compat.c b/fs/compat.c
-index 6d6f98f..7d1baf5 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1539,6 +1539,9 @@ int compat_do_execve(char * filename,
-        if (retval < 0)
-                goto out;
-
-+#ifdef CONFIG_FUTEX
-+       current->compat_robust_list = NULL;
-+#endif
-        /* execve succeeded */
-        current->fs->in_exec = 0;
-        current->in_execve = 0;
-diff --git a/fs/exec.c b/fs/exec.c
-index 172ceb6..d7b4ca3 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1354,6 +1354,9 @@ int do_execve(char * filename,
-        if (retval < 0)
-                goto out;
-
-+#ifdef CONFIG_FUTEX
-+       current->robust_list = NULL;
-+#endif
-        /* execve succeeded */
-        current->fs->in_exec = 0;
-        current->in_execve = 0;
-
-
-
-btw, by the same token, shouldn't we call sched_exec() after the exec()
-actually succeeds and the process has a new mm (thus having a smallest
-effective memory and cache footprint)? I know that I could be missing
-something subtle.
-
-Ani
-
+> If yes, then that has the potential to solve the issue. At higher layer one
+> can think of enabling size of IO/number of IO policy both for proportional
+> BW and max BW type of control. At lower level one can enable pure time
+> based control on seeky media.
+>
+> I think this will still left with the issue of prio with-in group as group
+> control is separate and you will not be maintatinig separate queues for
+> each process. Similarly you will also have isseus with read vs write
+> ratios as IO schedulers underneath change.
+>
+> So I will be curious to see that implementation.
+>
+>> > > My requirements for IO controller are:
+>> > > - Implement s a higher level controller, which is located at block
+>> > >   layer and bio is grabbed in generic_make_request().
+>> >
+>> > How are you planning to handle the issue of buffered writes Andrew raised?
+>>
+>> I think that it would be better to use the higher-level controller
+>> along with the memory controller and have limits memory usage for each
+>> cgroup. And as Kamezawa-san said, having limits of dirty pages would
+>> be better, too.
+>>
+>
+> Ok. So if we plan to co-mount memory controller with per memory group
+> dirty_ratio implemented, that can work with both higher level as well as
+> low level controller. Not sure if we also require some kind of a per
+> memory group flusher thread infrastructure also to make sure higher weight
+> group gets more job done.
+>
+>> > > - Can work with any type of IO scheduler.
+>> > > - Can work with any type of block devices.
+>> > > - Support multiple policies, proportional wegiht, max rate, time
+>> > >   based, ans so on.
+>> > >
+>> > > The IO controller mini-summit will be held in next week, and I'm
+>> > > looking forard to meet you all and discuss about IO controller.
+>> > > https://sourceforge.net/apps/trac/ioband/wiki/iosummit
+>> >
+>> > Is there a new version of dm-ioband now where you have solved the issue of
+>> > sync/async dispatch with-in group? Before meeting at mini-summit, I am
+>> > trying to run some tests and come up with numbers so that we have more
+>> > clear picture of pros/cons.
+>>
+>> Yes, I've released new versions of dm-ioband and blkio-cgroup. The new
+>> dm-ioband handles sync/async IO requests separately and
+>> the write-starve-read issue you pointed out is fixed. I would
+>> appreciate it if you would try them.
+>> http://sourceforge.net/projects/ioband/files/
+>
+> Cool. Will get to testing it.
+>
+> Thanks
+> Vivek
+>
