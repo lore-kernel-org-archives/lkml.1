@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbZJEB7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758334AbZJECS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758298AbZJEB7o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 4 Oct 2009 21:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758215AbZJEB7n
+	id S1758334AbZJECS7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 4 Oct 2009 22:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758312AbZJECS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 4 Oct 2009 21:59:43 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41351 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758210AbZJEB7m convert rfc822-to-8bit (ORCPT
+	Sun, 4 Oct 2009 22:18:59 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:31203 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758292AbZJECS6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 4 Oct 2009 21:59:42 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Bryan Donlan <bdonlan@gmail.com>
-Subject: Re: [PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KOSAKI Motohiro <kosaki.motohiro@gmail.com>, Timo Sirainen <tss@iki.fi>,
-       linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
-In-Reply-To: <3e8340490910041844w63720cfq7981c8f5364229de@mail.gmail.com>
-References: <20091005103744.5F83.A69D9226@jp.fujitsu.com> <3e8340490910041844w63720cfq7981c8f5364229de@mail.gmail.com>
-Message-Id: <20091005105617.5F86.A69D9226@jp.fujitsu.com>
+	Sun, 4 Oct 2009 22:18:58 -0400
+Message-ID: <4AC956D2.4010301@oracle.com>
+Date: Sun, 04 Oct 2009 19:15:46 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon,  5 Oct 2009 10:59:02 +0900 (JST)
+To: Tejun Heo <tj@kernel.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] percpu: fix compile warnings
+References: <20091002134718.f577be51.sfr@canb.auug.org.au> <20091002094030.ffbde6ca.randy.dunlap@oracle.com> <4AC7EB84.1060506@kernel.org> <4AC7EE39.6010605@kernel.org>
+In-Reply-To: <4AC7EE39.6010605@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4AC95712.0050:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sun, Oct 4, 2009 at 9:38 PM, KOSAKI Motohiro
-> <kosaki.motohiro@jp.fujitsu.com> wrote:
-> >> The improvement idea is here.
-> >>
-> >> Changelog
-> >>   - Added task_lock() to prctl(PR_SET_PROCTITLE_AREA)
-> >>  -  Added small input sanity check to prctl(PR_SET_PROCTITLE_AREA)
-> >
-> > Doh, task_lock() is obviously wrong. please forget this.
+Tejun Heo wrote:
+> Fix the following two compile warnings which show up on i386.
 > 
-> As another note, in general I think we'd need to hold a lock over the
-> entire operation. After all, if userspace changes its PROCTITLE_AREA,
-> and then reuses the memory for something else, we have an information
-> leak.
+> mm/percpu.c:1873: warning: comparison of distinct pointer types lacks a cast
+> mm/percpu.c:1879: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'size_t'
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-if reusing occur, it's obviously userland fault. I don't think we need to care this.
-because current kernel also can be information leak by strcpy(argv[0], mypassword).
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-I think they are userland bug both.
+Thanks.
 
- 
-> Perhaps a simpler approach would simply be to add a generation
-> counter. Read it once at the start, barrier, then grab the title. Then
-> at the end, read the generation counter again. If the value changed,
-> we need to start over. Also, in this case, an error when reading the
-> target process' memory should be ignored and retried, as we may have
-> hit a race in which the target process unmapped the proctitle area
-> after changing it.
+> ---
+> This patch has been committed to percpu#for-next.  Thanks.
+> 
+>  mm/percpu.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/percpu.c b/mm/percpu.c
+> index e4e08b8..ec158bb 100644
+> --- a/mm/percpu.c
+> +++ b/mm/percpu.c
+> @@ -1868,13 +1868,14 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, ssize_t dyn_size,
+>  	max_distance = 0;
+>  	for (group = 0; group < ai->nr_groups; group++) {
+>  		ai->groups[group].base_offset = areas[group] - base;
+> -		max_distance = max(max_distance, ai->groups[group].base_offset);
+> +		max_distance = max_t(size_t, max_distance,
+> +				     ai->groups[group].base_offset);
+>  	}
+>  	max_distance += ai->unit_size;
+>  
+>  	/* warn if maximum distance is further than 75% of vmalloc space */
+>  	if (max_distance > (VMALLOC_END - VMALLOC_START) * 3 / 4) {
+> -		pr_warning("PERCPU: max_distance=0x%lx too large for vmalloc "
+> +		pr_warning("PERCPU: max_distance=0x%zx too large for vmalloc "
+>  			   "space 0x%lx\n",
+>  			   max_distance, VMALLOC_END - VMALLOC_START);
+>  #ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK
 
 
-
+-- 
+~Randy
