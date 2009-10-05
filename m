@@ -1,415 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbZJEHIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbZJEHLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758209AbZJEHIR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 03:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbZJEHIQ
+	id S1758275AbZJEHLW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 03:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757646AbZJEHLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 03:08:16 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55245 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753879AbZJEHIP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 03:08:15 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AC99B23.9090701@jp.fujitsu.com>
-Date: Mon, 05 Oct 2009 16:07:15 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 5 Oct 2009 03:11:21 -0400
+Received: from mga03.intel.com ([143.182.124.21]:44093 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756918AbZJEHLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 03:11:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,505,1249282800"; 
+   d="scan'208";a="195077343"
+Date: Mon, 5 Oct 2009 15:10:26 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org
+Subject: [PATCH v2] NFS: introduce writeback wait queue
+Message-ID: <20091005071026.GA19262@localhost>
+References: <20091004030153.GA20327@localhost>
 MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUGFIX -v7] x86, MCE: Fix bugs and issues of MCE log ring buffer
-References: <1253269241.15717.525.camel@yhuang-dev.sh.intel.com> <4AC990E1.7030708@jp.fujitsu.com>
-In-Reply-To: <4AC990E1.7030708@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091004030153.GA20327@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the diff between Huang's original change and the result of changes
-by my patch set.
+Hi all,
 
-I'll going to explain what I changed from the original.
+This version makes two standalone functions for easier reuse.
 
-> diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-> index 2d5c42a..4b5ef3c 100644
-> --- a/arch/x86/include/asm/mce.h
-> +++ b/arch/x86/include/asm/mce.h
-> @@ -52,7 +52,7 @@
->  #define MCE_INJ_NMI_BROADCAST	(1 << 2)	/* do NMI broadcasting */
->  #define MCE_INJ_EXCEPTION	(1 << 3)	/* raise as exception */
->  
-> -/* Fields are zero when not available */
-> +/* MCE log entry. Fields are zero when not available. */
->  struct mce {
->  	__u64 status;
->  	__u64 misc;
-> @@ -63,12 +63,12 @@ struct mce {
->  	__u64 time;	/* wall time_t when error was detected */
->  	__u8  cpuvendor;	/* cpu vendor as encoded in system.h */
->  	__u8  inject_flags;	/* software inject flags */
-> -	__u16  pad;
-> +	__u16 pad;
->  	__u32 cpuid;	/* CPUID 1 EAX */
-> -	__u8  cs;		/* code segment */
-> +	__u8  cs;	/* code segment */
->  	__u8  bank;	/* machine check bank */
->  	__u8  cpu;	/* cpu number; obsolete; use extcpu now */
-> -	__u8  finished;   /* entry is valid */
-> +	__u8  finished;	/* 1 if write to entry is finished & entry is valid */
->  	__u32 extcpu;	/* linux cpu number that detected the error */
->  	__u32 socketid;	/* CPU socket ID */
->  	__u32 apicid;	/* CPU initial apic ID */
-> @@ -76,10 +76,9 @@ struct mce {
->  };
->  
->  /*
-> - * This structure contains all data related to the MCE log.  Also
-> - * carries a signature to make it easier to find from external
-> - * debugging tools.  Each entry is only valid when its finished flag
-> - * is set.
-> + * This structure contains all data related to the MCE log.  Also carries
-> + * a signature to make it easier to find from external debugging tools.
-> + * Each entry is only valid when its finished flag is set.
->   */
+Before patch, nr_writeback is near 1G on my 2GB laptop:
 
-Small clean up.
+     nr_writeback         nr_dirty      nr_unstable
+           203994                2           154469
+           203994                2           154469
 
->  
->  #define MCE_LOG_LEN		32
-> @@ -93,12 +92,18 @@ static inline int mce_log_index(int n)
->  struct mce_log_cpu;
->  
->  struct mce_log {
-> -	char signature[12]; /* "MACHINECHEC2" */
-> -	unsigned len;	    /* = MCE_LOG_LEN */
-> -	unsigned flags;
-> -	unsigned recordlen;	/* length of struct mce */
-> -	unsigned nr_mcelog_cpus;
-> +	char signature[12];		/* "MACHINECHEC2" */
-> +
-> +	/* points the table of per-CPU buffers */
->  	struct mce_log_cpu **mcelog_cpus;
-> +	unsigned int nr_mcelog_cpus;	/* = num_possible_cpus() */
-> +
-> +	/* spec of per-CPU buffer */
-> +	unsigned int header_len; 	/* offset of array "entry" */
-> +	unsigned int nr_record;		/* array size (= MCE_LOG_LEN) */
-> +	unsigned int record_len;	/* length of struct mce */
-> +
-> +	unsigned flags;
->  };
+After patch, nr_writeback is limited to nfs_congestion_kb=42MB.
 
-Add a member header_len, and renamed "len" to "nr_record" which is easier
-to understand.  Please refer the description of patch 6/10.
+     nr_writeback         nr_dirty      nr_unstable
+            11180            34195            11754
+             9865            36821             8234
+            10137            36695             9338
 
->  
->  #define MCE_OVERFLOW 0		/* bit 0 in flags means overflow */
-> diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-> index 5db3f5b..fad3daa 100644
-> --- a/arch/x86/kernel/cpu/mcheck/mce.c
-> +++ b/arch/x86/kernel/cpu/mcheck/mce.c
-> @@ -122,54 +122,53 @@ EXPORT_PER_CPU_SYMBOL_GPL(mce_fake_banks);
->   * separate MCEs from kernel messages to avoid bogus bug reports.
->   */
->  
-> -static struct mce_log mcelog = {
-> -	.signature	= MCE_LOG_SIGNATURE,
-> -	.len		= MCE_LOG_LEN,
-> -	.recordlen	= sizeof(struct mce),
-> -};
-> -
->  struct mce_log_cpu {
->  	int head;
->  	int tail;
-> -	unsigned long flags;
->  	struct mce entry[MCE_LOG_LEN];
->  };
+One minor problem I noticed is, NFS writeback is not very smooth.
+This per 0.1s sampled trace shows that it can sometimes stuck for
+up to 0.5s:
 
-Removed "flags" from per-CPU structure since mce_ioctl only cares global flags
-in struct mce_log.
+     nr_writeback         nr_dirty      nr_unstable
+            11055            37408             9599
+            10311            37315            10529
+            10869            35920            11459
+            10869            35920            11459
+            10869            35920            11459
+            10869            35920            11459
+            10869            35920            11459
+            10838            35891            10042
+            10466            35891            10414
+            10900            34744            11437
+            10249            34744            12088
+            10249            34744            12088
+            10249            34744            12088
+            10249            34744            12088
+            10249            34744            12088
+            10249            34744            12088
+            10133            34743            10663
+            10505            34743            11035
+            10970            34991            11345
+            10691            34991            11593
+            10691            34991            11593
+            10691            34991            11593
+            10691            34991            11593
+            10691            34991            11593
 
->  
->  DEFINE_PER_CPU(struct mce_log_cpu, mce_log_cpus);
->  
-> +static struct mce_log mcelog = {
-> +	.signature	= MCE_LOG_SIGNATURE,
-> +	.header_len	= offsetof(struct mce_log_cpu, entry),
-> +	.nr_record	= MCE_LOG_LEN,
-> +	.record_len	= sizeof(struct mce),
-> +};
-> +
->  void mce_log(struct mce *mce)
->  {
->  	struct mce_log_cpu *mcelog_cpu = &__get_cpu_var(mce_log_cpus);
->  	int head, ihead, tail, next;
->  
-> +	/* mce->finished must be set to 0 before written to buffer */
->  	mce->finished = 0;
-> -	/*
-> -	 * mce->finished must be set to 0 before written to ring
-> -	 * buffer
-> -	 */
->  	smp_wmb();
-> +
->  	do {
->  		head = mcelog_cpu->head;
->  		tail = mcelog_cpu->tail;
->  		ihead = mce_log_index(head);
-> +
->  		/*
->  		 * When the buffer fills up discard new entries.
->  		 * Assume that the earlier errors are the more
->  		 * interesting.
->  		 */
->  		if (ihead == mce_log_index(tail) && head != tail) {
-> -			set_bit(MCE_OVERFLOW, &mcelog_cpu->flags);
-> +			set_bit(MCE_OVERFLOW, (unsigned long *)&mcelog.flags);
-
-Use global flags which is cared by mce_ioctl.
-
->  			return;
->  		}
->  		next = head == MCE_LOG_LIMIT ? 0 : head + 1;
->  	} while (cmpxchg_local(&mcelog_cpu->head, head, next) != head);
-> +
->  	memcpy(mcelog_cpu->entry + ihead, mce, sizeof(struct mce));
-> -	/*
-> -	 * ".finished" of MCE record in ring buffer must be set after
-> -	 * copy
-> -	 */
-> +
-> +	/* ".finished" of MCE record in buffer must be set after copy */
->  	smp_wmb();
->  	mcelog_cpu->entry[ihead].finished = 1;
-> +
->  	/* bit 0 of notify_user should be set after finished be set */
->  	smp_wmb();
->  	mce->finished = 1;
-
-
-Changes from here to ....
-
-> @@ -1195,19 +1194,40 @@ int mce_notify_irq(void)
->  }
->  EXPORT_SYMBOL_GPL(mce_notify_irq);
->  
-> -static int mce_banks_init(void)
-> +static __cpuinit int mce_banks_init(void)
->  {
->  	int i;
->  
->  	mce_banks = kzalloc(banks * sizeof(struct mce_bank), GFP_KERNEL);
->  	if (!mce_banks)
->  		return -ENOMEM;
-> +
->  	for (i = 0; i < banks; i++) {
->  		struct mce_bank *b = &mce_banks[i];
->  
->  		b->ctl = -1ULL;
->  		b->init = 1;
->  	}
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Initialize MCE per-CPU log buffer
-> + */
-> +static __cpuinit int mce_log_init(void)
-> +{
-> +	int cpu;
-> +
-> +	mcelog.nr_mcelog_cpus = num_possible_cpus();
-> +	mcelog.mcelog_cpus = kzalloc(sizeof(void *) * num_possible_cpus(),
-> +				     GFP_KERNEL);
-> +	if (!mcelog.mcelog_cpus)
-> +		return -ENOMEM;
-> +
-> +	for_each_possible_cpu(cpu)
-> +		mcelog.mcelog_cpus[cpu] = &per_cpu(mce_log_cpus, cpu);
-> +
->  	return 0;
->  }
->  
-> @@ -1234,6 +1254,7 @@ static int __cpuinit mce_cap_init(void)
->  	/* Don't support asymmetric configurations today */
->  	WARN_ON(banks != 0 && b != banks);
->  	banks = b;
-> +
->  	if (!mce_banks) {
->  		int err = mce_banks_init();
->  
-> @@ -1241,6 +1262,13 @@ static int __cpuinit mce_cap_init(void)
->  			return err;
->  	}
->  
-> +	if (!mcelog.mcelog_cpus) {
-> +		int err = mce_log_init();
-> +
-> +		if (err)
-> +			return err;
-> +	}
-> +
->  	/* Use accurate RIP reporting if available. */
->  	if ((cap & MCG_EXT_P) && MCG_EXT_CNT(cap) >= 9)
->  		rip_msr = MSR_IA32_MCG_EIP;
-> @@ -1251,22 +1279,6 @@ static int __cpuinit mce_cap_init(void)
->  	return 0;
->  }
->  
-> -/*
-> - * Initialize MCE per-CPU log buffer
-> - */
-> -static __cpuinit void mce_log_init(void)
-> -{
-> -	int cpu;
-> -
-> -	if (mcelog.mcelog_cpus)
-> -		return;
-> -	mcelog.nr_mcelog_cpus = num_possible_cpus();
-> -	mcelog.mcelog_cpus = kzalloc(sizeof(void *) * num_possible_cpus(),
-> -				     GFP_KERNEL);
-> -	for_each_possible_cpu(cpu)
-> -		mcelog.mcelog_cpus[cpu] = &per_cpu(mce_log_cpus, cpu);
-> -}
-> -
->  static void mce_init(void)
->  {
->  	mce_banks_t all_banks;
-> @@ -1437,7 +1449,6 @@ void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
->  		mce_disabled = 1;
->  		return;
->  	}
-> -	mce_log_init();
->  
->  	machine_check_vector = do_machine_check;
->  
-
-... here are what done in patch 10/10.
-
-> @@ -1486,15 +1497,14 @@ static int mce_release(struct inode *inode, struct file *file)
->  	return 0;
->  }
->  
-> -static ssize_t mce_read_cpu(struct mce_log_cpu *mcelog_cpu,
-> -			    char __user *inubuf, size_t usize)
-> +static ssize_t mce_read_cpu(int cpu, char __user *inubuf, size_t usize)
->  {
-> +	struct mce_log_cpu *mcelog_cpu = &per_cpu(mce_log_cpus, cpu);
-
-Changed 1st arg to cpu number.
-
->  	char __user *ubuf = inubuf;
->  	int head, tail, pos, i, err = 0;
->  
->  	head = mcelog_cpu->head;
->  	tail = mcelog_cpu->tail;
-> -
->  	if (head == tail)
->  		return 0;
->  
-> @@ -1503,13 +1513,14 @@ static ssize_t mce_read_cpu(struct mce_log_cpu *mcelog_cpu,
->  		i = mce_log_index(pos);
->  		if (!mcelog_cpu->entry[i].finished) {
->  			int timeout = WRITER_TIMEOUT_NS;
-> +
->  			while (!mcelog_cpu->entry[i].finished) {
->  				if (timeout-- <= 0) {
->  					memset(mcelog_cpu->entry + i, 0,
->  					       sizeof(struct mce));
->  					head = mcelog_cpu->head;
->  					printk(KERN_WARNING "mcelog: timeout "
-> -					       "waiting for writer to finish!\n");
-> +					     "waiting for writer to finish!\n");
->  					goto timeout;
->  				}
->  				ndelay(1);
-> @@ -1538,11 +1549,6 @@ timeout:
->  	return err ? -EFAULT : ubuf - inubuf;
->  }
->  
-> -static int mce_empty_cpu(struct mce_log_cpu *mcelog_cpu)
-> -{
-> -	return mcelog_cpu->head == mcelog_cpu->tail;
-> -}
-> -
->  static int mce_empty(void)
->  {
->  	int cpu;
-> @@ -1550,33 +1556,34 @@ static int mce_empty(void)
->  
->  	for_each_possible_cpu(cpu) {
->  		mcelog_cpu = &per_cpu(mce_log_cpus, cpu);
-> -		if (!mce_empty_cpu(mcelog_cpu))
-> +		if (mcelog_cpu->head != mcelog_cpu->tail)
-
-Inlined.  Or it would be better to have static inlines in header file.
-
->  			return 0;
->  	}
->  	return 1;
->  }
->  
-> +static DEFINE_MUTEX(mce_read_mutex);
-> +
->  static ssize_t mce_read(struct file *filp, char __user *inubuf, size_t usize,
->  			loff_t *off)
->  {
->  	char __user *ubuf = inubuf;
-> -	struct mce_log_cpu *mcelog_cpu;
-> -	int cpu, new_mce, err = 0;
-> -	static DEFINE_MUTEX(mce_read_mutex);
-> +	int cpu, err = 0;
-> +
-> +	/* Only supports full reads right now */
-> +	if (*off != 0 || usize < sizeof(struct mce))
-> +		return -EINVAL;
-
-Picked up what implicitly dropped.
-
->  
->  	mutex_lock(&mce_read_mutex);
-> -	do {
-> -		new_mce = 0;
-> +
-> +	while (!mce_empty()) {
->  		for_each_possible_cpu(cpu) {
->  			if (usize < sizeof(struct mce))
->  				goto out;
-> -			mcelog_cpu = &per_cpu(mce_log_cpus, cpu);
-> -			err = mce_read_cpu(mcelog_cpu, ubuf,
-> -					   sizeof(struct mce));
-> +			err = mce_read_cpu(cpu, ubuf, sizeof(struct mce));
->  			if (err > 0) {
->  				ubuf += sizeof(struct mce);
->  				usize -= sizeof(struct mce);
-> -				new_mce = 1;
->  				err = 0;
->  			} else if (err < 0)
->  				goto out;
-> @@ -1586,9 +1593,10 @@ static ssize_t mce_read(struct file *filp, char __user *inubuf, size_t usize,
->  			cond_resched();
->  			mutex_lock(&mce_read_mutex);
->  		}
-> -	} while (new_mce || !mce_empty());
-> +	}
-
-I could not catch the intent of "new_mce," so replaced do-while by
-simple while statement.
-
->  out:
->  	mutex_unlock(&mce_read_mutex);
-> +
->  	return err ? err : ubuf - inubuf;
->  }
->  
-
-That's all.
+Trond, I guess nr_writeback/nr_unstable are decreased in async RPC
+"complete" events. It is understandable that nr_dirty can sometimes
+stuck on local waits, but the "local determined" nr_dirty and "remote
+determined" nr_writeback/nr_unstable tend to stuck at the same time?
+Did I miss something (that could be obvious to you)?
 
 Thanks,
-H.Seto
+Fengguang
+---
+Subject: NFS: introduce writeback wait queue
 
+The generic writeback routines are departing from congestion_wait()
+in preferance of get_request_wait(), aka. waiting on the block queues.
+
+Introduce the missing writeback wait queue for NFS, otherwise its
+writeback pages will grow out of control.
+
+CC: Jens Axboe <jens.axboe@oracle.com> 
+CC: Chris Mason <chris.mason@oracle.com>
+CC: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+
+ fs/nfs/client.c           |    2 
+ fs/nfs/write.c            |   86 ++++++++++++++++++++++++++++--------
+ include/linux/nfs_fs_sb.h |    1 
+ 3 files changed, 72 insertions(+), 17 deletions(-)
+
+--- linux.orig/fs/nfs/write.c	2009-10-05 13:27:20.000000000 +0800
++++ linux/fs/nfs/write.c	2009-10-05 14:48:39.000000000 +0800
+@@ -189,24 +189,72 @@ static int wb_priority(struct writeback_
+ 
+ int nfs_congestion_kb;
+ 
+-#define NFS_CONGESTION_ON_THRESH 	(nfs_congestion_kb >> (PAGE_SHIFT-10))
+-#define NFS_CONGESTION_OFF_THRESH	\
+-	(NFS_CONGESTION_ON_THRESH - (NFS_CONGESTION_ON_THRESH >> 2))
++/*
++ * SYNC requests will be blocked on (2*limit) and wakeup on (2*limit - limit/8)
++ * ASYNC requests will be blocked on (limit) and wakeup on (limit - limit/8)
++ * In this way SYNC writes will never be blocked by ASYNC ones.
++ */
+ 
+-static int nfs_set_page_writeback(struct page *page)
++static void nfs_writeback_wait(atomic_long_t *nr, long limit, int is_sync,
++			       struct backing_dev_info *bdi,
++			       wait_queue_head_t *wqh)
+ {
+-	int ret = test_set_page_writeback(page);
++	DEFINE_WAIT(wait);
++	int hard_limit = limit * 2;
+ 
+-	if (!ret) {
+-		struct inode *inode = page->mapping->host;
+-		struct nfs_server *nfss = NFS_SERVER(inode);
++	if (atomic_long_read(nr) <= limit)
++		return;
++
++	set_bdi_congested(bdi, BLK_RW_ASYNC);
+ 
+-		if (atomic_long_inc_return(&nfss->writeback) >
+-				NFS_CONGESTION_ON_THRESH) {
+-			set_bdi_congested(&nfss->backing_dev_info,
+-						BLK_RW_ASYNC);
++	if (is_sync && atomic_long_read(nr) <= hard_limit)
++		return;
++
++	for (;;) {
++		prepare_to_wait(&wqh[is_sync], &wait, TASK_UNINTERRUPTIBLE);
++
++		io_schedule();
++
++		if (atomic_long_read(nr) <= limit - limit/8)
++			break;
++		if (is_sync && atomic_long_read(nr) <= hard_limit - limit/8)
++			break;
++	}
++	finish_wait(&wqh[is_sync], &wait);
++}
++
++static void nfs_writeback_wakeup(long nr, long limit,
++				 struct backing_dev_info *bdi,
++				 wait_queue_head_t *wqh)
++{
++	int hard_limit = limit * 2;
++
++	if (nr < hard_limit - limit/8) {
++		if (waitqueue_active(&wqh[BLK_RW_SYNC]))
++			wake_up(&wqh[BLK_RW_SYNC]);
++		if (nr < limit - limit/8) {
++			clear_bdi_congested(bdi, BLK_RW_ASYNC);
++			if (waitqueue_active(&wqh[BLK_RW_ASYNC]))
++				wake_up(&wqh[BLK_RW_ASYNC]);
+ 		}
+ 	}
++}
++
++static int nfs_set_page_writeback(struct page *page,
++				  struct writeback_control *wbc)
++{
++	struct inode *inode = page->mapping->host;
++	struct nfs_server *nfss = NFS_SERVER(inode);
++	int ret = test_set_page_writeback(page);
++
++	if (!ret) {
++		atomic_long_inc(&nfss->writeback);
++		nfs_writeback_wait(&nfss->writeback,
++				   nfs_congestion_kb >> (PAGE_SHIFT-10),
++				   wbc->sync_mode == WB_SYNC_ALL,
++				   &nfss->backing_dev_info,
++				   nfss->writeback_wait);
++	}
+ 	return ret;
+ }
+ 
+@@ -216,8 +264,11 @@ static void nfs_end_page_writeback(struc
+ 	struct nfs_server *nfss = NFS_SERVER(inode);
+ 
+ 	end_page_writeback(page);
+-	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH)
+-		clear_bdi_congested(&nfss->backing_dev_info, BLK_RW_ASYNC);
++
++	nfs_writeback_wakeup(atomic_long_dec_return(&nfss->writeback),
++			     nfs_congestion_kb >> (PAGE_SHIFT-10),
++			     &nfss->backing_dev_info,
++			     nfss->writeback_wait);
+ }
+ 
+ static struct nfs_page *nfs_find_and_lock_request(struct page *page)
+@@ -254,7 +305,8 @@ static struct nfs_page *nfs_find_and_loc
+  * May return an error if the user signalled nfs_wait_on_request().
+  */
+ static int nfs_page_async_flush(struct nfs_pageio_descriptor *pgio,
+-				struct page *page)
++				struct page *page,
++				struct writeback_control *wbc)
+ {
+ 	struct nfs_page *req;
+ 	int ret = 0;
+@@ -266,7 +318,7 @@ static int nfs_page_async_flush(struct n
+ 	if (IS_ERR(req))
+ 		goto out;
+ 
+-	ret = nfs_set_page_writeback(page);
++	ret = nfs_set_page_writeback(page, wbc);
+ 	BUG_ON(ret != 0);
+ 	BUG_ON(test_bit(PG_CLEAN, &req->wb_flags));
+ 
+@@ -286,7 +338,7 @@ static int nfs_do_writepage(struct page 
+ 	nfs_add_stats(inode, NFSIOS_WRITEPAGES, 1);
+ 
+ 	nfs_pageio_cond_complete(pgio, page->index);
+-	return nfs_page_async_flush(pgio, page);
++	return nfs_page_async_flush(pgio, page, wbc);
+ }
+ 
+ /*
+--- linux.orig/include/linux/nfs_fs_sb.h	2009-10-05 13:27:20.000000000 +0800
++++ linux/include/linux/nfs_fs_sb.h	2009-10-05 13:28:31.000000000 +0800
+@@ -108,6 +108,7 @@ struct nfs_server {
+ 	struct nfs_iostats *	io_stats;	/* I/O statistics */
+ 	struct backing_dev_info	backing_dev_info;
+ 	atomic_long_t		writeback;	/* number of writeback pages */
++	wait_queue_head_t	writeback_wait[2];
+ 	int			flags;		/* various flags */
+ 	unsigned int		caps;		/* server capabilities */
+ 	unsigned int		rsize;		/* read size */
+--- linux.orig/fs/nfs/client.c	2009-10-05 13:27:20.000000000 +0800
++++ linux/fs/nfs/client.c	2009-10-05 13:28:31.000000000 +0800
+@@ -991,6 +991,8 @@ static struct nfs_server *nfs_alloc_serv
+ 	INIT_LIST_HEAD(&server->master_link);
+ 
+ 	atomic_set(&server->active, 0);
++	init_waitqueue_head(&server->writeback_wait[BLK_RW_SYNC]);
++	init_waitqueue_head(&server->writeback_wait[BLK_RW_ASYNC]);
+ 
+ 	server->io_stats = nfs_alloc_iostats();
+ 	if (!server->io_stats) {
