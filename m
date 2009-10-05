@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZJEWxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbZJEWxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbZJEWxa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 18:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbZJEWx1
+	id S1755545AbZJEWxj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 18:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755526AbZJEWxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 18:53:27 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:49328 "EHLO
+	Mon, 5 Oct 2009 18:53:38 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:49338 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755338AbZJEWxH (ORCPT
+	with ESMTP id S1755492AbZJEWxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 18:53:07 -0400
+	Mon, 5 Oct 2009 18:53:33 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: yehuda@newdream.net, Sage Weil <sage@newdream.net>
-Subject: [PATCH 17/21] ceph: message pools
-Date: Mon,  5 Oct 2009 15:50:47 -0700
-Message-Id: <1254783051-26217-18-git-send-email-sage@newdream.net>
+Subject: [PATCH 18/21] ceph: nfs re-export support
+Date: Mon,  5 Oct 2009 15:50:48 -0700
+Message-Id: <1254783051-26217-19-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1254783051-26217-17-git-send-email-sage@newdream.net>
+In-Reply-To: <1254783051-26217-18-git-send-email-sage@newdream.net>
 References: <1254783051-26217-1-git-send-email-sage@newdream.net>
  <1254783051-26217-2-git-send-email-sage@newdream.net>
  <1254783051-26217-3-git-send-email-sage@newdream.net>
@@ -35,228 +35,250 @@ References: <1254783051-26217-1-git-send-email-sage@newdream.net>
  <1254783051-26217-15-git-send-email-sage@newdream.net>
  <1254783051-26217-16-git-send-email-sage@newdream.net>
  <1254783051-26217-17-git-send-email-sage@newdream.net>
+ <1254783051-26217-18-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The msgpool is a basic mempool_t-like structure to preallocate
-messages we expect to receive over the wire.  This ensures we have the
-necessary memory preallocated to process replies to requests, or to
-process unsolicited messages from various servers.
+Basic NFS re-export support is included.  This mostly works.  However,
+Ceph's MDS design precludes the ability to generate a (small)
+filehandle that will be valid forever, so this is of limited utility.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/msgpool.c |  167 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ceph/msgpool.h |   26 ++++++++
- 2 files changed, 193 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/msgpool.c
- create mode 100644 fs/ceph/msgpool.h
+ fs/ceph/export.c |  223 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 223 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/export.c
 
-diff --git a/fs/ceph/msgpool.c b/fs/ceph/msgpool.c
+diff --git a/fs/ceph/export.c b/fs/ceph/export.c
 new file mode 100644
-index 0000000..39d4d7e
+index 0000000..fc68e39
 --- /dev/null
-+++ b/fs/ceph/msgpool.c
-@@ -0,0 +1,167 @@
++++ b/fs/ceph/export.c
+@@ -0,0 +1,223 @@
 +#include "ceph_debug.h"
 +
-+#include <linux/err.h>
-+#include <linux/sched.h>
-+#include <linux/types.h>
-+#include <linux/vmalloc.h>
++#include <linux/exportfs.h>
++#include <asm/unaligned.h>
 +
-+#include "msgpool.h"
++#include "super.h"
 +
 +/*
-+ * We use msg pools to preallocate memory for messages we expect to
-+ * receive over the wire, to avoid getting ourselves into OOM
-+ * conditions at unexpected times.  We take use a few different
-+ * strategies:
++ * NFS export support
 + *
-+ *  - for request/response type interactions, we preallocate the
-+ * memory needed for the response when we generate the request.
++ * NFS re-export of a ceph mount is, at present, only semireliable.
++ * The basic issue is that the Ceph architectures doesn't lend itself
++ * well to generating filehandles that will remain valid forever.
 + *
-+ *  - for messages we can receive at any time from the MDS, we preallocate
-+ * a pool of messages we can re-use.
++ * So, we do our best.  If you're lucky, your inode will be in the
++ * client's cache.  If it's not, and you have a connectable fh, then
++ * the MDS server may be able to find it for you.  Otherwise, you get
++ * ESTALE.
 + *
-+ *  - for writeback, we preallocate some number of messages to use for
-+ * requests and their replies, so that we always make forward
-+ * progress.
-+ *
-+ * The msgpool behaves like a mempool_t, but keeps preallocated
-+ * ceph_msgs strung together on a list_head instead of using a pointer
-+ * vector.  This avoids vector reallocation when we adjust the number
-+ * of preallocated items (which happens frequently).
++ * There are ways to this more reliable, but in the non-connectable fh
++ * case, we won't every work perfectly, and in the connectable case,
++ * some changes are needed on the MDS side to work better.
 + */
-+
 +
 +/*
-+ * Allocate or release as necessary to meet our target pool size.
++ * Basic fh
 + */
-+static int __fill_msgpool(struct ceph_msgpool *pool)
++struct ceph_nfs_fh {
++	u64 ino;
++} __attribute__ ((packed));
++
++/*
++ * Larger 'connectable' fh that includes parent ino and name hash.
++ * Use this whenever possible, as it works more reliably.
++ */
++struct ceph_nfs_confh {
++	u64 ino, parent_ino;
++	u32 parent_name_hash;
++} __attribute__ ((packed));
++
++static int ceph_encode_fh(struct dentry *dentry, u32 *rawfh, int *max_len,
++			  int connectable)
 +{
-+	struct ceph_msg *msg;
++	struct ceph_nfs_fh *fh = (void *)rawfh;
++	struct ceph_nfs_confh *cfh = (void *)rawfh;
++	struct dentry *parent = dentry->d_parent;
++	struct inode *inode = dentry->d_inode;
++	int type;
 +
-+	while (pool->num < pool->min) {
-+		dout("fill_msgpool %p %d/%d allocating\n", pool, pool->num,
-+		     pool->min);
-+		spin_unlock(&pool->lock);
-+		msg = ceph_msg_new(0, pool->front_len, 0, 0, NULL);
-+		spin_lock(&pool->lock);
-+		if (IS_ERR(msg))
-+			return PTR_ERR(msg);
-+		msg->pool = pool;
-+		list_add(&msg->list_head, &pool->msgs);
-+		pool->num++;
-+	}
-+	while (pool->num > pool->min) {
-+		msg = list_first_entry(&pool->msgs, struct ceph_msg, list_head);
-+		dout("fill_msgpool %p %d/%d releasing %p\n", pool, pool->num,
-+		     pool->min, msg);
-+		list_del_init(&msg->list_head);
-+		pool->num--;
-+		ceph_msg_kfree(msg);
-+	}
-+	return 0;
-+}
++	/* don't re-export snaps */
++	if (ceph_snap(inode) != CEPH_NOSNAP)
++		return -EINVAL;
 +
-+int ceph_msgpool_init(struct ceph_msgpool *pool,
-+		      int front_len, int min, bool blocking)
-+{
-+	int ret;
-+
-+	dout("msgpool_init %p front_len %d min %d\n", pool, front_len, min);
-+	spin_lock_init(&pool->lock);
-+	pool->front_len = front_len;
-+	INIT_LIST_HEAD(&pool->msgs);
-+	pool->num = 0;
-+	pool->min = min;
-+	pool->blocking = blocking;
-+	init_waitqueue_head(&pool->wait);
-+
-+	spin_lock(&pool->lock);
-+	ret = __fill_msgpool(pool);
-+	spin_unlock(&pool->lock);
-+	return ret;
-+}
-+
-+void ceph_msgpool_destroy(struct ceph_msgpool *pool)
-+{
-+	dout("msgpool_destroy %p\n", pool);
-+	spin_lock(&pool->lock);
-+	pool->min = 0;
-+	__fill_msgpool(pool);
-+	spin_unlock(&pool->lock);
-+}
-+
-+int ceph_msgpool_resv(struct ceph_msgpool *pool, int delta)
-+{
-+	int ret;
-+
-+	spin_lock(&pool->lock);
-+	dout("msgpool_resv %p delta %d\n", pool, delta);
-+	pool->min += delta;
-+	ret = __fill_msgpool(pool);
-+	spin_unlock(&pool->lock);
-+	return ret;
-+}
-+
-+struct ceph_msg *ceph_msgpool_get(struct ceph_msgpool *pool)
-+{
-+	wait_queue_t wait;
-+	struct ceph_msg *msg;
-+
-+	if (pool->blocking) {
-+		/* mempool_t behavior; first try to alloc */
-+		msg = ceph_msg_new(0, pool->front_len, 0, 0, NULL);
-+		if (!IS_ERR(msg))
-+			return msg;
-+	}
-+
-+	while (1) {
-+		spin_lock(&pool->lock);
-+		if (likely(pool->num)) {
-+			msg = list_entry(pool->msgs.next, struct ceph_msg,
-+					 list_head);
-+			list_del_init(&msg->list_head);
-+			pool->num--;
-+			dout("msgpool_get %p got %p, now %d/%d\n", pool, msg,
-+			     pool->num, pool->min);
-+			spin_unlock(&pool->lock);
-+			return msg;
-+		}
-+		pr_err("msgpool_get %p now %d/%d, %s\n", pool, pool->num,
-+		       pool->min, pool->blocking ? "waiting" : "failing");
-+		spin_unlock(&pool->lock);
-+
-+		if (!pool->blocking) {
-+			WARN_ON(1);
-+
-+			/* maybe we can allocate it now? */
-+			msg = ceph_msg_new(0, pool->front_len, 0, 0, NULL);
-+			if (!IS_ERR(msg))
-+				return msg;
-+
-+			return ERR_PTR(-ENOMEM);
-+		}
-+
-+		init_wait(&wait);
-+		prepare_to_wait(&pool->wait, &wait, TASK_UNINTERRUPTIBLE);
-+		schedule();
-+		finish_wait(&pool->wait, &wait);
-+	}
-+}
-+
-+void ceph_msgpool_put(struct ceph_msgpool *pool, struct ceph_msg *msg)
-+{
-+	spin_lock(&pool->lock);
-+	if (pool->num < pool->min) {
-+		ceph_msg_get(msg);   /* retake a single ref */
-+		list_add(&msg->list_head, &pool->msgs);
-+		pool->num++;
-+		dout("msgpool_put %p reclaim %p, now %d/%d\n", pool, msg,
-+		     pool->num, pool->min);
-+		spin_unlock(&pool->lock);
-+		wake_up(&pool->wait);
++	if (*max_len >= sizeof(*cfh)) {
++		dout("encode_fh %p connectable\n", dentry);
++		cfh->ino = ceph_ino(dentry->d_inode);
++		cfh->parent_ino = ceph_ino(parent->d_inode);
++		cfh->parent_name_hash = parent->d_name.hash;
++		*max_len = sizeof(*cfh);
++		type = 2;
++	} else if (*max_len > sizeof(*fh)) {
++		if (connectable)
++			return -ENOSPC;
++		dout("encode_fh %p\n", dentry);
++		fh->ino = ceph_ino(dentry->d_inode);
++		*max_len = sizeof(*fh);
++		type = 1;
 +	} else {
-+		dout("msgpool_put %p drop %p, at %d/%d\n", pool, msg,
-+		     pool->num, pool->min);
-+		spin_unlock(&pool->lock);
-+		ceph_msg_kfree(msg);
++		return -ENOSPC;
 +	}
++	return type;
 +}
-diff --git a/fs/ceph/msgpool.h b/fs/ceph/msgpool.h
-new file mode 100644
-index 0000000..07a2dec
---- /dev/null
-+++ b/fs/ceph/msgpool.h
-@@ -0,0 +1,26 @@
-+#ifndef _FS_CEPH_MSGPOOL
-+#define _FS_CEPH_MSGPOOL
-+
-+#include "messenger.h"
 +
 +/*
-+ * we use memory pools for preallocating messages we may receive, to
-+ * avoid unexpected OOM conditions.
++ * convert regular fh to dentry
++ *
++ * FIXME: we should try harder by querying the mds for the ino.
 + */
-+struct ceph_msgpool {
-+	spinlock_t lock;
-+	int front_len;          /* preallocated payload size */
-+	struct list_head msgs;  /* msgs in the pool; each has 1 ref */
-+	int num, min;           /* cur, min # msgs in the pool */
-+	bool blocking;
-+	wait_queue_head_t wait;
++static struct dentry *__fh_to_dentry(struct super_block *sb,
++				     struct ceph_nfs_fh *fh)
++{
++	struct inode *inode;
++	struct dentry *dentry;
++	struct ceph_vino vino;
++	int err;
++
++	dout("__fh_to_dentry %llx\n", fh->ino);
++	vino.ino = fh->ino;
++	vino.snap = CEPH_NOSNAP;
++	inode = ceph_find_inode(sb, vino);
++	if (!inode)
++		return ERR_PTR(-ESTALE);
++
++	dentry = d_obtain_alias(inode);
++	if (!dentry) {
++		pr_err("fh_to_dentry %llx -- inode %p but ENOMEM\n",
++		       fh->ino, inode);
++		iput(inode);
++		return ERR_PTR(-ENOMEM);
++	}
++	err = ceph_init_dentry(dentry);
++
++	if (err < 0) {
++		iput(inode);
++		return ERR_PTR(err);
++	}
++	dout("__fh_to_dentry %llx %p dentry %p\n", fh->ino, inode, dentry);
++	return dentry;
++}
++
++/*
++ * convert connectable fh to dentry
++ */
++static struct dentry *__cfh_to_dentry(struct super_block *sb,
++				      struct ceph_nfs_confh *cfh)
++{
++	struct ceph_mds_client *mdsc = &ceph_client(sb)->mdsc;
++	struct inode *inode;
++	struct dentry *dentry;
++	struct ceph_vino vino;
++	int err;
++
++	dout("__cfh_to_dentry %llx (%llx/%x)\n",
++	     cfh->ino, cfh->parent_ino, cfh->parent_name_hash);
++
++	vino.ino = cfh->ino;
++	vino.snap = CEPH_NOSNAP;
++	inode = ceph_find_inode(sb, vino);
++	if (!inode) {
++		struct ceph_mds_request *req;
++
++		req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_LOOKUPHASH,
++					       USE_ANY_MDS);
++		if (IS_ERR(req))
++			return ERR_PTR(PTR_ERR(req));
++
++		req->r_ino1 = vino;
++		req->r_ino2.ino = cfh->parent_ino;
++		req->r_ino2.snap = CEPH_NOSNAP;
++		req->r_path2 = kmalloc(16, GFP_NOFS);
++		snprintf(req->r_path2, 16, "%d", cfh->parent_name_hash);
++		req->r_num_caps = 1;
++		err = ceph_mdsc_do_request(mdsc, NULL, req);
++		ceph_mdsc_put_request(req);
++		inode = ceph_find_inode(sb, vino);
++		if (!inode)
++			return ERR_PTR(err ? err : -ESTALE);
++	}
++
++	dentry = d_obtain_alias(inode);
++	if (!dentry) {
++		pr_err("cfh_to_dentry %llx -- inode %p but ENOMEM\n",
++		       cfh->ino, inode);
++		iput(inode);
++		return ERR_PTR(-ENOMEM);
++	}
++	err = ceph_init_dentry(dentry);
++	if (err < 0) {
++		iput(inode);
++		return ERR_PTR(err);
++	}
++	dout("__cfh_to_dentry %llx %p dentry %p\n", cfh->ino, inode, dentry);
++	return dentry;
++}
++
++static struct dentry *ceph_fh_to_dentry(struct super_block *sb, struct fid *fid,
++					int fh_len, int fh_type)
++{
++	if (fh_type == 1)
++		return __fh_to_dentry(sb, (struct ceph_nfs_fh *)fid->raw);
++	else
++		return __cfh_to_dentry(sb, (struct ceph_nfs_confh *)fid->raw);
++}
++
++/*
++ * get parent, if possible.
++ *
++ * FIXME: we could do better by querying the mds to discover the
++ * parent.
++ */
++static struct dentry *ceph_fh_to_parent(struct super_block *sb,
++					 struct fid *fid,
++					int fh_len, int fh_type)
++{
++	struct ceph_nfs_confh *cfh = (void *)fid->raw;
++	struct ceph_vino vino;
++	struct inode *inode;
++	struct dentry *dentry;
++	int err;
++
++	if (fh_type == 1)
++		return ERR_PTR(-ESTALE);
++
++	pr_debug("fh_to_parent %llx/%d\n", cfh->parent_ino,
++		 cfh->parent_name_hash);
++
++	vino.ino = cfh->ino;
++	vino.snap = CEPH_NOSNAP;
++	inode = ceph_find_inode(sb, vino);
++	if (!inode)
++		return ERR_PTR(-ESTALE);
++
++	dentry = d_obtain_alias(inode);
++	if (!dentry) {
++		pr_err("fh_to_parent %llx -- inode %p but ENOMEM\n",
++		       cfh->ino, inode);
++		iput(inode);
++		return ERR_PTR(-ENOMEM);
++	}
++	err = ceph_init_dentry(dentry);
++	if (err < 0) {
++		iput(inode);
++		return ERR_PTR(err);
++	}
++	dout("fh_to_parent %llx %p dentry %p\n", cfh->ino, inode, dentry);
++	return dentry;
++}
++
++const struct export_operations ceph_export_ops = {
++	.encode_fh = ceph_encode_fh,
++	.fh_to_dentry = ceph_fh_to_dentry,
++	.fh_to_parent = ceph_fh_to_parent,
 +};
-+
-+extern int ceph_msgpool_init(struct ceph_msgpool *pool,
-+			     int front_len, int size, bool blocking);
-+extern void ceph_msgpool_destroy(struct ceph_msgpool *pool);
-+extern int ceph_msgpool_resv(struct ceph_msgpool *, int delta);
-+extern struct ceph_msg *ceph_msgpool_get(struct ceph_msgpool *);
-+extern void ceph_msgpool_put(struct ceph_msgpool *, struct ceph_msg *);
-+
-+#endif
 -- 
 1.5.6.5
 
