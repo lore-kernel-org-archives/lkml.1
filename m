@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbZJESlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbZJESni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754646AbZJESlt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 14:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZJESls
+	id S1754697AbZJESni (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 14:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZJESnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 14:41:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60900 "EHLO hera.kernel.org"
+	Mon, 5 Oct 2009 14:43:37 -0400
+Received: from winds.org ([68.75.195.9]:54207 "EHLO winds.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754528AbZJESls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 14:41:48 -0400
-Message-ID: <4ACA3DAE.6030300@kernel.org>
-Date: Mon, 05 Oct 2009 11:40:46 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1754588AbZJESnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 14:43:37 -0400
+Date: Mon, 5 Oct 2009 14:42:48 -0400 (EDT)
+From: Byron Stanoszek <bstanoszek@comtime.com>
+X-X-Sender: gandalf@winds.org
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
+In-Reply-To: <Pine.LNX.4.64.0910052334480.17655@boston.corp.fedex.com>
+Message-ID: <Pine.LNX.4.64.0910051439500.6589@winds.org>
+References: <Pine.LNX.4.64.0910052334480.17655@boston.corp.fedex.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, Tejun Heo <tj@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: use near online node instead of round bin for numa
-References: <4AC7974C.20304@kernel.org> <87my45yk79.fsf@basil.nowhere.org> <4ACA3677.40407@kernel.org> <20091005183539.GR1656@one.firstfloor.org>
-In-Reply-To: <20091005183539.GR1656@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Mon, Oct 05, 2009 at 11:09:59AM -0700, Yinghai Lu wrote:
->> Andi Kleen wrote:
->>> Yinghai Lu <yinghai@kernel.org> writes:
->>>
->>>> cpu to node mapping is set in following sequence:
->>>> 1. numa_init_array: set up roundbin from cpu to online node
->>>> 2. init_cpu_to_node: set that according to apicid_to_node[] according to srat
->>>> 		  only handle that node is online, and leave other cpu on node
->>>> 		  without ram (aka not online) to still round-bin
->>>> 3. later srat_detect_node for intel/amd, will use first_online node or near by
->>>>    node.
->>>>
->>>> problem is that setup_per_cpu_areas() is called between  2 and 3. the per_cpu
->>>> for cpu on node with ram is on different node. and could put that on node with
->>>> two hops away.
->>>>
->>>> so try add find_near_online_node() and call int init_cpu_to_node()
->>> This fallback case should not really happen anyways, unless the BIOS is buggy
->>> (in this case it might better to completely reject the SRAT because
->>> more might be wrong).
->> SRAT is right, and some node has no ram installed.
-> 
-> In this case there should be still a PXM to define the CPU locality -- your BIOS is broken.
-> Please fix it there.
+On Mon, 5 Oct 2009, Jeff Chua wrote:
 
-I don't think so.
+> Question is ... is there anyway to increase "low mem" without resorting to 
+> migrating to 64bit? (Look... it only has 378MB total low mem vs 850MB on the 
+> 4GB system). I've oracle installed on the 64GB system and it keeps getting 
+> OOMs!
 
-YH
+I have some installations using a 64-bit kernel and a 32-bit OS (including
+Oracle). This setup works really well and lets you use all available memory.
+You don't even have to upgrade your OS; just swap out the kernel.
+
+  -Byron
+
