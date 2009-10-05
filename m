@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbZJEOjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbZJEOgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752418AbZJEOjE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 10:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbZJEOjD
+	id S1752507AbZJEOgr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 10:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZJEOgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 10:39:03 -0400
-Received: from fanny.its.uu.se ([130.238.4.241]:44325 "EHLO fanny.its.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751722AbZJEOjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 10:39:02 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 5 Oct 2009 10:36:47 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:34946 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbZJEOgq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 10:36:46 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: Linux 2.6.32-rc1
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Valdis.Kletnieks@vt.edu
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <8276.1254413309@turing-police.cc.vt.edu>
+References: <20090928191506.40b61793@mschwide.boeblingen.de.ibm.com>
+	 <4AC10365.7090802@gmail.com> <4AC2712C.4080901@gmail.com>
+	 <alpine.LFD.2.01.0909291410440.6996@localhost.localdomain>
+	 <20090929232248.735bf4df@infradead.org>
+	 <alpine.LFD.2.01.0909291429570.6996@localhost.localdomain>
+	 <20090930170754.0886ff2e@infradead.org>
+	 <alpine.LFD.2.01.0909301304310.6996@localhost.localdomain>
+	 <4AC3BE89.3040708@gmail.com>
+	 <alpine.LFD.2.01.0909301339080.6996@localhost.localdomain>
+	 <20091001124832.GA25757@infradead.org>
+	 <8276.1254413309@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Mon, 05 Oct 2009 16:39:00 +0200
+Message-Id: <1254753540.26976.62.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Message-ID: <19146.1202.511428.691521@pilspetsen.it.uu.se>
-Date: Mon, 5 Oct 2009 16:37:38 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: sata_via: SError: { UnrecovData Proto TrStaTrns }
-In-Reply-To: <m3my46yo5g.fsf@intrepid.localdomain>
-References: <m3my46yo5g.fsf@intrepid.localdomain>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa writes:
- > Hi,
- > 
- > What could that be?
- > VIA VT6421A mini-PCI card and SATA SSD from Transcend. IXP425 (ARM)
- > little-endian CPU. 128 MB RAM - VT6421A can access only the first 64 MB
- > of system RAM, but there is bounce buffering (a la swiotlb) for the
- > rest.
- > 
- > Sometimes it produces:
- > 
- > ata1.00: exception Emask 0x12 SAct 0x0 SErr 0x1000500 action 0x6
- > ata1.00: BMDMA stat 0x5
- > ata1: SError: { UnrecovData Proto TrStaTrns }
- > ata1.00: cmd c8/00:20:b7:18:38/00:00:00:00:00/e0 tag 0 dma 16384 in
- >          res 51/40:20:b7:18:38/00:00:00:00:00/e0 Emask 0x12 (ATA bus error)
- > ata1.00: status: { DRDY ERR }
- > ata1.00: error: { UNC }
- > ata1: hard resetting link
- > ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
- > ata1.00: configured for UDMA/100
- > ata1: EH complete
- > 
- > Any ideas?
+On Thu, 2009-10-01 at 12:08 -0400, Valdis.Kletnieks@vt.edu wrote:
+> What? There's mainline graphic MUAs that *don't* do "select big chunk of text
+> with mouse drag, hit delete"?
 
-Try again with a known good SATA disk instead of the SSD.
+Better yet, using evo, if you select part of the msg using your mouse
+and then hit reply-all, it will only quote the selected bit.
 
-What is the make and model of that mini-PCI card?
+
