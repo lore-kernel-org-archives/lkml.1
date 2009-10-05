@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602AbZJENAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbZJENBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756602AbZJENAI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 09:00:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756582AbZJENAH
+	id S1757994AbZJENBe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 09:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594AbZJENBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 09:00:07 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16623 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756560AbZJENAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 09:00:06 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <4AC99292.5060502@redhat.com>
-References: <4AC99292.5060502@redhat.com> <20090930032138.3919.72085.sendpatchset@localhost.localdomain> <9705.1254400470@redhat.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       Brian Behlendorf <behlendorf1@llnl.gov>,
-       Ben Woodard <bwoodard@llnl.gov>, Stable Team <stable@kernel.org>,
-       akpm@linux-foundation.org
-Subject: Re: [Patch] rwsem: fix rwsem_is_locked() bug
-Date: Mon, 05 Oct 2009 13:58:36 +0100
-Message-ID: <16559.1254747516@redhat.com>
+	Mon, 5 Oct 2009 09:01:34 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:63274 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751585AbZJENBd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 09:01:33 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [.32-rc3] scheduler: iwlagn consistently high in "waiting for CPU"
+Date: Mon, 5 Oct 2009 15:00:54 +0200
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-wireless@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910051500.55875.elendil@planet.nl>
+X-OriginalArrivalTime: 05 Oct 2009 13:00:55.0976 (UTC) FILETIME=[E06A8A80:01CA45BB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang <amwang@redhat.com> wrote:
+With .32-rc3 I'm getting occasional skips from amarok while playing music 
+from an NFS share (3 today so far), something I've not had in a long time.
 
-> FYI, this seems wrong, probably even worse than what it is now.
-> I tried this change, it breaks portmap.
+The reason looks to be that latencytop consistently shows 'iwlagn' as the 
+top affected process with "Scheduler: waiting for CPU".
+Values of 100-140 ms occur frequently, but I've also seen higher values 
+(180, 207). I don't remember seeing iwlagn high in the list before, but I 
+have not checked earlier kernels yet.
 
-Sorry, my mistake.  The following:
+Added to that 'phy0' also frequently shows high with values of 25-75 ms.
 
-> > -	woken = 0;
-> > +	woken = ++sem->activity;
+The system is otherwise essentially idle. Other processes typically show a 
+latency < 5 ms.
 
-should have been:
+System: HP 2510p notebook, x86_64, Core2 Duo, Debian stable
 
--	woken = 0;
-+	woken = sem->activity++;
-
-David
+Cheers,
+FJP
