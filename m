@@ -1,64 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbZJEHaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbZJEH2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758582AbZJEHaJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 03:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758532AbZJEHaI
+	id S1758555AbZJEH2q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 03:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758492AbZJEH2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 03:30:08 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:48728 "EHLO kernel.dk"
+	Mon, 5 Oct 2009 03:28:45 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59053 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758475AbZJEHaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 03:30:06 -0400
-Date: Mon, 5 Oct 2009 09:29:29 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Philipp Reisner <philipp.reisner@linbit.com>, drbd-dev@linbit.com
-Subject: Re: linux-next: block/drbd tree build failure
-Message-ID: <20091005072929.GS26573@kernel.dk>
-References: <20091005143552.977a2d4d.sfr@canb.auug.org.au> <20091005063138.GO26573@kernel.dk> <20091005182103.0a391d15.sfr@canb.auug.org.au>
+	id S1758441AbZJEH2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 03:28:44 -0400
+Message-ID: <4AC9A108.8040504@redhat.com>
+Date: Mon, 05 Oct 2009 09:32:24 +0200
+From: Hans de Goede <hdegoede@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091005182103.0a391d15.sfr@canb.auug.org.au>
+To: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+CC: Jean-Francois Moine <moinejf@free.fr>,
+       Thomas Kaiser <thomas@kaiser-linux.li>, Kyle Guinn <elyk03@gmail.com>,
+       Theodore Kilgore <kilgota@auburn.edu>,
+       V4L Mailing List <linux-media@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, ltp-list@lists.sourceforge.net
+Subject: Re: [PATCH] pac_common: redesign function for finding Start Of Frame
+References: <4AC90BBF.9040803@freemail.hu>
+In-Reply-To: <4AC90BBF.9040803@freemail.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 05 2009, Stephen Rothwell wrote:
-> Hi Jens,
-> 
-> On Mon, 5 Oct 2009 08:31:38 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> >
-> > On Mon, Oct 05 2009, Stephen Rothwell wrote:
-> > > 
-> > > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> > > 
-> > > drivers/block/drbd/drbd_req.c: In function '_drbd_start_io_acct':
-> > > drivers/block/drbd/drbd_req.c:43: error: subscripted value is neither array nor pointer
-> > > drivers/block/drbd/drbd_req.c: In function '_drbd_end_io_acct':
-> > > drivers/block/drbd/drbd_req.c:56: error: subscripted value is neither array nor pointer
-> > > 
-> > > I reported a similar error against the dbd tree, which was fixed, but now
-> > > the commit that caused that error has been reverted and thus we get
-> > > this :-(
-> > > 
-> > > I have reverted the drbd commits from the block tree for today.
-> > 
-> > That's probably my fault, not drbd. I moved it to a new branch since it
-> > isn't going into 2.6.32, and perhaps dropped that fix along the way.
-> > I'll look into it.
-> 
-> The original problem was caused by commit
-> a9327cac440be4d8333bba975cbbf76045096275 ("Seperate read and write
-> statistics of in_flight requests") which went into Linus' tree on Sept
-> 15.  The drbd tee was fixed to cope with that change.  Then that commit
-> was reverted in Linus' tree on Oct 5, so the fix to the drbd tree needs
-> to be reverted as well.  Unfortunately, the drbd tree has been rebased
-> into (basically) one commit, so that commit needs fixing.
+Hi,
 
-Ah indeed, thanks. I'll put a fixup patch in place.
+Good one,
 
--- 
-Jens Axboe
+Acked-by: Hans de Goede <hdegoede@redhat.com>
 
+Jean-Francois, can you please add this patch to your tree?
+
+Thanks,
+
+Hans
+
+
+On 10/04/2009 10:55 PM, Németh Márton wrote:
+> From: Márton Németh<nm127@freemail.hu>
+>
+> The original implementation of pac_find_sof() does not always find
+> the Start Of Frame (SOF) marker. Replace it with a state machine
+> based design.
+>
+> The change was tested with Labtec Webcam 2200.
+>
+> Signed-off-by: Márton Németh<nm127@freemail.hu>
+> ---
+> --- linux-2.6.32-rc1.orig/drivers/media/video/gspca/pac_common.h	2009-09-10 00:13:59.000000000 +0200
+> +++ linux-2.6.32-rc1/drivers/media/video/gspca/pac_common.h	2009-10-04 21:49:19.000000000 +0200
+> @@ -33,6 +33,45 @@
+>   static const unsigned char pac_sof_marker[5] =
+>   		{ 0xff, 0xff, 0x00, 0xff, 0x96 };
+>
+> +/*
+> +   The following state machine finds the SOF marker sequence
+> +   0xff, 0xff, 0x00, 0xff, 0x96 in a byte stream.
+> +
+> +	   +----------+
+> +	   | 0: START |<---------------\
+> +	   +----------+<-\             |
+> +	     |       \---/otherwise    |
+> +	     v 0xff                    |
+> +	   +----------+ otherwise      |
+> +	   |     1    |--------------->*
+> +	   |          |                ^
+> +	   +----------+                |
+> +	     |                         |
+> +	     v 0xff                    |
+> +	   +----------+<-\0xff         |
+> +	/->|          |--/             |
+> +	|  |     2    |--------------->*
+> +	|  |          | otherwise      ^
+> +	|  +----------+                |
+> +	|    |                         |
+> +	|    v 0x00                    |
+> +	|  +----------+                |
+> +	|  |     3    |                |
+> +	|  |          |--------------->*
+> +	|  +----------+ otherwise      ^
+> +	|    |                         |
+> +   0xff |    v 0xff                    |
+> +	|  +----------+                |
+> +	\--|     4    |                |
+> +	   |          |----------------/
+> +	   +----------+ otherwise
+> +	     |
+> +	     v 0x96
+> +	   +----------+
+> +	   |  FOUND   |
+> +	   +----------+
+> +*/
+> +
+>   static unsigned char *pac_find_sof(struct gspca_dev *gspca_dev,
+>   					unsigned char *m, int len)
+>   {
+> @@ -41,17 +80,54 @@ static unsigned char *pac_find_sof(struc
+>
+>   	/* Search for the SOF marker (fixed part) in the header */
+>   	for (i = 0; i<  len; i++) {
+> -		if (m[i] == pac_sof_marker[sd->sof_read]) {
+> -			sd->sof_read++;
+> -			if (sd->sof_read == sizeof(pac_sof_marker)) {
+> +		switch (sd->sof_read) {
+> +		case 0:
+> +			if (m[i] == 0xff)
+> +				sd->sof_read = 1;
+> +			break;
+> +		case 1:
+> +			if (m[i] == 0xff)
+> +				sd->sof_read = 2;
+> +			else
+> +				sd->sof_read = 0;
+> +			break;
+> +		case 2:
+> +			switch (m[i]) {
+> +			case 0x00:
+> +				sd->sof_read = 3;
+> +				break;
+> +			case 0xff:
+> +				/* stay in this state */
+> +				break;
+> +			default:
+> +				sd->sof_read = 0;
+> +			}
+> +			break;
+> +		case 3:
+> +			if (m[i] == 0xff)
+> +				sd->sof_read = 4;
+> +			else
+> +				sd->sof_read = 0;
+> +			break;
+> +		case 4:
+> +			switch (m[i]) {
+> +			case 0x96:
+> +				/* Pattern found */
+>   				PDEBUG(D_FRAM,
+>   					"SOF found, bytes to analyze: %u."
+>   					" Frame starts at byte #%u",
+>   					len, i + 1);
+>   				sd->sof_read = 0;
+>   				return m + i + 1;
+> +				break;
+> +			case 0xff:
+> +				sd->sof_read = 2;
+> +				break;
+> +			default:
+> +				sd->sof_read = 0;
+>   			}
+> -		} else {
+> +			break;
+> +		default:
+>   			sd->sof_read = 0;
+>   		}
+>   	}
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
