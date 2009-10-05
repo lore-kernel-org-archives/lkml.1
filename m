@@ -1,67 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbZJEPHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbZJEPOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400AbZJEPHO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 11:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZJEPHN
+	id S1753519AbZJEPOM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 11:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZJEPOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 11:07:13 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:36332 "EHLO mx1.redhat.com"
+	Mon, 5 Oct 2009 11:14:11 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41633 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753070AbZJEPHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 11:07:12 -0400
-Message-ID: <4ACA0C51.6030809@redhat.com>
-Date: Mon, 05 Oct 2009 11:10:09 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH tracing/kprobes v2 0/5] tracing/kprobes, 	perf: perf probe
- support take 2
-References: <20091002214834.30906.86502.stgit@dhcp-100-2-132.bos.redhat.com> <y0mocolj3ht.fsf@fche.csb>
-In-Reply-To: <y0mocolj3ht.fsf@fche.csb>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753114AbZJEPOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 11:14:10 -0400
+Subject: Re: [PATCH] scsi_lib.c: sleeping function called from invalid
+ context
+From: James Bottomley <James.Bottomley@suse.de>
+To: iceberg <strakh@ispras.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, eric@andante.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <200910051835.51891.strakh@ispras.ru>
+References: <200909231758.47612.strakh@ispras.ru>
+	 <1253841816.5183.361.camel@mulgrave.site>
+	 <1254421936.3885.53.camel@mulgrave.site>
+	 <200910051835.51891.strakh@ispras.ru>
+Content-Type: text/plain
+Date: Mon, 05 Oct 2009 10:13:22 -0500
+Message-Id: <1254755602.3838.5.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frank Ch. Eigler wrote:
-> Masami Hiramatsu<mhiramat@redhat.com>  writes:
->
->> [...]
->> These patches introduce 'perf probe' command and update kprobe-tracer. [...]
->> Usage
->> -----
->>   perf probe [<options>] -P 'PROBEDEF' [-P 'PROBEDEF' ...]
->> [...]
->>      -k, --vmlinux<file>   vmlinux/module pathname
->>      -r, --release<rel>    kernel release
->> [...]
->
-> Can you outline a reason for the -r flag?  We use it in systemtap for
-> cross-compiling purposes, but I didn't think perf was interested in that.
+On Mon, 2009-10-05 at 18:35 +0000, iceberg wrote:
+> On Thursday 01 October 2009 18:32:16 you wrote:
+> > On Thu, 2009-09-24 at 18:23 -0700, James Bottomley wrote:
+> > > On Thu, 2009-09-24 at 15:56 -0700, Andrew Morton wrote:
+> > > > On Wed, 23 Sep 2009 17:58:47 +0000
+> > > >
+> > > > iceberg <strakh@ispras.ru> wrote:
+> > > > > Driver scsi_lib.c might sleep in atomic context, because it calls
+> > > > > scsi_device_put under spin_lock_irqsave.
+> > > > > drivers/scsi/scsi_lib.c:356:
+> > > > > 	spin_lock_irqsave(shost->host_lock, flags);
+> > > > > 	scsi_device_put(sdev);
+> > > > > Path to might_sleep macro from scsi_device_put:
+> > > > > 1. scsi_device_put calls put_device at ./drivers/scsi/scsi.c:1111
+> > > > > 2. put_device calls kobject_put at ./drivers/base/core.c:1038
+> > > > > 3. kobject_put calls kref_put at ./lib/kobject.c
+> > > > > 4. kref_put may call callback function kobject_release at
+> > > > > ./lib/kref.c if refcount becomes zero, which might_sleep because it
+> > > > > calls user event. Details: 4.1 kobject_cleanup calls kobject_uevent
+> > > > > at ./lib/kobject.c:555 4.2 kobject_uevent calls kobject_uevent_env at
+> > > > >  ./lib/kobject_uevent.c:282 4.3 kobject_uevent_env calls
+> > > > > call_usermodehelper_exec at
+> > > > > ./include/linux/kmod.h:83
+> > > > > 	4.4 call_usermodehelper_exec calls wait_for_completion at
+> > > > > ./kernel/kmod.c:481
+> > > > > 	4.5 wait_for_completion calls wait_for_common at
+> > > > > ./kernel/sched.c:5710 4.5 wait_for_common calls might_sleep at
+> > > > > ./kernels/sched.c:5692
+> > > > >
+> > > > > Found by Linux Driver Verification project.
+> > > > >
+> > > > > Delete wrong sleeping function calls.
+> > > > >
+> > > > > Signed-off-by: Alexander Strakh <strakh@ispras.ru>
+> > > > >
+> > > > > ---
+> > > > > diff --git a/./a/drivers/scsi/scsi_lib.c
+> > > > > b/./b/drivers/scsi/scsi_lib.c index f3c4089..a8f8e2f 100644
+> > > > > --- a/./a/drivers/scsi/scsi_lib.c
+> > > > > +++ b/./b/drivers/scsi/scsi_lib.c
+> > > > > @@ -353,9 +353,9 @@ static void scsi_single_lun_run(struct
+> > > > > scsi_device *current_sdev)
+> > > > >
+> > > > >  		spin_unlock_irqrestore(shost->host_lock, flags);
+> > > > >  		blk_run_queue(sdev->request_queue);
+> > > > > -		spin_lock_irqsave(shost->host_lock, flags);
+> > > > >
+> > > > > -		scsi_device_put(sdev);
+> > > > > +		scsi_device_put(sdev);
+> > > > > +		spin_lock_irqsave(shost->host_lock, flags);
+> > > > >  	}
+> > > > >   out:
+> > > > >  	spin_unlock_irqrestore(shost->host_lock, flags);
+> > > >
+> > > > Well this is strange.  afacit all the code to which you refer is
+> > > > ancient, so why did this bug just pop up now?
+> > >
+> > > No idea.  I think the root cause of this is in the kobject code:  we
+> > > explicitly require the ability to call last put from interrupt context
+> > > (and that includes holding locks).  I'll talks to Greg and Kai about
+> > > this (they're both here at plumbers).  I think the fix is to indirect
+> > > the kobject uevent stuff via a usermode helper so we don't get this
+> > > problem.
+> >
+> > Hang on ... I looked at the bug report again: there's no actual kernel
+> > trace, just a theoretical function graph.
+> >
+> > Has this actually been seen or is it just the result of an analysis?
+> >
+> > If the latter (which I suspect), there's no actual problem.  The
+> > explicit design of the calls is that device_initialize() and
+> > put_device() can be called from interrupt context.  device_add() and
+> > device_del() must be called from user context.
+> >
+> > The path you seem to be showing is the put_device() path where there's
+> > been an error in the state model and the caller is doing last put on a
+> > visible device without having first called device_del().
+> >
+> > If you see the real kernel message about this, it means there's a bug in
+> > the device model handling somewhere in SCSI.  If you haven't seen the
+> > message, it's just a bug in the static analysis tool.
+> 
+> This bug report is the result of code inspection. I'm considering functions 
+> which can call might_sleep macro and consequently which can not be called from 
+> atomic context. 
+> I choose function scsi_device_put. There are two paths to might_sleep macro. 
+> First path was shown in the report, second is:
+> 1. scsi_device_put calls put_device at ./drivers/scsi/scsi.c:1111 
+> 2. put_device calls kobject_put at ./drivers/base/core.c:1038 
+> 3. kobject_put calls kref_put at ./lib/kobject.c
+> 4. kref_put may call callback function kobject_release at ./lib/kref.c if 
+> refcount becomes zero
+> 5. kobject_cleanup calls kobject_del at ./lib/kobject.c:562
 
-Indeed, thanks!
-I just forgot to remove -r option from the code of c2kpe.c :(
+only if state_in_sysfs is set.
 
--- 
-Masami Hiramatsu
+This is only set if the caller previously failed to call kobject_del
+(i.e. device_del).
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+As long as devices follow the proper create->add->del->put paths, the
+final put may be called from interrupt context.
 
-e-mail: mhiramat@redhat.com
+Your analysis is wrong because you're basing it on the exception cleanup
+paths not the correct calling paths.
+
+James
+
+> 6. kobject_del calls sysfs_remove_dir at ./lib/kobject.c:516
+> 7. sysfs_remove_dir calls __sysfs_remove_dir at ./fs/sysfs/dir.c:821
+> 8. __sysfs_remove_dir calls sysfs_addrm_start at ./fs/sysfs/dir.c:789
+> 9. sysfs_addrm_start calls mutex_lock at ./fs/sysfs/dir.c:377, which 
+> might_sleep because it calls might_sleep macro.
+> 
+> As you wrote earlier, scsi_device_put was designed with the ability to call 
+> last put from interrupt context, but as we can see from the paths there might 
+> be situations where it is not true. Moreover, while analysing different usage 
+> patterns of scsi_device_put, I found that people are using scsi_device_put as 
+> if it can not be called from atomic context. Because before calling 
+> scsi_device_put, spin_locks are always released (i.e. spin_unlock is called 
+> before scsi_device_put and spin_lock is called after it). Examples are:
+> 1. drivers/scsi/dpt_i2o.c line 701
+> 2. drivers/ata/libata-scsi.c line 3626
+> 3. drivers/scsi/ipr.c line 2415
+> 
+> >The path you seem to be showing is the put_device() path where there's
+> >been an error in the state model and the caller is doing last put on a
+> >visible device without having first called device_del().
+> 
+> In scsi_lib.c  prior to scsi_device_put we always do scsi_device_get.  As far 
+> as I understand, if we are sure that scsi_device_put is always not last, then 
+> we can remove both calls to scsi_device_get and to scsi_device_put from the 
+> code without introducing races.
+> 
+>  347         list_for_each_entry_safe(sdev, tmp, &starget->devices,
+>  348                         same_target_siblings) {
+>  349                 if (sdev == current_sdev)
+>  350                         continue;
+>  351                 if (scsi_device_get(sdev))
+>  352                         continue;
+>  353
+>  354                 spin_unlock_irqrestore(shost->host_lock, flags);
+>  355                 blk_run_queue(sdev->request_queue);
+>  356                 spin_lock_irqsave(shost->host_lock, flags);
+>  357
+>  358                 scsi_device_put(sdev);
+>  359         }
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
