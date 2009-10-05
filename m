@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932594AbZJEKei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932581AbZJEKdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932594AbZJEKei (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 06:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932536AbZJEKei
+	id S932581AbZJEKdy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 06:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932519AbZJEKdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 06:34:38 -0400
-Received: from www.tglx.de ([62.245.132.106]:51925 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932526AbZJEKeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 06:34:37 -0400
-Date: Mon, 5 Oct 2009 12:33:27 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Remy Bohmer <linux@bohmer.net>
-cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31-rt11 freeze on userland start on ARM
-In-Reply-To: <3efb10970910041359m1db64926pcf83ebd98a8b1bdd@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0910051228041.2646@localhost.localdomain>
-References: <3efb10970909211136g4e74c8b3vc339d548cdd0959f@mail.gmail.com>  <alpine.LFD.2.00.0909301448030.2518@nanos>  <3efb10970909300911j44638434mc22adfd64aaef421@mail.gmail.com>  <alpine.LFD.2.00.0910041202110.2646@localhost.localdomain>
- <3efb10970910041359m1db64926pcf83ebd98a8b1bdd@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 5 Oct 2009 06:33:54 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:45582 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932515AbZJEKdx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 06:33:53 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: futex question
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Anirban Sinha <ani@anirban.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
+       Kaz Kylheku <kaz@zeugmasystems.com>,
+       Anirban Sinha <asinha@zeugmasystems.com>
+In-Reply-To: <alpine.LFD.2.00.0910041853180.2646@localhost.localdomain>
+References: <DDFD17CC94A9BD49A82147DDF7D545C501FD7F97@exchange.ZeugmaSystems.local>
+	 <20091001092218.GH15345@elte.hu>
+	 <DDFD17CC94A9BD49A82147DDF7D545C501FD8409@exchange.ZeugmaSystems.local>
+	 <4AC68F13.8050601@us.ibm.com>
+	 <alpine.LFD.2.00.0910041031330.2646@localhost.localdomain>
+	 <DDFD17CC94A9BD49A82147DDF7D545C501F457C5@exchange.ZeugmaSystems.local>
+	 <4AC8CF32.8060108@anirban.org>
+	 <alpine.LFD.2.00.0910041853180.2646@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 05 Oct 2009 12:36:14 +0200
+Message-Id: <1254738974.26976.24.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-B1;2005;0cOn Sun, 4 Oct 2009, Remy Bohmer wrote:
+On Sun, 2009-10-04 at 18:59 +0200, Thomas Gleixner wrote:
 
-> Hi,
+> > do. It does not feel right. Currently, with or without my change,
+> > such a thing would indefinitely block other waiters on the same
+> > futex.
 > 
-> 2009/10/4 Thomas Gleixner <tglx@linutronix.de>:
-> > On Wed, 30 Sep 2009, Remy Bohmer wrote:
-> >> > The serial irq cannot run in hard irq context.
-> >>
-> >> Indeed most drivers cannot, but for this particular handler can you
-> >> please explain me why?
-> >> Maybe I am missing some new mechanism that prevents it that was not
-> >> there on older RT-kernels (tested up-to latest 2.6.24-rt +
-> >> 2.6.26-rt)...
-> >
-> > Which had the same problem ....
-> 
-> what problem...?
+> Right. Which completely defeats the purpose of the robust list. Will
+> have a look tomorrow.
 
-The tasklet conversion happened after .24 and the hard interrupt
-context receive loop has introduced quite nasty latencies in
-.26. There was some other warning problem in .26 which I forgot.
- 
-> I will adapt the atmel-serial driver to this new irq-threading model
-> and provide a patch for it, it seems cleaner and makes the tasklet
-> stuff obsolete for this driver.
+Right, so mm_release() which is meant to destroy the old mm context
+actually does exit_robust_list(), but the problem is that it does so on
+the new mm, not the old one that got passed down to mm_release().
 
-Great, that code really looks ugly.
+The other detail is that exit_robust_list() doesn't clear
+current->robust_list.
 
-> >> TOL: could the generic interrupt code not check for this? It can see
-> >> the timer interrupt handler not returning 'IRQ_HANDLED', and still see
-> >> the interrupt being active, and know that there is a IRQ thread on the
-> >> same line, so it can conclude itself to mask the source in the
-> >> interrupt controller and wake the thread... Or am I wrong?
-> >
-> > What happens if both are active at the same time ? Also masking the
-> > interrupt line will block your timer interrupts until the threaded
-> > handler has completed.
-> 
-> That is indeed true, and proves once again that shared interrupt
-> handlers are really annoying, especially on -rt...
-> 
-> The old way we did in 2.6.24-rt + 2.6.26-rt was to adapt the handler
-> to allow it to run in hard-irq context for -rt as well as mainline.
-> The new way handles this differently... Since a -rt-friendly generic
-> solution seems not possible, I guess before -rt ever becomes mainline
-> _all_ interrupt handlers that are shared with a nodelay interrupt in
-> some configuration must be adapted to the new threaded_irq model... A
-> huge job...
+The problem with the patch send my Ani is that it clears the robust
+lists before the point of no return, so on a failing execve() we'd have
+messed up the state.
 
-Don't think so. ATx seems to be one of the weirder pieces of hardware :)
+Making exit_robust_list() deal with an mm that is not the current mm is
+interesting indeed.
 
-Thanks,
-
-	tglx
