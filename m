@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbZJEWBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbZJEWEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbZJEWBo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 18:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbZJEWBn
+	id S1755018AbZJEWEU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 18:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZJEWET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 18:01:43 -0400
-Received: from mga01.intel.com ([192.55.52.88]:46674 "EHLO mga01.intel.com"
+	Mon, 5 Oct 2009 18:04:19 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54069 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754981AbZJEWBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 18:01:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,508,1249282800"; 
-   d="scan'208";a="733284664"
-Subject: Re: 2.6.32-rc2: Intel(R) I/OAT DMA Engine init failed
-From: Dan Williams <dan.j.williams@intel.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-In-Reply-To: <a4423d670910020246n1e82644bud8b7a01d49b93e26@mail.gmail.com>
-References: <a4423d670910020246n1e82644bud8b7a01d49b93e26@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 05 Oct 2009 15:00:56 -0700
-Message-Id: <1254780056.8066.6.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	id S1754457AbZJEWET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 18:04:19 -0400
+Date: Tue, 6 Oct 2009 00:03:40 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, nhorman@tuxdriver.com
+Subject: Re: [PATCH trivial] docs: fix core_pipe_limit info
+In-Reply-To: <4AC95891.3000707@oracle.com>
+Message-ID: <alpine.LSU.2.00.0910060003310.10941@wotan.suse.de>
+References: <4AC95891.3000707@oracle.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-02 at 02:46 -0700, Alexander Beregalov wrote:
-> Hi
-> The kerneil is 2.6.32-rc2-00196-g0efe5e3.
-> Should I bisect?
+On Sun, 4 Oct 2009, Randy Dunlap wrote:
+
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> ioatdma: Intel(R) QuickData Technology Driver 4.00
-> ioatdma 0000:00:08.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> ioatdma 0000:00:08.0: setting latency timer to 64
->   alloc irq_desc for 33 on node -1
->   alloc kstat_irqs on node -1
-> ioatdma 0000:00:08.0: irq 33 for MSI/MSI-X
-> ioatdma 0000:00:08.0: Self-test copy timed out, disabling
-> ioatdma 0000:00:08.0: Intel(R) I/OAT DMA Engine init failed
+> Fix typos in core_pipe_limit info.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Neil Horman <nhorman@tuxdriver.com>
+> ---
+>  Documentation/sysctl/kernel.txt |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> --- linux-next-20090930.orig/Documentation/sysctl/kernel.txt
+> +++ linux-next-20090930/Documentation/sysctl/kernel.txt
+> @@ -139,9 +139,9 @@ core_pattern is used to specify a core d
+>  core_pipe_limit:
+>  
+>  This sysctl is only applicable when core_pattern is configured to pipe core
+> -files to user space helper a (when the first character of core_pattern is a '|',
+> +files to a user space helper (when the first character of core_pattern is a '|',
+>  see above).  When collecting cores via a pipe to an application, it is
+> -occasionally usefull for the collecting application to gather data about the
+> +occasionally useful for the collecting application to gather data about the
+>  crashing process from its /proc/pid directory.  In order to do this safely, the
+>  kernel must wait for the collecting process to exit, so as not to remove the
+>  crashing processes proc files prematurely.  This in turn creates the possibility
+> @@ -152,7 +152,7 @@ applications in parallel.  If this value
+>  processes above that value are noted via the kernel log and their cores are
+>  skipped.  0 is a special value, indicating that unlimited processes may be
+>  captured in parallel, but that no waiting will take place (i.e. the collecting
+> -process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
+> +process is not guaranteed access to /proc/<crashing pid>/).  This value defaults
+>  to 0.
 
-I may ask for a bisect later, but for now let's try and see why it is
-failing.  It is something platform specific as 2.6.32-rc3 loads fine on
-my v1.2 platform.  Please reproduce this with the patch below.
+Applied to trivial queue, thanks Randy.
 
-Thanks,
-Dan
-
-diff --git a/drivers/dma/ioat/dma.c b/drivers/dma/ioat/dma.c
-index c524d36..8f807b4 100644
---- a/drivers/dma/ioat/dma.c
-+++ b/drivers/dma/ioat/dma.c
-@@ -24,6 +24,7 @@
-  * This driver supports an Intel I/OAT DMA engine, which does asynchronous
-  * copy operations.
-  */
-+#define DEBUG
- 
- #include <linux/init.h>
- #include <linux/module.h>
-@@ -815,6 +816,7 @@ int __devinit ioat_dma_self_test(struct ioatdma_device *device)
- 	struct completion cmp;
- 	unsigned long tmo;
- 	unsigned long flags;
-+	enum dma_status stat;
- 
- 	src = kzalloc(sizeof(u8) * IOAT_TEST_SIZE, GFP_KERNEL);
- 	if (!src)
-@@ -864,10 +866,10 @@ int __devinit ioat_dma_self_test(struct ioatdma_device *device)
- 
- 	tmo = wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000));
- 
--	if (tmo == 0 ||
--	    dma->device_is_tx_complete(dma_chan, cookie, NULL, NULL)
--					!= DMA_SUCCESS) {
--		dev_err(dev, "Self-test copy timed out, disabling\n");
-+	stat = dma->device_is_tx_complete(dma_chan, cookie, NULL, NULL);
-+	if (tmo == 0 || stat != DMA_SUCCESS) {
-+		dev_err(dev, "Self-test copy timed out, disabling %ld:%d\n",
-+			tmo, stat);
- 		err = -ENODEV;
- 		goto free_resources;
- 	}
-
-
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
