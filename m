@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbZJEKXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932457AbZJEKYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbZJEKXG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 06:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758622AbZJEKXF
+	id S932457AbZJEKYe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 06:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932313AbZJEKYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 06:23:05 -0400
-Received: from bosmailout17.eigbox.net ([66.96.184.17]:35453 "EHLO
-	bosmailout17.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758557AbZJEKXF (ORCPT
+	Mon, 5 Oct 2009 06:24:34 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33814 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758687AbZJEKYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 06:23:05 -0400
-X-EN-OrigOutIP: 10.20.18.2
-X-EN-IMPSID: oyM41c00902gpmq0000000
-Message-ID: <4AC9C8A6.6010209@jaysonking.com>
-Date: Mon, 05 Oct 2009 05:21:26 -0500
-From: "Jayson R. King" <dev@jaysonking.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	Mon, 5 Oct 2009 06:24:33 -0400
+Date: Mon, 5 Oct 2009 19:23:06 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH -tip] x86: hw-breakpoints: Actually flush thread breakpoints in flush_thread().
+Message-ID: <20091005102306.GA7889@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	"K.Prasad" <prasad@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>, Jiri Kosina <trivial@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sched: Remove obsolete comment in sched_init()
-References: <4AC98F4A.7070303@jaysonking.com> <20091005100203.GA3211@elte.hu>
-In-Reply-To: <20091005100203.GA3211@elte.hu>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-EN-UserInfo: 06af1bc540adb20c3d2d7097199478a6:08dd1976e651f6e3791fbe97eaa5f898
-X-EN-AuthUser: jaysonking@jaysonking.com
-X-EN-OrigIP: 67.67.11.191
-X-EN-OrigHost: adsl-67-67-11-191.dsl.okcyok.swbell.net
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the comment about calling alloc_bootmem() as it is not called
-here since commit 36b7b6d465489c4754c4fd66fcec6086eba87896.
+[ I noticed this whilst hacking up SH support, applies to the current
+  tracing/hw-breakpoints topic branch. ]
 
-Signed-off-by: Jayson R. King <dev@jaysonking.com>
+flush_thread() tries to do a TIF_DEBUG check before calling in to
+flush_thread_hw_breakpoint() (which subsequently clears the thread flag),
+but for some reason, the x86 code is manually clearing TIF_DEBUG
+immediately before the test, so this path will never be taken.
+
+This kills off the erroneous clear_tsk_thread_flag() and lets
+flush_thread_hw_breakpoint() actually get invoked.
+
+Presumably folks were getting lucky with testing and the
+free_thread_info() -> free_thread_xstate() path was taking care of the
+flush there.
+
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+
 ---
- sched.c |    4 ----
- 1 file changed, 4 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 1535f38..d68ac0e 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9334,10 +9334,6 @@ void __init sched_init(void)
- #ifdef CONFIG_CPUMASK_OFFSTACK
- 	alloc_size += num_possible_cpus() * cpumask_size();
+ arch/x86/kernel/process.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 1092a1a..c62f647 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -110,8 +110,6 @@ void flush_thread(void)
+ 	}
  #endif
--	/*
--	 * As sched_init() is called before page_alloc is setup,
--	 * we use alloc_bootmem().
--	 */
- 	if (alloc_size) {
- 		ptr = (unsigned long)kzalloc(alloc_size, GFP_NOWAIT);
-
-
-
-
+ 
+-	clear_tsk_thread_flag(tsk, TIF_DEBUG);
+-
+ 	if (unlikely(test_tsk_thread_flag(tsk, TIF_DEBUG)))
+ 		flush_thread_hw_breakpoint(tsk);
+ 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
