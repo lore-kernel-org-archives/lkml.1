@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbZJERyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbZJER5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754252AbZJERyx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 13:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbZJERyx
+	id S1754311AbZJER5l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 13:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZJER5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 13:54:53 -0400
-Received: from mail-ew0-f217.google.com ([209.85.219.217]:65518 "EHLO
-	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753776AbZJERyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 13:54:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=D1Tq6J18ZgJuAIBZzfqSVeX3bqhJGLqXtXgJ/sngu1EZ/BbypnlB1879QA3i86IEs8
-         Sq6L99DvmfJ7TbU0ZjzGD5xtNeXx3jpSwidGAW1ysxP9i7cj/z7NdoqJ9KbwIZ3wJjcV
-         0YeDo1S8jfbvsprrsZKX0vTfT5zVd3FheIYAQ=
-Date: Mon, 5 Oct 2009 19:54:14 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [GIT PULL] tracing: Perf tracing fixes
-Message-ID: <20091005175411.GA5218@nowhere>
-References: <19140.13582.223629.56214@cargo.ozlabs.ibm.com> <1254577650-5623-1-git-send-email-fweisbec@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254577650-5623-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 5 Oct 2009 13:57:40 -0400
+Received: from mail.perches.com ([173.55.12.10]:1855 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754208AbZJER5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 13:57:39 -0400
+Subject: Re: [PATCH 16/21] kernel/kexec.c: use pr_<level> and add
+ pr_fmt(fmt)
+From: Joe Perches <joe@perches.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, kexec@lists.infradead.org
+In-Reply-To: <m163auvylv.fsf@fess.ebiederm.org>
+References: <cover.1254701151.git.joe@perches.com>
+	 <cover.1254701151.git.joe@perches.com>
+	 <40ffa7c5595f4afbba793919b397b5139cde901a.1254701151.git.joe@perches.com>
+	 <m163auvylv.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 05 Oct 2009 10:57:02 -0700
+Message-Id: <1254765422.1799.542.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 03, 2009 at 03:47:28PM +0200, Frederic Weisbecker wrote:
-> Ingo,
-> 
-> Please pull these .33 tracing fixes from
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> 	tracing/core
-> 
+On Mon, 2009-10-05 at 05:01 -0700, Eric W. Biederman wrote:
+> Joe Perches <joe@perches.com> writes:
+> > Added #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> > Converted printk(KERN_<level> to pr_<level>(
+> > Added KERN_ERR to allocation failure message
+> I'm dense and I haven't seen the discussions.  What
+> is the point of adding a prefix string where none exists
+> into a bunch of printks?
 
+Hi Eric.
 
-I've rebased it against latest Linus, you can pull it from
+There have been a few messages on lkml with little comment,
+so I thought I'd get a few more by submitting some patches.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-	tracing/urgent
+There is a [0/21] message that you might have received directly.
+http://lkml.org/lkml/2009/10/4/198
 
-Thanks!
+I believe these are some of the +/-'s of each approach:
+(copy/pasted from an earlier response)
 
-Frederic.
+Current:
+
+o Allows some messages to not have a prefix at all
+o Prefixes can vary inside a specific compilation unit
+
+Proposed:
+
+o Consistent, smaller source code, with no typos
+  for instance: acpi/apic typos were found/fixed
+                kernel/power had messages without PM:
+                mce used "MCE: " and "mce: " prefixes
+o Compatible with KMSG_COMPONENT
+o All logging messages should have a prefix so
+  it could be easier to grep/categorize logs
+o Future:
+  - Doesn't require each compilation unit to #define pr_fmt
+  - Smaller objects without duplicated prefixes
+  - Extensible via some dynamic_debug like mechanism
+    to hide or show modname/__func__/offset without
+    significant overhead or any increase in object size
+    (printk would emit the prefix via some insertion
+     mechanism after "<level>")
+
 
