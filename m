@@ -1,186 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbZJERJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbZJERL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117AbZJERJm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 13:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbZJERJm
+	id S1754140AbZJERL5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 13:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbZJERL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 13:09:42 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:40408 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752569AbZJERJl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 13:09:41 -0400
-Date: Mon, 5 Oct 2009 11:09:03 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Pete <greg.petr@gmail.com>
-Cc: kernel-janitors@vger.kernel.org, trivial@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fs: added KERNEL-DEBUG flag to printk statments
-Message-ID: <20091005170903.GA9791@parisc-linux.org>
-References: <1254753799.5279.37.camel@linux-k65f.site> <1254756285.5279.39.camel@linux-k65f.site>
+	Mon, 5 Oct 2009 13:11:56 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:44976 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754062AbZJERL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 13:11:56 -0400
+Date: Mon, 5 Oct 2009 13:10:23 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: m-ikeda@ds.jp.nec.com, nauman@google.com, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, agk@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
+       yoshikawa.takuya@oss.ntt.co.jp
+Subject: Re: IO scheduler based IO controller V10
+Message-ID: <20091005171023.GG22143@redhat.com>
+References: <4AC6623F.70600@ds.jp.nec.com> <20091005.193808.104033719.ryov@valinux.co.jp> <20091005123148.GB22143@redhat.com> <20091005.235535.193690928.ryov@valinux.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1254756285.5279.39.camel@linux-k65f.site>
+In-Reply-To: <20091005.235535.193690928.ryov@valinux.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 05, 2009 at 08:54:45PM +0530, Pete wrote:
-> The following is a trivial patch which adds some KRENEL_DEBUG flags to
-> the printk. This is my first patch, please review the same.
-
-Did you compile it?  I don't find the string KERNEL_DEBUG anywhere in
-my kernel.
-
-More generally, if you're going to change these lines at all, it would
-be better to convert them to use pr_debug instead of their own custom
-debug printer.
-
-Pay special attention to getting DEBUG set in the right place, and
-_at least_ compile-test your code, with and without DEBUG enabled.
-You should really run your code (again, with and without DEBUG enabled)
-and check that it does the right thing.
-
+On Mon, Oct 05, 2009 at 11:55:35PM +0900, Ryo Tsuruta wrote:
+> Hi Vivek,
 > 
-> --- linux-2.6/fs/aio.c	2009-10-05 14:46:11.000000000 +0530
-> +++ linux-2.6.test/fs/aio.c	2009-10-05 19:46:11.000000000 +0530
-> @@ -129,7 +129,7 @@ static int aio_setup_ring(struct kioctx
->  	}
->  
->  	info->mmap_size = nr_pages * PAGE_SIZE;
-> -	dprintk("attempting mmap of %lu bytes\n", info->mmap_size);
-> +	dprintk(KERNEL_DEBUG "attempting mmap of %lu bytes\n",
-> info->mmap_size);
->  	down_write(&ctx->mm->mmap_sem);
->  	info->mmap_base = do_mmap(NULL, 0, info->mmap_size, 
->  				  PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE,
-> @@ -141,7 +141,7 @@ static int aio_setup_ring(struct kioctx
->  		return -EAGAIN;
->  	}
->  
-> -	dprintk("mmap address: 0x%08lx\n", info->mmap_base);
-> +	dprintk(KERNEL_DEBUG "mmap address: 0x%08lx\n", info->mmap_base);
->  	info->nr_pages = get_user_pages(current, ctx->mm,
->  					info->mmap_base, nr_pages, 
->  					1, 0, info->ring_pages, NULL);
-> @@ -299,7 +299,7 @@ static struct kioctx *ioctx_alloc(unsign
->  	hlist_add_head_rcu(&ctx->list, &mm->ioctx_list);
->  	spin_unlock(&mm->ioctx_lock);
->  
-> -	dprintk("aio: allocated ioctx %p[%ld]: mm=%p mask=0x%x\n",
-> +	dprintk(KERNEL_DEBUG "aio: allocated ioctx %p[%ld]: mm=%p mask=0x%x
-> \n",
->  		ctx, ctx->user_id, current->mm, ctx->ring_info.nr);
->  	return ctx;
->  
-> @@ -312,7 +312,7 @@ out_freectx:
->  	kmem_cache_free(kioctx_cachep, ctx);
->  	ctx = ERR_PTR(-ENOMEM);
->  
-> -	dprintk("aio: error allocating ioctx %p\n", ctx);
-> +	dprintk(KERNEL_DEBUG "aio: error allocating ioctx %p\n", ctx);
->  	return ctx;
->  }
->  
-> @@ -407,7 +407,7 @@ void exit_aio(struct mm_struct *mm)
->  		cancel_work_sync(&ctx->wq.work);
->  
->  		if (1 != atomic_read(&ctx->users))
-> -			printk(KERN_DEBUG
-> +			printk(KERN_DEBUG,
->  				"exit_aio:ioctx still alive: %d %d %d\n",
->  				atomic_read(&ctx->users), ctx->dead,
->  				ctx->reqs_active);
-> @@ -952,7 +952,7 @@ int aio_complete(struct kiocb *iocb, lon
->  	event->res = res;
->  	event->res2 = res2;
->  
-> -	dprintk("aio_complete: %p[%lu]: %p: %p %Lx %lx %lx\n",
-> +	dprintk(KERNEL_DEBUG "aio_complete: %p[%lu]: %p: %p %Lx %lx %lx\n",
->  		ctx, tail, iocb, iocb->ki_obj.user, iocb->ki_user_data,
->  		res, res2);
->  
-> @@ -1011,7 +1011,7 @@ static int aio_read_evt(struct kioctx *i
->  	int ret = 0;
->  
->  	ring = kmap_atomic(info->ring_pages[0], KM_USER0);
-> -	dprintk("in aio_read_evt h%lu t%lu m%lu\n",
-> +	dprintk(KERNEL_DEBUG "in aio_read_evt h%lu t%lu m%lu\n",
->  		 (unsigned long)ring->head, (unsigned long)ring->tail,
->  		 (unsigned long)ring->nr);
->  
-> @@ -1034,7 +1034,7 @@ static int aio_read_evt(struct kioctx *i
->  
->  out:
->  	kunmap_atomic(ring, KM_USER0);
-> -	dprintk("leaving aio_read_evt: %d  h%lu t%lu\n", ret,
-> +	dprintk(KERNEL_DEBUG "leaving aio_read_evt: %d  h%lu t%lu\n", ret,
->  		 (unsigned long)ring->head, (unsigned long)ring->tail);
->  	return ret;
->  }
-> @@ -1100,13 +1100,13 @@ retry:
->  		if (unlikely(ret <= 0))
->  			break;
->  
-> -		dprintk("read event: %Lx %Lx %Lx %Lx\n",
-> +		dprintk(KERNEL_DEBUG "read event: %Lx %Lx %Lx %Lx\n",
->  			ent.data, ent.obj, ent.res, ent.res2);
->  
->  		/* Could we split the check in two? */
->  		ret = -EFAULT;
->  		if (unlikely(copy_to_user(event, &ent, sizeof(ent)))) {
-> -			dprintk("aio: lost an event due to EFAULT.\n");
-> +			dprintk(KERNEL_DEBUG "aio: lost an event due to EFAULT.\n");
->  			break;
->  		}
->  		ret = 0;
-> @@ -1176,7 +1176,7 @@ retry:
->  
->  		ret = -EFAULT;
->  		if (unlikely(copy_to_user(event, &ent, sizeof(ent)))) {
-> -			dprintk("aio: lost an event due to EFAULT.\n");
-> +			dprintk(KERNEL_DEBUG "aio: lost an event due to EFAULT.\n");
->  			break;
->  		}
->  
-> @@ -1207,7 +1207,7 @@ static void io_destroy(struct kioctx *io
->  	hlist_del_rcu(&ioctx->list);
->  	spin_unlock(&mm->ioctx_lock);
->  
-> -	dprintk("aio_release(%p)\n", ioctx);
-> +	dprintk(KERNEL_DEBUG "aio_release(%p)\n", ioctx);
->  	if (likely(!was_dead))
->  		put_ioctx(ioctx);	/* twice for the list */
->  
-> @@ -1496,7 +1496,7 @@ static ssize_t aio_setup_iocb(struct kio
->  			kiocb->ki_retry = aio_fsync;
->  		break;
->  	default:
-> -		dprintk("EINVAL: io_submit: no operation provided\n");
-> +		dprintk(KERNEL_DEBUG "EINVAL: io_submit: no operation provided\n");
->  		ret = -EINVAL;
->  	}
->  
-> @@ -1581,7 +1581,7 @@ static int io_submit_one(struct kioctx *
->  
->  	ret = put_user(req->ki_key, &user_iocb->aio_key);
->  	if (unlikely(ret)) {
-> -		dprintk("EFAULT: aio_key\n");
-> +		dprintk(KERNEL_DEBUG "EFAULT: aio_key\n");
->  		goto out_put_req;
->  	}
->  
+> Vivek Goyal <vgoyal@redhat.com> wrote:
+> > On Mon, Oct 05, 2009 at 07:38:08PM +0900, Ryo Tsuruta wrote:
+> > > Hi,
+> > > 
+> > > Munehiro Ikeda <m-ikeda@ds.jp.nec.com> wrote:
+> > > > Vivek Goyal wrote, on 10/01/2009 10:57 PM:
+> > > > > Before finishing this mail, will throw a whacky idea in the ring. I was
+> > > > > going through the request based dm-multipath paper. Will it make sense
+> > > > > to implement request based dm-ioband? So basically we implement all the
+> > > > > group scheduling in CFQ and let dm-ioband implement a request function
+> > > > > to take the request and break it back into bios. This way we can keep
+> > > > > all the group control at one place and also meet most of the requirements.
+> > > > >
+> > > > > So request based dm-ioband will have a request in hand once that request
+> > > > > has passed group control and prio control. Because dm-ioband is a device
+> > > > > mapper target, one can put it on higher level devices (practically taking
+> > > > > CFQ at higher level device), and provide fairness there. One can also
+> > > > > put it on those SSDs which don't use IO scheduler (this is kind of forcing
+> > > > > them to use the IO scheduler.)
+> > > > >
+> > > > > I am sure that will be many issues but one big issue I could think of that
+> > > > > CFQ thinks that there is one device beneath it and dipsatches requests
+> > > > > from one queue (in case of idling) and that would kill parallelism at
+> > > > > higher layer and throughput will suffer on many of the dm/md configurations.
+> > > > >
+> > > > > Thanks
+> > > > > Vivek
+> > > > 
+> > > > As long as using CFQ, your idea is reasonable for me.  But how about for
+> > > > other IO schedulers?  In my understanding, one of the keys to guarantee
+> > > > group isolation in your patch is to have per-group IO scheduler internal
+> > > > queue even with as, deadline, and noop scheduler.  I think this is
+> > > > great idea, and to implement generic code for all IO schedulers was
+> > > > concluded when we had so many IO scheduler specific proposals.
+> > > > If we will still need per-group IO scheduler internal queues with
+> > > > request-based dm-ioband, we have to modify elevator layer.  It seems
+> > > > out of scope of dm.
+> > > > I might miss something...
+> > > 
+> > > IIUC, the request based device-mapper could not break back a request
+> > > into bio, so it could not work with block devices which don't use the
+> > > IO scheduler.
+> > > 
+> > 
+> > I think current request based multipath drvier does not do it but can't it
+> > be implemented that requests are broken back into bio?
 > 
+> I guess it would be hard to implement it, and we need to hold requests
+> and throttle them at there and it would break the ordering by CFQ.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Anyway, I don't feel too strongly about this approach as it might
+> > introduce more serialization at higher layer.
+> 
+> Yes, I know it.
+> 
+> > > How about adding a callback function to the higher level controller?
+> > > CFQ calls it when the active queue runs out of time, then the higer
+> > > level controller use it as a trigger or a hint to move IO group, so
+> > > I think a time-based controller could be implemented at higher level.
+> > > 
+> > 
+> > Adding a call back should not be a big issue. But that means you are
+> > planning to run only one group at higher layer at one time and I think
+> > that's the problem because than we are introducing serialization at higher
+> > layer. So any higher level device mapper target which has multiple
+> > physical disks under it, we might be underutilizing these even more and
+> > take a big hit on overall throughput.
+> > 
+> > The whole design of doing proportional weight at lower layer is optimial 
+> > usage of system.
+> 
+> But I think that the higher level approch makes easy to configure
+> against striped software raid devices.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+How does it make easier to configure in case of higher level controller?
+
+In case of lower level design, one just have to create cgroups and assign
+weights to cgroups. This mininum step will be required in higher level
+controller also. (Even if you get rid of dm-ioband device setup step).
+
+> If one would like to
+> combine some physical disks into one logical device like a dm-linear,
+> I think one should map the IO controller on each physical device and
+> combine them into one logical device.
+> 
+
+In fact this sounds like a more complicated step where one has to setup
+one dm-ioband device on top of each physical device. But I am assuming 
+that this will go away once you move to per reuqest queue like implementation.
+
+I think it should be same in principal as my initial implementation of IO
+controller on request queue and I stopped development on it because of FIFO
+dispatch. 
+
+So you seem to be suggesting that you will move dm-ioband to request queue
+so that setting up additional device setup is gone. You will also enable
+it to do time based groups policy, so that we don't run into issues on
+seeky media. Will also enable dispatch from one group only at a time so
+that we don't run into isolation issues and can do time accounting
+accruately.
+
+If yes, then that has the potential to solve the issue. At higher layer one
+can think of enabling size of IO/number of IO policy both for proportional
+BW and max BW type of control. At lower level one can enable pure time
+based control on seeky media.
+
+I think this will still left with the issue of prio with-in group as group
+control is separate and you will not be maintatinig separate queues for
+each process. Similarly you will also have isseus with read vs write
+ratios as IO schedulers underneath change.
+
+So I will be curious to see that implementation. 
+
+> > > My requirements for IO controller are:
+> > > - Implement s a higher level controller, which is located at block
+> > >   layer and bio is grabbed in generic_make_request().
+> > 
+> > How are you planning to handle the issue of buffered writes Andrew raised?
+> 
+> I think that it would be better to use the higher-level controller
+> along with the memory controller and have limits memory usage for each
+> cgroup. And as Kamezawa-san said, having limits of dirty pages would
+> be better, too.
+> 
+
+Ok. So if we plan to co-mount memory controller with per memory group
+dirty_ratio implemented, that can work with both higher level as well as
+low level controller. Not sure if we also require some kind of a per
+memory group flusher thread infrastructure also to make sure higher weight
+group gets more job done.
+
+> > > - Can work with any type of IO scheduler.
+> > > - Can work with any type of block devices.
+> > > - Support multiple policies, proportional wegiht, max rate, time
+> > >   based, ans so on.
+> > > 
+> > > The IO controller mini-summit will be held in next week, and I'm
+> > > looking forard to meet you all and discuss about IO controller.
+> > > https://sourceforge.net/apps/trac/ioband/wiki/iosummit
+> > 
+> > Is there a new version of dm-ioband now where you have solved the issue of
+> > sync/async dispatch with-in group? Before meeting at mini-summit, I am
+> > trying to run some tests and come up with numbers so that we have more
+> > clear picture of pros/cons.
+> 
+> Yes, I've released new versions of dm-ioband and blkio-cgroup. The new
+> dm-ioband handles sync/async IO requests separately and
+> the write-starve-read issue you pointed out is fixed. I would
+> appreciate it if you would try them.
+> http://sourceforge.net/projects/ioband/files/ 
+
+Cool. Will get to testing it.
+
+Thanks
+Vivek
