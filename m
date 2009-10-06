@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933146AbZJFVBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933348AbZJFVCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933146AbZJFVBo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 17:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbZJFVBn
+	id S933348AbZJFVCO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 17:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933273AbZJFVCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 17:01:43 -0400
-Received: from mail.perches.com ([173.55.12.10]:1903 "EHLO mail.perches.com"
+	Tue, 6 Oct 2009 17:02:13 -0400
+Received: from bu3sch.de ([62.75.166.246]:33282 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757233AbZJFVBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 17:01:43 -0400
-Subject: [PATCH] kernel.h: Remove initialization of bool in printk_once
-From: Joe Perches <joe@perches.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 06 Oct 2009 14:01:06 -0700
-Message-Id: <1254862866.2134.78.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	id S933206AbZJFVCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 17:02:13 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Tilman Schmidt <tilman@imap.cc>
+Subject: Re: [PATCH RFC] isdn/capi: fix up CAPI subsystem workaround locking a bit
+Date: Tue, 6 Oct 2009 23:01:22 +0200
+User-Agent: KMail/1.9.9
+Cc: i4ldeveloper@listserv.isdn4linux.de, Carsten Paeth <calle@calle.de>,
+       Karsten Keil <isdn@linux-pingi.de>, Karsten Keil <keil@b1-systems.de>,
+       Armin Schindler <armin@melware.de>, isdn4linux@listserv.isdn4linux.de,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20091003120657.2228911186C@xenon.ts.pxnet.com> <200910052324.09992.mb@bu3sch.de> <4ACB83F7.9040500@imap.cc>
+In-Reply-To: <4ACB83F7.9040500@imap.cc>
+X-Move-Along: Nothing to see here. No, really... Nothing.
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910062301.24572.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't initialize __print_once
-Invert the test to reduce initialized data.
+On Tuesday 06 October 2009 19:52:55 Tilman Schmidt wrote:
+> > Yeah, this sledgehammer lock did fix the crash while leaving the old non-list-head
+> > queue in place (it should still be there today).
+> 
+> That is not the case. In mainline, your second patch was applied on
+> top of the first one, so there is now struct list_head ackqueue and
+> spinlock_t ackqlock as well as static DEFINE_SPINLOCK(workaround_lock).
 
-defconfig before:	$size vmlinux
-   text	   data	    bss	    dec	    hex	filename
-6976022	 679572	1359668	9015262	 898fde	vmlinux
+Ok, that's fine, too.
+It's just that the ackqlock wasn't enough to fix it, as I said. It just shrinks the window.
 
-defconfig after:	$size vmlinux
-   text	   data	    bss	    dec	    hex	filename
-6976006	 679508	1359700	9015214	 898fae	vmlinux
+> > I still have the device somewhere. If you want to have it, I can blow off the
+> > dust and send it to you. If you don't want it, I'll throw it away soon.
+> > I'd really like to send it to you to get rid of it. ;)
+> 
+> Feel free to do so. I'll send you my snailmail address by PM. I'm
+> making no promises about when I might get around to actually testing
+> it, though.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Thanks, I'll get it to the post office by the end of the week.
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index d3cd23f..344873d 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -252,10 +252,10 @@ extern int printk_delay_msec;
-  * Print a one-time message (analogous to WARN_ONCE() et al):
-  */
- #define printk_once(x...) ({			\
--	static bool __print_once = true;	\
-+	static bool __print_once;		\
- 						\
--	if (__print_once) {			\
--		__print_once = false;		\
-+	if (!__print_once) {			\
-+		__print_once = true;		\
- 		printk(x);			\
- 	}					\
- })
+> >> Can anyone shed some light on 
+> >> what that device is doing differently from other ISDN cards?
+> > 
+> > Well, it's a combined ISDN/DSL card, but I never used the ISDN part. So the crash
+> > happened while transferring data over the DSL link.
+> 
+> DSL over CAPI? Strange.
 
+Yeah, dunno. They did it that way... Pretty weird.
 
+> > The vendor driver is closed source with an open wrapper (like nvidia). It's a pretty
+> > crappy unmaintained piece of software, but it ran stable with some patches applied
+> > to the driver and the workaround-lock patch to the capi stack.
+> 
+> O dear. I wonder what I'll find.
+
+ftp://ftp.avm.de/cardware/fritzcrd.dsl/linux/suse.93/fcdsl-suse93-3.11-07.tar.gz
+
+This is the driver that I used. It needs some modification to compile on a recent kernel.
+Unfortunately I don't have the patch anymore. But it was rather trivial. It renamed some functions,
+because they clashed with others and did some other things I don't remember.
+Remember to get a bucket before looking at the code, because you will need it. ;)
+
+-- 
+Greetings, Michael.
