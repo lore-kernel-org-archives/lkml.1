@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZJFHMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbZJFHMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396AbZJFHMo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 03:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZJFHMn
+	id S1755255AbZJFHMk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 03:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbZJFHMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 03:12:43 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33203 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752432AbZJFHMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 03:12:41 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/pIVoS91rpoUyQ7nyn8kwEPET1/4ccuyIkQ+DMBH
-	xfZfDCciKAPH7g
-Subject: Re: complete IO hang since a few kernel revision
-From: Mike Galbraith <efault@gmx.de>
-To: Norbert Preining <preining@logic.at>
-Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091005083308.GB5612@gandalf.dynalias.org>
-References: <20091005011626.GH4335@gamma.logic.tuwien.ac.at>
-	 <4AC9607D.6050900@datenparkplatz.de>
-	 <20091005083308.GB5612@gandalf.dynalias.org>
-Content-Type: text/plain
-Date: Tue, 06 Oct 2009 09:11:51 +0200
-Message-Id: <1254813111.6293.22.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+	Tue, 6 Oct 2009 03:12:39 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:47698 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750834AbZJFHMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 03:12:39 -0400
+Date: Tue, 6 Oct 2009 09:12:02 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: bug in elevator/cfq regarding start_time?
+Message-ID: <20091006071202.GC5216@kernel.dk>
+References: <4e5e476b0910041354o54c95626g974264976adaf53c@mail.gmail.com> <20091004205955.GM26573@kernel.dk> <4e5e476b0910050808k3a26aad8r19a145fc60e1da6b@mail.gmail.com> <4e5e476b0910051326g559bf135ma3cf82219ade497@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4e5e476b0910051326g559bf135ma3cf82219ade497@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Oct 05 2009, Corrado Zoccolo wrote:
+> On Mon, Oct 5, 2009 at 5:08 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> > On Sun, Oct 4, 2009 at 10:59 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> >> Good spotting! So we can either add the same copy in cfq, or we can just
+> >> move the ->start_time check and assignment in attempt_merge() to post
+> >> the elv_merge_requests() call. I think the latter would work fine, but
+> >> I'll check and fix tomorrow.
+> >
+> > I think there is still something buggy regarding those timestamps.
+> False alarm. I just found that the list was not yet filled at that
+> place in the code.
 
-On Mon, 2009-10-05 at 17:33 +0900, Norbert Preining wrote:
-> On Mon, 05 Oct 2009, Ulrich Lukas wrote:
-> > A number of patches went into 2.6.32-rc3 which was released today.
-> 
-> Ok, with 2.6.32-rc3 running now.
-> 
-> > Can you test if your problems are solved with this latest version?
-> 
-> Example:
-> dpkg-source -x of a big debian source package
-> which is more or less untarring a big .tar and then applying a diff
-> which is much smaller (tar.gz: 482M, diff.gz: 412k)
-> 
-> The dpkg-source has finished, I am back at the prompt.
-> 
-> At the same time a simple
-> 	$ <ENTER>
-> in a different xterm did not produce *any* thing, no output, for about
-> 30 seconds. I mean 30 seconds waiting for an empty command is a bit
-> strange I would say.
-> 
-> I don't know to which this is related, but it seems quite buggy.
+OK, it did look a bit puzzling. FWIW, this is what I committed
+yesterday:
 
-I've tried unsuccessfully to reproduce this behavior.
+http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=30996f40bffe73f05abb92a4cec254befa8cecf7
 
-Since it doesn't appear to be something readily reproducible, more
-information and/or some digging on your part may be needed.
+-- 
+Jens Axboe
 
