@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932822AbZJFOlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932723AbZJFOMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932822AbZJFOlN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 10:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932754AbZJFOlM
+	id S932723AbZJFOMS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 10:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932688AbZJFOMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 10:41:12 -0400
-Received: from smtp-noauth7.primus.ca ([216.254.180.38]:34274 "EHLO
-	mail-05.primus.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932707AbZJFOlM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 10:41:12 -0400
-X-Greylist: delayed 1691 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Oct 2009 10:41:12 EDT
-Date: Tue, 6 Oct 2009 10:12:22 -0400
-From: Nick Bowler <nbowler@elliptictech.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH trivial] docs: Describe the 'C' taint flag in
- oops-tracing.txt.
-Message-ID: <20091006141222.GA18579@emergent.ellipticsemi.com>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Tue, 6 Oct 2009 10:12:17 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:5440 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932639AbZJFOMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 10:12:16 -0400
+Message-ID: <4ACB5082.6050902@redhat.com>
+Date: Tue, 06 Oct 2009 10:13:22 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Elliptic Technologies Inc.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Roland McGrath <roland@redhat.com>
+CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
+       rostedt@goodmis.org, ak@suse.de, rth@redhat.com
+Subject: Re: [PATCH 0/4] jump label patches
+References: <cover.1253831945.git.jbaron@redhat.com> <20091006060410.CAF2528@magilla.sf.frob.com>
+In-Reply-To: <20091006060410.CAF2528@magilla.sf.frob.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Bowler <nbowler@elliptictech.com>
+Roland McGrath wrote:
+> I think text_poke_fixup() is a good safe place to start, and it seems wise
+> to merge a version using that before worrying anything subtler.  But it's
+> almost surely overkill and makes the enable/disable switching cost pretty
+> huge.  The rules as documented by Intel seem to indicate that simple
+> self-modification can work for UP and for SMP there should be some scheme
+> with IPIs that is not too terrible.  
+> 
+> Those can entail a multi-phase modification like the int3 patching style,
+> but int3 is not the only way to do it.  int3 has the benefit of being a
+> one-byte instruction you can patch in, but also the downside of requiring
+> the trap handling hair.
 
-If some of the flags are documented there, they all should be.
+Hmm, would you want to put tracepoint on the path of int3 handling?
 
-Signed-off-by: Nick Bowler <nbowler@elliptictech.com>
----
- Documentation/oops-tracing.txt |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+>  Another approach is:
+> 
+> start:
+> 	   .balign 2
+> 	2: nopl
+> 	7: ...
+> 
+> phase 1:
+> 	2: jmp 7
+> 	4: <last 3 bytes of nopl>
+> 	7: ...
+> 
+> phase 2:
+> 	2: jmp 7
+> 	4: {last 3 bytes of "jmp .Ldo_trace"}
+> 	7: ...
+> 
+> phase 3:
+> 	2: jmp .Ldo_trace
+> 	7: ...
+> 
+> A scheme like that requires that the instruction to be patched be 2-byte
+> aligned so that the two-byte "jmp .+3" can be an atomic store not
+> straddling a word boundary.  On x86-64 (and, according to the Intel book,
+> everything >= Pentium), you can atomically store 8 bytes when aligned.  So
+> there you will usually actually be able to do this in one or two phases to
+> cover each particular 5 byte range with adequately aligned stores.
 
-diff --git a/Documentation/oops-tracing.txt b/Documentation/oops-tracing.txt
-index b152e81..c10c022 100644
---- a/Documentation/oops-tracing.txt
-+++ b/Documentation/oops-tracing.txt
-@@ -257,6 +257,8 @@ characters, each representing a particular tainted value.
- 
-  10: 'W' if a warning has previously been issued by the kernel.
- 
-+ 11: 'C' if a staging driver has been loaded.
-+
- The primary reason for the 'Tainted: ' string is to tell kernel
- debuggers if this is a clean kernel or if anything unusual has
- occurred.  Tainting is permanent: even if an offending module is
+It is unclear whether we can atomically modify 2 bytes in icache (also, it
+can across cache lines or pages.)
+I think int3 bypassing is more generic way to patching if you don't mind
+tracing int3 path :-)
+
+
+Thank you,
+
 -- 
-1.6.4.4
+Masami Hiramatsu
 
--- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
