@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756323AbZJFITd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756476AbZJFIWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756323AbZJFITd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 04:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755696AbZJFITc
+	id S1756476AbZJFIWl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 04:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbZJFIWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 04:19:32 -0400
-Received: from mtagate5.de.ibm.com ([195.212.17.165]:59217 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756246AbZJFITa (ORCPT
+	Tue, 6 Oct 2009 04:22:40 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:18214 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755317AbZJFIWj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 04:19:30 -0400
-Message-ID: <4ACAFD6A.3060008@fr.ibm.com>
-Date: Tue, 06 Oct 2009 10:18:50 +0200
-From: Daniel Lezcano <dlezcano@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 6 Oct 2009 04:22:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=sxsEB8WEaFOilXc4h9fGxTca0rFd0KmnyO+8fNldv4Ithw1BfHxnnFr/+Sms1EN/iX
+         UozTh1520611AsxKm3zoZxuM6lKYrSOgEYf5Yf/p/x0ls7iHeQQG2RQnpGsHOHsp6PvK
+         P4YJsqSNWNaaCUw0pWvqz6z89RpoUgFBW/+l8=
+From: Stephen Boyd <bebarino@gmail.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+Subject: [PATCH] connector: Fix incompatible pointer type warning
+Date: Tue,  6 Oct 2009 01:23:37 -0700
+Message-Id: <1254817417-16157-1-git-send-email-bebarino@gmail.com>
+X-Mailer: git-send-email 1.6.5.rc1.44.ga1675
 MIME-Version: 1.0
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-CC: Pavel Emelianov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: pidns memory leak
-References: <4AC5F198.2070407@fr.ibm.com> <20091006040526.GA22923@us.ibm.com>
-In-Reply-To: <20091006040526.GA22923@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sukadev Bhattiprolu wrote:
-> Daniel Lezcano [dlezcano@fr.ibm.com] wrote:
->> Hi,
->>
->> I am facing a problem with the pid namespace when I launch the following  
->> lxc commands:
->>
->> lxc-execute -n foo sleep 3600 &
->> ls -al /proc/$(pidof lxc-init)/exe && lxc-stop -n foo
->>
->> All the processes related to the container are killed, but there is  
->> still a refcount on the pid_namespace which is never released.
-> 
-> Thanks for the bug report.
-> 
-> Did you notice any leak in 'struct pids' also or just the pid_namespace ?
-> If the pids are not leaking, this may be slightly different from the problem
-> Catalin Marinas ran into:
-> 
-> 	http://lkml.org/lkml/2009/7/29/406
+Commit 7069331 (connector: Provide the sender's credentials to the
+callback, 2009-10-02) changed callbacks to take two arguments but missed
+this one.
 
-I am not sure what you mean by 'struct pids' but what I observed is:
+drivers/connector/cn_proc.c: In function ‘cn_proc_init’:
+drivers/connector/cn_proc.c:263: warning: passing argument 3 of
+‘cn_add_callback’ from incompatible pointer type
 
-pid_2 and pid_namespace (as they are named in /proc/slabinfo) are never 
-decremented.
+Signed-off-by: Stephen Boyd <bebarino@gmail.com>
+---
+ drivers/connector/cn_proc.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-> And the pid_namespace does not seem to reproduce for me, with out the
-> 'ls -al /proc/...' above, or with the simpler 'ns_exec' approach to
-> creating pid namespace.
+diff --git a/drivers/connector/cn_proc.c b/drivers/connector/cn_proc.c
+index abf4a25..6069790 100644
+--- a/drivers/connector/cn_proc.c
++++ b/drivers/connector/cn_proc.c
+@@ -227,7 +227,8 @@ static void cn_proc_ack(int err, int rcvd_seq, int rcvd_ack)
+  * cn_proc_mcast_ctl
+  * @data: message sent from userspace via the connector
+  */
+-static void cn_proc_mcast_ctl(struct cn_msg *msg)
++static void cn_proc_mcast_ctl(struct cn_msg *msg,
++			      struct netlink_skb_parms *nsp)
+ {
+ 	enum proc_cn_mcast_op *mc_op = NULL;
+ 	int err = 0;
+-- 
+1.6.5.rc1.44.ga1675
 
-I tried to write a simpler program but I failed to reproduce it.
-
-> I am going through the code for lxc-execute, but does it remount /proc 
-> in the container ?
-
-Right, the parent does a clone(NEWMNT|NEWPID|NEWIPC|NEWUTS), wait for 
-the child while this one (pid 1) 'execs' the lxc-init process. This 
-program mounts /proc and fork-exec the command passed as parameter (here 
-'sleep 3600').
-
-Without this intermediate process, the leak *seems* not happening.
-
-If you don't access /proc/<pid>/<file>, the leak is not happening.
-
-So to summarize:
-
-Leak when:
-----------
-
-lxc-execute -n foo sleep 3600 &
-ls -al /proc/$(pidof sleep)/exe && lxc-stop -n foo
-
-The stop can be done, immediately after looking at the proc file or 
-later, the leak happens in all the cases.
-
-No leak when:
--------------
-lxc-execute -n foo sleep 3600 &
-lxc-stop -n foo
-
-
-I tried to create a simpler program doing the same but that did not 
-triggered the problem.
-
-   -- Daniel
