@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbZJFVfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933412AbZJFVcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933533AbZJFVfl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 17:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933468AbZJFVeX
+	id S933412AbZJFVcD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 17:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933378AbZJFVcC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 17:34:23 -0400
-Received: from kroah.org ([198.145.64.141]:55782 "EHLO coco.kroah.org"
+	Tue, 6 Oct 2009 17:32:02 -0400
+Received: from claw.goop.org ([74.207.240.146]:40571 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933457AbZJFVeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 17:34:22 -0400
-Date: Tue, 6 Oct 2009 14:30:42 -0700
-From: Greg KH <greg@kroah.com>
-To: Mark Allyn <mark.a.allyn@intel.com>
-Cc: linux-kernel@vger.kernel.org, alan@linux.intel.com,
-       charles.f.johnson@intel.com
-Subject: Re: [PATCH] Integrating SEP Driver with RAR Driver
-Message-ID: <20091006213042.GB21996@kroah.com>
-References: <1254861977-18123-1-git-send-email-mark.a.allyn@intel.com>
+	id S933257AbZJFVcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 17:32:01 -0400
+Message-ID: <4ACBB725.4010605@goop.org>
+Date: Tue, 06 Oct 2009 14:31:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254861977-18123-1-git-send-email-mark.a.allyn@intel.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: airlied@linux.ie, dri-devel@lists.sourceforge.net, JBeulich@novell.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drm: make sure page protections are updated after changing
+ vm_flags.
+References: <4AC3E1EB.4020903@goop.org> <20091006133937.246a4f33.akpm@linux-foundation.org>
+In-Reply-To: <20091006133937.246a4f33.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 01:46:17PM -0700, Mark Allyn wrote:
-> SEP stands for Security Processor; a dedicated processor
-> that does encryption, decryption, key management, and
-> secure storage.
-> 
-> RAR stands for Restricted Access Region; this is memory
-> aboard the MID platform that is restricted (via hardware)
-> from access by software running on the x86 processor. 
-> Dedicated 'smart' peripherals such as sound, video, and
-> encryption can access these regions of memory. They are here
-> to help protect copyrighted midia from being illegally copied.
-> 
-> This is upstream revision 4 of the SEP driver.
-> 
-> This is a patch referenced from the linux-next repository
-> as pulled on October 6, 2009; from the following URL:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> 
-> This is a modified SEP driver to include integration with
-> the RAR driver
-> 
-> The SEP uses a region of restricted memory to hold its own
-> firmware; protecting that firmware and it's operation by
-> snooping via the x86 software.
-> 
-> Please be aware that this patch does not contain any encryption
-> algorithm. It only transports data to and from user space
-> applications to the security processor.
-> 
-> Please be aware that the SEP does require propriatary firmware;
-> however, the firmware is not within the kernel. It is to be
-> located in /lib/firmware and loaded by the normal kernel
-> firmware infrastructure using the request_firmware() kernel
-> api function call.
+On 10/06/09 13:39, Andrew Morton wrote:
+> On Wed, 30 Sep 2009 15:55:39 -0700
+> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> Some architectures compute ->vm_page_prot depending on ->vm_flags, so
+>> we need to update the protections after adjusting the flags.
+>>
+>> Reported-by: Jan Beulich <JBeulich@novell.com>
+>> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>>
+>> diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
+>> index 8104eca..9d3e39f 100644
+>> --- a/drivers/gpu/drm/drm_gem.c
+>> +++ b/drivers/gpu/drm/drm_gem.c
+>> @@ -537,7 +537,7 @@ int drm_gem_mmap(struct file *filp, struct vm_area_struct *vma)
+>>  	vma->vm_ops = obj->dev->driver->gem_vm_ops;
+>>  	vma->vm_private_data = map->handle;
+>>  	/* FIXME: use pgprot_writecombine when available */
+>> -	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+>> +	vma->vm_page_prot = pgprot_writecombine(vm_get_page_prot(vma->vm_flags));
+>>  
+>>  	/* Take a ref for this mapping of the object, so that the fault
+>>  	 * handler can dereference the mmap offset's pointer to the object.
+>>     
+> u fail changelogology.
+>
+> What were the consequences of the bug which you just fixed?
+>   
 
-Is this firmware in the linux-firmware package already?  If not, why
-not?
+AFAIK this only affects running X under Xen; without this patch you get
+lots of coloured blobs on the screen, or maybe a complete lockup.  Or
+anything really.
 
-Why are you adding new functionality to this driver when it is not yet
-cleaned up and moved out of the staging tree?  Please work to get it
-cleaned up and merged first.
+But that still depends on lots of out-of-tree stuff, so I don't think
+there are any consequences for anyone else.  But it is wrong in principle.
 
-thanks,
-
-greg k-h
+    J
