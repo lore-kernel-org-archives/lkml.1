@@ -1,256 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932695AbZJFRdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932852AbZJFRez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932695AbZJFRdw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 13:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932644AbZJFRdv
+	id S932852AbZJFRez (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 13:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932812AbZJFRey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 13:33:51 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:15433 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932242AbZJFRdt (ORCPT
+	Tue, 6 Oct 2009 13:34:54 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:19677 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932285AbZJFRew (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 13:33:49 -0400
-X-Loopcount0: from 143.166.82.43
-Date: Tue, 6 Oct 2009 12:33:11 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Zhang Yanmin <yanmin.zhang@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] PCIe AER: honor ACPI HEST FIRMWARE FIRST mode
-Message-ID: <20091006173311.GA15751@auslistsprd01.us.dell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Oct 2009 13:34:52 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] x86/pci: intel bus root res with IOH reading -v2
+Date: Tue, 6 Oct 2009 11:33:24 -0600
+User-Agent: KMail/1.9.10
+Cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+References: <4AC97C00.7090503@kernel.org>
+In-Reply-To: <4AC97C00.7090503@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200910061133.27546.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For review and comment.
+On Sunday 04 October 2009 10:54:24 pm Yinghai Lu wrote:
+> for intel system with multi IOH. we could read peer root resource from PCI conf,
+> and don't trust _CRS again for root bus
 
-Today, the PCIe Advanced Error Reporting (AER) driver attaches itself
-to every PCIe root port for which BIOS reports it should, via ACPI
-_OSC.
+Ugh.  Are we going to end up with amd_bus.c, intel_bus.c, nvidia_bus.c,
+broadcom_bus.c, serverworks_bus.c, etc.?
 
-However, _OSC alone is insufficient for newer BIOSes.  Part of ACPI
-4.0 is the new Platform Environment Control Interface (PECI), which is
-a way for OS and BIOS to handshake over which errors for which
-components each will handle.  One table in ACPI 4.0 is the Hardware
-Error Source Table (HEST), where BIOS can define that errors for
-certain PCIe devices (or all devices), should be handled by BIOS
-("Firmware First mode"), rather than be handled by the OS.
+This is basically a simple PCI host bridge driver, but it's completely
+separate from the ACPI pci_root.c driver, and it completely ignores
+useful things like multiple domain (_SEG) support and address translation
+(_TRA) support.  These are going to be important issues for large x86
+machines.
 
-Dell PowerEdge 11G server BIOS defines Firmware First mode in HEST, so
-that it may manage such errors, log them to the System Event Log, and
-possibly take other actions.  The aer driver should honor this, and
-not attach itself to devices noted as such.
+I think this is leading toward an architectural mess.  Yes, we have
+issues with _CRS for root bridges.  But ACPI does give us a generic
+framework powerful enough to handle everything you're doing here.  In
+my opinion, we should fix the implementation issues with that framework
+rather than adding platform-specific setup code every time we trip
+over something.
 
+I expect that will mean some quirks in pci_root.c, and maybe even some
+code similar to pci_root_bus_res() to validate or override what we learn
+from _CRS.  But we ought to try for some conceptual integrity in the
+design by putting all the putting all the host bridge driver code together.
 
-Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
+What is the specific problem solved by this patch?  Does "pci=use_crs"
+address any of that problem?  (I know "pci=use_crs" breaks some machines,
+and I know it's unacceptable to require users to use it.  But I want to
+understand whether the concept is related, and whether you've tripped
+over a BIOS defect or a Linux pci_root.c defect.)
 
--- 
-Matt Domsch
-Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+Bjorn
 
+> ---
+>  arch/x86/pci/Makefile    |    1 
+>  arch/x86/pci/amd_bus.c   |   45 +++++++++--------------
+>  arch/x86/pci/bus_numa.h  |   26 +++++++++++++
+>  arch/x86/pci/intel_bus.c |   90 +++++++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 135 insertions(+), 27 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/pci/Makefile
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/pci/Makefile
+> +++ linux-2.6/arch/x86/pci/Makefile
+> @@ -15,3 +15,4 @@ obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
+>  
+>  obj-y				+= common.o early.o
+>  obj-y				+= amd_bus.o
+> +obj-$(CONFIG_X86_64)		+= intel_bus.o
+> Index: linux-2.6/arch/x86/pci/intel_bus.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/arch/x86/pci/intel_bus.c
+> @@ -0,0 +1,90 @@
+> +/*
+> + * to read io range from IOH pci conf, need to do it after mmconfig is there
+> + */
+> +
+> +#include <linux/delay.h>
+> +#include <linux/dmi.h>
+> +#include <linux/pci.h>
+> +#include <linux/init.h>
+> +#include <asm/pci_x86.h>
+> +
+> +#include "bus_numa.h"
+> +
+> +static inline void print_ioh_resources(struct pci_root_info *info)
+> +{
+> +	int res_num;
+> +	int busnum;
+> +	int i;
+> +
+> +	printk(KERN_DEBUG "IOH bus: [%02x, %02x]\n",
+> +			info->bus_min, info->bus_max);
+> +	res_num = info->res_num;
+> +	busnum = info->bus_min;
+> +	for (i = 0; i < res_num; i++) {
+> +		struct resource *res;
+> +
+> +		res = &info->res[i];
+> +		printk(KERN_DEBUG "IOH bus: %02x index %x %s: [%llx, %llx]\n",
+> +			busnum, i,
+> +			(res->flags & IORESOURCE_IO) ? "io port" :
+> +							"mmio",
+> +			res->start, res->end);
+> +	}
+> +}
+> +
+> +#define IOH_LIO			0x108
+> +#define IOH_LMMIOL		0x10c
+> +#define IOH_LMMIOH		0x110
+> +#define IOH_LMMIOH_BASEU	0x114
+> +#define IOH_LMMIOH_LIMITU	0x118
+> +#define IOH_LCFGBUS		0x11c
+> +
+> +static void __devinit pci_root_bus_res(struct pci_dev *dev)
+> +{
+> +	u16 word;
+> +	u32 dword;
+> +	struct pci_root_info *info;
+> +	u16 io_base, io_end;
+> +	u32 mmiol_base, mmiol_end;
+> +	u64 mmioh_base, mmioh_end;
+> +	int bus_base, bus_end;
+> +
+> +	if (pci_root_num >= PCI_ROOT_NR) {
+> +		printk(KERN_DEBUG "intel_bus.c: PCI_ROOT_NR is too small\n");
+> +		return;
+> +	}
+> +
+> +	info = &pci_root_info[pci_root_num];
+> +	pci_root_num++;
+> +
+> +	pci_read_config_word(dev, IOH_LCFGBUS, &word);
+> +	bus_base = (word & 0xff);
+> +	bus_end = (word & 0xff00) >> 8;
+> +	sprintf(info->name, "PCI Bus #%02x", bus_base);
+> +	info->bus_min = bus_base;
+> +	info->bus_max = bus_end;
+> +
+> +	pci_read_config_word(dev, IOH_LIO, &word);
+> +	io_base = (word & 0xf0) << (12 - 4);
+> +	io_end = (word & 0xf000) | 0xfff;
+> +	update_res(info, io_base, io_end, IORESOURCE_IO, 0);
+> +
+> +	pci_read_config_dword(dev, IOH_LMMIOL, &dword);
+> +	mmiol_base = (dword & 0xff00) << (24 - 8);
+> +	mmiol_end = (dword & 0xff000000) | 0xffffff;
+> +	update_res(info, mmiol_base, mmiol_end, IORESOURCE_MEM, 0);
+> +
+> +	pci_read_config_dword(dev, IOH_LMMIOH, &dword);
+> +	mmioh_base = ((u64)(dword & 0xfc00)) << (26 - 10);
+> +	mmioh_end = ((u64)(dword & 0xfc000000) | 0x3ffffff);
+> +	pci_read_config_dword(dev, IOH_LMMIOH_BASEU, &dword);
+> +	mmioh_base |= ((u64)(dword & 0x7ffff)) << 32;
+> +	pci_read_config_dword(dev, IOH_LMMIOH_LIMITU, &dword);
+> +	mmioh_end |= ((u64)(dword & 0x7ffff)) << 32;
+> +	update_res(info, mmioh_base, mmioh_end, IORESOURCE_MEM, 0);
+> +
+> +	print_ioh_resources(info);
+> +}
+> +
+> +/* intel IOH */
+> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL, 0x342e, pci_root_bus_res);
+> Index: linux-2.6/arch/x86/pci/amd_bus.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/pci/amd_bus.c
+> +++ linux-2.6/arch/x86/pci/amd_bus.c
+> @@ -10,6 +10,8 @@
+>  #include <linux/cpumask.h>
+>  #endif
+>  
+> +#include "bus_numa.h"
+> +
+>  /*
+>   * This discovers the pcibus <-> node mapping on AMD K8.
+>   * also get peer root bus resource for io,mmio
+> @@ -17,25 +19,9 @@
+>  
+>  #ifdef CONFIG_X86_64
+>  
+> -/*
+> - * sub bus (transparent) will use entres from 3 to store extra from root,
+> - * so need to make sure have enought slot there, increase PCI_BUS_NUM_RESOURCES?
+> - */
+> -#define RES_NUM 16
+> -struct pci_root_info {
+> -	char name[12];
+> -	unsigned int res_num;
+> -	struct resource res[RES_NUM];
+> -	int bus_min;
+> -	int bus_max;
+> -	int node;
+> -	int link;
+> -};
+> -
+> -/* 4 at this time, it may become to 32 */
+> -#define PCI_ROOT_NR 4
+> -static int pci_root_num;
+> -static struct pci_root_info pci_root_info[PCI_ROOT_NR];
+> +int pci_root_num;
+> +struct pci_root_info pci_root_info[PCI_ROOT_NR];
+> +static int found_all_numa_early;
+>  
+>  void x86_pci_root_bus_res_quirks(struct pci_bus *b)
+>  {
+> @@ -48,8 +34,11 @@ void x86_pci_root_bus_res_quirks(struct
+>  	    b->resource[1] != &iomem_resource)
+>  		return;
+>  
+> -	/* if only one root bus, don't need to anything */
+> -	if (pci_root_num < 2)
+> +	if (!pci_root_num)
+> +		return;
+> +
+> +	/* for amd, if only one root bus, don't need to do anything */
+> +	if (pci_root_num < 2 && found_all_numa_early)
+>  		return;
+>  
+>  	for (i = 0; i < pci_root_num; i++) {
+> @@ -130,12 +119,15 @@ static void __init update_range(struct r
+>  	}
+>  }
+>  
+> -static void __init update_res(struct pci_root_info *info, size_t start,
+> +void __init update_res(struct pci_root_info *info, size_t start,
+>  			      size_t end, unsigned long flags, int merge)
+>  {
+>  	int i;
+>  	struct resource *res;
+>  
+> +	if (start > end)
+> +		return;
+> +
+>  	if (!merge)
+>  		goto addit;
+>  
+> @@ -230,7 +222,6 @@ static int __init early_fill_mp_bus_info
+>  	int j;
+>  	unsigned uninitialized_var(bus);
+>  	unsigned uninitialized_var(slot);
+> -	int found;
+>  	int node;
+>  	int link;
+>  	int def_node;
+> @@ -247,7 +238,7 @@ static int __init early_fill_mp_bus_info
+>  	if (!early_pci_allowed())
+>  		return -1;
+>  
+> -	found = 0;
+> +	found_all_numa_early = 0;
+>  	for (i = 0; i < ARRAY_SIZE(pci_probes); i++) {
+>  		u32 id;
+>  		u16 device;
+> @@ -261,12 +252,12 @@ static int __init early_fill_mp_bus_info
+>  		device = (id>>16) & 0xffff;
+>  		if (pci_probes[i].vendor == vendor &&
+>  		    pci_probes[i].device == device) {
+> -			found = 1;
+> +			found_all_numa_early = 1;
+>  			break;
+>  		}
+>  	}
+>  
+> -	if (!found)
+> +	if (!found_all_numa_early)
+>  		return 0;
+>  
+>  	pci_root_num = 0;
+> @@ -490,7 +481,7 @@ static int __init early_fill_mp_bus_info
+>  		info = &pci_root_info[i];
+>  		res_num = info->res_num;
+>  		busnum = info->bus_min;
+> -		printk(KERN_DEBUG "bus: [%02x,%02x] on node %x link %x\n",
+> +		printk(KERN_DEBUG "bus: [%02x, %02x] on node %x link %x\n",
+>  		       info->bus_min, info->bus_max, info->node, info->link);
+>  		for (j = 0; j < res_num; j++) {
+>  			res = &info->res[j];
+> Index: linux-2.6/arch/x86/pci/bus_numa.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/arch/x86/pci/bus_numa.h
+> @@ -0,0 +1,26 @@
+> +#ifdef CONFIG_X86_64
+> +
+> +/*
+> + * sub bus (transparent) will use entres from 3 to store extra from
+> + * root, so need to make sure we have enought slot there, Should we
+> + * increase PCI_BUS_NUM_RESOURCES?
+> + */
+> +#define RES_NUM 16
+> +struct pci_root_info {
+> +	char name[12];
+> +	unsigned int res_num;
+> +	struct resource res[RES_NUM];
+> +	int bus_min;
+> +	int bus_max;
+> +	int node;
+> +	int link;
+> +};
+> +
+> +/* 4 at this time, it may become to 32 */
+> +#define PCI_ROOT_NR 4
+> +extern int pci_root_num;
+> +extern struct pci_root_info pci_root_info[PCI_ROOT_NR];
+> +
+> +extern void update_res(struct pci_root_info *info, size_t start,
+> +			      size_t end, unsigned long flags, int merge);
+> +#endif
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
----
- drivers/pci/pcie/aer/aerdrv.h      |    4 +-
- drivers/pci/pcie/aer/aerdrv_acpi.c |  106 +++++++++++++++++++++++++++++++++++-
- drivers/pci/pcie/aer/aerdrv_core.c |    2 +-
- include/acpi/actbl1.h              |    8 ++-
- 4 files changed, 112 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/pci/pcie/aer/aerdrv.h b/drivers/pci/pcie/aer/aerdrv.h
-index bbd7428..2e00a22 100644
---- a/drivers/pci/pcie/aer/aerdrv.h
-+++ b/drivers/pci/pcie/aer/aerdrv.h
-@@ -128,9 +128,9 @@ extern void aer_print_error(struct pci_dev *dev, struct aer_err_info *info);
- extern irqreturn_t aer_irq(int irq, void *context);
- 
- #ifdef CONFIG_ACPI
--extern int aer_osc_setup(struct pcie_device *pciedev);
-+extern int aer_osc_setup(struct pcie_device *pciedev, int forceload);
- #else
--static inline int aer_osc_setup(struct pcie_device *pciedev)
-+static inline int aer_osc_setup(struct pcie_device *pciedev, int forceload)
- {
- 	return 0;
- }
-diff --git a/drivers/pci/pcie/aer/aerdrv_acpi.c b/drivers/pci/pcie/aer/aerdrv_acpi.c
-index 8edb2f3..10bd83c 100644
---- a/drivers/pci/pcie/aer/aerdrv_acpi.c
-+++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
-@@ -18,20 +18,112 @@
- #include <linux/delay.h>
- #include "aerdrv.h"
- 
-+static unsigned long parse_aer_hest_xpf_machine_check(struct acpi_hest_xpf_machine_check *p)
-+{
-+	return sizeof(*p) +
-+		(sizeof(struct acpi_hest_xpf_error_bank) * p->num_hardware_banks);
-+}
-+
-+static unsigned long parse_aer_hest_xpf_corrected_machine_check(struct acpi_table_hest_xpf_corrected *p)
-+{
-+	return sizeof(*p) +
-+		(sizeof(struct acpi_hest_xpf_error_bank) * p->num_hardware_banks);
-+}
-+
-+static unsigned long parse_aer_hest_xpf_nmi(struct acpi_hest_xpf_nmi *p)
-+{
-+	return sizeof(*p);
-+}
-+
-+static unsigned long parse_hest_generic(struct acpi_hest_generic *p)
-+{
-+	return sizeof(*p);
-+}
-+
-+static unsigned long parse_hest_aer(void *hdr, int type, struct pcie_device *pciedev, int *firmware_first)
-+{
-+	struct acpi_hest_aer_common *p = hdr + sizeof(struct acpi_hest_header);
-+	unsigned long rc=0;
-+	switch (type) {
-+	case ACPI_HEST_TYPE_AER_ROOT_PORT:
-+		rc = sizeof(struct acpi_hest_aer_root);
-+		break;
-+	case ACPI_HEST_TYPE_AER_ENDPOINT:
-+		rc = sizeof(struct acpi_hest_aer);
-+		break;
-+	case ACPI_HEST_TYPE_AER_BRIDGE:
-+		rc = sizeof(struct acpi_hest_aer_bridge);
-+		break;
-+	}
-+
-+	if (p->flags & ACPI_HEST_AER_FIRMWARE_FIRST &&
-+	    (p->flags & ACPI_HEST_AER_GLOBAL ||
-+	     (p->bus      == pciedev->port->bus->number &&
-+	      p->device   == PCI_SLOT(pciedev->port->devfn) &&
-+	      p->function == PCI_FUNC(pciedev->port->devfn))))
-+		*firmware_first = 1;
-+	return rc;
-+}
-+
-+static int aer_hest_firmware_first(struct acpi_table_header *stdheader, struct pcie_device *pciedev)
-+{
-+	struct acpi_table_hest *hest = (struct acpi_table_hest *)stdheader;
-+	void *p = (void *)hest + sizeof(*hest); /* defined by the ACPI 4.0 spec */
-+	struct acpi_hest_header *hdr = p;
-+
-+	int i;
-+	int firmware_first = 0;
-+
-+	for (i=0, hdr=p; p < (((void *)hest) + hest->header.length) && i < hest->error_source_count; i++) {
-+		switch (hdr->type) {
-+		case ACPI_HEST_TYPE_XPF_MACHINE_CHECK:
-+			p += parse_aer_hest_xpf_machine_check(p);
-+			break;
-+		case ACPI_HEST_TYPE_XPF_CORRECTED_MACHINE_CHECK:
-+			p += parse_aer_hest_xpf_corrected_machine_check(p);
-+			break;
-+		case ACPI_HEST_TYPE_XPF_NON_MASKABLE_INTERRUPT:
-+			p += parse_aer_hest_xpf_nmi(p);
-+			break;
-+		/* These three should never appear */
-+		case ACPI_HEST_TYPE_XPF_UNUSED:
-+		case ACPI_HEST_TYPE_IPF_CORRECTED_MACHINE_CHECK:
-+		case ACPI_HEST_TYPE_IPF_CORRECTED_PLATFORM_ERROR:
-+			break;
-+		case ACPI_HEST_TYPE_AER_ROOT_PORT:
-+		case ACPI_HEST_TYPE_AER_ENDPOINT:
-+		case ACPI_HEST_TYPE_AER_BRIDGE:
-+			p += parse_hest_aer(p, hdr->type, pciedev, &firmware_first);
-+			break;
-+		case ACPI_HEST_TYPE_GENERIC_HARDWARE_ERROR_SOURCE:
-+			p += parse_hest_generic(p);
-+			break;
-+		/* These should never appear either */
-+		case ACPI_HEST_TYPE_RESERVED:
-+		default:
-+			break;
-+		}
-+	}
-+	return firmware_first;
-+}
-+
- /**
-  * aer_osc_setup - run ACPI _OSC method
-  * @pciedev: pcie_device which AER is being enabled on
-  *
-  * @return: Zero on success. Nonzero otherwise.
-  *
-- * Invoked when PCIE bus loads AER service driver. To avoid conflict with
-- * BIOS AER support requires BIOS to yield AER control to OS native driver.
-+ * Invoked when PCIE bus loads AER service driver. To avoid conflict
-+ * with BIOS AER support requires BIOS to yield AER control to OS
-+ * native driver.  If HEST is found, and BIOS requires FIRMWARE FIRST
-+ * mode, expect the BIOS to continue managing AER.
-  **/
--int aer_osc_setup(struct pcie_device *pciedev)
-+int aer_osc_setup(struct pcie_device *pciedev, int forceload)
- {
- 	acpi_status status = AE_NOT_FOUND;
- 	struct pci_dev *pdev = pciedev->port;
- 	acpi_handle handle = NULL;
-+	struct acpi_table_header *hest = NULL;
- 
- 	if (acpi_pci_disabled)
- 		return -1;
-@@ -51,5 +143,13 @@ int aer_osc_setup(struct pcie_device *pciedev)
- 		return -1;
- 	}
- 
-+	status = acpi_get_table(ACPI_SIG_HEST, 1, &hest);
-+	if (ACPI_SUCCESS(status)) {
-+		if (aer_hest_firmware_first(hest, pciedev) && !forceload) {
-+			dev_printk(KERN_DEBUG, &pciedev->device,
-+				   "PCIe device errors handled by platform firmware\n");
-+			return -1;
-+		}
-+	}
- 	return 0;
- }
-diff --git a/drivers/pci/pcie/aer/aerdrv_core.c b/drivers/pci/pcie/aer/aerdrv_core.c
-index 3d88727..cbd959b 100644
---- a/drivers/pci/pcie/aer/aerdrv_core.c
-+++ b/drivers/pci/pcie/aer/aerdrv_core.c
-@@ -860,7 +860,7 @@ void aer_delete_rootport(struct aer_rpc *rpc)
-  */
- int aer_init(struct pcie_device *dev)
- {
--	if (aer_osc_setup(dev) && !forceload)
-+	if (aer_osc_setup(dev, forceload) && !forceload)
- 		return -ENXIO;
- 
- 	return AER_SUCCESS;
-diff --git a/include/acpi/actbl1.h b/include/acpi/actbl1.h
-index 59ade07..5919d4c 100644
---- a/include/acpi/actbl1.h
-+++ b/include/acpi/actbl1.h
-@@ -558,8 +558,8 @@ struct acpi_hest_header {
- enum acpi_hest_types {
- 	ACPI_HEST_TYPE_XPF_MACHINE_CHECK = 0,
- 	ACPI_HEST_TYPE_XPF_CORRECTED_MACHINE_CHECK = 1,
--	ACPI_HEST_TYPE_XPF_UNUSED = 2,
--	ACPI_HEST_TYPE_XPF_NON_MASKABLE_INTERRUPT = 3,
-+	ACPI_HEST_TYPE_XPF_NON_MASKABLE_INTERRUPT = 2,
-+	ACPI_HEST_TYPE_XPF_UNUSED = 3,
- 	ACPI_HEST_TYPE_IPF_CORRECTED_MACHINE_CHECK = 4,
- 	ACPI_HEST_TYPE_IPF_CORRECTED_PLATFORM_ERROR = 5,
- 	ACPI_HEST_TYPE_AER_ROOT_PORT = 6,
-@@ -630,6 +630,10 @@ struct acpi_hest_aer_common {
- 	u32 advanced_error_capabilities;
- };
- 
-+/* Flags */
-+#define ACPI_HEST_AER_FIRMWARE_FIRST (1)
-+#define ACPI_HEST_AER_GLOBAL         (1<<1)
-+
- /* Hardware Error Notification */
- 
- struct acpi_hest_notify {
--- 
-1.6.2.5
 
