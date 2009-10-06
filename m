@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933811AbZJFWVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933830AbZJFWXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933811AbZJFWVl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 18:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933796AbZJFWVh
+	id S933830AbZJFWXF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 18:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933486AbZJFWXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 18:21:37 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43983 "EHLO
+	Tue, 6 Oct 2009 18:23:01 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43989 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933799AbZJFWVf (ORCPT
+	with ESMTP id S933684AbZJFWW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 18:21:35 -0400
-Date: Tue, 6 Oct 2009 23:22:17 +0100
+	Tue, 6 Oct 2009 18:22:57 -0400
+Date: Tue, 6 Oct 2009 23:23:31 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mark Allyn <mark.a.allyn@intel.com>
-Cc: linux-kernel@vger.kernel.org, alan@linux.intel.com, greg@kroah.com,
-       charles.f.johnson@intel.com, Mark Allyn <mark.a.allyn@intel.com>
-Subject: Re: [PATCH] Changes to integrate RAR with SEP and fix RAR problems
-Message-ID: <20091006232217.18e3f0f4@lxorguk.ukuu.org.uk>
-In-Reply-To: <1254861953-18099-1-git-send-email-mark.a.allyn@intel.com>
-References: <1254861953-18099-1-git-send-email-mark.a.allyn@intel.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Alan Cox <alan@linux.intel.com>, Alan Stern <stern@rowland.harvard.edu>,
+       greg@kroah.com, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH 5/5] opticon: Fix resume logic
+Message-ID: <20091006232331.5684bbee@lxorguk.ukuu.org.uk>
+In-Reply-To: <200910062312.17832.oliver@neukum.org>
+References: <20091006145413.9431.47083.stgit@localhost.localdomain>
+	<20091006150651.9431.16939.stgit@localhost.localdomain>
+	<200910062312.17832.oliver@neukum.org>
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,18 +29,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -121,7 +121,7 @@ source "drivers/staging/hv/Kconfig"
->  
->  source "drivers/staging/vme/Kconfig"
->  
-> -source "drivers/staging/rar/Kconfig"
-> +source "drivers/staging/rar_register/Kconfig"
+On Tue, 6 Oct 2009 23:12:17 +0200
+Oliver Neukum <oliver@neukum.org> wrote:
 
-Its impossible to compare changes in diffs if you move them around and
-then diff them. Please don't do that. Produce the diffs using the same
-directory - it can move anyway when the thing comes out of staging
+> Am Dienstag, 6. Oktober 2009 17:06:57 schrieb Alan Cox:
+> > Opticon now takes the right mutex to check the port status but the status
+> > check is done wrongly for the modern serial code, so fix it.
+> 
+> As Alan Stern noticed, it seems like we have an ab-ba deadlock here
+> between open and resume regarding pm_mutex and port->mutex.
 
-If you must move something then do the move and the changes as two
-separate patches so it is clear. You do seem to have also done things
-like reformatted the code, or worked off an old tree not the kernel one
-for the changes which isn't helpful.
+Oh well I guess someone with hardware will have to fix that.
+
+Do we actually need a separate pm_mutex anyway ?
