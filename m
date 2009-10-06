@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933377AbZJFUyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933388AbZJFUyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933377AbZJFUyU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 16:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933327AbZJFUyT
+	id S933388AbZJFUyt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 16:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933366AbZJFUys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 16:54:19 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58356 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933324AbZJFUyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 16:54:18 -0400
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX18mT/xwMbomNxgtMPaMeGy4msoe5DwL84N8aogUvX
-	jEa0w5BuqIfOpp
-Message-ID: <4ACBAE49.9020903@gmx.de>
-Date: Tue, 06 Oct 2009 22:53:29 +0200
-From: Helge Deller <deller@gmx.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
+	Tue, 6 Oct 2009 16:54:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52999 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933324AbZJFUyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 16:54:47 -0400
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+From: James Bottomley <James.Bottomley@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: kyle@mcmartin.ca, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-Subject: Re: [git patches] parisc for 2.6.32
-References: <20091006172602.GA1924@hera.kernel.org> <alpine.LFD.2.01.0910061035050.3432@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0910061035050.3432@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
+References: <1254844007.4383.85.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 06 Oct 2009 20:54:02 +0000
+Message-Id: <1254862442.4383.183.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, 2009-10-06 at 08:58 -0700, Linus Torvalds wrote:
+> 
+> On Tue, 6 Oct 2009, James Bottomley wrote:
+> >
+> > This is mostly fixes.  However, it contains two new drivers: Brocade SAS
+> > (bfa), the Bladengine2 iSCSI (be2iscsi) under the merge window exemption
+> 
+> Btw, I'm getting less excited about the merge window exemption.
+> 
+> It makes sense for consumer devices that people actually hit and that are 
+> needed for bringup (ie they make a difference between a system that can be 
+> installed and used, and one that cannot), but I'm not at all sure it makes 
+> sense for things like this.
+> 
+> The _reason_ for the driver exemption was the fact that even a broken 
+> driver is better than no driver at all for somebody who just can't get a 
+> working system without it, but that argument really goes away when the 
+> driver is so specialized that it's not about regular hardware any more.
 
-On 10/06/2009 07:40 PM, Linus Torvalds wrote:
-> On Tue, 6 Oct 2009, Kyle McMartin wrote:
->> Mostly fixes, except for the tracehook stuff...
->
-> I don't see how this can be fixes, since I can't recall any parisc pulls
-> during the merge window.
+OK, so I don't see a huge distinction here.  This is a driver for a
+piece of enterprise HW that Linux previously didn't support.  To someone
+cursing not being able to use there hardware, it's every bit as
+important as the latest wireless driver.
 
-Yes, sadly it was not in time.
-And of course it's no excuse, that you didn't received a real pull-request,
-even after Kyle asked for feedback for his tree with his mail on LKML and
-parisc-list on 2009-09-28:
-http://www.pubbs.net/kernel/200909/123965/
+> And the whole "driver exemption" seems to have become a by-word for "I can 
+> ignore the merge window for 50% of my code". Which makes me very tired of 
+> it if there aren't real advantages to real users.
 
-> So now you come in after the merge window has been closed for over a week,
-> and want to do a parisc merge?
->
-> Tell me why I should take this. Tell me why I shouldn't just wait until
-> the next merge window (or rather "_you_ should have waited").
+While the exemption exists, I can certainly ignore the merge window for
+new drivers, yes ... however, that's not 50% of the code submitted in
+the merge window, and it's one time ... the same driver follows the
+merge window for the next release.  I try to police this pretty rigidly
+in SCSI ... as you do at the top.
 
-This patch really only touches parisc-specific files and it includes
-important fixes without which the parisc kernel won't even compile and link.
-So, it would help us parisc-porters a lot if you could do an exception and
-still pull from Kyle's tree, even after this merge window has been closed.
-At least, it would make me personally very happy...
+In fact, for SCSI, these two drivers are the third and fourth merge
+window exemptions in our year long history of allowing this.
 
-Helge
+> So I'm seriously considering a "the driver has to be mass market and also 
+> actually matter to an install" rule for the exemption to be valid.
+
+OK, so on the policy, let me argue against the above.  One of the things
+we've been saying about linux is that we facilitate rapid adoption of
+new hardware (and that we support more hardware than any other OS).  The
+Merge window exemption was adopted at the kernel summit last year
+specifically to speed our adoption of new hardware.  I think it's
+valuable for this speed of adoption to be *all* hardware, not
+specifically mass market laptop type stuff.
+
+However, even if you want to change the definition, can we please not do
+it retroactively?
+
+Thanks,
+
+James
+
+
