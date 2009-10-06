@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZJFPQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757559AbZJFPRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757631AbZJFPQu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757608AbZJFPQt
+	id S1757559AbZJFPRK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbZJFPRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:16:49 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35826 "EHLO
+	Tue, 6 Oct 2009 11:17:09 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35830 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757605AbZJFPQs (ORCPT
+	with ESMTP id S1757654AbZJFPRI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:16:48 -0400
+	Tue, 6 Oct 2009 11:17:08 -0400
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 2/5] tty_port: coding style cleaning pass
+Subject: [PATCH 3/5] usb_serial: Use the shutdown() operation
 To: greg@kroah.com, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Date: Tue, 06 Oct 2009 16:06:21 +0100
-Message-ID: <20091006150616.9431.29417.stgit@localhost.localdomain>
+Date: Tue, 06 Oct 2009 16:06:36 +0100
+Message-ID: <20091006150626.9431.34542.stgit@localhost.localdomain>
 In-Reply-To: <20091006145413.9431.47083.stgit@localhost.localdomain>
 References: <20091006145413.9431.47083.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,99 +25,119 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mind the hoover wire...
+As Alan Stern pointed out - now we have tty_port_open the shutdown method
+and locking allow us to whack the other bits into the full helper methods
+and provide a shutdown op which the tty port code will synchronize with 
+setup for us.
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/char/tty_port.c |   28 ++++++++++++++--------------
- 1 files changed, 14 insertions(+), 14 deletions(-)
+ drivers/usb/serial/usb-serial.c |   39 +++++++++++----------------------------
+ 1 files changed, 11 insertions(+), 28 deletions(-)
 
 
-diff --git a/drivers/char/tty_port.c b/drivers/char/tty_port.c
-index 2512262..c16ba2d 100644
---- a/drivers/char/tty_port.c
-+++ b/drivers/char/tty_port.c
-@@ -199,7 +199,7 @@ EXPORT_SYMBOL(tty_port_lower_dtr_rts);
-  *	management of these lines. Note that the dtr/rts raise is done each
-  *	iteration as a hangup may have previously dropped them while we wait.
-  */
-- 
-+
- int tty_port_block_til_ready(struct tty_port *port,
- 				struct tty_struct *tty, struct file *filp)
- {
-@@ -248,7 +248,8 @@ int tty_port_block_til_ready(struct tty_port *port,
- 			tty_port_raise_dtr_rts(port);
+diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+index 95c34da..e189338 100644
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -253,15 +253,12 @@ static int serial_activate(struct tty_port *tport, struct tty_struct *tty)
+ 	struct usb_serial *serial = port->serial;
+ 	int retval;
  
- 		prepare_to_wait(&port->open_wait, &wait, TASK_INTERRUPTIBLE);
--		/* Check for a hangup or uninitialised port. Return accordingly */
-+		/* Check for a hangup or uninitialised port.
-+							Return accordingly */
- 		if (tty_hung_up_p(filp) || !(port->flags & ASYNC_INITIALIZED)) {
- 			if (port->flags & ASYNC_HUP_NOTIFY)
- 				retval = -EAGAIN;
-@@ -280,11 +281,11 @@ int tty_port_block_til_ready(struct tty_port *port,
- 		port->flags |= ASYNC_NORMAL_ACTIVE;
- 	spin_unlock_irqrestore(&port->lock, flags);
+-	if (mutex_lock_interruptible(&port->mutex))
+-		return -ERESTARTSYS;
+ 	mutex_lock(&serial->disc_mutex);
+ 	if (serial->disconnected)
+ 		retval = -ENODEV;
+ 	else
+ 		retval = port->serial->type->open(tty, port);
+ 	mutex_unlock(&serial->disc_mutex);
+-	mutex_unlock(&port->mutex);
  	return retval;
--	
  }
- EXPORT_SYMBOL(tty_port_block_til_ready);
  
--int tty_port_close_start(struct tty_port *port, struct tty_struct *tty, struct file *filp)
-+int tty_port_close_start(struct tty_port *port,
-+				struct tty_struct *tty, struct file *filp)
+@@ -275,57 +272,40 @@ static int serial_open(struct tty_struct *tty, struct file *filp)
+ 
+ /**
+  * serial_down - shut down hardware
+- * @port: port to shut down
++ * @tport: tty port to shut down
+  *
+  * Shut down a USB serial port unless it is the console.  We never
+- * shut down the console hardware as it will always be in use.
++ * shut down the console hardware as it will always be in use. Serialized
++ * against activate by the tport mutex and kept to matching open/close pairs
++ * of calls by the ASYNCB_INITIALIZED flag.
+  */
+-static void serial_down(struct usb_serial_port *port)
++static void serial_down(struct tty_port *tport)
  {
- 	unsigned long flags;
- 
-@@ -294,7 +295,7 @@ int tty_port_close_start(struct tty_port *port, struct tty_struct *tty, struct f
- 		return 0;
- 	}
- 
--	if( tty->count == 1 && port->count != 1) {
-+	if (tty->count == 1 && port->count != 1) {
- 		printk(KERN_WARNING
- 		    "tty_port_close_start: tty->count = 1 port count = %d.\n",
- 								port->count);
-@@ -326,8 +327,8 @@ int tty_port_close_start(struct tty_port *port, struct tty_struct *tty, struct f
- 		long timeout;
- 
- 		if (bps > 1200)
--			timeout = max_t(long, (HZ * 10 * port->drain_delay) / bps,
--								HZ / 10);
-+			timeout = max_t(long,
-+				(HZ * 10 * port->drain_delay) / bps, HZ / 10);
- 		else
- 			timeout = 2 * HZ;
- 		schedule_timeout_interruptible(timeout);
-@@ -378,7 +379,7 @@ void tty_port_close(struct tty_port *port, struct tty_struct *tty,
- EXPORT_SYMBOL(tty_port_close);
- 
- int tty_port_open(struct tty_port *port, struct tty_struct *tty,
--                                                        struct file *filp)
-+							struct file *filp)
- {
- 	spin_lock_irq(&port->lock);
- 	if (!tty_hung_up_p(filp))
-@@ -398,14 +399,13 @@ int tty_port_open(struct tty_port *port, struct tty_struct *tty,
- 		if (port->ops->activate) {
- 			int retval = port->ops->activate(port, tty);
- 			if (retval) {
--        		        mutex_unlock(&port->mutex);
--        			return retval;
--        		}
--                }
-+				mutex_unlock(&port->mutex);
-+				return retval;
-+			}
-+		}
- 		set_bit(ASYNCB_INITIALIZED, &port->flags);
- 	}
- 	mutex_unlock(&port->mutex);
- 	return tty_port_block_til_ready(port, tty, filp);
--}        
++	struct usb_serial_port *port =
++		container_of(tport, struct usb_serial_port, port);
+ 	struct usb_serial_driver *drv = port->serial->type;
 -
-+}
- EXPORT_SYMBOL(tty_port_open);
+ 	/*
+ 	 * The console is magical.  Do not hang up the console hardware
+ 	 * or there will be tears.
+ 	 */
+ 	if (port->console)
+ 		return;
+-
+-	/* Don't call the close method if the hardware hasn't been
+-	 * initialized.
+-	 */
+-	if (!test_and_clear_bit(ASYNCB_INITIALIZED, &port->port.flags))
+-		return;
+-
+-	mutex_lock(&port->mutex);
+ 	if (drv->close)
+ 		drv->close(port);
+-	mutex_unlock(&port->mutex);
+ }
+ 
+ static void serial_hangup(struct tty_struct *tty)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+-
+ 	dbg("%s - port %d", __func__, port->number);
+-
+-	serial_down(port);
+ 	tty_port_hangup(&port->port);
+ }
+ 
+ static void serial_close(struct tty_struct *tty, struct file *filp)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+-
+ 	dbg("%s - port %d", __func__, port->number);
+-
+-	if (tty_hung_up_p(filp))
+-		return;
+-	if (tty_port_close_start(&port->port, tty, filp) == 0)
+-		return;
+-	serial_down(port);
+-	tty_port_close_end(&port->port, tty);
+-	tty_port_tty_set(&port->port, NULL);
++	tty_port_close(&port->port, tty, filp);
+ }
+ 
+ /**
+@@ -715,6 +695,7 @@ static const struct tty_port_operations serial_port_ops = {
+ 	.carrier_raised = serial_carrier_raised,
+ 	.dtr_rts = serial_dtr_rts,
+ 	.activate = serial_activate,
++	.shutdown = serial_down,
+ };
+ 
+ int usb_serial_probe(struct usb_interface *interface,
+@@ -913,6 +894,8 @@ int usb_serial_probe(struct usb_interface *interface,
+ 		port->port.ops = &serial_port_ops;
+ 		port->serial = serial;
+ 		spin_lock_init(&port->lock);
++		/* Keep this for private driver use for the moment but
++		   should probably go away */
+ 		mutex_init(&port->mutex);
+ 		INIT_WORK(&port->work, usb_serial_port_work);
+ 		serial->port[i] = port;
 
