@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbZJFDGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZJFDSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756114AbZJFDGS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 23:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZJFDGS
+	id S1756117AbZJFDSF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 23:18:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756049AbZJFDSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 23:06:18 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47827 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754085AbZJFDGR (ORCPT
+	Mon, 5 Oct 2009 23:18:05 -0400
+Received: from vms173015pub.verizon.net ([206.46.173.15]:37859 "EHLO
+	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756005AbZJFDSE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 23:06:17 -0400
-Date: Mon, 5 Oct 2009 20:05:13 -0700
-From: Greg KH <greg@kroah.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Colin Guthrie <cguthrie@mandriva.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: get_device_parent() race bug
-Message-ID: <20091006030513.GA24232@kroah.com>
-References: <4ABC7DB5.9010402@kernel.org> <4AC7EDD7.3080906@kernel.org> <20091005142201.GA21891@kroah.com> <4ACA9A20.4050809@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ACA9A20.4050809@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 5 Oct 2009 23:18:04 -0400
+Date: Mon, 05 Oct 2009 23:17:04 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Ricardo Jorge da Fonseca Marques Ferreira <storm@sys49152.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Yannick Roehlly <yannick.roehlly@free.fr>,
+       Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jesse.barnes@intel.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Ingo Molnar <mingo@elte.hu>,
+       x86@kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression in ACPI in 2.6.31-rc5
+In-reply-to: <200908160400.03391.storm@sys49152.net>
+Message-id: <alpine.LFD.2.00.0910052312140.309@localhost.localdomain>
+References: <200908072333.24631.storm@sys49152.net>
+ <alpine.LFD.2.00.0908122350560.22946@localhost.localdomain>
+ <200908160400.03391.storm@sys49152.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 10:15:12AM +0900, Tejun Heo wrote:
-> Greg KH wrote:
-> >>>  BUG: unable to handle kernel NULL pointer dereference at 0000000000000038
-> >> Ping.  This one needs to be fixed in -stable.  It can be triggered by
-> >> other char devices too.
-> >
-> > Sorry, been slowly catching up...
-> > 
-> > This can be triggered by char devices?  Huh?  How?  I don't see the
-> > failure path that is happening here.
-> 
-> Oooh, s/char/virtual/.  The bug is in the path which creates a
-> directory under the phony parent.
-> 
-> > And char devices shouldn't really be using the kobject at all, except
-> > for a very basic reference count.
-> > 
-> > I keep threatening to rip kobject out of a char device and just use a
-> > kref, as that is all that is really needed.  Well, that and the kmap
-> > stuff, but again, it's not a "real" kobject being used there...
-> > 
-> > Perhaps now is the time to do this.
-> 
-> Yay!
+From: Len Brown <len.brown@intel.com>
+Subject: [PATCH] Revert "x86/pci: remove rounding quirk from e820_setup_gap()"
 
-Ugh, I tried to do this today but it looks like the gendisk structure
-got all tied up with the kobj_map logic.  Which doesn't look all too
-correct to me but I'm not sure.
+This reverts commit 5d423ccd7ba4285f1084e91b26805e1d0ae978ed.
 
-Kay, you did the gendisk kobject conversion, right?  Any reason you tied
-it into the kobj_map stuff?  Or was that the way the code always was?
+because it caused multiple regressions in 2.6.31-rc1
+
+http://bugzilla.kernel.org/show_bug.cgi?id=13940
+
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+
+Yinghai,
+is there a reason we should not revert the offending patch, per below?
 
 thanks,
+-Len
 
-greg k-h
+ arch/x86/kernel/e820.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 85419bb..b322e30 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -617,7 +617,7 @@ __init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
+  */
+ __init void e820_setup_gap(void)
+ {
+-	unsigned long gapstart, gapsize;
++	unsigned long gapstart, gapsize, round;
+ 	int found;
+ 
+ 	gapstart = 0x10000000;
+@@ -634,9 +634,14 @@ __init void e820_setup_gap(void)
+ #endif
+ 
+ 	/*
+-	 * e820_reserve_resources_late protect stolen RAM already
++	 * See how much we want to round up: start off with
++	 * rounding to the next 1MB area.
+ 	 */
+-	pci_mem_start = gapstart;
++	round = 0x100000;
++	while ((gapsize >> 4) > round)
++		round += round;
++	/* Fun with two's complement */
++	pci_mem_start = (gapstart + round) & -round;
+ 
+ 	printk(KERN_INFO
+ 	       "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
+-- 
+1.6.5.rc2.17.gdbc1b
+
