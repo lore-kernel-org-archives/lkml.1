@@ -1,87 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932457AbZJFMeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbZJFM1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932457AbZJFMeO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 08:34:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932398AbZJFMeN
+	id S932443AbZJFM1E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 08:27:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932373AbZJFM1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 08:34:13 -0400
-Received: from emh02.mail.saunalahti.fi ([62.142.5.108]:48579 "EHLO
-	emh02.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932290AbZJFMeM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 08:34:12 -0400
-X-Greylist: delayed 466 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Oct 2009 08:34:12 EDT
-Message-ID: <4ACB3741.2030101@gmail.com>
-Date: Tue, 06 Oct 2009 15:25:37 +0300
-From: Harri Olin <harri.olin@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-CC: Bernie Innocenti <bernie@codewiz.org>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, sysadmin <sysadmin@gnu.org>
-Subject: Re: sata_mv 0000:03:06.0: PCI ERROR; PCI IRQ cause=0x30000040
-References: <1254546642.1438.135.camel@giskard> <4ACA6904.1060509@rtr.ca>
-In-Reply-To: <4ACA6904.1060509@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Oct 2009 12:25:41.0310 (UTC) FILETIME=[1E63DDE0:01CA4680]
-X-CT-RefID: str=0001.0A0B0205.4ACB3745.02D8,ss=1,fgs=0
-X-Antivirus: VAMS
+	Tue, 6 Oct 2009 08:27:03 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46853 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932331AbZJFM1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 08:27:02 -0400
+Date: Tue, 6 Oct 2009 14:26:24 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Latest vfs scalability patch
+Message-ID: <20091006122623.GE30316@wotan.suse.de>
+References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091006101414.GM5216@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Bernie Innocenti wrote:
->> The error in the subject appears in the console immediately followed bv
->> a hard freeze of the machine.  The error occurs reproducibly on two
->> identical Opteron servers, each one equipped with two identical
->> controller cards:
->>
->> 03:04.0 SCSI storage controller: Marvell Technology Group Ltd. 
->> MV88SX6081 8-port SATA II PCI-X Controller (rev 09)
->> 03:06.0 SCSI storage controller: Marvell Technology Group Ltd. 
->> MV88SX6081 8-port SATA II PCI-X Controller (rev 09)
->>
->> We can trigger the problem within a few seconds by starting a
->> reconstruction on a drive hooked to port 4 (counting from 0) of the
->> second controller.  Oddly, every other drive works reliably and the
->> faulty drive works if we connect it to, for example, port 4 of the first
->> controller.
->>
->> Tested with Debian kernels 2.6.26-19 and 2.6.30-8.  Let me know if
->> further details are needed.
-> ..
->> 0000:03:06.0: PCI ERROR; PCI IRQ cause=0x30000040..
-> ..
->
->  0x30000040 here means "MRdPerr":
->    "bad data parity detected during PCI master read".
->
-> Which means there that a data parity error happened
-> during outgoing data transfer on the PCI-X bus.
-> This could happen due to noise on the bus,
-> dying capacitors, or (?) bad RAM (not sure about the last one).
->
-I have heard same thing happened with same kind of configuration, using 
-Supermicro H8DME-2 motherboard, Opteron 2378 CPU.
+On Tue, Oct 06, 2009 at 12:14:14PM +0200, Jens Axboe wrote:
+> On Tue, Oct 06 2009, Nick Piggin wrote:
+> > Hi,
+> > 
+> > Several people have been interested to test my vfs patches, so rather
+> > than resend patches I have uploaded a rollup against Linus's current
+> > head.
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/npiggin/patches/fs-scale/
+> > 
+> > I have used ext2,ext3,autofs4,nfs as well as in-memory filesystems
+> > OK (although this doesn't mean there are no bugs!). Otherwise, if your
+> > filesystem compiles, then there is a reasonable chance of it working,
+> > or ask me and I can try updating it for the new locking.
+> > 
+> > I would be interested in seeing any numbers people might come up with,
+> > including single-threaded performance.
+> 
+> I gave this a quick spin on the 64-thread nehalem. Just a simple dbench
+> with 64 clients on tmpfs. The results are below. While running perf top
+> -a in mainline, the top 5 entries are:
+> 
+>           2086691.00 - 96.6% : _spin_lock
+>             14866.00 -  0.7% : copy_user_generic_string
+>              5710.00 -  0.3% : mutex_spin_on_owner
+>              2837.00 -  0.1% : _atomic_dec_and_lock
+>              2274.00 -  0.1% : __d_lookup
+> 
+> Uhm auch... It doesn't look much prettier for the patch kernel, though:
+> 
+>           9396422.00 - 95.7% : _spin_lock
+>             66978.00 -  0.7% : copy_user_generic_string
+>             43775.00 -  0.4% : dput
+>             23946.00 -  0.2% : __link_path_walk
+>             17699.00 -  0.2% : path_init
+>             15046.00 -  0.2% : do_lookup
 
-Even the controllers were on same slots.
+Yep, this is the problem of the common-path lookup. Every dentry
+element in the path has its d_lock taken for every path lookup,
+so cwd dentry lock bounces a lot for dbench.
 
-My initial suspicion was that the motherboard does not drop the PCI-X 
-bus frequency to 100MHz and drives the bus at 133MHz even though there 
-are 2 controllers connected. Proposed fix was to move the other 
-controller to other bus, as the H8DME-2 has four PCI-X slots, 2x100MHz 
-and 2x133MHz, but I haven't yet heard back if it helped.
-
-Even the kernel was same - latest Debian distribution kernel. Might be 
-worthwile to try using vanilla kernel.org kernel if possible.
-
-I have at home two 6081 controllers at same bus but at 100MHz and no 
-problems yet.
-
--- 
-Harri.
+I'm working on doing path traversal without any locks or stores
+to the dentries in the common cases, so that should basically
+be the last bit of the puzzle for vfs locking (although it can be
+considered a different type of problem than the global lock
+removal, but RCU-freed struct inode is important for the approach
+I'm taking, so I'm basing it on top of these patches).
+ 
+It's a copout, but you could try running multiple dbenches under
+different working directories (or actually, IIRC dbench does root
+based path lookups so maybe that won't help you much).
 
 
+> Anyway, below are the results. Seem very stable.
+> 
+>                                 throughput
+> ------------------------------------------------
+> 2.6.32-rc3-git          |      561.218 MB/sec
+> 2.6.32-rc3-git+patch    |      627.022 MB/sec
+
+Well it's good to see you got some improvement.
 
