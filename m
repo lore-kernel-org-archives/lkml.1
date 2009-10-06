@@ -1,86 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933060AbZJFSUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933051AbZJFSTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933060AbZJFSUA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 14:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbZJFST7
+	id S933051AbZJFSTj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 14:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932655AbZJFSTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 14:19:59 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:42003 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932765AbZJFST6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 14:19:58 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: zach.brown@oracle.com, linux-aio <linux-aio@kvack.org>,
-       Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch v4 0/3] aio: implement request batching [more performance numbers]
-References: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com>
-	<x49eipga02o.fsf@segfault.boston.devel.redhat.com>
-	<20091006180628.GB5216@kernel.dk>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 06 Oct 2009 14:18:51 -0400
-In-Reply-To: <20091006180628.GB5216@kernel.dk> (Jens Axboe's message of "Tue,
-	6 Oct 2009 20:06:28 +0200")
-Message-ID: <x49y6no8jxw.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	Tue, 6 Oct 2009 14:19:38 -0400
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:40083 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932290AbZJFSTh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 14:19:37 -0400
+Date: Tue, 6 Oct 2009 11:18:59 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Avi Kivity <avi@redhat.com>, David Howells <dhowells@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org,
+       "alacrityvm-devel@lists.sourceforge.net" 
+	<alacrityvm-devel@lists.sourceforge.net>
+Subject: Re: [Alacrityvm-devel] [PATCH v2 2/4] KVM: introduce "xinterface"
+ API for external	interaction with guests
+Message-ID: <20091006181859.GD6386@ovro.caltech.edu>
+References: <20091002201159.4014.33268.stgit@dev.haskins.net>
+ <20091002201927.4014.29432.stgit@dev.haskins.net>
+ <4AC8780D.1060800@redhat.com>
+ <4ACA87D7.1080206@gmail.com>
+ <4ACB0F3C.1000705@redhat.com>
+ <4ACB46AD.8010405@gmail.com>
+ <4ACB6E21.8010109@redhat.com>
+ <4ACB771E.8050404@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ACB771E.8050404@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Tue, 06 Oct 2009 11:19:00 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+On Tue, Oct 06, 2009 at 12:58:06PM -0400, Gregory Haskins wrote:
+> Avi Kivity wrote:
+> > On 10/06/2009 03:31 PM, Gregory Haskins wrote:
+> >>
+> >>> slots would be one implementation, if you can think of others then you'd
+> >>> add them.
+> >>>      
+> >> I'm more interested in *how* you'd add them more than "if" we would add
+> >> them.  What I am getting at are the logistics of such a beast.
+> >>    
+> > 
+> > Add alternative ioctls, or have one ioctl with a 'type' field.
+> > 
+> >> For instance, would I have /dev/slots-vas with ioctls for adding slots,
+> >> and /dev/foo-vas for adding foos?  And each one would instantiate a
+> >> different vas_struct object with its own vas_struct->ops?  Or were you
+> >> thinking of something different.
+> >>    
+> > 
+> > I think a single /dev/foo is sufficient, unless some of those address
+> > spaces are backed by real devices.
+> > 
+> >>> If you can't, I think it indicates that the whole thing isn't necessary
+> >>> and we're better off with slots and virtual memory.
+> >>>      
+> >> I'm not sure if we are talking about the same thing yet, but if we are,
+> >> there are uses of a generalized interface outside of slots/virtual
+> >> memory (Ira's physical box being a good example).
+> >>    
+> > 
+> > I'm not sure Ira's case is not best supported by virtual memory.
+> 
+> Perhaps, but there are surely some cases where the memory is not
+> pageable, but is accessible indirectly through some DMA controller.  So
+> if we require it to be pagable we will limit the utility of the
+> interface, though admittedly it will probably cover most cases.
+> 
 
-> On Tue, Oct 06 2009, Jeff Moyer wrote:
->> Here's a mail I got from Nathan Roberts.
->> 
->> Cheers,
->> Jeff
->> 
->> ---
->> 
->> Similar test as before. I had to re-upload the files so comparing
->> against last time isn't really apples-apples.
->> 
->> Disk is a cciss logical drive consisting of 12 SATA drives in a RAID6
->> configuration with 128K stripes.
->> 
->> Test case 1 is to read 1 million random 40K files (no file is read
->> more than once), 16 4K iocbs at a time, 100 threads.
->> 
->> Test case 2 is the same except 100,000 128K files are read.
->> 
->> Unit of measure is "files read per second".
->> 
->> 
->> 40K
->> -------------------------------------------------
->> Kernel                              NOOP
->> ------                              ----
->> 2.6.30.5                            682
->> 2.6.30.5 (w/o drop_caches)          718
->> 2.6.30.5+patch_v4                   900
->> 2.6.30.5+patch_v4 (w/o drop caches) 965
->> 
->> 
->> 128K
->> -------------------------------------------------
->> Kernel                              NOOP
->> ------                              ----
->> 2.6.30.5                            242
->> 2.6.30.5 (w/o drop_caches)          350
->> 2.6.30.5+patch_v4                   292
->> 2.6.30.5+patch_v4 (w/o drop caches) 420
->
-> Nice numbers! The patch looks good to me from a quick look, if you want
-> I can throw it into the testing mix tomorrow and see what kind of
-> improvements I see here. With performance increase of that magnitude, we
-> should get it in sooner rather than later.
+The limitation I have is that memory made available from the host system
+(PCI card) as PCI BAR1 must not be migrated around in memory. I can only
+change the address decoding to hit a specific physical address. AFAIK,
+this means it cannot be userspace memory (since the underlying physical
+page could change, or it could be in swap), and must be allocated with
+something like __get_free_pages() or dma_alloc_coherent().
 
-I'd love it if you could run some benchmarks, thank you!
+This is how all 83xx powerpc boards work, and I'd bet that the 85xx and
+86xx boards work almost exactly the same. I can't say anything about
+non-powerpc boards.
 
-Cheers,
-Jeff
+Ira
