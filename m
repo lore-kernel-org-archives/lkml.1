@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756059AbZJFCwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbZJFCzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756059AbZJFCwd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 22:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbZJFCwc
+	id S1756087AbZJFCzy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 22:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZJFCzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 22:52:32 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44224 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754104AbZJFCwc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 22:52:32 -0400
-Subject: Re: Linux 2.6.32-rc3
-From: Dirk Hohndel <hohndel@infradead.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0910052140100.309@localhost.localdomain>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>
-	 <alpine.LFD.2.00.0910052140100.309@localhost.localdomain>
-Content-Type: text/plain
-Organization: Intel Open Source Technology Center
-Date: Mon, 05 Oct 2009 19:51:42 -0700
-Message-Id: <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>
+	Mon, 5 Oct 2009 22:55:53 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47930 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754766AbZJFCzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 22:55:52 -0400
+Date: Tue, 6 Oct 2009 13:55:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stephen Hemminger <shemminger@vyatta.com>
+Subject: linux-next: suspend tree build failure
+Message-Id: <20091006135505.f07ee40d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hohndel@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__6_Oct_2009_13_55_05_+1100_oi2wW5BLLATsgDku"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-05 at 21:57 -0400, Len Brown wrote:
-> > do you mean -rc2 as in the Makefile (ie really -rc1) or -rc2 as in the 
-> > tagged release.
-> 
-> We have a similar problem with the period between, say, 2.6.X and 
-> 2.6.Y-rc1.  The Makefile still says 2.6.X, yet during the 2.6.Y
-> merge window the tree is very different from 2.6.X.
-> 
-> This confuses things like my scripts that take a source tree tarball,
-> and (re)generate config files for build testing based on the tags
-> in the Makefile.  There is no way for the scripts to know the
-> post 2.6.X tree not the same as 2.6.X itself, the new configs
-> overwrite the old, overwrite the old results etc.
-> 
-> I think that BenH also had troubles with this issue and pointed
-> it out a while back, but you were not convinced at the time that
-> it was a problem worth solving.
-> 
-> This could be clarified if you update Makefile on the 1st commit
-> after 2.6.X is frozen to simply be 2.6.Y-merge or 2.6.Y-rc0
-> or something.  Anything but 2.6.X.
+--Signature=_Tue__6_Oct_2009_13_55_05_+1100_oi2wW5BLLATsgDku
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I have seen this request many times and it seems to make perfect sense.
-The first commit applied after a release should change the version
-number to "something" - and "2.6.next-rc0" sounds as good as anything
-else that has been proposed so far.
+Hi Rafael,
 
-/D
- 
--- 
-Dirk Hohndel
-Intel Open Source Technology Center
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
+kernel/freezer.c:27: error: expected ',' or ';' before '{' token
+
+Caused by commit 9a4801cb8df76263abbb3049c0208625b7f34286 ("PM / freezer:
+Make refrigerator cold") which neglected to include linux/compiler.h for
+the definition of __cold.
+
+I have used the version of the suspend tree from next-20091002 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__6_Oct_2009_13_55_05_+1100_oi2wW5BLLATsgDku
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrKsYkACgkQjjKRsyhoI8zO8QCgghkfYUSSdTzbDDLRGZJJRVTf
+xHAAn0Jo4wvLLj+kZ8HWp5QqmCc0GcTF
+=mmVj
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__6_Oct_2009_13_55_05_+1100_oi2wW5BLLATsgDku--
