@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZJFNeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbZJFNm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbZJFNeQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 09:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757388AbZJFNeO
+	id S1757416AbZJFNm5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 09:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757299AbZJFNm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 09:34:14 -0400
-Received: from mtagate6.de.ibm.com ([195.212.17.166]:40135 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757367AbZJFNeN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 09:34:13 -0400
-Date: Tue, 6 Oct 2009 15:33:35 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Phil Carmody <ext-phil.2.carmody@nokia.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] sysfs: Allow sysfs_move_dir(..., NULL) again.
-Message-ID: <20091006153335.15d02d12@gondolin>
-In-Reply-To: <1254819129.23533.27.camel@pcarmody-desktop>
-References: <c4b4c2e3155280589fb539f952e58c77a1fa7e96.1254408493.git.ext-phil.2.carmody@nokia.com>
-	<20091005183753.4d77afcb@gondolin>
-	<1254819129.23533.27.camel@pcarmody-desktop>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-1?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-1?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Oct 2009 09:42:56 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:53203 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756411AbZJFNm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 09:42:56 -0400
+Date: Tue, 6 Oct 2009 15:37:32 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] signals: SEND_SIG_NOINFO should be considered as
+	SI_FROMUSER()
+Message-ID: <20091006133732.GB8628@redhat.com>
+References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com> <20091004021918.GB21006@redhat.com> <20091006073100.4184128@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091006073100.4184128@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As device_move() and kobject_move() both handle a NULL destination,
-sysfs_move_dir() should do this as well (again) and fall back to
-sysfs_root in that case.
+On 10/06, Roland McGrath wrote:
+>
+> This whole series looks fine to me.  I think in commenting and cleaning up
+> any of this, it bears explicit mention that (almost) every signal is
+> potentially reduced to SI_USER.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Yes,
 
----
- fs/sysfs/dir.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+> but your logs and comments are not explicit about the relationship
+> between that logic and what's implicit in the queue-exhaustion behavior.
 
---- linux-2.6.orig/fs/sysfs/dir.c
-+++ linux-2.6/fs/sysfs/dir.c
-@@ -894,7 +894,8 @@ int sysfs_move_dir(struct kobject *kobj,
- 
- 	mutex_lock(&sysfs_rename_mutex);
- 	BUG_ON(!sd->s_parent);
--	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
-+	new_parent_sd = (new_parent_kobj && new_parent_kobj->sd) ?
-+		new_parent_kobj->sd : &sysfs_root;
- 
- 	error = 0;
- 	if (sd->s_parent == new_parent_sd)
+Yes. the changelog for 3/4 mentions that this SI_USER doesn't really
+mean SI_FROMUSER(), but I agree I should have been more explicit.
+
+Perhaps, we should add the comment to explain that both SI_FROMUSER()
+and si_fromuser() are only valid in the sending pathes. Fortunately
+get_signal_to_deliver and friends do not care about the origination of
+the signal.
+
+Oleg.
+
