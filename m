@@ -1,267 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbZJFLYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbZJFLXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932203AbZJFLYW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 07:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932137AbZJFLYV
+	id S932200AbZJFLXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 07:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932163AbZJFLXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 07:24:21 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:19771 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932124AbZJFLYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 07:24:20 -0400
-Date: Tue, 6 Oct 2009 07:22:01 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: nauman@google.com, m-ikeda@ds.jp.nec.com, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
-       yoshikawa.takuya@oss.ntt.co.jp
-Subject: Re: IO scheduler based IO controller V10
-Message-ID: <20091006112201.GA27866@redhat.com>
-References: <20091005.235535.193690928.ryov@valinux.co.jp> <20091005171023.GG22143@redhat.com> <e98e18940910051111r110dc776l5105bf931761b842@mail.gmail.com> <20091006.161744.189719641.ryov@valinux.co.jp>
+	Tue, 6 Oct 2009 07:23:31 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:62269 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932157AbZJFLXb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 07:23:31 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091006.161744.189719641.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1254825795.31336.204.camel@eenurkka-desktop>
+References: <alpine.LNX.2.00.0910050923280.2419@alcarin.uplinklabs.net>
+	 <1254814298.31336.63.camel@eenurkka-desktop>
+	 <f488382f0910060322y12e2e7dbm9a1372e481c9013f@mail.gmail.com>
+	 <1254825795.31336.204.camel@eenurkka-desktop>
+Date: Tue, 6 Oct 2009 04:22:54 -0700
+Message-ID: <f488382f0910060422t420ade8bvdefbf3e3d0720266@mail.gmail.com>
+Subject: Re: [BISECTED] "conservative" cpufreq governor broken
+From: Steven Noonan <steven@uplinklabs.net>
+To: ext-eero.nurkkala@nokia.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Rik van Riel <riel@redhat.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 04:17:44PM +0900, Ryo Tsuruta wrote:
-> Hi Vivek and Nauman,
-> 
-> Nauman Rafique <nauman@google.com> wrote:
-> > >> > > How about adding a callback function to the higher level controller?
-> > >> > > CFQ calls it when the active queue runs out of time, then the higer
-> > >> > > level controller use it as a trigger or a hint to move IO group, so
-> > >> > > I think a time-based controller could be implemented at higher level.
-> > >> > >
-> > >> >
-> > >> > Adding a call back should not be a big issue. But that means you are
-> > >> > planning to run only one group at higher layer at one time and I think
-> > >> > that's the problem because than we are introducing serialization at higher
-> > >> > layer. So any higher level device mapper target which has multiple
-> > >> > physical disks under it, we might be underutilizing these even more and
-> > >> > take a big hit on overall throughput.
-> > >> >
-> > >> > The whole design of doing proportional weight at lower layer is optimial
-> > >> > usage of system.
-> > >>
-> > >> But I think that the higher level approch makes easy to configure
-> > >> against striped software raid devices.
-> > >
-> > > How does it make easier to configure in case of higher level controller?
-> > >
-> > > In case of lower level design, one just have to create cgroups and assign
-> > > weights to cgroups. This mininum step will be required in higher level
-> > > controller also. (Even if you get rid of dm-ioband device setup step).
-> 
-> In the case of lower level controller, if we need to assign weights on
-> a per device basis, we have to assign weights to all devices of which
-> a raid device consists, but in the case of higher level controller, 
-> we just assign weights to the raid device only.
-> 
+On Tue, Oct 6, 2009 at 3:43 AM, Eero Nurkkala
+<ext-eero.nurkkala@nokia.com> wrote:
+> On Tue, 2009-10-06 at 12:22 +0200, ext Steven Noonan wrote:
+>>
+>> I would suspect you have to have CONFIG_NO_HZ enabled to be able to
+>> reproduce the issue (considering the title of the bisected commit and
+>> my own config). Do you have it enabled?
+>>
+>
+> Yes, it's enabled.
+>
+>> > And another round:
+>> >
+>> > cpufreq stats: OP1:16,78%, OP2:0,24%, OP3:5,14%, OP4:77,83%  (72)
+>> >
+>> > Just once more after doing nothing:
+>> > OP1:7,41%, OP2:0,11%, OP3:2,38%, OP4:90,10%  (82)
+>> >
+>> > So I can't agree it's broken. The patch you bisected, actually filtered
+>> > out such phenomenon, in which an IRQ made the cpufreq framework
+>> > occasionally think we were idling, although we were not. So you got
+>> > "bonus" idle time that shouldn't been there in the first place. Now that
+>> > the "bonus" idle time is not there, your system load may indeed be so
+>> > high that the system never spends 80% or more time in idle? Could that
+>> > be the case? Of course, even though I can't agree it's broken, doesn't
+>> > mean it isn't somehow broken ;) It'd be nice to get info on other
+>> > systems as well...
+>>
+>> Interestingly, "ondemand" (the governor fixed by the bisected commit)
+>> works fine. "conservative" is the only broken one.
+>>
+>
+> If you took timestamps in /arch/x86/kernel/process_**.c:
+> (let's assume process_64.c) in cpu_idle()
+> around enter_idle(); and __exit_idle(), took the diff,
+> added the diffs up, and compared it to system uptime, you could see how
+> much time you spend in idle()? I think it's possible that
+> even if the cpu load is near 0%, the system may idle only for a bare
+> moment (that translates to a buggy pm_idle()), and time is spent
+> elsewhere (less than 80% in idle).
 
-This is required only if you need to assign different weights to different
-devices. This is just additional facility and not a requirement. Normally
-you will not be required to do that and devices will inherit the cgroup
-weights automatically. So one has to only assign the cgroup weights.
+This makes logical sense, but how should I test this? Is there a way
+to do this with existing tracers?
 
-> > >> If one would like to
-> > >> combine some physical disks into one logical device like a dm-linear,
-> > >> I think one should map the IO controller on each physical device and
-> > >> combine them into one logical device.
-> > >>
-> > >
-> > > In fact this sounds like a more complicated step where one has to setup
-> > > one dm-ioband device on top of each physical device. But I am assuming
-> > > that this will go away once you move to per reuqest queue like implementation.
-> 
-> I don't understand why the per request queue implementation makes it
-> go away. If dm-ioband is integrated into the LVM tools, it could allow
-> users to skip the complicated steps to configure dm-linear devices.
-> 
+By the way, a revert of the bisected commit changes the cpufreq stats favorably:
 
-Those who are not using dm-tools will be forced to use dm-tools for
-bandwidth control features.
+2333000 31
+2167000 13
+2000000 6
+1833000 79
+1667000 239
+1500000 193
+1333000 959
+1000000 10260
+2333000 11
+2167000 13
+2000000 13
+1833000 26
+1667000 33
+1500000 333
+1333000 59
+1000000 11293
 
-> > > I think it should be same in principal as my initial implementation of IO
-> > > controller on request queue and I stopped development on it because of FIFO
-> > > dispatch.
-> 
-> I think that FIFO dispatch seldom lead to prioviry inversion, because
-> holding period for throttling is not too long to break the IO priority.
-> I did some tests to see whether priority inversion is happened.
-> 
-> The first test ran fio sequential readers on the same group. The BE0
-> reader got the highest throughput as I expected.
-> 
-> nr_threads      16      |      16    |     1
-> ionice          BE7     |     BE7    |    BE0
-> ------------------------+------------+-------------
-> vanilla     10,076KiB/s | 9,779KiB/s | 32,775KiB/s
-> ioband       9,576KiB/s | 9,367KiB/s | 34,154KiB/s
-> 
-> The second test ran fio sequential readers on two different groups and
-> give weights of 20 and 10 to each group respectively. The bandwidth
-> was distributed according to their weights and the BE0 reader got
-> higher throughput than the BE7 readers in the same group. IO priority
-> was preserved within the IO group.
-> 
-> group         group1    |         group2
-> weight          20      |           10    
-> ------------------------+--------------------------
-> nr_threads      16      |      16    |     1
-> ionice          BE7     |     BE7    |    BE0
-> ------------------------+--------------------------
-> ioband      27,513KiB/s | 3,524KiB/s | 10,248KiB/s
->                         |     Total = 13,772KiB/s
-> 
-
-Interesting. In all the test cases you always test with sequential
-readers. I have changed the test case a bit (I have already reported the
-results in another mail, now running the same test again with dm-version
-1.14). I made all the readers doing direct IO and in other group I put
-a buffered writer. So setup looks as follows.
-
-In group1, I launch 1 prio 0 reader and increasing number of prio4
-readers. In group 2 I just run a dd doing buffered writes. Weights of
-both the groups are 100 each.
-
-Following are the results on 2.6.31 kernel.
-
-With-dm-ioband
-==============
-<------------prio4 readers---------------------->  <---prio0 reader------>
-nr  Max-bdwidth Min-bdwidth Agg-bdwidth Max-latency Agg-bdwidth Max-latency 
-1   9992KiB/s   9992KiB/s   9992KiB/s   413K usec   4621KiB/s   369K usec   
-2   4859KiB/s   4265KiB/s   9122KiB/s   344K usec   4915KiB/s   401K usec   
-4   2238KiB/s   1381KiB/s   7703KiB/s   532K usec   3195KiB/s   546K usec   
-8   504KiB/s    46KiB/s     1439KiB/s   399K usec   7661KiB/s   220K usec   
-16  131KiB/s    26KiB/s     638KiB/s    492K usec   4847KiB/s   359K usec   
-
-With vanilla CFQ
-================
-<------------prio4 readers---------------------->  <---prio0 reader------>
-nr  Max-bdwidth Min-bdwidth Agg-bdwidth Max-latency Agg-bdwidth Max-latency 
-1   10779KiB/s  10779KiB/s  10779KiB/s  407K usec   16094KiB/s  808K usec   
-2   7045KiB/s   6913KiB/s   13959KiB/s  538K usec   18794KiB/s  761K usec   
-4   7842KiB/s   4409KiB/s   20967KiB/s  876K usec   12543KiB/s  443K usec   
-8   6198KiB/s   2426KiB/s   24219KiB/s  1469K usec  9483KiB/s   685K usec   
-16  5041KiB/s   1358KiB/s   27022KiB/s  2417K usec  6211KiB/s   1025K usec  
-
-
-Above results are showing how bandwidth got distributed between prio4 and
-prio1 readers with-in group as we increased number of prio4 readers in
-the group. In another group a buffered writer is continuously going on
-as competitor.
-
-Notice, with dm-ioband how bandwidth allocation is broken.
-
-With 1 prio4 reader, prio4 reader got more bandwidth than prio1 reader.
-
-With 2 prio4 readers, looks like prio4 got almost same BW as prio1.
-
-With 8 and 16 prio4 readers, looks like prio0 readers takes over and prio4
-readers starve.
-
-As we incresae number of prio4 readers in the group, their total aggregate
-BW share should increase. Instread it is decreasing.
-
-So to me in the face of competition with a writer in other group, BW is
-all over the place. Some of these might be dm-ioband bugs and some of
-these might be coming from the fact that buffering takes place in higher
-layer and dispatch is FIFO?
-
-> Here is my test script.
-> -------------------------------------------------------------------------
-> arg="--time_base --rw=read --runtime=30 --directory=/mnt1 --size=1024M \
->      --group_reporting"
-> 
-> sync
-> echo 3 > /proc/sys/vm/drop_caches
-> 
-> echo $$ > /cgroup/1/tasks
-> ionice -c 2 -n 0 fio $arg --name=read1 --output=read1.log --numjobs=16 &
-> echo $$ > /cgroup/2/tasks
-> ionice -c 2 -n 0 fio $arg --name=read2 --output=read2.log --numjobs=16 &
-> ionice -c 1 -n 0 fio $arg --name=read3 --output=read3.log --numjobs=1 &
-> echo $$ > /cgroup/tasks
-> wait
-> -------------------------------------------------------------------------
-> 
-> Be that as it way, I think that if every bio can point the iocontext
-> of the process, then it makes it possible to handle IO priority in the
-> higher level controller. A patchse has already posted by Takhashi-san.
-> What do you think about this idea?
-> 
->   Date Tue, 22 Apr 2008 22:51:31 +0900 (JST)
->   Subject [RFC][PATCH 1/10] I/O context inheritance
->   From Hirokazu Takahashi <>
->   http://lkml.org/lkml/2008/4/22/195
-
-So far you have been denying that there are issues with ioprio with-in
-group in higher level controller. Here you seems to be saying that there are
-issues with ioprio and we need to take this patch in to solve the issue? I am
-confused?
-
-Anyway, if you think that above patch is needed to solve the issue of
-ioprio in higher level controller, why are you not posting it as part of
-your patch series regularly, so that we can also apply this patch along
-with other patches and test the effects?
-
-> 
-> > > So you seem to be suggesting that you will move dm-ioband to request queue
-> > > so that setting up additional device setup is gone. You will also enable
-> > > it to do time based groups policy, so that we don't run into issues on
-> > > seeky media. Will also enable dispatch from one group only at a time so
-> > > that we don't run into isolation issues and can do time accounting
-> > > accruately.
-> > 
-> > Will that approach solve the problem of doing bandwidth control on
-> > logical devices? What would be the advantages compared to Vivek's
-> > current patches?
-> 
-> I will only move the point where dm-ioband grabs bios, other
-> dm-ioband's mechanism and functionality will stll be the same.
-> The advantages against to scheduler based controllers are:
->  - can work with any type of block devices
->  - can work with any type of IO scheduler and no need a big change.
-> 
-
-The big change thing we will come to know for sure when we have
-implementation for the timed groups done and shown that it works as well as my
-patches. There are so many subtle things with time based approach. 
-
-[..]
-> > >> > Is there a new version of dm-ioband now where you have solved the issue of
-> > >> > sync/async dispatch with-in group? Before meeting at mini-summit, I am
-> > >> > trying to run some tests and come up with numbers so that we have more
-> > >> > clear picture of pros/cons.
-> > >>
-> > >> Yes, I've released new versions of dm-ioband and blkio-cgroup. The new
-> > >> dm-ioband handles sync/async IO requests separately and
-> > >> the write-starve-read issue you pointed out is fixed. I would
-> > >> appreciate it if you would try them.
-> > >> http://sourceforge.net/projects/ioband/files/
-> > >
-> > > Cool. Will get to testing it.
-> 
-> Thanks for your help in advance.
-
-Against what kernel version above patches apply. The biocgroup patches
-I tried against 2.6.31 as well as 2.6.32-rc1 and it does not apply cleanly
-against any of these?
-
-So for the time being I am doing testing with biocgroup patches.
-
-Thanks
-Vivek
+- Steven
