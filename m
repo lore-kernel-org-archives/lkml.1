@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932943AbZJFQEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932932AbZJFQG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932943AbZJFQEw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 12:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932930AbZJFQEv
+	id S932932AbZJFQG2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 12:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757542AbZJFQG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 12:04:51 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:64105 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932929AbZJFQEu (ORCPT
+	Tue, 6 Oct 2009 12:06:28 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:57753 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757527AbZJFQG1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 12:04:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=xHmfuaTqZrC5QO/VNje1BddeKWXn7kz8KwApBQuyjzZc90aeKVQRmYI7jPRk4I0I4e
-         lT4kEjoGvLngOY0VPFt6jROoRkJ2gOvZosg2wY+zkUk86/j1nKWIHTVqOa/cVqvlyRNb
-         +yDaATz6y+weprnoWVN0rDQLZ9iwdhYcvDGxs=
+	Tue, 6 Oct 2009 12:06:27 -0400
+Date: Tue, 6 Oct 2009 17:05:49 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+Cc: Mike Frysinger <vapier@gentoo.org>, Samuel Ortiz <sameo@linux.intel.com>,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
+       Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and
+ KeypadInput Device Driver
+Message-ID: <20091006160549.GA8881@rakim.wolfsonmicro.main>
+References: <1253682664-27040-1-git-send-email-vapier@gentoo.org>
+ <1254815071-15822-1-git-send-email-vapier@gentoo.org>
+ <20091006115543.GH27168@sirena.org.uk>
+ <8A42379416420646B9BFAC9682273B6D0E3F4348@limkexm3.ad.analog.com>
+ <20091006123658.GA31079@rakim.wolfsonmicro.main>
+ <8A42379416420646B9BFAC9682273B6D0E3F4420@limkexm3.ad.analog.com>
+ <20091006135836.GA3926@rakim.wolfsonmicro.main>
+ <8A42379416420646B9BFAC9682273B6D0E3F46A7@limkexm3.ad.analog.com>
+ <20091006144805.GA10987@rakim.wolfsonmicro.main>
+ <8A42379416420646B9BFAC9682273B6D0E3F4769@limkexm3.ad.analog.com>
 MIME-Version: 1.0
-In-Reply-To: <4ACB60A7.307@msgid.tls.msk.ru>
-References: <c43b2e150909200120kf87cdc2oabafea8abbf01227@mail.gmail.com>
-	 <68676e00909200520s7730b516v4e0d6c17d529d0a7@mail.gmail.com>
-	 <4AC939BB.8090600@wasp.net.au>
-	 <68676e00910050837g2006bfb8j349891504e474a95@mail.gmail.com>
-	 <4ACA21E8.6080501@msgid.tls.msk.ru>
-	 <68676e00910060800h4cb84dcl9f610f6b23a88e5c@mail.gmail.com>
-	 <4ACB60A7.307@msgid.tls.msk.ru>
-Date: Tue, 6 Oct 2009 17:04:12 +0100
-Message-ID: <9b2b86520910060904x1882fe28lf51f9806347bc3cf@mail.gmail.com>
-Subject: Re: [lm-sensors] it87 sensors need an ACPI driver (2.6.31)
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Luca Tettamanti <kronos.it@gmail.com>, Brad Campbell <brad@wasp.net.au>,
-       lm-sensors@lm-sensors.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8A42379416420646B9BFAC9682273B6D0E3F4769@limkexm3.ad.analog.com>
+X-Cookie: Haste makes waste.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/6/09, Michael Tokarev <mjt@tls.msk.ru> wrote:
-> Luca Tettamanti wrote:
->> On Mon, Oct 5, 2009 at 6:42 PM, Michael Tokarev <mjt@tls.msk.ru> wrote:
-> []
->>> Well, I just tried it here and it works here too, on 3 different
->>> asus motherboards.  But asus_atk0110 is far less useful than the
->>> it87 variant.  Yes atk0110 shows correct labels for various sensors,
->>> but for one there's no way to control fan speeds using it, at least
->>> not currently, -- something which is done by it87 easily.
-> []
->> The main reason for using atk0110 is correctness: the resources are
->> claimed by ACPI, it might not be safe to touch them (for the same
->> reason two drivers are not allowed to map e.g. the same PCI BAR).
->> On newer boards the risk of collision is pretty high, since the hwmon
->> chip is used by an EC that works in background... on other boards the
->> risk is much lower since the hwmon chip doesn't seem to be probed
->> actively.
->> Anyway, as user you can override this decision with
->> "acpi_enforce_resources=lax", but _I_ wouldn't recommend it.
->
-> If there's a choice between "does not work but correct" and
-> "incorrect but works", i'd prefer the latter, and I'd say any
-> sane person agrees.
+On Tue, Oct 06, 2009 at 04:05:45PM +0100, Hennerich, Michael wrote:
+> >From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
 
-It works fine on your system but it _doesn't_ work in the general case.
+> >According to the datasheet the GPIOs, light sensor and regulator can
+> >also generate interrupts?
 
-If you build a kernel with it87 and use acpi_enforce_resources=lax, it
-will cause a 15 second boot delay on certain models of EeePC.  There
-may be worse consequences on other machines, but that's bad enough.
+> Right - I know - but none of the subdevs are currently using this
+> functionality.
 
-So this doesn't depend on sanity, it's simply a matter of whether
-you're interested enough to test "acpi_enforce_resources=lax" on your
-system and identify any failures.  Most people aren't that interested.
- For the rest, there's always the option.  (Which should probably set
-a TAINT flag if it doesn't already).
+You weren't very clear on the difference between the current state of
+the drivers and the capabilities of the chip there.
 
-Thanks
-Alan
+> >The GPIOs in particular would benefit from
+> >this since this would mean that their interrupts would be usable by
+> >generic gpiolib based drivers.
+
+> Right - and I didn't say that I'm not going to add this functionality
+> later.
+> All the ADP5520 subdevs already merged in 2.6.32 - the MFD core is the
+> only remaining part.
+> Time is running short and major changes are going to require another
+> round of full testing.
+
+Oh, well, that's sad.  It would have been worth at least considering 
+doing something that at least looks like the IRQ infrastructure but now
+there's going to be a merge issue with the input tree if anything gets
+changed now.
