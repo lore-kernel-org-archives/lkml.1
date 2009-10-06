@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933402AbZJFVFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933146AbZJFVBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933402AbZJFVFa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 17:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933337AbZJFVF3
+	id S933146AbZJFVBo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 17:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbZJFVBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 17:05:29 -0400
-Received: from xenotime.net ([72.52.64.118]:46832 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933221AbZJFVF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 17:05:28 -0400
-Date: Tue, 6 Oct 2009 13:56:56 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
-Message-Id: <20091006135656.ac8bb2e7.rdunlap@xenotime.net>
-In-Reply-To: <1254862442.4383.183.camel@mulgrave.site>
-References: <1254844007.4383.85.camel@mulgrave.site>
-	<alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
-	<1254862442.4383.183.camel@mulgrave.site>
-Organization: YPO4
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Tue, 6 Oct 2009 17:01:43 -0400
+Received: from mail.perches.com ([173.55.12.10]:1903 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757233AbZJFVBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 17:01:43 -0400
+Subject: [PATCH] kernel.h: Remove initialization of bool in printk_once
+From: Joe Perches <joe@perches.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 06 Oct 2009 14:01:06 -0700
+Message-Id: <1254862866.2134.78.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 Oct 2009 20:54:02 +0000 James Bottomley wrote:
+Don't initialize __print_once
+Invert the test to reduce initialized data.
 
-> On Tue, 2009-10-06 at 08:58 -0700, Linus Torvalds wrote:
-> > 
-> > On Tue, 6 Oct 2009, James Bottomley wrote:
-> > >
-> > > This is mostly fixes.  However, it contains two new drivers: Brocade SAS
-> > > (bfa), the Bladengine2 iSCSI (be2iscsi) under the merge window exemption
-> > 
-> > Btw, I'm getting less excited about the merge window exemption.
-> > 
-> > It makes sense for consumer devices that people actually hit and that are 
-> > needed for bringup (ie they make a difference between a system that can be 
-> > installed and used, and one that cannot), but I'm not at all sure it makes 
-> > sense for things like this.
-> > 
-> > The _reason_ for the driver exemption was the fact that even a broken 
-> > driver is better than no driver at all for somebody who just can't get a 
-> > working system without it, but that argument really goes away when the 
-> > driver is so specialized that it's not about regular hardware any more.
-> 
-> OK, so I don't see a huge distinction here.  This is a driver for a
-> piece of enterprise HW that Linux previously didn't support.  To someone
-> cursing not being able to use there hardware, it's every bit as
-> important as the latest wireless driver.
-> 
-> > And the whole "driver exemption" seems to have become a by-word for "I can 
-> > ignore the merge window for 50% of my code". Which makes me very tired of 
-> > it if there aren't real advantages to real users.
-> 
-> While the exemption exists, I can certainly ignore the merge window for
-> new drivers, yes ... however, that's not 50% of the code submitted in
-> the merge window, and it's one time ... the same driver follows the
-> merge window for the next release.  I try to police this pretty rigidly
-> in SCSI ... as you do at the top.
+defconfig before:	$size vmlinux
+   text	   data	    bss	    dec	    hex	filename
+6976022	 679572	1359668	9015262	 898fde	vmlinux
 
-polices it so rigidly that even simple kernel-doc patches sit in a
-scsi git tree for months.  :(
+defconfig after:	$size vmlinux
+   text	   data	    bss	    dec	    hex	filename
+6976006	 679508	1359700	9015214	 898fae	vmlinux
+
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index d3cd23f..344873d 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -252,10 +252,10 @@ extern int printk_delay_msec;
+  * Print a one-time message (analogous to WARN_ONCE() et al):
+  */
+ #define printk_once(x...) ({			\
+-	static bool __print_once = true;	\
++	static bool __print_once;		\
+ 						\
+-	if (__print_once) {			\
+-		__print_once = false;		\
++	if (!__print_once) {			\
++		__print_once = true;		\
+ 		printk(x);			\
+ 	}					\
+ })
 
 
----
-~Randy
