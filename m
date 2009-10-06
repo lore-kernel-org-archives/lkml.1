@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbZJFRpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932638AbZJFRq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758177AbZJFRpm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 13:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757729AbZJFRpm
+	id S932638AbZJFRq0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 13:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757777AbZJFRq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 13:45:42 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:9803 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757140AbZJFRpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 13:45:41 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: zach.brown@oracle.com
-Cc: linux-aio <linux-aio@kvack.org>,
-       Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch v4 0/3] aio: implement request batching [more performance numbers]
-References: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 06 Oct 2009 13:45:03 -0400
-In-Reply-To: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com> (Jeff Moyer's
-	message of "Fri, 02 Oct 2009 18:54:20 -0400")
-Message-ID: <x49eipga02o.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 6 Oct 2009 13:46:26 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33508 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758050AbZJFRqZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 13:46:25 -0400
+Subject: Re: Linux 2.6.32-rc3
+From: Dirk Hohndel <hohndel@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>
+	 <alpine.LFD.2.00.0910052140100.309@localhost.localdomain>
+	 <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>
+	 <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
+	 <20091006144449.GA23078@elte.hu>
+	 <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain>
+	 <20091006153632.GA29795@elte.hu>
+	 <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain>
+	 <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Tue, 06 Oct 2009 10:45:32 -0700
+Message-Id: <1254851132.24117.30.camel@dhohndel-mobl.amr.corp.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hohndel@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a mail I got from Nathan Roberts.
+On Tue, 2009-10-06 at 09:31 -0700, Linus Torvalds wrote:
+> 
+> On Tue, 6 Oct 2009, Linus Torvalds wrote:
+> > 
+> > Unless:
+> > 
+> > > _That_ i think is a lot harder to confuse with the real .31 than a 
+> > > v2.6.31-1234-g16123c4 version string.
+> > 
+> > .. are you saying that it would be just some automatically generated 
+> > thing, just a crippled form of CONFIG_LOCALVERSION_AUTO? Kind of a 
+> > CONFIG_LOCALVERSION_AUTO_SHORTFORM?
 
-Cheers,
-Jeff
+That's much better than what I had suggested - and it would work for
+your case with multiple trees in a sane manner as well.
 
----
+> IOW, you'd never get 2.6.32-rc0, but you'd get either the complex git 
+> version number (or SVN/hg/whatever), or at least "2.6.31+" with the "+" 
+> showing that it is more than plain 2.6.31.
+> 
+> The "+" could be anything else, of course. The diff is pretty obvious, you 
+> can argue about exactly _what_ you'd like to see as a suffix for "and then 
+> some".
 
-Similar test as before. I had to re-upload the files so comparing
-against last time isn't really apples-apples.
+The argument by Stefan Richter that '+' is already used informally as
+"or later" is somewhat valid - maybe we could use an ampersand (which
+originally stood for 'et cetera' - and other things). 
 
-Disk is a cciss logical drive consisting of 12 SATA drives in a RAID6
-configuration with 128K stripes.
+But then I don't know if that would confuse tons of scripts as the & has
+lots of other meanings in various scripting languages.
 
-Test case 1 is to read 1 million random 40K files (no file is read
-more than once), 16 4K iocbs at a time, 100 threads.
-
-Test case 2 is the same except 100,000 128K files are read.
-
-Unit of measure is "files read per second".
-
-
-40K
--------------------------------------------------
-Kernel                              NOOP
-------                              ----
-2.6.30.5                            682
-2.6.30.5 (w/o drop_caches)          718
-2.6.30.5+patch_v4                   900
-2.6.30.5+patch_v4 (w/o drop caches) 965
-
-
-128K
--------------------------------------------------
-Kernel                              NOOP
-------                              ----
-2.6.30.5                            242
-2.6.30.5 (w/o drop_caches)          350
-2.6.30.5+patch_v4                   292
-2.6.30.5+patch_v4 (w/o drop caches) 420
-
-
-Hope it helps.
-Nathan
+-- 
+Dirk Hohndel
+Intel Open Source Technology Center
 
