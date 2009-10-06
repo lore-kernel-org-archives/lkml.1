@@ -1,175 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbZJGBfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbZJGDFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbZJGBfK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 21:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932858AbZJGBfI
+	id S1753269AbZJGDFG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 23:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZJGDFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 21:35:08 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:55212 "EHLO
+	Tue, 6 Oct 2009 23:05:03 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:44344 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758405AbZJGBfC (ORCPT
+	with ESMTP id S1752911AbZJGDE7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 21:35:02 -0400
+	Tue, 6 Oct 2009 23:04:59 -0400
 X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 3
 	times
-Message-Id: <20091006233730.848452188@gentwo.org>
+Message-Id: <20091006233731.227194194@gentwo.org>
 References: <20091006233654.815079668@gentwo.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 Oct 2009 19:37:01 -0400
+Date: Tue, 06 Oct 2009 19:37:03 -0400
 From: cl@linux-foundation.org
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       Dan Williams <dan.j.williams@intel.com>, Tejun Heo <tj@kernel.org>,
-       Eric Biederman <ebiederm@aristanetworks.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       David L Stevens <dlstevens@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Huang Ying <ying.huang@intel.com>
 CC: Mel Gorman <mel@csn.ul.ie>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [this_cpu_xx V5 07/19] this_cpu_ptr: Eliminate get/put_cpu
-Content-Disposition: inline; filename=this_cpu_ptr_eliminate_get_put_cpu
+Subject: [this_cpu_xx V5 09/19] Use this_cpu_ptr in crypto subsystem
+Content-Disposition: inline; filename=this_cpu_ptr_crypto
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are cases where we can use this_cpu_ptr and as the result
-of using this_cpu_ptr() we no longer need to determine the
-currently executing cpu.
+Just a slight optimization that removes one array lookup.
+The processor number is needed for other things as well so the
+get/put_cpu cannot be removed.
 
-In those places no get/put_cpu combination is needed anymore.
-The local cpu variable can be eliminated.
-
-Preemption still needs to be disabled and enabled since the
-modifications of the per cpu variables is not atomic. There may
-be multiple per cpu variables modified and those must all
-be from the same processor.
-
-Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
-Acked-by: Dan Williams <dan.j.williams@intel.com>
 Acked-by: Tejun Heo <tj@kernel.org>
-cc: Eric Biederman <ebiederm@aristanetworks.com>
-cc: Stephen Hemminger <shemminger@vyatta.com>
-cc: David L Stevens <dlstevens@us.ibm.com>
+Cc: Huang Ying <ying.huang@intel.com>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- drivers/dma/dmaengine.c |   36 +++++++++++++-----------------------
- drivers/net/veth.c      |    7 +++----
- 2 files changed, 16 insertions(+), 27 deletions(-)
+ crypto/cryptd.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/dma/dmaengine.c
+Index: linux-2.6/crypto/cryptd.c
 ===================================================================
---- linux-2.6.orig/drivers/dma/dmaengine.c	2009-09-28 10:08:09.000000000 -0500
-+++ linux-2.6/drivers/dma/dmaengine.c	2009-09-29 09:01:54.000000000 -0500
-@@ -326,14 +326,7 @@ arch_initcall(dma_channel_table_init);
-  */
- struct dma_chan *dma_find_channel(enum dma_transaction_type tx_type)
- {
--	struct dma_chan *chan;
--	int cpu;
--
--	cpu = get_cpu();
--	chan = per_cpu_ptr(channel_table[tx_type], cpu)->chan;
--	put_cpu();
--
--	return chan;
-+	return this_cpu_read(channel_table[tx_type]->chan);
- }
- EXPORT_SYMBOL(dma_find_channel);
+--- linux-2.6.orig/crypto/cryptd.c	2009-09-14 08:47:15.000000000 -0500
++++ linux-2.6/crypto/cryptd.c	2009-09-15 13:47:11.000000000 -0500
+@@ -99,7 +99,7 @@ static int cryptd_enqueue_request(struct
+ 	struct cryptd_cpu_queue *cpu_queue;
  
-@@ -847,7 +840,6 @@ dma_async_memcpy_buf_to_buf(struct dma_c
- 	struct dma_async_tx_descriptor *tx;
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
--	int cpu;
- 	unsigned long flags;
- 
- 	dma_src = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
-@@ -866,10 +858,10 @@ dma_async_memcpy_buf_to_buf(struct dma_c
- 	tx->callback = NULL;
- 	cookie = tx->tx_submit(tx);
- 
--	cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
-+	preempt_disable();
-+	__this_cpu_add(chan->local->bytes_transferred, len);
-+	__this_cpu_inc(chan->local->memcpy_count);
-+	preempt_enable();
- 
- 	return cookie;
- }
-@@ -896,7 +888,6 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
- 	struct dma_async_tx_descriptor *tx;
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
--	int cpu;
- 	unsigned long flags;
- 
- 	dma_src = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
-@@ -913,10 +904,10 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
- 	tx->callback = NULL;
- 	cookie = tx->tx_submit(tx);
- 
--	cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
-+	preempt_disable();
-+	__this_cpu_add(chan->local->bytes_transferred, len);
-+	__this_cpu_inc(chan->local->memcpy_count);
-+	preempt_enable();
- 
- 	return cookie;
- }
-@@ -945,7 +936,6 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
- 	struct dma_async_tx_descriptor *tx;
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
--	int cpu;
- 	unsigned long flags;
- 
- 	dma_src = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
-@@ -963,10 +953,10 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
- 	tx->callback = NULL;
- 	cookie = tx->tx_submit(tx);
- 
--	cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
-+	preempt_disable();
-+	__this_cpu_add(chan->local->bytes_transferred, len);
-+	__this_cpu_inc(chan->local->memcpy_count);
-+	preempt_enable();
- 
- 	return cookie;
- }
-Index: linux-2.6/drivers/net/veth.c
-===================================================================
---- linux-2.6.orig/drivers/net/veth.c	2009-09-17 17:54:16.000000000 -0500
-+++ linux-2.6/drivers/net/veth.c	2009-09-29 09:01:54.000000000 -0500
-@@ -153,7 +153,7 @@ static netdev_tx_t veth_xmit(struct sk_b
- 	struct net_device *rcv = NULL;
- 	struct veth_priv *priv, *rcv_priv;
- 	struct veth_net_stats *stats, *rcv_stats;
--	int length, cpu;
-+	int length;
- 
- 	skb_orphan(skb);
- 
-@@ -161,9 +161,8 @@ static netdev_tx_t veth_xmit(struct sk_b
- 	rcv = priv->peer;
- 	rcv_priv = netdev_priv(rcv);
- 
--	cpu = smp_processor_id();
--	stats = per_cpu_ptr(priv->stats, cpu);
--	rcv_stats = per_cpu_ptr(rcv_priv->stats, cpu);
-+	stats = this_cpu_ptr(priv->stats);
-+	rcv_stats = this_cpu_ptr(rcv_priv->stats);
- 
- 	if (!(rcv->flags & IFF_UP))
- 		goto tx_drop;
+ 	cpu = get_cpu();
+-	cpu_queue = per_cpu_ptr(queue->cpu_queue, cpu);
++	cpu_queue = this_cpu_ptr(queue->cpu_queue);
+ 	err = crypto_enqueue_request(&cpu_queue->queue, request);
+ 	queue_work_on(cpu, kcrypto_wq, &cpu_queue->work);
+ 	put_cpu();
 
 -- 
