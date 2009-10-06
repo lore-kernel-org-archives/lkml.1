@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZJFGt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbZJFGuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbZJFGt7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 02:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbZJFGt6
+	id S1754706AbZJFGuI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 02:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbZJFGuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 02:49:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52847 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750834AbZJFGt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 02:49:57 -0400
-Date: Tue, 6 Oct 2009 08:49:19 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org
-Cc: Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <axboe@kernel.dk>
-Subject: Latest vfs scalability patch
-Message-ID: <20091006064919.GB30316@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	Tue, 6 Oct 2009 02:50:05 -0400
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:57238 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbZJFGuB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 02:50:01 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: Amit Shah <amit.shah@redhat.com>
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for generic guest and host communication
+Date: Tue, 6 Oct 2009 08:49:22 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc2-prerelease; KDE/4.3.1; i686; ; )
+Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <200910011228.30563.borntraeger@de.ibm.com> <20091005140535.GA31333@amit-x200.redhat.com>
+In-Reply-To: <20091005140535.GA31333@amit-x200.redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910060849.22462.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Am Montag 05 Oktober 2009 16:05:35 schrieb Amit Shah:
+> On (Thu) Oct 01 2009 [12:28:30], Christian Borntraeger wrote:
+> > With the latest git kernel + your patch I sometmes get a completely
+> > frozen console. In the dump there is
+> >
+> >     <3>virtio_console virtio0: output:id 68 is not a head!
+> >
+> > Seems that I can reproduce it with large amounts of output (find / for
+> > example) Without your patch everything is fine.
+> 
+> Hey Christian,
+> 
+> Can you try this patch?
 
-Several people have been interested to test my vfs patches, so rather
-than resend patches I have uploaded a rollup against Linus's current
-head.
-
-ftp://ftp.kernel.org/pub/linux/kernel/people/npiggin/patches/fs-scale/
-
-I have used ext2,ext3,autofs4,nfs as well as in-memory filesystems
-OK (although this doesn't mean there are no bugs!). Otherwise, if your
-filesystem compiles, then there is a reasonable chance of it working,
-or ask me and I can try updating it for the new locking.
-
-I would be interested in seeing any numbers people might come up with,
-including single-threaded performance.
-
-Thanks, Nick
+This version seems to work on s390. Thanks
 
