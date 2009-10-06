@@ -1,84 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbZJFKKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756934AbZJFKLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbZJFKKW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 06:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756327AbZJFKKV
+	id S1756934AbZJFKLt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 06:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZJFKLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 06:10:21 -0400
-Received: from www.tglx.de ([62.245.132.106]:47674 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756850AbZJFKKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 06:10:19 -0400
-Date: Tue, 6 Oct 2009 12:09:36 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Sven-Thorsten Dietrich <sdietrich@novell.com>
-cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH][UHCI-DEBUG] Don't kmalloc with BKL held
-In-Reply-To: <1254573359.11691.0.camel@sven.thebigcorporation.com>
-Message-ID: <alpine.LFD.2.00.0910061206120.2646@localhost.localdomain>
-References: <1254474744.28661.2.camel@sven.thebigcorporation.com>  <20091002092021.GA25083@gambetta> <1254573359.11691.0.camel@sven.thebigcorporation.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 6 Oct 2009 06:11:48 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59421 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756847AbZJFKLr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 06:11:47 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Gleb Natapov <gleb@redhat.com>
+Subject: Re: [PATCH][RFC] add MAP_UNLOCKED mmap flag
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
+In-Reply-To: <20091006095111.GG9832@redhat.com>
+References: <20091006095111.GG9832@redhat.com>
+Message-Id: <20091006190938.126F.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  6 Oct 2009 19:11:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 3 Oct 2009, Sven-Thorsten Dietrich wrote:
-> On Fri, 2009-10-02 at 09:20 +0000, Frederik Deweerdt wrote:
-> > Hi Sven-Thorsten,
-> > 
-> > On Fri, Oct 02, 2009 at 11:12:24AM +0200, Sven-Thorsten Dietrich wrote:
-> > > Subject: Don't kmalloc with BKL held.
-> > > From: Sven-Thorsten Dietrich <sdietrich@suse.de>
-> > > 
-> > > I'm eyeballing this file for complete removal of lock_kernel but 
-> > > at first glance, we definitely don't need BKL to kmalloc(). 
-> > You need to move the unlock_kernel() above the out: label too.
-> > 
-> 
-> How about this ?
-> 
-> Subject: Don't kmalloc with BKL held.
-> From: Sven-Thorsten Dietrich sdietrich@suse.de Sat Oct 3 01:27:27 2009 -0700
-> Date: Sat Oct 3 01:27:27 2009 -0700:
-> Git: 4f62eb81e827eb857129101e49757d84ac9ee7eb
-> 
-> We don't need BKL to kmalloc
-> 
-> diff --git a/drivers/usb/host/uhci-debug.c b/drivers/usb/host/uhci-debug.c
-> index e52b954..3fd5602 100644
-> --- a/drivers/usb/host/uhci-debug.c
-> +++ b/drivers/usb/host/uhci-debug.c
-> @@ -494,32 +494,30 @@ static int uhci_debug_open(struct inode *inode, struct file *file)
->  {
->  	struct uhci_hcd *uhci = inode->i_private;
->  	struct uhci_debug *up;
-> -	int ret = -ENOMEM;
->  	unsigned long flags;
->  
-> -	lock_kernel();
->  	up = kmalloc(sizeof(*up), GFP_KERNEL);
->  	if (!up)
-> -		goto out;
-> +		return -ENOMEM;
->  
->  	up->data = kmalloc(MAX_OUTPUT, GFP_KERNEL);
->  	if (!up->data) {
->  		kfree(up);
-> -		goto out;
-> +		return -ENOMEM;
->  	}
->  
->  	up->size = 0;
-> +
-> +	lock_kernel();
+Hi
 
-Why don't you remove it completely ? That lock_kernel() protects
-exactly nothing.
+> If application does mlockall(MCL_FUTURE) it is no longer possible to
+> mmap file bigger than main memory or allocate big area of anonymous
+> memory. Sometimes it is desirable to lock everything related to program
+> execution into memory, but still be able to mmap big file or allocate
+> huge amount of memory and allow OS to swap them on demand. MAP_UNLOCKED
+> allows to do that.
+> 
+> Signed-off-by: Gleb Natapov <gleb@redhat.com>
 
-Thanks,
+Why don't you use explicit munlock()?
+Plus, Can you please elabrate which workload nedd this feature?
 
-	tglx
+
+
