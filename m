@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZJFJwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbZJFJvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756861AbZJFJwY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 05:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbZJFJwX
+	id S1756836AbZJFJvl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 05:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756732AbZJFJvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 05:52:23 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:52120 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756805AbZJFJwX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 05:52:23 -0400
-Date: Tue, 6 Oct 2009 12:48:45 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: alan@lxorguk.ukuu.org.uk, dbrownell@users.sourceforge.net
-Subject: TTY loosing bytes ?
-Message-ID: <20091006094845.GT4452@nokia.com>
-Reply-To: felipe.balbi@nokia.com
+	Tue, 6 Oct 2009 05:51:40 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:49652 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756643AbZJFJvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 05:51:39 -0400
+Date: Tue, 6 Oct 2009 11:51:11 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
+Subject: [PATCH][RFC] add MAP_UNLOCKED mmap flag
+Message-ID: <20091006095111.GG9832@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 06 Oct 2009 09:50:24.0060 (UTC) FILETIME=[6CE057C0:01CA466A]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+If application does mlockall(MCL_FUTURE) it is no longer possible to
+mmap file bigger than main memory or allocate big area of anonymous
+memory. Sometimes it is desirable to lock everything related to program
+execution into memory, but still be able to mmap big file or allocate
+huge amount of memory and allow OS to swap them on demand. MAP_UNLOCKED
+allows to do that.
 
-I'm facing a weird issue with TTY when using u_serial gadget.
-
-The problem seems to be related to ldisc's buffer getting full. Imagine
-a situation where you have 510 bytes available on N_TTY's buffer and you
-try to flush 512 bytes then the code path would look like:
-
---> flush_to_ldisc();
-	--> n_tty_receive_buf(512 bytes);
-		--> i = 510;
-		--> memcpy(i);
-
-		--> i = 0;
-		--> memcpy(i);
-	<-- wake_up_interruptible();
-
-What happens is that we loose those 2 extra bytes. I tried digging this
-problem and try to find a fix for it but it's been really complicated
-for me.
-
-Hope you guys can help. Actually, I've been reproducing the problem on
-2.6.28 but looking at the code current mainline should have the same
-problem. I also cherry-picked the relevant patches to my 2.6.28 tree
-(hope I got all of them) and it still failed.
-
-Sorry I'm reporting such a problem with such an old kernel but upgrading
-the kernel right now is just impossible.
-
-If you guys could give any pointers I would be really glad.
-
--- 
-balbi
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
+index 32c8bd6..0ab4c74 100644
+--- a/include/asm-generic/mman.h
++++ b/include/asm-generic/mman.h
+@@ -12,6 +12,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOKED	0x80000         /* pages are unlocked */
+ 
+ #define MCL_CURRENT	1		/* lock all current mappings */
+ #define MCL_FUTURE	2		/* lock all future mappings */
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 73f5e4b..7c2abdb 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -985,6 +985,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+ 		if (!can_do_mlock())
+ 			return -EPERM;
+ 
++        if (flags & MAP_UNLOKED)
++                vm_flags &= ~VM_LOCKED;
++
+ 	/* mlock MCL_FUTURE? */
+ 	if (vm_flags & VM_LOCKED) {
+ 		unsigned long locked, lock_limit;
+--
+			Gleb.
