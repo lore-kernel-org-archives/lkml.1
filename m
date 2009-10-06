@@ -1,104 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbZJFSyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbZJFSyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbZJFSyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 14:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758220AbZJFSyV
+	id S1758200AbZJFSyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 14:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbZJFSyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 14:54:21 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:51180 "EHLO kernel.dk"
+	Tue, 6 Oct 2009 14:54:18 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:52741 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757950AbZJFSyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 14:54:19 -0400
-Date: Tue, 6 Oct 2009 20:53:42 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Valdis.Kletnieks@vt.edu, Mike Galbraith <efault@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, riel@redhat.com
-Subject: Re: Do we support ioprio on SSDs with NCQ (Was: Re: IO scheduler
-	based IO controller V10)
-Message-ID: <20091006185341.GD5216@kernel.dk>
-References: <20091002222756.GG4494@redhat.com> <4e5e476b0910030543o776fb505ka0ce38da9d83b33c@mail.gmail.com> <20091003133810.GC12925@redhat.com> <4e5e476b0910040215m35af5c99pf2c3a463a5cb61dd@mail.gmail.com> <20091004121122.GB18778@redhat.com> <4e5e476b0910040546h5f77cd1fo3172fe5c229eb579@mail.gmail.com> <x49my457uef.fsf@segfault.boston.devel.redhat.com> <4e5e476b0910051409x33f8365flf32e8e7548d72e79@mail.gmail.com> <20091006084120.GJ5216@kernel.dk> <4e5e476b0910060200i7c028b3fr4c235bf5f18c3aa1@mail.gmail.com>
+	id S1757874AbZJFSyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 14:54:17 -0400
+Date: Tue, 6 Oct 2009 20:53:44 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org
+Subject: Re: [PATCH v2][RFC] add MAP_UNLOCKED mmap flag
+Message-ID: <20091006185344.GA19692@redhat.com>
+References: <20091006170218.GM9832@redhat.com>
+ <20091006183436.GA23110@cmpxchg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b0910060200i7c028b3fr4c235bf5f18c3aa1@mail.gmail.com>
+In-Reply-To: <20091006183436.GA23110@cmpxchg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06 2009, Corrado Zoccolo wrote:
-> On Tue, Oct 6, 2009 at 10:41 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > On Mon, Oct 05 2009, Corrado Zoccolo wrote:
-> >> On Mon, Oct 5, 2009 at 5:06 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
-> >> > It stands for residual, not residency.  Make more sense?
-> >> It makes sense when computed, but not when used in rb_key computation.
-> >> Why should we postpone queues that where preempted, instead of giving
-> >> them a boost?
-> >
-> > We should not, if it is/was working correctly, it should allow both for
-> > increase/descrease of tree position (hence it's a long and can go
-> > negative) to account for both over and under time.
+On Tue, Oct 06, 2009 at 08:34:36PM +0200, Johannes Weiner wrote:
+> On Tue, Oct 06, 2009 at 07:02:18PM +0200, Gleb Natapov wrote:
+> > diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
+> > index 32c8bd6..59e0f29 100644
+> > --- a/include/asm-generic/mman.h
+> > +++ b/include/asm-generic/mman.h
+> > @@ -12,6 +12,7 @@
+> >  #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+> >  #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+> >  #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
+> > +#define MAP_UNLOCKED	0x80000         /* force page unlocking */
+> >  
+> >  #define MCL_CURRENT	1		/* lock all current mappings */
+> >  #define MCL_FUTURE	2		/* lock all future mappings */
+> > diff --git a/mm/mmap.c b/mm/mmap.c
+> > index 73f5e4b..7c2abdb 100644
+> > --- a/mm/mmap.c
+> > +++ b/mm/mmap.c
+> > @@ -985,6 +985,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+> >  		if (!can_do_mlock())
+> >  			return -EPERM;
+> >  
+> > +        if (flags & MAP_UNLOKED)
+> > +                vm_flags &= ~VM_LOCKED;
 > 
-> I'm doing some tests with and without it.
-> How it is working now is:
-> definition:
->         if (timed_out && !cfq_cfqq_slice_new(cfqq)) {
->                 cfqq->slice_resid = cfqq->slice_end - jiffies;
->                 cfq_log_cfqq(cfqd, cfqq, "resid=%ld",
-> cfqq->slice_resid);
->         }
-> * here resid is > 0 if there was residual time, and < 0 if the queue
-> overrun its slice.
-> use:
->                 rb_key = cfq_slice_offset(cfqd, cfqq) + jiffies;
->                 rb_key += cfqq->slice_resid;
->                 cfqq->slice_resid = 0;
-> * here if residual is > 0, we postpone, i.e. penalize.  If residual is
-> < 0 (i.e. the queue overrun), we anticipate it, i.e. we boost it.
+> That needs changing into MAP_UNLOCKED as well.
 > 
-> So this is likely not what we want.
+That's for editing patch manually :(
 
-Indeed, that should be -= cfqq->slice_resid.
+> Should we do something special about (MAP_UNLOCKED | MAP_LOCKED)?
+It is simpler to just ignore it. What do you think?
 
-> I did some tests with and without it, or changing the sign, and it
-> doesn't matter at all for pure sync workloads.
-
-For most cases it will not change things a lot, but it should be
-technically correct.
-
-> The only case in which it matters a little, from my experiments, is
-> for sync vs async workload. Here, since async queues are preempted,
-> the current form of the code penalizes them, so they get larger
-> delays, and we get more bandwidth for sync.
-
-Right
-
-> This is, btw, the only positive outcome (I can think of) from the
-> current form of the code, and I think we could obtain it more easily
-> by unconditionally adding a delay for async queues:
->                 rb_key = cfq_slice_offset(cfqd, cfqq) + jiffies;
-> 		if (!cfq_cfqq_sync(cfqq)) {
->                         rb_key += CFQ_ASYNC_DELAY;
-> 	        }
-> 
-> removing completely the resid stuff (or at least leaving us with the
-> ability of using it with the proper sign).
-
-It's more likely for the async queue to overrun, but it can happen for
-others as well. I'm keeping the residual count, but making the sign
-change of course.
-
--- 
-Jens Axboe
-
+--
+			Gleb.
