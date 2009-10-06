@@ -1,92 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932835AbZJFRxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932968AbZJFRyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932835AbZJFRxR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 13:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932739AbZJFRxQ
+	id S932968AbZJFRyO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 13:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932922AbZJFRyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 13:53:16 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57710 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932735AbZJFRxP (ORCPT
+	Tue, 6 Oct 2009 13:54:13 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:46243 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757019AbZJFRyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 13:53:15 -0400
-Date: Tue, 6 Oct 2009 13:52:35 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: kyle@mcmartin.ca, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-Subject: Re: [git patches] parisc for 2.6.32
-Message-ID: <20091006175235.GA11702@bombadil.infradead.org>
-References: <20091006172602.GA1924@hera.kernel.org> <alpine.LFD.2.01.0910061035050.3432@localhost.localdomain>
+	Tue, 6 Oct 2009 13:54:12 -0400
+X-Sasl-enc: ANPm92X5U+RTK11Vl3WbS9GQbqYPPvY48SLgRtL8EvtB 1254851589
+Message-ID: <4ACB83F7.9040500@imap.cc>
+Date: Tue, 06 Oct 2009 19:52:55 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0910061035050.3432@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Michael Buesch <mb@bu3sch.de>
+CC: i4ldeveloper@listserv.isdn4linux.de, Carsten Paeth <calle@calle.de>,
+       Karsten Keil <isdn@linux-pingi.de>, Karsten Keil <keil@b1-systems.de>,
+       Armin Schindler <armin@melware.de>, isdn4linux@listserv.isdn4linux.de,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC] isdn/capi: fix up CAPI subsystem workaround locking
+ a bit
+References: <20091003120657.2228911186C@xenon.ts.pxnet.com> <200910032035.21884.mb@bu3sch.de> <4AC9DBA5.1090701@imap.cc> <200910052324.09992.mb@bu3sch.de>
+In-Reply-To: <200910052324.09992.mb@bu3sch.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig123FB9C4A91B62E09C2BE7C1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 10:40:10AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 6 Oct 2009, Kyle McMartin wrote:
-> <
-> > Mostly fixes, except for the tracehook stuff...
-> 
-> I don't see how this can be fixes, since I can't recall any parisc pulls 
-> during the merge window.
-> 
-> Yes, there have been parisc changes, but they've all come in through 
-> commits that either were global and people also fixed up parisc while at 
-> it (eg things like "fcntl: add F_[SG]ETOWN_EX"), or they have been build 
-> cleanups where you were cc'd but apparently never even bothered to ack the 
-> change.
-> 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig123FB9C4A91B62E09C2BE7C1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Christoph Hellwig (1):
-      parisc: convert to asm-generic/hardirq.h
+On Mon, 2009-10-05 23:24:07 +0200, Michael Buesch wrote:
+> On Monday 05 October 2009 13:42:29 Tilman Schmidt wrote:
 
-Jaswinder Singh Rajput (1):
-      parisc: includecheck fix: signal.c
+>> Thanks for the info. So do I understand correctly that after:
+>>
+>> commit 6aa65472d18703064898eefb5eb58f7ecd0d8912
+>> Author: Michael Buesch <mb@bu3sch.de>
+>> Date:   Mon Jun 26 00:25:30 2006 -0700
+>>
+>>     [PATCH] CAPI crash / race condition
+>>
+>> you were actually still seeing LIST_POISON2 Oopses in
+>> capiminor_del_ack(), but after:
+>=20
+> Yeah well. The oops with LIST_POISON was with a patch that converted th=
+e
+> datahandle_queue to struct list_head, but without the spinlock_t ackqlo=
+ck added.
+> Then I added the spinlock_t ackqlock and it first seemed to fix the pro=
+blem. (That
+> is the patch from the mail).
 
-James Bottomley (1):
-      parisc: add me to Maintainers
+Understood.
 
-- These could wait.
+> But it did only shrink the race window, so the crash did still happen, =
+but less often.
 
-Helge Deller (3):
-      parisc: rename parisc's vmalloc_start to parisc_vmalloc_start
-      parisc: Fix linker script breakage.
-      agp: parisc-agp.c - use correct page_mask function
+Ok.
 
-- 3 build fixes (the vmalloc one is a warning because of a name
-  collision.)
+> The crash was only "fixed" with the workaround_lock patch (but _without=
+_ any of the
+> ackqueue patches applied.)
+>=20
+>> commit 053b47ff249b9e0a634dae807f81465205e7c228
+>> Author: Michael Buesch <mb@bu3sch.de>
+>> Date:   Mon Feb 12 00:53:26 2007 -0800
+>>
+>>     [PATCH] Workaround CAPI subsystem locking issue
+>>
+>> they were gone? That's interesting. I'll try to wrap my mind around
+>> this.
+>=20
+> Yeah, this sledgehammer lock did fix the crash while leaving the old no=
+n-list-head
+> queue in place (it should still be there today).
 
-Julia Lawall (1):
-      parisc: correct use of SHF_ALLOC
+That is not the case. In mainline, your second patch was applied on
+top of the first one, so there is now struct list_head ackqueue and
+spinlock_t ackqlock as well as static DEFINE_SPINLOCK(workaround_lock).
 
-- Correctness fix (the two symbols have identical values, but still.)
+>> It's unfortunate that these crashes only seem to occur with one specif=
+ic
+>> device (FritzCard DSL) which I don't have.
+>=20
+> I still have the device somewhere. If you want to have it, I can blow o=
+ff the
+> dust and send it to you. If you don't want it, I'll throw it away soon.=
 
-Kyle McMartin (7):
-      parisc: tracehook_report_syscall
-      parisc: tracehook_signal_handler
-      parisc: add missing TI_TASK macro in syscall.S
-      parisc: split syscall_trace into two halves
-      parisc: stop using task->ptrace for {single,block}step flags
-      parisc: add skeleton syscall.h
-      parisc: HAVE_ARCH_TRACEHOOK
+> I'd really like to send it to you to get rid of it. ;)
 
-- Fine, I can drop these until .33
+Feel free to do so. I'll send you my snailmail address by PM. I'm
+making no promises about when I might get around to actually testing
+it, though.
 
-Tim Abbott (1):
-      parisc: Make THREAD_SIZE available to assembly files and linker
-scripts.
+>> Can anyone shed some light on=20
+>> what that device is doing differently from other ISDN cards?
+>=20
+> Well, it's a combined ISDN/DSL card, but I never used the ISDN part. So=
+ the crash
+> happened while transferring data over the DSL link.
 
-- Build fix.
+DSL over CAPI? Strange.
 
-I mean, take them, or don't. I'm not going to lose any sleep over it. I
-do this on a volunteer basis when I have free time between work and
-school... 
+> The vendor driver is closed source with an open wrapper (like nvidia). =
+It's a pretty
+> crappy unmaintained piece of software, but it ran stable with some patc=
+hes applied
+> to the driver and the workaround-lock patch to the capi stack.
 
-regards, Kyle
+O dear. I wonder what I'll find.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=C3=B6ffnet mindestens haltbar bis: (siehe R=C3=BCckseite)
+
+
+--------------enig123FB9C4A91B62E09C2BE7C1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFKy4QBQ3+did9BuFsRAsCcAJ4w+pG8PpXC/rKcqukzgaN2Fj3HJQCeLrs8
+iWIxNbtGEDJj/LT5bTjGhfw=
+=bwwl
+-----END PGP SIGNATURE-----
+
+--------------enig123FB9C4A91B62E09C2BE7C1--
