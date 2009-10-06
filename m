@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933002AbZJFQLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbZJFQTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933002AbZJFQLw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 12:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932950AbZJFQLv
+	id S1757082AbZJFQTW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 12:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbZJFQTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 12:11:51 -0400
-Received: from mga02.intel.com ([134.134.136.20]:30365 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932948AbZJFQLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 12:11:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,513,1249282800"; 
-   d="scan'208";a="454987915"
-Date: Tue, 6 Oct 2009 09:11:05 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Gabe Black <gabe.black@ni.com>
-Cc: shawn.bohrer@ni.com, mike.hoogendyk@ni.com, knan@anduin.net,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, Gabe Black <gabe.black@ni.com>
-Subject: Re: [PATCH] TI XIO200a bridge quirk: erroneously reports support
- for fast b2b transfers
-Message-ID: <20091006091105.2f4c0d5d@jbarnes-g45>
-In-Reply-To: <1254838785-10254-1-git-send-email-gabe.black@ni.com>
-References: <8a15eb2b0910060432m3c062776md718ea19baf19a3f@mail.gmail.com>
-	<1254838785-10254-1-git-send-email-gabe.black@ni.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Oct 2009 12:19:22 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:32931 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756100AbZJFQTV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 12:19:21 -0400
+Message-ID: <4ACB6DAF.4000709@gmail.com>
+Date: Tue, 06 Oct 2009 18:17:51 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [patch 2/4] tree rcu: Add debug RCU head option
+References: <20091006143727.868480435@polymtl.ca> <20091006144038.140258698@polymtl.ca> <4ACB684A.6060107@gmail.com> <20091006160948.GB15904@Krystal>
+In-Reply-To: <20091006160948.GB15904@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 06 Oct 2009 18:17:51 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Oct 2009 09:19:45 -0500
-Gabe Black <gabe.black@ni.com> wrote:
-
-> This quirk will disable fast back to back transfer on the secondary
-> bus segment of the TI Bridge.
+Mathieu Desnoyers a écrit :
+> * Eric Dumazet (eric.dumazet@gmail.com) wrote:
+>> Mathieu Desnoyers a écrit :
+>>> Poisoning the rcu_head callback list. Only for rcu tree for now.
+>>>
+>>> Helps finding racy users of call_rcu(), which results in hangs because list
+>>> entries are overwritten and/or skipped. Using the lower bit to poison because
+>>> include/net/dst.h __pad_to_align_refcnt complains when struct rcu_head grows.
+>>>
+>> I see :)
+>>
 > 
-> Signed-off-by: Gabe Black <gabe.black@ni.com>
+> I don't know if there is an easy fix for __pad_to_align_refcnt ?
 
-Applied to my for-linus branch.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+This check was added to make sure some tbench regression was not added if
+dst->__refcnt was moved around, I am sure you dont care about tbench being 10% slower,
+do you ?
+
+
+diff --git a/include/net/dst.h b/include/net/dst.h
+index 5a900dd..b8fba74 100644
+--- a/include/net/dst.h
++++ b/include/net/dst.h
+@@ -154,7 +154,9 @@ static inline void dst_hold(struct dst_entry * dst)
+ 	 * If your kernel compilation stops here, please check
+ 	 * __pad_to_align_refcnt declaration in struct dst_entry
+ 	 */
++#if !defined(DEBUG_RCU_HEAD)
+ 	BUILD_BUG_ON(offsetof(struct dst_entry, __refcnt) & 63);
++#endif
+ 	atomic_inc(&dst->__refcnt);
+ }
+ 
+
