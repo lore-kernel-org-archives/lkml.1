@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZJFKFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbZJFKHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbZJFKFh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 06:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756820AbZJFKFh
+	id S1756881AbZJFKHO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 06:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756790AbZJFKHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 06:05:37 -0400
-Received: from www.tglx.de ([62.245.132.106]:35264 "EHLO www.tglx.de"
+	Tue, 6 Oct 2009 06:07:13 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:59275 "EHLO pmx1.sophos.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756762AbZJFKFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 06:05:36 -0400
-Date: Tue, 6 Oct 2009 12:04:54 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Mehlan, Markus" <Markus.Mehlan@ritter.info>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: AW: AW: clock_nanosleep: cyclic POSIX thread freezes during time
- setting
-In-Reply-To: <40F775BBD072A346957E787B3D0DBE5F1C97B5@w2k3-46ex01.RITTER.LOCAL>
-Message-ID: <alpine.LFD.2.00.0910061201210.2646@localhost.localdomain>
-References: <40F775BBD072A346957E787B3D0DBE5F1C97AF@w2k3-46ex01.RITTER.LOCAL> <alpine.LFD.2.00.0910052044410.2646@localhost.localdomain> <40F775BBD072A346957E787B3D0DBE5F1C97B4@w2k3-46ex01.RITTER.LOCAL> <alpine.LFD.2.00.0910061112400.2646@localhost.localdomain>
- <40F775BBD072A346957E787B3D0DBE5F1C97B5@w2k3-46ex01.RITTER.LOCAL>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1756277AbZJFKHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 06:07:12 -0400
+From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Organization: Sophos Plc
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
+Date: Tue, 6 Oct 2009 11:06:33 +0100
+User-Agent: KMail/1.9.10
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       Tomasz Chmielewski <mangoo@wpkg.org>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Byron Stanoszek <bstanoszek@comtime.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>
+References: <Pine.LNX.4.64.0910052334480.17655@boston.corp.fedex.com> <b6a2187b0910051715y4ee63503y148ba2d7e24cad8e@mail.gmail.com> <alpine.LFD.2.01.0910051727420.3432@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910051727420.3432@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <200910061106.33718.tvrtko.ursulin@sophos.com>
+X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 06/10/2009 11:06:34,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 06/10/2009 11:06:34,
+	Serialize complete at 06/10/2009 11:06:34
+X-TNEFEvaluated: 1
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Oct 2009, Mehlan, Markus wrote:
-> #
-> # Kernel hacking
-> #
-> # CONFIG_PRINTK_TIME is not set
-> CONFIG_ENABLE_WARN_DEPRECATED=y
-> CONFIG_ENABLE_MUST_CHECK=y
-> CONFIG_FRAME_WARN=1024
-> CONFIG_MAGIC_SYSRQ=y
-> # CONFIG_UNUSED_SYMBOLS is not set
-> CONFIG_DEBUG_FS=y
-> # CONFIG_HEADERS_CHECK is not set
-> # CONFIG_DEBUG_KERNEL is not set
-> CONFIG_RTMUTEX_CHECK=y
-> # CONFIG_DEBUG_BUGVERBOSE is not set
-> CONFIG_HAVE_FTRACE=y
-> CONFIG_HAVE_DYNAMIC_FTRACE=y
-> # CONFIG_EVENT_TRACER is not set
-> # CONFIG_WAKEUP_LATENCY_HIST is not set
-> # CONFIG_SAMPLES is not set
-> # CONFIG_IRQSTACKS is not set
-> # CONFIG_VIRQ_DEBUG is not set
-> # CONFIG_BOOTX_TEXT is not set
-> # CONFIG_PPC_EARLY_DEBUG is not set
+On Tuesday 06 October 2009 01:30:51 Linus Torvalds wrote:
+> On Tue, 6 Oct 2009, Jeff Chua wrote:
+> > Loud and clear. And appreciated all the replies. I think it's time for
+> > upgrade!
+>
+> As Byron said, it really should be sufficient to just upgrade the kernel
+> (I presume that you already have a CPU that is 64-bit capable: not very
+> many boards with old CPU's can even fit 64GB of ram).
+>
+> In fact, I wish more people did that, just so that we'd get better
+> coverage of the 32-bit compat code. We occasionally find issues there,
+> although I think it's getting rarer.
 
-CONFIG_FTRACE=y is missing.
+Maybe convince some distro to offer this setup as an option at least? I always 
+wondered why no one has, or maybe I missed it.
 
-I don't remember whether the older -rt kernels had ftrace support for
-powerpc. 
+Tvrtko
 
-Can you verify whether later -rt versions (29-rt or 31-rt) have the
-same problem ?
-
-Thanks,
-
-	tglx
