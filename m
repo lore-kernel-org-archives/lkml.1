@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbZJFOgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932787AbZJFOXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932805AbZJFOgX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 10:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932754AbZJFOgW
+	id S932787AbZJFOXq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 10:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932778AbZJFOXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 10:36:22 -0400
-Received: from mailserv59-us.natinst.com ([130.164.14.243]:3294 "EHLO
-	mailserv59-us.natinst.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932765AbZJFOgV (ORCPT
+	Tue, 6 Oct 2009 10:23:45 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:44406 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932766AbZJFOXn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 10:36:21 -0400
-X-Greylist: delayed 958 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Oct 2009 10:36:21 EDT
-From: Gabe Black <gabe.black@ni.com>
-To: jbarnes@virtuousgeek.org
-Cc: shawn.bohrer@ni.com, mike.hoogendyk@ni.com, knan@anduin.net,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, Gabe Black <gabe.black@ni.com>
-Subject: [PATCH] TI XIO200a bridge quirk: erroneously reports support for fast b2b transfers
-Date: Tue, 6 Oct 2009 09:19:45 -0500
-Message-Id: <1254838785-10254-1-git-send-email-gabe.black@ni.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <8a15eb2b0910060432m3c062776md718ea19baf19a3f@mail.gmail.com>
-References: <8a15eb2b0910060432m3c062776md718ea19baf19a3f@mail.gmail.com>
-X-MIMETrack: Itemize by SMTP Server on MailServ59-US/AUS/H/NIC(Release 8.0.2 FP2|June 23, 2009) at
- 10/06/2009 09:19:46 AM,
-	Serialize by Router on MailServ59-US/AUS/H/NIC(Release 8.0.2 FP2|June 23, 2009) at
- 10/06/2009 09:36:26 AM,
-	Serialize complete at 10/06/2009 09:36:26 AM
+	Tue, 6 Oct 2009 10:23:43 -0400
+MIME-Version: 1.0
+Message-ID: <711a958d-5a76-4f00-aa69-8e5889945992@default>
+Date: Tue, 6 Oct 2009 07:19:51 -0700 (PDT)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: Avi Kivity <avi@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kurt.hackel@oracle.com, Keir Fraser <keir.fraser@eu.citrix.com>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>, zach.brown@oracle.com,
+       the arch/x86 maintainers <x86@kernel.org>, chris.mason@oracle.com
+Subject: RE: [PATCH 3/5] x86/pvclock: add vsyscall implementation
+In-Reply-To: <4ACB0833.2050203@redhat.com>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=Windows-1252
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4ACB5276.0165:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This quirk will disable fast back to back transfer on the secondary bus
-segment of the TI Bridge.
+> From: Jeremy Fitzhardinge [mailto:jeremy.fitzhardinge@citrix.com]
+> With this in place, I can do a gettimeofday in about 100ns on a 2.4GHz
+> Q6600.  I'm sure this could be tuned a bit more, but it is 
+> already much better than a syscall.
 
-Signed-off-by: Gabe Black <gabe.black@ni.com>
----
- drivers/pci/quirks.c    |   19 +++++++++++++++++++
- include/linux/pci_ids.h |    1 +
- 2 files changed, 20 insertions(+), 0 deletions(-)
+To evaluate the goodness of this, we really need a full
+set of measurements for:
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 6099fac..efa6534 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -670,6 +670,25 @@ static void __devinit quirk_vt8235_acpi(struct pci_dev *dev)
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA,	PCI_DEVICE_ID_VIA_8235,	quirk_vt8235_acpi);
- 
-+/*
-+ * TI XIO2000a PCIe-PCI Bridge erroneously reports it supports fast back-to-back:
-+ *	Disable fast back-to-back on the secondary bus segment
-+ */
-+static void __devinit quirk_xio2000a(struct pci_dev *dev)
-+{
-+	struct pci_dev *pdev;
-+	u16 command;
-+
-+	dev_warn(&dev->dev, "TI XIO2000a quirk detected; "
-+		"secondary bus fast back-to-back transfers disabled\n");
-+	list_for_each_entry(pdev, &dev->subordinate->devices, bus_list) {
-+		pci_read_config_word(pdev, PCI_COMMAND, &command);
-+		if (command & PCI_COMMAND_FAST_BACK)
-+			pci_write_config_word(pdev, PCI_COMMAND, command & ~PCI_COMMAND_FAST_BACK);
-+	}
-+}
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_XIO2000A,
-+			quirk_xio2000a);
- 
- #ifdef CONFIG_X86_IO_APIC 
- 
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index da1fda8..f490e7a 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -776,6 +776,7 @@
- #define PCI_DEVICE_ID_TI_X515		0x8036
- #define PCI_DEVICE_ID_TI_XX12		0x8039
- #define PCI_DEVICE_ID_TI_XX12_FM	0x803b
-+#define PCI_DEVICE_ID_TI_XIO2000A	0x8231
- #define PCI_DEVICE_ID_TI_1130		0xac12
- #define PCI_DEVICE_ID_TI_1031		0xac13
- #define PCI_DEVICE_ID_TI_1131		0xac15
--- 
-1.6.0.4
+a) cost of rdtsc (and rdtscp if different)
+b) cost of vsyscall+pvclock
+c) cost of rdtsc emulated
+d) cost of a hypercall that returns "hypervisor system time"
 
+On a E6850 (3Ghz but let's use cycles), I measured;
+
+a == 72 cycles
+c == 1080 cycles
+d == 780 cycles
+
+It may be partly apples and oranges, but it looks
+like a good guess for b on my machine is
+
+b == 240 cycles
+
+Not bad, but is there any additional context switch
+cost to support it?
+
+> From: Avi Kivity [mailto:avi@redhat.com]
+> Instead of using vgetcpu() and rdtsc() independently, you can 
+> use rdtscp 
+> to read both atomically.  This removes the need for the 
+> preempt notifier.
+
+Xen does not currently expose rdtscp and so does not emulate
+(or context switch) TSC_AUX.  Context switching TSC_AUX
+is certainly possible, but will likely be expensive.
+If the primary reason for vsyscall+pvclock is to maximize
+performance for gettimeofday/clock_gettime, this cost
+would need to be added to the mix.
+
+> preempt notifiers are per-thread, not global, and will upset 
+> the cycle 
+> counters.  I'd drop them and use rdtscp instead (and give up if the 
+> processor doesn't support it).
+
+Even if rdtscp is used, in the Intel processor lineup
+only the very latest (Nehalem) supports rdtscp, so
+"give up" doesn't seem like a very good option, at least
+in the near future.
