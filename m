@@ -1,118 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbZJFFr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbZJFFrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756311AbZJFFr0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 01:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbZJFFrZ
+	id S1756355AbZJFFrb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 01:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbZJFFrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 01:47:25 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38790 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756209AbZJFFrZ (ORCPT
+	Tue, 6 Oct 2009 01:47:31 -0400
+Received: from bc.sympatico.ca ([209.226.175.184]:65228 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756325AbZJFFr3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 01:47:25 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4ACAD9A9.5000208@jp.fujitsu.com>
-Date: Tue, 06 Oct 2009 14:46:17 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-CC: Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUGFIX -v7] x86, MCE: Fix bugs and issues of MCE log ring buffer
-References: <1253269241.15717.525.camel@yhuang-dev.sh.intel.com>	 <4AC990E1.7030708@jp.fujitsu.com> <c62985530910050151u78b46fa4l6ec0184f4f75be27@mail.gmail.com>
-In-Reply-To: <c62985530910050151u78b46fa4l6ec0184f4f75be27@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Tue, 6 Oct 2009 01:47:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAD9yykpMROOX/2dsb2JhbACBUdFRgiiCAgQ
+Date: Tue, 6 Oct 2009 01:46:18 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: Is RCU_PREEMPT working in 2.6.30.9 ?
+Message-ID: <20091006054618.GA28121@Krystal>
+References: <20091005235817.GA30691@Krystal> <20091006002441.GH6949@linux.vnet.ibm.com> <20091006020018.GA8901@Krystal> <20091006021417.GB8901@Krystal> <20091006030156.GC8901@Krystal> <20091006040235.GA6732@linux.vnet.ibm.com> <20091006051400.GA24465@Krystal> <20091006053051.GB24465@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20091006053051.GB24465@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 01:44:27 up 48 days, 16:33,  3 users,  load average: 0.45, 0.21,
+	0.18
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frédéric Weisbecker wrote:
-> Looks like the conversion of MCE log into a TRACE_EVENT is still in
-> discussion whereas the current issues are urgent.
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > 
+> > > Classic RCU does have known bugs in its dyntick interface, which was one
+> > > of the factors motivating its removal from mainline.  ;-)
+> > > 
+> > > 							Thanx, Paul
+> > 
+> > Recreated the problem with a simple test-case not involving lttng:
+> > 
+> > kernel 2.6.30.9
+> > TREE RCU
+> > 
+> > loading this hacky module:
+> > 
 > 
-> So the need is to have a more stable ring buffer. But this one is an ad-hoc one.
-> We already have a general purpose per-cpu/lockless ring buffer implementation in
-> kernel/trace/ring_buffer.c
-> And it's not only used by tracing, it's generally available.
+> Please forget about this hacky module test case. It was not actually
+> hung, just really slow when 8 cpus where up to get the prompt back from
+> 1000 synchronize_sched() calls.
 
-Thank you for this comment.
+The only reliable way I can reproduce this on TREE RCU is with my
+tracepoint.c and marker.c code with cpu hotplug/unplug. I'll dig into
+those internals before blaming RCU itself. ;)
 
-First of all, we have to make it clear that what is the urgent issue.
-IMHO there are 2 issues, one is "small buffer" and the other is "non
-ring buffer."
-
-I think that the "small buffer" is definitely a scalability issue and
-that this problem should be fixed asap to support large servers with
-modern processors.
-But I think that the "non ring buffer" is kind of a performance issue,
-which is relatively minor problem on the MCE codes.
-
-So frankly I approve of the per-CPU buffering, but be skeptical about
-the ring buffering here.
-
-In other words I don't mind dropping 9/10 of my patch set to postpone
-converting the buffer to ring buffer, because even though the rests of
-my patch set can convert the buffer to per-CPU style, which will solve
-the urgent issue I have now.  That is why I divided original patch into
-these pieces and made separate steps in the buffer conversion.
-
-How about converting the MCE buffer to per-CPU as the 1st step, to solve
-an urgent scalability issue, x86 maintainers? > Ingo, Peter?
-
-
-> I think it would be nicer to use it to avoid a proliferation of
-> unstable ring buffers inside the kernel.
-
-I tend to agree with Andi.
-I think the generic ring buffer implementation is too rich for current
-use in MCE codes.
-
-Maybe I could invent an alternative patch of my patch 9/10 to use generic
-ring buffer from MCE codes.  But as I mentioned above I think that the
-patch will solve the minor issue only.  Also I think that it might bring
-unexpected impacts on traditional interfaces.
-Therefore if there are still "use generic one if you want to use ring buffer"
-comments then I'd like to drop 9/10 simply rather than reinvent it.
-
-Any other suggestions?
-
-
-BTW, I'd like to make it clear that what is the main complaint here.
-
-Is it kind of "don't duplicate codes"?
-The requirement in MCE codes is quite simple, so use of relatively complex
-generic ring buffer doesn't fit for it.  I'm not sure but as Andi proposed
-the next version of kernel/kfifo will be better choice here.  I can wait
-the release of new kfifo either without making MCE log buffer to ring,
-or with the temporary ad-hoc one.
-
-Is it kind of "provide generic interface"?
-I think it makes a lot of sense.  I can't say the /dev/mcelog is the best
-interface for MCE logging.  Moreover there are many other hardware error
-sources in a system such as PCIe and power unit etc., so it would be nice
-for monitoring applications if kernel can provide a single channel (other
-than /var/log/messages) to gather all kind of hardware errors.
-The TRACE_EVENT would be one of possible options (or parts) to implement
-such feature.
-
-Oh, don't forget "please keep traditional interfaces."
-To be honest I think the current interfaces look quite ugly.  But I know
-that there are few real users such as mcelog (and mced?), and that at this
-time we have no choice but use these tools.  So we cannot cast away current
-interfaces immediately, until new interfaces are invented and new user land
-application can provide enough functionalities.  Or we need to improve
-current interface gradually and synchronously with improvements on tools ...
-but I suppose in this way there will never be drastic changes.
-
-
-Well, then I think what we have to do is invent a competitive new interface
-for MCE logging, which can live together with current interface for a while,
-isn't it?
-
+Sorry for the mass-self-reply,
 
 Thanks,
-H.Seto
 
+Mathieu
+
+> 
+> Mathieu
+> 
+> > /*
+> >  * test-rcu-bug.c
+> >  */
+> > 
+> > #include <linux/module.h>
+> > #include <linux/proc_fs.h>
+> > #include <linux/sched.h>
+> > #include <linux/timex.h>
+> > #include <linux/rcupdate.h>
+> > #include <asm/ptrace.h>
+> > 
+> > struct proc_dir_entry *pentry = NULL;
+> > 
+> > static int my_open(struct inode *inode, struct file *file)
+> > {
+> > 	unsigned int i;
+> > 
+> > 	for (i = 0; i < 1000; i++)
+> > 		synchronize_sched();
+> > 
+> > 	return -EPERM;
+> > }
+> > 
+> > 
+> > static struct file_operations my_operations = {
+> > 	.open = my_open,
+> > };
+> > 
+> > int init_module(void)
+> > {
+> > 	pentry = create_proc_entry("testrcu", 0444, NULL);
+> > 	if (pentry)
+> > 		pentry->proc_fops = &my_operations;
+> > 
+> > 	return 0;
+> > }
+> > 
+> > void cleanup_module(void)
+> > {
+> > 	remove_proc_entry("testrcu", NULL);
+> > }
+> > 
+> > MODULE_LICENSE("GPL");
+> > MODULE_AUTHOR("Mathieu Desnoyers");
+> > MODULE_DESCRIPTION("rcu test");
+> > 
+> > Running, in loops:
+> > 
+> > One console:
+> > for a in $(seq 1 7); do echo 0 > /sys/devices/system/cpu/cpu$a/online; done
+> > for a in $(seq 1 7); do echo 1 > /sys/devices/system/cpu/cpu$a/online; done
+> > 
+> > Another console:
+> > for a in $(seq 1 10000); do cat /proc/testrcu; done
+> > 
+> > I eventually get a hang for the cat loop. Sysrq-W shows:
+> > 
+> > 
+> > [ 1337.118630] SysRq : Show Blocked State                             
+> > [ 1337.118644]   task                        PC stack   pid father              
+> > [ 1337.118644] md1_resync    D 0000000000000000     0  1255      2
+> > [ 1337.118644]  ffffffff807eb360 0000000000000046 fffffb7fa3c41757 ffff880439150
+> > [ 1337.118644]  ffff88043e028860 00ffffff803f4b88 0000000000010a80 0000000000008
+> > [ 1337.118644]  0000000000010a80 00ff88043e028860 ffff88043e485b00 ffff88043e488
+> > [ 1337.118644] Call Trace:
+> > [ 1337.118644]  [<ffffffff80684638>] ? schedule+0x18/0x40
+> > [ 1337.118644]  [<ffffffff8052b3dc>] ? raise_barrier+0x9c/0x1a0
+> > [ 1337.118644]  [<ffffffff80236720>] ? default_wake_function+0x0/0x10
+> > [ 1337.118644]  [<ffffffff8052c4f6>] ? sync_request+0x126/0x6c0
+> > [ 1337.118644]  [<ffffffff8054609a>] ? is_mddev_idle+0xda/0x160
+> > [ 1337.118644]  [<ffffffff805467f7>] ? md_do_sync+0x6d7/0xc90
+> > [ 1337.118644]  [<ffffffff80252400>] ? autoremove_wake_function+0x0/0x30
+> > [ 1337.118644]  [<ffffffff80547677>] ? md_thread+0x47/0x120
+> > [ 1337.118644]  [<ffffffff8022e8db>] ? __wake_up_common+0x5b/0x90
+> > [ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
+> > [ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
+> > [ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
+> > [ 1337.118644]  [<ffffffff80251f24>] ? kthread+0x54/0x90
+> > [ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
+> > [ 1337.118644]  [<ffffffff8020d00a>] ? child_rip+0xa/0x20
+> > [ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
+> > [ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
+> > [ 1337.118644]  [<ffffffff8020d000>] ? child_rip+0x0/0x20
+> > [ 1337.118644] cat           D 0000000000000000     0 28861   4758
+> > [ 1337.118644]  ffff88043f84b330 0000000000000082 0000000000000000 ffff88043f570
+> > [ 1337.118644]  0000000000000019 00ffffff80293013 0000000000010a80 0000000000008
+> > [ 1337.118644]  0000000000010a80 00ffffff80293887 ffff88043dd885b0 ffff88043dd88
+> > [ 1337.118644] Call Trace:
+> > [ 1337.118644]  [<ffffffff802df5be>] ? inode_init_always+0xfe/0x1a0
+> > [ 1337.118644]  [<ffffffff802df692>] ? alloc_inode+0x32/0xa0
+> > [ 1337.118644]  [<ffffffff80684638>] ? schedule+0x18/0x40
+> > [ 1337.118644]  [<ffffffff806849ed>] ? schedule_timeout+0x15d/0x190
+> > [ 1337.118644]  [<ffffffff8031a1fc>] ? proc_lookup_de+0xac/0x100
+> > [ 1337.118644]  [<ffffffff80683b2c>] ? wait_for_common+0x15c/0x190
+> > [ 1337.118644]  [<ffffffff80236720>] ? default_wake_function+0x0/0x10
+> > [ 1337.118644]  [<ffffffff802dba90>] ? dput+0xb0/0x180
+> > [ 1337.118644]  [<ffffffffa007c050>] ? my_open+0x0/0x20 [test_rcu_bug]
+> > [ 1337.118644]  [<ffffffff8024f8d3>] ? synchronize_rcu+0x43/0x50
+> > [ 1337.118644]  [<ffffffff8024f730>] ? wakeme_after_rcu+0x0/0x10
+> > [ 1337.118644]  [<ffffffffa007c05d>] ? my_open+0xd/0x20 [test_rcu_bug]          
+> > [ 1337.118644]  [<ffffffff80313d52>] ? proc_reg_open+0xa2/0x190                 
+> > [ 1337.118644]  [<ffffffff80313cb0>] ? proc_reg_open+0x0/0x190                  
+> > [ 1337.118644]  [<ffffffff802c6a77>] ? __dentry_open+0x127/0x350                
+> > [ 1337.118644]  [<ffffffff802d6664>] ? do_filp_open+0x2b4/0xa00                 
+> > [ 1337.118644]  [<ffffffff802e0e22>] ? alloc_fd+0x122/0x150                     
+> > [ 1337.118644]  [<ffffffff802c6816>] ? do_sys_open+0x86/0x180                   
+> > [ 1337.118644]  [<ffffffff8020beeb>] ? system_call_fastpath+0x16/0x1b           
+> > 
+> > This might be a race between queued callbacks that discards a
+> > completion.
+> > 
+> > Thanks,
+> > 
+> > Mathieu
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
