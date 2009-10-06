@@ -1,175 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933743AbZJFWUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933670AbZJFWTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933743AbZJFWUT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 18:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933636AbZJFWUO
+	id S933670AbZJFWTm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 18:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933644AbZJFWTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 18:20:14 -0400
-Received: from mail.pxnet.com ([195.227.45.7]:41041 "EHLO mail.pxnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933728AbZJFWUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 18:20:06 -0400
-From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH 06/11] gigaset: improve error recovery
-To: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-CC: Hansjoerg Lipp <hjlipp@web.de>, Karsten Keil <isdn@linux-pingi.de>,
-       Karsten Keil <keil@b1-systems.de>, isdn4linux@listserv.isdn4linux.de,
-       i4ldeveloper@listserv.isdn4linux.de
-Message-ID: <20091006-patch-gigaset-06.tilman@imap.cc>
-In-Reply-To: <20091006-patch-gigaset-00.tilman@imap.cc>
-References: <20091006-patch-gigaset-00.tilman@imap.cc>
-Date: Wed,  7 Oct 2009 00:18:51 +0200 (CEST)
-X-Spam-Score: -2.141 () AWL,BAYES_00,RDNS_NONE
+	Tue, 6 Oct 2009 18:19:40 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:52266 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933655AbZJFWTi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 18:19:38 -0400
+Message-ID: <4ACBC24F.2040005@linux.vnet.ibm.com>
+Date: Tue, 06 Oct 2009 17:18:55 -0500
+From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+CC: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       Dustin Kirkland <kirkland@canonical.com>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, stable@kernel.org,
+       Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH] ima: ecryptfs fix imbalance message (updated)
+References: <1254767144-4756-1-git-send-email-zohar@linux.vnet.ibm.com>
+In-Reply-To: <1254767144-4756-1-git-send-email-zohar@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.97a
+OpenPGP: id=5D35E502
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the Gigaset base stops responding, try resetting the USB
-connection to recover.
+On 10/05/2009 01:25 PM, Mimi Zohar wrote:
+> The unencrypted files are being measured.  Update the counters to get
+> rid of the ecryptfs imbalance message. (http://bugzilla.redhat.com/519737)
+> 
+> Reported-by: Sachin Garg
+> Cc: stable@kernel.org
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> ---
+>  fs/ecryptfs/main.c |    7 ++++++-
+>  1 files changed, 6 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
+> index 101fe4c..c6ac85d 100644
+> --- a/fs/ecryptfs/main.c
+> +++ b/fs/ecryptfs/main.c
+> @@ -35,6 +35,7 @@
+>  #include <linux/key.h>
+>  #include <linux/parser.h>
+>  #include <linux/fs_stack.h>
+> +#include <linux/ima.h>
+>  #include "ecryptfs_kernel.h"
+> 
+>  /**
+> @@ -118,6 +119,7 @@ int ecryptfs_init_persistent_file(struct dentry *ecryptfs_dentry)
+>  	const struct cred *cred = current_cred();
+>  	struct ecryptfs_inode_info *inode_info =
+>  		ecryptfs_inode_to_private(ecryptfs_dentry->d_inode);
+> +	int opened_lower_file = 0;
+>  	int rc = 0;
+> 
+>  	mutex_lock(&inode_info->lower_file_mutex);
+> @@ -134,9 +136,12 @@ int ecryptfs_init_persistent_file(struct dentry *ecryptfs_dentry)
+>  			       "for lower_dentry [0x%p] and lower_mnt [0x%p]; "
+>  			       "rc = [%d]\n", lower_dentry, lower_mnt, rc);
+>  			inode_info->lower_file = NULL;
+> -		}
+> +		} else
+> +			opened_lower_file = 1;
+>  	}
+>  	mutex_unlock(&inode_info->lower_file_mutex);
+> +	if (opened_lower_file)
+> +		ima_counts_get(inode_info->lower_file);
+>  	return rc;
+>  }
+> 
 
-Impact: error handling improvement
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
----
- drivers/isdn/gigaset/bas-gigaset.c |   69 +++++++++++++++++++++++------------
- 1 files changed, 45 insertions(+), 24 deletions(-)
+Hi Mimi - Thanks for the updated patch!
 
-diff --git a/drivers/isdn/gigaset/bas-gigaset.c b/drivers/isdn/gigaset/bas-gigaset.c
-index 9e7108a..5ed1d99 100644
---- a/drivers/isdn/gigaset/bas-gigaset.c
-+++ b/drivers/isdn/gigaset/bas-gigaset.c
-@@ -134,6 +134,7 @@ struct bas_cardstate {
- #define BS_ATRDPEND	0x040	/* urb_cmd_in in use */
- #define BS_ATWRPEND	0x080	/* urb_cmd_out in use */
- #define BS_SUSPEND	0x100	/* USB port suspended */
-+#define BS_RESETTING	0x200	/* waiting for HD_RESET_INTERRUPT_PIPE_ACK */
- 
- 
- static struct gigaset_driver *driver = NULL;
-@@ -319,6 +320,21 @@ static int gigaset_set_line_ctrl(struct cardstate *cs, unsigned cflag)
- 	return -EINVAL;
- }
- 
-+/* set/clear bits in base connection state, return previous state
-+ */
-+static inline int update_basstate(struct bas_cardstate *ucs,
-+				  int set, int clear)
-+{
-+	unsigned long flags;
-+	int state;
-+
-+	spin_lock_irqsave(&ucs->lock, flags);
-+	state = ucs->basstate;
-+	ucs->basstate = (state & ~clear) | set;
-+	spin_unlock_irqrestore(&ucs->lock, flags);
-+	return state;
-+}
-+
- /* error_hangup
-  * hang up any existing connection because of an unrecoverable error
-  * This function may be called from any context and takes care of scheduling
-@@ -350,12 +366,9 @@ static inline void error_hangup(struct bc_state *bcs)
-  */
- static inline void error_reset(struct cardstate *cs)
- {
--	/* close AT command channel to recover (ignore errors) */
--	req_submit(cs->bcs, HD_CLOSE_ATCHANNEL, 0, BAS_TIMEOUT);
--
--	//FIXME try to recover without bothering the user
--	dev_err(cs->dev,
--	    "unrecoverable error - please disconnect Gigaset base to reset\n");
-+	/* reset interrupt pipe to recover (ignore errors) */
-+	update_basstate(cs->hw.bas, BS_RESETTING, 0);
-+	req_submit(cs->bcs, HD_RESET_INTERRUPT_PIPE, 0, BAS_TIMEOUT);
- }
- 
- /* check_pending
-@@ -398,8 +411,13 @@ static void check_pending(struct bas_cardstate *ucs)
- 	case HD_DEVICE_INIT_ACK:		/* no reply expected */
- 		ucs->pending = 0;
- 		break;
--	/* HD_READ_ATMESSAGE, HD_WRITE_ATMESSAGE, HD_RESET_INTERRUPTPIPE
--	 * are handled separately and should never end up here
-+	case HD_RESET_INTERRUPT_PIPE:
-+		if (!(ucs->basstate & BS_RESETTING))
-+			ucs->pending = 0;
-+		break;
-+	/*
-+	 * HD_READ_ATMESSAGE and HD_WRITE_ATMESSAGE are handled separately
-+	 * and should never end up here
- 	 */
- 	default:
- 		dev_warn(&ucs->interface->dev,
-@@ -449,21 +467,6 @@ static void cmd_in_timeout(unsigned long data)
- 	error_reset(cs);
- }
- 
--/* set/clear bits in base connection state, return previous state
-- */
--inline static int update_basstate(struct bas_cardstate *ucs,
--				  int set, int clear)
--{
--	unsigned long flags;
--	int state;
--
--	spin_lock_irqsave(&ucs->lock, flags);
--	state = ucs->basstate;
--	ucs->basstate = (state & ~clear) | set;
--	spin_unlock_irqrestore(&ucs->lock, flags);
--	return state;
--}
--
- /* read_ctrl_callback
-  * USB completion handler for control pipe input
-  * called by the USB subsystem in interrupt context
-@@ -762,7 +765,8 @@ static void read_int_callback(struct urb *urb)
- 		break;
- 
- 	case HD_RESET_INTERRUPT_PIPE_ACK:
--		gig_dbg(DEBUG_USBREQ, "HD_RESET_INTERRUPT_PIPE_ACK");
-+		update_basstate(ucs, 0, BS_RESETTING);
-+		dev_notice(cs->dev, "interrupt pipe reset\n");
- 		break;
- 
- 	case HD_SUSPEND_END:
-@@ -1429,6 +1433,7 @@ static void req_timeout(unsigned long data)
- 
- 	case HD_CLOSE_ATCHANNEL:
- 		dev_err(bcs->cs->dev, "timeout closing AT channel\n");
-+		error_reset(bcs->cs);
- 		break;
- 
- 	case HD_CLOSE_B2CHANNEL:
-@@ -1438,6 +1443,13 @@ static void req_timeout(unsigned long data)
- 		error_reset(bcs->cs);
- 		break;
- 
-+	case HD_RESET_INTERRUPT_PIPE:
-+		/* error recovery escalation */
-+		dev_err(bcs->cs->dev,
-+			"reset interrupt pipe timeout, attempting USB reset\n");
-+		usb_queue_reset_device(bcs->cs->hw.bas->interface);
-+		break;
-+
- 	default:
- 		dev_warn(bcs->cs->dev, "request 0x%02x timed out, clearing\n",
- 			 pending);
-@@ -1930,6 +1942,15 @@ static int gigaset_write_cmd(struct cardstate *cs,
- 		goto notqueued;
- 	}
- 
-+	/* translate "+++" escape sequence sent as a single separate command
-+	 * into "close AT channel" command for error recovery
-+	 * The next command will reopen the AT channel automatically.
-+	 */
-+	if (len == 3 && !memcmp(buf, "+++", 3)) {
-+		rc = req_submit(cs->bcs, HD_CLOSE_ATCHANNEL, 0, BAS_TIMEOUT);
-+		goto notqueued;
-+	}
-+
- 	if (len > IF_WRITEBUF)
- 		len = IF_WRITEBUF;
- 	if (!(cb = kmalloc(sizeof(struct cmdbuf_t) + len, GFP_ATOMIC))) {
--- 
-1.6.2.1.214.ge986c
+Applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/ecryptfs/ecryptfs-2.6.git#next
 
+Tyler
