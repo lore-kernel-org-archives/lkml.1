@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbZJFE0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbZJFEep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752355AbZJFE0T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 00:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbZJFE0T
+	id S1752432AbZJFEep (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 00:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZJFEeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 00:26:19 -0400
-Received: from mail-yx0-f199.google.com ([209.85.210.199]:38349 "EHLO
-	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751065AbZJFE0S (ORCPT
+	Tue, 6 Oct 2009 00:34:44 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35382 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbZJFEen (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 00:26:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=TPc7pER9sxdzetz9h9rrjrka6WeXMvetsMYc0AZQ6Rh3u0k4gdRU4FCf8A1QITEV1a
-         WykqyQIgxBoEMjAT4KnfvGq4soy8/Nh98rZJ4jW18+4zGvkYeTs3tTrVXhuTb+OTdg+E
-         +XXzJx7somjKnqCPnRH14/bCyD9a7jluZCgjQ=
+	Tue, 6 Oct 2009 00:34:43 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for October 5 (android)
+Cc: kosaki.motohiro@jp.fujitsu.com, Stephen Rothwell <sfr@canb.auug.org.au>,
+       devel@driverdev.osuosl.org, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20091005162129.08749093.randy.dunlap@oracle.com>
+References: <20091005190324.7013a4bb.sfr@canb.auug.org.au> <20091005162129.08749093.randy.dunlap@oracle.com>
+Message-Id: <20091006133202.5FAD.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 6 Oct 2009 00:25:22 -0400
-Message-ID: <8bd0f97a0910052125m4327fef3i47e3b549938802f9@mail.gmail.com>
-Subject: userspace firmware loader, vmap, and nommu
-To: David Howells <dhowells@redhat.com>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  6 Oct 2009 13:34:03 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-semi-recently (9 Apr 2009), the userspace firmware code was rewritten
-to use vmap().  this causes problems for nommu systems as it isnt
-possible to create a virtually contiguous map with physically
-discontiguous pages.  the firmware loader used to work before this
-change because it would handle the realloc steps itself (allocate
-larger contiguous memory, copy over older data, release older memory)
-and vmalloc() on nommu is simply kmalloc().
+Hi
 
-this could be handled transparently on nommu systems by moving this
-scatter gathering of pages into vmap:
-void *vmap(struct page **pages, unsigned int count, unsigned long
-flags, pgprot_t prot)
-{
-    unsigned int i;
-    void *new_map, *page_data;
 
-    new_map = kmalloc(count << PAGE_SHIFT, GFP_KERNEL);
-    if (!new_map)
-        return NULL;
+> > Hi all,
+> > 
+> > Changes since 20091002:
+> 
+> drivers/staging/android/lowmemorykiller.c: In function 'lowmem_shrink':
+> drivers/staging/android/lowmemorykiller.c:111: error: 'struct mm_struct' has no member named 'oom_adj'
 
-    for (i = 0; i < count; ++i) {
-        page_data = kmap(pages[i]);
-        memcpy(new_map + (i << PAGE_SHIFT), page_data, PAGE_SIZE);
-        kunmap(page_data);
-    }
+I've already fixed it and andrew pick it up to -mm at 11/Sep.
 
-    return new_map;
-}
-void vunmap(const void *addr)
-{
-    kfree(addr);
-}
 
-or we could add nommu-specific code to the firmware loader to not use
-vmap().  how would you like to go David (Howells) ?
+> 
+> config := config-and1
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> 
+> drivers/staging/android/logger.c:165: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
+> drivers/staging/android/logger.c:165: error: (Each undeclared identifier is reported only once
+> drivers/staging/android/logger.c:165: error: for each function it appears in.)
+> drivers/staging/android/logger.c:178: error: implicit declaration of function 'signal_pending'
+> drivers/staging/android/logger.c:183: error: implicit declaration of function 'schedule'
+> drivers/staging/android/logger.c: In function 'logger_aio_write':
+> drivers/staging/android/logger.c:325: error: dereferencing pointer to incomplete type
+> drivers/staging/android/logger.c:333: error: dereferencing pointer to incomplete type
+> drivers/staging/android/logger.c:334: error: dereferencing pointer to incomplete type
+> drivers/staging/android/logger.c:337: error: dereferencing pointer to incomplete type
+> drivers/staging/android/logger.c:360: error: dereferencing pointer to incomplete type
+> drivers/staging/android/logger.c:363: error: dereferencing pointer to incomplete type
+> drivers/staging/android/logger.c:370: error: increment of pointer to unknown structure
+> drivers/staging/android/logger.c:370: error: arithmetic on pointer to an incomplete type
+> drivers/staging/android/logger.c:377: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
+> make[4]: *** [drivers/staging/android/logger.o] Error 1
+> 
+> config := config-and2
+> 
+> 
+> ---
+> ~Randy
 
-there is a possibility for the semi-common case of vmap-ing only one
-page.  but i'm not familiar enough with the mm code to figure that
-case out.
--mike
+
+
