@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933429AbZJFWgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933649AbZJFWh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933429AbZJFWgN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 18:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbZJFWgM
+	id S933649AbZJFWh4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 18:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933391AbZJFWhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 18:36:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51954 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756348AbZJFWgK (ORCPT
+	Tue, 6 Oct 2009 18:37:55 -0400
+Received: from mga09.intel.com ([134.134.136.24]:55069 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933344AbZJFWhy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 18:36:10 -0400
-Date: Tue, 6 Oct 2009 15:35:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: "David S. Miller" <davem@davemloft.net>, Joao Ramos <joao.ramos@inov.pt>,
-       David Fries <david@fries.net>, d.stussy@yahoo.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] two ide fixes for -rc4
-In-Reply-To: <200910070027.30377.bzolnier@gmail.com>
-Message-ID: <alpine.LFD.2.01.0910061534040.3432@localhost.localdomain>
-References: <200910070027.30377.bzolnier@gmail.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 6 Oct 2009 18:37:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,515,1249282800"; 
+   d="scan'208";a="557131869"
+From: "Kay, Allen M" <allen.m.kay@intel.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "chris@sous-sol.org" <chris@sous-sol.org>
+Date: Tue, 6 Oct 2009 15:37:15 -0700
+Subject: RE: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
+Thread-Topic: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
+Thread-Index: AcpG0Q+XQlG46d0WRkmLtmKVMLmlYQABG0Rw
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E302254A@orsmsx505.amr.corp.intel.com>
+References: <1254861226-18376-1-git-send-email-allen.m.kay@intel.com>
+ <4ACBB8B0.9030102@goop.org>
+ <57C9024A16AD2D4C97DC78E552063EA3E30224B7@orsmsx505.amr.corp.intel.com>
+ <4ACBBF0E.60603@goop.org>
+In-Reply-To: <4ACBBF0E.60603@goop.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thanks!  I will re-spin my patch.
 
-David, can you test these on the sis5513 system that had problems with the 
-original pio0 mode setting?
+-----Original Message-----
+From: Jeremy Fitzhardinge [mailto:jeremy@goop.org] 
+Sent: Tuesday, October 06, 2009 3:05 PM
+To: Kay, Allen M
+Cc: linux-kernel@vger.kernel.org; linux-pci@vger.kernel.org; jbarnes@virtuousgeek.org; matthew@wil.cx; chris@sous-sol.org
+Subject: Re: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
 
-	Thanks,
-		Linus
+On 10/06/09 15:01, Kay, Allen M wrote:
+> Better move to somewhere arch independent as I'm calling this in architectural independent PCI driver code.
+>   
 
-On Wed, 7 Oct 2009, Bartlomiej Zolnierkiewicz wrote:
-> 
-> patch #1 fixes old bug in sis5513 (uncovered by 2.6.30 device probing
-> changes but it could be also triggered in earlier kernels on warm-plug
-> operation)
-> 
-> patch #2 reverts the recent incorrect revert
-> 
+I'm prepping a patch for you now, to move it to xen/xen.h.
+
+    J
+
