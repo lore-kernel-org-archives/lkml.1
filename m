@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933827AbZJFWyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933846AbZJFW5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933827AbZJFWyi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 18:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933804AbZJFWyh
+	id S933846AbZJFW5M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 18:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933076AbZJFW5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 18:54:37 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39609 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933803AbZJFWyh (ORCPT
+	Tue, 6 Oct 2009 18:57:11 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34276
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932867AbZJFW5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 18:54:37 -0400
-X-Sasl-enc: PsDpTyQY753MwrjM6lETFegY1yZFOvm3XTQQhSszGCB0 1254869612
-Date: Tue, 6 Oct 2009 19:53:29 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Massive ext4 filesystem corruption after a failed
- s2disk/ram cycle
-Message-ID: <20091006225329.GA27646@khazad-dum.debian.net>
-References: <1254863215.11577.23.camel@maxim-laptop>
- <200910062358.32417.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910062358.32417.rjw@sisk.pl>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 6 Oct 2009 18:57:10 -0400
+Date: Tue, 06 Oct 2009 15:57:05 -0700 (PDT)
+Message-Id: <20091006.155705.26059456.davem@davemloft.net>
+To: bzolnier@gmail.com
+Cc: torvalds@linux-foundation.org, joao.ramos@inov.pt, david@fries.net,
+       d.stussy@yahoo.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Revert "Revert "ide: try to use PIO Mode 0 during
+ probe if possible""
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200910070052.37964.bzolnier@gmail.com>
+References: <200910070027.45678.bzolnier@gmail.com>
+	<20091006.154120.153174904.davem@davemloft.net>
+	<200910070052.37964.bzolnier@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 06 Oct 2009, Rafael J. Wysocki wrote:
-> > You do sync file-systems before entering the hibernation, don't you?
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date: Wed, 7 Oct 2009 00:52:37 +0200
+
+> On Wednesday 07 October 2009 00:41:20 David Miller wrote:
+>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>> Date: Wed, 7 Oct 2009 00:27:45 +0200
+>> 
+>> > The root cause of reported system hangs was (now fixed) sis5513 bug
+>> > and not "ide: try to use PIO Mode 0 during probe if possible" change
+>> > (commit 6029336426a2b43e4bc6f4a84be8789a047d139e) so the revert was
+>> > incorrect (it simply replaced one regression with the other one).
+>> 
+>> What is this older "regression" fixed by the PIO-0 change?
+>> 
+>> You're not explaining it and neither does the commit message for the
+>> PIO-0 change.
 > 
-> Yes, a sync is there, but it is not effective on some filesystems.
+> It does:
+> 
+> | Subject: [PATCH] sis5513: fix PIO setup for ATAPI devices
 
-Which ones?
+Sorry, I wasn't clear.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+I'm talking about commit 6029336426a2b43e4bc6f4a84be8789a047d139e, it
+doesn't say why we want to try PIO 0 mode during probe.
+
+What was the regression fixed by that change?
+
