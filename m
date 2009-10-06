@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758410AbZJFV6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933258AbZJFV5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758410AbZJFV6z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 17:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757703AbZJFV6y
+	id S933258AbZJFV5f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 17:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758381AbZJFV5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 17:58:54 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:41240 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752766AbZJFV6y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 17:58:54 -0400
-X-Trace: 271005612/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.109.156/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.109.156
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlsFAA9ay0pPRW2c/2dsb2JhbACBUtMLhCoEgVM
-X-IronPort-AV: E=Sophos;i="4.44,515,1249254000"; 
-   d="scan'208";a="271005612"
-Date: Tue, 6 Oct 2009 22:58:03 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Jan Beulich <JBeulich@novell.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] adjust gfp mask passed on nested vmalloc() invocation
-In-Reply-To: <4AC9E38E0200007800017F57@vpn.id2.novell.com>
-Message-ID: <Pine.LNX.4.64.0910062241500.21409@sister.anvils>
-References: <4AC9E38E0200007800017F57@vpn.id2.novell.com>
+	Tue, 6 Oct 2009 17:57:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57500 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758378AbZJFV5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 17:57:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] Massive ext4 filesystem corruption after a failed s2disk/ram cycle
+Date: Tue, 6 Oct 2009 23:58:32 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <1254863215.11577.23.camel@maxim-laptop>
+In-Reply-To: <1254863215.11577.23.camel@maxim-laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910062358.32417.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 5 Oct 2009, Jan Beulich wrote:
-
-> - fix a latent bug resulting from blindly or-ing in __GFP_ZERO, since
->   the combination of this and __GFP_HIGHMEM (possibly passed into the
->   function) is forbidden in interrupt context
-> - avoid wasting more precious resources (DMA or DMA32 pools), when
->   being called through vmalloc_32{,_user}()
-> - explicitly allow using high memory here even if the outer allocation
->   request doesn't allow it, unless is collides with __GFP_ZERO
+On Tuesday 06 October 2009, Maxim Levitsky wrote:
+> Hi,
 > 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-
-I thought vmalloc.c was a BUG_ON(in_interrupt()) zone?
-The locking is all spin_lock stuff, not spin_lock_irq stuff.
-That's probably why your "bug" has remained "latent".
-
-Using HIGHMEM for internal arrays looks reasonable to me; but if
-__GFP_ZERO were a problem, wouldn't it be much cleaner to skip the
-"unless it collides" and #ifdef CONFIG_HIGHMEM !in_interrupt() stuff,
-just memset the array returned from __vmalloc_node()?
-
-Hugh
-
+> Just prior to 2.6.32 cycle I tried -next tree and noticed that after a
+> failed s2ram (here it works only once, and I test once in a whileto see
+> if fixed accidentally) I got a minor filesystem corruption. I am sorry I
+> didn't report that back then.
 > 
-> ---
->  mm/vmalloc.c |   12 ++++++++----
->  1 file changed, 8 insertions(+), 4 deletions(-)
+> Now I have installed 2.6.32-rc2 (well -rc1...) and things were sort of
+> ok, I have even thought that hibernation is once again stable
+> (somewhere in the not that distinct past the hibernation which used to
+> work, began to fail randomly on resume)
 > 
-> --- linux-2.6.32-rc3/mm/vmalloc.c	2009-10-05 11:59:56.000000000 +0200
-> +++ 2.6.32-rc3-vmalloc-nested-gfp/mm/vmalloc.c	2009-10-05 08:40:36.000000000 +0200
-> @@ -1410,6 +1410,7 @@ static void *__vmalloc_area_node(struct 
->  {
->  	struct page **pages;
->  	unsigned int nr_pages, array_size, i;
-> +	gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
->  
->  	nr_pages = (area->size - PAGE_SIZE) >> PAGE_SHIFT;
->  	array_size = (nr_pages * sizeof(struct page *));
-> @@ -1417,13 +1418,16 @@ static void *__vmalloc_area_node(struct 
->  	area->nr_pages = nr_pages;
->  	/* Please note that the recursion is strictly bounded. */
->  	if (array_size > PAGE_SIZE) {
-> -		pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
-> +#ifdef CONFIG_HIGHMEM
-> +		/* See the comment in prep_zero_page(). */
-> +		if (!in_interrupt())
-> +			nested_gfp |= __GFP_HIGHMEM;
-> +#endif
-> +		pages = __vmalloc_node(array_size, nested_gfp,
->  				PAGE_KERNEL, node, caller);
->  		area->flags |= VM_VPAGES;
->  	} else {
-> -		pages = kmalloc_node(array_size,
-> -				(gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO,
-> -				node);
-> +		pages = kmalloc_node(array_size, nested_gfp, node);
->  	}
->  	area->pages = pages;
->  	area->caller = caller;
+> Few days ago, I got a read-only filesystem again, an fsck, few more
+> corrupted files..., It should have had rung the bell for me (I have
+> still used hibernation, trying to understand why it fails sometimes)
+> 
+> Yesterday, however, I have decided to fix that once and for all, and for
+> that I have set up a loop + rtc wakealarm to make it cycle through
+> hibernation.
+> 
+> Needless to say I didn't run that loop more that maybe 3 cycles (and no
+> failures), but noticed that rtc clock is dead on resume. 
+> 
+> I sort of fixed that (this is hpet emulation that strikes again), I will
+> post when I test the fix (trivial), because when I had rebooted the
+> system into the modified kernel, I got that readonly filesystem again,
+> and this time the damage had spread over lots of files.
+> (I have even lost most of dpkg database..., many programs,
+> libraries,..., settings)
+> 
+> Yet, thanks to Linux flexibility, after a day, and some study of
+> nautilus source, I had the system recovered fully.
+> (Now am doing backups.....)
+> 
+> But I don't want that to happen again...
+> 
+> Another clue that I have seen was that ext4 driver reported that it
+> aborts journal replay.
+> 
+> I know that for now there is not much you can do, but just to let you
+> know that something is there...
+> 
+> What is especially interesting is that there were no s2ram'disk faulure
+> preceding the corruption, but my theory is that corruption wasn't
+> detected for a while from last failure, probably giving such bad
+> consequences.
+> 
+> You do sync file-systems before entering the hibernation, don't you?
+
+Yes, a sync is there, but it is not effective on some filesystems.
+
+Thanks,
+Rafael
