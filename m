@@ -1,76 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZJFIyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbZJFIy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbZJFIyV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 04:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756563AbZJFIyU
+	id S1756644AbZJFIy7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 04:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbZJFIy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 04:54:20 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59609 "EHLO gir.skynet.ie"
+	Tue, 6 Oct 2009 04:54:59 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:47016 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755930AbZJFIyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 04:54:19 -0400
-Date: Tue, 6 Oct 2009 09:53:45 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: David Rientjes <rientjes@google.com>
-Cc: Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>, linux-mm@kvack.org
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Message-ID: <20091006085345.GA18185@csn.ul.ie>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910050851.02056.elendil@planet.nl> <20091005085739.GB5452@csn.ul.ie> <200910052334.23833.elendil@planet.nl> <alpine.DEB.1.00.0910051700440.31688@chino.kir.corp.google.com>
+	id S1756566AbZJFIy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 04:54:58 -0400
+Date: Tue, 6 Oct 2009 10:54:21 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: bug in elevator/cfq regarding start_time?
+Message-ID: <20091006085421.GL5216@kernel.dk>
+References: <4e5e476b0910041354o54c95626g974264976adaf53c@mail.gmail.com> <20091004205955.GM26573@kernel.dk> <4e5e476b0910050808k3a26aad8r19a145fc60e1da6b@mail.gmail.com> <4e5e476b0910051326g559bf135ma3cf82219ade497@mail.gmail.com> <20091006071202.GC5216@kernel.dk> <4e5e476b0910060143o7af4798q22600d396a5fbbcd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0910051700440.31688@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4e5e476b0910060143o7af4798q22600d396a5fbbcd@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 05, 2009 at 05:04:55PM -0700, David Rientjes wrote:
-> On Mon, 5 Oct 2009, Frans Pop wrote:
-> 
-> > And the winner is:
-> > 2ff05b2b4eac2e63d345fc731ea151a060247f53 is first bad commit
-> > commit 2ff05b2b4eac2e63d345fc731ea151a060247f53
-> > Author: David Rientjes <rientjes@google.com>
-> > Date:   Tue Jun 16 15:32:56 2009 -0700
-> > 
-> >     oom: move oom_adj value from task_struct to mm_struct
-> > 
-> > I'm confident that the bisection is good. The test case was very reliable 
-> > while zooming in on the merge from akpm.
-> > 
-> 
-> I doubt it for two reasons: (i) this commit was reverted in 0753ba0 since 
-> 2.6.31-rc7 and is no longer in the kernel, and (ii) these are GFP_ATOMIC 
-> allocations which would be unaffected by oom killer scores.
-> 
+On Tue, Oct 06 2009, Corrado Zoccolo wrote:
+> On Tue, Oct 6, 2009 at 9:12 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > On Mon, Oct 05 2009, Corrado Zoccolo wrote:
+> >> On Mon, Oct 5, 2009 at 5:08 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> >> False alarm. I just found that the list was not yet filled at that
+> >> place in the code.
+> >
+> > OK, it did look a bit puzzling. FWIW, this is what I committed
+> > yesterday:
+> >
+> > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=30996f40bffe73f05abb92a4cec254befa8cecf7
+> Yes, I was testing this one, but put the testing code in the wrong place.
+> After fixing the testing code, I verified it is working correctly.
+> Now, both the start time and fifo_time are monotonic.
 
-However, the problem was reported to start showing up in 2.6.31-rc1 so
-while it might not be *the* patch, it might be making the type of change
-that caused more fragmentation. This patch adjusted the size of
-mm_struct and maybe it was enough to change the "order" required for the
-slab. Maybe there are other slabs that have changed size as well in that
-timeframe.
-
-Frans, what is the size of mm_struct before and after this patch was
-applied? Find it with either
-
-grep mm_struct /proc/slabinfo
-
-and if the information is not available there, try
-
-cat /sys/kernel/slab/mm_struct/slab_size and
-/sys/kernel/slab/mm_struct/order
-
-Thanks
+OK good, thanks for confirming! I'll push it for 2.6.32. And thanks for
+spotting this in the first place, the fixing part was the easy bit.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jens Axboe
+
