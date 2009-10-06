@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbZJFPtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbZJFPyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbZJFPtm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758051AbZJFPtl
+	id S932819AbZJFPyF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:54:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbZJFPyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:49:41 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:54378 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757737AbZJFPtk (ORCPT
+	Tue, 6 Oct 2009 11:54:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38991 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758050AbZJFPyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:49:40 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for CPU"
-Date: Tue, 6 Oct 2009 17:49:01 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-References: <200910051500.55875.elendil@planet.nl> <200910051613.32631.elendil@planet.nl> <20091005072428.16ce40e4@infradead.org>
-In-Reply-To: <20091005072428.16ce40e4@infradead.org>
+	Tue, 6 Oct 2009 11:54:03 -0400
+Date: Tue, 6 Oct 2009 08:51:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.32-rc3
+In-Reply-To: <20091006153632.GA29795@elte.hu>
+Message-ID: <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
+ <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <20091006153632.GA29795@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910061749.02805.elendil@planet.nl>
-X-OriginalArrivalTime: 06 Oct 2009 15:49:03.0339 (UTC) FILETIME=[875DBBB0:01CA469C]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 October 2009, Arjan van de Ven wrote:
-> On Mon, 5 Oct 2009 16:13:31 +0200 Frans Pop <elendil@planet.nl> wrote:
-> > On Monday 05 October 2009, Frans Pop wrote:
-> > > With .32-rc3 I'm getting occasional skips from amarok while playing
-> > > music from an NFS share (3 today so far), something I've not had in
-> > > a long time.
-> > >
-> > > The reason looks to be that latencytop consistently shows 'iwlagn'
-> > > as the top affected process with "Scheduler: waiting for CPU".
-> > > Values of 100-140 ms occur frequently, but I've also seen higher
-> > > values (180, 207). I don't remember seeing iwlagn high in the list
-> > > before, but I have not checked earlier kernels yet.
-> > >
-> > > Added to that 'phy0' also frequently shows high with values of
-> > > 25-75 ms.
 
-I've checked for 2.6.31.1 now and iwlagn is listed high there too when the 
-system is idle, but with normal values of 60-100 ms. And phy0 has normal 
-values of below 10 ms.
-I've now rebooted with today's mainline git; phy0 now frequently shows with 
-values of around 100 ms too (i.e. higher than last time).
 
-Both still go way down as soon as the system is given work to do.
+On Tue, 6 Oct 2009, Ingo Molnar wrote:
+> 
+> hm, i think you ignored (or missed, or found irrelevant) my first 
+> suggested variant:
 
-> > If I give the system some work to do (like compiling a kernel), the
-> > latencies on iwlagn and phy0 disappear (values < 5 ms).
-> > Is this related to ondemand frequency scaling?
->
-> shouldn't be.... but
->
-> can you do a 5 second or so timechart recording of this?
-> That will capture all scheduler delays as well as the P states etc....
+No, I didn't ignore it, it just showed that you didn't know what you were 
+thinking about.
 
-With a 5 second sleep I was unable to get any significant latencies (I 
-started perf on a latencytop refresh and did a manual refresh as it 
-finished to see what happened during the perf run). The perf run does seem 
-to affect the latencies.
-I've uploaded a chart for a 10s sleep during which I got latencies of 101ms 
-for iwlagn and 77ms for phy0: http://people.debian.org/~fjp/tmp/kernel/.
+>  v2.6.31
+>  v2.6.31+
+> 
+> The '+' sign says that it's more than .31.
 
-I've also uploaded the raw data as the colors in the chart looked off to me 
-(CPU bars were mostly black in Debian unstable's inkscape). I can't make 
-much from the chart TBH, but maybe you can.
+No. It shows no such thing. Because it DOES NOT EXIST in other peoples 
+trees until they rebase on top of mine.
 
-Not sure what to do with this. For now I'd suggest to ignore it as it's all 
-a bit vague. Unless of course you feel the latencies are higher than they 
-should be.
-I'll see if I get more skips and what latencies I get during them.
+Unless:
 
-Cheers,
-FJP
+> _That_ i think is a lot harder to confuse with the real .31 than a 
+> v2.6.31-1234-g16123c4 version string.
+
+.. are you saying that it would be just some automatically generated 
+thing, just a crippled form of CONFIG_LOCALVERSION_AUTO? Kind of a 
+CONFIG_LOCALVERSION_AUTO_SHORTFORM?
+
+If so, then I don't hate "v2.6.31+", but at the same time, that single 
+plus-sign tells _so_much_ less than v2.6.31-1234-g16123c4 that I think 
+it's really sad and crippled. 
+
+Is it so hard to teach people what "v2.6.31-1234-g16123c4" means? It's not 
+like it's very complicated, and it's not like it's not visually very 
+distinct indeed from the tagged release case (which is just "v2.6.31").
+
+I'd love to use "+" instead of "-", but I was thinking that there are 
+various version things that get unhappy about special characters like 
+that, so we've always used '-' as the separator (since we've always used 
+it).
+
+So I'm _entirely_ open to changing how 'CONFIG_LOCALVERSION_AUTO' works, 
+or extending on that notion. 
+
+What I'm _not_ open to doing is to add made-up commits that change the 
+top-level Makefile at non-release points. Because that way really does lie 
+insanity.
+
+		Linus
