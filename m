@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbZJFAgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZJFAuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755372AbZJFAgn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 20:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbZJFAgn
+	id S1755393AbZJFAuy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 20:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZJFAux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 20:36:43 -0400
-Received: from claw.goop.org ([74.207.240.146]:50064 "EHLO claw.goop.org"
+	Mon, 5 Oct 2009 20:50:53 -0400
+Received: from claw.goop.org ([74.207.240.146]:35220 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753428AbZJFAgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 20:36:42 -0400
-Message-ID: <4ACA90F2.1060909@goop.org>
-Date: Mon, 05 Oct 2009 17:36:02 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Bastian Blank <bastian@waldi.eu.org>, Ingo Molnar <mingo@redhat.com>,
+	id S1753600AbZJFAuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 20:50:52 -0400
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+To: Xen-devel <xen-devel@lists.xensource.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kurt.hackel@oracle.com, Dan Magenheimer <dan.magenheimer@oracle.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Avi Kivity <avi@redhat.com>, Zach Brown <zach.brown@oracle.com>,
        the arch/x86 maintainers <x86@kernel.org>,
-       Stable Kernel <stable@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [Xen-devel] Re: [PATCH] xen: Disable stack protector for irq
- helper
-References: <20091004183013.GA26101@wavehammer.waldi.eu.org>	<4AC92A65.40806@goop.org>	<20091005013517.GA6081@wavehammer.waldi.eu.org>	<4ACA2AFD.4080305@goop.org> <20091005224310.GA32144@wavehammer.waldi.eu.org>
-In-Reply-To: <20091005224310.GA32144@wavehammer.waldi.eu.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       Chris Mason <chris.mason@oracle.com>
+Subject: [PATCH RFC] Extending pvclock down to usermode for vsyscall
+Date: Mon,  5 Oct 2009 17:50:06 -0700
+Message-Id: <1254790211-15416-1-git-send-email-jeremy.fitzhardinge@citrix.com>
+X-Mailer: git-send-email 1.6.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/05/09 15:43, Bastian Blank wrote:
-> On Mon, Oct 05, 2009 at 10:21:01AM -0700, Jeremy Fitzhardinge wrote:
->   
->>> Save all caller-saved registers on x86_32 for the paravirt callee saved
->>> registers.
->>>       
->> That looks better, but it is still overkill.  We only need to save the
->> set of registers the ABI requires the callee to preserve.  What
->> additional register(s) gets clobbered by stack-protector that need to be
->> saved?
->>     
-> Well, exactly the two, ecx and edx. eax is still clobbered by the return
-> value. Anyway, it works in praxis.
+This series implements the vread method for the clocksource, which allows
+it to be used directly from usermode via vsyscall.
 
-I'm confused.  It already saves ecx, so what else needs saving?
+Most of the work is in the generic pvclock code, with a bit of
+hypervisor-specific code to set things up.  Specifically, it sets up a
+page which is an array of pvclock_vcpu_time_info structures indexed by
+vcpu number.  The usermode code gets the current (v)cpu via vgetcpu,
+gets the appropriate time info and computes system time from the tsc.
+After doing all that it rechecks the version number to make things
+happened consistently.  The kernel also installs a preempt notifier to
+bump the version number so that usermode can tell it has had its cpu
+context switched under it.
 
-Besides, most of the code in that file isn't used unless you're using a
-very old version of Xen; it will generally prefer to use the ones in
-xen-asm_X.S.
+I've included the Xen implementation, but it should be simple to implement
+for KVM (especially since it already has the feature I had to add to
+Xen to implement this: the ability to place the pvclock_vcpu_time_info
+structure at an arbitrary address).
 
-I have the feeling we haven't really found the root cause of your
-problem yet.
+With this in place, I can do a gettimeofday in about 100ns on a 2.4GHz
+Q6600.  I'm sure this could be tuned a bit more, but it is already much
+better than a syscall.
+
+(There's also a couple of other little generic pvclock fixes I'll send
+separately.)
 
 Thanks,
-    J
+	J
+
+ arch/x86/Kconfig                |    4 +
+ arch/x86/include/asm/fixmap.h   |   21 +++++
+ arch/x86/include/asm/pvclock.h  |    6 +
+ arch/x86/include/asm/vsyscall.h |    3 
+ arch/x86/kernel/Makefile        |    2 
+ arch/x86/kernel/pvclock.c       |  156 ++++++++++++++++++++++++++++++++++++----
+ arch/x86/xen/Kconfig            |    6 +
+ arch/x86/xen/mmu.c              |    3 
+ arch/x86/xen/smp.c              |    2 
+ arch/x86/xen/time.c             |   52 +++++++++++++
+ arch/x86/xen/xen-ops.h          |    8 ++
+ include/xen/interface/vcpu.h    |   41 ++++++++++
+ 12 files changed, 291 insertions(+), 13 deletions(-)
 
