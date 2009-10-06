@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933608AbZJFWTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbZJFWVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933608AbZJFWTW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 18:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933593AbZJFWTR
+	id S933793AbZJFWVZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 18:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933750AbZJFWU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 18:19:17 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58820 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933575AbZJFWTP (ORCPT
+	Tue, 6 Oct 2009 18:20:57 -0400
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:62976 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933703AbZJFWUx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 18:19:15 -0400
-Date: Tue, 6 Oct 2009 23:19:55 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mark Allyn <mark.a.allyn@intel.com>
-Cc: linux-kernel@vger.kernel.org, alan@linux.intel.com, greg@kroah.com,
-       charles.f.johnson@intel.com, Mark Allyn <mark.a.allyn@intel.com>
-Subject: Re: [PATCH] Integrating SEP Driver with RAR Driver
-Message-ID: <20091006231955.003932b7@lxorguk.ukuu.org.uk>
-In-Reply-To: <1254861977-18123-1-git-send-email-mark.a.allyn@intel.com>
-References: <1254861977-18123-1-git-send-email-mark.a.allyn@intel.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Oct 2009 18:20:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=IDFbuQW8A7VF9HFlTgNlb3oyMZ0OBqRKLflAj1NmEesR1mS4Dg7YEs8ijiZso+SeY9
+         IjHihQF6IRaKAadEhiBiwBGtYFW9qu58p/YWwI8EPuin1KwsV+PdBkPsABpSfN/X9OA5
+         8ailZM/MCBFhX6TWNAWn68zy36BWjYhAwVokg=
+MIME-Version: 1.0
+Date: Tue, 6 Oct 2009 15:20:16 -0700
+Message-ID: <4c44d90b0910061520o36adc7m50419be3a3d9d0fa@mail.gmail.com>
+Subject: [PATCH] Include hrtimer.h for ANSI compliance
+From: Thomas DuBuisson <thomas.dubuisson@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +#define SEP_IOCTLSETCALLERID                   _IO(SEP_IOC_MAGIC_NUMBER , 33)
+Include <linux/hrtimer.h> to make pci.h ansi compliant (it references
+an hrtimer enum).
 
-_IOR _IOW etc... I pointed this out before and it's not fixed
+Please CC on responses.
 
+Signed-off-by: Thomas DuBuisson <Thomas.DuBuisson@gmail.com>
+---
+include/linux/timer.h |    1 +
+1 files changed, 1 insertions(+), 0 deletions(-)
 
->  struct sep_driver_realloc_cache_resident_t {
-> -	/* new cache address */
-> -	u64 new_cache_addr;
-> -	/* new resident address */
-> -	u64 new_resident_addr;
-> -	/* new resident address */
-> -	u64  new_shared_area_addr;
-> -	/* new base address */
-> -	u64 new_base_addr;
-> -};
-> +  /* base address */
-> +  unsigned long   base_addr;
+diff --git a/include/linux/timer.h b/include/linux/timer.h
+index a2d1eb6..ad2b3cb 100644
+--- a/include/linux/timer.h
++++ b/include/linux/timer.h
+@@ -6,6 +6,7 @@
+#include <linux/stddef.h>
+#include <linux/debugobjects.h>
+#include <linux/stringify.h>
++#include <linux/hrtimer.h>
 
-and the ioctls still need to be fixed for 32/64bit
+struct tvec_base;
 
-
-> +/* debug macro with 3 paramaters */
-> +#define DEBUG_PRINT_3(DEBUG_LEVEL, info, param1, param2, param3) \
-> +do { \
-> +	if (DEBUG_LEVEL & sepDebug) \
-> +		printk(KERN_WARNING info , param1, param2 , param3); \
-> +} while (0)
-
-And the debug helpers are a step back
-
-Sorry but this is basically undoing a lot of cleanup that was needed.
-
-
-To put it mildly this needs a lot of further discussion before anything
-goes into the code.
+--
+1.6.2.5
