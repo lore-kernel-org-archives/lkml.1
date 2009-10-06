@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbZJFP4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932871AbZJFP7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758161AbZJFP4M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:56:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbZJFP4L
+	id S932871AbZJFP7l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbZJFP7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:56:11 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:36381 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758147AbZJFP4K (ORCPT
+	Tue, 6 Oct 2009 11:59:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40892 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932799AbZJFP7j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:56:10 -0400
-Message-ID: <4ACB684A.6060107@gmail.com>
-Date: Tue, 06 Oct 2009 17:54:50 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 6 Oct 2009 11:59:39 -0400
+Date: Tue, 6 Oct 2009 08:58:14 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: James Bottomley <James.Bottomley@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+In-Reply-To: <1254844007.4383.85.camel@mulgrave.site>
+Message-ID: <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
+References: <1254844007.4383.85.camel@mulgrave.site>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [patch 2/4] tree rcu: Add debug RCU head option
-References: <20091006143727.868480435@polymtl.ca> <20091006144038.140258698@polymtl.ca>
-In-Reply-To: <20091006144038.140258698@polymtl.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 06 Oct 2009 17:54:51 +0200 (CEST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers a écrit :
-> Poisoning the rcu_head callback list. Only for rcu tree for now.
-> 
-> Helps finding racy users of call_rcu(), which results in hangs because list
-> entries are overwritten and/or skipped. Using the lower bit to poison because
-> include/net/dst.h __pad_to_align_refcnt complains when struct rcu_head grows.
-> 
 
-I see :)
 
-> --- linux-2.6-lttng.orig/include/linux/rcupdate.h	2009-10-06 10:35:15.000000000 -0400
-> +++ linux-2.6-lttng/include/linux/rcupdate.h	2009-10-06 10:35:18.000000000 -0400
-> @@ -45,6 +45,8 @@
->   * struct rcu_head - callback structure for use with RCU
->   * @next: next update requests in a list
->   * @func: actual update function to call after the grace period.
-> + *
-> + * Debug mode assumes func pointer value is word-aligned.
+On Tue, 6 Oct 2009, James Bottomley wrote:
+>
+> This is mostly fixes.  However, it contains two new drivers: Brocade SAS
+> (bfa), the Bladengine2 iSCSI (be2iscsi) under the merge window exemption
 
-Ouch, I guess you never tried CONFIG_CC_OPTIMIZE_FOR_SIZE=y ?
+Btw, I'm getting less excited about the merge window exemption.
 
-random extract from "nm -v vmlinux"
+It makes sense for consumer devices that people actually hit and that are 
+needed for bringup (ie they make a difference between a system that can be 
+installed and used, and one that cannot), but I'm not at all sure it makes 
+sense for things like this.
 
-c0415e58 T in4_pton
-c0415f66 T in6_pton
-c04161f0 T in_aton
-c0416240 T net_ratelimit
-c0416250 t linkwatch_add_event
-c0416281 t linkwatch_schedule_work
-c0416301 T linkwatch_fire_event
-c0416368 t __linkwatch_run_queue
-c04164d2 t linkwatch_event
-c04164f4 T linkwatch_run_queue
-c0416500 T sk_chk_filter
-c0416703 t sk_filter_rcu_release
-c041671d T sk_detach_filter
-c041676a T sk_attach_filter
-c0416862 T sk_run_filter
-c0416f5d T sk_filter
-c0416fc4 t __flow_cache_shrink
+The _reason_ for the driver exemption was the fact that even a broken 
+driver is better than no driver at all for somebody who just can't get a 
+working system without it, but that argument really goes away when the 
+driver is so specialized that it's not about regular hardware any more.
 
-gcc -v
-Using built-in specs.
-Target: i686-pc-linux-gnu
-Configured with: ../gcc-4.4.1/configure --enable-languages=c,c++ --prefix=/usr
-Thread model: posix
-gcc version 4.4.1 (GCC)
+And the whole "driver exemption" seems to have become a by-word for "I can 
+ignore the merge window for 50% of my code". Which makes me very tired of 
+it if there aren't real advantages to real users.
 
+So I'm seriously considering a "the driver has to be mass market and also 
+actually matter to an install" rule for the exemption to be valid.
+
+			Linus
