@@ -1,93 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbZJFM1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbZJFI2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932443AbZJFM1E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 08:27:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932373AbZJFM1D
+	id S1756436AbZJFI2M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 04:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756327AbZJFI2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 08:27:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:46853 "EHLO mx2.suse.de"
+	Tue, 6 Oct 2009 04:28:11 -0400
+Received: from smtp.ispras.ru ([83.149.198.201]:34612 "EHLO smtp.ispras.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932331AbZJFM1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 08:27:02 -0400
-Date: Tue, 6 Oct 2009 14:26:24 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Latest vfs scalability patch
-Message-ID: <20091006122623.GE30316@wotan.suse.de>
-References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1756033AbZJFI2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 04:28:09 -0400
+From: iceberg <strakh@ispras.ru>
+Organization: ISP RAS
+To: James Bottomley <James.Bottomley@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, eric@andante.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] scsi_lib.c: sleeping function called from invalid context
+Date: Tue, 6 Oct 2009 12:30:02 +0000
+User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
+References: <200909231758.47612.strakh@ispras.ru> <200910051835.51891.strakh@ispras.ru> <1254755602.3838.5.camel@mulgrave.site>
+In-Reply-To: <1254755602.3838.5.camel@mulgrave.site>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091006101414.GM5216@kernel.dk>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200910061230.03488.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 12:14:14PM +0200, Jens Axboe wrote:
-> On Tue, Oct 06 2009, Nick Piggin wrote:
-> > Hi,
-> > 
-> > Several people have been interested to test my vfs patches, so rather
-> > than resend patches I have uploaded a rollup against Linus's current
-> > head.
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/npiggin/patches/fs-scale/
-> > 
-> > I have used ext2,ext3,autofs4,nfs as well as in-memory filesystems
-> > OK (although this doesn't mean there are no bugs!). Otherwise, if your
-> > filesystem compiles, then there is a reasonable chance of it working,
-> > or ask me and I can try updating it for the new locking.
-> > 
-> > I would be interested in seeing any numbers people might come up with,
-> > including single-threaded performance.
-> 
-> I gave this a quick spin on the 64-thread nehalem. Just a simple dbench
-> with 64 clients on tmpfs. The results are below. While running perf top
-> -a in mainline, the top 5 entries are:
-> 
->           2086691.00 - 96.6% : _spin_lock
->             14866.00 -  0.7% : copy_user_generic_string
->              5710.00 -  0.3% : mutex_spin_on_owner
->              2837.00 -  0.1% : _atomic_dec_and_lock
->              2274.00 -  0.1% : __d_lookup
-> 
-> Uhm auch... It doesn't look much prettier for the patch kernel, though:
-> 
->           9396422.00 - 95.7% : _spin_lock
->             66978.00 -  0.7% : copy_user_generic_string
->             43775.00 -  0.4% : dput
->             23946.00 -  0.2% : __link_path_walk
->             17699.00 -  0.2% : path_init
->             15046.00 -  0.2% : do_lookup
+On Monday 05 October 2009 15:13:22 you wrote:
+> > > Hang on ... I looked at the bug report again: there's no actual kernel
+> > > trace, just a theoretical function graph.
+> > >
+> > > Has this actually been seen or is it just the result of an analysis?
+> > >
+> > > If the latter (which I suspect), there's no actual problem.  The
+> > > explicit design of the calls is that device_initialize() and
+> > > put_device() can be called from interrupt context.  device_add() and
+> > > device_del() must be called from user context.
+> > >
+> > > The path you seem to be showing is the put_device() path where there's
+> > > been an error in the state model and the caller is doing last put on a
+> > > visible device without having first called device_del().
+> > >
+> > > If you see the real kernel message about this, it means there's a bug
+> > > in the device model handling somewhere in SCSI.  If you haven't seen
+> > > the message, it's just a bug in the static analysis tool.
+> >
+> > This bug report is the result of code inspection. I'm considering
+> > functions which can call might_sleep macro and consequently which can not
+> > be called from atomic context.
+> > I choose function scsi_device_put. There are two paths to might_sleep
+> > macro. First path was shown in the report, second is:
+> > 1. scsi_device_put calls put_device at ./drivers/scsi/scsi.c:1111
+> > 2. put_device calls kobject_put at ./drivers/base/core.c:1038
+> > 3. kobject_put calls kref_put at ./lib/kobject.c
+> > 4. kref_put may call callback function kobject_release at ./lib/kref.c if
+> > refcount becomes zero
+> > 5. kobject_cleanup calls kobject_del at ./lib/kobject.c:562
+>
+> only if state_in_sysfs is set.
+>
+> This is only set if the caller previously failed to call kobject_del
+> (i.e. device_del).
+>
+> As long as devices follow the proper create->add->del->put paths, the
+> final put may be called from interrupt context.
+>
+> Your analysis is wrong because you're basing it on the exception cleanup
+> paths not the correct calling paths.
+>
+> James
+>
+> > 6. kobject_del calls sysfs_remove_dir at ./lib/kobject.c:516
+> > 7. sysfs_remove_dir calls __sysfs_remove_dir at ./fs/sysfs/dir.c:821
+> > 8. __sysfs_remove_dir calls sysfs_addrm_start at ./fs/sysfs/dir.c:789
+> > 9. sysfs_addrm_start calls mutex_lock at ./fs/sysfs/dir.c:377, which
+> > might_sleep because it calls might_sleep macro.
+> >
+> > As you wrote earlier, scsi_device_put was designed with the ability to
+> > call last put from interrupt context, but as we can see from the paths
+> > there might be situations where it is not true. Moreover, while analysing
+> > different usage patterns of scsi_device_put, I found that people are
+> > using scsi_device_put as if it can not be called from atomic context.
+> > Because before calling scsi_device_put, spin_locks are always released
+> > (i.e. spin_unlock is called before scsi_device_put and spin_lock is
+> > called after it). Examples are: 1. drivers/scsi/dpt_i2o.c line 701
+> > 2. drivers/ata/libata-scsi.c line 3626
+> > 3. drivers/scsi/ipr.c line 2415
+> >
+> > >The path you seem to be showing is the put_device() path where there's
+> > >been an error in the state model and the caller is doing last put on a
+> > >visible device without having first called device_del().
+> >
+> > In scsi_lib.c  prior to scsi_device_put we always do scsi_device_get.  As
+> > far as I understand, if we are sure that scsi_device_put is always not
+> > last, then we can remove both calls to scsi_device_get and to
+> > scsi_device_put from the code without introducing races.
+> >
+> >  347         list_for_each_entry_safe(sdev, tmp, &starget->devices,
+> >  348                         same_target_siblings) {
+> >  349                 if (sdev == current_sdev)
+> >  350                         continue;
+> >  351                 if (scsi_device_get(sdev))
+> >  352                         continue;
+> >  353
+> >  354                 spin_unlock_irqrestore(shost->host_lock, flags);
+> >  355                 blk_run_queue(sdev->request_queue);
+> >  356                 spin_lock_irqsave(shost->host_lock, flags);
+> >  357
+> >  358                 scsi_device_put(sdev);
+> >  359         }
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Yep, this is the problem of the common-path lookup. Every dentry
-element in the path has its d_lock taken for every path lookup,
-so cwd dentry lock bounces a lot for dbench.
+James, what about code where spin_unlock is called before scsi_device_put, 
+especially for avoiding atomic context?
+In code like 
+	spin_unlock
+	scsi_device_put
+	spin_lock
+Is spin_unlock/spin_lock redundant?
 
-I'm working on doing path traversal without any locks or stores
-to the dentries in the common cases, so that should basically
-be the last bit of the puzzle for vfs locking (although it can be
-considered a different type of problem than the global lock
-removal, but RCU-freed struct inode is important for the approach
-I'm taking, so I'm basing it on top of these patches).
- 
-It's a copout, but you could try running multiple dbenches under
-different working directories (or actually, IIRC dbench does root
-based path lookups so maybe that won't help you much).
+Why do we need scsi_device_get/scsi_device_put pair in scsi_lib.c at all? If 
+we are sure that scsi_device_put is always not last, for what purpose do we 
+call it together with scsi_device_get in the loop?
 
 
-> Anyway, below are the results. Seem very stable.
-> 
->                                 throughput
-> ------------------------------------------------
-> 2.6.32-rc3-git          |      561.218 MB/sec
-> 2.6.32-rc3-git+patch    |      627.022 MB/sec
 
-Well it's good to see you got some improvement.
+
 
