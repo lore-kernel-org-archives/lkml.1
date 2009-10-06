@@ -1,68 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZJFEy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbZJFFEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbZJFEy1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 00:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbZJFEy0
+	id S1756026AbZJFFEM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 01:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZJFFEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 00:54:26 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45050 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751506AbZJFEy0 (ORCPT
+	Tue, 6 Oct 2009 01:04:11 -0400
+Received: from mail-yx0-f199.google.com ([209.85.210.199]:41489 "EHLO
+	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752253AbZJFFEK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 00:54:26 -0400
-Subject: Re: Patch "USB: Work around BIOS bugs by quiescing USB controllers
- earlier" causes MCEs
-From: David Woodhouse <dwmw2@infradead.org>
-To: Nick Piggin <npiggin@suse.de>, hpa@zytor.com, greg@kroah.com
-Cc: Mikael Pettersson <mikpe@it.uu.se>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091006044401.GA30316@wotan.suse.de>
-References: <20091002073400.GV6327@wotan.suse.de>
-	 <19141.54587.207559.849751@pilspetsen.it.uu.se>
-	 <19142.21600.475756.10647@pilspetsen.it.uu.se>
-	 <20091006044401.GA30316@wotan.suse.de>
-Content-Type: text/plain
-Date: Tue, 06 Oct 2009 05:53:39 +0100
-Message-Id: <1254804819.14541.101.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 6 Oct 2009 01:04:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Mtd4HpFgCBELdDc7DMP1Ow2ZaZYuhZyhRosiG+NM6pnadFQPSKoSGDt6HyqvGtPwsy
+         uRR+aBQ9UWzJ3h+IYyR+QTzBFi9WV0LhdCIbv5q6IVh4rZ4T4hEq3hwMz0B0ZInXhAyZ
+         JVP2qtftj6vTyBCej1ZRvN6/eY0lDXMR8SwE8=
+MIME-Version: 1.0
+In-Reply-To: <1254803939.14541.49.camel@macbook.infradead.org>
+References: <8bd0f97a0910052125m4327fef3i47e3b549938802f9@mail.gmail.com> 
+	<1254803939.14541.49.camel@macbook.infradead.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 6 Oct 2009 00:56:19 -0400
+Message-ID: <8bd0f97a0910052156o7aeb704cpf72586ca2e196277@mail.gmail.com>
+Subject: Re: userspace firmware loader, vmap, and nommu
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: David Howells <dhowells@redhat.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 06:44 +0200, Nick Piggin wrote:
-> > Changing this quirk back to a FIXUP_FINAL allows the platform's PCI
-> > init to complete. Later on the generic pci_init() calls the quirk,
-> > which now gets the correct I/O base address, and the outw()s in
-> > uhci_reset_hc() don't fail.
-> 
-> Thanks for this, I guess we await David's response.
+On Tue, Oct 6, 2009 at 00:38, David Woodhouse wrote:
+> On Tue, 2009-10-06 at 00:25 -0400, Mike Frysinger wrote:
+>>  the firmware loader used to work before this
+>> change because it would handle the realloc steps itself (allocate
+>> larger contiguous memory, copy over older data, release older memory)
+>> and vmalloc() on nommu is simply kmalloc().
+>>
+>> this could be handled transparently on nommu systems by moving this
+>> scatter gathering of pages into vmap:
+>> void *vmap(struct page **pages, unsigned int count, unsigned long
+>> flags, pgprot_t prot)
+>> {
+>>     unsigned int i;
+>>     void *new_map, *page_data;
+>>
+>>     new_map = kmalloc(count << PAGE_SHIFT, GFP_KERNEL);
+>>     if (!new_map)
+>>         return NULL;
+>>
+>>     for (i = 0; i < count; ++i) {
+>>         page_data = kmap(pages[i]);
+>>         memcpy(new_map + (i << PAGE_SHIFT), page_data, PAGE_SIZE);
+>>         kunmap(page_data);
+>>     }
+>>
+>>     return new_map;
+>
+> I wouldn't necessarily want to do that for _all_ vmap() calls,
 
-The problem is that FIXUP_FINAL is too late. If the USB controllers are
-still active at the time the IOMMU is initialised, then DMA for their
-'legacy keyboard/mouse emulation' will go AWOL -- because the BIOS
-authors are too incompetent to tell the OS about it correctly.
+there arent any vmap() callers currently on nommu systems since the
+functions currently BUG().  looking at lxr for 2.6.31 indicates that
+there are very few relevant vmap() callers in general.
 
-And then the whole system goes down, locked up in SMM mode because the
-BIOS authors are too incompetent to write code which can _cope_ with the
-DMA going AWOL. Or do any testing.
+> but doing
+> it just for the firmware loader might make some sense. It does mean you
+> have to have _twice_ as much memory available as the size of the
+> firmware in question. And you have to have a contiguous chunk even
+> _after_ allocating it once piecemeal.
 
-One option is to add a new quirk somewhere in the middle, or to invoke
-the USB fixups manually rather than by the quirk mechanism.
+yes, but this is how it worked before and no one complained ;).
+firmware files after all tend to be on the "small" side, so getting a
+small physically contiguous mapping isnt that hard.
 
-Another might be to move the initialisation of the IOMMU to later in the
-boot, so it happens just after the final PCI fixups.
+>> void vunmap(const void *addr)
+>> {
+>>     kfree(addr);
+>> }
+>>
+>> or we could add nommu-specific code to the firmware loader to not use
+>> vmap().  how would you like to go David (Howells) ?
+>
+> Or we could add _generic_ code not to use vmap(). Just teach the users
+> that you don't get a virtually contiguous blob back from
+> request_firmware(); you get an array of pages instead.
 
-But I distinctly remember a conversation, probably with hpa, in which he
-(or whoever) said that he wants to kill the USB controllers even
-_earlier_ in the boot process, because of other problems. So I was kind
-of hoping that whoever it was would pipe up. And then we'd take that
-option.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+wouldnt that non-trivially increase the code work for callers of the
+firmware functions ?  seems like a hefty penalty for a minority
+(nommu) to impose on the majority (mmu).
+-mike
