@@ -1,118 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932747AbZJFOWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbZJFOXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932747AbZJFOWs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 10:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932714AbZJFOWr
+	id S932774AbZJFOXm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 10:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932766AbZJFOXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 10:22:47 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:39142 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932721AbZJFOWq (ORCPT
+	Tue, 6 Oct 2009 10:23:41 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:36925 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932742AbZJFOXk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 10:22:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=gFVOdG1uhrsjuCfNg4HbDQ+jj+pKm/lYO+FrRZMJw4G2GjnonGZxqR1sPyqsTDCYCR
-         QY7A7BXL75PXzE3G7qMD7aDlBxuFJKgMkM3GyX9/NT7AkWXhydVIzJQYtZBe7EhCUG2E
-         OVd02TgsFtFjwdrAZsOUVA6hH56m4uLv5DJm4=
-Message-ID: <4ACB528D.6030408@gmail.com>
-Date: Tue, 06 Oct 2009 10:22:05 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH v2 2/4] KVM: introduce "xinterface" API for external	interaction
- with guests
-References: <20091002201159.4014.33268.stgit@dev.haskins.net> <20091002201927.4014.29432.stgit@dev.haskins.net> <4AC8780D.1060800@redhat.com> <4ACA87D7.1080206@gmail.com> <4ACB0F3C.1000705@redhat.com> <4ACB46AD.8010405@gmail.com>
-In-Reply-To: <4ACB46AD.8010405@gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigA8861F0DA1A02E69D00AC4D3"
+	Tue, 6 Oct 2009 10:23:40 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-14.arcor-online.net 672CC28AC52
+Subject: [PATCH] amd5536udc: fixed shared interrupt bug and warning oops
+From: Thomas Dahlmann <dahlmann.thomas@arcor.de>
+To: akpm@linux-foundation.org
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       robert.richter@amd.com
+Content-Type: text/plain
+Date: Tue, 06 Oct 2009 16:23:02 +0200
+Message-Id: <1254838982.14160.14.camel@erni>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigA8861F0DA1A02E69D00AC4D3
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+>From 38b535f604befaf16c6a3a1fc9fc80bcb56b8498 Mon Sep 17 00:00:00 2001
+From: Thomas Dahlmann <dahlmann.thomas@arcor.de>
+Date: Tue, 6 Oct 2009 16:01:04 +0200
+Subject: [PATCH] amd5536udc: fixed shared interrupt bug and warning oops
+ - fixed shared interrupt bug reported by Vadim Lobanov
+ - fixed possible warning oops on driver unload when connected
+ - prevent interrupt flood in PIO mode ("modprobe amd5536udc use_dma=0")
+   when using gadget ether
 
-Gregory Haskins wrote:
-> Avi Kivity wrote:
->> On 10/06/2009 01:57 AM, Gregory Haskins wrote:
->>> Avi Kivity wrote:
->>>  =20
->>>> On 10/02/2009 10:19 PM, Gregory Haskins wrote:
+Signed-off-by: Thomas Dahlmann <dahlmann.thomas@arcor.de>
+---
+ drivers/usb/gadget/amd5536udc.c |   49 +++++++++++++++++++++++---------------
+ 1 files changed, 30 insertions(+), 19 deletions(-)
 
->>>>> +
->>>>> +static inline void
->>>>> +_kvm_xinterface_release(struct kref *kref)
->>>>> +{
->>>>> +    struct kvm_xinterface *intf;
->>>>> +    struct module *owner;
->>>>> +
->>>>> +    intf =3D container_of(kref, struct kvm_xinterface, kref);
->>>>> +
->>>>> +    owner =3D intf->owner;
->>>>> +    rmb();
->>>>>
->>>>>       =20
->>>> Why rmb?
->>>>     =20
->>> the intf->ops->release() line may invalidate the intf pointer, so we
->>> want to ensure that the read completes before the release() is called=
-=2E
->>>
->>> TBH: I'm not 100% its needed, but I was being conservative.
->>>   =20
->> rmb()s are only needed if an external agent can issue writes, otherwis=
-e
->> you'd need one after every statement.
->=20
-> I was following lessons learned here:
->=20
-> http://lkml.org/lkml/2009/7/7/175
->=20
-> Perhaps mb() or barrier() are more appropriate than rmb()?  I'm CC'ing
-> David Howells in case he has more insight.
+diff --git a/drivers/usb/gadget/amd5536udc.c b/drivers/usb/gadget/amd5536udc.c
+index d5b6596..731150d 100644
+--- a/drivers/usb/gadget/amd5536udc.c
++++ b/drivers/usb/gadget/amd5536udc.c
+@@ -1213,7 +1213,12 @@ udc_queue(struct usb_ep *usbep, struct usb_request *usbreq, gfp_t gfp)
+ 				tmp &= AMD_UNMASK_BIT(ep->num);
+ 				writel(tmp, &dev->regs->ep_irqmsk);
+ 			}
+-		}
++		} else if (ep->in) {
++				/* enable ep irq */
++				tmp = readl(&dev->regs->ep_irqmsk);
++				tmp &= AMD_UNMASK_BIT(ep->num);
++				writel(tmp, &dev->regs->ep_irqmsk);
++			}
+ 
+ 	} else if (ep->dma) {
+ 
+@@ -2005,18 +2010,17 @@ __acquires(dev->lock)
+ {
+ 	int tmp;
+ 
+-	/* empty queues and init hardware */
+-	udc_basic_init(dev);
+-	for (tmp = 0; tmp < UDC_EP_NUM; tmp++) {
+-		empty_req_queue(&dev->ep[tmp]);
+-	}
+-
+ 	if (dev->gadget.speed != USB_SPEED_UNKNOWN) {
+ 		spin_unlock(&dev->lock);
+ 		driver->disconnect(&dev->gadget);
+ 		spin_lock(&dev->lock);
+ 	}
+-	/* init */
++
++	/* empty queues and init hardware */
++	udc_basic_init(dev);
++	for (tmp = 0; tmp < UDC_EP_NUM; tmp++)
++		empty_req_queue(&dev->ep[tmp]);
++
+ 	udc_setup_endpoints(dev);
+ }
+ 
+@@ -2472,6 +2476,13 @@ static irqreturn_t udc_data_in_isr(struct udc *dev, int ep_ix)
+ 				}
+ 			}
+ 
++		} else if (!use_dma && ep->in) {
++			/* disable interrupt */
++			tmp = readl(
++				&dev->regs->ep_irqmsk);
++			tmp |= AMD_BIT(ep->num);
++			writel(tmp,
++				&dev->regs->ep_irqmsk);
+ 		}
+ 	}
+ 	/* clear status bits */
+@@ -3279,6 +3290,17 @@ static int udc_pci_probe(
+ 		goto finished;
+ 	}
+ 
++	spin_lock_init(&dev->lock);
++	/* udc csr registers base */
++	dev->csr = dev->virt_addr + UDC_CSR_ADDR;
++	/* dev registers base */
++	dev->regs = dev->virt_addr + UDC_DEVCFG_ADDR;
++	/* ep registers base */
++	dev->ep_regs = dev->virt_addr + UDC_EPREGS_ADDR;
++	/* fifo's base */
++	dev->rxfifo = (u32 __iomem *)(dev->virt_addr + UDC_RXFIFO_ADDR);
++	dev->txfifo = (u32 __iomem *)(dev->virt_addr + UDC_TXFIFO_ADDR);
++
+ 	if (request_irq(pdev->irq, udc_irq, IRQF_SHARED, name, dev) != 0) {
+ 		dev_dbg(&dev->pdev->dev, "request_irq(%d) fail\n", pdev->irq);
+ 		kfree(dev);
+@@ -3331,7 +3353,6 @@ static int udc_probe(struct udc *dev)
+ 	udc_pollstall_timer.data = 0;
+ 
+ 	/* device struct setup */
+-	spin_lock_init(&dev->lock);
+ 	dev->gadget.ops = &udc_ops;
+ 
+ 	dev_set_name(&dev->gadget.dev, "gadget");
+@@ -3340,16 +3361,6 @@ static int udc_probe(struct udc *dev)
+ 	dev->gadget.name = name;
+ 	dev->gadget.is_dualspeed = 1;
+ 
+-	/* udc csr registers base */
+-	dev->csr = dev->virt_addr + UDC_CSR_ADDR;
+-	/* dev registers base */
+-	dev->regs = dev->virt_addr + UDC_DEVCFG_ADDR;
+-	/* ep registers base */
+-	dev->ep_regs = dev->virt_addr + UDC_EPREGS_ADDR;
+-	/* fifo's base */
+-	dev->rxfifo = (u32 __iomem *)(dev->virt_addr + UDC_RXFIFO_ADDR);
+-	dev->txfifo = (u32 __iomem *)(dev->virt_addr + UDC_TXFIFO_ADDR);
+-
+ 	/* init registers, interrupts, ... */
+ 	startup_registers(dev);
+ 
+-- 
+1.5.6.3
 
-BTW: In case it is not clear, the rationale as I understand it is we
-worry about the case where one cpu reorders the read to be after the
-->release(), and another cpu might grab the memory that was kfree()'d
-within the ->release() and scribble something else on it before the read
-completes.
-
-I know rmb() typically needs to be paired with wmb() to be correct, so
-you are probably right to say that the rmb() itself is not appropriate.
- This problem in general makes my head hurt, which is why I said I am
-not 100% sure of what is required.  As David mentions, perhaps
-"smp_mb()" is more appropriate for this application.  I also speculate
-barrier() may be all that we need.
-
-Kind Regards,
--Greg
 
 
---------------enigA8861F0DA1A02E69D00AC4D3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkrLUo0ACgkQP5K2CMvXmqEGXgCeKyVQZgKEaROeR0kFuaKauO/L
-RnYAni6yZ/gtFo/TIVEcN+9Tr709gy64
-=kSAO
------END PGP SIGNATURE-----
-
---------------enigA8861F0DA1A02E69D00AC4D3--
