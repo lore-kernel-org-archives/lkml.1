@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZJFFHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZJFFHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbZJFFHO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 01:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbZJFFHL
+	id S1756246AbZJFFHl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 01:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZJFFHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 01:07:11 -0400
-Received: from mail-ew0-f217.google.com ([209.85.219.217]:64745 "EHLO
+	Tue, 6 Oct 2009 01:07:40 -0400
+Received: from mail-ew0-f217.google.com ([209.85.219.217]:52018 "EHLO
 	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754519AbZJFFHH (ORCPT
+	with ESMTP id S1756193AbZJFFHj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 01:07:07 -0400
+	Tue, 6 Oct 2009 01:07:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=ttjMDIfxe7/YDCL1rZIuAWEDr0ehx6K/sW7C1tX4oz0NguTylPkbhYcjms6avBRpgm
-         SxEbiUjK/36sBe6o1tSYKM8Kd8DCmYz0dxdXwWvqk/8xpNDTEmGVx14iKdH9wdAf40lM
-         f+yMMRqsYqkH611WNaYp6Zo8k0Rt1AHP2AG1s=
-Date: Mon, 5 Oct 2009 22:06:50 -0700
+        b=HWFyZ9xX8VMteA/VDf9ZTq2Pv0UXr3xwFPRWwcrNMTGz7nv+7feDJ8AUxaM/Up9xo0
+         lA1QwMQH8BSOmGOq9aNeAYkDEdi7FkZrvPqwi9v4sX9Z01Casy3gujUEjKiBjOLlVVrA
+         rONGo5xucEoIY+KcTkdJOPcAsI/7HP6KdwMu8=
+Date: Mon, 5 Oct 2009 22:06:56 -0700
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz, linux-input@vger.kernel.org
-Subject: Re: 32-rc1 aka 32-rc2: warning at manage.c:361 (set_irq_wake),
-	matrix-keypad related?
-Message-ID: <20091006050649.GH27881@core.coreip.homeip.net>
-References: <20090930200746.GA1384@ucw.cz>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Amit Kucheria <amit.kucheria@verdurent.com>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>,
+       List Linux Omap <linux-omap@vger.kernel.org>,
+       Lauri Leukkunen <lauri.leukkunen@nokia.com>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: [PATCH] input: fix rx51 board keymap
+Message-ID: <20091006050656.GI27881@core.coreip.homeip.net>
+References: <1254317128-13954-1-git-send-email-amit.kucheria@verdurent.com> <20090930184843.GQ16865@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090930200746.GA1384@ucw.cz>
+In-Reply-To: <20090930184843.GQ16865@atomide.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
-
-On Wed, Sep 30, 2009 at 10:07:46PM +0200, Pavel Machek wrote:
-> Hi!
+On Wed, Sep 30, 2009 at 11:48:44AM -0700, Tony Lindgren wrote:
+> * Amit Kucheria <amit.kucheria@verdurent.com> [090930 06:26]:
+> > The original driver was written with the KEY() macro defined as (col, row)
+> > instead of (row, col) as defined by the matrix keypad infrastructure. So the
+> > keymap was defined accordingly.
+> > 
+> > Since the driver that was merged upstream uses the matrix keypad
+> > infrastructure, modify the keymap accordingly.
+> > 
+> > While we are at it, fix the comments in twl4030.h and define PERSISTENT_KEY as
+> > (r,c) instead of (c, r)
+> > 
+> > Tested on a RX51 (N900) device.
+> > 
+> > Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
+> > Cc: Tony Lindgren <tony@atomide.com>
+> > Cc: Lauri Leukkunen <lauri.leukkunen@nokia.com>
+> > Cc: Samuel Ortiz <sameo@linux.intel.com>
 > 
-> It complains about unbalanced irq 113 wake disable. That one belongs
-> to matrix-keypad...
+> Acked-by: Tony Lindgren <tony@atomide.com>
+> 
+> Dimitry, will you queue this one?
+> 
+> I'll also add it into omap-fixes-testing while waiting for it
+> to go to mainline.
+> 
 
-I guess some of enable_irq_wake()s fail on your box. Do you see it if
-you apply the patch below?
-
-Thanks.
+Applied to the 'for-linus' branch.
 
 -- 
 Dmitry
-
-
-Input: matrix-keypad - report errors from enable_irq_wake()
-
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- drivers/input/keyboard/matrix_keypad.c |   21 ++++++++++++++++++---
- 1 files changed, 18 insertions(+), 3 deletions(-)
-
-
-diff --git a/drivers/input/keyboard/matrix_keypad.c b/drivers/input/keyboard/matrix_keypad.c
-index 91cfe51..488171c 100644
---- a/drivers/input/keyboard/matrix_keypad.c
-+++ b/drivers/input/keyboard/matrix_keypad.c
-@@ -218,14 +218,29 @@ static int matrix_keypad_suspend(struct platform_device *pdev, pm_message_t stat
- 	struct matrix_keypad *keypad = platform_get_drvdata(pdev);
- 	const struct matrix_keypad_platform_data *pdata = keypad->pdata;
- 	int i;
-+	int err;
- 
- 	matrix_keypad_stop(keypad->input_dev);
- 
--	if (device_may_wakeup(&pdev->dev))
--		for (i = 0; i < pdata->num_row_gpios; i++)
--			enable_irq_wake(gpio_to_irq(pdata->row_gpios[i]));
-+	if (device_may_wakeup(&pdev->dev)) {
-+		for (i = 0; i < pdata->num_row_gpios; i++) {
-+			err = enable_irq_wake(gpio_to_irq(pdata->row_gpios[i]));
-+			if (err) {
-+				dev_err(&pdev->dev,
-+					"Failed to setup GPIO %d as "
-+					"wakeup source, err: %d\n",
-+					pdata->row_gpios[i], err);
-+				goto err_out;
-+			}
-+		}
-+	}
- 
- 	return 0;
-+
-+ err_out:
-+	while (--i >= 0)
-+		disable_irq_wake(gpio_to_irq(pdata->row_gpios[i]));
-+	return err;
- }
- 
- static int matrix_keypad_resume(struct platform_device *pdev)
