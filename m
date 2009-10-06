@@ -1,45 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933178AbZJFU16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933220AbZJFUgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933178AbZJFU16 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 16:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932797AbZJFU15
+	id S933220AbZJFUgB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 16:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932797AbZJFUgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 16:27:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41550 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932585AbZJFU14 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 16:27:56 -0400
-Date: Tue, 6 Oct 2009 16:27:13 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Breno Leitao <leitao@linux.vnet.ibm.com>
-Cc: mathieu.desnoyers@polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Documentation: improving tracepoints.txt
-Message-ID: <20091006202713.GA4663@infradead.org>
-References: <1254859771-8873-1-git-send-email-leitao@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254859771-8873-1-git-send-email-leitao@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 6 Oct 2009 16:36:01 -0400
+Received: from xenotime.net ([72.52.64.118]:59096 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756546AbZJFUgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 16:36:00 -0400
+Date: Tue, 6 Oct 2009 13:27:29 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, linville@tuxdriver.com
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+Subject: [PATCH -next] wireless: fix CFG80211_WEXT build problems
+Message-Id: <20091006132729.8b4f9345.rdunlap@xenotime.net>
+In-Reply-To: <20091006165220.b5cb1c44.sfr@canb.auug.org.au>
+References: <20091006165220.b5cb1c44.sfr@canb.auug.org.au>
+Organization: YPO4
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 05:09:31PM -0300, Breno Leitao wrote:
-> After reading the tracepoints.txt documentation, I tried to
-> follow the instructions to run the sample, but just assigning
-> CONFIG_SAMPLE_TRACEPOINTS=m wasn't enough to generate the tracepoints
-> samples. I also need to set CONFIG_SAMPLES=y, otherwise nothing
-> happens.
-> 
-> So, this silly patch explicit says that CONFIG_SAMPLES should be set to
-> compile those files.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Actually raw tracepoints are deprecated.  Both the documentation and the
-samples should be removed, with maybe a few tidbits about the consumer
-side moved to the trace_event samples because they can still be used
-with them.
+Fix CFG80211_WEXT build dependencies/errors:
 
+ERROR: "cfg80211_wext_siwscan" [drivers/net/wireless/orinoco/orinoco.ko] undefined!
+ERROR: "cfg80211_wext_siwmode" [drivers/net/wireless/orinoco/orinoco.ko] undefined!
+ERROR: "cfg80211_wext_giwrange" [drivers/net/wireless/orinoco/orinoco.ko] undefined!
+ERROR: "cfg80211_wext_giwmode" [drivers/net/wireless/orinoco/orinoco.ko] undefined!
+ERROR: "cfg80211_wext_giwname" [drivers/net/wireless/orinoco/orinoco.ko] undefined!
+ERROR: "cfg80211_wext_giwscan" [drivers/net/wireless/orinoco/orinoco.ko] undefined!
+ERROR: "cfg80211_wext_giwname" [drivers/net/wireless/ipw2x00/ipw2200.ko] undefined!
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/net/wireless/ipw2x00/Kconfig |    2 +-
+ drivers/net/wireless/orinoco/Kconfig |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+--- linux-next-20091006.orig/drivers/net/wireless/ipw2x00/Kconfig
++++ linux-next-20091006/drivers/net/wireless/ipw2x00/Kconfig
+@@ -65,7 +65,7 @@ config IPW2100_DEBUG
+ 
+ config IPW2200
+ 	tristate "Intel PRO/Wireless 2200BG and 2915ABG Network Connection"
+-	depends on PCI && WLAN_80211 && CFG80211
++	depends on PCI && WLAN_80211 && CFG80211 && CFG80211_WEXT
+ 	select WIRELESS_EXT
+ 	select WEXT_SPY
+ 	select WEXT_PRIV
+--- linux-next-20091006.orig/drivers/net/wireless/orinoco/Kconfig
++++ linux-next-20091006/drivers/net/wireless/orinoco/Kconfig
+@@ -1,7 +1,7 @@
+ config HERMES
+ 	tristate "Hermes chipset 802.11b support (Orinoco/Prism2/Symbol)"
+ 	depends on (PPC_PMAC || PCI || PCMCIA) && WLAN_80211
+-	depends on CFG80211
++	depends on CFG80211 && CFG80211_WEXT
+ 	select WIRELESS_EXT
+ 	select WEXT_SPY
+ 	select WEXT_PRIV
