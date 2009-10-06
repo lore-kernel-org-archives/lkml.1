@@ -1,64 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbZJFCCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbZJFCBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756010AbZJFCCQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 22:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755871AbZJFCCQ
+	id S1755993AbZJFCBb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 22:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbZJFCBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 22:02:16 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:37312 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755823AbZJFCCP (ORCPT
+	Mon, 5 Oct 2009 22:01:30 -0400
+Received: from mail-ew0-f217.google.com ([209.85.219.217]:44527 "EHLO
+	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755985AbZJFCBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 22:02:15 -0400
+	Mon, 5 Oct 2009 22:01:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        b=dBWF6/2q3SKkOjLoJ6cmD7EoR2GJMVJAe3yFxgsC91EN341Nv5fYnjrcSCvVjgZh/x
-         kqM4fsd6lfpl2WPnfvkmk7s9GVEV2cSHQazV8MY+1nsGd/xN5ZFngCv5MzZ/f1FnPlyr
-         rhlzoK+CZRI+Pn+zGit1/6Jcfg1dEdRTKRSzg=
-Message-ID: <4ACAA4D8.1080501@gmail.com>
-Date: Mon, 05 Oct 2009 20:00:56 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+        b=PF9ylqUe40tcedqaBOBq4NRMrnvfSSlORPElPcFaUjHB6k1Wru5mMhLUnvM4Srg5aV
+         BTDIrc+gvoIQeVmK9l6IkocIxuIY/LCZdCOD8y9SBqXZoepcU3QEzrOuCOC3QiJJZXkU
+         hD2MU4wLZgv827czZTB97FHCN5/TT12T/5ij8=
+Message-ID: <4ACAA4E4.1090802@gmail.com>
+Date: Mon, 05 Oct 2009 19:01:08 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-To: Norbert Preining <preining@logic.at>
-CC: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: complete IO hang since a few kernel revision
-References: <20091005011626.GH4335@gamma.logic.tuwien.ac.at> <4AC9607D.6050900@datenparkplatz.de> <20091005083308.GB5612@gandalf.dynalias.org>
-In-Reply-To: <20091005083308.GB5612@gandalf.dynalias.org>
+To: rostedt@goodmis.org
+CC: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: system gets stuck in a lock during boot
+References: <4A922F82.9080000@cn.fujitsu.com> <4A9251EB.8040805@gmail.com>	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>	 <20091002211211.GA2633@redhat.com> <20091004174113.GB24418@elte.hu>	 <dd18b0c30910041710y15e1da1k348c0decc05f326f@mail.gmail.com>	 <4ACA96B9.7000909@gmail.com> <1254791938.13160.211.camel@gandalf.stny.rr.com>
+In-Reply-To: <1254791938.13160.211.camel@gandalf.stny.rr.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/05/2009 02:33 AM, Norbert Preining wrote:
-> On Mon, 05 Oct 2009, Ulrich Lukas wrote:
->> A number of patches went into 2.6.32-rc3 which was released today.
+Steven Rostedt wrote:
+> On Mon, 2009-10-05 at 18:00 -0700, Justin P. Mattock wrote:
+>    
+>> Justin Mattock wrote:
+>>      
 >
-> Ok, with 2.6.32-rc3 running now.
+>    
+>> o.k. I put back on that system, and
+>> hit the error. I add your patch to 2.6.31-rc6,
+>> and the latest git(a few days old).
+>> I still am hitting this, but with your patch
+>> I'm able to see the beginning of this panic:
+>> (Ill write it manually)
+>>
+>> [   2.523966] kernel panic - not syncing: No init found. try passing
+>> init= option
+>> to the kernel
+>> [   2.524394] Pid: 1, comm: swapper Not tainted 2.6.31-rc6 #6
+>> [   2.524633] Call Trace:
+>> [   2.524875] [<ffffffff813a5b72>] panic+0x75/0x120
+>> [   2.525119] [<ffffffff8100910f>] init_post+0xef/0xf5
+>>      
 >
->> Can you test if your problems are solved with this latest version?
+> Strange. This panic is just telling you it could not find an "init" to
+> execute.
 >
-> Example:
-> dpkg-source -x of a big debian source package
-> which is more or less untarring a big .tar and then applying a diff
-> which is much smaller (tar.gz: 482M, diff.gz: 412k)
+>    
+It is strange, my only guess is something gcc
+is doing(like mentioned other systems I have run fine
+while using gcc 4.4)
+> -- Steve
 >
-> The dpkg-source has finished, I am back at the prompt.
+>    
+>> [   2.525357] [<ffffffff815f6cf0>] kernel_init+0x198/0x1a3
+>> [   2.525600] [<ffffffff8102410a>] child_rip+0xa/0x20
+>> [   2.525842] [<ffffffff815f6b58>] ? kernel_init+0x0/0x1a3
+>> [   2.526084] [>ffffffff810224100>] ? child_rip+0x0/0x20
+>>
+>> Seems I only hit this with using gcc 4.5.0 and compiling
+>> sysvinit with SELinux support to load the policy at boot.
+>> (here's the patch I used
+>> http://readlist.com/lists/tycho.nsa.gov/selinux/3/15451.html).
+>>
+>> Sound's like gcc is doing something(correct me if I'm
+>> wrong) because the other systems I have are using the same
+>> packages except for and older version of gcc.
+>> maybe  I should update sysvinit with a better patch to load the policy.
+>>
+>> Justin P. Mattock
+>>      
 >
-> At the same time a simple
-> 	$<ENTER>
-> in a different xterm did not produce *any* thing, no output, for about
-> 30 seconds. I mean 30 seconds waiting for an empty command is a bit
-> strange I would say.
 >
-> I don't know to which this is related, but it seems quite buggy.
->
-> Best wishes
->
-> Norbert
-
-Are you getting any errors showing up in dmesg?
+>    
+Justin P. Mattock
