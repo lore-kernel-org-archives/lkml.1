@@ -1,39 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933645AbZJFX2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZJFJwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933645AbZJFX2O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 19:28:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933612AbZJFX2N
+	id S1756861AbZJFJwY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 05:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbZJFJwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 19:28:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:54316 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933443AbZJFX2N convert rfc822-to-8bit (ORCPT
+	Tue, 6 Oct 2009 05:52:23 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:52120 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756805AbZJFJwX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 19:28:13 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Uwe =?utf-8?q?Kleine-K=C3=B6nig?=" <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH 29/34] move virtballoon_remove to .devexit.text
-Date: Tue, 6 Oct 2009 20:17:55 +1030
-User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Michael S. Tsirkin" <mst@redhat.com>
-References: <20091001082607.GA2181@pengutronix.de> <1254385718-14254-29-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1254385718-14254-29-git-send-email-u.kleine-koenig@pengutronix.de>
+	Tue, 6 Oct 2009 05:52:23 -0400
+Date: Tue, 6 Oct 2009 12:48:45 +0300
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: alan@lxorguk.ukuu.org.uk, dbrownell@users.sourceforge.net
+Subject: TTY loosing bytes ?
+Message-ID: <20091006094845.GT4452@nokia.com>
+Reply-To: felipe.balbi@nokia.com
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910062017.55803.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 06 Oct 2009 09:50:24.0060 (UTC) FILETIME=[6CE057C0:01CA466A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 1 Oct 2009 05:58:33 pm Uwe Kleine-König wrote:
-> The function virtballoon_remove is used only wrapped by __devexit_p so
-> define it using __devexit.
+Hi all,
 
-Thanks, applied!
+I'm facing a weird issue with TTY when using u_serial gadget.
 
-Rusty.
+The problem seems to be related to ldisc's buffer getting full. Imagine
+a situation where you have 510 bytes available on N_TTY's buffer and you
+try to flush 512 bytes then the code path would look like:
+
+--> flush_to_ldisc();
+	--> n_tty_receive_buf(512 bytes);
+		--> i = 510;
+		--> memcpy(i);
+
+		--> i = 0;
+		--> memcpy(i);
+	<-- wake_up_interruptible();
+
+What happens is that we loose those 2 extra bytes. I tried digging this
+problem and try to find a fix for it but it's been really complicated
+for me.
+
+Hope you guys can help. Actually, I've been reproducing the problem on
+2.6.28 but looking at the code current mainline should have the same
+problem. I also cherry-picked the relevant patches to my 2.6.28 tree
+(hope I got all of them) and it still failed.
+
+Sorry I'm reporting such a problem with such an old kernel but upgrading
+the kernel right now is just impossible.
+
+If you guys could give any pointers I would be really glad.
+
+-- 
+balbi
