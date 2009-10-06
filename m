@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZJFGKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbZJFGLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbZJFGKq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 02:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756208AbZJFGKn
+	id S1756651AbZJFGLc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 02:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756513AbZJFGKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 02:10:43 -0400
-Received: from mail-yx0-f173.google.com ([209.85.210.173]:42675 "EHLO
+	Tue, 6 Oct 2009 02:10:46 -0400
+Received: from mail-yx0-f173.google.com ([209.85.210.173]:45121 "EHLO
 	mail-yx0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756304AbZJFGKm (ORCPT
+	with ESMTP id S1756387AbZJFGKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 02:10:42 -0400
+	Tue, 6 Oct 2009 02:10:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=sJvCqvZDB+AdFLefnTITviAQY+ceKluaZhpWhZGuA1BA929rPwEJ/ttSoC6og6impz
-         0hABB+bV4q5mo0y0ZdzOuDfnqjEQ97nsVyc3niLYqXKnWUqQJzdSFGZEzshR9GIBDl3V
-         Xhu3t1gAhl7G9vZZM2UgDSFYtY/AD7tFKURJg=
+        b=qC0Ac4P+cbSTHhE66razruhzqYzJd+tqTZDsaogeLRA+cdd9vzEwILmCqHGtr/p5Fn
+         k4eLohYwioIkj7HoWBFRyPmc2C6RbIlpRp5hR4MTMhw0DEtHE7XzBTOhlOizxjfUKTHQ
+         HpqoJ6S3kPYkw+G/MsZJtq/2pvEeBordx3Cz8=
 From: Tom Zanussi <tzanussi@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, fweisbec@gmail.com, rostedt@goodmis.org,
        lizf@cn.fujitsu.com, hch@infradead.org
-Subject: [RFC][PATCH 2/9] perf trace: Add subsystem string to struct event
-Date: Tue,  6 Oct 2009 01:09:51 -0500
-Message-Id: <1254809398-8078-3-git-send-email-tzanussi@gmail.com>
+Subject: [RFC][PATCH 3/9] perf trace: Add string/dynamic cases to format_flags
+Date: Tue,  6 Oct 2009 01:09:52 -0500
+Message-Id: <1254809398-8078-4-git-send-email-tzanussi@gmail.com>
 X-Mailer: git-send-email 1.6.4.GIT
 In-Reply-To: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
 References: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
@@ -30,57 +30,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Needed to fully qualify event names for event stream processing.
+Needed for distinguishing string fields in event stream processing.
 
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 ---
- tools/perf/util/trace-event-parse.c |    4 +++-
- tools/perf/util/trace-event.h       |    3 ++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ tools/perf/util/trace-event-parse.c |   24 ++++++++++++++++++++++++
+ tools/perf/util/trace-event.h       |    2 ++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
 diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-index be8412d..de3fc8b 100644
+index de3fc8b..6f851f9 100644
 --- a/tools/perf/util/trace-event-parse.c
 +++ b/tools/perf/util/trace-event-parse.c
-@@ -2950,7 +2950,7 @@ int parse_ftrace_file(char *buf, unsigned long size)
- 	return 0;
+@@ -721,6 +721,24 @@ static int event_read_id(void)
+ 	return -1;
  }
  
--int parse_event_file(char *buf, unsigned long size, char *system__unused __unused)
-+int parse_event_file(char *buf, unsigned long size, char *sys)
- {
- 	struct event *event;
- 	int ret;
-@@ -2977,6 +2977,8 @@ int parse_event_file(char *buf, unsigned long size, char *system__unused __unuse
- 	if (ret < 0)
- 		die("failed to read event print fmt");
- 
-+	event->system = strdup(sys);
++static int field_is_string(struct format_field *field)
++{
++	if ((field->flags & FIELD_IS_ARRAY) &&
++	    (!strstr(field->type, "char") || !strstr(field->type, "u8") ||
++	     !strstr(field->type, "s8")))
++		return 1;
 +
- #define PRINT_ARGS 0
- 	if (PRINT_ARGS && event->print_fmt.args)
- 		print_args(event->print_fmt.args);
++	return 0;
++}
++
++static int field_is_dynamic(struct format_field *field)
++{
++	if (!strcmp(field->type, "__data_loc"))
++		return 1;
++
++	return 0;
++}
++
+ static int event_read_fields(struct event *event, struct format_field **fields)
+ {
+ 	struct format_field *field = NULL;
+@@ -865,6 +883,12 @@ static int event_read_fields(struct event *event, struct format_field **fields)
+ 			free(brackets);
+ 		}
+ 
++		if (field_is_string(field)) {
++			field->flags |= FIELD_IS_STRING;
++			if (field_is_dynamic(field))
++				field->flags |= FIELD_IS_DYNAMIC;
++		}
++
+ 		if (test_type_token(type, token,  EVENT_OP, (char *)";"))
+ 			goto fail;
+ 		free_token(token);
 diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
-index 00b440d..cb92978 100644
+index cb92978..5f59a39 100644
 --- a/tools/perf/util/trace-event.h
 +++ b/tools/perf/util/trace-event.h
-@@ -133,6 +133,7 @@ struct event {
- 	int			flags;
- 	struct format		format;
- 	struct print_fmt	print_fmt;
-+	char			*system;
+@@ -27,6 +27,8 @@ enum format_flags {
+ 	FIELD_IS_ARRAY		= 1,
+ 	FIELD_IS_POINTER	= 2,
+ 	FIELD_IS_SIGNED		= 4,
++	FIELD_IS_STRING		= 8,
++	FIELD_IS_DYNAMIC	= 16,
  };
  
- enum {
-@@ -167,7 +168,7 @@ void print_funcs(void);
- void print_printk(void);
- 
- int parse_ftrace_file(char *buf, unsigned long size);
--int parse_event_file(char *buf, unsigned long size, char *system);
-+int parse_event_file(char *buf, unsigned long size, char *sys);
- void print_event(int cpu, void *data, int size, unsigned long long nsecs,
- 		  char *comm);
- 
+ struct format_field {
 -- 
 1.6.4.GIT
 
