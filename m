@@ -1,100 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbZJFRpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbZJFRpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758133AbZJFRpu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 13:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbZJFRpt
+	id S1758177AbZJFRpm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 13:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757729AbZJFRpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 13:45:49 -0400
-Received: from thunk.org ([69.25.196.29]:40896 "EHLO thunker.thunk.org"
+	Tue, 6 Oct 2009 13:45:42 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:9803 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757333AbZJFRps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 13:45:48 -0400
-Date: Tue, 6 Oct 2009 13:44:50 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Dirk Hohndel <hohndel@infradead.org>,
-       Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32-rc3
-Message-ID: <20091006174450.GC24677@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Dirk Hohndel <hohndel@infradead.org>,
-	Len Brown <lenb@kernel.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <alpine.LFD.2.01.0910060828530.3432@localhost.localdomain>
+	id S1757140AbZJFRpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 13:45:41 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: zach.brown@oracle.com
+Cc: linux-aio <linux-aio@kvack.org>,
+       Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch v4 0/3] aio: implement request batching [more performance numbers]
+References: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 06 Oct 2009 13:45:03 -0400
+In-Reply-To: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com> (Jeff Moyer's
+	message of "Fri, 02 Oct 2009 18:54:20 -0400")
+Message-ID: <x49eipga02o.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0910060828530.3432@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 08:42:18AM -0700, Linus Torvalds wrote:
-> Now, that's not actually true, because (a) people rebase and (b) even in 
-> the absense of rebases I do merge with people like Andrew by email, so we 
-> actually end up having statistics like these:
-> 
->      32 SUBLEVEL = 29
->     383 SUBLEVEL = 30
->    8795 SUBLEVEL = 31
->       1 SUBLEVEL = 32
-> 
-> which is actually a bit sad in itself (showing just _how_ many people 
-> rebased their work on top of a release), but is still showing that we 
-> actually had 32 new commits in there that were based on a 2.6.29 kernel
+Here's a mail I got from Nathan Roberts.
 
-It's actually not quite so bad.  If you take into account
-Extraversion, the stats that you get look like this[1]:
+Cheers,
+Jeff
 
-      4 29-rc2
-     28 29-rc8
-    331 30
-      4 30-rc2
-     48 30-rc5
-   3867 31
-    561 31-rc1
-    895 31-rc2
-    190 31-rc3
-    278 31-rc4
-   1245 31-rc5
-    521 31-rc6
-    515 31-rc7
-    387 31-rc8
-    336 31-rc9
-      1 32-rc2
+---
 
-That actually shows that well over half of the commit based off of
-2.6.31 were actually based off of some 2.6.31-rc release, based on
-something *before* 2.6.31 released.
+Similar test as before. I had to re-upload the files so comparing
+against last time isn't really apples-apples.
 
-Of the 3867 that were based on something between 2.6.31 and
-2.6.31-rc1, that may be explained by people (like me) who will do a
-test merge, and if the test merge has conflicts, prefer to resolve the
-conflicts via a rebase and a re-run of the regression test suite, as
-opposed to either (a) having the upstream maintainer (you) do handle
-the merge, or (b) having two merges in the history; one merge by the
-maintainer to resolve the merge conflict, and another by the upstream
-maintainer when they pull in the topic branch.
+Disk is a cciss logical drive consisting of 12 SATA drives in a RAID6
+configuration with 128K stripes.
 
-Some (probably small percentage of the commits based on something
-between 2.6.31 and 2.6.31-rc1 can probably be explained by on bug
-fixes after an initial merge, but granted that's probably a pretty
-small set.
+Test case 1 is to read 1 million random 40K files (no file is read
+more than once), 16 4K iocbs at a time, 100 threads.
 
-					- Ted
+Test case 2 is the same except 100,000 128K files are read.
 
-\[1] Generated using:
+Unit of measure is "files read per second".
 
-git rev-list v2.6.31..v2.6.32-rc1 |
-while read a
-      do
-	git show $a:Makefile | head -4 > /tmp/foo
-	    awk '/^SUBLEVEL/ {printf("%s", $3)}; /^EXTRAVERSION/ {print $3}' < /tmp/foo
-	    done | sort | uniq -c
+
+40K
+-------------------------------------------------
+Kernel                              NOOP
+------                              ----
+2.6.30.5                            682
+2.6.30.5 (w/o drop_caches)          718
+2.6.30.5+patch_v4                   900
+2.6.30.5+patch_v4 (w/o drop caches) 965
+
+
+128K
+-------------------------------------------------
+Kernel                              NOOP
+------                              ----
+2.6.30.5                            242
+2.6.30.5 (w/o drop_caches)          350
+2.6.30.5+patch_v4                   292
+2.6.30.5+patch_v4 (w/o drop caches) 420
+
+
+Hope it helps.
+Nathan
 
