@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbZJFLCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932143AbZJFLLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932153AbZJFLCS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 07:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932124AbZJFLCR
+	id S932143AbZJFLLU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 07:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756906AbZJFLLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 07:02:17 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:60651 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756942AbZJFLCQ (ORCPT
+	Tue, 6 Oct 2009 07:11:19 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37859 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756823AbZJFLLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 07:02:16 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Subject: Re: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
-Date: Tue, 6 Oct 2009 13:01:35 +0200
-User-Agent: KMail/1.9.9
-Cc: torvalds@linux-foundation.org, jeff.chua.linux@gmail.com,
-       Valdis.Kletnieks@vt.edu, mangoo@wpkg.org, daniel.blueman@gmail.com,
-       bstanoszek@comtime.com, dave@linux.vnet.ibm.com,
-       hugh.dickins@tiscali.co.uk, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, hugh@veritas.com
-References: <Pine.LNX.4.64.0910052334480.17655@boston.corp.fedex.com> <b6a2187b0910051715y4ee63503y148ba2d7e24cad8e@mail.gmail.com> <alpine.LFD.2.01.0910051727420.3432@localhost.localdomain> <alpine.LFD.2.01.0910051727420.3432@localhost.localdomain> <200910061106.33718.tvrtko.ursulin@sophos.com>
-In-reply-To: <200910061106.33718.tvrtko.ursulin@sophos.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 6 Oct 2009 07:11:19 -0400
+Subject: Re: Latest vfs scalability patch
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20091006102604.GN5216@kernel.dk>
+References: <20091006064919.GB30316@wotan.suse.de>
+	 <20091006101414.GM5216@kernel.dk>  <20091006102604.GN5216@kernel.dk>
+Content-Type: text/plain
+Date: Tue, 06 Oct 2009 13:10:38 +0200
+Message-Id: <1254827438.21044.251.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910061301.39221.elendil@planet.nl>
-X-OriginalArrivalTime: 06 Oct 2009 11:01:39.0932 (UTC) FILETIME=[617EA1C0:01CA4674]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tvrtko Ursulin wrote:
->> In fact, I wish more people did that, just so that we'd get better
->> coverage of the 32-bit compat code. We occasionally find issues there,
->> although I think it's getting rarer.
-> 
-> Maybe convince some distro to offer this setup as an option at least? I
-> always wondered why no one has, or maybe I missed it.
+On Tue, 2009-10-06 at 12:26 +0200, Jens Axboe wrote:
 
-Debian has a 64-bit kernel for its 32-bit "i386" architecture (and also for 
-its 64-bit "amd64" architecture obviously):
-- for stable: http://packages.debian.org/lenny/linux-image-2.6.26-2-amd64
-- for unstable: http://packages.debian.org/sid/linux-image-2.6.30-2-amd64
+> I did a quick perf analysis on that, but only on 8 clients (64 clients
+> basically causes perf to shit itself, it's just not functional).
 
-Cheers,
-FJP
+Even when used with -a so that you profile each cpu? I can imagine the
+cacheline contention from the inherited counters to render a 64 thread
+machine less than usable?
+
+
