@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932732AbZJFOQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932822AbZJFOlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932732AbZJFOQp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 10:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932689AbZJFOQo
+	id S932822AbZJFOlN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 10:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932754AbZJFOlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 10:16:44 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:37156 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932685AbZJFOQo (ORCPT
+	Tue, 6 Oct 2009 10:41:12 -0400
+Received: from smtp-noauth7.primus.ca ([216.254.180.38]:34274 "EHLO
+	mail-05.primus.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932707AbZJFOlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 10:16:44 -0400
-Date: Tue, 6 Oct 2009 10:10:58 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: wireless/kbuild tree build failure
-Message-ID: <20091006141057.GA2911@tuxdriver.com>
-References: <20091006161639.85e731bb.sfr@canb.auug.org.au>
+	Tue, 6 Oct 2009 10:41:12 -0400
+X-Greylist: delayed 1691 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Oct 2009 10:41:12 EDT
+Date: Tue, 6 Oct 2009 10:12:22 -0400
+From: Nick Bowler <nbowler@elliptictech.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH trivial] docs: Describe the 'C' taint flag in
+ oops-tracing.txt.
+Message-ID: <20091006141222.GA18579@emergent.ellipticsemi.com>
+Mail-Followup-To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091006161639.85e731bb.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Organization: Elliptic Technologies Inc.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 04:16:39PM +1100, Stephen Rothwell wrote:
-> Hi John,
-> 
-> Today's linux-next build (i386 defconfig) failed like this:
-> 
-> net/wireless/ethtool.c:1:30: error: linux/utsrelease.h: No such file or directory
-> net/wireless/ethtool.c: In function 'cfg80211_get_drvinfo':
-> net/wireless/ethtool.c:13: error: 'UTS_RELEASE' undeclared (first use in this function)
-> 
-> Caused by commit fdd4b63be177e74b9346a557b75f4b48f3a42ee1 ("wireless:
-> implement basic ethtool support for cfg80211 devices").
-> 
-> utsrelease.h is now in include/generated after commit
-> bbae701f7f258b051ed199ef71c5e85e683c0fb8 ("kbuild: move utsrelease.h to
-> include/generated") from the kbuild tree.  (My other builds only worked
-> because utsrelease.h was left over in include/linux from previous builds.)
-> 
-> I have reverted the kbuild commit for today.  Sam, we need to come up
-> with a better solution ... maybe for one release we could have the old
-> files including the new files ... maybe remove the old files after
-> 2.6.33-rc2 ...
+From: Nick Bowler <nbowler@elliptictech.com>
 
-It looks like not much uses utsrelease.h -- should I be using something
-else to get a version identifier for the running kernel?
+If some of the flags are documented there, they all should be.
 
-John
+Signed-off-by: Nick Bowler <nbowler@elliptictech.com>
+---
+ Documentation/oops-tracing.txt |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/oops-tracing.txt b/Documentation/oops-tracing.txt
+index b152e81..c10c022 100644
+--- a/Documentation/oops-tracing.txt
++++ b/Documentation/oops-tracing.txt
+@@ -257,6 +257,8 @@ characters, each representing a particular tainted value.
+ 
+  10: 'W' if a warning has previously been issued by the kernel.
+ 
++ 11: 'C' if a staging driver has been loaded.
++
+ The primary reason for the 'Tainted: ' string is to tell kernel
+ debuggers if this is a clean kernel or if anything unusual has
+ occurred.  Tainting is permanent: even if an offending module is
 -- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+1.6.4.4
+
+-- 
+Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+
