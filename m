@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZJFJKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbZJFJO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbZJFJKq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 05:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbZJFJKp
+	id S1756738AbZJFJO2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 05:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756719AbZJFJO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 05:10:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59805 "EHLO mx2.mail.elte.hu"
+	Tue, 6 Oct 2009 05:14:28 -0400
+Received: from www.tglx.de ([62.245.132.106]:58100 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755454AbZJFJKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 05:10:44 -0400
-Date: Tue, 6 Oct 2009 11:09:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       lizf@cn.fujitsu.com, hch@infradead.org
-Subject: Re: [RFC][PATCH 0/9] perf trace: support for general-purpose
-	scripting
-Message-ID: <20091006090954.GA19325@elte.hu>
-References: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
+	id S1756718AbZJFJO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 05:14:27 -0400
+Date: Tue, 6 Oct 2009 11:13:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Mehlan, Markus" <Markus.Mehlan@ritter.info>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: AW: clock_nanosleep: cyclic POSIX thread freezes during time
+ setting
+In-Reply-To: <40F775BBD072A346957E787B3D0DBE5F1C97B4@w2k3-46ex01.RITTER.LOCAL>
+Message-ID: <alpine.LFD.2.00.0910061112400.2646@localhost.localdomain>
+References: <40F775BBD072A346957E787B3D0DBE5F1C97AF@w2k3-46ex01.RITTER.LOCAL> <alpine.LFD.2.00.0910052044410.2646@localhost.localdomain> <40F775BBD072A346957E787B3D0DBE5F1C97B4@w2k3-46ex01.RITTER.LOCAL>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0048]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 Oct 2009, Mehlan, Markus wrote:
+> > Just tested on a MPC5200 board with cyclictest and setting 
+> > date on a second console. Unfortunately I cannot reproduce 
+> > that problem. Can you try to activate the function tracer and 
+> > capture what the system is doing. That might us give some 
+> > clue about the problem.
+> > 
+> do you mean kernel function trace (KFT patch) with function trace
+> or user space "strace"?
 
-* Tom Zanussi <tzanussi@gmail.com> wrote:
+The kernel function tracer which is in -rt. strace is not telling us
+what's happening in the kernel.
 
-> Known problems/shortcomings:
-> 
-> Probably the biggest problem right now is the sorting hack I added as 
-> the last patch.  It's just meant as a temporary thing, but is there 
-> because tracing scripts in general want to see events in the order 
-> they happened i.e. timestamp order. [...]
+Thanks,
 
-Btw., have you seen the -M/--multiplex option to perf record? It 
-multiplexes all events into a single buffer - making them all ordered. 
-(The events are in causal ordering in this case even if there's some TSC 
-asynchronity)
-
-	Ingo
+	tglx
