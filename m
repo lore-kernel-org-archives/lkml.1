@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbZJFRJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbZJFRKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757639AbZJFRJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 13:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbZJFRJ4
+	id S1757986AbZJFRKO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 13:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757942AbZJFRKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 13:09:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57216 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755594AbZJFRJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 13:09:55 -0400
-Date: Tue, 6 Oct 2009 19:08:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Tue, 6 Oct 2009 13:10:14 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:57977 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755092AbZJFRKN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 13:10:13 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: Linux 2.6.32-rc3
-Message-ID: <20091006170846.GA9277@elte.hu>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <4ACB626C.8090503@s5r6.in-berlin.de>
+Date: Tue, 6 Oct 2009 19:09:34 +0200
+User-Agent: KMail/1.9.9
+Cc: mingo@elte.hu, hohndel@infradead.org, linux-kernel@vger.kernel.org
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <alpine.LFD.2.01.0910060828530.3432@localhost.localdomain>
+In-reply-To: <alpine.LFD.2.01.0910060828530.3432@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4ACB626C.8090503@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0177]
+Message-Id: <200910061909.35878.elendil@planet.nl>
+X-OriginalArrivalTime: 06 Oct 2009 17:09:36.0339 (UTC) FILETIME=[C80F0230:01CA46A7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> And what people are suggesting with a 2.6.32-rc0 would just lead to
+> people now rebasing their work NOT EVEN ON A RELEASE. They'd want to
+> rebase it on top of that made-up commit (2.6.32-rc0), so now from a
+> development standpoint that commit suddenly becomes more important than
+> the release itself.
 
-* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+IMO you're looking at this from the wrong side: the developer PoV. The 
+request is made from a *user* PoV.
+Users very simply want to avoid that they accidentally install a merge 
+window kernel over their stable kernel. IMO that makes sense.
 
-> Ingo Molnar wrote:
-> > I.e. i think it's a fact that right now our release version is highly 
-> > deceptive during the merge window.
-> [...]
-> > One option would be to make LOCALVERSION_AUTO compulsory.
-> > 
-> > Or to add a tweak to the naming, something like:
-> > 
-> >  v2.6.31
-> >  v2.6.31+
-> >  v2.6.32-rc1
-> >  v2.6.32-rc1+
-> [...]
-> > ... for the sole purpose of warning people that anything they pull after 
-> > v2.6.31 got released is (wildly!) not vanilla v2.6.31 anymore.
-> 
-> If this scheme is meant to be something on which people can rely on, 
-> everybody who commits to a tree from which Linus pulls from would have 
-> to base their branches onto those ...+ commits, always.
+Developers are supposed to be able to take care of themselves; the mainline 
+tree should aim to make things easy for users.
 
-I think you misunderstood - the + would just be a shortcut for the 
-long-form precise version string.
+I see the release versions purely as reference points. And -rc0 is 
+obviously useless from that perspective, which is why it should be just a 
+Makefile thing and not a tag. But -rc0 is IMO very useful to distinguish 
+what kernels someone has installed.
 
-	Ingo
+BTW, including the commit number in the version string has a major 
+disadvantage: kernels will get installed *alongside* eachother instead of 
+the newer kernel replacing the older one. Result is that /boot partitions 
+fill up much more quickly.
+
+Cheers,
+FJP
