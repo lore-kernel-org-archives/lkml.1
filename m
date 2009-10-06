@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933102AbZJFSfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbZJFSf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933102AbZJFSfg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 14:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932607AbZJFSfg
+	id S933115AbZJFSf7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 14:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933106AbZJFSf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 14:35:36 -0400
-Received: from cmpxchg.org ([85.214.51.133]:35459 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932192AbZJFSff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 14:35:35 -0400
-Date: Tue, 6 Oct 2009 20:34:36 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Gleb Natapov <gleb@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: [PATCH v2][RFC] add MAP_UNLOCKED mmap flag
-Message-ID: <20091006183436.GA23110@cmpxchg.org>
-References: <20091006170218.GM9832@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091006170218.GM9832@redhat.com>
+	Tue, 6 Oct 2009 14:35:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36770 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933105AbZJFSf6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 14:35:58 -0400
+Date: Tue, 6 Oct 2009 11:35:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Frans Pop <elendil@planet.nl>
+cc: mingo@elte.hu, hohndel@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.32-rc3
+In-Reply-To: <200910061840.57681.elendil@planet.nl>
+Message-ID: <alpine.LFD.2.01.0910061132150.3432@localhost.localdomain>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
+ <20091006144449.GA23078@elte.hu> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <200910061840.57681.elendil@planet.nl>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 07:02:18PM +0200, Gleb Natapov wrote:
-> diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
-> index 32c8bd6..59e0f29 100644
-> --- a/include/asm-generic/mman.h
-> +++ b/include/asm-generic/mman.h
-> @@ -12,6 +12,7 @@
->  #define MAP_NONBLOCK	0x10000		/* do not block on IO */
->  #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
->  #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
-> +#define MAP_UNLOCKED	0x80000         /* force page unlocking */
->  
->  #define MCL_CURRENT	1		/* lock all current mappings */
->  #define MCL_FUTURE	2		/* lock all future mappings */
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 73f5e4b..7c2abdb 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -985,6 +985,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
->  		if (!can_do_mlock())
->  			return -EPERM;
->  
-> +        if (flags & MAP_UNLOKED)
-> +                vm_flags &= ~VM_LOCKED;
 
-That needs changing into MAP_UNLOCKED as well.
 
-Should we do something special about (MAP_UNLOCKED | MAP_LOCKED)?
+On Tue, 6 Oct 2009, Frans Pop wrote:
+> 
+> Enabling it by default somehow would be fine with me, but "compulsory" is a 
+> step to far IMO. Users should always be allowed custom schemes.
+
+I do respect that - we shouldn't _force_ things if some people have 
+special needs and do things differently and really need a very particular 
+version number setup.
+
+That said, we might make it a lot harder for people to overlook this by 
+mistake when they don't care or know enough. Maybe we can have three 
+levels of the "automatic" version number, and make the third level ("no 
+automatic sign of versioning at all") be something that you really need to 
+ask for (eg you need to have EMBEDDED enabled to show that you want the 
+whole extended config option setup or something fairly draconian like 
+that).
+
+				Linus
