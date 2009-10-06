@@ -1,147 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbZJFOXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932759AbZJFOXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932774AbZJFOXm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 10:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932766AbZJFOXl
+	id S932759AbZJFOXR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 10:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932744AbZJFOXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 10:23:41 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:36925 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932742AbZJFOXk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 10:23:40 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-14.arcor-online.net 672CC28AC52
-Subject: [PATCH] amd5536udc: fixed shared interrupt bug and warning oops
-From: Thomas Dahlmann <dahlmann.thomas@arcor.de>
-To: akpm@linux-foundation.org
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       robert.richter@amd.com
-Content-Type: text/plain
-Date: Tue, 06 Oct 2009 16:23:02 +0200
-Message-Id: <1254838982.14160.14.camel@erni>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Oct 2009 10:23:17 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:7148 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932741AbZJFOXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 10:23:16 -0400
+Message-ID: <4ACB52F6.7020106@redhat.com>
+Date: Tue, 06 Oct 2009 10:23:50 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: rostedt@goodmis.org
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH tracing/kprobes v2 1/5] tracing/kprobes: Rename special
+ variables syntax
+References: <20091002214834.30906.86502.stgit@dhcp-100-2-132.bos.redhat.com>	 <20091002214842.30906.49220.stgit@dhcp-100-2-132.bos.redhat.com>	 <20091003015444.GE4828@nowhere> <4AC830F0.2010003@redhat.com>	 <4ACA25D5.10703@redhat.com>  <20091005192609.GB6071@nowhere> <1254787973.13160.195.camel@gandalf.stny.rr.com>
+In-Reply-To: <1254787973.13160.195.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 38b535f604befaf16c6a3a1fc9fc80bcb56b8498 Mon Sep 17 00:00:00 2001
-From: Thomas Dahlmann <dahlmann.thomas@arcor.de>
-Date: Tue, 6 Oct 2009 16:01:04 +0200
-Subject: [PATCH] amd5536udc: fixed shared interrupt bug and warning oops
- - fixed shared interrupt bug reported by Vadim Lobanov
- - fixed possible warning oops on driver unload when connected
- - prevent interrupt flood in PIO mode ("modprobe amd5536udc use_dma=0")
-   when using gadget ether
+Steven Rostedt wrote:
+> On Mon, 2009-10-05 at 21:26 +0200, Frederic Weisbecker wrote:
+>> On Mon, Oct 05, 2009 at 12:59:01PM -0400, Masami Hiramatsu wrote:
+>>> As far as I can see in arch/*/include/asm/ptrace.h, all registers start with
+>>> alphabets :-). So, I'd like to suggest renaming sp-vars to '_sp-vars'.
+>>>
+>>> Then, we will have;
+>>> - $local-vars
+>>
+>>
+>> There is a risk of bash collision.
+> 
+> I actually prefer the "$" notation. As for bash collision, it is common
+> for shell script writers to be able to distinguish a variable from bash.
+> Yes we can backslash it, or quote it. But when I see a $var it sticks
+> out to me that it is a variable. It's not hard to get around. For
+> example, type:
+> 
+> $ echo "hello $DISPLAY"' or $DISPLAY'
+> 
+> and see what you get.
+> 
+> Makefiles and Perl use '$' for variables those that need to handle it
+> with bash can easily cope with it.
+> 
+> So my vote is to keep the '$'. It is the most intuitive to what it
+> means.
+> 
+> Just my 0.02¤
 
-Signed-off-by: Thomas Dahlmann <dahlmann.thomas@arcor.de>
----
- drivers/usb/gadget/amd5536udc.c |   49 +++++++++++++++++++++++---------------
- 1 files changed, 30 insertions(+), 19 deletions(-)
+OK, so here are syntax ideas
 
-diff --git a/drivers/usb/gadget/amd5536udc.c b/drivers/usb/gadget/amd5536udc.c
-index d5b6596..731150d 100644
---- a/drivers/usb/gadget/amd5536udc.c
-+++ b/drivers/usb/gadget/amd5536udc.c
-@@ -1213,7 +1213,12 @@ udc_queue(struct usb_ep *usbep, struct usb_request *usbreq, gfp_t gfp)
- 				tmp &= AMD_UNMASK_BIT(ep->num);
- 				writel(tmp, &dev->regs->ep_irqmsk);
- 			}
--		}
-+		} else if (ep->in) {
-+				/* enable ep irq */
-+				tmp = readl(&dev->regs->ep_irqmsk);
-+				tmp &= AMD_UNMASK_BIT(ep->num);
-+				writel(tmp, &dev->regs->ep_irqmsk);
-+			}
- 
- 	} else if (ep->dma) {
- 
-@@ -2005,18 +2010,17 @@ __acquires(dev->lock)
- {
- 	int tmp;
- 
--	/* empty queues and init hardware */
--	udc_basic_init(dev);
--	for (tmp = 0; tmp < UDC_EP_NUM; tmp++) {
--		empty_req_queue(&dev->ep[tmp]);
--	}
--
- 	if (dev->gadget.speed != USB_SPEED_UNKNOWN) {
- 		spin_unlock(&dev->lock);
- 		driver->disconnect(&dev->gadget);
- 		spin_lock(&dev->lock);
- 	}
--	/* init */
-+
-+	/* empty queues and init hardware */
-+	udc_basic_init(dev);
-+	for (tmp = 0; tmp < UDC_EP_NUM; tmp++)
-+		empty_req_queue(&dev->ep[tmp]);
-+
- 	udc_setup_endpoints(dev);
- }
- 
-@@ -2472,6 +2476,13 @@ static irqreturn_t udc_data_in_isr(struct udc *dev, int ep_ix)
- 				}
- 			}
- 
-+		} else if (!use_dma && ep->in) {
-+			/* disable interrupt */
-+			tmp = readl(
-+				&dev->regs->ep_irqmsk);
-+			tmp |= AMD_BIT(ep->num);
-+			writel(tmp,
-+				&dev->regs->ep_irqmsk);
- 		}
- 	}
- 	/* clear status bits */
-@@ -3279,6 +3290,17 @@ static int udc_pci_probe(
- 		goto finished;
- 	}
- 
-+	spin_lock_init(&dev->lock);
-+	/* udc csr registers base */
-+	dev->csr = dev->virt_addr + UDC_CSR_ADDR;
-+	/* dev registers base */
-+	dev->regs = dev->virt_addr + UDC_DEVCFG_ADDR;
-+	/* ep registers base */
-+	dev->ep_regs = dev->virt_addr + UDC_EPREGS_ADDR;
-+	/* fifo's base */
-+	dev->rxfifo = (u32 __iomem *)(dev->virt_addr + UDC_RXFIFO_ADDR);
-+	dev->txfifo = (u32 __iomem *)(dev->virt_addr + UDC_TXFIFO_ADDR);
-+
- 	if (request_irq(pdev->irq, udc_irq, IRQF_SHARED, name, dev) != 0) {
- 		dev_dbg(&dev->pdev->dev, "request_irq(%d) fail\n", pdev->irq);
- 		kfree(dev);
-@@ -3331,7 +3353,6 @@ static int udc_probe(struct udc *dev)
- 	udc_pollstall_timer.data = 0;
- 
- 	/* device struct setup */
--	spin_lock_init(&dev->lock);
- 	dev->gadget.ops = &udc_ops;
- 
- 	dev_set_name(&dev->gadget.dev, "gadget");
-@@ -3340,16 +3361,6 @@ static int udc_probe(struct udc *dev)
- 	dev->gadget.name = name;
- 	dev->gadget.is_dualspeed = 1;
- 
--	/* udc csr registers base */
--	dev->csr = dev->virt_addr + UDC_CSR_ADDR;
--	/* dev registers base */
--	dev->regs = dev->virt_addr + UDC_DEVCFG_ADDR;
--	/* ep registers base */
--	dev->ep_regs = dev->virt_addr + UDC_EPREGS_ADDR;
--	/* fifo's base */
--	dev->rxfifo = (u32 __iomem *)(dev->virt_addr + UDC_RXFIFO_ADDR);
--	dev->txfifo = (u32 __iomem *)(dev->virt_addr + UDC_TXFIFO_ADDR);
--
- 	/* init registers, interrupts, ... */
- 	startup_registers(dev);
- 
+* current syntax
+<Ftrace>
+- $sp_var
+- %regs
+- @symbol
+<Perf>
+- local_var
+
+* $local syntax
+<Ftrace>
+- sp_var
+- %regs
+- @symbol
+<Perf>
+- $local_var
+
+* non $ syntax 1
+<Ftrace>
+- %sp_var
+- %regs
+- @symbol
+<Perf>
+- local_var
+
+* non $ syntax 2
+<Ftrace>
+- %%sp_var or %@sp_var
+- %regs
+- @symbol
+<Perf>
+- local_var
+
+So, which one do you like to use? :-)
+
+Thank you,
+
 -- 
-1.5.6.3
+Masami Hiramatsu
 
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
+e-mail: mhiramat@redhat.com
 
