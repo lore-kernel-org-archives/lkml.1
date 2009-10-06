@@ -1,102 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932967AbZJFQK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbZJFQK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932967AbZJFQK2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 12:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932854AbZJFQK1
+	id S932991AbZJFQK6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 12:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbZJFQK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 12:10:27 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:45167 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756154AbZJFQK1 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 12:10:27 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEACIGy0pMROOX/2dsb2JhbACBUdINhCoE
-Date: Tue, 6 Oct 2009 12:09:48 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [patch 2/4] tree rcu: Add debug RCU head option
-Message-ID: <20091006160948.GB15904@Krystal>
-References: <20091006143727.868480435@polymtl.ca> <20091006144038.140258698@polymtl.ca> <4ACB684A.6060107@gmail.com>
+	Tue, 6 Oct 2009 12:10:58 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:50406 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932957AbZJFQK5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 12:10:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dutnD+O+OyRJtAPfsqOa/utH8AIos0S+vpYuSVETMIRFR2cqmNIYQsLNgZVS6CNbpm
+         TB09NO/Fa7Mq+yzvADlo/b5dx5/wR1QjMZvrwatIO9/AFU+p7chc2WdFUPZDVGo1ytgJ
+         XiykWkum3vjgMrxo+hp8YB5RI7jR2YN3oLgsA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+In-Reply-To: <4ACB653B.9090707@msgid.tls.msk.ru>
+References: <c43b2e150909200120kf87cdc2oabafea8abbf01227@mail.gmail.com>
+	 <68676e00909200520s7730b516v4e0d6c17d529d0a7@mail.gmail.com>
+	 <4AC939BB.8090600@wasp.net.au>
+	 <68676e00910050837g2006bfb8j349891504e474a95@mail.gmail.com>
+	 <4ACA21E8.6080501@msgid.tls.msk.ru>
+	 <68676e00910060800h4cb84dcl9f610f6b23a88e5c@mail.gmail.com>
+	 <4ACB60A7.307@msgid.tls.msk.ru>
+	 <68676e00910060834p338c77c8kae8156a1f8dc68a9@mail.gmail.com>
+	 <4ACB653B.9090707@msgid.tls.msk.ru>
+Date: Tue, 6 Oct 2009 18:10:20 +0200
+Message-ID: <68676e00910060910m7744a6dcua2a344ce44b9de6e@mail.gmail.com>
+Subject: Re: [lm-sensors] it87 sensors need an ACPI driver (2.6.31)
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Brad Campbell <brad@wasp.net.au>, lm-sensors@lm-sensors.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-In-Reply-To: <4ACB684A.6060107@gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 12:08:43 up 49 days,  2:58,  2 users,  load average: 0.69, 0.38,
-	0.30
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eric Dumazet (eric.dumazet@gmail.com) wrote:
-> Mathieu Desnoyers a �crit :
-> > Poisoning the rcu_head callback list. Only for rcu tree for now.
-> > 
-> > Helps finding racy users of call_rcu(), which results in hangs because list
-> > entries are overwritten and/or skipped. Using the lower bit to poison because
-> > include/net/dst.h __pad_to_align_refcnt complains when struct rcu_head grows.
-> > 
-> 
-> I see :)
-> 
+On Tue, Oct 6, 2009 at 5:41 PM, Michael Tokarev <mjt@tls.msk.ru> wrote:
+> Luca Tettamanti wrote:
+>>
+>> On Tue, Oct 6, 2009 at 5:22 PM, Michael Tokarev <mjt@tls.msk.ru> wrote:
+>>> Ok.  Now a pure technical question, finally.  Is there a
+>>> way to made asus_atk0110 to be able to *set* fan speeds
+>>> too, in a way as it's done by it87?
+>>
+>> In term of Q-FAN profiles: yes, but I still haven't managed to make it
+>> work (the interface is there though).
+>
+> Oh, so it's basically boils down to Silent/Optimal/Normal choices
+> as in the BIOS settings, right?  I mean, still no pwm_* controls
+> as it87 offers?..
 
-I don't know if there is an easy fix for __pad_to_align_refcnt ?
+It's motherboard specific. On some model with w83627ehf it's possible
+to activate thermal cruise control (with a given target temperature).
+I've never seen direct pwm or dc control; it's theoretically doable
+with a custom DSDT ;-)
 
-> > --- linux-2.6-lttng.orig/include/linux/rcupdate.h	2009-10-06 10:35:15.000000000 -0400
-> > +++ linux-2.6-lttng/include/linux/rcupdate.h	2009-10-06 10:35:18.000000000 -0400
-> > @@ -45,6 +45,8 @@
-> >   * struct rcu_head - callback structure for use with RCU
-> >   * @next: next update requests in a list
-> >   * @func: actual update function to call after the grace period.
-> > + *
-> > + * Debug mode assumes func pointer value is word-aligned.
-> 
-> Ouch, I guess you never tried CONFIG_CC_OPTIMIZE_FOR_SIZE=y ?
-> 
-
-oops. Well, simple fix would be : depends on !CC_OPTIMIZE_FOR_SIZE
-
-It's a debug option after all... but I'd prefer growing the structure
-with a supplementary field if possible.
-
-Mathieu
-
-> random extract from "nm -v vmlinux"
-> 
-> c0415e58 T in4_pton
-> c0415f66 T in6_pton
-> c04161f0 T in_aton
-> c0416240 T net_ratelimit
-> c0416250 t linkwatch_add_event
-> c0416281 t linkwatch_schedule_work
-> c0416301 T linkwatch_fire_event
-> c0416368 t __linkwatch_run_queue
-> c04164d2 t linkwatch_event
-> c04164f4 T linkwatch_run_queue
-> c0416500 T sk_chk_filter
-> c0416703 t sk_filter_rcu_release
-> c041671d T sk_detach_filter
-> c041676a T sk_attach_filter
-> c0416862 T sk_run_filter
-> c0416f5d T sk_filter
-> c0416fc4 t __flow_cache_shrink
-> 
-> gcc -v
-> Using built-in specs.
-> Target: i686-pc-linux-gnu
-> Configured with: ../gcc-4.4.1/configure --enable-languages=c,c++ --prefix=/usr
-> Thread model: posix
-> gcc version 4.4.1 (GCC)
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Luca
