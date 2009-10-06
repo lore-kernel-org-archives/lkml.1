@@ -1,86 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932787AbZJFOXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932794AbZJFO2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932787AbZJFOXq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 10:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932778AbZJFOXp
+	id S932794AbZJFO2j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 10:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932779AbZJFO2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 10:23:45 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:44406 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932766AbZJFOXn convert rfc822-to-8bit (ORCPT
+	Tue, 6 Oct 2009 10:28:38 -0400
+Received: from firewall1.addi-data.de ([62.154.208.154]:44701 "EHLO
+	addi-data.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932778AbZJFO2h convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 10:23:43 -0400
+	Tue, 6 Oct 2009 10:28:37 -0400
+X-Greylist: delayed 381 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Oct 2009 10:28:37 EDT
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Message-ID: <711a958d-5a76-4f00-aa69-8e5889945992@default>
-Date: Tue, 6 Oct 2009 07:19:51 -0700 (PDT)
-From: Dan Magenheimer <dan.magenheimer@oracle.com>
-To: Avi Kivity <avi@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kurt.hackel@oracle.com, Keir Fraser <keir.fraser@eu.citrix.com>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>, zach.brown@oracle.com,
-       the arch/x86 maintainers <x86@kernel.org>, chris.mason@oracle.com
-Subject: RE: [PATCH 3/5] x86/pvclock: add vsyscall implementation
-In-Reply-To: <4ACB0833.2050203@redhat.com>
-X-Priority: 3
-X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
- 9.0.0.6627]
-Content-Type: text/plain; charset=Windows-1252
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 8BIT
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4ACB5276.0165:SCFMA4539814,ss=1,fgs=0
+Subject: [PATCH] serial: Add ADDI-DATA GmbH PCI-Express communication cards in
+ 8250_pci.c and pci_ids.h
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Tue, 6 Oct 2009 16:21:19 +0200
+Message-ID: <DD0BA80209AFF04091B518EA708D0A0B013D20F0@ffserver>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] serial: Add ADDI-DATA GmbH PCI-Express communication 
+    cards in 8250_pci.c and pci_ids.h
+Thread-Index: AcpGkEWziXcGpulQQNOJl84b4SCxxQ==
+From: "Krauth.Julien" <Krauth.Julien@addi-data.com>
+To: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Jeremy Fitzhardinge [mailto:jeremy.fitzhardinge@citrix.com]
-> With this in place, I can do a gettimeofday in about 100ns on a 2.4GHz
-> Q6600.  I'm sure this could be tuned a bit more, but it is 
-> already much better than a syscall.
+Add support for ADDI-DATA GmbH PCI-Express communication cards:
 
-To evaluate the goodness of this, we really need a full
-set of measurements for:
+APCIe-7300
+APCIe-7420
+APCIe-7500
+APCIe-7800
 
-a) cost of rdtsc (and rdtscp if different)
-b) cost of vsyscall+pvclock
-c) cost of rdtsc emulated
-d) cost of a hypercall that returns "hypervisor system time"
+Warning: 8250_pci.c depends on pci_ids.h. 8250_pci.c
 
-On a E6850 (3Ghz but let's use cycles), I measured;
 
-a == 72 cycles
-c == 1080 cycles
-d == 780 cycles
+Signed-off-by: Krauth Julien <Krauth.Julien@addi-data.com>
+---
 
-It may be partly apples and oranges, but it looks
-like a good guess for b on my machine is
+These patches applies on kernel 2.6.31.1
 
-b == 240 cycles
+--- linux-2.6.31.1-vanilla/include/linux/pci_ids.h	2009-09-24
+17:45:25.000000000 +0200
++++ linux-2.6.31.1/include/linux/pci_ids.h	2009-09-29
+11:30:06.000000000 +0200
+@@ -2149,6 +2149,10 @@
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7420_3      0x700D
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7300_3      0x700E
+ #define PCI_DEVICE_ID_ADDIDATA_APCI7800_3      0x700F
++#define PCI_DEVICE_ID_ADDIDATA_APCIe7300       0x7010
++#define PCI_DEVICE_ID_ADDIDATA_APCIe7420       0x7011
++#define PCI_DEVICE_ID_ADDIDATA_APCIe7500       0x7012
++#define PCI_DEVICE_ID_ADDIDATA_APCIe7800       0x7013
+ 
+ #define PCI_VENDOR_ID_PDC		0x15e9
 
-Not bad, but is there any additional context switch
-cost to support it?
 
-> From: Avi Kivity [mailto:avi@redhat.com]
-> Instead of using vgetcpu() and rdtsc() independently, you can 
-> use rdtscp 
-> to read both atomically.  This removes the need for the 
-> preempt notifier.
+--- linux-2.6.31.1-vanilla/drivers/serial/8250_pci.c	2009-09-24
+17:45:25.000000000 +0200
++++ linux-2.6.31.1/drivers/serial/8250_pci.c	2009-09-29
+16:59:44.000000000 +0200
+@@ -1566,6 +1566,10 @@ enum pci_board_num_t {
+ 	pbn_ni8430_4,
+ 	pbn_ni8430_8,
+ 	pbn_ni8430_16,
++	pbn_ADDIDATA_PCIe_1_3906250,
++	pbn_ADDIDATA_PCIe_2_3906250,
++	pbn_ADDIDATA_PCIe_4_3906250,
++	pbn_ADDIDATA_PCIe_8_3906250,
+ };
+ 
+ /*
+@@ -2185,6 +2189,37 @@ static struct pciserial_board pci_boards
+ 		.uart_offset	= 0x10,
+ 		.first_offset	= 0x800,
+ 	},
++	/*
++	 * ADDI-DATA GmbH PCI-Express communication cards
+<info@addi-data.com>
++	 */
++	[pbn_ADDIDATA_PCIe_1_3906250] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 1,
++		.base_baud	= 3906250,
++		.uart_offset	= 0x200,
++		.first_offset	= 0x1000,
++	},
++	[pbn_ADDIDATA_PCIe_2_3906250] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 2,
++		.base_baud	= 3906250,
++		.uart_offset	= 0x200,
++		.first_offset	= 0x1000,
++	},
++	[pbn_ADDIDATA_PCIe_4_3906250] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 4,
++		.base_baud	= 3906250,
++		.uart_offset	= 0x200,
++		.first_offset	= 0x1000,
++	},
++	[pbn_ADDIDATA_PCIe_8_3906250] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 8,
++		.base_baud	= 3906250,
++		.uart_offset	= 0x200,
++		.first_offset	= 0x1000,
++	},
+ };
+ 
+ static const struct pci_device_id softmodem_blacklist[] = {
+@@ -3556,6 +3591,38 @@ static struct pci_device_id serial_pci_t
+ 		0,
+ 		pbn_b0_8_115200 },
+ 
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCIe7500,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_ADDIDATA_PCIe_4_3906250 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCIe7420,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_ADDIDATA_PCIe_2_3906250 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCIe7300,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_ADDIDATA_PCIe_1_3906250 },
++
++	{	PCI_VENDOR_ID_ADDIDATA,
++		PCI_DEVICE_ID_ADDIDATA_APCIe7800,
++		PCI_ANY_ID,
++		PCI_ANY_ID,
++		0,
++		0,
++		pbn_ADDIDATA_PCIe_8_3906250 },
++
+ 	{	PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9835,
+ 		PCI_VENDOR_ID_IBM, 0x0299,
+ 		0, 0, pbn_b0_bt_2_115200 },
 
-Xen does not currently expose rdtscp and so does not emulate
-(or context switch) TSC_AUX.  Context switching TSC_AUX
-is certainly possible, but will likely be expensive.
-If the primary reason for vsyscall+pvclock is to maximize
-performance for gettimeofday/clock_gettime, this cost
-would need to be added to the mix.
 
-> preempt notifiers are per-thread, not global, and will upset 
-> the cycle 
-> counters.  I'd drop them and use rdtscp instead (and give up if the 
-> processor doesn't support it).
 
-Even if rdtscp is used, in the Intel processor lineup
-only the very latest (Nehalem) supports rdtscp, so
-"give up" doesn't seem like a very good option, at least
-in the near future.
+
+Besuchen Sie uns auf der SMART Automation in Linz vom 7. bis 9. Oktober 2009!
+Wir präsentieren Ihnen innovative Lösungen für die industrielle Mess-, Steuer- und Automatisierungstechnik:
+- Intelligente Ethernet-Systeme, IP 65
+- Störsichere PC-Karten für PCI-Express, PCI, CompactPCI und PC/104-PLUS
+- Echtzeit Open Source PAC*-Systeme mit PCI- oder CompactPCI-Backplane
+(*PAC = Programmable Automation Controller)
+Wir freuen uns auf Ihren Besuch am Stand 615 (Empore)!
+
+
+Visit us at the SMART Automation in Linz (Austria) from 7 - 9 October 2009!
+We will present you innovative solutions for industrial measurement, control and automation:
+- Intelligent Ethernet systems, IP 65
+- Interference-free PC boards for PCI-Express, PCI, CompactPCI and PC/104-PLUS
+- Real-time open source PAC* systems with PCI or CompactPCI backplane
+(*PAC = Programmable Automation Controller)
+We look forward to welcoming you at our booth 615 (gallery)!
+
+
+ADDI-DATA GmbH - Airport Boulevard B210 - 77836 Rheinmünster (Germany)
+Amtsgericht Mannheim HRB210433
+Geschäftsführer René Ohlmann
+UST-ID-Nr.: DE 143754253 WEEE-Reg.-Nr. DE 65862200
+
+This email and any files transmitted with it are confidential and intended 
+solely for the use of the individual or entity to whom they are addressed. If you have received this email in error please notify the system manager.
+This footnote confirms that this email message has been scanned for the presence of computer viruses.
+
