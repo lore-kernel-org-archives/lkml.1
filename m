@@ -1,88 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757101AbZJFK0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbZJFK2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757101AbZJFK0n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 06:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757072AbZJFK0m
+	id S1757124AbZJFK2j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 06:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbZJFK2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 06:26:42 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:46021 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756554AbZJFK0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 06:26:42 -0400
-Date: Tue, 6 Oct 2009 12:26:05 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Latest vfs scalability patch
-Message-ID: <20091006102604.GN5216@kernel.dk>
-References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk>
+	Tue, 6 Oct 2009 06:28:39 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51426 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757011AbZJFK2i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 06:28:38 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Gleb Natapov <gleb@redhat.com>
+Subject: Re: [PATCH][RFC] add MAP_UNLOCKED mmap flag
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
+In-Reply-To: <20091006102136.GH9832@redhat.com>
+References: <20091006190938.126F.A69D9226@jp.fujitsu.com> <20091006102136.GH9832@redhat.com>
+Message-Id: <20091006192454.1272.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091006101414.GM5216@kernel.dk>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  6 Oct 2009 19:27:56 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06 2009, Jens Axboe wrote:
-> On Tue, Oct 06 2009, Nick Piggin wrote:
-> > Hi,
+> On Tue, Oct 06, 2009 at 07:11:06PM +0900, KOSAKI Motohiro wrote:
+> > Hi
 > > 
-> > Several people have been interested to test my vfs patches, so rather
-> > than resend patches I have uploaded a rollup against Linus's current
-> > head.
+> > > If application does mlockall(MCL_FUTURE) it is no longer possible to
+> > > mmap file bigger than main memory or allocate big area of anonymous
+> > > memory. Sometimes it is desirable to lock everything related to program
+> > > execution into memory, but still be able to mmap big file or allocate
+> > > huge amount of memory and allow OS to swap them on demand. MAP_UNLOCKED
+> > > allows to do that.
+> > > 
+> > > Signed-off-by: Gleb Natapov <gleb@redhat.com>
 > > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/npiggin/patches/fs-scale/
+> > Why don't you use explicit munlock()?
+> Because mmap will fail before I'll have a chance to run munlock on it.
+> Actually when I run my process inside memory limited container host dies
+> (I suppose trashing, but haven't checked).
+> 
+> > Plus, Can you please elabrate which workload nedd this feature?
 > > 
-> > I have used ext2,ext3,autofs4,nfs as well as in-memory filesystems
-> > OK (although this doesn't mean there are no bugs!). Otherwise, if your
-> > filesystem compiles, then there is a reasonable chance of it working,
-> > or ask me and I can try updating it for the new locking.
-> > 
-> > I would be interested in seeing any numbers people might come up with,
-> > including single-threaded performance.
-> 
-> I gave this a quick spin on the 64-thread nehalem. Just a simple dbench
-> with 64 clients on tmpfs. The results are below. While running perf top
-> -a in mainline, the top 5 entries are:
-> 
->           2086691.00 - 96.6% : _spin_lock
->             14866.00 -  0.7% : copy_user_generic_string
->              5710.00 -  0.3% : mutex_spin_on_owner
->              2837.00 -  0.1% : _atomic_dec_and_lock
->              2274.00 -  0.1% : __d_lookup
-> 
-> Uhm auch... It doesn't look much prettier for the patch kernel, though:
-> 
->           9396422.00 - 95.7% : _spin_lock
->             66978.00 -  0.7% : copy_user_generic_string
->             43775.00 -  0.4% : dput
->             23946.00 -  0.2% : __link_path_walk
->             17699.00 -  0.2% : path_init
->             15046.00 -  0.2% : do_lookup
+> I wanted to run kvm with qemu process locked in memory, but guest memory
+> unlocked. And guest memory is bigger then host memory in the case I am
+> testing. I found out that it is impossible currently.
 
-I did a quick perf analysis on that, but only on 8 clients (64 clients
-basically causes perf to shit itself, it's just not functional). So for
-a 8 client 60s dbench run, we're already into ~75% spinlock time. The
-components are:
+1. process creation (qemu)
+2. load all library
+3. mlockall(MCL_CURRENT)
+4. load guest OS
 
-dput (44%)
-        path_put
-                path_walk
-                        do_path_lookup
-path_get (44%)
-        path_init
-                do_path_lookup
-__d_path (7%)
+is impossible? why?
 
-vfsmount_read_lock (3%)
 
-This is for the patched kernel.
 
--- 
-Jens Axboe
 
