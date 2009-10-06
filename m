@@ -1,83 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932301AbZJFMQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932317AbZJFMSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932301AbZJFMQe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 08:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932285AbZJFMQe
+	id S932317AbZJFMSA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 08:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932265AbZJFMR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 08:16:34 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:60683 "EHLO mx1.redhat.com"
+	Tue, 6 Oct 2009 08:17:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34763 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932190AbZJFMQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 08:16:33 -0400
-Date: Tue, 6 Oct 2009 14:16:03 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: [PATCH][RFC] add MAP_UNLOCKED mmap flag
-Message-ID: <20091006121603.GK9832@redhat.com>
-References: <20091006190938.126F.A69D9226@jp.fujitsu.com>
- <20091006102136.GH9832@redhat.com>
- <20091006192454.1272.A69D9226@jp.fujitsu.com>
- <20091006103300.GI9832@redhat.com>
- <2f11576a0910060510y401c1d5ax6f17135478d22899@mail.gmail.com>
+	id S932258AbZJFMR6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 08:17:58 -0400
+Date: Tue, 6 Oct 2009 12:16:42 GMT
+From: tip-bot for Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, tzanussi@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, tzanussi@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1254808849-7829-2-git-send-email-tzanussi@gmail.com>
+References: <1254808849-7829-2-git-send-email-tzanussi@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf trace: Remove unused code in builtin-trace.c
+Message-ID: <tip-d4c3768faaae70cdcffc3a5e296bd99edfa7ddb2@git.kernel.org>
+Git-Commit-ID: d4c3768faaae70cdcffc3a5e296bd99edfa7ddb2
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <2f11576a0910060510y401c1d5ax6f17135478d22899@mail.gmail.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 06 Oct 2009 12:16:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 09:10:35PM +0900, KOSAKI Motohiro wrote:
-> 2009/10/6 Gleb Natapov <gleb@redhat.com>:
-> > On Tue, Oct 06, 2009 at 07:27:56PM +0900, KOSAKI Motohiro wrote:
-> >> > On Tue, Oct 06, 2009 at 07:11:06PM +0900, KOSAKI Motohiro wrote:
-> >> > > Hi
-> >> > >
-> >> > > > If application does mlockall(MCL_FUTURE) it is no longer possible to
-> >> > > > mmap file bigger than main memory or allocate big area of anonymous
-> >> > > > memory. Sometimes it is desirable to lock everything related to program
-> >> > > > execution into memory, but still be able to mmap big file or allocate
-> >> > > > huge amount of memory and allow OS to swap them on demand. MAP_UNLOCKED
-> >> > > > allows to do that.
-> >> > > >
-> >> > > > Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> >> > >
-> >> > > Why don't you use explicit munlock()?
-> >> > Because mmap will fail before I'll have a chance to run munlock on it.
-> >> > Actually when I run my process inside memory limited container host dies
-> >> > (I suppose trashing, but haven't checked).
-> >> >
-> >> > > Plus, Can you please elabrate which workload nedd this feature?
-> >> > >
-> >> > I wanted to run kvm with qemu process locked in memory, but guest memory
-> >> > unlocked. And guest memory is bigger then host memory in the case I am
-> >> > testing. I found out that it is impossible currently.
-> >>
-> >> 1. process creation (qemu)
-> >> 2. load all library
-> > Can't control this if program has plugging. Not qemu case
-> > though.
-> >
-> >> 3. mlockall(MCL_CURRENT)
-> >> 4. load guest OS
-> > And what about all other allocations qemu does during its life time? Not
-> > all of them will be small enough to be from brk area.
-> >
-> >> is impossible? why?
-> >>
-> > Because what you are proposing is not the same as mlockall(MCL_CURRENT|MCL_FUTURE);
-> >
-> > You essentially say that MCL_FUTURE is not needed.
-> 
-> No, I only think your case doesn't fit MC_FUTURE.
-> I haven't find any real benefit in this patch.
-I did. It allows me to achieve something I can't now. Steps you provide
-just don't fit my needs. I need all memory areas (current and feature) to be
-locked except one. Very big one. You propose to lock memory at some
-arbitrary point and from that point on all newly mapped memory areas will
-be unlocked. Don't you see it is different?
+Commit-ID:  d4c3768faaae70cdcffc3a5e296bd99edfa7ddb2
+Gitweb:     http://git.kernel.org/tip/d4c3768faaae70cdcffc3a5e296bd99edfa7ddb2
+Author:     Tom Zanussi <tzanussi@gmail.com>
+AuthorDate: Tue, 6 Oct 2009 01:00:47 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 6 Oct 2009 12:02:33 +0200
 
---
-			Gleb.
+perf trace: Remove unused code in builtin-trace.c
+
+And some minor whitespace cleanup.
+
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: rostedt@goodmis.org
+Cc: lizf@cn.fujitsu.com
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <1254808849-7829-2-git-send-email-tzanussi@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/builtin-trace.c |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
+
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index e9d256e..0c5e4f7 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -219,10 +219,6 @@ remap:
+ more:
+ 	event = (event_t *)(buf + head);
+ 
+-	size = event->header.size;
+-	if (!size)
+-		size = 8;
+-
+ 	if (head + event->header.size >= page_size * mmap_window) {
+ 		unsigned long shift = page_size * (head / page_size);
+ 		int res;
+@@ -237,7 +233,6 @@ more:
+ 
+ 	size = event->header.size;
+ 
+-
+ 	if (!size || process_event(event, offset, head) < 0) {
+ 
+ 		/*
+@@ -290,7 +285,6 @@ int cmd_trace(int argc, const char **argv, const char *prefix __used)
+ 			usage_with_options(annotate_usage, options);
+ 	}
+ 
+-
+ 	setup_pager();
+ 
+ 	return __cmd_trace();
