@@ -1,107 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbZJFPez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbZJFPe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758001AbZJFPez (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932117AbZJFPew
+	id S1758033AbZJFPe7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758015AbZJFPe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:34:52 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35149 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757880AbZJFPev (ORCPT
+	Tue, 6 Oct 2009 11:34:58 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:37703 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758012AbZJFPe5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:34:51 -0400
-Subject: Re: Linux 2.6.32-rc3
-From: Dirk Hohndel <hohndel@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Len Brown <lenb@kernel.org>,
+	Tue, 6 Oct 2009 11:34:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FStPnnTs2b9lwfaTkn/QcvtbjByhNlaMO8COo+9NqVsIG47K5u55LOjvO4wTZKYIV9
+         NsY1LvGQ0jqLfoZsrDtRyrT9JpZXBiTNJf9CsQVej/Epkyl0vKwuiHjKGvHoOz4temuk
+         aXkny9z9pkZPRr0J74ufKxxsyURw4PMyHamgs=
+MIME-Version: 1.0
+In-Reply-To: <4ACB60A7.307@msgid.tls.msk.ru>
+References: <c43b2e150909200120kf87cdc2oabafea8abbf01227@mail.gmail.com>
+	 <68676e00909200520s7730b516v4e0d6c17d529d0a7@mail.gmail.com>
+	 <4AC939BB.8090600@wasp.net.au>
+	 <68676e00910050837g2006bfb8j349891504e474a95@mail.gmail.com>
+	 <4ACA21E8.6080501@msgid.tls.msk.ru>
+	 <68676e00910060800h4cb84dcl9f610f6b23a88e5c@mail.gmail.com>
+	 <4ACB60A7.307@msgid.tls.msk.ru>
+Date: Tue, 6 Oct 2009 17:34:19 +0200
+Message-ID: <68676e00910060834p338c77c8kae8156a1f8dc68a9@mail.gmail.com>
+Subject: Re: [lm-sensors] it87 sensors need an ACPI driver (2.6.31)
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Brad Campbell <brad@wasp.net.au>, lm-sensors@lm-sensors.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.01.0910060808220.3432@localhost.localdomain>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>
-	 <alpine.LFD.2.00.0910052140100.309@localhost.localdomain>
-	 <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>
-	 <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
-	 <1254839931.24117.9.camel@dhohndel-mobl.amr.corp.intel.com>
-	 <alpine.LFD.2.01.0910060808220.3432@localhost.localdomain>
-Content-Type: text/plain
-Organization: Intel Open Source Technology Center
-Date: Tue, 06 Oct 2009 08:34:02 -0700
-Message-Id: <1254843242.24117.23.camel@dhohndel-mobl.amr.corp.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hohndel@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 08:13 -0700, Linus Torvalds wrote:
-> 
-> On Tue, 6 Oct 2009, Dirk Hohndel wrote:
-> > 
-> > I respectfully disagree.
-> 
-> .. because you don't know what the f*ck you're talking about.
+On Tue, Oct 6, 2009 at 5:22 PM, Michael Tokarev <mjt@tls.msk.ru> wrote:
+> Luca Tettamanti wrote:
+>>
+>> On Mon, Oct 5, 2009 at 6:42 PM, Michael Tokarev <mjt@tls.msk.ru> wrote:
+>
+> []
+>>>
+>>> Well, I just tried it here and it works here too, on 3 different
+>>> asus motherboards.  But asus_atk0110 is far less useful than the
+>>> it87 variant.  Yes atk0110 shows correct labels for various sensors,
+>>> but for one there's no way to control fan speeds using it, at least
+>>> not currently, -- something which is done by it87 easily.
+>
+> []
+>>
+>> The main reason for using atk0110 is correctness: the resources are
+>> claimed by ACPI, it might not be safe to touch them (for the same
+>> reason two drivers are not allowed to map e.g. the same PCI BAR).
+>> On newer boards the risk of collision is pretty high, since the hwmon
+>> chip is used by an EC that works in background... on other boards the
+>> risk is much lower since the hwmon chip doesn't seem to be probed
+>> actively.
+>> Anyway, as user you can override this decision with
+>> "acpi_enforce_resources=lax", but _I_ wouldn't recommend it.
+>
+> If there's a choice between "does not work but correct" and
+> "incorrect but works", i'd prefer the latter, and I'd say any
+> sane person agrees.
+>
+> I spent quite some time choosing a motherboard that is able
+> to control fan speeds.  Now if know that it does that "incorrectly".
+> So I should either throw it away because one of the most
+> important criterias (ability to control noise level) does
+> not satisfy me anymore, or use it the "wrong" way as I did
+> for whole last year.  Ditto for 4 other asus motherboards
+> that have exactly the same problem.
 
-Always a pleasure having an intellectual discourse with you.
+Most Asus mobos have Q-FAN settings in the BIOS screen; you can use
+automatic management to let the hardware control the fan, the driver
+does not interfere with that (and if it does then it's a bug).
 
-> > With the proposed -rc0 there is EXACTLY ONE kernel that is called 2.6.31
-> > - the release kernel. And everything else is called something
-> > 2.6.xx-rcY.
-> 
-> No.
-> 
-> That's simply not _true_.
-> 
-> Think it through. Deeply. 
-> 
-> In particular, think about all the developers who start out at known 
-> stable points. And they are _supposed_ to start at release points. It 
-> means that a lot of versions in the -rc window will NOT have that -rc0 in 
-> them.
-> 
-> In fact, even more commonly (for people who don't rebase, which should be 
-> the default), you'll have kernel versions in the merge window (and later) 
-> that will have Makefiles that talk about the previous release.
-> 
-> If you can't get that FUNDAMENTAL FACT, then I don't know what to say.
+> Ok.  Now a pure technical question, finally.  Is there a
+> way to made asus_atk0110 to be able to *set* fan speeds
+> too, in a way as it's done by it87?
 
-The fundamental difference in our analysis is that I believe that 1% of
-the people using these kernels are developers as you describe above and
-99% are people who pull from your tree and build and test.
+In term of Q-FAN profiles: yes, but I still haven't managed to make it
+work (the interface is there though).
 
-> > So if you see something that identifies itself as -rc0, you know it's
-> > from during the merge window. If you see something that calls itself
-> > 2.6.xx then you know it's a release kernel.
-> 
-> No. No. And NO.
-
-For people simply pulling from your git tree, I think the answer is YES.
-
-> Your kind of magical thinking leads to _problems_. It's literally been a 
-> problem that people stop bisecting, because they notice that they start 
-> testing kernels that have a version number before the release they already 
-> tested as good. Exactly because of your kind of linear thinking.
-
-I think those two things are entirely unrelated. How would calling the
-versions in the merge window -merge or -rc0 make any difference
-whatsoever in whether people are confused by git bisect behavior?
-
-> We need _less_ linear thinking, not more. And you need to start thinking 
-> about other kernels than just my release tree.
-
-I do - I actually track multiple trees and have my own in which I do my
-own work.
-
-That still doesn't change my believe that the VAST MAJORITY of the
-people out there only track one tree. Yours.
-
-But hey, as you have stated so eloquently, I "don't know what the f*ck
-[I'm] talking about", so let's hear what others are thinking.
-
-/D
-
--- 
-Dirk Hohndel
-Intel Open Source Technology Center
-
+Luca
