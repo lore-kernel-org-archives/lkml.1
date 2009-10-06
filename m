@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbZJFMql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbZJFMub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932476AbZJFMql (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 08:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932257AbZJFMqk
+	id S1757197AbZJFMub (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 08:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbZJFMub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 08:46:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33368 "EHLO mx3.mail.elte.hu"
+	Tue, 6 Oct 2009 08:50:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60813 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932224AbZJFMqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 08:46:40 -0400
-Date: Tue, 6 Oct 2009 14:45:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       lizf@cn.fujitsu.com, hch@infradead.org
-Subject: Re: [RFC][PATCH 8/9] perf trace: Add perf trace scripting support
-	modules for Perl
-Message-ID: <20091006124550.GB15320@elte.hu>
-References: <1254809398-8078-1-git-send-email-tzanussi@gmail.com> <1254809398-8078-9-git-send-email-tzanussi@gmail.com>
+	id S1757182AbZJFMua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 08:50:30 -0400
+Date: Tue, 6 Oct 2009 12:49:15 GMT
+From: tip-bot for Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, h-shimamoto@ct.jp.nec.com, hpa@zytor.com,
+       mingo@redhat.com, fweisbec@gmail.com, srostedt@redhat.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, h-shimamoto@ct.jp.nec.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, srostedt@redhat.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4AC43118.6050409@ct.jp.nec.com>
+References: <4AC43118.6050409@ct.jp.nec.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/urgent] trace: Fix missing assignment in trace_ctxwake_*
+Message-ID: <tip-b0f56f1a63b7b968e6feeeefeace24bc8e0a4a65@git.kernel.org>
+Git-Commit-ID: b0f56f1a63b7b968e6feeeefeace24bc8e0a4a65
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1254809398-8078-9-git-send-email-tzanussi@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 06 Oct 2009 12:49:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  b0f56f1a63b7b968e6feeeefeace24bc8e0a4a65
+Gitweb:     http://git.kernel.org/tip/b0f56f1a63b7b968e6feeeefeace24bc8e0a4a65
+Author:     Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+AuthorDate: Thu, 1 Oct 2009 13:33:28 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 6 Oct 2009 14:28:24 +0200
 
-* Tom Zanussi <tzanussi@gmail.com> wrote:
+trace: Fix missing assignment in trace_ctxwake_*
 
-> +++ b/tools/perf/scripts/perl/Perf-Trace-Util/README
-> @@ -0,0 +1,30 @@
-> +Perf-Trace-Util version 0.01
-> +============================
-> +
-> +This module contains utility functions for use with perf trace.
-> +
-> +INSTALLATION
-> +
-> +Building perf with perf trace Perl scripting should install this
-> +module in the right place.
-> +
-> +You should make sure libperl is installed first e.g. apt-get install
-> +libperl-dev.
-> +
-> +DEPENDENCIES
-> +
-> +This module requires these other modules and libraries:
-> +
-> +  blah blah blah
+The state char variable S should be reassigned, if S == 0.
 
-Some fixing needed here i guess ;-)
+We are missing the state of the task that is going to sleep for the
+context switch events (in the raw mode).
 
-> +COPYRIGHT AND LICENCE
-> +
-> +Put the correct copyright and licence information here.
-> +
-> +Copyright (C) 2009 by Tom Zanussi <tzanussi@gmail.com>
-> +
-> +This library is free software; you can redistribute it and/or modify
-> +it under the same terms as Perl itself, either Perl version 5.10.0 or,
-> +at your option, any later version of Perl 5 you may have available.
+Fortunately the problem arises with the sched_switch/wake_up
+tracers, not the sched trace events.
 
-Would be nice to dual license it to the kernel (GPLv2) as well.
+The formers are legacy now. But still, that was buggy.
 
-	Ingo
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Steven Rostedt <srostedt@redhat.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <4AC43118.6050409@ct.jp.nec.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/trace/trace_output.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index f572f44..cda766f 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -883,7 +883,7 @@ static int trace_ctxwake_raw(struct trace_iterator *iter, char S)
+ 	trace_assign_type(field, iter->ent);
+ 
+ 	if (!S)
+-		task_state_char(field->prev_state);
++		S = task_state_char(field->prev_state);
+ 	T = task_state_char(field->next_state);
+ 	if (!trace_seq_printf(&iter->seq, "%d %d %c %d %d %d %c\n",
+ 			      field->prev_pid,
+@@ -918,7 +918,7 @@ static int trace_ctxwake_hex(struct trace_iterator *iter, char S)
+ 	trace_assign_type(field, iter->ent);
+ 
+ 	if (!S)
+-		task_state_char(field->prev_state);
++		S = task_state_char(field->prev_state);
+ 	T = task_state_char(field->next_state);
+ 
+ 	SEQ_PUT_HEX_FIELD_RET(s, field->prev_pid);
