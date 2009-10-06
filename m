@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbZJFSst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZJFSuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbZJFSst (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 14:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757587AbZJFSss
+	id S1758213AbZJFSuS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 14:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758187AbZJFSuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 14:48:48 -0400
-Received: from claw.goop.org ([74.207.240.146]:59805 "EHLO claw.goop.org"
+	Tue, 6 Oct 2009 14:50:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45480 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757078AbZJFSsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 14:48:47 -0400
-Message-ID: <4ACB90EA.2070701@goop.org>
-Date: Tue, 06 Oct 2009 11:48:10 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1757111AbZJFSuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 14:50:12 -0400
+Date: Tue, 6 Oct 2009 20:49:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] kbuild: Improve version string logic
+Message-ID: <20091006184911.GA833@elte.hu>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006173508.GA4786@elte.hu> <1254854227.22426.37.camel@johannes.local>
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Dan Magenheimer <dan.magenheimer@oracle.com>,
-       Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>,
-       Zach Brown <zach.brown@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>, Avi Kivity <avi@redhat.com>
-Subject: Re: [Xen-devel] [PATCH 5/5] xen/time: add	pvclock_clocksource_vread
- support
-References: <1254790211-15416-1-git-send-email-jeremy.fitzhardinge@citrix.com>	<1254790211-15416-6-git-send-email-jeremy.fitzhardinge@citrix.com> <4ACB37E802000078000182EC@vpn.id2.novell.com>
-In-Reply-To: <4ACB37E802000078000182EC@vpn.id2.novell.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254854227.22426.37.camel@johannes.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/06/09 03:28, Jan Beulich wrote:
->> --- a/arch/x86/xen/mmu.c
->> +++ b/arch/x86/xen/mmu.c
->> @@ -1814,6 +1814,7 @@ static void xen_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t prot)
->> # endif
->> #else
->> 	case VSYSCALL_LAST_PAGE ... VSYSCALL_FIRST_PAGE:
->> +	case FIX_PVCLOCK_TIME_INFO:
->> #endif
->> #ifdef CONFIG_X86_LOCAL_APIC
->> 	case FIX_APIC_BASE:	/* maps dummy local APIC */
->>     
-> And I think this added case also needs to move past the #endif.
->   
 
-No, for the same reason.
+* Johannes Berg <johannes@sipsolutions.net> wrote:
 
-    J
+> On Tue, 2009-10-06 at 19:35 +0200, Ingo Molnar wrote:
+> 
+> > It changes how CONFIG_LOCALVERSION_AUTO works, in the following trivial
+> > way:
+> > 
+> >  - if it is set, things work the way they always have, and you get a
+> >    extended kernel release like:
+> > 
+> > 	2.6.32-rc3+00052-g0eca52a-dirty
+> > 
+> >    ( with the difference that the extra version string is separated via
+> >      '+' not via '-'. This improves visibility when we have additional
+> >      changes over a vanilla tag. )
+> 
+> I really don't see how it improves visibility (unless you're oblivious 
+> to the difference between long and short strings), but I do know that 
+> I have a few parsers that this will break.
+
+It improves visibility the same way the + at the end of the short 
+version improves visibility.
+
+That said, i'm perfectly fine with just having the short version include 
+the '+' sign (i.e. Linus's original patch), that was my original 
+suggestion and that is already a big step forward.
+
+Thanks,
+
+	Ingo
