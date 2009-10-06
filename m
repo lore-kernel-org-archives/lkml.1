@@ -1,120 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbZJFHrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbZJFHwG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755504AbZJFHrX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 03:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbZJFHrW
+	id S1755537AbZJFHwG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 03:52:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbZJFHwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 03:47:22 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48487 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754685AbZJFHrW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 03:47:22 -0400
-Date: Tue, 6 Oct 2009 09:46:36 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz
-Subject: spitz: add gpio button support
-Message-ID: <20091006074635.GA2775@ucw.cz>
+	Tue, 6 Oct 2009 03:52:06 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:49557 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754606AbZJFHwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 03:52:05 -0400
+Date: Tue, 6 Oct 2009 09:51:27 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu
+Subject: Re: find_busiest_group using lots of CPU
+Message-ID: <20091006075127.GF5216@kernel.dk>
+References: <20090930081811.GP23126@kernel.dk> <1254745898.26976.52.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1254745898.26976.52.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 05 2009, Peter Zijlstra wrote:
+> On Wed, 2009-09-30 at 10:18 +0200, Jens Axboe wrote:
+> > Hi,
+> > 
+> > I stuffed a few more SSDs into my text box. Running a simple workload
+> > that just does streaming reads from 10 processes (throughput is around
+> > 2.2GB/sec), find_busiest_group() is using > 10% of the CPU time. This is
+> > a 64 thread box.
+> > 
+> > The top two profile entries are:
+> > 
+> >     10.86%      fio  [kernel]                [k] find_busiest_group
+> >                 |          
+> >                 |--99.91%-- thread_return
+> >                 |          io_schedule
+> >                 |          sys_io_getevents
+> >                 |          system_call_fastpath
+> >                 |          0x7f4b50b61604
+> >                 |          |          
+> >                 |           --100.00%-- td_io_getevents
+> >                 |                     io_u_queued_complete
+> >                 |                     thread_main
+> >                 |                     run_threads
+> >                 |                     main
+> >                 |                     __libc_start_main
+> >                  --0.09%-- [...]
+> > 
+> >      5.78%      fio  [kernel]                [k] cpumask_next_and
+> >                 |          
+> >                 |--67.21%-- thread_return
+> >                 |          io_schedule
+> >                 |          sys_io_getevents
+> >                 |          system_call_fastpath
+> >                 |          0x7f4b50b61604
+> >                 |          |          
+> >                 |           --100.00%-- td_io_getevents
+> >                 |                     io_u_queued_complete
+> >                 |                     thread_main
+> >                 |                     run_threads
+> >                 |                     main
+> >                 |                     __libc_start_main
+> >                 |          
+> >                  --32.79%-- find_busiest_group
+> >                            thread_return
+> >                            io_schedule
+> >                            sys_io_getevents
+> >                            system_call_fastpath
+> >                            0x7f4b50b61604
+> >                            |          
+> >                             --100.00%-- td_io_getevents
+> >                                       io_u_queued_complete
+> >                                       thread_main
+> >                                       run_threads
+> >                                       main
+> >                                       __libc_start_main
+> > 
+> > This is with SCHED_DEBUG=y and SCHEDSTATS=y enabled, I just tried with
+> > both disabled but that yields the same result (well actually worse, 22%
+> > spent in there. dunno if that's normal "fluctuation"). GROUP_SCHED is
+> > not set. This seems way excessive!
+> 
+> io_schedule() straight into find_busiest_group() leads me to think this
+> could be SD_BALANCE_NEWIDLE, does something like:
+> 
+> for i in /proc/sys/kernel/sched_domain/cpu*/domain*/flags; 
+> do 
+> 	val=`cat $i`; echo $((val & ~0x02)) > $i; 
+> done
+> 
+> [ assuming SCHED_DEBUG=y ]
+> 
+> Cure things?
 
-This is call for testing/comments. It adds support for power button,
-SWA and SWB.. I'm not sure what AK_INT is, nor what event it should
-generate. Unfortunately, this does _not_ fix suspend/resume, and
-neither does switch back to old spitz-keyboard help.
+I can try, as mentioned it doesn't look any better with SCHED_DEBUG=n
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-								Pavel
+> If so, then its spending time looking for work, which there might not be
+> on your machine, since everything is waiting for IO or somesuch.
 
---- linux-rc/arch/arm.ofic/mach-pxa/spitz.c	2009-09-28 12:09:26.000000000 +0200
-+++ linux-rc/arch/arm/mach-pxa/spitz.c	2009-10-04 20:58:32.000000000 +0200
-@@ -15,6 +15,7 @@
- #include <linux/kernel.h>
- #include <linux/platform_device.h>
- #include <linux/delay.h>
-+#include <linux/gpio_keys.h>
- #include <linux/gpio.h>
- #include <linux/leds.h>
- #include <linux/mtd/physmap.h>
-@@ -367,7 +368,8 @@
- };
- 
- static struct platform_device spitzkbd_device = {
--	.name		= "matrix-keypad",
-+  	.name		= "matrix-keypad",
-+	//	.name		= "spitz-keyboard",
- 	.id		= -1,
- 	.dev		= {
- 		.platform_data = &spitzkbd_pdata,
-@@ -375,6 +377,48 @@
- };
- 
- 
-+static struct gpio_keys_button spitz_gpio_keys[] = {
-+	{
-+		.type	= EV_KEY,
-+		.code	= KEY_SUSPEND,
-+		.gpio	= SPITZ_GPIO_ON_KEY,
-+		.desc	= "Poweron",
-+		.wakeup	= 1,
-+	},
-+	{
-+		.type	= EV_SW,
-+		.code	= 0,
-+		.gpio	= SPITZ_GPIO_SWA,
-+		.desc	= "SWA",
-+	},
-+	{
-+		.type	= EV_SW,
-+		.code	= 1,
-+		.gpio	= SPITZ_GPIO_SWB,
-+		.desc	= "SWB",
-+	},
-+	{
-+		.type	= EV_KEY,
-+		.code	= KEY_F13,
-+		.gpio	= SPITZ_GPIO_AK_INT,
-+		.desc	= "HP",
-+	},
-+};
-+
-+static struct gpio_keys_platform_data spitz_gpio_keys_platform_data = {
-+	.buttons	= spitz_gpio_keys,
-+	.nbuttons	= ARRAY_SIZE(spitz_gpio_keys),
-+};
-+
-+static struct platform_device spitz_gpio_keys_device = {
-+	.name	= "gpio-keys",
-+	.id	= -1,
-+	.dev	= {
-+		.platform_data	= &spitz_gpio_keys_platform_data,
-+	},
-+};
-+
-+
- /*
-  * Spitz LEDs
-  */
-@@ -689,6 +733,7 @@
- static struct platform_device *devices[] __initdata = {
- 	&spitzscoop_device,
- 	&spitzkbd_device,
-+	&spitz_gpio_keys_device,
- 	&spitzled_device,
- 	&sharpsl_nand_device,
- 	&sharpsl_rom_device,
+OK, just seems way excessive for something which is only 10 tasks and
+not even that context switch intensive.
+
+> Not really sure what to do about it though, this is a quad socket
+> nehalem, right? We could possibly disable SD_BALANCE_NEWIDLE on the NODE
+> level, but that would again decrease throughput in things like kbuild.
+
+Yes, it's a quad socket nehalem. I'll see if disabling NEWIDLE makes a
+difference, I need to run some other tests on that box today anyway.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jens Axboe
+
