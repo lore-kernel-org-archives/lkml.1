@@ -1,87 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbZJFQgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbZJFQla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756950AbZJFQgm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 12:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932119AbZJFQgl
+	id S1757002AbZJFQla (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 12:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbZJFQl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 12:36:41 -0400
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:57226 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756386AbZJFQgk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 12:36:40 -0400
-From: Frans Pop <elendil@planet.nl>
+	Tue, 6 Oct 2009 12:41:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46094 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756651AbZJFQl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 12:41:28 -0400
+Date: Tue, 6 Oct 2009 18:40:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.32-rc3
-Date: Tue, 6 Oct 2009 18:36:01 +0200
-User-Agent: KMail/1.9.9
-Cc: hohndel@infradead.org, linux-kernel@vger.kernel.org
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <1254839931.24117.9.camel@dhohndel-mobl.amr.corp.intel.com> <1254839931.24117.9.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060808220.3432@localhost.localdomain>
-In-reply-To: <alpine.LFD.2.01.0910060808220.3432@localhost.localdomain>
+Message-ID: <20091006164028.GA23305@elte.hu>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <20091006153632.GA29795@elte.hu> <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain> <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910061836.02726.elendil@planet.nl>
-X-OriginalArrivalTime: 06 Oct 2009 16:36:03.0115 (UTC) FILETIME=[181567B0:01CA46A3]
+In-Reply-To: <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Your kind of magical thinking leads to _problems_. It's literally been a
-> problem that people stop bisecting, because they notice that they start
-> testing kernels that have a version number before the release they
-> already tested as good. Exactly because of your kind of linear thinking.
 
-I do understand your point, but I'm not sure that it makes sense to take 
-bisecting as the main criterium here. Bisection will always be confusing 
-for users the first few times, whatever you put in the Makefile.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-IMO it is more relevant that people who build and run pre-rc1 kernels get a 
-clear distinction by default between their stable kernel and the (highly 
-unstable) merge window one.
-When a user compiles a kernel, the only thing that's relevant is what's in 
-Makefile *at that time*, not where the branches that are merged in happen 
-to originate.
+> On Tue, 6 Oct 2009, Linus Torvalds wrote:
+> > 
+> > Unless:
+> > 
+> > > _That_ i think is a lot harder to confuse with the real .31 than a 
+> > > v2.6.31-1234-g16123c4 version string.
+> > 
+> > .. are you saying that it would be just some automatically generated 
+> > thing, just a crippled form of CONFIG_LOCALVERSION_AUTO? Kind of a 
+> > CONFIG_LOCALVERSION_AUTO_SHORTFORM?
+> 
+> So how about this?
+> 
+> It changes how CONFIG_LOCALVERSION_AUTO works, in the following trivial 
+> way:
+> 
+>  - if it is set, things work the way they always have, and you get a 
+>    extended kernel release like
+> 
+> 	2.6.32-rc3-00052-g0eca52a-dirty
+> 
+>  - but if it is _not_ set, we'll still try to get a version from the 
+>    underlying SCM (we actually support git, hg and SVN right now, even if 
+>    some comments may say "git only"), and if the underlying SCM says it 
+>    has a local version, we append just "+", so you get a version number 
+>    like
+> 
+> 	2.6.32-rc3+
+> 
+> IOW, you'd never get 2.6.32-rc0, but you'd get either the complex git 
+> version number (or SVN/hg/whatever), or at least "2.6.31+" with the "+" 
+> showing that it is more than plain 2.6.31.
+> 
+> The "+" could be anything else, of course. The diff is pretty obvious, 
+> you can argue about exactly _what_ you'd like to see as a suffix for 
+> "and then some".
 
-Personally I always add a -rc0 in a local commit as soon as I pull any 
-merge window changes (that commit gets dropped when you release -rc1).
-Package versions are derived from git describe.
+Could we, for consistency's sake, make it:
 
-So I get (examples include local commits):
-linux-image-2.6.31_31.g5e9d407_amd64.deb (.31 + 31 local changes)
-linux-image-2.6.31.1_31.gb4adf51_amd64.deb
-linux-image-2.6.32-rc0_7396-g02b51df_amd64.deb
-linux-image-2.6.32-rc1_20.ge8343d5_amd64.deb
-linux-image-2.6.32-rc1_154.gb157421_i386.deb
-linux-image-2.6.32-rc3_18.g7e921a0_amd64.deb
-linux-image-2.6.32-rc3_69.g7146bc5_amd64.deb
+ 	2.6.32-rc3+00052-g0eca52a-dirty
+ 	2.6.32-rc3+
 
-Of course this it makes no difference if you use 'make install', but for 
-other cases I think having -rc0 in mainline first thing in the merge 
-window would be useful. Especially for users who compile kernels from the 
-git tarballs during the merge window (and are not aware of localversion).
-Of course there are plenty of options to do whatever you want locally, but 
-why not make it easy?
+? Or do we want to keep the old version string alone for some reason?
 
+The reason is that i have been confused in the past by having seen 
+something like:
 
-BTW, I've got a solution for bisection too: the versions in the Makefile 
-get changed to something constant. And the package version is set equal to 
-the bisection iteration. This ensures that I know exactly which kernels 
-were build for the series and that I can always go back to a specific 
-kernel if I need to retest for some reason.
+      2.6.29-00052-g0eca52a-dirty
 
-E.g. (for a bisection covering .30-.31):
-linux-image-2.6.31-bisect_1_amd64.deb
-linux-image-2.6.31-bisect_2_amd64.deb
-linux-image-2.6.31-bisect_3_amd64.deb
-...
+and parsing out (in an admittedly weak moment) the gibberish after the 
+first dash. Had it said:
 
-Cheers,
-FJP
+      2.6.29+00052-g0eca52a-dirty
 
-P.S. I use the deb-pkg target to build all my kernels. A wrapper script 
-takes care of all the stuff mentioned above (and cross-compiling). For me 
-the clean package management is worth the slight overhead.
+i'm sure i'd have noticed that it's not vanilla v2.6.29 - that plus sign 
+stands out like a lightning rod.
+
+	Ingo
