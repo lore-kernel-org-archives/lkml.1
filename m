@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbZJFJlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZJFJqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756799AbZJFJlQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 05:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756727AbZJFJlP
+	id S1756818AbZJFJqT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 05:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643AbZJFJqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 05:41:15 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:62938 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756714AbZJFJlP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 05:41:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=yCLjmqLq8xz8F1s1G5OQs1KKz1hmMkdHJQFIrdPJeTfYGiBdMpnKDkyEu/KvG06T5X
-         UiHRfP5bpeSGmgdQe5Mam5hDIe3+gP6hkQERtsziTNgUzDwmVL6B9aOC4uazYomOkUPW
-         iE1S7svDrCA0S5pHBS7wCKxAKSKAcMRiCMmKY=
+	Tue, 6 Oct 2009 05:46:18 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53153 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756619AbZJFJqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 05:46:18 -0400
+Date: Tue, 6 Oct 2009 10:45:44 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, mingo@elte.hu, rusty@rustcorp.com.au,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [this_cpu_xx V4 13/20] this_cpu_ops: page allocator conversion
+Message-ID: <20091006094544.GC18185@csn.ul.ie>
+References: <20091001212521.123389189@gentwo.org> <20091001212600.068637154@gentwo.org> <20091002151437.GP21906@csn.ul.ie> <alpine.DEB.1.10.0910021331020.26189@gentwo.org> <20091005094527.GB12681@csn.ul.ie> <alpine.DEB.1.10.0910051040270.16359@gentwo.org> <alpine.DEB.1.10.0910051055120.16359@gentwo.org>
 MIME-Version: 1.0
-In-Reply-To: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
-References: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
-Date: Tue, 6 Oct 2009 11:40:37 +0200
-Message-ID: <c62985530910060240y6755a8acgf235db0845202540@mail.gmail.com>
-Subject: Re: [RFC][PATCH 0/9] perf trace: support for general-purpose 
-	scripting
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org,
-       lizf@cn.fujitsu.com, hch@infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0910051055120.16359@gentwo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/10/6 Tom Zanussi <tzanussi@gmail.com>:
-> Hi,
->
-> This patchset defines a generic interface for processing the binary
-> output of 'perf trace' and making it directly available to
-> user-defined scripts written in general-purpose scripting languages
-> such as Perl or Python.  It also builds a general-purpose Perl
-> scripting trace processor on top of the new interface and provides a
-> few example scripts that exercise the basic functionality.
->
-> The main motivation behind it is to provide a more efficient and
-> powerful alternative to the popular method of parsing the ascii trace
-> output in order to extract useful information from it.  To avoid the
-> overhead and complexity of all that, this patchset provides a
-> direct-to-script-interpreter pathway for doing the same thing, but in
-> a more regularized fashion, one that takes advantage of all the event
-> meta-info provided by the tracing infrustructure, such as the
-> event/field info contained in the 'format files' designed for that
-> purpose.
+On Mon, Oct 05, 2009 at 10:55:49AM -0400, Christoph Lameter wrote:
+> 
+> Changes to this patch so far:
+> 
+> Index: linux-2.6/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page_alloc.c	2009-10-05 09:49:07.000000000 -0500
+> +++ linux-2.6/mm/page_alloc.c	2009-10-05 09:48:43.000000000 -0500
+> @@ -1098,8 +1098,6 @@ static void free_hot_cold_page(struct pa
+>  	arch_free_page(page, 0);
+>  	kernel_map_pages(page, 1, 0);
+> 
+> -	local_irq_save(flags);
+> -	pcp = &this_cpu_ptr(zone->pageset)->pcp;
+>  	migratetype = get_pageblock_migratetype(page);
+>  	set_page_private(page, migratetype);
+>  	if (unlikely(wasMlocked))
 
+Why did you move local_irq_save() ? It should have stayed where it was
+because VM counters are updated under the lock. Only the this_cpu_ptr
+should be moving.
 
-That's really a great thing! I was also hesitating to implement a
-python interface to perf in
-order to quickly plug post processing tools. But your patchset does
-that in a much more
-generic way that I imagined: we can support other languages, we have
-well defined
-callbacks to process the events...
+> @@ -1121,6 +1119,8 @@ static void free_hot_cold_page(struct pa
+>  		migratetype = MIGRATE_MOVABLE;
+>  	}
+> 
+> +	local_irq_save(flags);
+> +	pcp = &this_cpu_ptr(zone->pageset)->pcp;
+>  	if (cold)
+>  		list_add_tail(&page->lru, &pcp->lists[migratetype]);
+>  	else
+> @@ -3120,7 +3120,8 @@ static struct notifier_block __cpuinitda
+>  /*
+>   * Allocate per cpu pagesets and initialize them.
+>   * Before this call only boot pagesets were available.
+> - * Boot pagesets will no longer be used after this call is complete.
+> + * Boot pagesets will no longer be used by this processorr
+> + * after setup_per_cpu_pageset().
+>   */
+>  void __init setup_per_cpu_pageset(void)
+>  {
+> @@ -3232,11 +3233,11 @@ __meminit void setup_pagesets(void)
+>  		zone->pageset = &per_cpu_var(boot_pageset);
+> 
+>  		/*
+> -		 * Special pagesets with zero elements so that frees
+> +		 * Special pagesets with one element so that frees
+>  		 * and allocations are not buffered at all.
+>  		 */
+>  		for_each_possible_cpu(cpu)
+> -			setup_pageset(per_cpu_ptr(zone->pageset, cpu), 0);
+> +			setup_pageset(per_cpu_ptr(zone->pageset, cpu), 1);
+> 
+>  	}
+>  }
+> 
 
-Really nice, I hope we can give it a try in -tip soon.
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
