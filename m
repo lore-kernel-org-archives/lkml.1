@@ -1,117 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbZJFUVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933176AbZJFU0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758279AbZJFUVs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 16:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757704AbZJFUVr
+	id S933176AbZJFU0D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 16:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933145AbZJFU0C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 16:21:47 -0400
-Received: from na3sys009aog105.obsmtp.com ([74.125.149.75]:42169 "EHLO
-	na3sys009aog105.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757692AbZJFUVq convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 16:21:46 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
-CC: "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Tue, 6 Oct 2009 14:20:59 -0600
-Subject: [PATCH 3/12] scsi: megaraid_sas - Add poll mechanism to megaraid
- sas driver (part II)
-Thread-Topic: [PATCH 3/12] scsi: megaraid_sas - Add poll mechanism to
- megaraid sas driver (part II)
-Thread-Index: Aco284muq21jjlUCRvWfDnAhnowdBQAABfzAANwH1OADF5nF0A==
-Message-ID: <4B6A08C587958942AA3002690DD4F8C35C6861B3@cosmail02.lsi.com>
-References: <4B6A08C587958942AA3002690DD4F8C35C51195F@cosmail02.lsi.com>
- <4B6A08C587958942AA3002690DD4F8C35C5123FD@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C5123FD@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 6 Oct 2009 16:26:02 -0400
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:51600 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933141AbZJFU0C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 16:26:02 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [patch] kbuild: Improve version string logic
+Date: Tue, 6 Oct 2009 22:25:22 +0200
+User-Agent: KMail/1.9.9
+Cc: mingo@elte.hu, torvalds@linux-foundation.org, hohndel@infradead.org,
+       lenb@kernel.org, linux-kernel@vger.kernel.org
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <200910062146.00298.elendil@planet.nl> <1254858498.22426.41.camel@johannes.local>
+In-Reply-To: <1254858498.22426.41.camel@johannes.local>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910062225.24274.elendil@planet.nl>
+X-OriginalArrivalTime: 06 Oct 2009 20:25:24.0698 (UTC) FILETIME=[22A053A0:01CA46C3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RESUBMIT:
+This is a bit OT, but one last reply.
 
-Add poll support part II -- update the sysfs parameter to tell application driver support AEN poll
+On Tuesday 06 October 2009, Johannes Berg wrote:
+> > AFAIK it would be propagated into the package _name_, where
+> > it is allowed. And even if it were part of the package version, it
+> > would be in the "upstream" part of the version number, where it is
+> > also allowed.
+>
+> That may all well be true. I wasn't even aware of the distinction
+> between debian and upstream part of the version :)
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+The Debian part is everything after the last dash in a package version.
 
----
+> I do, however, remember no end to trouble with autoversion and make-kpkg
+> so eventually gave up on using it entirely.
 
-drivers/scsi/megaraid/megaraid_sas.c |   24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
+Yes, problems with autoversion and make-kpkg I can understand as it makes 
+the revision ID part of the package name, which is very simply not where 
+you want it [1].
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c	2009-09-13 09:49:11.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c	2009-09-13 10:11:50.000000000 -0400
-@@ -92,7 +92,7 @@ static DEFINE_MUTEX(megasas_async_queue_
- 
- static int megasas_poll_wait_aen;
- static DECLARE_WAIT_QUEUE_HEAD(megasas_poll_wait);
--
-+static u32 support_poll_for_event;
- static u32 megasas_dbg_lvl;
- 
- /* define lock for aen poll */
-@@ -3432,6 +3432,15 @@ static DRIVER_ATTR(release_date, S_IRUGO
- 		   NULL);
- 
- static ssize_t
-+megasas_sysfs_show_support_poll_for_event(struct device_driver *dd, char *buf)
-+{
-+	return sprintf(buf, "%u\n", support_poll_for_event);
-+}
-+
-+static DRIVER_ATTR(support_poll_for_event, S_IRUGO,
-+			megasas_sysfs_show_support_poll_for_event, NULL);
-+
-+static ssize_t
- megasas_sysfs_show_dbg_lvl(struct device_driver *dd, char *buf)
- {
- 	return sprintf(buf, "%u\n", megasas_dbg_lvl);
-@@ -3522,6 +3531,8 @@ static int __init megasas_init(void)
- 	printk(KERN_INFO "megasas: %s %s\n", MEGASAS_VERSION,
- 	       MEGASAS_EXT_VERSION);
- 
-+	support_poll_for_event = 2;
-+
- 	memset(&megasas_mgmt_info, 0, sizeof(megasas_mgmt_info));
- 
- 	/*
-@@ -3554,6 +3565,12 @@ static int __init megasas_init(void)
- 				  &driver_attr_release_date);
- 	if (rval)
- 		goto err_dcf_rel_date;
-+
-+	rval = driver_create_file(&megasas_pci_driver.driver,
-+				&driver_attr_support_poll_for_event);
-+	if (rval)
-+		goto err_dcf_support_poll_for_event;
-+
- 	rval = driver_create_file(&megasas_pci_driver.driver,
- 				  &driver_attr_dbg_lvl);
- 	if (rval)
-@@ -3570,7 +3587,12 @@ err_dcf_poll_mode_io:
- 			   &driver_attr_dbg_lvl);
- err_dcf_dbg_lvl:
- 	driver_remove_file(&megasas_pci_driver.driver,
-+			&driver_attr_support_poll_for_event);
-+
-+err_dcf_support_poll_for_event:
-+	driver_remove_file(&megasas_pci_driver.driver,
- 			   &driver_attr_release_date);
-+
- err_dcf_rel_date:
- 	driver_remove_file(&megasas_pci_driver.driver, &driver_attr_version);
- err_dcf_attr_ver:
+I stopped using make-kpkg for 2 reasons. First of all it is insanely 
+complex. And second it used to always do a 'make clean' for every build, 
+which meant a huge inefficiency during bisections and builds after minor 
+changes; I understand that has been fixed though.
+
+I was happy to discover the kernel's native deb-pkg target. There've been 
+some improvements to that in recent kernels that make it quite powerful 
+and flexible for building custom kernels as Debian packages.
+
+Cheers,
+FJP
+
+[1] The deb-pkg target does the same, so autoversion is not usable with 
+that either. What I do is manipulate the output of 'git describe' to set 
+an ENVVAR that gets used as package version.
