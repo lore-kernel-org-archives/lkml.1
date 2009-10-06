@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbZJFTxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752046AbZJGVIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758061AbZJFTxR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 15:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbZJFTxR
+	id S1752046AbZJGVIa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 17:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZJGVI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 15:53:17 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41392 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756861AbZJFTxQ (ORCPT
+	Wed, 7 Oct 2009 17:08:29 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35982 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750993AbZJGVI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 15:53:16 -0400
-Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Andy Whitcroft <apw@canonical.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <1254406711.18167.88.camel@desktop>
-References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
-	 <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
-	 <1253585691-10987-3-git-send-email-dwalker@fifo99.com>
-	 <4AB86ED1.1040200@cn.fujitsu.com>  <20090930152708.GD2957@shadowen.org>
-	 <1254406711.18167.88.camel@desktop>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 06 Oct 2009 15:51:17 -0400
-Message-Id: <1254858677.1696.35.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Oct 2009 17:08:28 -0400
+Date: Tue, 6 Oct 2009 21:54:13 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: dtor@mail.ru, dmitry.torokhov@gmail.com, linux-input@vger.kernel.org
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: ads7846 touchscreen: fix pressure
+Message-ID: <20091006195413.GA1469@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-01 at 07:18 -0700, Daniel Walker wrote:
-> On Wed, 2009-09-30 at 16:27 +0100, Andy Whitcroft wrote:
 
->         TP_STRUCT__entry(
->                 __field(        dev_t,  dev                     )
->                 __field(        ino_t,  ino                     )
->                 __field(        umode_t, mode                   )
->                 __field(        uid_t,  uid                     )
->                 __field(        gid_t,  gid                     )
->                 __field(        blkcnt_t, blocks                )
->         ),
+On Zaurus, pressure is reported inverted -- the lighter the pressure,
+the bigger numerical value. This should fix it.
 
-Yes, the whitespaces for __field and __array as well as __field_ext and
-__dynamic_array, and __sting, in this file can be ignored. As for the
-rest of the file, perhaps it would be good to still check them.
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
--- Steve
+--- linux-rc/drivers/input.ofic/touchscreen/ads7846.c	2009-10-06 13:49:56.000000000 +0200
++++ linux-rc/drivers/input/touchscreen/ads7846.c	2009-10-06 21:18:25.000000000 +0200
+@@ -608,12 +609,12 @@
+ 
+ 		input_report_abs(input, ABS_X, x);
+ 		input_report_abs(input, ABS_Y, y);
+-		input_report_abs(input, ABS_PRESSURE, Rt);
++		input_report_abs(input, ABS_PRESSURE, ts->pressure_max-Rt);
+ 
+ 		input_sync(input);
+ #ifdef VERBOSE
+ 		dev_dbg(&ts->spi->dev, "%4d/%4d/%4d\n", x, y, Rt);
+ #endif
+ 	}
+ 
+ 	hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_PERIOD),
 
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
