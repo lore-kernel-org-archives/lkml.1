@@ -1,152 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933381AbZJFU4C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933402AbZJFVFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933381AbZJFU4C (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 16:56:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932694AbZJFU4A
+	id S933402AbZJFVFa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 17:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933337AbZJFVF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 16:56:00 -0400
-Received: from na3sys009aog104.obsmtp.com ([74.125.149.73]:57500 "EHLO
-	na3sys009aog104.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932751AbZJFUz7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 16:55:59 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
-CC: "Austria, Winston" <Winston.Austria@lsi.com>,
-       "Mukker, Atul" <Atul.Mukker@lsi.com>
-Date: Tue, 6 Oct 2009 14:55:09 -0600
-Subject: [PATCH 12/12] scsi: megaraid_sas - version and docs update 
-Thread-Topic: [PATCH 12/12] scsi: megaraid_sas - version and docs update 
-Thread-Index: Aco284muq21jjlUCRvWfDnAhnowdBQAABfzAAAAxetAAAF05EAAATiEQAAAy5GAAAEeYsAAAagLgAABgNiAAAIZ8AAAAe/pAANlh0yADGEzqAA==
-Message-ID: <4B6A08C587958942AA3002690DD4F8C35C70B212@cosmail02.lsi.com>
-References: <4B6A08C587958942AA3002690DD4F8C35C5119E1@cosmail02.lsi.com>
- <4B6A08C587958942AA3002690DD4F8C35C512408@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C512408@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Tue, 6 Oct 2009 17:05:29 -0400
+Received: from xenotime.net ([72.52.64.118]:46832 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933221AbZJFVF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 17:05:28 -0400
+Date: Tue, 6 Oct 2009 13:56:56 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+Message-Id: <20091006135656.ac8bb2e7.rdunlap@xenotime.net>
+In-Reply-To: <1254862442.4383.183.camel@mulgrave.site>
+References: <1254844007.4383.85.camel@mulgrave.site>
+	<alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
+	<1254862442.4383.183.camel@mulgrave.site>
+Organization: YPO4
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RESUBMIT:
+On Tue, 06 Oct 2009 20:54:02 +0000 James Bottomley wrote:
 
-Update the version and documentation
+> On Tue, 2009-10-06 at 08:58 -0700, Linus Torvalds wrote:
+> > 
+> > On Tue, 6 Oct 2009, James Bottomley wrote:
+> > >
+> > > This is mostly fixes.  However, it contains two new drivers: Brocade SAS
+> > > (bfa), the Bladengine2 iSCSI (be2iscsi) under the merge window exemption
+> > 
+> > Btw, I'm getting less excited about the merge window exemption.
+> > 
+> > It makes sense for consumer devices that people actually hit and that are 
+> > needed for bringup (ie they make a difference between a system that can be 
+> > installed and used, and one that cannot), but I'm not at all sure it makes 
+> > sense for things like this.
+> > 
+> > The _reason_ for the driver exemption was the fact that even a broken 
+> > driver is better than no driver at all for somebody who just can't get a 
+> > working system without it, but that argument really goes away when the 
+> > driver is so specialized that it's not about regular hardware any more.
+> 
+> OK, so I don't see a huge distinction here.  This is a driver for a
+> piece of enterprise HW that Linux previously didn't support.  To someone
+> cursing not being able to use there hardware, it's every bit as
+> important as the latest wireless driver.
+> 
+> > And the whole "driver exemption" seems to have become a by-word for "I can 
+> > ignore the merge window for 50% of my code". Which makes me very tired of 
+> > it if there aren't real advantages to real users.
+> 
+> While the exemption exists, I can certainly ignore the merge window for
+> new drivers, yes ... however, that's not 50% of the code submitted in
+> the merge window, and it's one time ... the same driver follows the
+> merge window for the next release.  I try to police this pretty rigidly
+> in SCSI ... as you do at the top.
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+polices it so rigidly that even simple kernel-doc patches sit in a
+scsi git tree for months.  :(
+
 
 ---
-
-Documentation/scsi/ChangeLog.megaraid_sas |   62 ++++++++++++++++++++++++++++++
- drivers/scsi/megaraid/megaraid_sas.c      |    2
- drivers/scsi/megaraid/megaraid_sas.h      |    6 +-
- 3 files changed, 66 insertions(+), 4 deletions(-)
-
-diff -rupN linux-2.6.28_orig/Documentation/scsi/ChangeLog.megaraid_sas linux-2.6.28_new/Documentation/scsi/ChangeLog.megaraid_sas
---- linux-2.6.28_orig/Documentation/scsi/ChangeLog.megaraid_sas	2009-09-15 05:32:34.000000000 -0400
-+++ linux-2.6.28_new/Documentation/scsi/ChangeLog.megaraid_sas	2009-09-15 06:12:38.000000000 -0400
-@@ -1,3 +1,65 @@
-+1 Release Date    : Tues.  July 28, 2009 10:12:45 PST 2009 -
-+			(emaild-id:megaraidlinux@lsi.com)
-+			Bo Yang
-+
-+2 Current Version : 00.00.04.12
-+3 Older Version   : 00.00.04.10
-+
-+1.	Change the AEN sys PD update from scsi_scan to
-+	scsi_add_device and scsi_remove_device.
-+2.	Takeoff the debug print-out in aen_polling routine.
-+
-+1 Release Date    : Thur.  July 02, 2009 10:12:45 PST 2009 -
-+			(emaild-id:megaraidlinux@lsi.com)
-+			Bo Yang
-+
-+2 Current Version : 00.00.04.10
-+3 Older Version   : 00.00.04.08
-+
-+1.	Add the 3 mins timeout during the controller initialize.
-+2.	Add the fix for 64bit sense date errors.
-+ 
-+1 Release Date    : Tues. May 05, 2009 10:12:45 PST 2009 -
-+			(emaild-id:megaraidlinux@lsi.com)
-+			Bo Yang
-+
-+2 Current Version : 00.00.04.08
-+3 Older Version   : 00.00.04.06
-+
-+1.	Add the fix of pending in FW after deleted the logic drives. 
-+2.	Add the fix of deallocating memory after get pdlist.
-+
-+1 Release Date    : Tues. March 26, 2009 10:12:45 PST 2009 -
-+			(emaild-id:megaraidlinux@lsi.com)
-+			Bo Yang
-+
-+2 Current Version : 00.00.04.06
-+3 Older Version   : 00.00.04.04
-+
-+1.	Add the fix of the driver cmd empty fix of the driver cmd empty. 
-+2.	Add the fix of the driver MSM AEN CMD cause the system slow. 
-+
-+1 Release Date    : Tues. March 03, 2009 10:12:45 PST 2009 -
-+			(emaild-id:megaraidlinux@lsi.com)
-+			Bo Yang
-+
-+2 Current Version : 00.00.04.04
-+3 Older Version   : 00.00.04.01
-+
-+1.	Add the Tape drive fix to the driver: If the command is for
-+	the tape device, set the pthru timeout to the os layer timeout value.
-+
-+2.	Add Poll_wait mechanism to Gen-2 Linux driv.
-+		In the aen handler, driver needs to wakeup poll handler similar to 
-+		the way it raises SIGIO. 
-+
-+3.	Add new controller new SAS2 support to the driver.
-+
-+4.	Report the unconfigured PD (system PD) to OS.
-+
-+5.	Add the IEEE SGL support to the driver   
-+
-+6.	Reasign the Application cmds to SAS2 controller
- 
- 1 Release Date    : Thur.July. 24 11:41:51 PST 2008 -
-                        (emaild-id:megaraidlinux@lsi.com)
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c	2009-09-15 05:32:34.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c	2009-09-15 05:33:49.000000000 -0400
-@@ -10,7 +10,7 @@
-  *	   2 of the License, or (at your option) any later version.
-  *
-  * FILE		: megaraid_sas.c
-- * Version     : v00.00.04.01-rc1
-+ * Version     : v00.00.04.12-rc1
-  *
-  * Authors:
-  *	(email-id : megaraidlinux@lsi.com)
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h	2009-09-15 05:32:34.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h	2009-09-15 05:34:40.000000000 -0400
-@@ -18,9 +18,9 @@
- /*
-  * MegaRAID SAS Driver meta data
-  */
--#define MEGASAS_VERSION				"00.00.04.01"
--#define MEGASAS_RELDATE				"July 24, 2008"
--#define MEGASAS_EXT_VERSION			"Thu July 24 11:41:51 PST 2008"
-+#define MEGASAS_VERSION				"00.00.04.12-rc1"
-+#define MEGASAS_RELDATE				"Sep. 17, 2009"
-+#define MEGASAS_EXT_VERSION			"Thu Sep. 17 11:41:51 PST 2009"
- 
- /*
-  * Device IDs
+~Randy
