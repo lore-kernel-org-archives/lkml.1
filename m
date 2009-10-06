@@ -1,109 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758338AbZJFXAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933530AbZJFXDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758338AbZJFXAW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 19:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbZJFXAV
+	id S933530AbZJFXDB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 19:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933236AbZJFXDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 19:00:21 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:30435 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753663AbZJFXAU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 19:00:20 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=R99bv2+xeDueJxIFgDJNTmzcjoR8KfDdGPYmvEi+uBnZo1JQtIpANiMlkX9bNkeDE
-	yEjC8VLbe1ScnDISyJ4QQ==
+	Tue, 6 Oct 2009 19:03:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53569 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932382AbZJFXDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 19:03:00 -0400
+Message-ID: <4ACBCC78.7090703@garzik.org>
+Date: Tue, 06 Oct 2009 19:02:16 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-In-Reply-To: <20091006114052.5FAA.A69D9226@jp.fujitsu.com>
-References: <20091006112803.5FA5.A69D9226@jp.fujitsu.com>
-	 <20091006114052.5FAA.A69D9226@jp.fujitsu.com>
-Date: Tue, 6 Oct 2009 15:59:09 -0700
-Message-ID: <604427e00910061559v34590d49x4cdd01b16df6fb1e@mail.gmail.com>
-Subject: Re: [PATCH 2/2] mlock use lru_add_drain_all_async()
-From: Ying Han <yinghan@google.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: "Jung-Ik (John) Lee" <jilee@google.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Grant Grundler <grundler@google.com>,
+       Gwendal Gringo <gwendal@google.com>
+Subject: Re: [git patches] libata updates
+References: <20090917204935.GA7432@havoc.gtf.org> <200909281734.11090.bzolnier@gmail.com> <4ACAC665.7070109@garzik.org> <200910070026.15259.bzolnier@gmail.com>
+In-Reply-To: <200910070026.15259.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello KOSAKI-san,
+On 10/06/2009 06:26 PM, Bartlomiej Zolnierkiewicz wrote:
+> To the previous patch.  For your convenience I'll re-post all overdue
+> pata_atp867x patches to the date on linux-ide ML..
 
-Few questions on the lru_add_drain_all_async(). If i understand
-correctly, the reason that we have lru_add_drain_all() in the mlock()
-call is to isolate mlocked pages into the separate LRU in case they
-are sitting in pagevec.
 
-And I also understand the RT use cases you put in the patch
-description, now my questions is that do we have race after applying
-the patch? For example that if the RT task not giving up the cpu by
-the time mlock returns, you have pages left in the pagevec which not
-being drained back to the lru list. Do we have problem with that?
+Much appreciated...
 
---Ying
+	Jeff
 
-On Mon, Oct 5, 2009 at 7:41 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->
-> Recently, Peter Zijlstra reported RT-task can lead to prevent mlock
-> very long time.
->
->  Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
->  cpu0 does mlock()->lru_add_drain_all(), which does
->  schedule_on_each_cpu(), which then waits for all cpus to complete the
->  work. Except that cpu1, which is busy with the RT task, will never run
->  keventd until the RT load goes away.
->
->  This is not so much an actual deadlock as a serious starvation case.
->
-> Actually, mlock() doesn't need to wait to finish lru_add_drain_all().
-> Thus, this patch replace it with lru_add_drain_all_async().
->
-> Cc: Oleg Nesterov <onestero@redhat.com>
-> Reported-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  mm/mlock.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/mm/mlock.c b/mm/mlock.c
-> index 22041aa..46a016f 100644
-> --- a/mm/mlock.c
-> +++ b/mm/mlock.c
-> @@ -458,7 +458,7 @@ SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)
->        if (!can_do_mlock())
->                return -EPERM;
->
-> -       lru_add_drain_all();    /* flush pagevec */
-> +       lru_add_drain_all_async();      /* flush pagevec */
->
->        down_write(&current->mm->mmap_sem);
->        len = PAGE_ALIGN(len + (start & ~PAGE_MASK));
-> @@ -526,7 +526,7 @@ SYSCALL_DEFINE1(mlockall, int, flags)
->        if (!can_do_mlock())
->                goto out;
->
-> -       lru_add_drain_all();    /* flush pagevec */
-> +       lru_add_drain_all_async();      /* flush pagevec */
->
->        down_write(&current->mm->mmap_sem);
->
-> --
-> 1.6.2.5
->
->
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
+
