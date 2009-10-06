@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933161AbZJFUNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758121AbZJFUQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933161AbZJFUNa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 16:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933141AbZJFUN3
+	id S1758121AbZJFUQu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 16:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757424AbZJFUQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 16:13:29 -0400
-Received: from na3sys009aog109.obsmtp.com ([74.125.149.201]:60978 "EHLO
-	na3sys009aog109.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933122AbZJFUN2 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 16:13:28 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
-CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Austria, Winston" <Winston.Austria@lsi.com>,
-       "Mukker, Atul" <Atul.Mukker@lsi.com>
-Date: Tue, 6 Oct 2009 14:12:21 -0600
-Subject: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
-Thread-Topic: [PATCH 1/12] scsi: megaraid_sas - tape drive support fix
-Thread-Index: Aco28IhK0BCwqEkwToSTDcG+BIA9kwDb1hagAACJvwADF6mW4A==
-Message-ID: <4B6A08C587958942AA3002690DD4F8C35C6861A5@cosmail02.lsi.com>
-References: <4B6A08C587958942AA3002690DD4F8C35C5123FA@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C5123FA@cosmail02.lsi.com>
+	Tue, 6 Oct 2009 16:16:50 -0400
+Received: from mga01.intel.com ([192.55.52.88]:23120 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757278AbZJFUQt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 16:16:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,514,1249282800"; 
+   d="scan'208";a="733597160"
+From: "Kay, Allen M" <allen.m.kay@intel.com>
+To: Chris Wright <chrisw@sous-sol.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>
+Date: Tue, 6 Oct 2009 13:15:54 -0700
+Subject: RE: [PATCH ACS v3 1/1]
+Thread-Topic: [PATCH ACS v3 1/1]
+Thread-Index: AcpCNPS8MdEpINI1Q7SbW6/Glb9OjAD55rVg
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E302232D@orsmsx505.amr.corp.intel.com>
+References: <1253231193-5753-1-git-send-email-allen.m.kay@intel.com>
+ <20090929000041.GB3958@sequoia.sous-sol.org>
+ <57C9024A16AD2D4C97DC78E552063EA3E2EA3B70@orsmsx505.amr.corp.intel.com>
+ <20090929184650.GF3958@sequoia.sous-sol.org>
+ <57C9024A16AD2D4C97DC78E552063EA3E2F0411F@orsmsx505.amr.corp.intel.com>
+ <20091001011721.GK3958@sequoia.sous-sol.org>
+In-Reply-To: <20091001011721.GK3958@sequoia.sous-sol.org>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 acceptlanguage: en-US
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RESUBMIT:
+> I was thinking that ACS could be enabled if an IOMMU is enabled.  Not a
+> perfect fit, but seems reasonably close.
 
-Add the Tape drive fix to the megaraid_sas driver: If the command is for the tape device, set the FW pthru timeout to the os layer timeout value.
+Chris, I'm working on a new version of the patch that incorporates iommu check.  I'm also adding a check for dom0 kernel as HW iommu is not visible to dom0.
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+Allen
 
----
-drivers/scsi/megaraid/megaraid_sas.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+-----Original Message-----
+From: Chris Wright [mailto:chrisw@sous-sol.org] 
+Sent: Wednesday, September 30, 2009 6:17 PM
+To: Kay, Allen M
+Cc: Chris Wright; linux-kernel@vger.kernel.org; linux-pci@vger.kernel.org; jbarnes@virtuousgeek.org; matthew@wil.cx
+Subject: Re: [PATCH ACS v3 1/1]
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c	2009-05-04 20:06:29.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c	2009-05-04 20:08:26.000000000 -0400
-@@ -687,6 +687,17 @@ megasas_build_dcdb(struct megasas_instan
- 	memcpy(pthru->cdb, scp->cmnd, scp->cmd_len);
- 
- 	/*
-+	* If the command is for the tape device, set the
-+	* pthru timeout to the os layer timeout value.
-+	*/
-+	if (scp->device->type == TYPE_TAPE) {
-+		if ((scp->request->timeout / HZ) > 0xFFFF)
-+			pthru->timeout = 0xFFFF;
-+		else
-+			pthru->timeout = scp->request->timeout / HZ;
-+	}
-+
-+	/*
- 	 * Construct SGL
- 	 */
- 	if (IS_DMA64) {
+* Kay, Allen M (allen.m.kay@intel.com) wrote:
+> On the other hand, can we say VT-d PT mode is mainly for KVM
+> virtualization use case?  If so, is it reasonable to say performance of
+> host P2P in this mode is not of highest priority?
+
+Guess it depends on the workload.  Would be helpful to identify a use
+case that is p2p heavy (and then the impact of enabling ACS).
+
+> If not, another option is to have a kernel boot parameter to
+> configure an kernel boot instance to be either host kernel optimized or
+> virtualization optimized.  I don't know whether this is a reasonable or
+> not ...
+
+I was thinking that ACS could be enabled if an IOMMU is enabled.  Not a
+perfect fit, but seems reasonably close.
+
+thanks,
+-chris
