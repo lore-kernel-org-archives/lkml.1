@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZJFAuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755663AbZJFAu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbZJFAuy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 20:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZJFAux
+	id S1755663AbZJFAu5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 20:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbZJFAuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 20:50:53 -0400
-Received: from claw.goop.org ([74.207.240.146]:35220 "EHLO claw.goop.org"
+	Mon, 5 Oct 2009 20:50:55 -0400
+Received: from claw.goop.org ([74.207.240.146]:35235 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753600AbZJFAuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 20:50:52 -0400
+	id S1753600AbZJFAux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 20:50:53 -0400
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 To: Xen-devel <xen-devel@lists.xensource.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -17,54 +17,44 @@ Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Glauber de Oliveira Costa <gcosta@redhat.com>,
        Avi Kivity <avi@redhat.com>, Zach Brown <zach.brown@oracle.com>,
        the arch/x86 maintainers <x86@kernel.org>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: [PATCH RFC] Extending pvclock down to usermode for vsyscall
-Date: Mon,  5 Oct 2009 17:50:06 -0700
-Message-Id: <1254790211-15416-1-git-send-email-jeremy.fitzhardinge@citrix.com>
+       Chris Mason <chris.mason@oracle.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 1/5] x86/pvclock: make sure rdtsc doesn't speculate out of region
+Date: Mon,  5 Oct 2009 17:50:07 -0700
+Message-Id: <1254790211-15416-2-git-send-email-jeremy.fitzhardinge@citrix.com>
 X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1254790211-15416-1-git-send-email-jeremy.fitzhardinge@citrix.com>
+References: <1254790211-15416-1-git-send-email-jeremy.fitzhardinge@citrix.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This series implements the vread method for the clocksource, which allows
-it to be used directly from usermode via vsyscall.
+rdtsc is not necessarily ordered with surrounding instructions so we
+need to make sure that it doesn't get sampled out of order with
+respect to reading the time_info.
 
-Most of the work is in the generic pvclock code, with a bit of
-hypervisor-specific code to set things up.  Specifically, it sets up a
-page which is an array of pvclock_vcpu_time_info structures indexed by
-vcpu number.  The usermode code gets the current (v)cpu via vgetcpu,
-gets the appropriate time info and computes system time from the tsc.
-After doing all that it rechecks the version number to make things
-happened consistently.  The kernel also installs a preempt notifier to
-bump the version number so that usermode can tell it has had its cpu
-context switched under it.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/kernel/pvclock.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-I've included the Xen implementation, but it should be simple to implement
-for KVM (especially since it already has the feature I had to add to
-Xen to implement this: the ability to place the pvclock_vcpu_time_info
-structure at an arbitrary address).
-
-With this in place, I can do a gettimeofday in about 100ns on a 2.4GHz
-Q6600.  I'm sure this could be tuned a bit more, but it is already much
-better than a syscall.
-
-(There's also a couple of other little generic pvclock fixes I'll send
-separately.)
-
-Thanks,
-	J
-
- arch/x86/Kconfig                |    4 +
- arch/x86/include/asm/fixmap.h   |   21 +++++
- arch/x86/include/asm/pvclock.h  |    6 +
- arch/x86/include/asm/vsyscall.h |    3 
- arch/x86/kernel/Makefile        |    2 
- arch/x86/kernel/pvclock.c       |  156 ++++++++++++++++++++++++++++++++++++----
- arch/x86/xen/Kconfig            |    6 +
- arch/x86/xen/mmu.c              |    3 
- arch/x86/xen/smp.c              |    2 
- arch/x86/xen/time.c             |   52 +++++++++++++
- arch/x86/xen/xen-ops.h          |    8 ++
- include/xen/interface/vcpu.h    |   41 ++++++++++
- 12 files changed, 291 insertions(+), 13 deletions(-)
+diff --git a/arch/x86/kernel/pvclock.c b/arch/x86/kernel/pvclock.c
+index 03801f2..963f349 100644
+--- a/arch/x86/kernel/pvclock.c
++++ b/arch/x86/kernel/pvclock.c
+@@ -117,10 +117,10 @@ cycle_t pvclock_clocksource_read(struct pvclock_vcpu_time_info *src)
+ 
+ 	do {
+ 		version = pvclock_get_time_values(&shadow, src);
+-		barrier();
++		rdtsc_barrier();
+ 		offset = pvclock_get_nsec_offset(&shadow);
+ 		ret = shadow.system_timestamp + offset;
+-		barrier();
++		rdtsc_barrier();
+ 	} while (version != src->version);
+ 
+ 	return ret;
+-- 
+1.6.2.5
 
