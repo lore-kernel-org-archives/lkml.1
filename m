@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932612AbZJFQd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932376AbZJFQ3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932612AbZJFQd7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 12:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932517AbZJFQd7
+	id S932376AbZJFQ3i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 12:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbZJFQ3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 12:33:59 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:55252 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932481AbZJFQd6 (ORCPT
+	Tue, 6 Oct 2009 12:29:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49132 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756651AbZJFQ3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 12:33:58 -0400
-Date: Tue, 6 Oct 2009 12:27:27 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 2/2] mlock use lru_add_drain_all_async()
-In-Reply-To: <20091006114052.5FAA.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.1.10.0910061226300.18309@gentwo.org>
-References: <20091006112803.5FA5.A69D9226@jp.fujitsu.com> <20091006114052.5FAA.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Oct 2009 12:29:37 -0400
+Subject: Re: [PATCH 2/2] perf_events: add event constraints support for
+ Intel processors
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Stephane Eranian <eranian@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       perfmon2-devel@lists.sf.net, Stephane Eranian <eranian@gmail.com>
+In-Reply-To: <1254840129-6198-3-git-send-email-eranian@gmail.com>
+References: <> <1254840129-6198-1-git-send-email-eranian@gmail.com>
+	 <1254840129-6198-2-git-send-email-eranian@gmail.com>
+	 <1254840129-6198-3-git-send-email-eranian@gmail.com>
+Content-Type: text/plain
+Date: Tue, 06 Oct 2009 18:29:04 +0200
+Message-Id: <1254846544.21044.298.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Oct 2009, KOSAKI Motohiro wrote:
+On Tue, 2009-10-06 at 16:42 +0200, Stephane Eranian wrote:
 
->   Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
->   cpu0 does mlock()->lru_add_drain_all(), which does
->   schedule_on_each_cpu(), which then waits for all cpus to complete the
->   work. Except that cpu1, which is busy with the RT task, will never run
->   keventd until the RT load goes away.
->
->   This is not so much an actual deadlock as a serious starvation case.
->
-> Actually, mlock() doesn't need to wait to finish lru_add_drain_all().
-> Thus, this patch replace it with lru_add_drain_all_async().
+> 	This patch changes the event to counter assignment logic to take
+> 	into account event constraints for Intel P6, Core and Nehalem
+> 	processors. There is no contraints on Intel Atom. There are
+> 	constraints on Intel Yonah (Core Duo) but they are not provided
+> 	in this patch given that this processor is not yet supported by
+> 	perf_events.
 
-Ok so this will queue up lots of events for the cpu doing a RT task. If
-the RT task is continuous then they will be queued there forever?
+I don't think there's much missing for that, right?
+
+I don't actually have that hardware, so I can't test it.
+
+> 	As a result of the constraints, it is possible for some event groups
+> 	to never actually be loaded onto the PMU if they contain two events
+> 	which can only be measured on a single counter. That situation can be
+> 	detected with the scaling information extracted with read().
+
+Right, that's a pre existing bug in the x86 code (we can create groups
+larger than the PMU) and should be fixed.
+
+Patch looks nice though.
+
+
