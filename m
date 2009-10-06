@@ -1,150 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932250AbZJFL6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932270AbZJFMFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932250AbZJFL6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 07:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbZJFL6i
+	id S932270AbZJFMFF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 08:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932256AbZJFMFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 07:58:38 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50668 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756164AbZJFL6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 07:58:37 -0400
-Date: Tue, 6 Oct 2009 22:57:51 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: linux-next@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>
-Subject: Re: Adding to linux-next?
-Message-Id: <20091006225751.7d5f3eec.sfr@canb.auug.org.au>
-In-Reply-To: <4AC6339B.7000905@gmail.com>
-References: <4AC6339B.7000905@gmail.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
+	Tue, 6 Oct 2009 08:05:04 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60604 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932229AbZJFMFD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 08:05:03 -0400
+Subject: Re: find_busiest_group using lots of CPU
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+In-Reply-To: <20091006112006.GO5216@kernel.dk>
+References: <20090930081811.GP23126@kernel.dk>
+	 <1254745898.26976.52.camel@twins> <20091006075127.GF5216@kernel.dk>
+	 <20091006112006.GO5216@kernel.dk>
+Content-Type: text/plain
+Date: Tue, 06 Oct 2009 14:04:21 +0200
+Message-Id: <1254830661.21044.275.camel@laptop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__6_Oct_2009_22_57_51_+1100_DgyK78EqzKux/Yqu"
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__6_Oct_2009_22_57_51_+1100_DgyK78EqzKux/Yqu
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-10-06 at 13:20 +0200, Jens Axboe wrote:
+> > > io_schedule() straight into find_busiest_group() leads me to think this
+> > > could be SD_BALANCE_NEWIDLE, does something like:
+> > > 
+> > > for i in /proc/sys/kernel/sched_domain/cpu*/domain*/flags; 
+> > > do 
+> > >     val=`cat $i`; echo $((val & ~0x02)) > $i; 
+> > > done
+> > > 
+> > > [ assuming SCHED_DEBUG=y ]
+> > > 
+> > > Cure things?
+> > 
+> > I can try,
+> 
+> It does, it's gone from the profiles.
 
-Hi Greg,
+Hrmm,. ok. I'll go prod at the NEWIDLE bits to see if anything stands
+out.
 
-Sorry for the slow response.
+If only perf-annotate could generate annotated C... maybe I'll look at
+that.
 
-On Fri, 02 Oct 2009 13:08:43 -0400 Gregory Haskins <gregory.haskins@gmail.c=
-om> wrote:
->
-> I am looking for some guidance on policy/procedure governing inclusion
-> of a tree to linux-next.  For instance: Do I have to be arbitrarily
-> invited (e.g. by some committee on LKML), or do I explicitly request
-> consideration?  I tried to Google around for answers, and also found the
-> linux-next wiki, but I was not getting any clear answers.
+Thanks!
 
-You just send me the location of your tree and ask for inclusion. You
-should also mention who should be contacted if I have any problems with
-this tree (I will assume yourself).
-
-> I have these guest drivers to support IO on top of the AlacrityVM
-> hypervisor:
->=20
-> http://lkml.org/lkml/2009/8/3/278
->=20
-> The comments have since died down.  I realize this can mean anything
-> from "no objection" to "no interest" ;), but I assume the former unless
-> someone pipes up.
->=20
-> I believe I addressed the review comments and received an Ack from the
-> one maintainer of the tree that overlaps with the work (netdev/davem), he=
-re:
->=20
-> http://lkml.org/lkml/2009/8/3/505
->=20
-> Since the rest of the work doesn't really fall into any existing
-> subsystem, and David conceded that the netdev overlap portion should
-> carry elsewhere, I offer to fill this role myself from within the
-> AlacrityVM tree itself.
->=20
-> As such, I have taken the driver series and created a new branch here:
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/alacrityvm/linux-2=
-.6.git
-> linux-next
-
-I will add this tree from tomorrow unless someone screams.
-
-> Unlike the original posting, I have excluded the final ethernet patch
-> since I posted a v3 today (http://lkml.org/lkml/2009/10/2/239) that I
-> would like to have David re-Ack before including.
->=20
-> Once the driver has been suitably approved by David, and if he still
-> feels its ok to carry in a tree other than netdev, I will re-add it to
-> the linux-next branch.
-
-That sounds fine.
-
-> Because I am not really sure of the policies for linux-next, let me
-> state my intentions of this branch, since I am an unknown in the
-> maintainership role:
->=20
-> I will only post patches to this branch that:
->=20
-> *) do not fall into an existing maintained subsystem category, unless
-> the appropriate maintainer has relinquished the patch to carry in my tree.
-> *) have previously been posted to LKML for suitable review.
-
-Here is my boilerplate:
-
-Thanks for adding your subsystem tree as a participant of linux-next.  As
-you may know, this is not a judgment of your code.  The purpose of
-linux-next is for integration testing and to lower the impact of
-conflicts between subsystems in the next merge window.=20
-
-You will need to ensure that the patches/commits in your tree/series have
-been:
-     * submitted under GPL v2 (or later) and include the Contributor's
-	Signed-off-by,
-     * posted to the relevant mailing list,
-     * reviewed by you (or another maintainer of your subsystem tree),
-     * successfully unit tested, and=20
-     * destined for the current or next Linux merge window.
-
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).  It is allowed to be rebased if you deem it necessary.
-
---=20
-Cheers,
-Stephen Rothwell=20
-sfr@canb.auug.org.au
-
-Legal Stuff:
-By participating in linux-next, your subsystem tree contributions are
-public and will be included in the linux-next trees.  You may be sent
-e-mail messages indicating errors or other issues when the
-patches/commits from your subsystem tree are merged and tested in
-linux-next.  These messages may also be cross-posted to the linux-next
-mailing list, the linux-kernel mailing list, etc.  The linux-next tree
-project and IBM (my employer) make no warranties regarding the linux-next
-project, the testing procedures, the results, the e-mails, etc.  If you
-don't agree to these ground rules, let me know and I'll remove your tree
-from participation in linux-next.
-
---Signature=_Tue__6_Oct_2009_22_57_51_+1100_DgyK78EqzKux/Yqu
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrLML8ACgkQjjKRsyhoI8zt+ACeM+k6rqfDWmLJotjLpM0/WL0N
-/4wAnjMwhjNvRkn1OueOkkFtRo+hb0FP
-=tgtM
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_Oct_2009_22_57_51_+1100_DgyK78EqzKux/Yqu--
