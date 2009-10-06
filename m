@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbZJFPyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbZJFPzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932819AbZJFPyF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbZJFPyF
+	id S1758139AbZJFPzF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbZJFPzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:54:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38991 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758050AbZJFPyD (ORCPT
+	Tue, 6 Oct 2009 11:55:04 -0400
+Received: from mail-px0-f187.google.com ([209.85.216.187]:39214 "EHLO
+	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696AbZJFPzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:54:03 -0400
-Date: Tue, 6 Oct 2009 08:51:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32-rc3
-In-Reply-To: <20091006153632.GA29795@elte.hu>
-Message-ID: <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
- <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <20091006153632.GA29795@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 6 Oct 2009 11:55:03 -0400
+Message-ID: <4ACB6830.7050004@anirban.org>
+Date: Tue, 06 Oct 2009 08:54:24 -0700
+From: Anirban Sinha <ani@anirban.org>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.4pre) Gecko/20090915 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, tglx@linutronix.de, ani@anirban.org,
+       asinha@zeugmasystems.com
+CC: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/urgent] futex: Nullify robust lists after cleanup
+References: <new-submission> <tip-fc6b177dee33365ccb29fe6d2092223cf8d679f9@git.kernel.org>
+In-Reply-To: <tip-fc6b177dee33365ccb29fe6d2092223cf8d679f9@git.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Tue, 6 Oct 2009, Ingo Molnar wrote:
+Once upon a time, like on 09-10-06 8:03 AM, tip-bot for Peter Zijlstra wrote:
+
+> futex: Nullify robust lists after cleanup
 > 
-> hm, i think you ignored (or missed, or found irrelevant) my first 
-> suggested variant:
-
-No, I didn't ignore it, it just showed that you didn't know what you were 
-thinking about.
-
->  v2.6.31
->  v2.6.31+
+> The robust list pointers of user space held futexes are kept intact
+> over an exec() call. When the exec'ed task exits exit_robust_list() is
+> called with the stale pointer. The risk of corruption is minimal, but
+> still it is incorrect to keep the pointers valid. Actually glibc
+> should uninstall the robust list before calling exec() but we have to
+> deal with it anyway.
 > 
-> The '+' sign says that it's more than .31.
+> Nullify the pointers after [compat_]exit_robust_list() has been
+> called.
+> 
+> Reported-by: Anirban Sinha <ani@anirban.org>
+> Signed-off-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> LKML-Reference: <new-submission>
+> Cc: stable@kernel.org
 
-No. It shows no such thing. Because it DOES NOT EXIST in other peoples 
-trees until they rebase on top of mine.
+Excellent! I very much like the solution because:
 
-Unless:
+(a)  it reiterates the fact that an execve() call is indeed logically the
+'death' of a process.
+'(b) cleans up state that should not logically propagate across an execve() call.
+(c) Does not introduce new EWOULDBLOCK semantics that can potentially break user
+land.
+(d) Restores the 'robust' behavior of futexes by waking up other processes
+waiting on it on an exec() call.
+(e) handles potentially broken/buggy applications gracefully.
+(f) as far as I can see, the world would be better and no worse with this patch :)
 
-> _That_ i think is a lot harder to confuse with the real .31 than a 
-> v2.6.31-1234-g16123c4 version string.
+I'll let you guys know if something else strikes my eyes as being odd in the
+course of my digging through the code.
 
-.. are you saying that it would be just some automatically generated 
-thing, just a crippled form of CONFIG_LOCALVERSION_AUTO? Kind of a 
-CONFIG_LOCALVERSION_AUTO_SHORTFORM?
+Ani
 
-If so, then I don't hate "v2.6.31+", but at the same time, that single 
-plus-sign tells _so_much_ less than v2.6.31-1234-g16123c4 that I think 
-it's really sad and crippled. 
-
-Is it so hard to teach people what "v2.6.31-1234-g16123c4" means? It's not 
-like it's very complicated, and it's not like it's not visually very 
-distinct indeed from the tagged release case (which is just "v2.6.31").
-
-I'd love to use "+" instead of "-", but I was thinking that there are 
-various version things that get unhappy about special characters like 
-that, so we've always used '-' as the separator (since we've always used 
-it).
-
-So I'm _entirely_ open to changing how 'CONFIG_LOCALVERSION_AUTO' works, 
-or extending on that notion. 
-
-What I'm _not_ open to doing is to add made-up commits that change the 
-top-level Makefile at non-release points. Because that way really does lie 
-insanity.
-
-		Linus
