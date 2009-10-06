@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbZJFRmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZJFRou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758150AbZJFRmj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 13:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbZJFRmj
+	id S1758166AbZJFRou (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 13:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbZJFRot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 13:42:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42904 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755827AbZJFRmi (ORCPT
+	Tue, 6 Oct 2009 13:44:49 -0400
+Received: from ausxippc101.us.dell.com ([143.166.85.207]:54399 "EHLO
+	ausxippc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756090AbZJFRot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 13:42:38 -0400
-Date: Tue, 6 Oct 2009 10:41:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Frans Pop <elendil@planet.nl>, mingo@elte.hu, hohndel@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.32-rc3
-In-Reply-To: <4ACB7F9C.9090606@s5r6.in-berlin.de>
-Message-ID: <alpine.LFD.2.01.0910061040200.3432@localhost.localdomain>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
- <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <alpine.LFD.2.01.0910060828530.3432@localhost.localdomain> <200910061909.35878.elendil@planet.nl>
- <4ACB7F9C.9090606@s5r6.in-berlin.de>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Oct 2009 13:44:49 -0400
+X-Loopcount0: from 143.166.82.43
+Date: Tue, 6 Oct 2009 12:44:11 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] firmware: only allow EDD on x86
+Message-ID: <20091006174411.GB15751@auslistsprd01.us.dell.com>
+References: <1254808627-3889-1-git-send-email-vapier@gentoo.org> <1254814818-15658-1-git-send-email-vapier@gentoo.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254814818-15658-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 6 Oct 2009, Stefan Richter wrote:
-
-> Frans Pop wrote:
-> > Developers are supposed to be able to take care of themselves;
+On Tue, Oct 06, 2009 at 03:40:18AM -0400, Mike Frysinger wrote:
+> Rather than have the EDD depend on !ia64 (and assuming that only ia64,
+> x86, x86_64 will be including this Kconfig), have EDD depend on the only
+> arches which can support this code.  This should allow all other arches
+> to cleanly include the firmware Kconfig.
 > 
-> _People who build kernels from sources which differ from releases_ are
-> supposed to take care of themselves.
+> Also simplify the x86 string used by FIRMWARE_MEMMAP to match EDD.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-Yes. If you compile a random development kernel, you'd better then not 
-come and whine to developers about how you can't tell which version it is. 
-Especially when we do have things like CONFIG_LOCALVERSION_AUTO exactly 
-for this case.
+Acked-by: Matt Domsch <Matt_Domsch@del.com>
 
-But it's possible that people really just weren't aware of that whole 
-LOCALVERSION_AUTO thing.
-
-			Linus
+-- 
+Matt Domsch
+Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
