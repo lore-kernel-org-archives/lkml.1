@@ -1,77 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932234AbZJFL4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZJFL5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932234AbZJFL4Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 07:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbZJFL4Z
+	id S1755236AbZJFL5e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 07:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbZJFL5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 07:56:25 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:47776 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751879AbZJFL4Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 07:56:24 -0400
-Date: Tue, 6 Oct 2009 12:55:44 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and Keypad
-	Input Device Driver
-Message-ID: <20091006115543.GH27168@sirena.org.uk>
-References: <1253682664-27040-1-git-send-email-vapier@gentoo.org> <1254815071-15822-1-git-send-email-vapier@gentoo.org>
+	Tue, 6 Oct 2009 07:57:34 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:45452 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756145AbZJFL5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 07:57:33 -0400
+Date: Tue, 6 Oct 2009 13:56:56 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: find_busiest_group using lots of CPU
+Message-ID: <20091006115655.GP5216@kernel.dk>
+References: <20090930081811.GP23126@kernel.dk> <1254745898.26976.52.camel@twins> <20091006075127.GF5216@kernel.dk> <20091006112006.GO5216@kernel.dk> <20091006114716.GA28609@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1254815071-15822-1-git-send-email-vapier@gentoo.org>
-X-Cookie: RADIO SHACK LEVEL II BASIC
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20091006114716.GA28609@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 03:44:31AM -0400, Mike Frysinger wrote:
+On Tue, Oct 06 2009, Ingo Molnar wrote:
+> 
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Tue, Oct 06 2009, Jens Axboe wrote:
+> > > On Mon, Oct 05 2009, Peter Zijlstra wrote:
+> > > > On Wed, 2009-09-30 at 10:18 +0200, Jens Axboe wrote:
+> > > > > Hi,
+> > > > > 
+> > > > > I stuffed a few more SSDs into my text box. Running a simple workload
+> > > > > that just does streaming reads from 10 processes (throughput is around
+> > > > > 2.2GB/sec), find_busiest_group() is using > 10% of the CPU time. This is
+> > > > > a 64 thread box.
+> > > > > 
+> > > > > The top two profile entries are:
+> > > > > 
+> > > > >     10.86%      fio  [kernel]                [k] find_busiest_group
+> > > > >                 |          
+> > > > >                 |--99.91%-- thread_return
+> > > > >                 |          io_schedule
+> > > > >                 |          sys_io_getevents
+> > > > >                 |          system_call_fastpath
+> > > > >                 |          0x7f4b50b61604
+> > > > >                 |          |          
+> > > > >                 |           --100.00%-- td_io_getevents
+> > > > >                 |                     io_u_queued_complete
+> > > > >                 |                     thread_main
+> > > > >                 |                     run_threads
+> > > > >                 |                     main
+> > > > >                 |                     __libc_start_main
+> > > > >                  --0.09%-- [...]
+> > > > > 
+> > > > >      5.78%      fio  [kernel]                [k] cpumask_next_and
+> > > > >                 |          
+> > > > >                 |--67.21%-- thread_return
+> > > > >                 |          io_schedule
+> > > > >                 |          sys_io_getevents
+> > > > >                 |          system_call_fastpath
+> > > > >                 |          0x7f4b50b61604
+> > > > >                 |          |          
+> > > > >                 |           --100.00%-- td_io_getevents
+> > > > >                 |                     io_u_queued_complete
+> > > > >                 |                     thread_main
+> > > > >                 |                     run_threads
+> > > > >                 |                     main
+> > > > >                 |                     __libc_start_main
+> > > > >                 |          
+> > > > >                  --32.79%-- find_busiest_group
+> > > > >                            thread_return
+> > > > >                            io_schedule
+> > > > >                            sys_io_getevents
+> > > > >                            system_call_fastpath
+> > > > >                            0x7f4b50b61604
+> > > > >                            |          
+> > > > >                             --100.00%-- td_io_getevents
+> > > > >                                       io_u_queued_complete
+> > > > >                                       thread_main
+> > > > >                                       run_threads
+> > > > >                                       main
+> > > > >                                       __libc_start_main
+> > > > > 
+> > > > > This is with SCHED_DEBUG=y and SCHEDSTATS=y enabled, I just tried with
+> > > > > both disabled but that yields the same result (well actually worse, 22%
+> > > > > spent in there. dunno if that's normal "fluctuation"). GROUP_SCHED is
+> > > > > not set. This seems way excessive!
+> > > > 
+> > > > io_schedule() straight into find_busiest_group() leads me to think this
+> > > > could be SD_BALANCE_NEWIDLE, does something like:
+> > > > 
+> > > > for i in /proc/sys/kernel/sched_domain/cpu*/domain*/flags; 
+> > > > do 
+> > > > 	val=`cat $i`; echo $((val & ~0x02)) > $i; 
+> > > > done
+> > > > 
+> > > > [ assuming SCHED_DEBUG=y ]
+> > > > 
+> > > > Cure things?
+> > > 
+> > > I can try, as mentioned it doesn't look any better with SCHED_DEBUG=n
+> > 
+> > It does, it's gone from the profiles.
+> 
+> Peter mentioned SCHED_DEBUG=y to have 
+> /proc/sys/kernel/sched_domain/cpu*/domain*/flags available.
 
-> +int adp5520_register_notifier(struct device *dev, struct notifier_block *nb,
-> +				unsigned int events)
-> +{
+In case it wasn't clear, what I did was run the 'for...' from Peter
+(with a kernel with SCHED_DEBUG=y) and it cured the "problem". Peter
+asked whether it cured things, to which I replied "It does, it's gone
+from the profiles".
 
-This notifier stuff looks an awful lot like an interrupt controller
-driver.  Now that it's possible to implement support for an I2C/SPI
-driven interrupt controller it'd be good to use that rather than having
-a custom API if that's possible.
+-- 
+Jens Axboe
 
-> +#define GPIO_R3		(1 << 3)	/* LED3 or GPIO3 aka R3 */
-> +#define GPIO_R2		(1 << 2)
-> +#define GPIO_R1		(1 << 1)
-> +#define GPIO_R0		(1 << 0)
-
-> +struct adp5520_gpio_platfrom_data {
-> +	unsigned gpio_start;
-> +	u8 gpio_en_mask;
-> +	u8 gpio_pullup_mask;
-> +};
-
-Since there's platform data in here it'd probably be better to namespace
-the #defines or put them in a separate header in case there are
-collisions with some other chip used on a board.
-
-> +struct adp5520_leds_platfrom_data {
-
-There's some 'platfrom' rather than 'platform' typos.
-
-> +	int num_leds;
-> +	struct led_info	*leds;
-> +	u8 fade_in;		/* Backlight Fade-In Timer */
-> +	u8 fade_out;		/* Backlight Fade-Out Timer */
-> +	u8 led_on_time;
-
-I don't know exactly what the on_time option does but if it controls
-hardware-implemented blinking there's actually a callback function the
-LED driver can implement to allow triggers to use the hardware assisted
-blinking at runtime.  If it returns an error or isn't implemented
-there's a software fallback.
