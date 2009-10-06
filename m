@@ -1,99 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbZJFHxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZJFHzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbZJFHxD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 03:53:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbZJFHxC
+	id S1756043AbZJFHzX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 03:55:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbZJFHzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 03:53:02 -0400
-Received: from mail-qy0-f173.google.com ([209.85.221.173]:61038 "EHLO
-	mail-qy0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755143AbZJFHxB (ORCPT
+	Tue, 6 Oct 2009 03:55:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53926 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754854AbZJFHzW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 03:53:01 -0400
-Date: Tue, 6 Oct 2009 07:51:41 +0000
-From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-To: Sven-Thorsten Dietrich <sdietrich@novell.com>
-Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH][UHCI-DEBUG] Don't kmalloc with BKL held
-Message-ID: <20091006075141.GA6650@gambetta>
-References: <1254474744.28661.2.camel@sven.thebigcorporation.com> <20091002092021.GA25083@gambetta> <1254573359.11691.0.camel@sven.thebigcorporation.com>
+	Tue, 6 Oct 2009 03:55:22 -0400
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX19DVCc8YeZDjEnoQ1efheGT4DyXhYVY+CmMKmcttJ
+	cfkUHjN+Z7TS/H
+From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: remaining directory include/asm-x86/ after "make mrproper"
+Date: Tue, 6 Oct 2009 09:54:33 +0200
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1254573359.11691.0.camel@sven.thebigcorporation.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200910060954.33523.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.74
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 03, 2009 at 05:35:59AM -0700, Sven-Thorsten Dietrich wrote:
-> On Fri, 2009-10-02 at 09:20 +0000, Frederik Deweerdt wrote:
-> > Hi Sven-Thorsten,
-> > 
-> > On Fri, Oct 02, 2009 at 11:12:24AM +0200, Sven-Thorsten Dietrich wrote:
-> > > Subject: Don't kmalloc with BKL held.
-> > > From: Sven-Thorsten Dietrich <sdietrich@suse.de>
-> > > 
-> > > I'm eyeballing this file for complete removal of lock_kernel but 
-> > > at first glance, we definitely don't need BKL to kmalloc(). 
-> > You need to move the unlock_kernel() above the out: label too.
-> > 
-> 
-> How about this ?
-Yes, looks good to me.
+Even if I make "make mrproper; make distclean" within /usr/src/linux-2.6.31.1
+I cannot kick of that src dir under Gentoo Linux with "emerge -C" completely
+b/c of the remaining directory.
+I'm wondering why that directory isn't removed with "make mrproper".
 
-> 
-> Subject: Don't kmalloc with BKL held.
-> From: Sven-Thorsten Dietrich sdietrich@suse.de Sat Oct 3 01:27:27 2009 -0700
-> Date: Sat Oct 3 01:27:27 2009 -0700:
-> Git: 4f62eb81e827eb857129101e49757d84ac9ee7eb
-> 
-> We don't need BKL to kmalloc
-> 
-> diff --git a/drivers/usb/host/uhci-debug.c b/drivers/usb/host/uhci-debug.c
-> index e52b954..3fd5602 100644
-> --- a/drivers/usb/host/uhci-debug.c
-> +++ b/drivers/usb/host/uhci-debug.c
-> @@ -494,32 +494,30 @@ static int uhci_debug_open(struct inode *inode, struct file *file)
->  {
->  	struct uhci_hcd *uhci = inode->i_private;
->  	struct uhci_debug *up;
-> -	int ret = -ENOMEM;
->  	unsigned long flags;
->  
-> -	lock_kernel();
->  	up = kmalloc(sizeof(*up), GFP_KERNEL);
->  	if (!up)
-> -		goto out;
-> +		return -ENOMEM;
->  
->  	up->data = kmalloc(MAX_OUTPUT, GFP_KERNEL);
->  	if (!up->data) {
->  		kfree(up);
-> -		goto out;
-> +		return -ENOMEM;
->  	}
->  
->  	up->size = 0;
-> +
-> +	lock_kernel();
->  	spin_lock_irqsave(&uhci->lock, flags);
->  	if (uhci->is_initialized)
->  		up->size = uhci_sprint_schedule(uhci, up->data, MAX_OUTPUT);
->  	spin_unlock_irqrestore(&uhci->lock, flags);
->  
->  	file->private_data = up;
-> -
-> -	ret = 0;
-> -out:
->  	unlock_kernel();
-> -	return ret;
-> +
-> +	return 0;
->  }
->  
->  static loff_t uhci_debug_lseek(struct file *file, loff_t off, int whence)
-> 
-> 
+-- 
+MfG/Sincerely
+
+Toralf Förster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+
