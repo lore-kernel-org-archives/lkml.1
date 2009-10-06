@@ -1,180 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbZJFFbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZJFFcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756187AbZJFFbc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 01:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZJFFbb
+	id S1756227AbZJFFcc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 01:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbZJFFcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 01:31:31 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:40634 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751433AbZJFFba (ORCPT
+	Tue, 6 Oct 2009 01:32:32 -0400
+Received: from mail-ew0-f217.google.com ([209.85.219.217]:51740 "EHLO
+	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753445AbZJFFcb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 01:31:30 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAD9yykpMROOX/2dsb2JhbACBUdFRgiiCAgQ
-Date: Tue, 6 Oct 2009 01:30:51 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: Is RCU_PREEMPT working in 2.6.30.9 ?
-Message-ID: <20091006053051.GB24465@Krystal>
-References: <20091005235817.GA30691@Krystal> <20091006002441.GH6949@linux.vnet.ibm.com> <20091006020018.GA8901@Krystal> <20091006021417.GB8901@Krystal> <20091006030156.GC8901@Krystal> <20091006040235.GA6732@linux.vnet.ibm.com> <20091006051400.GA24465@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20091006051400.GA24465@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 01:29:38 up 48 days, 16:19,  3 users,  load average: 0.30, 0.26,
-	0.20
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 6 Oct 2009 01:32:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=Pp+mihkTWhhm+ykMe6snIOVc7Z4oalb8bh1Y4aftxlwYSBtA6Zm8w21sYfp3N0Z3TC
+         ZZmIwkb4RvUEmJ0qoV5K9Dr4ACN3UrXmpj6B3dSgYY3+WCQfaWF7OskdMwhSl+QxxNLa
+         JZaRgCeE5FVQpZRF3IJYfN6NUuRdhu2L1wypQ=
+MIME-Version: 1.0
+From: Vladimir Dronnikov <dronnikov@gmail.com>
+Date: Tue, 6 Oct 2009 09:31:32 +0400
+Message-ID: <6784529b0910052231u5053e8e2id28b6104cefbed5f@mail.gmail.com>
+Subject: [PATCH 1/1] md: drivers/md/unroll.pl replaced with awk analog, 
+	revisited
+To: linux-kernel@vger.kernel.org
+Cc: linux-raid@vger.kernel.org, neilb@suse.de, rob@landley.net,
+       firmware@impactlinux.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> 
-> > Classic RCU does have known bugs in its dyntick interface, which was one
-> > of the factors motivating its removal from mainline.  ;-)
-> > 
-> > 							Thanx, Paul
-> 
-> Recreated the problem with a simple test-case not involving lttng:
-> 
-> kernel 2.6.30.9
-> TREE RCU
-> 
-> loading this hacky module:
-> 
+From: Vladimir Dronnikov <dronnikov@gmail.com>
 
-Please forget about this hacky module test case. It was not actually
-hung, just really slow when 8 cpus where up to get the prompt back from
-1000 synchronize_sched() calls.
+drivers/md/unroll.pl replaced by awk script to drop build-time
+dependency on perl
 
-Mathieu
+Signed-off-by: Vladimir Dronnikov <dronnikov@gmail.com>
+---
 
-> /*
->  * test-rcu-bug.c
->  */
-> 
-> #include <linux/module.h>
-> #include <linux/proc_fs.h>
-> #include <linux/sched.h>
-> #include <linux/timex.h>
-> #include <linux/rcupdate.h>
-> #include <asm/ptrace.h>
-> 
-> struct proc_dir_entry *pentry = NULL;
-> 
-> static int my_open(struct inode *inode, struct file *file)
-> {
-> 	unsigned int i;
-> 
-> 	for (i = 0; i < 1000; i++)
-> 		synchronize_sched();
-> 
-> 	return -EPERM;
-> }
-> 
-> 
-> static struct file_operations my_operations = {
-> 	.open = my_open,
-> };
-> 
-> int init_module(void)
-> {
-> 	pentry = create_proc_entry("testrcu", 0444, NULL);
-> 	if (pentry)
-> 		pentry->proc_fops = &my_operations;
-> 
-> 	return 0;
-> }
-> 
-> void cleanup_module(void)
-> {
-> 	remove_proc_entry("testrcu", NULL);
-> }
-> 
-> MODULE_LICENSE("GPL");
-> MODULE_AUTHOR("Mathieu Desnoyers");
-> MODULE_DESCRIPTION("rcu test");
-> 
-> Running, in loops:
-> 
-> One console:
-> for a in $(seq 1 7); do echo 0 > /sys/devices/system/cpu/cpu$a/online; done
-> for a in $(seq 1 7); do echo 1 > /sys/devices/system/cpu/cpu$a/online; done
-> 
-> Another console:
-> for a in $(seq 1 10000); do cat /proc/testrcu; done
-> 
-> I eventually get a hang for the cat loop. Sysrq-W shows:
-> 
-> 
-> [ 1337.118630] SysRq : Show Blocked State                             
-> [ 1337.118644]   task                        PC stack   pid father              
-> [ 1337.118644] md1_resync    D 0000000000000000     0  1255      2
-> [ 1337.118644]  ffffffff807eb360 0000000000000046 fffffb7fa3c41757 ffff880439150
-> [ 1337.118644]  ffff88043e028860 00ffffff803f4b88 0000000000010a80 0000000000008
-> [ 1337.118644]  0000000000010a80 00ff88043e028860 ffff88043e485b00 ffff88043e488
-> [ 1337.118644] Call Trace:
-> [ 1337.118644]  [<ffffffff80684638>] ? schedule+0x18/0x40
-> [ 1337.118644]  [<ffffffff8052b3dc>] ? raise_barrier+0x9c/0x1a0
-> [ 1337.118644]  [<ffffffff80236720>] ? default_wake_function+0x0/0x10
-> [ 1337.118644]  [<ffffffff8052c4f6>] ? sync_request+0x126/0x6c0
-> [ 1337.118644]  [<ffffffff8054609a>] ? is_mddev_idle+0xda/0x160
-> [ 1337.118644]  [<ffffffff805467f7>] ? md_do_sync+0x6d7/0xc90
-> [ 1337.118644]  [<ffffffff80252400>] ? autoremove_wake_function+0x0/0x30
-> [ 1337.118644]  [<ffffffff80547677>] ? md_thread+0x47/0x120
-> [ 1337.118644]  [<ffffffff8022e8db>] ? __wake_up_common+0x5b/0x90
-> [ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
-> [ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
-> [ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
-> [ 1337.118644]  [<ffffffff80251f24>] ? kthread+0x54/0x90
-> [ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
-> [ 1337.118644]  [<ffffffff8020d00a>] ? child_rip+0xa/0x20
-> [ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
-> [ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
-> [ 1337.118644]  [<ffffffff8020d000>] ? child_rip+0x0/0x20
-> [ 1337.118644] cat           D 0000000000000000     0 28861   4758
-> [ 1337.118644]  ffff88043f84b330 0000000000000082 0000000000000000 ffff88043f570
-> [ 1337.118644]  0000000000000019 00ffffff80293013 0000000000010a80 0000000000008
-> [ 1337.118644]  0000000000010a80 00ffffff80293887 ffff88043dd885b0 ffff88043dd88
-> [ 1337.118644] Call Trace:
-> [ 1337.118644]  [<ffffffff802df5be>] ? inode_init_always+0xfe/0x1a0
-> [ 1337.118644]  [<ffffffff802df692>] ? alloc_inode+0x32/0xa0
-> [ 1337.118644]  [<ffffffff80684638>] ? schedule+0x18/0x40
-> [ 1337.118644]  [<ffffffff806849ed>] ? schedule_timeout+0x15d/0x190
-> [ 1337.118644]  [<ffffffff8031a1fc>] ? proc_lookup_de+0xac/0x100
-> [ 1337.118644]  [<ffffffff80683b2c>] ? wait_for_common+0x15c/0x190
-> [ 1337.118644]  [<ffffffff80236720>] ? default_wake_function+0x0/0x10
-> [ 1337.118644]  [<ffffffff802dba90>] ? dput+0xb0/0x180
-> [ 1337.118644]  [<ffffffffa007c050>] ? my_open+0x0/0x20 [test_rcu_bug]
-> [ 1337.118644]  [<ffffffff8024f8d3>] ? synchronize_rcu+0x43/0x50
-> [ 1337.118644]  [<ffffffff8024f730>] ? wakeme_after_rcu+0x0/0x10
-> [ 1337.118644]  [<ffffffffa007c05d>] ? my_open+0xd/0x20 [test_rcu_bug]          
-> [ 1337.118644]  [<ffffffff80313d52>] ? proc_reg_open+0xa2/0x190                 
-> [ 1337.118644]  [<ffffffff80313cb0>] ? proc_reg_open+0x0/0x190                  
-> [ 1337.118644]  [<ffffffff802c6a77>] ? __dentry_open+0x127/0x350                
-> [ 1337.118644]  [<ffffffff802d6664>] ? do_filp_open+0x2b4/0xa00                 
-> [ 1337.118644]  [<ffffffff802e0e22>] ? alloc_fd+0x122/0x150                     
-> [ 1337.118644]  [<ffffffff802c6816>] ? do_sys_open+0x86/0x180                   
-> [ 1337.118644]  [<ffffffff8020beeb>] ? system_call_fastpath+0x16/0x1b           
-> 
-> This might be a race between queued callbacks that discards a
-> completion.
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ drivers/md/Makefile           |   22 ++++++++--------
+ drivers/md/raid6altivec.uc    |    2 -
+ drivers/md/raid6int.uc        |    2 -
+ drivers/md/raid6test/Makefile |   42 ++++++++++++++++----------------
+ drivers/md/unroll.awk         |   20 +++++++++++++++
+ drivers/md/unroll.pl          |   24 ------------------
+ 6 files changed, 54 insertions(+), 58 deletions(-)
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--- linux-2.6.31.orig/drivers/md/Makefile	Wed Sep  9 22:13:59 2009
++++ linux-2.6.31/drivers/md/Makefile	Wed Oct  7 05:50:01 2009
+@@ -46,7 +48,7 @@
+ obj-$(CONFIG_DM_ZERO)		+= dm-zero.o
+
+ quiet_cmd_unroll = UNROLL  $@
+-      cmd_unroll = $(PERL) $(srctree)/$(src)/unroll.pl $(UNROLL) \
++      cmd_unroll = $(AWK) -f$(srctree)/$(src)/unroll.awk -vN=$(UNROLL) \
+                    < $< > $@ || ( rm -f $@ && exit 1 )
+
+ ifeq ($(CONFIG_ALTIVEC),y)
+@@ -59,56 +61,56 @@
+
+ targets += raid6int1.c
+ $(obj)/raid6int1.c:   UNROLL := 1
+-$(obj)/raid6int1.c:   $(src)/raid6int.uc $(src)/unroll.pl FORCE
++$(obj)/raid6int1.c:   $(src)/raid6int.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+
+ targets += raid6int2.c
+ $(obj)/raid6int2.c:   UNROLL := 2
+-$(obj)/raid6int2.c:   $(src)/raid6int.uc $(src)/unroll.pl FORCE
++$(obj)/raid6int2.c:   $(src)/raid6int.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+
+ targets += raid6int4.c
+ $(obj)/raid6int4.c:   UNROLL := 4
+-$(obj)/raid6int4.c:   $(src)/raid6int.uc $(src)/unroll.pl FORCE
++$(obj)/raid6int4.c:   $(src)/raid6int.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+
+ targets += raid6int8.c
+ $(obj)/raid6int8.c:   UNROLL := 8
+-$(obj)/raid6int8.c:   $(src)/raid6int.uc $(src)/unroll.pl FORCE
++$(obj)/raid6int8.c:   $(src)/raid6int.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+
+ targets += raid6int16.c
+ $(obj)/raid6int16.c:  UNROLL := 16
+-$(obj)/raid6int16.c:  $(src)/raid6int.uc $(src)/unroll.pl FORCE
++$(obj)/raid6int16.c:  $(src)/raid6int.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+
+ targets += raid6int32.c
+ $(obj)/raid6int32.c:  UNROLL := 32
+-$(obj)/raid6int32.c:  $(src)/raid6int.uc $(src)/unroll.pl FORCE
++$(obj)/raid6int32.c:  $(src)/raid6int.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+
+ CFLAGS_raid6altivec1.o += $(altivec_flags)
+ targets += raid6altivec1.c
+ $(obj)/raid6altivec1.c:   UNROLL := 1
+-$(obj)/raid6altivec1.c:   $(src)/raid6altivec.uc $(src)/unroll.pl FORCE
++$(obj)/raid6altivec1.c:   $(src)/raid6altivec.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+
+ CFLAGS_raid6altivec2.o += $(altivec_flags)
+ targets += raid6altivec2.c
+ $(obj)/raid6altivec2.c:   UNROLL := 2
+-$(obj)/raid6altivec2.c:   $(src)/raid6altivec.uc $(src)/unroll.pl FORCE
++$(obj)/raid6altivec2.c:   $(src)/raid6altivec.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+
+ CFLAGS_raid6altivec4.o += $(altivec_flags)
+ targets += raid6altivec4.c
+ $(obj)/raid6altivec4.c:   UNROLL := 4
+-$(obj)/raid6altivec4.c:   $(src)/raid6altivec.uc $(src)/unroll.pl FORCE
++$(obj)/raid6altivec4.c:   $(src)/raid6altivec.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+
+ CFLAGS_raid6altivec8.o += $(altivec_flags)
+ targets += raid6altivec8.c
+ $(obj)/raid6altivec8.c:   UNROLL := 8
+-$(obj)/raid6altivec8.c:   $(src)/raid6altivec.uc $(src)/unroll.pl FORCE
++$(obj)/raid6altivec8.c:   $(src)/raid6altivec.uc $(src)/unroll.awk FORCE
+ 	$(call if_changed,unroll)
+
+ quiet_cmd_mktable = TABLE   $@
+--- linux-2.6.31.orig/drivers/md/raid6altivec.uc	Wed Sep  9 22:13:59 2009
++++ linux-2.6.31/drivers/md/raid6altivec.uc	Mon Oct  5 20:10:15 2009
+@@ -15,7 +15,7 @@
+  *
+  * $#-way unrolled portable integer math RAID-6 instruction set
+  *
+- * This file is postprocessed using unroll.pl
++ * This file is postprocessed using unroll.awk
+  *
+  * <benh> hpa: in process,
+  * you can just "steal" the vec unit with enable_kernel_altivec() (but
+--- linux-2.6.31.orig/drivers/md/raid6int.uc	Wed Sep  9 22:13:59 2009
++++ linux-2.6.31/drivers/md/raid6int.uc	Mon Oct  5 20:10:15 2009
+@@ -15,7 +15,7 @@
+  *
+  * $#-way unrolled portable integer math RAID-6 instruction set
+  *
+- * This file is postprocessed using unroll.pl
++ * This file is postprocessed using unroll.awk
+  */
+
+ #include <linux/raid/pq.h>
+--- linux-2.6.31.orig/drivers/md/raid6test/Makefile	Wed Sep  9 22:13:59 2009
++++ linux-2.6.31/drivers/md/raid6test/Makefile	Wed Oct  7 05:51:03 2009
+@@ -7,7 +7,7 @@
+ OPTFLAGS = -O2			# Adjust as desired
+ CFLAGS	 = -I.. -I ../../../include -g $(OPTFLAGS)
+ LD	 = ld
+-PERL	 = perl
++AWK	 = awk
+ AR	 = ar
+ RANLIB	 = ranlib
+
+@@ -35,35 +35,35 @@
+ raid6test: test.c raid6.a
+ 	$(CC) $(CFLAGS) -o raid6test $^
+
+-raid6altivec1.c: raid6altivec.uc ../unroll.pl
+-	$(PERL) ../unroll.pl 1 < raid6altivec.uc > $@
++raid6altivec1.c: raid6altivec.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=1 < raid6altivec.uc > $@
+
+-raid6altivec2.c: raid6altivec.uc ../unroll.pl
+-	$(PERL) ../unroll.pl 2 < raid6altivec.uc > $@
++raid6altivec2.c: raid6altivec.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=2 < raid6altivec.uc > $@
+
+-raid6altivec4.c: raid6altivec.uc ../unroll.pl
+-	$(PERL) ../unroll.pl 4 < raid6altivec.uc > $@
++raid6altivec4.c: raid6altivec.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=4 < raid6altivec.uc > $@
+
+-raid6altivec8.c: raid6altivec.uc ../unroll.pl
+-	$(PERL) ../unroll.pl 8 < raid6altivec.uc > $@
++raid6altivec8.c: raid6altivec.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=8 < raid6altivec.uc > $@
+
+-raid6int1.c: raid6int.uc ../unroll.pl
+-	$(PERL) ../unroll.pl 1 < raid6int.uc > $@
++raid6int1.c: raid6int.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=1 < raid6int.uc > $@
+
+-raid6int2.c: raid6int.uc ../unroll.pl
+-	$(PERL) ../unroll.pl 2 < raid6int.uc > $@
++raid6int2.c: raid6int.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=2 < raid6int.uc > $@
+
+-raid6int4.c: raid6int.uc ../unroll.pl
+-	$(PERL) ../unroll.pl 4 < raid6int.uc > $@
++raid6int4.c: raid6int.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=4 < raid6int.uc > $@
+
+-raid6int8.c: raid6int.uc ../unroll.pl
+-	$(PERL) ../unroll.pl 8 < raid6int.uc > $@
++raid6int8.c: raid6int.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=8 < raid6int.uc > $@
+
+-raid6int16.c: raid6int.uc ../unroll.pl
+-	$(PERL) ../unroll.pl 16 < raid6int.uc > $@
++raid6int16.c: raid6int.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=16 < raid6int.uc > $@
+
+-raid6int32.c: raid6int.uc ../unroll.pl
+-	$(PERL) ../unroll.pl 32 < raid6int.uc > $@
++raid6int32.c: raid6int.uc ../unroll.awk
++	$(AWK) ../unroll.awk -vN=32 < raid6int.uc > $@
+
+ raid6tables.c: mktables
+ 	./mktables > raid6tables.c
+--- /dev/null	Thu Jan  1 00:00:00 1970
++++ linux-2.6.31/drivers/md/unroll.awk	Wed Oct  7 05:52:13 2009
+@@ -0,0 +1,20 @@
++
++# This filter requires one command line option of form -vN=n
++# where n must be a decimal number.
++#
++# Repeat each input line containing $$ n times, replacing $$ with 0...n-1.
++# Replace each $# with n, and each $* with a single $.
++
++BEGIN {
++	n = N + 0
++}
++{
++	if (/\$\$/) { rep = n } else { rep = 1 }
++	for (i = 0; i < rep; ++i) {
++		tmp = $0
++		gsub(/\$\$/, i, tmp)
++		gsub(/\$\#/, n, tmp)
++		gsub(/\$\*/, "$", tmp)
++		print tmp
++	}
++}
+--- linux-2.6.31.orig/drivers/md/unroll.pl	Wed Sep  9 22:13:59 2009
++++ /dev/null	Thu Jan  1 00:00:00 1970
+@@ -1,24 +0,0 @@
+-#!/usr/bin/perl
+-#
+-# Take a piece of C code and for each line which contains the sequence $$
+-# repeat n times with $ replaced by 0...n-1; the sequence $# is replaced
+-# by the unrolling factor, and $* with a single $
+-#
+-
+-($n) = @ARGV;
+-$n += 0;
+-
+-while ( defined($line = <STDIN>) ) {
+-    if ( $line =~ /\$\$/ ) {
+-	$rep = $n;
+-    } else {
+-	$rep = 1;
+-    }
+-    for ( $i = 0 ; $i < $rep ; $i++ ) {
+-	$tmp = $line;
+-	$tmp =~ s/\$\$/$i/g;
+-	$tmp =~ s/\$\#/$n/g;
+-	$tmp =~ s/\$\*/\$/g;
+-	print $tmp;
+-    }
+-}
