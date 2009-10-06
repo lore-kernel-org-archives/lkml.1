@@ -1,83 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZJFIVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbZJFITP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbZJFIVj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 04:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbZJFIVj
+	id S1756124AbZJFITP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 04:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755978AbZJFITO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 04:21:39 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53685 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753675AbZJFIVi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 04:21:38 -0400
-Date: Tue, 6 Oct 2009 10:12:58 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       "Wang, Shane" <shane.wang@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Cihula, Joseph" <joseph.cihula@intel.com>
-Subject: Re: [GIT PULL] x86/txt for v2.6.32
-Message-ID: <20091006081258.GB1469@ucw.cz>
-References: <20090928211745.GA2119@elf.ucw.cz> <4AC1AA61.8070408@intel.com> <20090929171318.GC14405@elf.ucw.cz> <20090929191951.18315e94@infradead.org> <037F493892196B458CD3E193E8EBAD4F01ED9FE3B1@pdsmsx502.ccr.corp.intel.com> <20090930065448.GB11652@elf.ucw.cz> <037F493892196B458CD3E193E8EBAD4F01ED9FE6E3@pdsmsx502.ccr.corp.intel.com> <20091003201959.GA16047@elf.ucw.cz> <20091003203619.GA27182@khazad-dum.debian.net> <ada4oqgp5qx.fsf@cisco.com>
+	Tue, 6 Oct 2009 04:19:14 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41710 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754335AbZJFITN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 04:19:13 -0400
+Content-Type: text/plain; charset="utf-8"
+Date: Tue, 06 Oct 2009 10:18:22 +0200
+From: "Ronny Egner" <RonnyEgner@gmx.de>
+Message-ID: <20091006081822.154790@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ada4oqgp5qx.fsf@cisco.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Question regarding Page Table size
+To: linux-kernel@vger.kernel.org
+X-Authenticated: #718584
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1+kafMeBYikSf8qSC/1F+5FCw0xhLeMhj9hvkyu8Z
+ DLTrlkOPvwr4cHlG7M6KybvhLdby2YqmnUaA== 
+Content-Transfer-Encoding: 8bit
+X-GMX-UID: es/4eUYLPTR+Fs/FOzIwuUY5c2tpZEtC
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-10-03 13:44:22, Roland Dreier wrote:
-> 
->  > > > So I modify the RAM content so that BIOS does not think measured
->  > > > environment existed before suspend?
-> 
->  > And it is ridiculously easy to pull off, too:
->  > http://www.engadget.com/2008/02/21/cold-boot-disk-encryption-attack-is-shockingly-effective/
->  > 
->  > Shows the attack being used to read sensitive keys, but you can use it also
->  > to *modify* system running state (it will be more difficult, as you need to
->  > remove and replace the RAM while on S3 instead of S5, but it should be
->  > doable by someone who knows what he is doing).
-> 
-> I believe the whole point of this TXT / S3 handling is that the resume
-> from S3 will then be able to detect that the contents of RAM have been
-> modified while the system was asleep.
+Dear Kernel gurus,
 
-...and you are able to read out any keys, etc. Maybe that's expected &
-ok, but Doc*/intel_txt.txt does not actually tell me what it protects
-against and is pretty much useless... making patches impossible to
-review.
+i have a simple question but until now i did not find an answer. I beg your apologize if my question is misplaced.
 
-So... what does txt protect?
 
-Data integrity only?
 
-Data privacy, too?
+So my question is:
 
-Who is it designed to protect against?
+"How much memory is needed in the kernel page table for a 
+process accessing a shared memory segment?"
 
-Remote attacker?
 
-Local user trying to subvert it?
+According to the information i have and found at the web the rule is:
 
-...and has soldering iron he's willing to use?
 
-...and has soldering iron, osciloscope and PCI analyzer he's willing to use?
+"4 Bytes per 4 KB referenced memory per process is allocated 
+in the page table"
 
-> TXT simply produces a reasonably trustworthy measurement of system
-> state.  If you modify RAM while the system is asleep, then you will not
-> be able to produce a measurement showing an unmodified system state.
 
-Well, actually I see some auditing to be done in proposed patches.
+However i found one note saying because shared memory is 
+referenced 8 Bytes are needed:
 
-									Pavel
+
+--- BEGIN QUOTE ---
+PageTables is memory to manage memory.
+
+Each entry takes 4 bytes. Each 4 Kb of virtual (not swap) 
+memory requires one PTE to manage. This also counts for 
+shared memory, as with shared memory there is one physical 
+segment, but each process has its own virtual memory which 
+maps to this segment.
+
+In Oracle’s case, assuming an SGA of 2 Gb, that is:
+
+524,288 pages * 8 bytes = 4 Mb per process
+
+--- END QUOTE ---
+(Source: http://www.pythian.com/news/741/pythian-goodies-free-memory-swap-oracle-and-everything)
+
+Until now i was not able to verify this information. So i am asking here
+for more information or perhaps a link.
+
+
+Where does the 8 byte in the calculation above come from?
+
+Taking the above example with a 2 GB shared memory segment the space 
+needed in the page table should be:
+
+ 524288 pages * 4 Bytes = 2 MB 
+     (for the process "owning" the shared memory segment)
+
+ PLUS
+
+ 524288 pages * 4 Bytes = 2 MB 
+     (for *every* process referencing the shared memory 
+      segment assuming the fact the shared memory segment 
+      is referenced completely)
+
+
+
+
+Could anybody please give me a hint?
+
+
+Thanks in advance
+
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ronny Egner
+-- 
+Ronny Egner
+RonnyEgner@gmx.de
+
