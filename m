@@ -1,143 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbZJFRBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbZJFRCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757734AbZJFRBj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 13:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756887AbZJFRBj
+	id S1757889AbZJFRCu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 13:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757672AbZJFRCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 13:01:39 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:61072 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751897AbZJFRBh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 13:01:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=nWXXTnhiEJmVwc9QS6H4bpKw5AwfprCdD9jOvsBqjKfdu/Dof8Mi+lIcSFvVDJ1eSL
-         AJL8h3RA2R5ciNZgZ1VqL7Nru8UHuxt9uzuSY4Inbkzj4Qezivmmytwb3I5VAMxu4ktz
-         VzrzHkmjgxBhpJAEF6+6W1CgrunHRgySvB6Xc=
-Message-ID: <4ACB77C8.9060007@gmail.com>
-Date: Tue, 06 Oct 2009 13:00:56 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 6 Oct 2009 13:02:49 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41453 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757562AbZJFRCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 13:02:48 -0400
+Date: Tue, 6 Oct 2009 19:02:18 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
+Subject: [PATCH v2][RFC] add MAP_UNLOCKED mmap flag
+Message-ID: <20091006170218.GM9832@redhat.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH v2 2/4] KVM: introduce "xinterface" API for external	interaction
- with guests
-References: <20091002201159.4014.33268.stgit@dev.haskins.net> <20091002201927.4014.29432.stgit@dev.haskins.net> <4AC8780D.1060800@redhat.com> <4ACA87D7.1080206@gmail.com> <4ACB0F3C.1000705@redhat.com> <4ACB46AD.8010405@gmail.com> <4ACB528D.6030408@gmail.com> <4ACB6F0E.4000407@redhat.com> <4ACB7794.5040308@gmail.com>
-In-Reply-To: <4ACB7794.5040308@gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigA277F302C50BD3075C41324A"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigA277F302C50BD3075C41324A
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+If application does mlockall(MCL_FUTURE) it is no longer possible to
+mmap file bigger than main memory or allocate big area of anonymous
+memory. Sometimes it is desirable to lock everything related to program
+execution into memory, but still be able to mmap big file or allocate
+huge amount of memory and allow OS to swap them on demand. MAP_UNLOCKED
+allows to do that.
 
-Gregory Haskins wrote:
-> Avi Kivity wrote:
->> On 10/06/2009 04:22 PM, Gregory Haskins wrote:
->>>>>>>> +
->>>>>>>> +static inline void
->>>>>>>> +_kvm_xinterface_release(struct kref *kref)
->>>>>>>> +{
->>>>>>>> +    struct kvm_xinterface *intf;
->>>>>>>> +    struct module *owner;
->>>>>>>> +
->>>>>>>> +    intf =3D container_of(kref, struct kvm_xinterface, kref);
->>>>>>>> +
->>>>>>>> +    owner =3D intf->owner;
->>>>>>>> +    rmb();
->>>>>>>>
->>>>>>>>
->>>>>>>>             =20
->>>>>>> Why rmb?
->>>>>>>
->>>>>>>           =20
->>>>>> the intf->ops->release() line may invalidate the intf pointer, so =
-we
->>>>>> want to ensure that the read completes before the release() is cal=
-led.
->>>>>>
->>>>>> TBH: I'm not 100% its needed, but I was being conservative.
->>>>>>
->>>>>>         =20
->>>>> rmb()s are only needed if an external agent can issue writes, other=
-wise
->>>>> you'd need one after every statement.
->>>>>       =20
->>>> I was following lessons learned here:
->>>>
->>>> http://lkml.org/lkml/2009/7/7/175
->>>>
->>>> Perhaps mb() or barrier() are more appropriate than rmb()?  I'm CC'i=
-ng
->>>> David Howells in case he has more insight.
->>>>     =20
->>> BTW: In case it is not clear, the rationale as I understand it is we
->>> worry about the case where one cpu reorders the read to be after the
->>> ->release(), and another cpu might grab the memory that was kfree()'d=
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+---
 
->>> within the ->release() and scribble something else on it before the r=
-ead
->>> completes.
->>>
->>> I know rmb() typically needs to be paired with wmb() to be correct, s=
-o
->>> you are probably right to say that the rmb() itself is not appropriat=
-e.
->>>   This problem in general makes my head hurt, which is why I said I a=
-m
->>> not 100% sure of what is required.  As David mentions, perhaps
->>> "smp_mb()" is more appropriate for this application.  I also speculat=
-e
->>> barrier() may be all that we need.
->>>   =20
->> barrier() is the operation for a compiler barrier.  But it's unneeded
->> here - unless the compiler can prove that ->release(intf) will not
->> modify intf->owner it is not allowed to move the access afterwards.  A=
-n
->> indirect function call is generally a barrier() since the compiler can=
-'t
->> assume memory has not been modified.
->>
->=20
-> You're logic
+v1->v2
+ - adding new flag to all archs
+ - fixing typo
 
-gak.  or "your logic" even.
-
-> seems reasonable to me.  I will defer to David, since he
-> brought up the issue with the similar logic originally.
->=20
-> Kind Regards,
-> -Greg
->=20
-
-
-
---------------enigA277F302C50BD3075C41324A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkrLd8gACgkQP5K2CMvXmqEvQwCgi1xB554e4BEkVAhERScFmtHz
-408An0ewLL73g+ZHN+UE1pzlIbfwwJw5
-=envK
------END PGP SIGNATURE-----
-
---------------enigA277F302C50BD3075C41324A--
+diff --git a/arch/alpha/include/asm/mman.h b/arch/alpha/include/asm/mman.h
+index 99c56d4..cfc51ac 100644
+--- a/arch/alpha/include/asm/mman.h
++++ b/arch/alpha/include/asm/mman.h
+@@ -30,6 +30,7 @@
+ #define MAP_NONBLOCK	0x40000		/* do not block on IO */
+ #define MAP_STACK	0x80000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x100000	/* create a huge page mapping */
++#define MAP_UNLOCKED	0x200000	/* force page unlocking */
+ 
+ #define MS_ASYNC	1		/* sync memory asynchronously */
+ #define MS_SYNC		2		/* synchronous memory sync */
+diff --git a/arch/mips/include/asm/mman.h b/arch/mips/include/asm/mman.h
+index a2250f3..c161e27 100644
+--- a/arch/mips/include/asm/mman.h
++++ b/arch/mips/include/asm/mman.h
+@@ -48,6 +48,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
+ 
+ /*
+  * Flags for msync
+diff --git a/arch/parisc/include/asm/mman.h b/arch/parisc/include/asm/mman.h
+index 9749c8a..4e8b9bf 100644
+--- a/arch/parisc/include/asm/mman.h
++++ b/arch/parisc/include/asm/mman.h
+@@ -24,6 +24,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
+ 
+ #define MS_SYNC		1		/* synchronous memory sync */
+ #define MS_ASYNC	2		/* sync memory asynchronously */
+diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+index d4a7f64..7d33f01 100644
+--- a/arch/powerpc/include/asm/mman.h
++++ b/arch/powerpc/include/asm/mman.h
+@@ -27,6 +27,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000		/* force page unlocking */
+ 
+ #ifdef __KERNEL__
+ #ifdef CONFIG_PPC64
+diff --git a/arch/sparc/include/asm/mman.h b/arch/sparc/include/asm/mman.h
+index c3029ad..f80d203 100644
+--- a/arch/sparc/include/asm/mman.h
++++ b/arch/sparc/include/asm/mman.h
+@@ -22,6 +22,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000		/* force page unlocking */
+ 
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
+diff --git a/arch/xtensa/include/asm/mman.h b/arch/xtensa/include/asm/mman.h
+index fca4db4..c62bcd8 100644
+--- a/arch/xtensa/include/asm/mman.h
++++ b/arch/xtensa/include/asm/mman.h
+@@ -55,6 +55,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
+ 
+ /*
+  * Flags for msync
+diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
+index 32c8bd6..59e0f29 100644
+--- a/include/asm-generic/mman.h
++++ b/include/asm-generic/mman.h
+@@ -12,6 +12,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000         /* force page unlocking */
+ 
+ #define MCL_CURRENT	1		/* lock all current mappings */
+ #define MCL_FUTURE	2		/* lock all future mappings */
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 73f5e4b..7c2abdb 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -985,6 +985,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+ 		if (!can_do_mlock())
+ 			return -EPERM;
+ 
++        if (flags & MAP_UNLOKED)
++                vm_flags &= ~VM_LOCKED;
++
+ 	/* mlock MCL_FUTURE? */
+ 	if (vm_flags & VM_LOCKED) {
+ 		unsigned long locked, lock_limit;
+--
+			Gleb.
