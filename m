@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932663AbZJFOFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932681AbZJFOHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932663AbZJFOFD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 10:05:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932624AbZJFOFD
+	id S932681AbZJFOHV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 10:07:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932641AbZJFOHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 10:05:03 -0400
-Received: from casper.infradead.org ([85.118.1.10]:41515 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932610AbZJFOFC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 10:05:02 -0400
-Date: Tue, 6 Oct 2009 07:04:52 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: Don't use the strict copy checks when branch profiling
- is in use
-Message-ID: <20091006070452.5e1fc119@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 6 Oct 2009 10:07:20 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57010 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932639AbZJFOHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 10:07:19 -0400
+Date: Tue, 6 Oct 2009 16:06:41 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH][RFC] add MAP_UNLOCKED mmap flag
+Message-ID: <20091006140641.GL9832@redhat.com>
+References: <20091006190938.126F.A69D9226@jp.fujitsu.com>
+ <20091006102136.GH9832@redhat.com>
+ <20091006192454.1272.A69D9226@jp.fujitsu.com>
+ <20091006103300.GI9832@redhat.com>
+ <2f11576a0910060510y401c1d5ax6f17135478d22899@mail.gmail.com>
+ <20091006121603.GK9832@redhat.com>
+ <1254837003.21044.283.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254837003.21044.283.camel@laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Oct 06, 2009 at 03:50:03PM +0200, Peter Zijlstra wrote:
+> On Tue, 2009-10-06 at 14:16 +0200, Gleb Natapov wrote:
+> > > No, I only think your case doesn't fit MC_FUTURE.
+> > > I haven't find any real benefit in this patch.
+> 
+> > I did. It allows me to achieve something I can't now. Steps you provide
+> > just don't fit my needs. I need all memory areas (current and feature) to be
+> > locked except one. Very big one. You propose to lock memory at some
+> > arbitrary point and from that point on all newly mapped memory areas will
+> > be unlocked. Don't you see it is different?
+> 
+> While true, it does demonstrates very sloppy programming. The proper fix
+> is to rework qemu to mlock what is needed.
+> 
+So you are saying for application (any application forget about qemu) to lock
+everything except one memory region it needs to provide its own memory allocation
+routings and its own dynamic linker? BTW the interface is not symmetric currently.
+Application may mmap single memory area locked (MAP_LOCKED), but can't do reverse
+if mlockall(MC_FUTURE) was called.
 
->From 3719b55e3091ad2cf8c2cfc358223c2b749ff3fd Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Tue, 6 Oct 2009 07:02:10 -0700
-Subject: [PATCH] x86: Don't use the strict copy checks when branch profiling is in use
+> I'm not sure encouraging mlockall() usage is a good thing. When using
+This is up to application programmer to decide whether he wants to use
+mlockall() or not. May be he has a good reason do so. As it stands the
+existing interface doesn't allow to do what I need without rewriting
+libc memory allocator and dynamic linking loader.
 
-The branch profiling creates very complex code for each if statement,
-to the point that gcc has trouble even analyzing something as simple
-as
+> resource locks one had better know what he's doing. mlockall() doesn't
+> promote caution.
+No need to patronize userspace developers. Lets provide them with
+flexible interface and if they'll use it inappropriately we will not use
+their software.
 
-if (count > 5)
-    count = 5;
-
-This then means that causing an error on code that gcc cannot analyze
-for copy_from_user() and co is not very productive.
-
-This patch excludes the strict copy checks in the case of branch
-profiling being enabled.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- arch/x86/Kconfig.debug |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index 1bd2e36..fb772b6 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -289,7 +289,7 @@ config OPTIMIZE_INLINING
- 
- config DEBUG_STRICT_USER_COPY_CHECKS
- 	bool "Strict copy size checks"
--	depends on DEBUG_KERNEL
-+	depends on DEBUG_KERNEL && !TRACE_BRANCH_PROFILING
- 	---help---
- 	  Enabling this option turns a certain set of sanity checks for user
- 	  copy operations into compile time failures.
--- 
-1.6.2.5
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+--
+			Gleb.
