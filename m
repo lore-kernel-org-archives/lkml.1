@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755129AbZJFHk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbZJFHpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755129AbZJFHk4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 03:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbZJFHk4
+	id S1756062AbZJFHpO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 03:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbZJFHpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 03:40:56 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:38406 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754168AbZJFHkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 03:40:55 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH v3] firmware: only allow EDD on x86
-Date: Tue,  6 Oct 2009 03:40:18 -0400
-Message-Id: <1254814818-15658-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.rc2
-In-Reply-To: <1254808627-3889-1-git-send-email-vapier@gentoo.org>
-References: <1254808627-3889-1-git-send-email-vapier@gentoo.org>
+	Tue, 6 Oct 2009 03:45:12 -0400
+Received: from mail.gmx.net ([213.165.64.20]:48493 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755373AbZJFHpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 03:45:10 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+sc+RarcWsXyij2GrL+KFeq0iT8FBk3eFLyTsT+e
+	8yPkAES8uVQBcb
+Subject: Re: complete IO hang since a few kernel revision
+From: Mike Galbraith <efault@gmx.de>
+To: Norbert Preining <preining@logic.at>
+Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091006071609.GB21772@gandalf.dynalias.org>
+References: <20091005011626.GH4335@gamma.logic.tuwien.ac.at>
+	 <4AC9607D.6050900@datenparkplatz.de>
+	 <20091005083308.GB5612@gandalf.dynalias.org>
+	 <1254813111.6293.22.camel@marge.simson.net>
+	 <20091006071609.GB21772@gandalf.dynalias.org>
+Content-Type: text/plain
+Date: Tue, 06 Oct 2009 09:44:20 +0200
+Message-Id: <1254815060.8758.14.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than have the EDD depend on !ia64 (and assuming that only ia64,
-x86, x86_64 will be including this Kconfig), have EDD depend on the only
-arches which can support this code.  This should allow all other arches
-to cleanly include the firmware Kconfig.
+On Tue, 2009-10-06 at 16:16 +0900, Norbert Preining wrote:
+> On Tue, 06 Oct 2009, Mike Galbraith wrote:
+> > I've tried unsuccessfully to reproduce this behavior.
+> > 
+> > Since it doesn't appear to be something readily reproducible, more
+> > information and/or some digging on your part may be needed.
+> 
+> Hm, how could I do that? I am fine with compiling some strange 
+> kernel options, or running some debugging task, but I don't have
+> and netconsole or serial console available.
 
-Also simplify the x86 string used by FIRMWARE_MEMMAP to match EDD.
+Locating when it started for you would be valuable, even if it's not
+pin-pointed such as a git bisection could do.  A bisection is the best
+bet to nail it down, but can be quite time consuming.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-v3
-	- use simpler x86 string pointed out by Takashi
+One thing you can try is to drop to a non-gui shell, and see it the
+symptom is reproducible without the GUI.  If it is, poke SysRq-W while
+things are thoroughly jammed up, and post the output+config here.
 
- drivers/firmware/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
-index ebb9e51..1b03ba1 100644
---- a/drivers/firmware/Kconfig
-+++ b/drivers/firmware/Kconfig
-@@ -7,7 +7,7 @@ menu "Firmware Drivers"
- 
- config EDD
- 	tristate "BIOS Enhanced Disk Drive calls determine boot disk"
--	depends on !IA64
-+	depends on X86
- 	help
- 	  Say Y or M here if you want to enable BIOS Enhanced Disk Drive
- 	  Services real mode BIOS calls to determine which disk
-@@ -28,7 +28,7 @@ config EDD_OFF
- 
- config FIRMWARE_MEMMAP
-     bool "Add firmware-provided memory map to sysfs" if EMBEDDED
--    default (X86_64 || X86_32)
-+    default X86
-     help
-       Add the firmware-provided (unmodified) memory map to /sys/firmware/memmap.
-       That memory map is used for example by kexec to set up parameter area
--- 
-1.6.5.rc2
+	-Mike
 
