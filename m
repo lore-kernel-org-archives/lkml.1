@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbZJFG5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbZJFHAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755088AbZJFG5B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 02:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbZJFG5A
+	id S1755073AbZJFHAw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 03:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbZJFHAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 02:57:00 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:18393 "EHLO mx1.redhat.com"
+	Tue, 6 Oct 2009 03:00:52 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:38335 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752437AbZJFG5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 02:57:00 -0400
-Date: Tue, 6 Oct 2009 12:25:46 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
-	generic guest and host communication
-Message-ID: <20091006065546.GA25410@amit-x200.redhat.com>
-References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <200910011228.30563.borntraeger@de.ibm.com> <20091005140535.GA31333@amit-x200.redhat.com> <200910060849.22462.borntraeger@de.ibm.com>
+	id S1750802AbZJFHAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 03:00:51 -0400
+Message-ID: <4ACAEB6D.2020601@redhat.com>
+Date: Tue, 06 Oct 2009 15:02:05 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910060849.22462.borntraeger@de.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: David Howells <dhowells@redhat.com>
+CC: linux-kernel@vger.kernel.org, Brian Behlendorf <behlendorf1@llnl.gov>,
+       Ben Woodard <bwoodard@llnl.gov>, Stable Team <stable@kernel.org>,
+       akpm@linux-foundation.org
+Subject: Re: [Patch v2] rwsem: fix rwsem_is_locked() bugs
+References: <20091005063919.3958.65581.sendpatchset@localhost.localdomain> <22214.1254748402@redhat.com>
+In-Reply-To: <22214.1254748402@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (Tue) Oct 06 2009 [08:49:22], Christian Borntraeger wrote:
-> Am Montag 05 Oktober 2009 16:05:35 schrieb Amit Shah:
-> > On (Thu) Oct 01 2009 [12:28:30], Christian Borntraeger wrote:
-> > > With the latest git kernel + your patch I sometmes get a completely
-> > > frozen console. In the dump there is
-> > >
-> > >     <3>virtio_console virtio0: output:id 68 is not a head!
-> > >
-> > > Seems that I can reproduce it with large amounts of output (find / for
-> > > example) Without your patch everything is fine.
-> > 
-> > Hey Christian,
-> > 
-> > Can you try this patch?
+David Howells wrote:
+> Amerigo Wang <amwang@redhat.com> wrote:
 > 
-> This version seems to work on s390. Thanks
+>> -	return (sem->activity != 0);
+>> +	return !(sem->activity == 0 && list_empty(&sem->wait_list));
+> 
+> This needs to be done in the opposite order with an smp_rmb() between[*], I
+> think, because the someone releasing the lock will first reduce activity to
+> zero, and then attempt to empty the list, so with your altered code as it
+> stands, you can get:
+> 
+> 	CPU 1				CPU 2
+> 	===============================	===============================
+> 	[sem is read locked, 1 queued writer]
+> 	-->up_read()
+> 	sem->activity--			-->rwsem_is_locked()
+> 	[sem->activity now 0]		sem->activity == 0 [true]
+> 					<interrupt>
+> 	-->__rwsem_do_wake()
+> 	sem->activity = -1
+> 	[sem->activity now !=0]
+> 	list_del()
+> 	[sem->wait_list now empty]	</interrupt>
+> 					list_empty(&sem->wait_list) [true]
+> 	wake_up_process()
+> 	<--__rwsem_do_wake()
+> 	<--up_read()
+> 	[sem is write locked]		return false [ie. sem is not locked]
+> 
+> In fact, I don't think even swapping things around addresses the problem.  You
+> do not prevent the state inside the sem changing under you whilst you try to
+> interpret it.
 
-Great; thanks for the confirmation.
+Hmm, right. I think we have to disable irq and preempt here, so
+probably spin_trylock_irq() is a good choice.
 
-The race I'm seeing could be due to some misconfiguration in qemu then.
+Since if we have locks, we don't need memory barriers any more, right?
 
-		Amit
+I just sent out the updated patch.
+
+Thanks!
