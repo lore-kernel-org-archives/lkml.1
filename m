@@ -1,157 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933225AbZJFUeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933228AbZJFUfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933225AbZJFUeB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 16:34:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933193AbZJFUeB
+	id S933228AbZJFUfa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 16:35:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933183AbZJFUfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 16:34:01 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:33478 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933200AbZJFUeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 16:34:00 -0400
-Date: Tue, 6 Oct 2009 16:32:26 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Justin Mattock <justinmattock@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: system gets stuck in a lock during boot
-Message-ID: <20091006203225.GC2631@redhat.com>
-References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com> <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com> <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com> <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com> <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com> <20091002211211.GA2633@redhat.com> <1254792249.13160.213.camel@gandalf.stny.rr.com>
+	Tue, 6 Oct 2009 16:35:30 -0400
+Received: from na3sys009aog114.obsmtp.com ([74.125.149.211]:38575 "EHLO
+	na3sys009aog114.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933055AbZJFUf2 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 16:35:28 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
+CC: "Austria, Winston" <Winston.Austria@lsi.com>,
+       "Mukker, Atul" <Atul.Mukker@lsi.com>
+Date: Tue, 6 Oct 2009 14:33:06 -0600
+Subject: [PATCH 6/12] scsi: megaraid_sas - report system pds to OS (part II)
+Thread-Topic: [PATCH 6/12] scsi: megaraid_sas - report system pds to OS
+ (part II)
+Thread-Index: Aco284muq21jjlUCRvWfDnAhnowdBQAABfzAAAAxetAAAF05EAAATiEQANttm3ADF65SQA==
+Message-ID: <4B6A08C587958942AA3002690DD4F8C35C6861C9@cosmail02.lsi.com>
+References: <4B6A08C587958942AA3002690DD4F8C35C51198F@cosmail02.lsi.com>
+ <4B6A08C587958942AA3002690DD4F8C35C512401@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C512401@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254792249.13160.213.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 05, 2009 at 09:24:09PM -0400, Steven Rostedt wrote:
-> On Fri, 2009-10-02 at 17:12 -0400, Jason Baron wrote:
-> 
-> > hi Justin,
-> > 
-> > I've been playing around with gcc '4.5' as well and hit a panic that
-> > looks very similar to what you've seen with stock 2.6.31 - I haven't
-> > seen it anywhere else. Anyways, it seems to be some sort of alignment
-> > issue with the 'struct ftrace_event_call'. I'm not sure yet if this is a
-> > compiler or kernel issue. But the following kernel patch fixes the issue
-> > for me. It would be interesting to verify if the patch also resolves the
-> > issue for you.
-> > 
-> > thanks,
-> > 
-> > -Jason
-> > 
-> > 
-> > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> > index 6ad76bf..0029af4 100644
-> > --- a/include/asm-generic/vmlinux.lds.h
-> > +++ b/include/asm-generic/vmlinux.lds.h
-> > @@ -164,6 +164,7 @@
-> >  	LIKELY_PROFILE()		       				\
-> >  	BRANCH_PROFILE()						\
-> >  	TRACE_PRINTKS()							\
-> > +	. = ALIGN(32);							\
-> >  	FTRACE_EVENTS()							\
-> >  	TRACE_SYSCALLS()
-> >  
-> > diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> > index a81170d..43f9f1e 100644
-> > --- a/include/linux/ftrace_event.h
-> > +++ b/include/linux/ftrace_event.h
-> > @@ -124,7 +124,7 @@ struct ftrace_event_call {
-> >  	atomic_t		profile_count;
-> >  	int			(*profile_enable)(struct ftrace_event_call *);
-> >  	void			(*profile_disable)(struct ftrace_event_call *);
-> > -};
-> > +} __attribute__((aligned(32)));
-> >  
-> >  #define MAX_FILTER_PRED		32
-> >  #define MAX_FILTER_STR_VAL	128
-> > diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> > index f64fbaa..4697fb6 100644
-> > --- a/include/trace/ftrace.h
-> > +++ b/include/trace/ftrace.h
-> > @@ -600,7 +600,7 @@ static int ftrace_raw_init_event_##call(void)				\
-> >  }									\
-> >  									\
-> >  static struct ftrace_event_call __used					\
-> > -__attribute__((__aligned__(4)))						\
-> > +__attribute__((__aligned__(32)))					\
-> >  __attribute__((section("_ftrace_events"))) event_##call = {		\
-> >  	.name			= #call,				\
-> >  	.system			= __stringify(TRACE_SYSTEM),		\
-> 
-> Are all alignments needed? Or just adding one might help. Or removing
-> the one directly above?
-> 
-> -- Steve
-> 
+RESUBMIT:
 
-So the problem I'm seeing is an oops on boot caused by the call->system pointer
-deference in event_create_dir(). The 'call' variable is of type 'struct
-ftrace_event_call'. 
+Add the system pds support part-II.  When OS issue inquiry, it will check driver's internal pd_list.
 
-What's going on is that the 'struct ftrace_event_call' is of size 168 bytes
-(sizeof(struct ftrace_event_call)) = 168 = 0xA8. However, in memory the
-structures are 16-byte aligned. Thus, the stride for walking through the
-pointers needs to be 176 (0xB0), but instead its 168 causing the oops.
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-I've only seen this issue while using gcc (GCC) 4.5.0 20090916, on a
-vanilla 2.6.31 kernel.
+---
+drivers/scsi/megaraid/megaraid_sas.c |   91 +++++++++++++++++++++++++----------
+ 1 file changed, 65 insertions(+), 26 deletions(-)
 
-That said, I'm not sure the compiler is doing the wrong thing here. The
-'struct ftrace_event_call' contains an embedded 'struct list_head' which
-is 16 bytes. According to the gcc docs, the aligned attribute, 'specifies a
-minimum alignment for the variable or structure field, measured in bytes'.
-Thus, at least according to the docs, gcc can increase the alignment of the
-'struct ftrace_event_call', from its original specification of 4, to 16. Even
-in the case where we are working corectly the structures are 8-byte aligned.
-
-Thus, I would reccommend the patch below as a preventive measure. Its
-the minimal patch I've found to resolve this issue. In general, if we
-are going to walk data structures embedded in a special elf section, I
-think the general rules needs to be to set the alignment to the power of
-two which is greater than or equal to the largest item in the structure.
-
-thanks,
-
--Jason
-
-Signed-off-by: Jason Baron <jbaron@redhat.com>
-
-
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index a81170d..7182f03 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -124,7 +124,10 @@ struct ftrace_event_call {
- 	atomic_t		profile_count;
- 	int			(*profile_enable)(struct ftrace_event_call *);
- 	void			(*profile_disable)(struct ftrace_event_call *);
--};
-+} __attribute__((aligned(16)));
-+
-+/* Align to the largest field in the data structure:
-+ * sizeof(struct list_head) = 16 */
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c	2009-09-14 05:49:20.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c	2009-09-14 05:56:01.000000000 -0400
+@@ -1115,24 +1115,76 @@ megasas_queue_command(struct scsi_cmnd *
+ 	return 0;
+ }
  
- #define MAX_FILTER_PRED		32
- #define MAX_FILTER_STR_VAL	128
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index f64fbaa..e344e81 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -600,7 +600,6 @@ static int ftrace_raw_init_event_##call(void)				\
- }									\
- 									\
- static struct ftrace_event_call __used					\
--__attribute__((__aligned__(4)))						\
- __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	.name			= #call,				\
- 	.system			= __stringify(TRACE_SYSTEM),		\
-
-
-
++static struct megasas_instance *megasas_lookup_instance(u16 host_no)
++{
++	int i;
++
++	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
++
++		if ((megasas_mgmt_info.instance[i]) &&
++		    (megasas_mgmt_info.instance[i]->host->host_no == host_no))
++			return megasas_mgmt_info.instance[i];
++	}
++
++	return NULL;
++}
++
+ static int megasas_slave_configure(struct scsi_device *sdev)
+ {
++	u16             pd_index = 0;
++	struct  megasas_instance *instance ;
++
++	instance = megasas_lookup_instance(sdev->host->host_no);
++
+ 	/*
+-	 * Don't export physical disk devices to the disk driver.
+-	 *
+-	 * FIXME: Currently we don't export them to the midlayer at all.
+-	 * 	  That will be fixed once LSI engineers have audited the
+-	 * 	  firmware for possible issues.
+-	 */
+-	if (sdev->channel < MEGASAS_MAX_PD_CHANNELS && sdev->type == TYPE_DISK)
++	* Don't export physical disk devices to the disk driver.
++	*
++	* FIXME: Currently we don't export them to the midlayer at all.
++	*        That will be fixed once LSI engineers have audited the
++	*        firmware for possible issues.
++	*/
++	if (sdev->channel < MEGASAS_MAX_PD_CHANNELS &&
++				sdev->type == TYPE_DISK) {
++		pd_index = (sdev->channel * MEGASAS_MAX_DEV_PER_CHANNEL) +
++								sdev->id;
++		if (instance->pd_list[pd_index].driveState ==
++						MR_PD_STATE_SYSTEM) {
++			blk_queue_rq_timeout(sdev->request_queue,
++				MEGASAS_DEFAULT_CMD_TIMEOUT * HZ);
++			return 0;
++		}
+ 		return -ENXIO;
++	}
+ 
+ 	/*
+-	 * The RAID firmware may require extended timeouts.
+-	 */
+-	if (sdev->channel >= MEGASAS_MAX_PD_CHANNELS)
+-		blk_queue_rq_timeout(sdev->request_queue,
+-				     MEGASAS_DEFAULT_CMD_TIMEOUT * HZ);
++	* The RAID firmware may require extended timeouts.
++	*/
++	blk_queue_rq_timeout(sdev->request_queue,
++		MEGASAS_DEFAULT_CMD_TIMEOUT * HZ);
++	return 0;
++}
++
++static int megasas_slave_alloc(struct scsi_device *sdev)
++{
++	u16             pd_index = 0;
++	struct megasas_instance *instance ;
++	instance = megasas_lookup_instance(sdev->host->host_no);
++	if ((sdev->channel < MEGASAS_MAX_PD_CHANNELS) &&
++				(sdev->type == TYPE_DISK)) {
++		/*
++		 * Open the OS scan to the SYSTEM PD
++		 */
++		pd_index =
++			(sdev->channel * MEGASAS_MAX_DEV_PER_CHANNEL) +
++			sdev->id;
++		if ((instance->pd_list[pd_index].driveState ==
++					MR_PD_STATE_SYSTEM) &&
++			(instance->pd_list[pd_index].driveType ==
++						TYPE_DISK)) {
++			return 0;
++		}
++		return -ENXIO;
++	}
+ 	return 0;
+ }
+ 
+@@ -1423,6 +1475,7 @@ static struct scsi_host_template megasas
+ 	.name = "LSI SAS based MegaRAID driver",
+ 	.proc_name = "megaraid_sas",
+ 	.slave_configure = megasas_slave_configure,
++	.slave_alloc = megasas_slave_alloc,
+ 	.queuecommand = megasas_queue_command,
+ 	.eh_device_reset_handler = megasas_reset_device,
+ 	.eh_bus_reset_handler = megasas_reset_bus_host,
+@@ -3455,20 +3508,6 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 	return error;
+ }
+ 
+-static struct megasas_instance *megasas_lookup_instance(u16 host_no)
+-{
+-	int i;
+-
+-	for (i = 0; i < megasas_mgmt_info.max_index; i++) {
+-
+-		if ((megasas_mgmt_info.instance[i]) &&
+-		    (megasas_mgmt_info.instance[i]->host->host_no == host_no))
+-			return megasas_mgmt_info.instance[i];
+-	}
+-
+-	return NULL;
+-}
+-
+ static int megasas_mgmt_ioctl_fw(struct file *file, unsigned long arg)
+ {
+ 	struct megasas_iocpacket __user *user_ioc =
