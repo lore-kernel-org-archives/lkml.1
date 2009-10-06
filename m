@@ -1,79 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933348AbZJFVCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933353AbZJFVEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933348AbZJFVCO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 17:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933273AbZJFVCN
+	id S933353AbZJFVEH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 17:04:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933053AbZJFVEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 17:02:13 -0400
-Received: from bu3sch.de ([62.75.166.246]:33282 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933206AbZJFVCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 17:02:13 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Tilman Schmidt <tilman@imap.cc>
-Subject: Re: [PATCH RFC] isdn/capi: fix up CAPI subsystem workaround locking a bit
-Date: Tue, 6 Oct 2009 23:01:22 +0200
-User-Agent: KMail/1.9.9
-Cc: i4ldeveloper@listserv.isdn4linux.de, Carsten Paeth <calle@calle.de>,
-       Karsten Keil <isdn@linux-pingi.de>, Karsten Keil <keil@b1-systems.de>,
-       Armin Schindler <armin@melware.de>, isdn4linux@listserv.isdn4linux.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20091003120657.2228911186C@xenon.ts.pxnet.com> <200910052324.09992.mb@bu3sch.de> <4ACB83F7.9040500@imap.cc>
-In-Reply-To: <4ACB83F7.9040500@imap.cc>
-X-Move-Along: Nothing to see here. No, really... Nothing.
+	Tue, 6 Oct 2009 17:04:06 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:53114 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932812AbZJFVEF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 17:04:05 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910062301.24572.mb@bu3sch.de>
+In-Reply-To: <20091006133456.5177a32a.akpm@linux-foundation.org>
+References: <1254332153-23493-1-git-send-email-khilman@deeprootsystems.com>
+	 <200909302321.33088.rjw@sisk.pl>
+	 <20091006133456.5177a32a.akpm@linux-foundation.org>
+Date: Tue, 6 Oct 2009 14:02:51 -0700
+Message-ID: <636c5030910061402x5a1e6f99i9cebf098c37147ee@mail.gmail.com>
+Subject: Re: [PATCH] CPUidle: always return with interrupts enabled
+From: Kevin Hilman <khilman@deeprootsystems.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, venkatesh.pallipadi@intel.com,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, lenb@kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 October 2009 19:52:55 Tilman Schmidt wrote:
-> > Yeah, this sledgehammer lock did fix the crash while leaving the old non-list-head
-> > queue in place (it should still be there today).
-> 
-> That is not the case. In mainline, your second patch was applied on
-> top of the first one, so there is now struct list_head ackqueue and
-> spinlock_t ackqlock as well as static DEFINE_SPINLOCK(workaround_lock).
+On Tue, Oct 6, 2009 at 1:34 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 30 Sep 2009 23:21:33 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+>
+>> On Wednesday 30 September 2009, Kevin Hilman wrote:
+>> > In the case where cpuidle_idle_call() returns before changing state
+>> > due to a need_resched(), it was returning with IRQs disabled.
+>> >
+>> > This patch ensures IRQs are (re)enabled before returning.
+>>
+>> Venki, any comments on this?
+>
+> Rigor mortis is setting in on this one.
+>
+> Venki's most recent linux-acpi email was on July 31.
+>
+>> > Reported-by: Hemanth V <hemanthv@ti.com>
+>> > Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+>> > ---
+>> >  drivers/cpuidle/cpuidle.c |    5 ++++-
+>> >  1 files changed, 4 insertions(+), 1 deletions(-)
+>> >
+>> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> > index ad41f19..12fdd39 100644
+>> > --- a/drivers/cpuidle/cpuidle.c
+>> > +++ b/drivers/cpuidle/cpuidle.c
+>> > @@ -76,8 +76,11 @@ static void cpuidle_idle_call(void)
+>> >  #endif
+>> >     /* ask the governor for the next state */
+>> >     next_state = cpuidle_curr_governor->select(dev);
+>> > -   if (need_resched())
+>> > +   if (need_resched()) {
+>> > +           local_irq_enable();
+>> >             return;
+>> > +   }
+>> > +
+>> >     target_state = &dev->states[next_state];
+>> >
+>> >     /* enter the state and update stats */
+>
+> The patch seems correct to me.  The code is hopelessly poorly
+> documented as per usual, but other paths in that function, including
+> the call to target_state->enter() (which devolves to default_idle) also
+> enable interrupts.
+>
+> Kevin, the changelog is not good.  It tells us what was wrong with the
+> code but does not describe the user-visible effects of the bug.
 
-Ok, that's fine, too.
-It's just that the ackqlock wasn't enough to fix it, as I said. It just shrinks the window.
+The idle path assumes that the platform specific idle code returns
+with interrupts enabled (although this too is undocumented AFAICT) and
+on ARM we have a WARN_ON(!(irqs_disabled()) when returning from the
+idle loop, so the user-visible effects were only a warning since
+interrupts were eventually re-enabled later.
 
-> > I still have the device somewhere. If you want to have it, I can blow off the
-> > dust and send it to you. If you don't want it, I'll throw it away soon.
-> > I'd really like to send it to you to get rid of it. ;)
-> 
-> Feel free to do so. I'll send you my snailmail address by PM. I'm
-> making no promises about when I might get around to actually testing
-> it, though.
+> I'm unable to find any bug report from Hemanth so I'm all in the dark.
+>
+> Your cc to linux-omap makes me suspect that <whatever the problem was>
+> was exhibited on a non-x86 platform, under some circumstances.  Perhaps
+> that explains (for unknown reasons) why <whatever the problem was> was
+> not observed on x86.  But I'm totally in the dark and grasping for
+> clues and have no way of determining (for example) whether we should
+> backport the fix to earlier kernels.
+>
+> Please send along the additional information?
+>
 
-Thanks, I'll get it to the post office by the end of the week.
+On x86, this same problem exists, but there is no WARN_ON() to detect
+it.  As on ARM, the interrupts are eventually re-enabled, so I'm not
+sure of any actual bugs triggered by this.  It's primarily a
+correctness/consistency fix.
 
-> >> Can anyone shed some light on 
-> >> what that device is doing differently from other ISDN cards?
-> > 
-> > Well, it's a combined ISDN/DSL card, but I never used the ISDN part. So the crash
-> > happened while transferring data over the DSL link.
-> 
-> DSL over CAPI? Strange.
+Thanks,
 
-Yeah, dunno. They did it that way... Pretty weird.
-
-> > The vendor driver is closed source with an open wrapper (like nvidia). It's a pretty
-> > crappy unmaintained piece of software, but it ran stable with some patches applied
-> > to the driver and the workaround-lock patch to the capi stack.
-> 
-> O dear. I wonder what I'll find.
-
-ftp://ftp.avm.de/cardware/fritzcrd.dsl/linux/suse.93/fcdsl-suse93-3.11-07.tar.gz
-
-This is the driver that I used. It needs some modification to compile on a recent kernel.
-Unfortunately I don't have the patch anymore. But it was rather trivial. It renamed some functions,
-because they clashed with others and did some other things I don't remember.
-Remember to get a bucket before looking at the code, because you will need it. ;)
-
--- 
-Greetings, Michael.
+Kevin
