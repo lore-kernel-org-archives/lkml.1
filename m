@@ -1,48 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932826AbZJFOgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932846AbZJFOlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932826AbZJFOgl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 10:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932818AbZJFOgk
+	id S932846AbZJFOlt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 10:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932722AbZJFOls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 10:36:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35604 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932813AbZJFOgj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 10:36:39 -0400
-Date: Tue, 6 Oct 2009 07:35:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-cc: Valdis.Kletnieks@vt.edu, Tomasz Chmielewski <mangoo@wpkg.org>,
-       Daniel J Blueman <daniel.blueman@gmail.com>,
-       Byron Stanoszek <bstanoszek@comtime.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
-In-Reply-To: <b6a2187b0910052312o662642b2teded3d19548b9151@mail.gmail.com>
-Message-ID: <alpine.LFD.2.01.0910060731190.3432@localhost.localdomain>
-References: <Pine.LNX.4.64.0910052334480.17655@boston.corp.fedex.com>  <alpine.LFD.2.01.0910051110200.3432@localhost.localdomain>  <b6a2187b0910051715y4ee63503y148ba2d7e24cad8e@mail.gmail.com>  <alpine.LFD.2.01.0910051727420.3432@localhost.localdomain>
- <b6a2187b0910052312o662642b2teded3d19548b9151@mail.gmail.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Oct 2009 10:41:48 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:38597 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932703AbZJFOls (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 10:41:48 -0400
+Message-Id: <20091006143727.868480435@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Tue, 06 Oct 2009 10:37:28 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [patch 0/4] DEBUG_RCU_HEAD: Debug and fix racy call_rcu() users
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue,  6 Oct 2009 14:40:34 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here is a patchset, done on 2.6.30.9, which permits to detect and fix racy
+call_rcu() users.
 
+Fix for vunmap, which happens to be one of them, is included.
 
-On Tue, 6 Oct 2009, Jeff Chua wrote:
-> 
-> First, have to compile gcc so that it can compile 64 bit kernel. That's a
-> tough one!
+Note that some false-positives might come up when call_rcu() is called on
+uninitialized struct rcu_head. The solution is, surprisingly enough, to
+initialize them.
 
-It's supposed to be easier these days, but I guess distros don't compile 
-in support for 64-bit mode by default. Just using another machine may be 
-the simplest approach, if you have any 64-bit distro around.
+Thanks,
 
-		Linus
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
