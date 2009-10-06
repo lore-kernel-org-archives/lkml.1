@@ -1,163 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933497AbZJFVrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758410AbZJFV6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933497AbZJFVrw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 17:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933418AbZJFVrv
+	id S1758410AbZJFV6z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 17:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757703AbZJFV6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 17:47:51 -0400
-Received: from mga09.intel.com ([134.134.136.24]:5084 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933280AbZJFVru convert rfc822-to-8bit (ORCPT
+	Tue, 6 Oct 2009 17:58:54 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:41240 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752766AbZJFV6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 17:47:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,515,1249282800"; 
-   d="scan'208";a="557119691"
-From: "Kay, Allen M" <allen.m.kay@intel.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "chris@sous-sol.org" <chris@sous-sol.org>
-Date: Tue, 6 Oct 2009 14:47:03 -0700
-Subject: RE: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
-Thread-Topic: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
-Thread-Index: AcpGzUsjZj+ktnSRSYK/HqBRdwJsSgAAEy6Q
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E3022474@orsmsx505.amr.corp.intel.com>
-References: <1254861226-18376-1-git-send-email-allen.m.kay@intel.com>
- <4ACBB8B0.9030102@goop.org>
-In-Reply-To: <4ACBB8B0.9030102@goop.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 6 Oct 2009 17:58:54 -0400
+X-Trace: 271005612/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.109.156/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.109.156
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlsFAA9ay0pPRW2c/2dsb2JhbACBUtMLhCoEgVM
+X-IronPort-AV: E=Sophos;i="4.44,515,1249254000"; 
+   d="scan'208";a="271005612"
+Date: Tue, 6 Oct 2009 22:58:03 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Jan Beulich <JBeulich@novell.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] adjust gfp mask passed on nested vmalloc() invocation
+In-Reply-To: <4AC9E38E0200007800017F57@vpn.id2.novell.com>
+Message-ID: <Pine.LNX.4.64.0910062241500.21409@sister.anvils>
+References: <4AC9E38E0200007800017F57@vpn.id2.novell.com>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's pretty ugly; duplicate externs are pretty bad idea.  Why not just
-> include the right header?  If its because its asm-x86, I'm happy to move
-> the definitions to somewhere more common.
+On Mon, 5 Oct 2009, Jan Beulich wrote:
 
-The main reason is lack of access of xen header files in driver/pci directory.  If we can move xen header files to include/asm-x86, then the ugliness will go away.
+> - fix a latent bug resulting from blindly or-ing in __GFP_ZERO, since
+>   the combination of this and __GFP_HIGHMEM (possibly passed into the
+>   function) is forbidden in interrupt context
+> - avoid wasting more precious resources (DMA or DMA32 pools), when
+>   being called through vmalloc_32{,_user}()
+> - explicitly allow using high memory here even if the outer allocation
+>   request doesn't allow it, unless is collides with __GFP_ZERO
+> 
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Specifically, I would like to access header file containing xen_domain_type and associated enum definition from driver/pci directory.
+I thought vmalloc.c was a BUG_ON(in_interrupt()) zone?
+The locking is all spin_lock stuff, not spin_lock_irq stuff.
+That's probably why your "bug" has remained "latent".
 
------Original Message-----
-From: Jeremy Fitzhardinge [mailto:jeremy@goop.org] 
-Sent: Tuesday, October 06, 2009 2:38 PM
-To: Kay, Allen M
-Cc: linux-kernel@vger.kernel.org; linux-pci@vger.kernel.org; jbarnes@virtuousgeek.org; matthew@wil.cx; chris@sous-sol.org
-Subject: Re: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
+Using HIGHMEM for internal arrays looks reasonable to me; but if
+__GFP_ZERO were a problem, wouldn't it be much cleaner to skip the
+"unless it collides" and #ifdef CONFIG_HIGHMEM !in_interrupt() stuff,
+just memset the array returned from __vmalloc_node()?
 
-On 10/06/09 13:33, Allen Kay wrote:
-> Changes from v3 to v4:
->         - enable ACS only if iommu is enabled or if kernel is running as xen dom0
->         - changed xen_domain_type from enum to #define to allow it to be used
->           in pci/probe.c and to avoid excessive changes to code structure.
->   
+Hugh
 
-Why can't it be used as an enum?
-
-> +++ b/drivers/pci/pci.h
-> @@ -311,4 +311,14 @@ static inline int pci_resource_alignment(struct pci_dev *dev,
->  	return resource_alignment(res);
->  }
+> 
+> ---
+>  mm/vmalloc.c |   12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> --- linux-2.6.32-rc3/mm/vmalloc.c	2009-10-05 11:59:56.000000000 +0200
+> +++ 2.6.32-rc3-vmalloc-nested-gfp/mm/vmalloc.c	2009-10-05 08:40:36.000000000 +0200
+> @@ -1410,6 +1410,7 @@ static void *__vmalloc_area_node(struct 
+>  {
+>  	struct page **pages;
+>  	unsigned int nr_pages, array_size, i;
+> +	gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
 >  
-> +extern void pci_enable_acs(struct pci_dev *dev);
-> +
-> +#ifdef CONFIG_DMAR
-> +extern int iommu_detected;
+>  	nr_pages = (area->size - PAGE_SIZE) >> PAGE_SHIFT;
+>  	array_size = (nr_pages * sizeof(struct page *));
+> @@ -1417,13 +1418,16 @@ static void *__vmalloc_area_node(struct 
+>  	area->nr_pages = nr_pages;
+>  	/* Please note that the recursion is strictly bounded. */
+>  	if (array_size > PAGE_SIZE) {
+> -		pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
+> +#ifdef CONFIG_HIGHMEM
+> +		/* See the comment in prep_zero_page(). */
+> +		if (!in_interrupt())
+> +			nested_gfp |= __GFP_HIGHMEM;
 > +#endif
-> +
-> +#ifdef CONFIG_XEN
-> +extern int xen_domain_type;
-> +#endif
->   
-
-That's pretty ugly; duplicate externs are pretty bad idea.  Why not just
-include the right header?  If its because its asm-x86, I'm happy to move
-the definitions to somewhere more common.
-
-> +
->  #endif /* DRIVERS_PCI_H */
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 8105e32..32703c7 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -1014,6 +1014,17 @@ static void pci_init_capabilities(struct pci_dev *dev)
->  
->  	/* Single Root I/O Virtualization */
->  	pci_iov_init(dev);
-> +
-> +	/* Enable ACS P2P upstream forwarding if HW iommu is detected */
-> +	if (iommu_detected)
-> +		pci_enable_acs(dev);
-> +
-> +#ifdef CONFIG_XEN
-> +	/* HW iommu is not visible in xen dom0 */
-> +	if (xen_domain_type)
-> +		pci_enable_acs(dev);
-> +#endif
->   
-
-The idea is that you're supposed to use xen_domain() to test for
-Xenness; it expands to a constant 0 if Xen isn't configured, so there's
-no need to use #ifdefs.
-
-> +
->  }
->  
->  void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
-> diff --git a/include/linux/dmar.h b/include/linux/dmar.h
-> index 69a6fba..d13c21c 100644
-> --- a/include/linux/dmar.h
-> +++ b/include/linux/dmar.h
-> @@ -196,7 +196,7 @@ extern irqreturn_t dmar_fault(int irq, void *dev_id);
->  extern int arch_setup_dmar_msi(unsigned int irq);
->  
->  #ifdef CONFIG_DMAR
-> -extern int iommu_detected, no_iommu;
-> +extern int no_iommu;
->  extern struct list_head dmar_rmrr_units;
->  struct dmar_rmrr_unit {
->  	struct list_head list;		/* list of rmrr units	*/
-> diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-> index dd0bed4..d798770 100644
-> --- a/include/linux/pci_regs.h
-> +++ b/include/linux/pci_regs.h
-> @@ -502,6 +502,7 @@
->  #define PCI_EXT_CAP_ID_VC	2
->  #define PCI_EXT_CAP_ID_DSN	3
->  #define PCI_EXT_CAP_ID_PWR	4
-> +#define PCI_EXT_CAP_ID_ACS	13
->  #define PCI_EXT_CAP_ID_ARI	14
->  #define PCI_EXT_CAP_ID_ATS	15
->  #define PCI_EXT_CAP_ID_SRIOV	16
-> @@ -662,4 +663,16 @@
->  #define  PCI_SRIOV_VFM_MO	0x2	/* Active.MigrateOut */
->  #define  PCI_SRIOV_VFM_AV	0x3	/* Active.Available */
->  
-> +/* Access Control Service */
-> +#define PCI_ACS_CAP		0x04	/* ACS Capability Register */
-> +#define  PCI_ACS_SV		0x01	/* Source Validation */
-> +#define  PCI_ACS_TB		0x02	/* Translation Blocking */
-> +#define  PCI_ACS_RR		0x04	/* P2P Request Redirect */
-> +#define  PCI_ACS_CR		0x08	/* P2P Completion Redirect */
-> +#define  PCI_ACS_UF		0x10	/* Upstream Forwarding */
-> +#define  PCI_ACS_EC		0x20	/* P2P Egress Control */
-> +#define  PCI_ACS_DT		0x40	/* Direct Translated P2P */
-> +#define PCI_ACS_CTRL		0x06	/* ACS Control Register */
-> +#define PCI_ACS_EGRESS_CTL_V	0x08	/* ACS Egress Control Vector */
-> +
->  #endif /* LINUX_PCI_REGS_H */
->   
-
-NAK
-
-    J
+> +		pages = __vmalloc_node(array_size, nested_gfp,
+>  				PAGE_KERNEL, node, caller);
+>  		area->flags |= VM_VPAGES;
+>  	} else {
+> -		pages = kmalloc_node(array_size,
+> -				(gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO,
+> -				node);
+> +		pages = kmalloc_node(array_size, nested_gfp, node);
+>  	}
+>  	area->pages = pages;
+>  	area->caller = caller;
