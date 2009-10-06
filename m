@@ -1,53 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932896AbZJFOmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932883AbZJFOmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932896AbZJFOmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 10:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932868AbZJFOmD
+	id S932883AbZJFOmG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 10:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932852AbZJFOmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 10:42:03 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:38714 "EHLO smtp.polymtl.ca"
+	Tue, 6 Oct 2009 10:42:05 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:38726 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932862AbZJFOmC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 10:42:02 -0400
-Message-Id: <20091006144040.716440112@polymtl.ca>
+	id S932862AbZJFOmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 10:42:04 -0400
+Message-Id: <20091006144043.378971387@polymtl.ca>
 References: <20091006143727.868480435@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 Oct 2009 10:37:31 -0400
+Date: Tue, 06 Oct 2009 10:37:32 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 3/4] markers call_rcu usage: initialize rcu_head structures
-Content-Disposition: inline; filename=marker-fix-rcu.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue,  6 Oct 2009 14:40:42 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, cl@linux-foundation.org,
+       linux-mm@kvack.org
+Subject: [patch 4/4] vunmap: Fix racy use of rcu_head
+Content-Disposition: inline; filename=vunmap-fix-teardown.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue,  6 Oct 2009 14:40:45 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Initialize rcu_head structures before passing them to call_rcu() to eliminate
-false positives in DEBUG_RCU_HEAD.
+Repetitive use of vmap/vunmap on the same address triggers this bug.
+
+Simplest fix: directly kfree the data structure rather than doing it lazily.
+
+Impact:
+(-) slight slowdown on vunmap
+(+) stop messing up rcu callback lists ;)
+
+Caught it with DEBUG_RCU_HEAD, running LTTng armall/disarmall in loops.
+Immediate values (with breakpoint-ipi scheme) are still using vunmap.
+
+------------[ cut here ]------------
+WARNING: at kernel/rcutree.c:1199 __call_rcu+0x181/0x190()
+Hardware name: X7DAL
+Modules linked in: loop ltt_statedump ltt_userspace_event ipc_tr]
+Pid: 4527, comm: ltt-armall Not tainted 2.6.30.9-trace #30
+Call Trace:
+ [<ffffffff8027b181>] ? __call_rcu+0x181/0x190
+ [<ffffffff8027b181>] ? __call_rcu+0x181/0x190
+ [<ffffffff8023a6a9>] ? warn_slowpath_common+0x79/0xd0
+ [<ffffffff802b4890>] ? rcu_free_va+0x0/0x10
+ [<ffffffff8027b181>] ? __call_rcu+0x181/0x190
+ [<ffffffff802b5298>] ? __purge_vmap_area_lazy+0x1a8/0x1e0
+ [<ffffffff802b59d4>] ? free_unmap_vmap_area_noflush+0x74/0x80
+ [<ffffffff802b5a0e>] ? remove_vm_area+0x2e/0x80
+ [<ffffffff802b5b35>] ? __vunmap+0x45/0xf0
+ [<ffffffffa002e826>] ? ltt_statedump_start+0x7b6/0x820 [ltt_sta]
+ [<ffffffff8068978a>] ? arch_imv_update+0x16a/0x2f0
+ [<ffffffff8027dd13>] ? imv_update_range+0x53/0xa0
+ [<ffffffff8026235b>] ? _module_imv_update+0x4b/0x60
+ [<ffffffff80262385>] ? module_imv_update+0x15/0x30
+ [<ffffffff80280049>] ? marker_probe_register+0x149/0xb90
+ [<ffffffff8040c8e0>] ? ltt_vtrace+0x0/0x8c0
+ [<ffffffff80409330>] ? ltt_marker_connect+0xd0/0x150
+ [<ffffffff8040f8dc>] ? marker_enable_write+0xec/0x120
+ [<ffffffff802c6cb8>] ? __dentry_open+0x268/0x350
+ [<ffffffff80280b2c>] ? marker_probe_cb+0x9c/0x170
+ [<ffffffff80280b2c>] ? marker_probe_cb+0x9c/0x170
+ [<ffffffff802c973b>] ? vfs_write+0xcb/0x170
+ [<ffffffff802c9984>] ? sys_write+0x64/0x130
+ [<ffffffff8020beeb>] ? system_call_fastpath+0x16/0x1b
+---[ end trace ef92443e716fa199 ]---
+------------[ cut here ]------------
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: cl@linux-foundation.org
 CC: mingo@elte.hu
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: linux-mm@kvack.org
 CC: akpm@linux-foundation.org
 ---
- kernel/marker.c |    1 +
- 1 file changed, 1 insertion(+)
+ mm/vmalloc.c |   18 ++----------------
+ 1 file changed, 2 insertions(+), 16 deletions(-)
 
-Index: linux-2.6-lttng/kernel/marker.c
+Index: linux-2.6-lttng/mm/vmalloc.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/marker.c	2009-10-06 09:16:32.000000000 -0400
-+++ linux-2.6-lttng/kernel/marker.c	2009-10-06 09:22:07.000000000 -0400
-@@ -451,6 +451,7 @@ static struct marker_entry *add_marker(c
- 	e->format_allocated = 0;
- 	e->refcount = 0;
- 	e->rcu_pending = 0;
-+	INIT_RCU_HEAD(&e->rcu);
- 	hlist_add_head(&e->hlist, head);
- 	return e;
+--- linux-2.6-lttng.orig/mm/vmalloc.c	2009-10-06 09:37:04.000000000 -0400
++++ linux-2.6-lttng/mm/vmalloc.c	2009-10-06 09:37:56.000000000 -0400
+@@ -417,13 +417,6 @@ overflow:
+ 	return va;
  }
+ 
+-static void rcu_free_va(struct rcu_head *head)
+-{
+-	struct vmap_area *va = container_of(head, struct vmap_area, rcu_head);
+-
+-	kfree(va);
+-}
+-
+ static void __free_vmap_area(struct vmap_area *va)
+ {
+ 	BUG_ON(RB_EMPTY_NODE(&va->rb_node));
+@@ -431,7 +424,7 @@ static void __free_vmap_area(struct vmap
+ 	RB_CLEAR_NODE(&va->rb_node);
+ 	list_del_rcu(&va->list);
+ 
+-	call_rcu(&va->rcu_head, rcu_free_va);
++	kfree(va);
+ }
+ 
+ /*
+@@ -757,13 +750,6 @@ static struct vmap_block *new_vmap_block
+ 	return vb;
+ }
+ 
+-static void rcu_free_vb(struct rcu_head *head)
+-{
+-	struct vmap_block *vb = container_of(head, struct vmap_block, rcu_head);
+-
+-	kfree(vb);
+-}
+-
+ static void free_vmap_block(struct vmap_block *vb)
+ {
+ 	struct vmap_block *tmp;
+@@ -778,7 +764,7 @@ static void free_vmap_block(struct vmap_
+ 	BUG_ON(tmp != vb);
+ 
+ 	free_unmap_vmap_area_noflush(vb->va);
+-	call_rcu(&vb->rcu_head, rcu_free_vb);
++	kfree(vb);
+ }
+ 
+ static void *vb_alloc(unsigned long size, gfp_t gfp_mask)
 
 -- 
 Mathieu Desnoyers
