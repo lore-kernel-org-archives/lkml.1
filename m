@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933034AbZJFSSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932949AbZJFSRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933034AbZJFSSJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 14:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933010AbZJFSSI
+	id S932949AbZJFSRv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 14:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756449AbZJFSRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 14:18:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59590 "EHLO mx3.mail.elte.hu"
+	Tue, 6 Oct 2009 14:17:50 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:39903 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933011AbZJFSSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 14:18:07 -0400
-Date: Tue, 6 Oct 2009 20:16:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32-rc3
-Message-ID: <20091006181637.GA25732@elte.hu>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <20091006153632.GA29795@elte.hu> <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain> <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain> <4ACB7B4D.8080203@s5r6.in-berlin.de>
+	id S1757171AbZJFSRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 14:17:50 -0400
+Date: Tue, 6 Oct 2009 20:17:13 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND][PATCH linux-2.6-block#for-linus]  Seperate read and
+	write statistics of in_flight requests v2
+Message-ID: <20091006181713.GC5216@kernel.dk>
+References: <200910061855.48502.knikanth@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4ACB7B4D.8080203@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200910061855.48502.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-> Linus Torvalds wrote:
-> > So how about this?
-> > 
-> > It changes how CONFIG_LOCALVERSION_AUTO works, in the following trivial 
-> > way:
-> > 
-> >  - if it is set, things work the way they always have, and you get a 
-> >    extended kernel release like
-> > 
-> > 	2.6.32-rc3-00052-g0eca52a-dirty
-> > 
-> >  - but if it is _not_ set,
-> [...]
-> >    we append just "+", so you get a version number like
-> > 
-> > 	2.6.32-rc3+
-> [...]
-> > The "+" could be anything else, of course. The diff is pretty obvious, you 
-> > can argue about exactly _what_ you'd like to see as a suffix for "and then 
-> > some".
+On Tue, Oct 06 2009, Nikanth Karthikesan wrote:
+> [Sorry, resending as the previous mail was word-wrapped]
 > 
-> The "+" suffix is already in informal use with a different meaning. 
-> It's customary to write "For feature XY, you need kernel 2.6.31+" as a 
-> shorthand for "kernel 2.6.31 or any later release".
+> Commit a9327cac440be4d8333bba975cbbf76045096275 added seperate read
+> and write statistics of in_flight requests. And exported the number
+> of read and write requests in progress seperately through sysfs.
+> 
+> But  Corrado Zoccolo <czoccolo@gmail.com> reported getting strange
+> output from "iostat -kx 2". Global values for service time and
+> utilization were garbage. For interval values, utilization was always
+> 100%, and service time is higher than normal.
+> 
+> So this was reverted by commit 0f78ab9899e9d6acb09d5465def618704255963b
+> 
+> The problem was in part_round_stats_single(), I missed the following:
+>         if (now == part->stamp)
+>                 return;
+> 
+> -       if (part->in_flight) {
+> +       if (part_in_flight(part)) {
+>                 __part_stat_add(cpu, part, time_in_queue,
+>                                 part_in_flight(part) * (now - part->stamp));
+>                 __part_stat_add(cpu, part, io_ticks, (now - part->stamp));
+> 
+> With this chunk included, the reported regression gets fixed.
 
-'+' is also informally used to denote addition and a whole ton of other 
-things. (and likewise all other ASCII characters)
+Thanks, applied.
 
-The primary context in where it's used, uname output and "I used kernel 
-v2.6.31+" statements is pretty unambigous i think.
+-- 
+Jens Axboe
 
-	Ingo
