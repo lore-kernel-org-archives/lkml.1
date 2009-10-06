@@ -1,196 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbZJFFrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbZJFFxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756355AbZJFFrb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 01:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbZJFFrb
+	id S1756307AbZJFFxJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 01:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbZJFFxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 01:47:31 -0400
-Received: from bc.sympatico.ca ([209.226.175.184]:65228 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756325AbZJFFr3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 01:47:29 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAD9yykpMROOX/2dsb2JhbACBUdFRgiiCAgQ
-Date: Tue, 6 Oct 2009 01:46:18 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: Is RCU_PREEMPT working in 2.6.30.9 ?
-Message-ID: <20091006054618.GA28121@Krystal>
-References: <20091005235817.GA30691@Krystal> <20091006002441.GH6949@linux.vnet.ibm.com> <20091006020018.GA8901@Krystal> <20091006021417.GB8901@Krystal> <20091006030156.GC8901@Krystal> <20091006040235.GA6732@linux.vnet.ibm.com> <20091006051400.GA24465@Krystal> <20091006053051.GB24465@Krystal>
+	Tue, 6 Oct 2009 01:53:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41306 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756220AbZJFFxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 01:53:06 -0400
+Date: Tue, 6 Oct 2009 16:52:20 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for October 6
+Message-Id: <20091006165220.b5cb1c44.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20091006053051.GB24465@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 01:44:27 up 48 days, 16:33,  3 users,  load average: 0.45, 0.21,
-	0.18
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__6_Oct_2009_16_52_20_+1100_tlJwOTDyl9H._lsQ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > 
-> > > Classic RCU does have known bugs in its dyntick interface, which was one
-> > > of the factors motivating its removal from mainline.  ;-)
-> > > 
-> > > 							Thanx, Paul
-> > 
-> > Recreated the problem with a simple test-case not involving lttng:
-> > 
-> > kernel 2.6.30.9
-> > TREE RCU
-> > 
-> > loading this hacky module:
-> > 
-> 
-> Please forget about this hacky module test case. It was not actually
-> hung, just really slow when 8 cpus where up to get the prompt back from
-> 1000 synchronize_sched() calls.
+--Signature=_Tue__6_Oct_2009_16_52_20_+1100_tlJwOTDyl9H._lsQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The only reliable way I can reproduce this on TREE RCU is with my
-tracepoint.c and marker.c code with cpu hotplug/unplug. I'll dig into
-those internals before blaming RCU itself. ;)
+Hi all,
 
-Sorry for the mass-self-reply,
+Changes since 20091005:
 
-Thanks,
+Tree undropped: drbd
 
-Mathieu
+My fixes tree contains a build fix for powerpc/kvm.
 
-> 
-> Mathieu
-> 
-> > /*
-> >  * test-rcu-bug.c
-> >  */
-> > 
-> > #include <linux/module.h>
-> > #include <linux/proc_fs.h>
-> > #include <linux/sched.h>
-> > #include <linux/timex.h>
-> > #include <linux/rcupdate.h>
-> > #include <asm/ptrace.h>
-> > 
-> > struct proc_dir_entry *pentry = NULL;
-> > 
-> > static int my_open(struct inode *inode, struct file *file)
-> > {
-> > 	unsigned int i;
-> > 
-> > 	for (i = 0; i < 1000; i++)
-> > 		synchronize_sched();
-> > 
-> > 	return -EPERM;
-> > }
-> > 
-> > 
-> > static struct file_operations my_operations = {
-> > 	.open = my_open,
-> > };
-> > 
-> > int init_module(void)
-> > {
-> > 	pentry = create_proc_entry("testrcu", 0444, NULL);
-> > 	if (pentry)
-> > 		pentry->proc_fops = &my_operations;
-> > 
-> > 	return 0;
-> > }
-> > 
-> > void cleanup_module(void)
-> > {
-> > 	remove_proc_entry("testrcu", NULL);
-> > }
-> > 
-> > MODULE_LICENSE("GPL");
-> > MODULE_AUTHOR("Mathieu Desnoyers");
-> > MODULE_DESCRIPTION("rcu test");
-> > 
-> > Running, in loops:
-> > 
-> > One console:
-> > for a in $(seq 1 7); do echo 0 > /sys/devices/system/cpu/cpu$a/online; done
-> > for a in $(seq 1 7); do echo 1 > /sys/devices/system/cpu/cpu$a/online; done
-> > 
-> > Another console:
-> > for a in $(seq 1 10000); do cat /proc/testrcu; done
-> > 
-> > I eventually get a hang for the cat loop. Sysrq-W shows:
-> > 
-> > 
-> > [ 1337.118630] SysRq : Show Blocked State                             
-> > [ 1337.118644]   task                        PC stack   pid father              
-> > [ 1337.118644] md1_resync    D 0000000000000000     0  1255      2
-> > [ 1337.118644]  ffffffff807eb360 0000000000000046 fffffb7fa3c41757 ffff880439150
-> > [ 1337.118644]  ffff88043e028860 00ffffff803f4b88 0000000000010a80 0000000000008
-> > [ 1337.118644]  0000000000010a80 00ff88043e028860 ffff88043e485b00 ffff88043e488
-> > [ 1337.118644] Call Trace:
-> > [ 1337.118644]  [<ffffffff80684638>] ? schedule+0x18/0x40
-> > [ 1337.118644]  [<ffffffff8052b3dc>] ? raise_barrier+0x9c/0x1a0
-> > [ 1337.118644]  [<ffffffff80236720>] ? default_wake_function+0x0/0x10
-> > [ 1337.118644]  [<ffffffff8052c4f6>] ? sync_request+0x126/0x6c0
-> > [ 1337.118644]  [<ffffffff8054609a>] ? is_mddev_idle+0xda/0x160
-> > [ 1337.118644]  [<ffffffff805467f7>] ? md_do_sync+0x6d7/0xc90
-> > [ 1337.118644]  [<ffffffff80252400>] ? autoremove_wake_function+0x0/0x30
-> > [ 1337.118644]  [<ffffffff80547677>] ? md_thread+0x47/0x120
-> > [ 1337.118644]  [<ffffffff8022e8db>] ? __wake_up_common+0x5b/0x90
-> > [ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
-> > [ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
-> > [ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
-> > [ 1337.118644]  [<ffffffff80251f24>] ? kthread+0x54/0x90
-> > [ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
-> > [ 1337.118644]  [<ffffffff8020d00a>] ? child_rip+0xa/0x20
-> > [ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
-> > [ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
-> > [ 1337.118644]  [<ffffffff8020d000>] ? child_rip+0x0/0x20
-> > [ 1337.118644] cat           D 0000000000000000     0 28861   4758
-> > [ 1337.118644]  ffff88043f84b330 0000000000000082 0000000000000000 ffff88043f570
-> > [ 1337.118644]  0000000000000019 00ffffff80293013 0000000000010a80 0000000000008
-> > [ 1337.118644]  0000000000010a80 00ffffff80293887 ffff88043dd885b0 ffff88043dd88
-> > [ 1337.118644] Call Trace:
-> > [ 1337.118644]  [<ffffffff802df5be>] ? inode_init_always+0xfe/0x1a0
-> > [ 1337.118644]  [<ffffffff802df692>] ? alloc_inode+0x32/0xa0
-> > [ 1337.118644]  [<ffffffff80684638>] ? schedule+0x18/0x40
-> > [ 1337.118644]  [<ffffffff806849ed>] ? schedule_timeout+0x15d/0x190
-> > [ 1337.118644]  [<ffffffff8031a1fc>] ? proc_lookup_de+0xac/0x100
-> > [ 1337.118644]  [<ffffffff80683b2c>] ? wait_for_common+0x15c/0x190
-> > [ 1337.118644]  [<ffffffff80236720>] ? default_wake_function+0x0/0x10
-> > [ 1337.118644]  [<ffffffff802dba90>] ? dput+0xb0/0x180
-> > [ 1337.118644]  [<ffffffffa007c050>] ? my_open+0x0/0x20 [test_rcu_bug]
-> > [ 1337.118644]  [<ffffffff8024f8d3>] ? synchronize_rcu+0x43/0x50
-> > [ 1337.118644]  [<ffffffff8024f730>] ? wakeme_after_rcu+0x0/0x10
-> > [ 1337.118644]  [<ffffffffa007c05d>] ? my_open+0xd/0x20 [test_rcu_bug]          
-> > [ 1337.118644]  [<ffffffff80313d52>] ? proc_reg_open+0xa2/0x190                 
-> > [ 1337.118644]  [<ffffffff80313cb0>] ? proc_reg_open+0x0/0x190                  
-> > [ 1337.118644]  [<ffffffff802c6a77>] ? __dentry_open+0x127/0x350                
-> > [ 1337.118644]  [<ffffffff802d6664>] ? do_filp_open+0x2b4/0xa00                 
-> > [ 1337.118644]  [<ffffffff802e0e22>] ? alloc_fd+0x122/0x150                     
-> > [ 1337.118644]  [<ffffffff802c6816>] ? do_sys_open+0x86/0x180                   
-> > [ 1337.118644]  [<ffffffff8020beeb>] ? system_call_fastpath+0x16/0x1b           
-> > 
-> > This might be a race between queued callbacks that discards a
-> > completion.
-> > 
-> > Thanks,
-> > 
-> > Mathieu
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+The sparc tree lost its build failure.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+The wireless tree gained a build failure due to an interaction with the=20
+kbuild tree for which I reverted a commit form the kbuild tree.
+
+The block and drbd trees lost their build failure.
+
+The device-mapper tree lost its conflict.
+
+The mfd tree gained a build failure so I used the version from
+next-20091005.
+
+The drm tree gained a conflict against Linus' treee.
+
+The suspend tree lost its build failure, but gained another so I used the
+version from next-20091002.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 139 trees (counting Linus' and 21 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/Kconfig
+CONFLICT (add/add): Merge conflict in arch/mips/bcm63xx/Makefile
+CONFLICT (add/add): Merge conflict in arch/mips/bcm63xx/boards/board_bcm963=
+xx.c
+CONFLICT (delete/modify): arch/mips/lemote/lm2e/Makefile deleted in HEAD an=
+d modified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of=
+ arch/mips/lemote/lm2e/Makefile left in tree.
+CONFLICT (delete/modify): arch/mips/lemote/lm2e/pci.c deleted in HEAD and m=
+odified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of ar=
+ch/mips/lemote/lm2e/pci.c left in tree.
+CONFLICT (delete/modify): arch/mips/lemote/lm2e/prom.c deleted in HEAD and =
+modified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of a=
+rch/mips/lemote/lm2e/prom.c left in tree.
+$ git rm -f arch/mips/lemote/lm2e/Makefile arch/mips/lemote/lm2e/pci.c arch=
+/mips/lemote/lm2e/prom.c
+Merging parisc/next
+CONFLICT (content): Merge conflict in arch/parisc/include/asm/thread_info.h
+CONFLICT (content): Merge conflict in arch/parisc/kernel/entry.S
+CONFLICT (content): Merge conflict in arch/parisc/kernel/signal.c
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+$ git reset --hard HEAD^
+Merging refs/next/20091005/mfd
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/radeon/radeon.h
+CONFLICT (content): Merge conflict in drivers/gpu/drm/radeon/radeon_asic.h
+CONFLICT (content): Merge conflict in drivers/gpu/drm/radeon/radeon_device.c
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+$ git reset --hard HEAD^
+Merging refs/next/20091002/suspend
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/for-jens
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/Kconfig
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/Makefile
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_actlog.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_int.h
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_main.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_nl.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_receiver.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_req.c
+CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_worker.c
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+Merging oprofile/for-next
+Merging percpu/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+[master 4dca21e] Revert "kbuild: move utsrelease.h to include/generated"
+
+--Signature=_Tue__6_Oct_2009_16_52_20_+1100_tlJwOTDyl9H._lsQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrK2xQACgkQjjKRsyhoI8zZXwCeJO6Mp2NPrVKG47z81vjAwGoU
+y8sAn3j+hoK5c5r/k/s8zNMIN795Gqoq
+=XbgO
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__6_Oct_2009_16_52_20_+1100_tlJwOTDyl9H._lsQ--
