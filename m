@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933793AbZJFWVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933811AbZJFWVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933793AbZJFWVZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 18:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933750AbZJFWU5
+	id S933811AbZJFWVl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 18:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933796AbZJFWVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 18:20:57 -0400
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:62976 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933703AbZJFWUx (ORCPT
+	Tue, 6 Oct 2009 18:21:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43983 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933799AbZJFWVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 18:20:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=IDFbuQW8A7VF9HFlTgNlb3oyMZ0OBqRKLflAj1NmEesR1mS4Dg7YEs8ijiZso+SeY9
-         IjHihQF6IRaKAadEhiBiwBGtYFW9qu58p/YWwI8EPuin1KwsV+PdBkPsABpSfN/X9OA5
-         8ailZM/MCBFhX6TWNAWn68zy36BWjYhAwVokg=
-MIME-Version: 1.0
-Date: Tue, 6 Oct 2009 15:20:16 -0700
-Message-ID: <4c44d90b0910061520o36adc7m50419be3a3d9d0fa@mail.gmail.com>
-Subject: [PATCH] Include hrtimer.h for ANSI compliance
-From: Thomas DuBuisson <thomas.dubuisson@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 6 Oct 2009 18:21:35 -0400
+Date: Tue, 6 Oct 2009 23:22:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mark Allyn <mark.a.allyn@intel.com>
+Cc: linux-kernel@vger.kernel.org, alan@linux.intel.com, greg@kroah.com,
+       charles.f.johnson@intel.com, Mark Allyn <mark.a.allyn@intel.com>
+Subject: Re: [PATCH] Changes to integrate RAR with SEP and fix RAR problems
+Message-ID: <20091006232217.18e3f0f4@lxorguk.ukuu.org.uk>
+In-Reply-To: <1254861953-18099-1-git-send-email-mark.a.allyn@intel.com>
+References: <1254861953-18099-1-git-send-email-mark.a.allyn@intel.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Include <linux/hrtimer.h> to make pci.h ansi compliant (it references
-an hrtimer enum).
+> @@ -121,7 +121,7 @@ source "drivers/staging/hv/Kconfig"
+>  
+>  source "drivers/staging/vme/Kconfig"
+>  
+> -source "drivers/staging/rar/Kconfig"
+> +source "drivers/staging/rar_register/Kconfig"
 
-Please CC on responses.
+Its impossible to compare changes in diffs if you move them around and
+then diff them. Please don't do that. Produce the diffs using the same
+directory - it can move anyway when the thing comes out of staging
 
-Signed-off-by: Thomas DuBuisson <Thomas.DuBuisson@gmail.com>
----
-include/linux/timer.h |    1 +
-1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/timer.h b/include/linux/timer.h
-index a2d1eb6..ad2b3cb 100644
---- a/include/linux/timer.h
-+++ b/include/linux/timer.h
-@@ -6,6 +6,7 @@
-#include <linux/stddef.h>
-#include <linux/debugobjects.h>
-#include <linux/stringify.h>
-+#include <linux/hrtimer.h>
-
-struct tvec_base;
-
---
-1.6.2.5
+If you must move something then do the move and the changes as two
+separate patches so it is clear. You do seem to have also done things
+like reformatted the code, or worked off an old tree not the kernel one
+for the changes which isn't helpful.
