@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbZJFNPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932581AbZJFNPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932561AbZJFNPi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 09:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932484AbZJFNPh
+	id S932581AbZJFNPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 09:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932484AbZJFNPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 09:15:37 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37241 "EHLO mx1.suse.de"
+	Tue, 6 Oct 2009 09:15:38 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37244 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932478AbZJFNPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 09:15:35 -0400
+	id S932437AbZJFNPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 09:15:36 -0400
 From: Nikanth Karthikesan <knikanth@suse.de>
 Organization: suse.de
 To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [bisected] commit: a9327cac440be4d8333bba975cbbf76045096275 causes   iostat output
-Date: Tue, 6 Oct 2009 18:44:01 +0530
+Subject: [PATCH linux-2.6-block#for-linus]  Seperate read and write statistics of in_flight requests v2
+Date: Tue, 6 Oct 2009 18:46:36 +0530
 User-Agent: KMail/1.12.0 (Linux/2.6.32-rc3-0.1-default; KDE/4.3.0; x86_64; ; )
 Cc: Corrado Zoccolo <czoccolo@gmail.com>,
        "Linux-Kernel" <linux-kernel@vger.kernel.org>
@@ -23,78 +23,52 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910061844.01499.knikanth@suse.de>
+Message-Id: <200910061846.36592.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 05 October 2009 00:36:53 Jens Axboe wrote:
-> On Sun, Oct 04 2009, Corrado Zoccolo wrote:
-> > Hi,
-> > with 2.6.32-rc1 I started getting the following strange output from
-> > "iostat -kx 2":
-> > Linux 2.6.31bisect (et2) 	04/10/2009 	_i686_	(2 CPU)
-> >
-> > avg-cpu:  %user   %nice %system %iowait  %steal   %idle
-> >           10,70    0,00    3,16   15,75    0,00   70,38
-> >
-> > Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s
-> > avgrq-sz avgqu-sz   await  svctm  %util
-> > sda              18,22     0,00    0,67    0,01    14,77     0,02
-> > 43,94     0,01   10,53 39043915,03 2629219,87
-> > sdb              60,89     9,68   50,79    3,04  1724,43    50,52
-> > 65,95     0,70   13,06 488437,47 2629219,87
-> >
-> > avg-cpu:  %user   %nice %system %iowait  %steal   %idle
-> >            2,72    0,00    0,74    0,00    0,00   96,53
-> >
-> > Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s
-> > avgrq-sz avgqu-sz   await  svctm  %util
-> > sda               0,00     0,00    0,00    0,00     0,00     0,00
-> > 0,00     0,00    0,00   0,00 100,00
-> > sdb               0,00     0,00    0,00    0,00     0,00     0,00
-> > 0,00     0,00    0,00   0,00 100,00
-> >
-> > avg-cpu:  %user   %nice %system %iowait  %steal   %idle
-> >            6,68    0,00    0,99    0,00    0,00   92,33
-> >
-> > Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s
-> > avgrq-sz avgqu-sz   await  svctm  %util
-> > sda               0,00     0,00    0,00    0,00     0,00     0,00
-> > 0,00     0,00    0,00   0,00 100,00
-> > sdb               0,00     0,00    0,00    0,00     0,00     0,00
-> > 0,00     0,00    0,00   0,00 100,00
-> >
-> > avg-cpu:  %user   %nice %system %iowait  %steal   %idle
-> >            4,40    0,00    0,73    1,47    0,00   93,40
-> >
-> > Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s
-> > avgrq-sz avgqu-sz   await  svctm  %util
-> > sda               0,00     0,00    0,00    0,00     0,00     0,00
-> > 0,00     0,00    0,00   0,00 100,00
-> > sdb               0,00     4,00    0,00    3,00     0,00    28,00
-> > 18,67     0,06   19,50 333,33 100,00
-> >
-> > Global values for service time and utilization are garbage. For
-> > interval values, utilization is always 100%, and service time is
-> > higher than normal.
-> >
-> > I bisected it down to:
-> > [a9327cac440be4d8333bba975cbbf76045096275] Seperate read and write
-> > statistics of in_flight requests
-> > and verified that reverting just that commit indeed solves the issue
-> > on 2.6.32-rc1.
->
+Commit a9327cac440be4d8333bba975cbbf76045096275 added seperate read
+and write statistics of in_flight requests. And exported the number
+of read and write requests in progress seperately through sysfs.
 
-Thanks for reporting.
+But  Corrado Zoccolo <czoccolo@gmail.com> reported getting strange
+output from "iostat -kx 2". Global values for service time and
+utilization were garbage. For interval values, utilization was always
+100%, and service time is higher than normal.
 
-> I've reverted this commit since the next -rc is close, then we can debug
-> and potentially re-introduce this change after that. Thanks a lot for
-> reporting and bisecting it, too!
+So this was reverted by commit 0f78ab9899e9d6acb09d5465def618704255963b
 
-Sorry. I missed converting to 2 seperate variables at 
+The problem was in part_round_stats_single(), I missed the following:
+        if (now == part->stamp)
+                return;
 
-@@ -1030,7 +1030,7 @@ static void part_round_stats_single(int cpu, struct 
+-       if (part->in_flight) {
++       if (part_in_flight(part)) {
+                __part_stat_add(cpu, part, time_in_queue,
+                                part_in_flight(part) * (now - part->stamp));
+                __part_stat_add(cpu, part, io_ticks, (now - part->stamp));
+
+With this chunk included, the reported regression gets fixed.
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+
+--
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 73ecbed..ac0fa10 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -70,7 +70,7 @@ static void drive_stat_acct(struct request *rq, int new_io)
+ 		part_stat_inc(cpu, part, merges[rw]);
+ 	else {
+ 		part_round_stats(cpu, part);
+-		part_inc_in_flight(part);
++		part_inc_in_flight(part, rw);
+ 	}
+ 
+ 	part_stat_unlock();
+@@ -1030,9 +1030,9 @@ static void part_round_stats_single(int cpu, struct 
 hd_struct *part,
  	if (now == part->stamp)
  		return;
@@ -102,10 +76,218 @@ hd_struct *part,
 -	if (part->in_flight) {
 +	if (part_in_flight(part)) {
  		__part_stat_add(cpu, part, time_in_queue,
- 				part_in_flight(part) * (now - part->stamp));
+-				part->in_flight * (now - part->stamp));
++				part_in_flight(part) * (now - part->stamp));
  		__part_stat_add(cpu, part, io_ticks, (now - part->stamp));
-
-which caused this regression. I would post the patch with this fix included.
-
-Thanks
-Nikanth
+ 	}
+ 	part->stamp = now;
+@@ -1739,7 +1739,7 @@ static void blk_account_io_done(struct request *req)
+ 		part_stat_inc(cpu, part, ios[rw]);
+ 		part_stat_add(cpu, part, ticks[rw], duration);
+ 		part_round_stats(cpu, part);
+-		part_dec_in_flight(part);
++		part_dec_in_flight(part, rw);
+ 
+ 		part_stat_unlock();
+ 	}
+diff --git a/block/blk-merge.c b/block/blk-merge.c
+index b0de857..99cb5cf 100644
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -351,7 +351,7 @@ static void blk_account_io_merge(struct request *req)
+ 		part = disk_map_sector_rcu(req->rq_disk, blk_rq_pos(req));
+ 
+ 		part_round_stats(cpu, part);
+-		part_dec_in_flight(part);
++		part_dec_in_flight(part, rq_data_dir(req));
+ 
+ 		part_stat_unlock();
+ 	}
+diff --git a/block/genhd.c b/block/genhd.c
+index 5a0861d..517e433 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -869,6 +869,7 @@ static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
+ static DEVICE_ATTR(alignment_offset, S_IRUGO, disk_alignment_offset_show, 
+NULL);
+ static DEVICE_ATTR(capability, S_IRUGO, disk_capability_show, NULL);
+ static DEVICE_ATTR(stat, S_IRUGO, part_stat_show, NULL);
++static DEVICE_ATTR(inflight, S_IRUGO, part_inflight_show, NULL);
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ static struct device_attribute dev_attr_fail =
+ 	__ATTR(make-it-fail, S_IRUGO|S_IWUSR, part_fail_show, part_fail_store);
+@@ -888,6 +889,7 @@ static struct attribute *disk_attrs[] = {
+ 	&dev_attr_alignment_offset.attr,
+ 	&dev_attr_capability.attr,
+ 	&dev_attr_stat.attr,
++	&dev_attr_inflight.attr,
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ 	&dev_attr_fail.attr,
+ #endif
+@@ -1053,7 +1055,7 @@ static int diskstats_show(struct seq_file *seqf, void 
+*v)
+ 			   part_stat_read(hd, merges[1]),
+ 			   (unsigned long long)part_stat_read(hd, sectors[1]),
+ 			   jiffies_to_msecs(part_stat_read(hd, ticks[1])),
+-			   hd->in_flight,
++			   part_in_flight(hd),
+ 			   jiffies_to_msecs(part_stat_read(hd, io_ticks)),
+ 			   jiffies_to_msecs(part_stat_read(hd, time_in_queue))
+ 			);
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index 23e76fe..376f1ab 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -130,7 +130,7 @@ struct mapped_device {
+ 	/*
+ 	 * A list of ios that arrived while we were suspended.
+ 	 */
+-	atomic_t pending;
++	atomic_t pending[2];
+ 	wait_queue_head_t wait;
+ 	struct work_struct work;
+ 	struct bio_list deferred;
+@@ -453,13 +453,14 @@ static void start_io_acct(struct dm_io *io)
+ {
+ 	struct mapped_device *md = io->md;
+ 	int cpu;
++	int rw = bio_data_dir(io->bio);
+ 
+ 	io->start_time = jiffies;
+ 
+ 	cpu = part_stat_lock();
+ 	part_round_stats(cpu, &dm_disk(md)->part0);
+ 	part_stat_unlock();
+-	dm_disk(md)->part0.in_flight = atomic_inc_return(&md->pending);
++	dm_disk(md)->part0.in_flight[rw] = atomic_inc_return(&md->pending[rw]);
+ }
+ 
+ static void end_io_acct(struct dm_io *io)
+@@ -479,8 +480,9 @@ static void end_io_acct(struct dm_io *io)
+ 	 * After this is decremented the bio must not be touched if it is
+ 	 * a barrier.
+ 	 */
+-	dm_disk(md)->part0.in_flight = pending =
+-		atomic_dec_return(&md->pending);
++	dm_disk(md)->part0.in_flight[rw] = pending =
++		atomic_dec_return(&md->pending[rw]);
++	pending += atomic_read(&md->pending[rw^0x1]);
+ 
+ 	/* nudge anyone waiting on suspend queue */
+ 	if (!pending)
+@@ -1785,7 +1787,8 @@ static struct mapped_device *alloc_dev(int minor)
+ 	if (!md->disk)
+ 		goto bad_disk;
+ 
+-	atomic_set(&md->pending, 0);
++	atomic_set(&md->pending[0], 0);
++	atomic_set(&md->pending[1], 0);
+ 	init_waitqueue_head(&md->wait);
+ 	INIT_WORK(&md->work, dm_wq_work);
+ 	init_waitqueue_head(&md->eventq);
+@@ -2088,7 +2091,8 @@ static int dm_wait_for_completion(struct mapped_device 
+*md, int interruptible)
+ 				break;
+ 			}
+ 			spin_unlock_irqrestore(q->queue_lock, flags);
+-		} else if (!atomic_read(&md->pending))
++		} else if (!atomic_read(&md->pending[0]) &&
++					!atomic_read(&md->pending[1]))
+ 			break;
+ 
+ 		if (interruptible == TASK_INTERRUPTIBLE &&
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index f38fee0..7b685e1 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -248,11 +248,19 @@ ssize_t part_stat_show(struct device *dev,
+ 		part_stat_read(p, merges[WRITE]),
+ 		(unsigned long long)part_stat_read(p, sectors[WRITE]),
+ 		jiffies_to_msecs(part_stat_read(p, ticks[WRITE])),
+-		p->in_flight,
++		part_in_flight(p),
+ 		jiffies_to_msecs(part_stat_read(p, io_ticks)),
+ 		jiffies_to_msecs(part_stat_read(p, time_in_queue)));
+ }
+ 
++ssize_t part_inflight_show(struct device *dev,
++			struct device_attribute *attr, char *buf)
++{
++	struct hd_struct *p = dev_to_part(dev);
++
++	return sprintf(buf, "%8u %8u\n", p->in_flight[0], p->in_flight[1]);
++}
++
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ ssize_t part_fail_show(struct device *dev,
+ 		       struct device_attribute *attr, char *buf)
+@@ -281,6 +289,7 @@ static DEVICE_ATTR(start, S_IRUGO, part_start_show, NULL);
+ static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
+ static DEVICE_ATTR(alignment_offset, S_IRUGO, part_alignment_offset_show, 
+NULL);
+ static DEVICE_ATTR(stat, S_IRUGO, part_stat_show, NULL);
++static DEVICE_ATTR(inflight, S_IRUGO, part_inflight_show, NULL);
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ static struct device_attribute dev_attr_fail =
+ 	__ATTR(make-it-fail, S_IRUGO|S_IWUSR, part_fail_show, part_fail_store);
+@@ -292,6 +301,7 @@ static struct attribute *part_attrs[] = {
+ 	&dev_attr_size.attr,
+ 	&dev_attr_alignment_offset.attr,
+ 	&dev_attr_stat.attr,
++	&dev_attr_inflight.attr,
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ 	&dev_attr_fail.attr,
+ #endif
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index 7beaa21..297df45 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -98,7 +98,7 @@ struct hd_struct {
+ 	int make_it_fail;
+ #endif
+ 	unsigned long stamp;
+-	int in_flight;
++	int in_flight[2];
+ #ifdef	CONFIG_SMP
+ 	struct disk_stats *dkstats;
+ #else
+@@ -322,18 +322,23 @@ static inline void free_part_stats(struct hd_struct 
+*part)
+ #define part_stat_sub(cpu, gendiskp, field, subnd)			\
+ 	part_stat_add(cpu, gendiskp, field, -subnd)
+ 
+-static inline void part_inc_in_flight(struct hd_struct *part)
++static inline void part_inc_in_flight(struct hd_struct *part, int rw)
+ {
+-	part->in_flight++;
++	part->in_flight[rw]++;
+ 	if (part->partno)
+-		part_to_disk(part)->part0.in_flight++;
++		part_to_disk(part)->part0.in_flight[rw]++;
+ }
+ 
+-static inline void part_dec_in_flight(struct hd_struct *part)
++static inline void part_dec_in_flight(struct hd_struct *part, int rw)
+ {
+-	part->in_flight--;
++	part->in_flight[rw]--;
+ 	if (part->partno)
+-		part_to_disk(part)->part0.in_flight--;
++		part_to_disk(part)->part0.in_flight[rw]--;
++}
++
++static inline int part_in_flight(struct hd_struct *part)
++{
++	return part->in_flight[0] + part->in_flight[1];
+ }
+ 
+ /* block/blk-core.c */
+@@ -546,6 +551,8 @@ extern ssize_t part_size_show(struct device *dev,
+ 			      struct device_attribute *attr, char *buf);
+ extern ssize_t part_stat_show(struct device *dev,
+ 			      struct device_attribute *attr, char *buf);
++extern ssize_t part_inflight_show(struct device *dev,
++			      struct device_attribute *attr, char *buf);
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ extern ssize_t part_fail_show(struct device *dev,
+ 			      struct device_attribute *attr, char *buf);
