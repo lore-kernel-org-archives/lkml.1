@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbZJFPFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbZJFPG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757514AbZJFPFw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZJFPFw
+	id S1757529AbZJFPG1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbZJFPG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:05:52 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:39875 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751542AbZJFPFu (ORCPT
+	Tue, 6 Oct 2009 11:06:26 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:55714 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751895AbZJFPGZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:05:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=glmLEF+tJ4FpssjDW5vMueXAdgv8e1jXMhFE3PqPg9ON3A/puhUWb6KWsCUuqpb69U
-         +nkGphwG3vZil7P9A5uCTHlAbnEH1xg5EJSJBhQD2lrdUlFtVAHVBMAk1fRIiPVO223Q
-         iNwiDqEv3rjfdwopB8nihI1wDhB3uXbrcMOEs=
-Date: Tue, 6 Oct 2009 17:05:12 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, tzanussi@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perf/core] tracing/events: Add 'signed' field to format
-	files
-Message-ID: <20091006150510.GA5152@nowhere>
-References: <1254809398-8078-2-git-send-email-tzanussi@gmail.com> <tip-26a50744b21fff65bd754874072857bee8967f4d@git.kernel.org>
+	Tue, 6 Oct 2009 11:06:25 -0400
+X-IronPort-AV: E=Sophos;i="4.44,513,1249272000"; 
+   d="scan'208";a="7242481"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tip-26a50744b21fff65bd754874072857bee8967f4d@git.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and KeypadInput Device Driver
+Date: Tue, 6 Oct 2009 16:05:45 +0100
+Message-ID: <8A42379416420646B9BFAC9682273B6D0E3F4769@limkexm3.ad.analog.com>
+In-Reply-To: <20091006144805.GA10987@rakim.wolfsonmicro.main>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+thread-topic: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and KeypadInput Device Driver
+thread-index: AcpGlAjM/s1ZRxDtRoWFi1+6WVQJTQAACiZQ
+References: <1253682664-27040-1-git-send-email-vapier@gentoo.org> <1254815071-15822-1-git-send-email-vapier@gentoo.org> <20091006115543.GH27168@sirena.org.uk> <8A42379416420646B9BFAC9682273B6D0E3F4348@limkexm3.ad.analog.com> <20091006123658.GA31079@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4420@limkexm3.ad.analog.com> <20091006135836.GA3926@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F46A7@limkexm3.ad.analog.com> <20091006144805.GA10987@rakim.wolfsonmicro.main>
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Mark Brown" <broonie@opensource.wolfsonmicro.com>
+CC: "Mike Frysinger" <vapier@gentoo.org>,
+       "Samuel Ortiz" <sameo@linux.intel.com>,
+       <uclinux-dist-devel@blackfin.uclinux.org>,
+       <linux-kernel@vger.kernel.org>, "Bryan Wu" <cooloney@kernel.org>
+X-OriginalArrivalTime: 06 Oct 2009 15:05:48.0463 (UTC) FILETIME=[7CB313F0:01CA4696]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 01:06:39PM +0000, tip-bot for Tom Zanussi wrote:
-> Commit-ID:  26a50744b21fff65bd754874072857bee8967f4d
-> Gitweb:     http://git.kernel.org/tip/26a50744b21fff65bd754874072857bee8967f4d
-> Author:     Tom Zanussi <tzanussi@gmail.com>
-> AuthorDate: Tue, 6 Oct 2009 01:09:50 -0500
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Tue, 6 Oct 2009 15:04:45 +0200
-> 
-> tracing/events: Add 'signed' field to format files
-> 
-> The sign info used for filters in the kernel is also useful to
-> applications that process the trace stream.  Add it to the format
-> files and make it available to userspace.
+>From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
+>On Tue, Oct 06, 2009 at 03:32:56PM +0100, Hennerich, Michael wrote:
+>
+>> This is not an interrupt controller.
+>> The only ADP5520 subdev that needs to be notified is the adp5520-keys
+>> input driver, if present.
+>> Sounds like overshoot, registering a irq_chip using
+>> set_irq_chip_and_handler() and friends, for exactly one dedicated and
+>> known consumer.
+>
+>According to the datasheet the GPIOs, light sensor and regulator can
+>also generate interrupts?
 
+Right - I know - but none of the subdevs are currently using this
+functionality.
 
+>The GPIOs in particular would benefit from
+>this since this would mean that their interrupts would be usable by
+>generic gpiolib based drivers.
 
-This is something we could already find using the type of
-the field.
+Right - and I didn't say that I'm not going to add this functionality
+later.
+All the ADP5520 subdevs already merged in 2.6.32 - the MFD core is the
+only remaining part.
+Time is running short and major changes are going to require another
+round of full testing.
 
-Also I wonder if that breaks the format definition ABI. I mean:
-event formats are not ABI, except for the TRACE_EVENT_ABI.
-But concerning how we describe the format description, I
-have doubts.
-
-As an example, I don't know if this patch would break 2.6.32-rc1
-(and then 2.6.32) based perf tools running on a future 2.6.33
-kernel.
+-Michael
 
