@@ -1,154 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932646AbZJFN5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbZJFN7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932646AbZJFN5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 09:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932624AbZJFN5S
+	id S932653AbZJFN7L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 09:59:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932624AbZJFN7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 09:57:18 -0400
-Received: from relay02-haj2.antispameurope.com ([83.246.65.52]:34496 "EHLO
-	relay02-haj2.antispameurope.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932553AbZJFN5R (ORCPT
+	Tue, 6 Oct 2009 09:59:10 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:55106 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932589AbZJFN7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 09:57:17 -0400
-Date: Tue, 06 Oct 2009 15:55:09 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: Valdis.Kletnieks@vt.edu, shawn.starr@rogers.com
-Cc: linux-kernel@vger.kernel.org, jeff@garzik.org
-Subject: Re: [PROBLEM][2.6.31.1] - Cannot burn DVDs - PIONEER DVD-RW DVR-111D
-Message-ID: <4acb4c3d.raY4eflQX5iCgb7k%Joerg.Schilling@fokus.fraunhofer.de>
-References: <4ac9d477.7gleZfWVJq3++UDn%Joerg.Schilling@fokus.fraunhofer.de>
- <4aca7014.bWkj1S1Z6N2kt4dr%Joerg.Schilling@fokus.fraunhofer.de>
- <188185.1254800635@turing-police.cc.vt.edu>
- <200910060335.02770.shawn.starr@rogers.com>
-In-Reply-To: <200910060335.02770.shawn.starr@rogers.com>
-User-Agent: nail 11.22 3/20/05
+	Tue, 6 Oct 2009 09:59:09 -0400
+Date: Tue, 6 Oct 2009 16:55:18 +0300
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
+Cc: ext Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>
+Subject: Re: TTY loosing bytes ?
+Message-ID: <20091006135518.GB4452@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <20091006094845.GT4452@nokia.com>
+ <20091006114528.GV4452@nokia.com>
+ <20091006131230.5301f711@lxorguk.ukuu.org.uk>
+ <20091006130150.GY4452@nokia.com>
+ <20091006141115.12ad22dd@lxorguk.ukuu.org.uk>
+ <20091006132752.GZ4452@nokia.com>
+ <20091006144012.1af5744a@lxorguk.ukuu.org.uk>
+ <20091006134209.GA4452@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 06 Oct 2009 13:56:32.0021 (UTC) FILETIME=[CF445C50:01CA468C]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091006134209.GA4452@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 06 Oct 2009 13:56:57.0899 (UTC) FILETIME=[DEB107B0:01CA468C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shawn Starr <shawn.starr@rogers.com> wrote:
-
-> On October 2, 2009 10:46:49 am Jeff Garzik wrote:
-> On October 5, 2009 11:43:55 pm Valdis.Kletnieks@vt.edu wrote:
-> > On Tue, 06 Oct 2009 00:15:48 +0200, Joerg Schilling said:
-> ...
+On Tue, Oct 06, 2009 at 03:42:09PM +0200, Balbi Felipe (Nokia-D/Helsinki) wrote:
+> On Tue, Oct 06, 2009 at 03:40:12PM +0200, ext Alan Cox wrote:
+> > > unfortunately it didn't work. Although now I don't the debugging prints
+> > > complaining we've lost bytes, the transfer does get stuck in lot earlier
+> > > stage.
+> > > 
+> > > Maybe this is one fix but there's still other problem with that code ?
 > > 
-> > > You can help: Ask your Linux distributor why he distributes an illegal
-> > > and buggy fork instead of the legal original software!
-> > 
-> > Apparently it's distributed because their legal team doesn't think it's an
-> > illegal fork, and it's still buggy because after you relicensed to CDDL,
-> >  they felt they couldn't backport your fixes to the original GPL code.
-> > 
->
-> Listen, I don't care about that who forked what. if wodim or cdrecord is 
-> broken in design, then it's time for a cdrecord-ng and start over please.  I 
-> don't want to see this bickering anymore.
+> > Or with completely unrelated code. I guess you need to measure what goes
+> > into receive_buf versus what appears in userspace
+> 
+> will do it soonish. Thanks Alan, I'll return to you when I have more
+> debugging.
 
-As mentioned already, wodim is based on a 4+ year old cdrecord source with 
-wodim specific bugs added but with not a single additional feature or bug fix 
-related to the original software.
+ok, here we are. For some reason the host side seems that it just
+stopped sending data to us:
 
-I cannot understand why some Linux distibutors still believe that their users 
-accept to be forced to use broken forked software while working original 
-software with even many new features is available for free.
+> [  177.413879]    37    37    37: read for 3 bytes
+> [  177.413909]    37    37    37: read actually 3 bytes (total 3)
+> [  177.413940]    37    37    37: read for 34 bytes
+> [  177.413940]    37    37    37: read actually 34 bytes (total 37)
+> [  177.414916]    37    37    37: write
+> [  177.416992]    40    40    40: read for 3 bytes
+> [  177.417022]    40    40    40: read actually 3 bytes (total 3)
+> [  177.417053]    40    40    40: read for 37 bytes
+> [  177.417053]    40    40    40: read actually 37 bytes (total 40)
+> [  178.115966]    40    40    40: write
+> [  178.116058]     0     0     0: write
+> [  178.175689]    19    19    19: read for 3 bytes
+> [  178.175720]    19    19    19: read actually 3 bytes (total 3)
+> [  178.175750]    19    19    19: read for 16 bytes
+> [  178.175781]    19    19    19: read actually 16 bytes (total 19)
+> [  178.175842]    19    19    19: write
+> [  180.784820] musb_hdrc periph: enabled ep1out for bulk OUT, maxpacket 512
+> [  180.784851] musb_hdrc periph: enabled ep1in for bulk IN, maxpacket 512
+> [  180.848358] musb_hdrc periph: enabled ep1out for bulk OUT, maxpacket 512
+> [  180.848388] musb_hdrc periph: enabled ep1in for bulk IN, maxpacket 512
+> [  186.659851] musb_hdrc periph: enabled ep2in for bulk IN, maxpacket 512
+> [  186.659912] musb_hdrc periph: enabled ep2out for bulk OUT, maxpacket 512
+> [  186.723907] musb_hdrc periph: enabled ep2in for bulk IN, maxpacket 512
+> [  186.723937] musb_hdrc periph: enabled ep2out for bulk OUT, maxpacket 512
+> [  186.848602]    37    37    37: read for 3 bytes
+> [  186.848632]    37    37    37: read actually 3 bytes (total 3)
+> [  186.848663]    37    37    37: read for 34 bytes
+> [  186.848663]    37    37    37: read actually 34 bytes (total 37)
+> [  186.849182]    37    37    37: write
+> [  186.852539]    40    40    40: read for 3 bytes
+> [  186.852569]    40    40    40: read actually 3 bytes (total 3)
+> [  186.852600]    40    40    40: read for 37 bytes
+> [  186.852630]    40    40    40: read actually 37 bytes (total 40)
+> [  187.435577]    40    40    40: write
+> [  187.435699]     0     0     0: write
+> [  187.644683]    47    47    47: read for 3 bytes
+> [  187.644714]    47    47    47: read actually 3 bytes (total 3)
+> [  187.644744]    47    47    47: read for 44 bytes
+> [  187.644775]    47    47    47: read actually 44 bytes (total 47)
+> [  187.648620]    47    47    47: write
+> [  192.939239]    24    24    24: read for 3 bytes
+> [  192.939300]    24    24    24: read actually 3 bytes (total 3)
+> [  192.939300]    24    24    24: read for 21 bytes
+> [  192.939331]    24    24    24: read actually 21 bytes (total 24)
+> [  192.939453]    24    24    24: write
+> [  192.940246]    34    34    34: read for 3 bytes
+> [  192.940246]    34    34    34: read actually 3 bytes (total 3)
+> [  192.940277]    34    34    34: read for 31 bytes
+> [  192.940307]    34    34    34: read actually 31 bytes (total 34)
+> [  192.943206]    34    34    34: write
+> [  192.944152]    34    34    34: read for 3 bytes
+> [  192.944183]    34    34    34: read actually 3 bytes (total 3)
+> [  192.944213]    34    34    34: read for 31 bytes
+> [  192.944213]    34    34    34: read actually 31 bytes (total 34)
+> [  192.944488]    34    34    34: write
+> [  192.945373]    47    47    47: read for 3 bytes
+> [  192.945373]    47    47    47: read actually 3 bytes (total 3)
+> [  192.945404]    47    47    47: read for 44 bytes
+> [  192.945434]    47    47    47: read actually 44 bytes (total 47)
+> [  192.946594]    47    47    47: write
+> [  192.981689]  6656  4096  3832: read for 3 bytes
+> [  192.981750]  7168  4096  3832: read actually 3 bytes (total 3)
+> [  192.981811]  7680  4096  3832: read for 65532 bytes
+> [  192.982177] 11264 11264  3832: read actually 3829 bytes (total 3832)
 
+this is weird. Why didn't we get more data ? Where's the rest of this
+block ??
 
-> We're just damaging users. We really should not be rehashing CD/DVD burning 
-> issues over again when there's much, much more pressing issues that need to be 
-> fixed.
+> [  194.410125] musb_hdrc periph: enabled ep3in for bulk IN, maxpacket 512
+> [  194.410156] musb_hdrc periph: enabled ep3out for bulk OUT, maxpacket 512
+> [  194.474456] musb_hdrc periph: enabled ep3in for bulk IN, maxpacket 512
+> [  194.474487] musb_hdrc periph: enabled ep3out for bulk OUT, maxpacket 512
+> [  200.706115] 65556 65556  3853: read for 3 bytes
+> [  200.706176] 65556 65556  3853: read actually 3 bytes (total 3835)
+> [  200.706207] 65556 65556  3853: read for 18 bytes
+> [  200.706207] 65556 65556  3853: read actually 18 bytes (total 3853)
+> [  200.706542] 65556 65556  3853: write
 
-You could try to help convincing the Linux distributors. The problem with the
-hostile downstream started more than 5 years ago, it is sad to see that there is
-no mechanism in the OSS world to reliably recover from problems that have been 
-caused by hostile downstreams.
-
-> Joerg, For one thing, I want to be able to access the burner devices with 
-> their proper /dev name. Just like any other sane unix tool like, even dd. (you 
-> used to resist this idea if I remember correctly on MLs) not the SCSI bus IDs, 
-> honestly, what are you trying to achieve here?? make it EASY for users, not 
-> harder.
-
-You ask me to do something that is not granted to work and that is not compliant
-with the ANSI-X10t3 standard. You ask me this although there is absolutely no 
-need for a change as the current implementation of cdrecord works nicely on 30
-platforms.
-
-------------important-------------->
-As cdrecord implements the "auto-target" feature since August 2006 (since 
-November 2006 even for Linux), 99% of the users do not need to care about the 
-dev= option anymore at all. These users have one single drive that is detected 
-automatically by cdrecord and libscg in case you simply omit dev=.
-<------------important--------------
-
-Note that cdrecord depends on libscg which is the oldest and most portable 
-generic SCSI pass though implementation I am aware of (I wrote the first 
-version for SunOS in August 1986). Today (if you count all Microsoft operating 
-systems as one only), libscg supports 30 different operating systems. 
-
-Only 9 (counting NetBSD/OpenBSD/DragonFly separately) of the 30 supported 
-operating systems allow to specify /dev/something at all for sending SCSI 
-commands.
-
-4 of the latter (including FreeBSD) implement the ANSI X10t3 CAM standard that
-defines the same addressing scheme as libscg uses.
-
-Even though people believe that Mac OS X is a "UNIX variant", it does not 
-implement /dev/* interfaces but something relly strange (see "DeviceKIT"). 
-
-As you see, using /dev/* is only possible on a minority of the supported 
-plaforms, so depending on /dev/* is definitely a mistake. As we all know that 
-even on Linux, the name of the related /dev/* entries to access the drives 
-changed many times in the past, cdrecord is bringing you stability on top of a 
-changing platform. Even if dev=/dev/* _may_ work for some of the supported 
-devices on Linux, I cannot grant you that it will work in the future.
-
-> Also, maybe if you cooperated a little better we can clean up this stinking 
-> pile of mess. 
-
-If you like to address the speudo problems that are mentioned by some Linux 
-users, this is obviouyls mainly a missunderstanding of the general constraints
-in the background by some people who do know nothing but Linux.
-
-If we look at GNOME, it is unfortunately also a problem of a GUI that likes to 
-be portable but that does not look at other possible target platforms while
-defining to use Linux only interfaces for important tasks (thus causing 
-portability problems). I hope that this is a problem that can be solved by 
-talking with each others....
-
-If we look at hald (the Linux variant), this is an application that mainly 
-implements an incorrect strategy in order to detect media changes and as a 
-result of this incorrect strategy, it interrupts the burning process. These 
-problems also could have been avoided if the authors of the Linux hald did ask
-me _before_ implementing. It still could be fixed now.
-
-I am cooperating with all people who also like to cooperate and I e.g. annunce 
-interface changes for cdrtools to my known "users" (i.e. authors of GUIs and 
-other front ends for the cdrtools) at least 3-5 years before I implement them.
-I hope that for the future we can again have a good cooperation with the Linux 
-kernel development (as we had before ~ 2001).
-
-BTW: As we are on the topic, I would like e.g. to see Linux supporting hard 
-links on ISO-9660+Rockridge. Any interest in implementing it? I did make the
-implementation for Solaris in 2006, so it would be easy to implement it for 
-Linux by just looking at my Solaris "hsfs" implementation.
-
-PP.S. I would also like to see Linux to support the sparse file interface I 
-defined together with Sun in 2004. This interface is based on lseek whence
-values SEEK_HOLE and SEEK_DATA and on *pathconf(*, _PC_MIN_HOLE_SIZE);
-This allows star to create 100% correct copies of sparse files.
-
-In case you don't know: while GNU tar does not implement a single Linux specific
-feature, star does implement many Linux specific features.
-
-Jörg
+I'll add more messages to be sure what's going on.
 
 -- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       joerg.schilling@fokus.fraunhofer.de (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/private/ ftp://ftp.berlios.de/pub/schily
+balbi
