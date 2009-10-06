@@ -1,168 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbZJFFOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZJFFRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756041AbZJFFOk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 01:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbZJFFOk
+	id S1756192AbZJFFRZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 01:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbZJFFRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 01:14:40 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:41596 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750891AbZJFFOj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 01:14:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAJ9sykpMROOX/2dsb2JhbACBUdFMgiiCAgQ
-Date: Tue, 6 Oct 2009 01:14:00 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: Is RCU_PREEMPT working in 2.6.30.9 ?
-Message-ID: <20091006051400.GA24465@Krystal>
-References: <20091005235817.GA30691@Krystal> <20091006002441.GH6949@linux.vnet.ibm.com> <20091006020018.GA8901@Krystal> <20091006021417.GB8901@Krystal> <20091006030156.GC8901@Krystal> <20091006040235.GA6732@linux.vnet.ibm.com>
+	Tue, 6 Oct 2009 01:17:25 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55538 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750987AbZJFFRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 01:17:24 -0400
+Date: Tue, 6 Oct 2009 16:16:39 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "John W. Linville" <linville@tuxdriver.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: wireless/kbuild tree build failure
+Message-Id: <20091006161639.85e731bb.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20091006040235.GA6732@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 01:04:55 up 48 days, 15:54,  3 users,  load average: 0.15, 0.21,
-	0.18
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__6_Oct_2009_16_16_39_+1100_zrq0WW4pJcN1xEUw"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+--Signature=_Tue__6_Oct_2009_16_16_39_+1100_zrq0WW4pJcN1xEUw
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Classic RCU does have known bugs in its dyntick interface, which was one
-> of the factors motivating its removal from mainline.  ;-)
-> 
-> 							Thanx, Paul
+Hi John,
 
-Recreated the problem with a simple test-case not involving lttng:
+Today's linux-next build (i386 defconfig) failed like this:
 
-kernel 2.6.30.9
-TREE RCU
+net/wireless/ethtool.c:1:30: error: linux/utsrelease.h: No such file or dir=
+ectory
+net/wireless/ethtool.c: In function 'cfg80211_get_drvinfo':
+net/wireless/ethtool.c:13: error: 'UTS_RELEASE' undeclared (first use in th=
+is function)
 
-loading this hacky module:
+Caused by commit fdd4b63be177e74b9346a557b75f4b48f3a42ee1 ("wireless:
+implement basic ethtool support for cfg80211 devices").
 
-/*
- * test-rcu-bug.c
- */
+utsrelease.h is now in include/generated after commit
+bbae701f7f258b051ed199ef71c5e85e683c0fb8 ("kbuild: move utsrelease.h to
+include/generated") from the kbuild tree.  (My other builds only worked
+because utsrelease.h was left over in include/linux from previous builds.)
 
-#include <linux/module.h>
-#include <linux/proc_fs.h>
-#include <linux/sched.h>
-#include <linux/timex.h>
-#include <linux/rcupdate.h>
-#include <asm/ptrace.h>
+I have reverted the kbuild commit for today.  Sam, we need to come up
+with a better solution ... maybe for one release we could have the old
+files including the new files ... maybe remove the old files after
+2.6.33-rc2 ...
 
-struct proc_dir_entry *pentry = NULL;
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-static int my_open(struct inode *inode, struct file *file)
-{
-	unsigned int i;
+--Signature=_Tue__6_Oct_2009_16_16_39_+1100_zrq0WW4pJcN1xEUw
+Content-Type: application/pgp-signature
 
-	for (i = 0; i < 1000; i++)
-		synchronize_sched();
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-	return -EPERM;
-}
+iEYEARECAAYFAkrK0rcACgkQjjKRsyhoI8w+JgCeMv3CR293ZKr62Z6lN7XxEfxr
+zUEAnRUfTB9L7506VFkkDGBz0PzXfeDn
+=xj7U
+-----END PGP SIGNATURE-----
 
-
-static struct file_operations my_operations = {
-	.open = my_open,
-};
-
-int init_module(void)
-{
-	pentry = create_proc_entry("testrcu", 0444, NULL);
-	if (pentry)
-		pentry->proc_fops = &my_operations;
-
-	return 0;
-}
-
-void cleanup_module(void)
-{
-	remove_proc_entry("testrcu", NULL);
-}
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("rcu test");
-
-Running, in loops:
-
-One console:
-for a in $(seq 1 7); do echo 0 > /sys/devices/system/cpu/cpu$a/online; done
-for a in $(seq 1 7); do echo 1 > /sys/devices/system/cpu/cpu$a/online; done
-
-Another console:
-for a in $(seq 1 10000); do cat /proc/testrcu; done
-
-I eventually get a hang for the cat loop. Sysrq-W shows:
-
-
-[ 1337.118630] SysRq : Show Blocked State                             
-[ 1337.118644]   task                        PC stack   pid father              
-[ 1337.118644] md1_resync    D 0000000000000000     0  1255      2
-[ 1337.118644]  ffffffff807eb360 0000000000000046 fffffb7fa3c41757 ffff880439150
-[ 1337.118644]  ffff88043e028860 00ffffff803f4b88 0000000000010a80 0000000000008
-[ 1337.118644]  0000000000010a80 00ff88043e028860 ffff88043e485b00 ffff88043e488
-[ 1337.118644] Call Trace:
-[ 1337.118644]  [<ffffffff80684638>] ? schedule+0x18/0x40
-[ 1337.118644]  [<ffffffff8052b3dc>] ? raise_barrier+0x9c/0x1a0
-[ 1337.118644]  [<ffffffff80236720>] ? default_wake_function+0x0/0x10
-[ 1337.118644]  [<ffffffff8052c4f6>] ? sync_request+0x126/0x6c0
-[ 1337.118644]  [<ffffffff8054609a>] ? is_mddev_idle+0xda/0x160
-[ 1337.118644]  [<ffffffff805467f7>] ? md_do_sync+0x6d7/0xc90
-[ 1337.118644]  [<ffffffff80252400>] ? autoremove_wake_function+0x0/0x30
-[ 1337.118644]  [<ffffffff80547677>] ? md_thread+0x47/0x120
-[ 1337.118644]  [<ffffffff8022e8db>] ? __wake_up_common+0x5b/0x90
-[ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
-[ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
-[ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
-[ 1337.118644]  [<ffffffff80251f24>] ? kthread+0x54/0x90
-[ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
-[ 1337.118644]  [<ffffffff8020d00a>] ? child_rip+0xa/0x20
-[ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
-[ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
-[ 1337.118644]  [<ffffffff8020d000>] ? child_rip+0x0/0x20
-[ 1337.118644] cat           D 0000000000000000     0 28861   4758
-[ 1337.118644]  ffff88043f84b330 0000000000000082 0000000000000000 ffff88043f570
-[ 1337.118644]  0000000000000019 00ffffff80293013 0000000000010a80 0000000000008
-[ 1337.118644]  0000000000010a80 00ffffff80293887 ffff88043dd885b0 ffff88043dd88
-[ 1337.118644] Call Trace:
-[ 1337.118644]  [<ffffffff802df5be>] ? inode_init_always+0xfe/0x1a0
-[ 1337.118644]  [<ffffffff802df692>] ? alloc_inode+0x32/0xa0
-[ 1337.118644]  [<ffffffff80684638>] ? schedule+0x18/0x40
-[ 1337.118644]  [<ffffffff806849ed>] ? schedule_timeout+0x15d/0x190
-[ 1337.118644]  [<ffffffff8031a1fc>] ? proc_lookup_de+0xac/0x100
-[ 1337.118644]  [<ffffffff80683b2c>] ? wait_for_common+0x15c/0x190
-[ 1337.118644]  [<ffffffff80236720>] ? default_wake_function+0x0/0x10
-[ 1337.118644]  [<ffffffff802dba90>] ? dput+0xb0/0x180
-[ 1337.118644]  [<ffffffffa007c050>] ? my_open+0x0/0x20 [test_rcu_bug]
-[ 1337.118644]  [<ffffffff8024f8d3>] ? synchronize_rcu+0x43/0x50
-[ 1337.118644]  [<ffffffff8024f730>] ? wakeme_after_rcu+0x0/0x10
-[ 1337.118644]  [<ffffffffa007c05d>] ? my_open+0xd/0x20 [test_rcu_bug]          
-[ 1337.118644]  [<ffffffff80313d52>] ? proc_reg_open+0xa2/0x190                 
-[ 1337.118644]  [<ffffffff80313cb0>] ? proc_reg_open+0x0/0x190                  
-[ 1337.118644]  [<ffffffff802c6a77>] ? __dentry_open+0x127/0x350                
-[ 1337.118644]  [<ffffffff802d6664>] ? do_filp_open+0x2b4/0xa00                 
-[ 1337.118644]  [<ffffffff802e0e22>] ? alloc_fd+0x122/0x150                     
-[ 1337.118644]  [<ffffffff802c6816>] ? do_sys_open+0x86/0x180                   
-[ 1337.118644]  [<ffffffff8020beeb>] ? system_call_fastpath+0x16/0x1b           
-
-This might be a race between queued callbacks that discards a
-completion.
-
-Thanks,
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--Signature=_Tue__6_Oct_2009_16_16_39_+1100_zrq0WW4pJcN1xEUw--
