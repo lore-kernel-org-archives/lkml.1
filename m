@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756390AbZJFF5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbZJFGBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756390AbZJFF5x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 01:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbZJFF5w
+	id S1756434AbZJFGBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 02:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbZJFGBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 01:57:52 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:43150 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755850AbZJFF5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 01:57:52 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] firmware: only allow EDD on x86/x86_64
-Date: Tue,  6 Oct 2009 01:57:07 -0400
-Message-Id: <1254808627-3889-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.rc2
-In-Reply-To: <1254808534-3793-1-git-send-email-vapier@gentoo.org>
-References: <1254808534-3793-1-git-send-email-vapier@gentoo.org>
+	Tue, 6 Oct 2009 02:01:32 -0400
+Received: from mail-yx0-f199.google.com ([209.85.210.199]:45536 "EHLO
+	mail-yx0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756408AbZJFGBb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 02:01:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=lcFy2kfLArlg3bgp947tZPyk3RlLt4fvUC2B5hHBF4w5GLvOLutg/Dfg3FOlYginCh
+         Y2o4+Q3QkcQ7PdRTKDBwrFQUhUtU851Zaux1j3zZlliWssUb8aRzziUYbDqD2btNDKdp
+         hdDv479SGF3RTSle1MTucuWh/F37tj674tYyA=
+From: Tom Zanussi <tzanussi@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, fweisbec@gmail.com, rostedt@goodmis.org,
+       lizf@cn.fujitsu.com
+Subject: [PATCH 0/3] a few tracing bugfixes
+Date: Tue,  6 Oct 2009 01:00:46 -0500
+Message-Id: <1254808849-7829-1-git-send-email-tzanussi@gmail.com>
+X-Mailer: git-send-email 1.6.4.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than have the EDD depend on !ia64 (and assuming that only ia64,
-x86, x86_64 will be including this Kconfig), have EDD depend on the only
-arches which can support this code.  This should allow all other arches
-to cleanly include the firmware Kconfig.
+Some fixes for a few things I noticed recently.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-v2
-	- send out the right file this time
+Tom Zanussi (3):
+  perf trace: Remove unused code in builtin-trace.c
+  perf trace: Update eval_flag() flags array to match interrupt.h
+  tracing/syscalls: Use long for syscall ret format and field
+    definitions
 
- drivers/firmware/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
-index ebb9e51..7fff33f 100644
---- a/drivers/firmware/Kconfig
-+++ b/drivers/firmware/Kconfig
-@@ -7,7 +7,7 @@ menu "Firmware Drivers"
- 
- config EDD
- 	tristate "BIOS Enhanced Disk Drive calls determine boot disk"
--	depends on !IA64
-+	depends on (X86_64 || X86_32)
- 	help
- 	  Say Y or M here if you want to enable BIOS Enhanced Disk Drive
- 	  Services real mode BIOS calls to determine which disk
--- 
-1.6.5.rc2
+ kernel/trace/trace_syscalls.c       |    4 ++--
+ tools/perf/builtin-trace.c          |    6 ------
+ tools/perf/util/trace-event-parse.c |    9 +++++----
+ 3 files changed, 7 insertions(+), 12 deletions(-)
 
