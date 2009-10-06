@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbZJFId2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbZJFIkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756571AbZJFId2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 04:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756394AbZJFId1
+	id S1756103AbZJFIkI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 04:40:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbZJFIkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 04:33:27 -0400
-Received: from mail-yx0-f194.google.com ([209.85.210.194]:45743 "EHLO
-	mail-yx0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754418AbZJFId0 (ORCPT
+	Tue, 6 Oct 2009 04:40:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57804
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750716AbZJFIkH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 04:33:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=uPnmn++wHFS9LA+qAUI6Q9EUAPT69mLfUiuw4R4NHVJMgYQ/OLAMkbX75Hpj9Daw0X
-         gy6PP/k8ZINZhhWj7hyi+Zzl4K+1M/p8lIlSZTvT7Xp9gdSHp7SgmnVcJpN43HYh/Lez
-         SVMLbz7ku1jXUgjv+SuR6V2xz0mXsRyZe6ow4=
-MIME-Version: 1.0
-In-Reply-To: <8bd0f97a0908131734h2588d240k9000bace38b58e7f@mail.gmail.com>
-References: <1250046053-3097-1-git-send-email-vapier@gentoo.org> 
-	<20090813234410.GB4406@kroah.com> <8bd0f97a0908131734h2588d240k9000bace38b58e7f@mail.gmail.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 6 Oct 2009 04:32:29 -0400
-Message-ID: <8bd0f97a0910060132r1dd6b6a4u71eaa8763862aebd@mail.gmail.com>
-Subject: Re: [PATCH] USB: isp1362: fix build warnings on 64-bit systems
-To: Greg KH <greg@kroah.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Lothar Wassmann <LW@karo-electronics.de>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 6 Oct 2009 04:40:07 -0400
+Date: Tue, 06 Oct 2009 01:40:01 -0700 (PDT)
+Message-Id: <20091006.014001.227720618.davem@davemloft.net>
+To: bebarino@gmail.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, zbr@ioremap.net,
+       philipp.reisner@linbit.com
+Subject: Re: [PATCH] connector: Fix incompatible pointer type warning
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1254817417-16157-1-git-send-email-bebarino@gmail.com>
+References: <1254817417-16157-1-git-send-email-bebarino@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n968fw16010062
 
-On Thu, Aug 13, 2009 at 20:34, Mike Frysinger wrote:
-> On Thu, Aug 13, 2009 at 19:44, Greg KH wrote:
->> On Tue, Aug 11, 2009 at 11:00:53PM -0400, Mike Frysinger wrote:
->>> A bunch of places assumed pointers were 32-bits in size (bit checking and
->>> debug output), but none of these affected runtime functionality.
->>>
->>> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
->>> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->>
->> This patch doesn't apply to my tree, what did you make it against?
->
-> it was reported against next, so i used that
+From: Stephen Boyd <bebarino@gmail.com>
+Date: Tue,  6 Oct 2009 01:23:37 -0700
 
-so what tree do i need to use to get you to merge this ?  i'm guessing
-the semantic patch was what caused conflicts (my proposed patch
-already included that fix, but too late now).
--mike
+> Commit 7069331 (connector: Provide the sender's credentials to the
+> callback, 2009-10-02) changed callbacks to take two arguments but missed
+> this one.
+> 
+> drivers/connector/cn_proc.c: In function â€˜cn_proc_initâ€™:
+> drivers/connector/cn_proc.c:263: warning: passing argument 3 of
+> â€˜cn_add_callbackâ€™ from incompatible pointer type
+> 
+> Signed-off-by: Stephen Boyd <bebarino@gmail.com>
+
+Applied, thanks.
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
