@@ -1,36 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbZJFBU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZJFBWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755808AbZJFBU6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 21:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbZJFBU5
+	id S1755891AbZJFBWQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 21:22:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZJFBWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 21:20:57 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57004 "EHLO
+	Mon, 5 Oct 2009 21:22:15 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:46544 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753869AbZJFBU5 (ORCPT
+	with ESMTP id S1755246AbZJFBWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 21:20:57 -0400
-Subject: Re: system gets stuck in a lock during boot
+	Mon, 5 Oct 2009 21:22:15 -0400
+Subject: Re: [PATCH tracing/kprobes v2 4/5] perf: Add perf probe subcommand
+ for kprobe-event setup helper
 From: Steven Rostedt <rostedt@goodmis.org>
 Reply-To: rostedt@goodmis.org
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4ACA96B9.7000909@gmail.com>
-References: <4A922F82.9080000@cn.fujitsu.com> <4A9251EB.8040805@gmail.com>
-	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>
-	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>
-	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>
-	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>
-	 <20091002211211.GA2633@redhat.com> <20091004174113.GB24418@elte.hu>
-	 <dd18b0c30910041710y15e1da1k348c0decc05f326f@mail.gmail.com>
-	 <4ACA96B9.7000909@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+In-Reply-To: <4ACA95F8.7020407@redhat.com>
+References: <20091002214834.30906.86502.stgit@dhcp-100-2-132.bos.redhat.com>
+	 <20091002214904.30906.11622.stgit@dhcp-100-2-132.bos.redhat.com>
+	 <1254788953.13160.209.camel@gandalf.stny.rr.com>
+	 <4ACA95F8.7020407@redhat.com>
 Content-Type: text/plain
 Organization: Kihon Technologies Inc.
-Date: Mon, 05 Oct 2009 21:18:58 -0400
-Message-Id: <1254791938.13160.211.camel@gandalf.stny.rr.com>
+Date: Mon, 05 Oct 2009 21:20:15 -0400
+Message-Id: <1254792015.13160.212.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
@@ -38,43 +43,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-05 at 18:00 -0700, Justin P. Mattock wrote:
-> Justin Mattock wrote:
-
-> o.k. I put back on that system, and
-> hit the error. I add your patch to 2.6.31-rc6,
-> and the latest git(a few days old).
-> I still am hitting this, but with your patch
-> I'm able to see the beginning of this panic:
-> (Ill write it manually)
+On Mon, 2009-10-05 at 20:57 -0400, Masami Hiramatsu wrote:
+> Steven Rostedt wrote:
+> > On Fri, 2009-10-02 at 17:49 -0400, Masami Hiramatsu wrote:
+> >> diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+> >> index b5f1953..6dabcf1 100644
+> >> --- a/tools/perf/Makefile
+> >> +++ b/tools/perf/Makefile
+> >> @@ -419,6 +419,16 @@ ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf *
+> >>  	msg := $(error No libelf.h/libelf found, please install libelf-dev/elfutils-libelf-devel);
+> >>  endif
+> >>  
+> >> +ifneq ($(shell sh -c "(echo '\#include <libdwarf/dwarf.h>'; echo '\#include <libdwarf/libdwarf.h>'; echo 'int main(void) { Dwarf_Debug dbg; Dwarf_Error err; dwarf_init(0, DW_DLC_READ, 0, 0, &dbg, &err); return (long)dbg; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -ldwarf -lelf -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+> >> +	msg := $(warning No libdwarf.h found, disables probe subcommand. Please install libdwarf-dev/libdwarf-devel);
+> > 
+> > Wow! And I thought my macros were ugly ;-)
 > 
-> [   2.523966] kernel panic - not syncing: No init found. try passing 
-> init= option
-> to the kernel
-> [   2.524394] Pid: 1, comm: swapper Not tainted 2.6.31-rc6 #6
-> [   2.524633] Call Trace:
-> [   2.524875] [<ffffffff813a5b72>] panic+0x75/0x120
-> [   2.525119] [<ffffffff8100910f>] init_post+0xef/0xf5
+> :-)
+> Maybe, would I better make a separate c file to check this?
+> Like "autoconf-checkdwarf.c".
 
-Strange. This panic is just telling you it could not find an "init" to
-execute.
+
+Nah, I think it is pretty obvious to what it is doing. But then again, I
+like ugly hacks like the above.
 
 -- Steve
 
-> [   2.525357] [<ffffffff815f6cf0>] kernel_init+0x198/0x1a3
-> [   2.525600] [<ffffffff8102410a>] child_rip+0xa/0x20
-> [   2.525842] [<ffffffff815f6b58>] ? kernel_init+0x0/0x1a3
-> [   2.526084] [>ffffffff810224100>] ? child_rip+0x0/0x20
-> 
-> Seems I only hit this with using gcc 4.5.0 and compiling
-> sysvinit with SELinux support to load the policy at boot.
-> (here's the patch I used
-> http://readlist.com/lists/tycho.nsa.gov/selinux/3/15451.html).
-> 
-> Sound's like gcc is doing something(correct me if I'm
-> wrong) because the other systems I have are using the same
-> packages except for and older version of gcc.
-> maybe  I should update sysvinit with a better patch to load the policy.
-> 
-> Justin P. Mattock
 
