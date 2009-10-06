@@ -1,411 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbZJFRFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbZJFRFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758011AbZJFRFj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 13:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757943AbZJFRFi
+	id S1758073AbZJFRFx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 13:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757620AbZJFRFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 13:05:38 -0400
-Received: from nox.protox.org ([88.191.38.29]:39887 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757808AbZJFRFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 13:05:31 -0400
-From: Jerome Glisse <jglisse@redhat.com>
-To: airlied@gmail.com
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: [PATCH 2/2] drm/radeon/kms: Fix AGP support for R600/RV770 family (v2)
-Date: Tue,  6 Oct 2009 19:04:30 +0200
-Message-Id: <1254848670-4880-2-git-send-email-jglisse@redhat.com>
-X-Mailer: git-send-email 1.6.4.4
-In-Reply-To: <1254848670-4880-1-git-send-email-jglisse@redhat.com>
-References: <1254848670-4880-1-git-send-email-jglisse@redhat.com>
+	Tue, 6 Oct 2009 13:05:52 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:58649 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757964AbZJFRFv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 13:05:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=DKjEobEjwjf0Y2fevptaMBz4euddv5nPejS1u0TUEGQ4nI9qA44oK/+uUpOFcNDIiw
+         gFI1c4otfWpOEbcfEBO3jq3+5Rt0cxC/MFN67MI8fT8T8rNdB1bYGss3ybc1sUDE7iqx
+         bk3Lr1oAtcbC7flc/Jmz0ZO+OGT+SWKVzmfZE=
+MIME-Version: 1.0
+In-Reply-To: <4AC93B45.8090707@suse.de>
+References: <1254669853.26496.0.camel@carter>
+	 <ca2dc2820910041046i47a1c3dhba82266bb14a440c@mail.gmail.com>
+	 <4AC8F02B.6080209@suse.de> <200910042246.23712.rjw@sisk.pl>
+	 <4AC91578.2020807@suse.de>
+	 <ca2dc2820910041455h18ece909rc2280a40f1899c0a@mail.gmail.com>
+	 <4AC923F4.9050100@suse.de>
+	 <ca2dc2820910041653o29d4b253n69270d231e56e447@mail.gmail.com>
+	 <4AC93B45.8090707@suse.de>
+Date: Tue, 6 Oct 2009 19:05:13 +0200
+Message-ID: <ca2dc2820910061005k2beae176lece9792bb15cda90@mail.gmail.com>
+Subject: Re: [PATCH] battery: Fix charge_now returned by broken batteries
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=KOI8-R
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For AGP to work unmapped access must cover VRAM & AGP as
-AGP is treated like VRAM by the GPU (ie physical address).
-This patch properly setup the virtual memory system aperture
-to cover AGP if AGP is enabled. It seems that there is memory
-corruption after resume when using AGP (RV770 seems unaffected
-thought). Version 2 just fix merge issue with updated AGP
-fallback patch.
+On Mon, Oct 5, 2009 at 2:18 AM, Alexey Starikovskiy
+<astarikovskiy@suse.de> wrote:
+> Miguel Ojeda ÐÉÛÅÔ:
+>>
+>> On Mon, Oct 5, 2009 at 12:38 AM, Alexey Starikovskiy
+>> <astarikovskiy@suse.de> wrote:
+>>>
+>>> Miguel Ojeda ÐÉÛÅÔ:
+>>>>
+>>>> On Sun, Oct 4, 2009 at 11:36 PM, Alexey Starikovskiy
+>>>> <astarikovskiy@suse.de> wrote:
+>>>>>
+>>>>> Hi Rafael,
+>>>>>
+>>>>> This is not my rule, it was/is the rule of power device class. If you
+>>>>> do
+>>>>> not
+>>>>> agree to it, please change
+>>>>> appropriate documentation.
+>>>>
+>>>> Oh, I did not know that. Thank you for pointing it out. I think you
+>>>> are refering to:
+>>>>
+>>>> š158Q: Suppose, my battery monitoring chip/firmware does not provides
+>>>> capacity
+>>>> š159 š in percents, but provides charge_{now,full,empty}. Should I
+>>>> calculate
+>>>> š160 š percentage capacity manually, inside the driver, and register
+>>>> CAPACITY
+>>>> š161 š attribute? The same question about time_to_empty/time_to_full.
+>>>> š162A: Most likely, no. This class is designed to export properties
+>>>> which
+>>>> are
+>>>> š163 š directly measurable by the specific hardware available.
+>>>> š164
+>>>> š165 š Inferring not available properties using some heuristics or
+>>>> mathematical
+>>>> š166 š model is not subject of work for a battery driver. Such
+>>>> functionality
+>>>> š167 š should be factored out, and in fact, apm_power, the driver to
+>>>> serve
+>>>> š168 š legacy APM API on top of power supply class, uses a simple
+>>>> heuristic of
+>>>> š169 š approximating remaining battery capacity based on its charge,
+>>>> current,
+>>>> š170 š voltage and so on. But full-fledged battery model is likely not
+>>>> subject
+>>>> š171 š for kernel at all, as it would require floating point calculation
+>>>> to deal
+>>>> š172 š with things like differential equations and Kalman filters. This
+>>>> is
+>>>> š173 š better be handled by batteryd/libbattery, yet to be written.
+>>>>
+>>>> We are not calculating anything new just by the pleasure of doing it,
+>>>> we are correcting a wrong value provided by the hardware.
+>>>
+>>> You are guessing that normal battery can not jump charge value, and on
+>>> this
+>>> assumption you
+>>> cap charge_now with last full_charge. Immediate problem is that
+>>> full_charge
+>>> is not fixed value,
+>>> this is why it is separated from design_full_charge.
+>>> During battery life full_charge may go down and up, depending on outside
+>>> temperature, battery discharge (full or partial).
+>>> I've seen batteries on some new machines reporting full charge of more
+>>> than
+>>> design charge.
+>>> Obviously, your patch will fail in some of the above situations.
+>>
+>> I don't see why. The patch compares against full_charge every time
+>> (which is updated as you say), not against design_full_charge.
+>>
+>> 1. full_charge > design_full_charge => OK, design_full_charge is not
+>> involved in the min() operation.
+>> 2. full_charge goes down => If charge_now > full_charge then hardware
+>> is wrong and we should read full_charge. OK.
+>> 3. full_charge goes up => Same.
+>
+> full_charge_capacity is the value of last full charge. It will be updated to
+> current full charge, when the charging is complete. It may end up lower or
+> greater than
+> previous value.
+> Comparing current charge with the last full charge may correctly give you
+>>100%.
 
-Signed-off-by: Jerome Glisse <jglisse@redhat.com>
----
- drivers/gpu/drm/radeon/r600.c          |  117 +++++++++++++++++++++++++-------
- drivers/gpu/drm/radeon/r600d.h         |    1 +
- drivers/gpu/drm/radeon/radeon_device.c |    1 +
- drivers/gpu/drm/radeon/rv770.c         |   79 +++++++++++++++++-----
- 4 files changed, 157 insertions(+), 41 deletions(-)
+Then maybe we can write something like...
 
-diff --git a/drivers/gpu/drm/radeon/r600.c b/drivers/gpu/drm/radeon/r600.c
-index 2cef638..6b43a95 100644
---- a/drivers/gpu/drm/radeon/r600.c
-+++ b/drivers/gpu/drm/radeon/r600.c
-@@ -65,16 +65,11 @@ MODULE_FIRMWARE("radeon/RV710_me.bin");
- 
- int r600_debugfs_mc_info_init(struct radeon_device *rdev);
- 
--/* This files gather functions specifics to:
-- * r600,rv610,rv630,rv620,rv635,rv670
-- *
-- * Some of these functions might be used by newer ASICs.
-- */
-+/* r600,rv610,rv630,rv620,rv635,rv670 */
- int r600_mc_wait_for_idle(struct radeon_device *rdev);
- void r600_gpu_init(struct radeon_device *rdev);
- void r600_fini(struct radeon_device *rdev);
- 
--
- /*
-  * R600 PCIE GART
-  */
-@@ -168,7 +163,7 @@ int r600_pcie_gart_enable(struct radeon_device *rdev)
- 	WREG32(MC_VM_L1_TLB_MCB_RD_SEM_CNTL, tmp | ENABLE_SEMAPHORE_MODE);
- 	WREG32(MC_VM_L1_TLB_MCB_WR_SEM_CNTL, tmp | ENABLE_SEMAPHORE_MODE);
- 	WREG32(VM_CONTEXT0_PAGE_TABLE_START_ADDR, rdev->mc.gtt_start >> 12);
--	WREG32(VM_CONTEXT0_PAGE_TABLE_END_ADDR, (rdev->mc.gtt_end - 1) >> 12);
-+	WREG32(VM_CONTEXT0_PAGE_TABLE_END_ADDR, rdev->mc.gtt_end >> 12);
- 	WREG32(VM_CONTEXT0_PAGE_TABLE_BASE_ADDR, rdev->gart.table_addr >> 12);
- 	WREG32(VM_CONTEXT0_CNTL, ENABLE_CONTEXT | PAGE_TABLE_DEPTH(0) |
- 				RANGE_PROTECTION_FAULT_ENABLE_DEFAULT);
-@@ -225,6 +220,40 @@ void r600_pcie_gart_fini(struct radeon_device *rdev)
- 	radeon_gart_fini(rdev);
- }
- 
-+void r600_agp_enable(struct radeon_device *rdev)
-+{
-+	u32 tmp;
-+	int i;
-+
-+	/* Setup L2 cache */
-+	WREG32(VM_L2_CNTL, ENABLE_L2_CACHE | ENABLE_L2_FRAGMENT_PROCESSING |
-+				ENABLE_L2_PTE_CACHE_LRU_UPDATE_BY_WRITE |
-+				EFFECTIVE_L2_QUEUE_SIZE(7));
-+	WREG32(VM_L2_CNTL2, 0);
-+	WREG32(VM_L2_CNTL3, BANK_SELECT_0(0) | BANK_SELECT_1(1));
-+	/* Setup TLB control */
-+	tmp = ENABLE_L1_TLB | ENABLE_L1_FRAGMENT_PROCESSING |
-+		SYSTEM_ACCESS_MODE_NOT_IN_SYS |
-+		EFFECTIVE_L1_TLB_SIZE(5) | EFFECTIVE_L1_QUEUE_SIZE(5) |
-+		ENABLE_WAIT_L2_QUERY;
-+	WREG32(MC_VM_L1_TLB_MCB_RD_SYS_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCB_WR_SYS_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCB_RD_HDP_CNTL, tmp | ENABLE_L1_STRICT_ORDERING);
-+	WREG32(MC_VM_L1_TLB_MCB_WR_HDP_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCD_RD_A_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCD_WR_A_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCD_RD_B_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCD_WR_B_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCB_RD_GFX_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCB_WR_GFX_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCB_RD_PDMA_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCB_WR_PDMA_CNTL, tmp);
-+	WREG32(MC_VM_L1_TLB_MCB_RD_SEM_CNTL, tmp | ENABLE_SEMAPHORE_MODE);
-+	WREG32(MC_VM_L1_TLB_MCB_WR_SEM_CNTL, tmp | ENABLE_SEMAPHORE_MODE);
-+	for (i = 0; i < 7; i++)
-+		WREG32(VM_CONTEXT0_CNTL + (i * 4), 0);
-+}
-+
- int r600_mc_wait_for_idle(struct radeon_device *rdev)
- {
- 	unsigned i;
-@@ -263,18 +292,34 @@ static void r600_mc_program(struct radeon_device *rdev)
- 	/* Lockout access through VGA aperture (doesn't exist before R600) */
- 	WREG32(VGA_HDP_CONTROL, VGA_MEMORY_DISABLE);
- 	/* Update configuration */
--	WREG32(MC_VM_SYSTEM_APERTURE_LOW_ADDR, rdev->mc.vram_start >> 12);
--	WREG32(MC_VM_SYSTEM_APERTURE_HIGH_ADDR, (rdev->mc.vram_end - 1) >> 12);
-+	if (rdev->flags & RADEON_IS_AGP) {
-+		if (rdev->mc.vram_start < rdev->mc.gtt_start) {
-+			/* VRAM before AGP */
-+			WREG32(MC_VM_SYSTEM_APERTURE_LOW_ADDR,
-+				rdev->mc.vram_start >> 12);
-+			WREG32(MC_VM_SYSTEM_APERTURE_HIGH_ADDR,
-+				rdev->mc.gtt_end >> 12);
-+		} else {
-+			/* VRAM after AGP */
-+			WREG32(MC_VM_SYSTEM_APERTURE_LOW_ADDR,
-+				rdev->mc.gtt_start >> 12);
-+			WREG32(MC_VM_SYSTEM_APERTURE_HIGH_ADDR,
-+				rdev->mc.vram_end >> 12);
-+		}
-+	} else {
-+		WREG32(MC_VM_SYSTEM_APERTURE_LOW_ADDR, rdev->mc.vram_start >> 12);
-+		WREG32(MC_VM_SYSTEM_APERTURE_HIGH_ADDR, rdev->mc.vram_end >> 12);
-+	}
- 	WREG32(MC_VM_SYSTEM_APERTURE_DEFAULT_ADDR, 0);
--	tmp = (((rdev->mc.vram_end - 1) >> 24) & 0xFFFF) << 16;
-+	tmp = ((rdev->mc.vram_end >> 24) & 0xFFFF) << 16;
- 	tmp |= ((rdev->mc.vram_start >> 24) & 0xFFFF);
- 	WREG32(MC_VM_FB_LOCATION, tmp);
- 	WREG32(HDP_NONSURFACE_BASE, (rdev->mc.vram_start >> 8));
- 	WREG32(HDP_NONSURFACE_INFO, (2 << 7));
--	WREG32(HDP_NONSURFACE_SIZE, (rdev->mc.mc_vram_size - 1) | 0x3FF);
-+	WREG32(HDP_NONSURFACE_SIZE, rdev->mc.mc_vram_size | 0x3FF);
- 	if (rdev->flags & RADEON_IS_AGP) {
--		WREG32(MC_VM_AGP_TOP, (rdev->mc.gtt_end - 1) >> 16);
--		WREG32(MC_VM_AGP_BOT, rdev->mc.gtt_start >> 16);
-+		WREG32(MC_VM_AGP_TOP, rdev->mc.gtt_end >> 22);
-+		WREG32(MC_VM_AGP_BOT, rdev->mc.gtt_start >> 22);
- 		WREG32(MC_VM_AGP_BASE, rdev->mc.agp_base >> 22);
- 	} else {
- 		WREG32(MC_VM_AGP_BASE, 0);
-@@ -390,9 +435,9 @@ int r600_mc_init(struct radeon_device *rdev)
- 		}
- 	}
- 	rdev->mc.vram_start = rdev->mc.vram_location;
--	rdev->mc.vram_end = rdev->mc.vram_location + rdev->mc.mc_vram_size;
-+	rdev->mc.vram_end = rdev->mc.vram_location + rdev->mc.mc_vram_size - 1;
- 	rdev->mc.gtt_start = rdev->mc.gtt_location;
--	rdev->mc.gtt_end = rdev->mc.gtt_location + rdev->mc.gtt_size;
-+	rdev->mc.gtt_end = rdev->mc.gtt_location + rdev->mc.gtt_size - 1;
- 	/* FIXME: we should enforce default clock in case GPU is not in
- 	 * default setup
- 	 */
-@@ -428,9 +473,13 @@ int r600_gpu_soft_reset(struct radeon_device *rdev)
- 	u32 srbm_reset = 0;
- 	u32 tmp;
- 
--	dev_info(rdev->dev, "GPU softreset (R_008010_GRBM_STATUS=0x%08X "
--		"R_008014_GRBM_STATUS2=0x%08X)\n", RREG32(R_008010_GRBM_STATUS),
-+	dev_info(rdev->dev, "GPU softreset \n");
-+	dev_info(rdev->dev, "  R_008010_GRBM_STATUS=0x%08X\n",
-+		RREG32(R_008010_GRBM_STATUS));
-+	dev_info(rdev->dev, "  R_008014_GRBM_STATUS2=0x%08X\n",
- 		RREG32(R_008014_GRBM_STATUS2));
-+	dev_info(rdev->dev, "  R_000E50_SRBM_STATUS=0x%08X\n",
-+		RREG32(R_000E50_SRBM_STATUS));
- 	rv515_mc_stop(rdev, &save);
- 	if (r600_mc_wait_for_idle(rdev)) {
- 		dev_warn(rdev->dev, "Wait for MC idle timedout !\n");
-@@ -453,7 +502,7 @@ int r600_gpu_soft_reset(struct radeon_device *rdev)
- 			S_008020_SOFT_RESET_TA(1) |
- 			S_008020_SOFT_RESET_VC(1) |
- 			S_008020_SOFT_RESET_VGT(1);
--		dev_info(rdev->dev, "R_008020_GRBM_SOFT_RESET=0x%08X\n", tmp);
-+		dev_info(rdev->dev, "  R_008020_GRBM_SOFT_RESET=0x%08X\n", tmp);
- 		WREG32(R_008020_GRBM_SOFT_RESET, tmp);
- 		(void)RREG32(R_008020_GRBM_SOFT_RESET);
- 		udelay(50);
-@@ -491,7 +540,14 @@ int r600_gpu_soft_reset(struct radeon_device *rdev)
- 		srbm_reset |= S_000E60_SOFT_RESET_RLC(1);
- 	if (G_000E50_SEM_BUSY(RREG32(R_000E50_SRBM_STATUS)))
- 		srbm_reset |= S_000E60_SOFT_RESET_SEM(1);
--	dev_info(rdev->dev, "R_000E60_SRBM_SOFT_RESET=0x%08X\n", srbm_reset);
-+	if (G_000E50_BIF_BUSY(RREG32(R_000E50_SRBM_STATUS)))
-+		srbm_reset |= S_000E60_SOFT_RESET_BIF(1);
-+	dev_info(rdev->dev, "  R_000E60_SRBM_SOFT_RESET=0x%08X\n", srbm_reset);
-+	WREG32(R_000E60_SRBM_SOFT_RESET, srbm_reset);
-+	(void)RREG32(R_000E60_SRBM_SOFT_RESET);
-+	udelay(50);
-+	WREG32(R_000E60_SRBM_SOFT_RESET, 0);
-+	(void)RREG32(R_000E60_SRBM_SOFT_RESET);
- 	WREG32(R_000E60_SRBM_SOFT_RESET, srbm_reset);
- 	(void)RREG32(R_000E60_SRBM_SOFT_RESET);
- 	udelay(50);
-@@ -499,6 +555,12 @@ int r600_gpu_soft_reset(struct radeon_device *rdev)
- 	(void)RREG32(R_000E60_SRBM_SOFT_RESET);
- 	/* Wait a little for things to settle down */
- 	udelay(50);
-+	dev_info(rdev->dev, "  R_008010_GRBM_STATUS=0x%08X\n",
-+		RREG32(R_008010_GRBM_STATUS));
-+	dev_info(rdev->dev, "  R_008014_GRBM_STATUS2=0x%08X\n",
-+		RREG32(R_008014_GRBM_STATUS2));
-+	dev_info(rdev->dev, "  R_000E50_SRBM_STATUS=0x%08X\n",
-+		RREG32(R_000E50_SRBM_STATUS));
- 	/* After reset we need to reinit the asic as GPU often endup in an
- 	 * incoherent state.
- 	 */
-@@ -1442,9 +1504,13 @@ int r600_startup(struct radeon_device *rdev)
- 	int r;
- 
- 	r600_mc_program(rdev);
--	r = r600_pcie_gart_enable(rdev);
--	if (r)
--		return r;
-+	if (rdev->flags & RADEON_IS_AGP) {
-+		r600_agp_enable(rdev);
-+	} else {
-+		r = r600_pcie_gart_enable(rdev);
-+		if (r)
-+			return r;
-+	}
- 	r600_gpu_init(rdev);
- 
- 	r = radeon_object_pin(rdev->r600_blit.shader_obj, RADEON_GEM_DOMAIN_VRAM,
-@@ -1472,9 +1538,10 @@ int r600_resume(struct radeon_device *rdev)
- {
- 	int r;
- 
--	if (r600_gpu_reset(rdev)) {
--		/* FIXME: what do we want to do here ? */
--	}
-+	/* Do not reset GPU before posting, on r600 hw unlike on r500 hw,
-+	 * posting will perform necessary task to bring back GPU into good
-+	 * shape.
-+	 */
- 	/* post card */
- 	atom_asic_init(rdev->mode_info.atom_context);
- 	/* Initialize clocks */
-diff --git a/drivers/gpu/drm/radeon/r600d.h b/drivers/gpu/drm/radeon/r600d.h
-index 723295f..5084595 100644
---- a/drivers/gpu/drm/radeon/r600d.h
-+++ b/drivers/gpu/drm/radeon/r600d.h
-@@ -642,6 +642,7 @@
- #define		G_000E50_MCDW_BUSY(x)			(((x) >> 13) & 1)
- #define		G_000E50_SEM_BUSY(x)			(((x) >> 14) & 1)
- #define		G_000E50_RLC_BUSY(x)			(((x) >> 15) & 1)
-+#define		G_000E50_BIF_BUSY(x)			(((x) >> 29) & 1)
- #define	R_000E60_SRBM_SOFT_RESET			0x0E60
- #define		S_000E60_SOFT_RESET_BIF(x)		(((x) & 1) << 1)
- #define		S_000E60_SOFT_RESET_CG(x)		(((x) & 1) << 2)
-diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
-index a6b80eb..d1cdda9 100644
---- a/drivers/gpu/drm/radeon/radeon_device.c
-+++ b/drivers/gpu/drm/radeon/radeon_device.c
-@@ -575,6 +575,7 @@ int radeon_device_init(struct radeon_device *rdev,
- 		/* Acceleration not working on AGP card try again
- 		 * with fallback to PCI or PCIE GART
- 		 */
-+		radeon_gpu_reset(rdev);
- 		radeon_fini(rdev);
- 		radeon_agp_disable(rdev);
- 		r = radeon_init(rdev);
-diff --git a/drivers/gpu/drm/radeon/rv770.c b/drivers/gpu/drm/radeon/rv770.c
-index 5c597df..595ac63 100644
---- a/drivers/gpu/drm/radeon/rv770.c
-+++ b/drivers/gpu/drm/radeon/rv770.c
-@@ -75,7 +75,7 @@ int rv770_pcie_gart_enable(struct radeon_device *rdev)
- 	WREG32(MC_VM_MB_L1_TLB2_CNTL, tmp);
- 	WREG32(MC_VM_MB_L1_TLB3_CNTL, tmp);
- 	WREG32(VM_CONTEXT0_PAGE_TABLE_START_ADDR, rdev->mc.gtt_start >> 12);
--	WREG32(VM_CONTEXT0_PAGE_TABLE_END_ADDR, (rdev->mc.gtt_end - 1) >> 12);
-+	WREG32(VM_CONTEXT0_PAGE_TABLE_END_ADDR, rdev->mc.gtt_end >> 12);
- 	WREG32(VM_CONTEXT0_PAGE_TABLE_BASE_ADDR, rdev->gart.table_addr >> 12);
- 	WREG32(VM_CONTEXT0_CNTL, ENABLE_CONTEXT | PAGE_TABLE_DEPTH(0) |
- 				RANGE_PROTECTION_FAULT_ENABLE_DEFAULT);
-@@ -126,9 +126,33 @@ void rv770_pcie_gart_fini(struct radeon_device *rdev)
- }
- 
- 
--/*
-- * MC
-- */
-+void rv770_agp_enable(struct radeon_device *rdev)
-+{
-+	u32 tmp;
-+	int i;
-+
-+	/* Setup L2 cache */
-+	WREG32(VM_L2_CNTL, ENABLE_L2_CACHE | ENABLE_L2_FRAGMENT_PROCESSING |
-+				ENABLE_L2_PTE_CACHE_LRU_UPDATE_BY_WRITE |
-+				EFFECTIVE_L2_QUEUE_SIZE(7));
-+	WREG32(VM_L2_CNTL2, 0);
-+	WREG32(VM_L2_CNTL3, BANK_SELECT(0) | CACHE_UPDATE_MODE(2));
-+	/* Setup TLB control */
-+	tmp = ENABLE_L1_TLB | ENABLE_L1_FRAGMENT_PROCESSING |
-+		SYSTEM_ACCESS_MODE_NOT_IN_SYS |
-+		SYSTEM_APERTURE_UNMAPPED_ACCESS_PASS_THRU |
-+		EFFECTIVE_L1_TLB_SIZE(5) | EFFECTIVE_L1_QUEUE_SIZE(5);
-+	WREG32(MC_VM_MD_L1_TLB0_CNTL, tmp);
-+	WREG32(MC_VM_MD_L1_TLB1_CNTL, tmp);
-+	WREG32(MC_VM_MD_L1_TLB2_CNTL, tmp);
-+	WREG32(MC_VM_MB_L1_TLB0_CNTL, tmp);
-+	WREG32(MC_VM_MB_L1_TLB1_CNTL, tmp);
-+	WREG32(MC_VM_MB_L1_TLB2_CNTL, tmp);
-+	WREG32(MC_VM_MB_L1_TLB3_CNTL, tmp);
-+	for (i = 0; i < 7; i++)
-+		WREG32(VM_CONTEXT0_CNTL + (i * 4), 0);
-+}
-+
- static void rv770_mc_program(struct radeon_device *rdev)
- {
- 	struct rv515_mc_save save;
-@@ -152,17 +176,35 @@ static void rv770_mc_program(struct radeon_device *rdev)
- 	/* Lockout access through VGA aperture*/
- 	WREG32(VGA_HDP_CONTROL, VGA_MEMORY_DISABLE);
- 	/* Update configuration */
--	WREG32(MC_VM_SYSTEM_APERTURE_LOW_ADDR, rdev->mc.vram_start >> 12);
--	WREG32(MC_VM_SYSTEM_APERTURE_HIGH_ADDR, (rdev->mc.vram_end - 1) >> 12);
-+	if (rdev->flags & RADEON_IS_AGP) {
-+		if (rdev->mc.vram_start < rdev->mc.gtt_start) {
-+			/* VRAM before AGP */
-+			WREG32(MC_VM_SYSTEM_APERTURE_LOW_ADDR,
-+				rdev->mc.vram_start >> 12);
-+			WREG32(MC_VM_SYSTEM_APERTURE_HIGH_ADDR,
-+				rdev->mc.gtt_end >> 12);
-+		} else {
-+			/* VRAM after AGP */
-+			WREG32(MC_VM_SYSTEM_APERTURE_LOW_ADDR,
-+				rdev->mc.gtt_start >> 12);
-+			WREG32(MC_VM_SYSTEM_APERTURE_HIGH_ADDR,
-+				rdev->mc.vram_end >> 12);
-+		}
-+	} else {
-+		WREG32(MC_VM_SYSTEM_APERTURE_LOW_ADDR,
-+			rdev->mc.vram_start >> 12);
-+		WREG32(MC_VM_SYSTEM_APERTURE_HIGH_ADDR,
-+			rdev->mc.vram_end >> 12);
-+	}
- 	WREG32(MC_VM_SYSTEM_APERTURE_DEFAULT_ADDR, 0);
--	tmp = (((rdev->mc.vram_end - 1) >> 24) & 0xFFFF) << 16;
-+	tmp = ((rdev->mc.vram_end >> 24) & 0xFFFF) << 16;
- 	tmp |= ((rdev->mc.vram_start >> 24) & 0xFFFF);
- 	WREG32(MC_VM_FB_LOCATION, tmp);
- 	WREG32(HDP_NONSURFACE_BASE, (rdev->mc.vram_start >> 8));
- 	WREG32(HDP_NONSURFACE_INFO, (2 << 7));
- 	WREG32(HDP_NONSURFACE_SIZE, (rdev->mc.mc_vram_size - 1) | 0x3FF);
- 	if (rdev->flags & RADEON_IS_AGP) {
--		WREG32(MC_VM_AGP_TOP, (rdev->mc.gtt_end - 1) >> 16);
-+		WREG32(MC_VM_AGP_TOP, rdev->mc.gtt_end >> 16);
- 		WREG32(MC_VM_AGP_BOT, rdev->mc.gtt_start >> 16);
- 		WREG32(MC_VM_AGP_BASE, rdev->mc.agp_base >> 22);
- 	} else {
-@@ -785,9 +827,9 @@ int rv770_mc_init(struct radeon_device *rdev)
- 		rdev->mc.gtt_size = radeon_gart_size * 1024 * 1024;
- 	}
- 	rdev->mc.vram_start = rdev->mc.vram_location;
--	rdev->mc.vram_end = rdev->mc.vram_location + rdev->mc.mc_vram_size;
-+	rdev->mc.vram_end = rdev->mc.vram_location + rdev->mc.mc_vram_size - 1;
- 	rdev->mc.gtt_start = rdev->mc.gtt_location;
--	rdev->mc.gtt_end = rdev->mc.gtt_location + rdev->mc.gtt_size;
-+	rdev->mc.gtt_end = rdev->mc.gtt_location + rdev->mc.gtt_size - 1;
- 	/* FIXME: we should enforce default clock in case GPU is not in
- 	 * default setup
- 	 */
-@@ -807,9 +849,13 @@ static int rv770_startup(struct radeon_device *rdev)
- 	int r;
- 
- 	rv770_mc_program(rdev);
--	r = rv770_pcie_gart_enable(rdev);
--	if (r)
--		return r;
-+	if (rdev->flags & RADEON_IS_AGP) {
-+		rv770_agp_enable(rdev);
-+	} else {
-+		r = rv770_pcie_gart_enable(rdev);
-+		if (r)
-+			return r;
-+	}
- 	rv770_gpu_init(rdev);
- 
- 	r = radeon_object_pin(rdev->r600_blit.shader_obj, RADEON_GEM_DOMAIN_VRAM,
-@@ -837,9 +883,10 @@ int rv770_resume(struct radeon_device *rdev)
- {
- 	int r;
- 
--	if (rv770_gpu_reset(rdev)) {
--		/* FIXME: what do we want to do here ? */
--	}
-+	/* Do not reset GPU before posting, on rv770 hw unlike on r500 hw,
-+	 * posting will perform necessary task to bring back GPU into good
-+	 * shape.
-+	 */
- 	/* post card */
- 	atom_asic_init(rdev->mode_info.atom_context);
- 	/* Initialize clocks */
--- 
-1.6.4.4
+val->intval = acpi_battery_is_charged(battery)
+	? min(battery->capacity_now, battery->full_charge_capacity) * 1000
+	: battery->capacity_now * 1000;
 
+So we only use the min() operation when it is fully charged (returning
+to 100%) without losing information when charging.
+
+The problem is that percentage may jump from >100% to 100% in
+batteries whose full capacity increase, but I think that is OK, since
+when completely charged, the >100% is the new 100%.
+
+In "broken" batteries (is it broken finally? or is it expected
+behaviour?) like mine the old problem will be corrected, as it was
+only present in the charged state.
+
+Still other special cases may appear. What do you think?
+
+> Now we have a decision to make -- do we update full charge to be greater
+> than charge now,
+> or do we update charge now to be lower than full charge.
+>>
+>> So, maybe the battery works as you suggested; still, the kernel should
+>> provide a common meaning to its interfaces. If some batteries report
+>> full_charge when in "charged" state and others report
+>> design_full_charge, then the kernel should convert all of them into
+>> one unique convention, or there is no sane way to write userspace
+>> applications.
+>
+> I still want to receive raw data from driver, and have 1 level of
+> interpreters.
+> As I understand, there is HAL, which may do interpretations for you and keep
+> it in single location.
+
+AFAIK, the battery plugins I checked read /proc or /sys directly. I
+will check other battery plugins too.
+
+>>>
+>>> Regards,
+>>> Alex.
+>>>
+>
+>
