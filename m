@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbZJFQvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbZJFQxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757351AbZJFQvJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 12:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbZJFQvI
+	id S1757316AbZJFQxj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 12:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755416AbZJFQxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 12:51:08 -0400
-Received: from bay0-omc3-s24.bay0.hotmail.com ([65.54.246.224]:63806 "EHLO
-	bay0-omc3-s24.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756977AbZJFQvH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 12:51:07 -0400
-Message-ID: <BAY105-W30FA408F4CEAD3C272EC98C3CE0@phx.gbl>
-X-Originating-IP: [164.116.126.146]
-From: Yuhong Bao <yuhongbao_386@hotmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: <jeff.chua.linux@gmail.com>, <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, <hugh@veritas.com>
-Subject: RE: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
-Date: Tue, 6 Oct 2009 09:50:05 -0700
-Importance: Normal
-In-Reply-To: <alpine.LFD.2.01.0910051110200.3432@localhost.localdomain>
-References: <Pine.LNX.4.64.0910052334480.17655@boston.corp.fedex.com>
-X-OriginalArrivalTime: 06 Oct 2009 16:50:06.0215 (UTC) FILETIME=[0E9C4170:01CA46A5]
+	Tue, 6 Oct 2009 12:53:38 -0400
+Received: from mga14.intel.com ([143.182.124.37]:10156 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755073AbZJFQxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 12:53:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,513,1249282800"; 
+   d="scan'208";a="195701682"
+Date: Tue, 6 Oct 2009 09:52:51 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86/pci: intel bus root res with IOH reading -v2
+Message-ID: <20091006095251.0865d85f@jbarnes-g45>
+In-Reply-To: <4AC97C00.7090503@kernel.org>
+References: <4AC97C00.7090503@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 04 Oct 2009 21:54:24 -0700
+Yinghai Lu <yinghai@kernel.org> wrote:
 
- <alpine.LFD.2.01.0910051110200.3432@localhost.localdomain>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
+> 
+> for intel system with multi IOH. we could read peer root resource
+> from PCI conf, and don't trust _CRS again for root bus
+> 
+> v2: address change request from Ingo
+> 
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
+Applied to my linux-next branch, thanks.
 
-
-> On Mon=2C 5 Oct 2009=2C Jeff Chua wrote:
->>
->> I've 3 systems with 4GB=2C 16GB and 64GB all running 32bit with these se=
-t:
->
-> Don't.
->
-> 4GB is useable. 8GB is borderline. 16GB+ and nobody will care.
->
->> # with 64GB
->> total used free shared buffers cached
->> Mem: 63995 524 63470 0 4 365
->> Low: 378 32 345
->
-> All your low memory is used for the 'struct page' arrays that describe
-> everything else.
->
->> Anything I should do?
->
-> Use a 64-bit CPU and kernel or limit your memory to 8GB or so. No ifs=2C
-> buts and maybe's.
->
-> Linus
-Even Windows limits the amount of RAM to 16 GB when both PAE and it's 3G/1G=
- split mode is enabled for precisely the same reason.(It defaults to 2G/2G =
-split mode)
-See this for more info:http://blogs.msdn.com/oldnewthing/archive/2004/08/18=
-/216492.aspx
-
-Yuhong Bao 		 	   		  =0A=
-_________________________________________________________________=0A=
-Hotmail: Free=2C trusted and rich email service.=0A=
-http://clk.atdmt.com/GBL/go/171222984/direct/01/=
+-- 
+Jesse Barnes, Intel Open Source Technology Center
