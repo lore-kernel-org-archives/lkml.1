@@ -1,191 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933358AbZJFUxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933377AbZJFUyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933358AbZJFUxJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 16:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933302AbZJFUxI
+	id S933377AbZJFUyU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 16:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933327AbZJFUyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 16:53:08 -0400
-Received: from na3sys009aog113.obsmtp.com ([74.125.149.209]:48779 "EHLO
-	na3sys009aog113.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933300AbZJFUxG convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 16:53:06 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
-CC: "Austria, Winston" <Winston.Austria@lsi.com>,
-       "Mukker, Atul" <Atul.Mukker@lsi.com>
-Date: Tue, 6 Oct 2009 14:52:20 -0600
-Subject: [PATCH 11/12] scsi: megaraid_sas - Add the 3 mins support during
- the FW boot-up and fixed the 64 bit sense buff error.  
-Thread-Topic: [PATCH 11/12] scsi: megaraid_sas - Add the 3 mins support
- during the FW boot-up and fixed the 64 bit sense buff error.  
-Thread-Index: Aco284muq21jjlUCRvWfDnAhnowdBQAABfzAAAAxetAAAF05EAAATiEQAAAy5GAAAEeYsAAAagLgAABgNiAAAIZ8AADZ1diAAxhDMZA=
-Message-ID: <4B6A08C587958942AA3002690DD4F8C35C6861F3@cosmail02.lsi.com>
-References: <4B6A08C587958942AA3002690DD4F8C35C5119D7@cosmail02.lsi.com>
- <4B6A08C587958942AA3002690DD4F8C35C512407@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C512407@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 6 Oct 2009 16:54:19 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58356 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933324AbZJFUyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 16:54:18 -0400
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX18mT/xwMbomNxgtMPaMeGy4msoe5DwL84N8aogUvX
+	jEa0w5BuqIfOpp
+Message-ID: <4ACBAE49.9020903@gmx.de>
+Date: Tue, 06 Oct 2009 22:53:29 +0200
+From: Helge Deller <deller@gmx.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: kyle@mcmartin.ca, linux-kernel@vger.kernel.org,
+       linux-parisc@vger.kernel.org
+Subject: Re: [git patches] parisc for 2.6.32
+References: <20091006172602.GA1924@hera.kernel.org> <alpine.LFD.2.01.0910061035050.3432@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910061035050.3432@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RESUBMIT:
+Hi Linus,
 
-Add the 3 mins support during the FW boot-up to the driver.  Also add the fix for the 64 bit sense buff error.
+On 10/06/2009 07:40 PM, Linus Torvalds wrote:
+> On Tue, 6 Oct 2009, Kyle McMartin wrote:
+>> Mostly fixes, except for the tracehook stuff...
+>
+> I don't see how this can be fixes, since I can't recall any parisc pulls
+> during the merge window.
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+Yes, sadly it was not in time.
+And of course it's no excuse, that you didn't received a real pull-request,
+even after Kyle asked for feedback for his tree with his mail on LKML and
+parisc-list on 2009-09-28:
+http://www.pubbs.net/kernel/200909/123965/
 
----
-drivers/scsi/megaraid/megaraid_sas.c |   36 ++++++++++++++++++++---------------
- 1 file changed, 21 insertions(+), 15 deletions(-)
+> So now you come in after the merge window has been closed for over a week,
+> and want to do a parisc merge?
+>
+> Tell me why I should take this. Tell me why I shouldn't just wait until
+> the next merge window (or rather "_you_ should have waited").
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c	2009-09-15 05:01:51.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c	2009-09-15 05:23:28.000000000 -0400
-@@ -1820,6 +1820,7 @@ megasas_transition_to_ready(struct megas
- 	u8 max_wait;
- 	u32 fw_state;
- 	u32 cur_state;
-+	u32 abs_state, curr_abs_state;
- 
- 	fw_state = instance->instancet->read_fw_status_reg(instance->reg_set) & MFI_STATE_MASK;
- 
-@@ -1829,6 +1830,9 @@ megasas_transition_to_ready(struct megas
- 
- 	while (fw_state != MFI_STATE_READY) {
- 
-+		abs_state =
-+		instance->instancet->read_fw_status_reg(instance->reg_set);
-+
- 		switch (fw_state) {
- 
- 		case MFI_STATE_FAULT:
-@@ -1854,7 +1858,7 @@ megasas_transition_to_ready(struct megas
- 					&instance->reg_set->inbound_doorbell);
- 			}
- 
--			max_wait = 2;
-+			max_wait = MEGASAS_RESET_WAIT_TIME;
- 			cur_state = MFI_STATE_WAIT_HANDSHAKE;
- 			break;
- 
-@@ -1869,7 +1873,7 @@ megasas_transition_to_ready(struct megas
- 				writel(MFI_INIT_HOTPLUG,
- 					&instance->reg_set->inbound_doorbell);
- 
--			max_wait = 10;
-+			max_wait = MEGASAS_RESET_WAIT_TIME;
- 			cur_state = MFI_STATE_BOOT_MESSAGE_PENDING;
- 			break;
- 
-@@ -1888,7 +1892,7 @@ megasas_transition_to_ready(struct megas
- 				writel(MFI_RESET_FLAGS,
- 					&instance->reg_set->inbound_doorbell);
- 
--			max_wait = 60;
-+			max_wait = MEGASAS_RESET_WAIT_TIME;
- 			cur_state = MFI_STATE_OPERATIONAL;
- 			break;
- 
-@@ -1896,32 +1900,32 @@ megasas_transition_to_ready(struct megas
- 			/*
- 			 * This state should not last for more than 2 seconds
- 			 */
--			max_wait = 2;
-+			max_wait = MEGASAS_RESET_WAIT_TIME;
- 			cur_state = MFI_STATE_UNDEFINED;
- 			break;
- 
- 		case MFI_STATE_BB_INIT:
--			max_wait = 2;
-+			max_wait = MEGASAS_RESET_WAIT_TIME;
- 			cur_state = MFI_STATE_BB_INIT;
- 			break;
- 
- 		case MFI_STATE_FW_INIT:
--			max_wait = 20;
-+			max_wait = MEGASAS_RESET_WAIT_TIME;
- 			cur_state = MFI_STATE_FW_INIT;
- 			break;
- 
- 		case MFI_STATE_FW_INIT_2:
--			max_wait = 20;
-+			max_wait = MEGASAS_RESET_WAIT_TIME;
- 			cur_state = MFI_STATE_FW_INIT_2;
- 			break;
- 
- 		case MFI_STATE_DEVICE_SCAN:
--			max_wait = 20;
-+			max_wait = MEGASAS_RESET_WAIT_TIME;
- 			cur_state = MFI_STATE_DEVICE_SCAN;
- 			break;
- 
- 		case MFI_STATE_FLUSH_CACHE:
--			max_wait = 20;
-+			max_wait = MEGASAS_RESET_WAIT_TIME;
- 			cur_state = MFI_STATE_FLUSH_CACHE;
- 			break;
- 
-@@ -1937,8 +1941,10 @@ megasas_transition_to_ready(struct megas
- 		for (i = 0; i < (max_wait * 1000); i++) {
- 			fw_state = instance->instancet->read_fw_status_reg(instance->reg_set) &  
- 					MFI_STATE_MASK ;
-+		curr_abs_state =
-+		instance->instancet->read_fw_status_reg(instance->reg_set);
- 
--			if (fw_state == cur_state) {
-+			if (abs_state == curr_abs_state) {
- 				msleep(1);
- 			} else
- 				break;
-@@ -1947,7 +1953,7 @@ megasas_transition_to_ready(struct megas
- 		/*
- 		 * Return error if fw_state hasn't changed after max_wait
- 		 */
--		if (fw_state == cur_state) {
-+		if (curr_abs_state == abs_state) {
- 			printk(KERN_DEBUG "FW state [%d] hasn't changed "
- 			       "in %d secs\n", fw_state, max_wait);
- 			return -ENODEV;
-@@ -3515,7 +3521,7 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
- 	int error = 0, i;
- 	void *sense = NULL;
- 	dma_addr_t sense_handle;
--	u32 *sense_ptr;
-+	unsigned long *sense_ptr;
- 
- 	memset(kbuff_arr, 0, sizeof(kbuff_arr));
- 
-@@ -3593,7 +3599,7 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
- 		}
- 
- 		sense_ptr =
--		    (u32 *) ((unsigned long)cmd->frame + ioc->sense_off);
-+		(unsigned long *) ((unsigned long)cmd->frame + ioc->sense_off);
- 		*sense_ptr = sense_handle;
- 	}
- 
-@@ -3624,8 +3630,8 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
- 		 * sense_ptr points to the location that has the user
- 		 * sense buffer address
- 		 */
--		sense_ptr = (u32 *) ((unsigned long)ioc->frame.raw +
--				     ioc->sense_off);
-+		sense_ptr = (unsigned long *) ((unsigned long)ioc->frame.raw +
-+				ioc->sense_off);
- 
- 		if (copy_to_user((void __user *)((unsigned long)(*sense_ptr)),
- 				 sense, ioc->sense_len)) {
+This patch really only touches parisc-specific files and it includes
+important fixes without which the parisc kernel won't even compile and link.
+So, it would help us parisc-porters a lot if you could do an exception and
+still pull from Kyle's tree, even after this merge window has been closed.
+At least, it would make me personally very happy...
+
+Helge
