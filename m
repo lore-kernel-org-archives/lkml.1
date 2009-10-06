@@ -1,58 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbZJFAQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbZJFAS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbZJFAQv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 20:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZJFAQu
+	id S1755693AbZJFAS7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 20:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbZJFAS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 20:16:50 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:35187 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755182AbZJFAQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 20:16:49 -0400
-Date: Mon, 5 Oct 2009 17:16:31 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] signals: send_signal: use si_fromuser() to detect
-	from_ancestor_ns
-Message-ID: <20091006001631.GC4390@us.ibm.com>
-References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com> <20091004021954.GC21006@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091004021954.GC21006@redhat.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 5 Oct 2009 20:18:59 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51178 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754601AbZJFAS6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 20:18:58 -0400
+Subject: Re: [PATCH tracing/kprobes v2 2/5] tracing/kprobes: Avoid field
+ name confliction
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+In-Reply-To: <20091002214850.30906.25919.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20091002214834.30906.86502.stgit@dhcp-100-2-132.bos.redhat.com>
+	 <20091002214850.30906.25919.stgit@dhcp-100-2-132.bos.redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 05 Oct 2009 20:16:58 -0400
+Message-Id: <1254788218.13160.198.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@redhat.com] wrote:
-| Change send_signal() to use si_fromuser(). From now SEND_SIG_NOINFO
-| triggers the "from_ancestor_ns" check.
-| 
-| This fixes reparent_thread()->group_send_sig_info(pdeath_signal)
-| behaviour, before this patch send_signal() does not detect the
-| cross-namespace case when the child of the dying parent belongs
-| to the sub-namespace.
-| 
-| This patch can affect the behaviour of send_sig(), kill_pgrp() and
-| kill_pid() when the caller sends the signal to the sub-namespace
-| with "priv == 0" but surprisingly all callers seem to use them
-| correctly, including disassociate_ctty(on_exit).
-| 
-| Except: drivers/staging/comedi/drivers/addi-data/*.c incorrectly
-| use send_sig(priv => 0). But his is minor and should be fixed
-| anyway.
-| 
-| Reported-by: Daniel Lezcano <dlezcano@fr.ibm.com>
-| Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+On Fri, 2009-10-02 at 17:48 -0400, Masami Hiramatsu wrote:
+> Check whether the argument name is conflict with other field names.
+> 
+> Changes in v2:
+>  - Add common_lock_depth to reserved name list.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Mike Galbraith <efault@gmx.de>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Christoph Hellwig <hch@infradead.org>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Jim Keniston <jkenisto@us.ibm.com>
+> Cc: Frank Ch. Eigler <fche@redhat.com>
+> ---
+> 
+>  kernel/trace/trace_kprobe.c |   65 +++++++++++++++++++++++++++++++++++--------
+>  1 files changed, 53 insertions(+), 12 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+> index f63ead0..eb1fa0f 100644
+> --- a/kernel/trace/trace_kprobe.c
+> +++ b/kernel/trace/trace_kprobe.c
+> @@ -38,6 +38,25 @@
+>  #define MAX_EVENT_NAME_LEN 64
+>  #define KPROBE_EVENT_SYSTEM "kprobes"
+>  
+> +/* Reserved field names */
+> +#define FIELD_STRING_IP "ip"
+> +#define FIELD_STRING_NARGS "nargs"
+> +#define FIELD_STRING_RETIP "ret_ip"
+> +#define FIELD_STRING_FUNC "func"
+> +
+> +const char *reserved_field_names[] = {
+> +	"common_type",
+> +	"common_flags",
+> +	"common_preempt_count",
+> +	"common_pid",
+> +	"common_tgid",
+> +	"common_lock_depth",
+> +	FIELD_STRING_IP,
+> +	FIELD_STRING_NARGS,
+> +	FIELD_STRING_RETIP,
+> +	FIELD_STRING_FUNC,
+> +};
+> +
+>  /* currently, trace_kprobe only supports X86. */
+>  
+>  struct fetch_func {
+> @@ -551,6 +570,20 @@ static int parse_probe_arg(char *arg, struct fetch_func *ff, int is_return)
+>  	return ret;
+>  }
+>  
+> +/* Return 1 if name is reserved or already used by another argument */
+> +static int conflict_field_name(const char *name,
+> +			       struct probe_arg *args, int narg)
+> +{
+> +	int i;
+> +	for (i = 0; i < ARRAY_SIZE(reserved_field_names); i++)
+> +		if (!strcmp(reserved_field_names[i], name))
+> +			return 1;
+> +	for (i = 0; i < narg; i++)
+> +		if (!strcmp(args[i].name, name))
+> +			return 1;
 
-Since, addressing the problem of container-init sending SIGKILL to itself
-would have to be a separate patch:
+Just a coding preference, but still, I've seen too many mistakes (made
+them myself too).
 
-Reviewed-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+	if (strcmp(args[i].name, name) == 0)
+
+Looks better as a match then
+
+	if (!strcmp(args[i].name, name))
+
+That stands out to me as a miss match. But this is still just a
+preference and not something to make me argue the patch.
+
+-- Steve
+
+
+> +	return 0;
+> +}
+> +
+
+
