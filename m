@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbZJFKOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbZJFKRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756999AbZJFKOw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 06:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756944AbZJFKOw
+	id S932119AbZJFKRF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 06:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932110AbZJFKRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 06:14:52 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:58826 "EHLO kernel.dk"
+	Tue, 6 Oct 2009 06:17:04 -0400
+Received: from www.tglx.de ([62.245.132.106]:58668 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756689AbZJFKOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 06:14:51 -0400
-Date: Tue, 6 Oct 2009 12:14:14 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Latest vfs scalability patch
-Message-ID: <20091006101414.GM5216@kernel.dk>
-References: <20091006064919.GB30316@wotan.suse.de>
+	id S932098AbZJFKRC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 06:17:02 -0400
+Date: Tue, 6 Oct 2009 12:15:30 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+Subject: [ANNOUNCE] 2.6.31.2-rt13
+In-Reply-To: <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
+ <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+ <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain> <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
+ <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain> <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain> <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091006064919.GB30316@wotan.suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06 2009, Nick Piggin wrote:
-> Hi,
-> 
-> Several people have been interested to test my vfs patches, so rather
-> than resend patches I have uploaded a rollup against Linus's current
-> head.
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/npiggin/patches/fs-scale/
-> 
-> I have used ext2,ext3,autofs4,nfs as well as in-memory filesystems
-> OK (although this doesn't mean there are no bugs!). Otherwise, if your
-> filesystem compiles, then there is a reasonable chance of it working,
-> or ask me and I can try updating it for the new locking.
-> 
-> I would be interested in seeing any numbers people might come up with,
-> including single-threaded performance.
+We are pleased to announce the next update to our new preempt-rt
+series.
+ 
+   - Forward to 2.6.31.2
+   - Futex fix
+   - iptables fix
 
-I gave this a quick spin on the 64-thread nehalem. Just a simple dbench
-with 64 clients on tmpfs. The results are below. While running perf top
--a in mainline, the top 5 entries are:
+Download locations:
+  
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
 
-          2086691.00 - 96.6% : _spin_lock
-            14866.00 -  0.7% : copy_user_generic_string
-             5710.00 -  0.3% : mutex_spin_on_owner
-             2837.00 -  0.1% : _atomic_dec_and_lock
-             2274.00 -  0.1% : __d_lookup
+Git release branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
+  
+Git development branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
 
-Uhm auch... It doesn't look much prettier for the patch kernel, though:
+Gitweb:
+    http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
+ 
+Information on the RT patch can be found at:
 
-          9396422.00 - 95.7% : _spin_lock
-            66978.00 -  0.7% : copy_user_generic_string
-            43775.00 -  0.4% : dput
-            23946.00 -  0.2% : __link_path_walk
-            17699.00 -  0.2% : path_init
-            15046.00 -  0.2% : do_lookup
+    http://rt.wiki.kernel.org/index.php/Main_Page
 
+to build the 2.6.31.2-rt13 tree, the following patches should be
+applied:
 
-Anyway, below are the results. Seem very stable.
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.2.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31.2-rt13.bz2
 
-                                throughput
-------------------------------------------------
-2.6.32-rc3-git          |      561.218 MB/sec
-2.6.32-rc3-git+patch    |      627.022 MB/sec
+Enjoy !
 
-
--- 
-Jens Axboe
-
+      tglx
