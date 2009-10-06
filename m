@@ -1,86 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932737AbZJFOVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbZJFOgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932737AbZJFOVL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 10:21:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932697AbZJFOVK
+	id S932805AbZJFOgX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 10:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932754AbZJFOgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 10:21:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34071 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932689AbZJFOVJ (ORCPT
+	Tue, 6 Oct 2009 10:36:22 -0400
+Received: from mailserv59-us.natinst.com ([130.164.14.243]:3294 "EHLO
+	mailserv59-us.natinst.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932765AbZJFOgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 10:21:09 -0400
-Date: Tue, 6 Oct 2009 07:18:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dirk Hohndel <hohndel@infradead.org>
-cc: Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32-rc3
-In-Reply-To: <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>
-Message-ID: <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>  <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 6 Oct 2009 10:36:21 -0400
+X-Greylist: delayed 958 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Oct 2009 10:36:21 EDT
+From: Gabe Black <gabe.black@ni.com>
+To: jbarnes@virtuousgeek.org
+Cc: shawn.bohrer@ni.com, mike.hoogendyk@ni.com, knan@anduin.net,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       arjan@infradead.org, Gabe Black <gabe.black@ni.com>
+Subject: [PATCH] TI XIO200a bridge quirk: erroneously reports support for fast b2b transfers
+Date: Tue, 6 Oct 2009 09:19:45 -0500
+Message-Id: <1254838785-10254-1-git-send-email-gabe.black@ni.com>
+X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <8a15eb2b0910060432m3c062776md718ea19baf19a3f@mail.gmail.com>
+References: <8a15eb2b0910060432m3c062776md718ea19baf19a3f@mail.gmail.com>
+X-MIMETrack: Itemize by SMTP Server on MailServ59-US/AUS/H/NIC(Release 8.0.2 FP2|June 23, 2009) at
+ 10/06/2009 09:19:46 AM,
+	Serialize by Router on MailServ59-US/AUS/H/NIC(Release 8.0.2 FP2|June 23, 2009) at
+ 10/06/2009 09:36:26 AM,
+	Serialize complete at 10/06/2009 09:36:26 AM
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This quirk will disable fast back to back transfer on the secondary bus
+segment of the TI Bridge.
 
+Signed-off-by: Gabe Black <gabe.black@ni.com>
+---
+ drivers/pci/quirks.c    |   19 +++++++++++++++++++
+ include/linux/pci_ids.h |    1 +
+ 2 files changed, 20 insertions(+), 0 deletions(-)
 
-On Mon, 5 Oct 2009, Dirk Hohndel wrote:
-> On Mon, 2009-10-05 at 21:57 -0400, Len Brown wrote:
->
-> > This could be clarified if you update Makefile on the 1st commit
-> > after 2.6.X is frozen to simply be 2.6.Y-merge or 2.6.Y-rc0
-> > or something.  Anything but 2.6.X.
-> 
-> I have seen this request many times and it seems to make perfect sense.
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 6099fac..efa6534 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -670,6 +670,25 @@ static void __devinit quirk_vt8235_acpi(struct pci_dev *dev)
+ }
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA,	PCI_DEVICE_ID_VIA_8235,	quirk_vt8235_acpi);
+ 
++/*
++ * TI XIO2000a PCIe-PCI Bridge erroneously reports it supports fast back-to-back:
++ *	Disable fast back-to-back on the secondary bus segment
++ */
++static void __devinit quirk_xio2000a(struct pci_dev *dev)
++{
++	struct pci_dev *pdev;
++	u16 command;
++
++	dev_warn(&dev->dev, "TI XIO2000a quirk detected; "
++		"secondary bus fast back-to-back transfers disabled\n");
++	list_for_each_entry(pdev, &dev->subordinate->devices, bus_list) {
++		pci_read_config_word(pdev, PCI_COMMAND, &command);
++		if (command & PCI_COMMAND_FAST_BACK)
++			pci_write_config_word(pdev, PCI_COMMAND, command & ~PCI_COMMAND_FAST_BACK);
++	}
++}
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_XIO2000A,
++			quirk_xio2000a);
+ 
+ #ifdef CONFIG_X86_IO_APIC 
+ 
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index da1fda8..f490e7a 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -776,6 +776,7 @@
+ #define PCI_DEVICE_ID_TI_X515		0x8036
+ #define PCI_DEVICE_ID_TI_XX12		0x8039
+ #define PCI_DEVICE_ID_TI_XX12_FM	0x803b
++#define PCI_DEVICE_ID_TI_XIO2000A	0x8231
+ #define PCI_DEVICE_ID_TI_1130		0xac12
+ #define PCI_DEVICE_ID_TI_1031		0xac13
+ #define PCI_DEVICE_ID_TI_1131		0xac15
+-- 
+1.6.0.4
 
-No. It makes perfect sense just because the people who think so don't 
-think things through.
-
-It doesn't help, for several reasons:
-
- - the step function of the Makefile change happens once per release, and 
-   if you compile anything but releases, you can never rely on just the 
-   revision. Was it a plain -rc, a plain release, or something in 
-   between? You'll never know, just looking at the 2.6.x.y thing.
-
-   In other words, you fundamentally have three choices:
-
-    (a) be confused. Adding an "-rc0" won't help. You'll still be confused 
-	in between releases about exactly what you're running.
-
-    (b) use CONFIG_LOCALVERSION_AUTO=y
-
-	Now, if 'uname -r' says 2.6.31, then you _know_ it's exactly 
-	2.6.31 and nothing else. If it's a few commits after 2.6.31, it 
-	will say something like '2.6.31-1-g752015d', and you know that 
-	it's one commit after 2.6.31, and you'll know _which_ commit it is!
-
-    (c) Don't compile anything but releases. 
-
-   Those are the choices. 
-
- - An even _more_ fundamental reason: Linux development isn't linear. 
-   There is not one "first commit" after a release, and there never will 
-   be. Sure, there's a first commit that I do, but that has absolutely 
-   zero relevance.
-
-   Learn this. Until you do, you'll be confused, and you'll show your 
-   confusion by saying "I want a 2.6.n+1-rc0". You'll _also_ show your 
-   confusion by things like "I was bisecting a bug that happened between 
-   2.6.30 and 2.6.31, and suddenly git was asking me to test a kernel that 
-   said it was version 2.6.29-rc1 - so I stopped bisecting because git was 
-   confused".
-
-Who was confused? Was it git, or was it the person who thought that the 
-Makefile version could be consistent in a non-linear world?
-
-So no. I'm not going to do -rc0. Because doing that is _stupid_. And until 
-you understand _why_ it's stupid, it's pointless talking about it, and 
-when you _do_ understand that it's stupid, you'll agree with me.
-
-			Linus
