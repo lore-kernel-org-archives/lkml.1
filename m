@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933025AbZJFSSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbZJFSN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933025AbZJFSSu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 14:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932407AbZJFSSt
+	id S933017AbZJFSN1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 14:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755109AbZJFSN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 14:18:49 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:62099 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932242AbZJFSSs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 14:18:48 -0400
-Date: Tue, 6 Oct 2009 11:09:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] perf build questions
-Message-Id: <20091006110941.eebe58af.randy.dunlap@oracle.com>
-In-Reply-To: <20091006180551.GB11702@bombadil.infradead.org>
-References: <20091005131729.78444bfb.randy.dunlap@oracle.com>
-	<1254818939.21044.120.camel@laptop>
-	<20091006102626.8b4f7810.randy.dunlap@oracle.com>
-	<20091006180551.GB11702@bombadil.infradead.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4ACB89C9.0081:SCFMA4539814,ss=1,fgs=0
+	Tue, 6 Oct 2009 14:13:26 -0400
+Received: from thunk.org ([69.25.196.29]:40831 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755558AbZJFSNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 14:13:25 -0400
+Date: Tue, 6 Oct 2009 14:12:18 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.32-rc3
+Message-ID: <20091006181218.GD24677@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <20091006153632.GA29795@elte.hu> <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain> <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain> <20091006164028.GA23305@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091006164028.GA23305@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Oct 2009 14:05:51 -0400 Kyle McMartin wrote:
-
-> On Tue, Oct 06, 2009 at 10:26:26AM -0700, Randy Dunlap wrote:
-> > $ make NO_64BIT=1 all
-> > $ file perf
-> > perf: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), for GNU/Linux 2.6.4, dynamically linked (uses shared libs), not stripped
-> > 
-> > 
-> > Shouldn't that be a 32-bit executable for i386?
-> > Am I confused?  (you don't have to answer that)
-> > 
+On Tue, Oct 06, 2009 at 06:40:28PM +0200, Ingo Molnar wrote:
 > 
-> Are you running a 32-bit userspace, with x86_64 kernel? Or running
-> x86_64 userspace as well and trying to crossbuild for i386? In the
-> latter case NO_64BIT won't do what you hope, it's to avoid trying to
-> build a 64-bit binary in the former case.
+> Could we, for consistency's sake, make it:
+> 
+>  	2.6.32-rc3+00052-g0eca52a-dirty
+>  	2.6.32-rc3+
+> 
+> ? Or do we want to keep the old version string alone for some reason?
 
-All 64-bit userspace & kernel.  so that fails.  Thanks.
+I'm a bit concerned that changing from what we've currently had:
 
-> You could force -m32 into CFLAGS in the second case, but unless you have
-> the proper i386 bi-arch toolchain installed (glibc, etc.) it likely
-> won't build...
+>       2.6.29-00052-g0eca52a-dirty
 
-I'll test/check etc.
+might break some packaging scripts.  I'm also personally used to that
+naming scheme; in fact at the moment I'm using
+2.6.32-rc1-00292-gb0390e2.  :-)
 
----
-~Randy
+							- Ted
