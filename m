@@ -1,91 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933657AbZJFWTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933743AbZJFWUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933657AbZJFWTi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 18:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933644AbZJFWTh
+	id S933743AbZJFWUT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 18:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933636AbZJFWUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 18:19:37 -0400
-Received: from gimli.pxnet.com ([195.227.45.7]:41036 "EHLO mail.pxnet.com"
+	Tue, 6 Oct 2009 18:20:14 -0400
+Received: from mail.pxnet.com ([195.227.45.7]:41041 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933643AbZJFWTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 18:19:35 -0400
+	id S933728AbZJFWUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 18:20:06 -0400
 From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH 05/11] gigaset: fix device ERROR response handling
+Subject: [PATCH 06/11] gigaset: improve error recovery
 To: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
 CC: Hansjoerg Lipp <hjlipp@web.de>, Karsten Keil <isdn@linux-pingi.de>,
        Karsten Keil <keil@b1-systems.de>, isdn4linux@listserv.isdn4linux.de,
        i4ldeveloper@listserv.isdn4linux.de
-Message-ID: <20091006-patch-gigaset-05.tilman@imap.cc>
+Message-ID: <20091006-patch-gigaset-06.tilman@imap.cc>
 In-Reply-To: <20091006-patch-gigaset-00.tilman@imap.cc>
 References: <20091006-patch-gigaset-00.tilman@imap.cc>
-Date: Wed,  7 Oct 2009 00:18:46 +0200 (CEST)
-X-Spam-Score: -2.137 () AWL,BAYES_00,RDNS_NONE
+Date: Wed,  7 Oct 2009 00:18:51 +0200 (CEST)
+X-Spam-Score: -2.141 () AWL,BAYES_00,RDNS_NONE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clear out pending command that got rejected with 'ERROR' response.
-This fixes the bug where unloading the driver module would hang
-with the message: "gigaset: not searching scheduled commands: busy"
-after a device communication error.
+When the Gigaset base stops responding, try resetting the USB
+connection to recover.
 
-Impact: error handling bugfix
+Impact: error handling improvement
 Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 ---
- drivers/isdn/gigaset/ev-layer.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/isdn/gigaset/bas-gigaset.c |   69 +++++++++++++++++++++++------------
+ 1 files changed, 45 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/isdn/gigaset/ev-layer.c b/drivers/isdn/gigaset/ev-layer.c
-index ff2ec2c..926370a 100644
---- a/drivers/isdn/gigaset/ev-layer.c
-+++ b/drivers/isdn/gigaset/ev-layer.c
-@@ -207,7 +207,6 @@ struct reply_t gigaset_tab_nocid[] =
- 	/* leave dle mode */
- 	{RSP_INIT,      0,  0,SEQ_DLE0,           201, 5, {0},             "^SDLE=0\r"},
- 	{RSP_OK,      201,201, -1,                202,-1},
--	//{RSP_ZDLE,    202,202,  0,                202, 0, {ACT_ERROR}},//DELETE
- 	{RSP_ZDLE,    202,202,  0,                  0, 0, {ACT_DLE0}},
- 	{RSP_NODEV,   200,249, -1,                  0, 0, {ACT_FAKEDLE0}},
- 	{RSP_ERROR,   200,249, -1,                  0, 0, {ACT_FAILDLE0}},
-@@ -265,6 +264,7 @@ struct reply_t gigaset_tab_nocid[] =
- 	{EV_SHUTDOWN,  -1, -1, -1,                 -1,-1, {ACT_SHUTDOWN}}, //FIXME
+diff --git a/drivers/isdn/gigaset/bas-gigaset.c b/drivers/isdn/gigaset/bas-gigaset.c
+index 9e7108a..5ed1d99 100644
+--- a/drivers/isdn/gigaset/bas-gigaset.c
++++ b/drivers/isdn/gigaset/bas-gigaset.c
+@@ -134,6 +134,7 @@ struct bas_cardstate {
+ #define BS_ATRDPEND	0x040	/* urb_cmd_in in use */
+ #define BS_ATWRPEND	0x080	/* urb_cmd_out in use */
+ #define BS_SUSPEND	0x100	/* USB port suspended */
++#define BS_RESETTING	0x200	/* waiting for HD_RESET_INTERRUPT_PIPE_ACK */
  
- 	/* misc. */
-+	{RSP_ERROR,    -1, -1, -1,                 -1, -1, {ACT_ERROR} },
- 	{RSP_EMPTY,    -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
- 	{RSP_ZCFGT,    -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
- 	{RSP_ZCFG,     -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
-@@ -328,10 +328,9 @@ struct reply_t gigaset_tab_cid[] =
- 	{RSP_INIT,     -1, -1,SEQ_HUP,            401, 5, {0},             "+VLS=0\r"}, /* hang up */ //-1,-1?
- 	{RSP_OK,      401,401, -1,                402, 5},
- 	{RSP_ZVLS,    402,402,  0,                403, 5},
--	{RSP_ZSAU,    403,403,ZSAU_DISCONNECT_REQ, -1,-1, {ACT_DEBUG}}, /* if not remote hup */
--	//{RSP_ZSAU,    403,403,ZSAU_NULL,          401, 0, {ACT_ERROR}}, //DELETE//FIXME -> DLE0 // should we do this _before_ hanging up for base driver?
--	{RSP_ZSAU,    403,403,ZSAU_NULL,            0, 0, {ACT_DISCONNECT}}, //FIXME -> DLE0 // should we do this _before_ hanging up for base driver?
--	{RSP_NODEV,   401,403, -1,                  0, 0, {ACT_FAKEHUP}}, //FIXME -> DLE0 // should we do this _before_ hanging up for base driver?
-+	{RSP_ZSAU,    403, 403, ZSAU_DISCONNECT_REQ, -1, -1, {ACT_DEBUG} },
-+	{RSP_ZSAU,    403, 403, ZSAU_NULL,            0,  0, {ACT_DISCONNECT} },
-+	{RSP_NODEV,   401, 403, -1,                   0,  0, {ACT_FAKEHUP} },
- 	{RSP_ERROR,   401,401, -1,                  0, 0, {ACT_ABORTHUP}},
- 	{EV_TIMEOUT,  401,403, -1,                  0, 0, {ACT_ABORTHUP}},
  
-@@ -1434,11 +1433,12 @@ static void do_action(int action, struct cardstate *cs,
- 		cs->gotfwver = -1;
- 		dev_err(cs->dev, "could not read firmware version.\n");
+ static struct gigaset_driver *driver = NULL;
+@@ -319,6 +320,21 @@ static int gigaset_set_line_ctrl(struct cardstate *cs, unsigned cflag)
+ 	return -EINVAL;
+ }
+ 
++/* set/clear bits in base connection state, return previous state
++ */
++static inline int update_basstate(struct bas_cardstate *ucs,
++				  int set, int clear)
++{
++	unsigned long flags;
++	int state;
++
++	spin_lock_irqsave(&ucs->lock, flags);
++	state = ucs->basstate;
++	ucs->basstate = (state & ~clear) | set;
++	spin_unlock_irqrestore(&ucs->lock, flags);
++	return state;
++}
++
+ /* error_hangup
+  * hang up any existing connection because of an unrecoverable error
+  * This function may be called from any context and takes care of scheduling
+@@ -350,12 +366,9 @@ static inline void error_hangup(struct bc_state *bcs)
+  */
+ static inline void error_reset(struct cardstate *cs)
+ {
+-	/* close AT command channel to recover (ignore errors) */
+-	req_submit(cs->bcs, HD_CLOSE_ATCHANNEL, 0, BAS_TIMEOUT);
+-
+-	//FIXME try to recover without bothering the user
+-	dev_err(cs->dev,
+-	    "unrecoverable error - please disconnect Gigaset base to reset\n");
++	/* reset interrupt pipe to recover (ignore errors) */
++	update_basstate(cs->hw.bas, BS_RESETTING, 0);
++	req_submit(cs->bcs, HD_RESET_INTERRUPT_PIPE, 0, BAS_TIMEOUT);
+ }
+ 
+ /* check_pending
+@@ -398,8 +411,13 @@ static void check_pending(struct bas_cardstate *ucs)
+ 	case HD_DEVICE_INIT_ACK:		/* no reply expected */
+ 		ucs->pending = 0;
  		break;
--#ifdef CONFIG_GIGASET_DEBUG
- 	case ACT_ERROR:
--		*p_genresp = 1;
--		*p_resp_code = RSP_ERROR;
-+		gig_dbg(DEBUG_ANY, "%s: ERROR response in ConState %d",
-+			__func__, at_state->ConState);
-+		cs->cur_at_seq = SEQ_NONE;
+-	/* HD_READ_ATMESSAGE, HD_WRITE_ATMESSAGE, HD_RESET_INTERRUPTPIPE
+-	 * are handled separately and should never end up here
++	case HD_RESET_INTERRUPT_PIPE:
++		if (!(ucs->basstate & BS_RESETTING))
++			ucs->pending = 0;
++		break;
++	/*
++	 * HD_READ_ATMESSAGE and HD_WRITE_ATMESSAGE are handled separately
++	 * and should never end up here
+ 	 */
+ 	default:
+ 		dev_warn(&ucs->interface->dev,
+@@ -449,21 +467,6 @@ static void cmd_in_timeout(unsigned long data)
+ 	error_reset(cs);
+ }
+ 
+-/* set/clear bits in base connection state, return previous state
+- */
+-inline static int update_basstate(struct bas_cardstate *ucs,
+-				  int set, int clear)
+-{
+-	unsigned long flags;
+-	int state;
+-
+-	spin_lock_irqsave(&ucs->lock, flags);
+-	state = ucs->basstate;
+-	ucs->basstate = (state & ~clear) | set;
+-	spin_unlock_irqrestore(&ucs->lock, flags);
+-	return state;
+-}
+-
+ /* read_ctrl_callback
+  * USB completion handler for control pipe input
+  * called by the USB subsystem in interrupt context
+@@ -762,7 +765,8 @@ static void read_int_callback(struct urb *urb)
  		break;
-+#ifdef CONFIG_GIGASET_DEBUG
- 	case ACT_TEST:
- 		{
- 			static int count = 3; //2; //1;
+ 
+ 	case HD_RESET_INTERRUPT_PIPE_ACK:
+-		gig_dbg(DEBUG_USBREQ, "HD_RESET_INTERRUPT_PIPE_ACK");
++		update_basstate(ucs, 0, BS_RESETTING);
++		dev_notice(cs->dev, "interrupt pipe reset\n");
+ 		break;
+ 
+ 	case HD_SUSPEND_END:
+@@ -1429,6 +1433,7 @@ static void req_timeout(unsigned long data)
+ 
+ 	case HD_CLOSE_ATCHANNEL:
+ 		dev_err(bcs->cs->dev, "timeout closing AT channel\n");
++		error_reset(bcs->cs);
+ 		break;
+ 
+ 	case HD_CLOSE_B2CHANNEL:
+@@ -1438,6 +1443,13 @@ static void req_timeout(unsigned long data)
+ 		error_reset(bcs->cs);
+ 		break;
+ 
++	case HD_RESET_INTERRUPT_PIPE:
++		/* error recovery escalation */
++		dev_err(bcs->cs->dev,
++			"reset interrupt pipe timeout, attempting USB reset\n");
++		usb_queue_reset_device(bcs->cs->hw.bas->interface);
++		break;
++
+ 	default:
+ 		dev_warn(bcs->cs->dev, "request 0x%02x timed out, clearing\n",
+ 			 pending);
+@@ -1930,6 +1942,15 @@ static int gigaset_write_cmd(struct cardstate *cs,
+ 		goto notqueued;
+ 	}
+ 
++	/* translate "+++" escape sequence sent as a single separate command
++	 * into "close AT channel" command for error recovery
++	 * The next command will reopen the AT channel automatically.
++	 */
++	if (len == 3 && !memcmp(buf, "+++", 3)) {
++		rc = req_submit(cs->bcs, HD_CLOSE_ATCHANNEL, 0, BAS_TIMEOUT);
++		goto notqueued;
++	}
++
+ 	if (len > IF_WRITEBUF)
+ 		len = IF_WRITEBUF;
+ 	if (!(cb = kmalloc(sizeof(struct cmdbuf_t) + len, GFP_ATOMIC))) {
 -- 
 1.6.2.1.214.ge986c
 
