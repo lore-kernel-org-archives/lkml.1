@@ -1,105 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbZJFRZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932626AbZJFR04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757768AbZJFRZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 13:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757654AbZJFRZZ
+	id S932626AbZJFR04 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 13:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932351AbZJFR0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 13:25:25 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:37421 "EHLO mx1.redhat.com"
+	Tue, 6 Oct 2009 13:26:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36892 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757609AbZJFRZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 13:25:24 -0400
-From: Glauber Costa <glommer@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: [PATCH] allow userspace to adjust kvmclock offset
-Date: Tue,  6 Oct 2009 13:24:56 -0400
-Message-Id: <1254849896-3947-1-git-send-email-glommer@redhat.com>
+	id S932326AbZJFR0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 13:26:54 -0400
+Date: Tue, 6 Oct 2009 17:26:02 +0000
+From: Kyle McMartin <kyle@hera.kernel.org>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
+Subject: [git patches] parisc for 2.6.32
+Message-ID: <20091006172602.GA1924@hera.kernel.org>
+Reply-To: kyle@mcmartin.ca
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 06 Oct 2009 17:26:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we migrate a kvm guest that uses pvclock between two hosts, we may
-suffer a large skew. This is because there can be significant differences
-between the monotonic clock of the hosts involved. When a new host with
-a much larger monotonic time starts running the guest, the view of time
-will be significantly impacted.
+Mostly fixes, except for the tracehook stuff... then again cleaning up
+ptrace is a pretty big fix in and of itself. ;-)
 
-Situation is much worse when we do the opposite, and migrate to a host with
-a smaller monotonic clock.
+The following changes since commit 17d857be649a21ca90008c6dc425d849fa83db5c:
+  Linus Torvalds (1):
+        Linux 2.6.32-rc1
 
-This new proposed ioctl will allow userspace to inform us what is the monotonic
-clock value in the source host, so we can keep the time skew short, and more
-importantly, never goes backwards.
+are available in the git repository at:
 
-Signed-off-by: Glauber Costa <glommer@redhat.com>
----
- arch/x86/include/asm/kvm_host.h |    1 +
- arch/x86/kvm/x86.c              |   19 ++++++++++++++++++-
- include/linux/kvm.h             |    1 +
- 3 files changed, 20 insertions(+), 1 deletions(-)
+  hera.kernel.org:/pub/scm/linux/kernel/git/kyle/parisc-2.6.git fixes
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 179a919..c9b0d9f 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -410,6 +410,7 @@ struct kvm_arch{
- 
- 	unsigned long irq_sources_bitmap;
- 	u64 vm_init_tsc;
-+	s64 kvmclock_offset;
- };
- 
- struct kvm_vm_stat {
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 747e566..9c9939e 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -699,7 +699,8 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
- 	/* With all the info we got, fill in the values */
- 
- 	vcpu->hv_clock.system_time = ts.tv_nsec +
--				     (NSEC_PER_SEC * (u64)ts.tv_sec);
-+				     (NSEC_PER_SEC * (u64)ts.tv_sec) + v->kvm->arch.kvmclock_offset;
-+
- 	/*
- 	 * The interface expects us to write an even number signaling that the
- 	 * update is finished. Since the guest won't see the intermediate
-@@ -2437,6 +2438,22 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 		r = 0;
- 		break;
- 	}
-+	case KVM_ADJUST_CLOCK: {
-+		struct timespec now;
-+		u64 now_ns, user_ns;
-+		long delta;
-+
-+		r =  -EFAULT;
-+		if (copy_from_user(&user_ns, argp, sizeof(user_ns)))
-+			goto out;
-+
-+		r = 0;
-+		ktime_get_ts(&now);
-+		now_ns = timespec_to_ns(&now) + kvm->arch.kvmclock_offset;
-+		delta = user_ns - now_ns;
-+		kvm->arch.kvmclock_offset = delta;
-+		break;	
-+	}
- 	default:
- 		;
- 	}
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index f8f8900..0cd5ad8 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -546,6 +546,7 @@ struct kvm_irqfd {
- #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
- #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
- #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
-+#define KVM_ADJUST_CLOCK	  _IOW(KVMIO, 0x7a, __u64)
- 
- /*
-  * ioctls for vcpu fds
--- 
-1.6.2.2
+Christoph Hellwig (1):
+      parisc: convert to asm-generic/hardirq.h
 
+Helge Deller (3):
+      parisc: rename parisc's vmalloc_start to parisc_vmalloc_start
+      parisc: Fix linker script breakage.
+      agp: parisc-agp.c - use correct page_mask function
+
+James Bottomley (1):
+      parisc: add me to Maintainers
+
+Jaswinder Singh Rajput (1):
+      parisc: includecheck fix: signal.c
+
+Julia Lawall (1):
+      parisc: correct use of SHF_ALLOC
+
+Kyle McMartin (7):
+      parisc: tracehook_report_syscall
+      parisc: tracehook_signal_handler
+      parisc: add missing TI_TASK macro in syscall.S
+      parisc: split syscall_trace into two halves
+      parisc: stop using task->ptrace for {single,block}step flags
+      parisc: add skeleton syscall.h
+      parisc: HAVE_ARCH_TRACEHOOK
+
+Tim Abbott (1):
+      parisc: Make THREAD_SIZE available to assembly files and linker scripts.
+
+ MAINTAINERS                           |    1 +
+ arch/parisc/Kconfig                   |    1 +
+ arch/parisc/include/asm/fixmap.h      |    4 +-
+ arch/parisc/include/asm/hardirq.h     |   20 +---------------
+ arch/parisc/include/asm/ptrace.h      |    5 +++-
+ arch/parisc/include/asm/syscall.h     |   40 +++++++++++++++++++++++++++++++
+ arch/parisc/include/asm/thread_info.h |   14 +++++++----
+ arch/parisc/kernel/asm-offsets.c      |    4 +-
+ arch/parisc/kernel/entry.S            |   21 ++++++++--------
+ arch/parisc/kernel/irq.c              |    5 ----
+ arch/parisc/kernel/module.c           |    2 +-
+ arch/parisc/kernel/ptrace.c           |   42 ++++++++++++++++----------------
+ arch/parisc/kernel/signal.c           |    5 +++-
+ arch/parisc/kernel/syscall.S          |   22 +++++++++++------
+ arch/parisc/kernel/vmlinux.lds.S      |   10 ++++++++
+ arch/parisc/mm/init.c                 |   11 ++++----
+ drivers/char/agp/parisc-agp.c         |    2 +-
+ 17 files changed, 128 insertions(+), 81 deletions(-)
+ create mode 100644 arch/parisc/include/asm/syscall.h
