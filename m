@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932107AbZJFKQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbZJFKKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932107AbZJFKQe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 06:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932081AbZJFKQe
+	id S1756903AbZJFKKT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 06:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756327AbZJFKKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 06:16:34 -0400
-Received: from mail-qy0-f173.google.com ([209.85.221.173]:40438 "EHLO
-	mail-qy0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932067AbZJFKQd (ORCPT
+	Tue, 6 Oct 2009 06:10:18 -0400
+Received: from mci007.btnet.de ([194.172.160.7]:36793 "EHLO relay.btnet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756708AbZJFKKS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 06:16:33 -0400
-Date: Tue, 6 Oct 2009 10:09:08 +0000
-From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-To: Gleb Natapov <gleb@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: [PATCH][RFC] add MAP_UNLOCKED mmap flag
-Message-ID: <20091006100908.GB6650@gambetta>
-References: <20091006095111.GG9832@redhat.com>
+	Tue, 6 Oct 2009 06:10:18 -0400
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091006095111.GG9832@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: AW: AW: AW: clock_nanosleep: cyclic POSIX thread freezes during time setting
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4325
+Date: Tue, 6 Oct 2009 12:09:35 +0200
+Message-ID: <40F775BBD072A346957E787B3D0DBE5F1C97B6@w2k3-46ex01.RITTER.LOCAL>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: AW: AW: clock_nanosleep: cyclic POSIX thread freezes during time setting
+thread-index: AcpGbHRVVjXKNE5aQ26gPUhEDh0PVAAAK9UA
+References: <40F775BBD072A346957E787B3D0DBE5F1C97AF@w2k3-46ex01.RITTER.LOCAL> <alpine.LFD.2.00.0910052044410.2646@localhost.localdomain> <40F775BBD072A346957E787B3D0DBE5F1C97B4@w2k3-46ex01.RITTER.LOCAL> <alpine.LFD.2.00.0910061112400.2646@localhost.localdomain> <40F775BBD072A346957E787B3D0DBE5F1C97B5@w2k3-46ex01.RITTER.LOCAL> <alpine.LFD.2.00.0910061201210.2646@localhost.localdomain>
+From: "Mehlan, Markus" <Markus.Mehlan@ritter.info>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+CC: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Gleb,
+ Hello Thomas,
 
-On Tue, Oct 06, 2009 at 11:51:11AM +0200, Gleb Natapov wrote:
-> If application does mlockall(MCL_FUTURE) it is no longer possible to
-> mmap file bigger than main memory or allocate big area of anonymous
-> memory. Sometimes it is desirable to lock everything related to program
-> execution into memory, but still be able to mmap big file or allocate
-> huge amount of memory and allow OS to swap them on demand. MAP_UNLOCKED
-> allows to do that.
+> -----Ursprüngliche Nachricht-----
+> Von: Thomas Gleixner [mailto:tglx@linutronix.de] 
+> Gesendet: Dienstag, 6. Oktober 2009 12:05
+> An: Mehlan, Markus
+> Cc: linux-kernel@vger.kernel.org
+> Betreff: Re: AW: AW: clock_nanosleep: cyclic POSIX thread 
+> freezes during time setting
 > 
-> Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
-> index 32c8bd6..0ab4c74 100644
-> --- a/include/asm-generic/mman.h
-> +++ b/include/asm-generic/mman.h
-> @@ -12,6 +12,7 @@
->  #define MAP_NONBLOCK	0x10000		/* do not block on IO */
->  #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
->  #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
-> +#define MAP_UNLOKED	0x80000         /* pages are unlocked */
-                 ^^^
-You're missing a 'C' here and below. Also '/* force page unlocking */'
-seems a better comment?
+> CONFIG_FTRACE=y is missing.
+OK!
+> 
+> I don't remember whether the older -rt kernels had ftrace 
+> support for powerpc. 
+> 
+> Can you verify whether later -rt versions (29-rt or 31-rt) 
+> have the same problem ?
+> 
+> Thanks,
+> 
+> 	tglx
+> 
+I have tested with 2.6.29.6-rt23 and couldn't reproduce the problem
+up to now.
 
-Regards,
-Frederik
->  
->  #define MCL_CURRENT	1		/* lock all current mappings */
->  #define MCL_FUTURE	2		/* lock all future mappings */
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 73f5e4b..7c2abdb 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -985,6 +985,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
->  		if (!can_do_mlock())
->  			return -EPERM;
->  
-> +        if (flags & MAP_UNLOKED)
-> +                vm_flags &= ~VM_LOCKED;
-> +
->  	/* mlock MCL_FUTURE? */
->  	if (vm_flags & VM_LOCKED) {
->  		unsigned long locked, lock_limit;
-> --
-> 			Gleb.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Greetings,
+Markus
+
+Sitz der Gesellschaft: Oberhausen
+Handelsregister Amtsgericht Duisburg HRB-Nr. 17168 UST ID-Nr. DE 814009849
+Geschaftsfuehrer: Manfred A. Wagner und Dr. Uwe Baader
+
