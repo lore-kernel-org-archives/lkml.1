@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbZJFPzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbZJFP4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758139AbZJFPzF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbZJFPzE
+	id S1758161AbZJFP4M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbZJFP4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:55:04 -0400
-Received: from mail-px0-f187.google.com ([209.85.216.187]:39214 "EHLO
-	mail-px0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752696AbZJFPzD (ORCPT
+	Tue, 6 Oct 2009 11:56:11 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:36381 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758147AbZJFP4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:55:03 -0400
-Message-ID: <4ACB6830.7050004@anirban.org>
-Date: Tue, 06 Oct 2009 08:54:24 -0700
-From: Anirban Sinha <ani@anirban.org>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.4pre) Gecko/20090915 Thunderbird/3.0b4
+	Tue, 6 Oct 2009 11:56:10 -0400
+Message-ID: <4ACB684A.6060107@gmail.com>
+Date: Tue, 06 Oct 2009 17:54:50 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       peterz@infradead.org, tglx@linutronix.de, ani@anirban.org,
-       asinha@zeugmasystems.com
-CC: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/urgent] futex: Nullify robust lists after cleanup
-References: <new-submission> <tip-fc6b177dee33365ccb29fe6d2092223cf8d679f9@git.kernel.org>
-In-Reply-To: <tip-fc6b177dee33365ccb29fe6d2092223cf8d679f9@git.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [patch 2/4] tree rcu: Add debug RCU head option
+References: <20091006143727.868480435@polymtl.ca> <20091006144038.140258698@polymtl.ca>
+In-Reply-To: <20091006144038.140258698@polymtl.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 06 Oct 2009 17:54:51 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Once upon a time, like on 09-10-06 8:03 AM, tip-bot for Peter Zijlstra wrote:
-
-> futex: Nullify robust lists after cleanup
+Mathieu Desnoyers a écrit :
+> Poisoning the rcu_head callback list. Only for rcu tree for now.
 > 
-> The robust list pointers of user space held futexes are kept intact
-> over an exec() call. When the exec'ed task exits exit_robust_list() is
-> called with the stale pointer. The risk of corruption is minimal, but
-> still it is incorrect to keep the pointers valid. Actually glibc
-> should uninstall the robust list before calling exec() but we have to
-> deal with it anyway.
+> Helps finding racy users of call_rcu(), which results in hangs because list
+> entries are overwritten and/or skipped. Using the lower bit to poison because
+> include/net/dst.h __pad_to_align_refcnt complains when struct rcu_head grows.
 > 
-> Nullify the pointers after [compat_]exit_robust_list() has been
-> called.
-> 
-> Reported-by: Anirban Sinha <ani@anirban.org>
-> Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> LKML-Reference: <new-submission>
-> Cc: stable@kernel.org
 
-Excellent! I very much like the solution because:
+I see :)
 
-(a)  it reiterates the fact that an execve() call is indeed logically the
-'death' of a process.
-'(b) cleans up state that should not logically propagate across an execve() call.
-(c) Does not introduce new EWOULDBLOCK semantics that can potentially break user
-land.
-(d) Restores the 'robust' behavior of futexes by waking up other processes
-waiting on it on an exec() call.
-(e) handles potentially broken/buggy applications gracefully.
-(f) as far as I can see, the world would be better and no worse with this patch :)
+> --- linux-2.6-lttng.orig/include/linux/rcupdate.h	2009-10-06 10:35:15.000000000 -0400
+> +++ linux-2.6-lttng/include/linux/rcupdate.h	2009-10-06 10:35:18.000000000 -0400
+> @@ -45,6 +45,8 @@
+>   * struct rcu_head - callback structure for use with RCU
+>   * @next: next update requests in a list
+>   * @func: actual update function to call after the grace period.
+> + *
+> + * Debug mode assumes func pointer value is word-aligned.
 
-I'll let you guys know if something else strikes my eyes as being odd in the
-course of my digging through the code.
+Ouch, I guess you never tried CONFIG_CC_OPTIMIZE_FOR_SIZE=y ?
 
-Ani
+random extract from "nm -v vmlinux"
+
+c0415e58 T in4_pton
+c0415f66 T in6_pton
+c04161f0 T in_aton
+c0416240 T net_ratelimit
+c0416250 t linkwatch_add_event
+c0416281 t linkwatch_schedule_work
+c0416301 T linkwatch_fire_event
+c0416368 t __linkwatch_run_queue
+c04164d2 t linkwatch_event
+c04164f4 T linkwatch_run_queue
+c0416500 T sk_chk_filter
+c0416703 t sk_filter_rcu_release
+c041671d T sk_detach_filter
+c041676a T sk_attach_filter
+c0416862 T sk_run_filter
+c0416f5d T sk_filter
+c0416fc4 t __flow_cache_shrink
+
+gcc -v
+Using built-in specs.
+Target: i686-pc-linux-gnu
+Configured with: ../gcc-4.4.1/configure --enable-languages=c,c++ --prefix=/usr
+Thread model: posix
+gcc version 4.4.1 (GCC)
 
