@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbZJFRXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbZJFRZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757477AbZJFRXj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 13:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZJFRXi
+	id S1757549AbZJFRZT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 13:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbZJFRZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 13:23:38 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:56190 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755667AbZJFRXi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 13:23:38 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.32-rc3
-Date: Tue, 6 Oct 2009 19:22:59 +0200
-User-Agent: KMail/1.9.9
-Cc: mingo@elte.hu, hohndel@infradead.org, linux-kernel@vger.kernel.org
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <20091006153632.GA29795@elte.hu> <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain> <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain> <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain>
-In-reply-To: <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910061923.00723.elendil@planet.nl>
-X-OriginalArrivalTime: 06 Oct 2009 17:23:00.0700 (UTC) FILETIME=[A77EC1C0:01CA46A9]
+	Tue, 6 Oct 2009 13:25:18 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:23459 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755715AbZJFRZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 13:25:17 -0400
+From: Glauber Costa <glommer@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: [PATCH] fix msr list
+Date: Tue,  6 Oct 2009 13:24:50 -0400
+Message-Id: <1254849890-3916-1-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> - but if it is _not_ set, we'll still try to get a version from the
-> underlying SCM (we actually support git, hg and SVN right now, even if
-> some comments may say "git only"), and if the underlying SCM says it
-> has a local version, we append just "+", so you get a version number
-> like
-> 
-> 2.6.32-rc3+
+For a while now, we are issuing a rdmsr instruction to find out which msrs in our
+save list are really supported by the underlying machine. However, it fails to account
+for kvm-specific msrs, such as the pvclock ones.
 
-Doesn't this leave users of the git snapshot tarballs in the cold?
-That seems a serious disadvantage as different users will get different 
-versions (and thus report different versions in bug reports).
+This patch moves then to the beginning of the list, and skip testing them.
 
-The advantage of an -rc0 in the Makefile is that everybody gets it.
+Signed-off-by: Glauber Costa <glommer@redhat.com>
+---
+ arch/x86/kvm/x86.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 11a6f2f..747e566 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -503,16 +503,19 @@ static inline u32 bit(int bitno)
+  * and KVM_SET_MSRS, and KVM_GET_MSR_INDEX_LIST.
+  *
+  * This list is modified at module load time to reflect the
+- * capabilities of the host cpu.
++ * capabilities of the host cpu. This capabilities test skips MSRs that are
++ * kvm-specific. Those are put in the beginning of the list.
+  */
++
++#define KVM_SAVE_MSRS_BEGIN	2
+ static u32 msrs_to_save[] = {
++	MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
+ 	MSR_IA32_SYSENTER_CS, MSR_IA32_SYSENTER_ESP, MSR_IA32_SYSENTER_EIP,
+ 	MSR_K6_STAR,
+ #ifdef CONFIG_X86_64
+ 	MSR_CSTAR, MSR_KERNEL_GS_BASE, MSR_SYSCALL_MASK, MSR_LSTAR,
+ #endif
+-	MSR_IA32_TSC, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
+-	MSR_IA32_PERF_STATUS, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA
++	MSR_IA32_TSC, MSR_IA32_PERF_STATUS, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA
+ };
+ 
+ static unsigned num_msrs_to_save;
+@@ -2446,7 +2449,8 @@ static void kvm_init_msr_list(void)
+ 	u32 dummy[2];
+ 	unsigned i, j;
+ 
+-	for (i = j = 0; i < ARRAY_SIZE(msrs_to_save); i++) {
++	/* skip the first msrs in the list. KVM-specific */
++	for (i = j = KVM_SAVE_MSRS_BEGIN; i < ARRAY_SIZE(msrs_to_save); i++) {
+ 		if (rdmsr_safe(msrs_to_save[i], &dummy[0], &dummy[1]) < 0)
+ 			continue;
+ 		if (j < i)
+-- 
+1.6.2.2
+
