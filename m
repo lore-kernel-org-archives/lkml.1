@@ -1,148 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbZJFDol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZJFDzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbZJFDol (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 23:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756045AbZJFDok
+	id S1756176AbZJFDzM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 23:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756150AbZJFDzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 23:44:40 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:42821 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754381AbZJFDoj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 23:44:39 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-Cc: shawn.starr@rogers.com, linux-kernel@vger.kernel.org
-Subject: Re: [PROBLEM][2.6.31.1] - Cannot burn DVDs - PIONEER DVD-RW DVR-111D
-In-Reply-To: Your message of "Tue, 06 Oct 2009 00:15:48 +0200."
-             <4aca7014.bWkj1S1Z6N2kt4dr%Joerg.Schilling@fokus.fraunhofer.de>
-From: Valdis.Kletnieks@vt.edu
-References: <4ac9d477.7gleZfWVJq3++UDn%Joerg.Schilling@fokus.fraunhofer.de> <172428.1254779700@turing-police.cc.vt.edu>
-            <4aca7014.bWkj1S1Z6N2kt4dr%Joerg.Schilling@fokus.fraunhofer.de>
+	Mon, 5 Oct 2009 23:55:11 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43987 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756097AbZJFDzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 23:55:10 -0400
+Date: Tue, 6 Oct 2009 14:54:25 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Haojian Zhuang <hzhuang1@marvell.com>
+Cc: Samuel Ortiz <sameo@openedhand.com>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: linux-next: mfd tree build failure
+Message-Id: <20091006145425.a9cc611a.sfr@canb.auug.org.au>
+In-Reply-To: <25B60CDC2F704E4E9D88FFD52780CB4C04B6A3794F@SC-VEXCH1.marvell.com>
+References: <20091006130202.5e18a332.sfr@canb.auug.org.au>
+	<25B60CDC2F704E4E9D88FFD52780CB4C04B6A3794F@SC-VEXCH1.marvell.com>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1254800635_3393P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 05 Oct 2009 23:43:55 -0400
-Message-ID: <188185.1254800635@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.35.168 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=dagger.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020202.4ACABCFC.0152,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__6_Oct_2009_14_54_25_+1100_JnI1TB.TLR+Y0j=C"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1254800635_3393P
-Content-Type: text/plain; charset=iso-8859-1
+--Signature=_Tue__6_Oct_2009_14_54_25_+1100_JnI1TB.TLR+Y0j=C
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 06 Oct 2009 00:15:48 +0200, Joerg Schilling said:
->                                                        The fork did see=
-=20
-> some speudo activity in the time between september 2006 and May 6th 200=
-7 but it
-> is dead since then.
+Hi Haojian,
 
-http://cdrkit.org/releases/ says differently:
+On Mon, 5 Oct 2009 19:35:05 -0700 Haojian Zhuang <hzhuang1@marvell.com> wro=
+te:
+>
+> Could you send your .config file to me? The 88pm8607 patch is just for mf=
+d-2.6 git tree. I didn't try it in linux-next git tree before. I can try it=
+ now. If I could have your .config file, it would be better.
 
-=5B =5D	cdrkit-1.1.3.tar.gz	26-Mar-2007 20:38 	1.4M
-=5B =5D	cdrkit-1.1.4.tgz	01-Apr-2007 20:12 	1.4M
-=5B =5D	cdrkit-1.1.5.1.tar.gz	21-Apr-2007 09:54 	1.3M
-=5B =5D	cdrkit-1.1.5.tar.gz	21-Apr-2007 09:24 	1.3M
-=5B =5D	cdrkit-1.1.6.tar.gz	06-May-2007 15:44 	1.3M
-=5B =5D	cdrkit-1.1.7.1.tar.gz	17-Mar-2008 21:47 	1.4M
-=5B =5D	cdrkit-1.1.8.tar.gz	25-May-2008 23:02 	1.4M
-=5B =5D	cdrkit-1.1.9.tar.gz	26-Oct-2008 23:17 	1.4M
+I am sorry, but I don't have the exact .config file any more (I have
+moved on in my creation of linux-next)  however, as I said, this was an
+allmodconfig build on x86_64.  I also noted that CONFIG_I2C=3Dm and
+CONFIG_MFD_CORE=3Dm, while the config entry that controls the building of
+this driver is a bool so must have been 'y'.  So from a builtin driver,
+you are referring to symbols that are only defined in modules.
 
-Slow-moving maybe, but hardly =22dead=22.=20
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> The fork is a problem caused by a hostile packetizer, see:
-
-> http://cdrecord.berlios.de/private/linux-dist.html
-
-Which says:
-
-=22Although there is no =22project=22 activity on the =22fork=22 anymore =
-since more than
-28 months (which is more than three times of the speudo activity period),=
- there
-are still people who spread incorrect claims on both the original project=
- and
-the fork. Please help the free original project by correcting these incor=
-rect
-claims.=22
-
-Unfortunately, =22there are still people who spread incorrect claims=22 s=
-eems to
-include one Joerg Schilling. Please fix your incorrect =2228 months=22 cl=
-aim, and
-all similar issues.  It will help your original project's credibility.
-
-It also says:
-
-=22In all programs of the fork that send SCSI commands, you may be unable=
- to
-access any of the CD/DVD/Blu-Ray drives at all if you are on Linux-2.6.8.=
-1 or
-later. This is due to a missing workaround for the Linux kernel interface=
-
-change that happened with Linux-2.6.8.1.=22
-
-If this is the SCSI command filtering that was cleared up in 2.6.12, you
-probably owe it to users to point out that little detail.  2.6.12 is over=
- 4
-years ago.  Given that when the fork happened, 2.6.17 was already current=
-, I
-could see why they didn't forward-port the fix for an issue that was only=
- a
-problem then if your kernel was already more than 2 years old, and instea=
-d just
-put in doc/plattforms/README.linux:
-
- - Linux kernel versions between 2.6.8 and 2.6.11 are known to have invas=
-ive
-   SCSI command filtering which makes the use of wodim almost inpossible =
-or
-   complicated for non-root users. Avoid those kernel versions, unless th=
-ey
-   have been patched to disable that filtering.
-
-So this claim, although possibly technically correct, is vastly misleadin=
-g,
-especially 4 years later.
-
-> You can help: Ask your Linux distributor why he distributes an illegal =
-and=20
-> buggy fork instead of the legal original software=21
-
-Apparently it's distributed because their legal team doesn't think it's a=
-n
-illegal fork, and it's still buggy because after you relicensed to CDDL, =
-they
-felt they couldn't backport your fixes to the original GPL code.
-
---==_Exmh_1254800635_3393P
+--Signature=_Tue__6_Oct_2009_14_54_25_+1100_JnI1TB.TLR+Y0j=C
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFKyrz7cC3lWbTT17ARAhCaAJ9+AE7fkPhgUuqSZDdgu1GsAsyM1wCg+zSa
-MQefsS2ikWs+ntxtd5dZaoQ=
-=0wIR
+iEYEARECAAYFAkrKv3EACgkQjjKRsyhoI8zD6QCfXQLIeQSMYelk1WOkuEU9q0yx
+0PQAn1bMHMavSvudvDTKt96LPukNr0v4
+=SYXZ
 -----END PGP SIGNATURE-----
 
---==_Exmh_1254800635_3393P--
-
+--Signature=_Tue__6_Oct_2009_14_54_25_+1100_JnI1TB.TLR+Y0j=C--
