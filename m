@@ -1,49 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933057AbZJFSXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbZJFSYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933057AbZJFSXt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 14:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbZJFSXt
+	id S933079AbZJFSYZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 14:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933014AbZJFSYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 14:23:49 -0400
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:53178 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932407AbZJFSXs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 14:23:48 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: Linux 2.6.32-rc3
-Date: Tue, 6 Oct 2009 20:23:10 +0200
-User-Agent: KMail/1.9.9
-Cc: torvalds@linux-foundation.org, mingo@elte.hu, hohndel@infradead.org,
-       linux-kernel@vger.kernel.org
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <alpine.LFD.2.01.0910060828530.3432@localhost.localdomain> <200910061909.35878.elendil@planet.nl> <200910061909.35878.elendil@planet.nl> <4ACB7F9C.9090606@s5r6.in-berlin.de>
-In-reply-To: <4ACB7F9C.9090606@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Oct 2009 14:24:24 -0400
+Received: from mga14.intel.com ([143.182.124.37]:11217 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932655AbZJFSYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 14:24:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,514,1249282800"; 
+   d="scan'208";a="195741618"
+Date: Tue, 6 Oct 2009 11:23:46 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: David Woodhouse <dwmw2@infradead.org>, Joerg Roedel <joro@8bytes.org>,
+       Francois Isabelle <Francois.Isabelle@ca.kontron.com>
+Cc: iommu <iommu@lists.linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] PCIe hot plug for Intel iommu
+Message-ID: <20091006182346.GA22770@linux-os.sc.intel.com>
+References: <72D8A09E39A89147BE9CFBB6F0C73C306073445396@rrsmsx501.amr.corp.intel.com> <6E2431EDEB6AE64F827F8A1B0D0DA1A603C322CF@azsmsx501.amr.corp.intel.com> <72D8A09E39A89147BE9CFBB6F0C73C30607344552A@rrsmsx501.amr.corp.intel.com> <20091002211844.GA14352@linux-os.sc.intel.com> <20091002215019.GB23379@8bytes.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910062023.11298.elendil@planet.nl>
-X-OriginalArrivalTime: 06 Oct 2009 18:23:11.0591 (UTC) FILETIME=[0FC0FF70:01CA46B2]
+In-Reply-To: <20091002215019.GB23379@8bytes.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Oct 2009, Stefan Richter wrote:
-> Frans Pop wrote:
-> > Developers are supposed to be able to take care of themselves;
-> 
-> _People who build kernels from sources which differ from releases_ are
-> supposed to take care of themselves.
+To support PCIe hot plug in IOMMU, we register a notifier to respond to device
+change action.
 
-OK. I can agree with that too. It does take some time to learn to take care 
-of oneself though. The point was that contributors start out as users; 
-some will gradually become developers.
+When the notifier gets BUS_NOTIFY_UNBOUND_DRIVER, it removes the device from its
+DMAR domain.
 
-And remember that developers also do often *ask* regular users to "try the
-current mainline", even during the merge window. Maybe that is something 
-that is done too lightly?
+A hot added device will be added into an IOMMU domain when it first does IOMMU
+op. So there is no need to add more code for hot add. 
 
-Cheers,
-FJP
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+
+---
+
+ intel-iommu.c |   29 +++++++++++++++++++++++++++++
+ 1 files changed, 29 insertions(+)
+
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index 855dd7c..d8b8cfc 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -3193,6 +3193,33 @@ static int __init init_iommu_sysfs(void)
+ }
+ #endif	/* CONFIG_PM */
+ 
++/*
++ * Here we only respond to action of unbound device from driver.
++ *
++ * Added device is not attached to its DMAR domain here yet. That will happen
++ * when mapping the device to iova.
++ */
++static int device_notifier(struct notifier_block *nb,
++				  unsigned long action, void *data)
++{
++	struct device *dev = data;
++	struct pci_dev *pdev = to_pci_dev(dev);
++	struct dmar_domain *domain;
++
++	domain = find_domain(pdev);
++	if (!domain)
++		return 0;
++
++	if (action == BUS_NOTIFY_UNBOUND_DRIVER && !iommu_pass_through)
++		domain_remove_one_dev_info(domain, pdev);
++
++	return 0;
++}
++
++static struct notifier_block device_nb = {
++	.notifier_call = device_notifier,
++};
++
+ int __init intel_iommu_init(void)
+ {
+ 	int ret = 0;
+@@ -3245,6 +3272,8 @@ int __init intel_iommu_init(void)
+ 
+ 	register_iommu(&intel_iommu_ops);
+ 
++	bus_register_notifier(&pci_bus_type, &device_nb);
++
+ 	return 0;
+ }
+ 
