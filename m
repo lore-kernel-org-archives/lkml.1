@@ -1,46 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933313AbZJFUvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933358AbZJFUxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933313AbZJFUvN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 16:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933273AbZJFUvM
+	id S933358AbZJFUxJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 16:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933302AbZJFUxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 16:51:12 -0400
-Received: from khc.piap.pl ([195.187.100.11]:55523 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933218AbZJFUvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 16:51:12 -0400
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Andy Whitcroft <apw@canonical.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
-References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
-	<1253585691-10987-2-git-send-email-dwalker@fifo99.com>
-	<1253585691-10987-3-git-send-email-dwalker@fifo99.com>
-	<4AB86ED1.1040200@cn.fujitsu.com> <20090930152708.GD2957@shadowen.org>
-	<1254406711.18167.88.camel@desktop>
-Date: Tue, 06 Oct 2009 22:50:32 +0200
-In-Reply-To: <1254406711.18167.88.camel@desktop> (Daniel Walker's message of
-	"Thu, 01 Oct 2009 07:18:30 -0700")
-Message-ID: <m33a5ww8kn.fsf@intrepid.localdomain>
+	Tue, 6 Oct 2009 16:53:08 -0400
+Received: from na3sys009aog113.obsmtp.com ([74.125.149.209]:48779 "EHLO
+	na3sys009aog113.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933300AbZJFUxG convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 16:53:06 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "James.Bottomley@suse.de" <James.Bottomley@suse.de>
+CC: "Austria, Winston" <Winston.Austria@lsi.com>,
+       "Mukker, Atul" <Atul.Mukker@lsi.com>
+Date: Tue, 6 Oct 2009 14:52:20 -0600
+Subject: [PATCH 11/12] scsi: megaraid_sas - Add the 3 mins support during
+ the FW boot-up and fixed the 64 bit sense buff error.  
+Thread-Topic: [PATCH 11/12] scsi: megaraid_sas - Add the 3 mins support
+ during the FW boot-up and fixed the 64 bit sense buff error.  
+Thread-Index: Aco284muq21jjlUCRvWfDnAhnowdBQAABfzAAAAxetAAAF05EAAATiEQAAAy5GAAAEeYsAAAagLgAABgNiAAAIZ8AADZ1diAAxhDMZA=
+Message-ID: <4B6A08C587958942AA3002690DD4F8C35C6861F3@cosmail02.lsi.com>
+References: <4B6A08C587958942AA3002690DD4F8C35C5119D7@cosmail02.lsi.com>
+ <4B6A08C587958942AA3002690DD4F8C35C512407@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C35C512407@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker <dwalker@fifo99.com> writes:
+RESUBMIT:
 
-> In terms of the list getting long or not, your basically in control of
-> it since you maintain checkpatch .. If you leave it without some sort of
-> blacklist, then you end up with whole sections of code where the
-> developers don't use checkpatch at all (or very little)..
+Add the 3 mins support during the FW boot-up to the driver.  Also add the fix for the 64 bit sense buff error.
 
-Why? I routinely ignore specific warnings from checkpatch while paying
-attention to other ones. That's precisely what one should expect if the
-code in question technically violates the common style (or whatever is
-it). I don't think we need exceptions in the checkpatch as they would
-make it less useful and less reliable.
--- 
-Krzysztof Halasa
+Signed-off-by Bo Yang<bo.yang@lsi.com>
+
+---
+drivers/scsi/megaraid/megaraid_sas.c |   36 ++++++++++++++++++++---------------
+ 1 file changed, 21 insertions(+), 15 deletions(-)
+
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c	2009-09-15 05:01:51.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c	2009-09-15 05:23:28.000000000 -0400
+@@ -1820,6 +1820,7 @@ megasas_transition_to_ready(struct megas
+ 	u8 max_wait;
+ 	u32 fw_state;
+ 	u32 cur_state;
++	u32 abs_state, curr_abs_state;
+ 
+ 	fw_state = instance->instancet->read_fw_status_reg(instance->reg_set) & MFI_STATE_MASK;
+ 
+@@ -1829,6 +1830,9 @@ megasas_transition_to_ready(struct megas
+ 
+ 	while (fw_state != MFI_STATE_READY) {
+ 
++		abs_state =
++		instance->instancet->read_fw_status_reg(instance->reg_set);
++
+ 		switch (fw_state) {
+ 
+ 		case MFI_STATE_FAULT:
+@@ -1854,7 +1858,7 @@ megasas_transition_to_ready(struct megas
+ 					&instance->reg_set->inbound_doorbell);
+ 			}
+ 
+-			max_wait = 2;
++			max_wait = MEGASAS_RESET_WAIT_TIME;
+ 			cur_state = MFI_STATE_WAIT_HANDSHAKE;
+ 			break;
+ 
+@@ -1869,7 +1873,7 @@ megasas_transition_to_ready(struct megas
+ 				writel(MFI_INIT_HOTPLUG,
+ 					&instance->reg_set->inbound_doorbell);
+ 
+-			max_wait = 10;
++			max_wait = MEGASAS_RESET_WAIT_TIME;
+ 			cur_state = MFI_STATE_BOOT_MESSAGE_PENDING;
+ 			break;
+ 
+@@ -1888,7 +1892,7 @@ megasas_transition_to_ready(struct megas
+ 				writel(MFI_RESET_FLAGS,
+ 					&instance->reg_set->inbound_doorbell);
+ 
+-			max_wait = 60;
++			max_wait = MEGASAS_RESET_WAIT_TIME;
+ 			cur_state = MFI_STATE_OPERATIONAL;
+ 			break;
+ 
+@@ -1896,32 +1900,32 @@ megasas_transition_to_ready(struct megas
+ 			/*
+ 			 * This state should not last for more than 2 seconds
+ 			 */
+-			max_wait = 2;
++			max_wait = MEGASAS_RESET_WAIT_TIME;
+ 			cur_state = MFI_STATE_UNDEFINED;
+ 			break;
+ 
+ 		case MFI_STATE_BB_INIT:
+-			max_wait = 2;
++			max_wait = MEGASAS_RESET_WAIT_TIME;
+ 			cur_state = MFI_STATE_BB_INIT;
+ 			break;
+ 
+ 		case MFI_STATE_FW_INIT:
+-			max_wait = 20;
++			max_wait = MEGASAS_RESET_WAIT_TIME;
+ 			cur_state = MFI_STATE_FW_INIT;
+ 			break;
+ 
+ 		case MFI_STATE_FW_INIT_2:
+-			max_wait = 20;
++			max_wait = MEGASAS_RESET_WAIT_TIME;
+ 			cur_state = MFI_STATE_FW_INIT_2;
+ 			break;
+ 
+ 		case MFI_STATE_DEVICE_SCAN:
+-			max_wait = 20;
++			max_wait = MEGASAS_RESET_WAIT_TIME;
+ 			cur_state = MFI_STATE_DEVICE_SCAN;
+ 			break;
+ 
+ 		case MFI_STATE_FLUSH_CACHE:
+-			max_wait = 20;
++			max_wait = MEGASAS_RESET_WAIT_TIME;
+ 			cur_state = MFI_STATE_FLUSH_CACHE;
+ 			break;
+ 
+@@ -1937,8 +1941,10 @@ megasas_transition_to_ready(struct megas
+ 		for (i = 0; i < (max_wait * 1000); i++) {
+ 			fw_state = instance->instancet->read_fw_status_reg(instance->reg_set) &  
+ 					MFI_STATE_MASK ;
++		curr_abs_state =
++		instance->instancet->read_fw_status_reg(instance->reg_set);
+ 
+-			if (fw_state == cur_state) {
++			if (abs_state == curr_abs_state) {
+ 				msleep(1);
+ 			} else
+ 				break;
+@@ -1947,7 +1953,7 @@ megasas_transition_to_ready(struct megas
+ 		/*
+ 		 * Return error if fw_state hasn't changed after max_wait
+ 		 */
+-		if (fw_state == cur_state) {
++		if (curr_abs_state == abs_state) {
+ 			printk(KERN_DEBUG "FW state [%d] hasn't changed "
+ 			       "in %d secs\n", fw_state, max_wait);
+ 			return -ENODEV;
+@@ -3515,7 +3521,7 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 	int error = 0, i;
+ 	void *sense = NULL;
+ 	dma_addr_t sense_handle;
+-	u32 *sense_ptr;
++	unsigned long *sense_ptr;
+ 
+ 	memset(kbuff_arr, 0, sizeof(kbuff_arr));
+ 
+@@ -3593,7 +3599,7 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 		}
+ 
+ 		sense_ptr =
+-		    (u32 *) ((unsigned long)cmd->frame + ioc->sense_off);
++		(unsigned long *) ((unsigned long)cmd->frame + ioc->sense_off);
+ 		*sense_ptr = sense_handle;
+ 	}
+ 
+@@ -3624,8 +3630,8 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+ 		 * sense_ptr points to the location that has the user
+ 		 * sense buffer address
+ 		 */
+-		sense_ptr = (u32 *) ((unsigned long)ioc->frame.raw +
+-				     ioc->sense_off);
++		sense_ptr = (unsigned long *) ((unsigned long)ioc->frame.raw +
++				ioc->sense_off);
+ 
+ 		if (copy_to_user((void __user *)((unsigned long)(*sense_ptr)),
+ 				 sense, ioc->sense_len)) {
