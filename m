@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbZJFC3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZJFCeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbZJFC3p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 22:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755845AbZJFC3o
+	id S1756043AbZJFCeU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 22:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbZJFCeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 22:29:44 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34382 "EHLO smtps.tip.net.au"
+	Mon, 5 Oct 2009 22:34:20 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:46043 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755731AbZJFC3o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 22:29:44 -0400
-Date: Tue, 6 Oct 2009 13:28:57 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Airlie <airlied@linux.ie>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: linux-next: manual merge of the drm tree with Linus' tree
-Message-Id: <20091006132857.5bd1cc3a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__6_Oct_2009_13_28_57_+1100_rdZ=MCLIcAsQuAor"
+	id S1754743AbZJFCeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 22:34:19 -0400
+Date: Mon, 5 Oct 2009 19:34:01 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] signals: send_signal: use si_fromuser() to detect
+	from_ancestor_ns
+Message-ID: <20091006023401.GA10132@us.ibm.com>
+References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com> <20091004021954.GC21006@redhat.com> <20091005181255.GE30442@us.ibm.com> <20091005182536.GA943@redhat.com> <20091005193738.GF30442@us.ibm.com> <20091005194415.GA4560@redhat.com> <20091006000631.GA4390@us.ibm.com> <20091006010956.GA28233@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091006010956.GA28233@redhat.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__6_Oct_2009_13_28_57_+1100_rdZ=MCLIcAsQuAor
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Oleg Nesterov [oleg@redhat.com] wrote:
+| On 10/05, Sukadev Bhattiprolu wrote:
+| >
+| > Oleg Nesterov [oleg@redhat.com] wrote:
+| > | Sorry for confusion.
+| > |
+| > | > But sure, we could use force_sig_info() in caller.
+| > |
+| > | Yes, because this makes the code more explicit imho. And we can avoid
+| > | the further complicatiions in send_signal() path.
+| >
+| > Although, one small drawback would be the different behavior for the
+| > SIGKILL in load_aout_binary() to the container-init itself calling:
+| >
+| > 	kill(getpid(), SIGKILL);
+| 
+| could you clarify? load_aout_binary(), like other ->load_binary()
+| methods does send_sig(SIGKILL, current, 0) ?
 
-Hi Dave,
+Yes sorry for being cryptic.
 
-Today's linux-next merge of the drm tree got a conflict in
-drivers/gpu/drm/radeon/radeon_device.c between commit
-28d520433b6375740990ab99d69b0d0067fd656b ("drm/vgaarb: add VGA
-arbitration support to the drm and kms") from Linus' tree and commit
-62a8ea3f7bb61e5f92db0a648b7cc566852c36ec ("drm/radeon/kms: Remove old
-init path as no hw use it anymore") from the drm tree.
+If we use force_sig_info() in ->load_binary() methods for the SIGKILL,
+they will, correctly, kill the container-init.
 
-I have no idea how to reconcile these, so I have just used the version
-from the drm tree.  Please do the merge with Linus' tree and fix this up
-properly.  (There are also still conflicts in
-drivers/gpu/drm/radeon/radeon.h and drivers/gpu/drm/radeon/radeon_asic.h)
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+But if the container-init itself calls kill(getpid(), SIGKILL), the
+container-init will not be killed.
 
---Signature=_Tue__6_Oct_2009_13_28_57_+1100_rdZ=MCLIcAsQuAor
-Content-Type: application/pgp-signature
+I was just pointing out the small difference in behavior for the
+same signal (when we use force_sig_info()).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Thanks for fixing the bug.
 
-iEYEARECAAYFAkrKq2kACgkQjjKRsyhoI8wybgCfVuJA/yLfb7HIzh5sZ2FReO8+
-SQ8AoJZYQiYqP2sir/Bj7bd+s0QCPmlB
-=Hu2B
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_Oct_2009_13_28_57_+1100_rdZ=MCLIcAsQuAor--
+Sukadev
