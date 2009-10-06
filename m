@@ -1,42 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbZJFPY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbZJFPZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756519AbZJFPY5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:24:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZJFPY5
+	id S1757671AbZJFPZV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbZJFPZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:24:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60215 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755700AbZJFPY4 (ORCPT
+	Tue, 6 Oct 2009 11:25:20 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:36916 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755667AbZJFPZS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:24:56 -0400
-Date: Tue, 6 Oct 2009 11:24:19 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Tom Zanussi <tzanussi@gmail.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org,
-       lizf@cn.fujitsu.com
-Subject: Re: [PATCH 2/3] perf trace: Update eval_flag() flags array to
-	match interrupt.h
-Message-ID: <20091006152419.GA10501@infradead.org>
-References: <1254808849-7829-1-git-send-email-tzanussi@gmail.com> <1254808849-7829-3-git-send-email-tzanussi@gmail.com> <20091006132732.GA14978@infradead.org> <20091006151858.GB5152@nowhere> <20091006152106.GA6490@infradead.org> <20091006152255.GC5152@nowhere>
+	Tue, 6 Oct 2009 11:25:18 -0400
+Date: Tue, 6 Oct 2009 20:54:21 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-arch@vger.kernel.org
+Subject: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power management
+	code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
+	cpuidle to POWER.
+Message-ID: <20091006152421.GA7278@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091006152255.GC5152@nowhere>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 05:22:58PM +0200, Frederic Weisbecker wrote:
-> I see...
-> Then the only solution I can imagine is to export a debugfs file
-> in the tracing directory that provides this name resolution.
+Hi
 
-The format files kinda contain that information, just not in a very
-useful format.  I think the general problem is that the formats exported
-aren't descriptive enough, and fields/flags are just one symptom of
-that.
+Please consider this for inclusion into the testing tree.
+
+This patchset introduces cpuidle infrastructure to POWER, prototyping
+for pSeries, and also does a major refactoring of current x86 idle
+power management and a cleanup of cpuidle infrastructure.
+
+Earlier discussions on the same can be found at:
+
+v6 --> http://lkml.org/lkml/2009/9/22/180
+v5 --> http://lkml.org/lkml/2009/9/22/26
+v4 --> http://lkml.org/lkml/2009/9/1/133
+v3 --> http://lkml.org/lkml/2009/8/27/124
+v2 --> http://lkml.org/lkml/2009/8/26/233
+v1 --> http://lkml.org/lkml/2009/8/19/150
+
+
+Changes in this version:
+-----------------------------------------
+
+* Earlier implementation maintained a list of cpuidle devices and
+  the list was traversed to disable and enable the cpuidle devices
+  when switching governors. This list is not necessary and is removed.
+  Now, we get the per cpu structure cpuidle_devices and disable and
+  enable it for each online cpu while switching governors.
+
+* Earlier iterations were buggy w.r.t the sysfs interface of the cpuidle.
+  This iteration removes the bug in PATCH 1/7.
+
+* In PATCH 7/7, smt_snooze_delay was not being updated whenever it was
+  changed through the sysfs interface. Provide a helper routine to
+  update it.
+
+* In PATCH 7/7, the idle loops are renamed to denote the idle states
+  to avoid any confusion.
+
+
+thanks,
+arun
