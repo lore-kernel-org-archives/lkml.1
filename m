@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932871AbZJFP7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932964AbZJFQIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932871AbZJFP7l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbZJFP7k
+	id S932964AbZJFQIH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 12:08:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932889AbZJFQIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:59:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40892 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932799AbZJFP7j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:59:39 -0400
-Date: Tue, 6 Oct 2009 08:58:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: James Bottomley <James.Bottomley@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
-In-Reply-To: <1254844007.4383.85.camel@mulgrave.site>
-Message-ID: <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
-References: <1254844007.4383.85.camel@mulgrave.site>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 6 Oct 2009 12:08:06 -0400
+Received: from zmc.proxad.net ([212.27.53.206]:45431 "EHLO zmc.proxad.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932823AbZJFQIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 12:08:05 -0400
+X-Greylist: delayed 488 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Oct 2009 12:08:04 EDT
+X-Spam-Flag: NO
+X-Spam-Score: -4.399
+From: Florian Fainelli <ffainelli@freebox.fr>
+To: spi-devel-general@lists.sourceforge.net
+Subject: [PATCH] fix spidev compilation when VERBOSE is defined
+Date: Tue, 6 Oct 2009 17:59:16 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-server; KDE/4.2.2; x86_64; ; )
+Organization: Freebox
+Cc: dbrownell@users.sourceforge.net, Maxime Bizon <mbizon@freebox.fr>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910061759.17327.ffainelli@freebox.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(please CC me as I am not subscribed to spi-devel-general).
 
+When VERBOSE is defined in the spidev module, the compilation
+will throw an error on 'spi' not being defined:
 
-On Tue, 6 Oct 2009, James Bottomley wrote:
->
-> This is mostly fixes.  However, it contains two new drivers: Brocade SAS
-> (bfa), the Bladengine2 iSCSI (be2iscsi) under the merge window exemption
+CC [M]  drivers/spi/spidev.o                   
+drivers/spi/spidev.c: In function 'spidev_message':
+drivers/spi/spidev.c:266: error: 'spi' undeclared (first use in this function)
+drivers/spi/spidev.c:266: error: (Each undeclared identifier is reported only once
+drivers/spi/spidev.c:266: error: for each function it appears in.) 
 
-Btw, I'm getting less excited about the merge window exemption.
+instead of using spi-> we should actually use spidev->spi.
+This patch fixes the build failure.
 
-It makes sense for consumer devices that people actually hit and that are 
-needed for bringup (ie they make a difference between a system that can be 
-installed and used, and one that cannot), but I'm not at all sure it makes 
-sense for things like this.
+CC: David Brownell <dbrownell@users.sourceforge.net>
+CC: Maxime Bizon <mbizon@freebox.fr>
+Signed-off-by: Florian Fainelli <ffainelli@freebox.fr>
+--
+diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
+index 5d869c4..c80c31b 100644
+--- a/drivers/spi/spidev.c
++++ b/drivers/spi/spidev.c
+@@ -262,15 +262,15 @@ static int spidev_message(struct spidev_data *spidev,
+ 		k_tmp->delay_usecs = u_tmp->delay_usecs;
+ 		k_tmp->speed_hz = u_tmp->speed_hz;
+ #ifdef VERBOSE
+-		dev_dbg(&spi->dev,
++		dev_dbg(&spidev->spi->dev,
+ 			"  xfer len %zd %s%s%s%dbits %u usec %uHz\n",
+ 			u_tmp->len,
+ 			u_tmp->rx_buf ? "rx " : "",
+ 			u_tmp->tx_buf ? "tx " : "",
+ 			u_tmp->cs_change ? "cs " : "",
+-			u_tmp->bits_per_word ? : spi->bits_per_word,
++			u_tmp->bits_per_word ? : spidev->spi->bits_per_word,
+ 			u_tmp->delay_usecs,
+-			u_tmp->speed_hz ? : spi->max_speed_hz);
++			u_tmp->speed_hz ? : spidev->spi->max_speed_hz);
+ #endif
+ 		spi_message_add_tail(k_tmp, &msg);
+ 	}
 
-The _reason_ for the driver exemption was the fact that even a broken 
-driver is better than no driver at all for somebody who just can't get a 
-working system without it, but that argument really goes away when the 
-driver is so specialized that it's not about regular hardware any more.
-
-And the whole "driver exemption" seems to have become a by-word for "I can 
-ignore the merge window for 50% of my code". Which makes me very tired of 
-it if there aren't real advantages to real users.
-
-So I'm seriously considering a "the driver has to be mass market and also 
-actually matter to an install" rule for the exemption to be valid.
-
-			Linus
