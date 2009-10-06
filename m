@@ -1,136 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbZJFTBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbZJFTDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277AbZJFTBv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 15:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757790AbZJFTBv
+	id S1758322AbZJFTDr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 15:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758255AbZJFTDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 15:01:51 -0400
-Received: from claw.goop.org ([74.207.240.146]:34115 "EHLO claw.goop.org"
+	Tue, 6 Oct 2009 15:03:46 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:13242 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755618AbZJFTBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 15:01:50 -0400
-Message-ID: <4ACB93F8.5010900@goop.org>
-Date: Tue, 06 Oct 2009 12:01:12 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1757857AbZJFTDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 15:03:45 -0400
+Date: Tue, 6 Oct 2009 21:03:16 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
+Subject: [PATCH v3][RFC] add MAP_UNLOCKED mmap flag
+Message-ID: <20091006190316.GB19692@redhat.com>
 MIME-Version: 1.0
-To: Bastian Blank <bastian@waldi.eu.org>, Ingo Molnar <mingo@redhat.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Stable Kernel <stable@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [Xen-devel] Re: [PATCH] xen: Disable stack protector for irq
- helper
-References: <20091004183013.GA26101@wavehammer.waldi.eu.org> <4AC92A65.40806@goop.org> <20091005013517.GA6081@wavehammer.waldi.eu.org> <4ACA2AFD.4080305@goop.org> <20091005224310.GA32144@wavehammer.waldi.eu.org> <4ACA90F2.1060909@goop.org> <20091006033050.GA6332@wavehammer.waldi.eu.org>
-In-Reply-To: <20091006033050.GA6332@wavehammer.waldi.eu.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/05/09 20:30, Bastian Blank wrote:
-> The original version saves ecx, but not edx. Both are official
-> caller-saved registers.
->   
+If application does mlockall(MCL_FUTURE) it is no longer possible to
+mmap file bigger than main memory or allocate big area of anonymous
+memory. Sometimes it is desirable to lock everything related to program
+execution into memory, but still be able to mmap big file or allocate
+huge amount of memory and allow OS to swap them on demand. MAP_UNLOCKED
+allows to do that.
 
-Hm.  It doesn't save edx because that can be half of a 64-bit return
-value, and in general both eax and edx are marked clobbered.  Except one
-place; does the patch below help?
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+---
 
->> Besides, most of the code in that file isn't used unless you're using a
->> very old version of Xen; it will generally prefer to use the ones in
->> xen-asm_X.S.
->>     
-> Well, my call stack say something different. It crashs during early
-> startup without a console. The modifications to the function pointers is
-> done much later.
+v1->v2
+ - adding new flag to all archs
+ - fixing typo
+v2->v3
+ - one more typo fix 
 
-You're right.  But you're holding out on me; can I see your backtrace? 
-And the disassembly of the troublesome code (both the Xen function and
-the calling function)?
-
-Thanks,
-    J
-
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Date: Tue, 6 Oct 2009 11:36:44 -0700
-Subject: [PATCH] x86/paravirt: use normal calling sequences for irq enable/disable etc
-
-For historical reasons irq enable/disable/save/restore had special
-calling sequences to make them more efficient.  With the more
-recent introduction of higher-level and more general optimisations
-this is no longer necessary so we can just use the normal PVOP_
-macros.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index e19ffe3..e8420a2 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -863,42 +863,22 @@ static __always_inline void __raw_spin_unlock(struct raw_spinlock *lock)
+diff --git a/arch/alpha/include/asm/mman.h b/arch/alpha/include/asm/mman.h
+index 99c56d4..cfc51ac 100644
+--- a/arch/alpha/include/asm/mman.h
++++ b/arch/alpha/include/asm/mman.h
+@@ -30,6 +30,7 @@
+ #define MAP_NONBLOCK	0x40000		/* do not block on IO */
+ #define MAP_STACK	0x80000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x100000	/* create a huge page mapping */
++#define MAP_UNLOCKED	0x200000	/* force page unlocking */
  
- static inline unsigned long __raw_local_save_flags(void)
- {
--	unsigned long f;
--
--	asm volatile(paravirt_alt(PARAVIRT_CALL)
--		     : "=a"(f)
--		     : paravirt_type(pv_irq_ops.save_fl),
--		       paravirt_clobber(CLBR_EAX)
--		     : "memory", "cc");
--	return f;
-+	return PVOP_CALLEE0(unsigned long, pv_irq_ops.save_fl);
- }
+ #define MS_ASYNC	1		/* sync memory asynchronously */
+ #define MS_SYNC		2		/* synchronous memory sync */
+diff --git a/arch/mips/include/asm/mman.h b/arch/mips/include/asm/mman.h
+index a2250f3..c161e27 100644
+--- a/arch/mips/include/asm/mman.h
++++ b/arch/mips/include/asm/mman.h
+@@ -48,6 +48,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
  
- static inline void raw_local_irq_restore(unsigned long f)
- {
--	asm volatile(paravirt_alt(PARAVIRT_CALL)
--		     : "=a"(f)
--		     : PV_FLAGS_ARG(f),
--		       paravirt_type(pv_irq_ops.restore_fl),
--		       paravirt_clobber(CLBR_EAX)
--		     : "memory", "cc");
-+	PVOP_VCALLEE1(pv_irq_ops.restore_fl, f);
- }
+ /*
+  * Flags for msync
+diff --git a/arch/parisc/include/asm/mman.h b/arch/parisc/include/asm/mman.h
+index 9749c8a..4e8b9bf 100644
+--- a/arch/parisc/include/asm/mman.h
++++ b/arch/parisc/include/asm/mman.h
+@@ -24,6 +24,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
  
- static inline void raw_local_irq_disable(void)
- {
--	asm volatile(paravirt_alt(PARAVIRT_CALL)
--		     :
--		     : paravirt_type(pv_irq_ops.irq_disable),
--		       paravirt_clobber(CLBR_EAX)
--		     : "memory", "eax", "cc");
-+	PVOP_VCALLEE0(pv_irq_ops.irq_disable);
- }
+ #define MS_SYNC		1		/* synchronous memory sync */
+ #define MS_ASYNC	2		/* sync memory asynchronously */
+diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+index d4a7f64..7d33f01 100644
+--- a/arch/powerpc/include/asm/mman.h
++++ b/arch/powerpc/include/asm/mman.h
+@@ -27,6 +27,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000		/* force page unlocking */
  
- static inline void raw_local_irq_enable(void)
- {
--	asm volatile(paravirt_alt(PARAVIRT_CALL)
--		     :
--		     : paravirt_type(pv_irq_ops.irq_enable),
--		       paravirt_clobber(CLBR_EAX)
--		     : "memory", "eax", "cc");
-+	PVOP_VCALLEE0(pv_irq_ops.irq_enable);
- }
+ #ifdef __KERNEL__
+ #ifdef CONFIG_PPC64
+diff --git a/arch/sparc/include/asm/mman.h b/arch/sparc/include/asm/mman.h
+index c3029ad..f80d203 100644
+--- a/arch/sparc/include/asm/mman.h
++++ b/arch/sparc/include/asm/mman.h
+@@ -22,6 +22,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000		/* force page unlocking */
  
- static inline unsigned long __raw_local_irq_save(void)
-diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
-index b9bb5e8..0b97706 100644
---- a/arch/x86/include/asm/paravirt_types.h
-+++ b/arch/x86/include/asm/paravirt_types.h
-@@ -612,8 +612,8 @@ int paravirt_disable_iospace(void);
- 		       VEXTRA_CLOBBERS,					\
- 		       pre, post, ##__VA_ARGS__)
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
+diff --git a/arch/xtensa/include/asm/mman.h b/arch/xtensa/include/asm/mman.h
+index fca4db4..c62bcd8 100644
+--- a/arch/xtensa/include/asm/mman.h
++++ b/arch/xtensa/include/asm/mman.h
+@@ -55,6 +55,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
  
--#define __PVOP_VCALLEESAVE(rettype, op, pre, post, ...)			\
--	____PVOP_CALL(rettype, op.func, CLBR_RET_REG,			\
-+#define __PVOP_VCALLEESAVE(op, pre, post, ...)				\
-+	____PVOP_VCALL(op.func, CLBR_RET_REG,				\
- 		      PVOP_VCALLEE_CLOBBERS, ,				\
- 		      pre, post, ##__VA_ARGS__)
+ /*
+  * Flags for msync
+diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
+index 32c8bd6..59e0f29 100644
+--- a/include/asm-generic/mman.h
++++ b/include/asm-generic/mman.h
+@@ -12,6 +12,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000         /* force page unlocking */
  
-
-
+ #define MCL_CURRENT	1		/* lock all current mappings */
+ #define MCL_FUTURE	2		/* lock all future mappings */
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 73f5e4b..ecc4471 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -985,6 +985,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+ 		if (!can_do_mlock())
+ 			return -EPERM;
+ 
++        if (flags & MAP_UNLOCKED)
++                vm_flags &= ~VM_LOCKED;
++
+ 	/* mlock MCL_FUTURE? */
+ 	if (vm_flags & VM_LOCKED) {
+ 		unsigned long locked, lock_limit;
+--
+			Gleb.
