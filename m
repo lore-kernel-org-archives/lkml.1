@@ -1,148 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752247AbZJGCfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933777AbZJGAfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752247AbZJGCfV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 22:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZJGCfV
+	id S933777AbZJGAfB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 20:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933687AbZJGAfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 22:35:21 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:50223 "EHLO
+	Tue, 6 Oct 2009 20:35:00 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:40405 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751049AbZJGCfU (ORCPT
+	with ESMTP id S933659AbZJGAe7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 22:35:20 -0400
-X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
+	Tue, 6 Oct 2009 20:34:59 -0400
+X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 3
 	times
-Message-Id: <20091006233732.371308677@gentwo.org>
+Message-Id: <20091006233732.563529822@gentwo.org>
 References: <20091006233654.815079668@gentwo.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 Oct 2009 19:37:09 -0400
+Date: Tue, 06 Oct 2009 19:37:10 -0400
 From: cl@linux-foundation.org
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Tejun Heo <tj@kernel.org>
 CC: Mel Gorman <mel@csn.ul.ie>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [this_cpu_xx V5 15/19] SLUB: Get rid of dynamic DMA kmalloc cache allocation
-Content-Disposition: inline; filename=this_cpu_slub_static_dma_kmalloc
+Subject: [this_cpu_xx V5 16/19] this_cpu: Remove slub kmem_cache fields
+Content-Disposition: inline; filename=this_cpu_slub_remove_fields
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dynamic DMA kmalloc cache allocation is troublesome since the
-new percpu allocator does not support allocations in atomic contexts.
-Reserve some statically allocated kmalloc_cpu structures instead.
+Remove the fields in struct kmem_cache_cpu that were used to cache data from
+struct kmem_cache when they were in different cachelines. The cacheline that
+holds the per cpu array pointer now also holds these values. We can cut down
+the struct kmem_cache_cpu size to almost half.
 
+The get_freepointer() and set_freepointer() functions that used to be only
+intended for the slow path now are also useful for the hot path since access
+to the size field does not require accessing an additional cacheline anymore.
+This results in consistent use of functions for setting the freepointer of
+objects throughout SLUB.
+
+Also we initialize all possible kmem_cache_cpu structures when a slab is
+created. No need to initialize them when a processor or node comes online.
+
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
 ---
- include/linux/slub_def.h |   19 +++++++++++--------
- mm/slub.c                |   24 ++++++++++--------------
- 2 files changed, 21 insertions(+), 22 deletions(-)
+ include/linux/slub_def.h |    2 -
+ mm/slub.c                |   81 +++++++++++++----------------------------------
+ 2 files changed, 24 insertions(+), 59 deletions(-)
 
 Index: linux-2.6/include/linux/slub_def.h
 ===================================================================
---- linux-2.6.orig/include/linux/slub_def.h	2009-09-29 11:42:06.000000000 -0500
-+++ linux-2.6/include/linux/slub_def.h	2009-09-29 11:43:18.000000000 -0500
-@@ -131,11 +131,21 @@ struct kmem_cache {
- 
- #define SLUB_PAGE_SHIFT (PAGE_SHIFT + 2)
- 
-+#ifdef CONFIG_ZONE_DMA
-+#define SLUB_DMA __GFP_DMA
-+/* Reserve extra caches for potential DMA use */
-+#define KMALLOC_CACHES (2 * SLUB_PAGE_SHIFT - 6)
-+#else
-+/* Disable DMA functionality */
-+#define SLUB_DMA (__force gfp_t)0
-+#define KMALLOC_CACHES SLUB_PAGE_SHIFT
-+#endif
-+
- /*
-  * We keep the general caches in an array of slab caches that are used for
-  * 2^x bytes of allocations.
-  */
--extern struct kmem_cache kmalloc_caches[SLUB_PAGE_SHIFT];
-+extern struct kmem_cache kmalloc_caches[KMALLOC_CACHES];
- 
- /*
-  * Sorry that the following has to be that ugly but some versions of GCC
-@@ -203,13 +213,6 @@ static __always_inline struct kmem_cache
- 	return &kmalloc_caches[index];
- }
- 
--#ifdef CONFIG_ZONE_DMA
--#define SLUB_DMA __GFP_DMA
--#else
--/* Disable DMA functionality */
--#define SLUB_DMA (__force gfp_t)0
--#endif
--
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
- void *__kmalloc(size_t size, gfp_t flags);
- 
+--- linux-2.6.orig/include/linux/slub_def.h	2009-09-29 11:44:03.000000000 -0500
++++ linux-2.6/include/linux/slub_def.h	2009-09-29 11:44:35.000000000 -0500
+@@ -38,8 +38,6 @@ struct kmem_cache_cpu {
+ 	void **freelist;	/* Pointer to first free per cpu object */
+ 	struct page *page;	/* The slab from which we are allocating */
+ 	int node;		/* The node of the page (or -1 for debug) */
+-	unsigned int offset;	/* Freepointer offset (in word units) */
+-	unsigned int objsize;	/* Size of an object (from kmem_cache) */
+ #ifdef CONFIG_SLUB_STATS
+ 	unsigned stat[NR_SLUB_STAT_ITEMS];
+ #endif
 Index: linux-2.6/mm/slub.c
 ===================================================================
---- linux-2.6.orig/mm/slub.c	2009-09-29 11:42:06.000000000 -0500
-+++ linux-2.6/mm/slub.c	2009-09-29 11:43:18.000000000 -0500
-@@ -2090,7 +2090,7 @@ static inline int alloc_kmem_cache_cpus(
- {
- 	int cpu;
+--- linux-2.6.orig/mm/slub.c	2009-09-29 11:44:03.000000000 -0500
++++ linux-2.6/mm/slub.c	2009-09-29 11:44:35.000000000 -0500
+@@ -260,13 +260,6 @@ static inline int check_valid_pointer(st
+ 	return 1;
+ }
  
--	if (s < kmalloc_caches + SLUB_PAGE_SHIFT && s >= kmalloc_caches)
-+	if (s < kmalloc_caches + KMALLOC_CACHES && s >= kmalloc_caches)
+-/*
+- * Slow version of get and set free pointer.
+- *
+- * This version requires touching the cache lines of kmem_cache which
+- * we avoid to do in the fast alloc free paths. There we obtain the offset
+- * from the page struct.
+- */
+ static inline void *get_freepointer(struct kmem_cache *s, void *object)
+ {
+ 	return *(void **)(object + s->offset);
+@@ -1473,10 +1466,10 @@ static void deactivate_slab(struct kmem_
+ 
+ 		/* Retrieve object from cpu_freelist */
+ 		object = c->freelist;
+-		c->freelist = c->freelist[c->offset];
++		c->freelist = get_freepointer(s, c->freelist);
+ 
+ 		/* And put onto the regular freelist */
+-		object[c->offset] = page->freelist;
++		set_freepointer(s, object, page->freelist);
+ 		page->freelist = object;
+ 		page->inuse--;
+ 	}
+@@ -1635,7 +1628,7 @@ load_freelist:
+ 	if (unlikely(SLABDEBUG && PageSlubDebug(c->page)))
+ 		goto debug;
+ 
+-	c->freelist = object[c->offset];
++	c->freelist = get_freepointer(s, object);
+ 	c->page->inuse = c->page->objects;
+ 	c->page->freelist = NULL;
+ 	c->node = page_to_nid(c->page);
+@@ -1681,7 +1674,7 @@ debug:
+ 		goto another_slab;
+ 
+ 	c->page->inuse++;
+-	c->page->freelist = object[c->offset];
++	c->page->freelist = get_freepointer(s, object);
+ 	c->node = -1;
+ 	goto unlock_out;
+ }
+@@ -1719,7 +1712,7 @@ static __always_inline void *slab_alloc(
+ 		object = __slab_alloc(s, gfpflags, node, addr, c);
+ 
+ 	else {
+-		c->freelist = object[c->offset];
++		c->freelist = get_freepointer(s, object);
+ 		stat(c, ALLOC_FASTPATH);
+ 	}
+ 	local_irq_restore(flags);
+@@ -1727,8 +1720,8 @@ static __always_inline void *slab_alloc(
+ 	if (unlikely((gfpflags & __GFP_ZERO) && object))
+ 		memset(object, 0, s->objsize);
+ 
+-	kmemcheck_slab_alloc(s, gfpflags, object, c->objsize);
+-	kmemleak_alloc_recursive(object, c->objsize, 1, s->flags, gfpflags);
++	kmemcheck_slab_alloc(s, gfpflags, object, s->objsize);
++	kmemleak_alloc_recursive(object, s->objsize, 1, s->flags, gfpflags);
+ 
+ 	return object;
+ }
+@@ -1783,7 +1776,7 @@ EXPORT_SYMBOL(kmem_cache_alloc_node_notr
+  * handling required then we can return immediately.
+  */
+ static void __slab_free(struct kmem_cache *s, struct page *page,
+-			void *x, unsigned long addr, unsigned int offset)
++			void *x, unsigned long addr)
+ {
+ 	void *prior;
+ 	void **object = (void *)x;
+@@ -1797,7 +1790,8 @@ static void __slab_free(struct kmem_cach
+ 		goto debug;
+ 
+ checks_ok:
+-	prior = object[offset] = page->freelist;
++	prior = page->freelist;
++	set_freepointer(s, object, prior);
+ 	page->freelist = object;
+ 	page->inuse--;
+ 
+@@ -1862,16 +1856,16 @@ static __always_inline void slab_free(st
+ 	kmemleak_free_recursive(x, s->flags);
+ 	local_irq_save(flags);
+ 	c = __this_cpu_ptr(s->cpu_slab);
+-	kmemcheck_slab_free(s, object, c->objsize);
+-	debug_check_no_locks_freed(object, c->objsize);
++	kmemcheck_slab_free(s, object, s->objsize);
++	debug_check_no_locks_freed(object, s->objsize);
+ 	if (!(s->flags & SLAB_DEBUG_OBJECTS))
+-		debug_check_no_obj_freed(object, c->objsize);
++		debug_check_no_obj_freed(object, s->objsize);
+ 	if (likely(page == c->page && c->node >= 0)) {
+-		object[c->offset] = c->freelist;
++		set_freepointer(s, object, c->freelist);
+ 		c->freelist = object;
+ 		stat(c, FREE_FASTPATH);
+ 	} else
+-		__slab_free(s, page, x, addr, c->offset);
++		__slab_free(s, page, x, addr);
+ 
+ 	local_irq_restore(flags);
+ }
+@@ -2058,19 +2052,6 @@ static unsigned long calculate_alignment
+ 	return ALIGN(align, sizeof(void *));
+ }
+ 
+-static void init_kmem_cache_cpu(struct kmem_cache *s,
+-			struct kmem_cache_cpu *c)
+-{
+-	c->page = NULL;
+-	c->freelist = NULL;
+-	c->node = 0;
+-	c->offset = s->offset / sizeof(void *);
+-	c->objsize = s->objsize;
+-#ifdef CONFIG_SLUB_STATS
+-	memset(c->stat, 0, NR_SLUB_STAT_ITEMS * sizeof(unsigned));
+-#endif
+-}
+-
+ static void
+ init_kmem_cache_node(struct kmem_cache_node *n, struct kmem_cache *s)
+ {
+@@ -2088,8 +2069,6 @@ static DEFINE_PER_CPU(struct kmem_cache_
+ 
+ static inline int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
+ {
+-	int cpu;
+-
+ 	if (s < kmalloc_caches + KMALLOC_CACHES && s >= kmalloc_caches)
  		/*
  		 * Boot time creation of the kmalloc array. Use static per cpu data
- 		 * since the per cpu allocator is not available yet.
-@@ -2537,7 +2537,7 @@ EXPORT_SYMBOL(kmem_cache_destroy);
-  *		Kmalloc subsystem
-  *******************************************************************/
+@@ -2102,8 +2081,6 @@ static inline int alloc_kmem_cache_cpus(
+ 	if (!s->cpu_slab)
+ 		return 0;
  
--struct kmem_cache kmalloc_caches[SLUB_PAGE_SHIFT] __cacheline_aligned;
-+struct kmem_cache kmalloc_caches[KMALLOC_CACHES] __cacheline_aligned;
- EXPORT_SYMBOL(kmalloc_caches);
+-	for_each_possible_cpu(cpu)
+-		init_kmem_cache_cpu(s, per_cpu_ptr(s->cpu_slab, cpu));
+ 	return 1;
+ }
  
- static int __init setup_slub_min_order(char *str)
-@@ -2627,6 +2627,7 @@ static noinline struct kmem_cache *dma_k
- 	char *text;
- 	size_t realsize;
- 	unsigned long slabflags;
-+	int i;
+@@ -2387,8 +2364,16 @@ static int kmem_cache_open(struct kmem_c
+ 	if (!init_kmem_cache_nodes(s, gfpflags & ~SLUB_DMA))
+ 		goto error;
  
- 	s = kmalloc_caches_dma[index];
- 	if (s)
-@@ -2647,18 +2648,13 @@ static noinline struct kmem_cache *dma_k
- 	text = kasprintf(flags & ~SLUB_DMA, "kmalloc_dma-%d",
- 			 (unsigned int)realsize);
+-	if (alloc_kmem_cache_cpus(s, gfpflags & ~SLUB_DMA))
++	if (!alloc_kmem_cache_cpus(s, gfpflags & ~SLUB_DMA))
++		return 0;
++
++	/*
++	 * gfp_flags would be flags & ~SLUB_DMA but the per cpu
++	 * allocator does not support it.
++	 */
++	if (s->cpu_slab)
+ 		return 1;
++
+ 	free_kmem_cache_nodes(s);
+ error:
+ 	if (flags & SLAB_PANIC)
+@@ -3245,22 +3230,12 @@ struct kmem_cache *kmem_cache_create(con
+ 	down_write(&slub_lock);
+ 	s = find_mergeable(size, align, flags, name, ctor);
+ 	if (s) {
+-		int cpu;
+-
+ 		s->refcount++;
+ 		/*
+ 		 * Adjust the object sizes so that we clear
+ 		 * the complete object on kzalloc.
+ 		 */
+ 		s->objsize = max(s->objsize, (int)size);
+-
+-		/*
+-		 * And then we need to update the object size in the
+-		 * per cpu structures
+-		 */
+-		for_each_online_cpu(cpu)
+-			per_cpu_ptr(s->cpu_slab, cpu)->objsize = s->objsize;
+-
+ 		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
+ 		up_write(&slub_lock);
  
--	if (flags & __GFP_WAIT)
--		s = kmalloc(kmem_size, flags & ~SLUB_DMA);
--	else {
--		int i;
-+	s = NULL;
-+	for (i = 0; i < KMALLOC_CACHES; i++)
-+		if (kmalloc_caches[i].size)
-+			break;
+@@ -3314,14 +3289,6 @@ static int __cpuinit slab_cpuup_callback
+ 	unsigned long flags;
  
--		s = NULL;
--		for (i = 0; i < SLUB_PAGE_SHIFT; i++)
--			if (kmalloc_caches[i].size) {
--				s = kmalloc_caches + i;
--				break;
--			}
--	}
-+	BUG_ON(i >= KMALLOC_CACHES);
-+	s = kmalloc_caches + i;
- 
- 	/*
- 	 * Must defer sysfs creation to a workqueue because we don't know
-@@ -2672,7 +2668,7 @@ static noinline struct kmem_cache *dma_k
- 
- 	if (!s || !text || !kmem_cache_open(s, flags, text,
- 			realsize, ARCH_KMALLOC_MINALIGN, slabflags, NULL)) {
--		kfree(s);
-+		s->size = 0;
- 		kfree(text);
- 		goto unlock_out;
- 	}
+ 	switch (action) {
+-	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
+-		down_read(&slub_lock);
+-		list_for_each_entry(s, &slab_caches, list)
+-			init_kmem_cache_cpu(s, per_cpu_ptr(s->cpu_slab, cpu));
+-		up_read(&slub_lock);
+-		break;
+-
+ 	case CPU_UP_CANCELED:
+ 	case CPU_UP_CANCELED_FROZEN:
+ 	case CPU_DEAD:
 
 -- 
