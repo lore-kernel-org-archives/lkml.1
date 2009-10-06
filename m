@@ -1,115 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933667AbZJFXoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbZJGBfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933667AbZJFXoY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 19:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933616AbZJFXoW
+	id S1758668AbZJGBfK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 21:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932858AbZJGBfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 19:44:22 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:39168 "EHLO
+	Tue, 6 Oct 2009 21:35:08 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:55212 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933611AbZJFXoU (ORCPT
+	with ESMTP id S1758405AbZJGBfC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 19:44:20 -0400
+	Tue, 6 Oct 2009 21:35:02 -0400
 X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 3
 	times
-Message-Id: <20091006233730.658458848@gentwo.org>
+Message-Id: <20091006233730.848452188@gentwo.org>
 References: <20091006233654.815079668@gentwo.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 06 Oct 2009 19:37:00 -0400
+Date: Tue, 06 Oct 2009 19:37:01 -0400
 From: cl@linux-foundation.org
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Eric Dumazet <dada1@cosmosbay.com>
+Cc: linux-kernel@vger.kernel.org,
+       Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       Dan Williams <dan.j.williams@intel.com>, Tejun Heo <tj@kernel.org>,
+       Eric Biederman <ebiederm@aristanetworks.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       David L Stevens <dlstevens@us.ibm.com>
 CC: Mel Gorman <mel@csn.ul.ie>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [this_cpu_xx V5 06/19] this_cpu_ptr: Straight transformations
-Content-Disposition: inline; filename=this_cpu_ptr_straight_transforms
+Subject: [this_cpu_xx V5 07/19] this_cpu_ptr: Eliminate get/put_cpu
+Content-Disposition: inline; filename=this_cpu_ptr_eliminate_get_put_cpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use this_cpu_ptr and __this_cpu_ptr in locations where straight
-transformations are possible because per_cpu_ptr is used with
-either smp_processor_id() or raw_smp_processor_id().
+There are cases where we can use this_cpu_ptr and as the result
+of using this_cpu_ptr() we no longer need to determine the
+currently executing cpu.
 
-cc: David Howells <dhowells@redhat.com>
+In those places no get/put_cpu combination is needed anymore.
+The local cpu variable can be eliminated.
+
+Preemption still needs to be disabled and enabled since the
+modifications of the per cpu variables is not atomic. There may
+be multiple per cpu variables modified and those must all
+be from the same processor.
+
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Acked-by: Dan Williams <dan.j.williams@intel.com>
 Acked-by: Tejun Heo <tj@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>
-cc: Rusty Russell <rusty@rustcorp.com.au>
-cc: Eric Dumazet <dada1@cosmosbay.com>
+cc: Eric Biederman <ebiederm@aristanetworks.com>
+cc: Stephen Hemminger <shemminger@vyatta.com>
+cc: David L Stevens <dlstevens@us.ibm.com>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- drivers/infiniband/hw/ehca/ehca_irq.c |    3 +--
- drivers/net/chelsio/sge.c             |    5 ++---
- drivers/net/loopback.c                |    2 +-
- fs/ext4/mballoc.c                     |    2 +-
- 4 files changed, 5 insertions(+), 7 deletions(-)
+ drivers/dma/dmaengine.c |   36 +++++++++++++-----------------------
+ drivers/net/veth.c      |    7 +++----
+ 2 files changed, 16 insertions(+), 27 deletions(-)
 
-Index: linux-2.6/drivers/net/chelsio/sge.c
+Index: linux-2.6/drivers/dma/dmaengine.c
 ===================================================================
---- linux-2.6.orig/drivers/net/chelsio/sge.c	2009-09-29 09:31:40.000000000 -0500
-+++ linux-2.6/drivers/net/chelsio/sge.c	2009-09-29 11:39:20.000000000 -0500
-@@ -1378,7 +1378,7 @@ static void sge_rx(struct sge *sge, stru
- 	}
- 	__skb_pull(skb, sizeof(*p));
- 
--	st = per_cpu_ptr(sge->port_stats[p->iff], smp_processor_id());
-+	st = this_cpu_ptr(sge->port_stats[p->iff]);
- 
- 	skb->protocol = eth_type_trans(skb, adapter->port[p->iff].dev);
- 	if ((adapter->flags & RX_CSUM_ENABLED) && p->csum == 0xffff &&
-@@ -1780,8 +1780,7 @@ netdev_tx_t t1_start_xmit(struct sk_buff
+--- linux-2.6.orig/drivers/dma/dmaengine.c	2009-09-28 10:08:09.000000000 -0500
++++ linux-2.6/drivers/dma/dmaengine.c	2009-09-29 09:01:54.000000000 -0500
+@@ -326,14 +326,7 @@ arch_initcall(dma_channel_table_init);
+  */
+ struct dma_chan *dma_find_channel(enum dma_transaction_type tx_type)
  {
- 	struct adapter *adapter = dev->ml_priv;
- 	struct sge *sge = adapter->sge;
--	struct sge_port_stats *st = per_cpu_ptr(sge->port_stats[dev->if_port],
--						smp_processor_id());
-+	struct sge_port_stats *st = this_cpu_ptr(sge->port_stats[dev->if_port]);
- 	struct cpl_tx_pkt *cpl;
- 	struct sk_buff *orig_skb = skb;
- 	int ret;
-Index: linux-2.6/drivers/net/loopback.c
+-	struct dma_chan *chan;
+-	int cpu;
+-
+-	cpu = get_cpu();
+-	chan = per_cpu_ptr(channel_table[tx_type], cpu)->chan;
+-	put_cpu();
+-
+-	return chan;
++	return this_cpu_read(channel_table[tx_type]->chan);
+ }
+ EXPORT_SYMBOL(dma_find_channel);
+ 
+@@ -847,7 +840,6 @@ dma_async_memcpy_buf_to_buf(struct dma_c
+ 	struct dma_async_tx_descriptor *tx;
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+-	int cpu;
+ 	unsigned long flags;
+ 
+ 	dma_src = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
+@@ -866,10 +858,10 @@ dma_async_memcpy_buf_to_buf(struct dma_c
+ 	tx->callback = NULL;
+ 	cookie = tx->tx_submit(tx);
+ 
+-	cpu = get_cpu();
+-	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
+-	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
+-	put_cpu();
++	preempt_disable();
++	__this_cpu_add(chan->local->bytes_transferred, len);
++	__this_cpu_inc(chan->local->memcpy_count);
++	preempt_enable();
+ 
+ 	return cookie;
+ }
+@@ -896,7 +888,6 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
+ 	struct dma_async_tx_descriptor *tx;
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+-	int cpu;
+ 	unsigned long flags;
+ 
+ 	dma_src = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
+@@ -913,10 +904,10 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
+ 	tx->callback = NULL;
+ 	cookie = tx->tx_submit(tx);
+ 
+-	cpu = get_cpu();
+-	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
+-	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
+-	put_cpu();
++	preempt_disable();
++	__this_cpu_add(chan->local->bytes_transferred, len);
++	__this_cpu_inc(chan->local->memcpy_count);
++	preempt_enable();
+ 
+ 	return cookie;
+ }
+@@ -945,7 +936,6 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
+ 	struct dma_async_tx_descriptor *tx;
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+-	int cpu;
+ 	unsigned long flags;
+ 
+ 	dma_src = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
+@@ -963,10 +953,10 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
+ 	tx->callback = NULL;
+ 	cookie = tx->tx_submit(tx);
+ 
+-	cpu = get_cpu();
+-	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
+-	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
+-	put_cpu();
++	preempt_disable();
++	__this_cpu_add(chan->local->bytes_transferred, len);
++	__this_cpu_inc(chan->local->memcpy_count);
++	preempt_enable();
+ 
+ 	return cookie;
+ }
+Index: linux-2.6/drivers/net/veth.c
 ===================================================================
---- linux-2.6.orig/drivers/net/loopback.c	2009-09-29 09:31:40.000000000 -0500
-+++ linux-2.6/drivers/net/loopback.c	2009-09-29 11:39:20.000000000 -0500
-@@ -81,7 +81,7 @@ static netdev_tx_t loopback_xmit(struct 
+--- linux-2.6.orig/drivers/net/veth.c	2009-09-17 17:54:16.000000000 -0500
++++ linux-2.6/drivers/net/veth.c	2009-09-29 09:01:54.000000000 -0500
+@@ -153,7 +153,7 @@ static netdev_tx_t veth_xmit(struct sk_b
+ 	struct net_device *rcv = NULL;
+ 	struct veth_priv *priv, *rcv_priv;
+ 	struct veth_net_stats *stats, *rcv_stats;
+-	int length, cpu;
++	int length;
  
- 	/* it's OK to use per_cpu_ptr() because BHs are off */
- 	pcpu_lstats = dev->ml_priv;
--	lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
-+	lb_stats = this_cpu_ptr(pcpu_lstats);
+ 	skb_orphan(skb);
  
- 	len = skb->len;
- 	if (likely(netif_rx(skb) == NET_RX_SUCCESS)) {
-Index: linux-2.6/fs/ext4/mballoc.c
-===================================================================
---- linux-2.6.orig/fs/ext4/mballoc.c	2009-09-29 09:31:40.000000000 -0500
-+++ linux-2.6/fs/ext4/mballoc.c	2009-09-29 11:39:20.000000000 -0500
-@@ -4210,7 +4210,7 @@ static void ext4_mb_group_or_file(struct
- 	 * per cpu locality group is to reduce the contention between block
- 	 * request from multiple CPUs.
- 	 */
--	ac->ac_lg = per_cpu_ptr(sbi->s_locality_groups, raw_smp_processor_id());
-+	ac->ac_lg = __this_cpu_ptr(sbi->s_locality_groups);
+@@ -161,9 +161,8 @@ static netdev_tx_t veth_xmit(struct sk_b
+ 	rcv = priv->peer;
+ 	rcv_priv = netdev_priv(rcv);
  
- 	/* we're going to use group allocation */
- 	ac->ac_flags |= EXT4_MB_HINT_GROUP_ALLOC;
-Index: linux-2.6/drivers/infiniband/hw/ehca/ehca_irq.c
-===================================================================
---- linux-2.6.orig/drivers/infiniband/hw/ehca/ehca_irq.c	2009-09-29 09:31:40.000000000 -0500
-+++ linux-2.6/drivers/infiniband/hw/ehca/ehca_irq.c	2009-09-29 11:39:20.000000000 -0500
-@@ -826,8 +826,7 @@ static void __cpuinit take_over_work(str
- 		cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
+-	cpu = smp_processor_id();
+-	stats = per_cpu_ptr(priv->stats, cpu);
+-	rcv_stats = per_cpu_ptr(rcv_priv->stats, cpu);
++	stats = this_cpu_ptr(priv->stats);
++	rcv_stats = this_cpu_ptr(rcv_priv->stats);
  
- 		list_del(&cq->entry);
--		__queue_comp_task(cq, per_cpu_ptr(pool->cpu_comp_tasks,
--						  smp_processor_id()));
-+		__queue_comp_task(cq, this_cpu_ptr(pool->cpu_comp_tasks));
- 	}
- 
- 	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
+ 	if (!(rcv->flags & IFF_UP))
+ 		goto tx_drop;
 
 -- 
