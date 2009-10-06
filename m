@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbZJFN0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZJFN2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbZJFN0b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 09:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757296AbZJFN0a
+	id S1757340AbZJFN2K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 09:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757299AbZJFN2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 09:26:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33221 "EHLO
+	Tue, 6 Oct 2009 09:28:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33285 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757243AbZJFN0a (ORCPT
+	with ESMTP id S1756141AbZJFN2I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 09:26:30 -0400
-Subject: Re: [RFC][PATCH 0/9] perf trace: support for general-purpose
- scripting
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
-       hch@infradead.org
-In-Reply-To: <20091006090954.GA19325@elte.hu>
-References: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
-	 <20091006090954.GA19325@elte.hu>
-Content-Type: text/plain
-Date: Tue, 06 Oct 2009 15:25:54 +0200
-Message-Id: <1254835554.21044.278.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Oct 2009 09:28:08 -0400
+Date: Tue, 6 Oct 2009 09:27:32 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       rostedt@goodmis.org, lizf@cn.fujitsu.com
+Subject: Re: [PATCH 2/3] perf trace: Update eval_flag() flags array to
+	match interrupt.h
+Message-ID: <20091006132732.GA14978@infradead.org>
+References: <1254808849-7829-1-git-send-email-tzanussi@gmail.com> <1254808849-7829-3-git-send-email-tzanussi@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254808849-7829-3-git-send-email-tzanussi@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 11:09 +0200, Ingo Molnar wrote:
-> * Tom Zanussi <tzanussi@gmail.com> wrote:
-> 
-> > Known problems/shortcomings:
-> > 
-> > Probably the biggest problem right now is the sorting hack I added as 
-> > the last patch.  It's just meant as a temporary thing, but is there 
-> > because tracing scripts in general want to see events in the order 
-> > they happened i.e. timestamp order. [...]
-> 
-> Btw., have you seen the -M/--multiplex option to perf record? It 
-> multiplexes all events into a single buffer - making them all ordered. 
-> (The events are in causal ordering in this case even if there's some TSC 
-> asynchronity)
+On Tue, Oct 06, 2009 at 01:00:48AM -0500, Tom Zanussi wrote:
+> Add missing BLOCK_IOPOLL_SOFTIRQ entry.
 
-It also wrecks large machines.. I've been thinking about limiting the
-number of CPUs you can redirect into a single output stream using the
-output_fd thing, but then the inherited stuff makes that very hard.
+Nothing against your patch which is good for the short term, but the
+existance of this code is a major design flaw.  The trace events are
+supposed to be self describing and having them duplicated in the trace
+tool means either we're not using that self-description or it's not
+good enough to be used.
 
-And we also need a solution for the inhertited counters, the best would
-be the per-cpu inherited things, where we use both cpu and pid, instead
-of either.
-
-In short, -M is nice, but it also has significant down sides, esp. with
-machines getting more and more cores.
+We'll soon add a lot more flags (e.g. my xfs tracing patch if I can ever
+get the formal maintainer to review it will add various), and it was
+also made pretty clear that perf while packaged with the kernel should
+work independent of the actual kernel version, e.g. one perf binary
+should work with older host kernels too which might have very different
+flag values.
 
