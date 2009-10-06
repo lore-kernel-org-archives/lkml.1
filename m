@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbZJFCCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbZJFCF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755986AbZJFCCu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 5 Oct 2009 22:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZJFCCu
+	id S1755990AbZJFCF5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 5 Oct 2009 22:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZJFCF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 5 Oct 2009 22:02:50 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:60154 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754677AbZJFCCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 5 Oct 2009 22:02:49 -0400
-Date: Tue, 6 Oct 2009 13:02:02 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Samuel Ortiz <sameo@openedhand.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Haojian Zhuang <haojian.zhuang@marvell.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: linux-next: mfd tree build failure
-Message-Id: <20091006130202.5e18a332.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__6_Oct_2009_13_02_02_+1100_iBWot3P=UnP1irTW"
+	Mon, 5 Oct 2009 22:05:56 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:44166 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754691AbZJFCF4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 5 Oct 2009 22:05:56 -0400
+Date: Tue, 6 Oct 2009 04:05:18 +0200
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: complete IO hang since a few kernel revision
+Message-ID: <20091006020518.GE9568@gamma.logic.tuwien.ac.at>
+References: <20091005011626.GH4335@gamma.logic.tuwien.ac.at> <4AC9607D.6050900@datenparkplatz.de> <20091005083308.GB5612@gandalf.dynalias.org> <4ACAA4D8.1080501@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ACAA4D8.1080501@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__6_Oct_2009_13_02_02_+1100_iBWot3P=UnP1irTW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mo, 05 Okt 2009, Robert Hancock wrote:
+> Are you getting any errors showing up in dmesg?
 
-Hi Samuel,
+No, neither dmesg, nor syslog, nor console.
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+Best wishes
 
-drivers/built-in.o: In function `pm8607_write_device':
-88pm8607.c:(.text+0xd02e9): undefined reference to `i2c_master_send'
-drivers/built-in.o: In function `pm8607_read_device':
-88pm8607.c:(.text+0xd033b): undefined reference to `i2c_master_send'
-88pm8607.c:(.text+0xd035c): undefined reference to `i2c_master_recv'
-drivers/built-in.o: In function `pm8607_init':
-88pm8607.c:(.init.text+0xa9bd): undefined reference to `i2c_register_driver'
-drivers/built-in.o: In function `pm8607_probe':
-88pm8607.c:(.devinit.text+0x4db6): undefined reference to `mfd_add_devices'
-drivers/built-in.o: In function `pm8607_exit':
-88pm8607.c:(.exit.text+0x598): undefined reference to `i2c_del_driver'
-drivers/built-in.o: In function `pm8607_remove':
-88pm8607.c:(.devexit.text+0x198): undefined reference to `mfd_remove_device=
-s'
+Norbert
 
-Obviously caused by commit 9ec6cd8f2235ddeee5b39068956f14238a12a617
-("mfd: Add 88PM8607 driver").
-
-This build has CONFIG_I2C=3Dm and CONFIG_MFD_CORE=3Dm.
-
-I have used the version of the mfd tree form next-20091005 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__6_Oct_2009_13_02_02_+1100_iBWot3P=UnP1irTW
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrKpRoACgkQjjKRsyhoI8xtTgCfa1x3CfmOs3HbefZeR/4Nw8g5
-118AoLQAMmh1lQ/pqxzwZJKqzp29+WYr
-=18is
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_Oct_2009_13_02_02_+1100_iBWot3P=UnP1irTW--
+-------------------------------------------------------------------------------
+Dr. Norbert Preining                                        Associate Professor
+JAIST Japan Advanced Institute of Science and Technology   preining@jaist.ac.jp
+Vienna University of Technology                               preining@logic.at
+Debian Developer (Debian TeX Task Force)                    preining@debian.org
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+it's at times like this, when
+I'm trapped in a Vogon airlock with a man from Betelgeuse,
+and about to die from asphyxiation in deep space that I
+really wish I'd listened to what my mother told me when I
+was young.'
+`Why, what did she tell you?'
+`I don't know, I didn't listen.'
+                 --- Arthur coping with certain death as best as he could.
+                 --- Douglas Adams, The Hitchhikers Guide to the Galaxy
