@@ -1,36 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932981AbZJFSGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757748AbZJFSCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932981AbZJFSGm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 14:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932407AbZJFSGl
+	id S1757748AbZJFSCR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 14:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbZJFSCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 14:06:41 -0400
-Received: from ns1.uci.cu ([200.55.140.178]:59149 "HELO mx1.uci.cu"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S932696AbZJFSGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 14:06:40 -0400
-X-Greylist: delayed 416 seconds by postgrey-1.27 at vger.kernel.org; Tue, 06 Oct 2009 14:06:38 EDT
-Message-ID: <4ACB85B6.5040400@grm.uci.cu>
-Date: Tue, 06 Oct 2009 14:00:22 -0400
-From: "Herlin R. Matos Lastres" <hmatos@grm.uci.cu>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 6 Oct 2009 14:02:17 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:14717 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755814AbZJFSCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 14:02:16 -0400
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.32-rc3
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <20091006153632.GA29795@elte.hu> <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain> <4ACB77ED.6060104@grm.uci.cu>
-In-Reply-To: <4ACB77ED.6060104@grm.uci.cu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] signals: send_signal: use si_fromuser() to detect
+	from_ancestor_ns
+In-Reply-To: Oleg Nesterov's message of  Tuesday, 6 October 2009 15:18:21 +0200 <20091006131821.GA8628@redhat.com>
+References: <20091003171029.GA30442@us.ibm.com>
+	<20091004021844.GA21006@redhat.com>
+	<20091004021954.GC21006@redhat.com>
+	<20091005181255.GE30442@us.ibm.com>
+	<20091005182536.GA943@redhat.com>
+	<20091005193738.GF30442@us.ibm.com>
+	<20091005194415.GA4560@redhat.com>
+	<20091006000631.GA4390@us.ibm.com>
+	<20091006010956.GA28233@redhat.com>
+	<20091006023401.GA10132@us.ibm.com>
+	<20091006131821.GA8628@redhat.com>
+X-Zippy-Says: An Italian is COMBING his hair in suburban DES MOINES!
+Message-Id: <20091006180104.A433822@magilla.sf.frob.com>
+Date: Tue,  6 Oct 2009 11:01:04 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> If so, then I don't hate "v2.6.31+", but at the same time, that single 
-> plus-sign tells _so_much_ less than v2.6.31-1234-g16123c4 that I think 
-> it's really sad and crippled.   
-I agree with linus, I don't like that (+) simbol in the linux version,
-I prefer only numbers.
+> Yes sure, init can't kill itself with or without these changes. But,
+> I think this is supposed behaviour which we do not want to change?
 
-Herlin.
+I agree.  (Actually, I think init shouldn't be "protected" that way at all.
+You shoot downwards, you get your foot.  But we are not talking about
+changing the global init behavior, and I do think that the container-init
+behavior should be as consistent as possible with what global init sees.)
 
+It's possible to meaningfully swallow a kill() signal because then nothing
+happens at all.  The exec failure cases are special because all the damage
+is already done so there is no way to avoid dying, and SIGKILL is just
+making it more formal and graceful.
+
+
+Thanks,
+Roland
