@@ -1,80 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758451AbZJFXES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758428AbZJFXCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758451AbZJFXES (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 19:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbZJFXES
+	id S1758428AbZJFXCA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 19:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbZJFXB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 19:04:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:35266 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753748AbZJFXER (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 19:04:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tjOHrxutz0ppO8bSgUEKlc0ug6XQEiIDbFQ+uBWT7FrbynUuHIghfjV4FGPGptdiXn
-         ePg51F5OhVsDa7yQxqWRzmV4D2VCi37s9aifAgKNPU56YDPrTci+eCsm+F3H6L6W7c6a
-         mTGdKGjYeiNgiXSvka4uwvH8tQCXNOtZXgth0=
-Subject: Re: Massive ext4 filesystem corruption after a failed s2disk/ram
- cycle
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <20091006214214.GC17883@mit.edu>
-References: <1254863215.11577.23.camel@maxim-laptop>
-	 <20091006214214.GC17883@mit.edu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 07 Oct 2009 01:02:25 +0200
-Message-Id: <1254870145.11561.8.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Tue, 6 Oct 2009 19:01:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57754 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757554AbZJFXB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 19:01:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [linux-pm] Massive ext4 filesystem corruption after a failed s2disk/ram cycle
+Date: Wed, 7 Oct 2009 01:02:47 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <1254863215.11577.23.camel@maxim-laptop> <200910062358.32417.rjw@sisk.pl> <20091006225329.GA27646@khazad-dum.debian.net>
+In-Reply-To: <20091006225329.GA27646@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910070102.47293.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 17:42 -0400, Theodore Tso wrote: 
-> On Tue, Oct 06, 2009 at 11:06:55PM +0200, Maxim Levitsky wrote:
+On Wednesday 07 October 2009, Henrique de Moraes Holschuh wrote:
+> On Tue, 06 Oct 2009, Rafael J. Wysocki wrote:
+> > > You do sync file-systems before entering the hibernation, don't you?
 > > 
-> > Just prior to 2.6.32 cycle I tried -next tree and noticed that after a
-> > failed s2ram (here it works only once, and I test once in a whileto see
-> > if fixed accidentally) I got a minor filesystem corruption. I am sorry I
-> > didn't report that back then.
+> > Yes, a sync is there, but it is not effective on some filesystems.
 > 
-> When you say filesystem corruption, it's important to indicate whether
-> you meant that (a) you noticed that some files were had corrupted
-> contents, (b) the kernel complained that the filesystem was corrupted,
-> and remounted the filesystem read-only, or (c) e2fsck found and fixed
-> errors.
-> 
-> Also, when you found errors of either class (a) or (b), did you run
-> e2fsck to find and fix any potential errors?  In a few places it
-> sounded like the kernel had complained about errors, but you had
-> ignored them and hadn't run e2fsck to fix them.  I hope that was just
-> me misunderstanding what you wrote!  Can you clarify?
+> Which ones?
 
-Sure, kernel noticed errors, and remounted the filesystem R/O (I didn't
-write anything down. really sorry)
-
-I had rebooted the system.
-Then startup scripts had booted the system to root shell
-
-I had run fsck on the filesystem. It had plenty of files with shared
-blocks, many orphaned inodes, errors in free bitmaps.
-
-
-Then, after the fsck, I got many missing files (many probably went to
-lost+found), some had garbage, some became truncated (0 size)
-
-Mostly were affected files that were from recent dpkg update.
-
-
-I use ubuntu 9.10, and (almost) latest -git of kernel tree.
-
-
-Best regards,
-Maxim Levitsky
-
+XFS for one example.
