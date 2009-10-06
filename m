@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbZJFQK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933002AbZJFQLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932991AbZJFQK6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 12:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbZJFQK6
+	id S933002AbZJFQLw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 12:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932950AbZJFQLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 12:10:58 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:50406 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932957AbZJFQK5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 12:10:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dutnD+O+OyRJtAPfsqOa/utH8AIos0S+vpYuSVETMIRFR2cqmNIYQsLNgZVS6CNbpm
-         TB09NO/Fa7Mq+yzvADlo/b5dx5/wR1QjMZvrwatIO9/AFU+p7chc2WdFUPZDVGo1ytgJ
-         XiykWkum3vjgMrxo+hp8YB5RI7jR2YN3oLgsA=
-MIME-Version: 1.0
-In-Reply-To: <4ACB653B.9090707@msgid.tls.msk.ru>
-References: <c43b2e150909200120kf87cdc2oabafea8abbf01227@mail.gmail.com>
-	 <68676e00909200520s7730b516v4e0d6c17d529d0a7@mail.gmail.com>
-	 <4AC939BB.8090600@wasp.net.au>
-	 <68676e00910050837g2006bfb8j349891504e474a95@mail.gmail.com>
-	 <4ACA21E8.6080501@msgid.tls.msk.ru>
-	 <68676e00910060800h4cb84dcl9f610f6b23a88e5c@mail.gmail.com>
-	 <4ACB60A7.307@msgid.tls.msk.ru>
-	 <68676e00910060834p338c77c8kae8156a1f8dc68a9@mail.gmail.com>
-	 <4ACB653B.9090707@msgid.tls.msk.ru>
-Date: Tue, 6 Oct 2009 18:10:20 +0200
-Message-ID: <68676e00910060910m7744a6dcua2a344ce44b9de6e@mail.gmail.com>
-Subject: Re: [lm-sensors] it87 sensors need an ACPI driver (2.6.31)
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Brad Campbell <brad@wasp.net.au>, lm-sensors@lm-sensors.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 6 Oct 2009 12:11:51 -0400
+Received: from mga02.intel.com ([134.134.136.20]:30365 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932948AbZJFQLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 12:11:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,513,1249282800"; 
+   d="scan'208";a="454987915"
+Date: Tue, 6 Oct 2009 09:11:05 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Gabe Black <gabe.black@ni.com>
+Cc: shawn.bohrer@ni.com, mike.hoogendyk@ni.com, knan@anduin.net,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       arjan@infradead.org, Gabe Black <gabe.black@ni.com>
+Subject: Re: [PATCH] TI XIO200a bridge quirk: erroneously reports support
+ for fast b2b transfers
+Message-ID: <20091006091105.2f4c0d5d@jbarnes-g45>
+In-Reply-To: <1254838785-10254-1-git-send-email-gabe.black@ni.com>
+References: <8a15eb2b0910060432m3c062776md718ea19baf19a3f@mail.gmail.com>
+	<1254838785-10254-1-git-send-email-gabe.black@ni.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 6, 2009 at 5:41 PM, Michael Tokarev <mjt@tls.msk.ru> wrote:
-> Luca Tettamanti wrote:
->>
->> On Tue, Oct 6, 2009 at 5:22 PM, Michael Tokarev <mjt@tls.msk.ru> wrote:
->>> Ok.  Now a pure technical question, finally.  Is there a
->>> way to made asus_atk0110 to be able to *set* fan speeds
->>> too, in a way as it's done by it87?
->>
->> In term of Q-FAN profiles: yes, but I still haven't managed to make it
->> work (the interface is there though).
->
-> Oh, so it's basically boils down to Silent/Optimal/Normal choices
-> as in the BIOS settings, right?  I mean, still no pwm_* controls
-> as it87 offers?..
+On Tue, 6 Oct 2009 09:19:45 -0500
+Gabe Black <gabe.black@ni.com> wrote:
 
-It's motherboard specific. On some model with w83627ehf it's possible
-to activate thermal cruise control (with a given target temperature).
-I've never seen direct pwm or dc control; it's theoretically doable
-with a custom DSDT ;-)
+> This quirk will disable fast back to back transfer on the secondary
+> bus segment of the TI Bridge.
+> 
+> Signed-off-by: Gabe Black <gabe.black@ni.com>
 
-Luca
+Applied to my for-linus branch.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
