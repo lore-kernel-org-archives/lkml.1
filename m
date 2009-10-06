@@ -1,203 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbZJFNoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932630AbZJFNtJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757445AbZJFNoL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 09:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbZJFNoK
+	id S932630AbZJFNtJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 09:49:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757399AbZJFNtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 09:44:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43091 "EHLO hera.kernel.org"
+	Tue, 6 Oct 2009 09:49:09 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8578 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757392AbZJFNoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 09:44:09 -0400
-Date: Tue, 6 Oct 2009 13:42:42 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf tools: Default to 1 KHz auto-sampling freq events
-Message-ID: <tip-42e59d7d19dc4b49feab2a860fd9a8ca3248c833@git.kernel.org>
-Git-Commit-ID: 42e59d7d19dc4b49feab2a860fd9a8ca3248c833
-X-Mailer: tip-git-log-daemon
+	id S1757435AbZJFNtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 09:49:06 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Nick Piggin <npiggin@novell.com>
+Cc: Christoph Hellwig <hch@ifradead.org>,
+       Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
+       Linux Filesystem Mailing List <linux-fsdevel@vger.kernel.org>
+Subject: NULL inode->i_mapping in generic_sync_sb_inodes
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 06 Oct 2009 09:48:38 -0400
+Message-ID: <x49vdisbpl5.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 06 Oct 2009 13:42:56 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  42e59d7d19dc4b49feab2a860fd9a8ca3248c833
-Gitweb:     http://git.kernel.org/tip/42e59d7d19dc4b49feab2a860fd9a8ca3248c833
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 6 Oct 2009 15:14:21 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 6 Oct 2009 15:41:09 +0200
+Hi,
 
-perf tools: Default to 1 KHz auto-sampling freq events
+I've come across a problem in 2.6.31 whereby the umount path on shutdown
+Oopses like so:
 
-Use auto-freq events by default in perf record and
-perf top.
+BUG: unable to handle kernel NULL pointer dereference at 00000070
+IP: [<c0510e19>] generic_sync_sb_inodes+0x2ca/0x34b
+*pdpt = 00000000220b1001 *pde = 0000000099419067 
+Oops: 0000 [#1] SMP 
+last sysfs file:
+/sys/devices/pci0000:00/0000:00:07.0/0000:0d:00.0/0000:0e:08.0/host0/target0:1:0/0:1:0:0/block/sda/removable
+Modules linked in: fcoe libfcoe libfc scsi_transport_fc scsi_tgt ipv6 xts lrw
+gf128mul sha256_generic cbc dm_crypt dm_round_robin dm_multipath dm_snapshot
+dm_mirror dm_region_hash dm_log dm_zero dm_mod linear raid10 raid456 raid6_pq
+async_xor async_memcpy async_tx xor raid1 raid0 nfs lockd fscache nfs_acl
+auth_rpcgss sunrpc radeon mptsas ttm drm_kms_helper mptscsih drm mptbase
+i2c_algo_bit i2c_core scsi_transport_sas bnx2 iscsi_ibft pcspkr edd iscsi_tcp
+libiscsi_tcp libiscsi scsi_transport_iscsi squashfs cramfs
 
-This allows more consistent hardware event sampling,
-regardless of the intensity of the underlying event.
+Pid: 5082, comm: grub Tainted: G        W  (2.6.31-27.el6.i686 #1) PowerEdge
+1955
+EIP: 0060:[<c0510e19>] EFLAGS: 00010246 CPU: 0
+EIP is at generic_sync_sb_inodes+0x2ca/0x34b
+EAX: ec45ae14 EBX: 00000000 ECX: 00000000 EDX: c0510e4f
+ESI: ec45ae04 EDI: ec45b1c4 EBP: f25fdf38 ESP: f25fdf10
+ DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+Process grub (pid: 5082, ti=f25fc000 task=ef0cc6f0 task.ti=f25fc000)
+Stack:
+ 00000246 00000001 f422fa6c 000abc70 f422fa64 f422fa54 8fd7ae23 f422f970
+<0> 00000001 f25fdf68 f25fdf74 c0510f0e 00000000 00000001 00000000 7fffffff
+<0> 00000000 00000000 00000000 ffffffff 7fffffff 00000000 8fd7ae23 f422f970
+Call Trace:
+ [<c0510f0e>] ? sync_inodes_sb+0x74/0x8c
+ [<c051407b>] ? __sync_filesystem+0x41/0x74
+ [<c0514144>] ? sync_filesystems+0x96/0xed
+ [<c051420a>] ? sys_sync+0x27/0x4a
+ [<c04095ab>] ? sysenter_do_call+0x12/0x38
+Code: 0f 85 83 00 00 00 8b b3 e4 00 00 00 81 c3 e4 00 00 00 31 ff 89 5d ec 83
+ee 10 eb 4b f6 86 6c 02 00 00 78 75 3c 8b 9e 3c 01 00 00 <83> 7b 70 00 74 30 89
+f0 e8 d8 61 ff ff b8 cc f4 a0 c0 e8 e0 dd 
+EIP: [<c0510e19>] generic_sync_sb_inodes+0x2ca/0x34b SS:ESP 0068:f25fdf10
+CR2: 0000000000000070
+---[ end trace 8171140d16b04470 ]---
 
-It also keeps us from over-sampling on larger/busier
-systems.
+The Oops is in fs/fs-writeback.c:568:
 
-(also make surrounding initializations more consistent)
+               list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+                        struct address_space *mapping;
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/builtin-record.c |   52 +++++++++++++++++++++---------------------
- tools/perf/builtin-top.c    |   38 +++++++++++++++---------------
- 2 files changed, 45 insertions(+), 45 deletions(-)
+                        if (inode->i_state &
+                                        (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
+                                continue;
+                        mapping = inode->i_mapping;
+                        if (mapping->nrpages == 0)    <==== BUG
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 3eeef33..494f8c7 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -29,43 +29,43 @@ static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
- 
- static long			default_interval		= 100000;
- 
--static int			nr_cpus				= 0;
-+static int			nr_cpus				=      0;
- static unsigned int		page_size;
--static unsigned int		mmap_pages			= 128;
--static int			freq				= 0;
-+static unsigned int		mmap_pages			=    128;
-+static int			freq				=   1000;
- static int			output;
- static const char		*output_name			= "perf.data";
--static int			group				= 0;
--static unsigned int		realtime_prio			= 0;
--static int			raw_samples			= 0;
--static int			system_wide			= 0;
--static int			profile_cpu			= -1;
--static pid_t			target_pid			= -1;
--static pid_t			child_pid			= -1;
--static int			inherit				= 1;
--static int			force				= 0;
--static int			append_file			= 0;
--static int			call_graph			= 0;
--static int			inherit_stat			= 0;
--static int			no_samples			= 0;
--static int			sample_address			= 0;
--static int			multiplex			= 0;
--static int			multiplex_fd			= -1;
--
--static long			samples;
-+static int			group				=      0;
-+static unsigned int		realtime_prio			=      0;
-+static int			raw_samples			=      0;
-+static int			system_wide			=      0;
-+static int			profile_cpu			=     -1;
-+static pid_t			target_pid			=     -1;
-+static pid_t			child_pid			=     -1;
-+static int			inherit				=      1;
-+static int			force				=      0;
-+static int			append_file			=      0;
-+static int			call_graph			=      0;
-+static int			inherit_stat			=      0;
-+static int			no_samples			=      0;
-+static int			sample_address			=      0;
-+static int			multiplex			=      0;
-+static int			multiplex_fd			=     -1;
-+
-+static long			samples				=      0;
- static struct timeval		last_read;
- static struct timeval		this_read;
- 
--static u64			bytes_written;
-+static u64			bytes_written			=      0;
- 
- static struct pollfd		event_array[MAX_NR_CPUS * MAX_COUNTERS];
- 
--static int			nr_poll;
--static int			nr_cpu;
-+static int			nr_poll				=      0;
-+static int			nr_cpu				=      0;
- 
--static int			file_new = 1;
-+static int			file_new			=      1;
- 
--struct perf_header		*header;
-+struct perf_header		*header				=   NULL;
- 
- struct mmap_data {
- 	int			counter;
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index c574c5b..d978dc9 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -55,26 +55,26 @@
- 
- static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
- 
--static int			system_wide			=  0;
-+static int			system_wide			=      0;
- 
- static int			default_interval		= 100000;
- 
--static int			count_filter			=  5;
--static int			print_entries			= 15;
-+static int			count_filter			=      5;
-+static int			print_entries			=     15;
- 
--static int			target_pid			= -1;
--static int			inherit				=  0;
--static int			profile_cpu			= -1;
--static int			nr_cpus				=  0;
--static unsigned int		realtime_prio			=  0;
--static int			group				=  0;
-+static int			target_pid			=     -1;
-+static int			inherit				=      0;
-+static int			profile_cpu			=     -1;
-+static int			nr_cpus				=      0;
-+static unsigned int		realtime_prio			=      0;
-+static int			group				=      0;
- static unsigned int		page_size;
--static unsigned int		mmap_pages			= 16;
--static int			freq				=  0;
-+static unsigned int		mmap_pages			=     16;
-+static int			freq				=   1000; /* 1 KHz */
- 
--static int			delay_secs			=  2;
--static int			zero;
--static int			dump_symtab;
-+static int			delay_secs			=      2;
-+static int			zero                            =      0;
-+static int			dump_symtab                     =      0;
- 
- /*
-  * Source
-@@ -87,11 +87,11 @@ struct source_line {
- 	struct source_line	*next;
- };
- 
--static char			*sym_filter			=  NULL;
--struct sym_entry		*sym_filter_entry		=  NULL;
--static int			sym_pcnt_filter			=  5;
--static int			sym_counter			=  0;
--static int			display_weighted		= -1;
-+static char			*sym_filter			=   NULL;
-+struct sym_entry		*sym_filter_entry		=   NULL;
-+static int			sym_pcnt_filter			=      5;
-+static int			sym_counter			=      0;
-+static int			display_weighted		=     -1;
- 
- /*
-  * Symbols
+Any idea how that can happen?  Maybe a race in the umount path?
+
+Cheers,
+Jeff
