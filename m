@@ -1,70 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZJFFHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbZJFFOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246AbZJFFHl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 01:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbZJFFHk
+	id S1756041AbZJFFOk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 01:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbZJFFOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 01:07:40 -0400
-Received: from mail-ew0-f217.google.com ([209.85.219.217]:52018 "EHLO
-	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756193AbZJFFHj (ORCPT
+	Tue, 6 Oct 2009 01:14:40 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:41596 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750891AbZJFFOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 01:07:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HWFyZ9xX8VMteA/VDf9ZTq2Pv0UXr3xwFPRWwcrNMTGz7nv+7feDJ8AUxaM/Up9xo0
-         lA1QwMQH8BSOmGOq9aNeAYkDEdi7FkZrvPqwi9v4sX9Z01Casy3gujUEjKiBjOLlVVrA
-         rONGo5xucEoIY+KcTkdJOPcAsI/7HP6KdwMu8=
-Date: Mon, 5 Oct 2009 22:06:56 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: Amit Kucheria <amit.kucheria@verdurent.com>,
-       List Linux Kernel <linux-kernel@vger.kernel.org>,
-       List Linux Omap <linux-omap@vger.kernel.org>,
-       Lauri Leukkunen <lauri.leukkunen@nokia.com>,
-       Samuel Ortiz <sameo@linux.intel.com>
-Subject: Re: [PATCH] input: fix rx51 board keymap
-Message-ID: <20091006050656.GI27881@core.coreip.homeip.net>
-References: <1254317128-13954-1-git-send-email-amit.kucheria@verdurent.com> <20090930184843.GQ16865@atomide.com>
-MIME-Version: 1.0
+	Tue, 6 Oct 2009 01:14:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAJ9sykpMROOX/2dsb2JhbACBUdFMgiiCAgQ
+Date: Tue, 6 Oct 2009 01:14:00 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: Is RCU_PREEMPT working in 2.6.30.9 ?
+Message-ID: <20091006051400.GA24465@Krystal>
+References: <20091005235817.GA30691@Krystal> <20091006002441.GH6949@linux.vnet.ibm.com> <20091006020018.GA8901@Krystal> <20091006021417.GB8901@Krystal> <20091006030156.GC8901@Krystal> <20091006040235.GA6732@linux.vnet.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090930184843.GQ16865@atomide.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091006040235.GA6732@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 01:04:55 up 48 days, 15:54,  3 users,  load average: 0.15, 0.21,
+	0.18
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 11:48:44AM -0700, Tony Lindgren wrote:
-> * Amit Kucheria <amit.kucheria@verdurent.com> [090930 06:26]:
-> > The original driver was written with the KEY() macro defined as (col, row)
-> > instead of (row, col) as defined by the matrix keypad infrastructure. So the
-> > keymap was defined accordingly.
-> > 
-> > Since the driver that was merged upstream uses the matrix keypad
-> > infrastructure, modify the keymap accordingly.
-> > 
-> > While we are at it, fix the comments in twl4030.h and define PERSISTENT_KEY as
-> > (r,c) instead of (c, r)
-> > 
-> > Tested on a RX51 (N900) device.
-> > 
-> > Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> > Cc: Tony Lindgren <tony@atomide.com>
-> > Cc: Lauri Leukkunen <lauri.leukkunen@nokia.com>
-> > Cc: Samuel Ortiz <sameo@linux.intel.com>
-> 
-> Acked-by: Tony Lindgren <tony@atomide.com>
-> 
-> Dimitry, will you queue this one?
-> 
-> I'll also add it into omap-fixes-testing while waiting for it
-> to go to mainline.
-> 
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
 
-Applied to the 'for-linus' branch.
+> Classic RCU does have known bugs in its dyntick interface, which was one
+> of the factors motivating its removal from mainline.  ;-)
+> 
+> 							Thanx, Paul
+
+Recreated the problem with a simple test-case not involving lttng:
+
+kernel 2.6.30.9
+TREE RCU
+
+loading this hacky module:
+
+/*
+ * test-rcu-bug.c
+ */
+
+#include <linux/module.h>
+#include <linux/proc_fs.h>
+#include <linux/sched.h>
+#include <linux/timex.h>
+#include <linux/rcupdate.h>
+#include <asm/ptrace.h>
+
+struct proc_dir_entry *pentry = NULL;
+
+static int my_open(struct inode *inode, struct file *file)
+{
+	unsigned int i;
+
+	for (i = 0; i < 1000; i++)
+		synchronize_sched();
+
+	return -EPERM;
+}
+
+
+static struct file_operations my_operations = {
+	.open = my_open,
+};
+
+int init_module(void)
+{
+	pentry = create_proc_entry("testrcu", 0444, NULL);
+	if (pentry)
+		pentry->proc_fops = &my_operations;
+
+	return 0;
+}
+
+void cleanup_module(void)
+{
+	remove_proc_entry("testrcu", NULL);
+}
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Mathieu Desnoyers");
+MODULE_DESCRIPTION("rcu test");
+
+Running, in loops:
+
+One console:
+for a in $(seq 1 7); do echo 0 > /sys/devices/system/cpu/cpu$a/online; done
+for a in $(seq 1 7); do echo 1 > /sys/devices/system/cpu/cpu$a/online; done
+
+Another console:
+for a in $(seq 1 10000); do cat /proc/testrcu; done
+
+I eventually get a hang for the cat loop. Sysrq-W shows:
+
+
+[ 1337.118630] SysRq : Show Blocked State                             
+[ 1337.118644]   task                        PC stack   pid father              
+[ 1337.118644] md1_resync    D 0000000000000000     0  1255      2
+[ 1337.118644]  ffffffff807eb360 0000000000000046 fffffb7fa3c41757 ffff880439150
+[ 1337.118644]  ffff88043e028860 00ffffff803f4b88 0000000000010a80 0000000000008
+[ 1337.118644]  0000000000010a80 00ff88043e028860 ffff88043e485b00 ffff88043e488
+[ 1337.118644] Call Trace:
+[ 1337.118644]  [<ffffffff80684638>] ? schedule+0x18/0x40
+[ 1337.118644]  [<ffffffff8052b3dc>] ? raise_barrier+0x9c/0x1a0
+[ 1337.118644]  [<ffffffff80236720>] ? default_wake_function+0x0/0x10
+[ 1337.118644]  [<ffffffff8052c4f6>] ? sync_request+0x126/0x6c0
+[ 1337.118644]  [<ffffffff8054609a>] ? is_mddev_idle+0xda/0x160
+[ 1337.118644]  [<ffffffff805467f7>] ? md_do_sync+0x6d7/0xc90
+[ 1337.118644]  [<ffffffff80252400>] ? autoremove_wake_function+0x0/0x30
+[ 1337.118644]  [<ffffffff80547677>] ? md_thread+0x47/0x120
+[ 1337.118644]  [<ffffffff8022e8db>] ? __wake_up_common+0x5b/0x90
+[ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
+[ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
+[ 1337.118644]  [<ffffffff80547630>] ? md_thread+0x0/0x120
+[ 1337.118644]  [<ffffffff80251f24>] ? kthread+0x54/0x90
+[ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
+[ 1337.118644]  [<ffffffff8020d00a>] ? child_rip+0xa/0x20
+[ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
+[ 1337.118644]  [<ffffffff80251ed0>] ? kthread+0x0/0x90
+[ 1337.118644]  [<ffffffff8020d000>] ? child_rip+0x0/0x20
+[ 1337.118644] cat           D 0000000000000000     0 28861   4758
+[ 1337.118644]  ffff88043f84b330 0000000000000082 0000000000000000 ffff88043f570
+[ 1337.118644]  0000000000000019 00ffffff80293013 0000000000010a80 0000000000008
+[ 1337.118644]  0000000000010a80 00ffffff80293887 ffff88043dd885b0 ffff88043dd88
+[ 1337.118644] Call Trace:
+[ 1337.118644]  [<ffffffff802df5be>] ? inode_init_always+0xfe/0x1a0
+[ 1337.118644]  [<ffffffff802df692>] ? alloc_inode+0x32/0xa0
+[ 1337.118644]  [<ffffffff80684638>] ? schedule+0x18/0x40
+[ 1337.118644]  [<ffffffff806849ed>] ? schedule_timeout+0x15d/0x190
+[ 1337.118644]  [<ffffffff8031a1fc>] ? proc_lookup_de+0xac/0x100
+[ 1337.118644]  [<ffffffff80683b2c>] ? wait_for_common+0x15c/0x190
+[ 1337.118644]  [<ffffffff80236720>] ? default_wake_function+0x0/0x10
+[ 1337.118644]  [<ffffffff802dba90>] ? dput+0xb0/0x180
+[ 1337.118644]  [<ffffffffa007c050>] ? my_open+0x0/0x20 [test_rcu_bug]
+[ 1337.118644]  [<ffffffff8024f8d3>] ? synchronize_rcu+0x43/0x50
+[ 1337.118644]  [<ffffffff8024f730>] ? wakeme_after_rcu+0x0/0x10
+[ 1337.118644]  [<ffffffffa007c05d>] ? my_open+0xd/0x20 [test_rcu_bug]          
+[ 1337.118644]  [<ffffffff80313d52>] ? proc_reg_open+0xa2/0x190                 
+[ 1337.118644]  [<ffffffff80313cb0>] ? proc_reg_open+0x0/0x190                  
+[ 1337.118644]  [<ffffffff802c6a77>] ? __dentry_open+0x127/0x350                
+[ 1337.118644]  [<ffffffff802d6664>] ? do_filp_open+0x2b4/0xa00                 
+[ 1337.118644]  [<ffffffff802e0e22>] ? alloc_fd+0x122/0x150                     
+[ 1337.118644]  [<ffffffff802c6816>] ? do_sys_open+0x86/0x180                   
+[ 1337.118644]  [<ffffffff8020beeb>] ? system_call_fastpath+0x16/0x1b           
+
+This might be a race between queued callbacks that discards a
+completion.
+
+Thanks,
+
+Mathieu
 
 -- 
-Dmitry
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
