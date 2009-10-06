@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbZJFIuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZJFIyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbZJFIuU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 04:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755930AbZJFIuU
+	id S1756630AbZJFIyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 04:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756563AbZJFIyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 04:50:20 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:25315 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755697AbZJFIuS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 04:50:18 -0400
-Subject: Re: [PATCH 1/1] Kobject: bail early if no new_parent in
-	kobject_move()
-From: Phil Carmody <ext-phil.2.carmody@nokia.com>
-Reply-To: ext-phil.2.carmody@nokia.com
-To: ext Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: "gregkh@suse.de" <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091005183753.4d77afcb@gondolin>
-References: <c4b4c2e3155280589fb539f952e58c77a1fa7e96.1254408493.git.ext-phil.2.carmody@nokia.com>
-	 <20091005183753.4d77afcb@gondolin>
-Content-Type: text/plain
-Organization: Nokia Oyj
-Date: Tue, 06 Oct 2009 11:52:09 +0300
-Message-Id: <1254819129.23533.27.camel@pcarmody-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Oct 2009 08:48:39.0895 (UTC) FILETIME=[CD059E70:01CA4661]
-X-Nokia-AV: Clean
+	Tue, 6 Oct 2009 04:54:20 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:59609 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755930AbZJFIyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 04:54:19 -0400
+Date: Tue, 6 Oct 2009 09:53:45 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>, linux-mm@kvack.org
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+Message-ID: <20091006085345.GA18185@csn.ul.ie>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910050851.02056.elendil@planet.nl> <20091005085739.GB5452@csn.ul.ie> <200910052334.23833.elendil@planet.nl> <alpine.DEB.1.00.0910051700440.31688@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0910051700440.31688@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-05 at 18:37 +0200, ext Cornelia Huck wrote:
-> On Thu,  1 Oct 2009 17:50:48 +0300,
-> Phil Carmody <ext-phil.2.carmody@nokia.com> wrote:
+On Mon, Oct 05, 2009 at 05:04:55PM -0700, David Rientjes wrote:
+> On Mon, 5 Oct 2009, Frans Pop wrote:
 > 
-> > From: Phil Carmody <ext-phil.2.carmody@nokia.com>
+> > And the winner is:
+> > 2ff05b2b4eac2e63d345fc731ea151a060247f53 is first bad commit
+> > commit 2ff05b2b4eac2e63d345fc731ea151a060247f53
+> > Author: David Rientjes <rientjes@google.com>
+> > Date:   Tue Jun 16 15:32:56 2009 -0700
 > > 
-> > In the absense of kobj->kset, new_parent would remain NULL.
-> > NULL-dereference shenanighans then ensues in the subsequent
-> > sysfs_move_dir(..., new_parent) call. Bail early instead.
+> >     oom: move oom_adj value from task_struct to mm_struct
+> > 
+> > I'm confident that the bisection is good. The test case was very reliable 
+> > while zooming in on the merge from akpm.
+> > 
 > 
-> But sysfs_move_dir(..., NULL) should work and fall back to the sysfs
-> root...
-
-I guess there are two schools of thought - the strict and the
-accommodating. I was contemplating resending an even stricter patch, but
-there's nothing wrong with adopting sane safe fallbacks instead. 
-
-> <looks at code>
+> I doubt it for two reasons: (i) this commit was reverted in 0753ba0 since 
+> 2.6.31-rc7 and is no longer in the kernel, and (ii) these are GFP_ATOMIC 
+> allocations which would be unaffected by oom killer scores.
 > 
-> It seems that has been broken for some time. Should probably be
-> something like this instead (uncompiled); I can send it with proper
-> description and s-o-b once I gave it a test.
-> 
-> ---
->  fs/sysfs/dir.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.orig/fs/sysfs/dir.c
-> +++ linux-2.6/fs/sysfs/dir.c
-> @@ -894,7 +894,8 @@ int sysfs_move_dir(struct kobject *kobj,
->  
->  	mutex_lock(&sysfs_rename_mutex);
->  	BUG_ON(!sd->s_parent);
-> -	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
-> +	new_parent_sd = (new_parent_kobj && new_parent_kobj->sd) ?
-> +		new_parent_kobj->sd : &sysfs_root;
->  
->  	error = 0;
->  	if (sd->s_parent == new_parent_sd)
 
-Looks like it knocks the NULL dereference squarely on the head. Yup.
+However, the problem was reported to start showing up in 2.6.31-rc1 so
+while it might not be *the* patch, it might be making the type of change
+that caused more fragmentation. This patch adjusted the size of
+mm_struct and maybe it was enough to change the "order" required for the
+slab. Maybe there are other slabs that have changed size as well in that
+timeframe.
 
-Phil
+Frans, what is the size of mm_struct before and after this patch was
+applied? Find it with either
+
+grep mm_struct /proc/slabinfo
+
+and if the information is not available there, try
+
+cat /sys/kernel/slab/mm_struct/slab_size and
+/sys/kernel/slab/mm_struct/order
+
+Thanks
+
 -- 
-"They weren't designed to run on a computer, they were designed
-to run on a Powerpoint slide projector." -- Peter Gutmann
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
