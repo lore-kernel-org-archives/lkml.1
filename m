@@ -1,96 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751509AbZJFEUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbZJFEYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751509AbZJFEUT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 00:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZJFEUR
+	id S1751879AbZJFEYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 00:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZJFEYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 00:20:17 -0400
-Received: from galiil.marvell.com ([199.203.130.254]:39594 "EHLO
-	galiil.marvell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbZJFEUQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 00:20:16 -0400
-From: Haojian Zhuang <hzhuang1@marvell.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Samuel Ortiz <sameo@openedhand.com>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Mon, 5 Oct 2009 21:19:32 -0700
-Subject: RE: linux-next: mfd tree build failure
-Thread-Topic: linux-next: mfd tree build failure
-Thread-Index: AcpGOLifLW/SyDDeTE2+joe6cy95qwAA0cUQ
-Message-ID: <25B60CDC2F704E4E9D88FFD52780CB4C04B6A37960@SC-VEXCH1.marvell.com>
-References: <20091006130202.5e18a332.sfr@canb.auug.org.au>
-	<25B60CDC2F704E4E9D88FFD52780CB4C04B6A3794F@SC-VEXCH1.marvell.com>
- <20091006145425.a9cc611a.sfr@canb.auug.org.au>
-In-Reply-To: <20091006145425.a9cc611a.sfr@canb.auug.org.au>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: multipart/mixed;
-	boundary="_002_25B60CDC2F704E4E9D88FFD52780CB4C04B6A37960SCVEXCH1marve_"
+	Tue, 6 Oct 2009 00:24:49 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55423 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750948AbZJFEYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 00:24:48 -0400
+Message-ID: <4ACAC665.7070109@garzik.org>
+Date: Tue, 06 Oct 2009 00:24:05 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: "Jung-Ik (John) Lee" <jilee@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Grant Grundler <grundler@google.com>,
+       Gwendal Gringo <gwendal@google.com>
+Subject: Re: [git patches] libata updates
+References: <20090917204935.GA7432@havoc.gtf.org> <200909202305.06199.bzolnier@gmail.com> <8b5805ff0909211936s4968d11fnd3e6604d38e31c79@mail.gmail.com> <200909281734.11090.bzolnier@gmail.com>
+In-Reply-To: <200909281734.11090.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---_002_25B60CDC2F704E4E9D88FFD52780CB4C04B6A37960SCVEXCH1marve_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+On 09/28/2009 11:34 AM, Bartlomiej Zolnierkiewicz wrote:
+> Thanks, your patch looks good to me but since there are still some
+> leftover issues left we would also need something like the incremental
+> patch below:
+>
+> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> Subject: [PATCH] pata_atp867x: PIO support fixes
+>
+> * use  8 clk setting for active clocks == 7 (was 12 clk)
+> * use 12 clk setting for active clocks>  12 (was  8 clk)
+> * do 66MHz bus fixup before mapping active clocks
+> * fix setup of PIO command timings
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+> ---
+>   drivers/ata/pata_atp867x.c |   36 +++++++++++++++++++-----------------
+>   1 file changed, 19 insertions(+), 17 deletions(-)
+>
+> Index: b/drivers/ata/pata_atp867x.c
+> ===================================================================
+> --- a/drivers/ata/pata_atp867x.c
+> +++ b/drivers/ata/pata_atp867x.c
+> @@ -155,30 +155,31 @@ static int atp867x_get_active_clocks_shi
+>   	struct atp867x_priv *dp = ap->private_data;
+>   	unsigned char clocks = clk;
+>
+> +	/*
+> +	 * Doc 6.6.9: increase the clock value by 1 for safer PIO speed
+> +	 * on 66MHz bus
+> +	 */
+> +	if (dp->pci66mhz)
+> +		clocks++;
+> +
+>   	switch (clocks) {
+>   	case 0:
+>   		clocks = 1;
+>   		break;
+> -	case 1 ... 7:
+> -		break;
+> -	case 9 ... 12:
+> -		clocks = 7;
+> +	case 1 ... 6:
+>   		break;
+>   	default:
+>   		printk(KERN_WARNING "ATP867X: active %dclk is invalid. "
+> -			"Using default 8clk.\n", clk);
+> +			"Using 12clk.\n", clk);
+> +	case 9 ... 12:
+> +		clocks = 7;	/* 12 clk */
+> +		break;
+> +	case 7:
+>   	case 8:	/* default 8 clk */
+>   		clocks = 0;
+>   		goto active_clock_shift_done;
+>   	}
+>
+> -	/*
+> -	 * Doc 6.6.9: increase the clock value by 1 for safer PIO speed
+> -	 * on 66MHz bus
+> -	 */
+> -	if (dp->pci66mhz&&  clocks<  7)
+> -		clocks++;
+> -
+>   active_clock_shift_done:
+>   	return clocks<<  ATP867X_IO_PIOSPD_ACTIVE_SHIFT;
+>   }
+> @@ -193,7 +194,8 @@ static int atp867x_get_recover_clocks_sh
+>   		break;
+>   	case 1 ... 11:
+>   		break;
+> -	case 13: case 14:
+> +	case 13:
+> +	case 14:
+>   		--clocks;	/* by the spec */
+>   		break;
+>   	case 15:
+> @@ -235,16 +237,16 @@ static void atp867x_set_piomode(struct a
+>   	iowrite8(b, dp->dma_mode);
+>
+>   	b = atp867x_get_active_clocks_shifted(ap, t.active) |
+> -		atp867x_get_recover_clocks_shifted(t.recover);
+> +	    atp867x_get_recover_clocks_shifted(t.recover);
+>
+>   	if (adev->devno&  1)
+>   		iowrite8(b, dp->slave_piospd);
+>   	else
+>   		iowrite8(b, dp->mstr_piospd);
+>
+> -	/*
+> -	 * use the same value for comand timing as for PIO timimg
+> -	 */
+> +	b = atp867x_get_active_clocks_shifted(ap, t.act8b) |
+> +	    atp867x_get_recover_clocks_shifted(t.rec8b);
+> +
+>   	iowrite8(b, dp->eightb_piospd);
+>   }
+>
+>
 
-SGkgU3RlcGhlbiwNCg0KVGhhbmtzIGEgbG90IGZvciB5b3VyIGhlbHAuIEkgZml4IGl0IG5vdy4g
-UGxlYXNlIGhlbHAgdG8gcmV2aWV3IGl0LiBJdCdzIGFscmVhZHkgcGFzc2VkIHRoZSBidWlsZCB0
-ZXN0Lg0KDQpCZXN0IFJlZ2FyZHMNCkhhb2ppYW4NCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0t
-LS0NCkZyb206IFN0ZXBoZW4gUm90aHdlbGwgW21haWx0bzpzZnJAY2FuYi5hdXVnLm9yZy5hdV0g
-DQpTZW50OiAyMDA5xOoxMNTCNsjVIDExOjU0IEFNDQpUbzogSGFvamlhbiBaaHVhbmcNCkNjOiBT
-YW11ZWwgT3J0aXo7IGxpbnV4LW5leHRAdmdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdl
-ci5rZXJuZWwub3JnOyBNYXJrIEJyb3duDQpTdWJqZWN0OiBSZTogbGludXgtbmV4dDogbWZkIHRy
-ZWUgYnVpbGQgZmFpbHVyZQ0KDQpIaSBIYW9qaWFuLA0KDQpPbiBNb24sIDUgT2N0IDIwMDkgMTk6
-MzU6MDUgLTA3MDAgSGFvamlhbiBaaHVhbmcgPGh6aHVhbmcxQG1hcnZlbGwuY29tPiB3cm90ZToN
-Cj4NCj4gQ291bGQgeW91IHNlbmQgeW91ciAuY29uZmlnIGZpbGUgdG8gbWU/IFRoZSA4OHBtODYw
-NyBwYXRjaCBpcyBqdXN0IGZvciBtZmQtMi42IGdpdCB0cmVlLiBJIGRpZG4ndCB0cnkgaXQgaW4g
-bGludXgtbmV4dCBnaXQgdHJlZSBiZWZvcmUuIEkgY2FuIHRyeSBpdCBub3cuIElmIEkgY291bGQg
-aGF2ZSB5b3VyIC5jb25maWcgZmlsZSwgaXQgd291bGQgYmUgYmV0dGVyLg0KDQpJIGFtIHNvcnJ5
-LCBidXQgSSBkb24ndCBoYXZlIHRoZSBleGFjdCAuY29uZmlnIGZpbGUgYW55IG1vcmUgKEkgaGF2
-ZQ0KbW92ZWQgb24gaW4gbXkgY3JlYXRpb24gb2YgbGludXgtbmV4dCkgIGhvd2V2ZXIsIGFzIEkg
-c2FpZCwgdGhpcyB3YXMgYW4NCmFsbG1vZGNvbmZpZyBidWlsZCBvbiB4ODZfNjQuICBJIGFsc28g
-bm90ZWQgdGhhdCBDT05GSUdfSTJDPW0gYW5kDQpDT05GSUdfTUZEX0NPUkU9bSwgd2hpbGUgdGhl
-IGNvbmZpZyBlbnRyeSB0aGF0IGNvbnRyb2xzIHRoZSBidWlsZGluZyBvZg0KdGhpcyBkcml2ZXIg
-aXMgYSBib29sIHNvIG11c3QgaGF2ZSBiZWVuICd5Jy4gIFNvIGZyb20gYSBidWlsdGluIGRyaXZl
-ciwNCnlvdSBhcmUgcmVmZXJyaW5nIHRvIHN5bWJvbHMgdGhhdCBhcmUgb25seSBkZWZpbmVkIGlu
-IG1vZHVsZXMuDQoNCi0tIA0KQ2hlZXJzLA0KU3RlcGhlbiBSb3Rod2VsbCAgICAgICAgICAgICAg
-ICAgICAgc2ZyQGNhbmIuYXV1Zy5vcmcuYXUNCmh0dHA6Ly93d3cuY2FuYi5hdXVnLm9yZy5hdS9+
-c2ZyLw0K
+This was incremental to the previous patch, or upstream?
 
---_002_25B60CDC2F704E4E9D88FFD52780CB4C04B6A37960SCVEXCH1marve_
-Content-Type: application/octet-stream;
-	name="0002-mfd-fix-the-dependancy-issue-on-88PM8607.patch"
-Content-Description: 0002-mfd-fix-the-dependancy-issue-on-88PM8607.patch
-Content-Disposition: attachment;
-	filename="0002-mfd-fix-the-dependancy-issue-on-88PM8607.patch"; size=959;
-	creation-date="Mon, 05 Oct 2009 21:18:17 GMT";
-	modification-date="Mon, 05 Oct 2009 21:11:20 GMT"
-Content-Transfer-Encoding: base64
+	Jeff
 
-RnJvbSA1NDNjNTY0YmExODE4OWFiYmFkYTNhMTYyMjhhNjE5M2M1NzU3MjEzIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBIYW9qaWFuIFpodWFuZyA8aGFvamlhbi56aHVhbmdAbWFydmVs
-bC5jb20+CkRhdGU6IFR1ZSwgNiBPY3QgMjAwOSAwODowODozNyAtMDQwMApTdWJqZWN0OiBbUEFU
-Q0hdIG1mZDogZml4IHRoZSBkZXBlbmRhbmN5IGlzc3VlIG9uIDg4UE04NjA3Cgo4OFBNODYwNyBk
-ZXBlbmRzIG9uIEkyQyBhbmQgTUZEX0NPUkUuIFNpbmNlIDg4UE04NjA3IGlzIGJ1aWx0LWluCmtl
-cm5lbCwgaXQgYWxzbyByZXF1aXJlcyB0aGF0IEkyQyBhbmQgTUZEX0NPUkUgYXJlIGJ1aWx0LWlu
-Cmtlcm5lbCBhbHNvLgoKU2lnbmVkLW9mZi1ieTogSGFvamlhbiBaaHVhbmcgPGhhb2ppYW4uemh1
-YW5nQG1hcnZlbGwuY29tPgotLS0KIGRyaXZlcnMvbWZkL0tjb25maWcgfCAgICAzICstLQogMSBm
-aWxlcyBjaGFuZ2VkLCAxIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9tZmQvS2NvbmZpZyBiL2RyaXZlcnMvbWZkL0tjb25maWcKaW5kZXggZmJlNjg0
-Yi4uNmU5ZWZjZCAxMDA2NDQKLS0tIGEvZHJpdmVycy9tZmQvS2NvbmZpZworKysgYi9kcml2ZXJz
-L21mZC9LY29uZmlnCkBAIC0zMDcsOCArMzA3LDcgQEAgY29uZmlnIEVaWF9QQ0FQCiAKIGNvbmZp
-ZyBNRkRfODhQTTg2MDcKIAlib29sICJTdXBwb3J0IE1hcnZlbGwgODhQTTg2MDciCi0JZGVwZW5k
-cyBvbiBJMkMKLQlzZWxlY3QgTUZEX0NPUkUKKwlkZXBlbmRzIG9uIEkyQz15ICYmIE1GRF9DT1JF
-PXkKIAloZWxwCiAJICBUaGlzIHN1cHBvcnRzIGZvciBNYXJ2ZWxsIDg4UE04NjA3IFBvd2VyIE1h
-bmFnZW1lbnQgSUMuIFRoaXMgaW5jbHVkZXMKIAkgIHRoZSBJMkMgZHJpdmVyIGFuZCB0aGUgY29y
-ZSBBUElzIF9vbmx5XywgeW91IGhhdmUgdG8gc2VsZWN0Ci0tIAoxLjUuNi41Cgo=
 
---_002_25B60CDC2F704E4E9D88FFD52780CB4C04B6A37960SCVEXCH1marve_--
