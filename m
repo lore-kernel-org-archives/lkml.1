@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbZJFSYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933097AbZJFSYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933079AbZJFSYZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 14:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933014AbZJFSYY
+	id S933097AbZJFSYd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 14:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933088AbZJFSYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 14:24:24 -0400
-Received: from mga14.intel.com ([143.182.124.37]:11217 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932655AbZJFSYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 14:24:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,514,1249282800"; 
-   d="scan'208";a="195741618"
-Date: Tue, 6 Oct 2009 11:23:46 -0700
-From: Fenghua Yu <fenghua.yu@intel.com>
-To: David Woodhouse <dwmw2@infradead.org>, Joerg Roedel <joro@8bytes.org>,
-       Francois Isabelle <Francois.Isabelle@ca.kontron.com>
-Cc: iommu <iommu@lists.linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] PCIe hot plug for Intel iommu
-Message-ID: <20091006182346.GA22770@linux-os.sc.intel.com>
-References: <72D8A09E39A89147BE9CFBB6F0C73C306073445396@rrsmsx501.amr.corp.intel.com> <6E2431EDEB6AE64F827F8A1B0D0DA1A603C322CF@azsmsx501.amr.corp.intel.com> <72D8A09E39A89147BE9CFBB6F0C73C30607344552A@rrsmsx501.amr.corp.intel.com> <20091002211844.GA14352@linux-os.sc.intel.com> <20091002215019.GB23379@8bytes.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091002215019.GB23379@8bytes.org>
-User-Agent: Mutt/1.4.1i
+	Tue, 6 Oct 2009 14:24:32 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:45389 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933087AbZJFSYb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 14:24:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=nODnvUU0dLP0B2d5wyHY0hTqATN8Sg1c+Wr047Su2iwcZbWoFu6TBXsMkhp3quKej8
+         Ie3rLdi6i8bcXMXm3WQcGXKFUOW1X6v84r8IuQi0E2EcnbcGj82944FnIrK7EGhRQd8w
+         OmtYJpIssADWqZfj+xs34RU7VVfkBpWNMifUg=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
+	 <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
+	 <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
+	 <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
+	 <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
+	 <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
+	 <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
+	 <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain>
+	 <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain>
+Date: Tue, 6 Oct 2009 20:23:53 +0200
+X-Google-Sender-Auth: 87198a1e312ab737
+Message-ID: <3efb10970910061123k2b6826bci11f0f42509173b26@mail.gmail.com>
+Subject: Re: [ANNOUNCE] 2.6.31.2-rt13
+From: Remy Bohmer <linux@bohmer.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To support PCIe hot plug in IOMMU, we register a notifier to respond to device
-change action.
+Hi Thomas,
 
-When the notifier gets BUS_NOTIFY_UNBOUND_DRIVER, it removes the device from its
-DMAR domain.
+2009/10/6 Thomas Gleixner <tglx@linutronix.de>:
+> We are pleased to announce the next update to our new preempt-rt
+> series.
+>
+>   - Forward to 2.6.31.2
+>   - Futex fix
+>   - iptables fix
 
-A hot added device will be added into an IOMMU domain when it first does IOMMU
-op. So there is no need to add more code for hot add. 
+Great!
 
-Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+But I was wondering if you missed this one:
+http://patchwork.kernel.org/patch/50044/
 
----
-
- intel-iommu.c |   29 +++++++++++++++++++++++++++++
- 1 files changed, 29 insertions(+)
-
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 855dd7c..d8b8cfc 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -3193,6 +3193,33 @@ static int __init init_iommu_sysfs(void)
- }
- #endif	/* CONFIG_PM */
- 
-+/*
-+ * Here we only respond to action of unbound device from driver.
-+ *
-+ * Added device is not attached to its DMAR domain here yet. That will happen
-+ * when mapping the device to iova.
-+ */
-+static int device_notifier(struct notifier_block *nb,
-+				  unsigned long action, void *data)
-+{
-+	struct device *dev = data;
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct dmar_domain *domain;
-+
-+	domain = find_domain(pdev);
-+	if (!domain)
-+		return 0;
-+
-+	if (action == BUS_NOTIFY_UNBOUND_DRIVER && !iommu_pass_through)
-+		domain_remove_one_dev_info(domain, pdev);
-+
-+	return 0;
-+}
-+
-+static struct notifier_block device_nb = {
-+	.notifier_call = device_notifier,
-+};
-+
- int __init intel_iommu_init(void)
- {
- 	int ret = 0;
-@@ -3245,6 +3272,8 @@ int __init intel_iommu_init(void)
- 
- 	register_iommu(&intel_iommu_ops);
- 
-+	bus_register_notifier(&pci_bus_type, &device_nb);
-+
- 	return 0;
- }
- 
+Remy
