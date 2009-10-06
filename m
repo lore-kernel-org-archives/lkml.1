@@ -1,81 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbZJFJQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933556AbZJFX1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756751AbZJFJQu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 05:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbZJFJQu
+	id S933556AbZJFX1d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 19:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933418AbZJFX1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 05:16:50 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:35204 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756341AbZJFJQs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 05:16:48 -0400
-Date: Tue, 6 Oct 2009 14:46:06 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       a.p.zijlstra@chello.nl, shaohua.li@intel.com, svaidy@linux.vnet.ibm.com
-Subject: Re: [git pull request] ACPI Processor Aggregator Driver for
- 2.6.32-rc1
-Message-ID: <20091006091606.GA6818@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <alpine.LFD.2.00.0910030145140.25240@localhost.localdomain>
- <20091005033256.GA26592@balbir.in.ibm.com>
- <200910052159.24920.rjw@sisk.pl>
- <20091005140415.57f1db5e.akpm@linux-foundation.org>
- <alpine.LFD.2.00.0910051818130.32307@localhost.localdomain>
- <20091005154021.129a8f9f.akpm@linux-foundation.org>
- <alpine.LFD.2.01.0910051614510.3432@localhost.localdomain>
- <alpine.LFD.2.00.0910052054540.309@localhost.localdomain>
+	Tue, 6 Oct 2009 19:27:32 -0400
+Received: from ozlabs.org ([203.10.76.45]:54233 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933396AbZJFX1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 19:27:31 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: john cooper <john.cooper@redhat.com>
+Subject: Re: [PATCH 1/4] virtio_blk: deprecate the 1024-byte ID field.
+Date: Tue, 6 Oct 2009 19:51:46 +1030
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; i686; ; )
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
+References: <200909300248.09630.rusty@rustcorp.com.au> <200909300941.24736.borntraeger@de.ibm.com> <4ACA1CBC.8020402@redhat.com>
+In-Reply-To: <4ACA1CBC.8020402@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0910052054540.309@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200910061951.47231.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Len Brown <lenb@kernel.org> [2009-10-05 21:28:18]:
+On Tue, 6 Oct 2009 02:50:12 am john cooper wrote:
+> It seems simply retiring use of the VIRTIO_BLK_F_IDENTIFY
+> binary value should be sufficient.  The patch which
+> implemented the cooperating logic in qemu was dropped
+> due to the config space issue.
 
-> > ...  we probably never want to even try 
-> > to solve it in the scheduler, because why the hell should we care and add 
-> > complex logic for something like that?
-> 
-> Today we take cores down to 100% idle, one at a time.
-> This is useful, but isn't the best we can do.
-> 
-> For we get zero "uncore" power savings.
-> As long as at least one core is active anywhere in the system,
-> all the uncores in all the packages in the system must remain active.
-> 
-> What a scheduler-based solution could do is
-> instead of taking, say, 1 of 64 cores down for 100%
-> of the period, it could take all 64 cores down
-> for 64th of the same period.  This could get the hardware
-> into the deeper "package C-states", for a measurable
-> net power savings.
-> 
-> At the same time, this system-wide throttling may mitigate
-> some of the fairness/availability issues raised regarding
-> taking cores 100% off-line.
-> 
-> But doing this optimally will not be trivial.
-> The hardware must stay in the deep-sleep-states long enough
-> to make it worth the energy to enter and exit those states.
-> The hardware will flush the caches, having a performance
-> impact on all the cores.  Device interrupts would prevent
-> the cores from sleeping, so they'd need to be somehow delayed
-> if we are to sleep long enough to make sleeping worth it etc.
->
+OK, I'll just remove it then.
 
-My concern is the side-effects of an approach like this. In the case
-that was pointed out earlier about hotplug breaking CPUSets, this
-solution can lead to starvation (single CPU in a cpuset). Most distros
-will enable this feature right? So most end users will see this thread
-running when ACPI 4.0 firmware decides to do thermal throttling.
+Also, I've been convinced to just hand over the 20 byte serial number
+since we're revisiting this.  It's simple, and there's no clear consensus.
 
--- 
-	Balbir
+Thanks,
+Rusty.
