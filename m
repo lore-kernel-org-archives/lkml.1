@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbZJFPZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbZJFP1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757671AbZJFPZV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbZJFPZU
+	id S1757868AbZJFP1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757853AbZJFP1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:25:20 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:36916 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755667AbZJFPZS (ORCPT
+	Tue, 6 Oct 2009 11:27:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41726 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757848AbZJFP1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:25:18 -0400
-Date: Tue, 6 Oct 2009 20:54:21 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-arch@vger.kernel.org
-Subject: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power management
-	code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
-	cpuidle to POWER.
-Message-ID: <20091006152421.GA7278@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
+	Tue, 6 Oct 2009 11:27:21 -0400
+Date: Tue, 6 Oct 2009 08:24:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.32-rc3
+In-Reply-To: <20091006144449.GA23078@elte.hu>
+Message-ID: <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
+ <20091006144449.GA23078@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-Please consider this for inclusion into the testing tree.
-
-This patchset introduces cpuidle infrastructure to POWER, prototyping
-for pSeries, and also does a major refactoring of current x86 idle
-power management and a cleanup of cpuidle infrastructure.
-
-Earlier discussions on the same can be found at:
-
-v6 --> http://lkml.org/lkml/2009/9/22/180
-v5 --> http://lkml.org/lkml/2009/9/22/26
-v4 --> http://lkml.org/lkml/2009/9/1/133
-v3 --> http://lkml.org/lkml/2009/8/27/124
-v2 --> http://lkml.org/lkml/2009/8/26/233
-v1 --> http://lkml.org/lkml/2009/8/19/150
 
 
-Changes in this version:
------------------------------------------
+On Tue, 6 Oct 2009, Ingo Molnar wrote:
+> 
+> We can ignore that and say "hehe, you dont understand non-linear trees 
+> and ran git remote update blindly, too bad for you", or we might do 
+> something to make things more transparent and reduce the confusion. 
 
-* Earlier implementation maintained a list of cpuidle devices and
-  the list was traversed to disable and enable the cpuidle devices
-  when switching governors. This list is not necessary and is removed.
-  Now, we get the per cpu structure cpuidle_devices and disable and
-  enable it for each online cpu while switching governors.
+You are missing the point.
 
-* Earlier iterations were buggy w.r.t the sysfs interface of the cpuidle.
-  This iteration removes the bug in PATCH 1/7.
+The only thing we can do is to teach people that the Makefile version 
+isn't too important, and that it really doesn't tell very much.
 
-* In PATCH 7/7, smt_snooze_delay was not being updated whenever it was
-  changed through the sysfs interface. Provide a helper routine to
-  update it.
+Trying to tweak it to make it somehow "more meaningful" is a BAD THING, 
+because it continues to spoon-feed people a lie. 
 
-* In PATCH 7/7, the idle loops are renamed to denote the idle states
-  to avoid any confusion.
+The cake is a lie. In between kernel versions, you can't rely on the 
+Makefile.  You should teach yourself (and others) THAT, rather than trying 
+to teach people to believe the lie even more.
 
+Once you start believing the lie, suddenly all the subtrees will start 
+thinking that now _their_ kernel versions are bad, so now they'll start to 
+want to make the same idiotic changes to their Makefiles, or maybe 
+they'll decide that they don't want to pull tagged releases, but the "one 
+after the tag so that they'll get the updated Makefile".
 
-thanks,
-arun
+And even if they don't do that idiocy, the whole "the version number is 
+meaningful outside of releases" thing leads to brain damage. 
+
+> One option would be to make LOCALVERSION_AUTO compulsory.
+
+Yes, I could live with that. If you're compiling from a git tree, we migth 
+as well show the real version.
+
+It's the "let's make that meaningful and misleading number be even _more_ 
+misleading by making people think it has meaning" magical thinking that I 
+hate.
+
+It's wrong, and it leads people to believe in things that aren't true. I 
+refuse to cater to that kind of wrongheaded thinking.
+
+I'd much rather screw up the version number entirely and add a _random_ 
+number to it (so that the Makefile would say "2.6.18" after I have 
+released 2.6.32) just so that people would be forced to _understand_ that 
+the version number isn't as meaningful as you seem to think it is.
+
+For example, let's take Arjan's request, that kerneloops should get -rc0.
+
+Think about that for a few minutes. Really THINK about it. What happens?
+
+[ Spend some time really thinking here. ]
+
+What about people like all the networking guys who are running their 
+development kernels that haven't been merged yet? Their kernels won't say 
+-rc0. Are you going to ask them to do it too?
+
+Or would you be better off teaching kerneloops about local versions?
+
+		Linus
