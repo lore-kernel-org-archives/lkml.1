@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756476AbZJFIWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbZJFId2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756476AbZJFIWl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 04:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbZJFIWk
+	id S1756571AbZJFId2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 04:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756394AbZJFId1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 04:22:40 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:18214 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755317AbZJFIWj (ORCPT
+	Tue, 6 Oct 2009 04:33:27 -0400
+Received: from mail-yx0-f194.google.com ([209.85.210.194]:45743 "EHLO
+	mail-yx0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754418AbZJFId0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 04:22:39 -0400
+	Tue, 6 Oct 2009 04:33:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=sxsEB8WEaFOilXc4h9fGxTca0rFd0KmnyO+8fNldv4Ithw1BfHxnnFr/+Sms1EN/iX
-         UozTh1520611AsxKm3zoZxuM6lKYrSOgEYf5Yf/p/x0ls7iHeQQG2RQnpGsHOHsp6PvK
-         P4YJsqSNWNaaCUw0pWvqz6z89RpoUgFBW/+l8=
-From: Stephen Boyd <bebarino@gmail.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-Subject: [PATCH] connector: Fix incompatible pointer type warning
-Date: Tue,  6 Oct 2009 01:23:37 -0700
-Message-Id: <1254817417-16157-1-git-send-email-bebarino@gmail.com>
-X-Mailer: git-send-email 1.6.5.rc1.44.ga1675
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=uPnmn++wHFS9LA+qAUI6Q9EUAPT69mLfUiuw4R4NHVJMgYQ/OLAMkbX75Hpj9Daw0X
+         gy6PP/k8ZINZhhWj7hyi+Zzl4K+1M/p8lIlSZTvT7Xp9gdSHp7SgmnVcJpN43HYh/Lez
+         SVMLbz7ku1jXUgjv+SuR6V2xz0mXsRyZe6ow4=
 MIME-Version: 1.0
+In-Reply-To: <8bd0f97a0908131734h2588d240k9000bace38b58e7f@mail.gmail.com>
+References: <1250046053-3097-1-git-send-email-vapier@gentoo.org> 
+	<20090813234410.GB4406@kroah.com> <8bd0f97a0908131734h2588d240k9000bace38b58e7f@mail.gmail.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 6 Oct 2009 04:32:29 -0400
+Message-ID: <8bd0f97a0910060132r1dd6b6a4u71eaa8763862aebd@mail.gmail.com>
+Subject: Re: [PATCH] USB: isp1362: fix build warnings on 64-bit systems
+To: Greg KH <greg@kroah.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Lothar Wassmann <LW@karo-electronics.de>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 7069331 (connector: Provide the sender's credentials to the
-callback, 2009-10-02) changed callbacks to take two arguments but missed
-this one.
+On Thu, Aug 13, 2009 at 20:34, Mike Frysinger wrote:
+> On Thu, Aug 13, 2009 at 19:44, Greg KH wrote:
+>> On Tue, Aug 11, 2009 at 11:00:53PM -0400, Mike Frysinger wrote:
+>>> A bunch of places assumed pointers were 32-bits in size (bit checking and
+>>> debug output), but none of these affected runtime functionality.
+>>>
+>>> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+>>> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+>>
+>> This patch doesn't apply to my tree, what did you make it against?
+>
+> it was reported against next, so i used that
 
-drivers/connector/cn_proc.c: In function ‘cn_proc_init’:
-drivers/connector/cn_proc.c:263: warning: passing argument 3 of
-‘cn_add_callback’ from incompatible pointer type
-
-Signed-off-by: Stephen Boyd <bebarino@gmail.com>
----
- drivers/connector/cn_proc.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/connector/cn_proc.c b/drivers/connector/cn_proc.c
-index abf4a25..6069790 100644
---- a/drivers/connector/cn_proc.c
-+++ b/drivers/connector/cn_proc.c
-@@ -227,7 +227,8 @@ static void cn_proc_ack(int err, int rcvd_seq, int rcvd_ack)
-  * cn_proc_mcast_ctl
-  * @data: message sent from userspace via the connector
-  */
--static void cn_proc_mcast_ctl(struct cn_msg *msg)
-+static void cn_proc_mcast_ctl(struct cn_msg *msg,
-+			      struct netlink_skb_parms *nsp)
- {
- 	enum proc_cn_mcast_op *mc_op = NULL;
- 	int err = 0;
--- 
-1.6.5.rc1.44.ga1675
-
+so what tree do i need to use to get you to merge this ?  i'm guessing
+the semantic patch was what caused conflicts (my proposed patch
+already included that fix, but too late now).
+-mike
