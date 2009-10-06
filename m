@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbZJFPEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbZJFPFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbZJFPEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757394AbZJFPEo
+	id S1757509AbZJFPFG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbZJFPFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:04:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57438 "EHLO hera.kernel.org"
+	Tue, 6 Oct 2009 11:05:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57446 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757392AbZJFPEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:04:43 -0400
-Date: Tue, 6 Oct 2009 15:03:42 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
+	id S1757477AbZJFPFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 11:05:03 -0400
+Date: Tue, 6 Oct 2009 15:03:57 GMT
+From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        peterz@infradead.org, tglx@linutronix.de, ani@anirban.org
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
@@ -18,65 +18,64 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/urgent] futex: Nullify robust lists after cleanup
-Message-ID: <tip-fc6b177dee33365ccb29fe6d2092223cf8d679f9@git.kernel.org>
-Git-Commit-ID: fc6b177dee33365ccb29fe6d2092223cf8d679f9
+Subject: [tip:core/urgent] futex: Move exit_pi_state() call to release_mm()
+Message-ID: <tip-322a2c100a8998158445599ea437fb556aa95b11@git.kernel.org>
+Git-Commit-ID: 322a2c100a8998158445599ea437fb556aa95b11
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 06 Oct 2009 15:03:43 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 06 Oct 2009 15:04:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fc6b177dee33365ccb29fe6d2092223cf8d679f9
-Gitweb:     http://git.kernel.org/tip/fc6b177dee33365ccb29fe6d2092223cf8d679f9
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Mon, 5 Oct 2009 18:17:32 +0200
+Commit-ID:  322a2c100a8998158445599ea437fb556aa95b11
+Gitweb:     http://git.kernel.org/tip/322a2c100a8998158445599ea437fb556aa95b11
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Mon, 5 Oct 2009 18:18:03 +0200
 Committer:  Thomas Gleixner <tglx@linutronix.de>
 CommitDate: Tue, 6 Oct 2009 17:00:01 +0200
 
-futex: Nullify robust lists after cleanup
+futex: Move exit_pi_state() call to release_mm()
 
-The robust list pointers of user space held futexes are kept intact
-over an exec() call. When the exec'ed task exits exit_robust_list() is
-called with the stale pointer. The risk of corruption is minimal, but
-still it is incorrect to keep the pointers valid. Actually glibc
-should uninstall the robust list before calling exec() but we have to
-deal with it anyway.
+exit_pi_state() is called from do_exit() but not from do_execve().
+Move it to release_mm() so it gets called from do_execve() as well.
 
-Nullify the pointers after [compat_]exit_robust_list() has been
-called.
-
-Reported-by: Anirban Sinha <ani@anirban.org>
-Signed-off-by: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 LKML-Reference: <new-submission>
 Cc: stable@kernel.org
----
- kernel/fork.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+Cc: Anirban Sinha <ani@anirban.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
 
+---
+ kernel/exit.c |    2 --
+ kernel/fork.c |    2 ++
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/exit.c b/kernel/exit.c
+index ae5d866..bc2b1fd 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -989,8 +989,6 @@ NORET_TYPE void do_exit(long code)
+ 	tsk->mempolicy = NULL;
+ #endif
+ #ifdef CONFIG_FUTEX
+-	if (unlikely(!list_empty(&tsk->pi_state_list)))
+-		exit_pi_state_list(tsk);
+ 	if (unlikely(current->pi_state_cache))
+ 		kfree(current->pi_state_cache);
+ #endif
 diff --git a/kernel/fork.c b/kernel/fork.c
-index bfee931..88ef51c 100644
+index 88ef51c..341965b 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
-@@ -543,11 +543,15 @@ void mm_release(struct task_struct *tsk, struct mm_struct *mm)
- 
- 	/* Get rid of any futexes when releasing the mm */
- #ifdef CONFIG_FUTEX
--	if (unlikely(tsk->robust_list))
-+	if (unlikely(tsk->robust_list)) {
- 		exit_robust_list(tsk);
-+		tsk->robust_list = NULL;
-+	}
- #ifdef CONFIG_COMPAT
--	if (unlikely(tsk->compat_robust_list))
-+	if (unlikely(tsk->compat_robust_list)) {
- 		compat_exit_robust_list(tsk);
-+		tsk->compat_robust_list = NULL;
-+	}
+@@ -553,6 +553,8 @@ void mm_release(struct task_struct *tsk, struct mm_struct *mm)
+ 		tsk->compat_robust_list = NULL;
+ 	}
  #endif
++	if (unlikely(!list_empty(&tsk->pi_state_list)))
++		exit_pi_state_list(tsk);
  #endif
  
+ 	/* Get rid of any cached register state */
