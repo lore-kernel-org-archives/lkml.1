@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933367AbZJFVHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933410AbZJFVHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933367AbZJFVHY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 17:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933186AbZJFVHX
+	id S933410AbZJFVHi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 17:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933385AbZJFVHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 17:07:23 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:54443 "EHLO
+	Tue, 6 Oct 2009 17:07:38 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:63571 "EHLO
 	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933053AbZJFVHX (ORCPT
+	with ESMTP id S933008AbZJFVHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 17:07:23 -0400
+	Tue, 6 Oct 2009 17:07:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=qu6CCT1y/LdxNb57TwEHYZ6ZzesclR76LvsydZczQXbMVRgFyDliWQ/CAkRhTXYZ0k
-         CpWVD+hDhGgjQ+eZr3nZjW0y7vQ2ybK1QIL7BJZ1nT5QmHVEdL0CIRlb7/RWzVyIOpsj
-         9Wb6HrrDumqq3HY7Gh2SrISMacwi1xNjYdg7g=
-MIME-Version: 1.0
-Date: Tue, 6 Oct 2009 23:06:45 +0200
-Message-ID: <63386a3d0910061406p32e514cdjbe6059e7af60fb87@mail.gmail.com>
-Subject: CGFreak control group visualizer
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: linux kernel <linux-kernel@vger.kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=Mvm0mMMyt0UiD9PfSHkMe8lOqxH0R63e4uj0n702XgVqPCp5ICKxp84Dr4IGKDGgYh
+         GQOr4I2SS+hb8m2mH0O2Y0mMVGD2jiYGT1HMCB3VPQ6Sqc5uLE+0vYyvmeua7xePbIeT
+         U/UH5GhmEfWfP4lPX8qtpqABL0fJNrkR+Atvo=
+Subject: Massive ext4 filesystem corruption after a failed s2disk/ram cycle
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 06 Oct 2009 23:06:55 +0200
+Message-Id: <1254863215.11577.23.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A while back I started to write CGFreak to visualize the intricacies of control
-groups using some python and cairo. (Nothing special, just a hobby - famous
-last words.) I have a web page of it running with some explanations of what
-you see here:
+Hi,
 
-  http://cgfreak.sourceforge.net/
+Just prior to 2.6.32 cycle I tried -next tree and noticed that after a
+failed s2ram (here it works only once, and I test once in a whileto see
+if fixed accidentally) I got a minor filesystem corruption. I am sorry I
+didn't report that back then.
 
-The basic idea is that resources can often be represented in piecharts,
-everyone should be familiar with these from school and economists love
-them. So I visualize system resources in control groups as piecharts and
-now I have also started to make it a bit interactive. It all grew out of the
-educational need to understand scheduling and control groups.
+Now I have installed 2.6.32-rc2 (well -rc1...) and things were sort of
+ok, I have even thought that hibernation is once again stable
+(somewhere in the not that distinct past the hibernation which used to
+work, began to fail randomly on resume)
 
-I don't know if you think this is as fun as I think, it's nice images anyway,
-I don't know how accurate they are, feedback and patches welcome.
+Few days ago, I got a read-only filesystem again, an fsck, few more
+corrupted files..., It should have had rung the bell for me (I have
+still used hibernation, trying to understand why it fails sometimes)
 
-Linus Walleij
+Yesterday, however, I have decided to fix that once and for all, and for
+that I have set up a loop + rtc wakealarm to make it cycle through
+hibernation.
+
+Needless to say I didn't run that loop more that maybe 3 cycles (and no
+failures), but noticed that rtc clock is dead on resume. 
+
+I sort of fixed that (this is hpet emulation that strikes again), I will
+post when I test the fix (trivial), because when I had rebooted the
+system into the modified kernel, I got that readonly filesystem again,
+and this time the damage had spread over lots of files.
+(I have even lost most of dpkg database..., many programs,
+libraries,..., settings)
+
+Yet, thanks to Linux flexibility, after a day, and some study of
+nautilus source, I had the system recovered fully.
+(Now am doing backups.....)
+
+But I don't want that to happen again...
+
+Another clue that I have seen was that ext4 driver reported that it
+aborts journal replay.
+
+I know that for now there is not much you can do, but just to let you
+know that something is there...
+
+What is especially interesting is that there were no s2ram'disk faulure
+preceding the corruption, but my theory is that corruption wasn't
+detected for a while from last failure, probably giving such bad
+consequences.
+
+You do sync file-systems before entering the hibernation, don't you?
+
+
+Best regards,
+Maxim Levitsky
+
