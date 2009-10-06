@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757465AbZJFNue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZJFNvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757465AbZJFNue (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 09:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757452AbZJFNue
+	id S1757472AbZJFNvk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 09:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbZJFNvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 09:50:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50017 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757437AbZJFNud (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 09:50:33 -0400
-Subject: Re: [PATCH][RFC] add MAP_UNLOCKED mmap flag
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gleb Natapov <gleb@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
-In-Reply-To: <20091006121603.GK9832@redhat.com>
-References: <20091006190938.126F.A69D9226@jp.fujitsu.com>
-	 <20091006102136.GH9832@redhat.com>
-	 <20091006192454.1272.A69D9226@jp.fujitsu.com>
-	 <20091006103300.GI9832@redhat.com>
-	 <2f11576a0910060510y401c1d5ax6f17135478d22899@mail.gmail.com>
-	 <20091006121603.GK9832@redhat.com>
+	Tue, 6 Oct 2009 09:51:39 -0400
+Received: from cantor.suse.de ([195.135.220.2]:38581 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756578AbZJFNvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 09:51:38 -0400
+Subject: Re: [PATCH] scsi_lib.c: sleeping function called from invalid
+ context
+From: James Bottomley <James.Bottomley@suse.de>
+To: iceberg <strakh@ispras.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, eric@andante.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <200910061230.03488.strakh@ispras.ru>
+References: <200909231758.47612.strakh@ispras.ru>
+	 <200910051835.51891.strakh@ispras.ru>
+	 <1254755602.3838.5.camel@mulgrave.site>
+	 <200910061230.03488.strakh@ispras.ru>
 Content-Type: text/plain
-Date: Tue, 06 Oct 2009 15:50:03 +0200
-Message-Id: <1254837003.21044.283.camel@laptop>
+Date: Tue, 06 Oct 2009 13:50:49 +0000
+Message-Id: <1254837049.4383.17.camel@mulgrave.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 14:16 +0200, Gleb Natapov wrote:
-> > No, I only think your case doesn't fit MC_FUTURE.
-> > I haven't find any real benefit in this patch.
+On Tue, 2009-10-06 at 12:30 +0000, iceberg wrote:
+> James, what about code where spin_unlock is called before scsi_device_put, 
+> especially for avoiding atomic context?
+> In code like 
+> 	spin_unlock
+> 	scsi_device_put
+> 	spin_lock
+> Is spin_unlock/spin_lock redundant?
 
-> I did. It allows me to achieve something I can't now. Steps you provide
-> just don't fit my needs. I need all memory areas (current and feature) to be
-> locked except one. Very big one. You propose to lock memory at some
-> arbitrary point and from that point on all newly mapped memory areas will
-> be unlocked. Don't you see it is different?
+Depends on context ... most of them are actually swapping locks or
+providing pre-emption points ... it could be redundant, but doesn't have
+to be.
 
-While true, it does demonstrates very sloppy programming. The proper fix
-is to rework qemu to mlock what is needed.
+> Why do we need scsi_device_get/scsi_device_put pair in scsi_lib.c at all? If 
+> we are sure that scsi_device_put is always not last, for what purpose do we 
+> call it together with scsi_device_get in the loop?
 
-I'm not sure encouraging mlockall() usage is a good thing. When using
-resource locks one had better know what he's doing. mlockall() doesn't
-promote caution.
+We're not sure (and never can be in a hotplug world) that any put isn't
+the last one.
+
+James
+
 
