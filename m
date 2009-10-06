@@ -1,99 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbZJFPh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932757AbZJFPm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757993AbZJFPh3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757478AbZJFPh2
+	id S932757AbZJFPm1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZJFPm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:37:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43467 "EHLO mx2.mail.elte.hu"
+	Tue, 6 Oct 2009 11:42:26 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:56064 "EHLO isrv.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757421AbZJFPh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:37:27 -0400
-Date: Tue, 6 Oct 2009 17:36:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32-rc3
-Message-ID: <20091006153632.GA29795@elte.hu>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain>
+	id S1755537AbZJFPm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 11:42:26 -0400
+Message-ID: <4ACB653B.9090707@msgid.tls.msk.ru>
+Date: Tue, 06 Oct 2009 19:41:47 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Luca Tettamanti <kronos.it@gmail.com>
+CC: Brad Campbell <brad@wasp.net.au>, lm-sensors@lm-sensors.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [lm-sensors] it87 sensors need an ACPI driver (2.6.31)
+References: <c43b2e150909200120kf87cdc2oabafea8abbf01227@mail.gmail.com>	 <68676e00909200520s7730b516v4e0d6c17d529d0a7@mail.gmail.com>	 <4AC939BB.8090600@wasp.net.au>	 <68676e00910050837g2006bfb8j349891504e474a95@mail.gmail.com>	 <4ACA21E8.6080501@msgid.tls.msk.ru>	 <68676e00910060800h4cb84dcl9f610f6b23a88e5c@mail.gmail.com>	 <4ACB60A7.307@msgid.tls.msk.ru> <68676e00910060834p338c77c8kae8156a1f8dc68a9@mail.gmail.com>
+In-Reply-To: <68676e00910060834p338c77c8kae8156a1f8dc68a9@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Luca Tettamanti wrote:
+> On Tue, Oct 6, 2009 at 5:22 PM, Michael Tokarev <mjt@tls.msk.ru> wrote:
+[]
+> Most Asus mobos have Q-FAN settings in the BIOS screen; you can use
+> automatic management to let the hardware control the fan, the driver
+> does not interfere with that (and if it does then it's a bug).
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+I know the Q-Fan works. But I wanted exactly the ability to control
+it from software (a-la fanspeed).  Here, due to the way my machine
+is built, the fan isn't needed most of the time (there's a large
+air duct inside that covers large CPU heatsink, hdd, northbridge
+heatsink and the PSU, that gets use of natural airflow), but it's
+used when the temperature grows.  So that most of the time, the
+system is 100% quiet, and only when I run something that uses much
+power it starts heating slowly, until a fan gets turned on.  That
+to say, the built-in q-fan profile isn't sufficient ;)  And yes,
+I'm such a crazy fan-noise-hater, and all the components of this
+system are choosen to satisfy this my craziness, including many
+parts that I made myself (airduct, noise-dampering matherials
+inside the case, fan mounting and placement and so on).
 
-> On Tue, 6 Oct 2009, Ingo Molnar wrote:
-> > 
-> > We can ignore that and say "hehe, you dont understand non-linear 
-> > trees and ran git remote update blindly, too bad for you", or we 
-> > might do something to make things more transparent and reduce the 
-> > confusion.
+>> Ok.  Now a pure technical question, finally.  Is there a
+>> way to made asus_atk0110 to be able to *set* fan speeds
+>> too, in a way as it's done by it87?
 > 
-> You are missing the point.
-> 
-> The only thing we can do is to teach people that the Makefile version 
-> isn't too important, and that it really doesn't tell very much.
-> 
-> Trying to tweak it to make it somehow "more meaningful" is a BAD 
-> THING, because it continues to spoon-feed people a lie.
-> 
-> The cake is a lie. In between kernel versions, you can't rely on the 
-> Makefile.  You should teach yourself (and others) THAT, rather than 
-> trying to teach people to believe the lie even more.
-> 
-> Once you start believing the lie, suddenly all the subtrees will start 
-> thinking that now _their_ kernel versions are bad, so now they'll 
-> start to want to make the same idiotic changes to their Makefiles, or 
-> maybe they'll decide that they don't want to pull tagged releases, but 
-> the "one after the tag so that they'll get the updated Makefile".
-> 
-> And even if they don't do that idiocy, the whole "the version number 
-> is meaningful outside of releases" thing leads to brain damage.
+> In term of Q-FAN profiles: yes, but I still haven't managed to make it
+> work (the interface is there though).
 
-hm, i think you ignored (or missed, or found irrelevant) my first 
-suggested variant:
+Oh, so it's basically boils down to Silent/Optimal/Normal choices
+as in the BIOS settings, right?  I mean, still no pwm_* controls
+as it87 offers?..
 
- v2.6.31
- v2.6.31+
- v2.6.32-rc1
- v2.6.32-rc1+
- ..
- v2.6.32-rc9
- v2.6.32-rc9+
- v2.6.32
+Thanks!
 
-The '+' sign says that it's more than .31.
-
-That defuses the 'lie' of trying to linerize a multi-thousand-node graph 
-down into some catchy human-readable string pretty efficiently i think. 
-It doesnt tell us precisely what that '+' means - it could be goodness 
-or it could be badness.
-
-_That_ i think is a lot harder to confuse with the real .31 than a 
-v2.6.31-1234-g16123c4 version string.
-
-My tweak #2, adding -rc0 indeed brings in problems, it's too artificial 
-to do it right after .31 gets released - and if we dont do it then we 
-cannot do it later either. (so we cannot really do it)
-
-[ It might bring in some advantages too btw. A pull request to you for a 
-  tree that is -rc0 based means it got rebased straight in the merge 
-  window => bad. Such a thing would be apparent at a glance. 'Good' 
-  trees should be based on some known good version of the previous 
-  stable kernel cycle. ]
-
-	Ingo
+/mjt
