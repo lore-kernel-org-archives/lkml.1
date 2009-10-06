@@ -1,305 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZJFPNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbZJFPPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbZJFPNI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 11:13:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757394AbZJFPNH
+	id S1757548AbZJFPPK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 11:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757421AbZJFPPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 11:13:07 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:48599 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757388AbZJFPNG (ORCPT
+	Tue, 6 Oct 2009 11:15:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60937 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757395AbZJFPPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 11:13:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=rwOBtoUVGgxkStSPJptdh1iw38XSrmA1TEXygZPg6Th/8HNSOBsfOzuPqHmAyp/tm1
-         P3O4gGnDYJfFPIfK3YUs/Ky6VR0WmBuzPskf/xB7LJDWAo0QC0m4//j+l2x2RhYboqC2
-         ESw1dFzgdR6+fp1cNYRz9MZpOmOVCra1M1NGs=
-Message-ID: <4ACB5E6B.1010601@gmail.com>
-Date: Tue, 06 Oct 2009 08:12:43 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
-MIME-Version: 1.0
-To: Jason Baron <jbaron@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+	Tue, 6 Oct 2009 11:15:08 -0400
+Date: Tue, 6 Oct 2009 08:13:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Dirk Hohndel <hohndel@infradead.org>
+cc: Len Brown <lenb@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: system gets stuck in a lock during boot
-References: <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com> <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com> <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com> <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com> <20091002211211.GA2633@redhat.com> <20091004174113.GB24418@elte.hu> <dd18b0c30910041710y15e1da1k348c0decc05f326f@mail.gmail.com> <4ACA96B9.7000909@gmail.com> <20091006143144.GB2631@redhat.com>
-In-Reply-To: <20091006143144.GB2631@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: Linux 2.6.32-rc3
+In-Reply-To: <1254839931.24117.9.camel@dhohndel-mobl.amr.corp.intel.com>
+Message-ID: <alpine.LFD.2.01.0910060808220.3432@localhost.localdomain>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>  <alpine.LFD.2.00.0910052140100.309@localhost.localdomain>  <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>  <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
+ <1254839931.24117.9.camel@dhohndel-mobl.amr.corp.intel.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Baron wrote:
-> On Mon, Oct 05, 2009 at 06:00:41PM -0700, Justin P. Mattock wrote:
->    
->> Justin Mattock wrote:
->>      
->>> On Sun, Oct 4, 2009 at 10:41 AM, Ingo Molnar<mingo@elte.hu>   wrote:
->>>
->>>        
->>>> * Jason Baron<jbaron@redhat.com>   wrote:
->>>>
->>>>
->>>>          
->>>>> On Mon, Sep 07, 2009 at 02:49:44PM -0700, Justin Mattock wrote:
->>>>>
->>>>>            
->>>>>>>> * Justin P. Mattock<justinmattock@gmail.com>     wrote:
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>>                  
->>>>>>>>> Ingo Molnar wrote:
->>>>>>>>>
->>>>>>>>>
->>>>>>>>>                    
->>>>>>>>>> * Justin Mattock<justinmattock@gmail.com>      wrote:
->>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>>                      
->>>>>>>>>>> O.K. I feel better, deleted
->>>>>>>>>>> my system, and threw in a minimal built system
->>>>>>>>>>> with only the bare essentials to boot.
->>>>>>>>>>> (just to make sure things are correct).
->>>>>>>>>>>
->>>>>>>>>>> unfortunately after building rc6 I'm still hitting
->>>>>>>>>>> this. really am not sure why this is happening.
->>>>>>>>>>>
->>>>>>>>>>>
->>>>>>>>>>>
->>>>>>>>>>>                        
->>>>>>>>>> Could you please double-check the bisection result by doing this:
->>>>>>>>>>
->>>>>>>>>>     git revert af6af30c0f
->>>>>>>>>>
->>>>>>>>>> on the latest kernel and seeing whether that fixes the lockup?
->>>>>>>>>>
->>>>>>>>>> Bisections are very efficient and hence very sensitive as well to
->>>>>>>>>> minimal errors. Just one small mistake near the end of a bisection
->>>>>>>>>> can blame the wrong commit.
->>>>>>>>>>
->>>>>>>>>> So the best way to double-check such 100%-triggerable crashes is to
->>>>>>>>>> do the revert. I tried the revert and it can be done fine here.
->>>>>>>>>>
->>>>>>>>>> [ _If_ that does not fix the bug then to save time you can
->>>>>>>>>>       'backtrack' the bisection, instead of re-doing it completely.
->>>>>>>>>>       I.e. you have your bisection log, re-check the final steps going
->>>>>>>>>>       backwards. Once you find a discrepancy (i.e. a 'bad' point that
->>>>>>>>>>       is 'good' or the other way around), redo the bisection log
->>>>>>>>>>       commands up to that point and continue it up to the end. ]
->>>>>>>>>>
->>>>>>>>>>          Ingo
->>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>>                      
->>>>>>>>> shoot, I did not see your post here. when looking at my bisect
->>>>>>>>> log, I guess after a git bisect reset it clears?
->>>>>>>>>
->>>>>>>>> Anyways after git bisect had finished I looked manually at the
->>>>>>>>> commits that it had generated the one which I had sent in a post
->>>>>>>>> previously, and this one:
->>>>>>>>>
->>>>>>>>>    9424edc2da097c8589fcc24a72552d33e54be161
->>>>>>>>>
->>>>>>>>>
->>>>>>>>>                    
->>>>>>>> (this commit has no effect on your kernel image, at all.)
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>>                  
->>>>>>> yep. but it was worth a try.
->>>>>>>
->>>>>>>                
->>>>>>>>> at the time looking at the commit, I see this to be more of the
->>>>>>>>> cause because of it being related to elf as so forth, but as soon
->>>>>>>>> as I reverted this on rc6 made no difference.(the previous commit
->>>>>>>>> fixes this for me, on a regular tar.ball as well as in git.
->>>>>>>>>
->>>>>>>>> I think at this point since this system is a fresh from scratch
->>>>>>>>> build, I think something might be wrong that I'm doing (all the
->>>>>>>>> CFLAGS, and such are in a previous post).
->>>>>>>>>
->>>>>>>>> At the moment I don't have a problem applying a patch to the
->>>>>>>>> kernel for this. especially since I'm the only one that seems to
->>>>>>>>> be hitting this, then if more and more reports of this happen then
->>>>>>>>> we can go from there.
->>>>>>>>>
->>>>>>>>>
->>>>>>>>>                    
->>>>>>>> What would be nice is to verify your bisection end result, i.e. do
->>>>>>>> what i suggested:
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>>                  
->>>>>>> yeah I've done this on both kernels three to be exact, and all boot after
->>>>>>> reverting
->>>>>>> Fix perf-tracepoint OOPS.
->>>>>>>
->>>>>>> As for my system, I'm still convinced that I might be doing something wrong
->>>>>>> over here.
->>>>>>>
->>>>>>>
->>>>>>>                
->>>>>>>>>> Could you please double-check the bisection result by doing this:
->>>>>>>>>>
->>>>>>>>>>     git revert af6af30c0f
->>>>>>>>>>
->>>>>>>>>> on the latest kernel and seeing whether that fixes the lockup?
->>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>>                      
->>>>>>>> if this doesnt fix it on latest -git then this commit is not the
->>>>>>>> cause of the lockup.
->>>>>>>>
->>>>>>>>          Ingo
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>>                  
->>>>>>> This commit(Fix perf-tracepoint OOPS.)does fix my stuckage, but I'm left, as
->>>>>>> well as others asking
->>>>>>> the question of why.
->>>>>>> In any case I still think I'm setting something wrong with either gcc, or
->>>>>>> something
->>>>>>> that might be causing this from userland.
->>>>>>>
->>>>>>> Justin P. Mattock
->>>>>>>
->>>>>>>
->>>>>>>                
->>>>>> O.k. here something awkward about this issue I was
->>>>>> experiencing. at the moment I have two imac's
->>>>>> here the descriptions:
->>>>>>
->>>>>> imac A) the one with the problem
->>>>>>
->>>>>> OS: built from the clfs book
->>>>>> x86_64 multilib with only lib64
->>>>>>
->>>>>> built everything with these flags:
->>>>>> CFLAGS="-m64 -mtune=core2 -march=core2
->>>>>> -mfpmath=both -O2 -pipe -fomit-frame-pointer
->>>>>> -fstack-protection"
->>>>>> CXXFLAGS="${CFLAGS}" MAKEOPTS="{-j3}"
->>>>>> while compiling everything with
->>>>>> gcc version: 4.5.0 20090730
->>>>>>
->>>>>>
->>>>>> imac B) the one that works
->>>>>>
->>>>>> OS: clfs(just built a few days ago)
->>>>>> x86_64 pure64 bit build
->>>>>> (lib with a symlink to lib64)
->>>>>> CFLAGS="-m64 -mtune=core2 -march=core2
->>>>>>    -O2 -pipe -fomit-frame-pointer"
->>>>>> CXXFLAGS="${CFLAGS}" MAKEOPTS="{-j3}"
->>>>>> gcc version: 4.4.1 (GCC for Cross-LFS 4.4.1.20090722)
->>>>>>
->>>>>> The only things I can think of is either I hit something
->>>>>> because of gcc, something goes wrong with the libraries,
->>>>>> or there something happening with either the option
->>>>>> of mfpmath=both or stackprotection.
->>>>>>
->>>>>> At this point since the kernel seems to be running fine,
->>>>>> is to just trash the system that has this issue and just leave
->>>>>> it at, I was hitting some weird anomaly.
->>>>>>
->>>>>>
->>>>>>              
->>>>> hi Justin,
->>>>>
->>>>> I've been playing around with gcc '4.5' as well and hit a panic that
->>>>> looks very similar to what you've seen with stock 2.6.31 - I haven't
->>>>> seen it anywhere else. Anyways, it seems to be some sort of alignment
->>>>> issue with the 'struct ftrace_event_call'. I'm not sure yet if this is a
->>>>> compiler or kernel issue. But the following kernel patch fixes the issue
->>>>> for me. It would be interesting to verify if the patch also resolves the
->>>>> issue for you.
->>>>>
->>>>>            
->>>> Would be nice to know precisely what kind of problem is being hit here -
->>>> we'd like to fix either the kernel or GCC - depending on where the bug
->>>> lies.
->>>>
->>>>          Ingo
->>>>
->>>>
->>>>          
->>> So I wasn't going crazy....
->>> Anyways that system(clfs)
->>> I still have, I can go ahead and
->>> put it back on the machine and see if I hit this
->>> again(keep in mind, just got back from a 7hr drive,
->>> so it might be tomorrow).
->>>
->>>
->>>        
->> o.k. I put back on that system, and
->> hit the error. I add your patch to 2.6.31-rc6,
->>      
->
-> ok. is that error, the same as the error below? The error below looks
-> completely different from the posted previously. So, it almost looks
-> like you the patch fixed one problem, only to reveal another one. Is
-> that correct?
->
->    
-Could be a different error, the problem I have is capturing this error i.g.
-tried ieee1394_dma=early to capture this, but that mechanism
-seems to error out.(ssh no go either because this happens so early).
-I think this is the top part of the error, because before adding your patch
-the system would boot a little farther(to fast to read anything)down the 
-line,
-and I did see something in there about a kernel panic.
 
-If you have any ideas on how I can capture this early, would be 
-appreciated.
-(getting anything to log this early is a bit tricky).
->> and the latest git(a few days old).
->> I still am hitting this, but with your patch
->> I'm able to see the beginning of this panic:
->> (Ill write it manually)
->>
->> [   2.523966] kernel panic - not syncing: No init found. try passing
->> init= option
->> to the kernel
->> [   2.524394] Pid: 1, comm: swapper Not tainted 2.6.31-rc6 #6
->> [   2.524633] Call Trace:
->> [   2.524875] [<ffffffff813a5b72>] panic+0x75/0x120
->> [   2.525119] [<ffffffff8100910f>] init_post+0xef/0xf5
->> [   2.525357] [<ffffffff815f6cf0>] kernel_init+0x198/0x1a3
->> [   2.525600] [<ffffffff8102410a>] child_rip+0xa/0x20
->> [   2.525842] [<ffffffff815f6b58>] ? kernel_init+0x0/0x1a3
->> [   2.526084] [>ffffffff810224100>] ? child_rip+0x0/0x20
->>
->> Seems I only hit this with using gcc 4.5.0 and compiling
->> sysvinit with SELinux support to load the policy at boot.
->> (here's the patch I used
->> http://readlist.com/lists/tycho.nsa.gov/selinux/3/15451.html).
->>
->> Sound's like gcc is doing something(correct me if I'm
->> wrong) because the other systems I have are using the same
->> packages except for and older version of gcc.
->> maybe  I should update sysvinit with a better patch to load the policy.
->>
->> Justin P. Mattock
->>      
->
->    
-As a test Ill throw in a kernel that was compiled with gcc 4.4.0 just to
-see if this is a compiler/kernel issue.
 
-Justin P. Mattock
+On Tue, 6 Oct 2009, Dirk Hohndel wrote:
+> 
+> I respectfully disagree.
+
+.. because you don't know what the f*ck you're talking about.
+
+> With the proposed -rc0 there is EXACTLY ONE kernel that is called 2.6.31
+> - the release kernel. And everything else is called something
+> 2.6.xx-rcY.
+
+No.
+
+That's simply not _true_.
+
+Think it through. Deeply. 
+
+In particular, think about all the developers who start out at known 
+stable points. And they are _supposed_ to start at release points. It 
+means that a lot of versions in the -rc window will NOT have that -rc0 in 
+them.
+
+In fact, even more commonly (for people who don't rebase, which should be 
+the default), you'll have kernel versions in the merge window (and later) 
+that will have Makefiles that talk about the previous release.
+
+If you can't get that FUNDAMENTAL FACT, then I don't know what to say.
+
+> So if you see something that identifies itself as -rc0, you know it's
+> from during the merge window. If you see something that calls itself
+> 2.6.xx then you know it's a release kernel.
+
+No. No. And NO.
+
+Your kind of magical thinking leads to _problems_. It's literally been a 
+problem that people stop bisecting, because they notice that they start 
+testing kernels that have a version number before the release they already 
+tested as good. Exactly because of your kind of linear thinking.
+
+We need _less_ linear thinking, not more. And you need to start thinking 
+about other kernels than just my release tree.
+
+		Linus
