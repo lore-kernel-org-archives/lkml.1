@@ -1,100 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758191AbZJFSFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbZJFSIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758191AbZJFSFS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 14:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbZJFSFR
+	id S1758107AbZJFSIj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 14:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757019AbZJFSIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 14:05:17 -0400
-Received: from trinity.develer.com ([83.149.158.210]:60197 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753411AbZJFSFQ (ORCPT
+	Tue, 6 Oct 2009 14:08:38 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60330 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756861AbZJFSIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 14:05:16 -0400
-Subject: Re: sata_mv 0000:03:06.0: PCI ERROR; PCI IRQ cause=0x30000040
-From: Bernie Innocenti <bernie@codewiz.org>
-To: Harri Olin <harri.olin@gmail.com>
-Cc: Mark Lord <liml@rtr.ca>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, sysadmin <sysadmin@gnu.org>
-In-Reply-To: <4ACB3741.2030101@gmail.com>
-References: <1254546642.1438.135.camel@giskard> <4ACA6904.1060509@rtr.ca>
-	 <4ACB3741.2030101@gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Sugar Labs - http://www.sugarlabs.org/
-Date: Tue, 06 Oct 2009 14:04:32 -0400
-Message-Id: <1254852272.1471.172.camel@giskard>
+	Tue, 6 Oct 2009 14:08:37 -0400
+Subject: Re: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
+ management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
+ cpuidle to POWER.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+Cc: Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-arch@vger.kernel.org
+In-Reply-To: <20091006163521.GA10425@linux.vnet.ibm.com>
+References: <20091006152421.GA7278@linux.vnet.ibm.com>
+	 <20091006163521.GA10425@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 06 Oct 2009 20:04:39 +0200
+Message-Id: <1254852279.17055.2.camel@laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-1.fc12) 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, 06-10-2009 a las 15:25 +0300, Harri Olin escribió:
-> Mark Lord wrote:
-> > Bernie Innocenti wrote:
-> >> The error in the subject appears in the console immediately followed bv
-> >> a hard freeze of the machine.  The error occurs reproducibly on two
-> >> identical Opteron servers, each one equipped with two identical
-> >> controller cards:
-> >>
-> >> 03:04.0 SCSI storage controller: Marvell Technology Group Ltd. 
-> >> MV88SX6081 8-port SATA II PCI-X Controller (rev 09)
-> >> 03:06.0 SCSI storage controller: Marvell Technology Group Ltd. 
-> >> MV88SX6081 8-port SATA II PCI-X Controller (rev 09)
-> >>
-> >> We can trigger the problem within a few seconds by starting a
-> >> reconstruction on a drive hooked to port 4 (counting from 0) of the
-> >> second controller.  Oddly, every other drive works reliably and the
-> >> faulty drive works if we connect it to, for example, port 4 of the first
-> >> controller.
-> >>
-> >> Tested with Debian kernels 2.6.26-19 and 2.6.30-8.  Let me know if
-> >> further details are needed.
-> > ..
-> >> 0000:03:06.0: PCI ERROR; PCI IRQ cause=0x30000040..
-> > ..
-> >
-> >  0x30000040 here means "MRdPerr":
-> >    "bad data parity detected during PCI master read".
-> >
-> > Which means there that a data parity error happened
-> > during outgoing data transfer on the PCI-X bus.
-> > This could happen due to noise on the bus,
-> > dying capacitors, or (?) bad RAM (not sure about the last one).
-> >
-> I have heard same thing happened with same kind of configuration, using 
-> Supermicro H8DME-2 motherboard, Opteron 2378 CPU.
->
->Even the controllers were on same slots.
+On Tue, 2009-10-06 at 22:05 +0530, Arun R Bharadwaj wrote:
 
-Close.  Mine is a Supermicro H8DM8-2 with 2x Opteron 2374 HE CPU.
+> Also, the per-cpu nature of registration/unregistration of cpuidle
+> has been maintained as ACPI needs this.
+
+Right, so can't we ditch that and have acpi default to the lowest common
+C-state and warn when various cpus report different C-states?
 
 
-> My initial suspicion was that the motherboard does not drop the PCI-X 
-> bus frequency to 100MHz and drives the bus at 133MHz even though there 
-> are 2 controllers connected. Proposed fix was to move the other 
-> controller to other bus, as the H8DME-2 has four PCI-X slots, 2x100MHz 
-> and 2x133MHz, but I haven't yet heard back if it helped.
-
-Thanks for this hint, I'll try this tomorrow,
-
-
-> Even the kernel was same - latest Debian distribution kernel. Might be 
-> worthwile to try using vanilla kernel.org kernel if possible.
-
-As a matter of fact, yesterday  I tried booting off an Open Solaris
-Nexenta CD and I couldn't reproduce the issue, although I couldn't
-reproduce the exact same conditions that trigger the bug systematically
-on Linux.
-
-
-> I have at home two 6081 controllers at same bus but at 100MHz and no 
-> problems yet.
-
-Is there a way to find out what the current PCI-X bus frequency is from
-Linux?  And from the BIOS?
-
--- 
-   // Bernie Innocenti - http://codewiz.org/
- \X/  Sugar Labs       - http://sugarlabs.org/
 
