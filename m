@@ -1,89 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZJFQY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbZJFQ1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbZJFQY2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 12:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbZJFQY1
+	id S1757015AbZJFQ1c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 12:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756639AbZJFQ1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 12:24:27 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:17337 "EHLO mx1.redhat.com"
+	Tue, 6 Oct 2009 12:27:31 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:38706 "EHLO fanny.its.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756121AbZJFQY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 12:24:27 -0400
-Message-ID: <4ACB6F0E.4000407@redhat.com>
-Date: Tue, 06 Oct 2009 18:23:42 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1754964AbZJFQ1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 12:27:30 -0400
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "alacrityvm-devel@lists.sourceforge.net" 
-	<alacrityvm-devel@lists.sourceforge.net>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH v2 2/4] KVM: introduce "xinterface" API for external	interaction
- with guests
-References: <20091002201159.4014.33268.stgit@dev.haskins.net> <20091002201927.4014.29432.stgit@dev.haskins.net> <4AC8780D.1060800@redhat.com> <4ACA87D7.1080206@gmail.com> <4ACB0F3C.1000705@redhat.com> <4ACB46AD.8010405@gmail.com> <4ACB528D.6030408@gmail.com>
-In-Reply-To: <4ACB528D.6030408@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19147.28614.505296.752363@pilspetsen.it.uu.se>
+Date: Tue, 6 Oct 2009 18:26:46 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: sata_via: SError: { UnrecovData Proto TrStaTrns }
+In-Reply-To: <m3my46yo5g.fsf@intrepid.localdomain>
+References: <m3my46yo5g.fsf@intrepid.localdomain>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/06/2009 04:22 PM, Gregory Haskins wrote:
->>>>>> +
->>>>>> +static inline void
->>>>>> +_kvm_xinterface_release(struct kref *kref)
->>>>>> +{
->>>>>> +    struct kvm_xinterface *intf;
->>>>>> +    struct module *owner;
->>>>>> +
->>>>>> +    intf = container_of(kref, struct kvm_xinterface, kref);
->>>>>> +
->>>>>> +    owner = intf->owner;
->>>>>> +    rmb();
->>>>>>
->>>>>>
->>>>>>              
->>>>> Why rmb?
->>>>>
->>>>>            
->>>> the intf->ops->release() line may invalidate the intf pointer, so we
->>>> want to ensure that the read completes before the release() is called.
->>>>
->>>> TBH: I'm not 100% its needed, but I was being conservative.
->>>>
->>>>          
->>> rmb()s are only needed if an external agent can issue writes, otherwise
->>> you'd need one after every statement.
->>>        
->> I was following lessons learned here:
->>
->> http://lkml.org/lkml/2009/7/7/175
->>
->> Perhaps mb() or barrier() are more appropriate than rmb()?  I'm CC'ing
->> David Howells in case he has more insight.
->>      
-> BTW: In case it is not clear, the rationale as I understand it is we
-> worry about the case where one cpu reorders the read to be after the
-> ->release(), and another cpu might grab the memory that was kfree()'d
-> within the ->release() and scribble something else on it before the read
-> completes.
->
-> I know rmb() typically needs to be paired with wmb() to be correct, so
-> you are probably right to say that the rmb() itself is not appropriate.
->   This problem in general makes my head hurt, which is why I said I am
-> not 100% sure of what is required.  As David mentions, perhaps
-> "smp_mb()" is more appropriate for this application.  I also speculate
-> barrier() may be all that we need.
->    
+Krzysztof Halasa writes:
+ > Hi,
+ > 
+ > What could that be?
+ > VIA VT6421A mini-PCI card and SATA SSD from Transcend. IXP425 (ARM)
+ > little-endian CPU. 128 MB RAM - VT6421A can access only the first 64 MB
+ > of system RAM, but there is bounce buffering (a la swiotlb) for the
+ > rest.
+ > 
+ > Sometimes it produces:
+ > 
+ > ata1.00: exception Emask 0x12 SAct 0x0 SErr 0x1000500 action 0x6
+ > ata1.00: BMDMA stat 0x5
+ > ata1: SError: { UnrecovData Proto TrStaTrns }
+ > ata1.00: cmd c8/00:20:b7:18:38/00:00:00:00:00/e0 tag 0 dma 16384 in
+ >          res 51/40:20:b7:18:38/00:00:00:00:00/e0 Emask 0x12 (ATA bus error)
+ > ata1.00: status: { DRDY ERR }
+ > ata1.00: error: { UNC }
+ > ata1: hard resetting link
+ > ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ > ata1.00: configured for UDMA/100
+ > ata1: EH complete
 
-barrier() is the operation for a compiler barrier.  But it's unneeded 
-here - unless the compiler can prove that ->release(intf) will not 
-modify intf->owner it is not allowed to move the access afterwards.  An 
-indirect function call is generally a barrier() since the compiler can't 
-assume memory has not been modified.
+I got (in private) a request to help debug a similar issue
+a few months ago:
 
--- 
-error compiling committee.c: too many arguments to function
+ > the other problem is vt6421a(SATA port contorller) on ixp425
+ > platform with 256MB ram. the driver in 2.6.28 is sata_via.c.
+ > the controller has two SATA ports.
+ > when i connect one harddisk to IXP425 mainboard, Reading & Writing
+ > is all right. but when i connected two drives to the mainboard,
+ > and transfer a big file(more than 200MB) from one harddisk to another one. 
+ > and the problem will happen.
+...
+ > ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ > ata2.00: cmd c8/00:00:3f:d6:02/00:00:00:00:00/e0 tag 0 dma 131072 in
+ >          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x24 (host bus error)
+ > ata2.00: status: { DRDY }
+ > ata2: hard resetting link
+ > ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ > ata2.00: configured for UDMA/133
+ > ata2: EH complete
+...
+ > ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ > ata1.00: cmd c8/00:20:c7:6a:03/00:00:00:00:00/e0 tag 0 dma 16384 in
+ >          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x24 (host bus error)
+ > ata1.00: status: { DRDY }
+ > ata1: hard resetting link
+ > ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+ > ata1.00: configured for UDMA/133
+ > ata1: EH complete
 
+I couldn't do much about it other than ask the person to take
+it to linux-ide (which I don't think he did), but it does make
+one wonder if there is some issue with the vt6421a when connected
+to an ixp4xx.
