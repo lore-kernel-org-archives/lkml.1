@@ -1,64 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934247AbZJGJAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934260AbZJGJJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934247AbZJGJAw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 05:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934024AbZJGJAv
+	id S934260AbZJGJJA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 05:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934024AbZJGJI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 05:00:51 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:60668 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934014AbZJGJAu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 05:00:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=kf91pbtUUC97C8zhha6/HV+/Q7SjPo4/YcCj69QDXViIDOisuYdHYwuoeyhjaIMPSK
-         ZFXpq9dU/tDYeVkFoV6QkayVPXSmvSGB8gG2ZFsV5xnLD7q6jaaBw1QiRGSEJsHDZnn0
-         EC/PsYZNovM9mVu0+nWfWlK+yAYGT+3FYAt6c=
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>
-Subject: [PATCH] cfq-iosched: fix think time allowed for seekers
-Date: Wed, 7 Oct 2009 11:00:07 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.32-rc3cz; KDE/4.2.4; i686; ; )
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910071100.07980.czoccolo@gmail.com>
+	Wed, 7 Oct 2009 05:08:59 -0400
+Received: from nox.protox.org ([88.191.38.29]:33249 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932476AbZJGJI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 05:08:58 -0400
+From: Jerome Glisse <jglisse@redhat.com>
+To: airlied@gmail.com
+Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       Jerome Glisse <jglisse@redhat.com>
+Subject: [PATCH] drm/radeon/kms: Fix RS600/RV515/R520/RS690 IRQ
+Date: Wed,  7 Oct 2009 11:08:22 +0200
+Message-Id: <1254906502-2456-1-git-send-email-jglisse@redhat.com>
+X-Mailer: git-send-email 1.6.4.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CFQ enables idle only for processes that think less than the allowed
-idle time. Since idle time is lower for seeky queues, we should use the
-correct value in the comparison.
+Bad generated header file leaded to use wrong register
+to check IRQ status and acknowledge them. Fix the header
+and use proper registers.
 
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+Signed-off-by: Jerome Glisse <jglisse@redhat.com>
 ---
- block/cfq-iosched.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/gpu/drm/radeon/rs600.c  |    8 ++--
+ drivers/gpu/drm/radeon/rs600d.h |   64 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 68 insertions(+), 4 deletions(-)
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 55bb8ca..4c795a2 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1997,7 +1997,10 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	    (!cfqd->cfq_latency && cfqd->hw_tag && CIC_SEEKY(cic)))
- 		enable_idle = 0;
- 	else if (sample_valid(cic->ttime_samples)) {
--		if (cic->ttime_mean > cfqd->cfq_slice_idle)
-+		unsigned int slice_idle = cfqd->cfq_slice_idle;
-+		if (sample_valid(cic->seek_samples) && CIC_SEEKY(cic))
-+			slice_idle = msecs_to_jiffies(CFQ_MIN_TT);
-+		if (cic->ttime_mean > slice_idle)
- 			enable_idle = 0;
- 		else
- 			enable_idle = 1;
+diff --git a/drivers/gpu/drm/radeon/rs600.c b/drivers/gpu/drm/radeon/rs600.c
+index 01f6834..10dfa78 100644
+--- a/drivers/gpu/drm/radeon/rs600.c
++++ b/drivers/gpu/drm/radeon/rs600.c
+@@ -206,10 +206,10 @@ int rs600_irq_set(struct radeon_device *rdev)
+ 
+ static inline uint32_t rs600_irq_ack(struct radeon_device *rdev, u32 *r500_disp_int)
+ {
+-	uint32_t irqs = RREG32(R_000040_GEN_INT_CNTL);
+-	uint32_t irq_mask = ~C_000040_SW_INT_EN;
++	uint32_t irqs = RREG32(R_000044_GEN_INT_STATUS);
++	uint32_t irq_mask = ~C_000044_SW_INT;
+ 
+-	if (G_000040_DISPLAY_INT_STATUS(irqs)) {
++	if (G_000044_DISPLAY_INT_STAT(irqs)) {
+ 		*r500_disp_int = RREG32(R_007EDC_DISP_INTERRUPT_STATUS);
+ 		if (G_007EDC_LB_D1_VBLANK_INTERRUPT(*r500_disp_int)) {
+ 			WREG32(R_006534_D1MODE_VBLANK_STATUS,
+@@ -224,7 +224,7 @@ static inline uint32_t rs600_irq_ack(struct radeon_device *rdev, u32 *r500_disp_
+ 	}
+ 
+ 	if (irqs) {
+-		WREG32(R_000040_GEN_INT_CNTL, irqs);
++		WREG32(R_000044_GEN_INT_STATUS, irqs);
+ 	}
+ 	return irqs & irq_mask;
+ }
+diff --git a/drivers/gpu/drm/radeon/rs600d.h b/drivers/gpu/drm/radeon/rs600d.h
+index 6dac524..8130892 100644
+--- a/drivers/gpu/drm/radeon/rs600d.h
++++ b/drivers/gpu/drm/radeon/rs600d.h
+@@ -87,6 +87,70 @@
+ #define   S_000040_VIDDMA(x)                           (((x) & 0x1) << 31)
+ #define   G_000040_VIDDMA(x)                           (((x) >> 31) & 0x1)
+ #define   C_000040_VIDDMA                              0x7FFFFFFF
++#define R_000044_GEN_INT_STATUS                      0x000044
++#define   S_000044_DISPLAY_INT_STAT(x)                 (((x) & 0x1) << 0)
++#define   G_000044_DISPLAY_INT_STAT(x)                 (((x) >> 0) & 0x1)
++#define   C_000044_DISPLAY_INT_STAT                    0xFFFFFFFE
++#define   S_000044_VGA_INT_STAT(x)                     (((x) & 0x1) << 1)
++#define   G_000044_VGA_INT_STAT(x)                     (((x) >> 1) & 0x1)
++#define   C_000044_VGA_INT_STAT                        0xFFFFFFFD
++#define   S_000044_CAP0_INT_ACTIVE(x)                  (((x) & 0x1) << 8)
++#define   G_000044_CAP0_INT_ACTIVE(x)                  (((x) >> 8) & 0x1)
++#define   C_000044_CAP0_INT_ACTIVE                     0xFFFFFEFF
++#define   S_000044_DMA_VIPH0_INT(x)                    (((x) & 0x1) << 12)
++#define   G_000044_DMA_VIPH0_INT(x)                    (((x) >> 12) & 0x1)
++#define   C_000044_DMA_VIPH0_INT                       0xFFFFEFFF
++#define   S_000044_DMA_VIPH1_INT(x)                    (((x) & 0x1) << 13)
++#define   G_000044_DMA_VIPH1_INT(x)                    (((x) >> 13) & 0x1)
++#define   C_000044_DMA_VIPH1_INT                       0xFFFFDFFF
++#define   S_000044_DMA_VIPH2_INT(x)                    (((x) & 0x1) << 14)
++#define   G_000044_DMA_VIPH2_INT(x)                    (((x) >> 14) & 0x1)
++#define   C_000044_DMA_VIPH2_INT                       0xFFFFBFFF
++#define   S_000044_DMA_VIPH3_INT(x)                    (((x) & 0x1) << 15)
++#define   G_000044_DMA_VIPH3_INT(x)                    (((x) >> 15) & 0x1)
++#define   C_000044_DMA_VIPH3_INT                       0xFFFF7FFF
++#define   S_000044_MC_PROBE_FAULT_STAT(x)              (((x) & 0x1) << 16)
++#define   G_000044_MC_PROBE_FAULT_STAT(x)              (((x) >> 16) & 0x1)
++#define   C_000044_MC_PROBE_FAULT_STAT                 0xFFFEFFFF
++#define   S_000044_I2C_INT(x)                          (((x) & 0x1) << 17)
++#define   G_000044_I2C_INT(x)                          (((x) >> 17) & 0x1)
++#define   C_000044_I2C_INT                             0xFFFDFFFF
++#define   S_000044_SCRATCH_INT_STAT(x)                 (((x) & 0x1) << 18)
++#define   G_000044_SCRATCH_INT_STAT(x)                 (((x) >> 18) & 0x1)
++#define   C_000044_SCRATCH_INT_STAT                    0xFFFBFFFF
++#define   S_000044_GUI_IDLE_STAT(x)                    (((x) & 0x1) << 19)
++#define   G_000044_GUI_IDLE_STAT(x)                    (((x) >> 19) & 0x1)
++#define   C_000044_GUI_IDLE_STAT                       0xFFF7FFFF
++#define   S_000044_ATI_OVERDRIVE_INT_STAT(x)           (((x) & 0x1) << 20)
++#define   G_000044_ATI_OVERDRIVE_INT_STAT(x)           (((x) >> 20) & 0x1)
++#define   C_000044_ATI_OVERDRIVE_INT_STAT              0xFFEFFFFF
++#define   S_000044_MC_PROTECTION_FAULT_STAT(x)         (((x) & 0x1) << 21)
++#define   G_000044_MC_PROTECTION_FAULT_STAT(x)         (((x) >> 21) & 0x1)
++#define   C_000044_MC_PROTECTION_FAULT_STAT            0xFFDFFFFF
++#define   S_000044_RBBM_READ_INT_STAT(x)               (((x) & 0x1) << 22)
++#define   G_000044_RBBM_READ_INT_STAT(x)               (((x) >> 22) & 0x1)
++#define   C_000044_RBBM_READ_INT_STAT                  0xFFBFFFFF
++#define   S_000044_CB_CONTEXT_SWITCH_STAT(x)           (((x) & 0x1) << 23)
++#define   G_000044_CB_CONTEXT_SWITCH_STAT(x)           (((x) >> 23) & 0x1)
++#define   C_000044_CB_CONTEXT_SWITCH_STAT              0xFF7FFFFF
++#define   S_000044_VIPH_INT(x)                         (((x) & 0x1) << 24)
++#define   G_000044_VIPH_INT(x)                         (((x) >> 24) & 0x1)
++#define   C_000044_VIPH_INT                            0xFEFFFFFF
++#define   S_000044_SW_INT(x)                           (((x) & 0x1) << 25)
++#define   G_000044_SW_INT(x)                           (((x) >> 25) & 0x1)
++#define   C_000044_SW_INT                              0xFDFFFFFF
++#define   S_000044_SW_INT_SET(x)                       (((x) & 0x1) << 26)
++#define   G_000044_SW_INT_SET(x)                       (((x) >> 26) & 0x1)
++#define   C_000044_SW_INT_SET                          0xFBFFFFFF
++#define   S_000044_IDCT_INT_STAT(x)                    (((x) & 0x1) << 27)
++#define   G_000044_IDCT_INT_STAT(x)                    (((x) >> 27) & 0x1)
++#define   C_000044_IDCT_INT_STAT                       0xF7FFFFFF
++#define   S_000044_GUIDMA_STAT(x)                      (((x) & 0x1) << 30)
++#define   G_000044_GUIDMA_STAT(x)                      (((x) >> 30) & 0x1)
++#define   C_000044_GUIDMA_STAT                         0xBFFFFFFF
++#define   S_000044_VIDDMA_STAT(x)                      (((x) & 0x1) << 31)
++#define   G_000044_VIDDMA_STAT(x)                      (((x) >> 31) & 0x1)
++#define   C_000044_VIDDMA_STAT                         0x7FFFFFFF
+ #define R_00004C_BUS_CNTL                            0x00004C
+ #define   S_00004C_BUS_MASTER_DIS(x)                   (((x) & 0x1) << 14)
+ #define   G_00004C_BUS_MASTER_DIS(x)                   (((x) >> 14) & 0x1)
 -- 
-1.6.2.5
-
+1.6.4.4
 
