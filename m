@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934363AbZJGSfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934297AbZJGSfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934363AbZJGSfr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 14:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934349AbZJGSfq
+	id S934297AbZJGSfg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 14:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757223AbZJGSff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 14:35:46 -0400
-Received: from THUNK.ORG ([69.25.196.29]:59738 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934350AbZJGSfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 14:35:45 -0400
-Date: Wed, 7 Oct 2009 14:34:53 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Nix <nix@esperi.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexander Duyck <alexander.duyck@gmail.com>,
-       Network Development <netdev@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: [Bug #14261] e1000e jumbo frames no longer work: 'Unsupported
-	MTU setting'
-Message-ID: <20091007183453.GD12971@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, Nix <nix@esperi.org.uk>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Alexander Duyck <alexander.duyck@gmail.com>,
-	Network Development <netdev@vger.kernel.org>,
-	Jesse Brandeburg <jesse.brandeburg@intel.com>,
-	e1000-devel@lists.sourceforge.net
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.jd.5MTxKB@chimera> <877hvd8rj5.fsf@spindle.srvr.nix> <200910022331.35916.rjw@sisk.pl> <9929d2390910021513t51827031k16a5bfc538640cbf@mail.gmail.com>
+	Wed, 7 Oct 2009 14:35:35 -0400
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:61542 "EHLO
+	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756662AbZJGSfe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 14:35:34 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for CPU"
+Date: Wed, 7 Oct 2009 20:34:55 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-wireless@vger.kernel.org
+References: <200910051500.55875.elendil@planet.nl> <200910061749.02805.elendil@planet.nl> <200910071910.53907.elendil@planet.nl>
+In-Reply-To: <200910071910.53907.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9929d2390910021513t51827031k16a5bfc538640cbf@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200910072034.57511.elendil@planet.nl>
+X-OriginalArrivalTime: 07 Oct 2009 18:34:57.0984 (UTC) FILETIME=[DF35C400:01CA477C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 02, 2009 at 03:13:07PM -0700, Jeff Kirsher wrote:
-> >> > Patch               : http://patchwork.kernel.org/patch/50277/
-> >>
-> > Most likely because it's not in the Linus' tree yet.
-> >
-> > [e1000e maintainers, we have a regression fix to merge, please.]
+On Wednesday 07 October 2009, Frans Pop wrote:
+> On Tuesday 06 October 2009, Frans Pop wrote:
+> > I've checked for 2.6.31.1 now and iwlagn is listed high there too when
+> > the system is idle, but with normal values of 60-100 ms. And phy0 has
+> > normal values of below 10 ms.
+> > I've now rebooted with today's mainline git; phy0 now frequently shows
+> > with values of around 100 ms too (i.e. higher than last time).
 >
-> Sorry, I forgot to send this patch out last night.  I will send it now.
+> Mike privately sent me a script to try to capture the latencies with
+> perf, but the perf output does not show any high latencies at all. It
+> looks as if we may have found a bug in latencytop here instead.
 
-Do we have a status on this progress of this patch to mainline?   Thanks,
+Not sure if it's relevant nor what it means, but I frequently see two lines 
+for iwlagn, e.g:
 
-      	     	       	    	     	- Ted
+    Scheduler: waiting for cpu              102.4 msec         99.7 %
+    .                                         3.3 msec          0.3 %
+
+I get the same results with both latencytop 0.4 and 0.5.
