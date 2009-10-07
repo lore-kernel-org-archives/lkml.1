@@ -1,95 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933630AbZJGARf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933683AbZJGASe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933630AbZJGARf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 20:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933327AbZJGARf
+	id S933683AbZJGASe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 20:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933517AbZJGASe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 20:17:35 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37440 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933302AbZJGARe (ORCPT
+	Tue, 6 Oct 2009 20:18:34 -0400
+Received: from mga11.intel.com ([192.55.52.93]:28648 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933505AbZJGASd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 20:17:34 -0400
-Subject: Re: [PATCH tracing/kprobes v2 1/5] tracing/kprobes: Rename special
- variables syntax
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-In-Reply-To: <4ACB52F6.7020106@redhat.com>
-References: <20091002214834.30906.86502.stgit@dhcp-100-2-132.bos.redhat.com>
-	 <20091002214842.30906.49220.stgit@dhcp-100-2-132.bos.redhat.com>
-	 <20091003015444.GE4828@nowhere> <4AC830F0.2010003@redhat.com>
-	 <4ACA25D5.10703@redhat.com>  <20091005192609.GB6071@nowhere>
-	 <1254787973.13160.195.camel@gandalf.stny.rr.com>
-	 <4ACB52F6.7020106@redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 06 Oct 2009 20:15:34 -0400
-Message-Id: <1254874534.1696.43.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Oct 2009 20:18:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,515,1249282800"; 
+   d="scan'208";a="733666560"
+From: "Kay, Allen M" <allen.m.kay@intel.com>
+To: Chris Wright <chrisw@sous-sol.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "chris@sous-sol.org" <chris@sous-sol.org>,
+       "jeremy@goop.org" <jeremy@goop.org>
+Date: Tue, 6 Oct 2009 17:17:55 -0700
+Subject: RE: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
+Thread-Topic: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
+Thread-Index: AcpG3qlZMS2EV6G4Rlabx1XxOCWuIQAAriEg
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E3088733@orsmsx505.amr.corp.intel.com>
+References: <1254861226-18376-1-git-send-email-allen.m.kay@intel.com>
+ <20091006234208.GB23140@sequoia.sous-sol.org>
+In-Reply-To: <20091006234208.GB23140@sequoia.sous-sol.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 10:23 -0400, Masami Hiramatsu wrote:
-> Steven Rostedt wrote:
-> > 
-> 
-> OK, so here are syntax ideas
-> 
-> * current syntax
-> <Ftrace>
-> - $sp_var
-> - %regs
-> - @symbol
-> <Perf>
-> - local_var
-> 
-> * $local syntax
-> <Ftrace>
-> - sp_var
-> - %regs
-> - @symbol
-> <Perf>
-> - $local_var
-> 
+Thanks Chris, I was not aware of these two functions.  I have made the following change:
 
-I'm fine with either of the above. I don't like either of the below.
+	if (iommu_found() || xen_initial_domain())
+		pci_enable_acs(dev);
 
--- Steve
+xen_intial_domain() should take care of dom0 case.  We just make the rough assumption that P2P upstream forwarding is needed if we are running on top of xen HV - similar to what we are doing for native kernel case.
 
-> * non $ syntax 1
-> <Ftrace>
-> - %sp_var
-> - %regs
-> - @symbol
-> <Perf>
-> - local_var
-> 
-> * non $ syntax 2
-> <Ftrace>
-> - %%sp_var or %@sp_var
-> - %regs
-> - @symbol
-> <Perf>
-> - local_var
-> 
-> So, which one do you like to use? :-)
-> 
-> Thank you,
-> 
+If this is ok, I'm going to re-spin the patch.  Separate out xen_initial_domain() modification since it is predicated on Jeremy's xen.h patch.
 
+-----Original Message-----
+From: Chris Wright [mailto:chrisw@sous-sol.org] 
+Sent: Tuesday, October 06, 2009 4:42 PM
+To: Kay, Allen M
+Cc: linux-kernel@vger.kernel.org; linux-pci@vger.kernel.org; jbarnes@virtuousgeek.org; matthew@wil.cx; chris@sous-sol.org; jeremy@goop.org
+Subject: Re: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
+
+* Allen Kay (allen.m.kay@intel.com) wrote:
+> +#ifdef CONFIG_DMAR
+> +extern int iommu_detected;
+> +#endif
+
+This should not be needed.
+
+> +
+> +#ifdef CONFIG_XEN
+> +extern int xen_domain_type;
+> +#endif
+
+Nor this (there's already a check for is dom0 called xen_initial_domain(),
+but unclear it's relevant yet for this patch).
+
+> +
+> +	/* Enable ACS P2P upstream forwarding if HW iommu is detected */
+> +	if (iommu_detected)
+
+I think you'd want iommu_found() instead.  To avoid, e.g., GART
+triggering this one.
+
+> +		pci_enable_acs(dev);
+> +
+> +#ifdef CONFIG_XEN
+> +	/* HW iommu is not visible in xen dom0 */
+> +	if (xen_domain_type)
+> +		pci_enable_acs(dev);
+
+could do this (xen_initial_domain()) above, but it's only relevant for
+dom0 (so not needed yet?), and really seems to like it should be done by hv.
+
+thanks,
+-chris
