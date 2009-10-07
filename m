@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbZJGDbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZJGDdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbZJGDbE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 23:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZJGDbD
+	id S1754111AbZJGDdf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 23:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZJGDdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 23:31:03 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:37977 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752664AbZJGDbC (ORCPT
+	Tue, 6 Oct 2009 23:33:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51149 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752911AbZJGDde (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 23:31:02 -0400
-Date: Tue, 6 Oct 2009 22:30:06 -0500
-From: David Fries <david@fries.net>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Joao Ramos <joao.ramos@inov.pt>, d.stussy@yahoo.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] two ide fixes for -rc4
-Message-ID: <20091007033005.GE21612@spacedout.fries.net>
-References: <200910070027.30377.bzolnier@gmail.com> <alpine.LFD.2.01.0910061534040.3432@localhost.localdomain> <200910070246.05283.bzolnier@gmail.com>
+	Tue, 6 Oct 2009 23:33:34 -0400
+Date: Tue, 6 Oct 2009 20:31:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Dave Airlie <airlied@gmail.com>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.32-rc3
+In-Reply-To: <alpine.LFD.2.01.0910062015200.3432@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0910062025300.3432@localhost.localdomain>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>  <alpine.LFD.2.00.0910052140100.309@localhost.localdomain>  <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>  <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> 
+ <1254864803.6035.25.camel@pasglop>  <alpine.LFD.2.01.0910061513510.3432@localhost.localdomain> <21d7e9970910061822i429344amb47b0bceb552abc6@mail.gmail.com> <alpine.LFD.2.01.0910062015200.3432@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910070246.05283.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Tue, 06 Oct 2009 22:30:11 -0500 (CDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 02:46:05AM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Wednesday 07 October 2009 00:35:24 Linus Torvalds wrote:
-> > 
-> > David, can you test these on the sis5513 system that had problems with the 
-> > original pio0 mode setting?
-> > 
-> > 	Thanks,
-> > 		Linus
-> > 
-> > On Wed, 7 Oct 2009, Bartlomiej Zolnierkiewicz wrote:
-> > > 
-> > > patch #1 fixes old bug in sis5513 (uncovered by 2.6.30 device probing
-> > > changes but it could be also triggered in earlier kernels on warm-plug
-> > > operation)
-> 
-> patch #1 contained a stupid mistake preventing it from working (thanks to
-> David Fries for letting me know quickly), I guess that is what one gets for
-> the late night hacking..
-> 
-> The corrected version below, David please try it instead:
-> 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH take 2] sis5513: fix PIO setup for ATAPI devices
 
-2.6.31 plus this patch fixed the hang on IDE initialization with the
-SIS5513.
 
-That's with my testing mode, I'm rebuilding a kernel and will try some
-benchmarks tomorrow.  I've been testing by hibernating to disk,
-booting the test kernel with a bad root and resume partition (so if it
-worked it wouldn't modify the suspended image), then rebooting to
-resume from disk with the good kernel.  That let me more quickly
-bisect and test kernels, I just haven't ran this kernel much past the
-initialization is all.
+On Tue, 6 Oct 2009, Linus Torvalds wrote:
+> 
+> So I literally think that our current CONFIG_LOCALVERSION_AUTO includes 
+> the best of both worlds. It has the "uniquely identifying" part, but it 
+> also has a part that is human-readable and useful for that reason.
 
--- 
-David Fries <david@fries.net>
-http://fries.net/~david/ (PGP encryption key available)
+Btw, that doesn't mean that I'm married to the exact details of the syntax 
+etc. I like CONFIG_LOCALVERSION_AUTO, but I can also see why Ingo would 
+prefer a "+" there instead of a "-".
+
+And the zero-padding to five digits of the number of commits may make 
+things line up nicely, and I think there was even some odd technical 
+reason for it too (some package manager or other that was unhappy with 
+"simple" numbers like "-1" and thought that they were a build number or 
+something), but it's admittedly silly too.
+
+So I'm not trying to say that we could not change the details or perhaps 
+improve on it. What I _am_ trying to say is that conceptually that whole 
+CONFIG_LOCALVERSION_AUTO is absolutely the only sane way to do things. 
+Whether we could expand on it or simplify it or paint it a different bike 
+shed color, I don't care much about.
+
+So I'm not married to the exact details of our current LOCALVERSION_AUTO 
+thing. But I _am_ 100% convinced that it's conceptually the right thing to 
+do, unlike the other suggestions I have pooh-poohed in this thread.
+
+		Linus
