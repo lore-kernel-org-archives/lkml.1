@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759556AbZJGQnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbZJGUEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759556AbZJGQnz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 12:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758826AbZJGQny
+	id S1759983AbZJGUEx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759973AbZJGUEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 12:43:54 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:55479 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755145AbZJGQnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 12:43:53 -0400
-Message-ID: <4ACCC4B7.4050805@redhat.com>
-Date: Wed, 07 Oct 2009 12:41:27 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Wed, 7 Oct 2009 16:04:52 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:41979 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759943AbZJGUEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 16:04:52 -0400
+Date: Wed, 7 Oct 2009 12:42:31 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
+Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
+ interrupt disable
+In-Reply-To: <20091007154111.GA12351@Krystal>
+Message-ID: <alpine.DEB.1.10.0910071237430.3467@gentwo.org>
+References: <20091006233654.815079668@gentwo.org> <20091006233733.153341605@gentwo.org> <20091007025440.GB4664@Krystal> <1254906707.26976.225.camel@twins> <20091007124628.GB27363@Krystal> <alpine.DEB.1.10.0910071039520.5671@gentwo.org> <20091007150257.GA8508@Krystal>
+ <alpine.DEB.1.10.0910071102590.9984@gentwo.org> <20091007151940.GA10052@Krystal> <alpine.DEB.1.10.0910071119450.9296@gentwo.org> <20091007154111.GA12351@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-CC: vgoyal@redhat.com, nauman@google.com, m-ikeda@ds.jp.nec.com,
-       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu,
-       yoshikawa.takuya@oss.ntt.co.jp
-Subject: Re: IO scheduler based IO controller V10
-References: <e98e18940910051111r110dc776l5105bf931761b842@mail.gmail.com>	<20091006.161744.189719641.ryov@valinux.co.jp>	<20091006112201.GA27866@redhat.com> <20091007.233805.183040347.ryov@valinux.co.jp>
-In-Reply-To: <20091007.233805.183040347.ryov@valinux.co.jp>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ryo Tsuruta wrote:
+On Wed, 7 Oct 2009, Mathieu Desnoyers wrote:
 
-> If once dm-ioband is integrated into the LVM tools and bandwidth can
-> be assigned per device by lvcreate, the use of dm-tools is no longer
-> required for users.
+> preempt_check_resched is basically:
+>
+> a test TIF_NEED_RESCHED
+>   if true, call to preempt_schedule
 
-A lot of large data center users have a SAN, with volume management
-handled SAN-side and dedicated LUNs for different applications or
-groups of applications.
+You did not mention the effect of incrementing the preempt counter and
+the barrier(). Adds an additional cacheline to a very hot OS path.
+Possibly register effects.
 
-Because of alignment issues, they typically use filesystems directly
-on top of the LUNs, without partitions or LVM layers.  We cannot rely
-on LVM for these systems, because people prefer not to use that.
+> I really don't see what's bothering you here. Testing a thread flag is
+> incredibly cheap. That's what is typically added to your fast path.
 
-Besides ... isn't the goal of the cgroups io bandwidth controller
-to control the IO used by PROCESSES?
+I am trying to get rid off all unnecessary overhead. These "incredible
+cheap" tricks en masse have caused lots of regressions. And the allocator
+hotpaths are overloaded with these "incredibly cheap" checks alreayd.
 
-If we want to control processes, why would we want the configuration
-to be applied to any other kind of object in the system?
+> So, correct behavior would be:
+>
+> preempt disable()
+> fast path attempt
+>   if (fast path already taken) {
+>     local_irq_save();
+>     slow path.
+>     local_irq_restore();
+>   }
+> preempt_enable()
 
--- 
-All rights reversed.
+Ok. If you have to use preempt then you have to suffer I guess..
+
