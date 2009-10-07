@@ -1,42 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933241AbZJGI23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934126AbZJGIaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933241AbZJGI23 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932499AbZJGI22
+	id S934126AbZJGIaP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934023AbZJGIaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:28:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36057
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932321AbZJGI20 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:28:26 -0400
-Date: Wed, 07 Oct 2009 01:28:21 -0700 (PDT)
-Message-Id: <20091007.012821.184426837.davem@davemloft.net>
-To: tilman@imap.cc
-Cc: alan@lxorguk.ukuu.org.uk, alan@linux.intel.com, paulus@samba.org,
-       linux-ppp@vger.kernel.org, netdev@vger.kernel.org, jarkao2@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net/ppp: fix comments - ppp_{sync,asynctty}_receive()
- may sleep
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091001142844.C50E511186D@xenon.ts.pxnet.com>
-References: <20091001142844.C50E511186D@xenon.ts.pxnet.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Oct 2009 04:30:14 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:44901 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933198AbZJGIaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 04:30:10 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-usb@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Lothar Wassmann <LW@karo-electronics.de>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH v2] USB: isp1362: fix build warnings on 64-bit systems
+Date: Wed,  7 Oct 2009 04:29:31 -0400
+Message-Id: <1254904171-5093-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.rc2
+In-Reply-To: <20091006143428.GA27158@kroah.com>
+References: <20091006143428.GA27158@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tilman Schmidt <tilman@imap.cc>
-Date: Thu,  1 Oct 2009 16:28:44 +0200 (CEST)
+A bunch of places assumed pointers were 32-bits in size (bit checking and
+debug output), but none of these affected runtime functionality.
 
-> The receive_buf methods of the N_PPP and N_SYNC_PPP line disciplines,
-> ppp_asynctty_receive() and ppp_sync_receive(), call tty_unthrottle()
-> which may sleep. Fix the comments claiming otherwise.
-> 
-> Impact: documentation
-> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+v2
+	- update to latest tree
 
-Applied, thanks.
+ drivers/usb/host/isp1362-hcd.c |   18 +++++++++---------
+ drivers/usb/host/isp1362.h     |   12 ++++++------
+ 2 files changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/usb/host/isp1362-hcd.c b/drivers/usb/host/isp1362-hcd.c
+index e35d828..5c774ab 100644
+--- a/drivers/usb/host/isp1362-hcd.c
++++ b/drivers/usb/host/isp1362-hcd.c
+@@ -2284,10 +2284,10 @@ static int isp1362_mem_config(struct usb_hcd *hcd)
+ 	dev_info(hcd->self.controller, "ISP1362 Memory usage:\n");
+ 	dev_info(hcd->self.controller, "  ISTL:    2 * %4d:     %4d @ $%04x:$%04x\n",
+ 		 istl_size / 2, istl_size, 0, istl_size / 2);
+-	dev_info(hcd->self.controller, "  INTL: %4d * (%3u+8):  %4d @ $%04x\n",
++	dev_info(hcd->self.controller, "  INTL: %4d * (%3lu+8):  %4d @ $%04x\n",
+ 		 ISP1362_INTL_BUFFERS, intl_blksize - PTD_HEADER_SIZE,
+ 		 intl_size, istl_size);
+-	dev_info(hcd->self.controller, "  ATL : %4d * (%3u+8):  %4d @ $%04x\n",
++	dev_info(hcd->self.controller, "  ATL : %4d * (%3lu+8):  %4d @ $%04x\n",
+ 		 atl_buffers, atl_blksize - PTD_HEADER_SIZE,
+ 		 atl_size, istl_size + intl_size);
+ 	dev_info(hcd->self.controller, "  USED/FREE:   %4d      %4d\n", total,
+@@ -2677,12 +2677,12 @@ static int __devexit isp1362_remove(struct platform_device *pdev)
+ 	DBG(0, "%s: Removing HCD\n", __func__);
+ 	usb_remove_hcd(hcd);
+ 
+-	DBG(0, "%s: Unmapping data_reg @ %08x\n", __func__,
+-	    (u32)isp1362_hcd->data_reg);
++	DBG(0, "%s: Unmapping data_reg @ %p\n", __func__,
++	    isp1362_hcd->data_reg);
+ 	iounmap(isp1362_hcd->data_reg);
+ 
+-	DBG(0, "%s: Unmapping addr_reg @ %08x\n", __func__,
+-	    (u32)isp1362_hcd->addr_reg);
++	DBG(0, "%s: Unmapping addr_reg @ %p\n", __func__,
++	    isp1362_hcd->addr_reg);
+ 	iounmap(isp1362_hcd->addr_reg);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+@@ -2810,16 +2810,16 @@ static int __init isp1362_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+  err6:
+-	DBG(0, "%s: Freeing dev %08x\n", __func__, (u32)isp1362_hcd);
++	DBG(0, "%s: Freeing dev %p\n", __func__, isp1362_hcd);
+ 	usb_put_hcd(hcd);
+  err5:
+-	DBG(0, "%s: Unmapping data_reg @ %08x\n", __func__, (u32)data_reg);
++	DBG(0, "%s: Unmapping data_reg @ %p\n", __func__, data_reg);
+ 	iounmap(data_reg);
+  err4:
+ 	DBG(0, "%s: Releasing mem region %08lx\n", __func__, (long unsigned int)data->start);
+ 	release_mem_region(data->start, resource_len(data));
+  err3:
+-	DBG(0, "%s: Unmapping addr_reg @ %08x\n", __func__, (u32)addr_reg);
++	DBG(0, "%s: Unmapping addr_reg @ %p\n", __func__, addr_reg);
+ 	iounmap(addr_reg);
+  err2:
+ 	DBG(0, "%s: Releasing mem region %08lx\n", __func__, (long unsigned int)addr->start);
+diff --git a/drivers/usb/host/isp1362.h b/drivers/usb/host/isp1362.h
+index fe60f62..1a253eb 100644
+--- a/drivers/usb/host/isp1362.h
++++ b/drivers/usb/host/isp1362.h
+@@ -580,7 +580,7 @@ static inline const char *ISP1362_INT_NAME(int n)
+ 
+ static inline void ALIGNSTAT(struct isp1362_hcd *isp1362_hcd, void *ptr)
+ {
+-	unsigned p = (unsigned)ptr;
++	unsigned long p = (unsigned long)ptr;
+ 	if (!(p & 0xf))
+ 		isp1362_hcd->stat16++;
+ 	else if (!(p & 0x7))
+@@ -770,7 +770,7 @@ static void isp1362_write_fifo(struct isp1362_hcd *isp1362_hcd, void *buf, u16 l
+ 	if (!len)
+ 		return;
+ 
+-	if ((unsigned)dp & 0x1) {
++	if ((unsigned long)dp & 0x1) {
+ 		/* not aligned */
+ 		for (; len > 1; len -= 2) {
+ 			data = *dp++;
+@@ -962,8 +962,8 @@ static void isp1362_read_buffer(struct isp1362_hcd *isp1362_hcd, void *buf, u16
+ 
+ 	isp1362_write_diraddr(isp1362_hcd, offset, len);
+ 
+-	DBG(3, "%s: Reading %d byte from buffer @%04x to memory @ %08x\n", __func__,
+-	    len, offset, (u32)buf);
++	DBG(3, "%s: Reading %d byte from buffer @%04x to memory @ %p\n",
++	    __func__, len, offset, buf);
+ 
+ 	isp1362_write_reg16(isp1362_hcd, HCuPINT, HCuPINT_EOT);
+ 	_WARN_ON((isp1362_read_reg16(isp1362_hcd, HCuPINT) & HCuPINT_EOT));
+@@ -982,8 +982,8 @@ static void isp1362_write_buffer(struct isp1362_hcd *isp1362_hcd, void *buf, u16
+ 
+ 	isp1362_write_diraddr(isp1362_hcd, offset, len);
+ 
+-	DBG(3, "%s: Writing %d byte to buffer @%04x from memory @ %08x\n", __func__,
+-	    len, offset, (u32)buf);
++	DBG(3, "%s: Writing %d byte to buffer @%04x from memory @ %p\n",
++	    __func__, len, offset, buf);
+ 
+ 	isp1362_write_reg16(isp1362_hcd, HCuPINT, HCuPINT_EOT);
+ 	_WARN_ON((isp1362_read_reg16(isp1362_hcd, HCuPINT) & HCuPINT_EOT));
+-- 
+1.6.5.rc2
+
