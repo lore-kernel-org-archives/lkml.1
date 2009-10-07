@@ -1,136 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932822AbZJGL5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbZJGMGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932822AbZJGL5y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 07:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932653AbZJGL5x
+	id S932903AbZJGMGO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 08:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932842AbZJGMGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 07:57:53 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:15306 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932612AbZJGL5w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 07:57:52 -0400
-X-Trace: 267881560/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.16.54/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.16.54
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlMFAH4ezEpQKRA2/2dsb2JhbACBUdNcgjOBdwQ
-X-IronPort-AV: E=Sophos;i="4.44,519,1249254000"; 
-   d="scan'208";a="267881560"
-Date: Wed, 7 Oct 2009 12:57:00 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Wu Fengguang <fengguang.wu@intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 29/45] writeback: fix the shmem AOP_WRITEPAGE_ACTIVATE
- case
-In-Reply-To: <20091007074904.870825579@intel.com>
-Message-ID: <Pine.LNX.4.64.0910071246180.28844@sister.anvils>
-References: <20091007073818.318088777@intel.com> <20091007074904.870825579@intel.com>
+	Wed, 7 Oct 2009 08:06:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:55675 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932774AbZJGMGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 08:06:12 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: "Nick Piggin" <npiggin@novell.com>
+Cc: Christoph Hellwig <hch@lst.de>, <npiggin@suse.de>,
+       <linux-fsdevel@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: NULL inode->i_mapping in generic_sync_sb_inodes
+References: <4ACC9E8A0200008A000439B0@novprvlin0050.provo.novell.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 07 Oct 2009 08:05:35 -0400
+In-Reply-To: <4ACC9E8A0200008A000439B0@novprvlin0050.provo.novell.com> (Nick
+	Piggin's message of "Tue, 06 Oct 2009 20:58:33 -0600")
+Message-ID: <x49ocoj2yuo.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Oct 2009, Wu Fengguang wrote:
+"Nick Piggin" <npiggin@novell.com> writes:
 
-> When shmem returns AOP_WRITEPAGE_ACTIVATE, the inode pages cannot be
-> synced in the near future. So write_cache_pages shall stop writting this
-> inode, and shmem shall increase pages_skipped to instruct VFS not to
-> busy retry.
-> 
-> CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+>>>> Jeff Moyer  10/07/09 12:48 AM >>>
+>>Hi,
+>>
+>>I've come across a problem in 2.6.31 whereby the umount path on shutdown
+>>Oopses like so:
+>>
+>>BUG: unable to handle kernel NULL pointer dereference at 00000070
+>>IP: [] generic_sync_sb_inodes+0x2ca/0x34b
+>>*pdpt = 00000000220b1001 *pde = 0000000099419067 
+>>Oops: 0000 [#1] SMP 
+>>last sysfs file:
+>>/sys/devices/pci0000:00/0000:00:07.0/0000:0d:00.0/0000:0e:08.0/host0/target0:1:0>/0:1:0:0/block/sda/removable
+>>Modules linked in: fcoe libfcoe libfc scsi_transport_fc scsi_tgt ipv6 xts lrw
+>>gf128mul sha256_generic cbc dm_crypt dm_round_robin dm_multipath dm_snapshot
+>>dm_mirror dm_region_hash dm_log dm_zero dm_mod linear raid10 raid456 raid6_pq
+>>async_xor async_memcpy async_tx xor raid1 raid0 nfs lockd fscache nfs_acl
+>>auth_rpcgss sunrpc radeon mptsas ttm drm_kms_helper mptscsih drm mptbase
+>>i2c_algo_bit i2c_core scsi_transport_sas bnx2 iscsi_ibft pcspkr edd iscsi_tcp
+>>libiscsi_tcp libiscsi scsi_transport_iscsi squashfs cramfs
+>>
+>>Pid: 5082, comm: grub Tainted: G        W  (2.6.31-27.el6.i686 #1) PowerEdge
+>>1955
+>>EIP: 0060:[] EFLAGS: 00010246 CPU: 0
+>>EIP is at generic_sync_sb_inodes+0x2ca/0x34b
+>>EAX: ec45ae14 EBX: 00000000 ECX: 00000000 EDX: c0510e4f
+>>ESI: ec45ae04 EDI: ec45b1c4 EBP: f25fdf38 ESP: f25fdf10
+>>DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+>>Process grub (pid: 5082, ti=f25fc000 task=ef0cc6f0 task.ti=f25fc000)
+>>Stack:
+>>00000246 00000001 f422fa6c 000abc70 f422fa64 f422fa54 8fd7ae23 f422f970
+>><0> 00000001 f25fdf68 f25fdf74 c0510f0e 00000000 00000001 00000000 7fffffff
+>><0> 00000000 00000000 00000000 ffffffff 7fffffff 00000000 8fd7ae23 f422f970
+>>Call Trace:
+>>[] ? sync_inodes_sb+0x74/0x8c
+>>[] ? __sync_filesystem+0x41/0x74
+>>[] ? sync_filesystems+0x96/0xed
+>>[] ? sys_sync+0x27/0x4a
+>>[] ? sysenter_do_call+0x12/0x38
+>>Code: 0f 85 83 00 00 00 8b b3 e4 00 00 00 81 c3 e4 00 00 00 31 ff 89 5d ec 83
+>>ee 10 eb 4b f6 86 6c 02 00 00 78 75 3c 8b 9e 3c 01 00 00 <83> 7b 70 00 74 30 89
+>>f0 e8 d8 61 ff ff b8 cc f4 a0 c0 e8 e0 dd 
+>>EIP: [] generic_sync_sb_inodes+0x2ca/0x34b SS:ESP 0068:f25fdf10
+>>CR2: 0000000000000070
+>>---[ end trace 8171140d16b04470 ]---
+>>
+>>The Oops is in fs/fs-writeback.c:568:
+>>
+>>list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+>>struct address_space *mapping;
+>>
+>>if (inode->i_state &
+>>(I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
+>>continue;
+>>mapping = inode->i_mapping;
+>>if (mapping->nrpages == 0)    <==== BUG
+>>
+>>Any idea how that can happen?  Maybe a race in the umount path?
+>
+> Possibly. I can't quite see how it could happen in the core code, because
+> we should always have i_state flags set if the inode is new or being
+> freed. It might happen that a caller is mistakenly unlocking it too
+> early or something, though.
+>
+> Is this repeatable?
 
-Okay, it embarrasses me to see AOP_WRITEPAGE_ACTIVATE (and its horrid
-"in this one case the page is still locked" semantic) still around -
-my patch to remove it vanished from mmotm (probably caused a temporary
-conflict) and I've never chased it up (partly out of guilt that I'd not
-yet kept my promise to contact the openAFS people about their use of it).
+I believe so.  I'm having a hard time getting this particular system to
+install, but once I have it reinstalled, I'll see if we get this problem
+again.  I'm pretty sure I've seen it at least twice on this machine.
 
-But that's orthogonal to your concern here: for so long as there has
-been a wbc->pages_skipped, I guess shmem_writepage() should have been
-incrementing it there - thanks.  But I don't believe the VFS will ever
-have any interest in pages_skipped from shmem_writepage(): do you have
-evidence that it does?  If so, I need to investigate.
+hch mentioned that it would be good to instrument to what file system
+the inode belonged.  Anything else you'd like to look at?
 
-And the accompanying change to write_cache_pages() seems irrelevant
-and misguided.  Irrelevant because write_cache_pages() should never be
-dealing with shmem_writepage() (its bdi should keep it well away), and
-should never be dealing with reclaim, which is the only case in which
-shmem_writepage() returns AOP_WRITEPAGE_ACTIVATE - or have your other
-changes, or the bdi work, changed that?
-
-And misguided because in your change to write_cache_pages() you're
-taking AOP_WRITEPAGE_ACTIVATE to say that it should now give up, not
-process more pages.  We just don't know that.  All it means is that
-this one page couldn't be written and should be reactivated (if it
-were under reclaim): it might be the case that every other page tried
-after would get treated in the same way, or it might be the case that
-the next page would get written successfully.  That info is just not
-provided.
-
-Hugh
-
-> ---
->  mm/page-writeback.c |   23 +++++++++++------------
->  mm/shmem.c          |    1 +
->  2 files changed, 12 insertions(+), 12 deletions(-)
-> 
-> --- linux.orig/mm/page-writeback.c	2009-10-06 23:39:28.000000000 +0800
-> +++ linux/mm/page-writeback.c	2009-10-06 23:39:29.000000000 +0800
-> @@ -851,19 +851,18 @@ continue_unlock:
->  				if (ret == AOP_WRITEPAGE_ACTIVATE) {
->  					unlock_page(page);
->  					ret = 0;
-> -				} else {
-> -					/*
-> -					 * done_index is set past this page,
-> -					 * so media errors will not choke
-> -					 * background writeout for the entire
-> -					 * file. This has consequences for
-> -					 * range_cyclic semantics (ie. it may
-> -					 * not be suitable for data integrity
-> -					 * writeout).
-> -					 */
-> -					done = 1;
-> -					break;
->  				}
-> +				/*
-> +				 * done_index is set past this page,
-> +				 * so media errors will not choke
-> +				 * background writeout for the entire
-> +				 * file. This has consequences for
-> +				 * range_cyclic semantics (ie. it may
-> +				 * not be suitable for data integrity
-> +				 * writeout).
-> +				 */
-> +				done = 1;
-> +				break;
->   			}
->  
->  			if (nr_to_write > 0) {
-> --- linux.orig/mm/shmem.c	2009-10-06 23:37:40.000000000 +0800
-> +++ linux/mm/shmem.c	2009-10-06 23:39:29.000000000 +0800
-> @@ -1103,6 +1103,7 @@ unlock:
->  	 */
->  	swapcache_free(swap, NULL);
->  redirty:
-> +	wbc->pages_skipped++;
->  	set_page_dirty(page);
->  	if (wbc->for_reclaim)
->  		return AOP_WRITEPAGE_ACTIVATE;	/* Return with page locked */
+Thanks a ton!
+Jeff
