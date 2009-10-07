@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbZJGHO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758507AbZJGHWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758677AbZJGHO3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 03:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbZJGHO2
+	id S1758507AbZJGHWu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 03:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbZJGHWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 03:14:28 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:54377 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756715AbZJGHO1 convert rfc822-to-8bit (ORCPT
+	Wed, 7 Oct 2009 03:22:49 -0400
+Received: from ns2.intersolute.de ([193.110.43.67]:45509 "EHLO
+	ns2.intersolute.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754497AbZJGHWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 03:14:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=M+g/Xz45G9LmynU/HZSk2YuomwQ4zF3u9WlGJ3CedKahAoVsZWYH7X3u1YJaQZ5hD3
-         iFU+r/hRJrq/vd1eLUQse5HLZunmYGz7U4v5CDgznXSm0euuqGp2OiO9TuYNLBnjO/wA
-         DK+dhrSF5QfyhOHzwq/pg6LC70vIMYzIQMPc0=
+	Wed, 7 Oct 2009 03:22:49 -0400
+Message-ID: <4ACC41A2.8070801@lumino.de>
+Date: Wed, 07 Oct 2009 09:22:10 +0200
+From: Michael Schnell <mschnell@lumino.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0910062202590.5950@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-	 <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
-	 <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
-	 <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
-	 <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
-	 <alpine.LFD.2.00.0909190027400.2889@localhost.localdomain>
-	 <alpine.LFD.2.00.0910061210400.2646@localhost.localdomain>
-	 <3efb10970910061123k2b6826bci11f0f42509173b26@mail.gmail.com>
-	 <alpine.LFD.2.00.0910062122230.5950@localhost.localdomain>
-	 <alpine.LFD.2.00.0910062202590.5950@localhost.localdomain>
-Date: Wed, 7 Oct 2009 09:13:51 +0200
-X-Google-Sender-Auth: 0587aceb2d118994
-Message-ID: <3efb10970910070013p447fdd99o22699967a9e51070@mail.gmail.com>
-Subject: Re: [ANNOUNCE] 2.6.31.2-rt13
-From: Remy Bohmer <linux@bohmer.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Userspace RCU: (ab)using futexes to save cpu cycles and
+ energy
+References: <20090923174820.GA12827@Krystal> <20091001144037.GB6205@linux.vnet.ibm.com> <20091004143745.GA19785@Krystal> <4AC99D55.8000102@lumino.de> <20091005125533.GA1857@Krystal>
+In-Reply-To: <20091005125533.GA1857@Krystal>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+Mathieu Desnoyers wrote:
+> Hrm, your assumption about the common case does not seem to fit my
+> scenarios. 
+Yep,
 
-> 2009/10/6 Thomas Gleixner <tglx@linutronix.de>:
-> On Tue, 6 Oct 2009, Thomas Gleixner wrote:
->
->> On Tue, 6 Oct 2009, Remy Bohmer wrote:
->> > But I was wondering if you missed this one:
->> > http://patchwork.kernel.org/patch/50044/
->>
->> Yup, slipped through. Queued for the next release.
->
-> Correction. I dropped the patch as it is just a sloppy work around.
-> Why creating the thread in the first place ? Real fix below.
+Obviously I was misled.
 
-Yeah, I thought about that too.
+So I now understand that you want to schedule the thread as a result to
+some event and the Thread might already be running at that time, so that
+it does not need to enter an OS-based wait state.
 
->
-> Thanks,
->
->        tglx
-> ---
-> diff --git a/kernel/softirq.c b/kernel/softirq.c
-> index aae8d45..3526976 100644
-> --- a/kernel/softirq.c
-> +++ b/kernel/softirq.c
-> @@ -1161,6 +1161,8 @@ static int __cpuinit cpu_callback(struct notifier_block *nfb,
->                        per_cpu(ksoftirqd, hotcpu)[i].tsk = NULL;
->                }
->                for (i = 0; i < NR_SOFTIRQS; i++) {
-> +                       if (!softirq_names[i])
-> +                               continue;
+But to me this looks as if a _counting_ semaphore is needed here (at
+least in a more general case), instead of a binary semaphore (such as
+FUTEX does manage). Only with a counting semaphore no events are missed
+(unless the user software design cares for this with other means, which
+might be difficult or impossible).
 
-But I did not do this because I thought this was sloppy as well, I
-guessed you would never accept a patch that only looks at defining the
-name, how wrong could I be... ;-)
-So, going for the cleaner solution, I was going for not defining the
-HRTIMER_SOFTIRQ in the enum in include/linux/interrupt.h in the first
-place, but that would touch even more code, and at least that makes
-clear how much the code is strangled.
+Of course the fast path of a  user space counting semaphore is easily
+doable with atomic_inc() and atomic_dec().
 
-The loop 'for (i = 0; i < NR_SOFTIRQS; i++)' is used at many more
-places, would this 'if (!softirq_names[i])' not be required at other
-places as well?
+But I only know about two working variants of the user space code for
+the (binary) FUTEX. There seem to be some more implementations that do
+not work decently.
 
-Remy
+I have no idea if it's possible to create a counting semaphore in user
+space that uses the "futex" syscall (or whatever) for the case the
+threads needs to wait.
+
+-Michael
+
