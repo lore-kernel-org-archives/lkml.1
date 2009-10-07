@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZJGXsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZJGXtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbZJGXsp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 19:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755748AbZJGXso
+	id S1756663AbZJGXtG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 19:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbZJGXtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 19:48:44 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:44670
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755536AbZJGXsn convert rfc822-to-8bit
+	Wed, 7 Oct 2009 19:49:05 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:17277
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756587AbZJGXtE convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 19:48:43 -0400
+	Wed, 7 Oct 2009 19:49:04 -0400
 X-SpamScore: -30
 X-BigFish: VPS-30(zz542N1432R98dN9371Pzz1202hzzz2dh6bh61h)
 X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-Class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
 Subject: RE: Xilinx SYSACE driver and 8-bit attachment
-Date: Wed, 7 Oct 2009 17:47:58 -0600
+Date: Wed, 7 Oct 2009 16:48:20 -0700
 In-Reply-To: <1d3f23370910071644y5877cf9v879967340a463f19@mail.gmail.com>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 Thread-Topic: Xilinx SYSACE driver and 8-bit attachment
-Thread-Index: AcpHqCk7ZwQKz4r/QgeAPEy71XuEOgAACaUw
+Thread-Index: AcpHqCkb7bCLCiOGSZ2fyGz57R3A2wAAEPXA
 References: <1d3f23370910070013u6307bc42hf7ab243b52d007df@mail.gmail.com> <fa686aa40910070634r4a8dcf74qdcbfb3bde3413109@mail.gmail.com> <1d3f23370910071644y5877cf9v879967340a463f19@mail.gmail.com>
-From: John Linn <John.Linn@xilinx.com>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 To: "John Williams" <john.williams@petalogix.com>, <grant.likely@secretlab.ca>
 CC: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
        "Michal Simek" <michal.simek@petalogix.com>,
-       "David DeBonis" <ddeboni@xilinx.com>,
-       "Stephen Neuendorffer" <stephenn@xilinx.com>,
+       "John Linn" <linnj@xilinx.com>, "David DeBonis" <ddeboni@xilinx.com>,
        "devicetree-discuss" <devicetree-discuss@lists.ozlabs.org>
-X-OriginalArrivalTime: 07 Oct 2009 23:48:00.0320 (UTC) FILETIME=[9A5ACC00:01CA47A8]
-Message-ID: <940f74fd-51b8-4158-9f40-c9ffa9a27ccb@VA3EHSMHS013.ehs.local>
+X-OriginalArrivalTime: 07 Oct 2009 23:48:21.0925 (UTC) FILETIME=[A73B7550:01CA47A8]
+Message-ID: <893df3b8-adf9-4d96-a970-11d2412117e8@VA3EHSMHS026.ehs.local>
 X-Reverse-DNS: unknown-60-83.xilinx.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
+
 > -----Original Message-----
 > From: John Williams [mailto:john.williams@petalogix.com]
-> Sent: Wednesday, October 07, 2009 5:45 PM
+> Sent: Wednesday, October 07, 2009 4:45 PM
 > To: grant.likely@secretlab.ca
 > Cc: Linux Kernel list; Michal Simek; John Linn; David DeBonis; Stephen Neuendorffer; devicetree-
 > discuss
@@ -89,14 +91,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > out any special per-device hacks.  This has a natural tendency towards
 > minimum pain I think.
 
-Agreed. This was special legacy is the only reason it warranted it.
+I second this wholeheartedly.
+Note that by definition, what comes out of the generator 'accurately and exactly describes the hardware', to the extent that the hardware is represented completely by its parameters.
 
-> 
-> John
-> --
-> John Williams, PhD, B.Eng, B.IT
-> PetaLogix - Linux Solutions for a Reconfigurable World
-> w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
+Steve
 
 
 This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
