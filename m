@@ -1,120 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933881AbZJGBWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbZJGBXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933881AbZJGBWv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 21:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758531AbZJGBWu
+	id S1758644AbZJGBXR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 21:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758531AbZJGBXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 21:22:50 -0400
-Received: from mail-yx0-f173.google.com ([209.85.210.173]:54604 "EHLO
-	mail-yx0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758517AbZJGBWu convert rfc822-to-8bit (ORCPT
+	Tue, 6 Oct 2009 21:23:16 -0400
+Received: from mail-yw0-f173.google.com ([209.85.211.173]:55647 "EHLO
+	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758611AbZJGBXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 21:22:50 -0400
+	Tue, 6 Oct 2009 21:23:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=EX3+bEKRfdH2gzsoku/suLhPGU1/3Zlf3wRwjgdVKzxE/JTiLBuCjoIdLYRsm2z/Bs
+         G075mTfPFYlC9UPlqPPpIBh4kwIp/xyLVJtk2VopD9qAAmOJkR7fCvQRTdpA90xDWCYk
+         l18CJFJVd62TXLHbuj8JJOj8UnsyEuU1AAIkU=
 MIME-Version: 1.0
-In-Reply-To: <f488382f0910061754g6d15cf58v572e85701fc5aa4f@mail.gmail.com>
-References: <alpine.LNX.2.00.0910050923280.2419@alcarin.uplinklabs.net>
-	 <1254814298.31336.63.camel@eenurkka-desktop>
-	 <f488382f0910060322y12e2e7dbm9a1372e481c9013f@mail.gmail.com>
-	 <1254825795.31336.204.camel@eenurkka-desktop>
-	 <f488382f0910060422t420ade8bvdefbf3e3d0720266@mail.gmail.com>
-	 <1254832609.31336.290.camel@eenurkka-desktop>
-	 <f488382f0910061754g6d15cf58v572e85701fc5aa4f@mail.gmail.com>
-Date: Tue, 6 Oct 2009 18:22:13 -0700
-Message-ID: <f488382f0910061822wf8da0c1m7f118f04fe793abe@mail.gmail.com>
-Subject: Re: [BISECTED] "conservative" cpufreq governor broken
-From: Steven Noonan <steven@uplinklabs.net>
-To: ext-eero.nurkkala@nokia.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Rik van Riel <riel@redhat.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+In-Reply-To: <alpine.LFD.2.01.0910061513510.3432@localhost.localdomain>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>
+	 <alpine.LFD.2.00.0910052140100.309@localhost.localdomain>
+	 <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>
+	 <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
+	 <1254864803.6035.25.camel@pasglop>
+	 <alpine.LFD.2.01.0910061513510.3432@localhost.localdomain>
+Date: Wed, 7 Oct 2009 11:22:38 +1000
+Message-ID: <21d7e9970910061822i429344amb47b0bceb552abc6@mail.gmail.com>
+Subject: Re: Linux 2.6.32-rc3
+From: Dave Airlie <airlied@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 6, 2009 at 5:54 PM, Steven Noonan <steven@uplinklabs.net> wrote:
-> On Tue, Oct 6, 2009 at 5:36 AM, Eero Nurkkala
-> <ext-eero.nurkkala@nokia.com> wrote:
->> On Tue, 2009-10-06 at 13:22 +0200, ext Steven Noonan wrote:
->>> On Tue, Oct 6, 2009 at 3:43 AM, Eero Nurkkala
->>> <ext-eero.nurkkala@nokia.com> wrote:
->>> > On Tue, 2009-10-06 at 12:22 +0200, ext Steven Noonan wrote:
->>> >>
->>> >> I would suspect you have to have CONFIG_NO_HZ enabled to be able to
->>> >> reproduce the issue (considering the title of the bisected commit and
->>> >> my own config). Do you have it enabled?
->>> >>
->>> >
->>> > Yes, it's enabled.
->>> >
->>> >> > And another round:
->>> >> >
->>> >> > cpufreq stats: OP1:16,78%, OP2:0,24%, OP3:5,14%, OP4:77,83%  (72)
->>> >> >
->>> >> > Just once more after doing nothing:
->>> >> > OP1:7,41%, OP2:0,11%, OP3:2,38%, OP4:90,10%  (82)
->>> >> >
->>> >> > So I can't agree it's broken. The patch you bisected, actually filtered
->>> >> > out such phenomenon, in which an IRQ made the cpufreq framework
->>> >> > occasionally think we were idling, although we were not. So you got
->>> >> > "bonus" idle time that shouldn't been there in the first place. Now that
->>> >> > the "bonus" idle time is not there, your system load may indeed be so
->>> >> > high that the system never spends 80% or more time in idle? Could that
->>> >> > be the case? Of course, even though I can't agree it's broken, doesn't
->>> >> > mean it isn't somehow broken ;) It'd be nice to get info on other
->>> >> > systems as well...
->>> >>
->>> >> Interestingly, "ondemand" (the governor fixed by the bisected commit)
->>> >> works fine. "conservative" is the only broken one.
->>> >>
->>> >
->>> > If you took timestamps in /arch/x86/kernel/process_**.c:
->>> > (let's assume process_64.c) in cpu_idle()
->>> > around enter_idle(); and __exit_idle(), took the diff,
->>> > added the diffs up, and compared it to system uptime, you could see how
->>> > much time you spend in idle()? I think it's possible that
->>> > even if the cpu load is near 0%, the system may idle only for a bare
->>> > moment (that translates to a buggy pm_idle()), and time is spent
->>> > elsewhere (less than 80% in idle).
->>>
->>> This makes logical sense, but how should I test this? Is there a way
->>> to do this with existing tracers?
->>
->> Tracers may by themselves add some load into the system.
->>
->> If I were you, I'd add something like: (I have only one CPU BTW)
->>
->> static ktime_t time_prior_idle;
->> static int64_t idle_total;
->>
->> time_prior_idle = ktime_get();
->> <idle stuff>
->> idle_total += ktime_to_ns(ktime_sub(ktime_get(), time_prior_idle));
->>
->> and have a sysfs hook (something already present, so you can just cat
->> it) with a trace:
->>
->> printk("Times: %lld, %lld \n", idle_total, ktime_to_ns(ktime_get()));
->>
->> Sample output:
->> 374758812519, 386768249832
->>
->> So I have 386768249832 / 386768249832 = 96.9 % time spent in idle in
->> this case.
->>
->> (Right, this should provide somewhat descent info, hopefully ;) )
->>
+On Wed, Oct 7, 2009 at 8:19 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
-> Well, I tried adding the code to cpu_idle() as suggested, but it never
-> printed anything. Apparently cpu_idle() isn't ever being called here.
-> Even added a 'BUG();' at the beginning of the function and it never
-> hit it. Of course, I'm probably missing something obvious. Is there a
-> separate cpu_idle()-esque function for SMP?
 >
+> On Wed, 7 Oct 2009, Benjamin Herrenschmidt wrote:
+>>
+>> Sure, when doing the stuff ourselves. Again, the problem is user
+>> reports. Being able to distinguish between a 2.6.x "release" kernel and
+>> anything else would be of value, at least to me.
+>
+> Why are you arguing? CONFIG_LOCALVERSION_AUTO gives exactly that?
+>
+> Also, why do you think that "release" is any special? All the same things
+> are true about "is it -rc1 or is it -rc1-351-g58e57fb? When it comes to a
+> bug-report, the difference between the two can be huge.
+>
+>> I disagree. I understand the linearity problem. My point isn't about
+>> having the Makefile provide with any kind of precise "pointer" into that
+>> tree for non-release, but really only to differenciate a release from
+>> anything else.
+>
+> And your point is totally destroyed by any amount of thinking. Which you
+> clearly didn't do.
+>
+> I repeat: there are tons of kernels that would not be based directly on
+> that "-rc0" commit. You would confuse _those_ cases even more, because you
+> would now think that they are somehow "release" kernels.
+>
+> And the fact is, NONE OF YOUR BLATHERING has in any way shown why people
+> shouldn't just use CONFIG_LOCALVERSION_AUTO.
+>
+> I keep on returning to that, and harping on it, but the point is, WE
+> ALREADY SOLVED THIS PROBLEM. Every single person who asks for a -rc0 tag
+> is just being stupid. You already have a much superior solution.
+>
+> So don't ask me for something _stupid_, when you already have the smart
+> thing!
 
-Oh crap. Perhaps it's more insidious. I reverted the bisected commit
-and it _DID_ hit the line I added. So cpu_idle is never entered with
-the bisected commit. Bizarre.
+Why don't you just have the kernel version Linux-commitid?
 
-- Steven
+why keep up the pretense that the 2.6.xx bit means anything outside of release?
+
+You could just have the tarball generation scripts make it into a 2.6.31 but
+for everyone else we never see it.
+
+Dave.
