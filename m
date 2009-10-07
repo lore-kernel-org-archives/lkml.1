@@ -1,64 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932072AbZJGXtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbZJGXxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932072AbZJGXtK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 19:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbZJGXtJ
+	id S1756561AbZJGXxs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 19:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbZJGXxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 19:49:09 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52808 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756597AbZJGXtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 19:49:07 -0400
-Date: Thu, 8 Oct 2009 10:48:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: linux-next: suspend tree build failure
-Message-Id: <20091008104823.f41e796e.sfr@canb.auug.org.au>
-In-Reply-To: <200910072241.54869.rjw@sisk.pl>
-References: <20091006135505.f07ee40d.sfr@canb.auug.org.au>
-	<200910070031.55135.rjw@sisk.pl>
-	<20091007152914.8dadf6d7.sfr@canb.auug.org.au>
-	<200910072241.54869.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__8_Oct_2009_10_48_23_+1100_DVHW5aAXTTzIHNMk"
+	Wed, 7 Oct 2009 19:53:48 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:38237 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754956AbZJGXxr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 19:53:47 -0400
+MIME-Version: 1.0
+In-Reply-To: <20091007233640.GA8464@kroah.com>
+References: <f3f71ab90910071414n482eca2dm18108c79ee08028d@mail.gmail.com> 
+	<20091007211916.GA4217@kroah.com> <f3f71ab90910071431g524fa807ib67f5fcfef7c70d1@mail.gmail.com> 
+	<20091007225828.GA7892@kroah.com> <f3f71ab90910071631g2ffb4796u6a3a370252c4cf92@mail.gmail.com> 
+	<20091007233640.GA8464@kroah.com>
+From: Mike Lothian <mike@fireburn.co.uk>
+Date: Thu, 8 Oct 2009 00:52:50 +0100
+Message-ID: <f3f71ab90910071652oa47bc7dn6ccf7b665e071609@mail.gmail.com>
+Subject: Re: Samsung Backlight Patch
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Matthias Hopf <mhopf@suse.de>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__8_Oct_2009_10_48_23_+1100_DVHW5aAXTTzIHNMk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Rafael,
-
-On Wed, 7 Oct 2009 22:41:54 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+2009/10/8 Greg KH <greg@kroah.com>:
+> On Thu, Oct 08, 2009 at 12:31:51AM +0100, Mike Lothian wrote:
+>> 2009/10/7 Greg KH <greg@kroah.com>:
+>> > On Wed, Oct 07, 2009 at 10:31:44PM +0100, Mike Lothian wrote:
+>> >> 2009/10/7 Greg KH <greg@kroah.com>:
+>> >> > On Wed, Oct 07, 2009 at 10:14:37PM +0100, Mike Lothian wrote:
+>> >> >> Hi
+>> >> >>
+>> >> >> I was hoping the following patch could be included in 2.6.32 so it
+>> >> >> would hopefully end up in the next round of distros
+>> >> >>
+>> >> >> It adds backlight support for some Samsung laptops
+>> >> >
+>> >> > You seem to have lost the original authorship of this patch, and not
+>> >> > included your signed-off-by for it.
+>> >> >
+>> >> > Which means it can't be applied :(
+>> >> >
+>> >> > thanks,
+>> >> >
+>> >> > greg k-h
+>> >> >
+>> >>
+>> >> It definitely has +MODULE_AUTHOR("Greg Kroah-Hartman
+>> >> <gregkh@suse.de>"); at the bottom
+>> >>
+>> >> I certainly wasn't trying to steal credit for your work
+>> >
+>> > I mean on the patch, when submitting it, you need a:
+>> >        From: Greg Kroah-Hartman <gregkh@suse.de>
+>> >
+>> > as the first line.
+>> >
+>> >> Who should sign it off?
+>> >
+>> > As I stated before, I can not sign off on this patch anymore, but I
+>> > would like my authorship to remain.  Someone needs to sign off on it...
+>> >
+>> >> I think there's a few other models that can be added to this patch too
+>> >
+>> > I do too.
+>> >
+>> > Note, if you look at the git tree I have for the driver, it is totally
+>> > rewritten to not use a structure, and instead, use offsets properly.
+>> > But it removed support for your laptop, which is not what you probably
+>> > want :(
+>> >
+>> > thanks,
+>> >
+>> > greg k-h
+>> >
+>>
+>> What git tree?
 >
-> OK, I've dropped the patch altogether for now, will add it later.
->=20
-> Just pushed the updated tree.
+> http://github.com/gregkh/samsung-backlight
+>
+> Look at the "laptop" branch for the latest stuff.
+>
+> Also supports rfkill and "silent" mode for the N130/N128 machines.
+>
+> thanks,
+>
+> greg k-h
+>
 
-OK, thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__8_Oct_2009_10_48_23_+1100_DVHW5aAXTTzIHNMk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEUEARECAAYFAkrNKMcACgkQjjKRsyhoI8y7IQCfe9mMJFgzcpvUW+VlamRO72IV
-MbQAmKR1i+y/cvW6ZGC1EXJGtwTewM8=
-=ssWz
------END PGP SIGNATURE-----
-
---Signature=_Thu__8_Oct_2009_10_48_23_+1100_DVHW5aAXTTzIHNMk--
+Tomorrow I'll try this updated patch with my laptop added and see if it works
