@@ -1,73 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759040AbZJGMiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbZJGMoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759040AbZJGMiO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 08:38:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758924AbZJGMiO
+	id S1759106AbZJGMoJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 08:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759075AbZJGMoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 08:38:14 -0400
-Received: from bc.sympatico.ca ([209.226.175.184]:50980 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754341AbZJGMiN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 08:38:13 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlMFAOIjzEpMROOX/2dsb2JhbACBUdNQhCoE
-Date: Wed, 7 Oct 2009 08:36:59 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/4] DEBUG_RCU_HEAD: Debug and fix racy call_rcu() users
-Message-ID: <20091007123658.GA27363@Krystal>
-References: <20091006143727.868480435@polymtl.ca> <20091007042054.GE6838@linux.vnet.ibm.com>
+	Wed, 7 Oct 2009 08:44:08 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48008 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756228AbZJGMoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 08:44:07 -0400
+Date: Wed, 7 Oct 2009 14:43:27 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Nick Piggin <npiggin@novell.com>, Christoph Hellwig <hch@lst.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: NULL inode->i_mapping in generic_sync_sb_inodes
+Message-ID: <20091007124327.GT30316@wotan.suse.de>
+References: <4ACC9E8A0200008A000439B0@novprvlin0050.provo.novell.com> <x49ocoj2yuo.fsf@segfault.boston.devel.redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091007042054.GE6838@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 08:31:03 up 49 days, 23:20,  2 users,  load average: 0.27, 0.23,
-	0.22
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <x49ocoj2yuo.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Tue, Oct 06, 2009 at 10:37:28AM -0400, Mathieu Desnoyers wrote:
-> > Here is a patchset, done on 2.6.30.9, which permits to detect and fix racy
-> > call_rcu() users.
-> > 
-> > Fix for vunmap, which happens to be one of them, is included.
-> > 
-> > Note that some false-positives might come up when call_rcu() is called on
-> > uninitialized struct rcu_head. The solution is, surprisingly enough, to
-> > initialize them.
+On Wed, Oct 07, 2009 at 08:05:35AM -0400, Jeff Moyer wrote:
+> "Nick Piggin" <npiggin@novell.com> writes:
 > 
-> Very cool, Mathieu!!!
+> >>>> Jeff Moyer  10/07/09 12:48 AM >>>
+> >>Hi,
+> >>
+> >>I've come across a problem in 2.6.31 whereby the umount path on shutdown
+> >>Oopses like so:
+> >>
+> >>BUG: unable to handle kernel NULL pointer dereference at 00000070
+> >>IP: [] generic_sync_sb_inodes+0x2ca/0x34b
+> >>*pdpt = 00000000220b1001 *pde = 0000000099419067 
+> >>Oops: 0000 [#1] SMP 
+> >>last sysfs file:
+> >>/sys/devices/pci0000:00/0000:00:07.0/0000:0d:00.0/0000:0e:08.0/host0/target0:1:0>/0:1:0:0/block/sda/removable
+> >>Modules linked in: fcoe libfcoe libfc scsi_transport_fc scsi_tgt ipv6 xts lrw
+> >>gf128mul sha256_generic cbc dm_crypt dm_round_robin dm_multipath dm_snapshot
+> >>dm_mirror dm_region_hash dm_log dm_zero dm_mod linear raid10 raid456 raid6_pq
+> >>async_xor async_memcpy async_tx xor raid1 raid0 nfs lockd fscache nfs_acl
+> >>auth_rpcgss sunrpc radeon mptsas ttm drm_kms_helper mptscsih drm mptbase
+> >>i2c_algo_bit i2c_core scsi_transport_sas bnx2 iscsi_ibft pcspkr edd iscsi_tcp
+> >>libiscsi_tcp libiscsi scsi_transport_iscsi squashfs cramfs
+> >>
+> >>Pid: 5082, comm: grub Tainted: G        W  (2.6.31-27.el6.i686 #1) PowerEdge
+> >>1955
+> >>EIP: 0060:[] EFLAGS: 00010246 CPU: 0
+> >>EIP is at generic_sync_sb_inodes+0x2ca/0x34b
+> >>EAX: ec45ae14 EBX: 00000000 ECX: 00000000 EDX: c0510e4f
+> >>ESI: ec45ae04 EDI: ec45b1c4 EBP: f25fdf38 ESP: f25fdf10
+> >>DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+> >>Process grub (pid: 5082, ti=f25fc000 task=ef0cc6f0 task.ti=f25fc000)
+> >>Stack:
+> >>00000246 00000001 f422fa6c 000abc70 f422fa64 f422fa54 8fd7ae23 f422f970
+> >><0> 00000001 f25fdf68 f25fdf74 c0510f0e 00000000 00000001 00000000 7fffffff
+> >><0> 00000000 00000000 00000000 ffffffff 7fffffff 00000000 8fd7ae23 f422f970
+> >>Call Trace:
+> >>[] ? sync_inodes_sb+0x74/0x8c
+> >>[] ? __sync_filesystem+0x41/0x74
+> >>[] ? sync_filesystems+0x96/0xed
+> >>[] ? sys_sync+0x27/0x4a
+> >>[] ? sysenter_do_call+0x12/0x38
+> >>Code: 0f 85 83 00 00 00 8b b3 e4 00 00 00 81 c3 e4 00 00 00 31 ff 89 5d ec 83
+> >>ee 10 eb 4b f6 86 6c 02 00 00 78 75 3c 8b 9e 3c 01 00 00 <83> 7b 70 00 74 30 89
+> >>f0 e8 d8 61 ff ff b8 cc f4 a0 c0 e8 e0 dd 
+> >>EIP: [] generic_sync_sb_inodes+0x2ca/0x34b SS:ESP 0068:f25fdf10
+> >>CR2: 0000000000000070
+> >>---[ end trace 8171140d16b04470 ]---
+> >>
+> >>The Oops is in fs/fs-writeback.c:568:
+> >>
+> >>list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> >>struct address_space *mapping;
+> >>
+> >>if (inode->i_state &
+> >>(I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
+> >>continue;
+> >>mapping = inode->i_mapping;
+> >>if (mapping->nrpages == 0)    <==== BUG
+> >>
+> >>Any idea how that can happen?  Maybe a race in the umount path?
+> >
+> > Possibly. I can't quite see how it could happen in the core code, because
+> > we should always have i_state flags set if the inode is new or being
+> > freed. It might happen that a caller is mistakenly unlocking it too
+> > early or something, though.
+> >
+> > Is this repeatable?
 > 
-> I do like adding the debug-only field to struct rcu_head.  Lots of
-> additional places need initialization, or am I missing a trick here?
+> I believe so.  I'm having a hard time getting this particular system to
+> install, but once I have it reinstalled, I'll see if we get this problem
+> again.  I'm pretty sure I've seen it at least twice on this machine.
 > 
+> hch mentioned that it would be good to instrument to what file system
+> the inode belonged.  Anything else you'd like to look at?
 
-In my case, only 2 sites in the process management and 1 site in the now
-deprecated marker.c complained about not being initialized.
+Not too sure. I guess i_state. Maybe you could take s_umount lock
+and see if it is still mounted?
 
-I can guess we will find others though. Please see the v2 of my patch,
-which adds the supplementary "debug" field rather than depending on
-word-aligned pointers. I volountarily complain about the .debug pointer
-being non-NULL when we find an uninitialized site. I could be more
-specific and complain "differently" if the pointer happens to be random
-vs if it's LIST_POISON1.
+Actually most useful will be to find all places where i_mapping is
+set to NULL, and record in the inode some callchain for the last
+site which set i_mapping to NULL. Dump this stack when you hit the
+bug.
 
-Thanks,
-
-Mathieu
-
-> 							Thanx, Paul
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
