@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934056AbZJGNVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbZJGNbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934056AbZJGNVo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 09:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933727AbZJGNVn
+	id S1752056AbZJGNbg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 09:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbZJGNbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 09:21:43 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:56451 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933539AbZJGNVm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 09:21:42 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
- management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
- cpuidle to POWER.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: balbir@linux.vnet.ibm.com
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>, arun@linux.vnet.ibm.com,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-arch@vger.kernel.org
-In-Reply-To: <20091007114719.GH6818@balbir.in.ibm.com>
-References: <20091006152421.GA7278@linux.vnet.ibm.com>
-	 <20091006163521.GA10425@linux.vnet.ibm.com>
-	 <1254852279.17055.2.camel@laptop>
-	 <20091007112648.GC7646@dirshya.in.ibm.com>
-	 <20091007114719.GH6818@balbir.in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 07 Oct 2009 15:24:17 +0200
-Message-Id: <1254921857.26976.249.camel@twins>
+	Wed, 7 Oct 2009 09:31:35 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:50670 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbZJGNbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 09:31:34 -0400
+To: pavel@ucw.cz
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [TOMOYO #16 00/25] Starting TOMOYO 2.3
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20091004124946.788396453@I-love.SAKURA.ne.jp>
+	<20091006093922.GB1363@ucw.cz>
+	<200910070409.n9749OQ1092174@www262.sakura.ne.jp>
+	<20091007073806.GC31245@elf.ucw.cz>
+In-Reply-To: <20091007073806.GC31245@elf.ucw.cz>
+Message-Id: <200910072230.JGE82381.OFHStFOQLJMVFO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Wed, 7 Oct 2009 22:30:56 +0900
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 17:17 +0530, Balbir Singh wrote:
+Pavel Machek wrote:
+> You are expected to submit diffs in smaller steps, not "here it is,
+> totally rewritten, take it or leave it".
+I see. I'll try to break this patchset into smaller steps.
 
-> > The objective of the refactoring is to have a single common idle
-> > routine management framework (remove pm_idle) and we have it done
-> > through cpuidle registration framework.  We can incrementally remove
-> > the per-cpu registration later easily by splitting the cpuidle_driver
-> > structure.
-> >
-> 
-> Yes, incremental refactoring makes the most sense from the do not
-> break as you refactor point of view.
-
-Sure,.. but I would have though getting rid of the per-cpu-ish-ness
-would have made the latter patches in this series easier. But maybe I'm
-lazy ;-)
-
-Let me go over the patches one more time, but they do look ok.
-
-
+Your comment ( http://lkml.org/lkml/2009/5/1/47 ) was the trigger for not only
+garbage collector but also many usability and feature enhancements for TOMOYO.
+Thank you. :-)
