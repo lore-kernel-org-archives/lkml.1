@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbZJGSUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759726AbZJGS0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757874AbZJGSUh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 14:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756519AbZJGSUg
+	id S1759726AbZJGS0q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 14:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757973AbZJGS0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 14:20:36 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:29379 "EHLO mx1.redhat.com"
+	Wed, 7 Oct 2009 14:26:45 -0400
+Received: from mail.issp.bas.bg ([195.96.236.10]:56352 "EHLO mail.issp.bas.bg"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751051AbZJGSUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 14:20:35 -0400
-Date: Wed, 7 Oct 2009 20:19:32 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-cc: linux-rt-users@vger.kernel.org, Clark Williams <williams@redhat.com>
-Subject: [PATCH RFC] BKL not necessary in cpuid_open
-Message-ID: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1757735AbZJGS0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 14:26:45 -0400
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH]Documentation: Use DMA_BIT_MASK(24) instead of 0x00ffffff
+Date: Wed, 7 Oct 2009 21:23:33 +0300
+User-Agent: KMail/1.11.4 (Linux/2.6.32-rc3; KDE/4.2.4; x86_64; ; )
+Cc: "David S. Miller" <davem@redhat.com>, Richard Henderson <rth@cygnus.com>,
+       Jakub Jelinek <jakub@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910072123.34048.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-I've been staring at the BKL lock in cpuid_open, and I can't see what it 
-is protecting. However, I may have missed something - even something 
-obvious, so comments are welcome.
+Use DMA_BIT_MASK(24) instead of 0x00ffffff in DMA-mapping.txt
 
->From 25c0f07b3ec5533c0e690e06198baa4300ee4a8c Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Wed, 7 Oct 2009 20:06:12 +0200
-Subject: [PATCH] The BKL is not necessary in cpuid_open
- Most of the variables are local to the function. It IS possible that for
- struct cpuinfo_x86 *c
- c could point to the same area. However, this is used read only.
+The patch is against 2.6.32-rc3
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- arch/x86/kernel/cpuid.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
 
-diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
-index 6a52d4b..8bb8401 100644
---- a/arch/x86/kernel/cpuid.c
-+++ b/arch/x86/kernel/cpuid.c
-@@ -118,8 +118,6 @@ static int cpuid_open(struct inode *inode, struct file *file)
- 	struct cpuinfo_x86 *c;
- 	int ret = 0;
+======================================================
+--- a/Documentation/DMA-mapping.txt	2009-10-05 17:43:52.000000000 +0300
++++ b/Documentation/DMA-mapping.txt	2009-10-05 17:44:45.000000000 +0300
+@@ -214,7 +214,7 @@
+ Here is pseudo-code showing how this might be done:
  
--	lock_kernel();
--
- 	cpu = iminor(file->f_path.dentry->d_inode);
- 	if (cpu >= nr_cpu_ids || !cpu_online(cpu)) {
- 		ret = -ENXIO;	/* No such CPU */
-@@ -129,7 +127,6 @@ static int cpuid_open(struct inode *inode, struct file *file)
- 	if (c->cpuid_level < 0)
- 		ret = -EIO;	/* CPUID not supported */
- out:
--	unlock_kernel();
- 	return ret;
- }
+ 	#define PLAYBACK_ADDRESS_BITS	DMA_BIT_MASK(32)
+-	#define RECORD_ADDRESS_BITS	0x00ffffff
++	#define RECORD_ADDRESS_BITS	DMA_BIT_MASK(24)
  
--- 
-1.6.0.6
-
+ 	struct my_sound_card *card;
+ 	struct pci_dev *pdev;
