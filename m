@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759322AbZJGO2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759310AbZJGO1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759322AbZJGO2F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759268AbZJGO2E
+	id S1759310AbZJGO1q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 10:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759303AbZJGO1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:28:04 -0400
-Received: from fifo99.com ([67.223.236.141]:53706 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759227AbZJGO2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 10:28:03 -0400
-Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
-From: Daniel Walker <dwalker@fifo99.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Andy Whitcroft <apw@canonical.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <m3hbubv779.fsf@intrepid.localdomain>
-References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
-	 <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
-	 <1253585691-10987-3-git-send-email-dwalker@fifo99.com>
-	 <4AB86ED1.1040200@cn.fujitsu.com> <20090930152708.GD2957@shadowen.org>
-	 <1254406711.18167.88.camel@desktop> <m33a5ww8kn.fsf@intrepid.localdomain>
-	 <1254887534.18167.253.camel@desktop>  <m3hbubv779.fsf@intrepid.localdomain>
-Content-Type: text/plain
-Date: Wed, 07 Oct 2009 07:26:57 -0700
-Message-Id: <1254925617.18167.262.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Oct 2009 10:27:45 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43145 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759302AbZJGO1n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 10:27:43 -0400
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Subject: [PATCH 1/1] perf tools: Install the docs by default
+Date: Wed,  7 Oct 2009 11:26:59 -0300
+Message-Id: <1254925619-6705-1-git-send-email-acme@redhat.com>
+X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <y>
+References: <y>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 12:17 +0200, Krzysztof Halasa wrote:
-> Daniel Walker <dwalker@fifo99.com> writes:
-> 
-> > This thread is specifically about checkpatch errors .. checkpatch
-> > warnings can be ignored, but errors you can't usually ignore..
-> 
-> Of course I can and do :-)
-> 
-> > If your
-> > ignoring errors then either checkpatch is producing bogus output that
-> > needs to be corrected, or it's something you really should fix..
-> 
-> Neither.
-> But unfortunately I don't have examples handy.
-> 
-> My POV must be a bit different: I treat errors like another class of
-> warnings (perhaps more important that "mere" warnings but still not
-> authoritative).
+So that we get matching docs when installing a new version of the tools.
 
->From my perspective Documentation/SubmittingPatches really dictates what
-you should be doing with checkpatch, since that was signed off on by
-Andy (on this thread) and Linus .. In that document I think checkpatch
-is given authority, rather than what your suggesting where it's just
-something you can use or not, and ignore or not like it has no meaning
-at all..
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Suggested-by: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/Makefile |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Daniel
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 5a42996..e714bd1 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -895,6 +895,7 @@ ifneq (,$X)
+ 	$(foreach p,$(patsubst %$X,%,$(filter %$X,$(ALL_PROGRAMS) $(BUILT_INS) perf$X)), $(RM) '$(DESTDIR_SQ)$(perfexec_instdir_SQ)/$p';)
+ endif
+ endif
++	$(MAKE) -C Documentation install
+ 
+ install-doc:
+ 	$(MAKE) -C Documentation install
+-- 
+1.6.2.5
 
