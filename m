@@ -1,220 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbZJGXFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbZJGWFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755880AbZJGXFO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 19:05:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbZJGXFO
+	id S1754972AbZJGWFR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 18:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbZJGWFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 19:05:14 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:39666 "EHLO
+	Wed, 7 Oct 2009 18:05:15 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:52464 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755038AbZJGXFM (ORCPT
+	with ESMTP id S1753951AbZJGWFK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 19:05:12 -0400
-X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 3
-	times
-Message-Id: <20091007211053.187155632@gentwo.org>
+	Wed, 7 Oct 2009 18:05:10 -0400
+X-Amavis-Alert: BAD HEADER, Duplicate header field: "Cc"
+Message-Id: <20091007211053.378634196@gentwo.org>
 References: <20091007211024.442168959@gentwo.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 07 Oct 2009 17:10:30 -0400
+Date: Wed, 07 Oct 2009 17:10:31 -0400
 From: cl@linux-foundation.org
 To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
 CC: Mel Gorman <mel@csn.ul.ie>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [this_cpu_xx V6 6/7] Make slub statistics use this_cpu_inc
-Content-Disposition: inline; filename=this_cpu_slub_cleanup_stat
+Subject: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu operations in the hotpaths
+Content-Disposition: inline; filename=this_cpu_slub_aggressive_cpu_ops
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this_cpu_inc() translates into a single instruction on x86 and does not
-need any register. So use it in stat(). We also want to avoid the
-calculation of the per cpu kmem_cache_cpu structure pointer. So pass
-a kmem_cache pointer instead of a kmem_cache_cpu pointer.
+Use this_cpu_* operations in the hotpath to avoid calculations of
+kmem_cache_cpu pointer addresses.
 
+On x86 there is a trade off: Multiple uses segment prefixes against an
+address calculation and more register pressure. Code size is reduced
+also therefore it is an advantage icache wise.
+
+The use of prefixes is necessary if we want to use a scheme
+for fastpaths that do not require disabling interrupts.
+
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org?
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- mm/slub.c |   43 ++++++++++++++++++++-----------------------
- 1 file changed, 20 insertions(+), 23 deletions(-)
+ mm/slub.c |   80 ++++++++++++++++++++++++++++++--------------------------------
+ 1 file changed, 39 insertions(+), 41 deletions(-)
 
 Index: linux-2.6/mm/slub.c
 ===================================================================
---- linux-2.6.orig/mm/slub.c	2009-09-29 11:44:35.000000000 -0500
-+++ linux-2.6/mm/slub.c	2009-09-29 11:44:49.000000000 -0500
-@@ -217,10 +217,10 @@ static inline void sysfs_slab_remove(str
- 
+--- linux-2.6.orig/mm/slub.c	2009-10-07 14:52:05.000000000 -0500
++++ linux-2.6/mm/slub.c	2009-10-07 14:58:50.000000000 -0500
+@@ -1512,10 +1512,10 @@ static void flush_all(struct kmem_cache 
+  * Check if the objects in a per cpu structure fit numa
+  * locality expectations.
+  */
+-static inline int node_match(struct kmem_cache_cpu *c, int node)
++static inline int node_match(struct kmem_cache *s, int node)
+ {
+ #ifdef CONFIG_NUMA
+-	if (node != -1 && c->node != node)
++	if (node != -1 && __this_cpu_read(s->cpu_slab->node) != node)
+ 		return 0;
  #endif
- 
--static inline void stat(struct kmem_cache_cpu *c, enum stat_item si)
-+static inline void stat(struct kmem_cache *s, enum stat_item si)
+ 	return 1;
+@@ -1603,46 +1603,46 @@ slab_out_of_memory(struct kmem_cache *s,
+  * a call to the page allocator and the setup of a new slab.
+  */
+ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
+-			  unsigned long addr, struct kmem_cache_cpu *c)
++			  unsigned long addr)
  {
- #ifdef CONFIG_SLUB_STATS
--	c->stat[si]++;
-+	__this_cpu_inc(s->cpu_slab->stat[si]);
- #endif
- }
+ 	void **object;
+-	struct page *new;
++	struct page *page = __this_cpu_read(s->cpu_slab->page);
  
-@@ -1108,7 +1108,7 @@ static struct page *allocate_slab(struct
- 		if (!page)
- 			return NULL;
+ 	/* We handle __GFP_ZERO in the caller */
+ 	gfpflags &= ~__GFP_ZERO;
  
--		stat(this_cpu_ptr(s->cpu_slab), ORDER_FALLBACK);
-+		stat(s, ORDER_FALLBACK);
- 	}
+-	if (!c->page)
++	if (!page)
+ 		goto new_slab;
  
- 	if (kmemcheck_enabled
-@@ -1406,23 +1406,22 @@ static struct page *get_partial(struct k
- static void unfreeze_slab(struct kmem_cache *s, struct page *page, int tail)
- {
- 	struct kmem_cache_node *n = get_node(s, page_to_nid(page));
--	struct kmem_cache_cpu *c = this_cpu_ptr(s->cpu_slab);
- 
- 	__ClearPageSlubFrozen(page);
- 	if (page->inuse) {
- 
- 		if (page->freelist) {
- 			add_partial(n, page, tail);
--			stat(c, tail ? DEACTIVATE_TO_TAIL : DEACTIVATE_TO_HEAD);
-+			stat(s, tail ? DEACTIVATE_TO_TAIL : DEACTIVATE_TO_HEAD);
- 		} else {
--			stat(c, DEACTIVATE_FULL);
-+			stat(s, DEACTIVATE_FULL);
- 			if (SLABDEBUG && PageSlubDebug(page) &&
- 						(s->flags & SLAB_STORE_USER))
- 				add_full(n, page);
- 		}
- 		slab_unlock(page);
- 	} else {
--		stat(c, DEACTIVATE_EMPTY);
-+		stat(s, DEACTIVATE_EMPTY);
- 		if (n->nr_partial < s->min_partial) {
- 			/*
- 			 * Adding an empty slab to the partial slabs in order
-@@ -1438,7 +1437,7 @@ static void unfreeze_slab(struct kmem_ca
- 			slab_unlock(page);
- 		} else {
- 			slab_unlock(page);
--			stat(__this_cpu_ptr(s->cpu_slab), FREE_SLAB);
-+			stat(s, FREE_SLAB);
- 			discard_slab(s, page);
- 		}
- 	}
-@@ -1453,7 +1452,7 @@ static void deactivate_slab(struct kmem_
- 	int tail = 1;
- 
- 	if (page->freelist)
--		stat(c, DEACTIVATE_REMOTE_FREES);
-+		stat(s, DEACTIVATE_REMOTE_FREES);
- 	/*
- 	 * Merge cpu freelist into slab freelist. Typically we get here
- 	 * because both freelists are empty. So this is unlikely
-@@ -1479,7 +1478,7 @@ static void deactivate_slab(struct kmem_
- 
- static inline void flush_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
- {
--	stat(c, CPUSLAB_FLUSH);
-+	stat(s, CPUSLAB_FLUSH);
- 	slab_lock(c->page);
- 	deactivate_slab(s, c);
- }
-@@ -1619,7 +1618,7 @@ static void *__slab_alloc(struct kmem_ca
- 	if (unlikely(!node_match(c, node)))
+-	slab_lock(c->page);
+-	if (unlikely(!node_match(c, node)))
++	slab_lock(page);
++	if (unlikely(!node_match(s, node)))
  		goto another_slab;
  
--	stat(c, ALLOC_REFILL);
-+	stat(s, ALLOC_REFILL);
+ 	stat(s, ALLOC_REFILL);
  
  load_freelist:
- 	object = c->page->freelist;
-@@ -1634,7 +1633,7 @@ load_freelist:
- 	c->node = page_to_nid(c->page);
+-	object = c->page->freelist;
++	object = page->freelist;
+ 	if (unlikely(!object))
+ 		goto another_slab;
+-	if (unlikely(SLABDEBUG && PageSlubDebug(c->page)))
++	if (unlikely(SLABDEBUG && PageSlubDebug(page)))
+ 		goto debug;
+ 
+-	c->freelist = get_freepointer(s, object);
+-	c->page->inuse = c->page->objects;
+-	c->page->freelist = NULL;
+-	c->node = page_to_nid(c->page);
++	__this_cpu_write(s->cpu_slab->node, page_to_nid(page));
++	__this_cpu_write(s->cpu_slab->freelist, get_freepointer(s, object));
++	page->inuse = page->objects;
++	page->freelist = NULL;
  unlock_out:
- 	slab_unlock(c->page);
--	stat(c, ALLOC_SLOWPATH);
-+	stat(s, ALLOC_SLOWPATH);
+-	slab_unlock(c->page);
++	slab_unlock(page);
+ 	stat(s, ALLOC_SLOWPATH);
  	return object;
  
  another_slab:
-@@ -1644,7 +1643,7 @@ new_slab:
- 	new = get_partial(s, gfpflags, node);
- 	if (new) {
- 		c->page = new;
--		stat(c, ALLOC_FROM_PARTIAL);
-+		stat(s, ALLOC_FROM_PARTIAL);
+-	deactivate_slab(s, c);
++	deactivate_slab(s, __this_cpu_ptr(s->cpu_slab));
+ 
+ new_slab:
+-	new = get_partial(s, gfpflags, node);
+-	if (new) {
+-		c->page = new;
++	page = get_partial(s, gfpflags, node);
++	if (page) {
++		__this_cpu_write(s->cpu_slab->page, page);
+ 		stat(s, ALLOC_FROM_PARTIAL);
  		goto load_freelist;
  	}
+@@ -1650,31 +1650,30 @@ new_slab:
+ 	if (gfpflags & __GFP_WAIT)
+ 		local_irq_enable();
  
-@@ -1658,7 +1657,7 @@ new_slab:
+-	new = new_slab(s, gfpflags, node);
++	page = new_slab(s, gfpflags, node);
  
- 	if (new) {
- 		c = __this_cpu_ptr(s->cpu_slab);
--		stat(c, ALLOC_SLAB);
-+		stat(s, ALLOC_SLAB);
- 		if (c->page)
- 			flush_slab(s, c);
- 		slab_lock(new);
-@@ -1713,7 +1712,7 @@ static __always_inline void *slab_alloc(
+ 	if (gfpflags & __GFP_WAIT)
+ 		local_irq_disable();
+ 
+-	if (new) {
+-		c = __this_cpu_ptr(s->cpu_slab);
++	if (page) {
+ 		stat(s, ALLOC_SLAB);
+-		if (c->page)
+-			flush_slab(s, c);
+-		slab_lock(new);
+-		__SetPageSlubFrozen(new);
+-		c->page = new;
++		if (__this_cpu_read(s->cpu_slab->page))
++			flush_slab(s, __this_cpu_ptr(s->cpu_slab));
++		slab_lock(page);
++		__SetPageSlubFrozen(page);
++		__this_cpu_write(s->cpu_slab->page, page);
+ 		goto load_freelist;
+ 	}
+ 	if (!(gfpflags & __GFP_NOWARN) && printk_ratelimit())
+ 		slab_out_of_memory(s, gfpflags, node);
+ 	return NULL;
+ debug:
+-	if (!alloc_debug_processing(s, c->page, object, addr))
++	if (!alloc_debug_processing(s, page, object, addr))
+ 		goto another_slab;
+ 
+-	c->page->inuse++;
+-	c->page->freelist = get_freepointer(s, object);
+-	c->node = -1;
++	page->inuse++;
++	page->freelist = get_freepointer(s, object);
++	__this_cpu_write(s->cpu_slab->node, -1);
+ 	goto unlock_out;
+ }
+ 
+@@ -1692,7 +1691,6 @@ static __always_inline void *slab_alloc(
+ 		gfp_t gfpflags, int node, unsigned long addr)
+ {
+ 	void **object;
+-	struct kmem_cache_cpu *c;
+ 	unsigned long flags;
+ 
+ 	gfpflags &= gfp_allowed_mask;
+@@ -1704,14 +1702,14 @@ static __always_inline void *slab_alloc(
+ 		return NULL;
+ 
+ 	local_irq_save(flags);
+-	c = __this_cpu_ptr(s->cpu_slab);
+-	object = c->freelist;
+-	if (unlikely(!object || !node_match(c, node)))
++	object = __this_cpu_read(s->cpu_slab->freelist);
++	if (unlikely(!object || !node_match(s, node)))
+ 
+-		object = __slab_alloc(s, gfpflags, node, addr, c);
++		object = __slab_alloc(s, gfpflags, node, addr);
  
  	else {
- 		c->freelist = get_freepointer(s, object);
--		stat(c, ALLOC_FASTPATH);
-+		stat(s, ALLOC_FASTPATH);
+-		c->freelist = get_freepointer(s, object);
++		__this_cpu_write(s->cpu_slab->freelist,
++			get_freepointer(s, object));
+ 		stat(s, ALLOC_FASTPATH);
  	}
  	local_irq_restore(flags);
- 
-@@ -1780,10 +1779,8 @@ static void __slab_free(struct kmem_cach
+@@ -1847,19 +1845,19 @@ static __always_inline void slab_free(st
+ 			struct page *page, void *x, unsigned long addr)
  {
- 	void *prior;
  	void **object = (void *)x;
 -	struct kmem_cache_cpu *c;
+ 	unsigned long flags;
  
+ 	kmemleak_free_recursive(x, s->flags);
+ 	local_irq_save(flags);
 -	c = __this_cpu_ptr(s->cpu_slab);
--	stat(c, FREE_SLOWPATH);
-+	stat(s, FREE_SLOWPATH);
- 	slab_lock(page);
- 
- 	if (unlikely(SLABDEBUG && PageSlubDebug(page)))
-@@ -1796,7 +1793,7 @@ checks_ok:
- 	page->inuse--;
- 
- 	if (unlikely(PageSlubFrozen(page))) {
--		stat(c, FREE_FROZEN);
-+		stat(s, FREE_FROZEN);
- 		goto out_unlock;
- 	}
- 
-@@ -1809,7 +1806,7 @@ checks_ok:
- 	 */
- 	if (unlikely(!prior)) {
- 		add_partial(get_node(s, page_to_nid(page)), page, 1);
--		stat(c, FREE_ADD_PARTIAL);
-+		stat(s, FREE_ADD_PARTIAL);
- 	}
- 
- out_unlock:
-@@ -1822,10 +1819,10 @@ slab_empty:
- 		 * Slab still on the partial list.
- 		 */
- 		remove_partial(s, page);
--		stat(c, FREE_REMOVE_PARTIAL);
-+		stat(s, FREE_REMOVE_PARTIAL);
- 	}
- 	slab_unlock(page);
--	stat(c, FREE_SLAB);
-+	stat(s, FREE_SLAB);
- 	discard_slab(s, page);
- 	return;
- 
-@@ -1863,7 +1860,7 @@ static __always_inline void slab_free(st
- 	if (likely(page == c->page && c->node >= 0)) {
- 		set_freepointer(s, object, c->freelist);
- 		c->freelist = object;
--		stat(c, FREE_FASTPATH);
-+		stat(s, FREE_FASTPATH);
+ 	kmemcheck_slab_free(s, object, s->objsize);
+ 	debug_check_no_locks_freed(object, s->objsize);
+ 	if (!(s->flags & SLAB_DEBUG_OBJECTS))
+ 		debug_check_no_obj_freed(object, s->objsize);
+-	if (likely(page == c->page && c->node >= 0)) {
+-		set_freepointer(s, object, c->freelist);
+-		c->freelist = object;
++
++	if (likely(page == __this_cpu_read(s->cpu_slab->page) &&
++			__this_cpu_read(s->cpu_slab->node) >= 0)) {
++		set_freepointer(s, object, __this_cpu_read(s->cpu_slab->freelist));
++		__this_cpu_write(s->cpu_slab->freelist, object);
+ 		stat(s, FREE_FASTPATH);
  	} else
  		__slab_free(s, page, x, addr);
- 
 
 -- 
