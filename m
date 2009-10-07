@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZJGWoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZJGW4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbZJGWoN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 18:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbZJGWoL
+	id S1755584AbZJGW4g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 18:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbZJGW4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 18:44:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48222 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756135AbZJGWoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 18:44:09 -0400
-Date: Wed, 7 Oct 2009 22:43:13 GMT
-From: tip-bot for John Kacur <jkacur@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jkacur@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jkacur@redhat.com, tglx@linutronix.de
-In-Reply-To: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
-References: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/cpu] x86, cpuid: Remove the bkl from cpuid_open()
-Message-ID: <tip-170a0bc3808909d8ea0f3f9c725c6565efe7f9c4@git.kernel.org>
-Git-Commit-ID: 170a0bc3808909d8ea0f3f9c725c6565efe7f9c4
-X-Mailer: tip-git-log-daemon
+	Wed, 7 Oct 2009 18:56:36 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:26083 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754690AbZJGW4f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 18:56:35 -0400
+Message-ID: <4ACD1C3D.3030506@oracle.com>
+Date: Wed, 07 Oct 2009 15:54:53 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 07 Oct 2009 22:43:14 +0000 (UTC)
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] wireless: make WEXT_SPY and WEXT_PRIV select WEXT_CORE
+References: <20091007105720.a2457e5b.randy.dunlap@oracle.com>	 <1254949672-24022-1-git-send-email-linville@tuxdriver.com>	 <4ACD0E5A.7060106@oracle.com> <1254954842.3713.7.camel@johannes.local>
+In-Reply-To: <1254954842.3713.7.camel@johannes.local>
+Content-Type: text/plain; charset=windows-1251
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4ACD1C4C.0169:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  170a0bc3808909d8ea0f3f9c725c6565efe7f9c4
-Gitweb:     http://git.kernel.org/tip/170a0bc3808909d8ea0f3f9c725c6565efe7f9c4
-Author:     John Kacur <jkacur@redhat.com>
-AuthorDate: Wed, 7 Oct 2009 20:19:32 +0200
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Wed, 7 Oct 2009 15:41:21 -0700
+Johannes Berg wrote:
+> On Wed, 2009-10-07 at 14:55 -0700, Randy Dunlap wrote:
+>> John W. Linville wrote:
+>>> Should prevent this build error reported by Randy...
+>>>
+>>> net/wireless/wext-priv.c:206: error: implicit declaration of function 'call_commit_handler'
+>>> make[3]: *** [net/wireless/wext-priv.o] Error 1
+>>>
+>>> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+>>> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+>> Sorry, it did not work for me.
+> 
+>> linux-next-20091007/net/wireless/wext-priv.c:206: error: implicit declaration of function 'call_commit_handler'
+>> make[3]: *** [net/wireless/wext-priv.o] Error 1
+>>
+>> Drivers like hostap and orinoco (hermes) select WEXT_PRIV regardless
+>> of the setting of WEXT_CORE.  oh, and staging/ drivers do that also.
+> 
+> But they also select WIRELESS_EXT, which should cause WEXT_CORE to be
+> turned on. Is it possible that is failing?
 
-x86, cpuid: Remove the bkl from cpuid_open()
+# CONFIG_WIRELESS is not set
+CONFIG_WIRELESS_EXT=y
+CONFIG_WEXT_SPY=y
+CONFIG_WEXT_PRIV=y
 
-Most of the variables are local to the function. It IS possible that
-for struct cpuinfo_x86 *c c could point to the same area. However,
-this is used read only.
+WEXT_CORE is not enabled.  I haven't found the culprit, but I suspect "select".
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
-LKML-Reference: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/cpuid.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+but what in WIRELESS_EXT would also cause WEXT_CORE to be enabled?
 
-diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
-index b07af88..ef69284 100644
---- a/arch/x86/kernel/cpuid.c
-+++ b/arch/x86/kernel/cpuid.c
-@@ -118,8 +118,6 @@ static int cpuid_open(struct inode *inode, struct file *file)
- 	struct cpuinfo_x86 *c;
- 	int ret = 0;
- 
--	lock_kernel();
--
- 	cpu = iminor(file->f_path.dentry->d_inode);
- 	if (cpu >= nr_cpu_ids || !cpu_online(cpu)) {
- 		ret = -ENXIO;	/* No such CPU */
-@@ -129,7 +127,6 @@ static int cpuid_open(struct inode *inode, struct file *file)
- 	if (c->cpuid_level < 0)
- 		ret = -EIO;	/* CPUID not supported */
- out:
--	unlock_kernel();
- 	return ret;
- }
- 
+~Randy
