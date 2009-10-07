@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933258AbZJGNA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933331AbZJGNBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933258AbZJGNA1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 09:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbZJGNA0
+	id S933331AbZJGNBS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 09:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933136AbZJGNBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 09:00:26 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:51041 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932939AbZJGNAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 09:00:25 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: laurent.pinchart@skynet.be
-Subject: [PATCH] Re: uvcvideo: Finally fix Logitech Quickcam for Notebooks Pro
-Date: Wed, 7 Oct 2009 14:59:40 +0200
-User-Agent: KMail/1.9.10
-Cc: linux-uvc-devel@lists.berlios.de, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200910061607.07195.linux@rainbow-software.org>
-In-Reply-To: <200910061607.07195.linux@rainbow-software.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 7 Oct 2009 09:01:18 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53924 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933132AbZJGNBR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 09:01:17 -0400
+Subject: Re: system gets stuck in a lock during boot
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <4ACC001D.4050105@gmail.com>
+References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>
+	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>
+	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>
+	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>
+	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>
+	 <20091002211211.GA2633@redhat.com>
+	 <1254792249.13160.213.camel@gandalf.stny.rr.com>
+	 <20091006203225.GC2631@redhat.com>
+	 <1254880921.1696.112.camel@gandalf.stny.rr.com>
+	 <4ACC001D.4050105@gmail.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 07 Oct 2009 09:00:29 -0400
+Message-Id: <1254920429.1696.127.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910071459.43622.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 06 October 2009, Ondrej Zary wrote:
-> Hello,
-> I have a Logitech Quickcam for Notebooks Pro camera (046d:08c3) which just
-> does not work even with kernel 2.6.31 and has never worked well before.
->
-> On http://linux-uvc.berlios.de/, there are two problems listed. I want to
-> really fix these two problems so the camera will just work after plugging
-> in (and not disconnect). I started with problem no. 2 as this causes the
-> camera not to work at all when plugged in:
->
-> usb 5-2.4: new high speed USB device using ehci_hcd and address 7
-> usb 5-2.4: configuration #1 chosen from 1 choice
-> uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c3)
-> uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
-> workaround.
-> uvcvideo: Failed to query (129) UVC probe control : -110 (exp. 26).
-> uvcvideo: Failed to initialize the device (-5).
->
-> When I do "modprobe snd_usb_audio", then "rmmod snd_usb_audio" and
-> finally "modprobe uvcvideo", it works. So it looks like snd_usb_audio does
-> some initialization that allows uvcvideo to work. It didn't work at all I
-> didn't have snd_usb_audio module compiled.
->
-> What was the change that supposedly broke this in 2.6.22?
+On Tue, 2009-10-06 at 19:42 -0700, Justin P. Mattock wrote:
 
-I discovered that it's not related to usb audio at all. Doing "rmmod uvcvideo"
-and "modprobe uvcvideo" repeatedly succeeded after a couple of tries. Increasing
-UVC_CTRL_STREAMING_TIMEOUT to 3000 helped (2000 was not enough).
+> >    
+> o.k. applied your patch, but unfortunantly
+> I still am hitting this kernel panic.
+> 
+> must admit I have no idea why this is doing this.
+> (but am willing to sit through this, because eventually
+> sooner or later will hit this if I update gcc).
+
+But the panic you showed was that it could not find an init to execute.
+Which looks like a setup issue and not a kernel bug.
+
+-- Steve
 
 
-Increase UVC_CTRL_STREAMING_TIMEOUT to fix initialization of
-Logitech Quickcam for Notebooks Pro.
-This fixes following error messages:
-uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling workaround.
-uvcvideo: Failed to query (129) UVC probe control : -110 (exp. 26).
-uvcvideo: Failed to initialize the device (-5).
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-
---- linux-2.6.31-orig/drivers/media/video/uvc/uvcvideo.h	2009-09-10 00:13:59.000000000 +0200
-+++ linux-2.6.31/drivers/media/video/uvc/uvcvideo.h	2009-10-07 13:47:27.000000000 +0200
-@@ -304,7 +304,7 @@
- #define UVC_MAX_STATUS_SIZE	16
- 
- #define UVC_CTRL_CONTROL_TIMEOUT	300
--#define UVC_CTRL_STREAMING_TIMEOUT	1000
-+#define UVC_CTRL_STREAMING_TIMEOUT	3000
- 
- /* Devices quirks */
- #define UVC_QUIRK_STATUS_INTERVAL	0x00000001
-
-
--- 
-Ondrej Zary
