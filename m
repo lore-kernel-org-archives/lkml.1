@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758343AbZJGNfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbZJGNgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758343AbZJGNfu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 09:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758196AbZJGNfs
+	id S1758656AbZJGNgd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 09:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZJGNgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 09:35:48 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:36604 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758052AbZJGNfr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 09:35:47 -0400
-X-IronPort-AV: E=Sophos;i="4.44,519,1249272000"; 
-   d="scan'208";a="5471356"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Wed, 7 Oct 2009 09:36:32 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:27214 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752898AbZJGNgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 09:36:31 -0400
+Message-ID: <4ACC992F.3060001@redhat.com>
+Date: Wed, 07 Oct 2009 09:35:43 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and KeypadInput Device Driver
-Date: Wed, 7 Oct 2009 14:35:06 +0100
-Message-ID: <8A42379416420646B9BFAC9682273B6D0E44312E@limkexm3.ad.analog.com>
-In-Reply-To: <20091007131931.GB18135@rakim.wolfsonmicro.main>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-thread-topic: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and KeypadInput Device Driver
-thread-index: AcpHUOG7mVqU0RAFRDOeRNEpiGNUdAAAUqew
-References: <20091006123658.GA31079@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4420@limkexm3.ad.analog.com> <20091006135836.GA3926@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F46A7@limkexm3.ad.analog.com> <20091006144805.GA10987@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4769@limkexm3.ad.analog.com> <20091006160549.GA8881@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4CEE@limkexm3.ad.analog.com> <20091007100638.GB3169@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E443077@limkexm3.ad.analog.com> <20091007131931.GB18135@rakim.wolfsonmicro.main>
-From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-To: "Mark Brown" <broonie@opensource.wolfsonmicro.com>,
-       "Frysinger, Michael" <Michael.Frysinger@analog.com>
-CC: "Mike Frysinger" <vapier@gentoo.org>,
-       "Samuel Ortiz" <sameo@linux.intel.com>,
-       <uclinux-dist-devel@blackfin.uclinux.org>,
-       <linux-kernel@vger.kernel.org>, "Bryan Wu" <cooloney@kernel.org>
-X-OriginalArrivalTime: 07 Oct 2009 13:35:09.0598 (UTC) FILETIME=[FD4BE3E0:01CA4752]
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, greg@kroah.com, riel@redhat.com,
+       steven@uplinklabs.net, ext-eero.nurkkala@nokia.com, tglx@linutronix.de
+CC: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:timers/urgent] NOHZ: update idle state also when NOHZ is
+ inactive
+References: <1254907901.30157.93.camel@eenurkka-desktop> <tip-fdc6f192e7e1ae80565af23cc33dc88e3dcdf184@git.kernel.org>
+In-Reply-To: <tip-fdc6f192e7e1ae80565af23cc33dc88e3dcdf184@git.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
->
->On Wed, Oct 07, 2009 at 02:01:42PM +0100, Hennerich, Michael wrote:
->
->> Most architectures define NR_IRQS to exactly the number of on-chip
-IRQs.
->> Therefore irq_desc pointers > NR_IRQS will fail on most
-architectures.
->> This driver should be usable out of the box - but I guess this may
->> prevent this.
->
->Indeed, that's rather unfortunate.  This wouldn't be the only driver
->with that dependency, though, so I'd expect to see the interesting
->architectures getting fixed.
+tip-bot for Eero Nurkkala wrote:
+> Commit-ID:  fdc6f192e7e1ae80565af23cc33dc88e3dcdf184
+> Gitweb:     http://git.kernel.org/tip/fdc6f192e7e1ae80565af23cc33dc88e3dcdf184
+> Author:     Eero Nurkkala <ext-eero.nurkkala@nokia.com>
+> AuthorDate: Wed, 7 Oct 2009 11:54:26 +0300
+> Committer:  Thomas Gleixner <tglx@linutronix.de>
+> CommitDate: Wed, 7 Oct 2009 13:05:05 +0200
+> 
+> NOHZ: update idle state also when NOHZ is inactive
+> 
+> Commit f2e21c9610991e95621a81407cdbab881226419b had unfortunate side
+> effects with cpufreq governors on some systems.
+> 
+> If the system did not switch into NOHZ mode ts->inidle is not set when
+> tick_nohz_stop_sched_tick() is called from the idle routine. Therefor
+> all subsequent calls from irq_exit() to tick_nohz_stop_sched_tick()
+> fail to call tick_nohz_start_idle(). This results in bogus idle
+> accounting information which is passed to cpufreq governors.
+> 
+> Set the inidle flag unconditionally of the NOHZ active state to keep
+> the idle time accounting correct in any case.
 
-We have an update patch that fixes the platform typo and namespace
-pollution in the header file.
-I think we send out this patch as final for mainline inclusion.
-For the interrupt controller feature - I think I can wait until the
-interesting architectures get fixed.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-Thanks for your feedback and help
-best regards,
-Michael 
- 
+-- 
+All rights reversed.
