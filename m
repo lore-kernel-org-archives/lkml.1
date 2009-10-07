@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933889AbZJGIBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbZJGIBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933889AbZJGIBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933684AbZJGIBU
+	id S933605AbZJGIBL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933487AbZJGIBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:01:20 -0400
-Received: from mga14.intel.com ([143.182.124.37]:35820 "EHLO mga14.intel.com"
+	Wed, 7 Oct 2009 04:01:10 -0400
+Received: from mga14.intel.com ([143.182.124.37]:58309 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933666AbZJGIBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:01:15 -0400
+	id S933416AbZJGIBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 04:01:08 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,518,1249282800"; 
-   d="scan'208";a="195971255"
-Message-Id: <20091007074903.167097721@intel.com>
+   d="scan'208";a="195971249"
+Message-Id: <20091007074903.307800809@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 07 Oct 2009 15:38:34 +0800
+Date: Wed, 07 Oct 2009 15:38:35 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
@@ -25,90 +25,98 @@ CC: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
        "Myklebust Trond" <Trond.Myklebust@netapp.com>,
        "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
        Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-       <linux-fsdevel@vger.kernel.org>, Martin Bligh <mbligh@google.com>,
-       Michael Rubin <mrubin@google.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 16/45] writeback: merge for_kupdate and !for_kupdate cases
+       <linux-fsdevel@vger.kernel.org>, Wu Fengguang <fengguang.wu@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 17/45] writeback: only allow two background writeback works
 References: <20091007073818.318088777@intel.com>
-Content-Disposition: inline; filename=writeback-merge-kupdate-cases.patch
+Content-Disposition: inline; filename=writeback-limit-background-work.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unify the logic for kupdate and non-kupdate cases.
-There won't be starvation because the inodes requeued into b_more_io
-will later be spliced _after_ the remaining inodes in b_io, hence won't
-stand in the way of other inodes in the next run.
+balance_dirty_pages() need a reliable way to ensure some background work
+is scheduled for running. We cannot simply run bdi_start_writeback()
+because that would queue up huge number of works (which takes memory and
+time).
 
-It avoids unnecessary redirty_tail() calls, hence the update of
-i_dirtied_when. The timestamp update is undesirable because it could
-later delay the inode's period writeback, or exclude the inode from
-the data integrity sync operation (which will check timestamp to avoid
-extra work and livelock).
-
-CC: Dave Chinner <david@fromorbit.com>
-Cc: Martin Bligh <mbligh@google.com>
-Cc: Michael Rubin <mrubin@google.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+CC: Jens Axboe <jens.axboe@oracle.com> 
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- fs/fs-writeback.c |   39 ++++++---------------------------------
- 1 file changed, 6 insertions(+), 33 deletions(-)
+ fs/fs-writeback.c           |   14 ++------------
+ include/linux/backing-dev.h |   26 +++++++++++++++++++++++++-
+ 2 files changed, 27 insertions(+), 13 deletions(-)
 
 --- linux.orig/fs/fs-writeback.c	2009-10-06 23:38:42.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-10-06 23:38:42.000000000 +0800
-@@ -485,45 +485,18 @@ writeback_single_inode(struct inode *ino
- 		if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
- 			/*
- 			 * We didn't write back all the pages.  nfs_writepages()
--			 * sometimes bales out without doing anything. Redirty
--			 * the inode; Move it from b_io onto b_more_io/b_dirty.
-+			 * sometimes bales out without doing anything.
- 			 */
--			/*
--			 * akpm: if the caller was the kupdate function we put
--			 * this inode at the head of b_dirty so it gets first
--			 * consideration.  Otherwise, move it to the tail, for
--			 * the reasons described there.  I'm not really sure
--			 * how much sense this makes.  Presumably I had a good
--			 * reasons for doing it this way, and I'd rather not
--			 * muck with it at present.
--			 */
--			if (wbc->for_kupdate) {
-+			inode->i_state |= I_DIRTY_PAGES;
-+			if (wbc->nr_to_write <= 0) {
- 				/*
--				 * For the kupdate function we move the inode
--				 * to b_more_io so it will get more writeout as
--				 * soon as the queue becomes uncongested.
-+				 * slice used up: queue for next turn
- 				 */
--				inode->i_state |= I_DIRTY_PAGES;
--				if (wbc->nr_to_write <= 0) {
--					/*
--					 * slice used up: queue for next turn
--					 */
--					requeue_io(inode);
--				} else {
--					/*
--					 * somehow blocked: retry later
--					 */
--					redirty_tail(inode);
--				}
-+				requeue_io(inode);
- 			} else {
- 				/*
--				 * Otherwise fully redirty the inode so that
--				 * other inodes on this superblock will get some
--				 * writeout.  Otherwise heavy writing to one
--				 * file would indefinitely suspend writeout of
--				 * all the other files.
-+				 * somehow blocked: retry later
- 				 */
--				inode->i_state |= I_DIRTY_PAGES;
- 				redirty_tail(inode);
- 			}
- 		} else if (inode->i_state & I_DIRTY) {
++++ linux/fs/fs-writeback.c	2009-10-06 23:38:43.000000000 +0800
+@@ -85,18 +85,6 @@ static inline void bdi_work_init(struct 
+ int sysctl_dirty_debug __read_mostly;
+ 
+ 
+-/**
+- * writeback_in_progress - determine whether there is writeback in progress
+- * @bdi: the device's backing_dev_info structure.
+- *
+- * Determine whether there is writeback waiting to be handled against a
+- * backing device.
+- */
+-int writeback_in_progress(struct backing_dev_info *bdi)
+-{
+-	return !list_empty(&bdi->work_list);
+-}
+-
+ static void bdi_work_clear(struct bdi_work *work)
+ {
+ 	clear_bit(WS_USED_B, &work->state);
+@@ -147,6 +135,8 @@ static void wb_clear_pending(struct bdi_
+ 
+ 		spin_lock(&bdi->wb_lock);
+ 		list_del_rcu(&work->list);
++		if (work->args.for_background)
++			clear_bit(WB_FLAG_BACKGROUND_WORK, &bdi->wb_mask);
+ 		spin_unlock(&bdi->wb_lock);
+ 
+ 		wb_work_complete(work);
+--- linux.orig/include/linux/backing-dev.h	2009-10-06 23:37:47.000000000 +0800
++++ linux/include/linux/backing-dev.h	2009-10-06 23:38:43.000000000 +0800
+@@ -94,6 +94,11 @@ struct backing_dev_info {
+ #endif
+ };
+ 
++/*
++ * background work queued, set to avoid redundant background works
++ */
++#define WB_FLAG_BACKGROUND_WORK		30
++
+ int bdi_init(struct backing_dev_info *bdi);
+ void bdi_destroy(struct backing_dev_info *bdi);
+ 
+@@ -248,7 +253,26 @@ int bdi_set_max_ratio(struct backing_dev
+ extern struct backing_dev_info default_backing_dev_info;
+ void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page);
+ 
+-int writeback_in_progress(struct backing_dev_info *bdi);
++/**
++ * writeback_in_progress - determine whether there is writeback in progress
++ * @bdi: the device's backing_dev_info structure.
++ *
++ * Determine whether there is writeback waiting to be handled against a
++ * backing device.
++ */
++static inline int writeback_in_progress(struct backing_dev_info *bdi)
++{
++	return !list_empty(&bdi->work_list);
++}
++
++/*
++ * Helper to limit # of background writeback works in circulation to 2.
++ * (one running and another queued)
++ */
++static inline int can_submit_background_writeback(struct backing_dev_info *bdi)
++{
++       return !test_and_set_bit(WB_FLAG_BACKGROUND_WORK, &bdi->wb_mask);
++}
+ 
+ static inline int bdi_congested(struct backing_dev_info *bdi, int bdi_bits)
+ {
 
 
