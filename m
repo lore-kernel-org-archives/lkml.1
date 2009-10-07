@@ -1,88 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbZJGK3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbZJGK3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbZJGK3a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 06:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758368AbZJGK33
+	id S1758788AbZJGK3t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 06:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758150AbZJGK3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 06:29:29 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37061 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758166AbZJGK32 (ORCPT
+	Wed, 7 Oct 2009 06:29:49 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:50923 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757923AbZJGK3s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 06:29:28 -0400
-Date: Wed, 7 Oct 2009 11:28:36 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-rt-users@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: Using set_irq_handler in set_irq_type callback?
-Message-ID: <20091007102836.GA27860@flint.arm.linux.org.uk>
-References: <20091007100756.GA5478@pengutronix.de>
+	Wed, 7 Oct 2009 06:29:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=a6h+XCEcf1IqjIy9I1HEOLwPH49dVMYE+dXqWLTWfoYOMXxp7B+jJ43jIFjOC4hTnE
+         zZ36MpOjERwdRAOeXa+VmcKFrVygMyNihrP+x/AmOnlHIEloKYykM5KPVxCtR2zFFICl
+         Q98wHTuhQibqMVf0OUOk9rNOx7kxZu5Bft6pw=
+Message-ID: <4ACC6D74.7010001@tuffmail.co.uk>
+Date: Wed, 07 Oct 2009 11:29:08 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091007100756.GA5478@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+CC: linux-arm-kernel@lists.infradead.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Tejun Heo <htejun@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH] arm: use unified discard definition in linker script
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 12:07:56PM +0200, Uwe Kleine-König wrote:
-> Hallo,
-> 
-> I'm seeing an imx31 (ARCH=arm) based system failing to boot .31.2-rt13.
-> 
-> The reason is that the irq for the ethernet device is level triggered,
-> but the handler for that interrupt is handle_edge_irq.
+I selfishly request an Acked-by for the following. My aim is to submit it as
+part of a larger series ("module: Speed up symbol resolution during module
+loading") which would not go through the ARM tree.
 
-There's nothing wrong with that with the conventional interrupt handling
-scheme.
+------------------------------------------------------------------->
+>From 52c4a00b22fecf3ecb352618356bb61f7f4b261b Mon Sep 17 00:00:00 2001
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Date: Wed, 7 Oct 2009 11:08:34 +0100
+Subject: [PATCH] arm: use unified discard definition in linker script
 
-> As the handler is threaded with PREEMPT_RT=y, the irq is only acked but
-> neither masked (as it is believed to be an edge irq) nor handled.  This
-> stucks the machine as the irq is still active.
+Commit 023bf6f "linker script: unify usage of discard definition"
+changed the linker scripts for all architectures except for ARM.
+I can find no discussion about this exception, so here are the changes
+for ARM.
 
-Actually, the problem is that I misnamed the edge/level handlers.
-What follows here is the non-RT case.
+These changes are exactly parallel to the ia64 case.
 
-Really, what the two are about is that the level handler is there for
-interrupt controllers which behave in a good way - in other words, for
-level-based inputs and for edge-based inputs which "remember" new
-transitions while the input is masked.
+"ia64 is notable because it first throws away some ia64 specific
+ subsections and then include the rest of the sections into the final
+ image, so those sections must be discarded before the inclusion."
 
-The edge handler is for edge-based inputs where the controller does not
-remember transitions with the input masked.
-
-Forcing people to use the edge handler all the time for edge based inputs
-is highly sub-optimal - it means greater interrupt load since the input
-is left unmasked.
-
-So really, the choice of the handler should be determined by how the
-hardware behaves, and not by the input type requested.
+Not boot-tested.  In build testing, the modified linker script generated
+an identical vmlinux file.
 
 
-When it comes to RT and its thread-based interrupt model, the assumptions
-which these handlers were designed around are no longer true.  What is
-now required is a different handling philosophy - rather than leaving
-the interrupt-time decision about what to do with a signalled interrupt
-to the flow handler, it should be immediately ack'ed and disabled, and
-the interrupt thread scheduled.
+[I would like to be able to rely on this unified discard definition.
+ I want to sort the kernel symbol tables to allow faster symbol
+ resolution during module loading. The simplest way appears to be
+ to generate sorted versions from vmlinux.o, link them in to vmlinux,
+ _and discard the original unsorted tables_.
 
-It is then up to the interrupt thread to determine how to handle the
-interrupt - if it's really a level interrupt, then the interrupt thread
-has to call the handlers before re-enabling the input.  If it's edge
-based, the input has to be re-enabled before running the handlers (so
-that new edges received during the running of those handlers are
-recognised.)
+ This work is driven by my x86 netbook, but it is implemented at a
+ generic level. It is possible it will benefit some ARM systems also.]
 
 
-So, the technical aspects of handling of interrupts between the RT and
-non-RT cases are quite different, and I feel that we shouldn't be
-re-using the same flow handlers between the two cases.
+Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+CC: Tejun Heo <tj@kernel.org>
+---
+ arch/arm/kernel/vmlinux.lds.S |   13 ++++++++-----
+ 1 files changed, 8 insertions(+), 5 deletions(-)
 
+diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
+index aecf87d..ec511d4 100644
+--- a/arch/arm/kernel/vmlinux.lds.S
++++ b/arch/arm/kernel/vmlinux.lds.S
+@@ -79,11 +79,11 @@ SECTIONS
+ #endif
+ 	}
+ 
+-	/DISCARD/ : {			/* Exit code and data		*/
+-		EXIT_TEXT
+-		EXIT_DATA
+-		*(.exitcall.exit)
+-		*(.discard)
++	/*
++	 * unwind exit sections must be discarded before the rest of the
++	 * unwind sections get included.
++	 */
++	/DISCARD/ : {
+ 		*(.ARM.exidx.exit.text)
+ 		*(.ARM.extab.exit.text)
+ #ifndef CONFIG_HOTPLUG_CPU
+@@ -271,6 +271,9 @@ SECTIONS
+ 	.stab.index 0 : { *(.stab.index) }
+ 	.stab.indexstr 0 : { *(.stab.indexstr) }
+ 	.comment 0 : { *(.comment) }
++
++	/* Default discards */
++	DISCARDS
+ }
+ 
+ /*
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+1.6.3.2
+
+
+
