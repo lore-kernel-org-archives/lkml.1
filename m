@@ -1,160 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759051AbZJGMMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbZJGMUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759051AbZJGMMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 08:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758931AbZJGMMU
+	id S1759072AbZJGMUN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 08:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758780AbZJGMUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 08:12:20 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:22050 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbZJGMMT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 08:12:19 -0400
-X-IronPort-AV: E=Sophos;i="4.44,519,1249272000"; 
-   d="scan'208";a="5466707"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and KeypadInput Device Driver
-Date: Wed, 7 Oct 2009 13:11:40 +0100
-Message-ID: <8A42379416420646B9BFAC9682273B6D0E442F71@limkexm3.ad.analog.com>
-In-Reply-To: <20091007100638.GB3169@rakim.wolfsonmicro.main>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-thread-topic: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and KeypadInput Device Driver
-thread-index: AcpHNeGj/gwW09AJQUS2/H1MYJjuPgABC5og
-References: <20091006115543.GH27168@sirena.org.uk> <8A42379416420646B9BFAC9682273B6D0E3F4348@limkexm3.ad.analog.com> <20091006123658.GA31079@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4420@limkexm3.ad.analog.com> <20091006135836.GA3926@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F46A7@limkexm3.ad.analog.com> <20091006144805.GA10987@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4769@limkexm3.ad.analog.com> <20091006160549.GA8881@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4CEE@limkexm3.ad.analog.com> <20091007100638.GB3169@rakim.wolfsonmicro.main>
-From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-To: "Mark Brown" <broonie@opensource.wolfsonmicro.com>
-CC: "Mike Frysinger" <vapier@gentoo.org>,
-       "Samuel Ortiz" <sameo@linux.intel.com>,
-       <uclinux-dist-devel@blackfin.uclinux.org>,
-       <linux-kernel@vger.kernel.org>, "Bryan Wu" <cooloney@kernel.org>
-X-OriginalArrivalTime: 07 Oct 2009 12:11:42.0464 (UTC) FILETIME=[54CFE000:01CA4747]
+	Wed, 7 Oct 2009 08:20:13 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:30748 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752443AbZJGMUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 08:20:12 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20091006065815.3927.12069.sendpatchset@localhost.localdomain>
+References: <20091006065815.3927.12069.sendpatchset@localhost.localdomain>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       Ben Woodard <bwoodard@llnl.gov>, akpm@linux-foundation.org,
+       Brian Behlendorf <behlendorf1@llnl.gov>
+Subject: Re: [Patch v3] rwsem: fix rwsem_is_locked() bugs
+Date: Wed, 07 Oct 2009 13:19:11 +0100
+Message-ID: <13922.1254917951@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
->Subject: Re: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and
-KeypadInput Device Driver
->
->On Wed, Oct 07, 2009 at 09:50:43AM +0100, Hennerich, Michael wrote:
->
->> As you said there are chip internal interrupt sources for I/Os,
-keypad
->> presses and releases, ambient light sensor comparator states, and
->> overvoltage conditions.
->> The current state of the driver uses only interrupts for the keypad.
->> I think you agree that its common practice to only implement
->> functionality for chip features that are typically used.
->
->Yes, but equally well it's good to avoid future issues as the driver is
->enhanced.  To be honest the main thing that made me notice when reading
->the patch was the use of the blocking notifier pattern to implement the
->interrupt infrastructure, mostly since it doesn't look like an IRQ
->driver and the naming hides the fat that that's what it is.
+Amerigo Wang <amwang@redhat.com> wrote:
 
-In case I would have done the whole ADP5520 in a single file exposing
-functionality to the input, backlight, led and gpio infrastructure - I
-probably wouldn't find a subtree maintainer that is likely to merge this
-blob.
-But apart from the GPIO interrupt capabilities - I wouldn't need doing
-an interrupt controller.
-I think you agree.
+>  static inline int rwsem_is_locked(struct rw_semaphore *sem)
+>  {
+> -	return (sem->activity != 0);
+> +	int ret;
+> +
+> +	if (spin_trylock_irq(&sem->wait_lock)) {
+> +		ret = !(list_empty(&sem->wait_list) && sem->activity == 0);
+> +		spin_unlock_irq(&sem->wait_lock);
+> +		return ret;
+> +	}
+> +	return 1;
+>  }
 
-So this notifier chain seemed like a good approach to notifiy the
-input/keypad/adp5520-keys about some work. BTW - this approach is used
-by other drivers for exactly the same reason too.
+Yep...  This seems a reasonable approach, though I contend that if you're
+holding the spinlock, then sem->wait_list _must_ be empty if sem->activity is
+0 - so that half of the test is redundant.
 
-Honestly - I'm not yet convinced that this new irq stuff really works in
-combination with my ADP5520 Low Level IRQ. 
-My chained_handler (for demux) as well as irq_desc .mask .unmask .ack
-and .set_type need to also be allowed to invoke sleeping i2c
-transfers!!!?
+sem->activity == 0 and sem->wait_list not being empty is a transitional state
+that can only occur in ups and downgrades whilst they hold the spinlock.
 
-If I understood you right:
+> diff --git a/lib/rwsem-spinlock.c b/lib/rwsem-spinlock.c
+> index 9df3ca5..234d83f 100644
+> --- a/lib/rwsem-spinlock.c
+> +++ b/lib/rwsem-spinlock.c
+> @@ -78,7 +78,12 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)
+>  
+>  	/* grant an infinite number of read locks to the front of the queue */
+>   dont_wake_writers:
+> -	woken = 0;
+> +	/*
+> +	 * we increase ->activity just to make rwsem_is_locked() happy,
+> +	 * to avoid potential cache line ping-pong, we don't do this
+> +	 * within the following loop.
+> +	 */
+> +	woken = sem->activity++;
+>  	while (waiter->flags & RWSEM_WAITING_FOR_READ) {
+>  		struct list_head *next = waiter->list.next;
+>  
+> @@ -94,7 +99,7 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)
+>  		waiter = list_entry(next, struct rwsem_waiter, list);
+>  	}
+>  
+> -	sem->activity += woken;
+> +	sem->activity = woken;
+>  
+>   out:
+>  	return sem;
 
-Instead of request_threaded_irq() in my MFD core:
+This change to __rwsem_do_wake() is all unnecessary - you're defending against
+the test of sem->activity by rwsem_is_locked() - but that now happens with the
+spinlock held.
 
-I should do following: (unfortunately this is all on the bleeding edge
-of technology, with no example driver actually using this craft)
-
-
-static struct irq_chip adp5520_irqchip = {
-	.name		= "ADP5520",
-	.mask		= adp5520_irq_mask, /* MAYSLEEP */
-	.unmask	= adp5520_irq_unmask, /* MAYSLEEP */
-	.set_type	= adp5520_irq_type, /* MAYSLEEP */
-};
-
-static void adp5520_irq_handler(unsigned irq, struct irq_desc *desc)
-{
-
-	/* MAYSLEEP */
-
-}
-
---snip--
-
-	set_irq_data(client->irq, chip);
-	set_irq_chained_handler(client->irq, adp5520_irq_handler);
-
-Or instead of using the set_irq_chained_handler 
-- I should use request_threaded_irq() and do whatever I wanted to do in
-adp5520_irq_handler(unsigned        irq, struct irq_desc *desc), in my
-irq_thread???
-
-For the additional interrupts exposed by the ADP5520 MFD Core Interrupt
-Controller I do this:
-
-
-	set_irq_chip_and_handler_name(chip->irq_base +
-ADP5520_KEYPAD_IRQ, &adp5520_irqchip,
-					handle_nested_irq,
-"adp5520-demux");
-	set_irq_chip_data(chip->irq_base + ADP5520_KEYPAD_IRQ, chip);
-
-	set_irq_nested_thread(chip->irq_base + ADP5520_KEYPAD_IRQ, 1);
-
-	for (i = ADP5520_KEYPAD_IRQ; i < ngpio; i++) {
-		set_irq_chip_and_handler_name(i + chip->irq_base,
-&adp5520_irqchip,
-					handle_nested_irq,
-"adp5520-demux");
-		set_irq_chip_data(i + chip->irq_base, chip);
-		set_irq_nested_thread(chip->irq_base + i, 1);
-	}
-
-
-
-
->
->I think I forgot to mention it previously but there's some work on
->getting a standard ALS interface in the kernel too.  I'd really expect
->the GPIOs to end up being used as GPIOs in some designs as well.
-
-This is really interesting. Do you know where this discussion currently
-takes place, and who is taking the lead (came up with a proposal)?
-
--Michael
-
->
->> In one of your earlier posts you mentioned: "register an irq_chip for
->> the interrupt controller on it.  Support for doing this on I2C
-devices
->> was added at pretty much the same time as the IRQ_ONESHOT support."
->
->> Can you point me to what exactly was added to support this on I2C/SPI
->> devices?
->
->These commits (which were merged during the merge window):
->
->4dbc9ca genirq: Do not mask oneshot edge type interrupts
->399b5da genirq: Support nested threaded irq handling
->70aedd2 genirq: Add buslock support
->
->There may be some other fixup patches afterwards too, but the buslock
->and nested threaded handers are the key ones.
+David
