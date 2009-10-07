@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933856AbZJGBqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbZJGB4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933856AbZJGBqS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 21:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbZJGBqS
+	id S1758544AbZJGB4i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 21:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbZJGB4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 21:46:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54234 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753938AbZJGBqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 21:46:17 -0400
-Message-ID: <4ACBF2BF.5060707@kernel.org>
-Date: Wed, 07 Oct 2009 10:45:35 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: pci tree build failure
-References: <20091007123821.043465c6.sfr@canb.auug.org.au>
-In-Reply-To: <20091007123821.043465c6.sfr@canb.auug.org.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 6 Oct 2009 21:56:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47382 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756162AbZJGB4g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 21:56:36 -0400
+Subject: Re: [PATCH 1/4] jump label - make init_kernel_text() global
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, ak@suse.de,
+       roland@redhat.com, rth@redhat.com, mhiramat@redhat.com
+In-Reply-To: <20091003123900.GA22046@Krystal>
+References: <cover.1253831945.git.jbaron@redhat.com>
+	 <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com>
+	 <20091001112003.GA2962@elte.hu> <20091001203905.GD2660@redhat.com>
+	 <20091003104335.GB15919@elte.hu>  <20091003123900.GA22046@Krystal>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 06 Oct 2009 21:54:38 -0400
+Message-Id: <1254880478.1696.104.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 07 Oct 2009 01:45:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi Jesse,
-> 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> ERROR: "pci_set_cacheline_size" [drivers/pcmcia/pcmcia_core.ko] undefined!
-> 
-> Caused by commit 018bc96e8e27bfcafec9357ff370bf51241a7ea7 ("pccard:
-> configure CLS on attach") which neglected to EXPORT_SYMBOL
-> pci_set_cacheline_size.
-> 
-> I have used the version of the pci tree from next-20091006 for today.
-> 
+On Sat, 2009-10-03 at 08:39 -0400, Mathieu Desnoyers wrote:
 
-Oops, Jesse, can you please add EXPORT_SYMBOL_GPL() there?
+> I might be missing a bit of context here, I just want to make sure we
+> are on the same page: patching a jmp instruction is safe on UP, safe
+> with stop_machine(), is very likely safe with the breakpoint-ipi
 
-Thanks.
+Hi Mathieu,
 
--- 
-tejun
+I've been reading through these threads (both this one and the immediate
+one) and I'm still a bit confused. I really want to understand this in a
+simple way, thus make sure everyone else understands it too.
+
+>From what Arjan said here:
+
+  http://lkml.org/lkml/2009/9/25/98
+
+The issue is going back from the int3 to the old value. How does the
+breakpoint-ipi work?
+
+Supposedly, we can add an int3 to the code without any worry. If another
+CPU at that same time hits that code path, it will either run the old
+code, or take the interrupt. The breakpoint interrupt handler, will
+handle that code path, and the execution continues.
+
+Now what is the issues with removing the int3 and placing back the old
+(or new) value. Is there an issue if another CPU is about to execute
+that code path as we remove the int3? If so, how does sending an IPI
+help the matter without adding more races?
+
+Is there only an issue if we change the old value with something else,
+and you just need to send the IPI after you modify the old code and
+before removing the int3?
+
+I may just be totally confused, which I usually am. But when I'm not
+confused, I feel that the code is practical ;-)
+
+-- Steve
+
+ 
+
+> approach (but we need the confirmation from Intel, which hpa is trying
+> to get), but is definitely _not_ safe if neither of these methods are
+> used on a SMP system. If a non-aligned multi-word jump is modified while
+> another CPU is fetching the instruction, bad things could happen.
+
+
