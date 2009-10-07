@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbZJGQJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759526AbZJGQMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759522AbZJGQJP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 12:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbZJGQJO
+	id S1759526AbZJGQMf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 12:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759248AbZJGQMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 12:09:14 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:55375 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754094AbZJGQJN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 12:09:13 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
-Date: Wed, 7 Oct 2009 18:10:02 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc9-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Alan Cox <alan@linux.intel.com>, greg@kroah.com,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0910071157390.2762-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0910071157390.2762-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200910071810.02966.oliver@neukum.org>
+	Wed, 7 Oct 2009 12:12:34 -0400
+Received: from fifo99.com ([67.223.236.141]:45251 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753760AbZJGQMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 12:12:34 -0400
+Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
+From: Daniel Walker <dwalker@fifo99.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Andy Whitcroft <apw@canonical.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <20091007165250.30d8c996@lxorguk.ukuu.org.uk>
+References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
+	 <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
+	 <1253585691-10987-3-git-send-email-dwalker@fifo99.com>
+	 <4AB86ED1.1040200@cn.fujitsu.com> <20090930152708.GD2957@shadowen.org>
+	 <1254406711.18167.88.camel@desktop> <m33a5ww8kn.fsf@intrepid.localdomain>
+	 <1254887534.18167.253.camel@desktop> <m3hbubv779.fsf@intrepid.localdomain>
+	 <1254925617.18167.262.camel@desktop> <m3skdvtgas.fsf@intrepid.localdomain>
+	 <1254927438.18167.275.camel@desktop>
+	 <20091007161107.72b4031b@lxorguk.ukuu.org.uk>
+	 <1254930068.18167.304.camel@desktop>
+	 <20091007165250.30d8c996@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Wed, 07 Oct 2009 09:11:27 -0700
+Message-Id: <1254931887.18167.309.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 7. Oktober 2009 18:03:08 schrieb Alan Stern:
-> On Wed, 7 Oct 2009, Oliver Neukum wrote:
-> > We will need some generic way to autoresume from open.
-> > Resume will need to lock against open() and need to be called
-> > from within open(). Any ideas for an unugly interface?
->
-> It's not quite that bad.  Resume doesn't need to lock against open.
-> If open is called while resume is running then when it tries to do its
-> own resume, it will either block (waiting for the pm_mutex) or return
-> immediately (if it sees the device is already resumed).
+On Wed, 2009-10-07 at 16:52 +0100, Alan Cox wrote:
+> On Wed, 07 Oct 2009 08:41:08 -0700
+> Daniel Walker <dwalker@fifo99.com> wrote:
+> 
+> > On Wed, 2009-10-07 at 16:11 +0100, Alan Cox wrote:
+> > > > Right it's a tool .. However, you should use it and you should follow
+> > > > it. If for some reason you disagree with the tool you have to give at
+> > > > least an arguable reason why, not just "It's a guide", "I don't like the
+> > > > coding style." etc..
+> > > 
+> > > Those are perfectly good reasons.
+> > 
+> > I don't think they are.. Like adding spaces for tabs is ok cause
+> > checkpatch is a guide right?
+> 
+> Yes.. if it was such a big deal someone would have updated the git commit
+> tools to fix them as we do to strim off trailing spaces.
+> 
+> They have *zero* impact on performance, maintainability or readability
+> providing they don't mess up the indentation - and the kernel is full of
+> them.
 
-But resume() needs to know whether the read URBs need to be
-submitted or not.
+It has an impact on maintainability and readability.. Take a source file
+with tabs, then remove all the tabs and insert spaces. It's pretty
+annoying and I would not want to touch code like that. Trailing
+whitespace is a lot less annoying than using spaces instead of tabs.
 
-	Regards
-		Oliver
+Daniel
 
