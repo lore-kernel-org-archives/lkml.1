@@ -1,70 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932925AbZJGMKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759051AbZJGMMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932925AbZJGMKX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 08:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932850AbZJGMKW
+	id S1759051AbZJGMMV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 08:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758931AbZJGMMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 08:10:22 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:52079 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932839AbZJGMKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 08:10:21 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: zach.brown@oracle.com, linux-aio <linux-aio@kvack.org>,
-       Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch v4 0/3] aio: implement request batching [more performance numbers]
-References: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com>
-	<x49eipga02o.fsf@segfault.boston.devel.redhat.com>
-	<20091006180628.GB5216@kernel.dk>
-	<x49y6no8jxw.fsf@segfault.boston.devel.redhat.com>
-	<20091007105259.GD8703@kernel.dk>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 07 Oct 2009 08:09:10 -0400
-In-Reply-To: <20091007105259.GD8703@kernel.dk> (Jens Axboe's message of "Wed,
-	7 Oct 2009 12:52:59 +0200")
-Message-ID: <x49k4z72yop.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	Wed, 7 Oct 2009 08:12:20 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:22050 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752388AbZJGMMT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 08:12:19 -0400
+X-IronPort-AV: E=Sophos;i="4.44,519,1249272000"; 
+   d="scan'208";a="5466707"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and KeypadInput Device Driver
+Date: Wed, 7 Oct 2009 13:11:40 +0100
+Message-ID: <8A42379416420646B9BFAC9682273B6D0E442F71@limkexm3.ad.analog.com>
+In-Reply-To: <20091007100638.GB3169@rakim.wolfsonmicro.main>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+thread-topic: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and KeypadInput Device Driver
+thread-index: AcpHNeGj/gwW09AJQUS2/H1MYJjuPgABC5og
+References: <20091006115543.GH27168@sirena.org.uk> <8A42379416420646B9BFAC9682273B6D0E3F4348@limkexm3.ad.analog.com> <20091006123658.GA31079@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4420@limkexm3.ad.analog.com> <20091006135836.GA3926@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F46A7@limkexm3.ad.analog.com> <20091006144805.GA10987@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4769@limkexm3.ad.analog.com> <20091006160549.GA8881@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4CEE@limkexm3.ad.analog.com> <20091007100638.GB3169@rakim.wolfsonmicro.main>
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Mark Brown" <broonie@opensource.wolfsonmicro.com>
+CC: "Mike Frysinger" <vapier@gentoo.org>,
+       "Samuel Ortiz" <sameo@linux.intel.com>,
+       <uclinux-dist-devel@blackfin.uclinux.org>,
+       <linux-kernel@vger.kernel.org>, "Bryan Wu" <cooloney@kernel.org>
+X-OriginalArrivalTime: 07 Oct 2009 12:11:42.0464 (UTC) FILETIME=[54CFE000:01CA4747]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+>From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
+>Subject: Re: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and
+KeypadInput Device Driver
+>
+>On Wed, Oct 07, 2009 at 09:50:43AM +0100, Hennerich, Michael wrote:
+>
+>> As you said there are chip internal interrupt sources for I/Os,
+keypad
+>> presses and releases, ambient light sensor comparator states, and
+>> overvoltage conditions.
+>> The current state of the driver uses only interrupts for the keypad.
+>> I think you agree that its common practice to only implement
+>> functionality for chip features that are typically used.
+>
+>Yes, but equally well it's good to avoid future issues as the driver is
+>enhanced.  To be honest the main thing that made me notice when reading
+>the patch was the use of the blocking notifier pattern to implement the
+>interrupt infrastructure, mostly since it doesn't look like an IRQ
+>driver and the naming hides the fat that that's what it is.
 
-> So here's a pretty basic test. It does random reads from a bunch of
-> devices, I tested both 4kb and 64kb block sizes. Queue depth used is 32
-> for both cases, but note that this test uses a thread per device (so the
-> queue depth is 32 per device). Results are averaged over 3 runs.
-> slat/clat are the submission and completion latencies, they are in
-> microseconds here.
->
-> 4kb random reads
->
-> kernel               sys     IOPS       slat    clat
-> ----------------------------------------------------
-> 2.6.32-rc3+patch    25.8%   192500      7.9     2606
-> 2.6.32-rc3          27.4%   191300      8.4     2612
->
->
->
-> 64kb random reads
->
-> kernel               sys     IOPS       slat    clat
-> ----------------------------------------------------
-> 2.6.32-rc3+patch     2.5%    24590      9.7     9681
-> 2.6.32-rc3           2.5%    24580      9.4     9691
->
-> So pretty close, nothing earth shattering here. What the results above
-> do not show is that the 4kb test runs very stable with your patch.
-> Mainline fluctuates somewhat in the bandwidth, most likely due to the
-> varying depth.
+In case I would have done the whole ADP5520 in a single file exposing
+functionality to the input, backlight, led and gpio infrastructure - I
+probably wouldn't find a subtree maintainer that is likely to merge this
+blob.
+But apart from the GPIO interrupt capabilities - I wouldn't need doing
+an interrupt controller.
+I think you agree.
 
-OK, good news.  Thanks for testing!
+So this notifier chain seemed like a good approach to notifiy the
+input/keypad/adp5520-keys about some work. BTW - this approach is used
+by other drivers for exactly the same reason too.
 
-Cheers,
-Jeff
+Honestly - I'm not yet convinced that this new irq stuff really works in
+combination with my ADP5520 Low Level IRQ. 
+My chained_handler (for demux) as well as irq_desc .mask .unmask .ack
+and .set_type need to also be allowed to invoke sleeping i2c
+transfers!!!?
+
+If I understood you right:
+
+Instead of request_threaded_irq() in my MFD core:
+
+I should do following: (unfortunately this is all on the bleeding edge
+of technology, with no example driver actually using this craft)
+
+
+static struct irq_chip adp5520_irqchip = {
+	.name		= "ADP5520",
+	.mask		= adp5520_irq_mask, /* MAYSLEEP */
+	.unmask	= adp5520_irq_unmask, /* MAYSLEEP */
+	.set_type	= adp5520_irq_type, /* MAYSLEEP */
+};
+
+static void adp5520_irq_handler(unsigned irq, struct irq_desc *desc)
+{
+
+	/* MAYSLEEP */
+
+}
+
+--snip--
+
+	set_irq_data(client->irq, chip);
+	set_irq_chained_handler(client->irq, adp5520_irq_handler);
+
+Or instead of using the set_irq_chained_handler 
+- I should use request_threaded_irq() and do whatever I wanted to do in
+adp5520_irq_handler(unsigned        irq, struct irq_desc *desc), in my
+irq_thread???
+
+For the additional interrupts exposed by the ADP5520 MFD Core Interrupt
+Controller I do this:
+
+
+	set_irq_chip_and_handler_name(chip->irq_base +
+ADP5520_KEYPAD_IRQ, &adp5520_irqchip,
+					handle_nested_irq,
+"adp5520-demux");
+	set_irq_chip_data(chip->irq_base + ADP5520_KEYPAD_IRQ, chip);
+
+	set_irq_nested_thread(chip->irq_base + ADP5520_KEYPAD_IRQ, 1);
+
+	for (i = ADP5520_KEYPAD_IRQ; i < ngpio; i++) {
+		set_irq_chip_and_handler_name(i + chip->irq_base,
+&adp5520_irqchip,
+					handle_nested_irq,
+"adp5520-demux");
+		set_irq_chip_data(i + chip->irq_base, chip);
+		set_irq_nested_thread(chip->irq_base + i, 1);
+	}
+
+
+
+
+>
+>I think I forgot to mention it previously but there's some work on
+>getting a standard ALS interface in the kernel too.  I'd really expect
+>the GPIOs to end up being used as GPIOs in some designs as well.
+
+This is really interesting. Do you know where this discussion currently
+takes place, and who is taking the lead (came up with a proposal)?
+
+-Michael
+
+>
+>> In one of your earlier posts you mentioned: "register an irq_chip for
+>> the interrupt controller on it.  Support for doing this on I2C
+devices
+>> was added at pretty much the same time as the IRQ_ONESHOT support."
+>
+>> Can you point me to what exactly was added to support this on I2C/SPI
+>> devices?
+>
+>These commits (which were merged during the merge window):
+>
+>4dbc9ca genirq: Do not mask oneshot edge type interrupts
+>399b5da genirq: Support nested threaded irq handling
+>70aedd2 genirq: Add buslock support
+>
+>There may be some other fixup patches afterwards too, but the buslock
+>and nested threaded handers are the key ones.
