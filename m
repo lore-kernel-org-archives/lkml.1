@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbZJGU1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbZJGUXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932805AbZJGU1J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760042AbZJGU1J
+	id S1760028AbZJGUXN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760014AbZJGUXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:27:09 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:59055 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760031AbZJGU1I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:27:08 -0400
-X-Greylist: delayed 409 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Oct 2009 16:27:07 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:user-agent:x-archive:mime-version
-         :content-type;
-        b=mmT3SbSmVP1R7tH/PwmP5bXLHOKLjc4B/3ViAwRgtBLlnpoHiiqp7A5MPU3x8hSAsV
-         c93NbeTnzvAnFVxX0KHG8IC4KY1DnWcIaJ9yHDNlRsbAG6KTDIW9lwpNQKgwgwALwcva
-         wnDzWu61BI4h42z1cftzMbF1sKdccHMRZmugw=
-Date: Wed, 7 Oct 2009 17:19:25 -0300 (BRST)
-From: "=?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?=" 
-	<fredlwm@gmail.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: keyboard under X with 2.6.31
-Message-ID: <alpine.LNX.2.01.0910071706490.11297@dyndns.pervalidus.net>
-User-Agent: Alpine 2.01 (LNX 1266 2009-07-14)
-X-Archive: encrypt
+	Wed, 7 Oct 2009 16:23:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37649 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759977AbZJGUXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 16:23:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Subject: Re: [Bug #14258] Memory leak in SCSI initialization
+Date: Wed, 7 Oct 2009 22:24:00 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: kernel-testers@vger.kernel.org, James.Bottomley@suse.de,
+       michael@ellerman.id.au, linux-kernel@vger.kernel.org
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910021926.46532.rjw@sisk.pl> <200910072304.BAB43294.JLOFHtSVMQOOFF@I-love.SAKURA.ne.jp>
+In-Reply-To: <200910072304.BAB43294.JLOFHtSVMQOOFF@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910072224.00467.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My keyboard (ABNT2 PS/2) seems to be broken under X with 
-2.6.31.2. After less than an hour, it starts acting crazy. The 
-first time, all leds turned off and I couldn't type anything. 
-The second time, all leds also turned off, but since it happened 
-while I was pressing the Backspace key to delete text, it 
-continued deleting, like if the key was pressed.
+On Wednesday 07 October 2009, Tetsuo Handa wrote:
+> Rafael J. Wysocki wrote:
+> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14258
+> > > > Subject		: Memory leak in SCSI initialization
+> > > > Submitter	: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+> > > > Date		: 2009-09-22 4:18 (10 days old)
+> > > > References	: http://marc.info/?l=linux-kernel&m=125359311312243&w=4
+> > > > Handled-By	: Michael Ellerman <michael@ellerman.id.au>
+> > > > Patch		: http://patchwork.kernel.org/patch/49258/
+> > 
+> > Thanks for the update.
+> http://patchwork.kernel.org/patch/49258/ would be replaced by
+> an updated patch at http://lkml.org/lkml/2009/10/2/335
 
-In both cases, the mouse (USB) still works and I can exit X, 
-where the keyboard works. There's nothing in the logs.
+Thanks, updated.
 
-No problem with 2.6.30.9. Is it supposed to be a kernel or X bug 
-?
+Rafael
