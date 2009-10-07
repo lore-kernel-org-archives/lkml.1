@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759913AbZJGTgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbZJGTpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759913AbZJGTgs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 15:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759205AbZJGTgr
+	id S1759925AbZJGTpJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 15:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759901AbZJGTpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 15:36:47 -0400
-Received: from kroah.org ([198.145.64.141]:41382 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754973AbZJGTgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 15:36:47 -0400
-Date: Wed, 7 Oct 2009 12:33:29 -0700
-From: Greg KH <greg@kroah.com>
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>,
-       Oliver Neukum <oliver@neukum.org>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4]: USB: ftdi_sio: fix regression in 2.6.31 and clean
- up
-Message-ID: <20091007193329.GA2977@kroah.com>
-References: <1254938707-6996-1-git-send-email-jhovold@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 Oct 2009 15:45:08 -0400
+Received: from mxo5.broadbandsupport.net ([209.55.3.85]:50069 "EHLO
+	mxo5.broadbandsupport.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758993AbZJGTpH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 15:45:07 -0400
+X-Greylist: delayed 347 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Oct 2009 15:45:07 EDT
+Message-ID: <65.5D.00983.24EECCA4@mxo5.broadbandsupport.net>
 Content-Disposition: inline
-In-Reply-To: <1254938707-6996-1-git-send-email-jhovold@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+From: Mail Administrator <subscriberr95@ymail.com>
+To: info@admin.org
+Subject: Email Alert!!!
+Reply-To: subscriberr95@ymail.com
+X-Origin: 158.64.76.128
+Date: Wed, 07 Oct 2009 15:38:42 -0400
+X-Uidl: 125494432267406455
+X-Mailer: AtMail 4.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 08:05:03PM +0200, Johan Hovold wrote:
-> Hi, 
-> 
-> These patches clean up the ftdi_sio driver and fixes
-> 
->  1) a long outstanding bug manifesting itself as 
->  
->  	BUG: sleeping function called from invalid context at kernel/mutex.c:280
-> 
->  2) a couple of regressions in 2.6.31 (stalled reads and unthrottle race)
->     due to changes in the tty layer.
-> 
-> Please have a look at it so we can get something back-ported to stable as the
-> ftdi_sio driver is currently completly broken and unusable due to the stalled
-> reads.
-> 
-> Note that the patches do not add suspend/resume support to the driver (but the
-> clean up should make it easier to implement).
-> 
-> Thanks to Alan Cox, Oliver Neukum, and Alan Stern for all comments and
-> suggestions so far.
+Dear User,
 
-Very nice, thanks for doing this work, I really appreciate it.  I'll
-queue it up as soon as possible.
+This message is from Mail Administrator and we are sending 
+It to every Accounts user for safety, we are having congestions due
+To the anonymous registration accounts so we are shutting down
+Some accounts and your account were among those to be deleted we are
+Sending this email to you so that you can verify and let us know if you
+Still want to use this account. If you are still interested please confirm
+Your account by filling the space below, Your User name, password, date of
+Birth and your country information would be needed to verify your account.
 
-thanks,
 
-greg k-h
+Due to the congestion in all users and removal of all unused
+Accounts would be shutting down all unused Accounts, You will
+Have to confirm your E-mail by filling out your Login Information below
+After clicking the reply button or your account will be suspended within
+24 hours for security reasons.
+
+
+* Username: ..............................
+* Password: ................................
+* Date of Birth: ............................
+* Alternative Email.........................
+* Country or Territory: ................
+
+
+After following the instructions in the sheet, your account will not be
+Interrupted and will continue as normal. Thanks for your attention to this
+Request, we apologize for any inconveniences.
+
+
+Warning!!! Account owner that refuses to update his/her account after two
+Weeks of receiving this warning will lose his or her account permanently.
+
+Sincerely,
+
+
+Mail Administrator.
