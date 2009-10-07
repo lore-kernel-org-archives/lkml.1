@@ -1,37 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbZJGUxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933824AbZJGUyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760042AbZJGUxZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760016AbZJGUxZ
+	id S933824AbZJGUyI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:54:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933637AbZJGUyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:53:25 -0400
-Received: from mail-px0-f179.google.com ([209.85.216.179]:38406 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760012AbZJGUxY (ORCPT
+	Wed, 7 Oct 2009 16:54:07 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:58115 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933284AbZJGUyE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:53:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=aeMxP9g05H1HvBhvN4WgYKG2601Xc3zmjn83FR1IcH8USyVoRplybRUqKvj+zn6gQw
-         hqbAj/78fJtOkvPlT/xpcH4pxAQeM4sFR/WPSAGj2lWmGdHEDA3N4qj1Eqq8qzyCpGvy
-         zrvD/pmiZbPVFPuxPlp2Ztd9m+9oCDzaVJn6M=
+	Wed, 7 Oct 2009 16:54:04 -0400
 MIME-Version: 1.0
-Date: Wed, 7 Oct 2009 13:52:47 -0700
-Message-ID: <296622aa0910071352v16ba4302y2c5ae50f51924026@mail.gmail.com>
-Subject: Linux autobuild Makefile to assist in autobuilding the kernel (eg. 
-	via a cronjob)
-From: Joe moo <starquestnerd@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20091007203121.GA432@trillian.comsick.at>
+References: <20091007175403.GA335@trillian.comsick.at> <9b2b86520910071246r393f2afvacaa4d8f544508a8@mail.gmail.com> 
+	<ac3eb2510910071306r4ad6dc9btb7503bc3ab0ec815@mail.gmail.com> 
+	<ac3eb2510910071312qe6ad45ep6c579a8393cc6b8e@mail.gmail.com> 
+	<20091007203121.GA432@trillian.comsick.at>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Wed, 7 Oct 2009 22:53:12 +0200
+Message-ID: <ac3eb2510910071353v3bbe5bc7lc41e184fbc1ff7ed@mail.gmail.com>
+Subject: Re: [BUG] No ttyS0 - Strange udev 8250_pnp interaction
+To: Michael Guntsche <mike@it-loops.com>
+Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-hotplug <linux-hotplug@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I hope you like it you can look at it and fork it here:
-http://gist.github.com/204431
+On Wed, Oct 7, 2009 at 22:31, Michael Guntsche <mike@it-loops.com> wrote:
+> add      /module/8250_pnp (module)
+> remove /devices/platform/serial8250/tty/ttyS0 (tty)
+> add      /devices/pnp0/00:05/tty/ttyS0 (tty)
 
-Basically it automates a lot of things and it ONLY wraps around the
-current Makefile to avoid reinventing the wheel. It runs git pull to
-update and (by default) builds an x86 system configured with
-allmodconfig! I acctually wrote this a few months ago...
+That's pretty odd, that the loading of a module removes pre-existing
+devices created by other code, and creates new ones with the same name
+and major/minor.
+
+As Alan mentioned, we could serialize events which carry the the same
+major/minor number, that should work around such behavior.
+
+Thanks,
+Kay
