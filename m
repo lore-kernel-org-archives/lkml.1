@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759722AbZJGRqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759753AbZJGRrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759722AbZJGRqe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 13:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759696AbZJGRqd
+	id S1759753AbZJGRrd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 13:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759100AbZJGRrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 13:46:33 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33666 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759692AbZJGRqc (ORCPT
+	Wed, 7 Oct 2009 13:47:33 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:45915 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757978AbZJGRrc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 13:46:32 -0400
-Date: Wed, 7 Oct 2009 13:45:54 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.32-rc3: floating-point build failure (undefined reference
-	to `__udivdi3' in menu governor)
-Message-ID: <20091007174553.GC11702@bombadil.infradead.org>
-References: <20091007104125.GA1449@rhlx01.hs-esslingen.de> <4ACCA44B.3070706@linux.intel.com> <20091007173457.GA25415@rhlx01.hs-esslingen.de>
+	Wed, 7 Oct 2009 13:47:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=fCmlKYEcHjplpA/jsUVphtTyaD1nisX8GhvvTqqub+eePupmteYqx0KbnT2K1Bsg1b
+         vgB12PucMUL0id5Btb+5dqIyBMugZ+mTYVsVDzASf66ycsFx7aKgASHb0hoTNXR5JgWd
+         KlgJG7pHmZwus3AXBSqUaO8hyyYuUAEuUSsHA=
+Message-ID: <4ACCD422.3080809@gmail.com>
+Date: Wed, 07 Oct 2009 10:47:14 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091007173457.GA25415@rhlx01.hs-esslingen.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: rostedt@goodmis.org
+CC: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: system gets stuck in a lock during boot
+References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>	 <20091002211211.GA2633@redhat.com>	 <1254792249.13160.213.camel@gandalf.stny.rr.com>	 <20091006203225.GC2631@redhat.com>	 <1254880921.1696.112.camel@gandalf.stny.rr.com>	 <4ACC001D.4050105@gmail.com>	 <1254920429.1696.127.camel@gandalf.stny.rr.com>	 <4ACCAB54.4010408@gmail.com>	 <1254928298.1696.166.camel@gandalf.stny.rr.com>	 <4ACCB934.7070805@gmail.com> <1254931582.1696.171.camel@gandalf.stny.rr.com>
+In-Reply-To: <1254931582.1696.171.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 07:34:58PM +0200, Andreas Mohr wrote:
-> Nopeee.
-> 
->         data->predicted_us = DIV_ROUND_CLOSEST((u32)
->                 data->expected_us * data->correction_factor[data->bucket],
->                 (u32)RESOLUTION * DECAY);
-> 
-> It did properly rebuild drivers/cpuidle/governors/menu.o.
-> Still happening.
-> IOW it must be somewhere inside the DIV_ROUND_CLOSEST macro or so.
-> 
+Steven Rostedt wrote:
+> On Wed, 2009-10-07 at 08:52 -0700, Justin P. Mattock wrote:
+>
+>    
+>>>
+>>>        
+>> What I think is happening is while building
+>> sysvinit with the SELinux patch, sysvinit is looking
+>> in /lib for libselinux(but could be wrong) but libselinux is in
+>> /lib64.
+>> (here's my excuse as a newbie:)
+>>    part of a pain when building an x86_64 multilib is building
+>> everything to point to lib64(pure64 with the soft link
+>> lib64 ->  lib makes life so much easier).
+>>
+>> I'm going to look at that patch and see how it tells
+>> -lselinux -lsepol to find the libs.
+>> (if this is the case then I must admit I am a real
+>> newbie, and apologize for the confusion).
+>>      
+>
+> Justin,
+>
+> Just being able to monkey around with the init code on top of SELinux
+> already qualifies you to be well beyond a newbie ;-)
+>
+> -- Steve
+>
+>
+>
+>    
+Thanks man!!(I really appreciate that).
+Im looking at sysvinit right now
+Im thinking all it really needs is
+LIBDIR/LDFLAGS=-L/lib64 -lselinux -lsepol
+in the Makefile or something in that area.
 
-It's being a jerk and not realizing that RESOLUTION * DECAY is a power
-of 2, so it can just do a shift...
-
-I don't recall if gcc 3 had these magic builtins, but if it does,
-something like this might help since it's the u64 case that's
-problematic.
-
-I probably noviced this in some trivial way, but it's a thought.
-And in the most-annoying case (most of these u64 divisions are power of
-2, that I've seen...) would sort things out.
-
-regards, Kyle
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index d3cd23f..4936eb6 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -51,6 +51,9 @@ extern const char linux_proc_banner[];
- #define DIV_ROUND_CLOSEST(x, divisor)(			\
- {							\
- 	typeof(divisor) __divisor = divisor;		\
-+	if (__builtin_types_compatible_p(typeof(divisor), unsigned long long) &&	\
-+		__builtin_popcountll(__divisor) == 1)			\
-+		(((x) + ((__divisor) / 2) << __builtin_ffsll(__divisor)));	\
- 	(((x) + ((__divisor) / 2)) / (__divisor));	\
- }							\
- )
+Justin P. Mattock
