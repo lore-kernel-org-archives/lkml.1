@@ -1,79 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbZJGL1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759081AbZJGLab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759065AbZJGL1f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 07:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759027AbZJGL1d
+	id S1759081AbZJGLab (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 07:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759064AbZJGLab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 07:27:33 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:38289 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759024AbZJGL1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 07:27:32 -0400
-Date: Wed, 7 Oct 2009 16:56:48 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>
-Cc: arun@linux.vnet.ibm.com, Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
- management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
- cpuidle to POWER.
-Message-ID: <20091007112648.GC7646@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20091006152421.GA7278@linux.vnet.ibm.com>
- <20091006163521.GA10425@linux.vnet.ibm.com>
- <1254852279.17055.2.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1254852279.17055.2.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 7 Oct 2009 07:30:31 -0400
+Received: from ns.penguin.cz ([84.21.108.25]:47444 "EHLO ns.penguin.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759048AbZJGLaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 07:30:30 -0400
+Subject: Re: spitz: add gpio button support (AK_INT and remote control
+ description)
+From: Stanislav Brabec <utx@penguin.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20091007085806.GB28807@elf.ucw.cz>
+References: <20091006074635.GA2775@ucw.cz>
+	 <1254829732.3546.35.camel@utx.utx.cz>  <20091007085806.GB28807@elf.ucw.cz>
+Content-Type: text/plain; charset="ISO-8859-2"
+Date: Wed, 07 Oct 2009 13:29:51 +0200
+Message-Id: <1254914991.4213.80.camel@hammer.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.27.91 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-06 20:04:39]:
-
-> On Tue, 2009-10-06 at 22:05 +0530, Arun R Bharadwaj wrote:
+Pavel Machek wrote:
+> On Tue 2009-10-06 13:48:52, Stanislav Brabec wrote:
+> > Pavel Machek wrote:
+> > > I'm not sure what AK_INT is, nor what event it should
+> > > generate.
+> > 
+> > AK_INT: remote control detect
 > 
-> > Also, the per-cpu nature of registration/unregistration of cpuidle
-> > has been maintained as ACPI needs this.
+> Thanks. So for now I'll do:
 > 
-> Right, so can't we ditch that and have acpi default to the lowest common
-> C-state and warn when various cpus report different C-states?
+>         /* This is for remote control support. Zaurus supports wired                  
+>            remote on headphones. */
+>         {
+>                 .type   = EV_KEY,
+>                 .code   = KEY_F13,
+>                 .gpio   = SPITZ_GPIO_AK_INT,
+>                 .desc   = "Wired remote (AK_INT)",
+>         },
+> 
+> ..and leave it for proper driver to support nicely.
 
-Hi Peter,
+I think that AK_INT should not generate key press event. Permanently
+pressed key could confuse many programs.
 
-As Arjan mentioned previously, the per-cpu registration has to stay
-for x86 for now due to legacy ACPI compatibility.  Breaking that may
-break lot of existing users and we do not have a clean fallback
-method.  
+But we may want to use switch events. I propose to create new switch
+event for it: SW_REMOTE_INSERT. But mapping of AK_INT to
+SW_REMOTE_INSERT cannot be straightforward.
 
-As far as powerpc is concerned, we can work with a single global
-registration.  However we would like to have the same interface across
-different archs.
+That is why I propose to ignore AK_INT for now.
 
-With the new re-factoring (v7), Arun has killed most of the list
-traversal and linking between various cpu's cpuidle_driver structures.
-Now we have a per-cpu stack of registered devices and we lookup the
-structs using online cpumasks.  The cpuidle_driver structure has list
-of idle routing pointers (struct cpuidle_state) and rest of it is
-statistics that needs to be maintained at a per-cpu level anyway.  All
-that is duplicated here is the array of idle routines (struct
-cpuidle_state) on each cpu.
+Following implementation may be used later (with future resistor matrix
+keyboard driver):
 
-The objective of the refactoring is to have a single common idle
-routine management framework (remove pm_idle) and we have it done
-through cpuidle registration framework.  We can incrementally remove
-the per-cpu registration later easily by splitting the cpuidle_driver
-structure.
+Map SPITZ_GPIO_HP_IN to SW_JACK_PHYSICAL_INSERT (after debouncing).
 
---Vaidy
+Generate SW_REMOTE_INSERT if:
+- SW_JACK_PHYSICAL_INSERT is on AK_INT is active and remote pin has full
+  voltage
+or
+- SW_JACK_PHYSICAL_INSERT is on and remote driver shows valid value
+
+SW_REMOTE_INSERT should be recognized by the Jack abstraction layer
+(sound/core/jack.c).
+
+Well, I am thinking about defining extra values for resistors, that can
+make stuff even more useful at cost of need of non-standard wiring on
+fourth ring of the audio jack. It can generate SW_MICROPHONE_INSERT,
+SW_LINEOUT_INSERT, and not yet defined SW_HEADESET_INSERT and
+SW_LINEIN_INSERT (which would require hardware mod inside Zaurus for
+stereo line-in).
+
+The default may be SW_HEADPHONE_INSERT (short connection between remote
+pin and ground).
+
+-- 
+Best Regards / S pozdravem,
+
+Stanislav Brabec
+software developer
+---------------------------------------------------------------------
+SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
+Lihovarská 1060/12           tel: +420 284 028 966, +49 911 740538747
+190 00 Praha 9                                  fax: +420 284 028 951
+Czech Republic                                    http://www.suse.cz/
 
