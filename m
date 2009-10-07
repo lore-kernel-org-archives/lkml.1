@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933331AbZJGNBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933188AbZJGM6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933331AbZJGNBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 09:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933136AbZJGNBS
+	id S933188AbZJGM6l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 08:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933097AbZJGM6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 09:01:18 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53924 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933132AbZJGNBR (ORCPT
+	Wed, 7 Oct 2009 08:58:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43944 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759103AbZJGM6j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 09:01:17 -0400
-Subject: Re: system gets stuck in a lock during boot
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4ACC001D.4050105@gmail.com>
-References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>
-	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>
-	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>
-	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>
-	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>
-	 <20091002211211.GA2633@redhat.com>
-	 <1254792249.13160.213.camel@gandalf.stny.rr.com>
-	 <20091006203225.GC2631@redhat.com>
-	 <1254880921.1696.112.camel@gandalf.stny.rr.com>
-	 <4ACC001D.4050105@gmail.com>
+	Wed, 7 Oct 2009 08:58:39 -0400
+Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
+ interrupt disable
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: cl@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
+In-Reply-To: <20091007124628.GB27363@Krystal>
+References: <20091006233654.815079668@gentwo.org>
+	 <20091006233733.153341605@gentwo.org> <20091007025440.GB4664@Krystal>
+	 <1254906707.26976.225.camel@twins>  <20091007124628.GB27363@Krystal>
 Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 07 Oct 2009 09:00:29 -0400
-Message-Id: <1254920429.1696.127.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
+Date: Wed, 07 Oct 2009 15:01:00 +0200
+Message-Id: <1254920460.26976.241.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 19:42 -0700, Justin P. Mattock wrote:
+On Wed, 2009-10-07 at 08:46 -0400, Mathieu Desnoyers wrote:
+> * local_irq_restore
+>   -> the interrupt line is low. The scheduler won't be called. There is
+>      no preempt_check_resched() call.
 
-> >    
-> o.k. applied your patch, but unfortunantly
-> I still am hitting this kernel panic.
-> 
-> must admit I have no idea why this is doing this.
-> (but am willing to sit through this, because eventually
-> sooner or later will hit this if I update gcc).
+That would be an issue with all irq disable sections, so I don't think
+this is actually true.
 
-But the panic you showed was that it could not find an init to execute.
-Which looks like a setup issue and not a kernel bug.
-
--- Steve
-
-
+I tried to find the actual code, but frigging paravirt crap obfuscated
+the code enough that I actually gave up.
