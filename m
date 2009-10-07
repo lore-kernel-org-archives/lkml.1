@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933150AbZJGULn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbZJGUN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933150AbZJGULn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759973AbZJGULm
+	id S1757851AbZJGUN6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbZJGUN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:11:42 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:52073 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759972AbZJGULm (ORCPT
+	Wed, 7 Oct 2009 16:13:57 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:34112 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753776AbZJGUN4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:11:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=HxqjzMTzap/4GUiILahIsaSq7ugdmQ3YIzz9NiF5g3jkL4B2276/63ZlMcSe0LZGe8
-         Qj1yyMy+xtrl007JkhTVHJRg0INmOfnAdNTbOhvVKVafpzJ44y802307xIOSuvnDfzQN
-         biY5BkQVSo6i5oqTVEgA/X2++OVwJHihciHDE=
-Message-ID: <4ACCF5D5.7010505@gmail.com>
-Date: Wed, 07 Oct 2009 22:11:01 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.7 Thunderbird/3.0b4
+	Wed, 7 Oct 2009 16:13:56 -0400
 MIME-Version: 1.0
-To: Alan Cox <alan@linux.intel.com>
-CC: linux-kernel@vger.kernel.org, strakh@ispras.ru
-Subject: Re: [PATCH 2/4] isicom: switch to the new tty_port_open helper
-References: <20091007144455.14550.95003.stgit@localhost.localdomain> <20091007144621.14550.62068.stgit@localhost.localdomain>
-In-Reply-To: <20091007144621.14550.62068.stgit@localhost.localdomain>
-X-Enigmail-Version: 0.97a
+In-Reply-To: <ac3eb2510910071306r4ad6dc9btb7503bc3ab0ec815@mail.gmail.com>
+References: <20091007175403.GA335@trillian.comsick.at> <9b2b86520910071246r393f2afvacaa4d8f544508a8@mail.gmail.com> 
+	<ac3eb2510910071306r4ad6dc9btb7503bc3ab0ec815@mail.gmail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Wed, 7 Oct 2009 22:12:28 +0200
+Message-ID: <ac3eb2510910071312qe6ad45ep6c579a8393cc6b8e@mail.gmail.com>
+Subject: Re: [BUG] No ttyS0 - Strange udev 8250_pnp interaction
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Cc: Michael Guntsche <mike@it-loops.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-hotplug <linux-hotplug@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/07/2009 04:46 PM, Alan Cox wrote:
-> -	if (port->port.flags & ASYNC_INITIALIZED)
-> -		return 0;
-> -	if (tty_port_alloc_xmit_buf(&port->port) < 0)
-> +	if (tty_port_alloc_xmit_buf(tport) < 0)
+On Wed, Oct 7, 2009 at 22:06, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Wed, Oct 7, 2009 at 21:46, Alan Jenkins
+> <sourcejedi.lkml@googlemail.com> wrote:
+>> Udev would have avoided the race prior to
+>>
+>> 82c785e "udevd: remove check for dev_t, DEVPATH_OLD takes care of that"
+>>
+>> (the "check" removed here used to serialize events based on the device
+>> major:minor number).
+>>
+>> So - udev probably needs to add the check back.
+>
+> What are the two devices with the same major/minor but a different DEVPATH?
 
-I think this won't work well with 1/4. ->activate is called with
-port->port.mutex (the name in this context), but tty_port_alloc_xmit_buf
-wants it again.
+To be more specific, Michael, can you please run "udevadm monitor" at
+the same time you see this happen?
+
+>> It might also be the case that future kernels could set DEVPATH_OLD as
+>> suggested.  I don't know the gory details of 8250_pnp though.
+>
+> The DEVPATH_OLD is only added when one and the same device was renamed
+> or moved, which isn't the case here, I guess?
+
+Thanks,
+Kay
