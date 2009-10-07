@@ -1,471 +1,444 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbZJGG2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757120AbZJGGSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbZJGG2c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 02:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbZJGG2a
+	id S1757120AbZJGGSg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 02:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756721AbZJGGSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 02:28:30 -0400
-Received: from mailout3.samsung.com ([203.254.224.33]:57724 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755697AbZJGG23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 02:28:29 -0400
-X-Greylist: delayed 642 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Oct 2009 02:28:28 EDT
-Date: Wed, 07 Oct 2009 15:17:01 +0900
-From: Kyungmin Park <kyungmin.park@samsung.com>
-Subject: [PATCH 1/6] Haptic: add haptic class
-To: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Cc: soni.trilok@gmail.com
-Message-id: <20091007061701.GA7567@july>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-OriginalArrivalTime: 07 Oct 2009 06:17:07.0566 (UTC)
- FILETIME=[CBFC10E0:01CA4715]
+	Wed, 7 Oct 2009 02:18:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60157 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756635AbZJGGSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 02:18:31 -0400
+Date: Wed, 7 Oct 2009 06:17:05 GMT
+From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1254890898456-git-send-email->
+References: <1254890898456-git-send-email->
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/rcu] rcu: Make hot-unplugged CPU relinquish its own RCU callbacks
+Message-ID: <tip-e74f4c4564455c91a3b4075bb1721993c2a95dda@git.kernel.org>
+Git-Commit-ID: e74f4c4564455c91a3b4075bb1721993c2a95dda
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 07 Oct 2009 06:17:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-New haptic class support.
-This class handles the haptic devices.
+Commit-ID:  e74f4c4564455c91a3b4075bb1721993c2a95dda
+Gitweb:     http://git.kernel.org/tip/e74f4c4564455c91a3b4075bb1721993c2a95dda
+Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+AuthorDate: Tue, 6 Oct 2009 21:48:17 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 7 Oct 2009 08:11:20 +0200
 
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+rcu: Make hot-unplugged CPU relinquish its own RCU callbacks
+
+The current interaction between RCU and CPU hotplug requires that
+RCU block in CPU notifiers waiting for callbacks to drain.
+
+This can be greatly simplified by having each CPU relinquish its
+own callbacks, and for both _rcu_barrier() and CPU_DEAD notifiers
+to adopt all callbacks that were previously relinquished.
+
+This change also eliminates the possibility of certain types of
+hangs due to the previous practice of waiting for callbacks to be
+invoked from within CPU notifiers.  If you don't every wait, you
+cannot hang.
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: laijs@cn.fujitsu.com
+Cc: dipankar@in.ibm.com
+Cc: akpm@linux-foundation.org
+Cc: mathieu.desnoyers@polymtl.ca
+Cc: josh@joshtriplett.org
+Cc: dvhltc@us.ibm.com
+Cc: niv@us.ibm.com
+Cc: peterz@infradead.org
+Cc: rostedt@goodmis.org
+Cc: Valdis.Kletnieks@vt.edu
+Cc: dhowells@redhat.com
+LKML-Reference: <1254890898456-git-send-email->
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/haptic/Kconfig        |   14 +++
- drivers/haptic/Makefile       |    2 +
- drivers/haptic/haptic-class.c |  255 +++++++++++++++++++++++++++++++++++++++++
- drivers/haptic/haptic.h       |   35 ++++++
- include/linux/haptic.h        |   85 ++++++++++++++
- 5 files changed, 391 insertions(+), 0 deletions(-)
- create mode 100644 drivers/haptic/Kconfig
- create mode 100644 drivers/haptic/Makefile
- create mode 100644 drivers/haptic/haptic-class.c
- create mode 100644 drivers/haptic/haptic.h
- create mode 100644 include/linux/haptic.h
+ kernel/rcutree.c        |  151 ++++++++++++++++++++++++----------------------
+ kernel/rcutree.h        |   11 +++-
+ kernel/rcutree_plugin.h |   34 +++++++++++
+ kernel/rcutree_trace.c  |    4 +-
+ 4 files changed, 125 insertions(+), 75 deletions(-)
 
-diff --git a/drivers/haptic/Kconfig b/drivers/haptic/Kconfig
-new file mode 100644
-index 0000000..656b022
---- /dev/null
-+++ b/drivers/haptic/Kconfig
-@@ -0,0 +1,14 @@
-+menuconfig HAPTIC
-+	bool "Haptic support"
-+	help
-+	  Say Y to enable haptic support. It enables the haptic and controls
-+	  from userspace.
-+
-+if HAPTIC
-+
-+config HAPTIC_CLASS
-+	tristate "Haptic Class Support"
-+	help
-+	  This option enables the haptic sysfs class in /sys/class/haptic.
-+
-+endif	# HAPTIC
-diff --git a/drivers/haptic/Makefile b/drivers/haptic/Makefile
-new file mode 100644
-index 0000000..d30f8cd
---- /dev/null
-+++ b/drivers/haptic/Makefile
-@@ -0,0 +1,2 @@
-+# Haptic Core
-+obj-$(CONFIG_HAPTIC_CLASS)		+= haptic-class.o
-diff --git a/drivers/haptic/haptic-class.c b/drivers/haptic/haptic-class.c
-new file mode 100644
-index 0000000..d2151bc
---- /dev/null
-+++ b/drivers/haptic/haptic-class.c
-@@ -0,0 +1,255 @@
-+/*
-+ *  Haptic Class Core
-+ *
-+ *  Copyright (C) 2008 - 2009 Samsung Electronics
-+ *  Kyungmin Park <kyungmin.park@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 0108570..d8d9865 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -63,6 +63,9 @@
+ 	.gpnum = -300, \
+ 	.completed = -300, \
+ 	.onofflock = __SPIN_LOCK_UNLOCKED(&name.onofflock), \
++	.orphan_cbs_list = NULL, \
++	.orphan_cbs_tail = &name.orphan_cbs_list, \
++	.orphan_qlen = 0, \
+ 	.fqslock = __SPIN_LOCK_UNLOCKED(&name.fqslock), \
+ 	.n_force_qs = 0, \
+ 	.n_force_qs_ngp = 0, \
+@@ -838,17 +841,63 @@ rcu_check_quiescent_state(struct rcu_state *rsp, struct rcu_data *rdp)
+ #ifdef CONFIG_HOTPLUG_CPU
+ 
+ /*
++ * Move a dying CPU's RCU callbacks to the ->orphan_cbs_list for the
++ * specified flavor of RCU.  The callbacks will be adopted by the next
++ * _rcu_barrier() invocation or by the CPU_DEAD notifier, whichever
++ * comes first.  Because this is invoked from the CPU_DYING notifier,
++ * irqs are already disabled.
 + */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/list.h>
-+#include <linux/spinlock.h>
-+#include <linux/device.h>
-+#include <linux/rwsem.h>
-+#include <linux/sysdev.h>
-+#include <linux/timer.h>
-+#include <linux/err.h>
-+#include <linux/ctype.h>
-+#include <linux/haptic.h>
-+#include "haptic.h"
-+
-+static DECLARE_RWSEM(haptic_list_lock);
-+static LIST_HEAD(haptic_list);
-+static struct class *haptic_class;
-+static struct class_dev_iter *iter;
-+
-+static void haptic_update_value(struct haptic_classdev *haptic_cdev)
++static void rcu_send_cbs_to_orphanage(struct rcu_state *rsp)
 +{
-+	if (haptic_cdev->get)
-+		haptic_cdev->value = haptic_cdev->get(haptic_cdev);
++	int i;
++	struct rcu_data *rdp = rsp->rda[smp_processor_id()];
++
++	if (rdp->nxtlist == NULL)
++		return;  /* irqs disabled, so comparison is stable. */
++	spin_lock(&rsp->onofflock);  /* irqs already disabled. */
++	*rsp->orphan_cbs_tail = rdp->nxtlist;
++	rsp->orphan_cbs_tail = rdp->nxttail[RCU_NEXT_TAIL];
++	rdp->nxtlist = NULL;
++	for (i = 0; i < RCU_NEXT_SIZE; i++)
++		rdp->nxttail[i] = &rdp->nxtlist;
++	rsp->orphan_qlen += rdp->qlen;
++	rdp->qlen = 0;
++	spin_unlock(&rsp->onofflock);  /* irqs remain disabled. */
 +}
 +
-+#define ATTR_DEF_SHOW(name) \
-+static ssize_t haptic_show_##name(struct class *class, \
-+		char *buf) \
-+{ \
-+	struct device *dev; \
-+	struct haptic_classdev *haptic_cdev; \
-+	ssize_t ret = -EINVAL; \
-+  \
-+	class_dev_iter_init(iter, haptic_class, NULL, NULL); \
-+	while ((dev = class_dev_iter_next(iter))) { \
-+		haptic_cdev = dev_get_drvdata(dev); \
-+		if (haptic_cdev->show_##name) \
-+			ret = haptic_cdev->show_##name(dev, NULL, buf); \
-+	} \
-+  \
-+	return ret; \
-+}
-+
-+#define ATTR_DEF_STORE(name) \
-+static ssize_t haptic_store_##name(struct class *class, \
-+		const char *buf, size_t count) \
-+{ \
-+	struct device *dev; \
-+	struct haptic_classdev *haptic_cdev; \
-+	ssize_t ret = -EINVAL; \
-+  \
-+	class_dev_iter_init(iter, haptic_class, NULL, NULL); \
-+	while ((dev = class_dev_iter_next(iter))) { \
-+		haptic_cdev = dev_get_drvdata(dev); \
-+		if (haptic_cdev->store_##name) \
-+			ret = haptic_cdev->store_##name( \
-+					dev, NULL, buf, count); \
-+	} \
-+  \
-+	return ret; \
-+}
-+
-+ATTR_DEF_SHOW(enable);
-+ATTR_DEF_STORE(enable);
-+static CLASS_ATTR(enable, 0644, haptic_show_enable, haptic_store_enable);
-+
-+ATTR_DEF_STORE(oneshot);
-+static CLASS_ATTR(oneshot, 0200, NULL, haptic_store_oneshot);
-+
-+ATTR_DEF_SHOW(level);
-+ATTR_DEF_STORE(level);
-+static CLASS_ATTR(level, 0644, haptic_show_level, haptic_store_level);
-+
-+ATTR_DEF_SHOW(level_max);
-+static CLASS_ATTR(level_max, 0444, haptic_show_level_max, NULL);
-+
-+static ssize_t haptic_show_value(struct class *class,
-+		char *buf)
++/*
++ * Adopt previously orphaned RCU callbacks.
++ */
++static void rcu_adopt_orphan_cbs(struct rcu_state *rsp)
 +{
-+	struct device *dev;
-+	struct haptic_classdev *haptic_cdev;
-+	ssize_t ret = 0;
++	unsigned long flags;
++	struct rcu_data *rdp;
 +
-+	class_dev_iter_init(iter, haptic_class, NULL, NULL);
-+	while ((dev = class_dev_iter_next(iter))) {
-+		haptic_cdev = dev_get_drvdata(dev);
-+
-+		/* no lock needed for this */
-+		haptic_update_value(haptic_cdev);
-+		sprintf(buf, "%u\n", haptic_get_value(haptic_cdev));
-+		ret = strlen(buf) + 1;
++	spin_lock_irqsave(&rsp->onofflock, flags);
++	rdp = rsp->rda[smp_processor_id()];
++	if (rsp->orphan_cbs_list == NULL) {
++		spin_unlock_irqrestore(&rsp->onofflock, flags);
++		return;
 +	}
-+
-+	return ret;
++	*rdp->nxttail[RCU_NEXT_TAIL] = rsp->orphan_cbs_list;
++	rdp->nxttail[RCU_NEXT_TAIL] = rsp->orphan_cbs_tail;
++	rdp->qlen += rsp->orphan_qlen;
++	rsp->orphan_cbs_list = NULL;
++	rsp->orphan_cbs_tail = &rsp->orphan_cbs_list;
++	rsp->orphan_qlen = 0;
++	spin_unlock_irqrestore(&rsp->onofflock, flags);
 +}
 +
-+static ssize_t haptic_store_value(struct class *class,
-+		const char *buf, size_t count)
++/*
+  * Remove the outgoing CPU from the bitmasks in the rcu_node hierarchy
+  * and move all callbacks from the outgoing CPU to the current one.
+  */
+ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ {
+-	int i;
+ 	unsigned long flags;
+ 	long lastcomp;
+ 	unsigned long mask;
+ 	struct rcu_data *rdp = rsp->rda[cpu];
+-	struct rcu_data *rdp_me;
+ 	struct rcu_node *rnp;
+ 
+ 	/* Exclude any attempts to start a new grace period. */
+@@ -871,32 +920,9 @@ static void __rcu_offline_cpu(int cpu, struct rcu_state *rsp)
+ 	} while (rnp != NULL);
+ 	lastcomp = rsp->completed;
+ 
+-	spin_unlock(&rsp->onofflock);		/* irqs remain disabled. */
++	spin_unlock_irqrestore(&rsp->onofflock, flags);
+ 
+-	/*
+-	 * Move callbacks from the outgoing CPU to the running CPU.
+-	 * Note that the outgoing CPU is now quiescent, so it is now
+-	 * (uncharacteristically) safe to access its rcu_data structure.
+-	 * Note also that we must carefully retain the order of the
+-	 * outgoing CPU's callbacks in order for rcu_barrier() to work
+-	 * correctly.  Finally, note that we start all the callbacks
+-	 * afresh, even those that have passed through a grace period
+-	 * and are therefore ready to invoke.  The theory is that hotplug
+-	 * events are rare, and that if they are frequent enough to
+-	 * indefinitely delay callbacks, you have far worse things to
+-	 * be worrying about.
+-	 */
+-	if (rdp->nxtlist != NULL) {
+-		rdp_me = rsp->rda[smp_processor_id()];
+-		*rdp_me->nxttail[RCU_NEXT_TAIL] = rdp->nxtlist;
+-		rdp_me->nxttail[RCU_NEXT_TAIL] = rdp->nxttail[RCU_NEXT_TAIL];
+-		rdp->nxtlist = NULL;
+-		for (i = 0; i < RCU_NEXT_SIZE; i++)
+-			rdp->nxttail[i] = &rdp->nxtlist;
+-		rdp_me->qlen += rdp->qlen;
+-		rdp->qlen = 0;
+-	}
+-	local_irq_restore(flags);
++	rcu_adopt_orphan_cbs(rsp);
+ }
+ 
+ /*
+@@ -914,6 +940,14 @@ static void rcu_offline_cpu(int cpu)
+ 
+ #else /* #ifdef CONFIG_HOTPLUG_CPU */
+ 
++static void rcu_send_cbs_to_orphanage(struct rcu_state *rsp)
 +{
-+	struct device *dev;
-+	struct haptic_classdev *haptic_cdev;
-+	ssize_t ret = -EINVAL;
-+	unsigned long val;
-+
-+	class_dev_iter_init(iter, haptic_class, NULL, NULL);
-+	while ((dev = class_dev_iter_next(iter))) {
-+		haptic_cdev = dev_get_drvdata(dev);
-+		ret = strict_strtoul(buf, 10, &val);
-+		if (ret == 0) {
-+			ret = count;
-+			haptic_set_value(haptic_cdev, val);
-+		}
-+	}
-+
-+	return ret;
 +}
-+static CLASS_ATTR(value, 0644, haptic_show_value, haptic_store_value);
 +
++static void rcu_adopt_orphan_cbs(struct rcu_state *rsp)
++{
++}
++
+ static void rcu_offline_cpu(int cpu)
+ {
+ }
+@@ -1367,9 +1401,6 @@ static DEFINE_PER_CPU(struct rcu_head, rcu_barrier_head) = {NULL};
+ static atomic_t rcu_barrier_cpu_count;
+ static DEFINE_MUTEX(rcu_barrier_mutex);
+ static struct completion rcu_barrier_completion;
+-static atomic_t rcu_migrate_type_count = ATOMIC_INIT(0);
+-static struct rcu_head rcu_migrate_head[3];
+-static DECLARE_WAIT_QUEUE_HEAD(rcu_migrate_wq);
+ 
+ static void rcu_barrier_callback(struct rcu_head *notused)
+ {
+@@ -1392,21 +1423,16 @@ static void rcu_barrier_func(void *type)
+ 	call_rcu_func(head, rcu_barrier_callback);
+ }
+ 
+-static inline void wait_migrated_callbacks(void)
+-{
+-	wait_event(rcu_migrate_wq, !atomic_read(&rcu_migrate_type_count));
+-	smp_mb(); /* In case we didn't sleep. */
+-}
+-
+ /*
+  * Orchestrate the specified type of RCU barrier, waiting for all
+  * RCU callbacks of the specified type to complete.
+  */
+-static void _rcu_barrier(void (*call_rcu_func)(struct rcu_head *head,
++static void _rcu_barrier(struct rcu_state *rsp,
++			 void (*call_rcu_func)(struct rcu_head *head,
+ 					       void (*func)(struct rcu_head *head)))
+ {
+ 	BUG_ON(in_interrupt());
+-	/* Take cpucontrol mutex to protect against CPU hotplug */
++	/* Take mutex to serialize concurrent rcu_barrier() requests. */
+ 	mutex_lock(&rcu_barrier_mutex);
+ 	init_completion(&rcu_barrier_completion);
+ 	/*
+@@ -1419,29 +1445,22 @@ static void _rcu_barrier(void (*call_rcu_func)(struct rcu_head *head,
+ 	 * early.
+ 	 */
+ 	atomic_set(&rcu_barrier_cpu_count, 1);
++	preempt_disable(); /* stop CPU_DYING from filling orphan_cbs_list */
++	rcu_adopt_orphan_cbs(rsp);
+ 	on_each_cpu(rcu_barrier_func, (void *)call_rcu_func, 1);
++	preempt_enable(); /* CPU_DYING can again fill orphan_cbs_list */
+ 	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
+ 		complete(&rcu_barrier_completion);
+ 	wait_for_completion(&rcu_barrier_completion);
+ 	mutex_unlock(&rcu_barrier_mutex);
+-	wait_migrated_callbacks();
+-}
+-
+-/**
+- * rcu_barrier - Wait until all in-flight call_rcu() callbacks complete.
+- */
+-void rcu_barrier(void)
+-{
+-	_rcu_barrier(call_rcu);
+ }
+-EXPORT_SYMBOL_GPL(rcu_barrier);
+ 
+ /**
+  * rcu_barrier_bh - Wait until all in-flight call_rcu_bh() callbacks complete.
+  */
+ void rcu_barrier_bh(void)
+ {
+-	_rcu_barrier(call_rcu_bh);
++	_rcu_barrier(&rcu_bh_state, call_rcu_bh);
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier_bh);
+ 
+@@ -1450,16 +1469,10 @@ EXPORT_SYMBOL_GPL(rcu_barrier_bh);
+  */
+ void rcu_barrier_sched(void)
+ {
+-	_rcu_barrier(call_rcu_sched);
++	_rcu_barrier(&rcu_sched_state, call_rcu_sched);
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier_sched);
+ 
+-static void rcu_migrate_callback(struct rcu_head *notused)
+-{
+-	if (atomic_dec_and_test(&rcu_migrate_type_count))
+-		wake_up(&rcu_migrate_wq);
+-}
+-
+ /*
+  * Do boot-time initialization of a CPU's per-CPU RCU data.
+  */
+@@ -1556,27 +1569,21 @@ int __cpuinit rcu_cpu_notify(struct notifier_block *self,
+ 	case CPU_UP_PREPARE_FROZEN:
+ 		rcu_online_cpu(cpu);
+ 		break;
+-	case CPU_DOWN_PREPARE:
+-	case CPU_DOWN_PREPARE_FROZEN:
+-		/* Don't need to wait until next removal operation. */
+-		/* rcu_migrate_head is protected by cpu_add_remove_lock */
+-		wait_migrated_callbacks();
+-		break;
+ 	case CPU_DYING:
+ 	case CPU_DYING_FROZEN:
+ 		/*
+-		 * preempt_disable() in on_each_cpu() prevents stop_machine(),
++		 * preempt_disable() in _rcu_barrier() prevents stop_machine(),
+ 		 * so when "on_each_cpu(rcu_barrier_func, (void *)type, 1);"
+-		 * returns, all online cpus have queued rcu_barrier_func(),
+-		 * and the dead cpu(if it exist) queues rcu_migrate_callback()s.
+-		 *
+-		 * These callbacks ensure _rcu_barrier() waits for all
+-		 * RCU callbacks of the specified type to complete.
++		 * returns, all online cpus have queued rcu_barrier_func().
++		 * The dying CPU clears its cpu_online_mask bit and
++		 * moves all of its RCU callbacks to ->orphan_cbs_list
++		 * in the context of stop_machine(), so subsequent calls
++		 * to _rcu_barrier() will adopt these callbacks and only
++		 * then queue rcu_barrier_func() on all remaining CPUs.
+ 		 */
+-		atomic_set(&rcu_migrate_type_count, 3);
+-		call_rcu_bh(rcu_migrate_head, rcu_migrate_callback);
+-		call_rcu_sched(rcu_migrate_head + 1, rcu_migrate_callback);
+-		call_rcu(rcu_migrate_head + 2, rcu_migrate_callback);
++		rcu_send_cbs_to_orphanage(&rcu_bh_state);
++		rcu_send_cbs_to_orphanage(&rcu_sched_state);
++		rcu_preempt_send_cbs_to_orphanage();
+ 		break;
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
+diff --git a/kernel/rcutree.h b/kernel/rcutree.h
+index 676eecd..b40ac57 100644
+--- a/kernel/rcutree.h
++++ b/kernel/rcutree.h
+@@ -244,7 +244,15 @@ struct rcu_state {
+ 	/* End  of fields guarded by root rcu_node's lock. */
+ 
+ 	spinlock_t onofflock;			/* exclude on/offline and */
+-						/*  starting new GP. */
++						/*  starting new GP.  Also */
++						/*  protects the following */
++						/*  orphan_cbs fields. */
++	struct rcu_head *orphan_cbs_list;	/* list of rcu_head structs */
++						/*  orphaned by all CPUs in */
++						/*  a given leaf rcu_node */
++						/*  going offline. */
++	struct rcu_head **orphan_cbs_tail;	/* And tail pointer. */
++	long orphan_qlen;			/* Number of orphaned cbs. */
+ 	spinlock_t fqslock;			/* Only one task forcing */
+ 						/*  quiescent states. */
+ 	unsigned long jiffies_force_qs;		/* Time at which to invoke */
+@@ -305,6 +313,7 @@ void call_rcu(struct rcu_head *head, void (*func)(struct rcu_head *rcu));
+ static int rcu_preempt_pending(int cpu);
+ static int rcu_preempt_needs_cpu(int cpu);
+ static void __cpuinit rcu_preempt_init_percpu_data(int cpu);
++static void rcu_preempt_send_cbs_to_orphanage(void);
+ static void __init __rcu_init_preempt(void);
+ 
+ #endif /* #else #ifdef RCU_TREE_NONCORE */
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index 57200fe..c0cb783 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -410,6 +410,15 @@ static int rcu_preempt_needs_cpu(int cpu)
+ 	return !!per_cpu(rcu_preempt_data, cpu).nxtlist;
+ }
+ 
 +/**
-+ * haptic_classdev_suspend - suspend an haptic_classdev.
-+ * @haptic_cdev: the haptic_classdev to suspend.
++ * rcu_barrier - Wait until all in-flight call_rcu() callbacks complete.
 + */
-+void haptic_classdev_suspend(struct haptic_classdev *haptic_cdev)
++void rcu_barrier(void)
 +{
-+	haptic_cdev->flags |= HAPTIC_SUSPENDED;
-+	haptic_cdev->set(haptic_cdev, HAPTIC_OFF);
++	_rcu_barrier(&rcu_preempt_state, call_rcu);
 +}
-+EXPORT_SYMBOL_GPL(haptic_classdev_suspend);
++EXPORT_SYMBOL_GPL(rcu_barrier);
 +
-+/**
-+ * haptic_classdev_resume - resume an haptic_classdev.
-+ * @haptic_cdev: the haptic_classdev to resume.
+ /*
+  * Initialize preemptable RCU's per-CPU data.
+  */
+@@ -419,6 +428,14 @@ static void __cpuinit rcu_preempt_init_percpu_data(int cpu)
+ }
+ 
+ /*
++ * Move preemptable RCU's callbacks to ->orphan_cbs_list.
 + */
-+void haptic_classdev_resume(struct haptic_classdev *haptic_cdev)
++static void rcu_preempt_send_cbs_to_orphanage(void)
 +{
-+	haptic_cdev->set(haptic_cdev, haptic_cdev->value);
-+	haptic_cdev->flags &= ~HAPTIC_SUSPENDED;
++	rcu_send_cbs_to_orphanage(&rcu_preempt_state);
 +}
-+EXPORT_SYMBOL_GPL(haptic_classdev_resume);
-+
-+/**
-+ * haptic_classdev_register - register a new object of haptic_classdev class.
-+ * @dev: The device to register.
-+ * @haptic_cdev: the haptic_classdev structure for this device.
-+ */
-+int haptic_classdev_register(struct device *parent,
-+				struct haptic_classdev *haptic_cdev)
-+{
-+	int ret;
-+
-+	haptic_cdev->dev = device_create(haptic_class, parent, 0,
-+				haptic_cdev, "%s", haptic_cdev->name);
-+	if (IS_ERR(haptic_cdev->dev))
-+		return PTR_ERR(haptic_cdev->dev);
-+
-+	/* register the attributes */
-+	ret = class_create_file(haptic_class, &class_attr_enable);
-+	if (ret) {
-+		printk(KERN_ERR "%s: class_create_file(enable) failed\n",
-+				 __func__);
-+		return ret;
-+	}
-+	ret = class_create_file(haptic_class, &class_attr_oneshot);
-+	if (ret) {
-+		printk(KERN_ERR "%s: class_create_file(oneshot) failed\n",
-+				 __func__);
-+		return ret;
-+	}
-+	ret = class_create_file(haptic_class, &class_attr_level);
-+	if (ret) {
-+		printk(KERN_ERR "%s: class_create_file(level) failed\n",
-+				 __func__);
-+		return ret;
-+	}
-+	ret = class_create_file(haptic_class, &class_attr_level_max);
-+	if (ret) {
-+		printk(KERN_ERR "%s: class_create_file(level_max) failed\n",
-+				 __func__);
-+		return ret;
-+	}
-+	ret = class_create_file(haptic_class, &class_attr_value);
-+	if (ret) {
-+		printk(KERN_ERR "%s: class_create_file(value) failed\n",
-+				 __func__);
-+		return ret;
-+	}
-+
-+	/* add to the list of haptic */
-+	down_write(&haptic_list_lock);
-+	list_add_tail(&haptic_cdev->node, &haptic_list);
-+	up_write(&haptic_list_lock);
-+
-+	haptic_update_value(haptic_cdev);
-+
-+	printk(KERN_INFO "Registered haptic device: %s\n", haptic_cdev->name);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(haptic_classdev_register);
-+
-+/**
-+ * haptic_classdev_unregister - unregisters a object of haptic class.
-+ * @haptic_cdev: the haptic device to unregister
-+ *
-+ * Unregisters a previously registered via haptic_classdev_register object.
-+ */
-+void haptic_classdev_unregister(struct haptic_classdev *haptic_cdev)
-+{
-+	class_remove_file(haptic_class, &class_attr_enable);
-+	class_remove_file(haptic_class, &class_attr_oneshot);
-+	class_remove_file(haptic_class, &class_attr_level);
-+	class_remove_file(haptic_class, &class_attr_level_max);
-+	class_remove_file(haptic_class, &class_attr_value);
-+
-+	device_unregister(haptic_cdev->dev);
-+
-+	down_write(&haptic_list_lock);
-+	list_del(&haptic_cdev->node);
-+	up_write(&haptic_list_lock);
-+}
-+EXPORT_SYMBOL_GPL(haptic_classdev_unregister);
-+
-+static int __init haptic_init(void)
-+{
-+	haptic_class = class_create(THIS_MODULE, "haptic");
-+	if (IS_ERR(haptic_class))
-+		return PTR_ERR(haptic_class);
-+
-+	iter = kmalloc(sizeof(struct class_dev_iter), GFP_KERNEL);
-+	if (!iter)
-+		return -ENOMEM;
-+	return 0;
-+}
-+subsys_initcall(haptic_init);
-+
-+static void __exit haptic_exit(void)
-+{
-+	class_destroy(haptic_class);
-+	kfree(iter);
-+}
-+module_exit(haptic_exit);
-+
-+MODULE_AUTHOR("Kyungmin Park <kyungmin.park@samsung.com>");
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("Haptic Class Interface");
-diff --git a/drivers/haptic/haptic.h b/drivers/haptic/haptic.h
-new file mode 100644
-index 0000000..888aaa3
---- /dev/null
-+++ b/drivers/haptic/haptic.h
-@@ -0,0 +1,35 @@
-+/*
-+ *  Haptic Core
-+ *
-+ *  Copyright (C) 2008 Samsung Electronics
-+ *  Kyungmin Park <kyungmin.park@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#ifndef __HAPTIC_H_INCLUDED
-+#define __HAPTIC_H_INCLUDED
-+
-+#include <linux/device.h>
-+#include <linux/rwsem.h>
-+#include <linux/haptic.h>
-+
-+static inline void haptic_set_value(struct haptic_classdev *haptic_cdev,
-+					enum haptic_value value)
-+{
-+	if (value > HAPTIC_FULL)
-+		value = HAPTIC_FULL;
-+	haptic_cdev->value = value;
-+	if (!(haptic_cdev->flags & HAPTIC_SUSPENDED))
-+		haptic_cdev->set(haptic_cdev, value);
-+}
-+
-+static inline int haptic_get_value(struct haptic_classdev *haptic_cdev)
-+{
-+	return haptic_cdev->value;
-+}
-+
-+#endif	/* __HAPTIC_H_INCLUDED */
-diff --git a/include/linux/haptic.h b/include/linux/haptic.h
-new file mode 100644
-index 0000000..c8c0778
---- /dev/null
-+++ b/include/linux/haptic.h
-@@ -0,0 +1,85 @@
-+/*
-+ *  Driver model for haptic
-+ *
-+ *  Copyright (C) 2008 Samsung Electronics
-+ *  Kyungmin Park <kyungmin.park@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#ifndef __LINUX_HAPTIC_H_INCLUDED
-+#define __LINUX_HAPTIC_H_INCLUDED
-+
-+#include <linux/list.h>
-+#include <linux/spinlock.h>
-+#include <linux/rwsem.h>
-+
-+struct device;
-+/*
-+ * Motor Core
-+ */
-+
-+enum haptic_value {
-+	HAPTIC_OFF	= 0,
-+	HAPTIC_HALF	= 127,
-+	HAPTIC_FULL	= 255,
-+};
-+
-+struct haptic_classdev {
-+	const char		*name;
-+	int			value;
-+#define HAPTIC_SUSPENDED		(1 << 0)
-+	int			flags;
-+
-+	/* Set haptic value */
-+	/* Must not sleep, use a workqueue if needed */
-+	void			(*set)(struct haptic_classdev *self,
-+					  enum haptic_value value);
-+	/* Get haptic value */
-+	enum haptic_value	(*get)(struct haptic_classdev *self);
-+
-+	ssize_t (*show_enable)(struct device *dev,
-+			struct device_attribute *attr, char *buf);
-+	ssize_t (*store_enable)(struct device *dev,
-+			struct device_attribute *attr,
-+			const char *buf, size_t size);
-+
-+	ssize_t (*store_oneshot)(struct device *dev,
-+			struct device_attribute *attr,
-+			const char *buf, size_t size);
-+
-+	ssize_t (*show_level)(struct device *dev,
-+			struct device_attribute *attr, char *buf);
-+	ssize_t (*store_level)(struct device *dev,
-+			struct device_attribute *attr,
-+			const char *buf, size_t size);
-+
-+	ssize_t (*show_level_max)(struct device *dev,
-+			struct device_attribute *attr, char *buf);
-+
-+	struct device		*dev;
-+	struct list_head	node;	/* Motor Device list */
-+};
-+
-+extern int haptic_classdev_register(struct device *parent,
-+				 struct haptic_classdev *haptic_cdev);
-+extern void haptic_classdev_unregister(struct haptic_classdev *lcd);
-+extern void haptic_classdev_suspend(struct haptic_classdev *haptic_cdev);
-+extern void haptic_classdev_resume(struct haptic_classdev *haptic_cdev);
 +
 +/*
-+ * Generic and gpio haptic platform data for describing haptic names.
+  * Initialize preemptable RCU's state structures.
+  */
+ static void __init __rcu_init_preempt(void)
+@@ -564,6 +581,16 @@ static int rcu_preempt_needs_cpu(int cpu)
+ }
+ 
+ /*
++ * Because preemptable RCU does not exist, rcu_barrier() is just
++ * another name for rcu_barrier_sched().
 + */
-+struct haptic_platform_data {
-+	const char	*name;
-+	int		pwm_timer;
-+	int		gpio;
-+	void	(*setup_pin)(void);
-+	u8		active_low;
-+	int		ldo_level;
-+};
++void rcu_barrier(void)
++{
++	rcu_barrier_sched();
++}
++EXPORT_SYMBOL_GPL(rcu_barrier);
 +
-+#endif	/* __LINUX_HAPTIC_H_INCLUDED */
--- 
-1.5.3.3
-
++/*
+  * Because preemptable RCU does not exist, there is no per-CPU
+  * data to initialize.
+  */
+@@ -572,6 +599,13 @@ static void __cpuinit rcu_preempt_init_percpu_data(int cpu)
+ }
+ 
+ /*
++ * Because there is no preemptable RCU, there are no callbacks to move.
++ */
++static void rcu_preempt_send_cbs_to_orphanage(void)
++{
++}
++
++/*
+  * Because preemptable RCU does not exist, it need not be initialized.
+  */
+ static void __init __rcu_init_preempt(void)
+diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
+index f09af28..4b31c77 100644
+--- a/kernel/rcutree_trace.c
++++ b/kernel/rcutree_trace.c
+@@ -159,13 +159,13 @@ static void print_one_rcu_state(struct seq_file *m, struct rcu_state *rsp)
+ 	struct rcu_node *rnp;
+ 
+ 	seq_printf(m, "c=%ld g=%ld s=%d jfq=%ld j=%x "
+-		      "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu\n",
++		      "nfqs=%lu/nfqsng=%lu(%lu) fqlh=%lu oqlen=%ld\n",
+ 		   rsp->completed, rsp->gpnum, rsp->signaled,
+ 		   (long)(rsp->jiffies_force_qs - jiffies),
+ 		   (int)(jiffies & 0xffff),
+ 		   rsp->n_force_qs, rsp->n_force_qs_ngp,
+ 		   rsp->n_force_qs - rsp->n_force_qs_ngp,
+-		   rsp->n_force_qs_lh);
++		   rsp->n_force_qs_lh, rsp->orphan_qlen);
+ 	for (rnp = &rsp->node[0]; rnp - &rsp->node[0] < NUM_RCU_NODES; rnp++) {
+ 		if (rnp->level != level) {
+ 			seq_puts(m, "\n");
