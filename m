@@ -1,94 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbZJGOZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759278AbZJGO0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759274AbZJGOZR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759239AbZJGOZP
+	id S1759278AbZJGO0b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 10:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758621AbZJGO0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:25:15 -0400
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:15494
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759245AbZJGOZM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 10:25:12 -0400
-X-SpamScore: -34
-X-BigFish: VPS-34(zz542N1432R98dN4015L9371Pzz1202hzzz2dh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Xilinx SYSACE driver and 8-bit attachment
-Date: Wed, 7 Oct 2009 08:24:28 -0600
-In-Reply-To: <fa686aa40910070634r4a8dcf74qdcbfb3bde3413109@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Xilinx SYSACE driver and 8-bit attachment
-Thread-Index: AcpHUwAhH5aNw0SuTEanW48+j2280gABkofA
-References: <1d3f23370910070013u6307bc42hf7ab243b52d007df@mail.gmail.com> <fa686aa40910070634r4a8dcf74qdcbfb3bde3413109@mail.gmail.com>
-From: John Linn <John.Linn@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-       "John Williams" <john.williams@petalogix.com>
-CC: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Michal Simek" <michal.simek@petalogix.com>,
-       "David DeBonis" <ddeboni@xilinx.com>,
-       "Stephen Neuendorffer" <stephenn@xilinx.com>,
-       "devicetree-discuss" <devicetree-discuss@lists.ozlabs.org>
-X-OriginalArrivalTime: 07 Oct 2009 14:24:29.0162 (UTC) FILETIME=[E15584A0:01CA4759]
-Message-ID: <838c3c32-27d9-4a0a-a197-c7227b911942@VA3EHSMHS014.ehs.local>
-X-Reverse-DNS: unknown-60-83.xilinx.com
+	Wed, 7 Oct 2009 10:26:31 -0400
+Received: from lo.gmane.org ([80.91.229.12]:54814 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758546AbZJGO0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 10:26:30 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jindrich Makovicka <makovick@gmail.com>
+Subject: Re: Massive ext4 filesystem corruption after a failed s2disk/ram
+ cycle
+Date: Wed, 7 Oct 2009 16:25:14 +0200
+Message-ID: <20091007162514.6942f538@starbug.prg01.itonis.net>
+References: <1254863215.11577.23.camel@maxim-laptop>
+	<20091006214214.GC17883@mit.edu>
+	<1254870145.11561.8.camel@maxim-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 193.239.0.25
+X-Newsreader: Claws Mail 3.7.2 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Cc: linux-pm@lists.osdl.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'll look to see if something has changed.  It's not clear to me if it has ever been right.
+On Wed, 07 Oct 2009 01:02:25 +0200
+Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 
-It look like we normally use 16 bit mode as that's how BSB generates the system by default.
+> On Tue, 2009-10-06 at 17:42 -0400, Theodore Tso wrote: 
+> > On Tue, Oct 06, 2009 at 11:06:55PM +0200, Maxim Levitsky wrote:
+> > > 
+> > > Just prior to 2.6.32 cycle I tried -next tree and noticed that
+> > > after a failed s2ram (here it works only once, and I test once in
+> > > a whileto see if fixed accidentally) I got a minor filesystem
+> > > corruption. I am sorry I didn't report that back then.
+> > 
+> 
+> Sure, kernel noticed errors, and remounted the filesystem R/O (I
+> didn't write anything down. really sorry)
+> 
+> I had rebooted the system.
+> Then startup scripts had booted the system to root shell
+> 
+> I had run fsck on the filesystem. It had plenty of files with shared
+> blocks, many orphaned inodes, errors in free bitmaps.
+> 
+> 
+> Then, after the fsck, I got many missing files (many probably went to
+> lost+found), some had garbage, some became truncated (0 size)
+> 
+> Mostly were affected files that were from recent dpkg update.
+> 
+> 
+> I use ubuntu 9.10, and (almost) latest -git of kernel tree.
 
-Thanks,
-John
+I encountered something very similar yesterday, with 2.6.32-rc3. When
+doing sync after accidentally removing a mounted USB stick, sync got
+stuck, so I resorted to SysRq+S/U/B. Unfortunately this was also just
+after an apt-get upgrade. The result was the same, corrupted ext4
+partitions, shared blocks, orphaned inodes, free bitmap errors.
 
-> -----Original Message-----
-> From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On Behalf Of Grant Likely
-> Sent: Wednesday, October 07, 2009 7:35 AM
-> To: John Williams
-> Cc: Linux Kernel list; Michal Simek; John Linn; David DeBonis; Stephen Neuendorffer; devicetree-
-> discuss
-> Subject: Re: Xilinx SYSACE driver and 8-bit attachment
-> 
-> [Added devicetree-discuss to cc: list]
-> 
-> On Wed, Oct 7, 2009 at 1:13 AM, John Williams
-> <john.williams@petalogix.com> wrote:
-> > Hi Grant (it's your driver :) and David D ( and your DTS generator :)
-> [...]
-> > if (of_find_property(op->node, "8-bit", NULL))
-> [...]
-> > doesn't match the properties generated by Xilinx's device tree generator:
-> [...]
-> >                         xlnx,mem-width = <0x8>;
-> >
-> > So, the question is, which should change?
-> 
-> Well, obviously its a device tree generator bug, the driver code is
-> perfect.  :-P
-> 
-> In all seriousness though, the '8-bit' property has been present for a
-> while now and needs to be retained to not break existing users.  It
-> would be okay for the driver to be modified to *also* check for the
-> xlnx,mem-width property, but the better solution is to modify the
-> device tree generator.  Plus, the '8-bit' property is the documented
-> binding in Documentation/powerpc/dts-bindings/xilinx.txt
-> 
-> Cheers,
-> g.
-> 
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
+Only recently written files seem to be affected, in my case
+upgraded stuff in / and configuration files in /home.
 
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+-- 
+Jindrich Makovicka
 
 
