@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752644AbZJGEgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbZJGEqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752644AbZJGEgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 00:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZJGEgt
+	id S1753617AbZJGEqW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 00:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbZJGEqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 00:36:49 -0400
-Received: from mail-ew0-f217.google.com ([209.85.219.217]:39193 "EHLO
-	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751522AbZJGEgs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 00:36:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tYfgLLpe3D4OCNAS+ypUFVB6RvZjS3iUh5Z0UEFxWI0StjGQRk4gAi7PcEuB/94565
-         4kyGYDaYsFVF58dtV19ktki9oifF5mFS2G2LtzWQKRUr0trsTeDVfOzw1RGLhScMhE7a
-         YHEBxblT+Ey1xVSLrWG1moiy7JqW4iZW/64Y4=
-Date: Tue, 6 Oct 2009 21:36:04 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz, linux-input@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 32-rc1 aka 32-rc2: warning at manage.c:361 (set_irq_wake),
-	matrix-keypad related?
-Message-ID: <20091007043603.GC10204@core.coreip.homeip.net>
-References: <20090930200746.GA1384@ucw.cz> <20091006050649.GH27881@core.coreip.homeip.net> <20091006075816.GA1362@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091006075816.GA1362@ucw.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 7 Oct 2009 00:46:21 -0400
+Received: from mail.perches.com ([173.55.12.10]:1947 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753076AbZJGEqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 00:46:20 -0400
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: Matt Mackall <mpm@selenic.com>, Neil Brown <neilb@suse.de>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       Adrian Hunter <adrian.hunter@nokia.com>, Alex Elder <aelder@sgi.com>,
+       xfs-masters@oss.sgi.com, linux-raid@vger.kernel.org,
+       linux-media@vger.kernel.org, cluster-devel@redhat.com,
+       linux-mtd@lists.infradead.org, xfs@oss.sgi.com
+Subject: [PATCH 0/8] Add vsprintf extension %pU to print UUID/GUIDs and use it
+Date: Tue,  6 Oct 2009 21:45:33 -0700
+Message-Id: <1254890742-28245-1-git-send-email-joe@perches.com>
+X-Mailer: git-send-email 1.6.5.rc2.17.gdbc1b.dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 09:58:17AM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> On Mon 2009-10-05 22:06:50, Dmitry Torokhov wrote:
-> > On Wed, Sep 30, 2009 at 10:07:46PM +0200, Pavel Machek wrote:
-> > > 
-> > > It complains about unbalanced irq 113 wake disable. That one belongs
-> > > to matrix-keypad...
-> > 
-> > I guess some of enable_irq_wake()s fail on your box. Do you see it if
-> > you apply the patch below?
-> 
-> I'll do short test. But... if you are right, your patch will just make
-> your machine refuse to suspend... right?
-> 
-> Ungood.
+Using %pU makes an x86 defconfig image a bit smaller
 
-It was just a debug patch.
+before:	$ size vmlinux
+   text    data     bss     dec     hex filename
+6976022  679572 1359668 9015262  898fde vmlinux
 
-> 
-> Actually, it seems to break suspend (returns  -EINVAL while refusing
-> to suspend), warnings are still there, and keyboard is dead after
-> failed suspend... double plus ungood.
-> 
-> Aha, so warning is solved: the one in the log is from gpio_buttons.
-> 
+after:	$ size vmlinux
+   text	   data	    bss	    dec	    hex	filename
+6975863	 679652	1359668	9015183	 898f8f	vmlinux
 
-OK, so it looks like your box refuses to set up one of the GPIOs as a
-wakeup source... Hmm, either your box is wrong ;) or matrix_keypad
-driver needs to maintain a separate list of wakeup GPIOs.
+Joe Perches (8):
+  lib/vsprintf.c: Add %pU to print UUID/GUIDs
+  random.c: Use %pU to print UUIDs
+  drivers/firmware/dmi_scan.c: Use %pUB to print UUIDs
+  drivers/md/md.c: Use %pU to print UUIDs
+  drivers/media/video/uvc: Use %pUl to print UUIDs
+  fs/gfs2/sys.c: Use %pUB to print UUIDs
+  fs/ubifs: Use %pUB to print UUIDs
+  fs/xfs/xfs_log_recover.c: Use %pU to print UUIDs
 
--- 
-Dmitry
+ drivers/char/random.c                |   10 +---
+ drivers/firmware/dmi_scan.c          |    5 +--
+ drivers/md/md.c                      |   16 ++------
+ drivers/media/video/uvc/uvc_ctrl.c   |   69 ++++++++++++++++------------------
+ drivers/media/video/uvc/uvc_driver.c |    7 +--
+ drivers/media/video/uvc/uvcvideo.h   |   10 -----
+ fs/gfs2/sys.c                        |   16 +------
+ fs/ubifs/debug.c                     |    9 +---
+ fs/ubifs/super.c                     |    7 +---
+ fs/xfs/xfs_log_recover.c             |   14 ++-----
+ lib/vsprintf.c                       |   62 ++++++++++++++++++++++++++++++-
+ 11 files changed, 114 insertions(+), 111 deletions(-)
+
