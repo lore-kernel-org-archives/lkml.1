@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934372AbZJGU7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZJGVMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934372AbZJGU7g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934355AbZJGU7f
+	id S1752842AbZJGVMx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 17:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbZJGVMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:59:35 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:10660 "EHLO mx1.redhat.com"
+	Wed, 7 Oct 2009 17:12:53 -0400
+Received: from www.tglx.de ([62.245.132.106]:44073 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934352AbZJGU7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:59:34 -0400
-Date: Wed, 7 Oct 2009 17:58:52 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 03/10] KVM: SVM: Move nested INTR #vmexit into
-	preemtible code
-Message-ID: <20091007205852.GA7692@amt.cnet>
-References: <1254925888-13743-1-git-send-email-joerg.roedel@amd.com> <1254925888-13743-4-git-send-email-joerg.roedel@amd.com>
+	id S1752463AbZJGVMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 17:12:52 -0400
+Date: Wed, 7 Oct 2009 23:01:23 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: John Kacur <jkacur@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH RFC] BKL not necessary in cpuid_open
+In-Reply-To: <20091007201338.GE5903@nowhere>
+Message-ID: <alpine.LFD.2.00.0910072259230.9428@localhost.localdomain>
+References: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain> <20091007201338.GE5903@nowhere>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254925888-13743-4-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 04:31:21PM +0200, Joerg Roedel wrote:
-> This patch makes use of the KVM_REQ_VMEXIT to move the
-> emulation of #vmexit(INTR) out of non-preemptible code.
+On Wed, 7 Oct 2009, Frederic Weisbecker wrote:
+> Hmm, I'm discovering that in tip:rt/kill-the-bkl
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kvm/svm.c |   18 ++++++++++++++++--
->  1 files changed, 16 insertions(+), 2 deletions(-)
+> http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commitdiff;h=55968ede164ae523692f00717f50cd926f1382a0
 > 
-> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-> index b6ce1a9..7015680 100644
-> --- a/arch/x86/kvm/svm.c
-> +++ b/arch/x86/kvm/svm.c
-> @@ -1379,8 +1379,14 @@ static inline int nested_svm_intr(struct vcpu_svm *svm)
->  
->  	svm->vmcb->control.exit_code = SVM_EXIT_INTR;
->  
-> -	if (nested_svm_exit_handled(svm)) {
-> -		nsvm_printk("VMexit -> INTR\n");
-> +	if (svm->nested.intercept & 1ULL) {
-> +		/*
-> +		 * The #vmexit can't be emulated here directly because this
-> +		 * code path runs with irqs and preemtion disabled and a
-> +		 * #vmexit emulation might sleep. Only set the request bit for
-> +		 * the #vmexit here.
-> +		 */
-> +		set_bit(KVM_REQ_VMEXIT, &svm->vcpu.requests);
->  		return 1;
->  	}
+> Looks like we have overlaped.
+> 
+> Thomas it would be nice to post these patches on LKML (or I missed
+> them?) and may be to merge them into tip:master, so that they are
+> visible and then we lower the risk of any duplicate works in this area.
 
-What if you keep this internal to SVM? Proceed to svm_vcpu_run and
-return, do the emulation on the exit handler.
+Now guess why I mentioned this branch sevaral times at the rt summit
+last week. It's even documented in Jonathans excellent meeting
+minutes on lwn.net :)
 
-Then there's no need for the request bit (VMX does that, see
-vmx_vcpu_run).
+Thanks,
 
+	tglx
