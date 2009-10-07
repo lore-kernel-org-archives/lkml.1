@@ -1,94 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934217AbZJGQ3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934268AbZJGQa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934217AbZJGQ3Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 12:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933408AbZJGQ3X
+	id S934268AbZJGQa2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 12:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759543AbZJGQa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 12:29:23 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:39755 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933178AbZJGQ3X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 12:29:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LZtekDg4ZzEdgkXKBa/dGpsbPUqGZOoVBDfxrE1f9y/s6dhnKrox+rnSfoCPXXfO9F
-         A/bdwBmfvwmrB1nOTnm07YHx8LiTdWoRKOCHdSG++Twh13gZw2C6OifU9/4yIT4yGzsA
-         4uyXByc0umbbTgNdXj8+LScIrD7WzjG8fDs4s=
-Date: Wed, 7 Oct 2009 18:28:42 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: rostedt@goodmis.org, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [PATCH tracing/kprobes v2 1/5] tracing/kprobes: Rename special
-	variables syntax
-Message-ID: <20091007162839.GA5903@nowhere>
-References: <20091002214834.30906.86502.stgit@dhcp-100-2-132.bos.redhat.com> <20091002214842.30906.49220.stgit@dhcp-100-2-132.bos.redhat.com> <20091003015444.GE4828@nowhere> <4AC830F0.2010003@redhat.com> <4ACA25D5.10703@redhat.com> <20091005192609.GB6071@nowhere> <1254787973.13160.195.camel@gandalf.stny.rr.com> <4ACB52F6.7020106@redhat.com> <20091006224755.GC11007@nowhere> <4ACBEB4E.20803@redhat.com>
-MIME-Version: 1.0
+	Wed, 7 Oct 2009 12:30:27 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38387 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759541AbZJGQa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 12:30:27 -0400
+Date: Wed, 7 Oct 2009 18:29:49 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [rfc][patch] store-free path walking
+Message-ID: <20091007162949.GV30316@wotan.suse.de>
+References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4ACBEB4E.20803@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 09:13:50PM -0400, Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
-> > On Tue, Oct 06, 2009 at 10:23:50AM -0400, Masami Hiramatsu wrote:
-> >> OK, so here are syntax ideas
-> >>
-> >> * current syntax
-> >> <Ftrace>
-> >> - $sp_var
-> >> - %regs
-> >> - @symbol
-> >> <Perf>
-> >> - local_var
+On Wed, Oct 07, 2009 at 07:56:33AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 7 Oct 2009, Nick Piggin wrote:
 > > 
-> > 
-> > This one looks good.
-> > And why not turning @symbol into symbol?
-> > Then it's up to perf probe to find the right
-> > target.
+> > OK, I have a really basic patch that does store-free path walking
+> > (except on the final element).
 > 
-> Hmm, one big reason for separating local_vars
-> and others is that I'd like to check whether
-> perf-probe needs debuginfo or not.
-> If there is no local_vars, we don't need to
-> parse debuginfo. Sometimes, it is useful just
-> for setting up probe points.
+> Yay!
 > 
-> > And @ can be used for raw addresses?
+> > dbench is pretty nasty still because it seems to do a lot of stupid 
+> > things like reading from /proc/mounts all the time.
 > 
-> Yeah, but @ can be shared with symbols and raw addresses.
-> If the first char is digit, it's not a symbol.:-)
-> 
-> And also, @symbol actually has its syntax rule.:-)
-> its real syntax is:
-> @[MODULE:]SYMBOL[+OFFSET]
-> or
-> @ADDRESS (0xNN (base 16) or NN (base 10))
-> 
-> Perhaps, since perf-probe has another syntax rule,
-> I don't want to confuse users. :-P
-> 
-> Thank you,
-> 
+> You should largely forget about dbench, it can certainly be a useful 
+> benchmark, but at the same time it's certainly not a _meaningful_ one.
+> There are better things to try.
 
-Ok let's pick @ for symbols then.
+Yes, sure. I'm just pointing out that it seems to do insane things
+(like reading /proc/mounts at regular intervals, although I don't
+see that in dbench source so I really hope it isn't libc being
+"smart").
 
-Thanks.
+I agree it is not a very good benchmark.
+
+ 
+> > The seqlock in the dentry is for getting consistent name,len pointer,
+> > and also not giving a false positive if a rename has partially
+> > overwritten the name string (false negatives are always fine in the
+> > lock free lookup path but false positives are not). Possibly we
+> > could make do with a per-sb seqlock for this (or just rename_lock).
+> 
+> My plan was always to just use rename_lock, and only do it at the outer 
+> level (and do it for both lookup failures _and_ for the success case). 
+> Your approach is _way_ more conservative than I would have done, and also 
+> potentially much slower due to the seqlock-per-path-component thing. 
+
+Hmm, the only issue is that we need a consistent load of the name
+pointer and the length, otherwise our memcmp might go crazy. We
+could solve this by another level of indirection so a rename only
+requires a pointer swap...
+
+But anyway at this approach I only use a single seqlock, because
+the negative case always falls out to the locked walk anyway (this
+again might be a bit conservative and something we could tighten
+up).
+
+ 
+> Remember: seqlocks are almost free on x86, but they can be reasonably 
+> expensive in other places.
+> 
+> Hmm. Regardless, this very much does look like what I envisioned, apart 
+> from details like that. And maybe your per-dentry seqlock is the right 
+> choice. On x86, it certainly doesn't have the performance issues it could 
+> have in other places.
+
+Yeah, well at least the basics seem to be there. I agree it is not
+totally clean and will have some cases that need optimising, but it
+is something people can start looking at...
 
