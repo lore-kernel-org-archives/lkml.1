@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbZJGGjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbZJGGlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758593AbZJGGjJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 02:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbZJGGjI
+	id S1758198AbZJGGlj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 02:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbZJGGlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 02:39:08 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40024
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758224AbZJGGjH (ORCPT
+	Wed, 7 Oct 2009 02:41:39 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:46174 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756021AbZJGGli (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 02:39:07 -0400
-Date: Tue, 06 Oct 2009 23:39:01 -0700 (PDT)
-Message-Id: <20091006.233901.192206610.davem@davemloft.net>
-To: tilman@imap.cc
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, hjlipp@web.de,
-       isdn@linux-pingi.de, keil@b1-systems.de,
-       isdn4linux@listserv.isdn4linux.de, i4ldeveloper@listserv.isdn4linux.de
-Subject: Re: [PATCH 00/11] Gigaset driver patches for 2.6.32 (v3)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091006-patch-gigaset-00.tilman@imap.cc>
-References: <20091006-patch-gigaset-00.tilman@imap.cc>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Oct 2009 02:41:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :user-agent;
+        b=RnZN9YmrSB1Pw7N61frV+bpDPfHxN97V4rJPsc/JBv+Jc2NyckERXHqIvm94Mm5rRx
+         5NxInrq89cF9r+K+fp+C8QjOXrzYNMQ4VfAQvskHrn2/jeg3KEmynnTVpeefzqorwiBo
+         OlXWk5MHbxJd+GVJrhh6bXgn9DyHr6AVb+EQc=
+Date: Wed, 7 Oct 2009 14:39:21 +0800
+From: Zhenwen Xu <helight.xu@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH] fix a warning on kernel/trace/trace_branch.c
+Message-ID: <20091007063921.GA19756@helight>
+Reply-To: Zhenwen Xu <helight.xu@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tilman Schmidt <tilman@imap.cc>
-Date: Wed,  7 Oct 2009 00:18:21 +0200 (CEST)
+fix this warning:
 
-> This is the third release of the series of patches for the Gigaset
-> drivers I first submitted on 2009-09-06. I have dropped the first patch
-> "gigaset: really fix chars_in_buffer" because it has now been merged
-> through the tty tree, and folded into the last one the fixes I posted on
-> 2009-09-25 and 2009-10-01. Apart from that, the series is unchanged from
-> the second submission on 2009-09-19. It would be great if this could
-> still make it into release 2.6.32 as one more step on the way to get rid
-> of the deprecated ISDN4Linux subsystem.
+kernel/trace/trace_branch.c: In function ‘probe_likely_condition’:
+kernel/trace/trace_branch.c:58: warning: passing argument 1 of ‘
+trace_buffer_lock_reserve’ from incompatible pointer type
 
-I applied patches 1-8 to net-2.6, merged net-2.6 into net-next-2.6,
-then added patches 9-11 into net-next-2.6
+The "tr" should be "(struct buffer *)tr" or "tr->buffer" here!!!
 
-Thanks!
+Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
+---
+ kernel/trace/trace_branch.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+index 7a7a9fd..216e2dd 100644
+--- a/kernel/trace/trace_branch.c
++++ b/kernel/trace/trace_branch.c
+@@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+ 		goto out;
+ 
+ 	pc = preempt_count();
+-	event = trace_buffer_lock_reserve(tr, TRACE_BRANCH,
++	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
+ 					  sizeof(*entry), flags, pc);
+ 	if (!event)
+ 		goto out;
+-- 
+1.6.3.3
+
+-- 
+--------------------------------
+http://zhwen.org - Open and Free
