@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757586AbZJHLFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbZJGJuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757586AbZJHLFA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 07:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbZJHLFA
+	id S1757479AbZJGJuY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 05:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZJGJuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 07:05:00 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41274 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757216AbZJHLE7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 07:04:59 -0400
-Date: Wed, 7 Oct 2009 11:44:19 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86-64: don't leak kernel register values to 32-bit
-	processes
-Message-ID: <20091007094248.GA1425@ucw.cz>
-References: <4AC34D73020000780001744A@vpn.id2.novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AC34D73020000780001744A@vpn.id2.novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Oct 2009 05:50:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56196 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750816AbZJGJuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 05:50:22 -0400
+X-Authenticated: #20192376
+X-Provags-ID: V01U2FsdGVkX1+OQQwSZcSOjaUizC1rKeyzxzTqDAFRVXTseDyigb
+	xFXylw+CAzHizp
+From: Andreas Fenkart <andreas.fenkart@streamunlimited.com>
+To: linux-arm-kernel@lists.infradead.org, linux-mips@linux-mips.org,
+       linux-am33-list@redhat.com, liqin.chen@sunplusct.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Make totalhigh_pages of consistent type.
+Date: Wed,  7 Oct 2009 11:49:36 +0200
+Message-Id: <1254908977-12827-1-git-send-email-andreas.fenkart@streamunlimited.com>
+X-Mailer: git-send-email 1.6.4.3
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Printing the value of totalhigh_pages requires casting, see
+typical print message:
 
-> While 32-bit processes can't directly access R8...R15, they can gain
-> access to these registers by temporarily switching themselves into
-> 64-bit mode. Therefore, registers not preserved anyway by called C
-> functions (i.e. R8...R11) must be cleared prior to returning to user
-> mode.
+arch/x86/mm/init_32.c:
+  printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, "
+      "%dk reserved, %dk data, %dk init, %ldk highmem)\n",
+    nr_free_pages() << (PAGE_SHIFT-10),
+    num_physpages << (PAGE_SHIFT-10),
+    codesize >> 10,
+    reservedpages << (PAGE_SHIFT-10),
+    datasize >> 10,
+    initsize >> 10,
+    (unsigned long)(totalhigh_pages << (PAGE_SHIFT-10)));
 
-How can userspace "temporarily switch itself" to 64bit mode?
 
-Such ability would lead to very interesting behaviour on 32-bit
-kernel, I'd say...
+The problem is that the type of totalhigh_pages is dependent on
+CONFIG_HIGHMEM being set or not.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+include/linux/highmem.h:
+  #ifdef CONFIG_HIGHMEM
+  
+  extern unsigned long totalhigh_pages;
+  
+  #else /* CONFIG_HIGHMEM */
+  
+ -#define totalhigh_pages 0
+ +#define totalhigh_pages 0UL
+  ...
+
+The patch changes the define, so that totalhigh_pages is of uniform
+type in both cases.
+
+Patch is build-tested on x86_32 and ARM
+
+kind regards
+
+Andreas
+
+
