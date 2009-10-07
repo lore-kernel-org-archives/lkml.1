@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbZJGOaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759250AbZJGOYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759302AbZJGOaW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759156AbZJGOaV
+	id S1759250AbZJGOYN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 10:24:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759218AbZJGOYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:30:21 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:38126 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758482AbZJGOaU (ORCPT
+	Wed, 7 Oct 2009 10:24:12 -0400
+Received: from mga06.intel.com ([134.134.136.21]:25059 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758524AbZJGOYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 10:30:20 -0400
-Date: Wed, 7 Oct 2009 10:23:06 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Tejun Heo <tj@kernel.org>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Eric Dumazet <dada1@cosmosbay.com>, Mel Gorman <mel@csn.ul.ie>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [this_cpu_xx V5 01/19] Introduce this_cpu_ptr() and generic
- this_cpu_* operations
-In-Reply-To: <4ACBD841.1080109@kernel.org>
-Message-ID: <alpine.DEB.1.10.0910071022280.5671@gentwo.org>
-References: <20091006233654.815079668@gentwo.org> <20091006233729.711197725@gentwo.org> <4ACBD841.1080109@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 7 Oct 2009 10:24:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,519,1249282800"; 
+   d="scan'208";a="455284477"
+Message-ID: <4ACCA44B.3070706@linux.intel.com>
+Date: Wed, 07 Oct 2009 07:23:07 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andreas Mohr <andi@lisas.de>
+CC: linux-kernel@vger.kernel.org, Adam Belay <abelay@novell.com>,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.32-rc3: floating-point build failure (undefined reference
+ to	`__udivdi3' in menu governor)
+References: <20091007104125.GA1449@rhlx01.hs-esslingen.de>
+In-Reply-To: <20091007104125.GA1449@rhlx01.hs-esslingen.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Oct 2009, Tejun Heo wrote:
+Andreas Mohr wrote:
+> Hi,
+> 
+> didn't find any report about this, so...
+> 
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o(.text+0xd85a1): In function `menu_select':
+> drivers/cpuidle/governors/menu.c:212: undefined reference to `__udivdi3'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> # gcc -v
+> Reading specs from /usr/lib/gcc-lib/i386-redhat-linux/3.2.3/specs
+> Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --enable-shared --enable-threads=posix --disable-checking --with-system-zlib --enable-__cxa_atexit --host=i386-redhat-linux
+> Thread model: posix
+> gcc version 3.2.3 20030502 (Red Hat Linux 3.2.3-49)
 
-> cl@linux-foundation.org wrote:
-> > This patch introduces two things: First this_cpu_ptr and then per cpu
-> > atomic operations.
->
-> percpu#for-next is for the most part a stable tree and 1-12 are
-> already in the tree.  Can you please send the changes based on the
-> current percpu#for-next?
+seems you're the only user of this left.
 
-ok should get to it by the afternoon.
+it's not floating point but a 64 bit division.
+The only one I can imagine is the one on line 213
+
+looking at it, can you try sticking (u32) at the end of line 212; that multiply is not very likely to exceed 32 bits
+
 
