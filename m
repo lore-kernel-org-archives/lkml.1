@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbZJGGoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbZJGHCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758606AbZJGGoq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 02:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758507AbZJGGop
+	id S1756875AbZJGHCh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 03:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756153AbZJGHCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 02:44:45 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47391 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757075AbZJGGon (ORCPT
+	Wed, 7 Oct 2009 03:02:37 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57501 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753062AbZJGHCg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 02:44:43 -0400
-Subject: Re: [RFC][PATCH] perf tools: Merge trace.info content into
- perf.data
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091006213643.GA5343@nowhere>
-References: <20091006213643.GA5343@nowhere>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 07 Oct 2009 08:47:30 +0200
-Message-Id: <1254898050.26976.146.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 7 Oct 2009 03:02:36 -0400
+Message-ID: <4ACC3C9D.9040106@cn.fujitsu.com>
+Date: Wed, 07 Oct 2009 15:00:45 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Zhenwen Xu <helight.xu@gmail.com>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] fix a warning on kernel/trace/trace_branch.c
+References: <20091007063921.GA19756@helight>
+In-Reply-To: <20091007063921.GA19756@helight>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 23:36 +0200, Frederic Weisbecker wrote:
-> Hi,
+Zhenwen Xu wrote:
+> fix this warning:
 > 
-> Here is an attempt to remove the trace.info file.
-> It works well for me, the reason for it to be an RFC
-> is that I have doubts about the backward compatibility.
+> kernel/trace/trace_branch.c: In function ‘probe_likely_condition’:
+> kernel/trace/trace_branch.c:58: warning: passing argument 1 of ‘
+> trace_buffer_lock_reserve’ from incompatible pointer type
 > 
-> A file created by perf after his patch is unsupported
-> by previous version because the size of the headers have
-> increased.
+> The "tr" should be "(struct buffer *)tr" or "tr->buffer" here!!!
 > 
-> That said, it's two new fields that have been added in
-> the end of the headers, and those could be ignored by
-> previous versions if they just handled the dynamic header
-> size and then ignore the unknow part. The offsets guarantee
-> the compatibility.
-> But previous versions handle the header size using its
-> static size, not dynamic, then it's not backward compatible.
-> 
-> Anyway, I'm not sure exactly how to handle that.
 
-If we're still able to read 'regular' old perf.data files after this.
-That is, allow to read short headers and assume the tail is 0 we'll be
-good. (this will break trace files that rely on the now removed
-trace.info, but that's unavoidable I guess).
+It's caused by the API change of trace_buffer_lock_reserve() by
+commit e77405ad80f53966524b5c31244e13fbbbecbd84.
 
-So backwards compatible, but no fwd compat for the old perf.
+Could you send an updated patch to also fix the same bug
+in kernel/trace/trace_hw_branch.c ?
+
+> Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
+> ---
+>  kernel/trace/trace_branch.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+> index 7a7a9fd..216e2dd 100644
+> --- a/kernel/trace/trace_branch.c
+> +++ b/kernel/trace/trace_branch.c
+> @@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+>  		goto out;
+>  
+>  	pc = preempt_count();
+> -	event = trace_buffer_lock_reserve(tr, TRACE_BRANCH,
+> +	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
+>  					  sizeof(*entry), flags, pc);
+>  	if (!event)
+>  		goto out;
+
