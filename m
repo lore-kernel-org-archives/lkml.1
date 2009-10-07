@@ -1,65 +1,454 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbZJGG3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbZJGGTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757513AbZJGG3k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 02:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbZJGG3k
+	id S1752285AbZJGGTN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 02:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbZJGGTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 02:29:40 -0400
-Received: from mailout3.samsung.com ([203.254.224.33]:57965 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756167AbZJGG3j (ORCPT
+	Wed, 7 Oct 2009 02:19:12 -0400
+Received: from mailout5.samsung.com ([203.254.224.35]:64463 "EHLO
+	mailout5.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758009AbZJGGTK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 02:29:39 -0400
-Date: Wed, 07 Oct 2009 15:18:14 +0900
+	Wed, 7 Oct 2009 02:19:10 -0400
+Date: Wed, 07 Oct 2009 15:18:22 +0900
 From: Kyungmin Park <kyungmin.park@samsung.com>
-Subject: [PATCH 4/6] Haptic: add haptic configuration
+Subject: [PATCH 5/6] haptic: Samsung SoCs PWM controlled haptic support
 To: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
 Cc: soni.trilok@gmail.com
-Message-id: <20091007061814.GA7596@july>
+Message-id: <20091007061822.GA7602@july>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Content-transfer-encoding: 7BIT
 Content-disposition: inline
 User-Agent: Mutt/1.5.14 (2007-02-12)
-X-OriginalArrivalTime: 07 Oct 2009 06:18:20.0348 (UTC)
- FILETIME=[F75DB7C0:01CA4715]
+X-OriginalArrivalTime: 07 Oct 2009 06:18:29.0052 (UTC)
+ FILETIME=[FC8DD7C0:01CA4715]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-haptic class support
+Samsung SoCs PWM and gpio connected haptic device support
+It's tested on s3c64xx, s5pc1xx
 
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/Kconfig  |    2 ++
- drivers/Makefile |    1 +
- 2 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/haptic/Kconfig              |    9 +
+ drivers/haptic/Makefile             |    3 +
+ drivers/haptic/haptic-samsung-pwm.c |  377 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 389 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/haptic/haptic-samsung-pwm.c
 
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 48bbdbe..a44348e 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -90,6 +90,8 @@ source "drivers/memstick/Kconfig"
+diff --git a/drivers/haptic/Kconfig b/drivers/haptic/Kconfig
+index 656b022..1e9849c 100644
+--- a/drivers/haptic/Kconfig
++++ b/drivers/haptic/Kconfig
+@@ -11,4 +11,13 @@ config HAPTIC_CLASS
+ 	help
+ 	  This option enables the haptic sysfs class in /sys/class/haptic.
  
- source "drivers/leds/Kconfig"
- 
-+source "drivers/haptic/Kconfig"
++comment "Haptic drivers"
 +
- source "drivers/accessibility/Kconfig"
- 
- source "drivers/infiniband/Kconfig"
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 6ee53c7..ee6f438 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -94,6 +94,7 @@ obj-y				+= idle/
- obj-$(CONFIG_MMC)		+= mmc/
- obj-$(CONFIG_MEMSTICK)		+= memstick/
- obj-$(CONFIG_NEW_LEDS)		+= leds/
-+obj-$(CONFIG_HAPTCI)		+= haptic/
- obj-$(CONFIG_INFINIBAND)	+= infiniband/
- obj-$(CONFIG_SGI_SN)		+= sn/
- obj-y				+= firmware/
++config HAPTIC_SAMSUNG_PWM
++	tristate "Haptic Support for SAMSUNG PWM-controlled haptic (ISA1000)"
++	depends on HAPTIC_CLASS && (ARCH_S3C64XX || ARCH_S5PC1XX)
++	help
++	  This options enables support for haptic connected to GPIO lines
++	  controlled by a PWM timer on SAMSUNG CPUs.
++
+ endif	# HAPTIC
+diff --git a/drivers/haptic/Makefile b/drivers/haptic/Makefile
+index d30f8cd..c691f7d 100644
+--- a/drivers/haptic/Makefile
++++ b/drivers/haptic/Makefile
+@@ -1,2 +1,5 @@
+ # Haptic Core
+ obj-$(CONFIG_HAPTIC_CLASS)		+= haptic-class.o
++
++# Drivers
++obj-$(CONFIG_HAPTIC_SAMSUNG_PWM)	+= haptic-samsung-pwm.o
+diff --git a/drivers/haptic/haptic-samsung-pwm.c b/drivers/haptic/haptic-samsung-pwm.c
+new file mode 100644
+index 0000000..df6f30d
+--- /dev/null
++++ b/drivers/haptic/haptic-samsung-pwm.c
+@@ -0,0 +1,377 @@
++/*
++ *  drivers/haptic/haptic-samsung-pwm.c
++ *
++ *  Copyright (C) 2008 Samsung Electronics
++ *  Kyungmin Park <kyungmin.park@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/ctype.h>
++#include <linux/haptic.h>
++#include <linux/workqueue.h>
++#include <linux/gpio.h>
++#include <linux/err.h>
++#include <linux/pwm.h>
++#include <linux/timer.h>
++
++#include "haptic.h"
++
++#define PWM_HAPTIC_PERIOD		44640
++#define PWM_HAPTIC_DEFAULT_LEVEL		2
++
++static int haptic_levels[] = { 18360, 14880, 10860, 5280, 540, };
++
++struct samsung_pwm_haptic {
++	struct haptic_classdev cdev;
++	struct work_struct work;
++	struct haptic_platform_data *pdata;
++	struct pwm_device *pwm;
++	struct timer_list timer;
++
++	int enable;
++	int powered;
++
++	int level;
++	int level_max;
++};
++
++static inline struct samsung_pwm_haptic *cdev_to_samsung_pwm_haptic(
++		struct haptic_classdev *haptic_cdev)
++{
++	return container_of(haptic_cdev, struct samsung_pwm_haptic, cdev);
++}
++
++static void samsung_pwm_haptic_power_on(struct samsung_pwm_haptic *haptic)
++{
++	if (haptic->powered)
++		return;
++	haptic->powered = 1;
++
++	if (gpio_is_valid(haptic->pdata->gpio))
++		gpio_set_value(haptic->pdata->gpio, 1);
++
++	pwm_enable(haptic->pwm);
++}
++
++static void samsung_pwm_haptic_power_off(struct samsung_pwm_haptic *haptic)
++{
++	if (!haptic->powered)
++		return;
++	haptic->powered = 0;
++
++	if (gpio_is_valid(haptic->pdata->gpio))
++		gpio_set_value(haptic->pdata->gpio, 0);
++
++	pwm_disable(haptic->pwm);
++}
++
++static int samsung_pwm_haptic_set_pwm_cycle(struct samsung_pwm_haptic *haptic)
++{
++	int duty = haptic_levels[haptic->level];
++	return pwm_config(haptic->pwm, duty, PWM_HAPTIC_PERIOD);
++}
++
++static void samsung_pwm_haptic_work(struct work_struct *work)
++{
++	struct samsung_pwm_haptic *haptic;
++	int r;
++
++	haptic = container_of(work, struct samsung_pwm_haptic, work);
++
++	if (haptic->enable) {
++		r = samsung_pwm_haptic_set_pwm_cycle(haptic);
++		if (r) {
++			dev_dbg(haptic->cdev.dev, "set_pwm_cycle failed\n");
++			return;
++		}
++		samsung_pwm_haptic_power_on(haptic);
++	} else {
++		samsung_pwm_haptic_power_off(haptic);
++	}
++}
++
++static void samsung_pwm_haptic_timer(unsigned long data)
++{
++	struct samsung_pwm_haptic *haptic = (struct samsung_pwm_haptic *)data;
++
++	haptic->enable = 0;
++	samsung_pwm_haptic_power_off(haptic);
++}
++
++static void samsung_pwm_haptic_set(struct haptic_classdev *haptic_cdev,
++				enum haptic_value value)
++{
++	struct samsung_pwm_haptic *haptic =
++		cdev_to_samsung_pwm_haptic(haptic_cdev);
++
++	switch (value) {
++	case HAPTIC_OFF:
++		haptic->enable = 0;
++		break;
++	case HAPTIC_HALF:
++	case HAPTIC_FULL:
++	default:
++		haptic->enable = 1;
++		break;
++	}
++
++	schedule_work(&haptic->work);
++}
++
++static enum haptic_value samsung_pwm_haptic_get(
++		struct haptic_classdev *haptic_cdev)
++{
++	struct samsung_pwm_haptic *haptic =
++		cdev_to_samsung_pwm_haptic(haptic_cdev);
++
++	if (haptic->enable)
++		return HAPTIC_FULL;
++
++	return HAPTIC_OFF;
++}
++
++#define ATTR_DEF_SHOW(name) \
++static ssize_t samsung_pwm_haptic_show_##name(struct device *dev, \
++		struct device_attribute *attr, char *buf) \
++{ \
++	struct haptic_classdev *haptic_cdev = dev_get_drvdata(dev); \
++	struct samsung_pwm_haptic *haptic =\
++		cdev_to_samsung_pwm_haptic(haptic_cdev); \
++ \
++	return sprintf(buf, "%u\n", haptic->name) + 1; \
++}
++
++#define ATTR_DEF_STORE(name) \
++static ssize_t samsung_pwm_haptic_store_##name(struct device *dev, \
++		struct device_attribute *attr, \
++		const char *buf, size_t size) \
++{ \
++	struct haptic_classdev *haptic_cdev = dev_get_drvdata(dev); \
++	struct samsung_pwm_haptic *haptic =\
++		 cdev_to_samsung_pwm_haptic(haptic_cdev); \
++	ssize_t ret = -EINVAL; \
++	unsigned long val; \
++ \
++	ret = strict_strtoul(buf, 10, &val); \
++	if (ret == 0) { \
++		ret = size; \
++		haptic->name = val; \
++		schedule_work(&haptic->work); \
++	} \
++ \
++	return ret; \
++}
++
++ATTR_DEF_SHOW(enable);
++ATTR_DEF_STORE(enable);
++static DEVICE_ATTR(enable, 0644, samsung_pwm_haptic_show_enable,
++		samsung_pwm_haptic_store_enable);
++
++static ssize_t samsung_pwm_haptic_store_level(struct device *dev,
++		struct device_attribute *attr,
++		const char *buf, size_t size)
++{
++	struct haptic_classdev *haptic_cdev = dev_get_drvdata(dev);
++	struct samsung_pwm_haptic *haptic =
++		cdev_to_samsung_pwm_haptic(haptic_cdev);
++	ssize_t ret = -EINVAL;
++	unsigned long val;
++
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret == 0) {
++		ret = size;
++		if (haptic->level_max < val)
++			val = haptic->level_max;
++		haptic->level = val;
++		schedule_work(&haptic->work);
++	}
++
++	return ret;
++}
++ATTR_DEF_SHOW(level);
++static DEVICE_ATTR(level, 0644, samsung_pwm_haptic_show_level,
++		samsung_pwm_haptic_store_level);
++
++ATTR_DEF_SHOW(level_max);
++static DEVICE_ATTR(level_max, 0444, samsung_pwm_haptic_show_level_max, NULL);
++
++static ssize_t samsung_pwm_haptic_store_oneshot(struct device *dev,
++		struct device_attribute *attr,
++		const char *buf, size_t size)
++{
++	struct haptic_classdev *haptic_cdev = dev_get_drvdata(dev);
++	struct samsung_pwm_haptic *haptic =
++		cdev_to_samsung_pwm_haptic(haptic_cdev);
++	ssize_t ret = -EINVAL;
++	unsigned long val;
++
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret == 0) {
++		ret = size;
++		haptic->enable = 1;
++		mod_timer(&haptic->timer, jiffies + val * HZ / 1000);
++		schedule_work(&haptic->work);
++	}
++
++	return ret;
++}
++static DEVICE_ATTR(oneshot, 0200, NULL, samsung_pwm_haptic_store_oneshot);
++
++static struct attribute *haptic_attributes[] = {
++	&dev_attr_enable.attr,
++	&dev_attr_level.attr,
++	&dev_attr_level_max.attr,
++	&dev_attr_oneshot.attr,
++	NULL,
++};
++
++static const struct attribute_group haptic_group = {
++	.attrs = haptic_attributes,
++};
++
++static int __devinit samsung_pwm_haptic_probe(struct platform_device *pdev)
++{
++	struct haptic_platform_data *pdata = pdev->dev.platform_data;
++	struct samsung_pwm_haptic *haptic;
++	int ret;
++
++	haptic = kzalloc(sizeof(struct samsung_pwm_haptic), GFP_KERNEL);
++	if (!haptic) {
++		dev_err(&pdev->dev, "No memory for device\n");
++		return -ENOMEM;
++	}
++
++	platform_set_drvdata(pdev, haptic);
++	haptic->cdev.set = samsung_pwm_haptic_set;
++	haptic->cdev.get = samsung_pwm_haptic_get;
++	haptic->cdev.show_enable = samsung_pwm_haptic_show_enable;
++	haptic->cdev.store_enable = samsung_pwm_haptic_store_enable;
++	haptic->cdev.store_oneshot = samsung_pwm_haptic_store_oneshot;
++	haptic->cdev.show_level = samsung_pwm_haptic_show_level;
++	haptic->cdev.store_level = samsung_pwm_haptic_store_level;
++	haptic->cdev.show_level_max = samsung_pwm_haptic_show_level_max;
++	haptic->cdev.name = pdata->name;
++	haptic->pdata = pdata;
++	haptic->enable = 0;
++	haptic->level = PWM_HAPTIC_DEFAULT_LEVEL;
++	haptic->level_max = ARRAY_SIZE(haptic_levels);
++
++	if (pdata->setup_pin)
++		pdata->setup_pin();
++
++	INIT_WORK(&haptic->work, samsung_pwm_haptic_work);
++
++	/* register our new haptic device */
++	ret = haptic_classdev_register(&pdev->dev, &haptic->cdev);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "haptic_classdev_register failed\n");
++		goto error_classdev;
++	}
++
++	haptic->pwm = pwm_request(pdata->pwm_timer, "haptic");
++	if (IS_ERR(haptic->pwm)) {
++		dev_err(&pdev->dev, "unable to request PWM for haptic\n");
++		ret = PTR_ERR(haptic->pwm);
++		goto err_pwm;
++	} else
++		dev_dbg(&pdev->dev, "got pwm for haptic\n");
++
++	ret = sysfs_create_group(&haptic->cdev.dev->kobj, &haptic_group);
++	if (ret)
++		goto error_enable;
++
++	if (gpio_is_valid(pdata->gpio)) {
++		printk(KERN_INFO "Motor enable gpio %d\n", pdata->gpio);
++		ret = gpio_request(pdata->gpio, "haptic enable");
++		if (ret)
++			goto error_gpio;
++		gpio_direction_output(pdata->gpio, 0);
++	}
++
++	init_timer(&haptic->timer);
++	haptic->timer.data = (unsigned long)haptic;
++	haptic->timer.function = &samsung_pwm_haptic_timer;
++
++	printk(KERN_INFO "samsung %s registed\n", pdata->name);
++	return 0;
++
++error_gpio:
++	gpio_free(pdata->gpio);
++error_enable:
++	sysfs_remove_group(&haptic->cdev.dev->kobj, &haptic_group);
++err_pwm:
++	pwm_free(haptic->pwm);
++error_classdev:
++	haptic_classdev_unregister(&haptic->cdev);
++	kfree(haptic);
++	return ret;
++}
++
++static int __devexit samsung_pwm_haptic_remove(struct platform_device *pdev)
++{
++	struct samsung_pwm_haptic *haptic = platform_get_drvdata(pdev);
++
++	samsung_pwm_haptic_set(&haptic->cdev, HAPTIC_OFF);
++	del_timer_sync(&haptic->timer);
++
++	if (haptic->pdata->gpio)
++		gpio_free(haptic->pdata->gpio);
++	device_remove_file(haptic->cdev.dev, &dev_attr_enable);
++	haptic_classdev_unregister(&haptic->cdev);
++	kfree(haptic);
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int samsung_pwm_haptic_suspend(
++	struct platform_device *pdev, pm_message_t state)
++{
++	struct samsung_pwm_haptic *haptic = platform_get_drvdata(pdev);
++
++	haptic_classdev_suspend(&haptic->cdev);
++	return 0;
++}
++
++static int samsung_pwm_haptic_resume(struct platform_device *pdev)
++{
++	struct samsung_pwm_haptic *haptic = platform_get_drvdata(pdev);
++
++	haptic_classdev_resume(&haptic->cdev);
++	return 0;
++}
++#else
++#define samsung_pwm_haptic_suspend	NULL
++#define samsung_pwm_haptic_resume	NULL
++#endif
++
++static struct platform_driver samsung_pwm_haptic_driver = {
++	.probe		= samsung_pwm_haptic_probe,
++	.remove		= samsung_pwm_haptic_remove,
++	.suspend	= samsung_pwm_haptic_suspend,
++	.resume		= samsung_pwm_haptic_resume,
++	.driver		= {
++		.name	= "samsung_pwm_haptic",
++		.owner	= THIS_MODULE,
++	},
++};
++
++static int __init samsung_pwm_haptic_init(void)
++{
++	return platform_driver_register(&samsung_pwm_haptic_driver);
++}
++module_init(samsung_pwm_haptic_init);
++
++static void __exit samsung_pwm_haptic_exit(void)
++{
++	platform_driver_unregister(&samsung_pwm_haptic_driver);
++}
++module_exit(samsung_pwm_haptic_exit);
++
++MODULE_AUTHOR("Kyungmin Park <kyungmin.park@samsung.com>");
++MODULE_DESCRIPTION("samsung PWM haptic driver");
++MODULE_LICENSE("GPL");
 -- 
 1.5.3.3
 
