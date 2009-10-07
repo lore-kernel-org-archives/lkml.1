@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbZJGUcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbZJGUfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753535AbZJGUcG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbZJGUcF
+	id S1755068AbZJGUfE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbZJGUfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:32:05 -0400
-Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:47893
-	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752302AbZJGUcF (ORCPT
+	Wed, 7 Oct 2009 16:35:04 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53130 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753827AbZJGUfC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:32:05 -0400
-Date: Wed, 7 Oct 2009 22:31:21 +0200
-From: Michael Guntsche <mike@it-loops.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-hotplug <linux-hotplug@vger.kernel.org>
-Subject: Re: [BUG] No ttyS0 - Strange udev 8250_pnp interaction
-Message-ID: <20091007203121.GA432@trillian.comsick.at>
-References: <20091007175403.GA335@trillian.comsick.at>
- <9b2b86520910071246r393f2afvacaa4d8f544508a8@mail.gmail.com>
- <ac3eb2510910071306r4ad6dc9btb7503bc3ab0ec815@mail.gmail.com>
- <ac3eb2510910071312qe6ad45ep6c579a8393cc6b8e@mail.gmail.com>
+	Wed, 7 Oct 2009 16:35:02 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [rfc][patch] store-free path walking
+From: Andi Kleen <andi@firstfloor.org>
+References: <20091006064919.GB30316@wotan.suse.de>
+	<20091006101414.GM5216@kernel.dk>
+	<20091006122623.GE30316@wotan.suse.de>
+	<20091006124941.GS5216@kernel.dk>
+	<20091007085849.GN30316@wotan.suse.de>
+	<alpine.LFD.2.01.0910070742260.3432@localhost.localdomain>
+	<alpine.LFD.2.01.0910070911080.3432@localhost.localdomain>
+	<20091007164622.GX30316@wotan.suse.de>
+	<alpine.LFD.2.01.0910071222230.3432@localhost.localdomain>
+Date: Wed, 07 Oct 2009 22:34:24 +0200
+In-Reply-To: <alpine.LFD.2.01.0910071222230.3432@localhost.localdomain> (Linus Torvalds's message of "Wed, 7 Oct 2009 12:25:03 -0700 (PDT)")
+Message-ID: <87eipfymcv.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510910071312qe6ad45ep6c579a8393cc6b8e@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009.10.07 22:12:28 , Kay Sievers wrote:
-> To be more specific, Michael, can you please run "udevadm monitor" at
-> the same time you see this happen?
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+>
+> Sad. But we do have the added requirement that we want to keep the 
+> commonly used fields together in the same cacheline, so maybe it's 
+> unavoidable.
 
-I started udevadm monitor with the module installed AND all 4 devices
-populated. Then I removed the module....
+With some strategic prefetches it might be cheap enough to use 
+two cache lines. Just fetch it with the other.
 
-KERNEL[1254947142.220060] remove   /devices/pnp0/00:06/tty/ttyS1 (tty)
-UDEV  [1254947142.220121] add
-/devices/platform/serial8250/tty/ttyS1 (tty)
-KERNEL[1254947142.220161] add
-/devices/platform/serial8250/tty/ttyS1 (tty)
-UDEV  [1254947142.220857] remove   /devices/pnp0/00:06/tty/ttyS1 (tty)
-KERNEL[1254947142.223078] remove   /devices/pnp0/00:05/tty/ttyS0 (tty)
-UDEV  [1254947142.223134] add
-/devices/platform/serial8250/tty/ttyS0 (tty)
-KERNEL[1254947142.223175] add
-/devices/platform/serial8250/tty/ttyS0 (tty)
-UDEV  [1254947142.223800] remove   /devices/pnp0/00:05/tty/ttyS0 (tty)
-KERNEL[1254947142.225369] remove   /bus/pnp/drivers/serial (drivers)
-UDEV  [1254947142.225419] remove   /module/8250_pnp (module)
-KERNEL[1254947142.225455] remove   /module/8250_pnp (module)
-UDEV  [1254947142.225675] remove   /bus/pnp/drivers/serial (drivers)
-
-Afterwards ONLY ttyS2 and ttS3 were under /dev. 
-
-I then added the module again ....
-
-KERNEL[1254947157.330470] add      /module/8250_pnp (module)
-UDEV  [1254947157.330521] add      /module/8250_pnp (module)
-KERNEL[1254947157.333498] remove
-/devices/platform/serial8250/tty/ttyS0 (tty)
-KERNEL[1254947157.333550] add      /devices/pnp0/00:05/tty/ttyS0 (tty)
-UDEV  [1254947157.334830] add      /devices/pnp0/00:05/tty/ttyS0 (tty)
-UDEV  [1254947157.334889] remove
-/devices/platform/serial8250/tty/ttyS0 (tty)
-KERNEL[1254947157.338967] remove
-/devices/platform/serial8250/tty/ttyS1 (tty)
-KERNEL[1254947157.339020] add      /devices/pnp0/00:06/tty/ttyS1 (tty)
-KERNEL[1254947157.339056] add      /bus/pnp/drivers/serial (drivers)
-UDEV  [1254947157.340180] remove
-/devices/platform/serial8250/tty/ttyS1 (tty)
-UDEV  [1254947157.340753] add      /devices/pnp0/00:06/tty/ttyS1 (tty)
-UDEV  [1254947157.341202] add      /bus/pnp/drivers/serial (drivers)
-
-ONLY ttyS1 (and S2, S3) where there.
-
-Kind regards,
-Michael
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
