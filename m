@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbZJGTLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759811AbZJGTNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758984AbZJGTLM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 15:11:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbZJGTLL
+	id S1759811AbZJGTNY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 15:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758373AbZJGTNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 15:11:11 -0400
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:57538 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753930AbZJGTLK (ORCPT
+	Wed, 7 Oct 2009 15:13:23 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:40345 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754206AbZJGTNW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 15:11:10 -0400
+	Wed, 7 Oct 2009 15:13:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=aUHdLDmrrfYRg8HjYv0CVnMqKkwFIIaTJ82YKvrmXNnzp7lNY3ED7UVoRuQxbqxoE6
-         0I43QBkVqziblSZvDoJIQcXgcDRUJ0W9pCAJkTRGLAc046lMP2rmtpMqtt9jmz0FTFcA
-         tW5SvYkfuJzhVsqKew4Utbon4CTmS2TBGbwTY=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=taWkysiY/PWvHkzsQDxPWqCb1hv2eEM9HY897sE2EoYS8JHYojJwd5r92XREF068QN
+         voJ/tAyO6hwAwp1puv/tT8RSXaIhSX2uzO03fADCe798LlKD2CJ6y/lnbK/aXOdrRD8m
+         yiLfcGVv4216y/5w3vYRBzWQM9O5uv/mRUmOc=
 MIME-Version: 1.0
-Date: Wed, 7 Oct 2009 15:10:33 -0400
-Message-ID: <68f1f87c0910071210l7d13ae3cueed7a7f24c669e35@mail.gmail.com>
-Subject: Query about process address space
-From: Hayawardh V <hayawardh@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ashwin Chaugule <ashwin.chaugule@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20091007183453.GD12971@mit.edu>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.jd.5MTxKB@chimera>
+	 <877hvd8rj5.fsf@spindle.srvr.nix> <200910022331.35916.rjw@sisk.pl>
+	 <9929d2390910021513t51827031k16a5bfc538640cbf@mail.gmail.com>
+	 <20091007183453.GD12971@mit.edu>
+Date: Wed, 7 Oct 2009 12:12:45 -0700
+X-Google-Sender-Auth: acb3370336dab00c
+Message-ID: <9929d2390910071212o632196b8o92899565bb131cea@mail.gmail.com>
+Subject: Re: [Bug #14261] e1000e jumbo frames no longer work: 'Unsupported MTU 
+	setting'
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+To: Theodore Tso <tytso@mit.edu>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Nix <nix@esperi.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alexander Duyck <alexander.duyck@gmail.com>,
+       Network Development <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       e1000-devel@lists.sourceforge.net
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Oct 7, 2009 at 11:34, Theodore Tso <tytso@mit.edu> wrote:
+> On Fri, Oct 02, 2009 at 03:13:07PM -0700, Jeff Kirsher wrote:
+>> >> > Patch               : http://patchwork.kernel.org/patch/50277/
+>> >>
+>> > Most likely because it's not in the Linus' tree yet.
+>> >
+>> > [e1000e maintainers, we have a regression fix to merge, please.]
+>>
+>> Sorry, I forgot to send this patch out last night.  I will send it now.
+>
+> Do we have a status on this progress of this patch to mainline?   Thanks,
+>
+>                                        - Ted
 
-generally the text segment of the program gets mapped into the virtual
-address starting at
-0x8048000 ....
+The patch has been submitted and accepted into David Miller's net-2.6
+tree.  I will submit the patch for 2.6.31 stable tree once it makes it
+into Linus's tree later this week.
 
-but in the case of certain programs like sshd, apache, postgres, when
-I examine the proc/pid/maps, I get that the program is mapped higher
-in memory (ie) in the mmap space.
-eg: cat /proc/sshd/maps
-
-...
-b7fd2000-b7fd3000 r--p 0001a000 08:01 5144607    /lib/ld-2.8.90.so
-b7fd3000-b7fd4000 rw-p 0001b000 08:01 5144607    /lib/ld-2.8.90.so
-b7fd4000-b8038000 r-xp 00000000 08:01 656219     /usr/sbin/sshd
-b8039000-b803a000 r--p 00064000 08:01 656219     /usr/sbin/sshd
-b803a000-b803b000 rw-p 00065000 08:01 656219     /usr/sbin/sshd
-b803b000-b8040000 rw-p 00000000 00:00 0
-b8779000-b87be000 rw-p 00000000 00:00 0          [heap]
-bfeed000-bff02000 rw-p 00000000 00:00 0          [stack]
-
-(on linux-2.6.30)
-
-This seems to be the mmap space. Why do programs mmap themselves in
-higher memory? Or is there some other reason and is this not the mmap space?
-
-Thanks,
-Hayawardh
+-- 
+Cheers,
+Jeff
