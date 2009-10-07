@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758627AbZJGHJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbZJGHN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758627AbZJGHJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 03:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbZJGHJz
+	id S1758633AbZJGHN1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 03:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758440AbZJGHN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 03:09:55 -0400
-Received: from mail-qy0-f202.google.com ([209.85.221.202]:54229 "EHLO
-	mail-qy0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756497AbZJGHJz (ORCPT
+	Wed, 7 Oct 2009 03:13:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34033
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757072AbZJGHN0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 03:09:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=RZW3GOJMuXjffGVDu04bVL/TgoYhN5rzAtkPTiLP6msgu8SIQh1tI8rOxA9OxFGzZM
-         Q9AiB3Sk2gAZVKblKrwLk1zsQxBPcXldIWlUheoBsNU1kXnlqWoDr3F2XgFop10tu46p
-         6HRH7WjsaXBREtB5ctxZ8xsKb68aS7BBTvXaQ=
-MIME-Version: 1.0
-In-Reply-To: <20091007061701.GA7567@july>
-References: <20091007061701.GA7567@july>
-Date: Wed, 7 Oct 2009 12:39:44 +0530
-Message-ID: <5d5443650910070009x281584besa7e97ceb7340b369@mail.gmail.com>
-Subject: Re: [PATCH 1/6] Haptic: add haptic class
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 7 Oct 2009 03:13:26 -0400
+Date: Wed, 07 Oct 2009 00:13:21 -0700 (PDT)
+Message-Id: <20091007.001321.197898334.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: peterz@infradead.org, paulus@samba.org, jens.axboe@oracle.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf_event: Provide vmalloc() based mmap() backing
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091006122359.GA7614@elte.hu>
+References: <1254830228.21044.272.camel@laptop>
+	<20091006122359.GA7614@elte.hu>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kyungmin,
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 6 Oct 2009 14:23:59 +0200
 
-On Wed, Oct 7, 2009 at 11:47 AM, Kyungmin Park
-<kyungmin.park@samsung.com> wrote:
-> New haptic class support.
-> This class handles the haptic devices.
->
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> 
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+>> OK, so I rewrote it a few more times, does the below make everybody 
+>> feel warm and fuzzy?
+> 
+> Yeah, looks perfect to me - applied to tip:perf/urgent, thanks Peter!
+> 
+> Dave, could you please test it on Sparc too? The Git coordinates are at:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perf/urgent
 
-Reviewed-by: Trilok Soni <soni.trilok@gmail.com>
+Works fine here, I forced the vmalloc stuff on using the debug
+option.  Once your stuff goes in I'll add the select statement
+to arch/sparc/Kconfig
 
----Trilok Soni
+Andrew also needs to marge the vmalloc_user() patch.  I almost
+forgot that to apply to my tree when testing :-)
