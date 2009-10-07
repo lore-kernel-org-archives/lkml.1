@@ -1,90 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934152AbZJGPlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934142AbZJGPnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934152AbZJGPlu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbZJGPlu
+	id S934142AbZJGPnY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759436AbZJGPnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:41:50 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:37001 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933367AbZJGPlt (ORCPT
+	Wed, 7 Oct 2009 11:43:23 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:52037 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759327AbZJGPnW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:41:49 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlMFABZOzEpMROOX/2dsb2JhbACBUtVjhCoE
-Date: Wed, 7 Oct 2009 11:41:11 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
-Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
-	interrupt disable
-Message-ID: <20091007154111.GA12351@Krystal>
-References: <20091006233654.815079668@gentwo.org> <20091006233733.153341605@gentwo.org> <20091007025440.GB4664@Krystal> <1254906707.26976.225.camel@twins> <20091007124628.GB27363@Krystal> <alpine.DEB.1.10.0910071039520.5671@gentwo.org> <20091007150257.GA8508@Krystal> <alpine.DEB.1.10.0910071102590.9984@gentwo.org> <20091007151940.GA10052@Krystal> <alpine.DEB.1.10.0910071119450.9296@gentwo.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0910071119450.9296@gentwo.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 11:31:48 up 50 days,  2:21,  3 users,  load average: 0.33, 0.58,
-	0.41
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Oct 2009 11:43:22 -0400
+Message-ID: <4ACCB6BE.5040602@gmail.com>
+Date: Wed, 07 Oct 2009 17:41:50 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>, Takahiro Yasui <tyasui@redhat.com>,
+       Hideo Aoki <haoki@redhat.com>
+Subject: Re: [Bug #14301] WARNING: at net/ipv4/af_inet.c:154
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.mdH.sMTxKB@chimera> <4AC70D20.4060009@gmail.com> <4AC710DF.5070705@gmail.com> <4AC78F7C.40908@gmail.com>
+In-Reply-To: <4AC78F7C.40908@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 07 Oct 2009 17:41:52 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (cl@linux-foundation.org) wrote:
-> On Wed, 7 Oct 2009, Mathieu Desnoyers wrote:
+Eric Dumazet a écrit :
+> Eric Dumazet a écrit :
+>> Eric Dumazet a écrit :
+>>> Rafael J. Wysocki a écrit :
+>>>> This message has been generated automatically as a part of a report
+>>>> of regressions introduced between 2.6.30 and 2.6.31.
+>>>>
+>>>> The following bug entry is on the current list of known regressions
+>>>> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+>>>> be listed and let me know (either way).
+>>>>
+>>>>
+>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14301
+>>>> Subject		: WARNING: at net/ipv4/af_inet.c:154
+>>>> Submitter	: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+>>>> Date		: 2009-09-30 12:24 (2 days old)
+>>>> References	: http://marc.info/?l=linux-kernel&m=125431350218137&w=4
+>>>>
 > 
-> > You are already calling the scheduler when ending the _fast_ path. I
-> > don't see the problem with calling it when you end the slow path
-> > execution.
-> 
-> Well yes that gives rise to the thought of using
-> 
-> 	preempt_enable_no_sched()
-> 
-> at the end of the fastpath as well. Constant calls into the scheduler
-> could be a major performance issue
-
-... but the opposite is a major RT behavior killer.
-
-preempt_check_resched is basically:
-
-a test TIF_NEED_RESCHED
-  if true, call to preempt_schedule
-
-So, it's not a call to the scheduler at each and every preempt_enable.
-It's _only_ if an interrupt came in during the preempt off section and
-the scheduler considered that it should re-schedule soon.
-
-I really don't see what's bothering you here. Testing a thread flag is
-incredibly cheap. That's what is typically added to your fast path.
-
-So, correct behavior would be:
-
-preempt disable()
-fast path attempt
-  if (fast path already taken) {
-    local_irq_save();
-    slow path.
-    local_irq_restore();
-  }
-preempt_enable()
-
-
-Mathieu
-
-> . I dont notice it here since I usually
-> cannot affort the preempt overhead and build kernels without support for
-> it.
-> 
+> Investigation still needed...
 > 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+OK, my last (buggy ???) feeling is about commit 95766fff6b9a78d1
+
+[UDP]: Add memory accounting.
+
+(Its a two years old patch, oh well...)
+
+Problem is the udp_poll() :
+
+We check the first frame to be dequeued from sk_receive_queue has a good checksum.
+
+If it doesnt, we drop the frame ( calling kfree_skb(skb); )
+
+Problem is now we perform memory accounting on UDP, this kfree_skb()
+should be done with socket locked, but we are allowed to
+call lock_sock() from this udp_poll() context
+
+unsigned int udp_poll(struct file *file, struct socket *sock, poll_table *wait)
+{
+        unsigned int mask = datagram_poll(file, sock, wait);
+        struct sock *sk = sock->sk;
+        int     is_lite = IS_UDPLITE(sk);
+
+        /* Check for false positives due to checksum errors */
+        if ((mask & POLLRDNORM) &&
+            !(file->f_flags & O_NONBLOCK) &&
+            !(sk->sk_shutdown & RCV_SHUTDOWN)) {
+                struct sk_buff_head *rcvq = &sk->sk_receive_queue;
+                struct sk_buff *skb;
+
+                spin_lock_bh(&rcvq->lock);
+                while ((skb = skb_peek(rcvq)) != NULL &&
+                       udp_lib_checksum_complete(skb)) {
+                        UDP_INC_STATS_BH(sock_net(sk),
+                                        UDP_MIB_INERRORS, is_lite);
+                        __skb_unlink(skb, rcvq);
+<<HERE>>                kfree_skb(skb);
+                }
+                spin_unlock_bh(&rcvq->lock);
+
+
+
+David, Herbert, any idea how to solve this problem ?
+
+1) Allow false positives
+
+Or
+
+2) Maybe we should finally convert sk_forward_alloc to an atomic_t after all...
+   This would make things easier, and speedup UDP (no more need to lock_sock())
+
+Or 
+
+3) ???
+
