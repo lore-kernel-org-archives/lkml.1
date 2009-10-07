@@ -1,65 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758582AbZJGBT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933881AbZJGBWv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758582AbZJGBT1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 21:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758477AbZJGBT0
+	id S933881AbZJGBWv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 21:22:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758531AbZJGBWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 21:19:26 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:44990 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758443AbZJGBT0 (ORCPT
+	Tue, 6 Oct 2009 21:22:50 -0400
+Received: from mail-yx0-f173.google.com ([209.85.210.173]:54604 "EHLO
+	mail-yx0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758517AbZJGBWu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 21:19:26 -0400
-Subject: Re: [PATCH 2/3] perf trace: Update eval_flag() flags array to
- match interrupt.h
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Tom Zanussi <tzanussi@gmail.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, lizf@cn.fujitsu.com
-In-Reply-To: <20091006214228.GB5343@nowhere>
-References: <1254808849-7829-1-git-send-email-tzanussi@gmail.com>
-	 <1254808849-7829-3-git-send-email-tzanussi@gmail.com>
-	 <20091006132732.GA14978@infradead.org> <20091006151858.GB5152@nowhere>
-	 <20091006152106.GA6490@infradead.org> <20091006152255.GC5152@nowhere>
-	 <20091006152419.GA10501@infradead.org>  <20091006214228.GB5343@nowhere>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 06 Oct 2009 21:17:27 -0400
-Message-Id: <1254878247.1696.51.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Oct 2009 21:22:50 -0400
+MIME-Version: 1.0
+In-Reply-To: <f488382f0910061754g6d15cf58v572e85701fc5aa4f@mail.gmail.com>
+References: <alpine.LNX.2.00.0910050923280.2419@alcarin.uplinklabs.net>
+	 <1254814298.31336.63.camel@eenurkka-desktop>
+	 <f488382f0910060322y12e2e7dbm9a1372e481c9013f@mail.gmail.com>
+	 <1254825795.31336.204.camel@eenurkka-desktop>
+	 <f488382f0910060422t420ade8bvdefbf3e3d0720266@mail.gmail.com>
+	 <1254832609.31336.290.camel@eenurkka-desktop>
+	 <f488382f0910061754g6d15cf58v572e85701fc5aa4f@mail.gmail.com>
+Date: Tue, 6 Oct 2009 18:22:13 -0700
+Message-ID: <f488382f0910061822wf8da0c1m7f118f04fe793abe@mail.gmail.com>
+Subject: Re: [BISECTED] "conservative" cpufreq governor broken
+From: Steven Noonan <steven@uplinklabs.net>
+To: ext-eero.nurkkala@nokia.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Rik van Riel <riel@redhat.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 23:42 +0200, Frederic Weisbecker wrote:
-> On Tue, Oct 06, 2009 at 11:24:19AM -0400, Christoph Hellwig wrote:
-> > On Tue, Oct 06, 2009 at 05:22:58PM +0200, Frederic Weisbecker wrote:
-> > > I see...
-> > > Then the only solution I can imagine is to export a debugfs file
-> > > in the tracing directory that provides this name resolution.
-> > 
-> > The format files kinda contain that information, just not in a very
-> > useful format.  I think the general problem is that the formats exported
-> > aren't descriptive enough, and fields/flags are just one symptom of
-> > that.
-> 
-> 
-> Well, Steve has posted a whole rewrite of the format files some months ago,
-> I don't know what's the status of this work. One of the problems is that we
-> know have tools that support the current format.
-> 
+On Tue, Oct 6, 2009 at 5:54 PM, Steven Noonan <steven@uplinklabs.net> wrote:
+> On Tue, Oct 6, 2009 at 5:36 AM, Eero Nurkkala
+> <ext-eero.nurkkala@nokia.com> wrote:
+>> On Tue, 2009-10-06 at 13:22 +0200, ext Steven Noonan wrote:
+>>> On Tue, Oct 6, 2009 at 3:43 AM, Eero Nurkkala
+>>> <ext-eero.nurkkala@nokia.com> wrote:
+>>> > On Tue, 2009-10-06 at 12:22 +0200, ext Steven Noonan wrote:
+>>> >>
+>>> >> I would suspect you have to have CONFIG_NO_HZ enabled to be able to
+>>> >> reproduce the issue (considering the title of the bisected commit and
+>>> >> my own config). Do you have it enabled?
+>>> >>
+>>> >
+>>> > Yes, it's enabled.
+>>> >
+>>> >> > And another round:
+>>> >> >
+>>> >> > cpufreq stats: OP1:16,78%, OP2:0,24%, OP3:5,14%, OP4:77,83%  (72)
+>>> >> >
+>>> >> > Just once more after doing nothing:
+>>> >> > OP1:7,41%, OP2:0,11%, OP3:2,38%, OP4:90,10%  (82)
+>>> >> >
+>>> >> > So I can't agree it's broken. The patch you bisected, actually filtered
+>>> >> > out such phenomenon, in which an IRQ made the cpufreq framework
+>>> >> > occasionally think we were idling, although we were not. So you got
+>>> >> > "bonus" idle time that shouldn't been there in the first place. Now that
+>>> >> > the "bonus" idle time is not there, your system load may indeed be so
+>>> >> > high that the system never spends 80% or more time in idle? Could that
+>>> >> > be the case? Of course, even though I can't agree it's broken, doesn't
+>>> >> > mean it isn't somehow broken ;) It'd be nice to get info on other
+>>> >> > systems as well...
+>>> >>
+>>> >> Interestingly, "ondemand" (the governor fixed by the bisected commit)
+>>> >> works fine. "conservative" is the only broken one.
+>>> >>
+>>> >
+>>> > If you took timestamps in /arch/x86/kernel/process_**.c:
+>>> > (let's assume process_64.c) in cpu_idle()
+>>> > around enter_idle(); and __exit_idle(), took the diff,
+>>> > added the diffs up, and compared it to system uptime, you could see how
+>>> > much time you spend in idle()? I think it's possible that
+>>> > even if the cpu load is near 0%, the system may idle only for a bare
+>>> > moment (that translates to a buggy pm_idle()), and time is spent
+>>> > elsewhere (less than 80% in idle).
+>>>
+>>> This makes logical sense, but how should I test this? Is there a way
+>>> to do this with existing tracers?
+>>
+>> Tracers may by themselves add some load into the system.
+>>
+>> If I were you, I'd add something like: (I have only one CPU BTW)
+>>
+>> static ktime_t time_prior_idle;
+>> static int64_t idle_total;
+>>
+>> time_prior_idle = ktime_get();
+>> <idle stuff>
+>> idle_total += ktime_to_ns(ktime_sub(ktime_get(), time_prior_idle));
+>>
+>> and have a sysfs hook (something already present, so you can just cat
+>> it) with a trace:
+>>
+>> printk("Times: %lld, %lld \n", idle_total, ktime_to_ns(ktime_get()));
+>>
+>> Sample output:
+>> 374758812519, 386768249832
+>>
+>> So I have 386768249832 / 386768249832 = 96.9 % time spent in idle in
+>> this case.
+>>
+>> (Right, this should provide somewhat descent info, hopefully ;) )
+>>
+>
+> Well, I tried adding the code to cpu_idle() as suggested, but it never
+> printed anything. Apparently cpu_idle() isn't ever being called here.
+> Even added a 'BUG();' at the beginning of the function and it never
+> hit it. Of course, I'm probably missing something obvious. Is there a
+> separate cpu_idle()-esque function for SMP?
+>
 
-Yeah, but that new format was just begging for a NAK. No one wants a new
-format layout. They want C code. But unfortunately, when we use enums
-for flags and such, the macros have no idea how to handle it. I may try
-to work out a way to let those same macros be able to export the value
-with the enum name.
+Oh crap. Perhaps it's more insidious. I reverted the bisected commit
+and it _DID_ hit the line I added. So cpu_idle is never entered with
+the bisected commit. Bizarre.
 
-I'll try to figure out something.
-
--- Steve
-
-
+- Steven
