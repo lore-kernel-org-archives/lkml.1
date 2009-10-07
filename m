@@ -1,104 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934327AbZJGToB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759948AbZJGTrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934327AbZJGToB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 15:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933824AbZJGToA
+	id S1759948AbZJGTrD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 15:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759939AbZJGTrC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 15:44:00 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:40638 "EHLO
+	Wed, 7 Oct 2009 15:47:02 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:49958 "EHLO
 	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933773AbZJGToA (ORCPT
+	with ESMTP id S1759934AbZJGTrA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 15:44:00 -0400
+	Wed, 7 Oct 2009 15:47:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=b51pCmySt0FW8M04JxWFw7vNo1WYB00KC0kIpFMe9cMy4RZhIbZRlxRJZ1OF+lMvkD
-         73Nuddw0tNt3WWL1JcVDcy2Hf0Qcs0/ZsuHNaxMpohRp9XuEjAel9sJu0VFw1/1uqtxk
-         xl9FRDJ85y8FHDwfXI9XQvVXTpFy9Qdu1/GL0=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       John Kacur <jkacur@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Sven-Thorsten Dietrich <sdietrich@suse.de>
-Subject: [PATCH] x86: Remove the bkl from msr_open()
-Date: Wed,  7 Oct 2009 21:43:22 +0200
-Message-Id: <1254944602-7382-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
-References: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=UraT+Fgd3dQXn2nGEhwz7Hv1+G4nAFzNhncN6phJHrcFHNyGVIeLGLVPu8DX2cRP1P
+         Jl4Jy6RaOy20PgpQtRUPlEKlQRhKijr/9lqmUhUhxaLl3X1nu/Y4NRA2w2//eIz5sV6b
+         M+5t/fWaG23LX54pliNzKyfF/PGKURZk8wtSY=
+MIME-Version: 1.0
+In-Reply-To: <20091007175403.GA335@trillian.comsick.at>
+References: <20091007175403.GA335@trillian.comsick.at>
+Date: Wed, 7 Oct 2009 20:46:23 +0100
+Message-ID: <9b2b86520910071246r393f2afvacaa4d8f544508a8@mail.gmail.com>
+Subject: Re: [BUG] No ttyS0 - Strange udev 8250_pnp interaction
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Michael Guntsche <mike@it-loops.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-hotplug <linux-hotplug@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the big kernel lock from msr_open() as it doesn't protect
-anything there.
+[CC: linux-hotplug aka the udev list]
 
-The only racy event that can happen here is a concurrent cpu shutdown.
+On 10/7/09, Michael Guntsche <mike@it-loops.com> wrote:
+> Hello list,
+>
+> (Please CC me on any replies since I am not subscribed to the list.)
+>
+> After upgrading to 2.6.31.2 I noticed a strange behaviour with my
+> /dev/ttySx entries. I tried earlier kernels too and saw the same thing
+> happening, albeit not as often. So what's the probem?
+>
+> Short description:
+> Although I see this in dmesg
+> serial 00:05: activated
+> 00:05: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+> serial 00:06: activated
+> 00:06: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+>
+> very often after boot either ttyS0 or ttyS1 is missing under /dev.
+> I tried to figure out what was happening and did the following.
+>
+> * stopped udevd
+> * rmmod 8250_pnp
+> * rmmod 8250
+>
+> No more /dev/ttySx entries under dev.
+>
+> Then I started udevd --debug and loaded 8250.
+> As a result ttyS[0123] were created. Then I loaded 8250_pnp.
+> Now here the problem starts (normally after a few rmmod;modprobe cycles).
+> I removed the 8250_pnp module again and the ttyS entries stayed (I think
+> because of the 8250 module). Upon re-inserting the 8250_pnp module
+> disappeared vanished.
+> I think this is part of the relevant udev output
+>
+> 1254937120.013500 [24944] event_queue_delete: seq 10438 done with 0
+> 1254937120.016933 [24944] event_queue_insert: seq 10439 queued, 'remove'
+> 'tty'
+> 1254937120.017101 [24944] udev_monitor_send_device: passed 148 bytes to
+> monitor 0x813a1f0
+> 1254937120.017245 [25361] worker_new: seq 10439 running
+> 1254937120.017387 [25361] udev_device_read_db: device 0x8149f80 filled
+> with db symlink data '/dev/ttyS1'
+> 1254937120.017611 [25361] update_link: no reference left, remove
+> '/dev/char/4:65'
+> 1254937120.018123 [24944] event_queue_insert: seq 10440 queued, 'add'
+> 'tty'
+> 1254937120.018314 [24944] udev_monitor_send_device: passed 136 bytes to
+> monitor 0x813a1f0
+> 1254937120.018473 [25362] worker_new: seq 10440 running
+> 1254937120.018629 [25362] udev_device_new_from_syspath: device 0x814a048
+> has devpath '/devices/pnp0/00:06/tty/ttyS1'
+> 1254937120.018763 [25362] udev_rules_apply_to_event: LINK 'char/4:65'
+> /lib/udev/rules.d/50-udev-default.rules:2
+> 1254937120.018943 [25362] udev_device_new_from_syspath: device 0x813a1f0
+> has devpath '/devices/pnp0/00:06'
+> 1254937120.019085 [25362] udev_device_new_from_syspath: device 0x814a3d0
+> has devpath '/devices/pnp0'
+> 1254937120.019207 [25362] udev_rules_apply_to_event: GROUP 20
+> /lib/udev/rules.d/91-permissions.rules:48
+> 1254937120.019301 [25362] udev_event_execute_rules: no node name set,
+> will use device name 'ttyS1'
+> 1254937120.019395 [25362] udev_device_update_db: create db link (ttyS1
+> char/4:65)
+> 1254937120.019476 [25362] udev_node_add: creating device node
+> '/dev/ttyS1', devnum=4:65, mode=0660, uid=0, gid=20
+> 1254937120.019597 [25362] udev_node_mknod: preserve file '/dev/ttyS1',
+> because it has correct dev_t
+> 1254937120.019850 [25362] update_link: '/dev/char/4:65' with target
+> '/dev/ttyS1' has the highest priority 0, create it
+> 1254937120.019994 [25362] node_symlink: preserve already existing
+> symlink '/dev/char/4:65' to '../ttyS1'
+> 1254937120.020122 [25362] udev_monitor_send_device: passed -1 bytes to
+> monitor 0x814a8d8
+> 1254937120.020223 [25362] worker_new: seq 10440 processed with 0
+> 1254937120.020375 [24944] event_queue_delete: seq 10440 done with 0
+> 1254937120.020527 [24944] event_queue_insert: seq 10441 queued, 'add'
+> 'drivers'
+> 1254937120.020697 [24944] udev_monitor_send_device: passed 117 bytes to
+> monitor 0x813a1f0
+> 1254937120.020840 [25362] worker_new: seq 10441 running
+> 1254937120.021093 [25362] udev_monitor_send_device: passed -1 bytes to
+> monitor 0x814a8d8
+> 1254937120.021212 [25362] worker_new: seq 10441 processed with 0
+> 1254937120.021491 [25361] udev_node_remove: removing device node
+> '/dev/ttyS1'
+> 1254937120.021695 [25361] udev_monitor_send_device: passed -1 bytes to
+> monitor 0x8149740
+> 1254937120.021794 [25361] worker_new: seq 10439 processed with 0
+> 1254937120.021941 [24944] event_queue_delete: seq 10441 done with 0
+> 1254937120.022067 [24944] event_queue_delete: seq 10439 done with 0
+> 1254937174.180067 [24944] event_queue_insert: seq 10442 queued, 'add'
+> 'uids'
+> 1254937174.180250 [24944] udev_monitor_send_device: passed 109 bytes to
+> monitor 0x813a1f0
+> 1254937174.181362 [25361] worker_new: seq 10442 running
+> 1254937174.181645 [25361] udev_monitor_send_device: passed -1 bytes to
+> monitor 0x8149740
+> 1254937174.182118 [25361] worker_new: seq 10442 processed with 0
+> 1254937174.182249 [24944] event_queue_delete: seq 10442 done with 0
+> 1254937174.217080 [24944] event_queue_insert: seq 10443 queued, 'remove'
+> 'uids'
+> 1254937174.217226 [24944] udev_monitor_send_device: passed 112 bytes to
+> monitor 0x813a1f0
+> 1254937174.217330 [25361] worker_new: seq 10443 running
+> 1254937174.217466 [25361] udev_monitor_send_device: passed -1 bytes to
+> monitor 0x8149740
+> 1254937174.217542 [25361] worker_new: seq 10443 processed with 0
+> 1254937174.217647 [24944] event_queue_delete: seq 10443 done with 0
+>
+>
+> It looks there is a race here. The code sees that ttyS1 is existing and
+> wants to reuse it
+> but at the same time deletes it. So I end up with either no ttyS0 or
+> ttyS1. I would not really care if this was just happening during the
+> rmmod;modprobe shuffle but this also happens fairly often during boot as
+> well. A headless system is connected via ttyS0 and I have to either
+> create the entry manually or restart udev to be able to connect to
+> it. I tried this on 2.6.30.2, 2.6.31 and 2.6.31.2 with the latest udev
+> from debian and from the git tree.
 
-So let's look at what could be racy during/after the above event:
+Good sleuthing.
 
-- The cpu_online() check is racy, but the bkl doesn't help about
-  that anyway it disables preemption but we may be chcking another
-  cpu than the current one.
-  Also the cpu can still become offlined between open and read calls.
+Udev would have avoided the race prior to
 
-- The cpu_data(cpu) returns a safe pointer too. It won't be released on
-  cpu offlining. But some fields can be changed from
-  arch/x86/kernel/smpboot.c:remove_siblinginfo() :
+82c785e "udevd: remove check for dev_t, DEVPATH_OLD takes care of that"
 
-	- phys_proc_id
-	- cpu_core_id
+(the "check" removed here used to serialize events based on the device
+major:minor number).
 
-  Those are not read from msr_open(). What we are checking is the
-  x86_capability that is left untouched on offlining.
+So - udev probably needs to add the check back.
 
-So this removal looks safe.
+It might also be the case that future kernels could set DEVPATH_OLD as
+suggested.  I don't know the gory details of 8250_pnp though.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: John Kacur <jkacur@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Sven-Thorsten Dietrich <sdietrich@suse.de>
----
- arch/x86/kernel/msr.c |   16 ++++++----------
- 1 files changed, 6 insertions(+), 10 deletions(-)
-
-diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
-index 6a3cefc..5534499 100644
---- a/arch/x86/kernel/msr.c
-+++ b/arch/x86/kernel/msr.c
-@@ -174,21 +174,17 @@ static int msr_open(struct inode *inode, struct file *file)
- {
- 	unsigned int cpu = iminor(file->f_path.dentry->d_inode);
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
--	int ret = 0;
- 
--	lock_kernel();
- 	cpu = iminor(file->f_path.dentry->d_inode);
- 
--	if (cpu >= nr_cpu_ids || !cpu_online(cpu)) {
--		ret = -ENXIO;	/* No such CPU */
--		goto out;
--	}
-+	if (cpu >= nr_cpu_ids || !cpu_online(cpu))
-+		return -ENXIO;	/* No such CPU */
-+
- 	c = &cpu_data(cpu);
- 	if (!cpu_has(c, X86_FEATURE_MSR))
--		ret = -EIO;	/* MSR not supported */
--out:
--	unlock_kernel();
--	return ret;
-+		return -EIO;	/* MSR not supported */
-+
-+	return 0;
- }
- 
- /*
--- 
-1.6.2.3
-
+Thanks
+Alan
