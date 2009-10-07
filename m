@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934084AbZJGIDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933322AbZJGIBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934084AbZJGIDJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934071AbZJGIDD
+	id S933322AbZJGIBF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933241AbZJGIBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:03:03 -0400
-Received: from mga03.intel.com ([143.182.124.21]:9396 "EHLO mga03.intel.com"
+	Wed, 7 Oct 2009 04:01:03 -0400
+Received: from mga03.intel.com ([143.182.124.21]:28327 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934063AbZJGIC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:02:59 -0400
+	id S933238AbZJGIBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 04:01:00 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,518,1249282800"; 
-   d="scan'208";a="195972038"
-Message-Id: <20091007074901.884235522@intel.com>
+   d="scan'208";a="195971188"
+Message-Id: <20091007074902.029561941@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 07 Oct 2009 15:38:24 +0800
+Date: Wed, 07 Oct 2009 15:38:25 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
@@ -25,76 +25,67 @@ CC: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
        "Myklebust Trond" <Trond.Myklebust@netapp.com>,
        "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
        Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-       <linux-fsdevel@vger.kernel.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>,
-       Wu Fengguang <fengguang.wu@intel.com>
+       <linux-fsdevel@vger.kernel.org>, Wu Fengguang <fengguang.wu@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 06/45] writeback: use larger ratelimit when dirty_exceeded
+Subject: [PATCH 07/45] writeback: dont redirty tail an inode with dirty pages
 References: <20091007073818.318088777@intel.com>
-Content-Disposition: inline; filename=writeback-ratelimit-on-dirty-exceeded.patch
+Content-Disposition: inline; filename=writeback-xfs-fast-redirty.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When dirty_exceeded, use ratelimit = ratelimit_pages/8, allowing it to
-scale up to 512KB for memory bounty systems. This is more efficient than
-the original 8 pages, and won't risk exceeding the dirty limit too much.
+This avoids delaying writeback for an expired (XFS) inode with lots of
+dirty pages, but no active dirtier at the moment.
 
-Given the larger ratelimit value, we can safely ignore the low bound
-check in sync_writeback_pages.
-
-dirty_exceeded is more likely to be seen when there are multiple dirty
-processes. In which case the lowered ratelimit will help reduce their
-overall wait time (latency) in the throttled queue.
-
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl> 
-CC: Richard Kennedy <richard@rsk.demon.co.uk>
+CC: Dave Chinner <david@fromorbit.com> 
+CC: Christoph Hellwig <hch@infradead.org> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/page-writeback.c |   12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ fs/fs-writeback.c |   20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
---- linux.orig/mm/page-writeback.c	2009-10-06 23:37:50.000000000 +0800
-+++ linux/mm/page-writeback.c	2009-10-06 23:38:18.000000000 +0800
-@@ -39,7 +39,8 @@
-  * After a CPU has dirtied this many pages, balance_dirty_pages_ratelimited
-  * will look to see if it needs to force writeback or throttling.
-  */
--static long ratelimit_pages = 32;
-+#define MAX_RATELIMIT_PAGES ((4096 * 1024) / PAGE_CACHE_SIZE)
-+static long ratelimit_pages = MAX_RATELIMIT_PAGES;
- 
- /*
-  * When balance_dirty_pages decides that the caller needs to perform some
-@@ -49,9 +50,6 @@ static long ratelimit_pages = 32;
-  */
- static inline long sync_writeback_pages(unsigned long dirtied)
- {
--	if (dirtied < ratelimit_pages)
--		dirtied = ratelimit_pages;
--
- 	return dirtied + dirtied / 2;
- }
- 
-@@ -600,7 +598,7 @@ void balance_dirty_pages_ratelimited_nr(
- 
- 	ratelimit = ratelimit_pages;
- 	if (mapping->backing_dev_info->dirty_exceeded)
--		ratelimit = 8;
-+		ratelimit >>= 3;
- 
- 	/*
- 	 * Check the rate limiting. Also, we do not want to throttle real-time
-@@ -722,8 +720,8 @@ void writeback_set_ratelimit(void)
- 	ratelimit_pages = vm_total_pages / (num_online_cpus() * 32);
- 	if (ratelimit_pages < 16)
- 		ratelimit_pages = 16;
--	if (ratelimit_pages * PAGE_CACHE_SIZE > 4096 * 1024)
--		ratelimit_pages = (4096 * 1024) / PAGE_CACHE_SIZE;
-+	if (ratelimit_pages > MAX_RATELIMIT_PAGES)
-+		ratelimit_pages = MAX_RATELIMIT_PAGES;
- }
- 
- static int __cpuinit
+--- linux.orig/fs/fs-writeback.c	2009-10-06 23:37:57.000000000 +0800
++++ linux/fs/fs-writeback.c	2009-10-06 23:38:28.000000000 +0800
+@@ -479,18 +479,7 @@ writeback_single_inode(struct inode *ino
+ 	spin_lock(&inode_lock);
+ 	inode->i_state &= ~I_SYNC;
+ 	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
+-		if ((inode->i_state & I_DIRTY_PAGES) && wbc->for_kupdate) {
+-			/*
+-			 * More pages get dirtied by a fast dirtier.
+-			 */
+-			goto select_queue;
+-		} else if (inode->i_state & I_DIRTY) {
+-			/*
+-			 * At least XFS will redirty the inode during the
+-			 * writeback (delalloc) and on io completion (isize).
+-			 */
+-			redirty_tail(inode);
+-		} else if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
++		if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
+ 			/*
+ 			 * We didn't write back all the pages.  nfs_writepages()
+ 			 * sometimes bales out without doing anything. Redirty
+@@ -512,7 +501,6 @@ writeback_single_inode(struct inode *ino
+ 				 * soon as the queue becomes uncongested.
+ 				 */
+ 				inode->i_state |= I_DIRTY_PAGES;
+-select_queue:
+ 				if (wbc->nr_to_write <= 0) {
+ 					/*
+ 					 * slice used up: queue for next turn
+@@ -535,6 +523,12 @@ select_queue:
+ 				inode->i_state |= I_DIRTY_PAGES;
+ 				redirty_tail(inode);
+ 			}
++		} else if (inode->i_state & I_DIRTY) {
++			/*
++			 * At least XFS will redirty the inode during the
++			 * writeback (delalloc) and on io completion (isize).
++			 */
++			redirty_tail(inode);
+ 		} else if (atomic_read(&inode->i_count)) {
+ 			/*
+ 			 * The inode is clean, inuse
 
 
