@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbZJGEiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752644AbZJGEgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752856AbZJGEiR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 00:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbZJGEiQ
+	id S1752644AbZJGEgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 00:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZJGEgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 00:38:16 -0400
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:33869 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbZJGEiP (ORCPT
+	Wed, 7 Oct 2009 00:36:49 -0400
+Received: from mail-ew0-f217.google.com ([209.85.219.217]:39193 "EHLO
+	mail-ew0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbZJGEgs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 00:38:15 -0400
+	Wed, 7 Oct 2009 00:36:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=UaA2aHCEucsTynD8Vl1A7Y4/xx6LwFOcdqeBR7edMAFl5ONGz+4GnF29QlwzgAlMsu
-         Xta5R/wAAV2/QUWuhRJU/qUzjLwqJWmwEgr2okeOcQ5wuBG7v8UWwuuLizmEyeh5qpHA
-         p56QPbR7bLy8xe3U80Byfi+mlAIl/vYikpB/g=
-Subject: Re: [tip:perf/core] tracing/events: Add 'signed' field to format
- files
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
-In-Reply-To: <20091006150510.GA5152@nowhere>
-References: <1254809398-8078-2-git-send-email-tzanussi@gmail.com>
-	 <tip-26a50744b21fff65bd754874072857bee8967f4d@git.kernel.org>
-	 <20091006150510.GA5152@nowhere>
-Content-Type: text/plain
-Date: Tue, 06 Oct 2009 23:30:02 -0500
-Message-Id: <1254889802.28917.156.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tYfgLLpe3D4OCNAS+ypUFVB6RvZjS3iUh5Z0UEFxWI0StjGQRk4gAi7PcEuB/94565
+         4kyGYDaYsFVF58dtV19ktki9oifF5mFS2G2LtzWQKRUr0trsTeDVfOzw1RGLhScMhE7a
+         YHEBxblT+Ey1xVSLrWG1moiy7JqW4iZW/64Y4=
+Date: Tue, 6 Oct 2009 21:36:04 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz, linux-input@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 32-rc1 aka 32-rc2: warning at manage.c:361 (set_irq_wake),
+	matrix-keypad related?
+Message-ID: <20091007043603.GC10204@core.coreip.homeip.net>
+References: <20090930200746.GA1384@ucw.cz> <20091006050649.GH27881@core.coreip.homeip.net> <20091006075816.GA1362@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091006075816.GA1362@ucw.cz>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 17:05 +0200, Frederic Weisbecker wrote:
-> On Tue, Oct 06, 2009 at 01:06:39PM +0000, tip-bot for Tom Zanussi wrote:
-> > Commit-ID:  26a50744b21fff65bd754874072857bee8967f4d
-> > Gitweb:     http://git.kernel.org/tip/26a50744b21fff65bd754874072857bee8967f4d
-> > Author:     Tom Zanussi <tzanussi@gmail.com>
-> > AuthorDate: Tue, 6 Oct 2009 01:09:50 -0500
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Tue, 6 Oct 2009 15:04:45 +0200
+On Tue, Oct 06, 2009 at 09:58:17AM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> On Mon 2009-10-05 22:06:50, Dmitry Torokhov wrote:
+> > On Wed, Sep 30, 2009 at 10:07:46PM +0200, Pavel Machek wrote:
+> > > 
+> > > It complains about unbalanced irq 113 wake disable. That one belongs
+> > > to matrix-keypad...
 > > 
-> > tracing/events: Add 'signed' field to format files
-> > 
-> > The sign info used for filters in the kernel is also useful to
-> > applications that process the trace stream.  Add it to the format
-> > files and make it available to userspace.
+> > I guess some of enable_irq_wake()s fail on your box. Do you see it if
+> > you apply the patch below?
 > 
+> I'll do short test. But... if you are right, your patch will just make
+> your machine refuse to suspend... right?
 > 
+> Ungood.
+
+It was just a debug patch.
+
 > 
-> This is something we could already find using the type of
-> the field.
+> Actually, it seems to break suspend (returns  -EINVAL while refusing
+> to suspend), warnings are still there, and keyboard is dead after
+> failed suspend... double plus ungood.
+> 
+> Aha, so warning is solved: the one in the log is from gpio_buttons.
 > 
 
-Hmm, yeah, we do have the field type but in the form of a string, which
-I guess we'd need some kind of type map to get the sign out of.  Since
-we already have the sign info, though, it made sense to me to stick it
-in the format file, other than the fact that it might break some
-existing tools.  I didn't think the final format was nailed down yet so
-thought that might not be so important at this point...
+OK, so it looks like your box refuses to set up one of the GPIOs as a
+wakeup source... Hmm, either your box is wrong ;) or matrix_keypad
+driver needs to maintain a separate list of wakeup GPIOs.
 
-Tom
-
-> Also I wonder if that breaks the format definition ABI. I mean:
-> event formats are not ABI, except for the TRACE_EVENT_ABI.
-> But concerning how we describe the format description, I
-> have doubts.
-> 
-> As an example, I don't know if this patch would break 2.6.32-rc1
-> (and then 2.6.32) based perf tools running on a future 2.6.33
-> kernel.
-> 
-
+-- 
+Dmitry
