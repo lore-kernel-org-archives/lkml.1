@@ -1,70 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933313AbZJGPhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759511AbZJGPjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933313AbZJGPhS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbZJGPhQ
+	id S1759511AbZJGPjf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbZJGPje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:37:16 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:61573 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753004AbZJGPhO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:37:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=P481lGZPxirYpWL8nSGnzpc2d5sSruF8vmhERn0yMp05xd+Rnu0ofidJCuqODXAO1b
-         6BtDSZGu5mjabnvYzbo6OIjD8Gm/1eyysf+5aiXugFA7zj4V9hOTuvunmjWeD8RsZNcQ
-         MFs+T6BkYt8YdiBJ87EHMnzK1nH877AdArDig=
-Date: Wed, 7 Oct 2009 17:36:38 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Zhenwen Xu <helight.xu@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH V3] fix a warning on kernel/trace/trace_branch.c
-	andtrace_hw_branches.c
-Message-ID: <20091007153635.GA5411@nowhere>
-References: <20091007113915.GA5265@helight>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091007113915.GA5265@helight>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Oct 2009 11:39:34 -0400
+Received: from fifo99.com ([67.223.236.141]:35782 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759471AbZJGPjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 11:39:33 -0400
+Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
+From: Daniel Walker <dwalker@fifo99.com>
+To: rostedt@goodmis.org
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Andy Whitcroft <apw@canonical.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1254928114.1696.164.camel@gandalf.stny.rr.com>
+References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
+	 <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
+	 <1253585691-10987-3-git-send-email-dwalker@fifo99.com>
+	 <4AB86ED1.1040200@cn.fujitsu.com> <20090930152708.GD2957@shadowen.org>
+	 <1254406711.18167.88.camel@desktop> <m33a5ww8kn.fsf@intrepid.localdomain>
+	 <1254887534.18167.253.camel@desktop>  <m3hbubv779.fsf@intrepid.localdomain>
+	 <1254925617.18167.262.camel@desktop>
+	 <1254928114.1696.164.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Wed, 07 Oct 2009 08:38:27 -0700
+Message-Id: <1254929907.18167.301.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 07:39:15PM +0800, Zhenwen Xu wrote:
-> fix warnings that caused the API change of trace_buffer_lock_reserve()
-> change files: kernel/trace/trace_hw_branch.c
-> 	      kernel/trace/trace_branch.c
+On Wed, 2009-10-07 at 11:08 -0400, Steven Rostedt wrote:
+> Daniel,
 > 
-> Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
-> ---
->  kernel/trace/trace_branch.c      |    2 +-
->  kernel/trace/trace_hw_branches.c |    6 ++++--
->  2 files changed, 5 insertions(+), 3 deletions(-)
+> This is getting old. You've successfully entered the /dev/null folder to
+> several major developers.
+
+Getting into a /dev/null folder for code comments is just absolutely
+insane to me. Any one that puts me into /dev/null has some pretty low
+tolerances ..
+
+What's getting old exactly ? The fact that Krzysztof and I are having a
+discussion about this?
+
+> The checkpatch.pl script is a very useful tool. I run it on all my
+> patches to make sure that I don't have any silly formatting errors. It
+> even catches some real bugs now and then.
 > 
-> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-> index 7a7a9fd..216e2dd 100644
-> --- a/kernel/trace/trace_branch.c
-> +++ b/kernel/trace/trace_branch.c
-> @@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
->  		goto out;
->  
->  	pc = preempt_count();
-> -	event = trace_buffer_lock_reserve(tr, TRACE_BRANCH,
-> +	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
->  					  sizeof(*entry), flags, pc);
+> That said, if we really wanted to have checkpatch as a authoritative
+> tool, it would be executed by a bot on all patches submitted to LKML
+> (which you seem to have put on yourself to do). But if Linus or others
+> wanted that, they would have set it up.
 
+You have a much different impression of this list than I do.. From my
+perspective this list is made up of 1000's of people each having their
+own agenda.. I have an agenda , you have one, everyone has one of their
+own.. By saying "if Linus or others wanted that, they would have set it
+up." . Your basically saying that only some "cool" people can have
+specific agenda's and some (me) can't have agenda's , which to me is
+totally bogus and wrong..
 
+You had your chance to comments on my activity already, and did I take
+your advice or anyones advice from this list? Do you see lots of emails
+from me on checkpatch errors constantly??
 
-Your change in kernel/trace/trace_hw_branches.c is fine, because
-you have handled the fact the buffer can be changed and then
-saved it in a temporary var.
+> We assume that the maintainers of the system are competent enough to
+> keep a decent formatting style that conforms to the rest of the kernel.
+> There are some instances that the style may change to cover cases that
+> are unique, like the events headers.
 
-But you forgot to do it in trace_branch.c
+I don't totally disagree with that, however as I'm telling Krzysztof
+even maintainers should have a good reason why they are deviating from
+it.
 
-Frederic.
+> Really it should be up to the maintainer to tell a submitter that they
+> need to run checkpatch. You are coming out as the checkpatch Nazi leader
+> to "enforce" your will of the tool on others. And when they tell you,
+> it's not that big of a deal, you have a conniption.
+
+conniption? I hope your joking.. I argue sure, which is my right to do..
+Clearly I can't force people to do anything, like I can't force you to
+change your events header files. I gave you an alternative, you didn't
+use it, and there is nothing else I can do about it..
+
+> So my advice to you is to take a chill pill (they come in chewables) and
+> relax a bit on this topic. If you had just sent out some nice emails to
+> obvious breakage in patches, then it would have been fine. But you are
+> coming across a bit too authoritarian, and it is becoming quite
+> annoying.
+
+Well there is a potentially easy way for you to stop me.. All you have
+to do is write a patch that modifies Documentation/SubmittingPatches .
+I'm not trying to bluff you at all, I fully expect you to submit a patch
+that changes that .. If it goes in then that's what I will follow. 
+
+You'll notice also I'm not sending many emails recently on this subject
+right? It's like you want to harp on this more than I do ..
+
+Just relax the submission rules so that checkpatch is basically an
+optional part of the submission process. Adding that you don't actually
+need to run it, you don't need a good reason not to follow the rules
+etc.. Or expand on it to fully explain what you think the deal is or
+should be.
+
+Daniel
 
