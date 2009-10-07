@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934133AbZJGPkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934168AbZJGPmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934133AbZJGPkj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933285AbZJGPki
+	id S934168AbZJGPmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933154AbZJGPmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:40:38 -0400
-Received: from outbound-mail-23.bluehost.com ([69.89.21.18]:37184 "HELO
-	outbound-mail-23.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933367AbZJGPkh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:40:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=Hb9J+MafCv6chLbJd80wLvhlG9D7pCMN7UctHPy8a8hkRu3ylS5ZD1EoeELHmm4EPIUaHO9r3d0U9efMWgMc4Qoq9R/6Zz/Sw9kkfuXpIOt7jKtkYHQTl9DHa6s6ffI0;
-Date: Wed, 7 Oct 2009 08:39:44 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: pci tree build failure
-Message-ID: <20091007083944.0d0d5059@jbarnes-g45>
-In-Reply-To: <4ACBF2BF.5060707@kernel.org>
-References: <20091007123821.043465c6.sfr@canb.auug.org.au>
-	<4ACBF2BF.5060707@kernel.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+	Wed, 7 Oct 2009 11:42:15 -0400
+Received: from fifo99.com ([67.223.236.141]:36005 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933285AbZJGPmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 11:42:14 -0400
+Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
+From: Daniel Walker <dwalker@fifo99.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Andy Whitcroft <apw@canonical.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <20091007161107.72b4031b@lxorguk.ukuu.org.uk>
+References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
+	 <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
+	 <1253585691-10987-3-git-send-email-dwalker@fifo99.com>
+	 <4AB86ED1.1040200@cn.fujitsu.com> <20090930152708.GD2957@shadowen.org>
+	 <1254406711.18167.88.camel@desktop> <m33a5ww8kn.fsf@intrepid.localdomain>
+	 <1254887534.18167.253.camel@desktop> <m3hbubv779.fsf@intrepid.localdomain>
+	 <1254925617.18167.262.camel@desktop> <m3skdvtgas.fsf@intrepid.localdomain>
+	 <1254927438.18167.275.camel@desktop>
+	 <20091007161107.72b4031b@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Wed, 07 Oct 2009 08:41:08 -0700
+Message-Id: <1254930068.18167.304.camel@desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Oct 2009 10:45:35 +0900
-Tejun Heo <tj@kernel.org> wrote:
-
-> Stephen Rothwell wrote:
-> > Hi Jesse,
-> > 
-> > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> > 
-> > ERROR: "pci_set_cacheline_size" [drivers/pcmcia/pcmcia_core.ko]
-> > undefined!
-> > 
-> > Caused by commit 018bc96e8e27bfcafec9357ff370bf51241a7ea7 ("pccard:
-> > configure CLS on attach") which neglected to EXPORT_SYMBOL
-> > pci_set_cacheline_size.
-> > 
-> > I have used the version of the pci tree from next-20091006 for
-> > today.
-> > 
+On Wed, 2009-10-07 at 16:11 +0100, Alan Cox wrote:
+> > Right it's a tool .. However, you should use it and you should follow
+> > it. If for some reason you disagree with the tool you have to give at
+> > least an arguable reason why, not just "It's a guide", "I don't like the
+> > coding style." etc..
 > 
-> Oops, Jesse, can you please add EXPORT_SYMBOL_GPL() there?
+> Those are perfectly good reasons.
 
-Sure, sorry I missed it.
+I don't think they are.. Like adding spaces for tabs is ok cause
+checkpatch is a guide right?
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Daniel
+
