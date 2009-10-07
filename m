@@ -1,112 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbZJGNsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbZJGNsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758736AbZJGNsV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 09:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758486AbZJGNsV
+	id S1758588AbZJGNsL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 09:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757870AbZJGNsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 09:48:21 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63777 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758628AbZJGNsU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 09:48:20 -0400
-Subject: Re: [PATCH V2] fix a warning on kernel/trace/trace_branch.c and
- trace_hw_branches.c
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: "Helight.Xu" <helight.xu@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <4ACC7E35.4050001@gmail.com>
-References: <20091007081946.GA25350@helight>
-	 <4ACC5715.4000201@cn.fujitsu.com>  <4ACC7E35.4050001@gmail.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 07 Oct 2009 09:46:20 -0400
-Message-Id: <1254923180.1696.138.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Wed, 7 Oct 2009 09:48:11 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:36033 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753151AbZJGNsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 09:48:10 -0400
+Message-ID: <4ACC9BE2.5070409@redhat.com>
+Date: Wed, 07 Oct 2009 09:47:14 -0400
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+MIME-Version: 1.0
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Myklebust Trond <Trond.Myklebust@netapp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 00/45] some writeback experiments
+References: <20091007073818.318088777@intel.com>
+In-Reply-To: <20091007073818.318088777@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 19:40 +0800, Helight.Xu wrote:
-> Li Zefan wrote:
-> > Zhenwen Xu wrote:
-> >   
-> >> fix warnings that caused the API change of trace_buffer_lock_reserve()
-> >> change files: kernel/trace/trace_hw_branch.c
-> >> 	      kernel/trace/trace_branch.c
-> >>
-> >>     
-> >
-> > Hmm, did you really compile trace_hw_branch.c while testing
-> > this patch?
-> >
-> > This change is necessary too:
-> >
-> > -	trace_buffer_unlock_commit(tr, event, 0, 0);
-> > +	trace_buffer_unlock_commit(tr->buffer, event, 0, 0);
-> >
-> > And use a varaible "buffer = tr->buffer" should be better.
-> >   
-> oh!   sorry for my careless!
-> >   
-> >> Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
-> >> ---
-> >>  kernel/trace/trace_branch.c      |    2 +-
-> >>  kernel/trace/trace_hw_branches.c |    2 +-
-> >>  2 files changed, 2 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-> >> index 7a7a9fd..216e2dd 100644
-> >> --- a/kernel/trace/trace_branch.c
-> >> +++ b/kernel/trace/trace_branch.c
-> >> @@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
-> >>  		goto out;
-> >>  
-> >>  	pc = preempt_count();
-> >> -	event = trace_buffer_lock_reserve(tr, TRACE_BRANCH,
-> >> +	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
-> >>  					  sizeof(*entry), flags, pc);
-
-Also, You should not pass in the buffer directly. This is because the
-tr->buffer can change, and if it changes between the reserve and commit,
-then you can corrupt the ring buffer.
-
-What you want to do is:
-
-	struct ring_buffer *buffer = tr->buffer;
-
-	event = trace_buffer_lock_reserve(buffer, TRACE_BRANCH ...)
-
-[...]
-
-	ring_buffer_unlock_commit(buffer, ...)
-
-
--- Steve
-
-> >>  	if (!event)
-> >>  		goto out;
-> >> diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
-> >> index 23b6385..1cc17ca 100644
-> >> --- a/kernel/trace/trace_hw_branches.c
-> >> +++ b/kernel/trace/trace_hw_branches.c
-> >> @@ -180,7 +180,7 @@ void trace_hw_branch(u64 from, u64 to)
-> >>  	if (atomic_inc_return(&tr->data[cpu]->disabled) != 1)
-> >>  		goto out;
-> >>  
-> >> -	event = trace_buffer_lock_reserve(tr, TRACE_HW_BRANCHES,
-> >> +	event = trace_buffer_lock_reserve(tr->buffer, TRACE_HW_BRANCHES,
-> >>  					  sizeof(*entry), 0, 0);
-> >>  	if (!event)
-> >>  		goto out;
-> >>     
-> >
-> >   
+Wu Fengguang wrote:
+> Hi all,
 > 
+> Here is a collection of writeback patches on
 > 
+> - larger writeback chunk sizes
+> - single per-bdi flush thread (killing the foreground throttling writeouts)
+> - lumpy pageout
+> - sync livelock prevention
+> - writeback scheduling
+> - random fixes
+> 
+> Sorry for posting a too big series - there are many direct or implicit
+> dependencies, and one patch lead to another before I can stop..
+> 
+> The lumpy pageout and nr_segments support is not complete and do not
+> cover all filesystems for now. It may be better to first convert some of
+> the ->writepages to the generic routines to avoid duplicate work.
+> 
+> I managed to address many issues in past week, however there are still known
+> problems. Hints from filesystem developers are highly appreciated. Thanks!
+> 
+> The estimated writeback bandwidth is about 1/2 the real throughput
+> for ext2/3/4 and btrfs; noticeable bigger than real throughput for NFS; and
+> cannot be estimated at all for XFS.  Very interesting..
+> 
+> NFS writeback is very bumpy. The page numbers and network throughput "freeze"
+> together from time to time:
+> 
+
+Yes.  It appears that the problem is that too many pages get dirtied
+and the network/server get overwhelmed by the NFS client attempting
+to write out all of the pages as quickly as it possibly can.
+
+I think that it would be better if we could better match the
+number of pages which can be dirty at any given point with the
+bandwidth available through the network and the server file
+system and storage.
+
+One approach that I have pondered is immediately queuing an
+asynchronous request when enough pages are dirtied to be able
+to completely fill an over the wire transfer.  This sort of
+seems like a per-file bdi, which doesn't seem quite like the
+right approach to me.  What would y'all think about that?
+
+		ps
+
+
+> # vmmon -d 1 nr_writeback nr_dirty nr_unstable      # (per 1-second samples)
+>      nr_writeback         nr_dirty      nr_unstable
+>             11227            41463            38044
+>             11227            41463            38044
+>             11227            41463            38044
+>             11227            41463            38044
+>             11045            53987             6490
+>             11033            53120             8145
+>             11195            52143            10886
+>             11211            52144            10913
+>             11211            52144            10913
+>             11211            52144            10913
+> 
+> btrfs seems to maintain a private pool of writeback pages, which can go out of
+> control:
+> 
+>      nr_writeback         nr_dirty
+>            261075              132
+>            252891              195
+>            244795              187
+>            236851              187
+>            228830              187
+>            221040              218
+>            212674              237
+>            204981              237
+> 
+> XFS has very interesting "bumpy writeback" behavior: it tends to wait
+> collect enough pages and then write the whole world.
+> 
+>      nr_writeback         nr_dirty
+>             80781                0
+>             37117            37703
+>             37117            43933
+>             81044                6
+>             81050                0
+>             43943            10199
+>             43930            36355
+>             43930            36355
+>             80293                0
+>             80285                0
+>             80285                0
+> 
+> Thanks,
+> Fengguang
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
