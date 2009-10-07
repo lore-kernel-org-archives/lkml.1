@@ -1,67 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZJGD5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbZJGEAC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754303AbZJGD5d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 23:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbZJGD5c
+	id S1753855AbZJGEAC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 00:00:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZJGEAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 23:57:32 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:47045 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbZJGD5b convert rfc822-to-8bit (ORCPT
+	Wed, 7 Oct 2009 00:00:01 -0400
+Received: from mail-qy0-f173.google.com ([209.85.221.173]:42577 "EHLO
+	mail-qy0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751938AbZJGEAA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 23:57:31 -0400
+	Wed, 7 Oct 2009 00:00:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=STp7WvQF/LxKtCwZ/7vFKk+4FYglEoT5i7A2VFlBFvNO6qHjZ+2yMouFZNTUwa63YX
-         /K6qkJP5gZPF7UBlqcYKa6dUQn92fKhPABGCPbye8IsS9FRKI1grxJO0ixzePlHg1Est
-         F5CONei0OwqC+4TY/2FH6cCYTshW9vSScahvU=
-MIME-Version: 1.0
-In-Reply-To: <1254341346-11367-1-git-send-email-jglisse@redhat.com>
-References: <1254341346-11367-1-git-send-email-jglisse@redhat.com>
-Date: Wed, 7 Oct 2009 13:56:54 +1000
-Message-ID: <21d7e9970910062056r12754a6ew2c89b6f5a80e290a@mail.gmail.com>
-Subject: Re: [PATCH] drm/radeon/kms: Convert RS600 to new init path
-From: Dave Airlie <airlied@gmail.com>
-To: Jerome Glisse <jglisse@redhat.com>
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=iaVscIdEMY2hDKCcT+pLaIlsFrlaFEJU9+KT/p9ORYiDddOnmopexa9pF3+acAp8mY
+         wO9z9Mcm6aANk6MchSsYzZl1pPbj9mQJjxm1p4s1zhEmx/dtjhLYrBcRZWaYe+nIsJAg
+         bt+ZTaBdpnwxZGBh0TNyvccDf7Euo3dv3mYn4=
+Subject: Re: [PATCH 3/3] tracing/syscalls: Use long for syscall ret format
+ and  field definitions
+From: Tom Zanussi <tzanussi@gmail.com>
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rostedt@goodmis.org,
+       lizf@cn.fujitsu.com
+In-Reply-To: <c62985530910060015t74d8c116i8593839e6d8a3af5@mail.gmail.com>
+References: <1254808849-7829-1-git-send-email-tzanussi@gmail.com>
+	 <1254808849-7829-4-git-send-email-tzanussi@gmail.com>
+	 <c62985530910060015t74d8c116i8593839e6d8a3af5@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 06 Oct 2009 22:59:22 -0500
+Message-Id: <1254887962.28917.101.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 1, 2009 at 6:09 AM, Jerome Glisse <jglisse@redhat.com> wrote:
-> New init path allow to simply asic initialization and make easier
-> to trace what happen on each different asic. We are removing most
-> callback. Do a massive RS600 register cleanup to clarify RS600
-> register, we are still bit fuzy on some register and waiting for
-> more informations. I don't have hw to test, so this patch is a
-> best effort to not break anythings and to try to improve things.
+On Tue, 2009-10-06 at 09:15 +0200, FrÃ©dÃ©ric Weisbecker wrote:
+> 2009/10/6, Tom Zanussi <tzanussi@gmail.com>:
+> > The syscall event definitions use long for the syscall exit ret value,
+> > but unsigned long for the same thing in the format and field
+> > definitions.  Change them all to long.
+> 
+> 
+> Thanks.
+> 
+> We may perhaps also want to change struct syscall_trace_exit
+> according to that?
+> That won't change the code behaviour, just the logic while
+> reviewing.
+> 
+> It's just a neat, this patch itself is fine.
+> 
 
-This patch breaks irq handling on all rs600->r5xx chips.
->  }
->
->  static inline uint32_t rs600_irq_ack(struct radeon_device *rdev, u32 *r500_disp_int)
->  {
-> -       uint32_t irqs = RREG32(RADEON_GEN_INT_STATUS);
+Yeah, that should have been part of it too.  I'll submit another patch
+later doing that.
 
-^ this was perfectly fine correct code.
+Tom
 
-> -       uint32_t irq_mask = RADEON_SW_INT_TEST;
-> -
-> -       if (irqs & AVIVO_DISPLAY_INT_STATUS) {
-> -               *r500_disp_int = RREG32(AVIVO_DISP_INTERRUPT_STATUS);
-> -               if (*r500_disp_int & AVIVO_D1_VBLANK_INTERRUPT) {
-> -                       WREG32(AVIVO_D1MODE_VBLANK_STATUS, AVIVO_VBLANK_ACK);
-> +       uint32_t irqs = RREG32(R_000040_GEN_INT_CNTL);
+> 
+> >
+> > Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> > ---
+> >  kernel/trace/trace_syscalls.c |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+> > index 9fbce6c..527e17e 100644
+> > --- a/kernel/trace/trace_syscalls.c
+> > +++ b/kernel/trace/trace_syscalls.c
+> > @@ -166,7 +166,7 @@ int syscall_exit_format(struct ftrace_event_call *call,
+> > struct trace_seq *s)
+> >  			       "\tfield:%s %s;\toffset:%zu;\tsize:%zu;\n"
+> >  			       "\tfield:%s %s;\toffset:%zu;\tsize:%zu;\n",
+> >  			       SYSCALL_FIELD(int, nr),
+> > -			       SYSCALL_FIELD(unsigned long, ret));
+> > +			       SYSCALL_FIELD(long, ret));
+> >  	if (!ret)
+> >  		return 0;
+> >
+> > @@ -212,7 +212,7 @@ int syscall_exit_define_fields(struct ftrace_event_call
+> > *call)
+> >  	if (ret)
+> >  		return ret;
+> >
+> > -	ret = trace_define_field(call, SYSCALL_FIELD(unsigned long, ret), 0,
+> > +	ret = trace_define_field(call, SYSCALL_FIELD(long, ret), 0,
+> >  				 FILTER_OTHER);
+> >
+> >  	return ret;
+> > --
+> > 1.6.4.GIT
+> >
+> >
 
-^ this is not doing the same thing at all.
-
-If these auto generated registers are meant to have made life easier I can't see
-how I'm wasting more time tracking down bugs that weren't there before this,
-than fixing real problems. I'm about 5 mins from reverting back to
-just using radeon_reg.h
-
-Dave.
