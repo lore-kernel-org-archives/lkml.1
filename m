@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934206AbZJGIze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933996AbZJGI6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934206AbZJGIze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934146AbZJGIzd
+	id S933996AbZJGI6I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932927AbZJGI6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:55:33 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56927 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S934036AbZJGIzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:55:32 -0400
-Message-ID: <4ACC5715.4000201@cn.fujitsu.com>
-Date: Wed, 07 Oct 2009 16:53:41 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Wed, 7 Oct 2009 04:58:07 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:40928 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932729AbZJGI6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 04:58:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=DbvLPcknUXcHNY94Qj340ssyv+aZef1GRSN14SCyjQriM6XNwO9klkkCYRXxbl7J/j
+         IhlmLcEoIF0DoQTVOfv+o4ttmra01XvTnZ1f4FhZw5t4LqQE4iLXnX5zCSl3Kv1qvCLD
+         GKpWEdgA9CFGOsFNdsqhEb33hxIBBaH7HYWhk=
 MIME-Version: 1.0
-To: Zhenwen Xu <helight.xu@gmail.com>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH V2] fix a warning on kernel/trace/trace_branch.c and	trace_hw_branches.c
-References: <20091007081946.GA25350@helight>
-In-Reply-To: <20091007081946.GA25350@helight>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1254302501.23991.90.camel@tubuntu>
+References: <1253793384-31158-1-git-send-email-tomi.valkeinen@nokia.com>
+	 <1254302501.23991.90.camel@tubuntu>
+Date: Wed, 7 Oct 2009 11:57:27 +0300
+Message-ID: <94a0d4530910070157v2dd8062aheffc6345daff9e78@mail.gmail.com>
+Subject: Re: [PATCH 00/19] OMAP: DSS2: Intro
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: tomi.valkeinen@nokia.com
+Cc: ext Andrew Morton <akpm@linux-foundation.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zhenwen Xu wrote:
-> fix warnings that caused the API change of trace_buffer_lock_reserve()
-> change files: kernel/trace/trace_hw_branch.c
-> 	      kernel/trace/trace_branch.c
-> 
+On Wed, Sep 30, 2009 at 12:21 PM, Tomi Valkeinen
+<tomi.valkeinen@nokia.com> wrote:
+> Hi,
+>
+> Andrew, do you have time to check out the DSS2 driver? Or suggestions
+> how should I proceed.
+>
+> I rebased DSS2 on top of today's linux-tree, and there were no
+> conflicts, so the posted patches should apply. But the rebased tree is
+> also available in master branch at
+> git://gitorious.org/linux-omap-dss2/linux.git
 
-Hmm, did you really compile trace_hw_branch.c while testing
-this patch?
+It's also worth noting that DSS2 is used basically on all linux-omap
+trees already, I've seen it working at least on N900 and beagleboard
+and it makes no sense to try to get some video output without it.
 
-This change is necessary too:
+P.S. I had to patch the beagleboard support from Tomi's
+'master-before-squash'... it would be nice to get it upstream already
 
--	trace_buffer_unlock_commit(tr, event, 0, 0);
-+	trace_buffer_unlock_commit(tr->buffer, event, 0, 0);
-
-And use a varaible "buffer = tr->buffer" should be better.
-
-> Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
-> ---
->  kernel/trace/trace_branch.c      |    2 +-
->  kernel/trace/trace_hw_branches.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-> index 7a7a9fd..216e2dd 100644
-> --- a/kernel/trace/trace_branch.c
-> +++ b/kernel/trace/trace_branch.c
-> @@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
->  		goto out;
->  
->  	pc = preempt_count();
-> -	event = trace_buffer_lock_reserve(tr, TRACE_BRANCH,
-> +	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
->  					  sizeof(*entry), flags, pc);
->  	if (!event)
->  		goto out;
-> diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
-> index 23b6385..1cc17ca 100644
-> --- a/kernel/trace/trace_hw_branches.c
-> +++ b/kernel/trace/trace_hw_branches.c
-> @@ -180,7 +180,7 @@ void trace_hw_branch(u64 from, u64 to)
->  	if (atomic_inc_return(&tr->data[cpu]->disabled) != 1)
->  		goto out;
->  
-> -	event = trace_buffer_lock_reserve(tr, TRACE_HW_BRANCHES,
-> +	event = trace_buffer_lock_reserve(tr->buffer, TRACE_HW_BRANCHES,
->  					  sizeof(*entry), 0, 0);
->  	if (!event)
->  		goto out;
+-- 
+Felipe Contreras
