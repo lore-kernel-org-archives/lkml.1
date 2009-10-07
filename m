@@ -1,50 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933837AbZJGAgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933858AbZJGAhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933837AbZJGAgV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 20:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933752AbZJGAgU
+	id S933858AbZJGAhs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 20:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933730AbZJGAhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 20:36:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50788
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933751AbZJGAgT (ORCPT
+	Tue, 6 Oct 2009 20:37:48 -0400
+Received: from exprod6ob109.obsmtp.com ([64.18.1.22]:42748 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S933327AbZJGAhr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 20:36:19 -0400
-Date: Tue, 06 Oct 2009 17:36:14 -0700 (PDT)
-Message-Id: <20091006.173614.123867711.davem@davemloft.net>
-To: tilman@imap.cc
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, isdn@linux-pingi.de,
-       keil@b1-systems.de, isdn4linux@listserv.isdn4linux.de,
-       i4ldeveloper@listserv.isdn4linux.de
-Subject: Re: [PATCH 0/4] ISDN patches for 2.6.32 (v3)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091006-patch-capi-0.tilman@imap.cc>
-References: <20091006-patch-capi-0.tilman@imap.cc>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 6 Oct 2009 20:37:47 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] init/main.c: fix symbol shadows noise
+Date: Tue, 6 Oct 2009 20:37:17 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901DB797E@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] init/main.c: fix symbol shadows noise
+Thread-Index: AcpG5lJOjLw5nPN2Q/q6+Zc0hOxpvA==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 07 Oct 2009 00:37:10.0197 (UTC) FILETIME=[4E348E50:01CA46E6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tilman Schmidt <tilman@imap.cc>
-Date: Wed,  7 Oct 2009 00:17:55 +0200 (CEST)
+The symbol 'call' is a static symbol used for initcall_debug.  This
+same symbol name is used locally by a couple functions and produces
+the following sparse warnings:
 
-> as I still haven't heard anything from Karsten and none of the other
-> ISDN developers has volunteered to step into the breach, I would like to
-> get back to the suggestion of merging my ISDN patches through you.
-> 
-> Here is a respin of the four patches for the Kernel CAPI subsystem I
-> first submitted on 2009-09-06. I have folded into patch 1 the amendment
-> I posted as "patch 5/4" on 2009-09-25, and re-added to patches 2 and 3
-> Karsten's original Acked-by that came out of the discussion on the
-> isdn4linux mailing list. Apart from that, the series is unchanged from
-> the second submission on 2009-09-19.
-> 
-> I'll be following up with the respun patches to the Gigaset driver.
-> 
-> It would be great if these could still be integrated into kernel release
-> 2.6.32.
+	warning: symbol 'call' shadows an earlier one
 
-Ok, I'll look over this stuff, thanks for your patience Tilman.
+Fix this noise by renaming the local symbols.
+
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+
+---
+
+diff --git a/init/main.c b/init/main.c
+index 7449819..19e564a 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -696,10 +696,10 @@ asmlinkage void __init start_kernel(void)
+ static void __init do_ctors(void)
+ {
+ #ifdef CONFIG_CONSTRUCTORS
+-	ctor_fn_t *call = (ctor_fn_t *) __ctors_start;
++	ctor_fn_t *fn = (ctor_fn_t *) __ctors_start;
+ 
+-	for (; call < (ctor_fn_t *) __ctors_end; call++)
+-		(*call)();
++	for (; fn < (ctor_fn_t *) __ctors_end; fn++)
++		(*fn)();
+ #endif
+ }
+ 
+@@ -760,10 +760,10 @@ extern initcall_t __initcall_start[], __initcall_end[], __early_initcall_end[];
+ 
+ static void __init do_initcalls(void)
+ {
+-	initcall_t *call;
++	initcall_t *fn;
+ 
+-	for (call = __early_initcall_end; call < __initcall_end; call++)
+-		do_one_initcall(*call);
++	for (fn = __early_initcall_end; fn < __initcall_end; fn++)
++		do_one_initcall(*fn);
+ 
+ 	/* Make sure there is no pending stuff from the initcall sequence */
+ 	flush_scheduled_work();
+@@ -791,10 +791,10 @@ static void __init do_basic_setup(void)
+ 
+ static void __init do_pre_smp_initcalls(void)
+ {
+-	initcall_t *call;
++	initcall_t *fn;
+ 
+-	for (call = __initcall_start; call < __early_initcall_end; call++)
+-		do_one_initcall(*call);
++	for (fn = __initcall_start; fn < __early_initcall_end; fn++)
++		do_one_initcall(*fn);
+ }
+ 
+ static void run_init_process(char *init_filename) 
