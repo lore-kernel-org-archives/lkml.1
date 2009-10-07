@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbZJGIWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932867AbZJGIVD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758760AbZJGIWI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:22:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbZJGIWH
+	id S932867AbZJGIVD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:21:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932235AbZJGIVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:22:07 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:54746 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753129AbZJGIWE (ORCPT
+	Wed, 7 Oct 2009 04:21:00 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:41831 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932117AbZJGIU7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:22:04 -0400
+	Wed, 7 Oct 2009 04:20:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=t/syMLunl3alLRLzLav7zxwVI745ROTyj+CGdP1Aps19mdSTJK5dM+I+kSha0nb7Jh
-         ai0x7cI+BSNl2ueMfJAn5BzAHb1cd5w+C8NP6OqBk9FvnMk7BHytOdLggP7RDHpwDZ8M
-         iYBmqhLEtGE8Z9yvx62H5Uhr6yauLlUEYzqYU=
-Date: Wed, 7 Oct 2009 16:19:46 +0800
-From: Zhenwen Xu <helight.xu@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH V2] fix a warning on kernel/trace/trace_branch.c and
-	trace_hw_branches.c
-Message-ID: <20091007081946.GA25350@helight>
-Reply-To: Zhenwen Xu <helight.xu@gmail.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=avZ8Ke+KmEJGYUJiY2WMmOo/ZlIoSev6gMRZB/nNBbN3G81qFvuQmX5SQxwvU2uzNk
+         UwkyzwSp9c/8go7LAkg7QF/yLSVGsshlHX8hRMjDhhQ1sZZLt4CtR3N8jYdf9nSd0Ixd
+         MYPa65PMI49QccwAUNstmK2fObh0qWchgKyLQ=
+Date: Wed, 7 Oct 2009 10:20:22 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] perf tools: Merge trace.info content into
+	perf.data
+Message-ID: <20091007082020.GC5043@nowhere>
+References: <20091006213643.GA5343@nowhere> <1254898050.26976.146.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1254898050.26976.146.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix warnings that caused the API change of trace_buffer_lock_reserve()
-change files: kernel/trace/trace_hw_branch.c
-	      kernel/trace/trace_branch.c
+On Wed, Oct 07, 2009 at 08:47:30AM +0200, Peter Zijlstra wrote:
+> On Tue, 2009-10-06 at 23:36 +0200, Frederic Weisbecker wrote:
+> > Hi,
+> > 
+> > Here is an attempt to remove the trace.info file.
+> > It works well for me, the reason for it to be an RFC
+> > is that I have doubts about the backward compatibility.
+> > 
+> > A file created by perf after his patch is unsupported
+> > by previous version because the size of the headers have
+> > increased.
+> > 
+> > That said, it's two new fields that have been added in
+> > the end of the headers, and those could be ignored by
+> > previous versions if they just handled the dynamic header
+> > size and then ignore the unknow part. The offsets guarantee
+> > the compatibility.
+> > But previous versions handle the header size using its
+> > static size, not dynamic, then it's not backward compatible.
+> > 
+> > Anyway, I'm not sure exactly how to handle that.
+> 
+> If we're still able to read 'regular' old perf.data files after this.
+> That is, allow to read short headers and assume the tail is 0 we'll be
+> good. (this will break trace files that rely on the now removed
+> trace.info, but that's unavoidable I guess).
+> 
+> So backwards compatible, but no fwd compat for the old perf.
 
-Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
----
- kernel/trace/trace_branch.c      |    2 +-
- kernel/trace/trace_hw_branches.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-index 7a7a9fd..216e2dd 100644
---- a/kernel/trace/trace_branch.c
-+++ b/kernel/trace/trace_branch.c
-@@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- 		goto out;
- 
- 	pc = preempt_count();
--	event = trace_buffer_lock_reserve(tr, TRACE_BRANCH,
-+	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
- 					  sizeof(*entry), flags, pc);
- 	if (!event)
- 		goto out;
-diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
-index 23b6385..1cc17ca 100644
---- a/kernel/trace/trace_hw_branches.c
-+++ b/kernel/trace/trace_hw_branches.c
-@@ -180,7 +180,7 @@ void trace_hw_branch(u64 from, u64 to)
- 	if (atomic_inc_return(&tr->data[cpu]->disabled) != 1)
- 		goto out;
- 
--	event = trace_buffer_lock_reserve(tr, TRACE_HW_BRANCHES,
-+	event = trace_buffer_lock_reserve(tr->buffer, TRACE_HW_BRANCHES,
- 					  sizeof(*entry), 0, 0);
- 	if (!event)
- 		goto out;
--- 
-1.6.3.3
+Hmm, but forward is possible. It will just ignore the trace.info
+part.
 
--- 
---------------------------------
-http://zhwen.org - Open and Free
