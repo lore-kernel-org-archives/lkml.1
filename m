@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759425AbZJGPgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbZJGPid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759425AbZJGPgL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbZJGPgK
+	id S1759482AbZJGPid (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbZJGPid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:36:10 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:39638 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752223AbZJGPgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:36:09 -0400
-Message-ID: <4ACCB52D.3020104@redhat.com>
-Date: Wed, 07 Oct 2009 08:35:09 -0700
-From: Richard Henderson <rth@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 7 Oct 2009 11:38:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53010 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752956AbZJGPic (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 11:38:32 -0400
+Date: Wed, 7 Oct 2009 08:36:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+cc: mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] printk: clean up return value
+In-Reply-To: <1254904787-11323-2-git-send-email-alan-jenkins@tuffmail.co.uk>
+Message-ID: <alpine.LFD.2.01.0910070828190.3432@localhost.localdomain>
+References: <1254904787-11323-1-git-send-email-alan-jenkins@tuffmail.co.uk> <1254904787-11323-2-git-send-email-alan-jenkins@tuffmail.co.uk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
-       rostedt@goodmis.org, ak@suse.de, mhiramat@redhat.com
-Subject: Re: [PATCH 0/4] jump label patches
-References: <cover.1253831945.git.jbaron@redhat.com>	<20091006053915.D9D0928@magilla.sf.frob.com>	<4ACBD1BF.30201@redhat.com> <20091007001436.B5FE9A8C@magilla.sf.frob.com>
-In-Reply-To: <20091007001436.B5FE9A8C@magilla.sf.frob.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/06/2009 05:14 PM, Roland McGrath wrote:
-> Kernel builds usually use -Os.  Is there anything else we can do now (4.4)
-> to influence this placement (while keeping the unlikely target block inside
-> a scope, i.e. macro, with the asm goto)?
-
-I think -Os includes -freorder-blocks as well.
-
-> 	      if (0) yes: maybe = 1;
-
-Anything with "if (0)" in it (even with __builtin_expect) is going to be 
-folded away too early to be useful.
-
-I can't think of any way to manipulate block placement from the source 
-level at this time that doesn't add more code along the fast path, 
-obviating the asm goto.
 
 
-r~
+On Wed, 7 Oct 2009, Alan Jenkins wrote:
+> 
+> We could fix this up, but it seems pointless.  Callers don't really care
+> about the extra characters added by printk().  Instead, let's return the
+> length of the original message as formatted (and possibly truncated)
+> by vscnprintf().
+
+Hmm. I kind of agree with this, but at the same time I suspect that no 
+caller should ever care about the loglevel characters (since they won't be 
+_shown_), so your change still doesn't make it return a sensible value.
+
+So I get the feeling that you should also add a
+
+	message_len -= 3;
+
+to the case where we peel off the "<.>" loglevel part at the head of the 
+string. No?
+
+Or we could just change it to 'void'. As Joe Perches says, nobody really 
+cares deeply enough for this to generally even matter.
+
+		Linus
