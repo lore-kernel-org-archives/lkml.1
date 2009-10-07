@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934318AbZJGQuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759584AbZJGQ6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934318AbZJGQuf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 12:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934095AbZJGQue
+	id S1759584AbZJGQ6P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 12:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759520AbZJGQ6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 12:50:34 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:43174 "EHLO
+	Wed, 7 Oct 2009 12:58:14 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:63529 "EHLO
 	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933571AbZJGQud (ORCPT
+	with ESMTP id S1759519AbZJGQ6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 12:50:33 -0400
+	Wed, 7 Oct 2009 12:58:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=r9DlMHbIQ2AGZ9BTwW1PUgxWK/y+N2AGNcYrVa4BxDYmFXO+7YmNSDsFfkmK8CwFkL
-         LzfWaZ7iBqBh6v0xh2SedSs7x05NCiV6x7Nlblug+ZwCjh2PpCLxJmB975vvOzWbDDFI
-         UNbgx96mU9ADMWYY9vyfI5e7Nl+KsOudKlfz8=
-Date: Wed, 7 Oct 2009 09:49:44 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       soni.trilok@gmail.com
-Subject: Re: [PATCH 2/6] Haptic: Documentation for haptic class
-Message-ID: <20091007164944.GC12053@core.coreip.homeip.net>
-References: <20091007061754.GA7588@july>
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=lUiYcsd0TTSvewe34QU/emqb1dDPvxf1pIYUXKpQskFTLl9Hgg3Poj6950dV7Bb5S3
+         RPSPRw/l+EawM15BaHckca0g75mGRTxRc8K8QC+jBLULX54WHC5WVTGNUWAuGW/dLzkZ
+         EqPraESfnG55AbLaaOnH3fvXPNlIagbxszKNU=
+Message-ID: <4ACCC87C.5090800@tuffmail.co.uk>
+Date: Wed, 07 Oct 2009 17:57:32 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091007061754.GA7588@july>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Joe Perches <joe@perches.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] printk: clean up return value
+References: <1254904787-11323-1-git-send-email-alan-jenkins@tuffmail.co.uk>	 <1254904787-11323-2-git-send-email-alan-jenkins@tuffmail.co.uk>	 <alpine.LFD.2.01.0910070828190.3432@localhost.localdomain> <1254933396.2134.371.camel@Joe-Laptop.home>
+In-Reply-To: <1254933396.2134.371.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 03:17:54PM +0900, Kyungmin Park wrote:
-> Describe the haptic class and how to use
-> 
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> ---
->  Documentation/haptic-class.txt |   20 ++++++++++++++++++++
->  1 files changed, 20 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/haptic-class.txt
-> 
-> diff --git a/Documentation/haptic-class.txt b/Documentation/haptic-class.txt
-> new file mode 100644
-> index 0000000..6bee82a
-> --- /dev/null
-> +++ b/Documentation/haptic-class.txt
-> @@ -0,0 +1,20 @@
-> +
-> +Haptic handling under Linux
-> +========================
-> +
-> +In its simplest form, the haptic class just allows control of Haptics from
-> +userspace. Haptic appears in /sys/class/haptic/. The maximum level of the
-> +haptic is defined in max_level file.
-> +
-> +To use simple. it provides the oneshot mode. Give millisecond time to this
-> +property. It working at given time with pre-defined level.
-> +Of course, you can adjust the level by setting level property
+Joe Perches wrote:
+> On Wed, 2009-10-07 at 08:36 -0700, Linus Torvalds wrote:
+>   
+>> On Wed, 7 Oct 2009, Alan Jenkins wrote:
+>>     
+>>> We could fix this up, but it seems pointless.  Callers don't really care
+>>> about the extra characters added by printk().  Instead, let's return the
+>>> length of the original message as formatted (and possibly truncated)
+>>> by vscnprintf().
+>>>       
+>> Or we could just change it to 'void'. As Joe Perches says, nobody really 
+>> cares deeply enough for this to generally even matter.
+>>     
+>
+> Here are changes to make printk/vprintk return void
+> to the only uses I found:
+>
+>  arch/arm/mach-iop13xx/pci.c   |    2 +-
+>  arch/arm/mach-iop13xx/setup.c |    2 +-
+>  drivers/char/mem.c            |    6 ++----
+>  drivers/md/md.c               |    3 +--
+>  drivers/md/raid5.c            |    3 ++-
+>  drivers/net/e100.c            |    9 +++++----
+>  include/linux/kernel.h        |   16 ++++++++--------
+>  include/net/sctp/sctp.h       |    6 +++---
+>  kernel/lockdep.c              |    4 ++--
+>  kernel/printk.c               |   10 +++-------
+>  net/sunrpc/svc.c              |    9 +++------
+>  11 files changed, 31 insertions(+), 39 deletions(-)
+>   
 
-"The interface is pretty simple - it provides oneshot mode where user
-can specify duration of the effect (in milliseconds) and desired level":
+Ok, you beat me to it.
 
-> +
-> +# echo ${millisecond} > /sys/class/haptic/<device>/oneshot
-> +
-> +# echo ${level} > /sys/class/haptic/<device>/level
-> +
-> +Also you can enable/disable by setting enable property
-> +
+My second patch will depend on this.  Two questions -
 
-"You can also enable or disable haptics devices by manipulating 'enable'
-attribute:"
+- May I add it to my series with your Signed-off-by?
+- May I split it up, so I can CC individual maintainers with the
+revelant portions?
 
-> +# echo 1 > /sys/class/haptic/<device>/level	-> Enable
-					^^^^^^ enable
-> +# echo 0 > /sys/class/haptic/<device>/level	-> Disable
-					^^^^^^
+Thanks
+Alan
 
--- 
-Dmitry
