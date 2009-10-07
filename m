@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbZJGKWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbZJGKXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758298AbZJGKWN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 06:22:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757923AbZJGKWM
+	id S1758289AbZJGKXQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 06:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbZJGKXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 06:22:12 -0400
-Received: from cantor.suse.de ([195.135.220.2]:42583 "EHLO mx1.suse.de"
+	Wed, 7 Oct 2009 06:23:16 -0400
+Received: from www.tglx.de ([62.245.132.106]:60220 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754702AbZJGKWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 06:22:11 -0400
-Date: Wed, 7 Oct 2009 12:21:30 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: David Howells <dhowells@redhat.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 14/45] writeback: quit on wrap for .range_cyclic (afs)
-Message-ID: <20091007102130.GQ30316@wotan.suse.de>
-References: <20091007074902.913463607@intel.com> <20091007073818.318088777@intel.com> <32495.1254910626@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <32495.1254910626@redhat.com>
-User-Agent: Mutt/1.5.9i
+	id S1754702AbZJGKXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 06:23:15 -0400
+Date: Wed, 7 Oct 2009 12:22:27 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+cc: linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>,
+       linux-rt-users@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: Using set_irq_handler in set_irq_type callback?
+In-Reply-To: <20091007100756.GA5478@pengutronix.de>
+Message-ID: <alpine.LFD.2.00.0910071221140.9428@localhost.localdomain>
+References: <20091007100756.GA5478@pengutronix.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-26196288-1254910949=:9428"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 11:17:06AM +0100, David Howells wrote:
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Convert wbc.range_cyclic to new behavior: when past EOF, abort writeback
-> > of the inode, which instructs writeback_single_inode() to delay it for
-> > a while if necessary.
-> > 
-> > It removes one inefficient .range_cyclic IO pattern when writeback_index
-> > wraps:
-> > 	submit [10000-10100], (wrap), submit [0-100]
-> > In which the submitted pages may be consisted of two distant ranges.
-> > 
-> > It also prevents submitting pointless IO for busy overwriters.
-> > 
-> > CC: David Howells <dhowells@redhat.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> 
-> Acked-by: David Howells <dhowells@redhat.com>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I don't see why. Then the inode is given less write bandwidth than
-those which don't wrap (or wrap on "nice" boundaries).
+--8323328-26196288-1254910949=:9428
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
+On Wed, 7 Oct 2009, Uwe Kleine-König wrote:
+> I think the fix for that is adding something like:
+> 
+> 	if (type & IRQ_TYPE_EDGE_BOTH)
+> 		set_irq_handler(irq, handle_edge_irq);
+> 	else
+> 		set_irq_handler(irq, handle_level_irq);
+> 
+> to the chip's .set_type callback.  (Doing this directly fails, as
+> .set_type holds desc->lock which set_irq_handler acquires, too.  So
+> maybe I need to code up a handler that checks how a given irq triggers
+> and then calls handle_edge_irq or handle_level_irq.)
+
+Nope. See __set_irq_handler_unlocked()
+
+Thanks,
+
+	tglx
+--8323328-26196288-1254910949=:9428--
