@@ -1,86 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbZJGPYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759349AbZJGOx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759369AbZJGPYz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZJGPYy
+	id S1759349AbZJGOx1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 10:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759318AbZJGOx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:24:54 -0400
-Received: from mail-yx0-f204.google.com ([209.85.210.204]:48835 "EHLO
-	mail-yx0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbZJGPYy convert rfc822-to-8bit (ORCPT
+	Wed, 7 Oct 2009 10:53:26 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:53420 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759317AbZJGOxZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:24:54 -0400
-X-Greylist: delayed 1515 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Oct 2009 11:24:54 EDT
+	Wed, 7 Oct 2009 10:53:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=l/zvFGkKg9ulSkWbK8x3KoNnvmFBgTZj5AL9ALL/vk/77kKauCp+BL3vIxKDSitRsS
+         MiAg1ly3kajzZbQrMg+HiHR50HlHtlhd+osRgsuq9zUwQqVS6nSlFgPqRyJphUi2AdAY
+         Fjt8O6cBRhd1B+cDKKEqGvTD6twRh7A44tt4A=
+Message-ID: <4ACCAB54.4010408@gmail.com>
+Date: Wed, 07 Oct 2009 07:53:08 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-In-Reply-To: <192797ad-5dd4-4ebe-8db3-d381bb949e1e@VA3EHSMHS029.ehs.local>
-References: <1d3f23370910070013u6307bc42hf7ab243b52d007df@mail.gmail.com> 
-	<fa686aa40910070634r4a8dcf74qdcbfb3bde3413109@mail.gmail.com> 
-	<192797ad-5dd4-4ebe-8db3-d381bb949e1e@VA3EHSMHS029.ehs.local>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 7 Oct 2009 08:52:34 -0600
-X-Google-Sender-Auth: a5a1f60e3d9b8b9d
-Message-ID: <fa686aa40910070752k1b954a32v1ae6a2e5a089fc5e@mail.gmail.com>
-Subject: Re: Xilinx SYSACE driver and 8-bit attachment
-To: John Linn <John.Linn@xilinx.com>
-Cc: John Linn <linnj@xilinx.com>, John Williams <john.williams@petalogix.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Michal Simek <michal.simek@petalogix.com>,
-       David DeBonis <ddeboni@xilinx.com>,
-       Stephen Neuendorffer <stephenn@xilinx.com>,
-       devicetree-discuss <devicetree-discuss@lists.ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: rostedt@goodmis.org
+CC: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: system gets stuck in a lock during boot
+References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>	 <20091002211211.GA2633@redhat.com>	 <1254792249.13160.213.camel@gandalf.stny.rr.com>	 <20091006203225.GC2631@redhat.com>	 <1254880921.1696.112.camel@gandalf.stny.rr.com>	 <4ACC001D.4050105@gmail.com> <1254920429.1696.127.camel@gandalf.stny.rr.com>
+In-Reply-To: <1254920429.1696.127.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 7, 2009 at 8:42 AM, John Linn <John.Linn@xilinx.com> wrote:
->> -----Original Message-----
->> From: John Linn
->> Sent: Wednesday, October 07, 2009 8:24 AM
->> To: 'Grant Likely'; John Williams
->> Cc: Linux Kernel list; Michal Simek; David DeBonis; Stephen Neuendorffer; devicetree-discuss
->> Subject: RE: Xilinx SYSACE driver and 8-bit attachment
->>
->> I'll look to see if something has changed.  It's not clear to me if it has ever been right.
->>
->> It look like we normally use 16 bit mode as that's how BSB generates the system by default.
->>
->> Thanks,
->> John
->>
->> > -----Original Message-----
->> > From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On Behalf Of Grant Likely
->> > Sent: Wednesday, October 07, 2009 7:35 AM
->> > To: John Williams
->> > Cc: Linux Kernel list; Michal Simek; John Linn; David DeBonis; Stephen Neuendorffer; devicetree-
->> > discuss
->> > Subject: Re: Xilinx SYSACE driver and 8-bit attachment
->> >
->> > [Added devicetree-discuss to cc: list]
->> >
->> > On Wed, Oct 7, 2009 at 1:13 AM, John Williams
->> > <john.williams@petalogix.com> wrote:
->> > > Hi Grant (it's your driver :) and David D ( and your DTS generator :)
->> > [...]
->> > > if (of_find_property(op->node, "8-bit", NULL))
->> > [...]
->> > > doesn't match the properties generated by Xilinx's device tree generator:
->> > [...]
->> > >                         xlnx,mem-width = <0x8>;
+Steven Rostedt wrote:
+> On Tue, 2009-10-06 at 19:42 -0700, Justin P. Mattock wrote:
 >
-> Do you know if the 8 bit mode was ever tested with the "8-bit" property in the tree?
+>    
+>>>
+>>>        
+>> o.k. applied your patch, but unfortunantly
+>> I still am hitting this kernel panic.
+>>
+>> must admit I have no idea why this is doing this.
+>> (but am willing to sit through this, because eventually
+>> sooner or later will hit this if I update gcc).
+>>      
 >
-> I don't see anything in the device tree generator history to say we ever did that "8-bit", but maybe I'm missing something.
+> But the panic you showed was that it could not find an init to execute.
+> Which looks like a setup issue and not a kernel bug.
 >
-> We are just generating the parameters from the h/w and the memory width is it.  We can always put something in there special, but it seems silly if it was never used anyway.
+> -- Steve
+>
+>
+>
+>    
+That's whats getting me, i.g. if I compile
+sysvinit normally without adding an SELinux patch
+the system boots, as soon as I compile sysvinit with
+SELinux support to load the policy, bam... I hit this.
 
-Don't forget that Virtex and Microblaze are not the only users of this
-driver.   There is a AMCC 440 board which uses the sysace as a CF
-adapter.  8-bit was definitely tested and is in use.
+I can send a post to SELinux and see what they think,
+and the go from there.
 
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Justin P. Mattock
