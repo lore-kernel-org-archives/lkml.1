@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759696AbZJGSGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759809AbZJGSGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759696AbZJGSGe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 14:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758551AbZJGSGd
+	id S1759809AbZJGSGo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 14:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759786AbZJGSGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 14:06:33 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:40907 "EHLO
+	Wed, 7 Oct 2009 14:06:43 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:44219 "EHLO
 	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757999AbZJGSGc (ORCPT
+	with ESMTP id S1759770AbZJGSGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 14:06:32 -0400
+	Wed, 7 Oct 2009 14:06:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=vZUi/AjNBEAwuAm6TxJWStPZqf3doCc3DIxNqQSO0+0vqcKauopgjwphI1aKzvM4QK
-         /fko5VHBkOTIz0fmdGsofdSgUm/zcqbWjZqkzgGFHOFgyuxIYKIY6jY/feAdSjFDoyQ3
-         StMEC7tY+kCaz2TywVo1t93WdVk+OiSOFEmP0=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=fzjFRhW38vQ+oFM9mxjG9EiXqyeEJ48GezTn8NhXBziXzsi8WmvopFR5AP/4BGlg5u
+         1Fwo58wgBRUiSOwDvtG29/fwjzApx7/60woOBTy12YJCXYEXDQ/JJLBUJvH64uir0ZC2
+         vZ9nSVxWBOgJ8wK8xqgtDckfRJhpWsxYwrUwI=
 From: Johan Hovold <jhovold@gmail.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>
 Cc: Oliver Neukum <oliver@neukum.org>, Alan Stern <stern@rowland.harvard.edu>,
        linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
        Johan Hovold <jhovold@gmail.com>
-Subject: [PATCH 0/4]: USB: ftdi_sio: fix regression in 2.6.31 and clean up
-Date: Wed,  7 Oct 2009 20:05:03 +0200
-Message-Id: <1254938707-6996-1-git-send-email-jhovold@gmail.com>
+Subject: [PATCH 1/4] USB: ftdi_sio: remove tty->low_latency
+Date: Wed,  7 Oct 2009 20:05:04 +0200
+Message-Id: <1254938707-6996-2-git-send-email-jhovold@gmail.com>
 X-Mailer: git-send-email 1.6.5.rc2
+In-Reply-To: <1254938707-6996-1-git-send-email-jhovold@gmail.com>
+References: <1254938707-6996-1-git-send-email-jhovold@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+Fixes tty_flip_buffer_push being called from hard interrupt context with
+low_latency set.
 
-These patches clean up the ftdi_sio driver and fixes
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/usb/serial/ftdi_sio.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
- 1) a long outstanding bug manifesting itself as 
+diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
+index 4f883b1..0ac2c2f 100644
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -1234,7 +1234,6 @@ static int set_serial_info(struct tty_struct *tty,
+ 					(new_serial.flags & ASYNC_FLAGS));
+ 	priv->custom_divisor = new_serial.custom_divisor;
  
- 	BUG: sleeping function called from invalid context at kernel/mutex.c:280
-
- 2) a couple of regressions in 2.6.31 (stalled reads and unthrottle race)
-    due to changes in the tty layer.
-
-Please have a look at it so we can get something back-ported to stable as the
-ftdi_sio driver is currently completly broken and unusable due to the stalled
-reads.
-
-Note that the patches do not add suspend/resume support to the driver (but the
-clean up should make it easier to implement).
-
-Thanks to Alan Cox, Oliver Neukum, and Alan Stern for all comments and
-suggestions so far.
-
-Thanks,
-Johan
-
-
-drivers/usb/serial/ftdi_sio.c |  422 +++++++++++++----------------------------
- 1 files changed, 129 insertions(+), 293 deletions(-)
+-	tty->low_latency = (priv->flags & ASYNC_LOW_LATENCY) ? 1 : 0;
+ 	write_latency_timer(port);
+ 
+ check_and_exit:
+@@ -1704,9 +1703,6 @@ static int ftdi_open(struct tty_struct *tty, struct usb_serial_port *port)
+ 	priv->rx_bytes = 0;
+ 	spin_unlock_irqrestore(&priv->rx_lock, flags);
+ 
+-	if (tty)
+-		tty->low_latency = (priv->flags & ASYNC_LOW_LATENCY) ? 1 : 0;
+-
+ 	write_latency_timer(port);
+ 
+ 	/* No error checking for this (will get errors later anyway) */
+-- 
+1.6.5.rc2
 
