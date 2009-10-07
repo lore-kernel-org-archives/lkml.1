@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbZJGP46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932728AbZJGLy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759508AbZJGP46 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759489AbZJGP45
+	id S932728AbZJGLy5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 07:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZJGLy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:56:57 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:33618 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759490AbZJGP45 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:56:57 -0400
-Date: Wed, 7 Oct 2009 11:56:18 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Oliver Neukum <oliver@neukum.org>, Johan Hovold <jhovold@gmail.com>,
-       Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH 5/5] opticon: Fix resume logic
-In-Reply-To: <20091006232331.5684bbee@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.44L0.0910071147020.2762-100000@iolanthe.rowland.org>
+	Wed, 7 Oct 2009 07:54:56 -0400
+Received: from smtp.ispras.ru ([83.149.198.201]:42388 "EHLO smtp.ispras.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753998AbZJGLy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 07:54:56 -0400
+From: Alexander Strakh <strakh@ispras.ru>
+Organization: ISP RAS
+To: Jaya Kumar <jayalk@intworks.biz>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] quickcam_messenger.c: possible buffer overflow while use strncat.
+Date: Wed, 7 Oct 2009 15:56:54 +0000
+User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910071556.54534.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 Oct 2009, Alan Cox wrote:
+	In driver ./drivers/media/video/usbvideo/quickcam_messenger.c in line 91:
+  91         usb_make_path(dev, cam->input_physname, sizeof(cam-
+>input_physname));
+After this line we use strncat:
+  92         strncat(cam->input_physname, "/input0", sizeof(cam-
+>input_physname));
+ where sizeof(cam->input_physname) returns length of cam->input_phisname 
+without length for null-symbol. But this parameter must be -  "maximum numbers 
+of bytes to copy", i.e.: sizeof(cam->input_physname)-strlen(cam-
+>input_physname)-1.
+	In this case, after call to usb_make_path the similar drivers use strlcat. 
+Like in: drivers/hid/usbhid/hid-core.c:
+1152         usb_make_path(dev, hid->phys, sizeof(hid->phys));
+1153         strlcat(hid->phys, "/input", sizeof(hid->phys));
 
-> On Tue, 6 Oct 2009 23:12:17 +0200
-> Oliver Neukum <oliver@neukum.org> wrote:
-> 
-> > Am Dienstag, 6. Oktober 2009 17:06:57 schrieb Alan Cox:
-> > > Opticon now takes the right mutex to check the port status but the status
-> > > check is done wrongly for the modern serial code, so fix it.
-> > 
-> > As Alan Stern noticed, it seems like we have an ab-ba deadlock here
-> > between open and resume regarding pm_mutex and port->mutex.
+Found by Linux Driver Verification Project.
 
-Johan pointed out that I was mistaken in saying the pm_mutex is
-acquired during open.  It actually is acquired in serial_install() and
-serial_cleanup(), which are called without the port mutex.  So I guess
-we're okay after all.
+Use strlcat instead of strncat.
 
-In the general case, that is.  Specific drivers may still run into
-trouble.  For example, option_open() and sierra_open() do acquire the 
-pm_mutex.
+Signed-off-by:Alexander Strakh <strakh@ispras.ru>
 
-> Oh well I guess someone with hardware will have to fix that.
-> 
-> Do we actually need a separate pm_mutex anyway ?
-
-In principle we don't, and Rafael Wysocki's new runtime PM framework
-doesn't use one.  However the current USB runtime PM framework does, so
-until we switch over (hopefully in time for 2.6.33) it's important to
-watch out for this sort of conflict.
-
-Alan Stern
+---
+diff --git a/./a/drivers/media/video/usbvideo/quickcam_messenger.c 
+b/./b/drivers/media/video/usbvideo/quickcam_messenger.c
+index 803d3e4..c4d1b96 100644
+--- a/./a/drivers/media/video/usbvideo/quickcam_messenger.c
++++ b/./b/drivers/media/video/usbvideo/quickcam_messenger.c
+@@ -89,7 +89,7 @@ static void qcm_register_input(struct qcm *cam, struct 
+usb_device *dev)
+ 	int error;
+ 
+ 	usb_make_path(dev, cam->input_physname, sizeof(cam->input_physname));
+-	strncat(cam->input_physname, "/input0", sizeof(cam->input_physname));
++	strlcat(cam->input_physname, "/input0", sizeof(cam->input_physname));
+ 
+ 	cam->input = input_dev = input_allocate_device();
+ 	if (!input_dev) {
 
