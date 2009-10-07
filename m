@@ -1,87 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759604AbZJGQrC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbZJGQrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759604AbZJGQrC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 12:47:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759596AbZJGQrA
+	id S1759609AbZJGQrx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 12:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759552AbZJGQrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 12:47:00 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56701 "EHLO mx1.suse.de"
+	Wed, 7 Oct 2009 12:47:52 -0400
+Received: from mga11.intel.com ([192.55.52.93]:15824 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759575AbZJGQq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 12:46:59 -0400
-Date: Wed, 7 Oct 2009 18:46:22 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
+	id S1759501AbZJGQrv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 12:47:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,520,1249282800"; 
+   d="scan'208";a="733887493"
+From: "Cihula, Joseph" <joseph.cihula@intel.com>
+To: Pavel Machek <pavel@ucw.cz>, Roland Dreier <rdreier@cisco.com>
+CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       "Wang, Shane" <shane.wang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [rfc][patch] store-free path walking
-Message-ID: <20091007164622.GX30316@wotan.suse.de>
-References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain> <alpine.LFD.2.01.0910070911080.3432@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0910070911080.3432@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Date: Wed, 7 Oct 2009 09:47:10 -0700
+Subject: RE: [GIT PULL] x86/txt for v2.6.32
+Thread-Topic: [GIT PULL] x86/txt for v2.6.32
+Thread-Index: AcpGXfNApoKOcynAREahhmB5dzCyPQBDKLew
+Message-ID: <4F65016F6CB04E49BFFA15D4F7B798D9AC1C49D6@orsmsx506.amr.corp.intel.com>
+References: <20090928211745.GA2119@elf.ucw.cz> <4AC1AA61.8070408@intel.com>
+ <20090929171318.GC14405@elf.ucw.cz> <20090929191951.18315e94@infradead.org>
+ <037F493892196B458CD3E193E8EBAD4F01ED9FE3B1@pdsmsx502.ccr.corp.intel.com>
+ <20090930065448.GB11652@elf.ucw.cz>
+ <037F493892196B458CD3E193E8EBAD4F01ED9FE6E3@pdsmsx502.ccr.corp.intel.com>
+ <20091003201959.GA16047@elf.ucw.cz>
+ <20091003203619.GA27182@khazad-dum.debian.net> <ada4oqgp5qx.fsf@cisco.com>
+ <20091006081258.GB1469@ucw.cz>
+In-Reply-To: <20091006081258.GB1469@ucw.cz>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 09:27:59AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 7 Oct 2009, Linus Torvalds wrote:
-> > 
-> > Hmm. Regardless, this very much does look like what I envisioned, apart 
-> > from details like that. And maybe your per-dentry seqlock is the right 
-> > choice. On x86, it certainly doesn't have the performance issues it could 
-> > have in other places.
-> 
-> Actually, if we really want to do the per-dentry thing, then we should 
-> change it a bit. Maybe rather than using a seqlock data structure (which 
-> is really just a unsigned counter and a spinlock), we could do just the 
-> unsigned counter, and use the d_lock as the spinlock for the sequence 
-> lock.
-> 
-> The hackiest way to do that woudl be to get rid of d_lock entirely, 
-> replace it with d_seqlock, and then just do
-> 
-> 	#define d_lock d_seqlock.lock
-> 
-> instead (but the dentry structure may well have layout issues that makes 
-> that not work very well - we're mixing pointers and 'int'-sized things 
-> and need to pack them well etc).
-> 
-> That would cut down the seqlock memory costs from 8 bytes (or more - just 
-> the spinlock itself is currently 8 bytes on ia64, so on ia64 the seqlock 
-> is actually 16 bytes, not to mention all the spinlock debugging cases) to 
-> just four bytes.
+> From: Pavel Machek [mailto:pavel@ucw.cz]
+> Sent: Tuesday, October 06, 2009 1:13 AM
+>
+> On Sat 2009-10-03 13:44:22, Roland Dreier wrote:
+> >
+> >  > > > So I modify the RAM content so that BIOS does not think measured
+> >  > > > environment existed before suspend?
+> >
+> >  > And it is ridiculously easy to pull off, too:
+> >  > http://www.engadget.com/2008/02/21/cold-boot-disk-encryption-attack-is-shockingly-
+> effective/
+> >  >
+> >  > Shows the attack being used to read sensitive keys, but you can use it also
+> >  > to *modify* system running state (it will be more difficult, as you need to
+> >  > remove and replace the RAM while on S3 instead of S5, but it should be
+> >  > doable by someone who knows what he is doing).
+> >
+> > I believe the whole point of this TXT / S3 handling is that the resume
+> > from S3 will then be able to detect that the contents of RAM have been
+> > modified while the system was asleep.
+>
+> ...and you are able to read out any keys, etc. Maybe that's expected &
+> ok, but Doc*/intel_txt.txt does not actually tell me what it protects
+> against and is pretty much useless... making patches impossible to
+> review.
+>
+> So... what does txt protect?
 
-Oh I did that, used a "seqcount" which is the bare sequence counter
-(and update it while holding d_lock).
+>From Documentation/intel_txt.txt:
+        Intel TXT in Brief:
+        o  Provides dynamic root of trust for measurement (DRTM)
+        o  Data protection in case of improper shutdown
+        o  Measurement and verification of launched environment
 
-Yes it still has packing issues, athough I think I can get rid of
-d_mounted so it will then pack nicely and size won't change. (just
-have a flag if we are mounted at least once, and just store the
-count elsewhere for mountpoints -- or even just search the mount
-hash on each umount to see if anything is left mounted on it)
+Intel TXT doesn't protect anything itself--it provides a foundation for software to provide protections and security.  tboot and the associated Linux patches do this.  The section of intel_txt.txt titled "Value Proposition for Linux or "Why should you care?"" tries to describe what is provided.
 
- 
-> However, I still suspect we could do things entirely without the seqlock. 
-> The outer seqlock will handle the "couldn't find it" case, and I've got 
-> the strongest feeling that we should be able to just use some basic memory 
-> ordering on the dentry hash to make the inner seqlock unnecessary (ie 
-> make sure that either we don't see the old entry at all, or that we can 
-> guarantee that it won't trigger a successful compare while the rename is 
-> in process because we set the dentry name length to zero).
+> Data integrity only?
 
-Well, I would be all for improving things of course. But keep in
-mind we already do the rename_lock seqcount for each d_lookup,
-so the lock free lookup path is only doing extra seqlocks on dcache
-hash collision cases.
+Data integrity, yes, but not only.  The code also provides for DRTM-based measurements, data protection in case of improper shutdown, etc.
 
-But I do agree it needs more thought. I'll try to get the powerpc
-guys interested in running tests for us tomorrow :)
+> Data privacy, too?
 
+No.
+
+> Who is it designed to protect against?
+>
+> Remote attacker?
+
+Yes.
+
+> Local user trying to subvert it?
+
+No.
+
+> ...and has soldering iron he's willing to use?
+>
+> ...and has soldering iron, osciloscope and PCI analyzer he's willing to use?
+
+No and no.
+
+> > TXT simply produces a reasonably trustworthy measurement of system
+> > state.  If you modify RAM while the system is asleep, then you will not
+> > be able to produce a measurement showing an unmodified system state.
+>
+> Well, actually I see some auditing to be done in proposed patches.
+
+All comments are welcome.
+
+Joe
