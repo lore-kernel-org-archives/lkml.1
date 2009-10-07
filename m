@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934288AbZJGQff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934312AbZJGQgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934288AbZJGQff (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 12:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934245AbZJGQfd
+	id S934312AbZJGQgP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 12:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934240AbZJGQgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 12:35:33 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35057 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933702AbZJGQfc (ORCPT
+	Wed, 7 Oct 2009 12:36:14 -0400
+Received: from mxout-08.mxes.net ([216.86.168.183]:12065 "EHLO
+	mxout-08.mxes.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933757AbZJGQgO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 12:35:32 -0400
-Date: Wed, 7 Oct 2009 12:34:55 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: Alan Cox <alan@linux.intel.com>, <greg@kroah.com>,
-       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
-In-Reply-To: <200910071810.02966.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0910071233240.2762-100000@iolanthe.rowland.org>
+	Wed, 7 Oct 2009 12:36:14 -0400
+Message-ID: <4ACCC347.4000404@tuffmail.co.uk>
+Date: Wed, 07 Oct 2009 17:35:19 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/7] x86 dumpstack: fix printing of stack dump loglevels
+References: <1254904787-11323-1-git-send-email-alan-jenkins@tuffmail.co.uk> <1254904787-11323-7-git-send-email-alan-jenkins@tuffmail.co.uk> <alpine.LFD.2.01.0910070731080.3432@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910070731080.3432@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Oct 2009, Oliver Neukum wrote:
+Linus Torvalds wrote:
+> On Wed, 7 Oct 2009, Alan Jenkins wrote:
+>   
+>> Changing printk() to accept loglevels in the middle of the string again
+>> would be non-trivial.  Let's accept this limitation and simply split the
+>> above code into two separate calls to printk().
+>>     
+>
+> Actually, let's just drop the log_lvl printout in the middle.
+>
+> And to do that, let's clean up printk() a bit further - just make it say 
+> "if there is no loglevel, use the previous loglevel". That's going to 
+> simplify _all_ kinds of multi-line code.
+>   
 
-> Am Mittwoch, 7. Oktober 2009 18:03:08 schrieb Alan Stern:
-> > On Wed, 7 Oct 2009, Oliver Neukum wrote:
-> > > We will need some generic way to autoresume from open.
-> > > Resume will need to lock against open() and need to be called
-> > > from within open(). Any ideas for an unugly interface?
-> >
-> > It's not quite that bad.  Resume doesn't need to lock against open.
-> > If open is called while resume is running then when it tries to do its
-> > own resume, it will either block (waiting for the pm_mutex) or return
-> > immediately (if it sees the device is already resumed).
-> 
-> But resume() needs to know whether the read URBs need to be
-> submitted or not.
+I think its more of a special case.  It's most useful where we output a
+multi-line hexdump (or some other sort of array).  I think that's just
+stack dumps (albeit potentially one for each architecture).  Is there
+really anything else?  If not, I would lean against doing this.
 
-Given that there are several pathways for turning on or turning off the 
-read URBs, the best answer is to use a flag.
+None of the other architectures seem to set any loglevel in
+dump_stack(), so this would change their behaviour.  I.e. dump_stack()
+would print with the current loglevel, whatever that is.  That's a neat
+behaviour and we could simplify x86 to match.  But it seems less simple
+overall.  This one arch function would rely implicitly on the new, not
+immediately obvious behaviour of printk().
 
-Alan Stern
+> As far as I can tell, that's a oneliner: make 'current_log_level' be a 
+> 'static' variable.
+>
+> Wouldn't that be much simpler for everybody?
+>
+> (And yes, if you mix multi-line messages that are printed as separate 
+> printk's and with different loglevels, output will be confused. But quite 
+> frankly, it will be confused regardless)
+>   
 
+It is more obvious that there is confusion when you see "<0>" in the
+middle of a line though :-).
+
+Regards
+Alan
