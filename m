@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZJGVMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934387AbZJGVCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbZJGVMx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 17:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbZJGVMx
+	id S934387AbZJGVCK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 17:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934355AbZJGVCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 17:12:53 -0400
-Received: from www.tglx.de ([62.245.132.106]:44073 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752463AbZJGVMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 17:12:52 -0400
-Date: Wed, 7 Oct 2009 23:01:23 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: John Kacur <jkacur@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH RFC] BKL not necessary in cpuid_open
-In-Reply-To: <20091007201338.GE5903@nowhere>
-Message-ID: <alpine.LFD.2.00.0910072259230.9428@localhost.localdomain>
-References: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain> <20091007201338.GE5903@nowhere>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Oct 2009 17:02:10 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54019 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933855AbZJGVCJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 17:02:09 -0400
+Date: Wed, 7 Oct 2009 22:02:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
+Message-ID: <20091007220252.5b672399@lxorguk.ukuu.org.uk>
+In-Reply-To: <200910072256.21316.oliver@neukum.org>
+References: <Pine.LNX.4.44L0.0910071434290.3051-100000@iolanthe.rowland.org>
+	<200910072256.21316.oliver@neukum.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Oct 2009, Frederic Weisbecker wrote:
-> Hmm, I'm discovering that in tip:rt/kill-the-bkl
-> 
-> http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commitdiff;h=55968ede164ae523692f00717f50cd926f1382a0
-> 
-> Looks like we have overlaped.
-> 
-> Thomas it would be nice to post these patches on LKML (or I missed
-> them?) and may be to merge them into tip:master, so that they are
-> visible and then we lower the risk of any duplicate works in this area.
+On Wed, 7 Oct 2009 22:56:20 +0200
+Oliver Neukum <oliver@neukum.org> wrote:
 
-Now guess why I mentioned this branch sevaral times at the rt summit
-last week. It's even documented in Jonathans excellent meeting
-minutes on lwn.net :)
+> Am Mittwoch, 7. Oktober 2009 20:52:21 schrieb Alan Stern:
+> > However in the option and sierra drivers there is a perverse path from
+> > close to resume: Both their close methods call
+> > usb_autopm_get_interface().  This could be removed without much
+> > trouble; perhaps we should do so.
+> 
+> I am afraid this won't do in the long run. Some drivers will want to
+> shut down devices by communicating with them in close().
 
-Thanks,
+drivers/serial will need a power management hook to use
+tty_port_{open/close} so perhaps that can be covered for both. In the
+serial case it needs to kick stuff out of PCI D3 mostly and could
+probably be fudged but if USB needs it perhaps it should be explicit.
 
-	tglx
