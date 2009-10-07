@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbZJGTA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbZJGTIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754780AbZJGTA0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 15:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbZJGTA0
+	id S1756640AbZJGTIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 15:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbZJGTIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 15:00:26 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16895 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753690AbZJGTAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 15:00:25 -0400
-Date: Wed, 7 Oct 2009 20:59:52 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: Olivier Galibert <galibert@pobox.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [PATCH][RFC] add MAP_UNLOCKED mmap flag
-Message-ID: <20091007185952.GC19692@redhat.com>
-References: <20091006190938.126F.A69D9226@jp.fujitsu.com>
- <20091006102136.GH9832@redhat.com>
- <20091006192454.1272.A69D9226@jp.fujitsu.com>
- <20091006103300.GI9832@redhat.com>
- <2f11576a0910060510y401c1d5ax6f17135478d22899@mail.gmail.com>
- <20091006121603.GK9832@redhat.com>
- <20091007185054.GB66690@dspnet.fr.eu.org>
+	Wed, 7 Oct 2009 15:08:47 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:45114 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753671AbZJGTIq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 15:08:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=WFh1rchZgDUrrV735S+MgHI8xf4NczhU1iO46eSOqtMSnrwooKZ/SquNT84scyTaX+
+         SngUSvRGkKugW01W8KxcdwioTIpd3aAaWK+Bn2cjXmiNx8QwpG20YiE3P0MK7Allf7Bl
+         DMacBL/23QT2w7AsQ3o9cd3EQPX4daVkuYuKk=
+Message-ID: <4ACCE72B.3010906@gmail.com>
+Date: Wed, 07 Oct 2009 12:08:27 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091007185054.GB66690@dspnet.fr.eu.org>
+To: rostedt@goodmis.org
+CC: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: system gets stuck in a lock during boot
+References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>	 <20091002211211.GA2633@redhat.com>	 <1254792249.13160.213.camel@gandalf.stny.rr.com>	 <20091006203225.GC2631@redhat.com>	 <1254880921.1696.112.camel@gandalf.stny.rr.com>	 <4ACC001D.4050105@gmail.com>	 <1254920429.1696.127.camel@gandalf.stny.rr.com>	 <4ACCAB54.4010408@gmail.com>	 <1254928298.1696.166.camel@gandalf.stny.rr.com>	 <4ACCB934.7070805@gmail.com>	 <1254931582.1696.171.camel@gandalf.stny.rr.com>	 <4ACCE1BA.5000307@gmail.com> <1254941730.1696.177.camel@gandalf.stny.rr.com>
+In-Reply-To: <1254941730.1696.177.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 08:50:54PM +0200, Olivier Galibert wrote:
-> On Tue, Oct 06, 2009 at 02:16:03PM +0200, Gleb Natapov wrote:
-> > I did. It allows me to achieve something I can't now. Steps you provide
-> > just don't fit my needs. I need all memory areas (current and feature) to be
-> > locked except one. Very big one. You propose to lock memory at some
-> > arbitrary point and from that point on all newly mapped memory areas will
-> > be unlocked. Don't you see it is different?
-> 
-> What about mlockall(MCL_CURRENT); mmap(...); mlockall(MCL_FUTURE);?
-> Or toggle MCL_FUTURE if a mlockall call can stop it?
-> 
-This may work. And MCL_FUTURE can be toggled, but this is not thread
-safe.
- 
---
-			Gleb.
+Steven Rostedt wrote:
+> On Wed, 2009-10-07 at 11:45 -0700, Justin P. Mattock wrote:
+>
+>    
+>>>
+>>>        
+>> yep like I said I owe you guys an apology, for
+>> my mistake(thanks for taking the time).
+>>      
+>
+> Well, thank you for reporting it. If nobody reports any problems, we
+> just assume everything is OK, and as people curse us out and look for
+> alternatives, we will be sipping our mai-tais in ignorant bliss.
+>
+> -- Steve
+>
+>    
+agree,
+my main concern when reporting is to make sure
+that it's a real issue, and not a mistake like this one.
+Anyways, a mai-tais sure does sound good
+(sign me up!!)
+>>    From what it looks like init was looking for libselinux
+>> in /lib instead of /lib64.
+>> after adjusting the Makefile and adding:
+>> LDFLAGS = -s -L/lib64 -lselinux -lsepol
+>> LIBDIR=/lib64
+>> the system boots right up.
+>> (sh*t built everything to point to lib64(xserver and all).., and
+>> forgot the modify init.c to do the same).
+>>
+>> Justin P. Mattock
+>>
+>>      
+>
+>
+>    
+Justin P. mattock
