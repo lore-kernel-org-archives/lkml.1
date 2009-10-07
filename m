@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759893AbZJGT0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbZJGT0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759893AbZJGT0h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 15:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759882AbZJGT0g
+	id S1759773AbZJGT0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 15:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbZJGT0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 15:26:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34384 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759875AbZJGT0g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 15:26:36 -0400
-Date: Wed, 7 Oct 2009 12:25:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Nick Piggin <npiggin@suse.de>
-cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [rfc][patch] store-free path walking
-In-Reply-To: <20091007164622.GX30316@wotan.suse.de>
-Message-ID: <alpine.LFD.2.01.0910071222230.3432@localhost.localdomain>
-References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain>
- <alpine.LFD.2.01.0910070911080.3432@localhost.localdomain> <20091007164622.GX30316@wotan.suse.de>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 7 Oct 2009 15:26:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48951 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755815AbZJGT0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 15:26:23 -0400
+Date: Wed, 7 Oct 2009 19:25:11 GMT
+From: tip-bot for Darren Hart <dvhltc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, eric.dumazet@gmail.com, johnstul@us.ibm.com,
+       peterz@infradead.org, dino@in.ibm.com, hcb@chaoticmind.net,
+       stable@kernel.org, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
+       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
+       johnstul@us.ibm.com, peterz@infradead.org, dino@in.ibm.com,
+       stable@kernel.org, hcb@chaoticmind.net, tglx@linutronix.de
+In-Reply-To: <4ACCE21E.5030805@us.ibm.com>
+References: <4ACCE21E.5030805@us.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/urgent] futex: fix requeue_pi key imbalance
+Message-ID: <tip-da085681014fb43d67d9bf6d14bc068e9254bd49@git.kernel.org>
+Git-Commit-ID: da085681014fb43d67d9bf6d14bc068e9254bd49
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 07 Oct 2009 19:25:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  da085681014fb43d67d9bf6d14bc068e9254bd49
+Gitweb:     http://git.kernel.org/tip/da085681014fb43d67d9bf6d14bc068e9254bd49
+Author:     Darren Hart <dvhltc@us.ibm.com>
+AuthorDate: Wed, 7 Oct 2009 11:46:54 -0700
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Wed, 7 Oct 2009 21:22:03 +0200
 
+futex: fix requeue_pi key imbalance
 
-On Wed, 7 Oct 2009, Nick Piggin wrote:
-> 
-> Oh I did that, used a "seqcount" which is the bare sequence counter
-> (and update it while holding d_lock).
+If futex_wait_requeue_pi() wakes prior to requeue, we drop the
+reference to the source futex_key twice, once in
+handle_early_requeue_pi_wakeup() and once on our way out.
 
-Oh, I didn't notice, for a really silly reason: I looked at how you had 
-changed DNAME_INLINE_LEN_MIN on 64-bit, and noticed that you were using 8 
-bytes for your sequence lock.
+Remove the drop from the handle_early_requeue_pi_wakeup() and keep
+the get/drops together in futex_wait_requeue_pi().
 
-But that's only true due to the padding things, and the seqcount itself is 
-indeed just 4 bytes. 
+Reported-by: Helge Bahmann <hcb@chaoticmind.net>
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+Cc: Helge Bahmann <hcb@chaoticmind.net>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Dinakar Guniguntala <dino@in.ibm.com>
+Cc: John Stultz <johnstul@us.ibm.com>
+Cc: stable-2.6.31 <stable@kernel.org>
+LKML-Reference: <4ACCE21E.5030805@us.ibm.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/futex.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Sad. But we do have the added requirement that we want to keep the 
-commonly used fields together in the same cacheline, so maybe it's 
-unavoidable.
-
-		Linus
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 1e176f3..c3bb2fc 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -2111,7 +2111,6 @@ int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
+ 		 * Unqueue the futex_q and determine which it was.
+ 		 */
+ 		plist_del(&q->list, &q->list.plist);
+-		drop_futex_key_refs(&q->key);
+ 
+ 		if (timeout && !timeout->task)
+ 			ret = -ETIMEDOUT;
