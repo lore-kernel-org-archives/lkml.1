@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759260AbZJGOZC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbZJGOZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759260AbZJGOZC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:25:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759246AbZJGOZB
+	id S1759274AbZJGOZR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 10:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759239AbZJGOZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:25:01 -0400
-Received: from mga03.intel.com ([143.182.124.21]:61637 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758310AbZJGOZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 10:25:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,519,1249282800"; 
-   d="scan'208";a="196083550"
-Date: Wed, 7 Oct 2009 22:23:30 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 09/45] writeback: quit on wrap for .range_cyclic
-	(pohmelfs)
-Message-ID: <20091007142330.GA8622@localhost>
-References: <20091007073818.318088777@intel.com> <20091007074902.268825252@intel.com> <20091007123211.GA29371@ioremap.net>
+	Wed, 7 Oct 2009 10:25:15 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:15494
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759245AbZJGOZM convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 10:25:12 -0400
+X-SpamScore: -34
+X-BigFish: VPS-34(zz542N1432R98dN4015L9371Pzz1202hzzz2dh6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091007123211.GA29371@ioremap.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Xilinx SYSACE driver and 8-bit attachment
+Date: Wed, 7 Oct 2009 08:24:28 -0600
+In-Reply-To: <fa686aa40910070634r4a8dcf74qdcbfb3bde3413109@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Xilinx SYSACE driver and 8-bit attachment
+Thread-Index: AcpHUwAhH5aNw0SuTEanW48+j2280gABkofA
+References: <1d3f23370910070013u6307bc42hf7ab243b52d007df@mail.gmail.com> <fa686aa40910070634r4a8dcf74qdcbfb3bde3413109@mail.gmail.com>
+From: John Linn <John.Linn@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+       "John Williams" <john.williams@petalogix.com>
+CC: "Linux Kernel list" <linux-kernel@vger.kernel.org>,
+       "Michal Simek" <michal.simek@petalogix.com>,
+       "David DeBonis" <ddeboni@xilinx.com>,
+       "Stephen Neuendorffer" <stephenn@xilinx.com>,
+       "devicetree-discuss" <devicetree-discuss@lists.ozlabs.org>
+X-OriginalArrivalTime: 07 Oct 2009 14:24:29.0162 (UTC) FILETIME=[E15584A0:01CA4759]
+Message-ID: <838c3c32-27d9-4a0a-a197-c7227b911942@VA3EHSMHS014.ehs.local>
+X-Reverse-DNS: unknown-60-83.xilinx.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 08:32:11PM +0800, Evgeniy Polyakov wrote:
-> Hi.
-> 
-> On Wed, Oct 07, 2009 at 03:38:27PM +0800, Wu Fengguang (fengguang.wu@intel.com) wrote:
-> > Convert wbc.range_cyclic to new behavior: when past EOF, abort writeback
-> > of the inode, which instructs writeback_single_inode() to delay it for 
-> > a while if necessary.
-> > 
-> > It removes one inefficient .range_cyclic IO pattern when writeback_index
-> > wraps:
-> > 	submit [10000-10100], (wrap), submit [0-100]
-> > In which the submitted pages may be consisted of two distant ranges.
-> > 
-> > It also prevents submitting pointless IO for busy overwriters.
-> 
-> I have no objections against this patchset, since I followed the
-> upstream writeback behaviour and did not personally observe such wraps
-> which would be otherwise handled in a single run.
+I'll look to see if something has changed.  It's not clear to me if it has ever been right.
 
-OK, thanks!
+It look like we normally use 16 bit mode as that's how BSB generates the system by default.
 
-Fengguang
+Thanks,
+John
+
+> -----Original Message-----
+> From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On Behalf Of Grant Likely
+> Sent: Wednesday, October 07, 2009 7:35 AM
+> To: John Williams
+> Cc: Linux Kernel list; Michal Simek; John Linn; David DeBonis; Stephen Neuendorffer; devicetree-
+> discuss
+> Subject: Re: Xilinx SYSACE driver and 8-bit attachment
+> 
+> [Added devicetree-discuss to cc: list]
+> 
+> On Wed, Oct 7, 2009 at 1:13 AM, John Williams
+> <john.williams@petalogix.com> wrote:
+> > Hi Grant (it's your driver :) and David D ( and your DTS generator :)
+> [...]
+> > if (of_find_property(op->node, "8-bit", NULL))
+> [...]
+> > doesn't match the properties generated by Xilinx's device tree generator:
+> [...]
+> >                         xlnx,mem-width = <0x8>;
+> >
+> > So, the question is, which should change?
+> 
+> Well, obviously its a device tree generator bug, the driver code is
+> perfect.  :-P
+> 
+> In all seriousness though, the '8-bit' property has been present for a
+> while now and needs to be retained to not break existing users.  It
+> would be okay for the driver to be modified to *also* check for the
+> xlnx,mem-width property, but the better solution is to modify the
+> device tree generator.  Plus, the '8-bit' property is the documented
+> binding in Documentation/powerpc/dts-bindings/xilinx.txt
+> 
+> Cheers,
+> g.
+> 
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+
+
