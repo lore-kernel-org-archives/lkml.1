@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751221AbZJGVFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751663AbZJGVH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751221AbZJGVFU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 17:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZJGVFU
+	id S1751663AbZJGVH3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 17:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbZJGVH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 17:05:20 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46543 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750833AbZJGVFT (ORCPT
+	Wed, 7 Oct 2009 17:07:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39800 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZJGVH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 17:05:19 -0400
-Date: Wed, 7 Oct 2009 22:05:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       strakh@ispras.ru
-Subject: Re: [PATCH 2/4] isicom: switch to the new tty_port_open helper
-Message-ID: <20091007220543.2d1864db@lxorguk.ukuu.org.uk>
-In-Reply-To: <4ACCF5D5.7010505@gmail.com>
-References: <20091007144455.14550.95003.stgit@localhost.localdomain>
-	<20091007144621.14550.62068.stgit@localhost.localdomain>
-	<4ACCF5D5.7010505@gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Wed, 7 Oct 2009 17:07:28 -0400
+Date: Wed, 7 Oct 2009 23:06:51 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [rfc][patch] store-free path walking
+Message-ID: <20091007210651.GB1656@one.firstfloor.org>
+References: <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain> <alpine.LFD.2.01.0910070911080.3432@localhost.localdomain> <20091007164622.GX30316@wotan.suse.de> <alpine.LFD.2.01.0910071222230.3432@localhost.localdomain> <87eipfymcv.fsf@basil.nowhere.org> <alpine.LFD.2.01.0910071349190.3432@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0910071349190.3432@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Oct 2009 22:11:01 +0200
-Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> On 10/07/2009 04:46 PM, Alan Cox wrote:
-> > -	if (port->port.flags & ASYNC_INITIALIZED)
-> > -		return 0;
-> > -	if (tty_port_alloc_xmit_buf(&port->port) < 0)
-> > +	if (tty_port_alloc_xmit_buf(tport) < 0)
+On Wed, Oct 07, 2009 at 01:51:07PM -0700, Linus Torvalds wrote:
 > 
-> I think this won't work well with 1/4. ->activate is called with
-> port->port.mutex (the name in this context), but tty_port_alloc_xmit_buf
-> wants it again.
+> 
+> On Wed, 7 Oct 2009, Andi Kleen wrote:
+> > 
+> > With some strategic prefetches it might be cheap enough to use 
+> > two cache lines. Just fetch it with the other.
+> 
+> I _seriously_ doubt that.
+> 
+> This is one of the biggest (and hottest) hash tables in the whole kernel.
+> 
+> No amount of prefetching will help the fact that you effectively double 
+> your cache footprint / working set if you have to fetch two cachelines in 
+> the hot case lookup rather than one.
 
-Indeed - so the port buffer allocation stuff wants revisiting. I'll do
-that tomorrow.
+It won't double it, because there are many more cache lines from
+all kinds of other things in these paths. The point was just to hide 
+the latency of fetching two at different times. The actual cache foot print
+is not that important, as long as it's not excessive, just the latencies
+hurt.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
