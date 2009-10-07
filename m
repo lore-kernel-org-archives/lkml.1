@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbZJGUqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758928AbZJGUrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbZJGUqd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbZJGUqd
+	id S1758928AbZJGUrw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbZJGUrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:46:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32989
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753827AbZJGUqc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:46:32 -0400
-Date: Wed, 07 Oct 2009 13:46:26 -0700 (PDT)
-Message-Id: <20091007.134626.238756485.davem@davemloft.net>
-To: eranian@gmail.com, eranian@googlemail.com
-Cc: paulus@samba.org, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, perfmon2-devel@lists.sf.net
-Subject: Re: [PATCH 2/2] perf_events: add event constraints support for
- Intel processors
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <7c86c4470910070531s8ff0d54xb29c22dd982aa387@mail.gmail.com>
-References: <1254911461.26976.239.camel@twins>
-	<19148.30773.350036.411105@cargo.ozlabs.ibm.com>
-	<7c86c4470910070531s8ff0d54xb29c22dd982aa387@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Oct 2009 16:47:51 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752614AbZJGUru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 16:47:50 -0400
+Date: Wed, 7 Oct 2009 22:47:18 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Olivier Galibert <galibert@pobox.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH][RFC] add MAP_UNLOCKED mmap flag
+Message-ID: <20091007204718.GD19692@redhat.com>
+References: <20091006190938.126F.A69D9226@jp.fujitsu.com>
+ <20091006102136.GH9832@redhat.com>
+ <20091006192454.1272.A69D9226@jp.fujitsu.com>
+ <20091006103300.GI9832@redhat.com>
+ <2f11576a0910060510y401c1d5ax6f17135478d22899@mail.gmail.com>
+ <20091006121603.GK9832@redhat.com>
+ <20091007185054.GB66690@dspnet.fr.eu.org>
+ <20091007185952.GC19692@redhat.com>
+ <20091007201017.GC66690@dspnet.fr.eu.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091007201017.GC66690@dspnet.fr.eu.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: stephane eranian <eranian@googlemail.com>
-Date: Wed, 7 Oct 2009 14:31:58 +0200
-
-> What PPC does is probably the only way to do this given the interface between
-> generic and machine-specific code. The one advantage I see is that it works
-> inside an event group but also across event groups because that code does not
-> look at group boundary, it only looks at the events and the number of available
-> registers. The downside is that you duplicate state.
+On Wed, Oct 07, 2009 at 10:10:17PM +0200, Olivier Galibert wrote:
+> On Wed, Oct 07, 2009 at 08:59:52PM +0200, Gleb Natapov wrote:
+> > On Wed, Oct 07, 2009 at 08:50:54PM +0200, Olivier Galibert wrote:
+> > > On Tue, Oct 06, 2009 at 02:16:03PM +0200, Gleb Natapov wrote:
+> > > > I did. It allows me to achieve something I can't now. Steps you provide
+> > > > just don't fit my needs. I need all memory areas (current and feature) to be
+> > > > locked except one. Very big one. You propose to lock memory at some
+> > > > arbitrary point and from that point on all newly mapped memory areas will
+> > > > be unlocked. Don't you see it is different?
+> > > 
+> > > What about mlockall(MCL_CURRENT); mmap(...); mlockall(MCL_FUTURE);?
+> > > Or toggle MCL_FUTURE if a mlockall call can stop it?
+> > > 
+> > This may work. And MCL_FUTURE can be toggled, but this is not thread
+> > safe.
 > 
-> Did I get this right, Paul?
+> Just ensure that your one special mmap is done with the other threads
+> not currently allocating stuff.  It's probably a synchronization point
+> for the whole process anyway.
+> 
+How can you stop other threads and libraries from calling malloc()? And if
+it is two special allocations? Or many mmap(big file)/munmap(big file)?
+This is the same issue as opening file CLOEXEC atomically. Why not
+prevent other thread from calling fork() instead of adding flags to
+bunch of system calls.
 
-That's basically how his code works, yes.  I intend on duplicating
-it to some extent on sparc64 since I'm operating in a similar
-problem space.
-
-So if at least some of this engine went to a generic place, there'd
-be at least a 3rd user :-)
+--
+			Gleb.
