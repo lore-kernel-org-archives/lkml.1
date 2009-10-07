@@ -1,43 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934220AbZJGImf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933347AbZJGIqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934220AbZJGImf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934195AbZJGImd
+	id S933347AbZJGIqr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758445AbZJGIqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:42:33 -0400
-Received: from webmail10.mail.sp.isp-net.nl ([217.149.192.62]:35656 "EHLO
-	webmail10.mail.sp.isp-net.nl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934167AbZJGImb (ORCPT
+	Wed, 7 Oct 2009 04:46:47 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:36256 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756594AbZJGIqq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:42:31 -0400
-Date: Wed, 7 Oct 2009 10:41:35 +0200
-From: Dick Streefland <dick@streefland.net>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
-Message-ID: <20091007084135.GA5355@streefland.net>
-References: <20091006203540.GA14634@streefland.net> <1254881503.1696.115.camel@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254881503.1696.115.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Language-Detected: en
-X-Spam-Scanned: InterNLnet Mail Scan System V2.03
+	Wed, 7 Oct 2009 04:46:46 -0400
+Subject: Re: [BISECTED] "conservative" cpufreq governor broken
+From: Eero Nurkkala <ext-eero.nurkkala@nokia.com>
+Reply-To: ext-eero.nurkkala@nokia.com
+To: ext Steven Noonan <steven@uplinklabs.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Rik van Riel <riel@redhat.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+In-Reply-To: <f488382f0910070124v6f1e1539gbeb7765ab6f32231@mail.gmail.com>
+References: <alpine.LNX.2.00.0910050923280.2419@alcarin.uplinklabs.net>
+	 <f488382f0910060422t420ade8bvdefbf3e3d0720266@mail.gmail.com>
+	 <1254832609.31336.290.camel@eenurkka-desktop>
+	 <f488382f0910061754g6d15cf58v572e85701fc5aa4f@mail.gmail.com>
+	 <f488382f0910061822wf8da0c1m7f118f04fe793abe@mail.gmail.com>
+	 <1254893230.30157.28.camel@eenurkka-desktop>
+	 <f488382f0910070030m153773e8s6d93cbd7e48f5461@mail.gmail.com>
+	 <1254901778.30157.62.camel@eenurkka-desktop>
+	 <f488382f0910070105g19cbf75ci8034f2917b7e5606@mail.gmail.com>
+	 <1254903263.30157.69.camel@eenurkka-desktop>
+	 <f488382f0910070124v6f1e1539gbeb7765ab6f32231@mail.gmail.com>
+Content-Type: text/plain
+Organization: Nokia
+Date: Wed, 07 Oct 2009 11:43:33 +0300
+Message-Id: <1254905013.30157.75.camel@eenurkka-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Oct 2009 08:44:44.0060 (UTC) FILETIME=[6ADDCDC0:01CA472A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 2009-10-06 22:11, Steven Rostedt wrote:
-| Now the question is, is this something that we should try to get into
-| the 32 release, or let this version go through linux-next for another
-| release?
+On Wed, 2009-10-07 at 10:24 +0200, ext Steven Noonan wrote:
+> >
+> > Steven, how do the cpu loads look like without the patch?
+> 
+> They're sane:
+> 
+> [   40.019381] cpufreq load = 100 * (66666 - 66337) / 66666 = 0
+> [   40.019396] cpufreq load = 100 * (66666 - 66299) / 66666 = 0
+> [   73.352580] cpufreq load = 100 * (66717 - 66349) / 66717 = 0
+> [   73.352595] cpufreq load = 100 * (66634 - 63848) / 66634 = 4
 
-I don't have a strong preference, as long as it gets into the kernel
-tree in the end. I realize that it is a bit late in the 32 release
-cycle, but on the other hand this script is not used in the kernel
-build process.
+Thank you. Could you please try the following:
+Now, if ts->nohz_mode == NOHZ_MODE_INACTIVE, ts->inidle is not set
+and all subsequent calls from irq_exit() think we weren't idling,
+which is not true.
 
--- 
-Dick
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -233,6 +233,8 @@ void tick_nohz_stop_sched_tick(int inidle)
+ 
+        now = tick_nohz_start_idle(ts);
+ 
++       ts->inidle = 1;
++
+        /*
+         * If this cpu is offline and it is the one which updates
+         * jiffies, then give up the assignment and let it be taken by
+@@ -248,8 +250,6 @@ void tick_nohz_stop_sched_tick(int inidle)
+        if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
+                goto end;
+ 
+-       ts->inidle = 1;
+-
+        if (need_resched())
+                goto end;
+ 
+
+
+
+
