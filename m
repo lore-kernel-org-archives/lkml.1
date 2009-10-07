@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933412AbZJGNC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933439AbZJGNJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933412AbZJGNC0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 09:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbZJGNCZ
+	id S933439AbZJGNJS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 09:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933353AbZJGNJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 09:02:25 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:11452 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933176AbZJGNCY (ORCPT
+	Wed, 7 Oct 2009 09:09:17 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:57762 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933225AbZJGNJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 09:02:24 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
- management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
- cpuidle to POWER.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: svaidy@linux.vnet.ibm.com
-Cc: Arjan van de Ven <arjan@infradead.org>, arun@linux.vnet.ibm.com,
-       Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-arch@vger.kernel.org
-In-Reply-To: <20091007112648.GC7646@dirshya.in.ibm.com>
-References: <20091006152421.GA7278@linux.vnet.ibm.com>
-	 <20091006163521.GA10425@linux.vnet.ibm.com>
-	 <1254852279.17055.2.camel@laptop>
-	 <20091007112648.GC7646@dirshya.in.ibm.com>
+	Wed, 7 Oct 2009 09:09:16 -0400
+Subject: Re: [RFC][PATCH 1/9] tracing/events: Add 'signed' field to format
+ files
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       lizf@cn.fujitsu.com, hch@infradead.org
+In-Reply-To: <1254891887.28917.190.camel@tropicana>
+References: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
+	 <1254809398-8078-2-git-send-email-tzanussi@gmail.com>
+	 <1254877572.1696.48.camel@gandalf.stny.rr.com>
+	 <1254891887.28917.190.camel@tropicana>
 Content-Type: text/plain
-Date: Wed, 07 Oct 2009 15:05:11 +0200
-Message-Id: <1254920711.26976.243.camel@twins>
+Organization: Kihon Technologies Inc.
+Date: Wed, 07 Oct 2009 09:07:17 -0400
+Message-Id: <1254920837.1696.130.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 16:56 +0530, Vaidyanathan Srinivasan wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-06 20:04:39]:
-> 
-> > On Tue, 2009-10-06 at 22:05 +0530, Arun R Bharadwaj wrote:
+On Wed, 2009-10-07 at 00:04 -0500, Tom Zanussi wrote:
+> On Tue, 2009-10-06 at 21:06 -0400, Steven Rostedt wrote:
+> > On Tue, 2009-10-06 at 01:09 -0500, Tom Zanussi wrote:
+> > > The sign info used for filters in the kernel is also useful to
+> > > applications that process the trace stream.  Add it to the format
+> > > files and make it available to userspace.
+> > > 
+> > > Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> > > ---
+> > >  include/trace/ftrace.h              |   15 +++++++++------
+> > >  kernel/trace/ring_buffer.c          |   15 +++++++++------
+> > >  kernel/trace/trace_events.c         |   24 ++++++++++++------------
+> > >  kernel/trace/trace_export.c         |   25 ++++++++++++++-----------
+> > >  kernel/trace/trace_syscalls.c       |   20 +++++++++++++-------
+> > >  tools/perf/util/trace-event-parse.c |   24 ++++++++++++++++++++++++
+> > >  tools/perf/util/trace-event.h       |    1 +
+> > >  7 files changed, 82 insertions(+), 42 deletions(-)
+> > > 
+> > > diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> > > index cc0d966..c9bbcab 100644
+> > > --- a/include/trace/ftrace.h
+> > > +++ b/include/trace/ftrace.h
+> > > @@ -120,9 +120,10 @@
+> > >  #undef __field
+> > >  #define __field(type, item)					\
+> > >  	ret = trace_seq_printf(s, "\tfield:" #type " " #item ";\t"	\
+> > > -			       "offset:%u;\tsize:%u;\n",		\
+> > > +			       "offset:%u;\tsize:%u;\tsigned:%u;\n",	\
+> > >  			       (unsigned int)offsetof(typeof(field), item), \
+> > > -			       (unsigned int)sizeof(field.item));	\
+> > > +			       (unsigned int)sizeof(field.item),	\
+> > > +			       (unsigned int)is_signed_type(type));	\
+> > >  	if (!ret)							\
+> > >  		return 0;
 > > 
-> > > Also, the per-cpu nature of registration/unregistration of cpuidle
-> > > has been maintained as ACPI needs this.
+> > I don't mind this change, but it makes me nervous. We really need to
+> > solidify the output format file. This is adding a new field and will
+> > already break the parsers in perf and trace_cmd.
 > > 
-> > Right, so can't we ditch that and have acpi default to the lowest
-> common
-> > C-state and warn when various cpus report different C-states?
+> > Is there anything else that is needed? I really want to make sure that
+> > we don't need to modify the output of the format files any more.
+> > 
 > 
-> Hi Peter,
+> One of the things I had in mind when writing this patchset was to make
+> sure that what was there already was enough to write something real on
+> top of.  The only thing I found I needed to add was the signed field,
+> and that was enough at least for the Perl case, where everything can be
+> mapped into 3 types - signed, unsigned and string.
 > 
-> As Arjan mentioned previously, the per-cpu registration has to stay
-> for x86 for now due to legacy ACPI compatibility.  Breaking that may
-> break lot of existing users and we do not have a clean fallback
-> method.  
+> Other languages might demand more - I haven't looked into it - so I
+> couldn't say whether anything else is needed, but it would seem to me
+> that the current combination of type description strings, sizes and
+> signs for each field should be enough information to allow any field to
+> be passed into any scripting interpreter.  Actually, you could probably
+> forget about signs and sizes and just manage on type description strings
+> alone, if you had a typemap that mapped from the C type descriptions to
+> the types expected by a given interpreter.  That might be what some
+> language implementations would end up doing, but at least for the Perl
+> implementation, it's much more convenient to have the is_signed field.
 
->From what I understood some broken ass bioses report different C state
-availability on different CPUs in the same SMP system.
+Actually I was thinking that the print format part of the format file
+would give enough to know if the object was signed or not, or even the
+type (unsigned long, etc). But we are still early in this game, and I
+would like to think that we are still early enough to be able to change
+these formats. But it's getting close that they will soon be locked in
+stone.
 
-I'm suggesting to work around that by limiting all CPUs to the subset of
-C states reported on all CPUs, instead of the current mess.
+-- Steve
 
-I haven't heard anybody tell me why that wouldn't be possible on x86
 
