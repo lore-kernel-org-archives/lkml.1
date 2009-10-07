@@ -1,208 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758966AbZJGLVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbZJGLXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758966AbZJGLVH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 07:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758856AbZJGLVA
+	id S1759042AbZJGLXo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 07:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759022AbZJGLXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 07:21:00 -0400
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:17911
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758410AbZJGLU7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 07:20:59 -0400
-X-SpamScore: -7
-X-BigFish: VPS-7(zz14c3L655Nzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KR565G-04-AU4-02
-X-M-MSG: 
-Date: Wed, 7 Oct 2009 13:20:38 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: <x86@aftab>, <linux-kernel@vger.kernel.org>
-Subject: [RESEND PATCH] mce, edac: use an atomic notifier for MCEs decoding
-Message-ID: <20091007112038.GA2505@aftab>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+	Wed, 7 Oct 2009 07:23:43 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44696 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758923AbZJGLXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 07:23:42 -0400
+Date: Wed, 7 Oct 2009 13:23:02 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Myklebust Trond <Trond.Myklebust@netapp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Jan Kara <jack@suse.cz>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 14/45] writeback: quit on wrap for .range_cyclic (afs)
+Message-ID: <20091007112302.GR30316@wotan.suse.de>
+References: <20091007074902.913463607@intel.com> <20091007073818.318088777@intel.com> <32495.1254910626@redhat.com> <20091007102130.GQ30316@wotan.suse.de> <20091007104711.GA11014@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 07 Oct 2009 11:20:01.0363 (UTC) FILETIME=[1C696A30:01CA4740]
-X-Reverse-DNS: unknown
+In-Reply-To: <20091007104711.GA11014@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an atomic notifier which ensures proper locking when conveying MCE
-info to EDAC for decoding. The actual notifier call overrides a default,
-negative priority notifier.
+On Wed, Oct 07, 2009 at 06:47:11PM +0800, Wu Fengguang wrote:
+> On Wed, Oct 07, 2009 at 06:21:30PM +0800, Nick Piggin wrote:
+> > On Wed, Oct 07, 2009 at 11:17:06AM +0100, David Howells wrote:
+> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > 
+> > > > Convert wbc.range_cyclic to new behavior: when past EOF, abort writeback
+> > > > of the inode, which instructs writeback_single_inode() to delay it for
+> > > > a while if necessary.
+> > > > 
+> > > > It removes one inefficient .range_cyclic IO pattern when writeback_index
+> > > > wraps:
+> > > > 	submit [10000-10100], (wrap), submit [0-100]
+> > > > In which the submitted pages may be consisted of two distant ranges.
+> > > > 
+> > > > It also prevents submitting pointless IO for busy overwriters.
+> > > > 
+> > > > CC: David Howells <dhowells@redhat.com>
+> > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > > 
+> > > Acked-by: David Howells <dhowells@redhat.com>
+> > 
+> > I don't see why. Then the inode is given less write bandwidth than
+> > those which don't wrap (or wrap on "nice" boundaries).
+> 
+> The "return on wrapped" behavior itself only offers a natural seek
+> boundary to the upper layer.  It's mainly the "whether to delay"
+> policy that will affect (overall) bandwidth.
+> 
+> If we choose to not sleep, and to go on with other inodes and then
+> back to this inode, no bandwidth will be lost.
+> 
+> If we have done work with other inodes (if any), and choose to sleep
+> for a while before restarting this inode, then we could lose bandwidth.
+> The plus side is, we possibly avoid submitting extra IO if this inode
+> is being busy overwritten. So it's a tradeoff.
+> 
+> The behavior after this patchset is, to keep busy as long as we can
+> write any pages (in patch 38/45). So we still opt for bandwidth :)
 
-Note: make sure we register the default decoder only once since
-mcheck_init() runs on each CPU.
-
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-LKML-Reference: <20091003065752.GA8935@liondog.tnic>
----
- arch/x86/include/asm/mce.h       |    3 ++-
- arch/x86/kernel/cpu/mcheck/mce.c |   30 +++++++++++++++++++++---------
- drivers/edac/edac_mce_amd.c      |   23 ++++++++++++++---------
- 3 files changed, 37 insertions(+), 19 deletions(-)
-
-diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-index f1363b7..227a72d 100644
---- a/arch/x86/include/asm/mce.h
-+++ b/arch/x86/include/asm/mce.h
-@@ -108,6 +108,8 @@ struct mce_log {
- #define K8_MCE_THRESHOLD_BANK_5    (MCE_THRESHOLD_BASE + 5 * 9)
- #define K8_MCE_THRESHOLD_DRAM_ECC  (MCE_THRESHOLD_BANK_4 + 0)
- 
-+extern struct atomic_notifier_head x86_mce_decoder_chain;
-+
- #ifdef __KERNEL__
- 
- #include <linux/percpu.h>
-@@ -213,6 +215,5 @@ extern void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu);
- void intel_init_thermal(struct cpuinfo_x86 *c);
- 
- void mce_log_therm_throt_event(__u64 status);
--
- #endif /* __KERNEL__ */
- #endif /* _ASM_X86_MCE_H */
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index b1598a9..09c2e2e 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -85,18 +85,26 @@ static DECLARE_WAIT_QUEUE_HEAD(mce_wait);
- static DEFINE_PER_CPU(struct mce, mces_seen);
- static int			cpu_missing;
- 
--static void default_decode_mce(struct mce *m)
-+/*
-+ * CPU/chipset specific EDAC code can register a notifier call here to print
-+ * MCE errors in a human-readable form.
-+ */
-+ATOMIC_NOTIFIER_HEAD(x86_mce_decoder_chain);
-+EXPORT_SYMBOL_GPL(x86_mce_decoder_chain);
-+
-+static int default_decode_mce(struct notifier_block *nb, unsigned long val,
-+			       void *data)
- {
- 	pr_emerg("No human readable MCE decoding support on this CPU type.\n");
- 	pr_emerg("Run the message through 'mcelog --ascii' to decode.\n");
-+
-+	return NOTIFY_STOP;
- }
- 
--/*
-- * CPU/chipset specific EDAC code can register a callback here to print
-- * MCE errors in a human-readable form:
-- */
--void (*x86_mce_decode_callback)(struct mce *m) = default_decode_mce;
--EXPORT_SYMBOL(x86_mce_decode_callback);
-+static struct notifier_block mce_dec_nb = {
-+	.notifier_call = default_decode_mce,
-+	.priority      = -1,
-+};
- 
- /* MCA banks polled by the period polling timer for corrected events */
- DEFINE_PER_CPU(mce_banks_t, mce_poll_banks) = {
-@@ -204,9 +212,9 @@ static void print_mce(struct mce *m)
- 
- 	/*
- 	 * Print out human-readable details about the MCE error,
--	 * (if the CPU has an implementation for that):
-+	 * (if the CPU has an implementation for that)
- 	 */
--	x86_mce_decode_callback(m);
-+	atomic_notifier_call_chain(&x86_mce_decoder_chain, 0, m);
- }
- 
- static void print_mce_head(void)
-@@ -1420,6 +1428,10 @@ void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
- 	mce_cpu_features(c);
- 	mce_init_timer();
- 	INIT_WORK(&__get_cpu_var(mce_work), mce_process_work);
-+
-+	if (raw_smp_processor_id() == 0)
-+		atomic_notifier_chain_register(&x86_mce_decoder_chain,
-+					       &mce_dec_nb);
- }
- 
- /*
-diff --git a/drivers/edac/edac_mce_amd.c b/drivers/edac/edac_mce_amd.c
-index 713ed7d..6ee7529 100644
---- a/drivers/edac/edac_mce_amd.c
-+++ b/drivers/edac/edac_mce_amd.c
-@@ -3,7 +3,6 @@
- 
- static bool report_gart_errors;
- static void (*nb_bus_decoder)(int node_id, struct err_regs *regs);
--static void (*orig_mce_callback)(struct mce *m);
- 
- void amd_report_gart_errors(bool v)
- {
-@@ -363,8 +362,10 @@ static inline void amd_decode_err_code(unsigned int ec)
- 		pr_warning("Huh? Unknown MCE error 0x%x\n", ec);
- }
- 
--static void amd_decode_mce(struct mce *m)
-+static int amd_decode_mce(struct notifier_block *nb, unsigned long val,
-+			   void *data)
- {
-+	struct mce *m = (struct mce *)data;
- 	struct err_regs regs;
- 	int node, ecc;
- 
-@@ -420,20 +421,23 @@ static void amd_decode_mce(struct mce *m)
- 	}
- 
- 	amd_decode_err_code(m->status & 0xffff);
-+
-+	return NOTIFY_STOP;
- }
- 
-+static struct notifier_block amd_mce_dec_nb = {
-+	.notifier_call	= amd_decode_mce,
-+};
-+
- static int __init mce_amd_init(void)
- {
- 	/*
- 	 * We can decode MCEs for Opteron and later CPUs:
- 	 */
- 	if ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
--	    (boot_cpu_data.x86 >= 0xf)) {
--		/* safe the default decode mce callback */
--		orig_mce_callback = x86_mce_decode_callback;
--
--		x86_mce_decode_callback = amd_decode_mce;
--	}
-+	    (boot_cpu_data.x86 >= 0xf))
-+		atomic_notifier_chain_register(&x86_mce_decoder_chain,
-+					       &amd_mce_dec_nb);
- 
- 	return 0;
- }
-@@ -442,7 +446,8 @@ early_initcall(mce_amd_init);
- #ifdef MODULE
- static void __exit mce_amd_exit(void)
- {
--	x86_mce_decode_callback = orig_mce_callback;
-+	atomic_notifier_chain_unregister(&x86_mce_decoder_chain,
-+					 &amd_mce_dec_nb);
- }
- 
- MODULE_DESCRIPTION("AMD MCE decoder");
--- 
-1.6.4.3
-
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+No I mean bandwidth fairness between inodes.
 
