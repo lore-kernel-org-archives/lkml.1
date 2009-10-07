@@ -1,96 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932650AbZJGThF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759904AbZJGTnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932650AbZJGThF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 15:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759919AbZJGThF
+	id S1759904AbZJGTnI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 15:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbZJGTnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 15:37:05 -0400
-Received: from mail-yw0-f196.google.com ([209.85.211.196]:56674 "EHLO
-	mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759918AbZJGThD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 15:37:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JExrrw7LpsL5P4xd/sC5q4bw6RedQh79uxv5KOeS5g+2WJAE9B9HjeKbXYKqTGNn5H
-         nuUDmcleLWTiJpxJSOlQ41G/339b+73A5Is1MzX0m4TXbOibzGUVC4JhiNvJ02c8CMb1
-         8jXLhcMsyeRTdOP5oOULauMLub6PjYnWYr8fY=
+	Wed, 7 Oct 2009 15:43:07 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:3756 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754443AbZJGTnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 15:43:05 -0400
+Date: Wed, 7 Oct 2009 21:31:56 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+cc: tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH RFC] BKL not necessary in cpuid_open
+In-Reply-To: <1254942848.15477.16.camel@quadrophenia.thebigcorporation.com>
+Message-ID: <alpine.LFD.2.00.0910072129070.15183@localhost.localdomain>
+References: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain> <1254942848.15477.16.camel@quadrophenia.thebigcorporation.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20091007175112.GI8703@kernel.dk>
-References: <200910071059.01146.czoccolo@gmail.com>
-	 <20091007175112.GI8703@kernel.dk>
-Date: Wed, 7 Oct 2009 21:30:44 +0200
-Message-ID: <4e5e476b0910071230x4adf48eava152bebb149d53e4@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: avoid slice overrun when idling
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 7, 2009 at 7:51 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Wed, Oct 07 2009, Corrado Zoccolo wrote:
->> Idle window for a queue is reduced when the queue is about to finish
->> its slice.
->>
->> Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
->> ---
->>  block/cfq-iosched.c |    4 +++-
->>  1 files changed, 3 insertions(+), 1 deletions(-)
->>
->> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
->> index 4ab33d8..55bb8ca 100644
->> --- a/block/cfq-iosched.c
->> +++ b/block/cfq-iosched.c
->> @@ -1105,8 +1105,10 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
->>        * we don't want to idle for seeks, but we do want to allow
->>        * fair distribution of slice time for a process doing back-to-back
->>        * seeks. so allow a little bit of time for him to submit a new rq
->> +      * but avoid overrunning its timeslice
->>        */
->> -     sl = cfqd->cfq_slice_idle;
->> +     sl = min_t(unsigned long, cfqd->cfq_slice_idle,
->> +             cfqq->slice_end - jiffies);
->>       if (sample_valid(cic->seek_samples) && CIC_SEEKY(cic))
->>               sl = min(sl, msecs_to_jiffies(CFQ_MIN_TT));
->
-> This was actually done this way on purpose, since shorter idling more
-> often don't suceed. So the logic was rather overrun the slice slightly
-> than wait shortly and just miss the incoming IO.
->
-> Of course this will overrun the slice even more, which the above will
-> also do since it wants to do IO within that time frame too.
->
-> So I think we should either leave it as-is, OR simply not arm the idle
-> timer when it has less than slice_idle time left and immediately select
-> a new queue.
-
-Maybe we can arm the timer only if the think time is less than the
-remaining slice, otherwise skip it.
-
-Corrado
->
-> --
-> Jens Axboe
->
->
 
 
+On Wed, 7 Oct 2009, Sven-Thorsten Dietrich wrote:
 
--- 
-__________________________________________________________________________
+> On Wed, 2009-10-07 at 20:19 +0200, John Kacur wrote:
+> > I've been staring at the BKL lock in cpuid_open, and I can't see what it 
+> > is protecting. However, I may have missed something - even something 
+> > obvious, so comments are welcome.
+> 
+> I have been using this patch to first see if the BKL is being used
+> simply as mutex, which would allow easier break-down.
+> 
+> Sven
+> 
+> Subject: Introduce the BKL-MUTEX, to allow proving the code that
+> From: Sven-Thorsten Dietrich sdietrich@suse.de Sat Oct 3 01:26:01 2009 -0700
+> Date: Sat Oct 3 01:26:01 2009 -0700:
+> Git: 4bfea26de550100d193c49278d657485e792dfe5
+> 
+> just needs a global kernel mutex, without all the funky
+> preemption bits...
+> 
+> Acked-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
+> diff --git a/include/linux/smp_mutex.h b/include/linux/smp_mutex.h
+> new file mode 100644
+> index 0000000..6c45a96
+> --- /dev/null
+> +++ b/include/linux/smp_mutex.h
+> @@ -0,0 +1,22 @@
+> +#ifndef __LINUX_SMPMUTEX_H
+> +#define __LINUX_SMPMUTEX_H
+> +
+> +#ifdef CONFIG_LOCK_KERNEL
+> +
+> +extern void lock_kernel_mutex(void);
+> +extern void unlock_kernel_mutex(void);
+> +
+> +static inline void cycle_kernel_mutex(void)
+> +{
+> +	lock_kernel_mutex();
+> +	unlock_kernel_mutex();
+> +}
+> +
+> +#else
+> +
+> +#define lock_kernel_mutex()				do { } while(0)
+> +#define unlock_kernel_mutex()				do { } while(0)
+> +#define cycle_kernel_mutex()			do { } while(0)
+> +
+> +#endif /* CONFIG_LOCK_KERNEL */
+> +#endif /* __LINUX_SMPMUTEX_H */
+> diff --git a/lib/Makefile b/lib/Makefile
+> index 2e78277..c71ffdc 100644
+> --- a/lib/Makefile
+> +++ b/lib/Makefile
+> @@ -40,7 +40,7 @@ lib-$(CONFIG_GENERIC_FIND_FIRST_BIT) += find_next_bit.o
+>  lib-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
+>  obj-$(CONFIG_GENERIC_FIND_LAST_BIT) += find_last_bit.o
+>  obj-$(CONFIG_GENERIC_HWEIGHT) += hweight.o
+> -obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o
+> +obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o kernel_mutex.o
+>  obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
+>  obj-$(CONFIG_DEBUG_LIST) += list_debug.o
+>  obj-$(CONFIG_DEBUG_OBJECTS) += debugobjects.o
+> diff --git a/lib/kernel_mutex.c b/lib/kernel_mutex.c
+> new file mode 100644
+> index 0000000..1d587a8
+> --- /dev/null
+> +++ b/lib/kernel_mutex.c
+> @@ -0,0 +1,37 @@
+> +/*
+> + * lib/kernel_mutex.c
+> + *
+> + * This is the preemptible BKL - To be used transitionally to
+> + * prove those subsystems still using lock_kernel, but really
+> + * requiring a global mutex.
+> + */
+> +#include <linux/smp_mutex.h>
+> +#include <linux/module.h>
+> +#include <linux/kallsyms.h>
+> +#include <linux/semaphore.h>
+> +#include <linux/mutex.h>
+> +
+> +/*
+> + * The 'big kernel mutex'
+> + *
+> + * Don't use in new code.
+> + */
+> +static  __cacheline_aligned_in_smp DEFINE_MUTEX(kernel_mutex);
+> +
+> +
+> +/*
+> + * Getting the kernel mutex.
+> + */
+> +void __lockfunc lock_kernel_mutex(void)
+> +{
+> +	mutex_lock(&kernel_mutex);
+> +}
+> +
+> +void __lockfunc unlock_kernel_mutex(void)
+> +{
+> +	mutex_unlock(&kernel_mutex);
+> +}
+> +
+> +EXPORT_SYMBOL(lock_kernel_mutex);
+> +EXPORT_SYMBOL(unlock_kernel_mutex);
+> +
+> 
 
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
-The self-confidence of a warrior is not the self-confidence of the average
-man. The average man seeks certainty in the eyes of the onlooker and calls
-that self-confidence. The warrior seeks impeccability in his own eyes and
-calls that humbleness.
-                               Tales of Power - C. Castaneda
+Cool! Seems like an excellent experiment. However this is a separate patch
+from the one initially proposed in this thread. I'm willing to risk just 
+removing it in this case without any intermediary step. However, if anyone 
+points out to me why I'm a knuckle head and missed something obvious - I'll 
+listen. Otherwise, let's use your patch as a separate tactic to kill BKL.
+
