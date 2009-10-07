@@ -1,49 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759995AbZJGUHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbZJGUK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759995AbZJGUHH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759976AbZJGUHH
+	id S1759989AbZJGUK5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759930AbZJGUK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:07:07 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:47815 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759974AbZJGUHF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:07:05 -0400
+	Wed, 7 Oct 2009 16:10:56 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:26795 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759921AbZJGUK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 16:10:56 -0400
+Message-ID: <4ACCF565.30804@redhat.com>
+Date: Wed, 07 Oct 2009 22:09:09 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-In-Reply-To: <9b2b86520910071246r393f2afvacaa4d8f544508a8@mail.gmail.com>
-References: <20091007175403.GA335@trillian.comsick.at> <9b2b86520910071246r393f2afvacaa4d8f544508a8@mail.gmail.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 7 Oct 2009 22:06:13 +0200
-Message-ID: <ac3eb2510910071306r4ad6dc9btb7503bc3ab0ec815@mail.gmail.com>
-Subject: Re: [BUG] No ttyS0 - Strange udev 8250_pnp interaction
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Michael Guntsche <mike@it-loops.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-hotplug <linux-hotplug@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Dan Magenheimer <dan.magenheimer@oracle.com>,
+       Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>,
+       Zach Brown <zach.brown@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall implementation
+References: <1254790211-15416-1-git-send-email-jeremy.fitzhardinge@citrix.com>	<1254790211-15416-4-git-send-email-jeremy.fitzhardinge@citrix.com> <4ACB0833.2050203@redhat.com> <4ACB9074.1000804@goop.org> <4ACC6C9C.7080707@redhat.com> <4ACCEC18.90401@goop.org>
+In-Reply-To: <4ACCEC18.90401@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 7, 2009 at 21:46, Alan Jenkins
-<sourcejedi.lkml@googlemail.com> wrote:
-> Udev would have avoided the race prior to
+On 10/07/2009 09:29 PM, Jeremy Fitzhardinge wrote:
 >
-> 82c785e "udevd: remove check for dev_t, DEVPATH_OLD takes care of that"
+>>    I'm a bit worried about the kernel playing with the hypervisor's
+>> version field.
+>>      
+> For Xen I explicitly made it not a problem by adding the notion of a
+> secondary pvclock_vcpu_time_info structure which is updated by copying,
+> aside from the version number which is updated as-is.
+>    
+
+When do you copy?
+
+I'd rather have a single copy for guest and host.
+
+> As far as I can tell it isn't a problem for KVM either.  The guest
+> version number is atomic with respect to preemption by the hypervisor so
+> there's no scope for racing.  (The ABI already guarantees that the
+> pvclock structures are never updated cross-cpu.)
 >
-> (the "check" removed here used to serialize events based on the device
-> major:minor number).
->
-> So - udev probably needs to add the check back.
+> It ultimately doesn't matter what the version number is so long as it
+> changes when the parameters are updated, and version numbers can't be
+> reused within a window where things get confused.
+>    
 
-What are the two devices with the same major/minor but a different DEVPATH?
+If the hypervisor does a pvclock->version = somethingelse->version++ 
+then the guest may get confused.  But I understand you have a 
+guest-private ->version?
 
-> It might also be the case that future kernels could set DEVPATH_OLD as
-> suggested.  I don't know the gory details of 8250_pnp though.
+>> It's better to introduce yet a new version for the kernel, and check
+>> both.
+>>      
+> Two version numbers are awkward to read atomically at least on 32-bit.
+> And I don't think its necessary.
+>    
 
-The DEVPATH_OLD is only added when one and the same device was renamed
-or moved, which isn't the case here, I guess?
+No need to read them atomically.
 
-Kay
+cpu1 = vgetcpu()
+hver1 = pvclock[cpu1].hver
+kver1 = pvclock[cpu1].kver
+tsc = rdtsc
+/* multipication magic with pvclock[cpu1]*/
+cpu2 = vgetcpu()
+hver2 = pvclock[cpu2].hver
+kver2 = pvclock[cpu2].kver
+valid = cpu1 == cpu2 && hver1 == hver2 && kver1 == kver2
+
+>> It's sufficient to increment a version counter on thread migration, no
+>> need to do it on context switch.
+>>
+>>      
+> That's true; switch_out is a pessimistic approximation of that.  But is
+> there a convenient hook to test for migration?
+>    
+
+I'd guess not but it's probably easy to add one in the migration thread.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
