@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbZJGRfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933836AbZJGRne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757728AbZJGRfg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 13:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZJGRff
+	id S933836AbZJGRne (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 13:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757175AbZJGRne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 13:35:35 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:60602 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752170AbZJGRff (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 13:35:35 -0400
-Date: Wed, 7 Oct 2009 19:34:58 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.32-rc3: floating-point build failure (undefined reference
-	to `__udivdi3' in menu governor)
-Message-ID: <20091007173457.GA25415@rhlx01.hs-esslingen.de>
-References: <20091007104125.GA1449@rhlx01.hs-esslingen.de> <4ACCA44B.3070706@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ACCA44B.3070706@linux.intel.com>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 7 Oct 2009 13:43:34 -0400
+Received: from mail.perches.com ([173.55.12.10]:1995 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753473AbZJGRnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 13:43:33 -0400
+Subject: Re: [PATCH 1/7] printk: clean up return value
+From: Joe Perches <joe@perches.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4ACCC87C.5090800@tuffmail.co.uk>
+References: <1254904787-11323-1-git-send-email-alan-jenkins@tuffmail.co.uk>
+	 <1254904787-11323-2-git-send-email-alan-jenkins@tuffmail.co.uk>
+	 <alpine.LFD.2.01.0910070828190.3432@localhost.localdomain>
+	 <1254933396.2134.371.camel@Joe-Laptop.home>
+	 <4ACCC87C.5090800@tuffmail.co.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 07 Oct 2009 10:42:56 -0700
+Message-Id: <1254937376.2134.384.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2009-10-07 at 17:57 +0100, Alan Jenkins wrote:
+> Joe Perches wrote:
+> > On Wed, 2009-10-07 at 08:36 -0700, Linus Torvalds wrote:
+> >> On Wed, 7 Oct 2009, Alan Jenkins wrote:
+> >>> We could fix this up, but it seems pointless.  Callers don't really care
+> >>> about the extra characters added by printk().  Instead, let's return the
+> >>> length of the original message as formatted (and possibly truncated)
+> >>> by vscnprintf().
+> >> Or we could just change it to 'void'. As Joe Perches says, nobody really 
+> >> cares deeply enough for this to generally even matter.
+> > Here are changes to make printk/vprintk return void
+> > to the only uses I found:
+> >  arch/arm/mach-iop13xx/pci.c   |    2 +-
+> >  arch/arm/mach-iop13xx/setup.c |    2 +-
+> >  drivers/char/mem.c            |    6 ++----
+> >  drivers/md/md.c               |    3 +--
+> >  drivers/md/raid5.c            |    3 ++-
+> >  drivers/net/e100.c            |    9 +++++----
+> >  include/linux/kernel.h        |   16 ++++++++--------
+> >  include/net/sctp/sctp.h       |    6 +++---
+> >  kernel/lockdep.c              |    4 ++--
+> >  kernel/printk.c               |   10 +++-------
+> >  net/sunrpc/svc.c              |    9 +++------
+> >  11 files changed, 31 insertions(+), 39 deletions(-)
+> Ok, you beat me to it.
+> My second patch will depend on this.  Two questions -
+> - May I add it to my series with your Signed-off-by?
 
-On Wed, Oct 07, 2009 at 07:23:07AM -0700, Arjan van de Ven wrote:
-> Andreas Mohr wrote:
->> Hi,
->>
->> didn't find any report about this, so...
->>
->>   LD      .tmp_vmlinux1
->> drivers/built-in.o(.text+0xd85a1): In function `menu_select':
->> drivers/cpuidle/governors/menu.c:212: undefined reference to `__udivdi3'
->> make: *** [.tmp_vmlinux1] Error 1
->>
->> # gcc -v
->> Reading specs from /usr/lib/gcc-lib/i386-redhat-linux/3.2.3/specs
->> Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --enable-shared --enable-threads=posix --disable-checking --with-system-zlib --enable-__cxa_atexit --host=i386-redhat-linux
->> Thread model: posix
->> gcc version 3.2.3 20030502 (Red Hat Linux 3.2.3-49)
->
-> seems you're the only user of this left.
+Hi Alan.
 
-Oh my...
+Sure.  I suggest you verify it first though.
 
-> it's not floating point but a 64 bit division.
-> The only one I can imagine is the one on line 213
->
-> looking at it, can you try sticking (u32) at the end of line 212; that multiply is not very likely to exceed 32 bits
+Signed-off-by: Joe Perches <joe@perches.com>
 
-Nopeee.
+> May I split it up, so I can CC individual maintainers with the
+> relevant portions?
 
-        data->predicted_us = DIV_ROUND_CLOSEST((u32)
-                data->expected_us * data->correction_factor[data->bucket],
-                (u32)RESOLUTION * DECAY);
+Please.  Thanks.  Joe
 
-It did properly rebuild drivers/cpuidle/governors/menu.o.
-Still happening.
-IOW it must be somewhere inside the DIV_ROUND_CLOSEST macro or so.
-
-Andreas Mohr
