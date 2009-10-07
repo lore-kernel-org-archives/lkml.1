@@ -1,112 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933844AbZJGQTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbZJGQZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933844AbZJGQTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 12:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759485AbZJGQTl
+	id S1759546AbZJGQZt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 12:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbZJGQZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 12:19:41 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:4612 "EHLO
-	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759461AbZJGQTk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 12:19:40 -0400
-X-SpamScore: -34
-X-BigFish: VPS-34(zz542N1432R98dN4015L9371Pzz1202hzzz2dh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Wed, 7 Oct 2009 12:25:49 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:45606 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759320AbZJGQZs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 12:25:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=yAe+dG4E/wqIysN0DvCA959IFajx0tKeI9qilhbfqBksxwnzGHscie2DjRRvNc4hk5
+         K2rN6ZMOoAaTfaktLpTqW5yjEZK21Lox3fVCGU1fhbIc3CR3BnSFttugOr901DPsSKVm
+         JXipslLXDYHtoK+EQLXiUrxEsMcOl3cqoegnM=
+Message-ID: <4ACCC0E3.8050404@tuffmail.co.uk>
+Date: Wed, 07 Oct 2009 17:25:07 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Xilinx SYSACE driver and 8-bit attachment
-Date: Wed, 7 Oct 2009 09:18:40 -0700
-In-Reply-To: <fa686aa40910070752k1b954a32v1ae6a2e5a089fc5e@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Xilinx SYSACE driver and 8-bit attachment
-Thread-Index: AcpHXeJC9zSr90w5QgK5RFl0wxcnUgACw3kg
-References: <1d3f23370910070013u6307bc42hf7ab243b52d007df@mail.gmail.com> <fa686aa40910070634r4a8dcf74qdcbfb3bde3413109@mail.gmail.com> <192797ad-5dd4-4ebe-8db3-d381bb949e1e@VA3EHSMHS029.ehs.local> <fa686aa40910070752k1b954a32v1ae6a2e5a089fc5e@mail.gmail.com>
-From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>, "John Linn" <linnj@xilinx.com>
-CC: "David DeBonis" <ddeboni@xilinx.com>,
-       "devicetree-discuss" <devicetree-discuss@lists.ozlabs.org>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "Michal Simek" <michal.simek@petalogix.com>,
-       "John Linn" <linnj@xilinx.com>,
-       "John Williams" <john.williams@petalogix.com>
-X-OriginalArrivalTime: 07 Oct 2009 16:18:49.0076 (UTC) FILETIME=[DA295340:01CA4769]
-Message-ID: <51ada07b-493e-4552-b79b-7a4044ae1b4c@VA3EHSMHS028.ehs.local>
-X-Reverse-DNS: unknown-60-83.xilinx.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] printk: clean up return value
+References: <1254904787-11323-1-git-send-email-alan-jenkins@tuffmail.co.uk> <1254904787-11323-2-git-send-email-alan-jenkins@tuffmail.co.uk> <alpine.LFD.2.01.0910070828190.3432@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0910070828190.3432@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> Hmm. I kind of agree with this, but at the same time I suspect that no 
+> caller should ever care about the loglevel characters (since they won't be 
+> _shown_), so your change still doesn't make it return a sensible value.
+>
+> So I get the feeling that you should also add a
+>
+> 	message_len -= 3;
+>
+> to the case where we peel off the "<.>" loglevel part at the head of the 
+> string. No?
+>   
 
+The value is only really sensible for partial printk()s... except that
+they're supposed to be prefixed with KERN_CONT.  So yes, good point.
 
-> -----Original Message-----
-> From: devicetree-discuss-bounces+stephen.neuendorffer=xilinx.com@lists.ozlabs.org [mailto:devicetree-
-> discuss-bounces+stephen.neuendorffer=xilinx.com@lists.ozlabs.org] On Behalf Of Grant Likely
-> Sent: Wednesday, October 07, 2009 7:53 AM
-> To: John Linn
-> Cc: David DeBonis; Stephen Neuendorffer; devicetree-discuss; Linux Kernel list; Michal Simek; John
-> Linn; John Williams
-> Subject: Re: Xilinx SYSACE driver and 8-bit attachment
-> 
-> On Wed, Oct 7, 2009 at 8:42 AM, John Linn <John.Linn@xilinx.com> wrote:
-> >> -----Original Message-----
-> >> From: John Linn
-> >> Sent: Wednesday, October 07, 2009 8:24 AM
-> >> To: 'Grant Likely'; John Williams
-> >> Cc: Linux Kernel list; Michal Simek; David DeBonis; Stephen Neuendorffer; devicetree-discuss
-> >> Subject: RE: Xilinx SYSACE driver and 8-bit attachment
-> >>
-> >> I'll look to see if something has changed.  It's not clear to me if it has ever been right.
-> >>
-> >> It look like we normally use 16 bit mode as that's how BSB generates the system by default.
-> >>
-> >> Thanks,
-> >> John
-> >>
-> >> > -----Original Message-----
-> >> > From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On Behalf Of Grant Likely
-> >> > Sent: Wednesday, October 07, 2009 7:35 AM
-> >> > To: John Williams
-> >> > Cc: Linux Kernel list; Michal Simek; John Linn; David DeBonis; Stephen Neuendorffer; devicetree-
-> >> > discuss
-> >> > Subject: Re: Xilinx SYSACE driver and 8-bit attachment
-> >> >
-> >> > [Added devicetree-discuss to cc: list]
-> >> >
-> >> > On Wed, Oct 7, 2009 at 1:13 AM, John Williams
-> >> > <john.williams@petalogix.com> wrote:
-> >> > > Hi Grant (it's your driver :) and David D ( and your DTS generator :)
-> >> > [...]
-> >> > > if (of_find_property(op->node, "8-bit", NULL))
-> >> > [...]
-> >> > > doesn't match the properties generated by Xilinx's device tree generator:
-> >> > [...]
-> >> > >                         xlnx,mem-width = <0x8>;
-> >
-> > Do you know if the 8 bit mode was ever tested with the "8-bit" property in the tree?
-> >
-> > I don't see anything in the device tree generator history to say we ever did that "8-bit", but
-> maybe I'm missing something.
-> >
-> > We are just generating the parameters from the h/w and the memory width is it.  We can always put
-> something in there special, but it seems silly if it was never used anyway.
-> 
-> Don't forget that Virtex and Microblaze are not the only users of this
-> driver.   There is a AMCC 440 board which uses the sysace as a CF
-> adapter.  8-bit was definitely tested and is in use.
+> Or we could just change it to 'void'. As Joe Perches says, nobody really 
+> cares deeply enough for this to generally even matter.
+>   
 
-In this case, I'm pretty sure this tag was never automatically generated by the DTS generator.
-Personally, I think it's bad practice to always assume that the device tree generator should be modified to match what a Linux driver is expecting, however given the precedence in this case,
-I agree that it might be reasonable to put a special case in to generate this.
+That involves more work, which explains why I shied away from it :-). 
+Ok, I'll do it.
 
-Steve
- 
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-
-
+Alan
