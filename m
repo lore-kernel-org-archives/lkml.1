@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZJGVco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZJGVeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754088AbZJGVco (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 17:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbZJGVco
+	id S1754116AbZJGVeu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 17:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbZJGVeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 17:32:44 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:37309 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753468AbZJGVcn (ORCPT
+	Wed, 7 Oct 2009 17:34:50 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:40480 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753518AbZJGVet (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 17:32:43 -0400
+	Wed, 7 Oct 2009 17:34:49 -0400
+Date: Wed, 7 Oct 2009 17:34:12 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
+In-Reply-To: <20091007220252.5b672399@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0910071720440.4512-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <20091007211916.GA4217@kroah.com>
-References: <f3f71ab90910071414n482eca2dm18108c79ee08028d@mail.gmail.com> 
-	<20091007211916.GA4217@kroah.com>
-From: Mike Lothian <mike@fireburn.co.uk>
-Date: Wed, 7 Oct 2009 22:31:44 +0100
-Message-ID: <f3f71ab90910071431g524fa807ib67f5fcfef7c70d1@mail.gmail.com>
-Subject: Re: Samsung Backlight Patch
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Matthias Hopf <mhopf@suse.de>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/10/7 Greg KH <greg@kroah.com>:
-> On Wed, Oct 07, 2009 at 10:14:37PM +0100, Mike Lothian wrote:
->> Hi
->>
->> I was hoping the following patch could be included in 2.6.32 so it
->> would hopefully end up in the next round of distros
->>
->> It adds backlight support for some Samsung laptops
->
-> You seem to have lost the original authorship of this patch, and not
-> included your signed-off-by for it.
->
-> Which means it can't be applied :(
->
-> thanks,
->
-> greg k-h
->
+On Wed, 7 Oct 2009, Alan Cox wrote:
 
-It definitely has +MODULE_AUTHOR("Greg Kroah-Hartman
-<gregkh@suse.de>"); at the bottom
+> On Wed, 7 Oct 2009 22:56:20 +0200
+> Oliver Neukum <oliver@neukum.org> wrote:
+> 
+> > Am Mittwoch, 7. Oktober 2009 20:52:21 schrieb Alan Stern:
+> > > However in the option and sierra drivers there is a perverse path from
+> > > close to resume: Both their close methods call
+> > > usb_autopm_get_interface().  This could be removed without much
+> > > trouble; perhaps we should do so.
+> > 
+> > I am afraid this won't do in the long run. Some drivers will want to
+> > shut down devices by communicating with them in close().
+> 
+> drivers/serial will need a power management hook to use
+> tty_port_{open/close} so perhaps that can be covered for both. In the
+> serial case it needs to kick stuff out of PCI D3 mostly and could
+> probably be fudged but if USB needs it perhaps it should be explicit.
 
-I certainly wasn't trying to steal credit for your work
+I'm losing track of the original point of this thread.  IIRC, the 
+problem is how the resume method should know whether or not to submit 
+the receive URB(s).  It can't afford to acquire the port mutex because 
+it might be called by open or close, at which time the mutex is already 
+held.
 
-Who should sign it off?
+Other schemes could work, but to me it seems simplest to rely on a flag
+protected by a spinlock.  The flag would mean "URBs are supposed to be
+queued unless we are suspended".  It would be set by open and 
+unthrottle, and cleared by close and throttle.
 
-I think there's a few other models that can be added to this patch too
+Alan Stern
 
-Regards
-
-Mike
