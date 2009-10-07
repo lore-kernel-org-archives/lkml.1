@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934238AbZJGRsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759534AbZJGRqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934238AbZJGRsV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 13:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757979AbZJGRsU
+	id S1759534AbZJGRqP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 13:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757802AbZJGRqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 13:48:20 -0400
-Received: from mail.lang.hm ([64.81.33.126]:55439 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757766AbZJGRsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 13:48:19 -0400
-Date: Wed, 7 Oct 2009 10:44:11 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Mike Galbraith <efault@gmx.de>
-cc: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Airlie <airlied@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32-rc3
-In-Reply-To: <1254927134.7121.36.camel@marge.simson.net>
-Message-ID: <alpine.DEB.2.00.0910071040560.11706@asgard.lang.hm>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>  <alpine.LFD.2.00.0910052140100.309@localhost.localdomain>  <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>  <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> 
- <1254864803.6035.25.camel@pasglop>  <alpine.LFD.2.01.0910061513510.3432@localhost.localdomain>  <21d7e9970910061822i429344amb47b0bceb552abc6@mail.gmail.com>  <alpine.LFD.2.01.0910062015200.3432@localhost.localdomain>  <alpine.LFD.2.01.0910062025300.3432@localhost.localdomain>
-  <20091007135233.GK17883@mit.edu> <1254927134.7121.36.camel@marge.simson.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 7 Oct 2009 13:46:14 -0400
+Received: from mga10.intel.com ([192.55.52.92]:17213 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757627AbZJGRqN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 13:46:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,520,1249282800"; 
+   d="scan'208";a="733907945"
+Message-ID: <4ACCD3A6.9000306@linux.intel.com>
+Date: Wed, 07 Oct 2009 10:45:10 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Andreas Mohr <andi@lisas.de>
+CC: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: 2.6.32-rc3: floating-point build failure (undefined reference
+ to `__udivdi3' in menu governor)
+References: <20091007104125.GA1449@rhlx01.hs-esslingen.de> <4ACCA44B.3070706@linux.intel.com> <20091007173457.GA25415@rhlx01.hs-esslingen.de>
+In-Reply-To: <20091007173457.GA25415@rhlx01.hs-esslingen.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Oct 2009, Mike Galbraith wrote:
+Andreas Mohr wrote:
+> Hi,
+>> looking at it, can you try sticking (u32) at the end of line 212; that multiply is not very likely to exceed 32 bits
+> 
+> Nopeee.
+> 
+>         data->predicted_us = DIV_ROUND_CLOSEST((u32)
+>                 data->expected_us * data->correction_factor[data->bucket],
+>                 (u32)RESOLUTION * DECAY);
+> 
+> It did properly rebuild drivers/cpuidle/governors/menu.o.
+> Still happening.
+> IOW it must be somewhere inside the DIV_ROUND_CLOSEST macro or so.
 
-> On Wed, 2009-10-07 at 09:52 -0400, Theodore Tso wrote:
->
->> The one thing that I wish we *could* do is make
->> CONFIG_LOCALVERSION_AUTO mandatory, or at least making it the strong
->> default and forcing people to work to turn it off, since the problem
->> really is with users smart enough to use git, but not quite smart
->> enough to turn on CONFIG_LOCALVERSION_AUTO.
->
-> There are also those who use git, but turn CONFIG_LOCALVERSION_AUTO off
-> for a reason, because it just annoys them with zero gain.
->
-> I don't do -rcX.  I have one tree per installed kernel.  When Linus
-> pulls a release out of the oven, on that day, Makefile becomes rev++ for
-> a new tree and stays that way until he declares the next one baked.  Old
-> tree stays frozen at rev until it becomes .stable.  My repos are always
-> frozen at where the installed kernel is at, so adding an extra version
-> is just a work generating irritant.
->
-> I'd like having git ID embedded in the kernel for idiot proofing, but I
-> don't like it polluting my installs, so I live without it.
-
-as I understand it, if you only use the released kernel then 
-CONFIG_LOCALVERSION_AUTO will make no difference to you.
-
-the kernel string only changes if you use a non-release kernel.
-
-David Lang
-
+it looks like your GCC has a problem dividing by a power of two though;
+both DECAY and RESOLUTION are powers of two...
 
