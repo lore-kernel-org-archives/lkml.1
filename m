@@ -1,98 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933309AbZJGNER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933412AbZJGNC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933309AbZJGNER (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 09:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbZJGNER
+	id S933412AbZJGNC0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 09:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbZJGNCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 09:04:17 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:48514 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933097AbZJGNEP (ORCPT
+	Wed, 7 Oct 2009 09:02:25 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:11452 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933176AbZJGNCY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 09:04:15 -0400
-Date: Wed, 7 Oct 2009 14:03:37 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Cc: Mike Frysinger <vapier@gentoo.org>, Samuel Ortiz <sameo@linux.intel.com>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and
- KeypadInput Device Driver
-Message-ID: <20091007130337.GA18135@rakim.wolfsonmicro.main>
-References: <20091006123658.GA31079@rakim.wolfsonmicro.main>
- <8A42379416420646B9BFAC9682273B6D0E3F4420@limkexm3.ad.analog.com>
- <20091006135836.GA3926@rakim.wolfsonmicro.main>
- <8A42379416420646B9BFAC9682273B6D0E3F46A7@limkexm3.ad.analog.com>
- <20091006144805.GA10987@rakim.wolfsonmicro.main>
- <8A42379416420646B9BFAC9682273B6D0E3F4769@limkexm3.ad.analog.com>
- <20091006160549.GA8881@rakim.wolfsonmicro.main>
- <8A42379416420646B9BFAC9682273B6D0E3F4CEE@limkexm3.ad.analog.com>
- <20091007100638.GB3169@rakim.wolfsonmicro.main>
- <8A42379416420646B9BFAC9682273B6D0E442F71@limkexm3.ad.analog.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8A42379416420646B9BFAC9682273B6D0E442F71@limkexm3.ad.analog.com>
-X-Cookie: I smell a wumpus.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 7 Oct 2009 09:02:24 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
+ management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
+ cpuidle to POWER.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: svaidy@linux.vnet.ibm.com
+Cc: Arjan van de Ven <arjan@infradead.org>, arun@linux.vnet.ibm.com,
+       Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-arch@vger.kernel.org
+In-Reply-To: <20091007112648.GC7646@dirshya.in.ibm.com>
+References: <20091006152421.GA7278@linux.vnet.ibm.com>
+	 <20091006163521.GA10425@linux.vnet.ibm.com>
+	 <1254852279.17055.2.camel@laptop>
+	 <20091007112648.GC7646@dirshya.in.ibm.com>
+Content-Type: text/plain
+Date: Wed, 07 Oct 2009 15:05:11 +0200
+Message-Id: <1254920711.26976.243.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 01:11:40PM +0100, Hennerich, Michael wrote:
+On Wed, 2009-10-07 at 16:56 +0530, Vaidyanathan Srinivasan wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-06 20:04:39]:
+> 
+> > On Tue, 2009-10-06 at 22:05 +0530, Arun R Bharadwaj wrote:
+> > 
+> > > Also, the per-cpu nature of registration/unregistration of cpuidle
+> > > has been maintained as ACPI needs this.
+> > 
+> > Right, so can't we ditch that and have acpi default to the lowest
+> common
+> > C-state and warn when various cpus report different C-states?
+> 
+> Hi Peter,
+> 
+> As Arjan mentioned previously, the per-cpu registration has to stay
+> for x86 for now due to legacy ACPI compatibility.  Breaking that may
+> break lot of existing users and we do not have a clean fallback
+> method.  
 
-> In case I would have done the whole ADP5520 in a single file exposing
-> functionality to the input, backlight, led and gpio infrastructure - I
-> probably wouldn't find a subtree maintainer that is likely to merge this
-> blob.
+>From what I understood some broken ass bioses report different C state
+availability on different CPUs in the same SMP system.
 
-Why do you say this?
+I'm suggesting to work around that by limiting all CPUs to the subset of
+C states reported on all CPUs, instead of the current mess.
 
-> But apart from the GPIO interrupt capabilities - I wouldn't need doing
-> an interrupt controller.
-> I think you agree.
+I haven't heard anybody tell me why that wouldn't be possible on x86
 
-I'm not sure I do, TBH - if there's more than one
-
-> So this notifier chain seemed like a good approach to notifiy the
-> input/keypad/adp5520-keys about some work. BTW - this approach is used
-> by other drivers for exactly the same reason too.
-
-The only ones using the specific approach are da903x and ab3100, both of
-which predate the availability of the genirq improvements.
-
-> Honestly - I'm not yet convinced that this new irq stuff really works in
-> combination with my ADP5520 Low Level IRQ. 
-> My chained_handler (for demux) as well as irq_desc .mask .unmask .ack
-> and .set_type need to also be allowed to invoke sleeping i2c
-> transfers!!!?
-
-You don't need to use chained_handler explicitly.  You can just use a
-regular threaded IRQ handler for the primary IRQ, register an IRQ chip
-for the IRQs it provides then call handle_nested_irq() from within the
-primary IRQ handler.  The chaining is only needed if running in hard
-IRQ context.
-
-The bus_lock stuff is there so that mask, unmask and ack don't need to
-do I2C interactions.  The idea is that you update local variables in
-those and then when sync_unlock() is called you write out all the
-changes to the device.  The framework is set up to cope with this.
-
-> I should do following: (unfortunately this is all on the bleeding edge
-> of technology, with no example driver actually using this craft)
-
-I have a patch for wm831x which does the switchover to the new model - I
-hope to be able to publish it very soon, I did some blind changes that I
-need to test.  I'll include you in the CCs when I post it.
-
-> >I think I forgot to mention it previously but there's some work on >
->getting a standard ALS interface in the kernel too.  I'd really expect
-> >the GPIOs to end up being used as GPIOs in some designs as well.
-
-> This is really interesting. Do you know where this discussion
-currently > takes place, and who is taking the lead (came up with a
-proposal)?
-
-Not precisely, though there's an active thread 'New home for DS1682
-driver' on the I2C list with some mutterings about it - it should at
-least give some pointers for further archive trawling.
