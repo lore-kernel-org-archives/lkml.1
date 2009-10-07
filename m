@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759641AbZJGRVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbZJGRXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759641AbZJGRVJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 13:21:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759626AbZJGRVI
+	id S1759636AbZJGRXI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 13:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759613AbZJGRXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 13:21:08 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:46404 "EHLO
-	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759624AbZJGRVH (ORCPT
+	Wed, 7 Oct 2009 13:23:07 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:48849 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753702AbZJGRXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 13:21:07 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4ACCCDE7.1090508@gmail.com>
-Date: Wed, 07 Oct 2009 18:20:39 +0100
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091007)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-CC: Samu Onkalo <samu.p.onkalo@nokia.com>, linux-kernel@vger.kernel.org,
-       LM Sensors <lm-sensors@lm-sensors.org>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 0/2] LIS3LV02D I2C driver
-References: <1254391591-9696-1-git-send-email-samu.p.onkalo@nokia.com> <4ACCC273.1030308@gmail.com> <4ACCC957.3060802@tremplin-utc.net>
-In-Reply-To: <4ACCC957.3060802@tremplin-utc.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Wed, 7 Oct 2009 13:23:06 -0400
+Date: Wed, 7 Oct 2009 10:21:53 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, drbd-dev@lists.linbit.com
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       jens.axboe@oracle.com
+Subject: [PATCH -next] drbd: needs __ratelimit()
+Message-Id: <20091007102153.1a19119b.randy.dunlap@oracle.com>
+In-Reply-To: <20091007173517.abfcfa2a.sfr@canb.auug.org.au>
+References: <20091007173517.abfcfa2a.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4ACCCE4A.0005:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Éric Piel wrote:
-> Op 07-10-09 18:31, Jonathan Cameron schreef:
->   
->> Just a quick heads up wrt overlapping work.
->>
->> For the i2c support Kalhan Trisal has been posting patches for i2c
->> support for this
->> driver to the lm-sensors list for some time and the latest version of that
->> set is also pretty clean.
->>     
-> You mean this post, right?
-> http://lists.lm-sensors.org/pipermail/lm-sensors/2009-August/026505.html
-> "Accelerometer driver for STMicroeletronics-LIS331DL-three-axis-digital"
-> Thanks for the heads up, I had never heard of this driver before.
->   
-I think that was the original post. (sorry should have added references!)
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> Well, it's for the LIS331DL, not the LIS3LV02DL (12 bits) or the
-> LIS302DL (8 bits) (both supported by lis3lv02d driver). That said,
-> according to the specs, it seems to be _very_ similar to the LIS302DL,
-> they even report the same "who_am_i" value. Just some special features
-> are different (free fall detection for instance).
->   
-Yes, that's why he was advised to combine it with your driver leading
-via about 3 revisions
-to
-http://lists.lm-sensors.org/pipermail/lm-sensors/2009-October/026840.html
-(removed a few pointless headers from previous version
-http://lists.lm-sensors.org/pipermail/lm-sensors/2009-September/026706.html
-.)
+drbd_int.h uses __ratelimit(), so it needs to #include ratelimit.h:
 
+drivers/block/drbd/drbd_int.h:1765: error: implicit declaration of function '__ratelimit'
 
-which at first glance is pretty much the same as Samu's driver.
-(hence real issue with overlapping work).
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: drbd-dev@lists.linbit.com
+---
+ drivers/block/drbd/drbd_int.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-I do wonder if it is worth adding a mailing list entry to the driver
-MAINTAINERS
-entry (unless lm-sensors is where you do want anything relevant to be
-discussed?).
-Problem here is this evolved in a thread not initially related to your
-driver and hence I guess no one noticed you weren't cc'd when it became
-relevant.
-
-Jonathan
-
-p.s. Kalhan, btw, just noticed a typo in the patch message :
-Macroelectronics->Microelectronics.
+--- linux-next-20091007.orig/drivers/block/drbd/drbd_int.h
++++ linux-next-20091007/drivers/block/drbd/drbd_int.h
+@@ -34,6 +34,7 @@
+ #include <linux/bitops.h>
+ #include <linux/slab.h>
+ #include <linux/crypto.h>
++#include <linux/ratelimit.h>
+ #include <linux/tcp.h>
+ #include <linux/mutex.h>
+ #include <linux/major.h>
