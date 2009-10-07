@@ -1,97 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZJGLIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbZJGLHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbZJGLIN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 07:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZJGLIM
+	id S1757548AbZJGLHE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 07:07:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZJGLHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 07:08:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37507 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751094AbZJGLIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 07:08:10 -0400
-Date: Wed, 7 Oct 2009 11:06:45 GMT
-From: tip-bot for Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       greg@kroah.com, venkatesh.pallipadi@intel.com, riel@redhat.com,
-       steven@uplinklabs.net, ext-eero.nurkkala@nokia.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, greg@kroah.com, riel@redhat.com,
-       steven@uplinklabs.net, ext-eero.nurkkala@nokia.com, tglx@linutronix.de
-In-Reply-To: <1254907901.30157.93.camel@eenurkka-desktop>
-References: <1254907901.30157.93.camel@eenurkka-desktop>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/urgent] NOHZ: update idle state also when NOHZ is inactive
-Message-ID: <tip-fdc6f192e7e1ae80565af23cc33dc88e3dcdf184@git.kernel.org>
-Git-Commit-ID: fdc6f192e7e1ae80565af23cc33dc88e3dcdf184
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 07 Oct 2009 11:06:45 +0000 (UTC)
+	Wed, 7 Oct 2009 07:07:03 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44524
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753856AbZJGLHB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 07:07:01 -0400
+Date: Wed, 07 Oct 2009 04:06:56 -0700 (PDT)
+Message-Id: <20091007.040656.62828073.davem@davemloft.net>
+To: david@fries.net
+Cc: bzolnier@gmail.com, torvalds@linux-foundation.org, joao.ramos@inov.pt,
+       d.stussy@yahoo.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] two ide fixes for -rc4
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091007033005.GE21612@spacedout.fries.net>
+References: <alpine.LFD.2.01.0910061534040.3432@localhost.localdomain>
+	<200910070246.05283.bzolnier@gmail.com>
+	<20091007033005.GE21612@spacedout.fries.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fdc6f192e7e1ae80565af23cc33dc88e3dcdf184
-Gitweb:     http://git.kernel.org/tip/fdc6f192e7e1ae80565af23cc33dc88e3dcdf184
-Author:     Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-AuthorDate: Wed, 7 Oct 2009 11:54:26 +0300
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Wed, 7 Oct 2009 13:05:05 +0200
+From: David Fries <david@fries.net>
+Date: Tue, 6 Oct 2009 22:30:06 -0500
 
-NOHZ: update idle state also when NOHZ is inactive
+> On Wed, Oct 07, 2009 at 02:46:05AM +0200, Bartlomiej Zolnierkiewicz wrote:
+>> The corrected version below, David please try it instead:
+>> 
+>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>> Subject: [PATCH take 2] sis5513: fix PIO setup for ATAPI devices
+> 
+> 2.6.31 plus this patch fixed the hang on IDE initialization with the
+> SIS5513.
+> 
+> That's with my testing mode, I'm rebuilding a kernel and will try some
+> benchmarks tomorrow.  I've been testing by hibernating to disk,
+> booting the test kernel with a bad root and resume partition (so if it
+> worked it wouldn't modify the suspended image), then rebooting to
+> resume from disk with the good kernel.  That let me more quickly
+> bisect and test kernels, I just haven't ran this kernel much past the
+> initialization is all.
 
-Commit f2e21c9610991e95621a81407cdbab881226419b had unfortunate side
-effects with cpufreq governors on some systems.
-
-If the system did not switch into NOHZ mode ts->inidle is not set when
-tick_nohz_stop_sched_tick() is called from the idle routine. Therefor
-all subsequent calls from irq_exit() to tick_nohz_stop_sched_tick()
-fail to call tick_nohz_start_idle(). This results in bogus idle
-accounting information which is passed to cpufreq governors.
-
-Set the inidle flag unconditionally of the NOHZ active state to keep
-the idle time accounting correct in any case.
-
-[ tglx: Added comment and tweaked the changelog ]
-
-Reported-by: Steven Noonan <steven@uplinklabs.net>
-Signed-off-by: Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Greg KH <greg@kroah.com>
-Cc: Steven Noonan <steven@uplinklabs.net>
-Cc: stable@kernel.org
-LKML-Reference: <1254907901.30157.93.camel@eenurkka-desktop>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/time/tick-sched.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index e0f59a2..89aed59 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -231,6 +231,13 @@ void tick_nohz_stop_sched_tick(int inidle)
- 	if (!inidle && !ts->inidle)
- 		goto end;
- 
-+	/*
-+	 * Set ts->inidle unconditionally. Even if the system did not
-+	 * switch to NOHZ mode the cpu frequency governers rely on the
-+	 * update of the idle time accounting in tick_nohz_start_idle().
-+	 */
-+	ts->inidle = 1;
-+
- 	now = tick_nohz_start_idle(ts);
- 
- 	/*
-@@ -248,8 +255,6 @@ void tick_nohz_stop_sched_tick(int inidle)
- 	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
- 		goto end;
- 
--	ts->inidle = 1;
--
- 	if (need_resched())
- 		goto end;
- 
+All applied, thanks everyone.
