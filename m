@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbZJGV4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZJGVxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbZJGV4F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 17:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZJGV4E
+	id S1754560AbZJGVxa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 17:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZJGVx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 17:56:04 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:58683 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbZJGV4D (ORCPT
+	Wed, 7 Oct 2009 17:53:29 -0400
+Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:50855
+	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754414AbZJGVx3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 17:56:03 -0400
-Message-ID: <4ACD0DA9.2090707@nortel.com>
-Date: Wed, 07 Oct 2009 15:52:41 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 7 Oct 2009 17:53:29 -0400
+Date: Wed, 7 Oct 2009 23:52:48 +0200
+From: Michael Guntsche <mike@it-loops.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-hotplug <linux-hotplug@vger.kernel.org>
+Subject: Re: [BUG] No ttyS0 - Strange udev 8250_pnp interaction
+Message-ID: <20091007215247.GA730@trillian.comsick.at>
+References: <20091007175403.GA335@trillian.comsick.at>
+ <9b2b86520910071246r393f2afvacaa4d8f544508a8@mail.gmail.com>
+ <ac3eb2510910071306r4ad6dc9btb7503bc3ab0ec815@mail.gmail.com>
+ <ac3eb2510910071312qe6ad45ep6c579a8393cc6b8e@mail.gmail.com>
+ <20091007203121.GA432@trillian.comsick.at>
+ <ac3eb2510910071353v3bbe5bc7lc41e184fbc1ff7ed@mail.gmail.com>
+ <1254950602.2307.1.camel@yio.site>
 MIME-Version: 1.0
-To: Niels Roest <niels@directfb.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: DirectFB "Fusion" module inclusion?
-References: <4ACC917D.3090302@directfb.org>
-In-Reply-To: <4ACC917D.3090302@directfb.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Oct 2009 21:54:59.0638 (UTC) FILETIME=[D0C0D560:01CA4798]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1254950602.2307.1.camel@yio.site>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/07/2009 07:02 AM, Niels Roest wrote:
-> Hi all.
+On 2009.10.07 23:23:22 , Kay Sievers wrote:
+> Michael, you mentioned trying the udev git version. Any chance to check
+> if that fixes it?
 > 
-> This is to request some comments about our interest to have our "Fusion" 
-> kernel module included in the kernel.
-> I hope you will let me now if it is feasible, desirable, etcetera.
+> Thanks,
+> Kay
+> 
+<snip>
 
-My initial reaction is that aside from everything else the naming is
-unfortunate since there is already a "Fusion" device driver, controlled
-by the CONFIG_FUSION config option.
+I applied it to current git and gave it a quick spin with.
 
-Adding a new CONFIG_FUSION_DEVICE for something totally different seems
-ripe for confusion.
+rmmod 8250_pnp;sleep 1;ls -la /dev/ttyS*;modprobe 8250_pnp;sleep 1;ls
+-la /dev/ttyS*
 
-Chris
+I was not able to reproduce the problem even after 30 runs.
+I will let it run some more just to be sure but so far it looks good.
+
+Michael
