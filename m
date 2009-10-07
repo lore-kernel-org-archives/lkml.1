@@ -1,49 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbZJGUxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbZJGUxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759978AbZJGUxJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758180AbZJGUxI
+	id S1760042AbZJGUxZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760016AbZJGUxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:53:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53851 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756706AbZJGUxH (ORCPT
+	Wed, 7 Oct 2009 16:53:25 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:38406 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760012AbZJGUxY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:53:07 -0400
-Date: Wed, 7 Oct 2009 13:51:07 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andi Kleen <andi@firstfloor.org>
-cc: Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [rfc][patch] store-free path walking
-In-Reply-To: <87eipfymcv.fsf@basil.nowhere.org>
-Message-ID: <alpine.LFD.2.01.0910071349190.3432@localhost.localdomain>
-References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain>
- <alpine.LFD.2.01.0910070911080.3432@localhost.localdomain> <20091007164622.GX30316@wotan.suse.de> <alpine.LFD.2.01.0910071222230.3432@localhost.localdomain> <87eipfymcv.fsf@basil.nowhere.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 7 Oct 2009 16:53:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=aeMxP9g05H1HvBhvN4WgYKG2601Xc3zmjn83FR1IcH8USyVoRplybRUqKvj+zn6gQw
+         hqbAj/78fJtOkvPlT/xpcH4pxAQeM4sFR/WPSAGj2lWmGdHEDA3N4qj1Eqq8qzyCpGvy
+         zrvD/pmiZbPVFPuxPlp2Ztd9m+9oCDzaVJn6M=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 7 Oct 2009 13:52:47 -0700
+Message-ID: <296622aa0910071352v16ba4302y2c5ae50f51924026@mail.gmail.com>
+Subject: Linux autobuild Makefile to assist in autobuilding the kernel (eg. 
+	via a cronjob)
+From: Joe moo <starquestnerd@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I hope you like it you can look at it and fork it here:
+http://gist.github.com/204431
 
-
-On Wed, 7 Oct 2009, Andi Kleen wrote:
-> 
-> With some strategic prefetches it might be cheap enough to use 
-> two cache lines. Just fetch it with the other.
-
-I _seriously_ doubt that.
-
-This is one of the biggest (and hottest) hash tables in the whole kernel.
-
-No amount of prefetching will help the fact that you effectively double 
-your cache footprint / working set if you have to fetch two cachelines in 
-the hot case lookup rather than one.
-
-			Linus
+Basically it automates a lot of things and it ONLY wraps around the
+current Makefile to avoid reinventing the wheel. It runs git pull to
+update and (by default) builds an x86 system configured with
+allmodconfig! I acctually wrote this a few months ago...
