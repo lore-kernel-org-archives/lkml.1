@@ -1,100 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759442AbZJGPxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934228AbZJGPw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759442AbZJGPxv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZJGPxv
+	id S934228AbZJGPw2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934200AbZJGPw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:53:51 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:8580 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbZJGPxu (ORCPT
+	Wed, 7 Oct 2009 11:52:27 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38835 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934195AbZJGPwZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:53:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=sUzX+0YirmoFUCc3KDAr4mINreL+jwCVRKa5pQq4HzlQoYiq2BcqCFDueX2nPX47n4
-         qjJmVtpIMEA0mNOSz1h1LqkKn2+4jv7as+FQSclk8mZWIOFdg7VEQ2ZKl5AN/1LdVuFO
-         qxKSdq+HUPkfLUpJe/t/KFUzWYCsZk/o7037A=
-Message-ID: <4ACCB934.7070805@gmail.com>
-Date: Wed, 07 Oct 2009 08:52:20 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
-MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: system gets stuck in a lock during boot
-References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>	 <20091002211211.GA2633@redhat.com>	 <1254792249.13160.213.camel@gandalf.stny.rr.com>	 <20091006203225.GC2631@redhat.com>	 <1254880921.1696.112.camel@gandalf.stny.rr.com>	 <4ACC001D.4050105@gmail.com>	 <1254920429.1696.127.camel@gandalf.stny.rr.com>	 <4ACCAB54.4010408@gmail.com> <1254928298.1696.166.camel@gandalf.stny.rr.com>
-In-Reply-To: <1254928298.1696.166.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 7 Oct 2009 11:52:25 -0400
+Date: Wed, 7 Oct 2009 16:52:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Andy Whitcroft <apw@canonical.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
+Message-ID: <20091007165250.30d8c996@lxorguk.ukuu.org.uk>
+In-Reply-To: <1254930068.18167.304.camel@desktop>
+References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
+	<1253585691-10987-2-git-send-email-dwalker@fifo99.com>
+	<1253585691-10987-3-git-send-email-dwalker@fifo99.com>
+	<4AB86ED1.1040200@cn.fujitsu.com>
+	<20090930152708.GD2957@shadowen.org>
+	<1254406711.18167.88.camel@desktop>
+	<m33a5ww8kn.fsf@intrepid.localdomain>
+	<1254887534.18167.253.camel@desktop>
+	<m3hbubv779.fsf@intrepid.localdomain>
+	<1254925617.18167.262.camel@desktop>
+	<m3skdvtgas.fsf@intrepid.localdomain>
+	<1254927438.18167.275.camel@desktop>
+	<20091007161107.72b4031b@lxorguk.ukuu.org.uk>
+	<1254930068.18167.304.camel@desktop>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Wed, 2009-10-07 at 07:53 -0700, Justin P. Mattock wrote:
->    
->> Steven Rostedt wrote:
->>      
->>> On Tue, 2009-10-06 at 19:42 -0700, Justin P. Mattock wrote:
->>>
->>>
->>>        
->>>>>
->>>>>            
->>>> o.k. applied your patch, but unfortunantly
->>>> I still am hitting this kernel panic.
->>>>
->>>> must admit I have no idea why this is doing this.
->>>> (but am willing to sit through this, because eventually
->>>> sooner or later will hit this if I update gcc).
->>>>
->>>>          
->>> But the panic you showed was that it could not find an init to execute.
->>> Which looks like a setup issue and not a kernel bug.
->>>
->>> -- Steve
->>>
->>>
->>>
->>>
->>>        
->> That's whats getting me, i.g. if I compile
->> sysvinit normally without adding an SELinux patch
->> the system boots, as soon as I compile sysvinit with
->> SELinux support to load the policy, bam... I hit this.
->>
->> I can send a post to SELinux and see what they think,
->> and the go from there.
->>      
->
-> Oh! It's an SELinux thing. It probably prevents you from executing
-> init ;-)
->
-> -- Steve
->
->
->
->    
-What I think is happening is while building
-sysvinit with the SELinux patch, sysvinit is looking
-in /lib for libselinux(but could be wrong) but libselinux is in
-/lib64.
-(here's my excuse as a newbie:)
-  part of a pain when building an x86_64 multilib is building
-everything to point to lib64(pure64 with the soft link
-lib64 -> lib makes life so much easier).
+On Wed, 07 Oct 2009 08:41:08 -0700
+Daniel Walker <dwalker@fifo99.com> wrote:
 
-I'm going to look at that patch and see how it tells
--lselinux -lsepol to find the libs.
-(if this is the case then I must admit I am a real
-newbie, and apologize for the confusion).
+> On Wed, 2009-10-07 at 16:11 +0100, Alan Cox wrote:
+> > > Right it's a tool .. However, you should use it and you should follow
+> > > it. If for some reason you disagree with the tool you have to give at
+> > > least an arguable reason why, not just "It's a guide", "I don't like the
+> > > coding style." etc..
+> > 
+> > Those are perfectly good reasons.
+> 
+> I don't think they are.. Like adding spaces for tabs is ok cause
+> checkpatch is a guide right?
 
-Justin P. Mattock
+Yes.. if it was such a big deal someone would have updated the git commit
+tools to fix them as we do to strim off trailing spaces.
 
-
+They have *zero* impact on performance, maintainability or readability
+providing they don't mess up the indentation - and the kernel is full of
+them.
