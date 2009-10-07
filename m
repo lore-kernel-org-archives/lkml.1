@@ -1,116 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbZJGRNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbZJGRQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753988AbZJGRNV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 13:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZJGRNU
+	id S1754340AbZJGRQx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 13:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbZJGRQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 13:13:20 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:35498 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752999AbZJGRNU (ORCPT
+	Wed, 7 Oct 2009 13:16:52 -0400
+Received: from [71.74.56.122] ([71.74.56.122]:37947 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753072AbZJGRQv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 13:13:20 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq0EAB9jzEpMROOX/2dsb2JhbACBUtYRhCoE
-Date: Wed, 7 Oct 2009 13:12:41 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
-Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
-	interrupt disable
-Message-ID: <20091007171241.GA21313@Krystal>
-References: <20091007025440.GB4664@Krystal> <1254906707.26976.225.camel@twins> <20091007124628.GB27363@Krystal> <alpine.DEB.1.10.0910071039520.5671@gentwo.org> <20091007150257.GA8508@Krystal> <alpine.DEB.1.10.0910071102590.9984@gentwo.org> <20091007151940.GA10052@Krystal> <alpine.DEB.1.10.0910071119450.9296@gentwo.org> <20091007154111.GA12351@Krystal> <alpine.DEB.1.10.0910071237430.3467@gentwo.org>
+	Wed, 7 Oct 2009 13:16:51 -0400
+Subject: Re: [PATCH 2/2] tracing - correct module boundaries for
+ ftrace_release
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: jolsa@redhat.com
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <1254934835-363-3-git-send-email-jolsa@redhat.com>
+References: <1254934835-363-1-git-send-email-jolsa@redhat.com>
+	 <1254934835-363-3-git-send-email-jolsa@redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 07 Oct 2009 13:14:03 -0400
+Message-Id: <1254935643.1696.172.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0910071237430.3467@gentwo.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 13:07:40 up 50 days,  3:57,  3 users,  load average: 0.11, 0.15,
-	0.18
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (cl@linux-foundation.org) wrote:
-> On Wed, 7 Oct 2009, Mathieu Desnoyers wrote:
+On Wed, 2009-10-07 at 19:00 +0200, jolsa@redhat.com wrote:
+> When the module is about the unload we release its call records.
+> The ftrace_release function was given wrong values representing
+> the module core boundaries, thus not releasing its call records.
 > 
-> > preempt_check_resched is basically:
-> >
-> > a test TIF_NEED_RESCHED
-> >   if true, call to preempt_schedule
-> 
-> You did not mention the effect of incrementing the preempt counter and
-> the barrier(). Adds an additional cacheline to a very hot OS path.
-> Possibly register effects.
+> Plus making ftrace_release function module specific.
 > 
 
-What you say applies to preempt_enable(). I was describing
-preempt_check_resched above, which involves no compiler barrier nor
-increment whatsoever.
+I'll take this version. Thanks! I'll get this ready for mainline urgent,
+as well as push it off to stable.
 
-By the way, the barrier() you are talking about is in
-preempt_enable_no_resched(), the very primitive you are considering
-using to save these precious cycles.
+-- Steve
 
-
-> > I really don't see what's bothering you here. Testing a thread flag is
-> > incredibly cheap. That's what is typically added to your fast path.
+> wbr,
+> jirka
 > 
-> I am trying to get rid off all unnecessary overhead. These "incredible
-> cheap" tricks en masse have caused lots of regressions. And the allocator
-> hotpaths are overloaded with these "incredibly cheap" checks alreayd.
 > 
-> > So, correct behavior would be:
-> >
-> > preempt disable()
-> > fast path attempt
-> >   if (fast path already taken) {
-> >     local_irq_save();
-> >     slow path.
-> >     local_irq_restore();
-> >   }
-> > preempt_enable()
+> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+> ---
+>  include/linux/ftrace.h |    2 +-
+>  kernel/trace/ftrace.c  |   12 ++++--------
+>  2 files changed, 5 insertions(+), 9 deletions(-)
 > 
-> Ok. If you have to use preempt then you have to suffer I guess..
-> 
+> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> index cd3d2ab..0b4f97d 100644
+> --- a/include/linux/ftrace.h
+> +++ b/include/linux/ftrace.h
+> @@ -241,7 +241,7 @@ extern void ftrace_enable_daemon(void);
+>  # define ftrace_set_filter(buf, len, reset)	do { } while (0)
+>  # define ftrace_disable_daemon()		do { } while (0)
+>  # define ftrace_enable_daemon()			do { } while (0)
+> -static inline void ftrace_release(void *start, unsigned long size) { }
+> +static inline void ftrace_release_mod(struct module *mod) {}
+>  static inline int register_ftrace_command(struct ftrace_func_command *cmd)
+>  {
+>  	return -EINVAL;
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 9a72853..559e552 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -2608,19 +2608,17 @@ static int ftrace_convert_nops(struct module *mod,
+>  }
+>  
+>  #ifdef CONFIG_MODULES
+> -void ftrace_release(void *start, void *end)
+> +void ftrace_release_mod(struct module *mod)
+>  {
+>  	struct dyn_ftrace *rec;
+>  	struct ftrace_page *pg;
+> -	unsigned long s = (unsigned long)start;
+> -	unsigned long e = (unsigned long)end;
+>  
+> -	if (ftrace_disabled || !start || start == end)
+> +	if (ftrace_disabled)
+>  		return;
+>  
+>  	mutex_lock(&ftrace_lock);
+>  	do_for_each_ftrace_rec(pg, rec) {
+> -		if ((rec->ip >= s) && (rec->ip < e)) {
+> +		if (within_module_core(rec->ip, mod)) {
+>  			/*
+>  			 * rec->ip is changed in ftrace_free_rec()
+>  			 * It should not between s and e if record was freed.
+> @@ -2652,9 +2650,7 @@ static int ftrace_module_notify(struct notifier_block *self,
+>  				   mod->num_ftrace_callsites);
+>  		break;
+>  	case MODULE_STATE_GOING:
+> -		ftrace_release(mod->ftrace_callsites,
+> -			       mod->ftrace_callsites +
+> -			       mod->num_ftrace_callsites);
+> +		ftrace_release_mod(mod);
+>  		break;
+>  	}
+>  
 
-Yes. A user enabling full preemption should be aware that it has a 
-performance footprint.
-
-By the way, from what I remember of the slub allocator, you might find 
-the following more suited for your needs. I remember that the slow path
-sometimes need to reenable interrupts, so:
-
-preempt disable()
-fast path attempt
-  if (fast path already taken) {
-    local_irq_save();
-    preempt_enable_no_resched();
-    slow path {
-      if (!flags & GFP_ATOMIC) {
-        local_irq_enable();
-        preempt_check_resched();
-        ...
-        local_irq_disable();
-      }
-    }
-    local_irq_restore();
-    preempt_check_resched();
-    return;
-  }
-preempt_enable()
-
-This should work, be efficient and manage to ensure scheduler RT
-correctness.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
