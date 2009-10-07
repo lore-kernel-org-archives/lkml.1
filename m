@@ -1,79 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759167AbZJGNxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759125AbZJGNzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759167AbZJGNxR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 09:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758550AbZJGNxP
+	id S1759125AbZJGNzk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 09:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758794AbZJGNzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 09:53:15 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:48817 "EHLO e3.ny.us.ibm.com"
+	Wed, 7 Oct 2009 09:55:40 -0400
+Received: from mail.perches.com ([173.55.12.10]:1984 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756119AbZJGNxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 09:53:15 -0400
-Date: Wed, 7 Oct 2009 06:52:37 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 0/3] rcu: prevent hangs by simplifying
-	rcu_barrier/CPU-hotplug, fix lockdep complaint
-Message-ID: <20091007135236.GG6838@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20091007044748.GA12763@linux.vnet.ibm.com> <20091007061448.GA21673@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091007061448.GA21673@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1758769AbZJGNzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 09:55:39 -0400
+Subject: Re: [PATCH 1/7] printk: clean up return value
+From: Joe Perches <joe@perches.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <1254904787-11323-2-git-send-email-alan-jenkins@tuffmail.co.uk>
+References: <1254904787-11323-1-git-send-email-alan-jenkins@tuffmail.co.uk>
+	 <1254904787-11323-2-git-send-email-alan-jenkins@tuffmail.co.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 07 Oct 2009 06:55:02 -0700
+Message-Id: <1254923702.2134.358.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 08:14:48AM +0200, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > This patchset fixes a couple of issues with TREE_PREEMPT_RCU:
-> > 
-> > 1.	The current implementation of rcu_barrier() waits for any
-> > 	prior CPU-hotplug operation to complete.  This code path has
-> > 	resulted in some hangs, so first move this code from rcupdate.c
-> > 	to rcutree.c and then use a simpler algorithm that avoids the
-> > 	waiting, eliminating the possibility of such hangs.
-> > 
-> > 2.	The lockdep facility complains from time to time due to the
-> > 	fact that certain combinations of CPU-hotplug operations can
-> > 	cause the TREE_PREEMPT_RCU code to acquire the root rcu_node
-> > 	structure's lock while holding a leaf rcu_node structure's
-> > 	lock.  This patch places the root rcu_node structure's lock
-> > 	into its own lockdep class to prevent this false positive.
-> > 
-> > Ingo, please rewind tip/core/rcu to commit #135c8aea before applying this
-> > series, as these patches really need to go into 2.6.32.  Reworked and
-> > retested rcutiny (for 2.6.33, as Linus requested) will follow in a
-> > few days.  Or more patches for more bug fixes, as the case may be.  ;-)
-> > 
-> >  b/kernel/rcupdate.c       |  120 -----------------------------------
-> >  b/kernel/rcutree.c        |  120 +++++++++++++++++++++++++++++++++++
-> >  b/kernel/rcutree.h        |   11 ++-
-> >  b/kernel/rcutree_plugin.h |   34 ++++++++++
-> >  b/kernel/rcutree_trace.c  |    5 -
-> >  kernel/rcutree.c          |  156 ++++++++++++++++++++++++----------------------
-> >  6 files changed, 248 insertions(+), 198 deletions(-)
-> 
-> Applied, thanks Paul!
-> 
-> I dropped these commits for now:
-> 
->  3ffea79: rcu: Make hot-unplugged CPU relinquish its own RCU callbacks
->  eddd962: rcu: Move rcu_barrier() to rcutree, make lightweight rcu_barrier() for rcutiny
->  a39e7d5: rcu-tiny: The Bloatwatch Edition, v6
-> 
-> We can apply rcu-tiny for .33 again, once the dust has settled.
+On Wed, 2009-10-07 at 09:39 +0100, Alan Jenkins wrote:
+> Commit 5fd29d6 "printk: clean up handling of log-levels and newlines"
+> causes printk() to return the wrong number of characters.
 
-Sounds good!  I am placing rcu-tiny and synchronize_srcu_expedited()
-on a separate branch in my local git tree for 2.6.33.
+Maybe it'd be better to return void?
 
-							Thanx, Paul
+These may be the only uses of the value returned,
+and both files are trivial to modify.
+
+kernel/lockdep.c:	len += printk("%*s   %s", depth, "", usage_str[bit]);
+kernel/lockdep.c:	len += printk(" at:\n");
+drivers/char/mem.c:	ret = printk("%s", tmp);
+
+
