@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934039AbZJGPfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759425AbZJGPgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934039AbZJGPfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933900AbZJGPe6
+	id S1759425AbZJGPgL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbZJGPgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:34:58 -0400
-Received: from mtagate7.de.ibm.com ([195.212.17.167]:58709 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933878AbZJGPe4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:34:56 -0400
-Date: Wed, 7 Oct 2009 17:34:15 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, devel@driverdev.osuosl.org,
-       heiko.carstens@de.ibm.com, linux-s390@vger.kernel.org
-Subject: Re: next-20091007 - comedi driver build breaks on S390x
-Message-ID: <20091007173415.5155d995@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20091007130744.GA26081@suse.de>
-References: <20091007173517.abfcfa2a.sfr@canb.auug.org.au>
-	<20091007105458.GA5472@linux.vnet.ibm.com>
-	<20091007130744.GA26081@suse.de>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 7 Oct 2009 11:36:10 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:39638 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752223AbZJGPgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 11:36:09 -0400
+Message-ID: <4ACCB52D.3020104@redhat.com>
+Date: Wed, 07 Oct 2009 08:35:09 -0700
+From: Richard Henderson <rth@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Roland McGrath <roland@redhat.com>
+CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
+       rostedt@goodmis.org, ak@suse.de, mhiramat@redhat.com
+Subject: Re: [PATCH 0/4] jump label patches
+References: <cover.1253831945.git.jbaron@redhat.com>	<20091006053915.D9D0928@magilla.sf.frob.com>	<4ACBD1BF.30201@redhat.com> <20091007001436.B5FE9A8C@magilla.sf.frob.com>
+In-Reply-To: <20091007001436.B5FE9A8C@magilla.sf.frob.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Oct 2009 06:07:44 -0700
-Greg KH <gregkh@suse.de> wrote:
+On 10/06/2009 05:14 PM, Roland McGrath wrote:
+> Kernel builds usually use -Os.  Is there anything else we can do now (4.4)
+> to influence this placement (while keeping the unlikely target block inside
+> a scope, i.e. macro, with the asm goto)?
 
-> On Wed, Oct 07, 2009 at 04:24:58PM +0530, Kamalesh Babulal wrote:
-> > Hi Greg,
-> > 
-> > 	next-20091007 randconfig build breaks on s390x with build error
-> > 
-> > drivers/staging/comedi/comedi_fops.c: In function 'comedi_mmap':
-> > drivers/staging/comedi/comedi_fops.c:1453: error: 'PAGE_SHARED' undeclared (first use in this function)
-> > drivers/staging/comedi/comedi_fops.c:1453: error: (Each undeclared identifier is reported only once
-> > drivers/staging/comedi/comedi_fops.c:1453: error: for each function it appears in.)
-> > make[3]: *** [drivers/staging/comedi/comedi_fops.o] Error 1
-> 
-> Odd.  What changed in the header files to cause this?
+I think -Os includes -freorder-blocks as well.
 
-The problem has always been present, only now did randconfig find it.
-The compile breaks because PAGE_SHARED is not defined for s390. The
-equivalent define for s390 is PAGE_RW. The problem has not shown up so
-far because all drivers who use the remap_pfn_range call with
-PAGE_SHARED has dependencies not available on s390, e.g. CONFIG_PCI.
+> 	      if (0) yes: maybe = 1;
 
-To fix this I see are two options: 1) add a PAGE_SHARED define to
-arch/s390/include/asm/pgtable.h, 2) make comedi depend on !S390.
+Anything with "if (0)" in it (even with __builtin_expect) is going to be 
+folded away too early to be useful.
 
--- 
-blue skies,
-   Martin.
+I can't think of any way to manipulate block placement from the source 
+level at this time that doesn't add more code along the fast path, 
+obviating the asm goto.
 
-"Reality continues to ruin my life." - Calvin.
 
+r~
