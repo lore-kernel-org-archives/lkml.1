@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbZJGGXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbZJGGed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756668AbZJGGXN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 02:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbZJGGXN
+	id S1758006AbZJGGed (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 02:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbZJGGec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 02:23:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38506 "EHLO mx3.mail.elte.hu"
+	Wed, 7 Oct 2009 02:34:32 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:54492 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753953AbZJGGXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 02:23:12 -0400
-Date: Wed, 7 Oct 2009 08:22:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] perf tools: Merge trace.info content into
-	perf.data
-Message-ID: <20091007062204.GE21673@elte.hu>
-References: <20091006213643.GA5343@nowhere>
+	id S1754194AbZJGGeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 02:34:31 -0400
+Date: Wed, 7 Oct 2009 08:33:54 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Philipp Reisner <philipp.reisner@linbit.com>, drbd-dev@linbit.com,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: Re: linux-next: block tree build failure
+Message-ID: <20091007063354.GG5216@kernel.dk>
+References: <20091007135505.df1f058c.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091006213643.GA5343@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091007135505.df1f058c.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> Hi,
+On Wed, Oct 07 2009, Stephen Rothwell wrote:
+> Hi Jens,
 > 
-> Here is an attempt to remove the trace.info file. It works well for 
-> me, the reason for it to be an RFC is that I have doubts about the 
-> backward compatibility.
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
 > 
-> A file created by perf after his patch is unsupported by previous 
-> version because the size of the headers have increased.
-
-That's OK i think in terms of trace.info - trace.info was a temporary 
-hack to begin with.
-
-> That said, it's two new fields that have been added in the end of the 
-> headers, and those could be ignored by previous versions if they just 
-> handled the dynamic header size and then ignore the unknow part. The 
-> offsets guarantee the compatibility.
-
-Yes, that's how it should work.
-
-> But previous versions handle the header size using its static size, 
-> not dynamic, then it's not backward compatible.
+> drivers/block/drbd/drbd_req.c: In function '_drbd_start_io_acct':
+> drivers/block/drbd/drbd_req.c:43: error: lvalue required as increment operand
+> drivers/block/drbd/drbd_req.c: In function '_drbd_end_io_acct':
+> drivers/block/drbd/drbd_req.c:56: error: lvalue required as decrement operand
 > 
-> Anyway, I'm not sure exactly how to handle that.
+> This is back again :-(
+> 
+> I have used the block tree from next-20091006 for today.  I also had to
+> use the device-mapper tree from next-20091006 since that is based on the
+> block tree.
 
-That's a bug in the previous version - mind doing a standalone fix for 
-that so we can mark it Cc: stable?
+Irk darn, I fixed this up. Sorry about that, Stephen. It was due to the
+in_flight counter being reverted for -rc3 and now back functional in my
+upstream branch.
 
-Thanks,
+-- 
+Jens Axboe
 
-	Ingo
