@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbZJGQfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934288AbZJGQff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759573AbZJGQfF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 12:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759558AbZJGQfE
+	id S934288AbZJGQff (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 12:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934245AbZJGQfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 12:35:04 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:54546 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759550AbZJGQfB (ORCPT
+	Wed, 7 Oct 2009 12:35:33 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35057 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933702AbZJGQfc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 12:35:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=Z+u7APv5IyzL9UrB/1LeBPyBwRTCzbhRg2xprpqJ1ewOiwjWZru895Jlq9mJymXvW8
-         nD3NHYoXsC28xQaUgxW7J6+7DM81mw0K6dt09MyQoHPtWAlH7LYAl7kfEVxx6tRa3Cr+
-         MjcDCZ165kKQMBpjoyvJaIa0TEp/b6/0nA1cg=
-Date: Wed, 7 Oct 2009 09:34:17 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Trilok Soni <soni.trilok@gmail.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH 3/6] Haptic: Add haptic maintainer
-Message-ID: <20091007163416.GB12053@core.coreip.homeip.net>
-References: <20091007061805.GA7592@july> <5d5443650910070006s1aae5fecmec9f6a24a2e272c5@mail.gmail.com>
+	Wed, 7 Oct 2009 12:35:32 -0400
+Date: Wed, 7 Oct 2009 12:34:55 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Alan Cox <alan@linux.intel.com>, <greg@kroah.com>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
+In-Reply-To: <200910071810.02966.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0910071233240.2762-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <5d5443650910070006s1aae5fecmec9f6a24a2e272c5@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 12:36:47PM +0530, Trilok Soni wrote:
-> On Wed, Oct 7, 2009 at 11:48 AM, Kyungmin Park
-> <kyungmin.park@samsung.com> wrote:
-> > Add me to haptic class maintainer
-> >
-> > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> > ---
-> >  MAINTAINERS |    7 +++++++
-> >  1 files changed, 7 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 09a2028..906b603 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -2287,6 +2287,13 @@ F:       Documentation/isdn/README.gigaset
-> >  F:     drivers/isdn/gigaset/
-> >  F:     include/linux/gigaset_dev.h
-> >
-> > +HAPTIC SUBSYSTEM
-> > +M:     Kyungmin Park <kyungmin.park@samsung.com>
-> > +L:     linux-input@vger.kernel.org
-> 
-> Dmitry,
-> 
-> Are you OK if we use linux-input for haptics class patches? OR else we
-> will just use linux-kernel.
+On Wed, 7 Oct 2009, Oliver Neukum wrote:
 
-Sure, I don't have any issues with haptics using linux-input.
+> Am Mittwoch, 7. Oktober 2009 18:03:08 schrieb Alan Stern:
+> > On Wed, 7 Oct 2009, Oliver Neukum wrote:
+> > > We will need some generic way to autoresume from open.
+> > > Resume will need to lock against open() and need to be called
+> > > from within open(). Any ideas for an unugly interface?
+> >
+> > It's not quite that bad.  Resume doesn't need to lock against open.
+> > If open is called while resume is running then when it tries to do its
+> > own resume, it will either block (waiting for the pm_mutex) or return
+> > immediately (if it sees the device is already resumed).
+> 
+> But resume() needs to know whether the read URBs need to be
+> submitted or not.
 
--- 
-Dmitry
+Given that there are several pathways for turning on or turning off the 
+read URBs, the best answer is to use a flag.
+
+Alan Stern
+
