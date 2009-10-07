@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933612AbZJGOjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932816AbZJGOfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933612AbZJGOjL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:39:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932508AbZJGOjK
+	id S932816AbZJGOfX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 10:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758590AbZJGOfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:39:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60605 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932368AbZJGOjK (ORCPT
+	Wed, 7 Oct 2009 10:35:22 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36482 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758579AbZJGOfU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 10:39:10 -0400
-Date: Wed, 7 Oct 2009 07:36:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-cc: mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/7] x86 dumpstack: fix printing of stack dump
- loglevels
-In-Reply-To: <1254904787-11323-7-git-send-email-alan-jenkins@tuffmail.co.uk>
-Message-ID: <alpine.LFD.2.01.0910070731080.3432@localhost.localdomain>
-References: <1254904787-11323-1-git-send-email-alan-jenkins@tuffmail.co.uk> <1254904787-11323-7-git-send-email-alan-jenkins@tuffmail.co.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 7 Oct 2009 10:35:20 -0400
+Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
+ interrupt disable
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: cl@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
+In-Reply-To: <20091007133106.GC29632@Krystal>
+References: <20091006233654.815079668@gentwo.org>
+	 <20091006233733.153341605@gentwo.org> <20091007025440.GB4664@Krystal>
+	 <1254906707.26976.225.camel@twins> <20091007124628.GB27363@Krystal>
+	 <1254920460.26976.241.camel@twins>  <20091007133106.GC29632@Krystal>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 07 Oct 2009 16:37:13 +0200
+Message-Id: <1254926233.26976.250.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 7 Oct 2009, Alan Jenkins wrote:
+On Wed, 2009-10-07 at 09:31 -0400, Mathieu Desnoyers wrote:
+> * Peter Zijlstra (peterz@infradead.org) wrote:
+> > On Wed, 2009-10-07 at 08:46 -0400, Mathieu Desnoyers wrote:
+> > > * local_irq_restore
+> > >   -> the interrupt line is low. The scheduler won't be called. There is
+> > >      no preempt_check_resched() call.
+> > 
+> > That would be an issue with all irq disable sections, so I don't think
+> > this is actually true.
+> > 
 > 
-> Changing printk() to accept loglevels in the middle of the string again
-> would be non-trivial.  Let's accept this limitation and simply split the
-> above code into two separate calls to printk().
+> AFAIK, irq disable sections rely on the fact that if you get a timer
+> interrupt during this section, the timer interrupt line stays triggered
+> for the duration of the irqoff section. Therefore, when interrupts are
+> re-enabled, the interrupt kicks in, so does the scheduler.
+> 
+> This is not the case with the preempt/irqoff dance proposed by
+> Christoph.
 
-Actually, let's just drop the log_lvl printout in the middle.
+Ah, you're quite right indeed.
 
-And to do that, let's clean up printk() a bit further - just make it say 
-"if there is no loglevel, use the previous loglevel". That's going to 
-simplify _all_ kinds of multi-line code.
-
-As far as I can tell, that's a oneliner: make 'current_log_level' be a 
-'static' variable.
-
-Wouldn't that be much simpler for everybody?
-
-(And yes, if you mix multi-line messages that are printed as separate 
-printk's and with different loglevels, output will be confused. But quite 
-frankly, it will be confused regardless)
-
-				Linus
