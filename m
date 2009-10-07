@@ -1,81 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752285AbZJGGTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbZJGGaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752285AbZJGGTN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 02:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbZJGGTM
+	id S932165AbZJGGaA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 02:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZJGG37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 02:19:12 -0400
-Received: from mailout5.samsung.com ([203.254.224.35]:64463 "EHLO
-	mailout5.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758009AbZJGGTK (ORCPT
+	Wed, 7 Oct 2009 02:29:59 -0400
+Received: from mailout1.samsung.com ([203.254.224.24]:41923 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757275AbZJGG35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 02:19:10 -0400
-Date: Wed, 07 Oct 2009 15:18:22 +0900
+	Wed, 7 Oct 2009 02:29:57 -0400
+Date: Wed, 07 Oct 2009 15:18:30 +0900
 From: Kyungmin Park <kyungmin.park@samsung.com>
-Subject: [PATCH 5/6] haptic: Samsung SoCs PWM controlled haptic support
+Subject: [PATCH 6/6] haptic: ISA1200 haptic device support
 To: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
 Cc: soni.trilok@gmail.com
-Message-id: <20091007061822.GA7602@july>
+Message-id: <20091007061830.GA7606@july>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Content-transfer-encoding: 7BIT
 Content-disposition: inline
 User-Agent: Mutt/1.5.14 (2007-02-12)
-X-OriginalArrivalTime: 07 Oct 2009 06:18:29.0052 (UTC)
- FILETIME=[FC8DD7C0:01CA4715]
+X-OriginalArrivalTime: 07 Oct 2009 06:18:36.0942 (UTC)
+ FILETIME=[0141C2E0:01CA4716]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samsung SoCs PWM and gpio connected haptic device support
-It's tested on s3c64xx, s5pc1xx
+I2C based ISA1200 haptic driver support.
+This chip supports both internal and external.
+But only external configuration are implemented.
 
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- drivers/haptic/Kconfig              |    9 +
- drivers/haptic/Makefile             |    3 +
- drivers/haptic/haptic-samsung-pwm.c |  377 +++++++++++++++++++++++++++++++++++
- 3 files changed, 389 insertions(+), 0 deletions(-)
- create mode 100644 drivers/haptic/haptic-samsung-pwm.c
+ drivers/haptic/Kconfig      |    6 +
+ drivers/haptic/Makefile     |    1 +
+ drivers/haptic/isa1200.c    |  429 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/i2c/isa1200.h |  103 +++++++++++
+ 4 files changed, 539 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/haptic/isa1200.c
+ create mode 100644 include/linux/i2c/isa1200.h
 
 diff --git a/drivers/haptic/Kconfig b/drivers/haptic/Kconfig
-index 656b022..1e9849c 100644
+index 1e9849c..30ae507 100644
 --- a/drivers/haptic/Kconfig
 +++ b/drivers/haptic/Kconfig
-@@ -11,4 +11,13 @@ config HAPTIC_CLASS
- 	help
- 	  This option enables the haptic sysfs class in /sys/class/haptic.
+@@ -20,4 +20,10 @@ config HAPTIC_SAMSUNG_PWM
+ 	  This options enables support for haptic connected to GPIO lines
+ 	  controlled by a PWM timer on SAMSUNG CPUs.
  
-+comment "Haptic drivers"
-+
-+config HAPTIC_SAMSUNG_PWM
-+	tristate "Haptic Support for SAMSUNG PWM-controlled haptic (ISA1000)"
-+	depends on HAPTIC_CLASS && (ARCH_S3C64XX || ARCH_S5PC1XX)
++config HAPTIC_ISA1200
++	tristate "ISA1200 haptic support"
++	depends on HAPTIC_CLASS && I2C
 +	help
-+	  This options enables support for haptic connected to GPIO lines
-+	  controlled by a PWM timer on SAMSUNG CPUs.
++	  The ISA1200 is a high performance enhanced haptic driver.
 +
  endif	# HAPTIC
 diff --git a/drivers/haptic/Makefile b/drivers/haptic/Makefile
-index d30f8cd..c691f7d 100644
+index c691f7d..3eca352 100644
 --- a/drivers/haptic/Makefile
 +++ b/drivers/haptic/Makefile
-@@ -1,2 +1,5 @@
- # Haptic Core
- obj-$(CONFIG_HAPTIC_CLASS)		+= haptic-class.o
-+
-+# Drivers
-+obj-$(CONFIG_HAPTIC_SAMSUNG_PWM)	+= haptic-samsung-pwm.o
-diff --git a/drivers/haptic/haptic-samsung-pwm.c b/drivers/haptic/haptic-samsung-pwm.c
+@@ -3,3 +3,4 @@ obj-$(CONFIG_HAPTIC_CLASS)		+= haptic-class.o
+ 
+ # Drivers
+ obj-$(CONFIG_HAPTIC_SAMSUNG_PWM)	+= haptic-samsung-pwm.o
++obj-$(CONFIG_HAPTIC_ISA1200)		+= isa1200.o
+diff --git a/drivers/haptic/isa1200.c b/drivers/haptic/isa1200.c
 new file mode 100644
-index 0000000..df6f30d
+index 0000000..51c4ea4
 --- /dev/null
-+++ b/drivers/haptic/haptic-samsung-pwm.c
-@@ -0,0 +1,377 @@
++++ b/drivers/haptic/isa1200.c
+@@ -0,0 +1,429 @@
 +/*
-+ *  drivers/haptic/haptic-samsung-pwm.c
++ *  isa1200.c - Haptic Motor
 + *
-+ *  Copyright (C) 2008 Samsung Electronics
++ *  Copyright (C) 2009 Samsung Electronics
 + *  Kyungmin Park <kyungmin.park@samsung.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -84,104 +83,120 @@ index 0000000..df6f30d
 + */
 +
 +#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/ctype.h>
-+#include <linux/haptic.h>
-+#include <linux/workqueue.h>
++#include <linux/init.h>
++#include <linux/i2c.h>
 +#include <linux/gpio.h>
++#include <linux/haptic.h>
++#include <linux/delay.h>
 +#include <linux/err.h>
 +#include <linux/pwm.h>
-+#include <linux/timer.h>
-+
++#include <linux/ctype.h>
++#include <linux/workqueue.h>
++#include <linux/i2c/isa1200.h>
 +#include "haptic.h"
 +
-+#define PWM_HAPTIC_PERIOD		44640
-+#define PWM_HAPTIC_DEFAULT_LEVEL		2
-+
-+static int haptic_levels[] = { 18360, 14880, 10860, 5280, 540, };
-+
-+struct samsung_pwm_haptic {
++struct isa1200_chip {
++	struct i2c_client *client;
++	struct pwm_device *pwm;
 +	struct haptic_classdev cdev;
 +	struct work_struct work;
-+	struct haptic_platform_data *pdata;
-+	struct pwm_device *pwm;
 +	struct timer_list timer;
++
++	unsigned int	len;		/* LDO enable */
++	unsigned int	hen;		/* Haptic enable */
 +
 +	int enable;
 +	int powered;
 +
 +	int level;
 +	int level_max;
++
++	int ldo_level;
 +};
 +
-+static inline struct samsung_pwm_haptic *cdev_to_samsung_pwm_haptic(
++static inline struct isa1200_chip *cdev_to_isa1200_chip(
 +		struct haptic_classdev *haptic_cdev)
 +{
-+	return container_of(haptic_cdev, struct samsung_pwm_haptic, cdev);
++	return container_of(haptic_cdev, struct isa1200_chip, cdev);
 +}
 +
-+static void samsung_pwm_haptic_power_on(struct samsung_pwm_haptic *haptic)
++static int isa1200_chip_set_pwm_cycle(struct isa1200_chip *haptic)
++{
++	int duty = PWM_HAPTIC_PERIOD * haptic->level / 100;
++	return pwm_config(haptic->pwm, duty, PWM_HAPTIC_PERIOD);
++}
++
++static int isa1200_read_reg(struct i2c_client *client, int reg)
++{
++	int ret;
++
++	ret = i2c_smbus_read_byte_data(client, reg);
++	if (ret < 0)
++		dev_err(&client->dev, "%s: err %d\n", __func__, ret);
++
++	return ret;
++}
++
++static int isa1200_write_reg(struct i2c_client *client, int reg, u8 value)
++{
++	int ret;
++
++	ret = i2c_smbus_write_byte_data(client, reg, value);
++	if (ret < 0)
++		dev_err(&client->dev, "%s: err %d\n", __func__, ret);
++
++	return ret;
++}
++
++static void isa1200_chip_power_on(struct isa1200_chip *haptic)
 +{
 +	if (haptic->powered)
 +		return;
 +	haptic->powered = 1;
-+
-+	if (gpio_is_valid(haptic->pdata->gpio))
-+		gpio_set_value(haptic->pdata->gpio, 1);
-+
++	/* Use smart mode enable control */
 +	pwm_enable(haptic->pwm);
 +}
 +
-+static void samsung_pwm_haptic_power_off(struct samsung_pwm_haptic *haptic)
++static void isa1200_chip_power_off(struct isa1200_chip *haptic)
 +{
 +	if (!haptic->powered)
 +		return;
 +	haptic->powered = 0;
-+
-+	if (gpio_is_valid(haptic->pdata->gpio))
-+		gpio_set_value(haptic->pdata->gpio, 0);
-+
++	/* Use smart mode enable control */
 +	pwm_disable(haptic->pwm);
 +}
 +
-+static int samsung_pwm_haptic_set_pwm_cycle(struct samsung_pwm_haptic *haptic)
++static void isa1200_chip_work(struct work_struct *work)
 +{
-+	int duty = haptic_levels[haptic->level];
-+	return pwm_config(haptic->pwm, duty, PWM_HAPTIC_PERIOD);
-+}
-+
-+static void samsung_pwm_haptic_work(struct work_struct *work)
-+{
-+	struct samsung_pwm_haptic *haptic;
++	struct isa1200_chip *haptic;
 +	int r;
 +
-+	haptic = container_of(work, struct samsung_pwm_haptic, work);
-+
++	haptic = container_of(work, struct isa1200_chip, work);
 +	if (haptic->enable) {
-+		r = samsung_pwm_haptic_set_pwm_cycle(haptic);
++		r = isa1200_chip_set_pwm_cycle(haptic);
 +		if (r) {
 +			dev_dbg(haptic->cdev.dev, "set_pwm_cycle failed\n");
 +			return;
 +		}
-+		samsung_pwm_haptic_power_on(haptic);
++		isa1200_chip_power_on(haptic);
 +	} else {
-+		samsung_pwm_haptic_power_off(haptic);
++		isa1200_chip_power_off(haptic);
 +	}
 +}
 +
-+static void samsung_pwm_haptic_timer(unsigned long data)
++static void isa1200_chip_timer(unsigned long data)
 +{
-+	struct samsung_pwm_haptic *haptic = (struct samsung_pwm_haptic *)data;
++	struct isa1200_chip *haptic = (struct isa1200_chip *)data;
 +
 +	haptic->enable = 0;
-+	samsung_pwm_haptic_power_off(haptic);
++	isa1200_chip_power_off(haptic);
 +}
 +
-+static void samsung_pwm_haptic_set(struct haptic_classdev *haptic_cdev,
++static void isa1200_chip_set(struct haptic_classdev *haptic_cdev,
 +				enum haptic_value value)
 +{
-+	struct samsung_pwm_haptic *haptic =
-+		cdev_to_samsung_pwm_haptic(haptic_cdev);
++	struct isa1200_chip *haptic =
++		cdev_to_isa1200_chip(haptic_cdev);
 +
 +	switch (value) {
 +	case HAPTIC_OFF:
@@ -197,11 +212,10 @@ index 0000000..df6f30d
 +	schedule_work(&haptic->work);
 +}
 +
-+static enum haptic_value samsung_pwm_haptic_get(
-+		struct haptic_classdev *haptic_cdev)
++static enum haptic_value isa1200_chip_get(struct haptic_classdev *haptic_cdev)
 +{
-+	struct samsung_pwm_haptic *haptic =
-+		cdev_to_samsung_pwm_haptic(haptic_cdev);
++	struct isa1200_chip *haptic =
++		cdev_to_isa1200_chip(haptic_cdev);
 +
 +	if (haptic->enable)
 +		return HAPTIC_FULL;
@@ -210,24 +224,22 @@ index 0000000..df6f30d
 +}
 +
 +#define ATTR_DEF_SHOW(name) \
-+static ssize_t samsung_pwm_haptic_show_##name(struct device *dev, \
++static ssize_t isa1200_chip_show_##name(struct device *dev, \
 +		struct device_attribute *attr, char *buf) \
 +{ \
 +	struct haptic_classdev *haptic_cdev = dev_get_drvdata(dev); \
-+	struct samsung_pwm_haptic *haptic =\
-+		cdev_to_samsung_pwm_haptic(haptic_cdev); \
++	struct isa1200_chip *haptic = cdev_to_isa1200_chip(haptic_cdev); \
 + \
 +	return sprintf(buf, "%u\n", haptic->name) + 1; \
 +}
 +
 +#define ATTR_DEF_STORE(name) \
-+static ssize_t samsung_pwm_haptic_store_##name(struct device *dev, \
++static ssize_t isa1200_chip_store_##name(struct device *dev, \
 +		struct device_attribute *attr, \
 +		const char *buf, size_t size) \
 +{ \
 +	struct haptic_classdev *haptic_cdev = dev_get_drvdata(dev); \
-+	struct samsung_pwm_haptic *haptic =\
-+		 cdev_to_samsung_pwm_haptic(haptic_cdev); \
++	struct isa1200_chip *haptic = cdev_to_isa1200_chip(haptic_cdev); \
 +	ssize_t ret = -EINVAL; \
 +	unsigned long val; \
 + \
@@ -243,16 +255,15 @@ index 0000000..df6f30d
 +
 +ATTR_DEF_SHOW(enable);
 +ATTR_DEF_STORE(enable);
-+static DEVICE_ATTR(enable, 0644, samsung_pwm_haptic_show_enable,
-+		samsung_pwm_haptic_store_enable);
++static DEVICE_ATTR(enable, 0644, isa1200_chip_show_enable,
++		isa1200_chip_store_enable);
 +
-+static ssize_t samsung_pwm_haptic_store_level(struct device *dev,
++static ssize_t isa1200_chip_store_level(struct device *dev,
 +		struct device_attribute *attr,
 +		const char *buf, size_t size)
 +{
 +	struct haptic_classdev *haptic_cdev = dev_get_drvdata(dev);
-+	struct samsung_pwm_haptic *haptic =
-+		cdev_to_samsung_pwm_haptic(haptic_cdev);
++	struct isa1200_chip *haptic = cdev_to_isa1200_chip(haptic_cdev);
 +	ssize_t ret = -EINVAL;
 +	unsigned long val;
 +
@@ -268,19 +279,18 @@ index 0000000..df6f30d
 +	return ret;
 +}
 +ATTR_DEF_SHOW(level);
-+static DEVICE_ATTR(level, 0644, samsung_pwm_haptic_show_level,
-+		samsung_pwm_haptic_store_level);
++static DEVICE_ATTR(level, 0644, isa1200_chip_show_level,
++		isa1200_chip_store_level);
 +
 +ATTR_DEF_SHOW(level_max);
-+static DEVICE_ATTR(level_max, 0444, samsung_pwm_haptic_show_level_max, NULL);
++static DEVICE_ATTR(level_max, 0444, isa1200_chip_show_level_max, NULL);
 +
-+static ssize_t samsung_pwm_haptic_store_oneshot(struct device *dev,
++static ssize_t isa1200_chip_store_oneshot(struct device *dev,
 +		struct device_attribute *attr,
 +		const char *buf, size_t size)
 +{
 +	struct haptic_classdev *haptic_cdev = dev_get_drvdata(dev);
-+	struct samsung_pwm_haptic *haptic =
-+		cdev_to_samsung_pwm_haptic(haptic_cdev);
++	struct isa1200_chip *haptic = cdev_to_isa1200_chip(haptic_cdev);
 +	ssize_t ret = -EINVAL;
 +	unsigned long val;
 +
@@ -294,7 +304,7 @@ index 0000000..df6f30d
 +
 +	return ret;
 +}
-+static DEVICE_ATTR(oneshot, 0200, NULL, samsung_pwm_haptic_store_oneshot);
++static DEVICE_ATTR(oneshot, 0200, NULL, isa1200_chip_store_oneshot);
 +
 +static struct attribute *haptic_attributes[] = {
 +	&dev_attr_enable.attr,
@@ -308,147 +318,297 @@ index 0000000..df6f30d
 +	.attrs = haptic_attributes,
 +};
 +
-+static int __devinit samsung_pwm_haptic_probe(struct platform_device *pdev)
++static void isa1200_setup(struct i2c_client *client)
 +{
-+	struct haptic_platform_data *pdata = pdev->dev.platform_data;
-+	struct samsung_pwm_haptic *haptic;
++	struct isa1200_chip *chip = i2c_get_clientdata(client);
++	int value;
++
++	gpio_set_value(chip->len, 1);
++	udelay(250);
++	gpio_set_value(chip->len, 1);
++
++	value = isa1200_read_reg(client, ISA1200_SCTRL0);
++	value &= ~ISA1200_LDOADJ_MASK;
++	value |= chip->ldo_level;
++	isa1200_write_reg(client, ISA1200_SCTRL0, value);
++
++	value = ISA1200_HAPDREN | ISA1200_OVERHL | ISA1200_HAPDIGMOD_PWM_IN |
++		ISA1200_PWMMOD_DIVIDER_128;
++	isa1200_write_reg(client, ISA1200_HCTRL0, value);
++
++	value = ISA1200_EXTCLKSEL | ISA1200_BIT6_ON | ISA1200_MOTTYP_LRA |
++		ISA1200_SMARTEN | ISA1200_SMARTOFFT_64;
++	isa1200_write_reg(client, ISA1200_HCTRL1, value);
++
++	value = isa1200_read_reg(client, ISA1200_HCTRL2);
++	value |= ISA1200_SEEN;
++	isa1200_write_reg(client, ISA1200_HCTRL2, value);
++	isa1200_chip_power_off(chip);
++	isa1200_chip_power_on(chip);
++
++	/* TODO */
++}
++
++static int __devinit isa1200_probe(struct i2c_client *client,
++			const struct i2c_device_id *id)
++{
++	struct isa1200_chip *chip;
++	struct haptic_platform_data *pdata;
 +	int ret;
 +
-+	haptic = kzalloc(sizeof(struct samsung_pwm_haptic), GFP_KERNEL);
-+	if (!haptic) {
-+		dev_err(&pdev->dev, "No memory for device\n");
-+		return -ENOMEM;
++	pdata = client->dev.platform_data;
++	if (!pdata) {
++		dev_err(&client->dev, "%s: no platform data\n", __func__);
++		return -EINVAL;
 +	}
 +
-+	platform_set_drvdata(pdev, haptic);
-+	haptic->cdev.set = samsung_pwm_haptic_set;
-+	haptic->cdev.get = samsung_pwm_haptic_get;
-+	haptic->cdev.show_enable = samsung_pwm_haptic_show_enable;
-+	haptic->cdev.store_enable = samsung_pwm_haptic_store_enable;
-+	haptic->cdev.store_oneshot = samsung_pwm_haptic_store_oneshot;
-+	haptic->cdev.show_level = samsung_pwm_haptic_show_level;
-+	haptic->cdev.store_level = samsung_pwm_haptic_store_level;
-+	haptic->cdev.show_level_max = samsung_pwm_haptic_show_level_max;
-+	haptic->cdev.name = pdata->name;
-+	haptic->pdata = pdata;
-+	haptic->enable = 0;
-+	haptic->level = PWM_HAPTIC_DEFAULT_LEVEL;
-+	haptic->level_max = ARRAY_SIZE(haptic_levels);
++	chip = kzalloc(sizeof(struct isa1200_chip), GFP_KERNEL);
++	if (!chip)
++		return -ENOMEM;
++
++	chip->client = client;
++	chip->cdev.set = isa1200_chip_set;
++	chip->cdev.get = isa1200_chip_get;
++	chip->cdev.show_enable = isa1200_chip_show_enable;
++	chip->cdev.store_enable = isa1200_chip_store_enable;
++	chip->cdev.store_oneshot = isa1200_chip_store_oneshot;
++	chip->cdev.show_level = isa1200_chip_show_level;
++	chip->cdev.store_level = isa1200_chip_store_level;
++	chip->cdev.show_level_max = isa1200_chip_show_level_max;
++	chip->cdev.name = pdata->name;
++	chip->enable = 0;
++	chip->level = PWM_HAPTIC_DEFAULT_LEVEL;
++	chip->level_max = PWM_HAPTIC_DEFAULT_LEVEL;
++	chip->ldo_level = pdata->ldo_level;
 +
 +	if (pdata->setup_pin)
 +		pdata->setup_pin();
++	chip->len = pdata->gpio;
++	chip->hen = pdata->gpio;
++	chip->pwm = pwm_request(pdata->pwm_timer, "haptic");
++	if (IS_ERR(chip->pwm)) {
++		dev_err(&client->dev, "unable to request PWM for haptic.\n");
++		ret = PTR_ERR(chip->pwm);
++		goto error_pwm;
++	}
 +
-+	INIT_WORK(&haptic->work, samsung_pwm_haptic_work);
++	INIT_WORK(&chip->work, isa1200_chip_work);
 +
 +	/* register our new haptic device */
-+	ret = haptic_classdev_register(&pdev->dev, &haptic->cdev);
++	ret = haptic_classdev_register(&client->dev, &chip->cdev);
 +	if (ret < 0) {
-+		dev_err(&pdev->dev, "haptic_classdev_register failed\n");
++		dev_err(&client->dev, "haptic_classdev_register failed\n");
 +		goto error_classdev;
 +	}
 +
-+	haptic->pwm = pwm_request(pdata->pwm_timer, "haptic");
-+	if (IS_ERR(haptic->pwm)) {
-+		dev_err(&pdev->dev, "unable to request PWM for haptic\n");
-+		ret = PTR_ERR(haptic->pwm);
-+		goto err_pwm;
-+	} else
-+		dev_dbg(&pdev->dev, "got pwm for haptic\n");
-+
-+	ret = sysfs_create_group(&haptic->cdev.dev->kobj, &haptic_group);
++	ret = sysfs_create_group(&chip->cdev.dev->kobj, &haptic_group);
 +	if (ret)
 +		goto error_enable;
 +
++	init_timer(&chip->timer);
++	chip->timer.data = (unsigned long)chip;
++	chip->timer.function = &isa1200_chip_timer;
++
++	i2c_set_clientdata(client, chip);
++
 +	if (gpio_is_valid(pdata->gpio)) {
-+		printk(KERN_INFO "Motor enable gpio %d\n", pdata->gpio);
 +		ret = gpio_request(pdata->gpio, "haptic enable");
 +		if (ret)
 +			goto error_gpio;
-+		gpio_direction_output(pdata->gpio, 0);
++		gpio_direction_output(pdata->gpio, 1);
 +	}
 +
-+	init_timer(&haptic->timer);
-+	haptic->timer.data = (unsigned long)haptic;
-+	haptic->timer.function = &samsung_pwm_haptic_timer;
++	isa1200_setup(client);
 +
-+	printk(KERN_INFO "samsung %s registed\n", pdata->name);
++	printk(KERN_INFO "isa1200 %s registered\n", pdata->name);
 +	return 0;
 +
 +error_gpio:
 +	gpio_free(pdata->gpio);
 +error_enable:
-+	sysfs_remove_group(&haptic->cdev.dev->kobj, &haptic_group);
-+err_pwm:
-+	pwm_free(haptic->pwm);
++	sysfs_remove_group(&chip->cdev.dev->kobj, &haptic_group);
 +error_classdev:
-+	haptic_classdev_unregister(&haptic->cdev);
-+	kfree(haptic);
++	haptic_classdev_unregister(&chip->cdev);
++error_pwm:
++	pwm_free(chip->pwm);
++	kfree(chip);
 +	return ret;
 +}
 +
-+static int __devexit samsung_pwm_haptic_remove(struct platform_device *pdev)
++static int __devexit isa1200_remove(struct i2c_client *client)
 +{
-+	struct samsung_pwm_haptic *haptic = platform_get_drvdata(pdev);
++	struct isa1200_chip *chip = i2c_get_clientdata(client);
 +
-+	samsung_pwm_haptic_set(&haptic->cdev, HAPTIC_OFF);
-+	del_timer_sync(&haptic->timer);
++	if (gpio_is_valid(chip->len))
++		gpio_free(chip->len);
 +
-+	if (haptic->pdata->gpio)
-+		gpio_free(haptic->pdata->gpio);
-+	device_remove_file(haptic->cdev.dev, &dev_attr_enable);
-+	haptic_classdev_unregister(&haptic->cdev);
-+	kfree(haptic);
++	sysfs_remove_group(&chip->cdev.dev->kobj, &haptic_group);
++	haptic_classdev_unregister(&chip->cdev);
++	pwm_free(chip->pwm);
++	kfree(chip);
 +	return 0;
 +}
 +
 +#ifdef CONFIG_PM
-+static int samsung_pwm_haptic_suspend(
-+	struct platform_device *pdev, pm_message_t state)
++static int isa1200_suspend(struct i2c_client *client, pm_message_t mesg)
 +{
-+	struct samsung_pwm_haptic *haptic = platform_get_drvdata(pdev);
-+
-+	haptic_classdev_suspend(&haptic->cdev);
++	struct isa1200_chip *chip = i2c_get_clientdata(client);
++	isa1200_chip_power_off(chip);
 +	return 0;
 +}
 +
-+static int samsung_pwm_haptic_resume(struct platform_device *pdev)
++static int isa1200_resume(struct i2c_client *client)
 +{
-+	struct samsung_pwm_haptic *haptic = platform_get_drvdata(pdev);
-+
-+	haptic_classdev_resume(&haptic->cdev);
++	isa1200_setup(client);
 +	return 0;
 +}
 +#else
-+#define samsung_pwm_haptic_suspend	NULL
-+#define samsung_pwm_haptic_resume	NULL
++#define isa1200_suspend		NULL
++#define isa1200_resume		NULL
 +#endif
 +
-+static struct platform_driver samsung_pwm_haptic_driver = {
-+	.probe		= samsung_pwm_haptic_probe,
-+	.remove		= samsung_pwm_haptic_remove,
-+	.suspend	= samsung_pwm_haptic_suspend,
-+	.resume		= samsung_pwm_haptic_resume,
-+	.driver		= {
-+		.name	= "samsung_pwm_haptic",
-+		.owner	= THIS_MODULE,
++static const struct i2c_device_id isa1200_id[] = {
++	{ "isa1200", 0 },
++	{ },
++};
++MODULE_DEVICE_TABLE(i2c, isa1200_id);
++
++static struct i2c_driver isa1200_driver = {
++	.driver	= {
++		.name	= "isa1200",
 +	},
++	.probe		= isa1200_probe,
++	.remove		= __devexit_p(isa1200_remove),
++	.suspend	= isa1200_suspend,
++	.resume		= isa1200_resume,
++	.id_table	= isa1200_id,
 +};
 +
-+static int __init samsung_pwm_haptic_init(void)
++static int __init isa1200_init(void)
 +{
-+	return platform_driver_register(&samsung_pwm_haptic_driver);
++	return i2c_add_driver(&isa1200_driver);
 +}
-+module_init(samsung_pwm_haptic_init);
 +
-+static void __exit samsung_pwm_haptic_exit(void)
++static void __exit isa1200_exit(void)
 +{
-+	platform_driver_unregister(&samsung_pwm_haptic_driver);
++	i2c_del_driver(&isa1200_driver);
 +}
-+module_exit(samsung_pwm_haptic_exit);
++
++module_init(isa1200_init);
++module_exit(isa1200_exit);
 +
 +MODULE_AUTHOR("Kyungmin Park <kyungmin.park@samsung.com>");
-+MODULE_DESCRIPTION("samsung PWM haptic driver");
++MODULE_DESCRIPTION("ISA1200 Haptic Motor driver");
 +MODULE_LICENSE("GPL");
+diff --git a/include/linux/i2c/isa1200.h b/include/linux/i2c/isa1200.h
+new file mode 100644
+index 0000000..3dee1a2
+--- /dev/null
++++ b/include/linux/i2c/isa1200.h
+@@ -0,0 +1,103 @@
++/*
++ *  isa1200.h - ISA1200 Haptic Motor driver
++ *
++ *  Copyright (C) 2009 Samsung Electronics
++ *  Kyungmin Park <kyungmin.park@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef __LINUX_ISA1200_H
++#define __LINUX_ISA1200_H
++
++#define ISA1200_SCTRL0		0x00
++#define ISA1200_THSWRST		(1 << 7)
++#define ISA1200_EXT2DIV		(1 << 4)
++#define ISA1200_LDOADJ_24V	(0x9 << 0)
++#define ISA1200_LDOADJ_25V	(0xa << 0)
++#define ISA1200_LDOADJ_26V	(0xb << 0)
++#define ISA1200_LDOADJ_27V	(0xc << 0)
++#define ISA1200_LDOADJ_28V	(0xd << 0)
++#define ISA1200_LDOADJ_29V	(0xe << 0)
++#define ISA1200_LDOADJ_30V	(0xf << 0)
++#define ISA1200_LDOADJ_31V	(0x0 << 0)
++#define ISA1200_LDOADJ_32V	(0x1 << 0)
++#define ISA1200_LDOADJ_33V	(0x2 << 0)
++#define ISA1200_LDOADJ_34V	(0x3 << 0)
++#define ISA1200_LDOADJ_35V	(0x4 << 0)
++#define ISA1200_LDOADJ_36V	(0x5 << 0)
++#define ISA1200_LDOADJ_MASK	(0xf << 0)
++#define ISA1200_HCTRL0		0x30
++#define ISA1200_HAPDREN		(1 << 7)
++#define ISA1200_OVEREN		(1 << 6)
++#define ISA1200_OVERHL		(1 << 5)
++#define ISA1200_HAPDIGMOD_PWM_IN	(1 << 3)
++#define ISA1200_HAPDIGMOD_PWM_GEN	(2 << 3)
++#define ISA1200_PLLMOD		(1 << 2)
++#define ISA1200_PWMMOD_DIVIDER_128	(0 << 0)
++#define ISA1200_PWMMOD_DIVIDER_256	(1 << 0)
++#define ISA1200_PWMMOD_DIVIDER_512	(2 << 0)
++#define ISA1200_PWMMOD_DIVIDER_1024	(3 << 0)
++#define ISA1200_HCTRL1		0x31
++#define ISA1200_EXTCLKSEL	(1 << 7)
++#define ISA1200_BIT6_ON		(1 << 6)
++#define ISA1200_MOTTYP_ERM	(1 << 5)
++#define ISA1200_MOTTYP_LRA	(0 << 5)
++#define ISA1200_PLLEN		(1 << 4)
++#define ISA1200_SMARTEN		(1 << 3)
++#define ISA1200_SMARTONT	(1 << 2)
++#define ISA1200_SMARTOFFT_16	(0 << 0)
++#define ISA1200_SMARTOFFT_32	(1 << 0)
++#define ISA1200_SMARTOFFT_64	(2 << 0)
++#define ISA1200_SMARTOFFT_100	(3 << 0)
++#define ISA1200_HCTRL2		0x32
++#define ISA1200_HSWRST		(1 << 7)
++#define ISA1200_SESTMOD		(1 << 2)
++#define ISA1200_SEEN		(1 << 1)
++#define ISA1200_SEEVENT		(1 << 0)
++#define ISA1200_HCTRL3		0x33
++#define ISA1200_PPLLDIV_MASK	(0xf0)
++#define ISA1200_PPLLDIV_SHIFT	(4)
++#define ISA1200_PPLLDIV_1	(0x0)
++#define ISA1200_PPLLDIV_2	(0x1)
++#define ISA1200_PPLLDIV_4	(0x2)
++#define ISA1200_PPLLDIV_8	(0x3)
++#define ISA1200_PPLLDIV_16	(0x4)
++#define ISA1200_PPLLDIV_32	(0x5)
++#define ISA1200_PPLLDIV_64	(0x6)
++#define ISA1200_PPLLDIV_128	(0x7)
++#define ISA1200_WPLLDIV_MASK	(0x0f)
++#define ISA1200_WPLLDIV_SHIFT	(0)
++#define ISA1200_WPLLDIV_1	(0x0)
++#define ISA1200_WPPLLDIV_2	(0x1)
++#define ISA1200_WPPLLDIV_4	(0x2)
++#define ISA1200_WPPLLDIV_8	(0x3)
++#define ISA1200_WPPLLDIV_16	(0x4)
++#define ISA1200_WPPLLDIV_32	(0x5)
++#define ISA1200_WPPLLDIV_64	(0x6)
++#define ISA1200_WPPLLDIV_128	(0x7)
++#define ISA1200_HCTRL4		0x34
++#define ISA1200_HCTRL5		0x35
++#define ISA1200_HCTRL6		0x36
++#define ISA1200_HCTRL7		0x37
++#define ISA1200_HCTRL8		0x38
++#define ISA1200_HCTRL9		0x39
++#define ISA1200_PLLP_SHIFT	(4)
++#define ISA1200_PLLP_MASK	(0xf0)
++#define ISA1200_PLLS_SHIFT	(0)
++#define ISA1200_PLLS_MASK	(0x0f)
++#define ISA1200_HCTRLA		0x3A
++#define ISA1200_PLLMM_MASK	(0xfc)
++#define ISA1200_PLLMM_SHIFT	(2)
++#define ISA1200_PLLMS_MASK	(0x03)
++#define ISA1200_PLLMS_SHIFT	(0)
++#define ISA1200_HCTRLB		0x3B
++#define ISA1200_HCTRLC		0x3C
++#define ISA1200_HCTRLD		0x3D
++
++#define PWM_HAPTIC_PERIOD	44640
++#define PWM_HAPTIC_DEFAULT_LEVEL	99
++
++#endif /* __LINUX_ISA1200_H */
 -- 
 1.5.3.3
 
