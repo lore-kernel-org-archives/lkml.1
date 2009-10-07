@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759380AbZJGPL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbZJGPNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759380AbZJGPL3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZJGPL2
+	id S1756596AbZJGPNj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbZJGPNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:11:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40407 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751204AbZJGPL1 (ORCPT
+	Wed, 7 Oct 2009 11:13:38 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63281 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbZJGPNh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:11:27 -0400
-Date: Wed, 7 Oct 2009 16:11:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Andy Whitcroft <apw@canonical.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
-Message-ID: <20091007161107.72b4031b@lxorguk.ukuu.org.uk>
-In-Reply-To: <1254927438.18167.275.camel@desktop>
-References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
-	<1253585691-10987-2-git-send-email-dwalker@fifo99.com>
-	<1253585691-10987-3-git-send-email-dwalker@fifo99.com>
-	<4AB86ED1.1040200@cn.fujitsu.com>
-	<20090930152708.GD2957@shadowen.org>
-	<1254406711.18167.88.camel@desktop>
-	<m33a5ww8kn.fsf@intrepid.localdomain>
-	<1254887534.18167.253.camel@desktop>
-	<m3hbubv779.fsf@intrepid.localdomain>
-	<1254925617.18167.262.camel@desktop>
-	<m3skdvtgas.fsf@intrepid.localdomain>
-	<1254927438.18167.275.camel@desktop>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Wed, 7 Oct 2009 11:13:37 -0400
+Subject: Re: system gets stuck in a lock during boot
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <4ACCAB54.4010408@gmail.com>
+References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>
+	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>
+	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>
+	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>
+	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>
+	 <20091002211211.GA2633@redhat.com>
+	 <1254792249.13160.213.camel@gandalf.stny.rr.com>
+	 <20091006203225.GC2631@redhat.com>
+	 <1254880921.1696.112.camel@gandalf.stny.rr.com>
+	 <4ACC001D.4050105@gmail.com>
+	 <1254920429.1696.127.camel@gandalf.stny.rr.com>
+	 <4ACCAB54.4010408@gmail.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 07 Oct 2009 11:11:38 -0400
+Message-Id: <1254928298.1696.166.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Right it's a tool .. However, you should use it and you should follow
-> it. If for some reason you disagree with the tool you have to give at
-> least an arguable reason why, not just "It's a guide", "I don't like the
-> coding style." etc..
+On Wed, 2009-10-07 at 07:53 -0700, Justin P. Mattock wrote:
+> Steven Rostedt wrote:
+> > On Tue, 2009-10-06 at 19:42 -0700, Justin P. Mattock wrote:
+> >
+> >    
+> >>>
+> >>>        
+> >> o.k. applied your patch, but unfortunantly
+> >> I still am hitting this kernel panic.
+> >>
+> >> must admit I have no idea why this is doing this.
+> >> (but am willing to sit through this, because eventually
+> >> sooner or later will hit this if I update gcc).
+> >>      
+> >
+> > But the panic you showed was that it could not find an init to execute.
+> > Which looks like a setup issue and not a kernel bug.
+> >
+> > -- Steve
+> >
+> >
+> >
+> >    
+> That's whats getting me, i.g. if I compile
+> sysvinit normally without adding an SELinux patch
+> the system boots, as soon as I compile sysvinit with
+> SELinux support to load the policy, bam... I hit this.
+> 
+> I can send a post to SELinux and see what they think,
+> and the go from there.
 
-Those are perfectly good reasons.
+Oh! It's an SELinux thing. It probably prevents you from executing
+init ;-)
 
-> In the case of Steven's code he has an arguable reason why he's not
-> following checkpatch..
+-- Steve
 
-Checkpatch is not very bright, it has no understanding of style beyond
-playing with pattern regexps. It's a rather dim tool that helps people
-get work done. (*)
 
-When used at random to "validate" submissions to the kernel the result is
-about as useful as a square wheel on a hovercraft.
-
-Alan
-(*) or as some would have it a rather dim tool used by even dimmer tools
-to make noise on kernel list.
