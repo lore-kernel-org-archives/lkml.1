@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934344AbZJGSM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759843AbZJGSOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934344AbZJGSM4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 14:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934325AbZJGSMz
+	id S1759843AbZJGSOu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 14:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759726AbZJGSOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 14:12:55 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:63603 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933895AbZJGSMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 14:12:54 -0400
-Subject: Re: linux-next: Tree for October 7 (libertas build failure)
-From: Dan Williams <dcbw@redhat.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-wireless@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       libertas-dev@lists.infradead.org,
-       Holger Schurig <hs4233@mail.mn-solutions.de>
-In-Reply-To: <20091007105210.409a1991.randy.dunlap@oracle.com>
-References: <20091007173517.abfcfa2a.sfr@canb.auug.org.au>
-	 <20091007105210.409a1991.randy.dunlap@oracle.com>
+	Wed, 7 Oct 2009 14:14:49 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43414 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756579AbZJGSOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 14:14:49 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+E27YfHLCEH3oy918VN/yXK/AXzGelL31dOILsKg
+	5Uy+inA14GyJPQ
+Subject: Re: Linux 2.6.32-rc3
+From: Mike Galbraith <efault@gmx.de>
+To: david@lang.hm
+Cc: Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Airlie <airlied@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.00.0910071040560.11706@asgard.lang.hm>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>
+	 <alpine.LFD.2.00.0910052140100.309@localhost.localdomain>
+	 <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>
+	 <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
+	 <1254864803.6035.25.camel@pasglop>
+	 <alpine.LFD.2.01.0910061513510.3432@localhost.localdomain>
+	 <21d7e9970910061822i429344amb47b0bceb552abc6@mail.gmail.com>
+	 <alpine.LFD.2.01.0910062015200.3432@localhost.localdomain>
+	 <alpine.LFD.2.01.0910062025300.3432@localhost.localdomain>
+	 <20091007135233.GK17883@mit.edu>
+	 <1254927134.7121.36.camel@marge.simson.net>
+	 <alpine.DEB.2.00.0910071040560.11706@asgard.lang.hm>
 Content-Type: text/plain
-Date: Wed, 07 Oct 2009 11:12:00 -0700
-Message-Id: <1254939120.16001.45.camel@localhost.localdomain>
+Date: Wed, 07 Oct 2009 20:13:48 +0200
+Message-Id: <1254939228.7523.12.camel@marge.simson.net>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.68
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 10:52 -0700, Randy Dunlap wrote:
-> On Wed, 7 Oct 2009 17:35:17 +1100 Stephen Rothwell wrote:
-> 
-> > Hi all,
-> > 
-> > Changes since 20091006:
-> 
-> 
-> drivers/built-in.o: In function `lbs_cfg_free':
-> (.text+0x3479e0): undefined reference to `wiphy_unregister'
-> drivers/built-in.o: In function `lbs_cfg_free':
-> (.text+0x3479e7): undefined reference to `wiphy_free'
-> drivers/built-in.o: In function `lbs_cfg_register':
-> (.text+0x347a52): undefined reference to `wiphy_register'
-> drivers/built-in.o: In function `lbs_cfg_alloc':
-> (.text+0x347acf): undefined reference to `wiphy_new'
+On Wed, 2009-10-07 at 10:44 -0700, david@lang.hm wrote:
 
-Holger, perhaps we need some Kconfig updates to select cfg80211?
+> as I understand it, if you only use the released kernel then 
+> CONFIG_LOCALVERSION_AUTO will make no difference to you.
+> 
+> the kernel string only changes if you use a non-release kernel.
 
-Dan
+Oh no, I pull/build multiple trees daily.
 
+	-Mike
 
