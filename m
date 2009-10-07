@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbZJGKso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbZJGKxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758917AbZJGKso (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 06:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758860AbZJGKsn
+	id S1758934AbZJGKxh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 06:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbZJGKxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 06:48:43 -0400
-Received: from www.tglx.de ([62.245.132.106]:37151 "EHLO www.tglx.de"
+	Wed, 7 Oct 2009 06:53:36 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:51070 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758827AbZJGKsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 06:48:42 -0400
-Date: Wed, 7 Oct 2009 12:47:56 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: Using set_irq_handler in set_irq_type callback?
-In-Reply-To: <20091007102836.GA27860@flint.arm.linux.org.uk>
-Message-ID: <alpine.LFD.2.00.0910071245190.9428@localhost.localdomain>
-References: <20091007100756.GA5478@pengutronix.de> <20091007102836.GA27860@flint.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1758033AbZJGKxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 06:53:36 -0400
+Date: Wed, 7 Oct 2009 12:52:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: zach.brown@oracle.com, linux-aio <linux-aio@kvack.org>,
+       Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch v4 0/3] aio: implement request batching [more
+	performance numbers]
+Message-ID: <20091007105259.GD8703@kernel.dk>
+References: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com> <x49eipga02o.fsf@segfault.boston.devel.redhat.com> <20091006180628.GB5216@kernel.dk> <x49y6no8jxw.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1619488404-1254912478=:9428"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49y6no8jxw.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, Oct 06 2009, Jeff Moyer wrote:
+> >> 40K
+> >> -------------------------------------------------
+> >> Kernel                              NOOP
+> >> ------                              ----
+> >> 2.6.30.5                            682
+> >> 2.6.30.5 (w/o drop_caches)          718
+> >> 2.6.30.5+patch_v4                   900
+> >> 2.6.30.5+patch_v4 (w/o drop caches) 965
+> >> 
+> >> 
+> >> 128K
+> >> -------------------------------------------------
+> >> Kernel                              NOOP
+> >> ------                              ----
+> >> 2.6.30.5                            242
+> >> 2.6.30.5 (w/o drop_caches)          350
+> >> 2.6.30.5+patch_v4                   292
+> >> 2.6.30.5+patch_v4 (w/o drop caches) 420
+> >
+> > Nice numbers! The patch looks good to me from a quick look, if you want
+> > I can throw it into the testing mix tomorrow and see what kind of
+> > improvements I see here. With performance increase of that magnitude, we
+> > should get it in sooner rather than later.
+> 
+> I'd love it if you could run some benchmarks, thank you!
 
---8323328-1619488404-1254912478=:9428
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+So here's a pretty basic test. It does random reads from a bunch of
+devices, I tested both 4kb and 64kb block sizes. Queue depth used is 32
+for both cases, but note that this test uses a thread per device (so the
+queue depth is 32 per device). Results are averaged over 3 runs.
+slat/clat are the submission and completion latencies, they are in
+microseconds here.
 
-On Wed, 7 Oct 2009, Russell King wrote:
-> On Wed, Oct 07, 2009 at 12:07:56PM +0200, Uwe Kleine-König wrote:
-> When it comes to RT and its thread-based interrupt model, the assumptions
-> which these handlers were designed around are no longer true.  What is
-> now required is a different handling philosophy - rather than leaving
-> the interrupt-time decision about what to do with a signalled interrupt
-> to the flow handler, it should be immediately ack'ed and disabled, and
-> the interrupt thread scheduled.
+4kb random reads
 
-That's what the code does at least for the level handler. When the
-thread has run then the irq line is reenabled.
- 
-> It is then up to the interrupt thread to determine how to handle the
-> interrupt - if it's really a level interrupt, then the interrupt thread
-> has to call the handlers before re-enabling the input.  If it's edge
-> based, the input has to be re-enabled before running the handlers (so
-> that new edges received during the running of those handlers are
-> recognised.)
+kernel               sys     IOPS       slat    clat
+----------------------------------------------------
+2.6.32-rc3+patch    25.8%   192500      7.9     2606
+2.6.32-rc3          27.4%   191300      8.4     2612
 
-That's exaclty how the RT code works :) 
- 
-> So, the technical aspects of handling of interrupts between the RT and
-> non-RT cases are quite different, and I feel that we shouldn't be
-> re-using the same flow handlers between the two cases.
 
-Why not. It works perfectly fine except for the case where a level
-type interrupt uses the edge handler :)
 
-Thanks,
+64kb random reads
 
-	tglx
---8323328-1619488404-1254912478=:9428--
+kernel               sys     IOPS       slat    clat
+----------------------------------------------------
+2.6.32-rc3+patch     2.5%    24590      9.7     9681
+2.6.32-rc3           2.5%    24580      9.4     9691
+
+So pretty close, nothing earth shattering here. What the results above
+do not show is that the 4kb test runs very stable with your patch.
+Mainline fluctuates somewhat in the bandwidth, most likely due to the
+varying depth.
+
+-- 
+Jens Axboe
+
