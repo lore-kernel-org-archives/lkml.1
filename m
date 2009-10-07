@@ -1,93 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933683AbZJGASe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933718AbZJGAdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933683AbZJGASe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 20:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933517AbZJGASe
+	id S933718AbZJGAdY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 20:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933569AbZJGAdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 20:18:34 -0400
-Received: from mga11.intel.com ([192.55.52.93]:28648 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933505AbZJGASd convert rfc822-to-8bit (ORCPT
+	Tue, 6 Oct 2009 20:33:23 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:52781 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933345AbZJGAdX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 20:18:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,515,1249282800"; 
-   d="scan'208";a="733666560"
-From: "Kay, Allen M" <allen.m.kay@intel.com>
-To: Chris Wright <chrisw@sous-sol.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "chris@sous-sol.org" <chris@sous-sol.org>,
-       "jeremy@goop.org" <jeremy@goop.org>
-Date: Tue, 6 Oct 2009 17:17:55 -0700
-Subject: RE: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
-Thread-Topic: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
-Thread-Index: AcpG3qlZMS2EV6G4Rlabx1XxOCWuIQAAriEg
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E3088733@orsmsx505.amr.corp.intel.com>
-References: <1254861226-18376-1-git-send-email-allen.m.kay@intel.com>
- <20091006234208.GB23140@sequoia.sous-sol.org>
-In-Reply-To: <20091006234208.GB23140@sequoia.sous-sol.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Tue, 6 Oct 2009 20:33:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=KszN53GNP9o3DUF+G5GRKvYULcTRZDXkai/s5YAzr2PzJpxALTRUw3udNwsO6qBwAM
+         CACQ0989RyoGe9PjJnqq/qzr+cInCwEcjlB0FsNEnbJr3Kw2ZL1aPwBvMdZXTdiNR+Bx
+         EGp3KgxFvU1o+j5wVr9H6+GCb6O8HRrG3AK5k=
+Subject: [PATCH] rtc: disable hpet emulation on suspend
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 07 Oct 2009 02:32:40 +0200
+Message-Id: <1254875560.12975.5.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Chris, I was not aware of these two functions.  I have made the following change:
+Hi,
 
-	if (iommu_found() || xen_initial_domain())
-		pci_enable_acs(dev);
+I noticed that rtc wont generate interrupts after a resume from disk.
+Here hpet rtc emulation is used.
 
-xen_intial_domain() should take care of dom0 case.  We just make the rough assumption that P2P upstream forwarding is needed if we are running on top of xen HV - similar to what we are doing for native kernel case.
+Problem is that rtc hpet comparator, isn't reinitialized after resume.
+Easiest way to solve this, is always mask all hpet interrupts on suspend
+This is triggered, when suspending with alarm set.
 
-If this is ok, I'm going to re-spin the patch.  Separate out xen_initial_domain() modification since it is predicated on Jeremy's xen.h patch.
+----
 
------Original Message-----
-From: Chris Wright [mailto:chrisw@sous-sol.org] 
-Sent: Tuesday, October 06, 2009 4:42 PM
-To: Kay, Allen M
-Cc: linux-kernel@vger.kernel.org; linux-pci@vger.kernel.org; jbarnes@virtuousgeek.org; matthew@wil.cx; chris@sous-sol.org; jeremy@goop.org
-Subject: Re: [PATCH ACS v4 1/1] Enabling PCI ACS P2P upstream forwarding
+>From e0e249d298ab0e92d247fb20440f33adf5e0a923 Mon Sep 17 00:00:00 2001
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Date: Wed, 7 Oct 2009 02:25:22 +0200
+Subject: [PATCH] rtc: disable hpet emulation on suspend
 
-* Allen Kay (allen.m.kay@intel.com) wrote:
-> +#ifdef CONFIG_DMAR
-> +extern int iommu_detected;
-> +#endif
+Otherwise, hpet driver will think it doesn't need to reinitialize
+the rtc comparator, thus rtc interrupts won't work.
 
-This should not be needed.
+This emulation isn't need for wakealarm.
 
-> +
-> +#ifdef CONFIG_XEN
-> +extern int xen_domain_type;
-> +#endif
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+---
+ drivers/rtc/rtc-cmos.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Nor this (there's already a check for is dom0 called xen_initial_domain(),
-but unclear it's relevant yet for this patch).
+diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+index f7a4701..876e3fc 100644
+--- a/drivers/rtc/rtc-cmos.c
++++ b/drivers/rtc/rtc-cmos.c
+@@ -871,8 +871,9 @@ static int cmos_suspend(struct device *dev, pm_message_t mesg)
+ 			mask = RTC_IRQMASK;
+ 		tmp &= ~mask;
+ 		CMOS_WRITE(tmp, RTC_CONTROL);
+-		hpet_mask_rtc_irq_bit(mask);
+ 
++		/* shut down hpet emulation - we don't need it for alarm */
++		hpet_mask_rtc_irq_bit(RTC_PIE|RTC_AIE|RTC_UIE);
+ 		cmos_checkintr(cmos, tmp);
+ 	}
+ 	spin_unlock_irq(&rtc_lock);
+-- 
+1.6.3.3
 
-> +
-> +	/* Enable ACS P2P upstream forwarding if HW iommu is detected */
-> +	if (iommu_detected)
 
-I think you'd want iommu_found() instead.  To avoid, e.g., GART
-triggering this one.
-
-> +		pci_enable_acs(dev);
-> +
-> +#ifdef CONFIG_XEN
-> +	/* HW iommu is not visible in xen dom0 */
-> +	if (xen_domain_type)
-> +		pci_enable_acs(dev);
-
-could do this (xen_initial_domain()) above, but it's only relevant for
-dom0 (so not needed yet?), and really seems to like it should be done by hv.
-
-thanks,
--chris
