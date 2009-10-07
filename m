@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934074AbZJGIDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933954AbZJGIBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934074AbZJGIDF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934045AbZJGIC6
+	id S933954AbZJGIBp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933943AbZJGIBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:02:58 -0400
-Received: from mga03.intel.com ([143.182.124.21]:28327 "EHLO mga03.intel.com"
+	Wed, 7 Oct 2009 04:01:44 -0400
+Received: from mga14.intel.com ([143.182.124.37]:50747 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934061AbZJGICy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:02:54 -0400
+	id S933939AbZJGIBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 04:01:41 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,518,1249282800"; 
-   d="scan'208";a="195972033"
-Message-Id: <20091007074905.569676747@intel.com>
+   d="scan'208";a="195971292"
+Message-Id: <20091007074905.694996170@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 07 Oct 2009 15:38:52 +0800
+Date: Wed, 07 Oct 2009 15:38:53 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
@@ -27,82 +27,69 @@ CC: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
        Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
        <linux-fsdevel@vger.kernel.org>, Wu Fengguang <fengguang.wu@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 34/45] writeback: sync livelock - kick background writeback
+Subject: [PATCH 35/45] writeback: sync livelock - use single timestamp for whole sync work
 References: <20091007073818.318088777@intel.com>
-Content-Disposition: inline; filename=writeback-sync-pending.patch
+Content-Disposition: inline; filename=writeback-sync-pending-start_time.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The periodic/background writeback can run forever. So when any
-sync work is enqueued, increase bdi->sync_works to notify the
-active non-sync works to exit. Non-sync works queued after all sync
-works won't be affected.
+The start time in writeback_inodes_wb() is not very useful because it
+slips at each invocation time. We shall use one _constant_ time at the
+beginning to cover this whole sync() work.
 
+The timestamp is now grabbed at work start time. It could be better set
+at the sync work submission time.
+
+CC: Jan Kara <jack@suse.cz> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- fs/fs-writeback.c           |   11 +++++++++++
- include/linux/backing-dev.h |    5 +++++
- mm/backing-dev.c            |    1 +
- 3 files changed, 17 insertions(+)
+ fs/fs-writeback.c |   17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
 --- linux.orig/fs/fs-writeback.c	2009-10-06 23:39:33.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-10-06 23:39:33.000000000 +0800
-@@ -139,6 +139,8 @@ static void wb_clear_pending(struct bdi_
- 		list_del_rcu(&work->list);
- 		if (work->args.for_background)
- 			clear_bit(WB_FLAG_BACKGROUND_WORK, &bdi->wb_mask);
-+		if (work->args.for_sync)
-+			bdi->sync_works--;
- 		spin_unlock(&bdi->wb_lock);
++++ linux/fs/fs-writeback.c	2009-10-06 23:39:39.000000000 +0800
+@@ -669,12 +669,11 @@ static long writeback_inodes_wb(struct b
+ 				struct writeback_control *wbc)
+ {
+ 	struct super_block *sb = wbc->sb, *pin_sb = NULL;
+-	const unsigned long start = jiffies;	/* livelock avoidance */
+ 	unsigned long stop_time = 0;
+ 	unsigned long wrote = 0;
  
- 		wb_work_complete(work);
-@@ -159,6 +161,8 @@ static void bdi_queue_work(struct backin
- 	 */
- 	spin_lock(&bdi->wb_lock);
- 	list_add_tail_rcu(&work->list, &bdi->work_list);
-+	if (work->args.for_sync)
-+		bdi->sync_works++;
- 	spin_unlock(&bdi->wb_lock);
+ 	if (wbc->timeout)
+-		stop_time = (start + wbc->timeout) | 1;
++		stop_time = (jiffies + wbc->timeout) | 1;
  
- 	/*
-@@ -811,6 +815,13 @@ static long wb_writeback(struct bdi_writ
- 			break;
+ 	spin_lock(&inode_lock);
  
- 		/*
-+		 * background/periodic works can run forever, need to abort
-+		 * on seeing any pending sync work, to prevent livelock it.
-+		 */
-+		if (!args->for_sync && wb->bdi->sync_works > 0)
-+			break;
-+
-+		/*
- 		 * For background writeout, stop when we are below the
- 		 * background dirty threshold
- 		 */
---- linux.orig/include/linux/backing-dev.h	2009-10-06 23:39:33.000000000 +0800
-+++ linux/include/linux/backing-dev.h	2009-10-06 23:39:33.000000000 +0800
-@@ -84,6 +84,11 @@ struct backing_dev_info {
- 	struct list_head wb_list; /* the flusher threads hanging off this bdi */
- 	unsigned long wb_mask;	  /* bitmask of registered tasks */
- 	unsigned int wb_cnt;	  /* number of registered tasks */
+@@ -699,13 +698,6 @@ static long writeback_inodes_wb(struct b
+ 			continue;
+ 		}
+ 
+-		/*
+-		 * Was this inode dirtied after sync_sb_inodes was called?
+-		 * This keeps sync from extra jobs and livelock.
+-		 */
+-		if (inode_dirtied_after(inode, start))
+-			break;
+-
+ 		if (pin_sb_for_writeback(wbc, inode, &pin_sb)) {
+ 			requeue_io(inode);
+ 			continue;
+@@ -798,6 +790,13 @@ static long wb_writeback(struct bdi_writ
+ 	long nr;
+ 	struct inode *inode;
+ 
 +	/*
-+	 * sync works queued, background works shall abort on seeing this,
-+	 * to prevent livelocking the sync works
++	 * keep sync from extra jobs and livelock
 +	 */
-+	unsigned int sync_works;
- 
- 	struct list_head work_list;
- 
---- linux.orig/mm/backing-dev.c	2009-10-06 23:38:52.000000000 +0800
-+++ linux/mm/backing-dev.c	2009-10-06 23:39:33.000000000 +0800
-@@ -647,6 +647,7 @@ int bdi_init(struct backing_dev_info *bd
- 	 */
- 	bdi->wb_mask = 1;
- 	bdi->wb_cnt = 1;
-+	bdi->sync_works = 0;
- 
- 	bdi->write_bandwidth = MAX_WRITEBACK_PAGES;
- 
++	if (wbc.for_sync) {
++		wbc.older_than_this = &oldest_jif;
++		oldest_jif = jiffies;
++	}
+ 	if (wbc.for_kupdate || wbc.for_background) {
+ 		wbc.older_than_this = &oldest_jif;
+ 		oldest_jif = jiffies - expire_interval;
 
 
