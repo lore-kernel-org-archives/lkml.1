@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbZJGMqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbZJGMrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759161AbZJGMqA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 08:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759149AbZJGMp7
+	id S933071AbZJGMrI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 08:47:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932972AbZJGMrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 08:45:59 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:52049 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759151AbZJGMp7 convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;4:1>);
-	Wed, 7 Oct 2009 08:45:59 -0400
-Message-Id: <4ACCA98202000078000187DF@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 07 Oct 2009 13:45:22 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <linux-mm@kvack.org>, <hugh.dickins@tiscali.co.uk>,
-       <linux-kernel@vger.kernel.org>
-Subject: [PATCH] adjust gfp mask passed on nested vmalloc() invocation
-	 (v2)
+	Wed, 7 Oct 2009 08:47:07 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:50424 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932936AbZJGMrG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 08:47:06 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlMFAJcnzEpMROOX/2dsb2JhbACBUtNWhCoE
+Date: Wed, 7 Oct 2009 08:46:28 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: cl@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
+Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
+	interrupt disable
+Message-ID: <20091007124628.GB27363@Krystal>
+References: <20091006233654.815079668@gentwo.org> <20091006233733.153341605@gentwo.org> <20091007025440.GB4664@Krystal> <1254906707.26976.225.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+In-Reply-To: <1254906707.26976.225.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 08:37:18 up 49 days, 23:26,  2 users,  load average: 0.22, 0.27,
+	0.24
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- avoid wasting more precious resources (DMA or DMA32 pools), when
-  being called through vmalloc_32{,_user}()
-- explicitly allow using high memory here even if the outer allocation
-  request doesn't allow it, unless is collides with __GFP_ZERO
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Tue, 2009-10-06 at 22:54 -0400, Mathieu Desnoyers wrote:
+> > > +     local_irq_save(flags);
+> > > +     preempt_enable();       /* Get rid of count */
+> > 
+> > Ugh ? Is that legit ?
+> 
+> Yeah, it reads rather awkward, and the comment doesn't make it any
+> better, but what he's doing is:
+> 
+> slab_alloc()
+>   preempt_disable();
+>   __slab_alloc()
+>     local_irq_save(flags);
+>     preempt_enable();
+> 
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Yes, I understood this is what he was doing, but I wonder about the
+impact on the scheduler. If we have:
 
----
- mm/vmalloc.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+* Jiffy 1 -- timer interrupt
 
---- linux-2.6.32-rc3/mm/vmalloc.c	2009-10-05 11:59:56.000000000 +0200
-+++ 2.6.32-rc3-vmalloc-nested-gfp/mm/vmalloc.c	2009-10-07 14:39:38.000000000 +0200
-@@ -1410,6 +1410,7 @@ static void *__vmalloc_area_node(struct 
- {
- 	struct page **pages;
- 	unsigned int nr_pages, array_size, i;
-+	gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
- 
- 	nr_pages = (area->size - PAGE_SIZE) >> PAGE_SHIFT;
- 	array_size = (nr_pages * sizeof(struct page *));
-@@ -1417,13 +1418,11 @@ static void *__vmalloc_area_node(struct 
- 	area->nr_pages = nr_pages;
- 	/* Please note that the recursion is strictly bounded. */
- 	if (array_size > PAGE_SIZE) {
--		pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
-+		pages = __vmalloc_node(array_size, nested_gfp | __GFP_HIGHMEM,
- 				PAGE_KERNEL, node, caller);
- 		area->flags |= VM_VPAGES;
- 	} else {
--		pages = kmalloc_node(array_size,
--				(gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO,
--				node);
-+		pages = kmalloc_node(array_size, nested_gfp, node);
- 	}
- 	area->pages = pages;
- 	area->caller = caller;
+* preempt disable
+* Jiffy 2 -- timer interrupt
+  -> here, the scheduler is disabled, so the timer interrupt is skipped.
+     The scheduler depends on preempt_check_resched() at preempt_enable()
+     to execute in a bounded amount of time.
+* local_irq_save
+* preempt_enable
+  -> interrupts are disabled, scheduler execution is skipped.
+* local_irq_restore
+  -> the interrupt line is low. The scheduler won't be called. There is
+     no preempt_check_resched() call.
 
+* Jiffy 3 -- timer interrupt
+  -> Scheduler finally gets executed, missing a whole jiffy.
 
+At the very least, I think an explicit preempt_check_resched should be
+added after local_irq_restore().
 
+Also, preempt_enable here should be replaced with
+preempt_enable_no_resched().
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
