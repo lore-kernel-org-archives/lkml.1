@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZJGWgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbZJGWkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbZJGWgO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 18:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZJGWgN
+	id S1755712AbZJGWkM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 18:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbZJGWkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 18:36:13 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:55946 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754697AbZJGWgM (ORCPT
+	Wed, 7 Oct 2009 18:40:11 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:36428 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755604AbZJGWkJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 18:36:12 -0400
-Subject: Re: linux-next: Tree for October 7 (libertas build failure)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Dan Williams <dcbw@redhat.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-wireless@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       libertas-dev@lists.infradead.org,
-       Holger Schurig <hs4233@mail.mn-solutions.de>
-In-Reply-To: <1254939120.16001.45.camel@localhost.localdomain>
-References: <20091007173517.abfcfa2a.sfr@canb.auug.org.au>
-	 <20091007105210.409a1991.randy.dunlap@oracle.com>
-	 <1254939120.16001.45.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-JuxiytzgcjjyFdQt2Mmq"
-Date: Thu, 08 Oct 2009 00:34:55 +0200
-Message-Id: <1254954895.3713.8.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Wed, 7 Oct 2009 18:40:09 -0400
+MIME-Version: 1.0
+Message-ID: <a5848618-ef48-43c8-a8c0-f3b4604cfede@default>
+Date: Wed, 7 Oct 2009 15:36:58 -0700 (PDT)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>, zach.brown@oracle.com,
+       chris.mason@oracle.com
+Subject: RE: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall
+ implementation
+In-Reply-To: <4ACD0333.9060603@redhat.com>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.4  (308245) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4ACD1851.00D0:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Then they will get incorrect timing once they are live migrated.
 
---=-JuxiytzgcjjyFdQt2Mmq
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I've posted a proposed (OS-independent) solution for that and
+am (slowly) in the process of implementing it.
 
-On Wed, 2009-10-07 at 11:12 -0700, Dan Williams wrote:
-
-> > drivers/built-in.o: In function `lbs_cfg_free':
-> > (.text+0x3479e0): undefined reference to `wiphy_unregister'
-> > drivers/built-in.o: In function `lbs_cfg_free':
-> > (.text+0x3479e7): undefined reference to `wiphy_free'
-> > drivers/built-in.o: In function `lbs_cfg_register':
-> > (.text+0x347a52): undefined reference to `wiphy_register'
-> > drivers/built-in.o: In function `lbs_cfg_alloc':
-> > (.text+0x347acf): undefined reference to `wiphy_new'
->=20
-> Holger, perhaps we need some Kconfig updates to select cfg80211?
-
-Depend on, please -- cfg80211 has dependencies that would otherwise be
-messed up.
-
-johannes
-
---=-JuxiytzgcjjyFdQt2Mmq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKzReIAAoJEODzc/N7+QmaCgAP/1y+IhIC2lLiqthiOSO23gNf
-ecUTj1Gxs1AXltLj1azkul7WvhLcBuH0O2Y0NdgQrwBJO0tQqOiG4fySvvA71AzT
-a7Hx/NN6cV3qKCj7Iyx6FFHIj/Sm5d8xRoySm4vAmrkemj0Pk5Dz5YVFZHIGvizp
-uU/QRph4Do7R51XR22ePB8NxxfM3LDh9oNLjxkEQ9khJg4PpCRS5c99VLuwKaeOZ
-MQ6fD0yTT+5iAbHonRIGiBdlVCF/5Mbs+cDwJwWU0nJsMy4RHKaHH7x/UvHuorjH
-ygS8gHWaiYbIvJCyO+BdHwqHRRB8RTx5ys7NyjJEgb7SlfEg6wrU18q2pkIjmZ9Z
-/R1LX/zqKjX/42GFOAw9SkW1njm7NfwjLfkzOGp4CB7UnMpMZQc/ZUYBlGl6udQ8
-NULaMR5hBXOZhRF5iwTB8qmT50Xi2QaNjSc8bAcIysAy3I50cP/7K6ttBxzTRzJW
-oMtAE9RkZR1x/i0wJCviABjWeU0tmAdYaFI7YQgduw3x3vG63nDiU511rg866YIL
-DDdo4kt21AIqKsydTmeVUWUyOpl4JxY1uLuy+HTNi4oMaiZIBGeeExjf1Xxo9Kyg
-z8aMKUBcQcChhcmth/yiBDeZhGsEl2IkSClXOhJHzJHCTAF2GRfMbCld2zBTaqtD
-dJ+/KT3GwnWY0YxFFuZk
-=CkZN
------END PGP SIGNATURE-----
-
---=-JuxiytzgcjjyFdQt2Mmq--
-
+> -----Original Message-----
+> From: Avi Kivity [mailto:avi@redhat.com]
+> Sent: Wednesday, October 07, 2009 3:08 PM
+> To: Dan Magenheimer
+> Cc: Jeremy Fitzhardinge; Jeremy Fitzhardinge; Xen-devel; Kurt Hackel;
+> the arch/x86 maintainers; Linux Kernel Mailing List; Glauber 
+> de Oliveira
+> Costa; Keir Fraser; Zach Brown; Chris Mason
+> Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall
+> implementation
+> 
+> 
+> On 10/07/2009 10:48 PM, Dan Magenheimer wrote:
+> >> We can support them by falling back to the kernel.  I'm a 
+> bit worried
+> >> about the kernel playing with the hypervisor's version field.  It's
+> >> better to introduce yet a new version for the kernel, and 
+> check both.
+> >>      
+> > On Nehalem, apps that need timestamp information at a high
+> > frequency will likely use rdtsc/rdtscp directly.
+> >
+> >    
+> 
+> Then they will get incorrect timing once they are live migrated.
+> 
+> -- 
+> I have a truly marvellous patch that fixes the bug which this
+> signature is too narrow to contain.
+> 
+> 
+>
