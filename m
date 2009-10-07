@@ -1,209 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758969AbZJGLUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758966AbZJGLVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758969AbZJGLUB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 07:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758940AbZJGLUA
+	id S1758966AbZJGLVH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 07:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758856AbZJGLVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 07:20:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55313
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758864AbZJGLT7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 07:19:59 -0400
-Date: Wed, 07 Oct 2009 04:19:54 -0700 (PDT)
-Message-Id: <20091007.041954.229456480.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Oct 2009 07:21:00 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:17911
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758410AbZJGLU7 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 07:20:59 -0400
+X-SpamScore: -7
+X-BigFish: VPS-7(zz14c3L655Nzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KR565G-04-AU4-02
+X-M-MSG: 
+Date: Wed, 7 Oct 2009 13:20:38 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: <x86@aftab>, <linux-kernel@vger.kernel.org>
+Subject: [RESEND PATCH] mce, edac: use an atomic notifier for MCEs decoding
+Message-ID: <20091007112038.GA2505@aftab>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 07 Oct 2009 11:20:01.0363 (UTC) FILETIME=[1C696A30:01CA4740]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add an atomic notifier which ensures proper locking when conveying MCE
+info to EDAC for decoding. The actual notifier call overrides a default,
+negative priority notifier.
 
-1) Device ID additions for IXGBE, and some CIS additions for
-   pcmcia networking devices.
+Note: make sure we register the default decoder only once since
+mcheck_init() runs on each CPU.
 
-2) Two pktgen fixes from Eric Dumazet.   Packet delays regressed
-   in this merge window and the multiqueue support doesn't handle
-   specifying exactly one specific queue to use properly.
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+LKML-Reference: <20091003065752.GA8935@liondog.tnic>
+---
+ arch/x86/include/asm/mce.h       |    3 ++-
+ arch/x86/kernel/cpu/mcheck/mce.c |   30 +++++++++++++++++++++---------
+ drivers/edac/edac_mce_amd.c      |   23 ++++++++++++++---------
+ 3 files changed, 37 insertions(+), 19 deletions(-)
 
-3) Kill libc5 crap from linux/socket.h, that just makes it impossible
-   to include sys/socket.h after it in userland apps.  From Ben Hutchings.
+diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
+index f1363b7..227a72d 100644
+--- a/arch/x86/include/asm/mce.h
++++ b/arch/x86/include/asm/mce.h
+@@ -108,6 +108,8 @@ struct mce_log {
+ #define K8_MCE_THRESHOLD_BANK_5    (MCE_THRESHOLD_BASE + 5 * 9)
+ #define K8_MCE_THRESHOLD_DRAM_ECC  (MCE_THRESHOLD_BANK_4 + 0)
+ 
++extern struct atomic_notifier_head x86_mce_decoder_chain;
++
+ #ifdef __KERNEL__
+ 
+ #include <linux/percpu.h>
+@@ -213,6 +215,5 @@ extern void (*threshold_cpu_callback)(unsigned long action, unsigned int cpu);
+ void intel_init_thermal(struct cpuinfo_x86 *c);
+ 
+ void mce_log_therm_throt_event(__u64 status);
+-
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_X86_MCE_H */
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index b1598a9..09c2e2e 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -85,18 +85,26 @@ static DECLARE_WAIT_QUEUE_HEAD(mce_wait);
+ static DEFINE_PER_CPU(struct mce, mces_seen);
+ static int			cpu_missing;
+ 
+-static void default_decode_mce(struct mce *m)
++/*
++ * CPU/chipset specific EDAC code can register a notifier call here to print
++ * MCE errors in a human-readable form.
++ */
++ATOMIC_NOTIFIER_HEAD(x86_mce_decoder_chain);
++EXPORT_SYMBOL_GPL(x86_mce_decoder_chain);
++
++static int default_decode_mce(struct notifier_block *nb, unsigned long val,
++			       void *data)
+ {
+ 	pr_emerg("No human readable MCE decoding support on this CPU type.\n");
+ 	pr_emerg("Run the message through 'mcelog --ascii' to decode.\n");
++
++	return NOTIFY_STOP;
+ }
+ 
+-/*
+- * CPU/chipset specific EDAC code can register a callback here to print
+- * MCE errors in a human-readable form:
+- */
+-void (*x86_mce_decode_callback)(struct mce *m) = default_decode_mce;
+-EXPORT_SYMBOL(x86_mce_decode_callback);
++static struct notifier_block mce_dec_nb = {
++	.notifier_call = default_decode_mce,
++	.priority      = -1,
++};
+ 
+ /* MCA banks polled by the period polling timer for corrected events */
+ DEFINE_PER_CPU(mce_banks_t, mce_poll_banks) = {
+@@ -204,9 +212,9 @@ static void print_mce(struct mce *m)
+ 
+ 	/*
+ 	 * Print out human-readable details about the MCE error,
+-	 * (if the CPU has an implementation for that):
++	 * (if the CPU has an implementation for that)
+ 	 */
+-	x86_mce_decode_callback(m);
++	atomic_notifier_call_chain(&x86_mce_decoder_chain, 0, m);
+ }
+ 
+ static void print_mce_head(void)
+@@ -1420,6 +1428,10 @@ void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
+ 	mce_cpu_features(c);
+ 	mce_init_timer();
+ 	INIT_WORK(&__get_cpu_var(mce_work), mce_process_work);
++
++	if (raw_smp_processor_id() == 0)
++		atomic_notifier_chain_register(&x86_mce_decoder_chain,
++					       &mce_dec_nb);
+ }
+ 
+ /*
+diff --git a/drivers/edac/edac_mce_amd.c b/drivers/edac/edac_mce_amd.c
+index 713ed7d..6ee7529 100644
+--- a/drivers/edac/edac_mce_amd.c
++++ b/drivers/edac/edac_mce_amd.c
+@@ -3,7 +3,6 @@
+ 
+ static bool report_gart_errors;
+ static void (*nb_bus_decoder)(int node_id, struct err_regs *regs);
+-static void (*orig_mce_callback)(struct mce *m);
+ 
+ void amd_report_gart_errors(bool v)
+ {
+@@ -363,8 +362,10 @@ static inline void amd_decode_err_code(unsigned int ec)
+ 		pr_warning("Huh? Unknown MCE error 0x%x\n", ec);
+ }
+ 
+-static void amd_decode_mce(struct mce *m)
++static int amd_decode_mce(struct notifier_block *nb, unsigned long val,
++			   void *data)
+ {
++	struct mce *m = (struct mce *)data;
+ 	struct err_regs regs;
+ 	int node, ecc;
+ 
+@@ -420,20 +421,23 @@ static void amd_decode_mce(struct mce *m)
+ 	}
+ 
+ 	amd_decode_err_code(m->status & 0xffff);
++
++	return NOTIFY_STOP;
+ }
+ 
++static struct notifier_block amd_mce_dec_nb = {
++	.notifier_call	= amd_decode_mce,
++};
++
+ static int __init mce_amd_init(void)
+ {
+ 	/*
+ 	 * We can decode MCEs for Opteron and later CPUs:
+ 	 */
+ 	if ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
+-	    (boot_cpu_data.x86 >= 0xf)) {
+-		/* safe the default decode mce callback */
+-		orig_mce_callback = x86_mce_decode_callback;
+-
+-		x86_mce_decode_callback = amd_decode_mce;
+-	}
++	    (boot_cpu_data.x86 >= 0xf))
++		atomic_notifier_chain_register(&x86_mce_decoder_chain,
++					       &amd_mce_dec_nb);
+ 
+ 	return 0;
+ }
+@@ -442,7 +446,8 @@ early_initcall(mce_amd_init);
+ #ifdef MODULE
+ static void __exit mce_amd_exit(void)
+ {
+-	x86_mce_decode_callback = orig_mce_callback;
++	atomic_notifier_chain_unregister(&x86_mce_decoder_chain,
++					 &amd_mce_dec_nb);
+ }
+ 
+ MODULE_DESCRIPTION("AMD MCE decoder");
+-- 
+1.6.4.3
 
-4) e1000e regression fix, limitation on jumbo frames was applied to
-   wrong chip IDs.  From Alexander Duyck.
 
-5) get_wireless_stats() executes get stats operations in a different
-   context than it normally would, they need to be able to sleep.
-   So when getting stats from sysfs, use rtnl mutex instead of
-   dev_base_lock.  From Johannes Berg.
+-- 
+Regards/Gruss,
+Boris.
 
-6) be2net flash operation submission, ethtool TX checksumming,
-   multicast frame accounting, and macro definition fixes from Ajit
-   Khaparde.
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
-7) tg3 PHY library locking was bolixed, fixed by Matt Carlson.
-
-8) Improperly paren'd unlikely() statement in netxen driver, fix from
-   Roel Kluin.
-
-9) qlge bug fixes from Ron Mercer
-
-10) Fix from Stephen Hemminger for arp_notify, it can crash with
-    a NULL pointer if there are no IPV4 addresses attached to the
-    interface at notification time.  With help from Eric Dumazet.
-
-11) ethoc bug fixes from Thomas Chou
-
-12) Deal with the backlog of ISDN bug fixes from Tilman Schmidt,
-    Karsten hasn't been respinsive for 2 or 3 weeks so I'm handling
-    ISDN stuff starting now until he can find time again.
-
-13) pasemi_mac can oops on a NULL pointer on ethtool get-settings
-    calls with some PHY types, fix from Valentine Barshak.
-
-14) au1000_eth tests wrong bits for RX errors, fix from Roel Kluin.
-
-Please pull, thanks a lot!
-
-The following changes since commit 0eca52a92735f43462165efe00a7e394345fb38e:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/ide-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Ajit Khaparde (4):
-      be2net: Fix a bug in preparation of mcc wrb which was causing flash operation to fail
-      be2net: Bug Fix while accounting of multicast frames during netdev stats update
-      be2net: Fix a typo in be_cmds.h
-      be2net: Bug fix to properly update ethtool tx-checksumming after ethtool -K <ifname> tx off
-
-Alexander Duyck (1):
-      e1000e: swap max hw supported frame size between 82574 and 82583
-
-Ben Hutchings (1):
-      net: Support inclusion of <linux/socket.h> before <sys/socket.h>
-
-Don Skidmore (2):
-      ixgbe: add support for 82599 Combined Backplane
-      ixgbe: add support for 82599 based X520 10G Dual KX4 Mezz card
-
-Eric Dumazet (2):
-      pktgen: Fix multiqueue handling
-      pktgen: restore nanosec delays
-
-Johannes Berg (1):
-      wext: let get_wireless_stats() sleep
-
-John W. Linville (1):
-      rndis_host: support ETHTOOL_GPERMADDR
-
-Ken Kawasaki (1):
-      pcnet_cs: add cis of National Semicondoctor's multifunction pcmcia card
-
-Matt Carlson (1):
-      tg3: Fix phylib locking strategy
-
-Neil Horman (1):
-      add maintainer for network drop monitor kernel service
-
-Roel Kluin (1):
-      netxen: Fix Unlikely(x) > y
-
-Ron Mercer (3):
-      qlge: Fix some bit definitions for reset register.
-      qlge: Fix queueing of firmware handler in ISR.
-      qlge: Fix lock/mutex warnings.
-
-Stephen Boyd (1):
-      connector: Fix incompatible pointer type warning
-
-Stephen Hemminger (1):
-      ipv4: arp_notify address list bug
-
-Thomas Chou (5):
-      ethoc: fix typo to compute number of tx descriptors
-      ethoc: fix buffer address mapping
-      ethoc: align received packet to make IP header at word boundary
-      ethoc: use system memory as buffer
-      ethoc: limit the number of buffers to 128
-
-Tilman Schmidt (12):
-      Documentation: expand isdn/INTERFACE.CAPI document
-      isdn: accept CAPI Informational Info values as success
-      isdn: avoid races in capidrv
-      isdn: make capidrv module parameter "debugmode" writeable
-      gigaset: fix reject/hangup handling
-      gigaset: linearize skb
-      gigaset: handle isoc frame errors more gracefully
-      gigaset: announce if built with debugging
-      gigaset: fix device ERROR response handling
-      gigaset: improve error recovery
-      gigaset: correct debugging output selection
-      gigaset: add kerneldoc comments
-
-Valentine Barshak (1):
-      pasemi_mac: ethtool get settings fix
-
-roel kluin (1):
-      au1000_eth: Duplicate test of RX_OVERLEN bit in update_rx_stats()
-
- Documentation/isdn/INTERFACE.CAPI    |   83 +++++++++++++++++----
- Documentation/networking/pktgen.txt  |    8 ++
- MAINTAINERS                          |    7 ++
- drivers/connector/cn_proc.c          |    3 +-
- drivers/isdn/capi/capi.c             |    2 +-
- drivers/isdn/capi/capidrv.c          |   27 ++++---
- drivers/isdn/gigaset/asyncdata.c     |   28 +++++---
- drivers/isdn/gigaset/bas-gigaset.c   |   87 +++++++++++++---------
- drivers/isdn/gigaset/common.c        |  134 ++++++++++++++++++++++++++++------
- drivers/isdn/gigaset/ev-layer.c      |   30 +++++---
- drivers/isdn/gigaset/i4l.c           |   23 ++++++
- drivers/isdn/gigaset/interface.c     |    9 ++
- drivers/isdn/gigaset/isocdata.c      |   30 ++++---
- drivers/net/au1000_eth.c             |    4 +-
- drivers/net/benet/be_cmds.c          |    1 -
- drivers/net/benet/be_cmds.h          |    2 +-
- drivers/net/benet/be_ethtool.c       |    2 +-
- drivers/net/benet/be_main.c          |    6 +-
- drivers/net/e1000e/82571.c           |    4 +-
- drivers/net/ethoc.c                  |   81 ++++++++++++++-------
- drivers/net/ixgbe/ixgbe_82599.c      |    2 +
- drivers/net/ixgbe/ixgbe_main.c       |    4 +
- drivers/net/ixgbe/ixgbe_type.h       |    2 +
- drivers/net/netxen/netxen_nic_main.c |    2 +-
- drivers/net/pasemi_mac_ethtool.c     |    3 +
- drivers/net/pcmcia/pcnet_cs.c        |   10 +-
- drivers/net/qlge/qlge.h              |    8 +-
- drivers/net/qlge/qlge_ethtool.c      |    2 -
- drivers/net/qlge/qlge_main.c         |   18 +---
- drivers/net/qlge/qlge_mpi.c          |   12 ++-
- drivers/net/tg3.c                    |   41 ++++-------
- drivers/net/tg3.h                    |    1 -
- drivers/net/usb/rndis_host.c         |    1 +
- drivers/serial/serial_cs.c           |   12 ++--
- firmware/Makefile                    |    7 +-
- firmware/WHENCE                      |    5 +
- firmware/cis/COMpad2.cis.ihex        |   11 +++
- firmware/cis/COMpad4.cis.ihex        |    9 ++
- firmware/cis/DP83903.cis.ihex        |   14 ++++
- firmware/cis/NE2K.cis.ihex           |    8 ++
- firmware/cis/tamarack.cis.ihex       |   10 +++
- include/linux/socket.h               |   21 +-----
- net/core/net-sysfs.c                 |    4 +-
- net/core/pktgen.c                    |    4 +-
- net/ipv4/devinet.c                   |   16 +++--
- 45 files changed, 545 insertions(+), 253 deletions(-)
- create mode 100644 firmware/cis/COMpad2.cis.ihex
- create mode 100644 firmware/cis/COMpad4.cis.ihex
- create mode 100644 firmware/cis/DP83903.cis.ihex
- create mode 100644 firmware/cis/NE2K.cis.ihex
- create mode 100644 firmware/cis/tamarack.cis.ihex
