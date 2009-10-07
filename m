@@ -1,65 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759090AbZJGLf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbZJGLlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759090AbZJGLf4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 07:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759056AbZJGLfz
+	id S932518AbZJGLlf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 07:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759073AbZJGLle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 07:35:55 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:28375 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759006AbZJGLfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 07:35:54 -0400
-Date: Wed, 7 Oct 2009 13:30:49 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] signals: SEND_SIG_NOINFO should be considered as
-	SI_FROMUSER()
-Message-ID: <20091007113049.GA3421@redhat.com>
-References: <4AC608BE.9020805@fr.ibm.com> <20091003171029.GA30442@us.ibm.com> <20091004021844.GA21006@redhat.com> <20091004021918.GB21006@redhat.com> <20091006073100.4184128@magilla.sf.frob.com> <20091006133732.GB8628@redhat.com> <20091006175705.6547A22@magilla.sf.frob.com>
+	Wed, 7 Oct 2009 07:41:34 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:55006 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758959AbZJGLld (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 07:41:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mime-version
+         :content-type:content-disposition:user-agent;
+        b=eqcxoJ/rJh9rINYYOxFFs6LLqb2D3CjnHLf8rfJ/Gy792ACDr7NEImszwCfbx32+JC
+         dgymEgsR9VN956LkRmTXPogbJ9cgDSVcqYsLVIYoQxsAGKN9az1cYdCX/ZNallMlmhIh
+         L2Sz/q51n6C86UpJQXJomGFpl6iby9kSlj4Dc=
+Date: Wed, 7 Oct 2009 19:39:15 +0800
+From: Zhenwen Xu <helight.xu@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH V3] fix a warning on kernel/trace/trace_branch.c
+	andtrace_hw_branches.c
+Message-ID: <20091007113915.GA5265@helight>
+Reply-To: Zhenwen Xu <helight.xu@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091006175705.6547A22@magilla.sf.frob.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/06, Roland McGrath wrote:
->
-> > Perhaps, we should add the comment to explain that both SI_FROMUSER()
-> > and si_fromuser() are only valid in the sending pathes.
->
-> Yes.  Also now that you put them both in a sentence together, it is clear
-> that it is insane to have two different things with those two names that
-> differ only in capitalization.
+fix warnings that caused the API change of trace_buffer_lock_reserve()
+change files: kernel/trace/trace_hw_branch.c
+	      kernel/trace/trace_branch.c
 
-I think this doesn't matter because we need more cleanups. As for naming
-I agree, si_fromuser() sucks and I'd be happy to send the patch which
-renames it (or re-send these 2 patches).
+Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
+---
+ kernel/trace/trace_branch.c      |    2 +-
+ kernel/trace/trace_hw_branches.c |    6 ++++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-The problem is, both SI_FROMUSER() and SI_FROMKERNEL() must die imho.
-In fact I think they should never exist.
+diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+index 7a7a9fd..216e2dd 100644
+--- a/kernel/trace/trace_branch.c
++++ b/kernel/trace/trace_branch.c
+@@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+ 		goto out;
+ 
+ 	pc = preempt_count();
+-	event = trace_buffer_lock_reserve(tr, TRACE_BRANCH,
++	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
+ 					  sizeof(*entry), flags, pc);
+ 	if (!event)
+ 		goto out;
+diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
+index 23b6385..e40f5fb 100644
+--- a/kernel/trace/trace_hw_branches.c
++++ b/kernel/trace/trace_hw_branches.c
+@@ -165,6 +165,7 @@ void trace_hw_branch(u64 from, u64 to)
+ 	struct ftrace_event_call *call = &event_hw_branch;
+ 	struct trace_array *tr = hw_branch_trace;
+ 	struct ring_buffer_event *event;
++	struct ring_buffer      *buf;
+ 	struct hw_branch_entry *entry;
+ 	unsigned long irq1;
+ 	int cpu;
+@@ -180,7 +181,8 @@ void trace_hw_branch(u64 from, u64 to)
+ 	if (atomic_inc_return(&tr->data[cpu]->disabled) != 1)
+ 		goto out;
+ 
+-	event = trace_buffer_lock_reserve(tr, TRACE_HW_BRANCHES,
++	buf = tr->buffer
++	event = trace_buffer_lock_reserve(buf, TRACE_HW_BRANCHES,
+ 					  sizeof(*entry), 0, 0);
+ 	if (!event)
+ 		goto out;
+@@ -190,7 +192,7 @@ void trace_hw_branch(u64 from, u64 to)
+ 	entry->from = from;
+ 	entry->to   = to;
+ 	if (!filter_check_discard(call, entry, tr->buffer, event))
+-		trace_buffer_unlock_commit(tr, event, 0, 0);
++		trace_buffer_unlock_commit(buf, event, 0, 0);
+ 
+  out:
+ 	atomic_dec(&tr->data[cpu]->disabled);
+-- 
+1.6.3.3
 
-	SI_FROMUSER(siptr)      ((siptr)->si_code <= 0)
-
-note "<=", this means this helper is unuseable. What we need is another
-macro/inline which checks "si_code < 0" (or >= 0 depending on naming),
-this helper should be used by sys_sigqueueinfo/etc which can not not use
-SI_FROMXXX() because SI_USER is rightly forbidden. __send_signal() can
-use the new helper too.
-
-Other cleanups which imho makes sense:
-
-	- rename SEND_SIG_XXX
-
-	- redefine them to make sure SEND_SIG_NOINFO != NULL
-
-Oleg.
-
+-- 
+--------------------------------
+http://zhwen.org - Open and Free
