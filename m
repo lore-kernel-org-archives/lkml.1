@@ -1,31 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbZJGB4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933764AbZJGCEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbZJGB4i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 21:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbZJGB4h
+	id S933764AbZJGCEB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 22:04:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbZJGCEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 21:56:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47382 "EHLO
+	Tue, 6 Oct 2009 22:04:01 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53970 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756162AbZJGB4g (ORCPT
+	with ESMTP id S1754043AbZJGCEA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 21:56:36 -0400
-Subject: Re: [PATCH 1/4] jump label - make init_kernel_text() global
+	Tue, 6 Oct 2009 22:04:00 -0400
+Subject: Re: system gets stuck in a lock during boot
 From: Steven Rostedt <rostedt@goodmis.org>
 Reply-To: rostedt@goodmis.org
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, ak@suse.de,
-       roland@redhat.com, rth@redhat.com, mhiramat@redhat.com
-In-Reply-To: <20091003123900.GA22046@Krystal>
-References: <cover.1253831945.git.jbaron@redhat.com>
-	 <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com>
-	 <20091001112003.GA2962@elte.hu> <20091001203905.GD2660@redhat.com>
-	 <20091003104335.GB15919@elte.hu>  <20091003123900.GA22046@Krystal>
+To: Jason Baron <jbaron@redhat.com>
+Cc: Justin Mattock <justinmattock@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091006203225.GC2631@redhat.com>
+References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>
+	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>
+	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>
+	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>
+	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>
+	 <20091002211211.GA2633@redhat.com>
+	 <1254792249.13160.213.camel@gandalf.stny.rr.com>
+	 <20091006203225.GC2631@redhat.com>
 Content-Type: text/plain
 Organization: Kihon Technologies Inc.
-Date: Tue, 06 Oct 2009 21:54:38 -0400
-Message-Id: <1254880478.1696.104.camel@gandalf.stny.rr.com>
+Date: Tue, 06 Oct 2009 22:02:01 -0400
+Message-Id: <1254880921.1696.112.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
@@ -33,49 +38,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-03 at 08:39 -0400, Mathieu Desnoyers wrote:
+On Tue, 2009-10-06 at 16:32 -0400, Jason Baron wrote:
 
-> I might be missing a bit of context here, I just want to make sure we
-> are on the same page: patching a jmp instruction is safe on UP, safe
-> with stop_machine(), is very likely safe with the breakpoint-ipi
+> So the problem I'm seeing is an oops on boot caused by the call->system pointer
+> deference in event_create_dir(). The 'call' variable is of type 'struct
+> ftrace_event_call'. 
+> 
+> What's going on is that the 'struct ftrace_event_call' is of size 168 bytes
+> (sizeof(struct ftrace_event_call)) = 168 = 0xA8. However, in memory the
+> structures are 16-byte aligned. Thus, the stride for walking through the
+> pointers needs to be 176 (0xB0), but instead its 168 causing the oops.
+> 
+> I've only seen this issue while using gcc (GCC) 4.5.0 20090916, on a
+> vanilla 2.6.31 kernel.
+> 
+> That said, I'm not sure the compiler is doing the wrong thing here. The
+> 'struct ftrace_event_call' contains an embedded 'struct list_head' which
+> is 16 bytes. According to the gcc docs, the aligned attribute, 'specifies a
+> minimum alignment for the variable or structure field, measured in bytes'.
+> Thus, at least according to the docs, gcc can increase the alignment of the
+> 'struct ftrace_event_call', from its original specification of 4, to 16. Even
+> in the case where we are working corectly the structures are 8-byte aligned.
+> 
+> Thus, I would reccommend the patch below as a preventive measure. Its
+> the minimal patch I've found to resolve this issue. In general, if we
+> are going to walk data structures embedded in a special elf section, I
+> think the general rules needs to be to set the alignment to the power of
+> two which is greater than or equal to the largest item in the structure.
+> 
+> thanks,
+> 
+> -Jason
+> 
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> 
+> 
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index a81170d..7182f03 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -124,7 +124,10 @@ struct ftrace_event_call {
+>  	atomic_t		profile_count;
+>  	int			(*profile_enable)(struct ftrace_event_call *);
+>  	void			(*profile_disable)(struct ftrace_event_call *);
+> -};
+> +} __attribute__((aligned(16)));
+> +
+> +/* Align to the largest field in the data structure:
+> + * sizeof(struct list_head) = 16 */
 
-Hi Mathieu,
+Is this true for i386?
 
-I've been reading through these threads (both this one and the immediate
-one) and I'm still a bit confused. I really want to understand this in a
-simple way, thus make sure everyone else understands it too.
+I just tried this patch and it seems to work. Can you give it a try.
 
->From what Arjan said here:
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-  http://lkml.org/lkml/2009/9/25/98
 
-The issue is going back from the int3 to the old value. How does the
-breakpoint-ipi work?
-
-Supposedly, we can add an int3 to the code without any worry. If another
-CPU at that same time hits that code path, it will either run the old
-code, or take the interrupt. The breakpoint interrupt handler, will
-handle that code path, and the execution continues.
-
-Now what is the issues with removing the int3 and placing back the old
-(or new) value. Is there an issue if another CPU is about to execute
-that code path as we remove the int3? If so, how does sending an IPI
-help the matter without adding more races?
-
-Is there only an issue if we change the old value with something else,
-and you just need to send the IPI after you modify the old code and
-before removing the int3?
-
-I may just be totally confused, which I usually am. But when I'm not
-confused, I feel that the code is practical ;-)
-
--- Steve
-
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index 4ec5e67..044b70d 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -133,7 +133,7 @@ struct ftrace_event_call {
+ 	atomic_t		profile_count;
+ 	int			(*profile_enable)(void);
+ 	void			(*profile_disable)(void);
+-};
++} __attribute__((aligned(sizeof(struct list_head))));
  
-
-> approach (but we need the confirmation from Intel, which hpa is trying
-> to get), but is definitely _not_ safe if neither of these methods are
-> used on a SMP system. If a non-aligned multi-word jump is modified while
-> another CPU is fetching the instruction, bad things could happen.
+ #define FTRACE_MAX_PROFILE_SIZE	2048
+ 
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index cc0d966..31e7637 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -501,7 +501,6 @@ static void ftrace_profile_disable_##call(void)				\
+  * }
+  *
+  * static struct ftrace_event_call __used
+- * __attribute__((__aligned__(4)))
+  * __attribute__((section("_ftrace_events"))) event_<call> = {
+  *	.name			= "<call>",
+  *	.system			= "<system>",
+@@ -619,7 +618,6 @@ static int ftrace_raw_init_event_##call(void)				\
+ }									\
+ 									\
+ static struct ftrace_event_call __used					\
+-__attribute__((__aligned__(4)))						\
+ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.name			= #call,				\
+ 	.system			= __stringify(TRACE_SYSTEM),		\
 
 
