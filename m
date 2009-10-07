@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbZJGRbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbZJGRfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757894AbZJGRbu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 13:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbZJGRbt
+	id S1757728AbZJGRfg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 13:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZJGRff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 13:31:49 -0400
-Received: from mga01.intel.com ([192.55.52.88]:4958 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757433AbZJGRbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 13:31:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,520,1249282800"; 
-   d="scan'208";a="500761702"
-From: Allen Kay <allen.m.kay@intel.com>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Cc: jbarnes@virtuousgeek.org, matthew@wil.cx, chris@sous-sol.org,
-       jeremy@goop.org, don.dugger@intel.com,
-       Allen Kay <allen.m.kay@intel.com>
-Subject: [ACS PATCH v5 2/2] adding xen dom0 checking
-Date: Wed,  7 Oct 2009 10:27:51 -0700
-Message-Id: <1254936471-18602-1-git-send-email-allen.m.kay@intel.com>
-X-Mailer: git-send-email 1.6.0.6
+	Wed, 7 Oct 2009 13:35:35 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:60602 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752170AbZJGRff (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 13:35:35 -0400
+Date: Wed, 7 Oct 2009 19:34:58 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.32-rc3: floating-point build failure (undefined reference
+	to `__udivdi3' in menu governor)
+Message-ID: <20091007173457.GA25415@rhlx01.hs-esslingen.de>
+References: <20091007104125.GA1449@rhlx01.hs-esslingen.de> <4ACCA44B.3070706@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ACCA44B.3070706@linux.intel.com>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is predicated on Jeremy's patch in include/xen/xen.h.
+Hi,
 
-Signed-off-by: Allen Kay <allen.m.kay@intel.com>
----
- drivers/pci/probe.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+On Wed, Oct 07, 2009 at 07:23:07AM -0700, Arjan van de Ven wrote:
+> Andreas Mohr wrote:
+>> Hi,
+>>
+>> didn't find any report about this, so...
+>>
+>>   LD      .tmp_vmlinux1
+>> drivers/built-in.o(.text+0xd85a1): In function `menu_select':
+>> drivers/cpuidle/governors/menu.c:212: undefined reference to `__udivdi3'
+>> make: *** [.tmp_vmlinux1] Error 1
+>>
+>> # gcc -v
+>> Reading specs from /usr/lib/gcc-lib/i386-redhat-linux/3.2.3/specs
+>> Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --enable-shared --enable-threads=posix --disable-checking --with-system-zlib --enable-__cxa_atexit --host=i386-redhat-linux
+>> Thread model: posix
+>> gcc version 3.2.3 20030502 (Red Hat Linux 3.2.3-49)
+>
+> seems you're the only user of this left.
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index aa98258..e9b347e 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -11,6 +11,7 @@
- #include <linux/cpumask.h>
- #include <linux/pci-aspm.h>
- #include <linux/iommu.h>
-+#include <xen/xen.h>
- #include "pci.h"
- 
- #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
-@@ -1017,7 +1018,7 @@ static void pci_init_capabilities(struct pci_dev *dev)
- 	pci_iov_init(dev);
- 
- 	/* Enable ACS P2P upstream forwarding */
--	if (iommu_found())
-+	if (iommu_found() || xen_initial_domain())
- 		pci_enable_acs(dev);
- }
- 
--- 
-1.6.0.6
+Oh my...
 
+> it's not floating point but a 64 bit division.
+> The only one I can imagine is the one on line 213
+>
+> looking at it, can you try sticking (u32) at the end of line 212; that multiply is not very likely to exceed 32 bits
+
+Nopeee.
+
+        data->predicted_us = DIV_ROUND_CLOSEST((u32)
+                data->expected_us * data->correction_factor[data->bucket],
+                (u32)RESOLUTION * DECAY);
+
+It did properly rebuild drivers/cpuidle/governors/menu.o.
+Still happening.
+IOW it must be somewhere inside the DIV_ROUND_CLOSEST macro or so.
+
+Andreas Mohr
