@@ -1,299 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934140AbZJGPwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759442AbZJGPxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934140AbZJGPwW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757312AbZJGPwW
+	id S1759442AbZJGPxv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZJGPxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:52:22 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:50399 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753609AbZJGPwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:52:21 -0400
-Date: Wed, 7 Oct 2009 08:51:42 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: catalin.marinas@arm.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.32-rc3 kmemleak] WARNING: at kernel/lockdep.c:3161
-	check_flags+0xbe/0x180()
-Message-ID: <20091007155142.GB6743@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <200910050315.n953FCD9030264@www262.sakura.ne.jp>
+	Wed, 7 Oct 2009 11:53:51 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:8580 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbZJGPxu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 11:53:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=sUzX+0YirmoFUCc3KDAr4mINreL+jwCVRKa5pQq4HzlQoYiq2BcqCFDueX2nPX47n4
+         qjJmVtpIMEA0mNOSz1h1LqkKn2+4jv7as+FQSclk8mZWIOFdg7VEQ2ZKl5AN/1LdVuFO
+         qxKSdq+HUPkfLUpJe/t/KFUzWYCsZk/o7037A=
+Message-ID: <4ACCB934.7070805@gmail.com>
+Date: Wed, 07 Oct 2009 08:52:20 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910050315.n953FCD9030264@www262.sakura.ne.jp>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: rostedt@goodmis.org
+CC: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: system gets stuck in a lock during boot
+References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>	 <20091002211211.GA2633@redhat.com>	 <1254792249.13160.213.camel@gandalf.stny.rr.com>	 <20091006203225.GC2631@redhat.com>	 <1254880921.1696.112.camel@gandalf.stny.rr.com>	 <4ACC001D.4050105@gmail.com>	 <1254920429.1696.127.camel@gandalf.stny.rr.com>	 <4ACCAB54.4010408@gmail.com> <1254928298.1696.166.camel@gandalf.stny.rr.com>
+In-Reply-To: <1254928298.1696.166.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 05, 2009 at 12:15:12PM +0900, Tetsuo Handa wrote:
-> Hello.
-> 
-> I got this error.
-> 
-> [    0.000000] Linux version 2.6.32-rc3 (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #1 SMP Mon Oct 5 11:24:05 JST 2009
-> (...snipped...)
-> [    0.000000] -------------------------------------------------------
-> [    0.000000] Good, all 218 testcases passed! |
-> [    0.000000] ---------------------------------
-> [    0.000000] ------------[ cut here ]------------
-> [    0.000000] WARNING: at kernel/lockdep.c:3161 check_flags+0xbe/0x180()
-> [    0.000000] Hardware name: VMware Virtual Platform
-> [    0.000000] Modules linked in:
-> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.32-rc3 #1
-> [    0.000000] Call Trace:
-> [    0.000000]  [<c104182d>] ? printk+0x1d/0x30
-> [    0.000000]  [<c107069e>] ? check_flags+0xbe/0x180
-> [    0.000000]  [<c1040de1>] warn_slowpath_common+0x81/0xa0
-> [    0.000000]  [<c107069e>] ? check_flags+0xbe/0x180
-> [    0.000000]  [<c1040e5a>] warn_slowpath_null+0x1a/0x30
-> [    0.000000]  [<c107069e>] check_flags+0xbe/0x180
-> [    0.000000]  [<c106e52e>] lockdep_trace_alloc+0x2e/0x60
-> [    0.000000]  [<c10cfedd>] kmem_cache_alloc+0x2d/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c106e22b>] ? trace_hardirqs_on+0xb/0x10
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cf9c4>] ? cache_alloc_refill+0x144/0x210
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
-> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
-> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
-> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
-> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
-> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
-> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
-> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
-> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
-> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
-> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
-> [    0.000000]  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>(...snipped...)
-> 
-> Adding kmemleak=off to kernel command line solves this error.
-> Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.32-rc3
-> 
-> By the way,
-> > static void early_alloc(struct early_log *log)
-> > {
-> >         struct kmemleak_object *object;
-> >         unsigned long flags;
-> >         int i;
-> > 
-> >         if (!atomic_read(&kmemleak_enabled) || !log->ptr || IS_ERR(log->ptr))
-> >                 return;
-> > 
-> >         /*
-> >          * RCU locking needed to ensure object is not freed via put_object().
-> >          */
-> >         rcu_read_lock();
-> >         object = create_object((unsigned long)log->ptr, log->size,
-> >                                log->min_count, GFP_KERNEL);
-> I think we can't use GFP_KERNEL inside rcu_read_lock()...
-> >         spin_lock_irqsave(&object->lock, flags);
-> >         for (i = 0; i < log->trace_len; i++)
-> >                 object->trace[i] = log->trace[i];
-> >         object->trace_len = log->trace_len;
-> >         spin_unlock_irqrestore(&object->lock, flags);
-> >         rcu_read_unlock();
-> > }
-> 
-> [PATCH 2.6.32-rc3] kmemleak: Use GFP_ATOMIC for early_alloc().
-> 
-> We can't use GFP_KERNEL inside rcu_read_lock().
-> 
-> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> ---
->  mm/kmemleak.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-2.6.32-rc3.orig/mm/kmemleak.c
-> +++ linux-2.6.32-rc3/mm/kmemleak.c
-> @@ -833,7 +833,7 @@ static void early_alloc(struct early_log
->  	 */
->  	rcu_read_lock();
->  	object = create_object((unsigned long)log->ptr, log->size,
-> -			       log->min_count, GFP_KERNEL);
-> +			       log->min_count, GFP_ATOMIC);
+Steven Rostedt wrote:
+> On Wed, 2009-10-07 at 07:53 -0700, Justin P. Mattock wrote:
+>    
+>> Steven Rostedt wrote:
+>>      
+>>> On Tue, 2009-10-06 at 19:42 -0700, Justin P. Mattock wrote:
+>>>
+>>>
+>>>        
+>>>>>
+>>>>>            
+>>>> o.k. applied your patch, but unfortunantly
+>>>> I still am hitting this kernel panic.
+>>>>
+>>>> must admit I have no idea why this is doing this.
+>>>> (but am willing to sit through this, because eventually
+>>>> sooner or later will hit this if I update gcc).
+>>>>
+>>>>          
+>>> But the panic you showed was that it could not find an init to execute.
+>>> Which looks like a setup issue and not a kernel bug.
+>>>
+>>> -- Steve
+>>>
+>>>
+>>>
+>>>
+>>>        
+>> That's whats getting me, i.g. if I compile
+>> sysvinit normally without adding an SELinux patch
+>> the system boots, as soon as I compile sysvinit with
+>> SELinux support to load the policy, bam... I hit this.
+>>
+>> I can send a post to SELinux and see what they think,
+>> and the go from there.
+>>      
+>
+> Oh! It's an SELinux thing. It probably prevents you from executing
+> init ;-)
+>
+> -- Steve
+>
+>
+>
+>    
+What I think is happening is while building
+sysvinit with the SELinux patch, sysvinit is looking
+in /lib for libselinux(but could be wrong) but libselinux is in
+/lib64.
+(here's my excuse as a newbie:)
+  part of a pain when building an x86_64 multilib is building
+everything to point to lib64(pure64 with the soft link
+lib64 -> lib makes life so much easier).
 
-Won't we need to check for object==NULL?
+I'm going to look at that patch and see how it tells
+-lselinux -lsepol to find the libs.
+(if this is the case then I must admit I am a real
+newbie, and apologize for the confusion).
 
-							Thanx, Paul
+Justin P. Mattock
 
->  	spin_lock_irqsave(&object->lock, flags);
->  	for (i = 0; i < log->trace_len; i++)
->  		object->trace[i] = log->trace[i];
-> 
-> Regards.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
