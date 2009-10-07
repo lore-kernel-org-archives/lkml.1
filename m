@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933347AbZJGIqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934181AbZJGIv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933347AbZJGIqr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758445AbZJGIqr
+	id S934181AbZJGIv2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934146AbZJGIv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:46:47 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:36256 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756594AbZJGIqq (ORCPT
+	Wed, 7 Oct 2009 04:51:27 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:9270 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934121AbZJGIv0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:46:46 -0400
-Subject: Re: [BISECTED] "conservative" cpufreq governor broken
-From: Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-Reply-To: ext-eero.nurkkala@nokia.com
-To: ext Steven Noonan <steven@uplinklabs.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Rik van Riel <riel@redhat.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <f488382f0910070124v6f1e1539gbeb7765ab6f32231@mail.gmail.com>
-References: <alpine.LNX.2.00.0910050923280.2419@alcarin.uplinklabs.net>
-	 <f488382f0910060422t420ade8bvdefbf3e3d0720266@mail.gmail.com>
-	 <1254832609.31336.290.camel@eenurkka-desktop>
-	 <f488382f0910061754g6d15cf58v572e85701fc5aa4f@mail.gmail.com>
-	 <f488382f0910061822wf8da0c1m7f118f04fe793abe@mail.gmail.com>
-	 <1254893230.30157.28.camel@eenurkka-desktop>
-	 <f488382f0910070030m153773e8s6d93cbd7e48f5461@mail.gmail.com>
-	 <1254901778.30157.62.camel@eenurkka-desktop>
-	 <f488382f0910070105g19cbf75ci8034f2917b7e5606@mail.gmail.com>
-	 <1254903263.30157.69.camel@eenurkka-desktop>
-	 <f488382f0910070124v6f1e1539gbeb7765ab6f32231@mail.gmail.com>
-Content-Type: text/plain
-Organization: Nokia
-Date: Wed, 07 Oct 2009 11:43:33 +0300
-Message-Id: <1254905013.30157.75.camel@eenurkka-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Oct 2009 08:44:44.0060 (UTC) FILETIME=[6ADDCDC0:01CA472A]
-X-Nokia-AV: Clean
+	Wed, 7 Oct 2009 04:51:26 -0400
+X-IronPort-AV: E=Sophos;i="4.44,518,1249272000"; 
+   d="scan'208";a="7277509"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and KeypadInput Device Driver
+Date: Wed, 7 Oct 2009 09:50:43 +0100
+Message-ID: <8A42379416420646B9BFAC9682273B6D0E3F4CEE@limkexm3.ad.analog.com>
+In-Reply-To: <20091006160549.GA8881@rakim.wolfsonmicro.main>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+thread-topic: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and KeypadInput Device Driver
+thread-index: AcpGnuTO4EkaRpUwSIOgs532m6xe+gAidTIw
+References: <1253682664-27040-1-git-send-email-vapier@gentoo.org> <1254815071-15822-1-git-send-email-vapier@gentoo.org> <20091006115543.GH27168@sirena.org.uk> <8A42379416420646B9BFAC9682273B6D0E3F4348@limkexm3.ad.analog.com> <20091006123658.GA31079@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4420@limkexm3.ad.analog.com> <20091006135836.GA3926@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F46A7@limkexm3.ad.analog.com> <20091006144805.GA10987@rakim.wolfsonmicro.main> <8A42379416420646B9BFAC9682273B6D0E3F4769@limkexm3.ad.analog.com> <20091006160549.GA8881@rakim.wolfsonmicro.main>
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Mark Brown" <broonie@opensource.wolfsonmicro.com>
+CC: "Mike Frysinger" <vapier@gentoo.org>,
+       "Samuel Ortiz" <sameo@linux.intel.com>,
+       <uclinux-dist-devel@blackfin.uclinux.org>,
+       <linux-kernel@vger.kernel.org>, "Bryan Wu" <cooloney@kernel.org>
+X-OriginalArrivalTime: 07 Oct 2009 08:50:45.0748 (UTC) FILETIME=[42730340:01CA472B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 10:24 +0200, ext Steven Noonan wrote:
-> >
-> > Steven, how do the cpu loads look like without the patch?
-> 
-> They're sane:
-> 
-> [   40.019381] cpufreq load = 100 * (66666 - 66337) / 66666 = 0
-> [   40.019396] cpufreq load = 100 * (66666 - 66299) / 66666 = 0
-> [   73.352580] cpufreq load = 100 * (66717 - 66349) / 66717 = 0
-> [   73.352595] cpufreq load = 100 * (66634 - 63848) / 66634 = 4
+>From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
+>On Tue, Oct 06, 2009 at 04:05:45PM +0100, Hennerich, Michael wrote:
+>> >From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com]
+>
+>> >According to the datasheet the GPIOs, light sensor and regulator can
+>> >also generate interrupts?
+>
+>> Right - I know - but none of the subdevs are currently using this
+>> functionality.
+>
+>You weren't very clear on the difference between the current state of
+>the drivers and the capabilities of the chip there.
 
-Thank you. Could you please try the following:
-Now, if ts->nohz_mode == NOHZ_MODE_INACTIVE, ts->inidle is not set
-and all subsequent calls from irq_exit() think we weren't idling,
-which is not true.
+As you said there are chip internal interrupt sources for I/Os, keypad
+presses and releases, ambient light sensor comparator states, and
+overvoltage conditions.
+The current state of the driver uses only interrupts for the keypad.
+I think you agree that its common practice to only implement
+functionality for chip features that are typically used.
+There are exactly 8 GP signals which are muxed with Keypad and GPIO. In
+case you use a 4x4 Keypad there is no GPIO left.
+In case you use a 3x4 Keypad there is exactly 1 GPIO that can be exposed
+to the gpiolib.
 
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -233,6 +233,8 @@ void tick_nohz_stop_sched_tick(int inidle)
- 
-        now = tick_nohz_start_idle(ts);
- 
-+       ts->inidle = 1;
-+
-        /*
-         * If this cpu is offline and it is the one which updates
-         * jiffies, then give up the assignment and let it be taken by
-@@ -248,8 +250,6 @@ void tick_nohz_stop_sched_tick(int inidle)
-        if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
-                goto end;
- 
--       ts->inidle = 1;
--
-        if (need_resched())
-                goto end;
- 
+In one of your earlier posts you mentioned: "register an irq_chip for
+the interrupt controller on it.  Support for doing this on I2C devices
+was added at pretty much the same time as the IRQ_ONESHOT support."
 
+Can you point me to what exactly was added to support this on I2C/SPI
+devices? 
 
-
-
+-Michael
