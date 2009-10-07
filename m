@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933322AbZJGIBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934032AbZJGICh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933322AbZJGIBF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:01:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933241AbZJGIBD
+	id S934032AbZJGICh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934021AbZJGICb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:01:03 -0400
-Received: from mga03.intel.com ([143.182.124.21]:28327 "EHLO mga03.intel.com"
+	Wed, 7 Oct 2009 04:02:31 -0400
+Received: from mga03.intel.com ([143.182.124.21]:9396 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933238AbZJGIBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:01:00 -0400
+	id S1758733AbZJGIC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 04:02:26 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,518,1249282800"; 
-   d="scan'208";a="195971188"
-Message-Id: <20091007074902.029561941@intel.com>
+   d="c'?scan'208";a="195971869"
+Message-Id: <20091007074902.144336866@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 07 Oct 2009 15:38:25 +0800
+Date: Wed, 07 Oct 2009 15:38:26 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
@@ -25,67 +25,111 @@ CC: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
        "Myklebust Trond" <Trond.Myklebust@netapp.com>,
        "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
        Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-       <linux-fsdevel@vger.kernel.org>, Wu Fengguang <fengguang.wu@intel.com>
+       <linux-fsdevel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 07/45] writeback: dont redirty tail an inode with dirty pages
+Subject: [PATCH 08/45] writeback: quit on wrap for .range_cyclic (write_cache_pages)
 References: <20091007073818.318088777@intel.com>
-Content-Disposition: inline; filename=writeback-xfs-fast-redirty.patch
+Content-Disposition: inline; filename=linux_mm_page-writeback.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This avoids delaying writeback for an expired (XFS) inode with lots of
-dirty pages, but no active dirtier at the moment.
+Convert wbc.range_cyclic to new behavior: when past EOF, abort the
+writeback of the current inode, which instructs writeback_single_inode()
+to delay it for a while if necessary. 
 
-CC: Dave Chinner <david@fromorbit.com> 
-CC: Christoph Hellwig <hch@infradead.org> 
+This is the right behavior for
+- sync writeback (is already so with range_whole)
+  we have scanned the inode address space, and don't care any more newly
+  dirtied pages. So shall update its i_dirtied_when and exclude it from
+  the todo list.
+- periodic writeback
+  any more newly dirtied pages may be delayed for a while.
+  This also prevents pointless IO for busy overwriters.
+- background writeback
+  irrelevant because it generally don't care the dirty timestamp.
+
+That should get rid of one inefficient IO pattern of .range_cyclic when
+writeback_index wraps, in which the submitted pages may be consisted of
+two distant ranges: submit [10000-10100], (wrap), submit [0-100].
+
+CC: Christoph Lameter <cl@linux-foundation.org>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Jens Axboe <jens.axboe@oracle.com>
+CC: Nick Piggin <npiggin@suse.de>
+CC: Jan Kara <jack@suse.cz>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- fs/fs-writeback.c |   20 +++++++-------------
- 1 file changed, 7 insertions(+), 13 deletions(-)
+ mm/page-writeback.c |   27 +++++----------------------
+ 1 file changed, 5 insertions(+), 22 deletions(-)
 
---- linux.orig/fs/fs-writeback.c	2009-10-06 23:37:57.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-10-06 23:38:28.000000000 +0800
-@@ -479,18 +479,7 @@ writeback_single_inode(struct inode *ino
- 	spin_lock(&inode_lock);
- 	inode->i_state &= ~I_SYNC;
- 	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
--		if ((inode->i_state & I_DIRTY_PAGES) && wbc->for_kupdate) {
--			/*
--			 * More pages get dirtied by a fast dirtier.
--			 */
--			goto select_queue;
--		} else if (inode->i_state & I_DIRTY) {
--			/*
--			 * At least XFS will redirty the inode during the
--			 * writeback (delalloc) and on io completion (isize).
--			 */
--			redirty_tail(inode);
--		} else if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
-+		if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
- 			/*
- 			 * We didn't write back all the pages.  nfs_writepages()
- 			 * sometimes bales out without doing anything. Redirty
-@@ -512,7 +501,6 @@ writeback_single_inode(struct inode *ino
- 				 * soon as the queue becomes uncongested.
- 				 */
- 				inode->i_state |= I_DIRTY_PAGES;
--select_queue:
- 				if (wbc->nr_to_write <= 0) {
- 					/*
- 					 * slice used up: queue for next turn
-@@ -535,6 +523,12 @@ select_queue:
- 				inode->i_state |= I_DIRTY_PAGES;
- 				redirty_tail(inode);
- 			}
-+		} else if (inode->i_state & I_DIRTY) {
-+			/*
-+			 * At least XFS will redirty the inode during the
-+			 * writeback (delalloc) and on io completion (isize).
-+			 */
-+			redirty_tail(inode);
- 		} else if (atomic_read(&inode->i_count)) {
- 			/*
- 			 * The inode is clean, inuse
+--- linux.orig/mm/page-writeback.c	2009-10-06 23:38:18.000000000 +0800
++++ linux/mm/page-writeback.c	2009-10-06 23:38:30.000000000 +0800
+@@ -789,31 +789,23 @@ int write_cache_pages(struct address_spa
+ 	int done = 0;
+ 	struct pagevec pvec;
+ 	int nr_pages;
+-	pgoff_t uninitialized_var(writeback_index);
+ 	pgoff_t index;
+ 	pgoff_t end;		/* Inclusive */
+ 	pgoff_t done_index;
+-	int cycled;
+ 	int range_whole = 0;
+ 	long nr_to_write = wbc->nr_to_write;
+ 
+ 	pagevec_init(&pvec, 0);
+ 	if (wbc->range_cyclic) {
+-		writeback_index = mapping->writeback_index; /* prev offset */
+-		index = writeback_index;
+-		if (index == 0)
+-			cycled = 1;
+-		else
+-			cycled = 0;
++		index = mapping->writeback_index; /* prev offset */
+ 		end = -1;
+ 	} else {
+ 		index = wbc->range_start >> PAGE_CACHE_SHIFT;
+ 		end = wbc->range_end >> PAGE_CACHE_SHIFT;
+ 		if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
+ 			range_whole = 1;
+-		cycled = 1; /* ignore range_cyclic tests */
+ 	}
+-retry:
++
+ 	done_index = index;
+ 	while (!done && (index <= end)) {
+ 		int i;
+@@ -821,8 +813,10 @@ retry:
+ 		nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
+ 			      PAGECACHE_TAG_DIRTY,
+ 			      min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1);
+-		if (nr_pages == 0)
++		if (nr_pages == 0) {
++			done_index = 0;
+ 			break;
++		}
+ 
+ 		for (i = 0; i < nr_pages; i++) {
+ 			struct page *page = pvec.pages[i];
+@@ -919,17 +913,6 @@ continue_unlock:
+ 		pagevec_release(&pvec);
+ 		cond_resched();
+ 	}
+-	if (!cycled && !done) {
+-		/*
+-		 * range_cyclic:
+-		 * We hit the last page and there is more work to be done: wrap
+-		 * back to the start of the file
+-		 */
+-		cycled = 1;
+-		index = 0;
+-		end = writeback_index - 1;
+-		goto retry;
+-	}
+ 	if (!wbc->no_nrwrite_index_update) {
+ 		if (wbc->range_cyclic || (range_whole && nr_to_write > 0))
+ 			mapping->writeback_index = done_index;
 
 
