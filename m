@@ -1,65 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbZJGUOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbZJGU0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760005AbZJGUOx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbZJGUOx
+	id S1760039AbZJGU0t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760030AbZJGU0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:14:53 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:13642 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754082AbZJGUOv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:14:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GEvpIIkRrQIVMysubHmhCDd8uyXf2Q1WjVU4gQQ89r/oFgwyI1uoh0YruHl4vrH+E8
-         vH8P1ArO/jG4t0CYxVGFXyfRMQnay17JLP5LE/FiQBsHZjXQK2iR58OS/3+vyXYVFRl+
-         z/WgkYH12IwzAErJVY/hOFVCeZz9mBqVBvkjc=
-Date: Wed, 7 Oct 2009 22:13:41 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: John Kacur <jkacur@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Clark Williams <williams@redhat.com>
-Subject: Re: [PATCH RFC] BKL not necessary in cpuid_open
-Message-ID: <20091007201338.GE5903@nowhere>
-References: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
+	Wed, 7 Oct 2009 16:26:48 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:39941 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760020AbZJGU0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 16:26:47 -0400
+Date: Wed, 7 Oct 2009 22:15:36 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Sven-Thorsten Dietrich <sdietrich@suse.de>
+Subject: Re: [PATCH] x86: Remove the bkl from msr_open()
+In-Reply-To: <1254944602-7382-1-git-send-email-fweisbec@gmail.com>
+Message-ID: <alpine.LFD.2.00.0910072214290.15183@localhost.localdomain>
+References: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain> <1254944602-7382-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 08:19:32PM +0200, John Kacur wrote:
+
+
+On Wed, 7 Oct 2009, Frederic Weisbecker wrote:
+
+> Remove the big kernel lock from msr_open() as it doesn't protect
+> anything there.
 > 
-> I've been staring at the BKL lock in cpuid_open, and I can't see what it 
-> is protecting. However, I may have missed something - even something 
-> obvious, so comments are welcome.
+> The only racy event that can happen here is a concurrent cpu shutdown.
 > 
-> From 25c0f07b3ec5533c0e690e06198baa4300ee4a8c Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Wed, 7 Oct 2009 20:06:12 +0200
-> Subject: [PATCH] The BKL is not necessary in cpuid_open
->  Most of the variables are local to the function. It IS possible that for
->  struct cpuinfo_x86 *c
->  c could point to the same area. However, this is used read only.
+> So let's look at what could be racy during/after the above event:
 > 
-> Signed-off-by: John Kacur <jkacur@redhat.com>
+> - The cpu_online() check is racy, but the bkl doesn't help about
+>   that anyway it disables preemption but we may be chcking another
+>   cpu than the current one.
+>   Also the cpu can still become offlined between open and read calls.
+> 
+> - The cpu_data(cpu) returns a safe pointer too. It won't be released on
+>   cpu offlining. But some fields can be changed from
+>   arch/x86/kernel/smpboot.c:remove_siblinginfo() :
+> 
+> 	- phys_proc_id
+> 	- cpu_core_id
+> 
+>   Those are not read from msr_open(). What we are checking is the
+>   x86_capability that is left untouched on offlining.
+> 
+> So this removal looks safe.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: John Kacur <jkacur@redhat.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: Sven-Thorsten Dietrich <sdietrich@suse.de>
+> ---
+>  arch/x86/kernel/msr.c |   16 ++++++----------
+>  1 files changed, 6 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
+> index 6a3cefc..5534499 100644
+> --- a/arch/x86/kernel/msr.c
+> +++ b/arch/x86/kernel/msr.c
+> @@ -174,21 +174,17 @@ static int msr_open(struct inode *inode, struct file *file)
+>  {
+>  	unsigned int cpu = iminor(file->f_path.dentry->d_inode);
+>  	struct cpuinfo_x86 *c = &cpu_data(cpu);
+> -	int ret = 0;
+>  
+> -	lock_kernel();
+>  	cpu = iminor(file->f_path.dentry->d_inode);
+>  
+> -	if (cpu >= nr_cpu_ids || !cpu_online(cpu)) {
+> -		ret = -ENXIO;	/* No such CPU */
+> -		goto out;
+> -	}
+> +	if (cpu >= nr_cpu_ids || !cpu_online(cpu))
+> +		return -ENXIO;	/* No such CPU */
+> +
+>  	c = &cpu_data(cpu);
+>  	if (!cpu_has(c, X86_FEATURE_MSR))
+> -		ret = -EIO;	/* MSR not supported */
+> -out:
+> -	unlock_kernel();
+> -	return ret;
+> +		return -EIO;	/* MSR not supported */
+> +
+> +	return 0;
+>  }
+>  
+>  /*
+> -- 
+> 1.6.2.3
+> 
+> 
 
-
-Hmm, I'm discovering that in tip:rt/kill-the-bkl
-
-http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commitdiff;h=55968ede164ae523692f00717f50cd926f1382a0
-
-Looks like we have overlaped.
-
-Thomas it would be nice to post these patches on LKML (or I missed
-them?) and may be to merge them into tip:master, so that they are
-visible and then we lower the risk of any duplicate works in this area.
-
-Thanks.
-
+This case looks very similar to the cpuid_open one.
+Reviewed-by: John Kacur <jkacur@redhat.com>
