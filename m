@@ -1,164 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933215AbZJGM51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933258AbZJGNA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933215AbZJGM51 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 08:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbZJGM51
+	id S933258AbZJGNA1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 09:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbZJGNA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 08:57:27 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47281 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933115AbZJGM50 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 08:57:26 -0400
-Subject: Re: [PATCH 1/4] jump label - make init_kernel_text() global
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, ak@suse.de,
-       roland@redhat.com, rth@redhat.com, mhiramat@redhat.com
-In-Reply-To: <20091007023251.GA4664@Krystal>
-References: <cover.1253831945.git.jbaron@redhat.com>
-	 <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com>
-	 <20091001112003.GA2962@elte.hu> <20091001203905.GD2660@redhat.com>
-	 <20091003104335.GB15919@elte.hu> <20091003123900.GA22046@Krystal>
-	 <1254880478.1696.104.camel@gandalf.stny.rr.com>
-	 <20091007023251.GA4664@Krystal>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 07 Oct 2009 08:56:38 -0400
-Message-Id: <1254920198.1696.125.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Wed, 7 Oct 2009 09:00:26 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:51041 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932939AbZJGNAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 09:00:25 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: laurent.pinchart@skynet.be
+Subject: [PATCH] Re: uvcvideo: Finally fix Logitech Quickcam for Notebooks Pro
+Date: Wed, 7 Oct 2009 14:59:40 +0200
+User-Agent: KMail/1.9.10
+Cc: linux-uvc-devel@lists.berlios.de, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200910061607.07195.linux@rainbow-software.org>
+In-Reply-To: <200910061607.07195.linux@rainbow-software.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910071459.43622.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 22:32 -0400, Mathieu Desnoyers wrote:
+On Tuesday 06 October 2009, Ondrej Zary wrote:
+> Hello,
+> I have a Logitech Quickcam for Notebooks Pro camera (046d:08c3) which just
+> does not work even with kernel 2.6.31 and has never worked well before.
+>
+> On http://linux-uvc.berlios.de/, there are two problems listed. I want to
+> really fix these two problems so the camera will just work after plugging
+> in (and not disconnect). I started with problem no. 2 as this causes the
+> camera not to work at all when plugged in:
+>
+> usb 5-2.4: new high speed USB device using ehci_hcd and address 7
+> usb 5-2.4: configuration #1 chosen from 1 choice
+> uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c3)
+> uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+> workaround.
+> uvcvideo: Failed to query (129) UVC probe control : -110 (exp. 26).
+> uvcvideo: Failed to initialize the device (-5).
+>
+> When I do "modprobe snd_usb_audio", then "rmmod snd_usb_audio" and
+> finally "modprobe uvcvideo", it works. So it looks like snd_usb_audio does
+> some initialization that allows uvcvideo to work. It didn't work at all I
+> didn't have snd_usb_audio module compiled.
+>
+> What was the change that supposedly broke this in 2.6.22?
 
-> 
-> Hi Steven,
-> 
-> OK, I'll make the explanation as straightforward as possible. I'll use a
-> race example to illustrate what we try to avoid by using the
-> breakpoint+ipi scheme. After that, I present the same scenario with the
-> breakpoint+ipi in place.
-> 
-> Each step shows what is executed, and what is the memory values seen by
-> the CPU. CPU A is doing the code patching, CPU B executing the code.
-> I intentionally left out some sfence required on CPU A for simplicity.)
-> 
-> Initially, let's say we have:
-> (1)  (2)
-> 0xeb 0xe5    (jmp to offset 0xe5)
-> 
-> And we want to change this to:
-> (1)  (2)
-> 0xeb 0xf0    (jmp to offset 0xf0)
-> 
-> (scenario "buggy")
-> 
-> CPU A       |       CPU B  (this is about as far as my ascii-art skills go)
-> -------------------------    ;)
-> 0xeb 0xe5     0xeb 0xe5
-> 0:            CPU B instruction pointer is earlier than (1)
->               CPU B pipeline speculatively predicts branches,
->               prefetches data, calculates speculated values.
-> 1:            CPU B loads 0xeb
-> 2:            CPU B loads 0xe5
-> 3:
-> Write to (2)
-> 0xeb 0xf0     0xeb 0xf0
-> 4:            CPU B instruction pointer gets to (1), needs to validate
->               all the pipeline speculation.
->               But ! The CPU does not expect code to change underneath.
->               General protection fault (or any other fault.. random..)
-> 
-> 
-> Now with the breakpoint+ipi/mb() scheme:
-> (scenario A: CPU B does not hit the breakpoint)
-> 
-> CPU A       |       CPU B
-> -------------------------
-> 0xeb 0xe5     0xeb 0xe5
-> 0:            CPU B instruction pointer is earlier than (1)
->               CPU B pipeline speculatively predicts branches,
->               prefetches data, calculates speculated values.
-> 1:            CPU B loads 0xeb
-> 2:            CPU B loads 0xe5
-> 3:
-> Write to (1)
-> 0xcc 0xe5     0xcc 0xe5  # breakpoint inserted
-> 4: send IPI
-> 5:            mfence     # serializing instruction. Flushes CPU B's
->                          # pipeline
-> 6:
-> Write to (2)
-> 0xcc 0xf0     0xcc 0xf0
-> 7:
-> Write to (1)
-> 0xeb 0xf0     0xeb 0xf0
-> 8:            CPU B instruction pointer gets to (1), needs to validate
->               all the pipeline speculation. Because we flushed any
->               speculation prior to the mfence, we're ok.
-> 
-> 
-> Now, I'll show why just using the breakpoint, without IPI, is
-> problematic:
-> 
-> CPU A       |       CPU B
-> -------------------------
-> 0xeb 0xe5     0xeb 0xe5
-> 0:            CPU B instruction pointer is earlier than (1)
->               CPU B pipeline speculatively predicts branches,
->               prefetches data, calculates speculated values.
-> 1:            CPU B loads 0xeb
-> 2:            CPU B loads 0xe5
-> 3:
-> Write to (1)
-> 0xcc 0xe5     0xcc 0xf0  # breakpoint inserted
-> 4:
-> Write to (2)
-> 0xcc 0xf0     0xeb 0xf0  # Silly CPU B. Did not see nor use the breakpoint.
->                          # Same problem as scenario "buggy".
-> 5:
-> Write to (1)
-> 0xeb 0xf0     0xeb 0xf0
-> 4:            CPU B instruction pointer gets to (1), needs to validate
->               all the pipeline speculation.
->               But ! The CPU does not expect code to change underneath.
->               General protection fault (or any other fault.. random..)
-> 
-> So, basically, we ensure that the only transitions CPU B will see are
-> either:
-> 
-> 0xeb 0xe5 -> 0xcc 0xe5 : OK, adding breakpoint
-> 0xcc 0xe5 -> 0xcc 0xf0 : OK, not using the operand anyway, it's a
->                              breakpoint!
-> 0xcc 0xf0 -> 0xeb 0xf0 : OK, removing breakpoint
-> 
-> *but*, the transition we guarantee that CPU B will *never* see without
-> having a mfence executed between the old and the new version is:
-> 
-> 0xeb 0xe5 -> 0xeb 0xf0  <----- buggy.
-> 
-> Hope the explanation helps,
-
-Thanks Mathieu,
-
-This does help explain a lot.
-
-So, basically the IPI is to make sure the int3 is seen by other CPUS
-before you modify the jump. Otherwise you risk setting up the int3 and
-the other CPU does not see it but still executes the change to the jmp
-destination.
-
-I'm assuming that the int3 handler will make the process on CPU B jump
-to the next op (one not being modified).
-
-Now we must get from Intel and AMD that it is OK to remove the int3.
-
--- Steve
+I discovered that it's not related to usb audio at all. Doing "rmmod uvcvideo"
+and "modprobe uvcvideo" repeatedly succeeded after a couple of tries. Increasing
+UVC_CTRL_STREAMING_TIMEOUT to 3000 helped (2000 was not enough).
 
 
+Increase UVC_CTRL_STREAMING_TIMEOUT to fix initialization of
+Logitech Quickcam for Notebooks Pro.
+This fixes following error messages:
+uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling workaround.
+uvcvideo: Failed to query (129) UVC probe control : -110 (exp. 26).
+uvcvideo: Failed to initialize the device (-5).
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+
+--- linux-2.6.31-orig/drivers/media/video/uvc/uvcvideo.h	2009-09-10 00:13:59.000000000 +0200
++++ linux-2.6.31/drivers/media/video/uvc/uvcvideo.h	2009-10-07 13:47:27.000000000 +0200
+@@ -304,7 +304,7 @@
+ #define UVC_MAX_STATUS_SIZE	16
+ 
+ #define UVC_CTRL_CONTROL_TIMEOUT	300
+-#define UVC_CTRL_STREAMING_TIMEOUT	1000
++#define UVC_CTRL_STREAMING_TIMEOUT	3000
+ 
+ /* Devices quirks */
+ #define UVC_QUIRK_STATUS_INTERVAL	0x00000001
+
+
+-- 
+Ondrej Zary
