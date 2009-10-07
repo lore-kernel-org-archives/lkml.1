@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbZJGQZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934279AbZJGQcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759546AbZJGQZt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 12:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbZJGQZt
+	id S934279AbZJGQcK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 12:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934245AbZJGQcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 12:25:49 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:45606 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759320AbZJGQZs (ORCPT
+	Wed, 7 Oct 2009 12:32:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52846 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759549AbZJGQcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 12:25:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=yAe+dG4E/wqIysN0DvCA959IFajx0tKeI9qilhbfqBksxwnzGHscie2DjRRvNc4hk5
-         K2rN6ZMOoAaTfaktLpTqW5yjEZK21Lox3fVCGU1fhbIc3CR3BnSFttugOr901DPsSKVm
-         JXipslLXDYHtoK+EQLXiUrxEsMcOl3cqoegnM=
-Message-ID: <4ACCC0E3.8050404@tuffmail.co.uk>
-Date: Wed, 07 Oct 2009 17:25:07 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 7 Oct 2009 12:32:08 -0400
+Date: Wed, 7 Oct 2009 09:27:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Nick Piggin <npiggin@suse.de>
+cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [rfc][patch] store-free path walking
+In-Reply-To: <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0910070911080.3432@localhost.localdomain>
+References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/7] printk: clean up return value
-References: <1254904787-11323-1-git-send-email-alan-jenkins@tuffmail.co.uk> <1254904787-11323-2-git-send-email-alan-jenkins@tuffmail.co.uk> <alpine.LFD.2.01.0910070828190.3432@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0910070828190.3432@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> Hmm. I kind of agree with this, but at the same time I suspect that no 
-> caller should ever care about the loglevel characters (since they won't be 
-> _shown_), so your change still doesn't make it return a sensible value.
->
-> So I get the feeling that you should also add a
->
-> 	message_len -= 3;
->
-> to the case where we peel off the "<.>" loglevel part at the head of the 
-> string. No?
->   
 
-The value is only really sensible for partial printk()s... except that
-they're supposed to be prefixed with KERN_CONT.  So yes, good point.
 
-> Or we could just change it to 'void'. As Joe Perches says, nobody really 
-> cares deeply enough for this to generally even matter.
->   
+On Wed, 7 Oct 2009, Linus Torvalds wrote:
+> 
+> Hmm. Regardless, this very much does look like what I envisioned, apart 
+> from details like that. And maybe your per-dentry seqlock is the right 
+> choice. On x86, it certainly doesn't have the performance issues it could 
+> have in other places.
 
-That involves more work, which explains why I shied away from it :-). 
-Ok, I'll do it.
+Actually, if we really want to do the per-dentry thing, then we should 
+change it a bit. Maybe rather than using a seqlock data structure (which 
+is really just a unsigned counter and a spinlock), we could do just the 
+unsigned counter, and use the d_lock as the spinlock for the sequence 
+lock.
 
-Alan
+The hackiest way to do that woudl be to get rid of d_lock entirely, 
+replace it with d_seqlock, and then just do
+
+	#define d_lock d_seqlock.lock
+
+instead (but the dentry structure may well have layout issues that makes 
+that not work very well - we're mixing pointers and 'int'-sized things 
+and need to pack them well etc).
+
+That would cut down the seqlock memory costs from 8 bytes (or more - just 
+the spinlock itself is currently 8 bytes on ia64, so on ia64 the seqlock 
+is actually 16 bytes, not to mention all the spinlock debugging cases) to 
+just four bytes.
+
+However, I still suspect we could do things entirely without the seqlock. 
+The outer seqlock will handle the "couldn't find it" case, and I've got 
+the strongest feeling that we should be able to just use some basic memory 
+ordering on the dentry hash to make the inner seqlock unnecessary (ie 
+make sure that either we don't see the old entry at all, or that we can 
+guarantee that it won't trigger a successful compare while the rename is 
+in process because we set the dentry name length to zero).
+
+			Linus
