@@ -1,113 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbZJGOcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932434AbZJGOdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759354AbZJGOcg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbZJGOcf
+	id S932434AbZJGOdK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 10:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759314AbZJGOdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:32:35 -0400
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:31212
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759342AbZJGOce (ORCPT
+	Wed, 7 Oct 2009 10:33:07 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:42041
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759430AbZJGOdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 10:32:34 -0400
-X-SpamScore: 1
-X-BigFish: VPS1(zzzz1202hzzz32i6bh64h)
-X-Spam-TCS-SCL: 3:0
+	Wed, 7 Oct 2009 10:33:03 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
 X-FB-SS: 5,
-X-WSS-ID: 0KR5F0U-01-FED-02
+X-WSS-ID: 0KR5F0V-02-3PB-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
 CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 02/10] KVM: X86: Add KVM_REQ_VMEXIT to trigger a nested #vmexit
-Date: Wed, 7 Oct 2009 16:31:20 +0200
-Message-ID: <1254925888-13743-3-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 03/10] KVM: SVM: Move nested INTR #vmexit into preemtible code
+Date: Wed, 7 Oct 2009 16:31:21 +0200
+Message-ID: <1254925888-13743-4-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.4.3
 In-Reply-To: <1254925888-13743-1-git-send-email-joerg.roedel@amd.com>
 References: <1254925888-13743-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 07 Oct 2009 14:31:35.0108 (UTC) FILETIME=[DF37B840:01CA475A]
+X-OriginalArrivalTime: 07 Oct 2009 14:31:35.0170 (UTC) FILETIME=[DF412E20:01CA475A]
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Reverse-DNS: ausb3extmailp02.amd.com
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the vcpu_run path the kernel may notice that a #vmexit is
-necessary when preemption is already disabled. In the SVM
-code an emulation of #vmexit may sleep and can't be executed
-with preemtion disabled. This patch begins to solve this
-problem by defining a KVM_REQ_VMEXIT bit. When this bit is
-set the vcpu_run loop is restarted and a #vmexit is
-emulated.
+This patch makes use of the KVM_REQ_VMEXIT to move the
+emulation of #vmexit(INTR) out of non-preemptible code.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/kvm_host.h |    1 +
- arch/x86/kvm/x86.c              |   17 +++++++++++++++++
- include/linux/kvm_host.h        |    1 +
- 3 files changed, 19 insertions(+), 0 deletions(-)
+ arch/x86/kvm/svm.c |   18 ++++++++++++++++--
+ 1 files changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 179a919..50e5aa4 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -524,6 +524,7 @@ struct kvm_x86_ops {
- 	int (*get_tdp_level)(void);
- 	u64 (*get_mt_mask)(struct kvm_vcpu *vcpu, gfn_t gfn, bool is_mmio);
- 	bool (*gb_page_enable)(void);
-+	void (*emulate_vmexit)(struct kvm_vcpu *vcpu);
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index b6ce1a9..7015680 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1379,8 +1379,14 @@ static inline int nested_svm_intr(struct vcpu_svm *svm)
  
- 	const struct trace_print_flags *exit_reasons_str;
- };
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 11a6f2f..97e1d9d 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -3610,6 +3610,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
- 			r = 0;
- 			goto out;
- 		}
-+		if (test_and_clear_bit(KVM_REQ_VMEXIT, &vcpu->requests))
-+			 kvm_x86_ops->emulate_vmexit(vcpu);
+ 	svm->vmcb->control.exit_code = SVM_EXIT_INTR;
+ 
+-	if (nested_svm_exit_handled(svm)) {
+-		nsvm_printk("VMexit -> INTR\n");
++	if (svm->nested.intercept & 1ULL) {
++		/*
++		 * The #vmexit can't be emulated here directly because this
++		 * code path runs with irqs and preemtion disabled and a
++		 * #vmexit emulation might sleep. Only set the request bit for
++		 * the #vmexit here.
++		 */
++		set_bit(KVM_REQ_VMEXIT, &svm->vcpu.requests);
+ 		return 1;
  	}
  
- 	preempt_disable();
-@@ -3638,6 +3640,21 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
- 	else if (kvm_cpu_has_interrupt(vcpu) || req_int_win)
- 		kvm_x86_ops->enable_irq_window(vcpu);
+@@ -2859,6 +2865,13 @@ static bool svm_gb_page_enable(void)
+ 	return true;
+ }
  
-+	/*
-+	 * With nested KVM the enable_irq_window() function may cause an
-+	 * #vmexit if the vcpu is running in guest mode. A #vmexit may sleep
-+	 * and can't be executed at this stage. So we use the request field to
-+	 * tell KVM that a #vmexit has to be done before we can enter the guest
-+	 * again. The code below checks for this request.
-+	 */
-+	if (vcpu->requests) {
-+		local_irq_enable();
-+		preempt_enable();
-+		r = 1;
-+		goto out;
-+	}
++static void svm_emulate_vmexit(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
 +
++	nested_svm_vmexit(svm);
++}
 +
- 	if (kvm_lapic_enabled(vcpu)) {
- 		update_cr8_intercept(vcpu);
- 		kvm_lapic_sync_to_vapic(vcpu);
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index b985a29..245463f 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -38,6 +38,7 @@
- #define KVM_REQ_MMU_SYNC           7
- #define KVM_REQ_KVMCLOCK_UPDATE    8
- #define KVM_REQ_KICK               9
-+#define KVM_REQ_VMEXIT             10
+ static struct kvm_x86_ops svm_x86_ops = {
+ 	.cpu_has_kvm_support = has_svm,
+ 	.disabled_by_bios = is_disabled,
+@@ -2923,6 +2936,7 @@ static struct kvm_x86_ops svm_x86_ops = {
  
- #define KVM_USERSPACE_IRQ_SOURCE_ID	0
+ 	.exit_reasons_str = svm_exit_reasons_str,
+ 	.gb_page_enable = svm_gb_page_enable,
++	.emulate_vmexit = svm_emulate_vmexit,
+ };
  
+ static int __init svm_init(void)
 -- 
 1.6.4.3
 
