@@ -1,123 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933402AbZJGNMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933670AbZJGNQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933402AbZJGNMj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 09:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933136AbZJGNMj
+	id S933670AbZJGNQY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 09:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933588AbZJGNQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 09:12:39 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16156 "EHLO mx1.redhat.com"
+	Wed, 7 Oct 2009 09:16:23 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:5069 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933082AbZJGNMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 09:12:37 -0400
-Message-ID: <4ACC9373.6080703@redhat.com>
-Date: Wed, 07 Oct 2009 09:11:15 -0400
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S933457AbZJGNQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 09:16:22 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Nick Piggin <npiggin@novell.com>, Christoph Hellwig <hch@lst.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: NULL inode->i_mapping in generic_sync_sb_inodes
+References: <4ACC9E8A0200008A000439B0@novprvlin0050.provo.novell.com>
+	<x49ocoj2yuo.fsf@segfault.boston.devel.redhat.com>
+	<20091007124327.GT30316@wotan.suse.de>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 07 Oct 2009 09:15:47 -0400
+In-Reply-To: <20091007124327.GT30316@wotan.suse.de> (Nick Piggin's message of
+	"Wed, 7 Oct 2009 14:43:27 +0200")
+Message-ID: <x497hv7tke4.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 44/45] NFS: remove NFS_INO_FLUSHING lock
-References: <20091007073818.318088777@intel.com> <20091007074906.867871013@intel.com>
-In-Reply-To: <20091007074906.867871013@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> It was introduced in 72cb77f4a5ac, and the several issues have been
-> addressed in generic writeback:
-> - out of order writeback (or interleaved concurrent writeback)
->   addressed by the per-bdi writeback and wait queue in balance_dirty_pages()
-> - sync livelocked by a fast dirtier
->   addressed by throttling all to-be-synced dirty inodes
-> 
+Nick Piggin <npiggin@suse.de> writes:
 
-I don't think that we can just remove this support.  It is
-designed to reduce the effects from doing a stat(2) on a
-file which is being actively written to.
+>> hch mentioned that it would be good to instrument to what file system
+>> the inode belonged.  Anything else you'd like to look at?
+>
+> Not too sure. I guess i_state. Maybe you could take s_umount lock
+> and see if it is still mounted?
+>
+> Actually most useful will be to find all places where i_mapping is
+> set to NULL, and record in the inode some callchain for the last
+> site which set i_mapping to NULL. Dump this stack when you hit the
+> bug.
 
-If we do remove it, then we will need to replace this patch
-with another.  Trond and I hadn't quite finished discussing
-some aspects of that other patch...  :-)
+Well, I can't find a single place where i_mapping is set to NULL.  ;-)
+I'll see what I can dig up.
 
-	Thanx...
-
-		ps
-
-> CC: Peter Zijlstra <a.p.zijlstra@chello.nl> 
-> CC: Peter Staubach <staubach@redhat.com>
-> CC: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  fs/nfs/file.c          |    9 ---------
->  fs/nfs/write.c         |   11 -----------
->  include/linux/nfs_fs.h |    1 -
->  3 files changed, 21 deletions(-)
-> 
-> --- linux.orig/fs/nfs/file.c	2009-10-07 14:31:45.000000000 +0800
-> +++ linux/fs/nfs/file.c	2009-10-07 14:32:54.000000000 +0800
-> @@ -386,15 +386,6 @@ static int nfs_write_begin(struct file *
->  		mapping->host->i_ino, len, (long long) pos);
->  
->  start:
-> -	/*
-> -	 * Prevent starvation issues if someone is doing a consistency
-> -	 * sync-to-disk
-> -	 */
-> -	ret = wait_on_bit(&NFS_I(mapping->host)->flags, NFS_INO_FLUSHING,
-> -			nfs_wait_bit_killable, TASK_KILLABLE);
-> -	if (ret)
-> -		return ret;
-> -
->  	page = grab_cache_page_write_begin(mapping, index, flags);
->  	if (!page)
->  		return -ENOMEM;
-> --- linux.orig/fs/nfs/write.c	2009-10-07 14:31:45.000000000 +0800
-> +++ linux/fs/nfs/write.c	2009-10-07 14:32:54.000000000 +0800
-> @@ -387,26 +387,15 @@ static int nfs_writepages_callback(struc
->  int nfs_writepages(struct address_space *mapping, struct writeback_control *wbc)
->  {
->  	struct inode *inode = mapping->host;
-> -	unsigned long *bitlock = &NFS_I(inode)->flags;
->  	struct nfs_pageio_descriptor pgio;
->  	int err;
->  
-> -	/* Stop dirtying of new pages while we sync */
-> -	err = wait_on_bit_lock(bitlock, NFS_INO_FLUSHING,
-> -			nfs_wait_bit_killable, TASK_KILLABLE);
-> -	if (err)
-> -		goto out_err;
-> -
->  	nfs_inc_stats(inode, NFSIOS_VFSWRITEPAGES);
->  
->  	nfs_pageio_init_write(&pgio, inode, wb_priority(wbc));
->  	err = write_cache_pages(mapping, wbc, nfs_writepages_callback, &pgio);
->  	nfs_pageio_complete(&pgio);
->  
-> -	clear_bit_unlock(NFS_INO_FLUSHING, bitlock);
-> -	smp_mb__after_clear_bit();
-> -	wake_up_bit(bitlock, NFS_INO_FLUSHING);
-> -
->  	if (err < 0)
->  		goto out_err;
->  	err = pgio.pg_error;
-> --- linux.orig/include/linux/nfs_fs.h	2009-10-07 14:31:45.000000000 +0800
-> +++ linux/include/linux/nfs_fs.h	2009-10-07 14:32:54.000000000 +0800
-> @@ -208,7 +208,6 @@ struct nfs_inode {
->  #define NFS_INO_STALE		(1)		/* possible stale inode */
->  #define NFS_INO_ACL_LRU_SET	(2)		/* Inode is on the LRU list */
->  #define NFS_INO_MOUNTPOINT	(3)		/* inode is remote mountpoint */
-> -#define NFS_INO_FLUSHING	(4)		/* inode is flushing out data */
->  #define NFS_INO_FSCACHE		(5)		/* inode can be cached by FS-Cache */
->  #define NFS_INO_FSCACHE_LOCK	(6)		/* FS-Cache cookie management lock */
+Cheers,
+Jeff
