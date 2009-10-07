@@ -1,85 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751247AbZJGEKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751223AbZJGES1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751247AbZJGEKM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 00:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbZJGEKL
+	id S1751223AbZJGES1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 00:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbZJGES0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 00:10:11 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:52497 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbZJGEKL (ORCPT
+	Wed, 7 Oct 2009 00:18:26 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:51421 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbZJGESZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 00:10:11 -0400
-Message-Id: <200910070409.n9749OQ1092174@www262.sakura.ne.jp>
-Subject: Re: [TOMOYO #16 00/25] Starting TOMOYO 2.3
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: pavel@ucw.cz
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Wed, 7 Oct 2009 00:18:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ETKJwVk6Imdjg8LFGNsxtIlJjXsHEFUOtrPFo7p8pxCGpYkD7CAjPiYCldDaRZpZoJ
+         mUBHpTBAPLn4YjXst77Vq2fBpSbiNb5bnHsfMUS6Fkg9fVskLZc5URhMKqmI0pDAuNbg
+         2GnLW4WIHsCgRAE+asuYmKFSOx8V1GfuAaQfY=
+Subject: Re: [RFC][PATCH 5/9] perf trace: Add Perl scripting support
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
+       lizf@cn.fujitsu.com, hch@infradead.org
+In-Reply-To: <20091006130059.GD15320@elte.hu>
+References: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
+	 <1254809398-8078-6-git-send-email-tzanussi@gmail.com>
+	 <20091006130059.GD15320@elte.hu>
+Content-Type: text/plain
+Date: Tue, 06 Oct 2009 23:09:25 -0500
+Message-Id: <1254888565.28917.135.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Date: Wed, 07 Oct 2009 13:09:24 +0900
-References: <20091004124946.788396453@I-love.SAKURA.ne.jp> <20091006093922.GB1363@ucw.cz>
-In-Reply-To: <20091006093922.GB1363@ucw.cz>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 07102009 #2708572, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Tue, 2009-10-06 at 15:00 +0200, Ingo Molnar wrote:
+> * Tom Zanussi <tzanussi@gmail.com> wrote:
+> 
+> >  	OPT_BOOLEAN('v', "verbose", &verbose,
+> >  		    "be more verbose (show symbol address, etc)"),
+> > +	OPT_BOOLEAN('p', "perl", &do_perl,
+> > +		    "send output to a Perl script"),
+> >  	OPT_STRING('s', "script", &script_name, "file",
+> >  		    "script file name"),
+> 
+> I dont think we want to use up primary option letters one per language. 
+> If Perl takes 'p' then what will Python use, 'P'? How about PHP, PEARL 
+> and PostScript then? ;-)
+> 
+> I think it's better to make the language specification part of the 
+> -s/--script option, via two methods:
+> 
+> Explicit:
+> 
+>   -s Perl::my_script.pl
+>   -s pl::my_script.pl
+>   -s Python::my_script.py
+>   -s Bash::my_script.sh
+> 
+> Implicit, based on the script extension:
+> 
+>   -s my_script.pl       # maps to the Perl generator
+>   -s my_script.py       # maps to the Python generator
+>   -s my_script.sh       # maps to the Bash generator
+> 
+> I think we also want to have a 'perf -s *' kind of thing to get a list 
+> of all available language modules.
+> 
 
-Pavel Machek wrote:
->> Since this patchset is not yet accepted, I haven't written documentation for
->> TOMOYO 2.3. You can see http://tomoyo.sourceforge.jp/1.7/policy-reference.html
->> instead.
->
->New, undocumented user/kernel api is no-no.
+I knew somebody would point that out (and suggest a better way ;-)  That
+all makes sense - I'll make these changes in the next version.
 
-I'll update api description by final submission.
+Tom
 
-Main purpose of this submission is to
 
-(1) know whether 01, 02, 03, 05 and 06 are acceptable or not.
-    If 05 is not acceptable, the rest of patchset needs to be rewritten.
-    Please review 01, 02, 03, 05 and 06 before reviewing the rest.
+> 	Ingo
 
-(2) know which features are acceptable.
-    This submission includes proposal of new features.
-
-      Use of customized d_path().
-      Network filtering including incoming TCP connections.
-      Audit logs.
-      Conditional permissions.
-      Interactive enforcing mode.
-      Sleep penalty.
-      Execute handler.
-      Environment variable name checking.
-      Non POSIX capability checking.
-
-    Unacceptable features will be dropped from next submission.
-
->> Conventionally, patches should be submitted in the form of diff file.
->> But this time, I submit in the form of entire file due to amount of changes.
->
-> That's also no-no.
-
-I have a question.
-Is the diff file based on existing files more preferable for reviewers to
-review than totally rewritten files, even if "total lines of diff files" is
-close to "total lines of rewritten files"?
-
-Amount of rewritten files:
-# cat security/tomoyo/* | wc -l
-17250
-
-Amount of diff based on existing files:
-# diff -Nur security/tomoyo.2.2/ security/tomoyo/ | wc -l
-16945
-# diff -Nur security/tomoyo.2.2/ security/tomoyo/ | diffstat -f0
- 24 files changed, 13495 insertions(+), 2216 deletions(-)
-
-I posted rewritten files because I thought reading 17250 insertions is less
-difficult than reading 16945 lines of diff file with complicated mixture of
-13495 insertions and 2216 deletions.
-
-Regards.
