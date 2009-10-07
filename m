@@ -1,58 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbZJGDJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbZJGDJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753082AbZJGDJP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 23:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZJGDJO
+	id S1753782AbZJGDJZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 23:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbZJGDJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 23:09:14 -0400
-Received: from ozlabs.org ([203.10.76.45]:48937 "EHLO ozlabs.org"
+	Tue, 6 Oct 2009 23:09:24 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:58190 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751917AbZJGDJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 23:09:14 -0400
+	id S1753511AbZJGDJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 23:09:24 -0400
+Message-ID: <4ACC06A4.5080508@redhat.com>
+Date: Tue, 06 Oct 2009 23:10:28 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, ak@suse.de, roland@redhat.com, rth@redhat.com
+Subject: Re: [PATCH 1/4] jump label - make init_kernel_text() global
+References: <cover.1253831945.git.jbaron@redhat.com> <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com> <20091001112003.GA2962@elte.hu> <20091001203905.GD2660@redhat.com> <20091003104335.GB15919@elte.hu> <20091003123900.GA22046@Krystal> <1254880478.1696.104.camel@gandalf.stny.rr.com> <20091007023251.GA4664@Krystal>
+In-Reply-To: <20091007023251.GA4664@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <19148.1579.573095.98045@cargo.ozlabs.ibm.com>
-Date: Wed, 7 Oct 2009 14:08:27 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 1/2] tracing: Check total refcount before releasing bufs in profile_enable failure
-In-Reply-To: <1254577650-5623-2-git-send-email-fweisbec@gmail.com>
-References: <19140.13582.223629.56214@cargo.ozlabs.ibm.com>
-	<1254577650-5623-2-git-send-email-fweisbec@gmail.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker writes:
 
-> When we call the profile_enable() callback of an event, we release the
-> shared perf event tracing buffers unconditionnaly in the failure path.
-> This is wrong because there may be other users of these. Then check the
-> total refcount before doing this.
 
-[snip]
+Mathieu Desnoyers wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+>> On Sat, 2009-10-03 at 08:39 -0400, Mathieu Desnoyers wrote:
+>>
+>>> I might be missing a bit of context here, I just want to make sure we
+>>> are on the same page: patching a jmp instruction is safe on UP, safe
+>>> with stop_machine(), is very likely safe with the breakpoint-ipi
+>>
+>> Hi Mathieu,
+>>
+>> I've been reading through these threads (both this one and the immediate
+>> one) and I'm still a bit confused. I really want to understand this in a
+>> simple way, thus make sure everyone else understands it too.
+>>
+>> >From what Arjan said here:
+>>
+>>   http://lkml.org/lkml/2009/9/25/98
+>>
+>> The issue is going back from the int3 to the old value. How does the
+>> breakpoint-ipi work?
+>>
+>> Supposedly, we can add an int3 to the code without any worry. If another
+>> CPU at that same time hits that code path, it will either run the old
+>> code, or take the interrupt. The breakpoint interrupt handler, will
+>> handle that code path, and the execution continues.
+>>
+>> Now what is the issues with removing the int3 and placing back the old
+>> (or new) value. Is there an issue if another CPU is about to execute
+>> that code path as we remove the int3? If so, how does sending an IPI
+>> help the matter without adding more races?
+>>
+>> Is there only an issue if we change the old value with something else,
+>> and you just need to send the IPI after you modify the old code and
+>> before removing the int3?
+>>
+>> I may just be totally confused, which I usually am. But when I'm not
+>> confused, I feel that the code is practical ;-)
+>>
+> 
+> Hi Steven,
+> 
+> OK, I'll make the explanation as straightforward as possible. I'll use a
+> race example to illustrate what we try to avoid by using the
+> breakpoint+ipi scheme. After that, I present the same scenario with the
+> breakpoint+ipi in place.
+> 
+> Each step shows what is executed, and what is the memory values seen by
+> the CPU. CPU A is doing the code patching, CPU B executing the code.
+> I intentionally left out some sfence required on CPU A for simplicity.)
+> 
+> Initially, let's say we have:
+> (1)  (2)
+> 0xeb 0xe5    (jmp to offset 0xe5)
+> 
+> And we want to change this to:
+> (1)  (2)
+> 0xeb 0xf0    (jmp to offset 0xf0)
+> 
+> (scenario "buggy")
+> 
+> CPU A       |       CPU B  (this is about as far as my ascii-art skills go)
+> -------------------------    ;)
+> 0xeb 0xe5     0xeb 0xe5
+> 0:            CPU B instruction pointer is earlier than (1)
+>               CPU B pipeline speculatively predicts branches,
+>               prefetches data, calculates speculated values.
+> 1:            CPU B loads 0xeb
+> 2:            CPU B loads 0xe5
+> 3:
+> Write to (2)
+> 0xeb 0xf0     0xeb 0xf0
+> 4:            CPU B instruction pointer gets to (1), needs to validate
+>               all the pipeline speculation.
+>               But ! The CPU does not expect code to change underneath.
+>               General protection fault (or any other fault.. random..)
+> 
+> 
+> Now with the breakpoint+ipi/mb() scheme:
+> (scenario A: CPU B does not hit the breakpoint)
+> 
+> CPU A       |       CPU B
+> -------------------------
+> 0xeb 0xe5     0xeb 0xe5
+> 0:            CPU B instruction pointer is earlier than (1)
+>               CPU B pipeline speculatively predicts branches,
+>               prefetches data, calculates speculated values.
+> 1:            CPU B loads 0xeb
+> 2:            CPU B loads 0xe5
+> 3:
+> Write to (1)
+> 0xcc 0xe5     0xcc 0xe5  # breakpoint inserted
+> 4: send IPI
+> 5:            mfence     # serializing instruction. Flushes CPU B's
+>                          # pipeline
+> 6:
+> Write to (2)
+> 0xcc 0xf0     0xcc 0xf0
+> 7:
+> Write to (1)
+> 0xeb 0xf0     0xeb 0xf0
+> 8:            CPU B instruction pointer gets to (1), needs to validate
+>               all the pipeline speculation. Because we flushed any
+>               speculation prior to the mfence, we're ok.
+> 
+> 
+> Now, I'll show why just using the breakpoint, without IPI, is
+> problematic:
+> 
+> CPU A       |       CPU B
+> -------------------------
+> 0xeb 0xe5     0xeb 0xe5
+> 0:            CPU B instruction pointer is earlier than (1)
+>               CPU B pipeline speculatively predicts branches,
+>               prefetches data, calculates speculated values.
+> 1:            CPU B loads 0xeb
+> 2:            CPU B loads 0xe5
+> 3:
+> Write to (1)
+> 0xcc 0xe5     0xcc 0xf0  # breakpoint inserted
+> 4:
+> Write to (2)
+> 0xcc 0xf0     0xeb 0xf0  # Silly CPU B. Did not see nor use the breakpoint.
+>                          # Same problem as scenario "buggy".
+> 5:
+> Write to (1)
+> 0xeb 0xf0     0xeb 0xf0
+> 4:            CPU B instruction pointer gets to (1), needs to validate
+>               all the pipeline speculation.
+>               But ! The CPU does not expect code to change underneath.
+>               General protection fault (or any other fault.. random..)
+> 
+> So, basically, we ensure that the only transitions CPU B will see are
+> either:
+> 
+> 0xeb 0xe5 -> 0xcc 0xe5 : OK, adding breakpoint
+> 0xcc 0xe5 -> 0xcc 0xf0 : OK, not using the operand anyway, it's a
+>                              breakpoint!
+> 0xcc 0xf0 -> 0xeb 0xf0 : OK, removing breakpoint
+> 
+> *but*, the transition we guarantee that CPU B will *never* see without
+> having a mfence executed between the old and the new version is:
+> 
+> 0xeb 0xe5 -> 0xeb 0xf0  <----- buggy.
+> 
+> Hope the explanation helps,
 
-> -	kfree(trace_profile_buf_nmi);
->  fail_buf_nmi:
-> -	kfree(trace_profile_buf);
-> +	if (!total_profile_count) {
+Thanks for explanation.
+One thing I'd like to know is why you are using mfence
+instead of cpuid (a.k.a. sync_core()). I assume that old
+processor doesn't have mfence and is that OK?
 
-A small problem here: total_profile_count will be 1, not 0, in the
-case where we need to free...
+Thank you,
 
-> +		kfree(trace_profile_buf_nmi);
-> +		kfree(trace_profile_buf);
-> +		trace_profile_buf_nmi = NULL;
-> +		trace_profile_buf = NULL;
-> +	}
->  fail_buf:
-> -	total_profile_count--;
+-- 
+Masami Hiramatsu
 
-since we don't decrement total_profile_count until here.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-Paul.
+e-mail: mhiramat@redhat.com
+
