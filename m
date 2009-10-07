@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759707AbZJGRXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbZJGRYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759707AbZJGRXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 13:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759628AbZJGRXv
+	id S1759728AbZJGRYh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 13:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbZJGRYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 13:23:51 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:43385 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753840AbZJGRXu (ORCPT
+	Wed, 7 Oct 2009 13:24:37 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42002 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759627AbZJGRYg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 13:23:50 -0400
-Date: Wed, 7 Oct 2009 10:22:59 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Gregory Haskins <ghaskins@novell.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] vbus: proxy uses, select IOQ
-Message-Id: <20091007102259.ae014b15.randy.dunlap@oracle.com>
-In-Reply-To: <20091007173517.abfcfa2a.sfr@canb.auug.org.au>
-References: <20091007173517.abfcfa2a.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4ACCCE79.00CD:SCFMA4539814,ss=1,fgs=0
+	Wed, 7 Oct 2009 13:24:36 -0400
+Date: Wed, 7 Oct 2009 13:23:59 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
+In-Reply-To: <20091007174611.439a7a5a@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0910071320120.3051-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, 7 Oct 2009, Alan Cox wrote:
 
-vbus-proxy also uses ioq, so it should select IOQ.
+> On Wed, 7 Oct 2009 12:03:08 -0400 (EDT)
+> Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > On Wed, 7 Oct 2009, Oliver Neukum wrote:
+> > 
+> > > We will need some generic way to autoresume from open.
+> > > Resume will need to lock against open() and need to be called
+> > > from within open(). Any ideas for an unugly interface?
+> > 
+> > It's not quite that bad.  Resume doesn't need to lock against open. 
+> > If open is called while resume is running then when it tries to do its
+> > own resume, it will either block (waiting for the pm_mutex) or return
+> > immediately (if it sees the device is already resumed).
+> 
+> It would probably be cleaner if they could lock against each other
 
-When CONFIG_VBUS_PROXY=[ym] and VBUS_PCIBRIDGE=n:
+What you mean isn't clear.  After all, open sometimes has to call
+resume.  So how could resume lock against open?
 
-ERROR: "ioq_init" [drivers/vbus/vbus-proxy.ko] undefined!
+> > A more interesting question is how to synchronize both open/close and
+> > suspend/resume against throttle/unthrottle.
+> 
+> throttle and unthrottle can sleep and obviously have to as they do a fair
+> bit of work sometimes (xon/xoff, mode line waggling etc)
+> 
+> The current ordering here is quite ugly because we open the ldisc before
+> the tty which means the ldisc sometimes calls unthrottle before the tty
+> is opened which is not nice. On the close side we have the same thing via
+> tty_ldisc_release.
+> 
+> We can take the port->mutex lock in the throttle/unthrottle methods as
+> far as I can see - there are no obvious problem cases. We do call
+> ->throttle and ->unthrottle from the ldisc open but this occurs outside
+> of any call to the tty driver open/close method so I don't see any
+> deadlock.
+> 
+> It adds an ordering of termios lock before port mutex when taking both
+> but that's not a problem and really implicit in the structure of the code
+> anyway.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Gregory Haskins <ghaskins@novell.com>
----
- drivers/vbus/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+Does this imply that unthrottle should try to autoresume?  There does 
+appear to be a potential race between unthrottle and autosuspend.
 
---- linux-next-20091007.orig/drivers/vbus/Kconfig
-+++ linux-next-20091007/drivers/vbus/Kconfig
-@@ -5,6 +5,7 @@
- config VBUS_PROXY
-        tristate "Virtual-Bus support"
-        select SHM_SIGNAL
-+       select IOQ
-        default n
-        help
-        Adds support for a virtual-bus model drivers in a guest to connect
+Alan Stern
+
