@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759201AbZJGOCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759108AbZJGOB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759201AbZJGOCJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:02:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759099AbZJGOCI
+	id S1759108AbZJGOB2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 10:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758620AbZJGOB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:02:08 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:59476 "EHLO mx1.redhat.com"
+	Wed, 7 Oct 2009 10:01:28 -0400
+Received: from mga14.intel.com ([143.182.124.37]:59751 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758547AbZJGOCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 10:02:07 -0400
-Message-ID: <4ACC9EAE.3000104@redhat.com>
-Date: Wed, 07 Oct 2009 09:59:10 -0400
-From: Peter Staubach <staubach@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+	id S1758596AbZJGOB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 10:01:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,519,1249282800"; 
+   d="scan'208";a="196072769"
+Date: Wed, 7 Oct 2009 22:00:28 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
        Christoph Hellwig <hch@infradead.org>,
        Dave Chinner <david@fromorbit.com>,
        Chris Mason <chris.mason@oracle.com>,
@@ -26,130 +26,124 @@ CC: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
        Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 44/45] NFS: remove NFS_INO_FLUSHING lock
-References: <20091007073818.318088777@intel.com> <20091007074906.867871013@intel.com> <4ACC9373.6080703@redhat.com> <20091007133235.GC20855@localhost>
-In-Reply-To: <20091007133235.GC20855@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 29/45] writeback: fix the shmem AOP_WRITEPAGE_ACTIVATE
+	case
+Message-ID: <20091007140028.GA26280@localhost>
+References: <20091007073818.318088777@intel.com> <20091007074904.870825579@intel.com> <Pine.LNX.4.64.0910071246180.28844@sister.anvils>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0910071246180.28844@sister.anvils>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> On Wed, Oct 07, 2009 at 09:11:15PM +0800, Peter Staubach wrote:
->> Wu Fengguang wrote:
->>> It was introduced in 72cb77f4a5ac, and the several issues have been
->>> addressed in generic writeback:
->>> - out of order writeback (or interleaved concurrent writeback)
->>>   addressed by the per-bdi writeback and wait queue in balance_dirty_pages()
->>> - sync livelocked by a fast dirtier
->>>   addressed by throttling all to-be-synced dirty inodes
->>>
->> I don't think that we can just remove this support.  It is
->> designed to reduce the effects from doing a stat(2) on a
->> file which is being actively written to.
+On Wed, Oct 07, 2009 at 07:57:00PM +0800, Hugh Dickins wrote:
+> On Wed, 7 Oct 2009, Wu Fengguang wrote:
 > 
-> Ah OK.
+> > When shmem returns AOP_WRITEPAGE_ACTIVATE, the inode pages cannot be
+> > synced in the near future. So write_cache_pages shall stop writting this
+> > inode, and shmem shall increase pages_skipped to instruct VFS not to
+> > busy retry.
+> > 
+> > CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 > 
->> If we do remove it, then we will need to replace this patch
->> with another.  Trond and I hadn't quite finished discussing
->> some aspects of that other patch...  :-)
-> 
-> I noticed the i_mutex lock in nfs_getattr(). Do you mean that?
-> 
+> Okay, it embarrasses me to see AOP_WRITEPAGE_ACTIVATE (and its horrid
+> "in this one case the page is still locked" semantic) still around -
+> my patch to remove it vanished from mmotm (probably caused a temporary
+> conflict) and I've never chased it up (partly out of guilt that I'd not
+> yet kept my promise to contact the openAFS people about their use of it).
 
-Well, that's part of that support as well.  That keeps a writing
-application from dirtying more pages while the application doing
-the stat is attempting to clean them.
+Googled this one :) 
 
-Another approach that I suggested was to keep track of the
-number of pages which are dirty on a per-inode basis.  When
-enough pages are dirty to fill an over the wire transfer,
-then schedule an asynchronous write to transmit that data to
-the server.  This ties in with support to ensure that the
-server/network is not completely overwhelmed by the client
-by flow controlling the writing application to better match
-the bandwidth and latencies of the network and server.
-With this support, the NFS client tends not to fill memory
-with dirty pages and thus, does not depend upon the other
-parts of the system to flush these pages.
+        http://markmail.org/thread/fivi4bgylwsy26ws
 
-All of these recent pages make this current flushing happen
-in a much more orderly fashion, which is great.  However,
-this can still lead to the client attempting to flush
-potentially gigabytes all at once, which is more than most
-networks and servers can handle reasonably.
+In fact we could just return from shmem_writepage() with PG_dirty and
+!PG_writeback. Then the page will be put back to LRU with PG_reclaim
+cleared. It could well happen in other filesystems who has trouble to
+writeback the page for the time (those already do pages_skipped++).
 
-		ps
+> But that's orthogonal to your concern here: for so long as there has
+> been a wbc->pages_skipped, I guess shmem_writepage() should have been
+> incrementing it there - thanks.  But I don't believe the VFS will ever
+> have any interest in pages_skipped from shmem_writepage(): do you have
+> evidence that it does?  If so, I need to investigate.
 
+Yes :) Except in this new code.
 
-> Thanks,
-> Fengguang
-> 
->>> CC: Peter Zijlstra <a.p.zijlstra@chello.nl> 
->>> CC: Peter Staubach <staubach@redhat.com>
->>> CC: Trond Myklebust <Trond.Myklebust@netapp.com>
->>> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
->>> ---
->>>  fs/nfs/file.c          |    9 ---------
->>>  fs/nfs/write.c         |   11 -----------
->>>  include/linux/nfs_fs.h |    1 -
->>>  3 files changed, 21 deletions(-)
->>>
->>> --- linux.orig/fs/nfs/file.c	2009-10-07 14:31:45.000000000 +0800
->>> +++ linux/fs/nfs/file.c	2009-10-07 14:32:54.000000000 +0800
->>> @@ -386,15 +386,6 @@ static int nfs_write_begin(struct file *
->>>  		mapping->host->i_ino, len, (long long) pos);
->>>  
->>>  start:
->>> -	/*
->>> -	 * Prevent starvation issues if someone is doing a consistency
->>> -	 * sync-to-disk
->>> -	 */
->>> -	ret = wait_on_bit(&NFS_I(mapping->host)->flags, NFS_INO_FLUSHING,
->>> -			nfs_wait_bit_killable, TASK_KILLABLE);
->>> -	if (ret)
->>> -		return ret;
->>> -
->>>  	page = grab_cache_page_write_begin(mapping, index, flags);
->>>  	if (!page)
->>>  		return -ENOMEM;
->>> --- linux.orig/fs/nfs/write.c	2009-10-07 14:31:45.000000000 +0800
->>> +++ linux/fs/nfs/write.c	2009-10-07 14:32:54.000000000 +0800
->>> @@ -387,26 +387,15 @@ static int nfs_writepages_callback(struc
->>>  int nfs_writepages(struct address_space *mapping, struct writeback_control *wbc)
->>>  {
->>>  	struct inode *inode = mapping->host;
->>> -	unsigned long *bitlock = &NFS_I(inode)->flags;
->>>  	struct nfs_pageio_descriptor pgio;
->>>  	int err;
->>>  
->>> -	/* Stop dirtying of new pages while we sync */
->>> -	err = wait_on_bit_lock(bitlock, NFS_INO_FLUSHING,
->>> -			nfs_wait_bit_killable, TASK_KILLABLE);
->>> -	if (err)
->>> -		goto out_err;
->>> -
->>>  	nfs_inc_stats(inode, NFSIOS_VFSWRITEPAGES);
->>>  
->>>  	nfs_pageio_init_write(&pgio, inode, wb_priority(wbc));
->>>  	err = write_cache_pages(mapping, wbc, nfs_writepages_callback, &pgio);
->>>  	nfs_pageio_complete(&pgio);
->>>  
->>> -	clear_bit_unlock(NFS_INO_FLUSHING, bitlock);
->>> -	smp_mb__after_clear_bit();
->>> -	wake_up_bit(bitlock, NFS_INO_FLUSHING);
->>> -
->>>  	if (err < 0)
->>>  		goto out_err;
->>>  	err = pgio.pg_error;
->>> --- linux.orig/include/linux/nfs_fs.h	2009-10-07 14:31:45.000000000 +0800
->>> +++ linux/include/linux/nfs_fs.h	2009-10-07 14:32:54.000000000 +0800
->>> @@ -208,7 +208,6 @@ struct nfs_inode {
->>>  #define NFS_INO_STALE		(1)		/* possible stale inode */
->>>  #define NFS_INO_ACL_LRU_SET	(2)		/* Inode is on the LRU list */
->>>  #define NFS_INO_MOUNTPOINT	(3)		/* inode is remote mountpoint */
->>> -#define NFS_INO_FLUSHING	(4)		/* inode is flushing out data */
->>>  #define NFS_INO_FSCACHE		(5)		/* inode can be cached by FS-Cache */
->>>  #define NFS_INO_FSCACHE_LOCK	(6)		/* FS-Cache cookie management lock */
+> And the accompanying change to write_cache_pages() seems irrelevant
+> and misguided.  Irrelevant because write_cache_pages() should never be
+> dealing with shmem_writepage() (its bdi should keep it well away), and
+> should never be dealing with reclaim, which is the only case in which
+> shmem_writepage() returns AOP_WRITEPAGE_ACTIVATE - or have your other
+> changes, or the bdi work, changed that?
 
+That becomes possible with my another patch (30/45). I've added check
+to avoid doing lumpy reclaim for shmem. So now everything returns to
+normal :)
+
+> And misguided because in your change to write_cache_pages() you're
+> taking AOP_WRITEPAGE_ACTIVATE to say that it should now give up, not
+> process more pages.  We just don't know that.  All it means is that
+> this one page couldn't be written and should be reactivated (if it
+> were under reclaim): it might be the case that every other page tried
+> after would get treated in the same way, or it might be the case that
+> the next page would get written successfully.  That info is just not
+> provided.
+
+Yes, it was over-smart indeed. I'll revert that chunk (or
+AOP_WRITEPAGE_ACTIVATE) totally.
+
+Thanks,
+Fengguang
+
+> > ---
+> >  mm/page-writeback.c |   23 +++++++++++------------
+> >  mm/shmem.c          |    1 +
+> >  2 files changed, 12 insertions(+), 12 deletions(-)
+> > 
+> > --- linux.orig/mm/page-writeback.c	2009-10-06 23:39:28.000000000 +0800
+> > +++ linux/mm/page-writeback.c	2009-10-06 23:39:29.000000000 +0800
+> > @@ -851,19 +851,18 @@ continue_unlock:
+> >  				if (ret == AOP_WRITEPAGE_ACTIVATE) {
+> >  					unlock_page(page);
+> >  					ret = 0;
+> > -				} else {
+> > -					/*
+> > -					 * done_index is set past this page,
+> > -					 * so media errors will not choke
+> > -					 * background writeout for the entire
+> > -					 * file. This has consequences for
+> > -					 * range_cyclic semantics (ie. it may
+> > -					 * not be suitable for data integrity
+> > -					 * writeout).
+> > -					 */
+> > -					done = 1;
+> > -					break;
+> >  				}
+> > +				/*
+> > +				 * done_index is set past this page,
+> > +				 * so media errors will not choke
+> > +				 * background writeout for the entire
+> > +				 * file. This has consequences for
+> > +				 * range_cyclic semantics (ie. it may
+> > +				 * not be suitable for data integrity
+> > +				 * writeout).
+> > +				 */
+> > +				done = 1;
+> > +				break;
+> >   			}
+> >  
+> >  			if (nr_to_write > 0) {
+> > --- linux.orig/mm/shmem.c	2009-10-06 23:37:40.000000000 +0800
+> > +++ linux/mm/shmem.c	2009-10-06 23:39:29.000000000 +0800
+> > @@ -1103,6 +1103,7 @@ unlock:
+> >  	 */
+> >  	swapcache_free(swap, NULL);
+> >  redirty:
+> > +	wbc->pages_skipped++;
+> >  	set_page_dirty(page);
+> >  	if (wbc->for_reclaim)
+> >  		return AOP_WRITEPAGE_ACTIVATE;	/* Return with page locked */
