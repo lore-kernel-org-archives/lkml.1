@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932581AbZJGLm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932681AbZJGLsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932581AbZJGLm5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 07:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758955AbZJGLm4
+	id S932681AbZJGLsF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 07:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758978AbZJGLsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 07:42:56 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:46804 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758920AbZJGLm4 (ORCPT
+	Wed, 7 Oct 2009 07:48:04 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:55613 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758948AbZJGLsC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 07:42:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=mOCvyMudKnwf8mT7fPhw65gWC4bJAzwdLH2qeyw40oTY4sy2NLlvxUBwDywqo3bknF
-         W8Y+grB+JgEL2JrHRmHHCeon/kkK6ssdwufV7ulPVfW961WGrwQMMmYpvCQh9wkrJPNj
-         cofFW/YDET05jMWc/UBv3R1z8+r/jeS3rL7LM=
-Message-ID: <4ACC7E35.4050001@gmail.com>
-Date: Wed, 07 Oct 2009 19:40:37 +0800
-From: "Helight.Xu" <helight.xu@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 7 Oct 2009 07:48:02 -0400
+Date: Wed, 7 Oct 2009 17:17:20 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>, arun@linux.vnet.ibm.com,
+       Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [v7 PATCH 0/7]: cpuidle/x86/POWER: Cleanup idle power
+ management code in x86, cleanup drivers/cpuidle/cpuidle.c and introduce
+ cpuidle to POWER.
+Message-ID: <20091007114719.GH6818@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091006152421.GA7278@linux.vnet.ibm.com>
+ <20091006163521.GA10425@linux.vnet.ibm.com>
+ <1254852279.17055.2.camel@laptop>
+ <20091007112648.GC7646@dirshya.in.ibm.com>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH V2] fix a warning on kernel/trace/trace_branch.c and	trace_hw_branches.c
-References: <20091007081946.GA25350@helight> <4ACC5715.4000201@cn.fujitsu.com>
-In-Reply-To: <4ACC5715.4000201@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091007112648.GC7646@dirshya.in.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Zhenwen Xu wrote:
->   
->> fix warnings that caused the API change of trace_buffer_lock_reserve()
->> change files: kernel/trace/trace_hw_branch.c
->> 	      kernel/trace/trace_branch.c
->>
->>     
->
-> Hmm, did you really compile trace_hw_branch.c while testing
-> this patch?
->
-> This change is necessary too:
->
-> -	trace_buffer_unlock_commit(tr, event, 0, 0);
-> +	trace_buffer_unlock_commit(tr->buffer, event, 0, 0);
->
-> And use a varaible "buffer = tr->buffer" should be better.
->   
-oh!   sorry for my careless!
->   
->> Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
->> ---
->>  kernel/trace/trace_branch.c      |    2 +-
->>  kernel/trace/trace_hw_branches.c |    2 +-
->>  2 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
->> index 7a7a9fd..216e2dd 100644
->> --- a/kernel/trace/trace_branch.c
->> +++ b/kernel/trace/trace_branch.c
->> @@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
->>  		goto out;
->>  
->>  	pc = preempt_count();
->> -	event = trace_buffer_lock_reserve(tr, TRACE_BRANCH,
->> +	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
->>  					  sizeof(*entry), flags, pc);
->>  	if (!event)
->>  		goto out;
->> diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
->> index 23b6385..1cc17ca 100644
->> --- a/kernel/trace/trace_hw_branches.c
->> +++ b/kernel/trace/trace_hw_branches.c
->> @@ -180,7 +180,7 @@ void trace_hw_branch(u64 from, u64 to)
->>  	if (atomic_inc_return(&tr->data[cpu]->disabled) != 1)
->>  		goto out;
->>  
->> -	event = trace_buffer_lock_reserve(tr, TRACE_HW_BRANCHES,
->> +	event = trace_buffer_lock_reserve(tr->buffer, TRACE_HW_BRANCHES,
->>  					  sizeof(*entry), 0, 0);
->>  	if (!event)
->>  		goto out;
->>     
->
->   
+* Vaidy <svaidy@linux.vnet.ibm.com> [2009-10-07 16:56:48]:
 
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-06 20:04:39]:
+> 
+> > On Tue, 2009-10-06 at 22:05 +0530, Arun R Bharadwaj wrote:
+> > 
+> > > Also, the per-cpu nature of registration/unregistration of cpuidle
+> > > has been maintained as ACPI needs this.
+> > 
+> > Right, so can't we ditch that and have acpi default to the lowest common
+> > C-state and warn when various cpus report different C-states?
+> 
+> Hi Peter,
+> 
+> As Arjan mentioned previously, the per-cpu registration has to stay
+> for x86 for now due to legacy ACPI compatibility.  Breaking that may
+> break lot of existing users and we do not have a clean fallback
+> method.  
+> 
+> As far as powerpc is concerned, we can work with a single global
+> registration.  However we would like to have the same interface across
+> different archs.
+> 
+> With the new re-factoring (v7), Arun has killed most of the list
+> traversal and linking between various cpu's cpuidle_driver structures.
+> Now we have a per-cpu stack of registered devices and we lookup the
+> structs using online cpumasks.  The cpuidle_driver structure has list
+> of idle routing pointers (struct cpuidle_state) and rest of it is
+> statistics that needs to be maintained at a per-cpu level anyway.  All
+> that is duplicated here is the array of idle routines (struct
+> cpuidle_state) on each cpu.
+> 
+> The objective of the refactoring is to have a single common idle
+> routine management framework (remove pm_idle) and we have it done
+> through cpuidle registration framework.  We can incrementally remove
+> the per-cpu registration later easily by splitting the cpuidle_driver
+> structure.
+>
+
+Yes, incremental refactoring makes the most sense from the do not
+break as you refactor point of view.
 
 -- 
----------------------------------
-Zhenwen Xu - Open and Free
-Home Page:	http://zhwen.org
-
+	Balbir
