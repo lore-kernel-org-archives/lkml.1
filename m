@@ -1,57 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbZJGNgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758736AbZJGNsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758656AbZJGNgd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 09:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZJGNgc
+	id S1758736AbZJGNsV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 09:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758486AbZJGNsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 09:36:32 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:27214 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752898AbZJGNgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 09:36:31 -0400
-Message-ID: <4ACC992F.3060001@redhat.com>
-Date: Wed, 07 Oct 2009 09:35:43 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, greg@kroah.com, riel@redhat.com,
-       steven@uplinklabs.net, ext-eero.nurkkala@nokia.com, tglx@linutronix.de
-CC: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:timers/urgent] NOHZ: update idle state also when NOHZ is
- inactive
-References: <1254907901.30157.93.camel@eenurkka-desktop> <tip-fdc6f192e7e1ae80565af23cc33dc88e3dcdf184@git.kernel.org>
-In-Reply-To: <tip-fdc6f192e7e1ae80565af23cc33dc88e3dcdf184@git.kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 7 Oct 2009 09:48:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63777 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758628AbZJGNsU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 09:48:20 -0400
+Subject: Re: [PATCH V2] fix a warning on kernel/trace/trace_branch.c and
+ trace_hw_branches.c
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: "Helight.Xu" <helight.xu@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <4ACC7E35.4050001@gmail.com>
+References: <20091007081946.GA25350@helight>
+	 <4ACC5715.4000201@cn.fujitsu.com>  <4ACC7E35.4050001@gmail.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Wed, 07 Oct 2009 09:46:20 -0400
+Message-Id: <1254923180.1696.138.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tip-bot for Eero Nurkkala wrote:
-> Commit-ID:  fdc6f192e7e1ae80565af23cc33dc88e3dcdf184
-> Gitweb:     http://git.kernel.org/tip/fdc6f192e7e1ae80565af23cc33dc88e3dcdf184
-> Author:     Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-> AuthorDate: Wed, 7 Oct 2009 11:54:26 +0300
-> Committer:  Thomas Gleixner <tglx@linutronix.de>
-> CommitDate: Wed, 7 Oct 2009 13:05:05 +0200
-> 
-> NOHZ: update idle state also when NOHZ is inactive
-> 
-> Commit f2e21c9610991e95621a81407cdbab881226419b had unfortunate side
-> effects with cpufreq governors on some systems.
-> 
-> If the system did not switch into NOHZ mode ts->inidle is not set when
-> tick_nohz_stop_sched_tick() is called from the idle routine. Therefor
-> all subsequent calls from irq_exit() to tick_nohz_stop_sched_tick()
-> fail to call tick_nohz_start_idle(). This results in bogus idle
-> accounting information which is passed to cpufreq governors.
-> 
-> Set the inidle flag unconditionally of the NOHZ active state to keep
-> the idle time accounting correct in any case.
+On Wed, 2009-10-07 at 19:40 +0800, Helight.Xu wrote:
+> Li Zefan wrote:
+> > Zhenwen Xu wrote:
+> >   
+> >> fix warnings that caused the API change of trace_buffer_lock_reserve()
+> >> change files: kernel/trace/trace_hw_branch.c
+> >> 	      kernel/trace/trace_branch.c
+> >>
+> >>     
+> >
+> > Hmm, did you really compile trace_hw_branch.c while testing
+> > this patch?
+> >
+> > This change is necessary too:
+> >
+> > -	trace_buffer_unlock_commit(tr, event, 0, 0);
+> > +	trace_buffer_unlock_commit(tr->buffer, event, 0, 0);
+> >
+> > And use a varaible "buffer = tr->buffer" should be better.
+> >   
+> oh!   sorry for my careless!
+> >   
+> >> Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
+> >> ---
+> >>  kernel/trace/trace_branch.c      |    2 +-
+> >>  kernel/trace/trace_hw_branches.c |    2 +-
+> >>  2 files changed, 2 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+> >> index 7a7a9fd..216e2dd 100644
+> >> --- a/kernel/trace/trace_branch.c
+> >> +++ b/kernel/trace/trace_branch.c
+> >> @@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+> >>  		goto out;
+> >>  
+> >>  	pc = preempt_count();
+> >> -	event = trace_buffer_lock_reserve(tr, TRACE_BRANCH,
+> >> +	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
+> >>  					  sizeof(*entry), flags, pc);
 
-Acked-by: Rik van Riel <riel@redhat.com>
+Also, You should not pass in the buffer directly. This is because the
+tr->buffer can change, and if it changes between the reserve and commit,
+then you can corrupt the ring buffer.
 
--- 
-All rights reversed.
+What you want to do is:
+
+	struct ring_buffer *buffer = tr->buffer;
+
+	event = trace_buffer_lock_reserve(buffer, TRACE_BRANCH ...)
+
+[...]
+
+	ring_buffer_unlock_commit(buffer, ...)
+
+
+-- Steve
+
+> >>  	if (!event)
+> >>  		goto out;
+> >> diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
+> >> index 23b6385..1cc17ca 100644
+> >> --- a/kernel/trace/trace_hw_branches.c
+> >> +++ b/kernel/trace/trace_hw_branches.c
+> >> @@ -180,7 +180,7 @@ void trace_hw_branch(u64 from, u64 to)
+> >>  	if (atomic_inc_return(&tr->data[cpu]->disabled) != 1)
+> >>  		goto out;
+> >>  
+> >> -	event = trace_buffer_lock_reserve(tr, TRACE_HW_BRANCHES,
+> >> +	event = trace_buffer_lock_reserve(tr->buffer, TRACE_HW_BRANCHES,
+> >>  					  sizeof(*entry), 0, 0);
+> >>  	if (!event)
+> >>  		goto out;
+> >>     
+> >
+> >   
+> 
+> 
+
