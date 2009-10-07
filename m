@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757652AbZJGKHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbZJGKJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757652AbZJGKHT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 06:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756950AbZJGKHS
+	id S1757885AbZJGKJQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 06:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZJGKJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 06:07:18 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:39508 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756289AbZJGKHQ (ORCPT
+	Wed, 7 Oct 2009 06:09:16 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:43039 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754740AbZJGKJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 06:07:16 -0400
-Date: Wed, 7 Oct 2009 11:06:38 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Cc: Mike Frysinger <vapier@gentoo.org>, Samuel Ortiz <sameo@linux.intel.com>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH v3] mfd: ADP5520 Multifunction LCD Backlight and
- KeypadInput Device Driver
-Message-ID: <20091007100638.GB3169@rakim.wolfsonmicro.main>
-References: <20091006115543.GH27168@sirena.org.uk>
- <8A42379416420646B9BFAC9682273B6D0E3F4348@limkexm3.ad.analog.com>
- <20091006123658.GA31079@rakim.wolfsonmicro.main>
- <8A42379416420646B9BFAC9682273B6D0E3F4420@limkexm3.ad.analog.com>
- <20091006135836.GA3926@rakim.wolfsonmicro.main>
- <8A42379416420646B9BFAC9682273B6D0E3F46A7@limkexm3.ad.analog.com>
- <20091006144805.GA10987@rakim.wolfsonmicro.main>
- <8A42379416420646B9BFAC9682273B6D0E3F4769@limkexm3.ad.analog.com>
- <20091006160549.GA8881@rakim.wolfsonmicro.main>
- <8A42379416420646B9BFAC9682273B6D0E3F4CEE@limkexm3.ad.analog.com>
+	Wed, 7 Oct 2009 06:09:15 -0400
+Date: Wed, 7 Oct 2009 12:07:56 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Russell King <rmk@arm.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-rt-users@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Using set_irq_handler in set_irq_type callback?
+Message-ID: <20091007100756.GA5478@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <8A42379416420646B9BFAC9682273B6D0E3F4CEE@limkexm3.ad.analog.com>
-X-Cookie: BOFH excuse
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 09:50:43AM +0100, Hennerich, Michael wrote:
+Hallo,
 
-> As you said there are chip internal interrupt sources for I/Os, keypad
-> presses and releases, ambient light sensor comparator states, and
-> overvoltage conditions.
-> The current state of the driver uses only interrupts for the keypad.
-> I think you agree that its common practice to only implement
-> functionality for chip features that are typically used.
+I'm seeing an imx31 (ARCH=arm) based system failing to boot .31.2-rt13.
 
-Yes, but equally well it's good to avoid future issues as the driver is
-enhanced.  To be honest the main thing that made me notice when reading
-the patch was the use of the blocking notifier pattern to implement the
-interrupt infrastructure, mostly since it doesn't look like an IRQ
-driver and the naming hides the fat that that's what it is.
+The reason is that the irq for the ethernet device is level triggered,
+but the handler for that interrupt is handle_edge_irq.
+As the handler is threaded with PREEMPT_RT=y, the irq is only acked but
+neither masked (as it is believed to be an edge irq) nor handled.  This
+stucks the machine as the irq is still active.
 
-I think I forgot to mention it previously but there's some work on
-getting a standard ALS interface in the kernel too.  I'd really expect
-the GPIOs to end up being used as GPIOs in some designs as well.
+I think the fix for that is adding something like:
 
-> In one of your earlier posts you mentioned: "register an irq_chip for
-> the interrupt controller on it.  Support for doing this on I2C devices
-> was added at pretty much the same time as the IRQ_ONESHOT support."
+	if (type & IRQ_TYPE_EDGE_BOTH)
+		set_irq_handler(irq, handle_edge_irq);
+	else
+		set_irq_handler(irq, handle_level_irq);
 
-> Can you point me to what exactly was added to support this on I2C/SPI
-> devices? 
+to the chip's .set_type callback.  (Doing this directly fails, as
+.set_type holds desc->lock which set_irq_handler acquires, too.  So
+maybe I need to code up a handler that checks how a given irq triggers
+and then calls handle_edge_irq or handle_level_irq.)
 
-These commits (which were merged during the merge window):
+The thing that let's me question that change is that I only found[1] a
+single .set_type callback that does something like that (i.e.
+arch/blackfin/mach-common/ints-priority.c).
 
-4dbc9ca genirq: Do not mask oneshot edge type interrupts
-399b5da genirq: Support nested threaded irq handling
-70aedd2 genirq: Add buslock support
+Do I just miss something or are there more than one platforms that are
+in the need of handling this issue, too?
 
-There may be some other fixup patches afterwards too, but the buslock
-and nested threaded handers are the key ones.
+Best regards
+Uwe
+
+[1] checking files found by 
+
+	git grep -c set_irq_handler | awk -F: '$2 >= 2'
+
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
