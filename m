@@ -1,78 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751306AbZJGEaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbZJGEiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751306AbZJGEaB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 00:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbZJGEaA
+	id S1752856AbZJGEiR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 00:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbZJGEiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 00:30:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47872 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770AbZJGE37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 00:29:59 -0400
-Date: Wed, 7 Oct 2009 15:29:14 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: linux-next: suspend tree build failure
-Message-Id: <20091007152914.8dadf6d7.sfr@canb.auug.org.au>
-In-Reply-To: <200910070031.55135.rjw@sisk.pl>
-References: <20091006135505.f07ee40d.sfr@canb.auug.org.au>
-	<200910070031.55135.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
+	Wed, 7 Oct 2009 00:38:16 -0400
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:33869 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbZJGEiP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 00:38:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=UaA2aHCEucsTynD8Vl1A7Y4/xx6LwFOcdqeBR7edMAFl5ONGz+4GnF29QlwzgAlMsu
+         Xta5R/wAAV2/QUWuhRJU/qUzjLwqJWmwEgr2okeOcQ5wuBG7v8UWwuuLizmEyeh5qpHA
+         p56QPbR7bLy8xe3U80Byfi+mlAIl/vYikpB/g=
+Subject: Re: [tip:perf/core] tracing/events: Add 'signed' field to format
+ files
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
+In-Reply-To: <20091006150510.GA5152@nowhere>
+References: <1254809398-8078-2-git-send-email-tzanussi@gmail.com>
+	 <tip-26a50744b21fff65bd754874072857bee8967f4d@git.kernel.org>
+	 <20091006150510.GA5152@nowhere>
+Content-Type: text/plain
+Date: Tue, 06 Oct 2009 23:30:02 -0500
+Message-Id: <1254889802.28917.156.camel@tropicana>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__7_Oct_2009_15_29_14_+1100_mOUsqxFhkX6AOlzY"
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__7_Oct_2009_15_29_14_+1100_mOUsqxFhkX6AOlzY
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-10-06 at 17:05 +0200, Frederic Weisbecker wrote:
+> On Tue, Oct 06, 2009 at 01:06:39PM +0000, tip-bot for Tom Zanussi wrote:
+> > Commit-ID:  26a50744b21fff65bd754874072857bee8967f4d
+> > Gitweb:     http://git.kernel.org/tip/26a50744b21fff65bd754874072857bee8967f4d
+> > Author:     Tom Zanussi <tzanussi@gmail.com>
+> > AuthorDate: Tue, 6 Oct 2009 01:09:50 -0500
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Tue, 6 Oct 2009 15:04:45 +0200
+> > 
+> > tracing/events: Add 'signed' field to format files
+> > 
+> > The sign info used for filters in the kernel is also useful to
+> > applications that process the trace stream.  Add it to the format
+> > files and make it available to userspace.
+> 
+> 
+> 
+> This is something we could already find using the type of
+> the field.
+> 
 
-Hi Rafael,
+Hmm, yeah, we do have the field type but in the form of a string, which
+I guess we'd need some kind of type map to get the sign out of.  Since
+we already have the sign info, though, it made sense to me to stick it
+in the format file, other than the fact that it might break some
+existing tools.  I didn't think the final format was nailed down yet so
+thought that might not be so important at this point...
 
-On Wed, 7 Oct 2009 00:31:55 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
->
-> Thanks for the notification.
->=20
-> Did you cross-compile it by chance?  It builds for me on native x86_64 wi=
-th
-> allmodconfig, which is why I missed this issue.
+Tom
 
-I cross compile all my x86 builds as my big machines are all PowerPC.
+> Also I wonder if that breaks the format definition ABI. I mean:
+> event formats are not ABI, except for the TRACE_EVENT_ABI.
+> But concerning how we describe the format description, I
+> have doubts.
+> 
+> As an example, I don't know if this patch would break 2.6.32-rc1
+> (and then 2.6.32) based perf tools running on a future 2.6.33
+> kernel.
+> 
 
-> > I have used the version of the suspend tree from next-20091002 for toda=
-y.
->=20
-> I added the #include <linux/compiler.h> to freezer.h, but obviously I cou=
-ldn't
-> verify if that fixed the problem.  Hopefully it did.
-
-My guess was wrong.  You either need to leave the __cold off the
-definition in kernel/freezer.c or move it before the function name.  No
-other function definition in the kernel is marked __cold, but several
-declarations are.
-
-Also __cold only generates something for gcc >=3D 4.3 ...  I am using 4.4.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__7_Oct_2009_15_29_14_+1100_mOUsqxFhkX6AOlzY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrMGRoACgkQjjKRsyhoI8wJGwCfW7yt0M/oUigA/Icj789ycPvA
-TRgAnR2lMJOS+N5WxY6pddk2rvSA4ckK
-=fSS5
------END PGP SIGNATURE-----
-
---Signature=_Wed__7_Oct_2009_15_29_14_+1100_mOUsqxFhkX6AOlzY--
