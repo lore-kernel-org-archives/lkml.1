@@ -1,212 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbZJGD3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbZJGDbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbZJGD3l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 23:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZJGD3l
+	id S1753843AbZJGDbE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 23:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZJGDbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 23:29:41 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:60812 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752528AbZJGD3k (ORCPT
+	Tue, 6 Oct 2009 23:31:03 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:37977 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752664AbZJGDbC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 23:29:40 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlsFAP+hy0pMROOX/2dsb2JhbACBUtNAhCoEgVM
-Date: Tue, 6 Oct 2009 23:29:01 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, ak@suse.de,
-       roland@redhat.com, rth@redhat.com, mhiramat@redhat.com
-Subject: Re: [PATCH 1/4] jump label - make init_kernel_text() global
-Message-ID: <20091007032901.GB12202@Krystal>
-References: <cover.1253831945.git.jbaron@redhat.com> <77d69d0f3c8e1f98a4c2392ea4e4f6c25ed177f4.1253831946.git.jbaron@redhat.com> <20091001112003.GA2962@elte.hu> <20091001203905.GD2660@redhat.com> <20091003104335.GB15919@elte.hu> <20091003123900.GA22046@Krystal> <1254880478.1696.104.camel@gandalf.stny.rr.com> <20091007023251.GA4664@Krystal>
-Mime-Version: 1.0
+	Tue, 6 Oct 2009 23:31:02 -0400
+Date: Tue, 6 Oct 2009 22:30:06 -0500
+From: David Fries <david@fries.net>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Joao Ramos <joao.ramos@inov.pt>, d.stussy@yahoo.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] two ide fixes for -rc4
+Message-ID: <20091007033005.GE21612@spacedout.fries.net>
+References: <200910070027.30377.bzolnier@gmail.com> <alpine.LFD.2.01.0910061534040.3432@localhost.localdomain> <200910070246.05283.bzolnier@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091007023251.GA4664@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 23:26:25 up 49 days, 14:15,  2 users,  load average: 0.53, 0.37,
-	0.27
+In-Reply-To: <200910070246.05283.bzolnier@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Tue, 06 Oct 2009 22:30:11 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > On Sat, 2009-10-03 at 08:39 -0400, Mathieu Desnoyers wrote:
+On Wed, Oct 07, 2009 at 02:46:05AM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Wednesday 07 October 2009 00:35:24 Linus Torvalds wrote:
 > > 
-> > > I might be missing a bit of context here, I just want to make sure we
-> > > are on the same page: patching a jmp instruction is safe on UP, safe
-> > > with stop_machine(), is very likely safe with the breakpoint-ipi
+> > David, can you test these on the sis5513 system that had problems with the 
+> > original pio0 mode setting?
 > > 
-> > Hi Mathieu,
+> > 	Thanks,
+> > 		Linus
 > > 
-> > I've been reading through these threads (both this one and the immediate
-> > one) and I'm still a bit confused. I really want to understand this in a
-> > simple way, thus make sure everyone else understands it too.
-> > 
-> > >From what Arjan said here:
-> > 
-> >   http://lkml.org/lkml/2009/9/25/98
-> > 
-> > The issue is going back from the int3 to the old value. How does the
-> > breakpoint-ipi work?
-> > 
-> > Supposedly, we can add an int3 to the code without any worry. If another
-> > CPU at that same time hits that code path, it will either run the old
-> > code, or take the interrupt. The breakpoint interrupt handler, will
-> > handle that code path, and the execution continues.
-> > 
-> > Now what is the issues with removing the int3 and placing back the old
-> > (or new) value. Is there an issue if another CPU is about to execute
-> > that code path as we remove the int3? If so, how does sending an IPI
-> > help the matter without adding more races?
-> > 
-> > Is there only an issue if we change the old value with something else,
-> > and you just need to send the IPI after you modify the old code and
-> > before removing the int3?
-> > 
-> > I may just be totally confused, which I usually am. But when I'm not
-> > confused, I feel that the code is practical ;-)
-> > 
+> > On Wed, 7 Oct 2009, Bartlomiej Zolnierkiewicz wrote:
+> > > 
+> > > patch #1 fixes old bug in sis5513 (uncovered by 2.6.30 device probing
+> > > changes but it could be also triggered in earlier kernels on warm-plug
+> > > operation)
 > 
-> Hi Steven,
+> patch #1 contained a stupid mistake preventing it from working (thanks to
+> David Fries for letting me know quickly), I guess that is what one gets for
+> the late night hacking..
 > 
-> OK, I'll make the explanation as straightforward as possible. I'll use a
-> race example to illustrate what we try to avoid by using the
-> breakpoint+ipi scheme. After that, I present the same scenario with the
-> breakpoint+ipi in place.
+> The corrected version below, David please try it instead:
 > 
-> Each step shows what is executed, and what is the memory values seen by
-> the CPU. CPU A is doing the code patching, CPU B executing the code.
-> I intentionally left out some sfence required on CPU A for simplicity.)
-> 
-> Initially, let's say we have:
-> (1)  (2)
-> 0xeb 0xe5    (jmp to offset 0xe5)
-> 
-> And we want to change this to:
-> (1)  (2)
-> 0xeb 0xf0    (jmp to offset 0xf0)
-> 
-> (scenario "buggy")
-> 
-> CPU A       |       CPU B  (this is about as far as my ascii-art skills go)
-> -------------------------    ;)
-> 0xeb 0xe5     0xeb 0xe5
-> 0:            CPU B instruction pointer is earlier than (1)
->               CPU B pipeline speculatively predicts branches,
->               prefetches data, calculates speculated values.
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH take 2] sis5513: fix PIO setup for ATAPI devices
 
-Clarification: going back to my past exchanges with Richard J Moore, the
-specific CPU "state" that needs to be consistent on CPU B here across
-0-4 is the instruction trace cache.
+2.6.31 plus this patch fixed the hang on IDE initialization with the
+SIS5513.
 
-Mathieu
-
-> 1:            CPU B loads 0xeb
-> 2:            CPU B loads 0xe5
-> 3:
-> Write to (2)
-> 0xeb 0xf0     0xeb 0xf0
-> 4:            CPU B instruction pointer gets to (1), needs to validate
->               all the pipeline speculation.
->               But ! The CPU does not expect code to change underneath.
->               General protection fault (or any other fault.. random..)
-> 
-> 
-> Now with the breakpoint+ipi/mb() scheme:
-> (scenario A: CPU B does not hit the breakpoint)
-> 
-> CPU A       |       CPU B
-> -------------------------
-> 0xeb 0xe5     0xeb 0xe5
-> 0:            CPU B instruction pointer is earlier than (1)
->               CPU B pipeline speculatively predicts branches,
->               prefetches data, calculates speculated values.
-> 1:            CPU B loads 0xeb
-> 2:            CPU B loads 0xe5
-> 3:
-> Write to (1)
-> 0xcc 0xe5     0xcc 0xe5  # breakpoint inserted
-> 4: send IPI
-> 5:            mfence     # serializing instruction. Flushes CPU B's
->                          # pipeline
-> 6:
-> Write to (2)
-> 0xcc 0xf0     0xcc 0xf0
-> 7:
-> Write to (1)
-> 0xeb 0xf0     0xeb 0xf0
-> 8:            CPU B instruction pointer gets to (1), needs to validate
->               all the pipeline speculation. Because we flushed any
->               speculation prior to the mfence, we're ok.
-> 
-> 
-> Now, I'll show why just using the breakpoint, without IPI, is
-> problematic:
-> 
-> CPU A       |       CPU B
-> -------------------------
-> 0xeb 0xe5     0xeb 0xe5
-> 0:            CPU B instruction pointer is earlier than (1)
->               CPU B pipeline speculatively predicts branches,
->               prefetches data, calculates speculated values.
-> 1:            CPU B loads 0xeb
-> 2:            CPU B loads 0xe5
-> 3:
-> Write to (1)
-> 0xcc 0xe5     0xcc 0xf0  # breakpoint inserted
-> 4:
-> Write to (2)
-> 0xcc 0xf0     0xeb 0xf0  # Silly CPU B. Did not see nor use the breakpoint.
->                          # Same problem as scenario "buggy".
-> 5:
-> Write to (1)
-> 0xeb 0xf0     0xeb 0xf0
-> 4:            CPU B instruction pointer gets to (1), needs to validate
->               all the pipeline speculation.
->               But ! The CPU does not expect code to change underneath.
->               General protection fault (or any other fault.. random..)
-> 
-> So, basically, we ensure that the only transitions CPU B will see are
-> either:
-> 
-> 0xeb 0xe5 -> 0xcc 0xe5 : OK, adding breakpoint
-> 0xcc 0xe5 -> 0xcc 0xf0 : OK, not using the operand anyway, it's a
->                              breakpoint!
-> 0xcc 0xf0 -> 0xeb 0xf0 : OK, removing breakpoint
-> 
-> *but*, the transition we guarantee that CPU B will *never* see without
-> having a mfence executed between the old and the new version is:
-> 
-> 0xeb 0xe5 -> 0xeb 0xf0  <----- buggy.
-> 
-> Hope the explanation helps,
-> 
-> Mathieu
-> 
-> 
-> > -- Steve
-> > 
-> >  
-> > 
-> > > approach (but we need the confirmation from Intel, which hpa is trying
-> > > to get), but is definitely _not_ safe if neither of these methods are
-> > > used on a SMP system. If a non-aligned multi-word jump is modified while
-> > > another CPU is fetching the instruction, bad things could happen.
-> > 
-> > 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+That's with my testing mode, I'm rebuilding a kernel and will try some
+benchmarks tomorrow.  I've been testing by hibernating to disk,
+booting the test kernel with a bad root and resume partition (so if it
+worked it wouldn't modify the suspended image), then rebooting to
+resume from disk with the good kernel.  That let me more quickly
+bisect and test kernels, I just haven't ran this kernel much past the
+initialization is all.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+David Fries <david@fries.net>
+http://fries.net/~david/ (PGP encryption key available)
