@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbZJGUN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbZJGUOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757851AbZJGUN6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbZJGUN5
+	id S1760005AbZJGUOx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbZJGUOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:13:57 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:34112 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753776AbZJGUN4 convert rfc822-to-8bit (ORCPT
+	Wed, 7 Oct 2009 16:14:53 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:13642 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754082AbZJGUOv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:13:56 -0400
+	Wed, 7 Oct 2009 16:14:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GEvpIIkRrQIVMysubHmhCDd8uyXf2Q1WjVU4gQQ89r/oFgwyI1uoh0YruHl4vrH+E8
+         vH8P1ArO/jG4t0CYxVGFXyfRMQnay17JLP5LE/FiQBsHZjXQK2iR58OS/3+vyXYVFRl+
+         z/WgkYH12IwzAErJVY/hOFVCeZz9mBqVBvkjc=
+Date: Wed, 7 Oct 2009 22:13:41 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: John Kacur <jkacur@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, Clark Williams <williams@redhat.com>
+Subject: Re: [PATCH RFC] BKL not necessary in cpuid_open
+Message-ID: <20091007201338.GE5903@nowhere>
+References: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510910071306r4ad6dc9btb7503bc3ab0ec815@mail.gmail.com>
-References: <20091007175403.GA335@trillian.comsick.at> <9b2b86520910071246r393f2afvacaa4d8f544508a8@mail.gmail.com> 
-	<ac3eb2510910071306r4ad6dc9btb7503bc3ab0ec815@mail.gmail.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 7 Oct 2009 22:12:28 +0200
-Message-ID: <ac3eb2510910071312qe6ad45ep6c579a8393cc6b8e@mail.gmail.com>
-Subject: Re: [BUG] No ttyS0 - Strange udev 8250_pnp interaction
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Michael Guntsche <mike@it-loops.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-hotplug <linux-hotplug@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 7, 2009 at 22:06, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On Wed, Oct 7, 2009 at 21:46, Alan Jenkins
-> <sourcejedi.lkml@googlemail.com> wrote:
->> Udev would have avoided the race prior to
->>
->> 82c785e "udevd: remove check for dev_t, DEVPATH_OLD takes care of that"
->>
->> (the "check" removed here used to serialize events based on the device
->> major:minor number).
->>
->> So - udev probably needs to add the check back.
->
-> What are the two devices with the same major/minor but a different DEVPATH?
+On Wed, Oct 07, 2009 at 08:19:32PM +0200, John Kacur wrote:
+> 
+> I've been staring at the BKL lock in cpuid_open, and I can't see what it 
+> is protecting. However, I may have missed something - even something 
+> obvious, so comments are welcome.
+> 
+> From 25c0f07b3ec5533c0e690e06198baa4300ee4a8c Mon Sep 17 00:00:00 2001
+> From: John Kacur <jkacur@redhat.com>
+> Date: Wed, 7 Oct 2009 20:06:12 +0200
+> Subject: [PATCH] The BKL is not necessary in cpuid_open
+>  Most of the variables are local to the function. It IS possible that for
+>  struct cpuinfo_x86 *c
+>  c could point to the same area. However, this is used read only.
+> 
+> Signed-off-by: John Kacur <jkacur@redhat.com>
 
-To be more specific, Michael, can you please run "udevadm monitor" at
-the same time you see this happen?
 
->> It might also be the case that future kernels could set DEVPATH_OLD as
->> suggested.  I don't know the gory details of 8250_pnp though.
->
-> The DEVPATH_OLD is only added when one and the same device was renamed
-> or moved, which isn't the case here, I guess?
+Hmm, I'm discovering that in tip:rt/kill-the-bkl
 
-Thanks,
-Kay
+http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commitdiff;h=55968ede164ae523692f00717f50cd926f1382a0
+
+Looks like we have overlaped.
+
+Thomas it would be nice to post these patches on LKML (or I missed
+them?) and may be to merge them into tip:master, so that they are
+visible and then we lower the risk of any duplicate works in this area.
+
+Thanks.
+
