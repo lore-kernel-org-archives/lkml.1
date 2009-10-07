@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbZJGMHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759030AbZJGMJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759013AbZJGMHX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 08:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZJGMHW
+	id S1759030AbZJGMJG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 08:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758924AbZJGMJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 08:07:22 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:44436 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758841AbZJGMHW (ORCPT
+	Wed, 7 Oct 2009 08:09:06 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:19669 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758841AbZJGMJF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 08:07:22 -0400
-Date: Wed, 7 Oct 2009 13:06:44 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Pavel Machek <pavel@ucw.cz>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com
-Subject: Re: spitz: add gpio button support (AK_INT and remote control
- description)
-Message-ID: <20091007120643.GA17069@rakim.wolfsonmicro.main>
-References: <20091006074635.GA2775@ucw.cz>
- <1254829732.3546.35.camel@utx.utx.cz>
- <20091007085806.GB28807@elf.ucw.cz>
- <1254914991.4213.80.camel@hammer.suse.cz>
+	Wed, 7 Oct 2009 08:09:05 -0400
+X-Trace: 267886270/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.16.54/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.16.54
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlMFAPwhzEpQKRA2/2dsb2JhbACBUdM/hCoEgVQ
+X-IronPort-AV: E=Sophos;i="4.44,519,1249254000"; 
+   d="scan'208";a="267886270"
+Date: Wed, 7 Oct 2009 13:08:17 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Jan Beulich <JBeulich@novell.com>
+cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] adjust gfp mask passed on nested vmalloc()  invocation
+In-Reply-To: <4ACC62DC0200007800018690@vpn.id2.novell.com>
+Message-ID: <Pine.LNX.4.64.0910071300330.28844@sister.anvils>
+References: <4AC9E38E0200007800017F57@vpn.id2.novell.com>
+ <Pine.LNX.4.64.0910062241500.21409@sister.anvils> <4ACC62DC0200007800018690@vpn.id2.novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1254914991.4213.80.camel@hammer.suse.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 01:29:51PM +0200, Stanislav Brabec wrote:
+On Wed, 7 Oct 2009, Jan Beulich wrote:
+> >>> Hugh Dickins <hugh.dickins@tiscali.co.uk> 06.10.09 23:58 >>>
+> >On Mon, 5 Oct 2009, Jan Beulich wrote:
+> >
+> >> - fix a latent bug resulting from blindly or-ing in __GFP_ZERO, since
+> >>   the combination of this and __GFP_HIGHMEM (possibly passed into the
+> >>   function) is forbidden in interrupt context
+> >> - avoid wasting more precious resources (DMA or DMA32 pools), when
+> >>   being called through vmalloc_32{,_user}()
+> >> - explicitly allow using high memory here even if the outer allocation
+> >>   request doesn't allow it, unless is collides with __GFP_ZERO
+> >> 
+> >> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> >
+> >I thought vmalloc.c was a BUG_ON(in_interrupt()) zone?
+> >The locking is all spin_lock stuff, not spin_lock_irq stuff.
+> >That's probably why your "bug" has remained "latent".
+> 
+> Then you probably mean BUG_ON(irqs_disabled()), which would seem
+> correct.
 
-> SW_REMOTE_INSERT should be recognized by the Jack abstraction layer
-> (sound/core/jack.c).
+I'm relieved you came to see that remark as bogus.
 
-It's the other way around - the jack layer reports jacks for ALSA cards.
-Also, for spitz you'd probably want to be using the ASoC wrapper layer.
+> But if the gfp mask massaging was needed for calling kmalloc(),
+> it would seem odd that the same shouldn't be needed for calling
+> vmalloc() recursively...
+> 
+> >Using HIGHMEM for internal arrays looks reasonable to me; but if
+> >__GFP_ZERO were a problem, wouldn't it be much cleaner to skip the
+> >"unless it collides" and #ifdef CONFIG_HIGHMEM !in_interrupt() stuff,
+> >just memset the array returned from __vmalloc_node()?
+> 
+> The main goal was to change the existing code as little as possible - I
+> did consider this alternative, but wasn't sure that would be accepted.
+> If you view this as the better alternative, I'll certainly modify the
+> patch to do it that way.
 
-> Well, I am thinking about defining extra values for resistors, that can
-> make stuff even more useful at cost of need of non-standard wiring on
-> fourth ring of the audio jack. It can generate SW_MICROPHONE_INSERT,
-> SW_LINEOUT_INSERT, and not yet defined SW_HEADESET_INSERT and
-> SW_LINEIN_INSERT (which would require hardware mod inside Zaurus for
-> stereo line-in).
+Well, now we've accepted that this code cannot be used in_interrupt(),
+there's no need for your #ifdef CONFIG_HIGHMEM nor for my memset: just
+use __GFP_ZERO as it was before, and your patch would amount to or'ing
+__GFP_HIGHMEM into gfp_mask for the __vmalloc_node case - wouldn't it?
 
-Headset should be represented by reporting headphone plus microphone on
-one jack simultaneously.
+Hugh
