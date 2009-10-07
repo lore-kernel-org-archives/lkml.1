@@ -1,112 +1,299 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934142AbZJGPnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934140AbZJGPwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934142AbZJGPnY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759436AbZJGPnX
+	id S934140AbZJGPwW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757312AbZJGPwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:43:23 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:52037 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759327AbZJGPnW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:43:22 -0400
-Message-ID: <4ACCB6BE.5040602@gmail.com>
-Date: Wed, 07 Oct 2009 17:41:50 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 7 Oct 2009 11:52:22 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:50399 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753609AbZJGPwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 11:52:21 -0400
+Date: Wed, 7 Oct 2009 08:51:42 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: catalin.marinas@arm.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.32-rc3 kmemleak] WARNING: at kernel/lockdep.c:3161
+	check_flags+0xbe/0x180()
+Message-ID: <20091007155142.GB6743@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200910050315.n953FCD9030264@www262.sakura.ne.jp>
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Wei Yongjun <yjwei@cn.fujitsu.com>, Takahiro Yasui <tyasui@redhat.com>,
-       Hideo Aoki <haoki@redhat.com>
-Subject: Re: [Bug #14301] WARNING: at net/ipv4/af_inet.c:154
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.mdH.sMTxKB@chimera> <4AC70D20.4060009@gmail.com> <4AC710DF.5070705@gmail.com> <4AC78F7C.40908@gmail.com>
-In-Reply-To: <4AC78F7C.40908@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 07 Oct 2009 17:41:52 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910050315.n953FCD9030264@www262.sakura.ne.jp>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> Eric Dumazet a écrit :
->> Eric Dumazet a écrit :
->>> Rafael J. Wysocki a écrit :
->>>> This message has been generated automatically as a part of a report
->>>> of regressions introduced between 2.6.30 and 2.6.31.
->>>>
->>>> The following bug entry is on the current list of known regressions
->>>> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
->>>> be listed and let me know (either way).
->>>>
->>>>
->>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14301
->>>> Subject		: WARNING: at net/ipv4/af_inet.c:154
->>>> Submitter	: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
->>>> Date		: 2009-09-30 12:24 (2 days old)
->>>> References	: http://marc.info/?l=linux-kernel&m=125431350218137&w=4
->>>>
+On Mon, Oct 05, 2009 at 12:15:12PM +0900, Tetsuo Handa wrote:
+> Hello.
 > 
-> Investigation still needed...
+> I got this error.
 > 
+> [    0.000000] Linux version 2.6.32-rc3 (root@tomoyo) (gcc version 3.3.5 (Debian 1:3.3.5-13)) #1 SMP Mon Oct 5 11:24:05 JST 2009
+> (...snipped...)
+> [    0.000000] -------------------------------------------------------
+> [    0.000000] Good, all 218 testcases passed! |
+> [    0.000000] ---------------------------------
+> [    0.000000] ------------[ cut here ]------------
+> [    0.000000] WARNING: at kernel/lockdep.c:3161 check_flags+0xbe/0x180()
+> [    0.000000] Hardware name: VMware Virtual Platform
+> [    0.000000] Modules linked in:
+> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.32-rc3 #1
+> [    0.000000] Call Trace:
+> [    0.000000]  [<c104182d>] ? printk+0x1d/0x30
+> [    0.000000]  [<c107069e>] ? check_flags+0xbe/0x180
+> [    0.000000]  [<c1040de1>] warn_slowpath_common+0x81/0xa0
+> [    0.000000]  [<c107069e>] ? check_flags+0xbe/0x180
+> [    0.000000]  [<c1040e5a>] warn_slowpath_null+0x1a/0x30
+> [    0.000000]  [<c107069e>] check_flags+0xbe/0x180
+> [    0.000000]  [<c106e52e>] lockdep_trace_alloc+0x2e/0x60
+> [    0.000000]  [<c10cfedd>] kmem_cache_alloc+0x2d/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c106e22b>] ? trace_hardirqs_on+0xb/0x10
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cf9c4>] ? cache_alloc_refill+0x144/0x210
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cef9f>] alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10cf3de>] cache_grow+0xae/0x170
+> [    0.000000]  [<c10cf9fb>] cache_alloc_refill+0x17b/0x210
+> [    0.000000]  [<c10d005a>] kmem_cache_alloc+0x1aa/0x1d0
+> [    0.000000]  [<c10cd9b8>] ? obj_size+0x8/0x10
+> [    0.000000]  [<c10d3969>] ? create_object+0x29/0x220
+> [    0.000000]  [<c10d3969>] create_object+0x29/0x220
+> [    0.000000]  [<c10cd9a8>] ? obj_offset+0x8/0x10
+> [    0.000000]  [<c10ce07a>] ? poison_obj+0x2a/0x50
+> [    0.000000]  [<c1321693>] kmemleak_alloc+0x83/0xd0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  [<c10d0035>] kmem_cache_alloc+0x185/0x1d0
+> [    0.000000]  [<c106e1b7>] ? trace_hardirqs_on_caller+0xf7/0x160
+> [    0.000000]  [<c10cef9f>] ? alloc_slabmgmt+0x5f/0x80
+> [    0.000000]  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>  <IRQ>(...snipped...)
+> 
+> Adding kmemleak=off to kernel command line solves this error.
+> Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.32-rc3
+> 
+> By the way,
+> > static void early_alloc(struct early_log *log)
+> > {
+> >         struct kmemleak_object *object;
+> >         unsigned long flags;
+> >         int i;
+> > 
+> >         if (!atomic_read(&kmemleak_enabled) || !log->ptr || IS_ERR(log->ptr))
+> >                 return;
+> > 
+> >         /*
+> >          * RCU locking needed to ensure object is not freed via put_object().
+> >          */
+> >         rcu_read_lock();
+> >         object = create_object((unsigned long)log->ptr, log->size,
+> >                                log->min_count, GFP_KERNEL);
+> I think we can't use GFP_KERNEL inside rcu_read_lock()...
+> >         spin_lock_irqsave(&object->lock, flags);
+> >         for (i = 0; i < log->trace_len; i++)
+> >                 object->trace[i] = log->trace[i];
+> >         object->trace_len = log->trace_len;
+> >         spin_unlock_irqrestore(&object->lock, flags);
+> >         rcu_read_unlock();
+> > }
+> 
+> [PATCH 2.6.32-rc3] kmemleak: Use GFP_ATOMIC for early_alloc().
+> 
+> We can't use GFP_KERNEL inside rcu_read_lock().
+> 
+> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> ---
+>  mm/kmemleak.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-2.6.32-rc3.orig/mm/kmemleak.c
+> +++ linux-2.6.32-rc3/mm/kmemleak.c
+> @@ -833,7 +833,7 @@ static void early_alloc(struct early_log
+>  	 */
+>  	rcu_read_lock();
+>  	object = create_object((unsigned long)log->ptr, log->size,
+> -			       log->min_count, GFP_KERNEL);
+> +			       log->min_count, GFP_ATOMIC);
 
-OK, my last (buggy ???) feeling is about commit 95766fff6b9a78d1
+Won't we need to check for object==NULL?
 
-[UDP]: Add memory accounting.
+							Thanx, Paul
 
-(Its a two years old patch, oh well...)
-
-Problem is the udp_poll() :
-
-We check the first frame to be dequeued from sk_receive_queue has a good checksum.
-
-If it doesnt, we drop the frame ( calling kfree_skb(skb); )
-
-Problem is now we perform memory accounting on UDP, this kfree_skb()
-should be done with socket locked, but we are allowed to
-call lock_sock() from this udp_poll() context
-
-unsigned int udp_poll(struct file *file, struct socket *sock, poll_table *wait)
-{
-        unsigned int mask = datagram_poll(file, sock, wait);
-        struct sock *sk = sock->sk;
-        int     is_lite = IS_UDPLITE(sk);
-
-        /* Check for false positives due to checksum errors */
-        if ((mask & POLLRDNORM) &&
-            !(file->f_flags & O_NONBLOCK) &&
-            !(sk->sk_shutdown & RCV_SHUTDOWN)) {
-                struct sk_buff_head *rcvq = &sk->sk_receive_queue;
-                struct sk_buff *skb;
-
-                spin_lock_bh(&rcvq->lock);
-                while ((skb = skb_peek(rcvq)) != NULL &&
-                       udp_lib_checksum_complete(skb)) {
-                        UDP_INC_STATS_BH(sock_net(sk),
-                                        UDP_MIB_INERRORS, is_lite);
-                        __skb_unlink(skb, rcvq);
-<<HERE>>                kfree_skb(skb);
-                }
-                spin_unlock_bh(&rcvq->lock);
-
-
-
-David, Herbert, any idea how to solve this problem ?
-
-1) Allow false positives
-
-Or
-
-2) Maybe we should finally convert sk_forward_alloc to an atomic_t after all...
-   This would make things easier, and speedup UDP (no more need to lock_sock())
-
-Or 
-
-3) ???
-
+>  	spin_lock_irqsave(&object->lock, flags);
+>  	for (i = 0; i < log->trace_len; i++)
+>  		object->trace[i] = log->trace[i];
+> 
+> Regards.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
