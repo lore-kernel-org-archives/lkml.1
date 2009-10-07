@@ -1,40 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbZJGPNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbZJGPQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756596AbZJGPNj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 11:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbZJGPNi
+	id S1752055AbZJGPQX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZJGPQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 11:13:38 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63281 "EHLO
+	Wed, 7 Oct 2009 11:16:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41547 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbZJGPNh (ORCPT
+	with ESMTP id S1752067AbZJGPQV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 11:13:37 -0400
+	Wed, 7 Oct 2009 11:16:21 -0400
 Subject: Re: system gets stuck in a lock during boot
 From: Steven Rostedt <rostedt@goodmis.org>
 Reply-To: rostedt@goodmis.org
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Jason Baron <jbaron@redhat.com>, Justin Mattock <justinmattock@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Li Zefan <lizf@cn.fujitsu.com>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4ACCAB54.4010408@gmail.com>
-References: <1251096925.7538.121.camel@twins> <4A9251EB.8040805@gmail.com>
-	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>
-	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>
-	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>
+In-Reply-To: <20091007150506.GB8508@Krystal>
+References: <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>
 	 <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>
 	 <20091002211211.GA2633@redhat.com>
 	 <1254792249.13160.213.camel@gandalf.stny.rr.com>
 	 <20091006203225.GC2631@redhat.com>
 	 <1254880921.1696.112.camel@gandalf.stny.rr.com>
-	 <4ACC001D.4050105@gmail.com>
-	 <1254920429.1696.127.camel@gandalf.stny.rr.com>
-	 <4ACCAB54.4010408@gmail.com>
+	 <20091007143023.GA2659@redhat.com> <20091007144058.GB6110@Krystal>
+	 <1254927329.1696.150.camel@gandalf.stny.rr.com>
+	 <20091007150506.GB8508@Krystal>
 Content-Type: text/plain
 Organization: Kihon Technologies Inc.
-Date: Wed, 07 Oct 2009 11:11:38 -0400
-Message-Id: <1254928298.1696.166.camel@gandalf.stny.rr.com>
+Date: Wed, 07 Oct 2009 11:14:23 -0400
+Message-Id: <1254928463.1696.168.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
@@ -42,39 +40,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 07:53 -0700, Justin P. Mattock wrote:
-> Steven Rostedt wrote:
-> > On Tue, 2009-10-06 at 19:42 -0700, Justin P. Mattock wrote:
-> >
-> >    
-> >>>
-> >>>        
-> >> o.k. applied your patch, but unfortunantly
-> >> I still am hitting this kernel panic.
-> >>
-> >> must admit I have no idea why this is doing this.
-> >> (but am willing to sit through this, because eventually
-> >> sooner or later will hit this if I update gcc).
-> >>      
-> >
-> > But the panic you showed was that it could not find an init to execute.
-> > Which looks like a setup issue and not a kernel bug.
-> >
-> > -- Steve
-> >
-> >
-> >
-> >    
-> That's whats getting me, i.g. if I compile
-> sysvinit normally without adding an SELinux patch
-> the system boots, as soon as I compile sysvinit with
-> SELinux support to load the policy, bam... I hit this.
-> 
-> I can send a post to SELinux and see what they think,
-> and the go from there.
+On Wed, 2009-10-07 at 11:05 -0400, Mathieu Desnoyers wrote:
 
-Oh! It's an SELinux thing. It probably prevents you from executing
-init ;-)
+
+> Also adding a BUILD_BUG_ON() that checks the structure sizeof() would be
+> a nice safety-net (this should probably be added to tracepoints too
+> eventually).
+
+Yeah, I was thinking the same thing. But that would have to be added
+somewhere in a C file.
 
 -- Steve
 
