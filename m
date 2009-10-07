@@ -1,90 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751429AbZJGEMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751247AbZJGEKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751429AbZJGEMr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 00:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbZJGEMq
+	id S1751247AbZJGEKM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 00:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbZJGEKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 00:12:46 -0400
-Received: from mail-qy0-f202.google.com ([209.85.221.202]:58779 "EHLO
-	mail-qy0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786AbZJGEMq (ORCPT
+	Wed, 7 Oct 2009 00:10:11 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:52497 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbZJGEKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 00:12:46 -0400
-X-Greylist: delayed 418 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Oct 2009 00:12:46 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=yFLm7D1LooAgvIBo9tRMGWK3q9G5u+A2bf5XURvF6N8GBCGrCW2iBOxYQrSzyTKuEc
-         LRRbei+Pnp5z3H5fr1KGXwurRwC9mNtyG4jQru3e/GOF9ouWuSZTyGrJ4/kvsNaT1lak
-         BDEIJXlQ+kkFzqdu6HPGG4qVvonJlmwOPLXC8=
-Subject: Re: [RFC][PATCH 8/9] perf trace: Add perf trace scripting support
- modules for Perl
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, rostedt@goodmis.org,
-       lizf@cn.fujitsu.com, hch@infradead.org
-In-Reply-To: <20091006124550.GB15320@elte.hu>
-References: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
-	 <1254809398-8078-9-git-send-email-tzanussi@gmail.com>
-	 <20091006124550.GB15320@elte.hu>
-Content-Type: text/plain
-Date: Tue, 06 Oct 2009 23:05:04 -0500
-Message-Id: <1254888304.28917.124.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Wed, 7 Oct 2009 00:10:11 -0400
+Message-Id: <200910070409.n9749OQ1092174@www262.sakura.ne.jp>
+Subject: Re: [TOMOYO #16 00/25] Starting TOMOYO 2.3
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+To: pavel@ucw.cz
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Date: Wed, 07 Oct 2009 13:09:24 +0900
+References: <20091004124946.788396453@I-love.SAKURA.ne.jp> <20091006093922.GB1363@ucw.cz>
+In-Reply-To: <20091006093922.GB1363@ucw.cz>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 07102009 #2708572, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-10-06 at 14:45 +0200, Ingo Molnar wrote:
-> * Tom Zanussi <tzanussi@gmail.com> wrote:
-> 
-> > +++ b/tools/perf/scripts/perl/Perf-Trace-Util/README
-> > @@ -0,0 +1,30 @@
-> > +Perf-Trace-Util version 0.01
-> > +============================
-> > +
-> > +This module contains utility functions for use with perf trace.
-> > +
-> > +INSTALLATION
-> > +
-> > +Building perf with perf trace Perl scripting should install this
-> > +module in the right place.
-> > +
-> > +You should make sure libperl is installed first e.g. apt-get install
-> > +libperl-dev.
-> > +
-> > +DEPENDENCIES
-> > +
-> > +This module requires these other modules and libraries:
-> > +
-> > +  blah blah blah
-> 
-> Some fixing needed here i guess ;-)
+Hello.
 
-Yeah, more auto-generated stuff.
+Pavel Machek wrote:
+>> Since this patchset is not yet accepted, I haven't written documentation for
+>> TOMOYO 2.3. You can see http://tomoyo.sourceforge.jp/1.7/policy-reference.html
+>> instead.
+>
+>New, undocumented user/kernel api is no-no.
 
-> 
-> > +COPYRIGHT AND LICENCE
-> > +
-> > +Put the correct copyright and licence information here.
-> > +
-> > +Copyright (C) 2009 by Tom Zanussi <tzanussi@gmail.com>
-> > +
-> > +This library is free software; you can redistribute it and/or modify
-> > +it under the same terms as Perl itself, either Perl version 5.10.0 or,
-> > +at your option, any later version of Perl 5 you may have available.
-> 
-> Would be nice to dual license it to the kernel (GPLv2) as well.
-> 
+I'll update api description by final submission.
 
-Right, I'll add the GPL license to this.
+Main purpose of this submission is to
 
-Thanks,
+(1) know whether 01, 02, 03, 05 and 06 are acceptable or not.
+    If 05 is not acceptable, the rest of patchset needs to be rewritten.
+    Please review 01, 02, 03, 05 and 06 before reviewing the rest.
 
-Tom
+(2) know which features are acceptable.
+    This submission includes proposal of new features.
 
-> 	Ingo
+      Use of customized d_path().
+      Network filtering including incoming TCP connections.
+      Audit logs.
+      Conditional permissions.
+      Interactive enforcing mode.
+      Sleep penalty.
+      Execute handler.
+      Environment variable name checking.
+      Non POSIX capability checking.
 
+    Unacceptable features will be dropped from next submission.
+
+>> Conventionally, patches should be submitted in the form of diff file.
+>> But this time, I submit in the form of entire file due to amount of changes.
+>
+> That's also no-no.
+
+I have a question.
+Is the diff file based on existing files more preferable for reviewers to
+review than totally rewritten files, even if "total lines of diff files" is
+close to "total lines of rewritten files"?
+
+Amount of rewritten files:
+# cat security/tomoyo/* | wc -l
+17250
+
+Amount of diff based on existing files:
+# diff -Nur security/tomoyo.2.2/ security/tomoyo/ | wc -l
+16945
+# diff -Nur security/tomoyo.2.2/ security/tomoyo/ | diffstat -f0
+ 24 files changed, 13495 insertions(+), 2216 deletions(-)
+
+I posted rewritten files because I thought reading 17250 insertions is less
+difficult than reading 16945 lines of diff file with complicated mixture of
+13495 insertions and 2216 deletions.
+
+Regards.
