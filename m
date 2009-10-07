@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbZJGO1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbZJGO1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbZJGO1B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:27:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759245AbZJGO1A
+	id S1759299AbZJGO1j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 10:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759289AbZJGO1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:27:00 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:7419 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759228AbZJGO1A convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;4:1>);
-	Wed, 7 Oct 2009 10:27:00 -0400
-Message-Id: <4ACCC12E020000780001882B@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 07 Oct 2009 15:26:22 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Hugh Dickins" <hugh.dickins@tiscali.co.uk>
-Cc: <linux-mm@kvack.org>, "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] adjust gfp mask passed on nested vmalloc()
-	 invocation  (v2)
-References: <4ACCA98202000078000187DF@vpn.id2.novell.com>
- <Pine.LNX.4.64.0910071451090.4695@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0910071451090.4695@sister.anvils>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Wed, 7 Oct 2009 10:27:38 -0400
+Received: from thunk.org ([69.25.196.29]:49445 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759287AbZJGO1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 10:27:37 -0400
+Date: Wed, 7 Oct 2009 10:26:32 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Myklebust Trond <Trond.Myklebust@netapp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 00/45] some writeback experiments
+Message-ID: <20091007142632.GM17883@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Wu Fengguang <fengguang.wu@intel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Dave Chinner <david@fromorbit.com>,
+	Chris Mason <chris.mason@oracle.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Li Shaohua <shaohua.li@intel.com>,
+	Myklebust Trond <Trond.Myklebust@netapp.com>,
+	"jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+	Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
+	linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <20091007073818.318088777@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091007073818.318088777@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Hugh Dickins <hugh.dickins@tiscali.co.uk> 07.10.09 15:55 >>>
->On Wed, 7 Oct 2009, Jan Beulich wrote:
->
->> - avoid wasting more precious resources (DMA or DMA32 pools), when
->>   being called through vmalloc_32{,_user}()
->> - explicitly allow using high memory here even if the outer allocation
->>   request doesn't allow it, unless is collides with __GFP_ZERO
->                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->                            that's no longer an issue in the patch
+On Wed, Oct 07, 2009 at 03:38:18PM +0800, Wu Fengguang wrote:
+> 
+> The estimated writeback bandwidth is about 1/2 the real throughput
+> for ext2/3/4 and btrfs; noticeable bigger than real throughput for NFS; and
+> cannot be estimated at all for XFS.  Very interesting..
 
-Oops. Will send out a corrected version in a second.
+Can you expand on what you mean here?  Estimated write bandwidth of
+what?  And what are you comparing it against?
 
-Jan
+I'm having trouble understanding your note (which I'm guessing you
+write fairly late at night?  :-)
 
+Thanks,
+
+						- Ted
