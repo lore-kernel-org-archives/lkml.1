@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbZJGHFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbZJGHH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757369AbZJGHFs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 03:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbZJGHFr
+	id S1758142AbZJGHH1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 03:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756715AbZJGHHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 03:05:47 -0400
-Received: from mail-qy0-f202.google.com ([209.85.221.202]:44642 "EHLO
+	Wed, 7 Oct 2009 03:07:25 -0400
+Received: from mail-qy0-f202.google.com ([209.85.221.202]:35220 "EHLO
 	mail-qy0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751833AbZJGHFq convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1755579AbZJGHHY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 03:05:46 -0400
+	Wed, 7 Oct 2009 03:07:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=a+0P43PEAsOn5KA+7KR6wPD31s0gLG82d9jdVQWluRQLiB4hzwFvHgypJDrwY6Asfz
-         ip78X0NyVkAH9YcMlZrjrTwtLHRCp18zg+r8+ykQPC6MDqKvhqU4dfXzu9v7bmCEiYJA
-         E0z7HrVX+EUxv6hgkS4cEzHDsyzTdXKe5M0ek=
+        b=rTdVBhf5THygVMUfUNjYibkP6anQ9fLJiF/sWbh0qz9Pd8dOODJWyQvLeO03i7gbgO
+         n4HH3uFZnHkXtKb5EMLGHA14W14r77xgOujsKPOxOVGB0dnefGB+vqsla4PyoAgiTTKX
+         RY5/aMGxFL3UtkqQd0gIb7rea5CMRSJxGDqKc=
 MIME-Version: 1.0
-In-Reply-To: <20091007061754.GA7588@july>
-References: <20091007061754.GA7588@july>
-Date: Wed, 7 Oct 2009 12:35:09 +0530
-Message-ID: <5d5443650910070005t48b894ddoc08788c1b14e76a4@mail.gmail.com>
-Subject: Re: [PATCH 2/6] Haptic: Documentation for haptic class
+In-Reply-To: <20091007061805.GA7592@july>
+References: <20091007061805.GA7592@july>
+Date: Wed, 7 Oct 2009 12:36:47 +0530
+Message-ID: <5d5443650910070006s1aae5fecmec9f6a24a2e272c5@mail.gmail.com>
+Subject: Re: [PATCH 3/6] Haptic: Add haptic maintainer
 From: Trilok Soni <soni.trilok@gmail.com>
-To: Kyungmin Park <kyungmin.park@samsung.com>
+To: Kyungmin Park <kyungmin.park@samsung.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
@@ -32,57 +33,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kyungmin,
-
-On Wed, Oct 7, 2009 at 11:47 AM, Kyungmin Park
+On Wed, Oct 7, 2009 at 11:48 AM, Kyungmin Park
 <kyungmin.park@samsung.com> wrote:
-> Describe the haptic class and how to use
+> Add me to haptic class maintainer
 >
 > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 > ---
->  Documentation/haptic-class.txt |   20 ++++++++++++++++++++
->  1 files changed, 20 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/haptic-class.txt
+>  MAINTAINERS |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
 >
-> diff --git a/Documentation/haptic-class.txt b/Documentation/haptic-class.txt
-> new file mode 100644
-> index 0000000..6bee82a
-> --- /dev/null
-> +++ b/Documentation/haptic-class.txt
-> @@ -0,0 +1,20 @@
-> +
-> +Haptic handling under Linux
-> +========================
-> +
-> +In its simplest form, the haptic class just allows control of Haptics from
-> +userspace. Haptic appears in /sys/class/haptic/. The maximum level of the
-> +haptic is defined in max_level file.
-> +
-> +To use simple. it provides the oneshot mode. Give millisecond time to this
-> +property. It working at given time with pre-defined level.
-
-nit-pick: "To make it simple, it provides the one shot mode. Provide
-milliseconds time to
-this property, and it will be working for the given time with the
-pre-defined level."
-
-Please check if my above statement looks better.
-
-> +Of course, you can adjust the level by setting level property
-> +
-> +# echo ${millisecond} > /sys/class/haptic/<device>/oneshot
-> +
-> +# echo ${level} > /sys/class/haptic/<device>/level
-> +
-> +Also you can enable/disable by setting enable property
-> +
-> +# echo 1 > /sys/class/haptic/<device>/level    -> Enable
-> +# echo 0 > /sys/class/haptic/<device>/level    -> Disable
-> --
-> 1.5.3.3
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 09a2028..906b603 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2287,6 +2287,13 @@ F:       Documentation/isdn/README.gigaset
+>  F:     drivers/isdn/gigaset/
+>  F:     include/linux/gigaset_dev.h
 >
->
+> +HAPTIC SUBSYSTEM
+> +M:     Kyungmin Park <kyungmin.park@samsung.com>
+> +L:     linux-input@vger.kernel.org
 
+Dmitry,
+
+Are you OK if we use linux-input for haptics class patches? OR else we
+will just use linux-kernel.
 
 
 -- 
