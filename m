@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759455AbZJGO63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbZJGPDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759455AbZJGO63 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759407AbZJGO62
+	id S1759458AbZJGPDh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759429AbZJGPDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:58:28 -0400
-Received: from fifo99.com ([67.223.236.141]:44113 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759341AbZJGO60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 10:58:26 -0400
-Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
-From: Daniel Walker <dwalker@fifo99.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Andy Whitcroft <apw@canonical.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <m3skdvtgas.fsf@intrepid.localdomain>
-References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
-	 <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
-	 <1253585691-10987-3-git-send-email-dwalker@fifo99.com>
-	 <4AB86ED1.1040200@cn.fujitsu.com> <20090930152708.GD2957@shadowen.org>
-	 <1254406711.18167.88.camel@desktop> <m33a5ww8kn.fsf@intrepid.localdomain>
-	 <1254887534.18167.253.camel@desktop> <m3hbubv779.fsf@intrepid.localdomain>
-	 <1254925617.18167.262.camel@desktop>  <m3skdvtgas.fsf@intrepid.localdomain>
-Content-Type: text/plain
-Date: Wed, 07 Oct 2009 07:57:17 -0700
-Message-Id: <1254927438.18167.275.camel@desktop>
+	Wed, 7 Oct 2009 11:03:36 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:51936 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759413AbZJGPDf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 11:03:35 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlMFAApHzEpMROOX/2dsb2JhbACBUtU8gjSBdgQ
+Date: Wed, 7 Oct 2009 11:02:57 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
+Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
+	interrupt disable
+Message-ID: <20091007150257.GA8508@Krystal>
+References: <20091006233654.815079668@gentwo.org> <20091006233733.153341605@gentwo.org> <20091007025440.GB4664@Krystal> <1254906707.26976.225.camel@twins> <20091007124628.GB27363@Krystal> <alpine.DEB.1.10.0910071039520.5671@gentwo.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0910071039520.5671@gentwo.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 10:56:45 up 50 days,  1:46,  3 users,  load average: 0.08, 0.22,
+	0.23
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 16:44 +0200, Krzysztof Halasa wrote:
-> Daniel Walker <dwalker@fifo99.com> writes:
+* Christoph Lameter (cl@linux-foundation.org) wrote:
+> On Wed, 7 Oct 2009, Mathieu Desnoyers wrote:
 > 
-> >>From my perspective Documentation/SubmittingPatches really dictates what
-> > you should be doing with checkpatch, since that was signed off on by
-> > Andy (on this thread) and Linus .. In that document I think checkpatch
-> > is given authority, rather than what your suggesting where it's just
-> > something you can use or not, and ignore or not like it has no meaning
-> > at all..
+> > Yes, I understood this is what he was doing, but I wonder about the
+> > impact on the scheduler. If we have:
+> >
+> > * Jiffy 1 -- timer interrupt
+> >
+> > * preempt disable
+> > * Jiffy 2 -- timer interrupt
+> >   -> here, the scheduler is disabled, so the timer interrupt is skipped.
+> >      The scheduler depends on preempt_check_resched() at preempt_enable()
+> >      to execute in a bounded amount of time.
 > 
-> Checkpatch is a tool. How a tool can have authority? Code authors can
-> have authority. Maintainers can have authority. Linus as the "top"
-> maintainer can have authority. But a tool?
+> preempt disable does not disable interrupts. The timer interrupt will
+> occur. The scheduler may not reschedule another job on this processor
+> when the timer interrupt calls the scheduler_tick. It
+> may not do load balancing.
+
+Yes. All you say here is true. I'm concerned about the _impact_ of this
+along with the preempt/irqoff dance you propose. Trimming the following
+key points from my execution scenario indeed skips the problem altogether.
+
+Usually, when preemption is disabled, the scheduler restrain from
+executing. *Now the important point*: the criterion that bounds the
+maximum amount of time before the scheduler will re-check for pending
+preemption is when preempt_enable() will re-activate preemption.
+
+But because you run preempt_enable with interrupts off, the scheduler
+check is not done. And it's not done when interrupts are re-activated
+neither.
+
+Please go back to my complete execution scenario, you'll probably see
+the light. ;)
+
+Thanks,
+
+Mathieu
+
 > 
-> If checkpatch had any authority, the file in question (ext4.h) would
-> have to be "fixed" without questions and exceptions.
+> > Also, preempt_enable here should be replaced with
+> > preempt_enable_no_resched().
 > 
-> I don't say its warnings and errors have no meaning at all. It may be
-> very helpful at times, but still it's only a tool.
+> Used to have that in earlier incarnations but I saw a lot of these being
+> removed lately.
+> 
+> 
+> 
 
-Right it's a tool .. However, you should use it and you should follow
-it. If for some reason you disagree with the tool you have to give at
-least an arguable reason why, not just "It's a guide", "I don't like the
-coding style." etc..
-
-In the case of Steven's code he has an arguable reason why he's not
-following checkpatch..
-
-Daniel
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
