@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZJGVbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZJGVco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbZJGVbJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 17:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbZJGVbI
+	id S1754088AbZJGVco (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 17:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbZJGVco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 17:31:08 -0400
-Received: from khc.piap.pl ([195.187.100.11]:57595 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753921AbZJGVbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 17:31:07 -0400
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: rostedt@goodmis.org, Andy Whitcroft <apw@canonical.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
-References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
-	<1253585691-10987-2-git-send-email-dwalker@fifo99.com>
-	<1253585691-10987-3-git-send-email-dwalker@fifo99.com>
-	<4AB86ED1.1040200@cn.fujitsu.com> <20090930152708.GD2957@shadowen.org>
-	<1254406711.18167.88.camel@desktop>
-	<m33a5ww8kn.fsf@intrepid.localdomain>
-	<1254887534.18167.253.camel@desktop>
-	<m3hbubv779.fsf@intrepid.localdomain>
-	<1254925617.18167.262.camel@desktop>
-	<1254928114.1696.164.camel@gandalf.stny.rr.com>
-	<1254929907.18167.301.camel@desktop>
-Date: Wed, 07 Oct 2009 23:30:27 +0200
-In-Reply-To: <1254929907.18167.301.camel@desktop> (Daniel Walker's message of
-	"Wed, 07 Oct 2009 08:38:27 -0700")
-Message-ID: <m3my42uc24.fsf@intrepid.localdomain>
+	Wed, 7 Oct 2009 17:32:44 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:37309 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753468AbZJGVcn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 17:32:43 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20091007211916.GA4217@kroah.com>
+References: <f3f71ab90910071414n482eca2dm18108c79ee08028d@mail.gmail.com> 
+	<20091007211916.GA4217@kroah.com>
+From: Mike Lothian <mike@fireburn.co.uk>
+Date: Wed, 7 Oct 2009 22:31:44 +0100
+Message-ID: <f3f71ab90910071431g524fa807ib67f5fcfef7c70d1@mail.gmail.com>
+Subject: Re: Samsung Backlight Patch
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Matthias Hopf <mhopf@suse.de>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker <dwalker@fifo99.com> writes:
+2009/10/7 Greg KH <greg@kroah.com>:
+> On Wed, Oct 07, 2009 at 10:14:37PM +0100, Mike Lothian wrote:
+>> Hi
+>>
+>> I was hoping the following patch could be included in 2.6.32 so it
+>> would hopefully end up in the next round of distros
+>>
+>> It adds backlight support for some Samsung laptops
+>
+> You seem to have lost the original authorship of this patch, and not
+> included your signed-off-by for it.
+>
+> Which means it can't be applied :(
+>
+> thanks,
+>
+> greg k-h
+>
 
-> Just relax the submission rules so that checkpatch is basically an
-> optional part of the submission process. Adding that you don't actually
-> need to run it, you don't need a good reason not to follow the rules
-> etc.. Or expand on it to fully explain what you think the deal is or
-> should be.
+It definitely has +MODULE_AUTHOR("Greg Kroah-Hartman
+<gregkh@suse.de>"); at the bottom
 
-Oh come on... The SubmittingPatches is a HOWTO-style document for people
-who want to get their patches merged. Obviously a common sense dictates
-you need a good reason to ignore this or that. "Looks better" and
-"I find it easier to work with" are good reasons since this is source
-code, for humans to work with.
+I certainly wasn't trying to steal credit for your work
 
-BTW, the file says:
+Who should sign it off?
 
-"Check your patches with the patch style checker prior to submission
-(scripts/checkpatch.pl).  The style checker should be viewed as
-a guide not as the final word.  If your code looks better with
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-a violation then its probably best left alone.
+I think there's a few other models that can be added to this patch too
 
-The checker reports at three levels:
- - ERROR: things that are very likely to be wrong
-                               ^^^^^^
- - WARNING: things requiring careful review
- - CHECK: things requiring thought"
+Regards
 
-Only "very likely".
-
-WRT tabs vs spaces, I wonder if using only spaces would be a better
-idea. Theoretically using tabs for syntactic indentation only is better,
-but the tools (editors) aren't up to the task yet.
--- 
-Krzysztof Halasa
+Mike
