@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbZJGDy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZJGD5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754344AbZJGDy2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 23:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZJGDy2
+	id S1754303AbZJGD5d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 23:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbZJGD5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 23:54:28 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33313 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753519AbZJGDy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 23:54:27 -0400
-Message-ID: <4ACC111A.8020500@suse.de>
-Date: Wed, 07 Oct 2009 09:25:06 +0530
-From: Suresh Jayaraman <sjayaraman@suse.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 6 Oct 2009 23:57:32 -0400
+Received: from mail-yw0-f173.google.com ([209.85.211.173]:47045 "EHLO
+	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbZJGD5b convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 23:57:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=STp7WvQF/LxKtCwZ/7vFKk+4FYglEoT5i7A2VFlBFvNO6qHjZ+2yMouFZNTUwa63YX
+         /K6qkJP5gZPF7UBlqcYKa6dUQn92fKhPABGCPbye8IsS9FRKI1grxJO0ixzePlHg1Est
+         F5CONei0OwqC+4TY/2FH6cCYTshW9vSScahvU=
 MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Rafael Wysocki <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] swapfile: avoid NULL pointer dereference in swapon when
- s_bdev is NULL
-References: <4AC1FC41.2060807@suse.de> <Pine.LNX.4.64.0910011052330.7682@sister.anvils> <4AC492E2.7060205@suse.de> <Pine.LNX.4.64.0910011252220.13515@sister.anvils> <4AC49B95.2040504@suse.de> <Pine.LNX.4.64.0910062157300.16308@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0910062157300.16308@sister.anvils>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1254341346-11367-1-git-send-email-jglisse@redhat.com>
+References: <1254341346-11367-1-git-send-email-jglisse@redhat.com>
+Date: Wed, 7 Oct 2009 13:56:54 +1000
+Message-ID: <21d7e9970910062056r12754a6ew2c89b6f5a80e290a@mail.gmail.com>
+Subject: Re: [PATCH] drm/radeon/kms: Convert RS600 to new init path
+From: Dave Airlie <airlied@gmail.com>
+To: Jerome Glisse <jglisse@redhat.com>
+Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
->> Hugh Dickins wrote:
->>> On Thu, 1 Oct 2009, Suresh Jayaraman wrote:
->>>> The call sequence is add_to_swap() -> get_swap_page() ->  scan_swap_map()
->>>> -> discard_swap_cluster() -> blkdev_issue_discard().
->>>>
->>>> Wrapping the code around a NULL check fixes the Oops for me.
->>> That's odd: scan_swap_map() should only discard_swap_cluster() if
->>> SWP_DISCARDABLE got set, and your first patch made sure that it wasn't.
->> I forgot to mention, this is not on loopback NFS mount but an remote NFS
->> mount (so possibly s_bdev is not NULL) when doing swapon. The oops was
->> triggered when memhog program tries to use the swap space on the newly
->> created swapfile on NFS. I have not completely investigated the issue,
->> perhaps s_bdev is not being set when it ought to be..
-> 
-> I'm happy to see your first patch already in 2.6.32-rc3, but still
-> suspicious of this second patch you sent afterwards.  A quick skim
-> through your patchset suggests 23/31 is probably responsible:
+On Thu, Oct 1, 2009 at 6:09 AM, Jerome Glisse <jglisse@redhat.com> wrote:
+> New init path allow to simply asic initialization and make easier
+> to trace what happen on each different asic. We are removing most
+> callback. Do a massive RS600 register cleanup to clarify RS600
+> register, we are still bit fuzy on some register and waiting for
+> more informations. I don't have hw to test, so this patch is a
+> best effort to not break anythings and to try to improve things.
 
-Thanks for skimming through those patches. I noticed this already during
-my review and thought I had already fixed this, but apparently I missed
-out. I'll test after fixing this and report.
+This patch breaks irq handling on all rs600->r5xx chips.
+>  }
+>
+>  static inline uint32_t rs600_irq_ack(struct radeon_device *rdev, u32 *r500_disp_int)
+>  {
+> -       uint32_t irqs = RREG32(RADEON_GEN_INT_STATUS);
 
-> --- mmotm.orig/include/linux/swap.h
-> +++ mmotm/include/linux/swap.h
-> @@ -120,6 +120,7 @@ struct swap_extent {
->  enum {
->  	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
->  	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
-> +	SWP_FILE	= (1 << 2),	/* file swap area */
->  	SWP_DISCARDABLE = (1 << 2),	/* blkdev supports discard */
->  	SWP_DISCARDING	= (1 << 3),	/* now discarding a free cluster */
->  	SWP_SOLIDSTATE	= (1 << 4),	/* blkdev seeks are cheap */
-> 
-> Hugh
+^ this was perfectly fine correct code.
 
-Thanks,
+> -       uint32_t irq_mask = RADEON_SW_INT_TEST;
+> -
+> -       if (irqs & AVIVO_DISPLAY_INT_STATUS) {
+> -               *r500_disp_int = RREG32(AVIVO_DISP_INTERRUPT_STATUS);
+> -               if (*r500_disp_int & AVIVO_D1_VBLANK_INTERRUPT) {
+> -                       WREG32(AVIVO_D1MODE_VBLANK_STATUS, AVIVO_VBLANK_ACK);
+> +       uint32_t irqs = RREG32(R_000040_GEN_INT_CNTL);
 
--- 
-Suresh Jayaraman
+^ this is not doing the same thing at all.
+
+If these auto generated registers are meant to have made life easier I can't see
+how I'm wasting more time tracking down bugs that weren't there before this,
+than fixing real problems. I'm about 5 mins from reverting back to
+just using radeon_reg.h
+
+Dave.
