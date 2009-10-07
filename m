@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbZJGWiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755632AbZJGWhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbZJGWiX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 18:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZJGWiV
+	id S1755632AbZJGWhu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 18:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbZJGWht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 18:38:21 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:46178 "EHLO mx1.redhat.com"
+	Wed, 7 Oct 2009 18:37:49 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:36777 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755077AbZJGWiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 18:38:15 -0400
+	id S1755426AbZJGWhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 18:37:48 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH tracing/kprobes v3 3/7] tracing/kprobes: Rename special
-	variables
+Subject: [PATCH tracing/kprobes v3 4/7] tracing/kprobes: Avoid field name
+	confliction
 To: Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        lkml <linux-kernel@vger.kernel.org>
@@ -28,8 +28,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Jim Keniston <jkenisto@us.ibm.com>,
        "Frank Ch. Eigler" <fche@redhat.com>
-Date: Wed, 07 Oct 2009 18:27:59 -0400
-Message-ID: <20091007222759.1684.3319.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Wed, 07 Oct 2009 18:28:07 -0400
+Message-ID: <20091007222807.1684.26880.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -40,11 +40,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename special variables to more self-explainable name as below:
-- $rv to $retval
-- $sa to $stack
-- $aN to $argN
-- $sN to $stackN
+Check whether the argument name is conflict with other field names.
+
+Changes in v3:
+ - Check strcmp() == 0 instead of !strcmp().
+
+Changes in v2:
+ - Add common_lock_depth to reserved name list.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
@@ -61,167 +63,140 @@ Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Frank Ch. Eigler <fche@redhat.com>
 ---
 
- Documentation/trace/kprobetrace.txt |   22 ++++++++-------
- kernel/trace/trace_kprobe.c         |   50 ++++++++++++++++-------------------
- 2 files changed, 34 insertions(+), 38 deletions(-)
+ kernel/trace/trace_kprobe.c |   65 +++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 53 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-index 4208253..1541524 100644
---- a/Documentation/trace/kprobetrace.txt
-+++ b/Documentation/trace/kprobetrace.txt
-@@ -35,13 +35,13 @@ Synopsis of kprobe_events
-  MEMADDR	: Address where the probe is inserted.
- 
-  FETCHARGS	: Arguments. Each probe can have up to 128 args.
--  %REG	: Fetch register REG
--  @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
-+  %REG		: Fetch register REG
-+  @ADDR		: Fetch memory at ADDR (ADDR should be in kernel)
-   @SYM[+|-offs]	: Fetch memory at SYM +|- offs (SYM should be a data symbol)
--  $sN	: Fetch Nth entry of stack (N >= 0)
--  $sa	: Fetch stack address.
--  $aN	: Fetch function argument. (N >= 0)(*)
--  $rv	: Fetch return value.(**)
-+  $stackN	: Fetch Nth entry of stack (N >= 0)
-+  $stack	: Fetch stack address.
-+  $argN		: Fetch function argument. (N >= 0)(*)
-+  $retval	: Fetch return value.(**)
-   +|-offs(FETCHARG) : Fetch memory at FETCHARG +|- offs address.(***)
-   NAME=FETCHARG: Set NAME as the argument name of FETCHARG.
- 
-@@ -84,13 +84,13 @@ Usage examples
- To add a probe as a new event, write a new definition to kprobe_events
- as below.
- 
--  echo p:myprobe do_sys_open dfd=$a0 filename=$a1 flags=$a2 mode=$a3 > /sys/kernel/debug/tracing/kprobe_events
-+  echo p:myprobe do_sys_open dfd=$arg0 filename=$arg1 flags=$arg2 mode=$arg3 > /sys/kernel/debug/tracing/kprobe_events
- 
-  This sets a kprobe on the top of do_sys_open() function with recording
- 1st to 4th arguments as "myprobe" event. As this example shows, users can
- choose more familiar names for each arguments.
- 
--  echo r:myretprobe do_sys_open $rv >> /sys/kernel/debug/tracing/kprobe_events
-+  echo r:myretprobe do_sys_open $retval >> /sys/kernel/debug/tracing/kprobe_events
- 
-  This sets a kretprobe on the return point of do_sys_open() function with
- recording return value as "myretprobe" event.
-@@ -137,11 +137,11 @@ events, you need to enable it.
- #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
- #              | |       |          |         |
-            <...>-1447  [001] 1038282.286875: myprobe: (do_sys_open+0x0/0xd6) dfd=3 filename=7fffd1ec4440 flags=8000 mode=0
--           <...>-1447  [001] 1038282.286878: myretprobe: (sys_openat+0xc/0xe <- do_sys_open) $rv=fffffffffffffffe
-+           <...>-1447  [001] 1038282.286878: myretprobe: (sys_openat+0xc/0xe <- do_sys_open) $retval=fffffffffffffffe
-            <...>-1447  [001] 1038282.286885: myprobe: (do_sys_open+0x0/0xd6) dfd=ffffff9c filename=40413c flags=8000 mode=1b6
--           <...>-1447  [001] 1038282.286915: myretprobe: (sys_open+0x1b/0x1d <- do_sys_open) $rv=3
-+           <...>-1447  [001] 1038282.286915: myretprobe: (sys_open+0x1b/0x1d <- do_sys_open) $retval=3
-            <...>-1447  [001] 1038282.286969: myprobe: (do_sys_open+0x0/0xd6) dfd=ffffff9c filename=4041c6 flags=98800 mode=10
--           <...>-1447  [001] 1038282.286976: myretprobe: (sys_open+0x1b/0x1d <- do_sys_open) $rv=3
-+           <...>-1447  [001] 1038282.286976: myretprobe: (sys_open+0x1b/0x1d <- do_sys_open) $retval=3
- 
- 
-  Each line shows when the kernel hits an event, and <- SYMBOL means kernel
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index ba6d3bd..030f28c 100644
+index 030f28c..e3b824a 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
-@@ -215,22 +215,22 @@ static int probe_arg_string(char *buf, size_t n, struct fetch_func *ff)
- 	int ret = -EINVAL;
+@@ -38,6 +38,25 @@
+ #define MAX_EVENT_NAME_LEN 64
+ #define KPROBE_EVENT_SYSTEM "kprobes"
  
- 	if (ff->func == fetch_argument)
--		ret = snprintf(buf, n, "$a%lu", (unsigned long)ff->data);
-+		ret = snprintf(buf, n, "$arg%lu", (unsigned long)ff->data);
- 	else if (ff->func == fetch_register) {
- 		const char *name;
- 		name = regs_query_register_name((unsigned int)((long)ff->data));
- 		ret = snprintf(buf, n, "%%%s", name);
- 	} else if (ff->func == fetch_stack)
--		ret = snprintf(buf, n, "$s%lu", (unsigned long)ff->data);
-+		ret = snprintf(buf, n, "$stack%lu", (unsigned long)ff->data);
- 	else if (ff->func == fetch_memory)
- 		ret = snprintf(buf, n, "@0x%p", ff->data);
- 	else if (ff->func == fetch_symbol) {
- 		struct symbol_cache *sc = ff->data;
- 		ret = snprintf(buf, n, "@%s%+ld", sc->symbol, sc->offset);
- 	} else if (ff->func == fetch_retvalue)
--		ret = snprintf(buf, n, "$rv");
-+		ret = snprintf(buf, n, "$retval");
- 	else if (ff->func == fetch_stack_address)
--		ret = snprintf(buf, n, "$sa");
-+		ret = snprintf(buf, n, "$stack");
- 	else if (ff->func == fetch_indirect) {
- 		struct indirect_fetch_data *id = ff->data;
- 		size_t l = 0;
-@@ -427,28 +427,17 @@ static int parse_probe_vars(char *arg, struct fetch_func *ff, int is_return)
- 	int ret = 0;
- 	unsigned long param;
++/* Reserved field names */
++#define FIELD_STRING_IP "ip"
++#define FIELD_STRING_NARGS "nargs"
++#define FIELD_STRING_RETIP "ret_ip"
++#define FIELD_STRING_FUNC "func"
++
++const char *reserved_field_names[] = {
++	"common_type",
++	"common_flags",
++	"common_preempt_count",
++	"common_pid",
++	"common_tgid",
++	"common_lock_depth",
++	FIELD_STRING_IP,
++	FIELD_STRING_NARGS,
++	FIELD_STRING_RETIP,
++	FIELD_STRING_FUNC,
++};
++
+ /* currently, trace_kprobe only supports X86. */
  
--	switch (arg[0]) {
--	case 'a':	/* argument */
--		ret = strict_strtoul(arg + 1, 10, &param);
--		if (ret || param > PARAM_MAX_ARGS)
--			ret = -EINVAL;
--		else {
--			ff->func = fetch_argument;
--			ff->data = (void *)param;
--		}
--		break;
--	case 'r':	/* retval or retaddr */
--		if (is_return && arg[1] == 'v') {
-+	if (strcmp(arg, "retval") == 0) {
-+		if (is_return) {
- 			ff->func = fetch_retvalue;
- 			ff->data = NULL;
- 		} else
- 			ret = -EINVAL;
--		break;
--	case 's':	/* stack */
--		if (arg[1] == 'a') {
-+	} else if (strncmp(arg, "stack", 5) == 0) {
-+		if (arg[5] == '\0') {
- 			ff->func = fetch_stack_address;
- 			ff->data = NULL;
--		} else {
-+		} else if (isdigit(arg[5])) {
- 			ret = strict_strtoul(arg + 1, 10, &param);
- 			if (ret || param > PARAM_MAX_STACK)
- 				ret = -EINVAL;
-@@ -456,11 +445,18 @@ static int parse_probe_vars(char *arg, struct fetch_func *ff, int is_return)
- 				ff->func = fetch_stack;
- 				ff->data = (void *)param;
- 			}
-+		} else
-+			ret = -EINVAL;
-+	} else if (strncmp(arg, "arg", 3) == 0 && isdigit(arg[4])) {
-+		ret = strict_strtoul(arg + 1, 10, &param);
-+		if (ret || param > PARAM_MAX_ARGS)
-+			ret = -EINVAL;
-+		else {
-+			ff->func = fetch_argument;
-+			ff->data = (void *)param;
- 		}
--		break;
--	default:
-+	} else
- 		ret = -EINVAL;
--	}
+ struct fetch_func {
+@@ -537,6 +556,20 @@ static int parse_probe_arg(char *arg, struct fetch_func *ff, int is_return)
  	return ret;
  }
  
-@@ -548,10 +544,10 @@ static int create_trace_probe(int argc, char **argv)
- 	 *  - Add kprobe: p[:[GRP/]EVENT] KSYM[+OFFS]|KADDR [FETCHARGS]
- 	 *  - Add kretprobe: r[:[GRP/]EVENT] KSYM[+0] [FETCHARGS]
- 	 * Fetch args:
--	 *  $aN	: fetch Nth of function argument. (N:0-)
--	 *  $rv	: fetch return value
--	 *  $sa	: fetch stack address
--	 *  $sN	: fetch Nth of stack (N:0-)
-+	 *  $argN	: fetch Nth of function argument. (N:0-)
-+	 *  $retval	: fetch return value
-+	 *  $stack	: fetch stack address
-+	 *  $stackN	: fetch Nth of stack (N:0-)
- 	 *  @ADDR	: fetch memory at ADDR (ADDR should be in kernel)
- 	 *  @SYM[+|-offs] : fetch memory at SYM +|- offs (SYM is a data symbol)
- 	 *  %REG	: fetch register REG
++/* Return 1 if name is reserved or already used by another argument */
++static int conflict_field_name(const char *name,
++			       struct probe_arg *args, int narg)
++{
++	int i;
++	for (i = 0; i < ARRAY_SIZE(reserved_field_names); i++)
++		if (strcmp(reserved_field_names[i], name) == 0)
++			return 1;
++	for (i = 0; i < narg; i++)
++		if (strcmp(args[i].name, name) == 0)
++			return 1;
++	return 0;
++}
++
+ static int create_trace_probe(int argc, char **argv)
+ {
+ 	/*
+@@ -637,6 +670,12 @@ static int create_trace_probe(int argc, char **argv)
+ 			*arg++ = '\0';
+ 		else
+ 			arg = argv[i];
++
++		if (conflict_field_name(argv[i], tp->args, i)) {
++			ret = -EINVAL;
++			goto error;
++		}
++
+ 		tp->args[i].name = kstrdup(argv[i], GFP_KERNEL);
+ 
+ 		/* Parse fetch argument */
+@@ -1039,8 +1078,8 @@ static int kprobe_event_define_fields(struct ftrace_event_call *event_call)
+ 	if (!ret)
+ 		return ret;
+ 
+-	DEFINE_FIELD(unsigned long, ip, "ip", 0);
+-	DEFINE_FIELD(int, nargs, "nargs", 1);
++	DEFINE_FIELD(unsigned long, ip, FIELD_STRING_IP, 0);
++	DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
+ 	/* Set argument names as fields */
+ 	for (i = 0; i < tp->nr_args; i++)
+ 		DEFINE_FIELD(unsigned long, args[i], tp->args[i].name, 0);
+@@ -1057,9 +1096,9 @@ static int kretprobe_event_define_fields(struct ftrace_event_call *event_call)
+ 	if (!ret)
+ 		return ret;
+ 
+-	DEFINE_FIELD(unsigned long, func, "func", 0);
+-	DEFINE_FIELD(unsigned long, ret_ip, "ret_ip", 0);
+-	DEFINE_FIELD(int, nargs, "nargs", 1);
++	DEFINE_FIELD(unsigned long, func, FIELD_STRING_FUNC, 0);
++	DEFINE_FIELD(unsigned long, ret_ip, FIELD_STRING_RETIP, 0);
++	DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
+ 	/* Set argument names as fields */
+ 	for (i = 0; i < tp->nr_args; i++)
+ 		DEFINE_FIELD(unsigned long, args[i], tp->args[i].name, 0);
+@@ -1108,15 +1147,16 @@ static int kprobe_event_show_format(struct ftrace_event_call *call,
+ 	int ret, i;
+ 	struct trace_probe *tp = (struct trace_probe *)call->data;
+ 
+-	SHOW_FIELD(unsigned long, ip, "ip");
+-	SHOW_FIELD(int, nargs, "nargs");
++	SHOW_FIELD(unsigned long, ip, FIELD_STRING_IP);
++	SHOW_FIELD(int, nargs, FIELD_STRING_NARGS);
+ 
+ 	/* Show fields */
+ 	for (i = 0; i < tp->nr_args; i++)
+ 		SHOW_FIELD(unsigned long, args[i], tp->args[i].name);
+ 	trace_seq_puts(s, "\n");
+ 
+-	return __probe_event_show_format(s, tp, "(%lx)", "REC->ip");
++	return __probe_event_show_format(s, tp, "(%lx)",
++					 "REC->" FIELD_STRING_IP);
+ }
+ 
+ static int kretprobe_event_show_format(struct ftrace_event_call *call,
+@@ -1126,9 +1166,9 @@ static int kretprobe_event_show_format(struct ftrace_event_call *call,
+ 	int ret, i;
+ 	struct trace_probe *tp = (struct trace_probe *)call->data;
+ 
+-	SHOW_FIELD(unsigned long, func, "func");
+-	SHOW_FIELD(unsigned long, ret_ip, "ret_ip");
+-	SHOW_FIELD(int, nargs, "nargs");
++	SHOW_FIELD(unsigned long, func, FIELD_STRING_FUNC);
++	SHOW_FIELD(unsigned long, ret_ip, FIELD_STRING_RETIP);
++	SHOW_FIELD(int, nargs, FIELD_STRING_NARGS);
+ 
+ 	/* Show fields */
+ 	for (i = 0; i < tp->nr_args; i++)
+@@ -1136,7 +1176,8 @@ static int kretprobe_event_show_format(struct ftrace_event_call *call,
+ 	trace_seq_puts(s, "\n");
+ 
+ 	return __probe_event_show_format(s, tp, "(%lx <- %lx)",
+-					  "REC->func, REC->ret_ip");
++					 "REC->" FIELD_STRING_FUNC
++					 ", REC->" FIELD_STRING_RETIP);
+ }
+ 
+ #ifdef CONFIG_EVENT_PROFILE
 
 
 -- 
