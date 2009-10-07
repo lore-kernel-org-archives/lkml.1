@@ -1,97 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZJGWAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZJGWAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754549AbZJGWAG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 18:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbZJGWAF
+	id S1754840AbZJGWAq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 18:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbZJGWAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 18:00:05 -0400
-Received: from fifo99.com ([67.223.236.141]:56377 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752162AbZJGWAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 18:00:04 -0400
-Subject: Re: [PATCH 3/5] checkpatch: add a blacklist
-From: Daniel Walker <dwalker@fifo99.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: rostedt@goodmis.org, Andy Whitcroft <apw@canonical.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <m3my42uc24.fsf@intrepid.localdomain>
-References: <1253585691-10987-1-git-send-email-dwalker@fifo99.com>
-	 <1253585691-10987-2-git-send-email-dwalker@fifo99.com>
-	 <1253585691-10987-3-git-send-email-dwalker@fifo99.com>
-	 <4AB86ED1.1040200@cn.fujitsu.com> <20090930152708.GD2957@shadowen.org>
-	 <1254406711.18167.88.camel@desktop> <m33a5ww8kn.fsf@intrepid.localdomain>
-	 <1254887534.18167.253.camel@desktop> <m3hbubv779.fsf@intrepid.localdomain>
-	 <1254925617.18167.262.camel@desktop>
-	 <1254928114.1696.164.camel@gandalf.stny.rr.com>
-	 <1254929907.18167.301.camel@desktop>  <m3my42uc24.fsf@intrepid.localdomain>
-Content-Type: text/plain
-Date: Wed, 07 Oct 2009 14:58:55 -0700
-Message-Id: <1254952735.18167.350.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Oct 2009 18:00:45 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:39009 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754704AbZJGWAo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 18:00:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=RYPOItueCxOXDJazTylK69KpcA9pdol2myJHm9aRy/oiq9IgByWKby2zpK9lC/HvuP
+         kUCCgHfWapGh4bsYX3pMLgoKul2Cdu+U55dpGYdHxxirC0/y3HC66nzCYELRa0SAcbZb
+         WjUrxj9AnhW2wEaQotMCGbxO+RZluQVm3GuKA=
+MIME-Version: 1.0
+In-Reply-To: <4ACC917D.3090302@directfb.org>
+References: <4ACC917D.3090302@directfb.org>
+Date: Wed, 7 Oct 2009 23:00:06 +0100
+Message-ID: <9b2b86520910071500q3eb571efrc50ccdc54119ef58@mail.gmail.com>
+Subject: Re: DirectFB "Fusion" module inclusion?
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Niels Roest <niels@directfb.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 23:30 +0200, Krzysztof Halasa wrote:
-> Daniel Walker <dwalker@fifo99.com> writes:
-> 
-> > Just relax the submission rules so that checkpatch is basically an
-> > optional part of the submission process. Adding that you don't actually
-> > need to run it, you don't need a good reason not to follow the rules
-> > etc.. Or expand on it to fully explain what you think the deal is or
-> > should be.
-> 
-> Oh come on... The SubmittingPatches is a HOWTO-style document for people
-> who want to get their patches merged. Obviously a common sense dictates
-> you need a good reason to ignore this or that. "Looks better" and
-> "I find it easier to work with" are good reasons since this is source
-> code, for humans to work with.
+On 10/7/09, Niels Roest <niels@directfb.org> wrote:
+> Hi all.
+>
+> This is to request some comments about our interest to have our "Fusion"
+> kernel module included in the kernel.
+> I hope you will let me now if it is feasible, desirable, etcetera.
 
-The whole point of this black list is to allow people to give good
-reasons why they don't follow the tool.. Once in the blacklist those
-errors that are getting ignored become formally ignored.. So I haven't
-been against people having a good reason not to fix the errors, but you
-still need a good reason. I've checked 1000's of patches and Steven's
-code is the only one that I've found which uniformly violates the coding
-style ..
+Possibly not.
 
-> BTW, the file says:
-> 
-> "Check your patches with the patch style checker prior to submission
-> (scripts/checkpatch.pl).  The style checker should be viewed as
-> a guide not as the final word.  If your code looks better with
->   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> a violation then its probably best left alone.
+> What is Fusion? Fusion is the low-level layer of DirectFB
+> (www.directfb.org). DirectFB is basically a graphics library that offers
+> hardware acceleration and multi-process cooperation on top of e.g. the
+> frame buffer device.
+>
+> What does Fusion offer? Fusion takes care of IPC by providing the
+> following primitives: skirmishes (locks), calls (partially via a
+> user-space library handling callback threads), properties and shared
+> memory pools. The main two reasons for us to make a kernel module out of
+> this is: crashing applications will not take down the "DirectFB" system,
+> since resources are handled in the kernel; and debug
+> information/deadlock status is shared via /proc/fusion.
+>
+> Fusion documentation (fusion.pdf) can be found at
+> http://git.directfb.org/?p=core/linux-fusion.git;a=tree;f=doc;
+> Fusion source files can be found at the same git location:
+> http://git.directfb.org/?p=core/linux-fusion.git;a=tree
+>
+> Fusion is implemented as a device driver with an ioctl interface. In our
+> case, Fusion is used together with libfusion.so (LGPL), which abstracts
+> the kernel ioctls away, among other things. DirectFB resides on top of
+> libfusion.so.
+>
+> We would probably rework Fusion significantly if needed - we want to
+> have the benefit of having Fusion inside kernel mainline, and we hope
+> that it is indeed interesting enough to consider, so let's hear it :)
 
-I think that exists since the tool can parse incorrectly sometimes and
-flag things that it shouldn't be flagging (often times are checkpatch
-defects).. For instance a large macro that only creates a function would
-not need to be wrapped in a "do { } while(0);" .. So in those cases the
-tool can't be the final word, this list (or a list) needs to be the
-final word. Usually in those cases there is no need to explain the error
-since it's clear what's happening in the code..
+I do have some suggestions.  These carry no weight or guarantee of
+acceptance, they are simply my impressions as a slightly curious
+bystander.
 
-> The checker reports at three levels:
->  - ERROR: things that are very likely to be wrong
->                                ^^^^^^
+I believe the ioctls would have to be replaced with system calls.
 
-Well, "very likely" is pretty strong wording for a this kind of tool ..
+The easy example is shared memory.  We already have mmap() to map it,
+and ftruncate() to increase the size of the memory region; you just
+need to provide a way to obtain a file descriptor.
 
->  - WARNING: things requiring careful review
->  - CHECK: things requiring thought"
-> 
-> Only "very likely".
-> 
-> WRT tabs vs spaces, I wonder if using only spaces would be a better
-> idea. Theoretically using tabs for syntactic indentation only is better,
-> but the tools (editors) aren't up to the task yet.
+Similarly we already have sockets.  We don't have RPCs per se; but it
+seems to be covered by sending formatted "call" and "return" messages
+over sockets.  It looks like unix domain sockets would work already.
 
-You can usually change your editor to conform .. I know emacs usually
-does spaces for tabs, but I'm sure you can change it's config to use
-real tabs .. I don't use emacs tho.
+Refs and reactors have no obvious parallels.  You get to defend the
+utility of the system calls and possibly other ABIs you need in order
+to implement them, or find less novel alternatives which can be made
+to work.  It may be possible to implement refs in userspace using
+shared memory and futexes.  If so, make sure you read the paper which
+describes the pitfalls encountered when implementing pthread mutexes
+using futexes :-).  Reactors are tricky; they might be accepted as a
+new socket type, or perhaps implemented using new socket options.
 
-Daniel
+Then you want to tie them all together with a common namespace.  This
+is commonly known as a filesystem :-P.  Top level directory defines
+the "world"; the second level directory gives you the "fusion ID".
+Ideally you've avoided adding a new type of filesystem node so you can
+use an arbitrary filesystem.  I believe tmpfs is already used as the
+standard backing store for posix shared memory.
 
+I guess you can block on world (directory) creation using inotify.
+
+For debugging information you will probably have to create a new
+filesystem.  You're not allowed to shove everything in procfs anymore
+:-).
+
+BTW, your /proc documentation includes "properties" but they don't
+seem to be mentioned any where else.
+
+Regards
+Alan
