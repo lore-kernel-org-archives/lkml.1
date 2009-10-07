@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961AbZJGDOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753161AbZJGDVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752961AbZJGDOa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 23:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZJGDOa
+	id S1753161AbZJGDVn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 23:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbZJGDVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 23:14:30 -0400
-Received: from rtr.ca ([76.10.145.34]:36358 "EHLO mail.rtr.ca"
+	Tue, 6 Oct 2009 23:21:43 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59066 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751180AbZJGDO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 23:14:29 -0400
-Message-ID: <4ACC076F.7020000@rtr.ca>
-Date: Tue, 06 Oct 2009 23:13:51 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1752507AbZJGDVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 23:21:42 -0400
+Message-ID: <4ACC0963.5080403@redhat.com>
+Date: Tue, 06 Oct 2009 23:22:11 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Bernie Innocenti <bernie@codewiz.org>
-Cc: Harri Olin <harri.olin@gmail.com>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, sysadmin <sysadmin@gnu.org>
-Subject: Re: sata_mv 0000:03:06.0: PCI ERROR; PCI IRQ cause=0x30000040
-References: <1254546642.1438.135.camel@giskard> <4ACA6904.1060509@rtr.ca>	 <4ACB3741.2030101@gmail.com> <1254852272.1471.172.camel@giskard>	 <4ACBA33C.7090606@rtr.ca>  <1254873978.1471.463.camel@giskard> <1254879618.1471.525.camel@giskard>
-In-Reply-To: <1254879618.1471.525.camel@giskard>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: rostedt@goodmis.org, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH tracing/kprobes v2 4/5] perf: Add perf probe subcommand
+ for kprobe-event setup helper
+References: <20091002214834.30906.86502.stgit@dhcp-100-2-132.bos.redhat.com>	 <20091002214904.30906.11622.stgit@dhcp-100-2-132.bos.redhat.com>	 <1254788953.13160.209.camel@gandalf.stny.rr.com>	 <4ACA95F8.7020407@redhat.com> <1254819822.21044.125.camel@laptop>
+In-Reply-To: <1254819822.21044.125.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernie Innocenti wrote:
-> El Tue, 06-10-2009 a las 20:06 -0400, Bernie Innocenti escribió:
->>> The early revs of these chips did have a number of errata specific to PCI-X.
->> I checked the revision (09) against the sata_mv source and I couldn't
->> spot anything relevant to us.
+Peter Zijlstra wrote:
+> On Mon, 2009-10-05 at 20:57 -0400, Masami Hiramatsu wrote:
+>>>> +ifneq ($(shell sh -c "(echo '\#include <libdwarf/dwarf.h>'; echo '\#include <libdwarf/libdwarf.h>'; echo 'int main(void) { Dwarf_Debug dbg; Dwarf_Error err; dwarf_init(0, DW_DLC_READ, 0, 0, &dbg, &err); return (long)dbg; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -ldwarf -lelf -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+>>>> +    msg := $(warning No libdwarf.h found, disables probe subcommand. Please install libdwarf-dev/libdwarf-devel);
+>>>
+>>> Wow! And I thought my macros were ugly ;-)
+>>
+>> :-)
+>> Maybe, would I better make a separate c file to check this?
+>> Like "autoconf-checkdwarf.c".
 > 
-> NEWSFLASH: today we replaced the 4x500GB Seagate drives with 4x1.5TB
-> drives and reconstruction of the array has been running for 2h without a
-> glitch.
+> I'm the one who started this trend.. Maybe putting all those tests in a
+> static .c file makes sense now, put them in a tests/ or checks/
+> directory though, so it doesn't litter the regular files.
 > 
-> One interesting difference is that the 500GB drives were being
-> configured in 1.5Gbps SATA mode.  Another notable difference is the
-> sequential read speed: ~70MB/s vs ~130MB/s with the 1.5TB model.
-> 
-> Could the PCI bus errors be a red herring?
-..
+> Then again,.. the actual .c file is only half that line, so it doesn't
+> really clean up that much.
 
-Dunno.  Rev.9 == "C0" in Marvell terminology,
-and that's the latest/final rev for the 6081 chip,
-with most of the PCI-X bugs fixed or worked around.
-So not much to go on there.
+Yeah, ok, then I'll leave this part in this series.
+It's better to be done in another series.
 
-The Bus error report was real, though.
-But with 3.0gb/sec sata connections, the chip will be
-using some different internal clocks and timings,
-which could be enough to avoid triggering the PCI errors.
+Thank you,
 
-I guess.  Let's hope so, anyway.
+-- 
+Masami Hiramatsu
 
-Cheers
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
+e-mail: mhiramat@redhat.com
 
