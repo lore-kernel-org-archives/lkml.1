@@ -1,88 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbZJGX0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756480AbZJGX05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756392AbZJGX0v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 19:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbZJGX0u
+	id S1756480AbZJGX05 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 19:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756434AbZJGX05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 19:26:50 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:39229 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756178AbZJGX0t (ORCPT
+	Wed, 7 Oct 2009 19:26:57 -0400
+Received: from mail-yw0-f196.google.com ([209.85.211.196]:56109 "EHLO
+	mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756306AbZJGX0u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 19:26:49 -0400
-Date: Wed, 7 Oct 2009 19:17:45 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Tejun Heo <tj@kernel.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [Patch vs. percpu next] Use this_cpu_xx for ftrace
-Message-ID: <alpine.DEB.1.10.0910071916040.21638@gentwo.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 7 Oct 2009 19:26:50 -0400
+X-Greylist: delayed 488 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Oct 2009 19:26:50 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type;
+        b=J8C1dr1xqNvHLNTCRVKPTFRi+/AE7+uBhEWBjZLwJ2nNnNZG1K0odPHFr+xGgFaqvM
+         wOCiIhyEpHIR5Pn4JBdWWXE/0occb7XX/LQHmRjjbk7jVjO2KqS87pXDIo1jaDDLxt82
+         o1TvsJhcDGAQisgXPBHwdIFZwPcRB3jaA0IDM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <haj471$fn8$1@ger.gmane.org>
+References: <haj471$fn8$1@ger.gmane.org>
+Date: Wed, 7 Oct 2009 18:18:05 -0500
+X-Google-Sender-Auth: 96644668382202d3
+Message-ID: <58965d8a0910071618s2420fed1k4ccde4823e57f756@mail.gmail.com>
+Subject: Re: iso9660 mount problem
+From: Paul Hartman <paul.hartman+linux@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <cl@linux-foundation.org>
-Subject: tracing: Use this_cpu_xx for ftrace
+On Wed, Oct 7, 2009 at 5:22 PM, Jack Byer <ojbyer@usa.net> wrote:
+> I have a CD of a commercial software program that I am attempting to run
+> under wine. The CD works without problems under Windows, but when I mount
+> it on linux the file system appears to be empty (no files or
+> directories). The drive is capable of reading the CD because "strings
+> /dev/cdrom" works.
+>
+> What would I need to do in order to troubleshoot this problem?
 
-this_cpu_xx can reduce the instruction count here and also
-avoid address arithmetic.
-
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
-
----
- kernel/trace/trace.c |    8 ++++----
- kernel/trace/trace.h |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/kernel/trace/trace.c
-===================================================================
---- linux-2.6.orig/kernel/trace/trace.c	2009-10-07 18:07:48.000000000 -0500
-+++ linux-2.6/kernel/trace/trace.c	2009-10-07 18:09:42.000000000 -0500
-@@ -86,17 +86,17 @@ static int dummy_set_flag(u32 old_flags,
-  */
- static int tracing_disabled = 1;
-
--DEFINE_PER_CPU(local_t, ftrace_cpu_disabled);
-+DEFINE_PER_CPU(int, ftrace_cpu_disabled);
-
- static inline void ftrace_disable_cpu(void)
- {
- 	preempt_disable();
--	local_inc(&__get_cpu_var(ftrace_cpu_disabled));
-+	__this_cpu_inc(per_cpu_var(ftrace_cpu_disabled));
- }
-
- static inline void ftrace_enable_cpu(void)
- {
--	local_dec(&__get_cpu_var(ftrace_cpu_disabled));
-+	__this_cpu_dec(per_cpu_var(ftrace_cpu_disabled));
- 	preempt_enable();
- }
-
-@@ -1085,7 +1085,7 @@ trace_function(struct trace_array *tr,
- 	struct ftrace_entry *entry;
-
- 	/* If we are reading the ring buffer, don't trace */
--	if (unlikely(local_read(&__get_cpu_var(ftrace_cpu_disabled))))
-+	if (unlikely(__this_cpu_read(per_cpu_var(ftrace_cpu_disabled))))
- 		return;
-
- 	event = trace_buffer_lock_reserve(buffer, TRACE_FN, sizeof(*entry),
-Index: linux-2.6/kernel/trace/trace.h
-===================================================================
---- linux-2.6.orig/kernel/trace/trace.h	2009-10-07 18:08:59.000000000 -0500
-+++ linux-2.6/kernel/trace/trace.h	2009-10-07 18:09:19.000000000 -0500
-@@ -413,7 +413,7 @@ extern int DYN_FTRACE_TEST_NAME(void);
-
- extern int ring_buffer_expanded;
- extern bool tracing_selftest_disabled;
--DECLARE_PER_CPU(local_t, ftrace_cpu_disabled);
-+DECLARE_PER_CPU(int, ftrace_cpu_disabled);
-
- #ifdef CONFIG_FTRACE_STARTUP_TEST
- extern int trace_selftest_startup_function(struct tracer *trace,
+Maybe try mounting with the "-o unhide" option. Or maybe it is a
+multi-session disc?
