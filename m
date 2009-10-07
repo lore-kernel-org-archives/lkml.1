@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbZJGBai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933868AbZJGBjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758608AbZJGBai (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 6 Oct 2009 21:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758405AbZJGBai
+	id S933868AbZJGBjI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 6 Oct 2009 21:39:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932923AbZJGBjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 6 Oct 2009 21:30:38 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:40881 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753634AbZJGBah (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 6 Oct 2009 21:30:37 -0400
-X-Sasl-enc: JgWqOsYUABSE2440iOKek9lHzM6l3DqkFbi+dNhb3RQz 1254878973
-Date: Tue, 6 Oct 2009 22:29:30 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Massive ext4 filesystem corruption after a failed
- s2disk/ram cycle
-Message-ID: <20091007012930.GA7022@khazad-dum.debian.net>
-References: <1254863215.11577.23.camel@maxim-laptop>
- <200910062358.32417.rjw@sisk.pl>
- <20091006225329.GA27646@khazad-dum.debian.net>
- <200910070102.47293.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910070102.47293.rjw@sisk.pl>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 6 Oct 2009 21:39:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45636 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933067AbZJGBjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 6 Oct 2009 21:39:07 -0400
+Date: Wed, 7 Oct 2009 12:38:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>
+Subject: linux-next: pci tree build failure
+Message-Id: <20091007123821.043465c6.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__7_Oct_2009_12_38_21_+1100_PZKP670RRusRXtA."
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Oct 2009, Rafael J. Wysocki wrote:
-> On Wednesday 07 October 2009, Henrique de Moraes Holschuh wrote:
-> > On Tue, 06 Oct 2009, Rafael J. Wysocki wrote:
-> > > > You do sync file-systems before entering the hibernation, don't you?
-> > > 
-> > > Yes, a sync is there, but it is not effective on some filesystems.
-> > 
-> > Which ones?
-> 
-> XFS for one example.
+--Signature=_Wed__7_Oct_2009_12_38_21_+1100_PZKP670RRusRXtA.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Interesting.  So XFS is not only a Bad Idea for /, but also for anything
-that might enter S3/S4.  Not nice.  I sure hope it doesn't do a
-half-assed job of flushing and checkpointing itself during machine
-shutdown/restart like it apparently does when told to "sync" before
-S3/S4...
+Hi Jesse,
 
-Would you be so kind to disclose to us, the uninitated, which other
-filesystems are unsafe when faced with a sleep/suspend request?
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+ERROR: "pci_set_cacheline_size" [drivers/pcmcia/pcmcia_core.ko] undefined!
+
+Caused by commit 018bc96e8e27bfcafec9357ff370bf51241a7ea7 ("pccard:
+configure CLS on attach") which neglected to EXPORT_SYMBOL
+pci_set_cacheline_size.
+
+I have used the version of the pci tree from next-20091006 for today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__7_Oct_2009_12_38_21_+1100_PZKP670RRusRXtA.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrL8Q0ACgkQjjKRsyhoI8x81ACfSwL+80+AfzH5EA+Ka+DNXOT2
++rwAnRe7tXmfpu7GW7e29/kWAK8Xlr/H
+=cmtg
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__7_Oct_2009_12_38_21_+1100_PZKP670RRusRXtA.--
