@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759030AbZJGMJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932925AbZJGMKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759030AbZJGMJG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 08:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758924AbZJGMJG
+	id S932925AbZJGMKX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 08:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932850AbZJGMKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 08:09:06 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:19669 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758841AbZJGMJF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 08:09:05 -0400
-X-Trace: 267886270/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.16.54/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.16.54
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlMFAPwhzEpQKRA2/2dsb2JhbACBUdM/hCoEgVQ
-X-IronPort-AV: E=Sophos;i="4.44,519,1249254000"; 
-   d="scan'208";a="267886270"
-Date: Wed, 7 Oct 2009 13:08:17 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Jan Beulich <JBeulich@novell.com>
-cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] adjust gfp mask passed on nested vmalloc()  invocation
-In-Reply-To: <4ACC62DC0200007800018690@vpn.id2.novell.com>
-Message-ID: <Pine.LNX.4.64.0910071300330.28844@sister.anvils>
-References: <4AC9E38E0200007800017F57@vpn.id2.novell.com>
- <Pine.LNX.4.64.0910062241500.21409@sister.anvils> <4ACC62DC0200007800018690@vpn.id2.novell.com>
+	Wed, 7 Oct 2009 08:10:22 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:52079 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932839AbZJGMKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 08:10:21 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: zach.brown@oracle.com, linux-aio <linux-aio@kvack.org>,
+       Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch v4 0/3] aio: implement request batching [more performance numbers]
+References: <x49zl8976g3.fsf@segfault.boston.devel.redhat.com>
+	<x49eipga02o.fsf@segfault.boston.devel.redhat.com>
+	<20091006180628.GB5216@kernel.dk>
+	<x49y6no8jxw.fsf@segfault.boston.devel.redhat.com>
+	<20091007105259.GD8703@kernel.dk>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 07 Oct 2009 08:09:10 -0400
+In-Reply-To: <20091007105259.GD8703@kernel.dk> (Jens Axboe's message of "Wed,
+	7 Oct 2009 12:52:59 +0200")
+Message-ID: <x49k4z72yop.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 Oct 2009, Jan Beulich wrote:
-> >>> Hugh Dickins <hugh.dickins@tiscali.co.uk> 06.10.09 23:58 >>>
-> >On Mon, 5 Oct 2009, Jan Beulich wrote:
-> >
-> >> - fix a latent bug resulting from blindly or-ing in __GFP_ZERO, since
-> >>   the combination of this and __GFP_HIGHMEM (possibly passed into the
-> >>   function) is forbidden in interrupt context
-> >> - avoid wasting more precious resources (DMA or DMA32 pools), when
-> >>   being called through vmalloc_32{,_user}()
-> >> - explicitly allow using high memory here even if the outer allocation
-> >>   request doesn't allow it, unless is collides with __GFP_ZERO
-> >> 
-> >> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> >
-> >I thought vmalloc.c was a BUG_ON(in_interrupt()) zone?
-> >The locking is all spin_lock stuff, not spin_lock_irq stuff.
-> >That's probably why your "bug" has remained "latent".
-> 
-> Then you probably mean BUG_ON(irqs_disabled()), which would seem
-> correct.
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-I'm relieved you came to see that remark as bogus.
+> So here's a pretty basic test. It does random reads from a bunch of
+> devices, I tested both 4kb and 64kb block sizes. Queue depth used is 32
+> for both cases, but note that this test uses a thread per device (so the
+> queue depth is 32 per device). Results are averaged over 3 runs.
+> slat/clat are the submission and completion latencies, they are in
+> microseconds here.
+>
+> 4kb random reads
+>
+> kernel               sys     IOPS       slat    clat
+> ----------------------------------------------------
+> 2.6.32-rc3+patch    25.8%   192500      7.9     2606
+> 2.6.32-rc3          27.4%   191300      8.4     2612
+>
+>
+>
+> 64kb random reads
+>
+> kernel               sys     IOPS       slat    clat
+> ----------------------------------------------------
+> 2.6.32-rc3+patch     2.5%    24590      9.7     9681
+> 2.6.32-rc3           2.5%    24580      9.4     9691
+>
+> So pretty close, nothing earth shattering here. What the results above
+> do not show is that the 4kb test runs very stable with your patch.
+> Mainline fluctuates somewhat in the bandwidth, most likely due to the
+> varying depth.
 
-> But if the gfp mask massaging was needed for calling kmalloc(),
-> it would seem odd that the same shouldn't be needed for calling
-> vmalloc() recursively...
-> 
-> >Using HIGHMEM for internal arrays looks reasonable to me; but if
-> >__GFP_ZERO were a problem, wouldn't it be much cleaner to skip the
-> >"unless it collides" and #ifdef CONFIG_HIGHMEM !in_interrupt() stuff,
-> >just memset the array returned from __vmalloc_node()?
-> 
-> The main goal was to change the existing code as little as possible - I
-> did consider this alternative, but wasn't sure that would be accepted.
-> If you view this as the better alternative, I'll certainly modify the
-> patch to do it that way.
+OK, good news.  Thanks for testing!
 
-Well, now we've accepted that this code cannot be used in_interrupt(),
-there's no need for your #ifdef CONFIG_HIGHMEM nor for my memset: just
-use __GFP_ZERO as it was before, and your patch would amount to or'ing
-__GFP_HIGHMEM into gfp_mask for the __vmalloc_node case - wouldn't it?
-
-Hugh
+Cheers,
+Jeff
