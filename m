@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933954AbZJGIBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934081AbZJGIIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933954AbZJGIBp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933943AbZJGIBo
+	id S934081AbZJGIIb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933990AbZJGIB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:01:44 -0400
-Received: from mga14.intel.com ([143.182.124.37]:50747 "EHLO mga14.intel.com"
+	Wed, 7 Oct 2009 04:01:58 -0400
+Received: from mga14.intel.com ([143.182.124.37]:58309 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933939AbZJGIBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:01:41 -0400
+	id S933212AbZJGIB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 04:01:56 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,518,1249282800"; 
-   d="scan'208";a="195971292"
-Message-Id: <20091007074905.694996170@intel.com>
+   d="scan'208";a="195971365"
+Message-Id: <20091007074905.829888184@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 07 Oct 2009 15:38:53 +0800
+Date: Wed, 07 Oct 2009 15:38:54 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
@@ -27,69 +27,82 @@ CC: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
        Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
        <linux-fsdevel@vger.kernel.org>, Wu Fengguang <fengguang.wu@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 35/45] writeback: sync livelock - use single timestamp for whole sync work
+Subject: [PATCH 36/45] writeback: sync livelock - curb dirty speed for inodes to be synced
 References: <20091007073818.318088777@intel.com>
-Content-Disposition: inline; filename=writeback-sync-pending-start_time.patch
+Content-Disposition: inline; filename=writeback-sync-pending-slower-writes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The start time in writeback_inodes_wb() is not very useful because it
-slips at each invocation time. We shall use one _constant_ time at the
-beginning to cover this whole sync() work.
-
-The timestamp is now grabbed at work start time. It could be better set
-at the sync work submission time.
+The inodes to be synced will be dirty throttled regardless of the dirty
+threshold.  This stops sync() livelock by some fast dirtier.
 
 CC: Jan Kara <jack@suse.cz> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- fs/fs-writeback.c |   17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+ fs/fs-writeback.c           |    4 ++++
+ include/linux/backing-dev.h |    1 +
+ mm/page-writeback.c         |   13 +++++++++++++
+ 3 files changed, 18 insertions(+)
 
---- linux.orig/fs/fs-writeback.c	2009-10-06 23:39:33.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-10-06 23:39:39.000000000 +0800
-@@ -669,12 +669,11 @@ static long writeback_inodes_wb(struct b
- 				struct writeback_control *wbc)
- {
- 	struct super_block *sb = wbc->sb, *pin_sb = NULL;
--	const unsigned long start = jiffies;	/* livelock avoidance */
- 	unsigned long stop_time = 0;
- 	unsigned long wrote = 0;
+--- linux.orig/mm/page-writeback.c	2009-10-07 10:47:09.000000000 +0800
++++ linux/mm/page-writeback.c	2009-10-07 14:32:43.000000000 +0800
+@@ -478,6 +478,18 @@ static void balance_dirty_pages(struct a
+ 	global_dirty_thresh(&background_thresh, &dirty_thresh);
  
- 	if (wbc->timeout)
--		stop_time = (start + wbc->timeout) | 1;
-+		stop_time = (jiffies + wbc->timeout) | 1;
- 
- 	spin_lock(&inode_lock);
- 
-@@ -699,13 +698,6 @@ static long writeback_inodes_wb(struct b
- 			continue;
- 		}
- 
--		/*
--		 * Was this inode dirtied after sync_sb_inodes was called?
--		 * This keeps sync from extra jobs and livelock.
--		 */
--		if (inode_dirtied_after(inode, start))
--			break;
--
- 		if (pin_sb_for_writeback(wbc, inode, &pin_sb)) {
- 			requeue_io(inode);
- 			continue;
-@@ -798,6 +790,13 @@ static long wb_writeback(struct bdi_writ
- 	long nr;
- 	struct inode *inode;
- 
-+	/*
-+	 * keep sync from extra jobs and livelock
+ 	/*
++	 * If sync() is in progress, curb the to-be-synced inodes regardless
++	 * of dirty limits, so that a fast dirtier won't livelock the sync.
 +	 */
-+	if (wbc.for_sync) {
-+		wbc.older_than_this = &oldest_jif;
-+		oldest_jif = jiffies;
++	if (unlikely(bdi->sync_time &&
++		     S_ISREG(mapping->host->i_mode) &&
++		     time_after_eq(bdi->sync_time,
++				   mapping->host->dirtied_when))) {
++		write_chunk *= 2;
++		goto throttle;
 +	}
++
++	/*
+ 	 * Throttle it only when the background writeback cannot
+ 	 * catch-up. This skips the ramp up phase of bdi limits.
+ 	 */
+@@ -510,6 +522,7 @@ static void balance_dirty_pages(struct a
+ 	if (!dirty_exceeded)
+ 		goto out;
+ 
++throttle:
+ 	if (!bdi->dirty_exceeded)
+ 		bdi->dirty_exceeded = 1;
+ 
+--- linux.orig/fs/fs-writeback.c	2009-10-07 10:47:09.000000000 +0800
++++ linux/fs/fs-writeback.c	2009-10-07 14:31:47.000000000 +0800
+@@ -796,6 +796,7 @@ static long wb_writeback(struct bdi_writ
+ 	if (wbc.for_sync) {
+ 		wbc.older_than_this = &oldest_jif;
+ 		oldest_jif = jiffies;
++		wbc.bdi->sync_time = oldest_jif | 1;
+ 	}
  	if (wbc.for_kupdate || wbc.for_background) {
  		wbc.older_than_this = &oldest_jif;
- 		oldest_jif = jiffies - expire_interval;
+@@ -873,6 +874,9 @@ static long wb_writeback(struct bdi_writ
+ 		spin_unlock(&inode_lock);
+ 	}
+ 
++	if (args->for_sync)
++		wb->bdi->sync_time = 0;
++
+ 	if (args->for_background)
+ 		while (bdi_writeback_wakeup(wb->bdi))
+ 			;  /* unthrottle all tasks */
+--- linux.orig/include/linux/backing-dev.h	2009-10-07 10:47:09.000000000 +0800
++++ linux/include/linux/backing-dev.h	2009-10-07 14:31:53.000000000 +0800
+@@ -89,6 +89,7 @@ struct backing_dev_info {
+ 	 * to prevent livelocking the sync works
+ 	 */
+ 	unsigned int sync_works;
++	unsigned long sync_time;
+ 
+ 	struct list_head work_list;
+ 
 
 
