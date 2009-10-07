@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbZJGGlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbZJGGon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758198AbZJGGlj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 02:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbZJGGlj
+	id S1757178AbZJGGon (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 02:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbZJGGon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 02:41:39 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:46174 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756021AbZJGGli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 02:41:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :user-agent;
-        b=RnZN9YmrSB1Pw7N61frV+bpDPfHxN97V4rJPsc/JBv+Jc2NyckERXHqIvm94Mm5rRx
-         5NxInrq89cF9r+K+fp+C8QjOXrzYNMQ4VfAQvskHrn2/jeg3KEmynnTVpeefzqorwiBo
-         OlXWk5MHbxJd+GVJrhh6bXgn9DyHr6AVb+EQc=
-Date: Wed, 7 Oct 2009 14:39:21 +0800
-From: Zhenwen Xu <helight.xu@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH] fix a warning on kernel/trace/trace_branch.c
-Message-ID: <20091007063921.GA19756@helight>
-Reply-To: Zhenwen Xu <helight.xu@gmail.com>
+	Wed, 7 Oct 2009 02:44:43 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48095 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756415AbZJGGom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 02:44:42 -0400
+Date: Wed, 7 Oct 2009 08:43:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] perf tools: Merge trace.info content into
+	perf.data
+Message-ID: <20091007064355.GA3283@elte.hu>
+References: <20091006213643.GA5343@nowhere> <20091007062204.GE21673@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091007062204.GE21673@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fix this warning:
 
-kernel/trace/trace_branch.c: In function ‘probe_likely_condition’:
-kernel/trace/trace_branch.c:58: warning: passing argument 1 of ‘
-trace_buffer_lock_reserve’ from incompatible pointer type
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-The "tr" should be "(struct buffer *)tr" or "tr->buffer" here!!!
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > Hi,
+> > 
+> > Here is an attempt to remove the trace.info file. It works well for 
+> > me, the reason for it to be an RFC is that I have doubts about the 
+> > backward compatibility.
+> > 
+> > A file created by perf after his patch is unsupported by previous 
+> > version because the size of the headers have increased.
+> 
+> That's OK i think in terms of trace.info - trace.info was a temporary 
+> hack to begin with.
+> 
+> > That said, it's two new fields that have been added in the end of the 
+> > headers, and those could be ignored by previous versions if they just 
+> > handled the dynamic header size and then ignore the unknow part. The 
+> > offsets guarantee the compatibility.
+> 
+> Yes, that's how it should work.
+> 
+> > But previous versions handle the header size using its static size, 
+> > not dynamic, then it's not backward compatible.
+> > 
+> > Anyway, I'm not sure exactly how to handle that.
+> 
+> That's a bug in the previous version - mind doing a standalone fix for 
+> that so we can mark it Cc: stable?
 
-Signed-off-by: Zhenwen Xu <helight.xu@gmail.com>
----
- kernel/trace/trace_branch.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Meanwhile i've applied your two patches - they are clear steps forward. 
+We'll need the -stable fix so that the new perf.data can be read. (and 
+even that only affects -R afaics - so normal perf record / perf report 
+is compatible.)
 
-diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-index 7a7a9fd..216e2dd 100644
---- a/kernel/trace/trace_branch.c
-+++ b/kernel/trace/trace_branch.c
-@@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- 		goto out;
- 
- 	pc = preempt_count();
--	event = trace_buffer_lock_reserve(tr, TRACE_BRANCH,
-+	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
- 					  sizeof(*entry), flags, pc);
- 	if (!event)
- 		goto out;
--- 
-1.6.3.3
+Btw., we also need a patch for new perf to read older perf.data files 
+[non-trace.info ones], as those are not working either:
 
--- 
---------------------------------
-http://zhwen.org - Open and Free
+ $ perf report
+   Fatal: incompatible file format
+
+( We dont want to push it - i.e. i dont think we need to support old
+  perf.data + trace.info combos. )
+
+	Ingo
