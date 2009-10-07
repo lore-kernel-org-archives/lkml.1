@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934325AbZJGSUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757874AbZJGSUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934325AbZJGSUJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 14:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbZJGSUI
+	id S1757874AbZJGSUh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 14:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756519AbZJGSUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 14:20:08 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:45829 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbZJGSUG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 14:20:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=fdtQcqmXMDl3d54OnK8oIT/PKSqtzMi4bE8OEpwAT81JenAsNI5r9yr1N5gb71uS+i
-         PEGzeIhZNoiDz2EY+A8o+uiMmIGCeXN5tjLVq9MFYabR9vLpVUvdetiAkbjbNwdIJNux
-         Uv4tSCBAuVg20eb0KrgZMbRry36ixJxivZCwU=
-Message-ID: <4ACCDBAC.8040608@gmail.com>
-Date: Wed, 07 Oct 2009 14:19:24 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Wed, 7 Oct 2009 14:20:36 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:29379 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751051AbZJGSUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 14:20:35 -0400
+Date: Wed, 7 Oct 2009 20:19:32 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+cc: linux-rt-users@vger.kernel.org, Clark Williams <williams@redhat.com>
+Subject: [PATCH RFC] BKL not necessary in cpuid_open
+Message-ID: <alpine.LFD.2.00.0910072016190.15183@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Gregory Haskins <ghaskins@novell.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -next] vbus: proxy uses, select IOQ
-References: <20091007173517.abfcfa2a.sfr@canb.auug.org.au> <20091007102259.ae014b15.randy.dunlap@oracle.com>
-In-Reply-To: <20091007102259.ae014b15.randy.dunlap@oracle.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3497D467835B74A75CDDBDE3"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3497D467835B74A75CDDBDE3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->=20
-> vbus-proxy also uses ioq, so it should select IOQ.
->=20
-> When CONFIG_VBUS_PROXY=3D[ym] and VBUS_PCIBRIDGE=3Dn:
->=20
-> ERROR: "ioq_init" [drivers/vbus/vbus-proxy.ko] undefined!
->=20
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: Gregory Haskins <ghaskins@novell.com>
+I've been staring at the BKL lock in cpuid_open, and I can't see what it 
+is protecting. However, I may have missed something - even something 
+obvious, so comments are welcome.
 
-Thanks Randy, applied.
+>From 25c0f07b3ec5533c0e690e06198baa4300ee4a8c Mon Sep 17 00:00:00 2001
+From: John Kacur <jkacur@redhat.com>
+Date: Wed, 7 Oct 2009 20:06:12 +0200
+Subject: [PATCH] The BKL is not necessary in cpuid_open
+ Most of the variables are local to the function. It IS possible that for
+ struct cpuinfo_x86 *c
+ c could point to the same area. However, this is used read only.
 
-Kind Regards,
--Greg
+Signed-off-by: John Kacur <jkacur@redhat.com>
+---
+ arch/x86/kernel/cpuid.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
+diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
+index 6a52d4b..8bb8401 100644
+--- a/arch/x86/kernel/cpuid.c
++++ b/arch/x86/kernel/cpuid.c
+@@ -118,8 +118,6 @@ static int cpuid_open(struct inode *inode, struct file *file)
+ 	struct cpuinfo_x86 *c;
+ 	int ret = 0;
+ 
+-	lock_kernel();
+-
+ 	cpu = iminor(file->f_path.dentry->d_inode);
+ 	if (cpu >= nr_cpu_ids || !cpu_online(cpu)) {
+ 		ret = -ENXIO;	/* No such CPU */
+@@ -129,7 +127,6 @@ static int cpuid_open(struct inode *inode, struct file *file)
+ 	if (c->cpuid_level < 0)
+ 		ret = -EIO;	/* CPUID not supported */
+ out:
+-	unlock_kernel();
+ 	return ret;
+ }
+ 
+-- 
+1.6.0.6
 
---------------enig3497D467835B74A75CDDBDE3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkrM26wACgkQP5K2CMvXmqFj2ACfWWEP31tPkL1FQBg1Iie0MseW
-+0oAniLB+DSGr7Oz1fULtSsExrenDKUk
-=3MnT
------END PGP SIGNATURE-----
-
---------------enig3497D467835B74A75CDDBDE3--
