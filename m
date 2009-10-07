@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932375AbZJGHdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbZJGHiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932375AbZJGHdb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 03:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932142AbZJGHda
+	id S932263AbZJGHiy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 03:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757714AbZJGHix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 03:33:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35993 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932146AbZJGHda (ORCPT
+	Wed, 7 Oct 2009 03:38:53 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52731 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757018AbZJGHix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 03:33:30 -0400
-Date: Wed, 7 Oct 2009 00:32:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, peterz@infradead.org, paulus@samba.org,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf_event: Provide vmalloc() based mmap() backing
-Message-Id: <20091007003202.5a8ac565.akpm@linux-foundation.org>
-In-Reply-To: <20091007.001321.197898334.davem@davemloft.net>
-References: <1254830228.21044.272.camel@laptop>
-	<20091006122359.GA7614@elte.hu>
-	<20091007.001321.197898334.davem@davemloft.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 Oct 2009 03:38:53 -0400
+Date: Wed, 7 Oct 2009 09:38:06 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [TOMOYO #16 00/25] Starting TOMOYO 2.3
+Message-ID: <20091007073806.GC31245@elf.ucw.cz>
+References: <20091004124946.788396453@I-love.SAKURA.ne.jp> <20091006093922.GB1363@ucw.cz> <200910070409.n9749OQ1092174@www262.sakura.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910070409.n9749OQ1092174@www262.sakura.ne.jp>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Oct 2009 00:13:21 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
-
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 6 Oct 2009 14:23:59 +0200
+On Wed 2009-10-07 13:09:24, Tetsuo Handa wrote:
+> Hello.
 > 
-> > 
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> >> OK, so I rewrote it a few more times, does the below make everybody 
-> >> feel warm and fuzzy?
-> > 
-> > Yeah, looks perfect to me - applied to tip:perf/urgent, thanks Peter!
-> > 
-> > Dave, could you please test it on Sparc too? The Git coordinates are at:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perf/urgent
+> Pavel Machek wrote:
+> >> Since this patchset is not yet accepted, I haven't written documentation for
+> >> TOMOYO 2.3. You can see http://tomoyo.sourceforge.jp/1.7/policy-reference.html
+> >> instead.
+> >
+> >New, undocumented user/kernel api is no-no.
 > 
-> Works fine here, I forced the vmalloc stuff on using the debug
-> option.  Once your stuff goes in I'll add the select statement
-> to arch/sparc/Kconfig
+> I'll update api description by final submission.
+
+Well, then you'll get proper review by final submission.
+
+> >> Conventionally, patches should be submitted in the form of diff file.
+> >> But this time, I submit in the form of entire file due to amount of changes.
+> >
+> > That's also no-no.
 > 
-> Andrew also needs to marge the vmalloc_user() patch.  I almost
-> forgot that to apply to my tree when testing :-)
+> I have a question.
+> Is the diff file based on existing files more preferable for reviewers to
+> review than totally rewritten files, even if "total lines of diff files" is
+> close to "total lines of rewritten files"?
 
-I seem to have lost it.  We might as well keep the two patches together
-so can you please handle it?
+You are expected to submit diffs in smaller steps, not "here it is,
+totally rewritten, take it or leave it".
+								Pavel
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
