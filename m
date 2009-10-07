@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759204AbZJGOxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbZJGPYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759204AbZJGOxI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZJGOxI
+	id S1759369AbZJGPYz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 11:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZJGPYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:53:08 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38196 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753136AbZJGOxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 10:53:07 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+CivYcNGKC5poUX/LSgz4P9YWIfwB19ZS8SgWKJX
-	BRZCudu6eq5r/o
-Subject: Re: Linux 2.6.32-rc3
-From: Mike Galbraith <efault@gmx.de>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Airlie <airlied@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091007135233.GK17883@mit.edu>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain>
-	 <alpine.LFD.2.00.0910052140100.309@localhost.localdomain>
-	 <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com>
-	 <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain>
-	 <1254864803.6035.25.camel@pasglop>
-	 <alpine.LFD.2.01.0910061513510.3432@localhost.localdomain>
-	 <21d7e9970910061822i429344amb47b0bceb552abc6@mail.gmail.com>
-	 <alpine.LFD.2.01.0910062015200.3432@localhost.localdomain>
-	 <alpine.LFD.2.01.0910062025300.3432@localhost.localdomain>
-	 <20091007135233.GK17883@mit.edu>
-Content-Type: text/plain
-Date: Wed, 07 Oct 2009 16:52:14 +0200
-Message-Id: <1254927134.7121.36.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.65
+	Wed, 7 Oct 2009 11:24:54 -0400
+Received: from mail-yx0-f204.google.com ([209.85.210.204]:48835 "EHLO
+	mail-yx0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbZJGPYy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 11:24:54 -0400
+X-Greylist: delayed 1515 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Oct 2009 11:24:54 EDT
+MIME-Version: 1.0
+In-Reply-To: <192797ad-5dd4-4ebe-8db3-d381bb949e1e@VA3EHSMHS029.ehs.local>
+References: <1d3f23370910070013u6307bc42hf7ab243b52d007df@mail.gmail.com> 
+	<fa686aa40910070634r4a8dcf74qdcbfb3bde3413109@mail.gmail.com> 
+	<192797ad-5dd4-4ebe-8db3-d381bb949e1e@VA3EHSMHS029.ehs.local>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 7 Oct 2009 08:52:34 -0600
+X-Google-Sender-Auth: a5a1f60e3d9b8b9d
+Message-ID: <fa686aa40910070752k1b954a32v1ae6a2e5a089fc5e@mail.gmail.com>
+Subject: Re: Xilinx SYSACE driver and 8-bit attachment
+To: John Linn <John.Linn@xilinx.com>
+Cc: John Linn <linnj@xilinx.com>, John Williams <john.williams@petalogix.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Michal Simek <michal.simek@petalogix.com>,
+       David DeBonis <ddeboni@xilinx.com>,
+       Stephen Neuendorffer <stephenn@xilinx.com>,
+       devicetree-discuss <devicetree-discuss@lists.ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 09:52 -0400, Theodore Tso wrote:
+On Wed, Oct 7, 2009 at 8:42 AM, John Linn <John.Linn@xilinx.com> wrote:
+>> -----Original Message-----
+>> From: John Linn
+>> Sent: Wednesday, October 07, 2009 8:24 AM
+>> To: 'Grant Likely'; John Williams
+>> Cc: Linux Kernel list; Michal Simek; David DeBonis; Stephen Neuendorffer; devicetree-discuss
+>> Subject: RE: Xilinx SYSACE driver and 8-bit attachment
+>>
+>> I'll look to see if something has changed.  It's not clear to me if it has ever been right.
+>>
+>> It look like we normally use 16 bit mode as that's how BSB generates the system by default.
+>>
+>> Thanks,
+>> John
+>>
+>> > -----Original Message-----
+>> > From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On Behalf Of Grant Likely
+>> > Sent: Wednesday, October 07, 2009 7:35 AM
+>> > To: John Williams
+>> > Cc: Linux Kernel list; Michal Simek; John Linn; David DeBonis; Stephen Neuendorffer; devicetree-
+>> > discuss
+>> > Subject: Re: Xilinx SYSACE driver and 8-bit attachment
+>> >
+>> > [Added devicetree-discuss to cc: list]
+>> >
+>> > On Wed, Oct 7, 2009 at 1:13 AM, John Williams
+>> > <john.williams@petalogix.com> wrote:
+>> > > Hi Grant (it's your driver :) and David D ( and your DTS generator :)
+>> > [...]
+>> > > if (of_find_property(op->node, "8-bit", NULL))
+>> > [...]
+>> > > doesn't match the properties generated by Xilinx's device tree generator:
+>> > [...]
+>> > >                         xlnx,mem-width = <0x8>;
+>
+> Do you know if the 8 bit mode was ever tested with the "8-bit" property in the tree?
+>
+> I don't see anything in the device tree generator history to say we ever did that "8-bit", but maybe I'm missing something.
+>
+> We are just generating the parameters from the h/w and the memory width is it.  We can always put something in there special, but it seems silly if it was never used anyway.
 
-> The one thing that I wish we *could* do is make
-> CONFIG_LOCALVERSION_AUTO mandatory, or at least making it the strong
-> default and forcing people to work to turn it off, since the problem
-> really is with users smart enough to use git, but not quite smart
-> enough to turn on CONFIG_LOCALVERSION_AUTO.
+Don't forget that Virtex and Microblaze are not the only users of this
+driver.   There is a AMCC 440 board which uses the sysace as a CF
+adapter.  8-bit was definitely tested and is in use.
 
-There are also those who use git, but turn CONFIG_LOCALVERSION_AUTO off
-for a reason, because it just annoys them with zero gain.
+g.
 
-I don't do -rcX.  I have one tree per installed kernel.  When Linus
-pulls a release out of the oven, on that day, Makefile becomes rev++ for
-a new tree and stays that way until he declares the next one baked.  Old
-tree stays frozen at rev until it becomes .stable.  My repos are always
-frozen at where the installed kernel is at, so adding an extra version
-is just a work generating irritant.
-
-I'd like having git ID embedded in the kernel for idiot proofing, but I
-don't like it polluting my installs, so I live without it.
-
-	-Mike
-
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
