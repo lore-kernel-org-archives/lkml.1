@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbZJGUK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760010AbZJGULK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759989AbZJGUK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 16:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759930AbZJGUK4
+	id S1760010AbZJGULK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 16:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760001AbZJGULJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 16:10:56 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:26795 "EHLO mx1.redhat.com"
+	Wed, 7 Oct 2009 16:11:09 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:2316 "EHLO dspnet.fr.eu.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759921AbZJGUK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 16:10:56 -0400
-Message-ID: <4ACCF565.30804@redhat.com>
-Date: Wed, 07 Oct 2009 22:09:09 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Dan Magenheimer <dan.magenheimer@oracle.com>,
-       Xen-devel <xen-devel@lists.xensource.com>, kurt.hackel@oracle.com,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>,
-       Zach Brown <zach.brown@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>
-Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add vsyscall implementation
-References: <1254790211-15416-1-git-send-email-jeremy.fitzhardinge@citrix.com>	<1254790211-15416-4-git-send-email-jeremy.fitzhardinge@citrix.com> <4ACB0833.2050203@redhat.com> <4ACB9074.1000804@goop.org> <4ACC6C9C.7080707@redhat.com> <4ACCEC18.90401@goop.org>
-In-Reply-To: <4ACCEC18.90401@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1759944AbZJGULI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 16:11:08 -0400
+Date: Wed, 7 Oct 2009 22:10:17 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: Gleb Natapov <gleb@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH][RFC] add MAP_UNLOCKED mmap flag
+Message-ID: <20091007201017.GC66690@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Gleb Natapov <gleb@redhat.com>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+	linux-api@vger.kernel.org
+References: <20091006190938.126F.A69D9226@jp.fujitsu.com> <20091006102136.GH9832@redhat.com> <20091006192454.1272.A69D9226@jp.fujitsu.com> <20091006103300.GI9832@redhat.com> <2f11576a0910060510y401c1d5ax6f17135478d22899@mail.gmail.com> <20091006121603.GK9832@redhat.com> <20091007185054.GB66690@dspnet.fr.eu.org> <20091007185952.GC19692@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091007185952.GC19692@redhat.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/07/2009 09:29 PM, Jeremy Fitzhardinge wrote:
->
->>    I'm a bit worried about the kernel playing with the hypervisor's
->> version field.
->>      
-> For Xen I explicitly made it not a problem by adding the notion of a
-> secondary pvclock_vcpu_time_info structure which is updated by copying,
-> aside from the version number which is updated as-is.
->    
+On Wed, Oct 07, 2009 at 08:59:52PM +0200, Gleb Natapov wrote:
+> On Wed, Oct 07, 2009 at 08:50:54PM +0200, Olivier Galibert wrote:
+> > On Tue, Oct 06, 2009 at 02:16:03PM +0200, Gleb Natapov wrote:
+> > > I did. It allows me to achieve something I can't now. Steps you provide
+> > > just don't fit my needs. I need all memory areas (current and feature) to be
+> > > locked except one. Very big one. You propose to lock memory at some
+> > > arbitrary point and from that point on all newly mapped memory areas will
+> > > be unlocked. Don't you see it is different?
+> > 
+> > What about mlockall(MCL_CURRENT); mmap(...); mlockall(MCL_FUTURE);?
+> > Or toggle MCL_FUTURE if a mlockall call can stop it?
+> > 
+> This may work. And MCL_FUTURE can be toggled, but this is not thread
+> safe.
 
-When do you copy?
+Just ensure that your one special mmap is done with the other threads
+not currently allocating stuff.  It's probably a synchronization point
+for the whole process anyway.
 
-I'd rather have a single copy for guest and host.
+  OG.
 
-> As far as I can tell it isn't a problem for KVM either.  The guest
-> version number is atomic with respect to preemption by the hypervisor so
-> there's no scope for racing.  (The ABI already guarantees that the
-> pvclock structures are never updated cross-cpu.)
->
-> It ultimately doesn't matter what the version number is so long as it
-> changes when the parameters are updated, and version numbers can't be
-> reused within a window where things get confused.
->    
-
-If the hypervisor does a pvclock->version = somethingelse->version++ 
-then the guest may get confused.  But I understand you have a 
-guest-private ->version?
-
->> It's better to introduce yet a new version for the kernel, and check
->> both.
->>      
-> Two version numbers are awkward to read atomically at least on 32-bit.
-> And I don't think its necessary.
->    
-
-No need to read them atomically.
-
-cpu1 = vgetcpu()
-hver1 = pvclock[cpu1].hver
-kver1 = pvclock[cpu1].kver
-tsc = rdtsc
-/* multipication magic with pvclock[cpu1]*/
-cpu2 = vgetcpu()
-hver2 = pvclock[cpu2].hver
-kver2 = pvclock[cpu2].kver
-valid = cpu1 == cpu2 && hver1 == hver2 && kver1 == kver2
-
->> It's sufficient to increment a version counter on thread migration, no
->> need to do it on context switch.
->>
->>      
-> That's true; switch_out is a pessimistic approximation of that.  But is
-> there a convenient hook to test for migration?
->    
-
-I'd guess not but it's probably easy to add one in the migration thread.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
