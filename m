@@ -1,191 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934117AbZJGIEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934103AbZJGIGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934117AbZJGIEA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 04:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934113AbZJGID4
+	id S934103AbZJGIGV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 04:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934065AbZJGIGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 04:03:56 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:13980 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934088AbZJGIDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 04:03:49 -0400
-Date: Wed, 7 Oct 2009 10:02:27 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       tglx@linutronix.de, john stultz <johnstul@us.ibm.com>
-cc: Clark Williams <williams@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] time: remove xtime_cache
-In-Reply-To: <1254525855.7741.95.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0910070959360.15183@localhost.localdomain>
-References: <1254525473.7741.88.camel@localhost.localdomain> <1254525855.7741.95.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 7 Oct 2009 04:06:18 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:39721 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934069AbZJGIGN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 04:06:13 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1254901778.30157.62.camel@eenurkka-desktop>
+References: <alpine.LNX.2.00.0910050923280.2419@alcarin.uplinklabs.net>
+	 <f488382f0910060322y12e2e7dbm9a1372e481c9013f@mail.gmail.com>
+	 <1254825795.31336.204.camel@eenurkka-desktop>
+	 <f488382f0910060422t420ade8bvdefbf3e3d0720266@mail.gmail.com>
+	 <1254832609.31336.290.camel@eenurkka-desktop>
+	 <f488382f0910061754g6d15cf58v572e85701fc5aa4f@mail.gmail.com>
+	 <f488382f0910061822wf8da0c1m7f118f04fe793abe@mail.gmail.com>
+	 <1254893230.30157.28.camel@eenurkka-desktop>
+	 <f488382f0910070030m153773e8s6d93cbd7e48f5461@mail.gmail.com>
+	 <1254901778.30157.62.camel@eenurkka-desktop>
+Date: Wed, 7 Oct 2009 01:05:36 -0700
+Message-ID: <f488382f0910070105g19cbf75ci8034f2917b7e5606@mail.gmail.com>
+Subject: Re: [BISECTED] "conservative" cpufreq governor broken
+From: Steven Noonan <steven@uplinklabs.net>
+To: ext-eero.nurkkala@nokia.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Rik van Riel <riel@redhat.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Oct 7, 2009 at 12:49 AM, Eero Nurkkala
+<ext-eero.nurkkala@nokia.com> wrote:
+> On Wed, 2009-10-07 at 09:30 +0200, ext Steven Noonan wrote:
+>>
+>> Okay, wow, I'm a moron. I misread what cpu_idle() was intended to be
+>> for. I thought that cpu_idle() was a function that was periodically
+>> called whenever the CPU had nothing to do, but now I see that it's
+>> actually the main loop. I should really read the code next time.
+>>
+>> I've moved the statistics printout code to the _inside_ of that
+>> infinite loop and retested. I had it print every several hundred
+>> iterations. Here's the results (note the machine was idle the whole
+>> time, except for about the first 10-20 seconds while the machine
+>> booted):
+>>
+>> [    3.627716] timings[0]: 2250511125 / 3627716116
+>> [    6.946216] timings[0]: 4780901366 / 6946213531
+>> [   13.355182] timings[0]: 9385417604 / 13355183525
+>> [   18.551304] timings[1]: 16300853077 / 18551301189
+>> [   21.589039] timings[0]: 15984495433 / 21589037480
+>> [   47.152733] timings[1]: 44386121538 / 47152731476
+>> [   51.682630] timings[0]: 45713834076 / 51682628295
+>> [   79.587359] timings[0]: 73524821916 / 79587356820
+>> [   88.630110] timings[1]: 85324277596 / 88630109605
+>> [   96.082386] timings[0]: 89691306072 / 96082384539
+>>
+>
+> Those look good.
+>
+> Well, might as well then go for:
+> /drivers/cpufreq/cpufreq_conservative.c
+> dbs_check_cpu() ->
+> load = 100 * (wall_time - idle_time) / wall_time; <- What is your load?
 
-@John Stultz
-I also backported this patch to 2.6.31.2-rt13, could you please look it 
-over and see if it looks okay to you?
+That's probably the problem...
 
-@Thomas
-Same as the previous patch, please consider queuing this for -rt14 and we 
-can drop it in the future because John Stultz submitted it upstream.
+[   40.632277] cpufreq load = 100 * (66667 - 3310) / 66667 = 95
+[   40.698947] cpufreq load = 100 * (66661 - 3238) / 66661 = 95
+[   73.965425] cpufreq load = 100 * (66667 - 12820) / 66667 = 80
+[   74.032095] cpufreq load = 100 * (66661 - 1124) / 66661 = 98
+[  107.298571] cpufreq load = 100 * (66666 - 13092) / 66666 = 80
+[  107.365301] cpufreq load = 100 * (66722 - 3317) / 66722 = 95
+[  140.631717] cpufreq load = 100 * (66666 - 3311) / 66666 = 95
+[  140.698387] cpufreq load = 100 * (66662 - 3237) / 66662 = 95
 
-Thanks
+idle_time is wrong.
 
->From 868ee3f7346a90ae3b529ac24996f059cc322a82 Mon Sep 17 00:00:00 2001
-From: tip-bot for john stultz <johnstul@us.ibm.com>
-Date: Mon, 5 Oct 2009 11:54:53 +0000
-Subject: [PATCH] time: Remove xtime_cache
-
-Commit-ID:  7bc7d637452383d56ba4368d4336b0dde1bb476d
-Gitweb:     http://git.kernel.org/tip/7bc7d637452383d56ba4368d4336b0dde1bb476d
-Author:     john stultz <johnstul@us.ibm.com>
-AuthorDate: Fri, 2 Oct 2009 16:24:15 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 5 Oct 2009 13:52:02 +0200
-
-time: Remove xtime_cache
-
-With the prior logarithmic time accumulation patch, xtime will now
-always be within one "tick" of the current time, instead of
-possibly half a second off.
-
-This removes the need for the xtime_cache value, which always
-stored the time at the last interrupt, so this patch cleans that up
-removing the xtime_cache related code.
-
-This is a bit simpler, but still could use some wider testing.
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Reviewed-by: John Kacur <jkacur@redhat.com>
-Cc: Clark Williams <williams@redhat.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <1254525855.7741.95.camel@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- kernel/time.c             |    1 -
- kernel/time/timekeeping.c |   20 ++------------------
- 2 files changed, 2 insertions(+), 19 deletions(-)
-
-diff --git a/kernel/time.c b/kernel/time.c
-index 35d1aaa..01944b5 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -136,7 +136,6 @@ static inline void warp_clock(void)
- 	write_atomic_seqlock_irq(&xtime_lock);
- 	wall_to_monotonic.tv_sec -= sys_tz.tz_minuteswest * 60;
- 	xtime.tv_sec += sys_tz.tz_minuteswest * 60;
--	update_xtime_cache(0);
- 	write_atomic_sequnlock_irq(&xtime_lock);
- 	clock_was_set();
- }
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 4630874..4a0920d 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -48,16 +48,8 @@ static unsigned long total_sleep_time;		/* seconds */
- /* flag for if timekeeping is suspended */
- int __read_mostly timekeeping_suspended;
- 
--static struct timespec xtime_cache __attribute__ ((aligned (16)));
--void update_xtime_cache(u64 nsec)
--{
--	xtime_cache = xtime;
--	timespec_add_ns(&xtime_cache, nsec);
--}
--
- struct clocksource *clock;
- 
--
- #ifdef CONFIG_GENERIC_TIME
- /**
-  * clocksource_forward_now - update clock to the current time
-@@ -233,7 +225,6 @@ int do_settimeofday(struct timespec *tv)
- 
- 	xtime = *tv;
- 
--	update_xtime_cache(0);
- 
- 	clock->error = 0;
- 	ntp_clear();
-@@ -435,7 +426,6 @@ void __init timekeeping_init(void)
- 	xtime.tv_nsec = 0;
- 	set_normalized_timespec(&wall_to_monotonic,
- 		-xtime.tv_sec, -xtime.tv_nsec);
--	update_xtime_cache(0);
- 	total_sleep_time = 0;
- 	write_atomic_sequnlock_irqrestore(&xtime_lock, flags);
- }
-@@ -467,7 +457,6 @@ static int timekeeping_resume(struct sys_device *dev)
- 		wall_to_monotonic.tv_sec -= sleep_length;
- 		total_sleep_time += sleep_length;
- 	}
--	update_xtime_cache(0);
- 	/* re-base the last cycle value */
- 	clock->cycle_last = 0;
- 	clock->cycle_last = clocksource_read(clock);
-@@ -608,7 +597,6 @@ static void clocksource_adjust(s64 offset)
- 			(NTP_SCALE_SHIFT - clock->shift);
- }
- 
--
- /**
-  * logarithmic_accumulation - shifted accumulation of cycles
-  *
-@@ -652,7 +640,6 @@ static cycle_t logarithmic_accumulation(cycle_t offset, int shift)
- 	return offset;
- }
- 
--
- /**
-  * update_wall_time - Uses the current clocksource to increment the wall time
-  *
-@@ -661,7 +648,6 @@ static cycle_t logarithmic_accumulation(cycle_t offset, int shift)
- void update_wall_time(void)
- {
- 	cycle_t offset;
--	u64 nsecs;
- 	int shift = 0, maxshift;
- 
- 	/* Make sure we're fully resumed: */
-@@ -725,8 +711,6 @@ void update_wall_time(void)
- 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
- 	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
- 
--	update_xtime_cache(cyc2ns(clock, offset));
--
- 	/* check to see if there is a new clocksource to use */
- 	change_clocksource();
- 	update_vsyscall(&xtime, clock);
-@@ -761,7 +745,7 @@ void monotonic_to_bootbased(struct timespec *ts)
- 
- unsigned long get_seconds(void)
- {
--	return xtime_cache.tv_sec;
-+	return xtime.tv_sec;
- }
- EXPORT_SYMBOL(get_seconds);
- 
-@@ -774,7 +758,7 @@ struct timespec current_kernel_time(void)
- 	do {
- 		seq = read_atomic_seqbegin(&xtime_lock);
- 
--		now = xtime_cache;
-+		now = xtime;
- 	} while (read_atomic_seqretry(&xtime_lock, seq));
- 
- 	return now;
--- 
-1.6.0.6
-
+> Let assume load is sane, look for (in dbs_check_cpu())
+>        if (load < (dbs_tuners_ins.down_threshold - 10)) {
+>
+> whether it is taken ever...if not, what is your
+> (dbs_tuners_ins.down_threshold - 10) ?
+>
+> - Eero
+>
+>
