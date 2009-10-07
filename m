@@ -1,55 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbZJGLEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZJGLIN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758861AbZJGLEJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 07:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbZJGLEI
+	id S1754018AbZJGLIN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 07:08:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZJGLIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 07:04:08 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:64082 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753931AbZJGLEI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 07:04:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=EU2kp7EuU+DjhV/b291NQNpzqdo9EvvBbYxYI9mm18ojsna/oLsheEDpyOyeLOqUA8
-         cy6wRdeXTT6919snegETaJbHIlWcppefuYx2PktXBxlbtZrrSd7GxAx0GJSF/KWutXo7
-         yZGdQvUQoHP6HiMMLH2jUTJ4Dg1RXwXWQtdVI=
+	Wed, 7 Oct 2009 07:08:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37507 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751094AbZJGLIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 07:08:10 -0400
+Date: Wed, 7 Oct 2009 11:06:45 GMT
+From: tip-bot for Eero Nurkkala <ext-eero.nurkkala@nokia.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       greg@kroah.com, venkatesh.pallipadi@intel.com, riel@redhat.com,
+       steven@uplinklabs.net, ext-eero.nurkkala@nokia.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, greg@kroah.com, riel@redhat.com,
+       steven@uplinklabs.net, ext-eero.nurkkala@nokia.com, tglx@linutronix.de
+In-Reply-To: <1254907901.30157.93.camel@eenurkka-desktop>
+References: <1254907901.30157.93.camel@eenurkka-desktop>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:timers/urgent] NOHZ: update idle state also when NOHZ is inactive
+Message-ID: <tip-fdc6f192e7e1ae80565af23cc33dc88e3dcdf184@git.kernel.org>
+Git-Commit-ID: fdc6f192e7e1ae80565af23cc33dc88e3dcdf184
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <661de9470910061610n53bd0de0gdeb8dec854ef679a@mail.gmail.com>
-References: <63386a3d0910061406p32e514cdjbe6059e7af60fb87@mail.gmail.com>
-	 <661de9470910061610n53bd0de0gdeb8dec854ef679a@mail.gmail.com>
-Date: Wed, 7 Oct 2009 13:03:30 +0200
-Message-ID: <63386a3d0910070403k1d1e6d56xa46d95d2ff448b2a@mail.gmail.com>
-Subject: Re: CGFreak control group visualizer
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux kernel <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 07 Oct 2009 11:06:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/10/7 Balbir Singh <balbir@linux.vnet.ibm.com>:
+Commit-ID:  fdc6f192e7e1ae80565af23cc33dc88e3dcdf184
+Gitweb:     http://git.kernel.org/tip/fdc6f192e7e1ae80565af23cc33dc88e3dcdf184
+Author:     Eero Nurkkala <ext-eero.nurkkala@nokia.com>
+AuthorDate: Wed, 7 Oct 2009 11:54:26 +0300
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Wed, 7 Oct 2009 13:05:05 +0200
 
-> I looked at the screenshots and they look very interesting. Would it
-> take a lot of effort to extend it to track other controllers like
-> memory, network, etc?
+NOHZ: update idle state also when NOHZ is inactive
 
-No I don't think that'd be a problem if you can just come up with some
-proper visualization idea.
+Commit f2e21c9610991e95621a81407cdbab881226419b had unfortunate side
+effects with cpufreq governors on some systems.
 
-Memory can probably be a piechart as well, representing the physical memory
-(I think Matt already has some support for offline-generation of such charts in
-smem but this could be interactive, on-the-fly.)
+If the system did not switch into NOHZ mode ts->inidle is not set when
+tick_nohz_stop_sched_tick() is called from the idle routine. Therefor
+all subsequent calls from irq_exit() to tick_nohz_stop_sched_tick()
+fail to call tick_nohz_start_idle(). This results in bogus idle
+accounting information which is passed to cpufreq governors.
 
-Network bandwidth is harder I think because I don't know how these interfaces
-look if you want to measure throughput also (alottment would be easy to draw
-as a pie chart).
+Set the inidle flag unconditionally of the NOHZ active state to keep
+the idle time accounting correct in any case.
 
-Patches welcome :-)
+[ tglx: Added comment and tweaked the changelog ]
 
-Linus Walleij
+Reported-by: Steven Noonan <steven@uplinklabs.net>
+Signed-off-by: Eero Nurkkala <ext-eero.nurkkala@nokia.com>
+Cc: Rik van Riel <riel@redhat.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Greg KH <greg@kroah.com>
+Cc: Steven Noonan <steven@uplinklabs.net>
+Cc: stable@kernel.org
+LKML-Reference: <1254907901.30157.93.camel@eenurkka-desktop>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/time/tick-sched.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index e0f59a2..89aed59 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -231,6 +231,13 @@ void tick_nohz_stop_sched_tick(int inidle)
+ 	if (!inidle && !ts->inidle)
+ 		goto end;
+ 
++	/*
++	 * Set ts->inidle unconditionally. Even if the system did not
++	 * switch to NOHZ mode the cpu frequency governers rely on the
++	 * update of the idle time accounting in tick_nohz_start_idle().
++	 */
++	ts->inidle = 1;
++
+ 	now = tick_nohz_start_idle(ts);
+ 
+ 	/*
+@@ -248,8 +255,6 @@ void tick_nohz_stop_sched_tick(int inidle)
+ 	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
+ 		goto end;
+ 
+-	ts->inidle = 1;
+-
+ 	if (need_resched())
+ 		goto end;
+ 
