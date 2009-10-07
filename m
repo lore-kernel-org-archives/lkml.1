@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbZJGO1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbZJGO11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759299AbZJGO1j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 10:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759289AbZJGO1i
+	id S1759257AbZJGO11 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 10:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758482AbZJGO10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 10:27:38 -0400
-Received: from thunk.org ([69.25.196.29]:49445 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759287AbZJGO1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 10:27:37 -0400
-Date: Wed, 7 Oct 2009 10:26:32 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00/45] some writeback experiments
-Message-ID: <20091007142632.GM17883@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Wu Fengguang <fengguang.wu@intel.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	Dave Chinner <david@fromorbit.com>,
-	Chris Mason <chris.mason@oracle.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Li Shaohua <shaohua.li@intel.com>,
-	Myklebust Trond <Trond.Myklebust@netapp.com>,
-	"jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-	Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-	linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20091007073818.318088777@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 7 Oct 2009 10:27:26 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:7475 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758383AbZJGO1Z convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;4:1>);
+	Wed, 7 Oct 2009 10:27:25 -0400
+Message-Id: <4ACCC149020000780001882E@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Wed, 07 Oct 2009 15:26:49 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-mm@kvack.org>, <hugh.dickins@tiscali.co.uk>,
+       <linux-kernel@vger.kernel.org>
+Subject: [PATCH] adjust gfp mask passed on nested vmalloc() invocation
+	 (v3)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20091007073818.318088777@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 03:38:18PM +0800, Wu Fengguang wrote:
-> 
-> The estimated writeback bandwidth is about 1/2 the real throughput
-> for ext2/3/4 and btrfs; noticeable bigger than real throughput for NFS; and
-> cannot be estimated at all for XFS.  Very interesting..
+- avoid wasting more precious resources (DMA or DMA32 pools), when
+  being called through vmalloc_32{,_user}()
+- explicitly allow using high memory here even if the outer allocation
+  request doesn't allow it
 
-Can you expand on what you mean here?  Estimated write bandwidth of
-what?  And what are you comparing it against?
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-I'm having trouble understanding your note (which I'm guessing you
-write fairly late at night?  :-)
+---
+ mm/vmalloc.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-Thanks,
+--- linux-2.6.32-rc3/mm/vmalloc.c	2009-10-05 11:59:56.000000000 +0200
++++ 2.6.32-rc3-vmalloc-nested-gfp/mm/vmalloc.c	2009-10-07 14:39:38.000000000 +0200
+@@ -1410,6 +1410,7 @@ static void *__vmalloc_area_node(struct 
+ {
+ 	struct page **pages;
+ 	unsigned int nr_pages, array_size, i;
++	gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
+ 
+ 	nr_pages = (area->size - PAGE_SIZE) >> PAGE_SHIFT;
+ 	array_size = (nr_pages * sizeof(struct page *));
+@@ -1417,13 +1418,11 @@ static void *__vmalloc_area_node(struct 
+ 	area->nr_pages = nr_pages;
+ 	/* Please note that the recursion is strictly bounded. */
+ 	if (array_size > PAGE_SIZE) {
+-		pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
++		pages = __vmalloc_node(array_size, nested_gfp | __GFP_HIGHMEM,
+ 				PAGE_KERNEL, node, caller);
+ 		area->flags |= VM_VPAGES;
+ 	} else {
+-		pages = kmalloc_node(array_size,
+-				(gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO,
+-				node);
++		pages = kmalloc_node(array_size, nested_gfp, node);
+ 	}
+ 	area->pages = pages;
+ 	area->caller = caller;
 
-						- Ted
+
+
