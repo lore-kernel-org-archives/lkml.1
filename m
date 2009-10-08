@@ -1,78 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbZJHCJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757034AbZJHCTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757199AbZJHCJO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 22:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbZJHCJA
+	id S1757034AbZJHCTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 22:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZJHCTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 22:09:00 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45094 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756804AbZJHCI6 (ORCPT
+	Wed, 7 Oct 2009 22:19:20 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:56093 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756748AbZJHCTT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 22:08:58 -0400
-Message-Id: <20091008020700.433266812@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Wed, 07 Oct 2009 22:06:27 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 2/2] [PATCH 2/2] tracing: user local buffer variable for trace branch tracer
-References: <20091008020625.084181867@goodmis.org>
-Content-Disposition: inline; filename=0002-tracing-user-local-buffer-variable-for-trace-branch-.patch
+	Wed, 7 Oct 2009 22:19:19 -0400
+Date: Thu, 08 Oct 2009 11:18:41 +0900 (JST)
+Message-Id: <20091008.111841.226773827.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: nauman@google.com, m-ikeda@ds.jp.nec.com, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, agk@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com,
+       yoshikawa.takuya@oss.ntt.co.jp
+Subject: Re: IO scheduler based IO controller V10
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20091007150929.GB3674@redhat.com>
+References: <20091006112201.GA27866@redhat.com>
+	<20091007.233805.183040347.ryov@valinux.co.jp>
+	<20091007150929.GB3674@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+Hi Vivek,
 
-Just using the tr->buffer for the API to trace_buffer_lock_reserve
-is not good enough. This is because the tr->buffer may change, and we
-do not want to commit with a different buffer that we reserved from.
+Vivek Goyal <vgoyal@redhat.com> wrote:
+> Ok. Our numbers can vary a bit depending on fio settings like block size
+> and underlying storage also. But that's not the important thing. Currently
+> with this test I just wanted to point out that model of ioprio with-in group
+> is currently broken with dm-ioband and good that you can reproduce that.
+> 
+> One minor nit, for max latency you need to look at "clat " row and "max=" field
+> in fio output. Most of the time "max latency" will matter most. You seem to
+> be currently grepping for "maxt" which is just seems to be telling how
+> long did test run and in this case 30 seconds.
+> 
+> Assigning reads to right context in CFQ and not to dm-ioband thread might
+> help a bit, but I am bit skeptical and following is the reason.
+> 
+> CFQ relies on time providing longer time slice length for higher priority
+> process and if one does not use time slice, it looses its share. So the moment
+> you buffer even single bio of a process in dm-layer, if CFQ was servicing that
+> process at same time, that process will loose its share. CFQ will at max
+> anticipate for 8 ms and if buffering is longer than 8ms, CFQ will expire the
+> queue and move on to next queue. Later if you submit same bio and with
+> dm-ioband helper thread and even if CFQ attributes it to right process, it is
+> not going to help much as process already lost it slice and now a new slice
+> will start.
 
-This patch uses a local variable to hold the buffer that was used to
-reserve and commit with.
+O.K. I would like to figure something out this issue.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_branch.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+> > > > Be that as it way, I think that if every bio can point the iocontext
+> > > > of the process, then it makes it possible to handle IO priority in the
+> > > > higher level controller. A patchse has already posted by Takhashi-san.
+> > > > What do you think about this idea?
+> > > > 
+> > > >   Date Tue, 22 Apr 2008 22:51:31 +0900 (JST)
+> > > >   Subject [RFC][PATCH 1/10] I/O context inheritance
+> > > >   From Hirokazu Takahashi <>
+> > > >   http://lkml.org/lkml/2008/4/22/195
+> > > 
+> > > So far you have been denying that there are issues with ioprio with-in
+> > > group in higher level controller. Here you seems to be saying that there are
+> > > issues with ioprio and we need to take this patch in to solve the issue? I am
+> > > confused?
+> > 
+> > The true intention of this patch is to preserve the io-context of a
+> > process which originate it, but I think that we could also make use of
+> > this patch for one of the way to solve this issue.
+> > 
+> 
+> Ok. Did you run the same test with this patch applied and how do numbers look
+> like? Can you please forward port it to 2.6.31 and I will also like to
+> play with it?
 
-diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-index 216e2dd..4a194f0 100644
---- a/kernel/trace/trace_branch.c
-+++ b/kernel/trace/trace_branch.c
-@@ -34,6 +34,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- 	struct trace_array *tr = branch_tracer;
- 	struct ring_buffer_event *event;
- 	struct trace_branch *entry;
-+	struct ring_buffer *buffer;
- 	unsigned long flags;
- 	int cpu, pc;
- 	const char *p;
-@@ -54,7 +55,8 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- 		goto out;
- 
- 	pc = preempt_count();
--	event = trace_buffer_lock_reserve(tr->buffer, TRACE_BRANCH,
-+	buffer = tr->buffer;
-+	event = trace_buffer_lock_reserve(buffer, TRACE_BRANCH,
- 					  sizeof(*entry), flags, pc);
- 	if (!event)
- 		goto out;
-@@ -74,8 +76,8 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- 	entry->line = f->line;
- 	entry->correct = val == expect;
- 
--	if (!filter_check_discard(call, entry, tr->buffer, event))
--		ring_buffer_unlock_commit(tr->buffer, event);
-+	if (!filter_check_discard(call, entry, buffer, event))
-+		ring_buffer_unlock_commit(buffer, event);
- 
-  out:
- 	atomic_dec(&tr->data[cpu]->disabled);
--- 
-1.6.3.3
+I'm sorry, I have no time to do that this week. I would like to do the
+forward porting and test with it by the mini-summit when poissible.
 
+> I am running more tests/numbers with 2.6.31 for all the IO controllers and
+> planning to post it to lkml before we meet for IO mini summit. Numbers can
+> help us understand the issue better.
+> 
+> In first phase I am planning to post numbers for IO scheudler controller
+> and dm-ioband. Then will get to max bw controller of Andrea Righi.
 
+That sounds good. Thank you for your work.
+
+> > I created those patches against 2.6.32-rc1 and made sure the patches
+> > can be cleanly applied to that version.
+> 
+> I am applying dm-ioband patch first and then bio cgroup patches. Is this
+> right order? Will try again.
+
+Yes, the order is right. Here are the sha1sums.
+9f4e50878d77922c84a29be9913a8b5c3f66e6ec linux-2.6.32-rc1.tar.bz2
+15d7cc9d801805327204296a2454d6c5346dd2ae dm-ioband-1.14.0.patch
+5e0626c14a40c319fb79f2f78378d2de5cc97b02 blkio-cgroup-v13.tar.bz2
+
+Thanks,
+Ryo Tsuruta
