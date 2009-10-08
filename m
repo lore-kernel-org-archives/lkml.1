@@ -1,514 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbZJHKyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbZJHLBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757440AbZJHKyd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 06:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbZJHKyd
+	id S1757474AbZJHLBx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 07:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757104AbZJHLBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 06:54:33 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:44311 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755732AbZJHKyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 06:54:31 -0400
-Date: Thu, 8 Oct 2009 11:53:58 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: cl@linux-foundation.org
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [this_cpu_xx V6 1/7] this_cpu_ops: page allocator conversion
-Message-ID: <20091008105357.GC10004@csn.ul.ie>
-References: <20091007211024.442168959@gentwo.org> <20091007211052.229772418@gentwo.org>
+	Thu, 8 Oct 2009 07:01:52 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:60326 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753296AbZJHLBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 07:01:51 -0400
+Date: Thu, 8 Oct 2009 16:31:06 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
+	register a set of idle routines.
+Message-ID: <20091008110106.GK20595@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20091008094828.GA20595@linux.vnet.ibm.com> <20091008095027.GC20595@linux.vnet.ibm.com> <1254998162.26976.270.camel@twins> <20091008104249.GJ20595@linux.vnet.ibm.com> <1254999033.26976.272.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091007211052.229772418@gentwo.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1254999033.26976.272.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 05:10:25PM -0400, cl@linux-foundation.org wrote:
-> Use the per cpu allocator functionality to avoid per cpu arrays in struct zone.
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-08 12:50:33]:
+
+> On Thu, 2009-10-08 at 16:12 +0530, Arun R Bharadwaj wrote:
+> > 
+> > > So cpuidle didn't already have a list of idle functions it takes an
+> > > appropriate one from?
+> > > 
+> > 
+> > No.. As of now, cpuidle supported only one _set_ of idle states that
+> > can be registered. So in this one set, it would choose the appropriate
+> > idle state. But this list mechanism(actually a stack) allows for
+> > multiple sets.
+> > 
+> > This is needed because we have a hierarchy of idle states discovery
+> > in x86. First, select_idle_routine() would select poll/mwait/default/c1e.
+> > It doesn't know of existance of ACPI. Later when ACPI comes up,
+> > it registers a set of routines on top of the earlier set.
+> > 
+> > > Then what does this governor do?
+> > >
+> > 
+> > The governor would only select the best idle state available from the
+> > set of states which is at the top of the stack. (In the above case, it
+> > would only consider the states registered by ACPI).
+> > 
+> > If the top-of-the-stack set of idle states is unregistered, the next
+> > set of states on the stack are considered.
+> > 
+> > > Also, does this imply the governor doesn't consider these idle routines?
+> > >
+> > 
+> > As i said above, governor would only consider the idle routines which
+> > are at the top of the stack.
+> > 
+> > Hope this gave a better idea..
 > 
-> This drastically reduces the size of struct zone for systems with large
-> amounts of processors and allows placement of critical variables of struct
-> zone in one cacheline even on very large systems.
+> So does it make sense to have a set of sets?
 > 
-> Another effect is that the pagesets of one processor are placed near one
-> another. If multiple pagesets from different zones fit into one cacheline
-> then additional cacheline fetches can be avoided on the hot paths when
-> allocating memory from multiple zones.
-> 
-> Bootstrap becomes simpler if we use the same scheme for UP, SMP, NUMA. #ifdefs
-> are reduced and we can drop the zone_pcp macro.
-> 
-> Hotplug handling is also simplified since cpu alloc can bring up and
-> shut down cpu areas for a specific cpu as a whole. So there is no need to
-> allocate or free individual pagesets.
-> 
-> V4-V5:
-> - Fix up cases where per_cpu_ptr is called before irq disable
-> - Integrate the bootstrap logic that was separate before.
-> 
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> Why not integrate them all into one set to be ruled by this governor
+> thing?
 > 
 
-I haven't tested the patch series but it now looks good to my eyes at
-least. Thanks
+Right now there is a clean hierarchy. So breaking that would mean
+putting the registration of all idle routines under ACPI. So, if ACPI
+fails to come up or if ACPI is not supported, that would lead to
+problems. Because if that happens now, we can fallback to the
+initially registered set.
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+Also, if a module wants to register a set of routines later on, that
+cant be added to the initially registered set. So i think we need this
+set of sets.
 
-> ---
->  include/linux/mm.h     |    4 -
->  include/linux/mmzone.h |   12 ---
->  mm/page_alloc.c        |  187 ++++++++++++++++++-------------------------------
->  mm/vmstat.c            |   14 ++-
->  4 files changed, 81 insertions(+), 136 deletions(-)
-> 
-> Index: linux-2.6/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm.h	2009-10-07 14:34:25.000000000 -0500
-> +++ linux-2.6/include/linux/mm.h	2009-10-07 14:48:09.000000000 -0500
-> @@ -1061,11 +1061,7 @@ extern void si_meminfo(struct sysinfo * 
->  extern void si_meminfo_node(struct sysinfo *val, int nid);
->  extern int after_bootmem;
->  
-> -#ifdef CONFIG_NUMA
->  extern void setup_per_cpu_pageset(void);
-> -#else
-> -static inline void setup_per_cpu_pageset(void) {}
-> -#endif
->  
->  extern void zone_pcp_update(struct zone *zone);
->  
-> Index: linux-2.6/include/linux/mmzone.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mmzone.h	2009-10-07 14:34:25.000000000 -0500
-> +++ linux-2.6/include/linux/mmzone.h	2009-10-07 14:48:09.000000000 -0500
-> @@ -184,13 +184,7 @@ struct per_cpu_pageset {
->  	s8 stat_threshold;
->  	s8 vm_stat_diff[NR_VM_ZONE_STAT_ITEMS];
->  #endif
-> -} ____cacheline_aligned_in_smp;
-> -
-> -#ifdef CONFIG_NUMA
-> -#define zone_pcp(__z, __cpu) ((__z)->pageset[(__cpu)])
-> -#else
-> -#define zone_pcp(__z, __cpu) (&(__z)->pageset[(__cpu)])
-> -#endif
-> +};
->  
->  #endif /* !__GENERATING_BOUNDS.H */
->  
-> @@ -306,10 +300,8 @@ struct zone {
->  	 */
->  	unsigned long		min_unmapped_pages;
->  	unsigned long		min_slab_pages;
-> -	struct per_cpu_pageset	*pageset[NR_CPUS];
-> -#else
-> -	struct per_cpu_pageset	pageset[NR_CPUS];
->  #endif
-> +	struct per_cpu_pageset	*pageset;
->  	/*
->  	 * free areas of different sizes
->  	 */
-> Index: linux-2.6/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_alloc.c	2009-10-07 14:34:25.000000000 -0500
-> +++ linux-2.6/mm/page_alloc.c	2009-10-07 14:48:09.000000000 -0500
-> @@ -1011,10 +1011,10 @@ static void drain_pages(unsigned int cpu
->  		struct per_cpu_pageset *pset;
->  		struct per_cpu_pages *pcp;
->  
-> -		pset = zone_pcp(zone, cpu);
-> +		local_irq_save(flags);
-> +		pset = per_cpu_ptr(zone->pageset, cpu);
->  
->  		pcp = &pset->pcp;
-> -		local_irq_save(flags);
->  		free_pcppages_bulk(zone, pcp->count, pcp);
->  		pcp->count = 0;
->  		local_irq_restore(flags);
-> @@ -1098,7 +1098,6 @@ static void free_hot_cold_page(struct pa
->  	arch_free_page(page, 0);
->  	kernel_map_pages(page, 1, 0);
->  
-> -	pcp = &zone_pcp(zone, get_cpu())->pcp;
->  	migratetype = get_pageblock_migratetype(page);
->  	set_page_private(page, migratetype);
->  	local_irq_save(flags);
-> @@ -1121,6 +1120,7 @@ static void free_hot_cold_page(struct pa
->  		migratetype = MIGRATE_MOVABLE;
->  	}
->  
-> +	pcp = &this_cpu_ptr(zone->pageset)->pcp;
->  	if (cold)
->  		list_add_tail(&page->lru, &pcp->lists[migratetype]);
->  	else
-> @@ -1133,7 +1133,6 @@ static void free_hot_cold_page(struct pa
->  
->  out:
->  	local_irq_restore(flags);
-> -	put_cpu();
->  }
->  
->  void free_hot_page(struct page *page)
-> @@ -1183,17 +1182,15 @@ struct page *buffered_rmqueue(struct zon
->  	unsigned long flags;
->  	struct page *page;
->  	int cold = !!(gfp_flags & __GFP_COLD);
-> -	int cpu;
->  
->  again:
-> -	cpu  = get_cpu();
->  	if (likely(order == 0)) {
->  		struct per_cpu_pages *pcp;
->  		struct list_head *list;
->  
-> -		pcp = &zone_pcp(zone, cpu)->pcp;
-> -		list = &pcp->lists[migratetype];
->  		local_irq_save(flags);
-> +		pcp = &this_cpu_ptr(zone->pageset)->pcp;
-> +		list = &pcp->lists[migratetype];
->  		if (list_empty(list)) {
->  			pcp->count += rmqueue_bulk(zone, 0,
->  					pcp->batch, list,
-> @@ -1234,7 +1231,6 @@ again:
->  	__count_zone_vm_events(PGALLOC, zone, 1 << order);
->  	zone_statistics(preferred_zone, zone);
->  	local_irq_restore(flags);
-> -	put_cpu();
->  
->  	VM_BUG_ON(bad_range(zone, page));
->  	if (prep_new_page(page, order, gfp_flags))
-> @@ -1243,7 +1239,6 @@ again:
->  
->  failed:
->  	local_irq_restore(flags);
-> -	put_cpu();
->  	return NULL;
->  }
->  
-> @@ -2172,7 +2167,7 @@ void show_free_areas(void)
->  		for_each_online_cpu(cpu) {
->  			struct per_cpu_pageset *pageset;
->  
-> -			pageset = zone_pcp(zone, cpu);
-> +			pageset = per_cpu_ptr(zone->pageset, cpu);
->  
->  			printk("CPU %4d: hi:%5d, btch:%4d usd:%4d\n",
->  			       cpu, pageset->pcp.high,
-> @@ -2735,10 +2730,29 @@ static void build_zonelist_cache(pg_data
->  
->  #endif	/* CONFIG_NUMA */
->  
-> +/*
-> + * Boot pageset table. One per cpu which is going to be used for all
-> + * zones and all nodes. The parameters will be set in such a way
-> + * that an item put on a list will immediately be handed over to
-> + * the buddy list. This is safe since pageset manipulation is done
-> + * with interrupts disabled.
-> + *
-> + * The boot_pagesets must be kept even after bootup is complete for
-> + * unused processors and/or zones. They do play a role for bootstrapping
-> + * hotplugged processors.
-> + *
-> + * zoneinfo_show() and maybe other functions do
-> + * not check if the processor is online before following the pageset pointer.
-> + * Other parts of the kernel may not check if the zone is available.
-> + */
-> +static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch);
-> +static DEFINE_PER_CPU(struct per_cpu_pageset, boot_pageset);
-> +
->  /* return values int ....just for stop_machine() */
->  static int __build_all_zonelists(void *dummy)
->  {
->  	int nid;
-> +	int cpu;
->  
->  #ifdef CONFIG_NUMA
->  	memset(node_load, 0, sizeof(node_load));
-> @@ -2749,6 +2763,14 @@ static int __build_all_zonelists(void *d
->  		build_zonelists(pgdat);
->  		build_zonelist_cache(pgdat);
->  	}
-> +
-> +	/*
-> +	 * Initialize the boot_pagesets that are going to be used
-> +	 * for bootstrapping processors.
-> +	 */
-> +	for_each_possible_cpu(cpu)
-> +		setup_pageset(&per_cpu(boot_pageset, cpu), 0);
-> +
->  	return 0;
->  }
->  
-> @@ -3087,120 +3109,60 @@ static void setup_pagelist_highmark(stru
->  }
->  
->  
-> -#ifdef CONFIG_NUMA
-> -/*
-> - * Boot pageset table. One per cpu which is going to be used for all
-> - * zones and all nodes. The parameters will be set in such a way
-> - * that an item put on a list will immediately be handed over to
-> - * the buddy list. This is safe since pageset manipulation is done
-> - * with interrupts disabled.
-> - *
-> - * Some NUMA counter updates may also be caught by the boot pagesets.
-> - *
-> - * The boot_pagesets must be kept even after bootup is complete for
-> - * unused processors and/or zones. They do play a role for bootstrapping
-> - * hotplugged processors.
-> - *
-> - * zoneinfo_show() and maybe other functions do
-> - * not check if the processor is online before following the pageset pointer.
-> - * Other parts of the kernel may not check if the zone is available.
-> - */
-> -static struct per_cpu_pageset boot_pageset[NR_CPUS];
-> -
-> -/*
-> - * Dynamically allocate memory for the
-> - * per cpu pageset array in struct zone.
-> - */
-> -static int __cpuinit process_zones(int cpu)
-> -{
-> -	struct zone *zone, *dzone;
-> -	int node = cpu_to_node(cpu);
-> -
-> -	node_set_state(node, N_CPU);	/* this node has a cpu */
-> -
-> -	for_each_populated_zone(zone) {
-> -		zone_pcp(zone, cpu) = kmalloc_node(sizeof(struct per_cpu_pageset),
-> -					 GFP_KERNEL, node);
-> -		if (!zone_pcp(zone, cpu))
-> -			goto bad;
-> -
-> -		setup_pageset(zone_pcp(zone, cpu), zone_batchsize(zone));
-> -
-> -		if (percpu_pagelist_fraction)
-> -			setup_pagelist_highmark(zone_pcp(zone, cpu),
-> -			 	(zone->present_pages / percpu_pagelist_fraction));
-> -	}
-> -
-> -	return 0;
-> -bad:
-> -	for_each_zone(dzone) {
-> -		if (!populated_zone(dzone))
-> -			continue;
-> -		if (dzone == zone)
-> -			break;
-> -		kfree(zone_pcp(dzone, cpu));
-> -		zone_pcp(dzone, cpu) = &boot_pageset[cpu];
-> -	}
-> -	return -ENOMEM;
-> -}
-> -
-> -static inline void free_zone_pagesets(int cpu)
-> -{
-> -	struct zone *zone;
-> -
-> -	for_each_zone(zone) {
-> -		struct per_cpu_pageset *pset = zone_pcp(zone, cpu);
-> -
-> -		/* Free per_cpu_pageset if it is slab allocated */
-> -		if (pset != &boot_pageset[cpu])
-> -			kfree(pset);
-> -		zone_pcp(zone, cpu) = &boot_pageset[cpu];
-> -	}
-> -}
-> -
->  static int __cpuinit pageset_cpuup_callback(struct notifier_block *nfb,
->  		unsigned long action,
->  		void *hcpu)
->  {
->  	int cpu = (long)hcpu;
-> -	int ret = NOTIFY_OK;
->  
->  	switch (action) {
->  	case CPU_UP_PREPARE:
->  	case CPU_UP_PREPARE_FROZEN:
-> -		if (process_zones(cpu))
-> -			ret = NOTIFY_BAD;
-> -		break;
-> -	case CPU_UP_CANCELED:
-> -	case CPU_UP_CANCELED_FROZEN:
-> -	case CPU_DEAD:
-> -	case CPU_DEAD_FROZEN:
-> -		free_zone_pagesets(cpu);
-> +		node_set_state(cpu_to_node(cpu), N_CPU);
->  		break;
->  	default:
->  		break;
->  	}
-> -	return ret;
-> +	return NOTIFY_OK;
->  }
->  
->  static struct notifier_block __cpuinitdata pageset_notifier =
->  	{ &pageset_cpuup_callback, NULL, 0 };
->  
-> +/*
-> + * Allocate per cpu pagesets and initialize them.
-> + * Before this call only boot pagesets were available.
-> + * Boot pagesets will no longer be used by this processorr
-> + * after setup_per_cpu_pageset().
-> + */
->  void __init setup_per_cpu_pageset(void)
->  {
-> -	int err;
-> +	struct zone *zone;
-> +	int cpu;
-> +
-> +	for_each_populated_zone(zone) {
-> +		zone->pageset = alloc_percpu(struct per_cpu_pageset);
-> +
-> +		for_each_possible_cpu(cpu) {
-> +			struct per_cpu_pageset *pcp = per_cpu_ptr(zone->pageset, cpu);
-> +
-> +			setup_pageset(pcp, zone_batchsize(zone));
-> +
-> +			if (percpu_pagelist_fraction)
-> +				setup_pagelist_highmark(pcp,
-> +					(zone->present_pages /
-> +						percpu_pagelist_fraction));
-> +		}
-> +	}
->  
-> -	/* Initialize per_cpu_pageset for cpu 0.
-> -	 * A cpuup callback will do this for every cpu
-> -	 * as it comes online
-> +	/*
-> +	 * The boot cpu is always the first active.
-> +	 * The boot node has a processor
->  	 */
-> -	err = process_zones(smp_processor_id());
-> -	BUG_ON(err);
-> +	node_set_state(cpu_to_node(smp_processor_id()), N_CPU);
->  	register_cpu_notifier(&pageset_notifier);
->  }
->  
-> -#endif
-> -
->  static noinline __init_refok
->  int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
->  {
-> @@ -3254,7 +3216,7 @@ static int __zone_pcp_update(void *data)
->  		struct per_cpu_pageset *pset;
->  		struct per_cpu_pages *pcp;
->  
-> -		pset = zone_pcp(zone, cpu);
-> +		pset = per_cpu_ptr(zone->pageset, cpu);
->  		pcp = &pset->pcp;
->  
->  		local_irq_save(flags);
-> @@ -3272,21 +3234,13 @@ void zone_pcp_update(struct zone *zone)
->  
->  static __meminit void zone_pcp_init(struct zone *zone)
->  {
-> -	int cpu;
-> -	unsigned long batch = zone_batchsize(zone);
-> +	/* Use boot pagesets until we have the per cpu allocator up */
-> +	zone->pageset = &per_cpu_var(boot_pageset);
->  
-> -	for (cpu = 0; cpu < NR_CPUS; cpu++) {
-> -#ifdef CONFIG_NUMA
-> -		/* Early boot. Slab allocator not functional yet */
-> -		zone_pcp(zone, cpu) = &boot_pageset[cpu];
-> -		setup_pageset(&boot_pageset[cpu],0);
-> -#else
-> -		setup_pageset(zone_pcp(zone,cpu), batch);
-> -#endif
-> -	}
->  	if (zone->present_pages)
-> -		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%lu\n",
-> -			zone->name, zone->present_pages, batch);
-> +		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%u\n",
-> +			zone->name, zone->present_pages,
-> +					 zone_batchsize(zone));
->  }
->  
->  __meminit int init_currently_empty_zone(struct zone *zone,
-> @@ -4800,10 +4754,11 @@ int percpu_pagelist_fraction_sysctl_hand
->  	if (!write || (ret == -EINVAL))
->  		return ret;
->  	for_each_populated_zone(zone) {
-> -		for_each_online_cpu(cpu) {
-> +		for_each_possible_cpu(cpu) {
->  			unsigned long  high;
->  			high = zone->present_pages / percpu_pagelist_fraction;
-> -			setup_pagelist_highmark(zone_pcp(zone, cpu), high);
-> +			setup_pagelist_highmark(
-> +				per_cpu_ptr(zone->pageset, cpu), high);
->  		}
->  	}
->  	return 0;
-> Index: linux-2.6/mm/vmstat.c
-> ===================================================================
-> --- linux-2.6.orig/mm/vmstat.c	2009-10-07 14:34:25.000000000 -0500
-> +++ linux-2.6/mm/vmstat.c	2009-10-07 14:48:09.000000000 -0500
-> @@ -139,7 +139,8 @@ static void refresh_zone_stat_thresholds
->  		threshold = calculate_threshold(zone);
->  
->  		for_each_online_cpu(cpu)
-> -			zone_pcp(zone, cpu)->stat_threshold = threshold;
-> +			per_cpu_ptr(zone->pageset, cpu)->stat_threshold
-> +							= threshold;
->  	}
->  }
->  
-> @@ -149,7 +150,8 @@ static void refresh_zone_stat_thresholds
->  void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
->  				int delta)
->  {
-> -	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
-> +	struct per_cpu_pageset *pcp = this_cpu_ptr(zone->pageset);
-> +
->  	s8 *p = pcp->vm_stat_diff + item;
->  	long x;
->  
-> @@ -202,7 +204,7 @@ EXPORT_SYMBOL(mod_zone_page_state);
->   */
->  void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
->  {
-> -	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
-> +	struct per_cpu_pageset *pcp = this_cpu_ptr(zone->pageset);
->  	s8 *p = pcp->vm_stat_diff + item;
->  
->  	(*p)++;
-> @@ -223,7 +225,7 @@ EXPORT_SYMBOL(__inc_zone_page_state);
->  
->  void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
->  {
-> -	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
-> +	struct per_cpu_pageset *pcp = this_cpu_ptr(zone->pageset);
->  	s8 *p = pcp->vm_stat_diff + item;
->  
->  	(*p)--;
-> @@ -300,7 +302,7 @@ void refresh_cpu_vm_stats(int cpu)
->  	for_each_populated_zone(zone) {
->  		struct per_cpu_pageset *p;
->  
-> -		p = zone_pcp(zone, cpu);
-> +		p = per_cpu_ptr(zone->pageset, cpu);
->  
->  		for (i = 0; i < NR_VM_ZONE_STAT_ITEMS; i++)
->  			if (p->vm_stat_diff[i]) {
-> @@ -738,7 +740,7 @@ static void zoneinfo_show_print(struct s
->  	for_each_online_cpu(i) {
->  		struct per_cpu_pageset *pageset;
->  
-> -		pageset = zone_pcp(zone, i);
-> +		pageset = per_cpu_ptr(zone->pageset, i);
->  		seq_printf(m,
->  			   "\n    cpu: %i"
->  			   "\n              count: %i"
-> 
-> -- 
-> 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
