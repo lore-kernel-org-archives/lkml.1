@@ -1,126 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbZJHVma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbZJHVnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933041AbZJHVma (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 17:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbZJHVm3
+	id S1757499AbZJHVnk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 17:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757102AbZJHVni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 17:42:29 -0400
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:59923 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756023AbZJHVm2 (ORCPT
+	Thu, 8 Oct 2009 17:43:38 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:55494 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756023AbZJHVnh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 17:42:28 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+tOr/ArtLFRL3LZ+MM7xMZ
-Date: Thu, 8 Oct 2009 14:41:41 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       linux-omap@vger.kernel.org
-Subject: Re: [GIT PULL] omap fixes for v2.6.32-rc3
-Message-ID: <20091008214140.GJ7417@atomide.com>
-References: <20091007185112.GJ7899@atomide.com> <94a0d4530910081429m7ad88b43q38245109f3252078@mail.gmail.com>
+	Thu, 8 Oct 2009 17:43:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=gOrZhQK4R8PV4IAqqubuVTfMO8wkfFnUdSq0YrBBROOgUQQ7DmNH0mpYMRdpVeoSfK
+         lz+7ZNWxeoX2SqAWgG+Km/R/J7z6yUSCY1axaMMUrKCiFtBFVmFRtmFsq8rAeDsMROnH
+         2b4E3sL9+D3Lir8++t1e1H1bftTu2HqJiLM0M=
+Date: Thu, 8 Oct 2009 23:43:00 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 1/2] tracing: Check total refcount before releasing
+	bufs in profile_enable failure
+Message-ID: <20091008214258.GH5073@nowhere>
+References: <19140.13582.223629.56214@cargo.ozlabs.ibm.com> <1254577650-5623-2-git-send-email-fweisbec@gmail.com> <19148.1579.573095.98045@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <94a0d4530910081429m7ad88b43q38245109f3252078@mail.gmail.com>
+In-Reply-To: <19148.1579.573095.98045@cargo.ozlabs.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Felipe Contreras <felipe.contreras@gmail.com> [091008 14:29]:
-> On Wed, Oct 7, 2009 at 9:51 PM, Tony Lindgren <tony@atomide.com> wrote:
-> > Linus,
-> >
-> > Please pull omap fixes from:
-> >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-fixes-for-linus
-> >
-> > Regards,
-> >
-> > Tony
-> >
-> >
-> > The following changes since commit 374576a8b6f865022c0fd1ca62396889b23d66dd:
-> >  Linus Torvalds (1):
-> >        Linux 2.6.32-rc3
-> >
-> > are available in the git repository at:
-> >
-> >  git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git omap-fixes-for-linus
-> >
-> > Artem Bityutskiy (1):
-> >      OMAP3: PM: introduce a new powerdomain walk helper
-> >
-> > Daniel Walker (1):
-> >      omap: iovmm: Add missing mutex_unlock
-> >
-> > Hiroshi DOYU (1):
-> >      omap: iovmm: Fix incorrect spelling
-> >
-> > Jon Hunter (1):
-> >      OMAP3: PM: Prevent hang in prcm_interrupt_handler
-> >
-> > Kevin Hilman (1):
-> >      OMAP3: PM: Enable GPIO module-level wakeups
-> >
-> > Paul Walmsley (2):
-> >      OMAP3: PM: PRCM interrupt: check MPUGRPSEL register
-> >      OMAP3: PM: PRCM interrupt: only handle selected PRCM interrupts
-> >
-> > Rajendra Nayak (1):
-> >      omap: Lock DPLL5 at boot
-> >
-> > Sergio Aguirre (1):
-> >      omapfb: Condition mutex acquisition
-> >
-> > Tommi Rantala (2):
-> >      omapfb: Blizzard: fix pointer to be const
-> >      omapfb: Blizzard: constify register address tables
-> >
-> > Tony Lindgren (2):
-> >      omap: Fix incorrect 730 vs 850 detection
-> >      Merge branch 'pm-fixes-32' of git://git.kernel.org/.../khilman/linux-omap-pm into omap-fixes-for-linus
-> >
-> > Vikram Pandita (1):
-> >      OMAP3: PM: USBHOST: clear wakeup events on both hosts
-> >
-> > ye janboe (1):
-> >      omap: SRAM: flush the right address after memcpy in omap_sram_push
+On Wed, Oct 07, 2009 at 02:08:27PM +1100, Paul Mackerras wrote:
+> Frederic Weisbecker writes:
 > 
-> The beagleboard is still not booting for me with this branch, I need
-> to add these two patches:
+> > When we call the profile_enable() callback of an event, we release the
+> > shared perf event tracing buffers unconditionnaly in the failure path.
+> > This is wrong because there may be other users of these. Then check the
+> > total refcount before doing this.
 > 
-> * http://patchwork.kernel.org/patch/50721/
+> [snip]
 > 
+> > -	kfree(trace_profile_buf_nmi);
+> >  fail_buf_nmi:
+> > -	kfree(trace_profile_buf);
+> > +	if (!total_profile_count) {
+> 
+> A small problem here: total_profile_count will be 1, not 0, in the
+> case where we need to free...
+> 
+> > +		kfree(trace_profile_buf_nmi);
+> > +		kfree(trace_profile_buf);
+> > +		trace_profile_buf_nmi = NULL;
+> > +		trace_profile_buf = NULL;
+> > +	}
+> >  fail_buf:
+> > -	total_profile_count--;
+> 
+> since we don't decrement total_profile_count until here.
+> 
+> Paul.
 
-This should go to the mainline kernel via Samuel as it's
-drivers/mfd related.
 
-> This one is needed because the defconfig has:
-> CONFIG_TWL4030_USB=y
-> 
-> * http://patchwork.kernel.org/patch/50970/
-> 
-> This is needed because most people boot from an MMC.
+No, because now we only increment total_profile_count if
+nothing has failed. This is even the last thing done
+in the succeeded path. So if we fail and need to free, it
+means its values is still 0.
 
-And this should go in via the mmc list.
-
-So little more patience is still needed :)
-
-Cheers,
-
-Tony
-
-> 
-> You can add my 'tested-by' line if you want.
-> 
-> Cheers.
-> 
-> -- 
-> Felipe Contreras
