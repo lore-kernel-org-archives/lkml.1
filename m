@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbZJHQTL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932399AbZJHQNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758740AbZJHQTL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 12:19:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbZJHQTK
+	id S932399AbZJHQNA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 12:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbZJHQNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 12:19:10 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:51122 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757892AbZJHQTJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 12:19:09 -0400
-Date: Thu, 8 Oct 2009 12:11:48 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>,
-       Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
-Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
- interrupt disable
-In-Reply-To: <1254988350.26976.256.camel@twins>
-Message-ID: <alpine.DEB.1.10.0910081211050.21951@gentwo.org>
-References: <20091006233654.815079668@gentwo.org>  <20091006233733.153341605@gentwo.org> <20091007025440.GB4664@Krystal>  <1254906707.26976.225.camel@twins> <20091007124628.GB27363@Krystal>  <alpine.DEB.1.10.0910071039520.5671@gentwo.org>  <20091007150257.GA8508@Krystal>
-  <alpine.DEB.1.10.0910071102590.9984@gentwo.org>  <20091007151940.GA10052@Krystal>  <alpine.DEB.1.10.0910071119450.9296@gentwo.org> <1254988350.26976.256.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 8 Oct 2009 12:13:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:40493 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753932AbZJHQM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 12:12:59 -0400
+Message-ID: <4ACE0F6C.3060103@redhat.com>
+Date: Thu, 08 Oct 2009 18:12:28 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/9] KVM: SVM: Notify nested hypervisor of lost event
+ injections
+References: <1254996199-17667-1-git-send-email-joerg.roedel@amd.com> <1254996199-17667-2-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1254996199-17667-2-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Oct 2009, Peter Zijlstra wrote:
-
-> > 	preempt_enable_no_sched()
+On 10/08/2009 12:03 PM, Joerg Roedel wrote:
+> From: Alexander Graf<agraf@suse.de>
 >
-> NACK, delaying the reschedule is not an option
+> If event_inj is valid on a #vmexit the host CPU would write
+> the contents to exit_int_info, so the hypervisor knows that
+> the event wasn't injected.
+>
+> We don't do this in nested SVM by now which is a bug and
+> fixed by this patch.
+>    
 
-I ended up just doing a preempt_disable() at the beginning and a
-preempt_disable() at the end. That should be easily reviewable.
+We need to start thinking about regression tests for these bugs.  It 
+would be relatively easy to set up something with save->cr3 == cr3 (i.e. 
+no isolation, mmu virtualization, etc.).
+
+
+-- 
+error compiling committee.c: too many arguments to function
 
