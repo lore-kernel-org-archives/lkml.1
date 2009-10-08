@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbZJHIU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757896AbZJHMWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585AbZJHIU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 04:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZJHIU3
+	id S1757896AbZJHMWg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 08:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757659AbZJHMWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 04:20:29 -0400
-Received: from smtp.ispras.ru ([83.149.198.201]:47772 "EHLO smtp.ispras.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755279AbZJHIU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 04:20:27 -0400
-From: Alexander Strakh <strakh@ispras.ru>
-Organization: ISP RAS
-To: Benjamin Kong <benjamin_kong@ali.com.tw>, Samuel Ortiz <samuel@sortiz.org>,
-       rda-users@lists.sourceforge.net,
-       Linux Kernlel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [BUG] ali-ircc.c sleeping function called from invalid context
-Date: Thu, 8 Oct 2009 12:22:29 +0000
-User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 8 Oct 2009 08:22:35 -0400
+Received: from viefep15-int.chello.at ([62.179.121.35]:37030 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757597AbZJHMWe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 08:22:34 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
+ register a set of idle routines.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <20091008120120.GL20595@linux.vnet.ibm.com>
+References: <20091008094828.GA20595@linux.vnet.ibm.com>
+	 <20091008095027.GC20595@linux.vnet.ibm.com>
+	 <1254998162.26976.270.camel@twins>
+	 <20091008104249.GJ20595@linux.vnet.ibm.com>
+	 <1254999033.26976.272.camel@twins>
+	 <20091008110106.GK20595@linux.vnet.ibm.com>
+	 <1255001110.26976.292.camel@twins>
+	 <20091008120120.GL20595@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 08 Oct 2009 14:25:37 +0200
+Message-Id: <1255004737.26976.307.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910081222.29956.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	KERNEL_VERSION: 2.6.31
-	DESCRIBE:
-Driver reports/drivers/net/irda/ali-ircc.c might sleep in attomic context, 
-because it calls ali_ircc_change_speed after spin_lock_irqsave:
+On Thu, 2009-10-08 at 17:31 +0530, Arun R Bharadwaj wrote:
+> 
+> > Uhm, no, it would mean ACPI putting its idle routines on the same level
+> > as all others.
+> > 
+> 
+> Putting them all on the same level would mean, we need an
+> enable/disable routine to enable only the currently active routines.
 
-drivers/net/irda/ali-ircc.c:
-2028static int ali_ircc_net_ioctl(struct net_device *dev, struct ifreq *rq, 
-int cmd)
-...
-2056                spin_lock_irqsave(&self->lock, flags);
-2057                ali_ircc_change_speed(self, irq->ifr_baudrate);         
-...
+What's this enable/disable stuff about?
 
-Path to might_sleep macro from ali_ircc_change_speed:
-1. ali_ircc_change_speed calls ali_ircc_sir_change_speed 
-./drivers/net/irda/ali-ircc.c:999
-2. ali_ircc_sir_change_speed calls spin_lock_irqsave at 
-./drivers/net/irda/ali-ircc.c:1084
+> Also, the way governor works is that, it assumes that idle routines
+> are indexed in the increasing order of power benefit that can be got
+> out of the state. So this would get messed up.
 
-Found by: Linux Driver Verification
+Right, which is why I initially had a power-savings field in my
+proposal, so it could weight the power savings vs the wakeup latency.
+
+  http://lkml.org/lkml/2009/8/27/159
+
+There it was said that was exactly what these governors were doing,
+seems its not.
+
+> > Sounds like something is wrong alright. If you can register an idle
+> > routine you should be able to unregister it too.
+> >
+> 
+> Yes, we can register and unregister in a clean way now.
+> Consider this. We have a set of routines A, B, C currently registered.
+> Now a module comes and registers D and E, and later on at some point
+> of time wants to unregister. So how do you keep track of what all idle
+> routines the module registered and unregister only those?
+> Best way to do that is a stack, which is how I have currently
+> implemented.
+
+Right, so destroy that inner set thing, that way we only have one
+left ;-)
 
