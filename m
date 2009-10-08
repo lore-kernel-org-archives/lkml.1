@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbZJHJWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbZJHJYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756469AbZJHJWg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 05:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbZJHJWg
+	id S1756619AbZJHJYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 05:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756277AbZJHJYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 05:22:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56693 "EHLO hera.kernel.org"
+	Thu, 8 Oct 2009 05:24:48 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:16811 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755983AbZJHJWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 05:22:35 -0400
-Message-ID: <4ACDAF18.2030705@kernel.org>
-Date: Thu, 08 Oct 2009 18:21:28 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH suspend-2.6#linux-next] PM / freezer: add missing include
-References: <20091008153051.37f043fa.sfr@canb.auug.org.au>
-In-Reply-To: <20091008153051.37f043fa.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 08 Oct 2009 09:21:34 +0000 (UTC)
+	id S1756168AbZJHJYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 05:24:48 -0400
+Date: Thu, 8 Oct 2009 05:23:53 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ben Woodard <bwoodard@llnl.gov>, David Howells <dhowells@redhat.com>,
+       akpm@linux-foundation.org, Brian Behlendorf <behlendorf1@llnl.gov>,
+       Amerigo Wang <amwang@redhat.com>
+Message-Id: <20091008092632.7101.62229.sendpatchset@localhost.localdomain>
+Subject: [Patch v4] rwsem: fix rwsem_is_locked() bugs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix compile failure caused by a48145a7cbf3b0555ba3ad61aaf2c38719bab95d
-forgetting to include delay.h.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+rwsem_is_locked() tests ->activity without locks, so we should always
+keep ->activity consistent. However, the code in __rwsem_do_wake()
+breaks this rule, it updates ->activity after _all_ readers waken up,
+this may give some reader a wrong ->activity value, thus cause
+rwsem_is_locked() behaves wrong.
+
+Quote from Andrew:
+
+"
+- we have one or more processes sleeping in down_read(), waiting for access.
+
+- we wake one or more processes up without altering ->activity
+
+- they start to run and they do rwsem_is_locked().  This incorrectly
+  returns "false", because the waker process is still crunching away in
+  __rwsem_do_wake().
+
+- the waker now alters ->activity, but it was too late.
+"
+
+So we need get a spinlock to protect this. And rwsem_is_locked()
+should not block, thus we use spin_trylock.
+
+Reported-by: Brian Behlendorf <behlendorf1@llnl.gov>
+Cc: Ben Woodard <bwoodard@llnl.gov>
+Cc: David Howells <dhowells@redhat.com>
+Signed-off-by: WANG Cong <amwang@redhat.com>
+
 ---
- kernel/power/process.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index 66161f0..5ade1bd 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -14,6 +14,7 @@
- #include <linux/module.h>
- #include <linux/syscalls.h>
- #include <linux/freezer.h>
-+#include <linux/delay.h>
+diff --git a/include/linux/rwsem-spinlock.h b/include/linux/rwsem-spinlock.h
+index 6c3c0f6..fb7efcb 100644
+--- a/include/linux/rwsem-spinlock.h
++++ b/include/linux/rwsem-spinlock.h
+@@ -71,7 +71,13 @@ extern void __downgrade_write(struct rw_semaphore *sem);
  
- /* 
-  * Timeout for stopping processes
+ static inline int rwsem_is_locked(struct rw_semaphore *sem)
+ {
+-	return (sem->activity != 0);
++	int ret = 1;
++
++	if (spin_trylock_irq(&sem->wait_lock)) {
++		ret = (sem->activity != 0);
++		spin_unlock_irq(&sem->wait_lock);
++	}
++	return ret;
+ }
+ 
+ #endif /* __KERNEL__ */
+diff --git a/lib/rwsem-spinlock.c b/lib/rwsem-spinlock.c
+index 9df3ca5..ec7804e 100644
+--- a/lib/rwsem-spinlock.c
++++ b/lib/rwsem-spinlock.c
+@@ -82,6 +82,10 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wakewrite)
+ 	while (waiter->flags & RWSEM_WAITING_FOR_READ) {
+ 		struct list_head *next = waiter->list.next;
+ 
++		/*
++		 * Since rwsem_is_locked() reads ->activity with spinlock,
++		 * not updating ->activity here is fine.
++		 */
+ 		list_del(&waiter->list);
+ 		tsk = waiter->task;
+ 		smp_mb();
