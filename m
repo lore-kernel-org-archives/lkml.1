@@ -1,136 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZJHGYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbZJHG3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbZJHGYP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 02:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbZJHGYO
+	id S1754121AbZJHG3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 02:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZJHG3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 02:24:14 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35590 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751056AbZJHGYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 02:24:13 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+s7iwxoL6sFmuc4rX2ohJajVr/vZSYu7aoOjj4EF
-	kDoZAC9jOssBWf
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
- CPU"
-From: Mike Galbraith <efault@gmx.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <1254974743.7797.21.camel@marge.simson.net>
-References: <200910051500.55875.elendil@planet.nl>
-	 <200910061749.02805.elendil@planet.nl>
-	 <200910071910.53907.elendil@planet.nl>
-	 <200910072034.57511.elendil@planet.nl>
-	 <1254974743.7797.21.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Thu, 08 Oct 2009 08:23:23 +0200
-Message-Id: <1254983003.14810.13.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+	Thu, 8 Oct 2009 02:29:19 -0400
+Received: from mga14.intel.com ([143.182.124.37]:27290 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752851AbZJHG3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 02:29:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,524,1249282800"; 
+   d="scan'208";a="196420804"
+Date: Thu, 8 Oct 2009 14:28:09 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Myklebust Trond <Trond.Myklebust@netapp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 18/45] writeback: introduce wait queue for
+	balance_dirty_pages()
+Message-ID: <20091008062808.GA24939@localhost>
+References: <20091007073818.318088777@intel.com> <20091007074903.422089703@intel.com> <20091008100159.fb6770cf.kamezawa.hiroyu@jp.fujitsu.com> <20091008015822.GB14224@localhost> <20091008114037.56f78b0e.kamezawa.hiroyu@jp.fujitsu.com> <20091008040136.GA30292@localhost> <20091008145907.7f1799ca.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091008145907.7f1799ca.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 06:05 +0200, Mike Galbraith wrote:
-> On Wed, 2009-10-07 at 20:34 +0200, Frans Pop wrote:
-> > On Wednesday 07 October 2009, Frans Pop wrote:
-> > > On Tuesday 06 October 2009, Frans Pop wrote:
-> > > > I've checked for 2.6.31.1 now and iwlagn is listed high there too when
-> > > > the system is idle, but with normal values of 60-100 ms. And phy0 has
-> > > > normal values of below 10 ms.
-> > > > I've now rebooted with today's mainline git; phy0 now frequently shows
-> > > > with values of around 100 ms too (i.e. higher than last time).
-> > >
-> > > Mike privately sent me a script to try to capture the latencies with
-> > > perf, but the perf output does not show any high latencies at all. It
-> > > looks as if we may have found a bug in latencytop here instead.
+On Thu, Oct 08, 2009 at 01:59:07PM +0800, KAMEZAWA Hiroyuki wrote:
+> On Thu, 8 Oct 2009 12:01:36 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > On Thu, Oct 08, 2009 at 10:40:37AM +0800, KAMEZAWA Hiroyuki wrote:
+> > > Thank you for clarification.
+> > > Then, hmm, %iotwait (which 'top' shows) didn't work as desgined and we need
+> > > to update throttle_vm_writeout() and some in vmscan.c. Thanks for input.
 > > 
-> > Not sure if it's relevant nor what it means, but I frequently see two lines 
-> > for iwlagn, e.g:
+> > Thanks, you also reminds me to do io_schedule() in the nfs writeback
+> > wait queue :)
 > > 
-> >     Scheduler: waiting for cpu              102.4 msec         99.7 %
-> >     .                                         3.3 msec          0.3 %
+> good side effect ;)
+> 
+> > > BTW, I'm glad if I can know "how many threads/ios are throttoled now" per bdi.
 > > 
-> > I get the same results with both latencytop 0.4 and 0.5.
+> > Good suggestion. How about this patch?
+> > 
 > 
-> OK, I see latencytop spikes here on an idle box too, to the tune of up
-> to a _second_.  Booting with nohz=off seems to have cured it.
-> 
-> I wanted to see if that's also the perf sched record -C N trouble I
-> warned you not to try when recording with script, but unfortunately,
-> after pulling this morning...
-> 
-> marge:/root/tmp # perf sched lat --sort=max
-> Segmentation fault
-> 
-> ...perf sched got busted.  Seems likely to be same thing for both
-> though, as magnitude/frequency of bogons is very similar.
+> Seems attractive. 
+> Hmm..
+> ==
+> struct dirty_throttle_task {
+> +	pid_t	owner_pid;
+> ==
+> and show it ? (too verbose ?
 
-Reverting problematic commit showed that nohz isn't the source of perf
-sched record -C N oddity.
-
-However, aside from latencytop seemingly having trouble with nohz, there
-appears to be a problem with perf sched record -a as well, the same one
-Arjan just fixed for perf timechart.
-
-In thread - [PATCH] perf timechart: Work around commit 42e59d7d19dc4b4,
-Arjan said..
-<quote>
-Commit 42e59d7d19dc4b4 introduced a sample frequency framework..
-.. however it unfortunately changed how perf events get recorded,..
-</quote>
-
-Monkey see monkey (eep) do, and record mostly idle box, only amarok
-doing it's thing...
-
-Before:
-marge:/root/tmp # perf sched record sleep 1
-[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 0.279 MB perf.data (~12208 samples) ]
-
-After:
-marge:/root/tmp # perf sched record sleep 1
-[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 0.649 MB perf.data (~28349 samples) ]
-
-
-perf_counter tools: make perf sched pass -F 0 to record
-
-Commit 42e59d7d19dc4b4 introduced a sample frequency framework..
-.. however it unfortunately changed how perf events get recorded,
-and caused sched to miss events.
-
-This patch causes the sched code to use -F 0 to not use the
-new framework when recording sched data.
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
+Not all all, added comm too :)
 
 ---
- tools/perf/builtin-sched.c |    1 +
- 1 file changed, 1 insertion(+)
+writeback: show per-bdi throttled tasks
 
-Index: linux-2.6/tools/perf/builtin-sched.c
-===================================================================
---- linux-2.6.orig/tools/perf/builtin-sched.c
-+++ linux-2.6/tools/perf/builtin-sched.c
-@@ -1902,6 +1902,7 @@ static const char *record_args[] = {
- 	"-f",
- 	"-m", "1024",
- 	"-c", "1",
-+	"-F", "0",
- 	"-e", "sched:sched_switch:r",
- 	"-e", "sched:sched_stat_wait:r",
- 	"-e", "sched:sched_stat_sleep:r",
+All currently throttled tasks will be listed, showing the pages to
+writeback for them, and total wait time since blocked.
+
+	# cat /debug/bdi/0:16/throttle_list
+	goal=768kb      waited=36ms     pid=3551        comm=cp
 
 
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/fs-writeback.c           |    6 +++--
+ include/linux/backing-dev.h |    3 ++
+ mm/backing-dev.c            |   35 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 42 insertions(+), 2 deletions(-)
 
+--- linux.orig/include/linux/backing-dev.h	2009-10-08 12:37:13.000000000 +0800
++++ linux/include/linux/backing-dev.h	2009-10-08 14:10:44.000000000 +0800
+@@ -101,6 +101,7 @@ struct backing_dev_info {
+ #ifdef CONFIG_DEBUG_FS
+ 	struct dentry *debug_dir;
+ 	struct dentry *debug_stats;
++	struct dentry *debug_throttle;
+ #endif
+ };
+ 
+@@ -116,6 +117,8 @@ struct backing_dev_info {
+ #define DIRTY_THROTTLE_PAGES_STOP	(1 << 22)
+ 
+ struct dirty_throttle_task {
++	struct task_struct	*sleeper;
++	unsigned long		start_time;
+ 	long			nr_pages;
+ 	struct list_head	list;
+ 	struct completion	complete;
+--- linux.orig/mm/backing-dev.c	2009-10-08 12:37:42.000000000 +0800
++++ linux/mm/backing-dev.c	2009-10-08 14:12:35.000000000 +0800
+@@ -115,6 +115,25 @@ static int bdi_debug_stats_show(struct s
+ 	return 0;
+ }
+ 
++static int bdi_debug_throttle_show(struct seq_file *m, void *v)
++{
++	struct backing_dev_info *bdi = m->private;
++	struct dirty_throttle_task *tt;
++	unsigned long flags;
++
++	spin_lock_irqsave(&bdi->throttle_lock, flags);
++	list_for_each_entry(tt, &bdi->throttle_list, list) {
++		seq_printf(m, "goal=%lukb\twaited=%lums\tpid=%d\tcomm=%s\n",
++			   tt->nr_pages << (PAGE_SHIFT - 10),
++			   (jiffies - tt->start_time) * 1000 / HZ,
++			   tt->sleeper->pid,
++			   tt->sleeper->comm);
++	}
++	spin_unlock_irqrestore(&bdi->throttle_lock, flags);
++
++	return 0;
++}
++
+ static int bdi_debug_stats_open(struct inode *inode, struct file *file)
+ {
+ 	return single_open(file, bdi_debug_stats_show, inode->i_private);
+@@ -127,15 +146,31 @@ static const struct file_operations bdi_
+ 	.release	= single_release,
+ };
+ 
++static int bdi_debug_throttle_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, bdi_debug_throttle_show, inode->i_private);
++}
++
++static const struct file_operations bdi_debug_throttle_fops = {
++	.open		= bdi_debug_throttle_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
+ static void bdi_debug_register(struct backing_dev_info *bdi, const char *name)
+ {
+ 	bdi->debug_dir = debugfs_create_dir(name, bdi_debug_root);
+ 	bdi->debug_stats = debugfs_create_file("stats", 0444, bdi->debug_dir,
+ 					       bdi, &bdi_debug_stats_fops);
++	bdi->debug_throttle = debugfs_create_file("throttle_list", 0444,
++						  bdi->debug_dir, bdi,
++						  &bdi_debug_throttle_fops);
+ }
+ 
+ static void bdi_debug_unregister(struct backing_dev_info *bdi)
+ {
++	debugfs_remove(bdi->debug_throttle);
+ 	debugfs_remove(bdi->debug_stats);
+ 	debugfs_remove(bdi->debug_dir);
+ }
+--- linux.orig/fs/fs-writeback.c	2009-10-08 12:37:24.000000000 +0800
++++ linux/fs/fs-writeback.c	2009-10-08 14:10:51.000000000 +0800
+@@ -284,8 +284,10 @@ static void bdi_calc_write_bandwidth(str
+ void bdi_writeback_wait(struct backing_dev_info *bdi, long nr_pages)
+ {
+ 	struct dirty_throttle_task tt = {
+-		.nr_pages = nr_pages,
+-		.complete = COMPLETION_INITIALIZER_ONSTACK(tt.complete),
++		.sleeper	= current,
++		.start_time	= jiffies,
++		.nr_pages	= nr_pages,
++		.complete	= COMPLETION_INITIALIZER_ONSTACK(tt.complete),
+ 	};
+ 	unsigned long flags;
+ 
