@@ -1,48 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933524AbZJHXKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933087AbZJHXCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933524AbZJHXKg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 19:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759629AbZJHXKf
+	id S933087AbZJHXCr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 19:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757780AbZJHXCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 19:10:35 -0400
-Received: from kroah.org ([198.145.64.141]:34461 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757298AbZJHXKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 19:10:33 -0400
-Date: Thu, 8 Oct 2009 15:58:38 -0700
-From: Greg KH <greg@kroah.com>
-To: Nitin Gupta <ngupta@vflare.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
-Subject: Re: [PATCH 3/3] documentation
-Message-ID: <20091008225838.GA31046@kroah.com>
-References: <1253595414-2855-1-git-send-email-ngupta@vflare.org>
- <1253595414-2855-4-git-send-email-ngupta@vflare.org>
- <20091008225724.GB22949@kroah.com>
+	Thu, 8 Oct 2009 19:02:45 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:39287 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757762AbZJHXCo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 19:02:44 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: linux-uvc-devel@lists.berlios.de
+Subject: Re: [Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech Quickcam for Notebooks Pro
+Date: Fri, 9 Oct 2009 01:04:26 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31.1; KDE/4.3.1; x86_64; ; )
+Cc: Ondrej Zary <linux@rainbow-software.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+References: <200910061607.07195.linux@rainbow-software.org> <200910071459.43622.linux@rainbow-software.org>
+In-Reply-To: <200910071459.43622.linux@rainbow-software.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091008225724.GB22949@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910090104.26371.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 03:57:24PM -0700, Greg KH wrote:
-> On Tue, Sep 22, 2009 at 10:26:54AM +0530, Nitin Gupta wrote:
-> > Short guide on how to setup and use ramzswap.
+Hi Ondrej,
+
+On Wednesday 07 October 2009 14:59:40 Ondrej Zary wrote:
+> On Tuesday 06 October 2009, Ondrej Zary wrote:
+> > Hello,
+> > I have a Logitech Quickcam for Notebooks Pro camera (046d:08c3) which
+> > just does not work even with kernel 2.6.31 and has never worked well
+> > before.
+> >
+> > On http://linux-uvc.berlios.de/, there are two problems listed. I want to
+> > really fix these two problems so the camera will just work after plugging
+> > in (and not disconnect). I started with problem no. 2 as this causes the
+> > camera not to work at all when plugged in:
+> >
+> > usb 5-2.4: new high speed USB device using ehci_hcd and address 7
+> > usb 5-2.4: configuration #1 chosen from 1 choice
+> > uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c3)
+> > uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+> > workaround.
+> > uvcvideo: Failed to query (129) UVC probe control : -110 (exp. 26).
+> > uvcvideo: Failed to initialize the device (-5).
+> >
+> > When I do "modprobe snd_usb_audio", then "rmmod snd_usb_audio" and
+> > finally "modprobe uvcvideo", it works. So it looks like snd_usb_audio
+> > does some initialization that allows uvcvideo to work. It didn't work at
+> > all I didn't have snd_usb_audio module compiled.
+> >
+> > What was the change that supposedly broke this in 2.6.22?
 > 
-> Can you also send a patch that adds a drivers/staging/ramzswap/TODO file
-> that follows the format of the other drivers/staging/*/TODO file
-> describing what is needed to be done to get the code merged into the
-> main kernel tree?
+> I discovered that it's not related to usb audio at all. Doing "rmmod
+>  uvcvideo" and "modprobe uvcvideo" repeatedly succeeded after a couple of
+>  tries. Increasing UVC_CTRL_STREAMING_TIMEOUT to 3000 helped (2000 was not
+>  enough).
+> 
+> 
+> Increase UVC_CTRL_STREAMING_TIMEOUT to fix initialization of
+> Logitech Quickcam for Notebooks Pro.
+> This fixes following error messages:
+> uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+>  workaround. uvcvideo: Failed to query (129) UVC probe control : -110 (exp.
+>  26). uvcvideo: Failed to initialize the device (-5).
+> 
+> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+> 
+> --- linux-2.6.31-orig/drivers/media/video/uvc/uvcvideo.h	2009-09-10
+>  00:13:59.000000000 +0200 +++
+>  linux-2.6.31/drivers/media/video/uvc/uvcvideo.h	2009-10-07
+>  13:47:27.000000000 +0200 @@ -304,7 +304,7 @@
+>  #define UVC_MAX_STATUS_SIZE	16
+> 
+>  #define UVC_CTRL_CONTROL_TIMEOUT	300
+> -#define UVC_CTRL_STREAMING_TIMEOUT	1000
+> +#define UVC_CTRL_STREAMING_TIMEOUT	3000
+> 
+>  /* Devices quirks */
+>  #define UVC_QUIRK_STATUS_INTERVAL	0x00000001
+> 
 
-Doh, nevermind, you already did that.
+Thanks for the patch. I wonder if it will help other Logitech users.
 
-stupid me...
+The UVC specification unfortunately doesn't give a time boundary for answering 
+streaming requests, so that's up to the developers. I'm pretty sure we will 
+find at least one webcam model that will require 3001ms at some point :-)
 
-greg k-h
+I was thinking about adding a module parameter to set the streaming control 
+timeout. I'm not sure what the default value should be though. What's your 
+opinion on this ? If we decide to increase the default value, where should we 
+stop ?
+
+-- 
+Regards,
+
+Laurent Pinchart
