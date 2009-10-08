@@ -1,33 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933176AbZJHXG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933279AbZJHXIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933176AbZJHXG5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 19:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932913AbZJHXG4
+	id S933279AbZJHXIx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 19:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933000AbZJHXIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 19:06:56 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:41378 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932902AbZJHXG4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 19:06:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=YztuLFv2gTuEvJWsx2m4JESIEbA1GnpNJdTfbJZBRn6bR1z5fQBOnHGeczSEkiu46Q
-         QvPG+xFTmE1TsHz/023KuF3cR27qPI8FXi0sKhgKCHt+uN+oUjBrVk9l/nw9pO5CHAO1
-         9pWSMgDMatQ3dIYOqtIWTgZyH61je5mFocS+k=
+	Thu, 8 Oct 2009 19:08:51 -0400
+Received: from bu3sch.de ([62.75.166.246]:59922 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932977AbZJHXIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 19:08:50 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: pull request: wireless-2.6 2009-10-08
+Date: Fri, 9 Oct 2009 01:08:06 +0200
+User-Agent: KMail/1.9.9
+Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20091008223454.GB2798@tuxdriver.com>
+In-Reply-To: <20091008223454.GB2798@tuxdriver.com>
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Date: Fri, 9 Oct 2009 01:05:48 +0200
-Message-ID: <f188924b0910081605i6f5cc1c3ibb4cfe6b17543521@mail.gmail.com>
-Subject: Microsoft is planning Windows 8 to be 128-bit
-From: "Fred ." <eldmannen@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910090108.08838.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So I heard that Microsoft is now planning Windows 8 to be 128-bit.
+On Friday 09 October 2009 00:34:54 John W. Linville wrote:
+> Albert Herranz (1):
+>       b43: do not stack-allocate pio rx/tx header and tail buffers
 
-So what do guys think about this?
-And what are you going to do about it?
+Come on, this is _not_ funny anymore. I did _not_ ack this patch, because I do _not_ like it.
+I was planning to do a better solution, but I didn't have the time, yet.
+Can you _please_ either:
+- Wait for my ack before you apply random b43 patches
+or
+- Remove me from MAINTAINERS
+
+-- 
+Greetings, Michael.
