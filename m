@@ -1,96 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbZJHM6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbZJHNJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758071AbZJHM6Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 08:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757971AbZJHM6Y
+	id S1758082AbZJHNJo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 09:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758011AbZJHNJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 08:58:24 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42553 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757928AbZJHM6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 08:58:23 -0400
-Date: Thu, 8 Oct 2009 14:57:46 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Thu, 8 Oct 2009 09:09:43 -0400
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:64685 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758009AbZJHNJn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 09:09:43 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for CPU"
+Date: Thu, 8 Oct 2009 15:09:04 +0200
+User-Agent: KMail/1.9.9
+Cc: Arjan van de Ven <arjan@infradead.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [rfc][patch] store-free path walking
-Message-ID: <20091008125746.GL9228@kernel.dk>
-References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain> <20091008123622.GA30316@wotan.suse.de>
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-wireless@vger.kernel.org
+References: <200910051500.55875.elendil@planet.nl> <200910072034.57511.elendil@planet.nl> <1255001062.7500.1.camel@marge.simson.net>
+In-Reply-To: <1255001062.7500.1.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091008123622.GA30316@wotan.suse.de>
+Message-Id: <200910081509.05394.elendil@planet.nl>
+X-OriginalArrivalTime: 08 Oct 2009 13:09:05.0693 (UTC) FILETIME=[838CACD0:01CA4818]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08 2009, Nick Piggin wrote:
-> On Wed, Oct 07, 2009 at 07:56:33AM -0700, Linus Torvalds wrote:
-> > On Wed, 7 Oct 2009, Nick Piggin wrote:
-> > > 
-> > > OK, I have a really basic patch that does store-free path walking
-> > > (except on the final element).
-> > 
-> > Yay!
-> > 
-> > > dbench is pretty nasty still because it seems to do a lot of stupid 
-> > > things like reading from /proc/mounts all the time.
-> > 
-> > You should largely forget about dbench, it can certainly be a useful 
-> > benchmark, but at the same time it's certainly not a _meaningful_ one.
-> > There are better things to try.
-> 
-> OK, here's one you might find interesting. It is a cached git diff
-> workload in a linux kernel tree. I actually ran it in a loop 100
-> times in order to get some reasonable sample sizes, then I ran
-> parallel and serial configs (PreloadIndex = true/false). Compared
-> plain kernel with all vfs patches to now.
-> 
-> 2.6.32-rc3 serial
-> 5.35user 7.12system 0:12.47elapsed 100%CPU
-> 
-> 2.6.32-rc3 parallel
-> 5.79user 17.69system 0:09.41elapsed 249%CPU
-> 
-> vfs serial
-> 5.30user 5.62system 0:10.92elapsed 100%CPU
-> 
-> vfs parallel
-> 4.86user 0.68system 0:06.82elapsed 81%CPU
+On Thursday 08 October 2009, Mike Galbraith wrote:
+> Care to try a patch?
+>
+> latencytop: only account on-runqueue wait time as being scheduler
+> latency.
+>
+> Latencytop was accounting uninterruptible and interruptible sleep time
+> up to 5ms, which is not the latency the user is looking for.  Account
+> time waiting on-runqueue instead.  Also add a clock update to
+> update_curr() for the case where there's nobody home.  When coming out
+> of idle with NO_HZ, not updating the clock leads to bogus max latency
+> report.
 
-Since the box was booted anyway, I tried the git test too. Results are
-with 2.6.32-rc3 serial being the baseline 1.00 scores, smaller than 1.00
-are faster and vice versa.
+With this patch the high values for iwlagn and phy0 are gone. The values 
+now match roughly with the output of your script.
 
-2.6.32-rc3 serial
-real    1.00
-user    1.00
-sys     1.00
+If (un)interruptible sleep is worth displaying in latencytop then maybe it 
+should be identified as a separate cause instead of lumped under "waiting 
+for CPU"?
 
-2.6.32-rc3 parallel
-real    0.80
-user    0.83
-sys     8.38
+> TODO: Figure out where the heck empty braces come from.
 
-sys time, auch...
+I also see these lines with "[]" sometimes; looks to come from 'sleep'.
 
-vfs serial
-real    0.86
-user    0.93
-sys     0.84
+And I still see lines with only a "." as the cause; this seems specific to 
+targets marked with the penguin (work queues?).
 
-vfs parallel
-real    0.43
-user    0.72
-sys     0.13
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
+> Arjan van de Ven <arjan@infradead.org>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> LKML-Reference: <new-submission>
 
-Let me know if you want profiles or anything like that. I'd say that
-looks veeeery tasty.
+If Arjan is happy with the patch, please add my:
 
--- 
-Jens Axboe
+Reported-and-tested-by: Frans Pop <elendil@planet.nl>
 
+Thanks,
+FJP
