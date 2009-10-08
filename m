@@ -1,65 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbZJHXbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760119AbZJHXcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760095AbZJHXbt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 19:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbZJHXbq
+	id S1760119AbZJHXcp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 19:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758153AbZJHXco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 19:31:46 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52549 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750773AbZJHXbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 19:31:45 -0400
-Date: Thu, 8 Oct 2009 16:28:25 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: Greg KH <greg@kroah.com>, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       sfr@canb.auug.org.au, Andrew Morton <akpm@linux-foundation.org>,
-       Arve Hjonnevag <arve@android.com>, San Mehat <san@android.com>
-Subject: Re: [PATCH] linux-next: 20090929 - android driver build breaks
-Message-ID: <20091008232825.GA540@suse.de>
-References: <20090929140404.dfb2c5f5.sfr@canb.auug.org.au>
- <20090929152027.GC4373@linux.vnet.ibm.com>
- <20091008224725.GA22949@kroah.com>
- <alpine.DEB.1.00.0910081621340.10613@chino.kir.corp.google.com>
+	Thu, 8 Oct 2009 19:32:44 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:43386 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755715AbZJHXcm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 19:32:42 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC][PATCH 1/4] PCI PM: Add function for checking PME status of devices
+Date: Thu, 8 Oct 2009 17:32:02 -0600
+User-Agent: KMail/1.9.10
+Cc: Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Shaohua Li <shaohua.li@intel.com>
+References: <200910090051.50932.rjw@sisk.pl> <200910090052.48493.rjw@sisk.pl>
+In-Reply-To: <200910090052.48493.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0910081621340.10613@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200910081732.03157.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 04:24:46PM -0700, David Rientjes wrote:
-> On Thu, 8 Oct 2009, Greg KH wrote:
+On Thursday 08 October 2009 04:52:48 pm Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> > > Hi Greg,
-> > > 
-> > > 	next-20090929 randconfig build breaks with
-> > > CONFIG_ANDROID_LOW_MEMORY_KILLER=y
-> > 
-> > Due to no support from Google, I've dropped the android code from the
-> > staging tree for 2.6.33.
-> > 
+> Add function pci_check_pme_status() that will check the PME status
+> bit of given device and clear it along with the PME enable bit.  It
+> will be necessary for PCI run-time power management.
 > 
-> What are you specifically referring to?  Kamalesh provided a patch[*] that 
-> fixes this particular compile error, which you said you were queueing.
+> Based on a patch from Shaohua Li <shaohua.li@intel.com>
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/pci/pci.c |   35 +++++++++++++++++++++++++++++++++++
+>  drivers/pci/pci.h |    1 +
+>  2 files changed, 36 insertions(+)
+> 
+> Index: linux-2.6/drivers/pci/pci.h
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pci.h
+> +++ linux-2.6/drivers/pci/pci.h
+> @@ -49,6 +49,7 @@ struct pci_platform_pm_ops {
+>  extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+>  extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+>  extern void pci_disable_enabled_device(struct pci_dev *dev);
+> +extern bool pci_check_pme_status(struct pci_dev *dev);
+>  extern void pci_pm_init(struct pci_dev *dev);
+>  extern void platform_pci_wakeup_init(struct pci_dev *dev);
+>  extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+> Index: linux-2.6/drivers/pci/pci.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pci.c
+> +++ linux-2.6/drivers/pci/pci.c
+> @@ -1167,6 +1167,41 @@ int pci_set_pcie_reset_state(struct pci_
+>  }
+>  
+>  /**
+> + * pci_check_pme_status - Check if given device has generated PME.
+> + * @dev: Device to check.
+> + *
+> + * Check the PME status of the device, clear PME status and PME enable.  Return
+> + * 'true' if PME has been generated by the device (and hasn't been spurious) or
+> + * 'false' otherwise.
 
-Hm, I did say I was queueing it, but I still can't figure out if this is
-needed for the 2.6.32 tree.  Is it?
+This comment confuses me because it implies that we always clear PME enable,
+but that's not what the code does.  If PME_STATUS is not asserted, the code
+doesn't write anything.
 
-> If it's a criticism of the staleness of the Android code within the 
-> staging tree or no recent activity, then we should probably loop in some 
-> Android developers to find our about their plans.  I've added them to the 
-> cc.
+> + */
+> +bool pci_check_pme_status(struct pci_dev *dev)
+> +{
+> +	int pmcsr_pos;
+> +	u16 pmcsr;
+> +	bool ret = false;
+> +
+> +	if (!dev->pm_cap)
+> +		return false;
+> +
+> +	pmcsr_pos = dev->pm_cap + PCI_PM_CTRL;
+> +	/* clear PME status and disable PME to avoid interrupt flood */
+> +	pci_read_config_word(dev, pmcsr_pos, &pmcsr);
+> +	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
+> +		return false;
+> +
+> +	pmcsr |= PCI_PM_CTRL_PME_STATUS;
+> +	/* Ignore spurious PME or clear PME enable if it's not spurious. */
+> +	if (pmcsr & PCI_PM_CTRL_PME_ENABLE) {
+> +		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
+> +		ret = true;
+> +	}
+> +
+> +	pci_write_config_word(dev, pmcsr_pos, pmcsr);
 
-They know all about this and agreed that the code should be dropped for
-2.6.33 if no one sends me patches.  If someone does, then I will remove
-my 'delete the android code' patch in the staging tree.
+I can't tell whether the comment or the code is what was intended,
+but I think the following would be a clearer way to implement the
+comment:
 
-Honestly, I'm not holding my breath :(
+	pci_read_config_word(..., &pmcsr);
+	pci_write_config_word(..., (pmcsr | STATUS) & ~ENABLE);
 
-thanks,
+	if ((pmcsr & ENABLE) && (pmcsr & STATUS))
+		return true;
+	return false;
 
-greg k-h
+Bjorn
+
+> +
+> +	return ret;
+> +}
+> +
+> +/**
+>   * pci_pme_capable - check the capability of PCI device to generate PME#
+>   * @dev: PCI device to handle.
+>   * @state: PCI state from which device will issue PME#.
+> 
+
+
