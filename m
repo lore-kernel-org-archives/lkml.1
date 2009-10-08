@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbZJHSus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932931AbZJHSfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759479AbZJHSus (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 14:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759307AbZJHSur
+	id S932931AbZJHSfM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 14:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932829AbZJHSfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 14:50:47 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:40151 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759181AbZJHSuq (ORCPT
+	Thu, 8 Oct 2009 14:35:11 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:39992 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932813AbZJHSfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 14:50:46 -0400
-Subject: Re: [PATCH] wireless: make WEXT_SPY and WEXT_PRIV select WEXT_CORE
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20091008080615.09c8b803.randy.dunlap@oracle.com>
-References: <20091007105720.a2457e5b.randy.dunlap@oracle.com>
-	 <1254949672-24022-1-git-send-email-linville@tuxdriver.com>
-	 <4ACD0E5A.7060106@oracle.com> <1254954842.3713.7.camel@johannes.local>
-	 <4ACD1C3D.3030506@oracle.com> <1254957256.3713.10.camel@johannes.local>
-	 <20091007171235.d40f0cc2.randy.dunlap@oracle.com>
-	 <1254995282.3713.18.camel@johannes.local>
-	 <20091008080615.09c8b803.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 08 Oct 2009 20:29:23 +0200
-Message-Id: <1255026563.3713.28.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Oct 2009 14:35:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OFPh4NWWi8HG2idakfScfAYXnZQugHbU4a/9p9ucnw7MZA2sfju2SfO+9UQXt8Ru9k
+         CpVnNEXOo8ZdGADfw81+FjXTnUBZZ8BipDSDaBvSkH1GuhwqPzi0D/2MIPJodwjdhwOd
+         C1RR60apYg/Ntz8GcjLw8UU1ITKgkeJcCJTEI=
+Date: Thu, 8 Oct 2009 20:34:32 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] perf tools: Improve thread comm resolution in perf
+	sched
+Message-ID: <20091008183431.GD5073@nowhere>
+References: <1255012632-7882-1-git-send-email-fweisbec@gmail.com> <1255019582.26976.314.camel@twins> <20091008171814.GC5073@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091008171814.GC5073@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 08:06 -0700, Randy Dunlap wrote:
-
-> > It's kinda strange though that you can select wireless drivers without
-> > selecting WIRELESS. Maybe the solution is as simple as making WLAN
-> > (drivers/net/wireless/Kconfig) depend on WIRELESS?
+On Thu, Oct 08, 2009 at 07:18:16PM +0200, Frederic Weisbecker wrote:
+> On Thu, Oct 08, 2009 at 06:33:02PM +0200, Peter Zijlstra wrote:
+> > On Thu, 2009-10-08 at 16:37 +0200, Frederic Weisbecker wrote:
+> > > When we get sched traces that involve a task that was already
+> > > created before opening the event, we won't have the comm event
+> > > for it.
+> > 
+> > pid_synthesize_comm_event() should have taken care of that..
+> > 
+> > > So if we can't find the comm event for a given thread, we look at the
+> > > traces that may contain these informations.
+> > 
+> > Sure, but it would be good to find out why the synthesize bits didn't
+> > work as expected.
 > 
-> Yes, I think that would be a very good start.
+> 
+> Oh you're right, I didn't notice it.
+> 
+> And it's weird, I've just done some tests, and I always
+> have the same pids that are found inside the events but
+> but not in /proc:
+> 
+> 7989 -> npviewer.bin
+> 5467 -> xchat
+> 5124 -> firefox
+> 7929 -> npviewer.bin
+> 
+> That's weird. I'm going to look further on the proc filesystem.
+> 
 
-On the other hand, of course, the whole WIRELESS thing is somewhat
-stupid. How about this?
 
-johannes
+Geeze...this is just because we are resolving the pid, not the tid..
 
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: wireless: make wireless drivers select core
+The patch is actually a one liner :-(
 
-It is somewhat non-sensical to allow selecting wireless
-drivers without showing wireless core code options, and
-since the wext refactoring this has made it possible to
-generate configurations that will not build. Avoid this
-and make wireless drivers select the wireless options.
-
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
- drivers/net/wireless/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- wireless-testing.orig/drivers/net/wireless/Kconfig	2009-10-08 20:25:04.000000000 +0200
-+++ wireless-testing/drivers/net/wireless/Kconfig	2009-10-08 20:27:38.000000000 +0200
-@@ -5,6 +5,7 @@
- menuconfig WLAN
- 	bool "Wireless LAN"
- 	depends on !S390
-+	select WIRELESS
- 	default y
- 	---help---
- 	  This section contains all the pre 802.11 and 802.11 wireless
 
 
