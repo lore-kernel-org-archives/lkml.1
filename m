@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbZJHP0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbZJHQIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbZJHP0X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 11:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758459AbZJHP0X
+	id S1757705AbZJHQIq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 12:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757388AbZJHQIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 11:26:23 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:38830 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758439AbZJHP0W convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 11:26:22 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
-Date: Thu, 8 Oct 2009 17:27:11 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc9-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0910081054300.2986-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0910081054300.2986-100000@iolanthe.rowland.org>
+	Thu, 8 Oct 2009 12:08:46 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:38860 "EHLO mx1.emlix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757381AbZJHQIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 12:08:45 -0400
+X-Greylist: delayed 2251 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Oct 2009 12:08:45 EDT
+From: "Oskar Schirmer" <os@emlix.com>
+Date: Thu, 8 Oct 2009 17:30:37 +0200
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Oskar Schirmer <os@emlix.com>
+Subject: Re: [PATCH] add missing include in lib/rational.c
+Message-ID: <20091008153037.GA13717@emlix.com>
+References: <20091008075403.GE30719@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200910081727.11745.oliver@neukum.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091008075403.GE30719@pengutronix.de>
+Organization: emlix GmbH
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 8. Oktober 2009 16:58:39 schrieb Alan Stern:
-> On Thu, 8 Oct 2009, Oliver Neukum wrote:
-> > Am Mittwoch, 7. Oktober 2009 23:34:12 schrieb Alan Stern:
+On Thu, Oct 08, 2009 at 09:54:03 +0200, Sascha Hauer wrote:
+> 
+> Hi,
+> 
+> Here is a little patch to fix a compiler warning
+> 
+> fixes:
+> 
+> lib/rational.c:62: warning: data definition has no type or storage class
+> lib/rational.c:62: warning: type defaults to 'int' in declaration of 'EXPORT_SYMBOL'
+> lib/rational.c:62: warning: parameter names (without types) in function declaration
 
-> > > Other schemes could work, but to me it seems simplest to rely on a flag
-> > > protected by a spinlock. �The flag would mean "URBs are supposed to be
-> > > queued unless we are suspended". �It would be set by open and
-> > > unthrottle, and cleared by close and throttle.
-> >
-> > 1. Why a spinlock?
->
-> Because the amount of work involved seems too small for a mutex.  But
-> you could use a mutex if you wanted, since everything occurs in process
-> context.
+Oh yes, we didnt use it with modules up to now.
+Thank You for the fix.
 
-We have to submit URBs under that lock.
+> 
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-> > 2. Can we get by with only one flag?
->
-> If all you want to do is answer a single question ("Should URBs be
-> submitted") then a single flag should be all you need.  Why, do you
-> think more information will be necessary?  You can always add more.
+Acked-by: Oskar Schirmer <os@emlix.com>
 
-We have at least three reasons URBs should not be submitted.
-- closure
-- throttling
-- suspension
-Resume() should not submit if either closure or throttling are active,
-neither should unthrottle() resubmit if closure or suspension are active.
+> ---
+>  lib/rational.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/lib/rational.c b/lib/rational.c
+> index b3c099b..3ed247b 100644
+> --- a/lib/rational.c
+> +++ b/lib/rational.c
+> @@ -7,6 +7,7 @@
+>   */
+>  
+>  #include <linux/rational.h>
+> +#include <linux/module.h>
+>  
+>  /*
+>   * calculate best rational approximation for a given fraction
+> -- 
+> 1.6.4.3
+> 
+> 
+> -- 
+> Pengutronix e.K.                           |                             |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> 
 
-	Regards
-		Oliver
+-- 
+oskar schirmer, emlix gmbh, http://www.emlix.com
+fon +49 551 30664-0, fax -11, bahnhofsallee 1b, 37081 göttingen, germany
+sitz der gesellschaft: göttingen, amtsgericht göttingen hr b 3160
+geschäftsführer: dr. uwe kracke, ust-idnr.: de 205 198 055
 
+emlix - your embedded linux partner
