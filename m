@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbZJHJh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbZJHJgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857AbZJHJh2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 05:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZJHJh1
+	id S1756422AbZJHJgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 05:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755306AbZJHJgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 05:37:27 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:40548 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755986AbZJHJh0 (ORCPT
+	Thu, 8 Oct 2009 05:36:23 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:8418 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754957AbZJHJgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 05:37:26 -0400
+	Thu, 8 Oct 2009 05:36:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=vTUOQUaybG/9eOjubTkUb4dftLPJeO+1qrppWH/y4PqkqjNz1TYagB5fuSmf6puuWS
-         bjMUzR/2zNfYlbK5zkwLqrKX7jnginKRgqjqkTL4XFAK5JDu8uufRHVTgXVvXtp+ZmeD
-         0IVOe3vmmAfEg5AjBzNFKocg81mNx2NgXWQUI=
-Date: Thu, 8 Oct 2009 11:36:46 +0200
-From: Johan Hovold <jhovold@gmail.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>
-Cc: Frank Schaefer <schaefer.frank@gmx.net>,
-       Jason Wessel <jason.wessel@windriver.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] USB: pl2303: fix error characters not being reported to
- ldisc
-Message-ID: <20091008093646.GA14695@localhost>
+        h=from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=FK+9hTGJhC/Dcd1sRMRM0tfqXwuVeVLjEDgaZ2qJH58v7PZ6iQl8Fhdvx7AtSzYjae
+         jOrlQ6JgN+fI0tiKMXb4bzWRYrCS8dkES3Vb6FsOh+C20Zn8Y93v19CoeC3LaNcN0Jz+
+         skMrxkRHywPxdv50eFxdrxWhrSZZNL8a8lcpg=
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Gleb Natapov <gleb@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org
+Subject: Re: [PATCH v3][RFC] add MAP_UNLOCKED mmap flag
+References: <20091006190316.GB19692@redhat.com> <874oqap7xw.fsf@gmail.com>
+	<20091008091611.GD16702@redhat.com>
+Date: Thu, 08 Oct 2009 17:37:45 +0800
+In-Reply-To: <20091008091611.GD16702@redhat.com> (Gleb Natapov's message of
+	"Thu, 8 Oct 2009 11:16:12 +0200")
+Message-ID: <87zl82ns46.fsf@gmail.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix regression introduced by commit
-d4fc4a7bfc2dee626f4fec1e209e58eaa4312de6 (tty: Fix the PL2303 private
-methods for sysrq).
+Gleb Natapov <gleb@redhat.com> writes:
 
-Signed-off-by: Johan Hovold <jhovold@gmail.com>
----
- drivers/usb/serial/pl2303.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+> On Thu, Oct 08, 2009 at 05:10:35PM +0800, WANG Cong wrote:
+>> Gleb Natapov <gleb@redhat.com> writes:
+>> 
+>> > If application does mlockall(MCL_FUTURE) it is no longer possible to
+>> > mmap file bigger than main memory or allocate big area of anonymous
+>> > memory. Sometimes it is desirable to lock everything related to program
+>> > execution into memory, but still be able to mmap big file or allocate
+>> > huge amount of memory and allow OS to swap them on demand. MAP_UNLOCKED
+>> > allows to do that.
+>> >
+>> > Signed-off-by: Gleb Natapov <gleb@redhat.com>
+>> 
+>> <snip>
+>> 
+>> > diff --git a/mm/mmap.c b/mm/mmap.c
+>> > index 73f5e4b..ecc4471 100644
+>> > --- a/mm/mmap.c
+>> > +++ b/mm/mmap.c
+>> > @@ -985,6 +985,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+>> >  		if (!can_do_mlock())
+>> >  			return -EPERM;
+>> >  
+>> > +        if (flags & MAP_UNLOCKED)
+>> > +                vm_flags &= ~VM_LOCKED;
+>> > +
+>> >  	/* mlock MCL_FUTURE? */
+>> >  	if (vm_flags & VM_LOCKED) {
+>> >  		unsigned long locked, lock_limit;
+>> 
+>> So, if I read it correctly, it is perfectly legal to set
+>> both MAP_LOCKED and MAP_UNLOCKED at the same time? While
+>> the behavior is still same as only setting MAP_UNLOCKED.
+>> 
+>> Is this what we expect?
+>> 
+> This is what code does currently. Should we return EINVAL in this case?
+>
 
-diff --git a/drivers/usb/serial/pl2303.c b/drivers/usb/serial/pl2303.c
-index 1128e01..9ec1a49 100644
---- a/drivers/usb/serial/pl2303.c
-+++ b/drivers/usb/serial/pl2303.c
-@@ -1046,13 +1046,15 @@ static void pl2303_push_data(struct tty_struct *tty,
- 	/* overrun is special, not associated with a char */
- 	if (line_status & UART_OVERRUN_ERROR)
- 		tty_insert_flip_char(tty, 0, TTY_OVERRUN);
--	if (port->console && port->sysrq) {
-+
-+	if (tty_flag == TTY_NORMAL && !(port->console && port->sysrq))
-+		tty_insert_flip_string(tty, data, urb->actual_length);
-+	else {
- 		int i;
- 		for (i = 0; i < urb->actual_length; ++i)
- 			if (!usb_serial_handle_sysrq_char(tty, port, data[i]))
- 				tty_insert_flip_char(tty, data[i], tty_flag);
--	} else
--		tty_insert_flip_string(tty, data, urb->actual_length);
-+	}
- 	tty_flip_buffer_push(tty);
- }
- 
--- 
-1.6.5.rc2
-
+I suppose to get an EINVAL.
