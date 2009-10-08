@@ -1,38 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbZJHWbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbZJHWd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760034AbZJHWbO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 18:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759932AbZJHWbN
+	id S1760055AbZJHWd3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 18:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757603AbZJHWd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 18:31:13 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37489 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756557AbZJHWbM (ORCPT
+	Thu, 8 Oct 2009 18:33:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41152 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757447AbZJHWd0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 18:31:12 -0400
-Date: Thu, 8 Oct 2009 23:31:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
-Message-ID: <20091008233150.5e033c11@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.44L0.0910081722340.2765-100000@iolanthe.rowland.org>
-References: <200910082240.36607.oliver@neukum.org>
-	<Pine.LNX.4.44L0.0910081722340.2765-100000@iolanthe.rowland.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Thu, 8 Oct 2009 18:33:26 -0400
+Subject: Re: [RFC][PATCH] kmap_atomic_push
+From: Peter Zijlstra <peterz@infradead.org>
+To: jim owens <jowens@hp.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>
+In-Reply-To: <4ACE674E.30403@hp.com>
+References: <1255016123.17055.17.camel@laptop>
+	 <20091008155344.GA11727@elte.hu> <1255019362.26976.311.camel@twins>
+	 <alpine.LFD.2.01.0910080945230.3432@localhost.localdomain>
+	 <Pine.LNX.4.64.0910081850270.4553@sister.anvils>  <4ACE674E.30403@hp.com>
+Content-Type: text/plain
+Date: Fri, 09 Oct 2009 00:32:30 +0200
+Message-Id: <1255041150.17055.24.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> update the last_busy time in the completion of every input URB).  When
-> the driver is throttled no URBs will be submitted, so the usage count
-> will remain at 0 with no effort on the part of throttle().
+On Thu, 2009-10-08 at 18:27 -0400, jim owens wrote:
+> So if I understand this correctly, the sequence:
+> 
+> in = kmap_atomic(inpage, KM_USER1);
+> 
+> out = kmap_atomic(outpage, KM_USER0);
+> 
+> kunmap_atomic(in, KM_USER1);
+> 
+> in = kmap_atomic(next_inpage, KM_USER1);
+> 
+> is now illegal with this patch
 
-You can still get modem changes (set_mctrl), break etc with the port
-throttled, or indeed output.
+Yep.
+
 
