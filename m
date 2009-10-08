@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932776AbZJHRSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932807AbZJHRT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932776AbZJHRSa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 13:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbZJHRSa
+	id S932807AbZJHRT2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 13:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932668AbZJHRT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 13:18:30 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:55532 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758797AbZJHRS3 (ORCPT
+	Thu, 8 Oct 2009 13:19:28 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:61951 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932658AbZJHRT1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 13:18:29 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtMEAF64zUpMROOX/2dsb2JhbACBUtlwhCoE
-Date: Thu, 8 Oct 2009 13:17:50 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
-Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
-	interrupt disable
-Message-ID: <20091008171750.GA3370@Krystal>
-References: <20091007025440.GB4664@Krystal> <1254906707.26976.225.camel@twins> <20091007124628.GB27363@Krystal> <alpine.DEB.1.10.0910071039520.5671@gentwo.org> <20091007150257.GA8508@Krystal> <alpine.DEB.1.10.0910071102590.9984@gentwo.org> <20091007151940.GA10052@Krystal> <alpine.DEB.1.10.0910071119450.9296@gentwo.org> <1254988350.26976.256.camel@twins> <alpine.DEB.1.10.0910081211050.21951@gentwo.org>
-Mime-Version: 1.0
+	Thu, 8 Oct 2009 13:19:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=X6kjWMR5qtyTvgFFYRZFCmQw6fW3TIAfRD4gnQoM7Y2y0b/JrRz2sQfxqdNippmua+
+         jpGVNY9ZXKkO3n/hDuvzcAXLANbKgvxjbVBirS3vEkOybsmy2PGC7rNaxpmiYdjt/B+9
+         wncjCJ4xEPARXtMkfC7CqBY2sR5fRJRfglzJI=
+Date: Thu, 8 Oct 2009 19:18:16 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] perf tools: Improve thread comm resolution in perf
+	sched
+Message-ID: <20091008171814.GC5073@nowhere>
+References: <1255012632-7882-1-git-send-email-fweisbec@gmail.com> <1255019582.26976.314.camel@twins>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0910081211050.21951@gentwo.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 13:17:28 up 51 days,  4:06,  2 users,  load average: 0.20, 0.18,
-	0.11
+In-Reply-To: <1255019582.26976.314.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (cl@linux-foundation.org) wrote:
-> On Thu, 8 Oct 2009, Peter Zijlstra wrote:
+On Thu, Oct 08, 2009 at 06:33:02PM +0200, Peter Zijlstra wrote:
+> On Thu, 2009-10-08 at 16:37 +0200, Frederic Weisbecker wrote:
+> > When we get sched traces that involve a task that was already
+> > created before opening the event, we won't have the comm event
+> > for it.
 > 
-> > > 	preempt_enable_no_sched()
-> >
-> > NACK, delaying the reschedule is not an option
+> pid_synthesize_comm_event() should have taken care of that..
 > 
-> I ended up just doing a preempt_disable() at the beginning and a
-> preempt_disable() at the end. That should be easily reviewable.
+> > So if we can't find the comm event for a given thread, we look at the
+> > traces that may contain these informations.
 > 
-
-Then how do you re-enable preemption in the slow path when you need to
-block ?
-
-Mathieu
+> Sure, but it would be good to find out why the synthesize bits didn't
+> work as expected.
 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Oh you're right, I didn't notice it.
+
+And it's weird, I've just done some tests, and I always
+have the same pids that are found inside the events but
+but not in /proc:
+
+7989 -> npviewer.bin
+5467 -> xchat
+5124 -> firefox
+7929 -> npviewer.bin
+
+That's weird. I'm going to look further on the proc filesystem.
+
