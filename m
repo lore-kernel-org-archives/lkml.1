@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbZJHIuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZJHI4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755654AbZJHIuy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 04:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZJHIux
+	id S1755793AbZJHI4N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 04:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbZJHI4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 04:50:53 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48676 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755394AbZJHIuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 04:50:52 -0400
-X-Authenticated: #7313500
-X-Provags-ID: V01U2FsdGVkX1/oy90EFhPo998wEy/KkT4F/N2yyNhY4FemPq58lf
-	menQnH4HkGe/Cv
-From: "Jan-Simon =?iso-8859-1?q?M=F6ller?=" <dl9pf@gmx.de>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: TM6010 driver and firmware
-Date: Thu, 8 Oct 2009 10:50:02 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: =?iso-8859-1?q?D=EAnis_Goes?= <denishark@gmail.com>,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <f326ee1a0910030539pd5e00e2xb9f6de9975b64b9b@mail.gmail.com> <f326ee1a0910030602w2518f66q2d6e185c473d5ad@mail.gmail.com> <20091005095343.6b9afa65@pedra.chehab.org>
-In-Reply-To: <20091005095343.6b9afa65@pedra.chehab.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 8 Oct 2009 04:56:12 -0400
+Received: from mtagate7.de.ibm.com ([195.212.17.167]:44681 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752099AbZJHI4K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 04:56:10 -0400
+Date: Thu, 8 Oct 2009 10:55:28 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, devel@driverdev.osuosl.org,
+       heiko.carstens@de.ibm.com, linux-s390@vger.kernel.org
+Subject: Re: next-20091007 - comedi driver build breaks on S390x
+Message-ID: <20091008105528.55616624@mschwide.boeblingen.de.ibm.com>
+In-Reply-To: <20091007172715.GA28562@suse.de>
+References: <20091007173517.abfcfa2a.sfr@canb.auug.org.au>
+	<20091007105458.GA5472@linux.vnet.ibm.com>
+	<20091007130744.GA26081@suse.de>
+	<20091007173415.5155d995@mschwide.boeblingen.de.ibm.com>
+	<20091007172715.GA28562@suse.de>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910081050.02215.dl9pf@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi !
+On Wed, 7 Oct 2009 10:27:15 -0700
+Greg KH <gregkh@suse.de> wrote:
 
-Using the 3.7 firmware on HVR900H, I get up to this point:
+> On Wed, Oct 07, 2009 at 05:34:15PM +0200, Martin Schwidefsky wrote:
+> > On Wed, 7 Oct 2009 06:07:44 -0700
+> > Greg KH <gregkh@suse.de> wrote:
+> > 
+> > > On Wed, Oct 07, 2009 at 04:24:58PM +0530, Kamalesh Babulal wrote:
+> > > > Hi Greg,
+> > > > 
+> > > > 	next-20091007 randconfig build breaks on s390x with build error
+> > > > 
+> > > > drivers/staging/comedi/comedi_fops.c: In function 'comedi_mmap':
+> > > > drivers/staging/comedi/comedi_fops.c:1453: error: 'PAGE_SHARED' undeclared (first use in this function)
+> > > > drivers/staging/comedi/comedi_fops.c:1453: error: (Each undeclared identifier is reported only once
+> > > > drivers/staging/comedi/comedi_fops.c:1453: error: for each function it appears in.)
+> > > > make[3]: *** [drivers/staging/comedi/comedi_fops.o] Error 1
+> > > 
+> > > Odd.  What changed in the header files to cause this?
+> > 
+> > The problem has always been present, only now did randconfig find it.
+> > The compile breaks because PAGE_SHARED is not defined for s390. The
+> > equivalent define for s390 is PAGE_RW. The problem has not shown up so
+> > far because all drivers who use the remap_pfn_range call with
+> > PAGE_SHARED has dependencies not available on s390, e.g. CONFIG_PCI.
+> > 
+> > To fix this I see are two options: 1) add a PAGE_SHARED define to
+> > arch/s390/include/asm/pgtable.h, 2) make comedi depend on !S390.
+> 
+> I'll drop s390 support for comedi, it doesn't make sense at all for that
+> platform.
+> 
+> Actually, I'll just go off of PCI/ISA/USB/PCMCIA, that should drop s390
+> automatically, right?
 
-http://pastebin.ca/1603643
+Correct.
 
-[...]
-Error during zl10353_attach!
-tm6000: couldn't attach the frontend!
-xc2028 4-0061: destroying instance
-tm6000: Error -1 while registering
-tm6000: probe of 1-5.1:1.0 failed with error -1
-usbcore: registered new interface driver tm6000
-Original value=255
+-- 
+blue skies,
+   Martin.
 
+"Reality continues to ruin my life." - Calvin.
 
-Best,
-Jan-Simon
