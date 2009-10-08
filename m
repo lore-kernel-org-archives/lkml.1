@@ -1,144 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbZJHUch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760072AbZJHUf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760050AbZJHUch (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 16:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759663AbZJHUcg
+	id S1760072AbZJHUf0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 16:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZJHUfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 16:32:36 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:45939 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759626AbZJHUca (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 16:32:30 -0400
-Subject: [PATCH][2.6.31-stable] PIT fixes to unbreak suspend/resume (bug
- #14222)
-From: john stultz <johnstul@us.ibm.com>
-To: stable@kernel.org, lkml <linux-kernel@vger.kernel.org>
-Cc: linux@rainbow-software.org, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Thu, 08 Oct 2009 13:31:45 -0700
-Message-Id: <1255033906.4846.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Oct 2009 16:35:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36488 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759650AbZJHUfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 16:35:18 -0400
+Date: Thu, 8 Oct 2009 20:34:07 GMT
+From: tip-bot for Alok Kataria <akataria@vmware.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       chrisw@sous-sol.org, akataria@vmware.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       chrisw@sous-sol.org, tglx@linutronix.de, akataria@vmware.com,
+       mingo@elte.hu
+In-Reply-To: <1254193238.13456.48.camel@ank32.eng.vmware.com>
+References: <1254193238.13456.48.camel@ank32.eng.vmware.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, vmi: Mark VMI deprecated and schedule it for removal
+Message-ID: <tip-d0153ca35d344d9b640dc305031b0703ba3f30f0@git.kernel.org>
+Git-Commit-ID: d0153ca35d344d9b640dc305031b0703ba3f30f0
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 08 Oct 2009 20:34:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ondrej Zary reported a suspend/resume hang with 2.6.31 in bug #14222.
+Commit-ID:  d0153ca35d344d9b640dc305031b0703ba3f30f0
+Gitweb:     http://git.kernel.org/tip/d0153ca35d344d9b640dc305031b0703ba3f30f0
+Author:     Alok Kataria <akataria@vmware.com>
+AuthorDate: Tue, 29 Sep 2009 10:25:24 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 8 Oct 2009 22:27:55 +0200
 
-http://bugzilla.kernel.org/show_bug.cgi?id=14222
+x86, vmi: Mark VMI deprecated and schedule it for removal
 
-The hang was bisected to c7121843685de2bf7f3afd3ae1d6a146010bf1fc
-however, that was really just the last straw that caused the issue.
+Add text in feature-removal.txt indicating that VMI will be removed in
+the 2.6.37 timeframe.
 
-The problem was that on suspend, the PIT is removed as a clocksource,
-and was using the mult value essentially as a is_enabled() flag. The
-mult adjustments done in the commit above caused that usage to break,
-causing bad list manipulation and the oops.
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Acked-by: Chris Wright <chrisw@sous-sol.org>
+LKML-Reference: <1254193238.13456.48.camel@ank32.eng.vmware.com>
+[ removed a bogus Kconfig change, marked (DEPRECATED) in Kconfig ]
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ Documentation/feature-removal-schedule.txt |   30 ++++++++++++++++++++++++++++
+ arch/x86/Kconfig                           |   11 +++++++++-
+ arch/x86/kernel/vmi_32.c                   |    2 +-
+ 3 files changed, 41 insertions(+), 2 deletions(-)
 
-Further, on resume, the PIT clocksource is never restored, causing the
-system to run in a degraded mode with jiffies as the clocksource.
-
-This issue has since been resolved in 2.6.32-rc by commit
-8cab02dc3c58a12235c6d463ce684dded9696848 which removes the clocksource
-disabling on suspend. Testing shows no issues there.
-
-So the following patch rectifies the situation for 2.6.31 users of the
-PIT clocksource that use suspend and resume (which is probably not that
-many).
-
-Many thanks to Ondrej for helping narrow down what was happening, what
-caused it, and verifying the fix.
-
-thanks
--john
-
-
-
-Avoid using the unprotected clocksource.mult value as an "is_registered"
-flag, instead us an explicit flag variable. This avoids possible list
-corruption if the clocksource is double-unregistered.
-
-Also re-register the PIT clocksource on resume so folks don't have to
-use jiffies after suspend.
-
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-
-diff --git a/arch/x86/kernel/i8253.c b/arch/x86/kernel/i8253.c
-index 5cf36c0..da890f0 100644
---- a/arch/x86/kernel/i8253.c
-+++ b/arch/x86/kernel/i8253.c
-@@ -21,8 +21,10 @@ EXPORT_SYMBOL(i8253_lock);
- 
- #ifdef CONFIG_X86_32
- static void pit_disable_clocksource(void);
-+static void pit_enable_clocksource(void);
- #else
- static inline void pit_disable_clocksource(void) { }
-+static inline void pit_enable_clocksource(void) { }
- #endif
- 
- /*
-@@ -67,7 +69,7 @@ static void init_pit_timer(enum clock_event_mode mode,
- 		break;
- 
- 	case CLOCK_EVT_MODE_RESUME:
--		/* Nothing to do here */
-+		pit_enable_clocksource();
- 		break;
- 	}
- 	spin_unlock(&i8253_lock);
-@@ -200,19 +202,27 @@ static struct clocksource pit_cs = {
- 	.shift		= 20,
- };
- 
-+int pit_cs_registered;
- static void pit_disable_clocksource(void)
- {
--	/*
--	 * Use mult to check whether it is registered or not
--	 */
--	if (pit_cs.mult) {
-+	if (pit_cs_registered) {
- 		clocksource_unregister(&pit_cs);
--		pit_cs.mult = 0;
-+		pit_cs_registered = 0;
-+	}
-+}
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 89a47b5..04e6c81 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -451,3 +451,33 @@ Why:	OSS sound_core grabs all legacy minors (0-255) of SOUND_MAJOR
+ 	will also allow making ALSA OSS emulation independent of
+ 	sound_core.  The dependency will be broken then too.
+ Who:	Tejun Heo <tj@kernel.org>
 +
-+static void pit_enable_clocksource(void)
-+{
-+	if (!pit_cs_registered && !clocksource_register(&pit_cs)) {
-+		pit_cs_registered = 1;
- 	}
- }
- 
++----------------------------
 +
++What:	Support for VMware's guest paravirtuliazation technique [VMI] will be
++	dropped.
++When:	2.6.37 or earlier.
++Why:	With the recent innovations in CPU hardware acceleration technologies
++	from Intel and AMD, VMware ran a few experiments to compare these
++	techniques to guest paravirtualization technique on VMware's platform.
++	These hardware assisted virtualization techniques have outperformed the
++	performance benefits provided by VMI in most of the workloads. VMware
++	expects that these hardware features will be ubiquitous in a couple of
++	years, as a result, VMware has started a phased retirement of this
++	feature from the hypervisor. We will be removing this feature from the
++	Kernel too. Right now we are targeting 2.6.37 but can retire earlier if
++	technical reasons (read opportunity to remove major chunk of pvops)
++	arise.
 +
- static int __init init_pit_clocksource(void)
- {
-+	int ret;
- 	 /*
- 	  * Several reasons not to register PIT as a clocksource:
- 	  *
-@@ -226,7 +236,10 @@ static int __init init_pit_clocksource(void)
++	Please note that VMI has always been an optimization and non-VMI kernels
++	still work fine on VMware's platform.
++	Latest versions of VMware's product which support VMI are,
++	Workstation 7.0 and VSphere 4.0 on ESX side, future maintainence
++	releases for these products will continue supporting VMI.
++
++	For more details about VMI retirement take a look at this,
++	http://blogs.vmware.com/guestosguide/2009/09/vmi-retirement.html
++
++Who:	Alok N Kataria <akataria@vmware.com>
++
++----------------------------
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index c876bac..07e0114 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -491,7 +491,7 @@ if PARAVIRT_GUEST
+ source "arch/x86/xen/Kconfig"
  
- 	pit_cs.mult = clocksource_hz2mult(CLOCK_TICK_RATE, pit_cs.shift);
+ config VMI
+-	bool "VMI Guest support"
++	bool "VMI Guest support (DEPRECATED)"
+ 	select PARAVIRT
+ 	depends on X86_32
+ 	---help---
+@@ -500,6 +500,15 @@ config VMI
+ 	  at the moment), by linking the kernel to a GPL-ed ROM module
+ 	  provided by the hypervisor.
  
--	return clocksource_register(&pit_cs);
-+	ret = clocksource_register(&pit_cs);
-+	if (!ret)
-+		pit_cs_registered = 1;
-+	return ret;
- }
- arch_initcall(init_pit_clocksource);
++	  As of September 2009, VMware has started a phased retirement
++	  of this feature from VMware's products. Please see
++	  feature-removal-schedule.txt for details.  If you are
++	  planning to enable this option, please note that you cannot
++	  live migrate a VMI enabled VM to a future VMware product,
++	  which doesn't support VMI. So if you expect your kernel to
++	  seamlessly migrate to newer VMware products, keep this
++	  disabled.
++
+ config KVM_CLOCK
+ 	bool "KVM paravirtualized clock"
+ 	select PARAVIRT
+diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
+index 31e6f6c..d430e4c 100644
+--- a/arch/x86/kernel/vmi_32.c
++++ b/arch/x86/kernel/vmi_32.c
+@@ -648,7 +648,7 @@ static inline int __init activate_vmi(void)
  
-
-
-
-
-
-
+ 	pv_info.paravirt_enabled = 1;
+ 	pv_info.kernel_rpl = kernel_cs & SEGMENT_RPL_MASK;
+-	pv_info.name = "vmi";
++	pv_info.name = "vmi [deprecated]";
+ 
+ 	pv_init_ops.patch = vmi_patch;
+ 
