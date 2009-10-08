@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZJHGFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbZJHGHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbZJHGFR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 02:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZJHGFM
+	id S1754932AbZJHGHI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 02:07:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbZJHGHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 02:05:12 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:34519 "EHLO smtp.gentoo.org"
+	Thu, 8 Oct 2009 02:07:05 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:34522 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753398AbZJHGFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 02:05:08 -0400
+	id S1753001AbZJHGFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 02:05:09 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org,
-       Robin Getz <robin.getz@analog.com>
-Subject: [PATCH 02/13] Blackfin: mass clean up of copyright/licensing info
-Date: Thu,  8 Oct 2009 02:04:18 -0400
-Message-Id: <1254981869-21586-3-git-send-email-vapier@gentoo.org>
+       Barry Song <barry.song@analog.com>
+Subject: [PATCH 03/13] Blackfin: BF51x: add PTP MMR defines
+Date: Thu,  8 Oct 2009 02:04:19 -0400
+Message-Id: <1254981869-21586-4-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.5.rc2
 In-Reply-To: <1254981869-21586-1-git-send-email-vapier@gentoo.org>
 References: <1254981869-21586-1-git-send-email-vapier@gentoo.org>
@@ -23,275 +23,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robin Getz <robin.getz@analog.com>
+From: Barry Song <barry.song@analog.com>
 
-Bill Gatliff & David Brownell pointed out we were missing some
-copyrights, and licensing terms in some of the files in
-./arch/blackfin, so this fixes things, and cleans them up.
-
-It also removes:
- - verbose GPL text(refer to the top level ./COPYING file)
- - file names (you are looking at the file)
- - bug url (it's in the ./MAINTAINERS file)
- - "or later" on GPL-2, when we did not have that right
-
-It also allows some Blackfin-specific assembly files to be under a BSD
-like license (for people to use them outside of Linux).
-
-Signed-off-by: Robin Getz <robin.getz@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
-large noisy patch truncated; you can find it here:
-	http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=commit;h=96f1050d3df105c9ae6c6ac224f370199ea82fcd
+ arch/blackfin/mach-bf518/include/mach/cdefBF518.h |   41 +++++++++++++++++++++
+ arch/blackfin/mach-bf518/include/mach/defBF518.h  |   28 ++++++++++++++
+ 2 files changed, 69 insertions(+), 0 deletions(-)
 
- arch/blackfin/ADI_BSD.txt                          |   41 ++++++++++++++++++
- arch/blackfin/include/asm/atomic.h                 |    6 +++
- arch/blackfin/include/asm/bfin-global.h            |   26 +----------
- arch/blackfin/include/asm/bfin5xx_spi.h            |    2 -
- arch/blackfin/include/asm/bfin_rotary.h            |    4 ++
- arch/blackfin/include/asm/bfin_simple_timer.h      |    6 +++
- arch/blackfin/include/asm/bitops.h                 |    6 +++
- arch/blackfin/include/asm/blackfin.h               |    5 ++-
- arch/blackfin/include/asm/bug.h                    |    6 +++
- arch/blackfin/include/asm/byteorder.h              |    5 --
- arch/blackfin/include/asm/cache.h                  |    5 ++-
- arch/blackfin/include/asm/cacheflush.h             |   27 +-----------
- arch/blackfin/include/asm/cdef_LPBlackfin.h        |   32 ++------------
- arch/blackfin/include/asm/checksum.h               |    9 +++-
- arch/blackfin/include/asm/clocks.h                 |   27 +-----------
- arch/blackfin/include/asm/context.S                |   27 +-----------
- arch/blackfin/include/asm/cplb.h                   |   27 +-----------
- arch/blackfin/include/asm/cplbinit.h               |   27 +-----------
- arch/blackfin/include/asm/cpu.h                    |   21 +--------
- arch/blackfin/include/asm/def_LPBlackfin.h         |   36 +++-------------
- arch/blackfin/include/asm/dma-mapping.h            |    6 +++
- arch/blackfin/include/asm/dpmc.h                   |    6 ++-
- arch/blackfin/include/asm/early_printk.h           |   22 +--------
- arch/blackfin/include/asm/elf.h                    |    6 ++-
- arch/blackfin/include/asm/entry.h                  |    6 +++
- arch/blackfin/include/asm/fcntl.h                  |    6 +++
- arch/blackfin/include/asm/fixed_code.h             |   10 ++++-
- arch/blackfin/include/asm/flat.h                   |    5 +-
- arch/blackfin/include/asm/gpio.h                   |   27 +-----------
- arch/blackfin/include/asm/hardirq.h                |    6 +++
- arch/blackfin/include/asm/io.h                     |    6 +++
- arch/blackfin/include/asm/irq.h                    |   17 ++-----
- arch/blackfin/include/asm/irq_handler.h            |    6 +++
- arch/blackfin/include/asm/l1layout.h               |    5 ++-
- arch/blackfin/include/asm/linkage.h                |    6 +++
- arch/blackfin/include/asm/mmu.h                    |    9 +++-
- arch/blackfin/include/asm/mmu_context.h            |   27 +-----------
- arch/blackfin/include/asm/module.h                 |    6 +++
- arch/blackfin/include/asm/mutex.h                  |    4 ++
- arch/blackfin/include/asm/nand.h                   |   12 ++----
- arch/blackfin/include/asm/page.h                   |    6 +++
- arch/blackfin/include/asm/page_offset.h            |    9 +++-
- arch/blackfin/include/asm/pda.h                    |   21 +--------
- arch/blackfin/include/asm/pgtable.h                |    6 +++
- arch/blackfin/include/asm/poll.h                   |    7 +++
- arch/blackfin/include/asm/portmux.h                |    5 ++-
- arch/blackfin/include/asm/posix_types.h            |    6 +++
- arch/blackfin/include/asm/processor.h              |    6 +++
- arch/blackfin/include/asm/ptrace.h                 |    6 +++
- arch/blackfin/include/asm/sections.h               |    6 +++
- arch/blackfin/include/asm/segment.h                |    6 +++
- arch/blackfin/include/asm/sigcontext.h             |    6 +++
- arch/blackfin/include/asm/siginfo.h                |    6 +++
- arch/blackfin/include/asm/smp.h                    |   21 +--------
- arch/blackfin/include/asm/spinlock.h               |    6 +++
- arch/blackfin/include/asm/spinlock_types.h         |    6 +++
- arch/blackfin/include/asm/stat.h                   |    6 +++
- arch/blackfin/include/asm/string.h                 |    6 +++
- arch/blackfin/include/asm/swab.h                   |    6 +++
- arch/blackfin/include/asm/system.h                 |   32 +-------------
- arch/blackfin/include/asm/thread_info.h            |   24 +----------
- arch/blackfin/include/asm/tlb.h                    |    6 +++
- arch/blackfin/include/asm/trace.h                  |    5 ++-
- arch/blackfin/include/asm/traps.h                  |   13 ++----
- arch/blackfin/include/asm/uaccess.h                |    5 ++-
- arch/blackfin/include/asm/unistd.h                 |    6 +++
- arch/blackfin/kernel/asm-offsets.c                 |   27 +-----------
- arch/blackfin/kernel/bfin_dma_5xx.c                |    1 +
- arch/blackfin/kernel/bfin_gpio.c                   |   27 +-----------
- arch/blackfin/kernel/cplb-mpu/cplbinit.c           |   20 +--------
- arch/blackfin/kernel/cplb-mpu/cplbmgr.c            |   19 ++-------
- arch/blackfin/kernel/cplb-nompu/cplbinit.c         |   19 +--------
- arch/blackfin/kernel/cplb-nompu/cplbmgr.c          |   16 +------
- arch/blackfin/kernel/cplbinfo.c                    |    1 +
- arch/blackfin/kernel/dma-mapping.c                 |   27 +-----------
- arch/blackfin/kernel/early_printk.c                |   23 ++--------
- arch/blackfin/kernel/entry.S                       |   27 +-----------
- arch/blackfin/kernel/fixed_code.S                  |    5 ++
- arch/blackfin/kernel/flat.c                        |   18 +-------
- arch/blackfin/kernel/init_task.c                   |   27 +-----------
- arch/blackfin/kernel/irqchip.c                     |   27 +-----------
- arch/blackfin/kernel/module.c                      |   27 +-----------
- arch/blackfin/kernel/process.c                     |   27 +-----------
- arch/blackfin/kernel/ptrace.c                      |   28 +-----------
- arch/blackfin/kernel/setup.c                       |    6 +--
- arch/blackfin/kernel/shadow_console.c              |    2 -
- arch/blackfin/kernel/signal.c                      |   27 +-----------
- arch/blackfin/kernel/sys_bfin.c                    |   30 ++------------
- arch/blackfin/kernel/time-ts.c                     |   10 ++--
- arch/blackfin/kernel/traps.c                       |   27 +-----------
- arch/blackfin/kernel/vmlinux.lds.S                 |   27 +-----------
- arch/blackfin/lib/ashldi3.c                        |   27 +-----------
- arch/blackfin/lib/ashrdi3.c                        |   27 +-----------
- arch/blackfin/lib/checksum.c                       |   30 ++-----------
- arch/blackfin/lib/divsi3.S                         |   28 ++-----------
- arch/blackfin/lib/gcclib.h                         |   27 +-----------
- arch/blackfin/lib/lshrdi3.c                        |   27 +-----------
- arch/blackfin/lib/memchr.S                         |   27 +-----------
- arch/blackfin/lib/memcmp.S                         |   27 +-----------
- arch/blackfin/lib/memcpy.S                         |   37 +++-------------
- arch/blackfin/lib/memmove.S                        |   27 +-----------
- arch/blackfin/lib/memset.S                         |   27 +-----------
- arch/blackfin/lib/modsi3.S                         |   36 +++-------------
- arch/blackfin/lib/muldi3.S                         |    6 +++
- arch/blackfin/lib/outs.S                           |   29 ++-----------
- arch/blackfin/lib/smulsi3_highpart.S               |    6 +++
- arch/blackfin/lib/udivsi3.S                        |   27 +-----------
- arch/blackfin/lib/umodsi3.S                        |   27 +-----------
- arch/blackfin/lib/umulsi3_highpart.S               |    6 +++
- arch/blackfin/mach-bf518/boards/ezbrd.c            |   30 ++------------
- arch/blackfin/mach-bf518/dma.c                     |   28 ++-----------
- arch/blackfin/mach-bf518/include/mach/bf518.h      |   27 +-----------
- .../mach-bf518/include/mach/bfin_serial_5xx.h      |   29 +------------
- arch/blackfin/mach-bf518/include/mach/blackfin.h   |   29 +------------
- arch/blackfin/mach-bf518/include/mach/cdefBF512.h  |   29 +------------
- arch/blackfin/mach-bf518/include/mach/cdefBF514.h  |   29 +------------
- arch/blackfin/mach-bf518/include/mach/cdefBF516.h  |   29 +------------
- arch/blackfin/mach-bf518/include/mach/cdefBF518.h  |   29 +------------
- .../mach-bf518/include/mach/cdefBF51x_base.h       |   28 +------------
- arch/blackfin/mach-bf518/include/mach/defBF512.h   |   28 +------------
- arch/blackfin/mach-bf518/include/mach/defBF514.h   |   28 +------------
- arch/blackfin/mach-bf518/include/mach/defBF516.h   |   28 +------------
- arch/blackfin/mach-bf518/include/mach/defBF518.h   |   28 +------------
- .../mach-bf518/include/mach/defBF51x_base.h        |   28 +------------
- arch/blackfin/mach-bf518/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf518/include/mach/irq.h        |   29 +------------
- arch/blackfin/mach-bf518/include/mach/portmux.h    |    6 +++
- arch/blackfin/mach-bf518/ints-priority.c           |   27 +-----------
- arch/blackfin/mach-bf527/boards/cm_bf527.c         |   31 ++------------
- arch/blackfin/mach-bf527/boards/ezbrd.c            |   30 ++------------
- arch/blackfin/mach-bf527/boards/ezkit.c            |   30 ++------------
- arch/blackfin/mach-bf527/dma.c                     |   28 ++-----------
- arch/blackfin/mach-bf527/include/mach/bf527.h      |   27 +-----------
- .../mach-bf527/include/mach/bfin_serial_5xx.h      |   29 +------------
- arch/blackfin/mach-bf527/include/mach/blackfin.h   |   29 +------------
- arch/blackfin/mach-bf527/include/mach/cdefBF522.h  |   29 +------------
- arch/blackfin/mach-bf527/include/mach/cdefBF525.h  |   29 +------------
- arch/blackfin/mach-bf527/include/mach/cdefBF527.h  |   29 +------------
- .../mach-bf527/include/mach/cdefBF52x_base.h       |   28 +------------
- arch/blackfin/mach-bf527/include/mach/defBF522.h   |   28 +------------
- arch/blackfin/mach-bf527/include/mach/defBF525.h   |   28 +------------
- arch/blackfin/mach-bf527/include/mach/defBF527.h   |   28 +------------
- .../mach-bf527/include/mach/defBF52x_base.h        |   28 +------------
- arch/blackfin/mach-bf527/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf527/include/mach/irq.h        |   29 +------------
- arch/blackfin/mach-bf527/include/mach/portmux.h    |    6 +++
- arch/blackfin/mach-bf527/ints-priority.c           |   27 +-----------
- arch/blackfin/mach-bf533/boards/H8606.c            |   33 +++------------
- arch/blackfin/mach-bf533/boards/blackstamp.c       |   14 ++----
- arch/blackfin/mach-bf533/boards/cm_bf533.c         |   30 ++-----------
- arch/blackfin/mach-bf533/boards/ezkit.c            |   30 ++------------
- arch/blackfin/mach-bf533/boards/ip0x.c             |   36 +++-------------
- arch/blackfin/mach-bf533/boards/stamp.c            |   30 ++------------
- arch/blackfin/mach-bf533/dma.c                     |   28 ++-----------
- arch/blackfin/mach-bf533/include/mach/bf533.h      |   27 +-----------
- .../mach-bf533/include/mach/bfin_serial_5xx.h      |   29 +------------
- arch/blackfin/mach-bf533/include/mach/blackfin.h   |   28 +------------
- arch/blackfin/mach-bf533/include/mach/cdefBF532.h  |   28 +------------
- arch/blackfin/mach-bf533/include/mach/defBF532.h   |   44 +------------------
- arch/blackfin/mach-bf533/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf533/include/mach/irq.h        |   28 +------------
- arch/blackfin/mach-bf533/include/mach/portmux.h    |    6 +++
- arch/blackfin/mach-bf533/ints-priority.c           |   27 +-----------
- arch/blackfin/mach-bf537/boards/cm_bf537e.c        |   31 ++------------
- arch/blackfin/mach-bf537/boards/cm_bf537u.c        |   31 ++------------
- arch/blackfin/mach-bf537/boards/minotaur.c         |    6 +++
- arch/blackfin/mach-bf537/boards/pnav10.c           |   30 ++------------
- arch/blackfin/mach-bf537/boards/stamp.c            |   30 ++------------
- arch/blackfin/mach-bf537/boards/tcm_bf537.c        |   31 ++------------
- arch/blackfin/mach-bf537/dma.c                     |   28 ++-----------
- arch/blackfin/mach-bf537/include/mach/bf537.h      |   27 +-----------
- .../mach-bf537/include/mach/bfin_serial_5xx.h      |   29 +------------
- arch/blackfin/mach-bf537/include/mach/blackfin.h   |   29 +------------
- arch/blackfin/mach-bf537/include/mach/cdefBF534.h  |   29 +------------
- arch/blackfin/mach-bf537/include/mach/cdefBF537.h  |   29 +------------
- arch/blackfin/mach-bf537/include/mach/defBF534.h   |   28 +------------
- arch/blackfin/mach-bf537/include/mach/defBF537.h   |   29 +------------
- arch/blackfin/mach-bf537/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf537/include/mach/irq.h        |   29 +------------
- arch/blackfin/mach-bf537/include/mach/portmux.h    |    6 +++
- arch/blackfin/mach-bf537/ints-priority.c           |   27 +-----------
- arch/blackfin/mach-bf538/boards/ezkit.c            |   30 ++------------
- arch/blackfin/mach-bf538/dma.c                     |   28 ++-----------
- arch/blackfin/mach-bf538/include/mach/bf538.h      |   27 +-----------
- .../mach-bf538/include/mach/bfin_serial_5xx.h      |   29 +------------
- arch/blackfin/mach-bf538/include/mach/blackfin.h   |   29 +------------
- arch/blackfin/mach-bf538/include/mach/cdefBF538.h  |   28 +------------
- arch/blackfin/mach-bf538/include/mach/defBF539.h   |   44 +------------------
- arch/blackfin/mach-bf538/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf538/include/mach/irq.h        |   29 +------------
- arch/blackfin/mach-bf538/include/mach/portmux.h    |    6 +++
- arch/blackfin/mach-bf538/ints-priority.c           |   27 +-----------
- arch/blackfin/mach-bf548/boards/cm_bf548.c         |   31 ++------------
- arch/blackfin/mach-bf548/boards/ezkit.c            |   30 ++------------
- arch/blackfin/mach-bf548/dma.c                     |   27 +-----------
- arch/blackfin/mach-bf548/include/mach/bf548.h      |   27 +-----------
- .../blackfin/mach-bf548/include/mach/bf54x-lq043.h |    6 +++
- arch/blackfin/mach-bf548/include/mach/bf54x_keys.h |    6 +++
- .../mach-bf548/include/mach/bfin_serial_5xx.h      |   29 +------------
- arch/blackfin/mach-bf548/include/mach/blackfin.h   |   29 +------------
- arch/blackfin/mach-bf548/include/mach/cdefBF542.h  |   28 +------------
- arch/blackfin/mach-bf548/include/mach/cdefBF544.h  |   28 +------------
- arch/blackfin/mach-bf548/include/mach/cdefBF547.h  |   28 +------------
- arch/blackfin/mach-bf548/include/mach/cdefBF548.h  |   28 +------------
- arch/blackfin/mach-bf548/include/mach/cdefBF549.h  |   28 +------------
- .../mach-bf548/include/mach/cdefBF54x_base.h       |   28 +------------
- arch/blackfin/mach-bf548/include/mach/defBF542.h   |   28 +------------
- arch/blackfin/mach-bf548/include/mach/defBF544.h   |   28 +------------
- arch/blackfin/mach-bf548/include/mach/defBF547.h   |   28 +------------
- arch/blackfin/mach-bf548/include/mach/defBF548.h   |   28 +------------
- arch/blackfin/mach-bf548/include/mach/defBF549.h   |   28 +------------
- .../mach-bf548/include/mach/defBF54x_base.h        |   28 +------------
- arch/blackfin/mach-bf548/include/mach/gpio.h       |   30 +------------
- arch/blackfin/mach-bf548/include/mach/irq.h        |   29 +------------
- arch/blackfin/mach-bf548/include/mach/portmux.h    |    6 +++
- arch/blackfin/mach-bf548/ints-priority.c           |   27 +-----------
- arch/blackfin/mach-bf561/atomic.S                  |   21 +--------
- arch/blackfin/mach-bf561/boards/cm_bf561.c         |   30 ++-----------
- arch/blackfin/mach-bf561/boards/ezkit.c            |   29 ++-----------
- arch/blackfin/mach-bf561/boards/tepla.c            |   14 +++----
- arch/blackfin/mach-bf561/dma.c                     |   28 ++-----------
- arch/blackfin/mach-bf561/include/mach/bf561.h      |   27 +-----------
- .../mach-bf561/include/mach/bfin_serial_5xx.h      |   29 +------------
- arch/blackfin/mach-bf561/include/mach/blackfin.h   |   28 +------------
- arch/blackfin/mach-bf561/include/mach/cdefBF561.h  |   28 +------------
- arch/blackfin/mach-bf561/include/mach/defBF561.h   |   29 +------------
- arch/blackfin/mach-bf561/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf561/include/mach/irq.h        |   29 +------------
- arch/blackfin/mach-bf561/include/mach/portmux.h    |    6 +++
- arch/blackfin/mach-bf561/include/mach/smp.h        |    6 +++
- arch/blackfin/mach-bf561/ints-priority.c           |   27 +-----------
- arch/blackfin/mach-bf561/secondary.S               |   24 ++---------
- arch/blackfin/mach-bf561/smp.c                     |   21 +--------
- arch/blackfin/mach-common/arch_checks.c            |   27 +-----------
- arch/blackfin/mach-common/cache-c.c                |    2 -
- arch/blackfin/mach-common/cache.S                  |    2 -
- arch/blackfin/mach-common/cpufreq.c                |   27 +-----------
- arch/blackfin/mach-common/entry.S                  |   31 ++------------
- arch/blackfin/mach-common/head.S                   |    2 -
- arch/blackfin/mach-common/interrupt.S              |   30 ++-----------
- arch/blackfin/mach-common/ints-priority.c          |   35 ++++------------
- arch/blackfin/mach-common/irqpanic.c               |   27 +-----------
- arch/blackfin/mach-common/pm.c                     |   34 ++-------------
- arch/blackfin/mach-common/smp.c                    |   22 ++--------
- arch/blackfin/mm/blackfin_sram.h                   |   27 +-----------
- arch/blackfin/mm/init.c                            |   27 +-----------
- arch/blackfin/mm/isram-driver.c                    |   14 +-----
- arch/blackfin/mm/sram-alloc.c                      |   27 +-----------
- 248 files changed, 893 insertions(+), 4298 deletions(-)
- create mode 100644 arch/blackfin/ADI_BSD.txt
+diff --git a/arch/blackfin/mach-bf518/include/mach/cdefBF518.h b/arch/blackfin/mach-bf518/include/mach/cdefBF518.h
+index fd92f6e..929b906 100644
+--- a/arch/blackfin/mach-bf518/include/mach/cdefBF518.h
++++ b/arch/blackfin/mach-bf518/include/mach/cdefBF518.h
+@@ -186,6 +186,47 @@
+ #define bfin_read_EMAC_TXC_ABORT()		bfin_read32(EMAC_TXC_ABORT)
+ #define bfin_write_EMAC_TXC_ABORT(val)		bfin_write32(EMAC_TXC_ABORT, val)
+ 
++#define bfin_read_EMAC_PTP_CTL()                bfin_read16(EMAC_PTP_CTL)
++#define bfin_write_EMAC_PTP_CTL(val)            bfin_write16(EMAC_PTP_CTL, val)
++#define bfin_read_EMAC_PTP_IE()                 bfin_read16(EMAC_PTP_IE)
++#define bfin_write_EMAC_PTP_IE(val)             bfin_write16(EMAC_PTP_IE, val)
++#define bfin_read_EMAC_PTP_ISTAT()              bfin_read16(EMAC_PTP_ISTAT)
++#define bfin_write_EMAC_PTP_ISTAT(val)          bfin_write16(EMAC_PTP_ISTAT, val)
++#define bfin_read_EMAC_PTP_FOFF()               bfin_read32(EMAC_PTP_FOFF)
++#define bfin_write_EMAC_PTP_FOFF(val)           bfin_write32(EMAC_PTP_FOFF, val)
++#define bfin_read_EMAC_PTP_FV1()                bfin_read32(EMAC_PTP_FV1)
++#define bfin_write_EMAC_PTP_FV1(val)            bfin_write32(EMAC_PTP_FV1, val)
++#define bfin_read_EMAC_PTP_FV2()                bfin_read32(EMAC_PTP_FV2)
++#define bfin_write_EMAC_PTP_FV2(val)            bfin_write32(EMAC_PTP_FV2, val)
++#define bfin_read_EMAC_PTP_FV3()                bfin_read32(EMAC_PTP_FV3)
++#define bfin_write_EMAC_PTP_FV3(val)            bfin_write32(EMAC_PTP_FV3, val)
++#define bfin_read_EMAC_PTP_ADDEND()             bfin_read32(EMAC_PTP_ADDEND)
++#define bfin_write_EMAC_PTP_ADDEND(val)         bfin_write32(EMAC_PTP_ADDEND, val)
++#define bfin_read_EMAC_PTP_ACCR()               bfin_read32(EMAC_PTP_ACCR)
++#define bfin_write_EMAC_PTP_ACCR(val)           bfin_write32(EMAC_PTP_ACCR, val)
++#define bfin_read_EMAC_PTP_OFFSET()             bfin_read32(EMAC_PTP_OFFSET)
++#define bfin_write_EMAC_PTP_OFFSET(val)         bfin_write32(EMAC_PTP_OFFSET, val)
++#define bfin_read_EMAC_PTP_TIMELO()             bfin_read32(EMAC_PTP_TIMELO)
++#define bfin_write_EMAC_PTP_TIMELO(val)         bfin_write32(EMAC_PTP_TIMELO, val)
++#define bfin_read_EMAC_PTP_TIMEHI()             bfin_read32(EMAC_PTP_TIMEHI)
++#define bfin_write_EMAC_PTP_TIMEHI(val)         bfin_write32(EMAC_PTP_TIMEHI, val)
++#define bfin_read_EMAC_PTP_RXSNAPLO()           bfin_read32(EMAC_PTP_RXSNAPLO)
++#define bfin_read_EMAC_PTP_RXSNAPHI()           bfin_read32(EMAC_PTP_RXSNAPHI)
++#define bfin_read_EMAC_PTP_TXSNAPLO()           bfin_read32(EMAC_PTP_TXSNAPLO)
++#define bfin_read_EMAC_PTP_TXSNAPHI()           bfin_read32(EMAC_PTP_TXSNAPHI)
++#define bfin_read_EMAC_PTP_ALARMLO()            bfin_read32(EMAC_PTP_ALARMLO)
++#define bfin_write_EMAC_PTP_ALARMLO(val)        bfin_write32(EMAC_PTP_ALARMLO, val)
++#define bfin_read_EMAC_PTP_ALARMHI()            bfin_read32(EMAC_PTP_ALARMHI)
++#define bfin_write_EMAC_PTP_ALARMHI(val)        bfin_write32(EMAC_PTP_ALARMHI, val)
++#define bfin_read_EMAC_PTP_ID_OFF()             bfin_read16(EMAC_PTP_ID_OFF)
++#define bfin_write_EMAC_PTP_ID_OFF(val)         bfin_write16(EMAC_PTP_ID_OFF, val)
++#define bfin_read_EMAC_PTP_ID_SNAP()            bfin_read32(EMAC_PTP_ID_SNAP)
++#define bfin_write_EMAC_PTP_ID_SNAP(val)        bfin_write32(EMAC_PTP_ID_SNAP, val)
++#define bfin_read_EMAC_PTP_PPS_STARTHI()        bfin_read32(EMAC_PTP_PPS_STARTHI)
++#define bfin_write_EMAC_PTP_PPS_STARTHI(val)    bfin_write32(EMAC_PTP_PPS_STARTHI, val)
++#define bfin_read_EMAC_PTP_PPS_PERIOD()         bfin_read32(EMAC_PTP_PPS_PERIOD)
++#define bfin_write_EMAC_PTP_PPS_PERIOD(val)     bfin_write32(EMAC_PTP_PPS_PERIOD, val)
++
+ /* Removable Storage Interface Registers */
+ 
+ #define bfin_read_RSI_PWR_CTL()        bfin_read16(RSI_PWR_CONTROL)
+diff --git a/arch/blackfin/mach-bf518/include/mach/defBF518.h b/arch/blackfin/mach-bf518/include/mach/defBF518.h
+index 16b7eef..794cf06 100644
+--- a/arch/blackfin/mach-bf518/include/mach/defBF518.h
++++ b/arch/blackfin/mach-bf518/include/mach/defBF518.h
+@@ -624,4 +624,32 @@
+ 
+ #define                       RWR  0x1        /* Read Wait Request */
+ 
++/* Bit masks for EMAC_PTP_CTL */
++
++#define                    PTP_EN  0x1        /* Enable the PTP_TSYNC module */
++#define                        TL  0x2        /* Timestamp lock control */
++#define                      ASEN  0x10       /* Auxiliary snapshot control */
++#define                     PPSEN  0x80       /* Pulse-per-second (PPS) control */
++#define                     CKOEN  0x2000     /* Clock output control */
++
++/* Bit masks for EMAC_PTP_IE */
++
++#define                      ALIE  0x1        /* Alarm interrupt enable */
++#define                     RXEIE  0x2        /* Receive event interrupt enable */
++#define                     RXGIE  0x4        /* Receive general interrupt enable */
++#define                      TXIE  0x8        /* Transmit interrupt enable */
++#define                     RXOVE  0x10       /* Receive overrun error interrupt enable */
++#define                     TXOVE  0x20       /* Transmit overrun error interrupt enable */
++#define                      ASIE  0x40       /* Auxiliary snapshot interrupt enable */
++
++/* Bit masks for EMAC_PTP_ISTAT */
++
++#define                       ALS  0x1        /* Alarm status */
++#define                      RXEL  0x2        /* Receive event interrupt status */
++#define                      RXGL  0x4        /* Receive general interrupt status */
++#define                      TXTL  0x8        /* Transmit snapshot status */
++#define                      RXOV  0x10       /* Receive snapshot overrun status */
++#define                      TXOV  0x20       /* Transmit snapshot overrun status */
++#define                       ASL  0x40       /* Auxiliary snapshot interrupt status */
++
+ #endif /* _DEF_BF518_H */
+-- 
+1.6.5.rc2
 
