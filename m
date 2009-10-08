@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbZJHOQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932315AbZJHOeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932286AbZJHOQE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 10:16:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbZJHOQD
+	id S932315AbZJHOeD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 10:34:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbZJHOeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 10:16:03 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35360 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754295AbZJHOQC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 10:16:02 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/x4ggT+Vnx5qdrH8KTu7chSREMOp4FTgwGGykUAC
-	gROc26opjvg75+
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
- CPU"
-From: Mike Galbraith <efault@gmx.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Frans Pop <elendil@planet.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <20091008064521.07fae137@infradead.org>
-References: <200910051500.55875.elendil@planet.nl>
-	 <200910061749.02805.elendil@planet.nl>
-	 <200910071910.53907.elendil@planet.nl>
-	 <200910072034.57511.elendil@planet.nl>
-	 <1255001062.7500.1.camel@marge.simson.net>
-	 <20091008064521.07fae137@infradead.org>
+	Thu, 8 Oct 2009 10:34:03 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47290 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757045AbZJHOeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 10:34:01 -0400
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+From: James Bottomley <James.Bottomley@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1254862442.4383.183.camel@mulgrave.site>
+References: <1254844007.4383.85.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
+	 <1254862442.4383.183.camel@mulgrave.site>
 Content-Type: text/plain
-Date: Thu, 08 Oct 2009 16:15:12 +0200
-Message-Id: <1255011312.7294.3.camel@marge.simson.net>
+Date: Thu, 08 Oct 2009 14:33:19 +0000
+Message-Id: <1255012399.4187.24.camel@mulgrave.site>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.67
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 06:45 -0700, Arjan van de Ven wrote:
-> On Thu, 08 Oct 2009 13:24:22 +0200
-> Mike Galbraith <efault@gmx.de> wrote:
-> > Latencytop was accounting uninterruptible and interruptible sleep
-> > time up to 5ms, which is not the latency the user is looking for.
+On Tue, 2009-10-06 at 20:54 +0000, James Bottomley wrote:
+> On Tue, 2009-10-06 at 08:58 -0700, Linus Torvalds wrote:
+> > 
+> > On Tue, 6 Oct 2009, James Bottomley wrote:
+> > >
+> > > This is mostly fixes.  However, it contains two new drivers: Brocade SAS
+> > > (bfa), the Bladengine2 iSCSI (be2iscsi) under the merge window exemption
+> > 
+> > Btw, I'm getting less excited about the merge window exemption.
+> > 
+> > It makes sense for consumer devices that people actually hit and that are 
+> > needed for bringup (ie they make a difference between a system that can be 
+> > installed and used, and one that cannot), but I'm not at all sure it makes 
+> > sense for things like this.
+> > 
+> > The _reason_ for the driver exemption was the fact that even a broken 
+> > driver is better than no driver at all for somebody who just can't get a 
+> > working system without it, but that argument really goes away when the 
+> > driver is so specialized that it's not about regular hardware any more.
 > 
-> it is for everything but the scheduler latency!
+> OK, so I don't see a huge distinction here.  This is a driver for a
+> piece of enterprise HW that Linux previously didn't support.  To someone
+> cursing not being able to use there hardware, it's every bit as
+> important as the latest wireless driver.
 > 
-> latencytop wants to show where you're waiting for disk, etc etc.
-> that's not "time on runqueue".
+> > And the whole "driver exemption" seems to have become a by-word for "I can 
+> > ignore the merge window for 50% of my code". Which makes me very tired of 
+> > it if there aren't real advantages to real users.
 > 
-> for the scheduler delays a whole different codepath is used!
+> While the exemption exists, I can certainly ignore the merge window for
+> new drivers, yes ... however, that's not 50% of the code submitted in
+> the merge window, and it's one time ... the same driver follows the
+> merge window for the next release.  I try to police this pretty rigidly
+> in SCSI ... as you do at the top.
+> 
+> In fact, for SCSI, these two drivers are the third and fourth merge
+> window exemptions in our year long history of allowing this.
+> 
+> > So I'm seriously considering a "the driver has to be mass market and also 
+> > actually matter to an install" rule for the exemption to be valid.
+> 
+> OK, so on the policy, let me argue against the above.  One of the things
+> we've been saying about linux is that we facilitate rapid adoption of
+> new hardware (and that we support more hardware than any other OS).  The
+> Merge window exemption was adopted at the kernel summit last year
+> specifically to speed our adoption of new hardware.  I think it's
+> valuable for this speed of adoption to be *all* hardware, not
+> specifically mass market laptop type stuff.
+> 
+> However, even if you want to change the definition, can we please not do
+> it retroactively?
 
-That explains.. a few things.
+So what do you want to do about this?  I need the fixes in this tree to
+go forwards even if you don't want the new drivers ... I also now have a
+list of other fixes to put in the next round which I'd like to get into
+linux-next but while this is unresolved I can't really add more stuff to
+my rc-fixes tree.
 
-	-Mike
+James
+
 
