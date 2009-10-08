@@ -1,335 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbZJHJz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbZJHJye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbZJHJz1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 05:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757250AbZJHJz0
+	id S1757328AbZJHJye (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 05:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbZJHJyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 05:55:26 -0400
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:36118 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756725AbZJHJzY (ORCPT
+	Thu, 8 Oct 2009 05:54:33 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56294 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756281AbZJHJyc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 05:55:24 -0400
-Date: Thu, 8 Oct 2009 15:24:37 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: [v8 PATCH 7/8]: pSeries: implement pSeries processor idle module.
-Message-ID: <20091008095437.GH20595@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20091008094828.GA20595@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20091008094828.GA20595@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 8 Oct 2009 05:54:32 -0400
+Date: Thu, 8 Oct 2009 10:55:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Thomas Chou <thomas@wytron.com.tw>
+Cc: linux-ide@vger.kernel.org,
+       Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
+       linux-kernel@vger.kernel.org, Thomas Chou <thomas@wytron.com.tw>,
+       Ian Abbott <abbotti@mev.co.uk>
+Subject: Re: [PATCH v2] ata: New PATA driver for Altera CompactFlash.
+Message-ID: <20091008105503.6ce414f5@lxorguk.ukuu.org.uk>
+In-Reply-To: <1254967110-3495-1-git-send-email-thomas@wytron.com.tw>
+References: <1254967110-3495-1-git-send-email-thomas@wytron.com.tw>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-08 15:18:28]:
+On Thu,  8 Oct 2009 09:58:30 +0800
+Thomas Chou <thomas@wytron.com.tw> wrote:
 
-This patch creates arch/powerpc/platforms/pseries/processor_idle.c,
-which implements the cpuidle infrastructure for pseries.
-It implements a pseries_cpuidle_loop() which would be the main idle loop
-called from cpu_idle(). It makes decision of entering either
-dedicated_snooze_loop or dedicated_cede_loop for dedicated lpar and
-shared_cede_loop for shared lpar processor based on the
-decision taken by the cpuidle governor.
+> This patch adds a new PATA driver to support the Altera SOPC Builder
+> CompactFlash component as a PATA device with support for insertion
+> and removal of CF cards.  It uses the platform driver model.
 
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/system.h               |    1 
- arch/powerpc/kernel/sysfs.c                     |    2 
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/processor_idle.c |  210 ++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/pseries.h        |    8 
- 5 files changed, 222 insertions(+)
+Can you explain why you remove the interface rather than the device on
+the interface when you detect a card removal ?
 
-Index: linux.trees.git/arch/powerpc/platforms/pseries/Makefile
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/Makefile
-+++ linux.trees.git/arch/powerpc/platforms/pseries/Makefile
-@@ -26,3 +26,4 @@ obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst
- obj-$(CONFIG_PHYP_DUMP)	+= phyp_dump.o
- obj-$(CONFIG_CMM)		+= cmm.o
- obj-$(CONFIG_DTL)		+= dtl.o
-+obj-$(CONFIG_PSERIES_PROCESSOR_IDLE)	+= processor_idle.o
-Index: linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
-===================================================================
---- linux.trees.git.orig/arch/powerpc/platforms/pseries/pseries.h
-+++ linux.trees.git/arch/powerpc/platforms/pseries/pseries.h
-@@ -10,6 +10,8 @@
- #ifndef _PSERIES_PSERIES_H
- #define _PSERIES_PSERIES_H
- 
-+#include <linux/cpuidle.h>
-+
- extern void __init fw_feature_init(const char *hypertas, unsigned long len);
- 
- struct pt_regs;
-@@ -40,4 +42,10 @@ extern unsigned long rtas_poweron_auto;
- 
- extern void find_udbg_vterm(void);
- 
-+DECLARE_PER_CPU(unsigned long, smt_snooze_delay);
-+
-+#ifdef CONFIG_PSERIES_PROCESSOR_IDLE
-+extern struct cpuidle_driver pseries_idle_driver;
-+#endif
-+
- #endif /* _PSERIES_PSERIES_H */
-Index: linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
-===================================================================
---- /dev/null
-+++ linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -0,0 +1,210 @@
-+/*
-+ *  processor_idle - idle state cpuidle driver.
-+ *  Adapted from drivers/acpi/processor_idle.c
-+ *
-+ *  Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-+ *
-+ *  Copyright (C) 2009 IBM Corporation.
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or (at
-+ *  your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/moduleparam.h>
-+#include <linux/cpuidle.h>
-+
-+#include <asm/paca.h>
-+#include <asm/reg.h>
-+#include <asm/system.h>
-+#include <asm/machdep.h>
-+#include <asm/firmware.h>
-+
-+#include "plpar_wrappers.h"
-+#include "pseries.h"
-+
-+MODULE_AUTHOR("Arun R Bharadwaj");
-+MODULE_DESCRIPTION("pSeries Idle State Driver");
-+MODULE_LICENSE("GPL");
-+
-+struct cpuidle_driver pseries_idle_driver = {
-+	.name =		"pseries_idle",
-+	.owner =	THIS_MODULE,
-+};
-+
-+DEFINE_PER_CPU(struct cpuidle_device, pseries_dev);
-+
-+#define IDLE_STATE_COUNT	2
-+
-+/* pSeries Idle state Flags */
-+#define	PSERIES_DEDICATED_SNOOZE	(0x01)
-+#define	PSERIES_DEDICATED_CEDE		(0x02)
-+#define	PSERIES_SHARED_CEDE		(0x03)
-+
-+static int pseries_idle_init(struct cpuidle_device *dev)
-+{
-+	return cpuidle_register_device(dev);
-+}
-+
-+static void shared_cede_loop(void)
-+{
-+	get_lppaca()->idle = 1;
-+	cede_processor();
-+	get_lppaca()->idle = 0;
-+}
-+
-+static void dedicated_snooze_loop(void)
-+{
-+	local_irq_enable();
-+	set_thread_flag(TIF_POLLING_NRFLAG);
-+	while (!need_resched()) {
-+		ppc64_runlatch_off();
-+		HMT_low();
-+		HMT_very_low();
-+	}
-+	HMT_medium();
-+	clear_thread_flag(TIF_POLLING_NRFLAG);
-+	smp_mb();
-+	local_irq_disable();
-+}
-+
-+static void dedicated_cede_loop(void)
-+{
-+	ppc64_runlatch_off();
-+	HMT_medium();
-+	cede_processor();
-+}
-+
-+static int pseries_cpuidle_loop(struct cpuidle_device *dev,
-+				struct cpuidle_state *st)
-+{
-+	ktime_t t1, t2;
-+	s64 diff;
-+	int ret;
-+	unsigned long in_purr, out_purr;
-+
-+	get_lppaca()->idle = 1;
-+	get_lppaca()->donate_dedicated_cpu = 1;
-+	in_purr = mfspr(SPRN_PURR);
-+
-+	t1 = ktime_get();
-+
-+	if (st->flags & PSERIES_SHARED_CEDE)
-+		shared_cede_loop();
-+	else if (st->flags & PSERIES_DEDICATED_SNOOZE)
-+		dedicated_snooze_loop();
-+	else
-+		dedicated_cede_loop();
-+
-+	t2 = ktime_get();
-+	diff = ktime_to_us(ktime_sub(t2, t1));
-+	if (diff > INT_MAX)
-+		diff = INT_MAX;
-+
-+	ret = (int) diff;
-+
-+	out_purr = mfspr(SPRN_PURR);
-+	get_lppaca()->wait_state_cycles += out_purr - in_purr;
-+	get_lppaca()->donate_dedicated_cpu = 0;
-+	get_lppaca()->idle = 0;
-+
-+	return ret;
-+}
-+
-+static int pseries_setup_cpuidle(struct cpuidle_device *dev, int cpu)
-+{
-+	int i;
-+	struct cpuidle_state *state;
-+
-+	dev->cpu = cpu;
-+
-+	if (get_lppaca()->shared_proc) {
-+		state = &dev->states[0];
-+		snprintf(state->name, CPUIDLE_NAME_LEN, "IDLE");
-+		state->enter = pseries_cpuidle_loop;
-+		strncpy(state->desc, "shared_cede", CPUIDLE_DESC_LEN);
-+		state->flags = PSERIES_SHARED_CEDE;
-+		state->exit_latency = 0;
-+		state->target_residency = 0;
-+		return 0;
-+	}
-+
-+	for (i = 0; i < IDLE_STATE_COUNT; i++) {
-+		state = &dev->states[i];
-+
-+		snprintf(state->name, CPUIDLE_NAME_LEN, "CEDE%d", i);
-+		state->enter = pseries_cpuidle_loop;
-+
-+		switch (i) {
-+		case 0:
-+			strncpy(state->desc, "snooze", CPUIDLE_DESC_LEN);
-+			state->flags = PSERIES_DEDICATED_SNOOZE;
-+			state->exit_latency = 0;
-+			state->target_residency = 0;
-+			break;
-+
-+		case 1:
-+			strncpy(state->desc, "cede", CPUIDLE_DESC_LEN);
-+			state->flags = PSERIES_DEDICATED_CEDE;
-+			state->exit_latency = 1;
-+			state->target_residency =
-+					__get_cpu_var(smt_snooze_delay);
-+			break;
-+		}
-+	}
-+	dev->state_count = IDLE_STATE_COUNT;
-+
-+	return 0;
-+}
-+
-+void update_smt_snooze_delay(int snooze)
-+{
-+	int cpu;
-+	for_each_online_cpu(cpu)
-+		per_cpu(pseries_dev, cpu).states[0].target_residency = snooze;
-+}
-+
-+static int __init pseries_processor_idle_init(void)
-+{
-+	int cpu;
-+	int result;
-+
-+	result = cpuidle_register_driver(&pseries_idle_driver);
-+
-+	if (result < 0)
-+		return result;
-+
-+	printk(KERN_DEBUG "pSeries idle driver registered\n");
-+
-+	if (!firmware_has_feature(FW_FEATURE_SPLPAR)) {
-+		printk(KERN_DEBUG "Using default idle\n");
-+		return 0;
-+	}
-+
-+	for_each_online_cpu(cpu) {
-+		pseries_setup_cpuidle(&per_cpu(pseries_dev, cpu), cpu);
-+		pseries_idle_init(&per_cpu(pseries_dev, cpu));
-+	}
-+
-+	printk(KERN_DEBUG "Using cpuidle idle loop\n");
-+
-+	return 0;
-+}
-+
-+device_initcall(pseries_processor_idle_init);
-Index: linux.trees.git/arch/powerpc/include/asm/system.h
-===================================================================
---- linux.trees.git.orig/arch/powerpc/include/asm/system.h
-+++ linux.trees.git/arch/powerpc/include/asm/system.h
-@@ -548,6 +548,7 @@ extern void account_system_vtime(struct 
- extern struct dentry *powerpc_debugfs_root;
- 
- void cpu_idle_wait(void);
-+extern void update_smt_snooze_delay(int snooze);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_SYSTEM_H */
-Index: linux.trees.git/arch/powerpc/kernel/sysfs.c
-===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/sysfs.c
-+++ linux.trees.git/arch/powerpc/kernel/sysfs.c
-@@ -18,6 +18,7 @@
- #include <asm/machdep.h>
- #include <asm/smp.h>
- #include <asm/pmc.h>
-+#include <asm/system.h>
- 
- #include "cacheinfo.h"
- 
-@@ -51,6 +52,7 @@ static ssize_t store_smt_snooze_delay(st
- 		return -EINVAL;
- 
- 	per_cpu(smt_snooze_delay, cpu->sysdev.id) = snooze;
-+	update_smt_snooze_delay(snooze);
- 
- 	return count;
- }
