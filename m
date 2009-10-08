@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751106AbZJHEGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751425AbZJHE2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751106AbZJHEGj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 00:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZJHEGi
+	id S1751425AbZJHE2M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 00:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbZJHE2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 00:06:38 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54959 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750789AbZJHEGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 00:06:37 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+mIx17YPGmPymNsemJnEh3/jnCZ/EH4C38+0gL2z
-	+nwu0ZYYcFOHy/
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
- CPU"
-From: Mike Galbraith <efault@gmx.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <200910072034.57511.elendil@planet.nl>
-References: <200910051500.55875.elendil@planet.nl>
-	 <200910061749.02805.elendil@planet.nl>
-	 <200910071910.53907.elendil@planet.nl>
-	 <200910072034.57511.elendil@planet.nl>
-Content-Type: text/plain
-Date: Thu, 08 Oct 2009 06:05:43 +0200
-Message-Id: <1254974743.7797.21.camel@marge.simson.net>
+	Thu, 8 Oct 2009 00:28:11 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34563 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751040AbZJHE2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 00:28:10 -0400
+Date: Thu, 8 Oct 2009 15:27:25 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>
+Subject: linux-next: pci tree build warning
+Message-Id: <20091008152725.1351485a.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__8_Oct_2009_15_27_25_+1100_+Pmt_soVCwyp6Dyq"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 20:34 +0200, Frans Pop wrote:
-> On Wednesday 07 October 2009, Frans Pop wrote:
-> > On Tuesday 06 October 2009, Frans Pop wrote:
-> > > I've checked for 2.6.31.1 now and iwlagn is listed high there too when
-> > > the system is idle, but with normal values of 60-100 ms. And phy0 has
-> > > normal values of below 10 ms.
-> > > I've now rebooted with today's mainline git; phy0 now frequently shows
-> > > with values of around 100 ms too (i.e. higher than last time).
-> >
-> > Mike privately sent me a script to try to capture the latencies with
-> > perf, but the perf output does not show any high latencies at all. It
-> > looks as if we may have found a bug in latencytop here instead.
-> 
-> Not sure if it's relevant nor what it means, but I frequently see two lines 
-> for iwlagn, e.g:
-> 
->     Scheduler: waiting for cpu              102.4 msec         99.7 %
->     .                                         3.3 msec          0.3 %
-> 
-> I get the same results with both latencytop 0.4 and 0.5.
+--Signature=_Thu__8_Oct_2009_15_27_25_+1100_+Pmt_soVCwyp6Dyq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK, I see latencytop spikes here on an idle box too, to the tune of up
-to a _second_.  Booting with nohz=off seems to have cured it.
+Hi Jesse,
 
-I wanted to see if that's also the perf sched record -C N trouble I
-warned you not to try when recording with script, but unfortunately,
-after pulling this morning...
+Today's linux-next build (powerpc allnoconfig) produced this warning:
 
-marge:/root/tmp # perf sched lat --sort=max
-Segmentation fault
+WARNING: drivers/pci/built-in.o(.devinit.text+0x86a): Section mismatch in r=
+eference from the function pci_init() to the variable .init.data:pci_dfl_ca=
+che_line_size
+The function __devinit pci_init() references
+a variable __initdata pci_dfl_cache_line_size.
+If pci_dfl_cache_line_size is only used by pci_init then
+annotate pci_dfl_cache_line_size with a matching annotation.
 
-...perf sched got busted.  Seems likely to be same thing for both
-though, as magnitude/frequency of bogons is very similar.
+Introduced by commit b20dd110d21aac94b3f4063cffbcf9718656ce51 ("PCI:
+determine CLS more intelligently").
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-	-Mike
+--Signature=_Thu__8_Oct_2009_15_27_25_+1100_+Pmt_soVCwyp6Dyq
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrNai0ACgkQjjKRsyhoI8xg0ACfTLrfHSh3czsu9ZE4v8f+Dmzd
+MfQAnjmbn7NM4muoIA/J318T74lW8Oa8
+=mTe2
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__8_Oct_2009_15_27_25_+1100_+Pmt_soVCwyp6Dyq--
