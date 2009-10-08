@@ -1,78 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZJHGRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZJHGYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZJHGRV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 02:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZJHGRU
+	id S1753991AbZJHGYP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 02:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbZJHGYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 02:17:20 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:4312 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750790AbZJHGRT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 02:17:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=X1BQHRYtQYGKzV4mWeTlGb+K/j8ppDE8cLC3Rf8KnXid3KI24XU3CfBXQrFofLIjiX
-         jFzhbh7V4WltDpXM+xTEBe49ssK6i44aJ6e12XXhSgaOUkHQ2L5sp6M3bSMjEfP9XjRj
-         Y0MfQzc9RzDdzjAcDjgglkP+bXpZ8v/1vY7XI=
-MIME-Version: 1.0
-In-Reply-To: <20091002224124.GY1133@earth.li>
-References: <65168.192.168.10.89.1253788033.squirrel@dbdmail.itg.ti.com>
-	 <20091002224124.GY1133@earth.li>
-Date: Thu, 8 Oct 2009 11:46:12 +0530
-Message-ID: <d6a0f7aa0910072316y622f8a7ch40624dc43d1a650b@mail.gmail.com>
-Subject: Re: [PATCHv1 1/3] OMAP UART: Adds omap-serial driver support.
-From: Govindraj <govindraj.ti@gmail.com>
-To: Jonathan McDowell <noodles@earth.li>
-Cc: "Govindraj.R" <govindraj.raja@ti.com>, linux-omap@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 8 Oct 2009 02:24:14 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35590 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751056AbZJHGYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 02:24:13 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+s7iwxoL6sFmuc4rX2ohJajVr/vZSYu7aoOjj4EF
+	kDoZAC9jOssBWf
+Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
+ CPU"
+From: Mike Galbraith <efault@gmx.de>
+To: Frans Pop <elendil@planet.nl>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <1254974743.7797.21.camel@marge.simson.net>
+References: <200910051500.55875.elendil@planet.nl>
+	 <200910061749.02805.elendil@planet.nl>
+	 <200910071910.53907.elendil@planet.nl>
+	 <200910072034.57511.elendil@planet.nl>
+	 <1254974743.7797.21.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Thu, 08 Oct 2009 08:23:23 +0200
+Message-Id: <1254983003.14810.13.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 3, 2009 at 4:11 AM, Jonathan McDowell <noodles@earth.li> wrote:
-> On Thu, Sep 24, 2009 at 03:57:13PM +0530, Govindraj.R wrote:
->> From: Govindraj R <govindraj.raja@ti.com>
->>
->> This patch adds support for OMAP3430-HIGH SPEED UART Controller.
->>
->> Signed-off-by:        Govindraj R <govindraj.raja@ti.com>
->> Reviewed-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
->> Reviewed-by: Tony Lindgren <tony@atomide.com>
->> ---
->
->> +config SERIAL_OMAP
->> +     bool "OMAP serial port support"
->> +     depends on ARM && ARCH_OMAP
->> +     select SERIAL_CORE
->> +     help
->> +     If you have a machine based on an Texas Instruments OMAP CPU you
->> +     can enable its onboard serial ports by enabling this option.
->
-> If it's OMAP3 hardware then should the "depends on" be ARCH_OMAP3 ||
-> ARCH_OMAP4, rather than allowing it for OMAP1 + 2 as well?
->
-> J.
->
+On Thu, 2009-10-08 at 06:05 +0200, Mike Galbraith wrote:
+> On Wed, 2009-10-07 at 20:34 +0200, Frans Pop wrote:
+> > On Wednesday 07 October 2009, Frans Pop wrote:
+> > > On Tuesday 06 October 2009, Frans Pop wrote:
+> > > > I've checked for 2.6.31.1 now and iwlagn is listed high there too when
+> > > > the system is idle, but with normal values of 60-100 ms. And phy0 has
+> > > > normal values of below 10 ms.
+> > > > I've now rebooted with today's mainline git; phy0 now frequently shows
+> > > > with values of around 100 ms too (i.e. higher than last time).
+> > >
+> > > Mike privately sent me a script to try to capture the latencies with
+> > > perf, but the perf output does not show any high latencies at all. It
+> > > looks as if we may have found a bug in latencytop here instead.
+> > 
+> > Not sure if it's relevant nor what it means, but I frequently see two lines 
+> > for iwlagn, e.g:
+> > 
+> >     Scheduler: waiting for cpu              102.4 msec         99.7 %
+> >     .                                         3.3 msec          0.3 %
+> > 
+> > I get the same results with both latencytop 0.4 and 0.5.
+> 
+> OK, I see latencytop spikes here on an idle box too, to the tune of up
+> to a _second_.  Booting with nohz=off seems to have cured it.
+> 
+> I wanted to see if that's also the perf sched record -C N trouble I
+> warned you not to try when recording with script, but unfortunately,
+> after pulling this morning...
+> 
+> marge:/root/tmp # perf sched lat --sort=max
+> Segmentation fault
+> 
+> ...perf sched got busted.  Seems likely to be same thing for both
+> though, as magnitude/frequency of bogons is very similar.
 
-Agree. Will do the changes.
+Reverting problematic commit showed that nohz isn't the source of perf
+sched record -C N oddity.
+
+However, aside from latencytop seemingly having trouble with nohz, there
+appears to be a problem with perf sched record -a as well, the same one
+Arjan just fixed for perf timechart.
+
+In thread - [PATCH] perf timechart: Work around commit 42e59d7d19dc4b4,
+Arjan said..
+<quote>
+Commit 42e59d7d19dc4b4 introduced a sample frequency framework..
+.. however it unfortunately changed how perf events get recorded,..
+</quote>
+
+Monkey see monkey (eep) do, and record mostly idle box, only amarok
+doing it's thing...
+
+Before:
+marge:/root/tmp # perf sched record sleep 1
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.279 MB perf.data (~12208 samples) ]
+
+After:
+marge:/root/tmp # perf sched record sleep 1
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.649 MB perf.data (~28349 samples) ]
 
 
-> --
-> Revd. Jonathan McDowell, ULC | If they can't take a joke....fuck 'em.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+perf_counter tools: make perf sched pass -F 0 to record
 
+Commit 42e59d7d19dc4b4 introduced a sample frequency framework..
+.. however it unfortunately changed how perf events get recorded,
+and caused sched to miss events.
 
+This patch causes the sched code to use -F 0 to not use the
+new framework when recording sched data.
 
--- 
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+
 ---
-Regards,
-Govindraj.R
+ tools/perf/builtin-sched.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-2.6/tools/perf/builtin-sched.c
+===================================================================
+--- linux-2.6.orig/tools/perf/builtin-sched.c
++++ linux-2.6/tools/perf/builtin-sched.c
+@@ -1902,6 +1902,7 @@ static const char *record_args[] = {
+ 	"-f",
+ 	"-m", "1024",
+ 	"-c", "1",
++	"-F", "0",
+ 	"-e", "sched:sched_switch:r",
+ 	"-e", "sched:sched_stat_wait:r",
+ 	"-e", "sched:sched_stat_sleep:r",
+
+
+
