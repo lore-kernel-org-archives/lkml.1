@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbZJHCgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbZJHCnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756937AbZJHCgP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 22:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZJHCgP
+	id S1755824AbZJHCnr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 22:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZJHCnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 22:36:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52597 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754601AbZJHCgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 22:36:14 -0400
-Date: Thu, 8 Oct 2009 13:35:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Airlie <airlied@linux.ie>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: Re: linux-next: manual merge of the drm tree with Linus' tree
-Message-Id: <20091008133529.eda6d568.sfr@canb.auug.org.au>
-In-Reply-To: <20091006132857.5bd1cc3a.sfr@canb.auug.org.au>
-References: <20091006132857.5bd1cc3a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+	Wed, 7 Oct 2009 22:43:47 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59507 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754900AbZJHCnq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 22:43:46 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 8 Oct 2009 11:40:37 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Myklebust Trond <Trond.Myklebust@netapp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 18/45] writeback: introduce wait queue for
+ balance_dirty_pages()
+Message-Id: <20091008114037.56f78b0e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091008015822.GB14224@localhost>
+References: <20091007073818.318088777@intel.com>
+	<20091007074903.422089703@intel.com>
+	<20091008100159.fb6770cf.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091008015822.GB14224@localhost>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__8_Oct_2009_13_35_29_+1100_2TqoJqJAu=dQykXL"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__8_Oct_2009_13_35_29_+1100_2TqoJqJAu=dQykXL
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 8 Oct 2009 09:58:22 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
+> On Thu, Oct 08, 2009 at 09:01:59AM +0800, KAMEZAWA Hiroyuki wrote:
+> > IIUC, "iowait" cpustat data was calculated by runqueue->nr_iowait as
+> > == kernel/schec.c
+> > void account_idle_time(cputime_t cputime)
+> > {
+> >         struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
+> >         cputime64_t cputime64 = cputime_to_cputime64(cputime);
+> >         struct rq *rq = this_rq();
+> > 
+> >         if (atomic_read(&rq->nr_iowait) > 0)
+> >                 cpustat->iowait = cputime64_add(cpustat->iowait, cputime64);
+> >         else
+> >                 cpustat->idle = cputime64_add(cpustat->idle, cputime64);
+> > }
+> > ==
+> > Then, for showing "cpu is in iowait", runqueue->nr_iowait should be modified
+> > at some places. In old kernel, congestion_wait() at el did that by calling
+> > io_schedule_timeout().
+> > 
+> > How this runqueue->nr_iowait is handled now ?
+> 
+> Good question. io_schedule() has an old comment for throttling IO wait:
+> 
+>          * But don't do that if it is a deliberate, throttling IO wait (this task
+>          * has set its backing_dev_info: the queue against which it should throttle)
+>          */
+>         void __sched io_schedule(void)
+> 
+> So it looks both Jens' and this patch behaves right in ignoring the
+> iowait accounting for balance_dirty_pages() :)
+> 
+Thank you for clarification.
+Then, hmm, %iotwait (which 'top' shows) didn't work as desgined and we need
+to update throttle_vm_writeout() and some in vmscan.c. Thanks for input.
 
-Hi Dave,
+BTW, I'm glad if I can know "how many threads/ios are throttoled now" per bdi.
 
-On Tue, 6 Oct 2009 13:28:57 +1100 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> Today's linux-next merge of the drm tree got a conflict in
-> drivers/gpu/drm/radeon/radeon_device.c between commit
-> 28d520433b6375740990ab99d69b0d0067fd656b ("drm/vgaarb: add VGA
-> arbitration support to the drm and kms") from Linus' tree and commit
-> 62a8ea3f7bb61e5f92db0a648b7cc566852c36ec ("drm/radeon/kms: Remove old
-> init path as no hw use it anymore") from the drm tree.
->=20
-> I have no idea how to reconcile these, so I have just used the version
-> from the drm tree.  Please do the merge with Linus' tree and fix this up
-> properly.  (There are also still conflicts in
-> drivers/gpu/drm/radeon/radeon.h and drivers/gpu/drm/radeon/radeon_asic.h)
+Regards,
+-Kame
 
-Got similar conflicts today ... any way you can sort this out, please?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Thu__8_Oct_2009_13_35_29_+1100_2TqoJqJAu=dQykXL
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkrNT/EACgkQjjKRsyhoI8yQIQCeIgAF4twy8z9PZ90RzU1MrSpS
-uisAn1xJ6uICfGagknMevuLavPHZ2+qR
-=1oLs
------END PGP SIGNATURE-----
 
---Signature=_Thu__8_Oct_2009_13_35_29_+1100_2TqoJqJAu=dQykXL--
+
