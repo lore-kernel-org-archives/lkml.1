@@ -1,116 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932990AbZJHSgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932960AbZJHSf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932990AbZJHSgK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 14:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932969AbZJHSgJ
+	id S932960AbZJHSf6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 14:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932829AbZJHSf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 14:36:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42425 "EHLO mx3.mail.elte.hu"
+	Thu, 8 Oct 2009 14:35:57 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54178 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932966AbZJHSgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 14:36:08 -0400
-Date: Thu, 8 Oct 2009 20:35:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: [GIT PULL] timer fixes
-Message-ID: <20091008183512.GA29701@elte.hu>
+	id S932782AbZJHSf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 14:35:57 -0400
+Date: Thu, 8 Oct 2009 20:35:15 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Alexander Strakh <strakh@ispras.ru>
+Cc: Pierre Ossman <pierre@ossman.eu>, sdhci-devel@lists.ossman.eu,
+       Linux Kernlel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] wbsd.c: after spin_lock_bh uses spin_unlock instead
+ spin_unlock_bh
+In-Reply-To: <200910081518.00707.strakh@ispras.ru>
+Message-ID: <alpine.LRH.2.00.0910082030010.12171@twin.jikos.cz>
+References: <200910081518.00707.strakh@ispras.ru>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Thu, 8 Oct 2009, Alexander Strakh wrote:
 
-Please pull the latest timers-fixes-for-linus git tree from:
+> 	KERNEL_VERSION: 2.6.31
+> 	DESCRIBE:
+> Driver ./drivers/mmc/host/wbsd.c calls spin_lock_bh and then spin_unlock 
+> instead of spin_unlock_bh:
+> 
+>  753 static void wbsd_request(struct mmc_host *mmc, struct mmc_request *mrq)
+> ...
+>  761         spin_lock_bh(&host->lock);
+> ...
+>  844 done:
+>  845         wbsd_request_end(host, mrq);
+>  846
+>  847         spin_unlock_bh(&host->lock);
+>  848 }
+> 
+> But in wsdb_request calls spin_unlock/spin_lock instead of 
+> spin_unlock_bh/spin_lock_bh;
+> 
+>  206 static void wbsd_request_end(struct wbsd_host *host, struct mmc_request 
+> ...
+>  230         spin_unlock(&host->lock);
+>  231         mmc_request_done(host->mmc, mrq);
+>  232         spin_lock(&host->lock);
+>  233 }
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
+And where exactly you see a bug?
 
- Thanks,
+wbsd_request_end() can be called in the following ways:
 
-	Ingo
+- through wbsd_finish_data() from tasklet (therefore no need to disable 
+  tasklets there)
+- from wbsd_request() directly. The sequence here is
 
------------------->
-Arjan van de Ven (1):
-      x86, timers: Check for pending timers after (device) interrupts
+	spin_lock_bh(&host->lock);
+	...
+	wbsd_request_end(host, mrq);
+		spin_unlock(&host->lock);
+		....
+		spin_lock(&host->lock);		
+	spin_unlock_bh(&host->lock);	
 
-Eero Nurkkala (1):
-      NOHZ: update idle state also when NOHZ is inactive
+  So the whole thing runs with tasklets disabled, no matter what you do 
+  with the host->lock, and they are only enabled at the very end of 
+  wbsd_request()
 
+So, what exact problem scenario do you see here?
 
- arch/x86/kernel/irq.c    |    2 ++
- arch/x86/kernel/smp.c    |    1 +
- kernel/time/tick-sched.c |    9 +++++++--
- 3 files changed, 10 insertions(+), 2 deletions(-)
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index 74656d1..3912061 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -244,6 +244,7 @@ unsigned int __irq_entry do_IRQ(struct pt_regs *regs)
- 				__func__, smp_processor_id(), vector, irq);
- 	}
- 
-+	run_local_timers();
- 	irq_exit();
- 
- 	set_irq_regs(old_regs);
-@@ -268,6 +269,7 @@ void smp_generic_interrupt(struct pt_regs *regs)
- 	if (generic_interrupt_extension)
- 		generic_interrupt_extension();
- 
-+	run_local_timers();
- 	irq_exit();
- 
- 	set_irq_regs(old_regs);
-diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
-index ec1de97..d915d95 100644
---- a/arch/x86/kernel/smp.c
-+++ b/arch/x86/kernel/smp.c
-@@ -198,6 +198,7 @@ void smp_reschedule_interrupt(struct pt_regs *regs)
- {
- 	ack_APIC_irq();
- 	inc_irq_stat(irq_resched_count);
-+	run_local_timers();
- 	/*
- 	 * KVM uses this interrupt to force a cpu out of guest mode
- 	 */
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index e0f59a2..89aed59 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -231,6 +231,13 @@ void tick_nohz_stop_sched_tick(int inidle)
- 	if (!inidle && !ts->inidle)
- 		goto end;
- 
-+	/*
-+	 * Set ts->inidle unconditionally. Even if the system did not
-+	 * switch to NOHZ mode the cpu frequency governers rely on the
-+	 * update of the idle time accounting in tick_nohz_start_idle().
-+	 */
-+	ts->inidle = 1;
-+
- 	now = tick_nohz_start_idle(ts);
- 
- 	/*
-@@ -248,8 +255,6 @@ void tick_nohz_stop_sched_tick(int inidle)
- 	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
- 		goto end;
- 
--	ts->inidle = 1;
--
- 	if (need_resched())
- 		goto end;
- 
