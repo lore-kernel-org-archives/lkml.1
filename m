@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbZJHQwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbZJHQ6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758905AbZJHQwg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 12:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758550AbZJHQwf
+	id S1758866AbZJHQ6q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 12:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758550AbZJHQ6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 12:52:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53338 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756219AbZJHQwf (ORCPT
+	Thu, 8 Oct 2009 12:58:45 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:33099 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751657AbZJHQ6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 12:52:35 -0400
-Date: Thu, 8 Oct 2009 09:50:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       David Howells <dhowells@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>
-Subject: Re: [RFC][PATCH] kmap_atomic_push
-In-Reply-To: <1255019362.26976.311.camel@twins>
-Message-ID: <alpine.LFD.2.01.0910080945230.3432@localhost.localdomain>
-References: <1255016123.17055.17.camel@laptop>  <20091008155344.GA11727@elte.hu> <1255019362.26976.311.camel@twins>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 8 Oct 2009 12:58:44 -0400
+Date: Thu, 8 Oct 2009 12:58:08 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
+In-Reply-To: <200910081727.11745.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0910081253420.2765-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 8 Oct 2009, Oliver Neukum wrote:
 
-
-On Thu, 8 Oct 2009, Peter Zijlstra wrote:
+> Am Donnerstag, 8. Oktober 2009 16:58:39 schrieb Alan Stern:
+> > On Thu, 8 Oct 2009, Oliver Neukum wrote:
+> > > Am Mittwoch, 7. Oktober 2009 23:34:12 schrieb Alan Stern:
 > 
-> Right, so I did that full rename just so that people wouldn't get
-> confused or something, but if both you and Linus think it should remain:
-> kmap_atomic() and kunmap_atomic(), I can certainly undo that part.
+> > > > Other schemes could work, but to me it seems simplest to rely on a flag
+> > > > protected by a spinlock.  The flag would mean "URBs are supposed to be
+> > > > queued unless we are suspended".  It would be set by open and
+> > > > unthrottle, and cleared by close and throttle.
+> > >
+> > > 1. Why a spinlock?
+> >
+> > Because the amount of work involved seems too small for a mutex.  But
+> > you could use a mutex if you wanted, since everything occurs in process
+> > context.
+> 
+> We have to submit URBs under that lock.
 
-I think the renaming probably helps find all the places (simple "grep -w" 
-shows the difference, and no fear of confusion with comma-expressions and 
-multi-line arguments etc). But once they've all been converted, you might 
-as well then do a search-and-replace-back on the patch, and make the end 
-result look like you just removed the (now pointless) argument.
+Yes.  What's your point?
 
-In fact, I'd personally be inclined to split the patch into two patches:
+> > > 2. Can we get by with only one flag?
+> >
+> > If all you want to do is answer a single question ("Should URBs be
+> > submitted") then a single flag should be all you need.  Why, do you
+> > think more information will be necessary?  You can always add more.
+> 
+> We have at least three reasons URBs should not be submitted.
+> - closure
+> - throttling
+> - suspension
+> Resume() should not submit if either closure or throttling are active,
+> neither should unthrottle() resubmit if closure or suspension are active.
 
- - one that just ignores the now redundant argument (but still keeps it), 
-   and fixes the cases that didn't nest
+True.  Nor should open() submit if throttling is active.  Feel free to 
+use three separate flags.  :-)
 
- - one that then removes the argument.
+Alan Stern
 
-Why? The _bugs_ are going to be shown by the first patch, and it would be 
-nice to keep that patch small. When a bug shows up, it would be either 
-because there's something wrong in that (much smaller) patch, or because 
-some not-properly-nested casel wasn't fixed.
-
-In contrast, the second patch would be large, but if done right, you could 
-then prove that it has no actual semantic changes (ie "binary is same 
-before and after"). That just sounds _much_ nicer from a debug standpoint. 
-Developers would look at the small and concentrated "real changes" patch, 
-rather than be distracted by all the trivial noise.
-
-		Linus
