@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbZJHVOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933577AbZJHVOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758024AbZJHVOk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 17:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbZJHVOj
+	id S933577AbZJHVOy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 17:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759629AbZJHVOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 17:14:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49425 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754688AbZJHVOi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 17:14:38 -0400
-Date: Thu, 8 Oct 2009 14:13:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Theodore Tso <tytso@mit.edu>
-cc: James Bottomley <James.Bottomley@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
-In-Reply-To: <20091008210737.GD29181@mit.edu>
-Message-ID: <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
-References: <1254844007.4383.85.camel@mulgrave.site> <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain> <1254862442.4383.183.camel@mulgrave.site> <1255012399.4187.24.camel@mulgrave.site> <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
- <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain> <1255031298.4187.260.camel@mulgrave.site> <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain> <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain> <20091008210737.GD29181@mit.edu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 8 Oct 2009 17:14:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:36086 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759537AbZJHVOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 17:14:53 -0400
+Message-ID: <4ACE56EE.8060000@redhat.com>
+Date: Thu, 08 Oct 2009 17:17:34 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH tracing/kprobes v3 6/7] perf: Add perf probe subcommand
+ for	kprobe-event setup helper
+References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222822.1684.3251.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20091007222822.1684.3251.stgit@dhcp-100-2-132.bos.redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Masami Hiramatsu wrote:
+> Add perf probe subcommand for kprobe-event setup helper to perf command.
+> This allows user to define kprobe events by C expressions (C line numbers,
+> C function names, and C local variables).
+>
+> Usage
+> -----
+>   perf probe [<options>] -P 'PROBEDEF' [-P 'PROBEDEF' ...]
+>
+>      -k, --vmlinux<file>   vmlinux/module pathname
+>      -P, --probe<p|r:[GRP/]NAME FUNC[+OFFS][@SRC]|@SRC:LINE [ARG ...]>
+>                            probe point definition, where
+> 		p:	kprobe probe
+> 		r:	kretprobe probe
+> 		GRP:	Group name (optional)
+> 		NAME:	Event name
+> 		FUNC:	Function name
+> 		OFFS:	Offset from function entry (in byte)
+> 		SRC:	Source code path
+> 		LINE:	Line number
+> 		ARG:	Probe argument (local variable name or
+> 			kprobe-tracer argument format is supported.)
+
+Oops, I found it caused compilation error on gcc < 4.4 as below:
+
+     CC builtin-trace.o
+     CC builtin-probe.o
+cc1: warnings being treated as errors
+builtin-probe.c: In function 'parse_probepoint':
+builtin-probe.c:109: error: implicit declaration of function 'strndup'
+builtin-probe.c:109: error: incompatible implicit declaration of built-in function 'strndup'
+
+Since I forgot to add _GNU_SOURCE...
 
 
-On Thu, 8 Oct 2009, Theodore Tso wrote:
-> 
-> So would it be acceptable to merge the 50 kloc of crap _during_ the
-> merge window?
+-- 
+Masami Hiramatsu
 
-Yes. I actually looked at the driver (since I had pulled it - I've 
-unpulled it but am still mulling it over), and while I think it looked 
-huge and overly complex, it by no means gave me the kinds of vibes I get 
-from some "obviously-ported-from-windows-with-no-clue" drivers.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-So at least from my quick look I didn't get the feeling that the driver 
-was "evil". For me, it's a timing issue.  I hate getting big pull requests 
-after -rc1 is out, and I really don't like the feeling that people are 
-just ignoring the merge window.
+e-mail: mhiramat@redhat.com
 
-That said, if somebody wants to look more closely at the driver, and then 
-wants to convince people that it should have gone through "staging", feel 
-free. But that's not what I've personally been arguing about.
-
-			Linus
