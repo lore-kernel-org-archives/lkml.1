@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756410AbZJHJQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbZJHJWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756410AbZJHJQo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 05:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbZJHJQo
+	id S1756469AbZJHJWg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 05:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbZJHJWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 05:16:44 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:49123 "EHLO mx1.redhat.com"
+	Thu, 8 Oct 2009 05:22:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56693 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751492AbZJHJQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 05:16:43 -0400
-Date: Thu, 8 Oct 2009 11:16:12 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: [PATCH v3][RFC] add MAP_UNLOCKED mmap flag
-Message-ID: <20091008091611.GD16702@redhat.com>
-References: <20091006190316.GB19692@redhat.com>
- <874oqap7xw.fsf@gmail.com>
+	id S1755983AbZJHJWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 05:22:35 -0400
+Message-ID: <4ACDAF18.2030705@kernel.org>
+Date: Thu, 08 Oct 2009 18:21:28 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <874oqap7xw.fsf@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH suspend-2.6#linux-next] PM / freezer: add missing include
+References: <20091008153051.37f043fa.sfr@canb.auug.org.au>
+In-Reply-To: <20091008153051.37f043fa.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 08 Oct 2009 09:21:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 05:10:35PM +0800, WANG Cong wrote:
-> Gleb Natapov <gleb@redhat.com> writes:
-> 
-> > If application does mlockall(MCL_FUTURE) it is no longer possible to
-> > mmap file bigger than main memory or allocate big area of anonymous
-> > memory. Sometimes it is desirable to lock everything related to program
-> > execution into memory, but still be able to mmap big file or allocate
-> > huge amount of memory and allow OS to swap them on demand. MAP_UNLOCKED
-> > allows to do that.
-> >
-> > Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> 
-> <snip>
-> 
-> > diff --git a/mm/mmap.c b/mm/mmap.c
-> > index 73f5e4b..ecc4471 100644
-> > --- a/mm/mmap.c
-> > +++ b/mm/mmap.c
-> > @@ -985,6 +985,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
-> >  		if (!can_do_mlock())
-> >  			return -EPERM;
-> >  
-> > +        if (flags & MAP_UNLOCKED)
-> > +                vm_flags &= ~VM_LOCKED;
-> > +
-> >  	/* mlock MCL_FUTURE? */
-> >  	if (vm_flags & VM_LOCKED) {
-> >  		unsigned long locked, lock_limit;
-> 
-> So, if I read it correctly, it is perfectly legal to set
-> both MAP_LOCKED and MAP_UNLOCKED at the same time? While
-> the behavior is still same as only setting MAP_UNLOCKED.
-> 
-> Is this what we expect?
-> 
-This is what code does currently. Should we return EINVAL in this case?
+Fix compile failure caused by a48145a7cbf3b0555ba3ad61aaf2c38719bab95d
+forgetting to include delay.h.
 
---
-			Gleb.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ kernel/power/process.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index 66161f0..5ade1bd 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -14,6 +14,7 @@
+ #include <linux/module.h>
+ #include <linux/syscalls.h>
+ #include <linux/freezer.h>
++#include <linux/delay.h>
+ 
+ /* 
+  * Timeout for stopping processes
