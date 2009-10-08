@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbZJHQkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbZJHQTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758897AbZJHQkL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 12:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758840AbZJHQkK
+	id S1758740AbZJHQTL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 12:19:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758416AbZJHQTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 12:40:10 -0400
-Received: from mail-yx0-f181.google.com ([209.85.210.181]:57311 "EHLO
-	mail-yx0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758807AbZJHQkJ (ORCPT
+	Thu, 8 Oct 2009 12:19:10 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:51122 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757892AbZJHQTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 12:40:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type;
-        b=jbAfxQ7C5zSeEylPyry0oRltYOiPZRumpJRHwLKQ8SYfG2BGPwSj8NRH0c2YGxbPoi
-         wy0sfLduXo1Y5vzBC4yAqdOoS7IBNAvxN/5ylGy+Sn/pyvd0UDF/HZ7/6TPF7ZLHBEni
-         5+nuNja6H8KHj/u760fL2evHYAWWND3i9TseE=
+	Thu, 8 Oct 2009 12:19:09 -0400
+Date: Thu, 8 Oct 2009 12:11:48 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Tejun Heo <tj@kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
+Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
+ interrupt disable
+In-Reply-To: <1254988350.26976.256.camel@twins>
+Message-ID: <alpine.DEB.1.10.0910081211050.21951@gentwo.org>
+References: <20091006233654.815079668@gentwo.org>  <20091006233733.153341605@gentwo.org> <20091007025440.GB4664@Krystal>  <1254906707.26976.225.camel@twins> <20091007124628.GB27363@Krystal>  <alpine.DEB.1.10.0910071039520.5671@gentwo.org>  <20091007150257.GA8508@Krystal>
+  <alpine.DEB.1.10.0910071102590.9984@gentwo.org>  <20091007151940.GA10052@Krystal>  <alpine.DEB.1.10.0910071119450.9296@gentwo.org> <1254988350.26976.256.camel@twins>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <haj8uj$fn8$2@ger.gmane.org>
-References: <haj471$fn8$1@ger.gmane.org>
-	 <58965d8a0910071618s2420fed1k4ccde4823e57f756@mail.gmail.com>
-	 <haj8uj$fn8$2@ger.gmane.org>
-Date: Thu, 8 Oct 2009 11:08:12 -0500
-X-Google-Sender-Auth: f47fa6c9e76bff67
-Message-ID: <58965d8a0910080908m6d914800m9465c70929eaa7ba@mail.gmail.com>
-Subject: Re: iso9660 mount problem
-From: Paul Hartman <paul.hartman+linux@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 7, 2009 at 6:42 PM, Jack Byer <ojbyer@usa.net> wrote:
-> Paul Hartman wrote:
->
->> On Wed, Oct 7, 2009 at 5:22 PM, Jack Byer <ojbyer@usa.net> wrote:
->>> I have a CD of a commercial software program that I am attempting to run
->>> under wine. The CD works without problems under Windows, but when I mount
->>> it on linux the file system appears to be empty (no files or
->>> directories). The drive is capable of reading the CD because "strings
->>> /dev/cdrom" works.
->>>
->>> What would I need to do in order to troubleshoot this problem?
->>
->> Maybe try mounting with the "-o unhide" option. Or maybe it is a
->> multi-session disc?
->
-> -o unhide does not help. Can a factory-pressed disc be multisession? It's
-> not a CD-R
+On Thu, 8 Oct 2009, Peter Zijlstra wrote:
 
-Yes (for example "Enhanced CDs" which contain both audio and data
-tracks). I think the default on MS Windows is to mount the last
-session on the disc. You should be able to use mount paramater "-o
-session=x" with x being the session number you want to mount.
+> > 	preempt_enable_no_sched()
+>
+> NACK, delaying the reschedule is not an option
+
+I ended up just doing a preempt_disable() at the beginning and a
+preempt_disable() at the end. That should be easily reviewable.
+
