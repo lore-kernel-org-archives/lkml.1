@@ -1,40 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932223AbZJHNb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbZJHNii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932223AbZJHNb4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 09:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932136AbZJHNbz
+	id S1758321AbZJHNii (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 09:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbZJHNii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 09:31:55 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:63326 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932132AbZJHNbz (ORCPT
+	Thu, 8 Oct 2009 09:38:38 -0400
+Received: from cmsout01.mbox.net ([165.212.64.31]:49065 "EHLO
+	cmsout01.mbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757941AbZJHNih convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 09:31:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=fjimHkjtQ1JGQzmVU8kXvpnB89R8oRLLW7YUz87u3xr2lV7CI1B27Qvv0Zg72KKpRh
-         J+fKNnEBIEnfMw5jMa7ZshdYFGBbkg8e34E/GlIHX80YDFFCtfDfIyRDeeymVXMobJQp
-         fHVjpkwQGL1G1k+1IqRWGXhAnzejiqsuodbeM=
-Message-ID: <4ACDE9AF.8040001@gmail.com>
-Date: Thu, 08 Oct 2009 15:31:27 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.1 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org, strakh@ispras.ru
-Subject: Re: [PATCH 2/4] isicom: switch to the new tty_port_open helper
-References: <20091007144455.14550.95003.stgit@localhost.localdomain>	<20091007144621.14550.62068.stgit@localhost.localdomain>	<4ACCF5D5.7010505@gmail.com> <20091008141353.342fd2ae@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091008141353.342fd2ae@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Oct 2009 09:38:37 -0400
+X-Greylist: delayed 308 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Oct 2009 09:38:37 EDT
+X-USANET-Source: 165.212.11.132  IN   ojbyer@usa.net cmsapps03.cms.usa.net
+X-USANET-MsgId: XID942NJHNG16702X01
+X-USANET-Auth: 165.212.8.12    AUTO ojbyer@usa.net cmsweb12.cms.usa.net
+Date: Thu, 08 Oct 2009 08:32:50 -0500
+From: "Jack Byer" <ojbyer@usa.net>
+To: Dave Young <hidave.darkstar@gmail.com>
+Subject: Re: iso9660 mount problem
+CC: <linux-kernel@vger.kernel.org>
+X-Mailer: USANET web-mailer (C8.MAIN.3.56O)
+Mime-Version: 1.0
+Message-ID: <645NJHNfY3626S12.1255008770@cmsweb12.cms.usa.net>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Z-USANET-MsgId: XID393NJHNGY0272X39
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/08/2009 03:13 PM, Alan Cox wrote:
-> Ok fixed that the simple way the buffer allocator now has its own private
-> mutex. Any other problems strike you ?
+>So it must be an apple hfs disc, (or hybrid disc?).
+>Maybe you may try mount it as hfs, this problem is not relevant to iso9660.
 
-I don't see any. It looks good. Thanks.
+I have tested this disc on my Windows XP machine at work and it has no
+problems reading it. The program supports Windows and OS X so it is probably a
+hybrid disc. I can try mounting as hfs at home tonight as well as extracting
+the rest of the metadata.
+
+If I am able to mount as hfs I don't know how much good that will do unless it
+is possible to run OS X programs under linux.
+
+
