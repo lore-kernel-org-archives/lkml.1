@@ -1,244 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbZJHPOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932680AbZJHPO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932653AbZJHPOJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 11:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932626AbZJHPOI
+	id S932680AbZJHPO3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 11:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932663AbZJHPO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 11:14:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39883 "EHLO hera.kernel.org"
+	Thu, 8 Oct 2009 11:14:28 -0400
+Received: from www.tglx.de ([62.245.132.106]:41876 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932610AbZJHPOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 11:14:05 -0400
-Date: Thu, 8 Oct 2009 15:12:56 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1255012632-7882-1-git-send-email-fweisbec@gmail.com>
-References: <1255012632-7882-1-git-send-email-fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf tools: Improve thread comm resolution in perf sched
-Message-ID: <tip-9a92b479b2f088ee2d3194243f4c8e59b1b8c9c2@git.kernel.org>
-Git-Commit-ID: 9a92b479b2f088ee2d3194243f4c8e59b1b8c9c2
-X-Mailer: tip-git-log-daemon
+	id S932629AbZJHPO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 11:14:27 -0400
+Date: Thu, 8 Oct 2009 17:13:00 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+cc: linux-mips@linux-mips.org, pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Yoichi Yuasa <yuasa@linux-mips.org>
+Subject: Re: [PATCH] MIPS: add IRQF_TIMER flag for Timer Interrupts
+In-Reply-To: <1255007874-19574-1-git-send-email-wuzhangjin@gmail.com>
+Message-ID: <alpine.LFD.2.00.0910081712390.9428@localhost.localdomain>
+References: <1255007874-19574-1-git-send-email-wuzhangjin@gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 08 Oct 2009 15:12:57 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9a92b479b2f088ee2d3194243f4c8e59b1b8c9c2
-Gitweb:     http://git.kernel.org/tip/9a92b479b2f088ee2d3194243f4c8e59b1b8c9c2
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Thu, 8 Oct 2009 16:37:12 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 8 Oct 2009 16:56:33 +0200
+On Thu, 8 Oct 2009, Wu Zhangjin wrote:
 
-perf tools: Improve thread comm resolution in perf sched
+> This patch add IRQF_TIMER flag for all Timer interrupts in linux-MIPS,
+> which will help to not disable the Timer IRQ when suspending to ensure
+> resuming normally(d6c585a4342a2ff627a29f9aea77c5ed4cd76023) and not
+> thread them when enabled PREEMPT_RT.
+> 
+> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 
-When we get sched traces that involve a task that was already
-created before opening the event, we won't have the comm event for
-it.
-
-So if we can't find the comm event for a given thread, we look at
-the traces that may contain these informations.
-
-Before:
-
- ata/1:371             |      0.000 ms |        1 | avg: 3988.693 ms | max: 3988.693 ms |
- kondemand/1:421       |      0.096 ms |        3 | avg:  345.346 ms | max: 1035.989 ms |
- kondemand/0:420       |      0.025 ms |        3 | avg:  421.332 ms | max:  964.014 ms |
- :5124:5124            |      0.103 ms |        5 | avg:   74.082 ms | max:  277.194 ms |
- :6244:6244            |      0.691 ms |        9 | avg:  125.655 ms | max:  271.306 ms |
- firefox:5080          |      0.924 ms |        5 | avg:   53.833 ms | max:  257.828 ms |
- npviewer.bin:6225     |     21.871 ms |       53 | avg:   22.462 ms | max:  220.835 ms |
- :6245:6245            |      9.631 ms |       21 | avg:   41.864 ms | max:  213.349 ms |
-
-After:
-
- ata/1:371             |      0.000 ms |        1 | avg: 3988.693 ms | max: 3988.693 ms |
- kondemand/1:421       |      0.096 ms |        3 | avg:  345.346 ms | max: 1035.989 ms |
- kondemand/0:420       |      0.025 ms |        3 | avg:  421.332 ms | max:  964.014 ms |
- firefox:5124          |      0.103 ms |        5 | avg:   74.082 ms | max:  277.194 ms |
- npviewer.bin:6244     |      0.691 ms |        9 | avg:  125.655 ms | max:  271.306 ms |
- firefox:5080          |      0.924 ms |        5 | avg:   53.833 ms | max:  257.828 ms |
- npviewer.bin:6225     |     21.871 ms |       53 | avg:   22.462 ms | max:  220.835 ms |
- npviewer.bin:6245     |      9.631 ms |       21 | avg:   41.864 ms | max:  213.349 ms |
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1255012632-7882-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/builtin-sched.c |   44 +++++++++++++++++++++++++++++++++++++++-----
- tools/perf/util/thread.c   |   32 +++++++++++++++++++++++++-------
- tools/perf/util/thread.h   |    3 +++
- 3 files changed, 67 insertions(+), 12 deletions(-)
-
-diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index e1df705..25b91e7 100644
---- a/tools/perf/builtin-sched.c
-+++ b/tools/perf/builtin-sched.c
-@@ -1034,6 +1034,36 @@ add_sched_in_event(struct work_atoms *atoms, u64 timestamp)
- 	atoms->nb_atoms++;
- }
- 
-+static struct thread *
-+threads__findnew_from_ctx(u32 pid, struct trace_switch_event *switch_event)
-+{
-+	struct thread *th;
-+
-+	th = threads__findnew_nocomm(pid, &threads, &last_match);
-+	if (th->comm)
-+		return th;
-+
-+	if (pid == switch_event->prev_pid)
-+		thread__set_comm(th, switch_event->prev_comm);
-+	else
-+		thread__set_comm(th, switch_event->next_comm);
-+	return th;
-+}
-+
-+static struct thread *
-+threads__findnew_from_wakeup(struct trace_wakeup_event *wakeup_event)
-+{
-+	struct thread *th;
-+
-+	th =  threads__findnew_nocomm(wakeup_event->pid, &threads, &last_match);
-+	if (th->comm)
-+		return th;
-+
-+	thread__set_comm(th, wakeup_event->comm);
-+
-+	return th;
-+}
-+
- static void
- latency_switch_event(struct trace_switch_event *switch_event,
- 		     struct event *event __used,
-@@ -1059,8 +1089,10 @@ latency_switch_event(struct trace_switch_event *switch_event,
- 		die("hm, delta: %Ld < 0 ?\n", delta);
- 
- 
--	sched_out = threads__findnew(switch_event->prev_pid, &threads, &last_match);
--	sched_in = threads__findnew(switch_event->next_pid, &threads, &last_match);
-+	sched_out = threads__findnew_from_ctx(switch_event->prev_pid,
-+					      switch_event);
-+	sched_in = threads__findnew_from_ctx(switch_event->next_pid,
-+					     switch_event);
- 
- 	out_events = thread_atoms_search(&atom_root, sched_out, &cmp_pid);
- 	if (!out_events) {
-@@ -1126,7 +1158,7 @@ latency_wakeup_event(struct trace_wakeup_event *wakeup_event,
- 	if (!wakeup_event->success)
- 		return;
- 
--	wakee = threads__findnew(wakeup_event->pid, &threads, &last_match);
-+	wakee = threads__findnew_from_wakeup(wakeup_event);
- 	atoms = thread_atoms_search(&atom_root, wakee, &cmp_pid);
- 	if (!atoms) {
- 		thread_atoms_insert(wakee);
-@@ -1386,8 +1418,10 @@ map_switch_event(struct trace_switch_event *switch_event,
- 		die("hm, delta: %Ld < 0 ?\n", delta);
- 
- 
--	sched_out = threads__findnew(switch_event->prev_pid, &threads, &last_match);
--	sched_in = threads__findnew(switch_event->next_pid, &threads, &last_match);
-+	sched_out = threads__findnew_from_ctx(switch_event->prev_pid,
-+					      switch_event);
-+	sched_in = threads__findnew_from_ctx(switch_event->next_pid,
-+					     switch_event);
- 
- 	curr_thread[this_cpu] = sched_in;
- 
-diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
-index 3b56aeb..8bd5ca2 100644
---- a/tools/perf/util/thread.c
-+++ b/tools/perf/util/thread.c
-@@ -6,15 +6,17 @@
- #include "util.h"
- #include "debug.h"
- 
--static struct thread *thread__new(pid_t pid)
-+static struct thread *thread__new(pid_t pid, int set_comm)
- {
- 	struct thread *self = calloc(1, sizeof(*self));
- 
- 	if (self != NULL) {
- 		self->pid = pid;
--		self->comm = malloc(32);
--		if (self->comm)
--			snprintf(self->comm, 32, ":%d", self->pid);
-+		if (set_comm) {
-+			self->comm = malloc(32);
-+			if (self->comm)
-+				snprintf(self->comm, 32, ":%d", self->pid);
-+		}
- 		self->maps = RB_ROOT;
- 		INIT_LIST_HEAD(&self->removed_maps);
- 	}
-@@ -50,8 +52,10 @@ static size_t thread__fprintf(struct thread *self, FILE *fp)
- 	return ret;
- }
- 
--struct thread *
--threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match)
-+static struct thread *
-+__threads__findnew(pid_t pid, struct rb_root *threads,
-+		   struct thread **last_match,
-+		   int set_comm)
- {
- 	struct rb_node **p = &threads->rb_node;
- 	struct rb_node *parent = NULL;
-@@ -80,7 +84,8 @@ threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match)
- 			p = &(*p)->rb_right;
- 	}
- 
--	th = thread__new(pid);
-+	th = thread__new(pid, set_comm);
-+
- 	if (th != NULL) {
- 		rb_link_node(&th->rb_node, parent, p);
- 		rb_insert_color(&th->rb_node, threads);
-@@ -91,6 +96,19 @@ threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match)
- }
- 
- struct thread *
-+threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match)
-+{
-+	return __threads__findnew(pid, threads, last_match, 1);
-+}
-+
-+struct thread *
-+threads__findnew_nocomm(pid_t pid, struct rb_root *threads,
-+			struct thread **last_match)
-+{
-+	return __threads__findnew(pid, threads, last_match, 0);
-+}
-+
-+struct thread *
- register_idle_thread(struct rb_root *threads, struct thread **last_match)
- {
- 	struct thread *thread = threads__findnew(0, threads, last_match);
-diff --git a/tools/perf/util/thread.h b/tools/perf/util/thread.h
-index 845d9b6..75bc843 100644
---- a/tools/perf/util/thread.h
-+++ b/tools/perf/util/thread.h
-@@ -18,6 +18,9 @@ int thread__set_comm(struct thread *self, const char *comm);
- struct thread *
- threads__findnew(pid_t pid, struct rb_root *threads, struct thread **last_match);
- struct thread *
-+threads__findnew_nocomm(pid_t pid, struct rb_root *threads,
-+			struct thread **last_match);
-+struct thread *
- register_idle_thread(struct rb_root *threads, struct thread **last_match);
- void thread__insert_map(struct thread *self, struct map *map);
- int thread__fork(struct thread *self, struct thread *parent);
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
