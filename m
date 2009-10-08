@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbZJHPy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbZJHP6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758663AbZJHPy5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 11:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZJHPy4
+	id S1758705AbZJHP6z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 11:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756411AbZJHP6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 11:54:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42502 "EHLO mx2.mail.elte.hu"
+	Thu, 8 Oct 2009 11:58:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:25547 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751051AbZJHPy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 11:54:56 -0400
-Date: Thu, 8 Oct 2009 17:53:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>, Avi Kivity <avi@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       David Howells <dhowells@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>
-Subject: Re: [RFC][PATCH] kmap_atomic_push
-Message-ID: <20091008155344.GA11727@elte.hu>
-References: <1255016123.17055.17.camel@laptop>
+	id S1751033AbZJHP6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 11:58:53 -0400
+Message-ID: <4ACE0C1E.40506@redhat.com>
+Date: Thu, 08 Oct 2009 17:58:22 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255016123.17055.17.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/9] KVM: SVM: Add tracepoint for nested vmrun
+References: <1254996199-17667-1-git-send-email-joerg.roedel@amd.com> <1254996199-17667-4-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1254996199-17667-4-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/08/2009 12:03 PM, Joerg Roedel wrote:
+> This patch adds a dedicated kvm tracepoint for a nested
+> vmrun.
+>
+> Signed-off-by: Joerg Roedel<joerg.roedel@amd.com>
+> ---
+>   arch/x86/kvm/svm.c   |    6 ++++++
+>   arch/x86/kvm/trace.h |   33 +++++++++++++++++++++++++++++++++
+>   arch/x86/kvm/x86.c   |    1 +
+>   3 files changed, 40 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> index 884bffc..907af3f 100644
+> --- a/arch/x86/kvm/svm.c
+> +++ b/arch/x86/kvm/svm.c
+> @@ -1726,6 +1726,12 @@ static bool nested_svm_vmrun(struct vcpu_svm *svm)
+>   	/* nested_vmcb is our indicator if nested SVM is activated */
+>   	svm->nested.vmcb = svm->vmcb->save.rax;
+>
+> +	trace_kvm_nested_vmrun(svm->vmcb->save.rip - 3, svm->nested.vmcb,
+> +			       nested_vmcb->save.rip,
+> +			       nested_vmcb->control.int_ctl,
+> +			       nested_vmcb->control.event_inj,
+> +			       nested_vmcb->control.nested_ctl);
+> +
+>    
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+It's better to pass only 'svm' as argument and have the tracepoint code 
+derive everything else, since (I think) argument setup is done 
+unconditionally, and only the actual trace_kvm call is patched out.  It 
+may not work out due to where the trace code is compiled, but it's worth 
+trying.
 
-> The below patchlet changes the kmap_atomic interface to a stack based 
-> one that doesn't require the KM_types anymore.
-> 
-> This significantly simplifies some code (more still than are present 
-> in this patch -- ie. pte_map_nested can go now)
-> 
-> This obviously requires that push and pop are matched, I fixed a few 
-> cases that were not properly nested, the (x86) code checks for this 
-> and will go BUG when trying to pop a vaddr that isn't the top one so 
-> abusers should be rather visible.
+-- 
+error compiling committee.c: too many arguments to function
 
-Looks great IMO! Last i proposed this i think either Andrew or Avi had 
-second thoughts about the hard-to-calculate worst-case mapping limit - 
-but i dont think that's a big issue.
-
-Lets not change the API names though - the rule is that map/unmap must 
-be properly nested.
-
-	Ingo
