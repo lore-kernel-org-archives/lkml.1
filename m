@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbZJHDpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750868AbZJHECO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752686AbZJHDpl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 23:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZJHDpk
+	id S1750868AbZJHECO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 00:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbZJHECO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 23:45:40 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:35061 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752356AbZJHDpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 23:45:40 -0400
-Date: Thu, 8 Oct 2009 14:44:55 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Airlie <airlied@linux.ie>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: Re: linux-next: manual merge of the drm tree with Linus' tree
-Message-Id: <20091008144455.f89b3745.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.DEB.2.00.0910080437120.14330@skynet.skynet.ie>
-References: <20091006132857.5bd1cc3a.sfr@canb.auug.org.au>
-	<20091008133529.eda6d568.sfr@canb.auug.org.au>
-	<alpine.DEB.2.00.0910080437120.14330@skynet.skynet.ie>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+	Thu, 8 Oct 2009 00:02:14 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:41969 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbZJHECN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 00:02:13 -0400
+X-Greylist: delayed 84692 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 Oct 2009 00:02:13 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=q4dulZJfyMgRBRrdIX13uyRMd40NjgoSTOg6qfShrnolbXt9runk5+QoWoK9S0ZbZP
+         yHS3857jT6WYFjcjcNdzPMv/7+9KRITIG5LUf1v0N9QAn6n/BOqOPtv6QG9itucx8AYJ
+         bHfD9EXSZi8lrfKcw5fCMH5/M/cTMlGvSW2k8=
+Subject: Re: [RFC][PATCH 5/9] perf trace: Add Perl scripting support
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com
+In-Reply-To: <20091007141332.GA21320@infradead.org>
+References: <1254809398-8078-1-git-send-email-tzanussi@gmail.com>
+	 <1254809398-8078-6-git-send-email-tzanussi@gmail.com>
+	 <20091006130059.GD15320@elte.hu> <1254888565.28917.135.camel@tropicana>
+	 <20091007141332.GA21320@infradead.org>
+Content-Type: text/plain
+Date: Wed, 07 Oct 2009 23:01:33 -0500
+Message-Id: <1254974493.6841.17.camel@tropicana>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__8_Oct_2009_14_44_55_+1100_GjHZl+FCZr6TYQNJ"
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__8_Oct_2009_14_44_55_+1100_GjHZl+FCZr6TYQNJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2009-10-07 at 10:13 -0400, Christoph Hellwig wrote:
+> On Tue, Oct 06, 2009 at 11:09:25PM -0500, Tom Zanussi wrote:
+> > > I think we also want to have a 'perf -s *' kind of thing to get a list 
+> > > of all available language modules.
+> > > 
+> > 
+> > I knew somebody would point that out (and suggest a better way ;-)  That
+> > all makes sense - I'll make these changes in the next version.
+> 
+> I'm a bit worried about linking two million scripting language into the
+> main perf binary.  Can't we just have seaprate perlperf / pythonperf,
+> rubyperf, awkperf binaries that only contain the scripting support?
+> 
 
-Hi Dave,
+Yeah, that's a good point.  Maybe support for each language should be
+implemented as shared library 'plugins', where the right one gets loaded
+dynamically using dlopen/dlsym based on the type of script invoked or
+command-line option used.  I'll try something like that for the next
+version.
 
-On Thu, 8 Oct 2009 04:38:04 +0100 (IST) Dave Airlie <airlied@linux.ie> wrot=
-e:
->
-> I'm testing the result of a merge at the moment, but I don't want to be=20
-> premature with pushing it out.
+Tom
 
-Very sensible, thanks.
-
-> hopefully be there tomorrow.
-
-Excellent.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__8_Oct_2009_14_44_55_+1100_GjHZl+FCZr6TYQNJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrNYDcACgkQjjKRsyhoI8xuoQCeKs+35808BX7WktPqlmXkJ3u8
-Z0gAn37rCVZoyf4Qe8lqMWhFCzp8Doqj
-=KKa8
------END PGP SIGNATURE-----
-
---Signature=_Thu__8_Oct_2009_14_44_55_+1100_GjHZl+FCZr6TYQNJ--
