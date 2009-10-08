@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbZJHTnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbZJHTtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758242AbZJHTnG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 15:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756914AbZJHTnF
+	id S1759145AbZJHTtG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 15:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbZJHTtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 15:43:05 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:43911 "EHLO e6.ny.us.ibm.com"
+	Thu, 8 Oct 2009 15:49:05 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56262 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756846AbZJHTnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 15:43:04 -0400
-Date: Thu, 8 Oct 2009 14:42:27 -0500
-From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+	id S1757915AbZJHTtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 15:49:04 -0400
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+From: James Bottomley <James.Bottomley@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@us.ibm.com>,
-       linux-kernel@vger.kernel.org, ecryptfs-devel@lists.launchpad.net
-Subject: [GIT PULL] eCryptfs fixes for 2.6.32-rc4
-Message-ID: <20091008194222.GA26528@fedora-virt>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain>
+References: <1254844007.4383.85.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
+	 <1254862442.4383.183.camel@mulgrave.site>
+	 <1255012399.4187.24.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
+	 <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 08 Oct 2009 19:48:18 +0000
+Message-Id: <1255031298.4187.260.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, 2009-10-08 at 07:54 -0700, Linus Torvalds wrote:
+> 
+> On Thu, 8 Oct 2009, Linus Torvalds wrote:
+> > 
+> > I'm taking it (and the parisc one I was also unhappy with)
+> 
+> Actually, looking at it again, I'm wavering.
+> 
+> That BFA driver isn't a "driver". It's a huge subsystem of it's own. It's 
+> almost 50 _thousand_ lines of code for just a single "driver", and for 
+> rare hardware at that.
 
-The following changes since commit 0eca52a92735f43462165efe00a7e394345fb38e:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/ide-2.6
+It's a huge glue layer driver, like the aic7xxx, yes.
 
-are available in the git repository at:
+So the tradeoff here is that I estimate it would take years to get it to
+where a linux driver should be.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/ecryptfs/ecryptfs-2.6.git for-linus
+Could I remind you that at the last kernel summit I was the one
+advocating for holding drivers out of tree until they met our standards
+and you were the one who told me not to do this ... Jon even captured
+it:
 
-Mimi Zohar (1):
-      ima: ecryptfs fix imbalance message
+https://lwn.net/Articles/298570/
 
-Randy Dunlap (1):
-      ecryptfs: depends on CRYPTO
+I'll certainly offer this driver to Greg's drivers project to see if
+they can unglue it ... I just think it's going to take a while.
 
-Tyler Hicks (1):
-      eCryptfs: Remove Kconfig NET dependency and select MD5
+> Quite frankly, the "bang per line" is almost zero. 
+> 
+> What the ^&@* is wrong with "enterprise SCSI" people? The amount of crazy 
+> is overwhelming.
+> 
+> So I've pulled it, but I'm still considering just unpulling it. That 
+> driver is _not_ "just a driver".  It's something more. Something dank and 
+> smelly, that has grown in dark and forbidding places.
+> 
+> The whole crazy "high end SCSI" industry needs a f*cking exorcism.
+> 
+> Even if I don't unpull, I don't _ever_ want to see a driver like this 
+> outside the merge window. And dammit, James, you should have realized 
+> that.
 
- fs/ecryptfs/Kconfig |    3 ++-
- fs/ecryptfs/main.c  |    7 ++++++-
- 2 files changed, 8 insertions(+), 2 deletions(-)
+Well certainly in an ideal world ... and in fact the world before KS2008
+I wouldn't have accepted it until it was well cleaned up.
+
+James
+
+
