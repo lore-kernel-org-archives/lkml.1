@@ -1,147 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759794AbZJHVG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933590AbZJHVIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759794AbZJHVG0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 17:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbZJHVGX
+	id S933590AbZJHVIY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 17:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932284AbZJHVIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 17:06:23 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:21687 "EHLO mx2.netapp.com"
+	Thu, 8 Oct 2009 17:08:23 -0400
+Received: from thunk.org ([69.25.196.29]:43265 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757159AbZJHVGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 17:06:22 -0400
-X-IronPort-AV: E=Sophos;i="4.44,527,1249282800"; 
-   d="scan'208";a="255405267"
-Subject: [GIT PULL] Please pull NFS client bugfixes for 2.6.32-rc3
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+	id S932253AbZJHVIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 17:08:22 -0400
+Date: Thu, 8 Oct 2009 17:07:37 -0400
+From: Theodore Tso <tytso@mit.edu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Thu, 08 Oct 2009 17:05:28 -0400
-Message-Id: <1255035929.17864.4.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-X-OriginalArrivalTime: 08 Oct 2009 21:05:30.0581 (UTC) FILETIME=[11787050:01CA485B]
+Cc: James Bottomley <James.Bottomley@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+Message-ID: <20091008210737.GD29181@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	James Bottomley <James.Bottomley@suse.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-scsi <linux-scsi@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <1254844007.4383.85.camel@mulgrave.site> <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain> <1254862442.4383.183.camel@mulgrave.site> <1255012399.4187.24.camel@mulgrave.site> <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain> <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain> <1255031298.4187.260.camel@mulgrave.site> <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain> <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Oct 08, 2009 at 01:00:58PM -0700, Linus Torvalds wrote:
+> 
+> It really boils down to the fact that I'm perfectly happy to let new 
+> drivers slip in after the merge window in order to help end users. But 
+> really - there has to be a limit to it. Not just anything.
+> 
+> It has to help end users, and dammit, you have to admit that 50 kloc is 
+> damn well not just "another random driver".
 
-Please pull from the "bugfixes" branch of the repository at
+So would it be acceptable to merge the 50 kloc of crap _during_ the
+merge window?  Crap is crap, no matter when it is merged.  In this
+particular case, the crap is its own subsystem, and wouldn't interfere
+with the rest of the kernel tree.  So it's no more risky to merge it
+outside of merge window; so the decision about whether merge 50 kloc
+of crap shouldn't be impacted about whether we are in our out of the
+merge window.
 
-   git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git bugfixes
+Arguably, the question is whether it's better for the end users to
+merge this at _any_ time, or whether we force the manufacturer to drop
+it into the staging tree provisionally until it can be cleaned up.
 
-This will update the following files through the appended changesets.
-
-  Cheers,
-    Trond
-
-----
- fs/nfs/client.c        |    2 +-
- fs/nfs/nfs4namespace.c |   12 ++++++------
- fs/nfs/nfs4renewd.c    |    6 ------
- fs/nfs/super.c         |   36 +++++++++++++++++-------------------
- 4 files changed, 24 insertions(+), 32 deletions(-)
-
-commit 3050141bae57984dd660e6861632ccf9b8bca77e
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Thu Oct 8 11:50:55 2009 -0400
-
-    NFSv4: Kill nfs4_renewd_prepare_shutdown()
-    
-    The NFSv4 renew daemon is shared between all active super blocks that refer
-    to a particular NFS server, so it is wrong to be shutting it down in
-    nfs4_kill_super every time a super block is destroyed.
-    
-    This patch therefore kills nfs4_renewd_prepare_shutdown altogether, and
-    leaves it up to nfs4_shutdown_client() to also shut down the renew daemon
-    by means of the existing call to nfs4_kill_renewd().
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit 517be09def6cd7bc231222ee756fde8ea245a6fe
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Tue Oct 6 15:42:20 2009 -0400
-
-    NFSv4: Fix the referral mount code
-    
-    Fix a typo which causes try_location() to use the wrong length argument
-    when calling nfs_parse_server_name(). This again, causes the initialisation
-    of the mount's sockaddr structure to fail.
-    
-    Also ensure that if nfs4_pathname_string() returns an error, then we pass
-    that error back up the stack instead of ENOENT.
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit f4373bf9e67e4a653c8854acd7b02dac9714c98a
-Author: Ben Hutchings <ben@decadent.org.uk>
-Date:   Tue Oct 6 15:42:18 2009 -0400
-
-    nfs: Avoid overrun when copying client IP address string
-    
-    As seen in <http://bugs.debian.org/549002>, nfs4_init_client() can
-    overrun the source string when copying the client IP address from
-    nfs_parsed_mount_data::client_address to nfs_client::cl_ipaddr.  Since
-    these are both treated as null-terminated strings elsewhere, the copy
-    should be done with strlcpy() not memcpy().
-    
-    Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit bcd2ea17da6a329a7276cde7286d802f009af332
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Tue Oct 6 15:41:22 2009 -0400
-
-    NFS: Fix port initialisation in nfs_remount()
-    
-    The recent changeset 53a0b9c4c99ab0085a06421f71592722e5b3fd5f (NFS: Replace
-    nfs_parse_ip_address() with rpc_pton()) broke nfs_remount, since the call
-    to rpc_pton() will zero out the port number in data->nfs_server.address.
-    
-    This is actually due to a bug in nfs_remount: it should be looking at the
-    port number in nfs_server.port instead...
-    
-    This fixes bug
-       http://bugzilla.kernel.org/show_bug.cgi?id=14276
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit f5855fecda65c1965c894915ace1e086d4925154
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Tue Oct 6 15:40:37 2009 -0400
-
-    NFS: Fix port and mountport display in /proc/self/mountinfo
-    
-    Currently, the port and mount port will both display as 65535 if you do not
-    specify a port number. That would be wrong...
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-commit c5811dbdd26284d63c19fca618bd740dd10ad53d
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Tue Oct 6 15:40:15 2009 -0400
-
-    NFS: Fix a default mount regression...
-    
-    With the recent spate of changes, the nfs protocol version will now default
-    to 2 instead of 3, while the mount protocol version defaults to 3.
-    
-    The following patch should ensure the defaults are consistent with the
-    previous defaults of vers=3,proto=tcp,mountvers=3,mountproto=tcp.
-    
-    This fixes the bug
-       http://bugzilla.kernel.org/show_bug.cgi?id=14259
-    
-    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-
--- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+   	    	    	 	       	     	- Ted
