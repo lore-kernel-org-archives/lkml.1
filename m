@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932305AbZJHOkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbZJHOkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932305AbZJHOkS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 10:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757543AbZJHOkR
+	id S1758275AbZJHOkv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 10:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932352AbZJHOku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 10:40:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47133 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753255AbZJHOkQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 10:40:16 -0400
-Date: Thu, 8 Oct 2009 07:39:34 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: James Bottomley <James.Bottomley@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
-In-Reply-To: <1255012399.4187.24.camel@mulgrave.site>
-Message-ID: <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
-References: <1254844007.4383.85.camel@mulgrave.site>  <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>  <1254862442.4383.183.camel@mulgrave.site> <1255012399.4187.24.camel@mulgrave.site>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Oct 2009 10:40:50 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:45132 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756453AbZJHOkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 10:40:41 -0400
+Date: Thu, 8 Oct 2009 16:39:52 +0200
+From: Pierre Ossman <pierre-list@ossman.eu>
+To: neilb@suse.de, LKML <linux-kernel@vger.kernel.org>
+Subject: Raid not shutting down when disks are lost?
+Message-ID: <20091008163952.679572b5@mjolnir.ossman.eu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-19831-1255012805-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
+--=_freyr.ossman.eu-19831-1255012805-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 8 Oct 2009, James Bottomley wrote:
-> 
-> So what do you want to do about this? 
+Today one RAID6 array I manage decided to lose four out of eight disks.
+Oddly enough, the array did not shut down but instead I got
+intermittent read and writer errors from the filesystem.
 
-I'm taking it (and the parisc one I was also unhappy with), but I'm a bit 
-grumpy as usual. The parisc pull came totally outside the merge window, 
-and the SCSI fix pull is technically perfectly fine, but what makes me 
-grumpy is that I get the strong feeling that people aren't even _trying_ 
-to hit the merge window with new drivers, because they decide that they 
-instead can just push them any time.
+It's been some time since I had a failure of this magnitude, but I seem
+to recall that once the array lost too many disks, it would shut down
+and refuse to write a single byte. The nice effect of this was that if
+it was a temporary error, you could just reboot and the array would
+start nicely (albeit in degraded mode).
 
-So I don't think I necessarily want to change the "new driver" policy per 
-se, but I want people to see the merge window as the _primary_ time you 
-get any new code in. The "yes, we'll take new drivers" thing should be the 
-exception rather than the rule. It doesn't seem to be an exception.
+Has something changed? Is this perhaps an effect of using RAID6 (I used
+to run RAID5 arrays)? Or was I simply lucky the previous instances I've
+had?
 
-		Linus
+Related, it would be nice if you could control how it handles lost
+disks. E.g. I'd like it to go read-only when it goes in to fully
+degraded mode. In case the last disk lost was only a temporary glitch,
+the array could be made to recover without a lengthy resync.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-19831-1255012805-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iEYEARECAAYFAkrN+cEACgkQ7b8eESbyJLj+BwCgiM5J62B3tGzVDPBXSif1Yoni
+HfIAoJHH3s96/hKsnSXODxAqwxR6kbco
+=NCMf
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-19831-1255012805-0001-2--
