@@ -1,176 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbZJHXvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbZJHXwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760136AbZJHXvy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 19:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbZJHXvy
+	id S1760150AbZJHXwf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 19:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760097AbZJHXwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 19:51:54 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37162 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759191AbZJHXvx (ORCPT
+	Thu, 8 Oct 2009 19:52:34 -0400
+Received: from mail-vw0-f203.google.com ([209.85.212.203]:54752 "EHLO
+	mail-vw0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760094AbZJHXwd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 19:51:53 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 9 Oct 2009 08:48:53 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nis@tyo205.gate.nec.co.jp>
-Subject: Re: [PATCH 1/2] memcg: coalescing uncharge at unmap and truncation
- (fixed coimpile bug)
-Message-Id: <20091009084853.26975150.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091008151710.1216a615.akpm@linux-foundation.org>
-References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091002140126.61d15e5e.kamezawa.hiroyu@jp.fujitsu.com>
-	<4AC5A1FA.1080208@ct.jp.nec.com>
-	<20091002160213.32ae2bb5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091008151710.1216a615.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Oct 2009 19:52:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=bpP+rl0q+NancozQ/eozMyzr2jdCaaGpLsmenMdzs1gTu4MaCjKfpHjyQucwmMcNKa
+         YwxwGa75aORWi6igtHK1gkpGNeKpb5+w0zHYKMqvAa4bJrKgoLwYICs82YfB6QjycyaJ
+         roZjqTGdPg79G+y80WYy5GkExtkkS2RzvMQLo=
+MIME-Version: 1.0
+In-Reply-To: <4ACE3124.4060109@billgatliff.com>
+References: <20091007061822.GA7602@july>
+	 <5d5443650910081128l58f45148m87735185a0094c31@mail.gmail.com>
+	 <4ACE3124.4060109@billgatliff.com>
+Date: Fri, 9 Oct 2009 08:51:56 +0900
+X-Google-Sender-Auth: 236ad48b7c00b1c5
+Message-ID: <9c9fda240910081651n7c30bcd1y931ee1d58198e2c3@mail.gmail.com>
+Subject: Re: [PATCH 5/6] haptic: Samsung SoCs PWM controlled haptic support
+From: Kyungmin Park <kmpark@infradead.org>
+To: Bill Gatliff <bgat@billgatliff.com>
+Cc: Trilok Soni <soni.trilok@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, ben-linux@fluff.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Oct 2009 15:17:10 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi,
 
-> On Fri, 2 Oct 2009 16:02:13 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> >
-> > ...
-> >
-> > In massive parallel enviroment, res_counter can be a performance bottleneck.
-> > One strong techinque to reduce lock contention is reducing calls by
-> > coalescing some amount of calls into one.
-> > 
-> > Considering charge/uncharge chatacteristic,
-> > 	- charge is done one by one via demand-paging.
-> > 	- uncharge is done by
-> > 		- in chunk at munmap, truncate, exit, execve...
-> > 		- one by one via vmscan/paging.
-> > 
-> > It seems we have a chance in uncharge at unmap/truncation.
-> > 
-> > This patch is a for coalescing uncharge. For avoiding scattering memcg's
-> > structure to functions under /mm, this patch adds memcg batch uncharge
-> > information to the task. 
-> > 
-> > The degree of coalescing depends on callers
-> >   - at invalidate/trucate... pagevec size
-> >   - at unmap ....ZAP_BLOCK_SIZE
-> > (memory itself will be freed in this degree.)
-> > Then, we'll not coalescing too much.
-> > 
-> >
-> > ...
-> >
-> > +static void
-> > +__do_uncharge(struct mem_cgroup *mem, const enum charge_type ctype)
-> > +{
-> > +	struct memcg_batch_info *batch = NULL;
-> > +	bool uncharge_memsw = true;
-> > +	/* If swapout, usage of swap doesn't decrease */
-> > +	if (!do_swap_account || ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
-> > +		uncharge_memsw = false;
-> > +	/*
-> > +	 * do_batch > 0 when unmapping pages or inode invalidate/truncate.
-> > +	 * In those cases, all pages freed continously can be expected to be in
-> > +	 * the same cgroup and we have chance to coalesce uncharges.
-> > +	 * And, we do uncharge one by one if this is killed by OOM.
-> > +	 */
-> > +	if (!current->memcg_batch.do_batch || test_thread_flag(TIF_MEMDIE))
-> > +		goto direct_uncharge;
-> > +
-> > +	batch = &current->memcg_batch;
-> > +	/*
-> > +	 * In usual, we do css_get() when we remember memcg pointer.
-> > +	 * But in this case, we keep res->usage until end of a series of
-> > +	 * uncharges. Then, it's ok to ignore memcg's refcnt.
-> > +	 */
-> > +	if (!batch->memcg)
-> > +		batch->memcg = mem;
-> > +	/*
-> > +	 * In typical case, batch->memcg == mem. This means we can
-> > +	 * merge a series of uncharges to an uncharge of res_counter.
-> > +	 * If not, we uncharge res_counter ony by one.
-> > +	 */
-> > +	if (batch->memcg != mem)
-> > +		goto direct_uncharge;
-> > +	/* remember freed charge and uncharge it later */
-> > +	batch->pages += PAGE_SIZE;
-> 
-> ->pages is really confusingly named.  It doesn't count pages, it counts
-> bytes!
-> 
-> We could call it `bytes', but perhaps charge_bytes would be more
-> communicative?
-> 
-Ah, I agree. I'll change this "bytes".
+I agree use the generic PWM framework. But it's not support on Samsung SoCs yet.
 
-> > +/*
-> > + * batch_start/batch_end is called in unmap_page_range/invlidate/trucate.
-> > + * In that cases, pages are freed continuously and we can expect pages
-> > + * are in the same memcg. All these calls itself limits the number of
-> > + * pages freed at once, then uncharge_start/end() is called properly.
-> > + */
-> > +
-> > +void mem_cgroup_uncharge_start(void)
-> > +{
-> > +	if (!current->memcg_batch.do_batch) {
-> > +		current->memcg_batch.memcg = NULL;
-> > +		current->memcg_batch.pages = 0;
-> > +		current->memcg_batch.memsw = 0;
-> 
-> what's memsw?
-> 
-Ah, memccontol.c uses "memsw" in several parts.
+I also wrote the OMAP driver. Of course it uses the OMAP specific PWM drivers.
 
-For example, memory usage interface to user is shown as
+I think after full integration of PWM frameworks as GPIO does, It will
+be replace with new PWM frameworks.
 
-   memory.usage_in_bytes
-
-memory+swap usage interface to suer is shown as
-
-    memory.memsw.usage_in_bytes.
-
-But, Hmm, this is visible from sched.c then...
-
-  memsw_bytes or memory_and_swap_bytes ?
+Thank you,
+Kyungmin Park
 
 
-
-> > +	}
-> > +	current->memcg_batch.do_batch++;
-> > +}
-> > +
-> >
-> > ...
-> >
-> > +#ifdef CONFIG_CGROUP_MEM_RES_CTLR /* memcg uses this to do batch job */
-> > +	struct memcg_batch_info {
-> > +		int do_batch;
-> > +		struct mem_cgroup *memcg;
-> > +		long pages, memsw;
-> > +	} memcg_batch;
-> > +#endif
-> 
-> I find the most valuable documetnation is that which is devoted to the
-> data structures.  This one didn't get any :(
-> 
-> Negative values of `pages' and `memsw' are meaningless, so it would be
-> better to give them an unsigned type.  That matches the
-> res_counter_charge() expectations also.
-> 
-Agreed. I'll rewrite this part with appropriate comments.
-Thank you for pointing out.
-
-Regards,
--Kame
-
+On Fri, Oct 9, 2009 at 3:36 AM, Bill Gatliff <bgat@billgatliff.com> wrote:
+> Trilok Soni wrote:
+>>
+>> Adding Bill Gatliff.
+>>
+>> Hi Kyungmin,
+>>
+>> Most of the driver looks fine. I have only one generic comment, but
+>> not for this driver:
+>>
+>> - Someone should really work on getting PWM framework (may be the one
+>> written by Bill Gatliff) into the kernel, because
+>>  if we don't do this and if new PWM controller provides it's own APIs
+>> then we can't leverage the chips using them, like the
+>>  case here for ISA1000 and ISA1200. These chips are using the pwm
+>> APIs exported by Samsung PWM controller, but it would
+>>  be painful to integrate other PWM controller if that has slightly
+>> little different API due to its nature.
+>>
+>>  So, it would be better to get one generic PWM framework mainline in
+>> the kernel.
+>>
+>
+> I can repost for review, if you like.
+>
+> The only objection I received last time, IIRC, was that I proffered it as a
+> "generic" API but only provided support for a couple of AT91 parts.  I
+> haven't had much time to add other support, so I haven't pushed for
+> inclusion.
+>
+> I would be happy to coordinate the development/migration of support to the
+> API.  I can still do the AT91 parts and probably PXA, maybe
+> OMAP3430/Beagleboard.  But I would need others to help me with the rest.
+>
+> b.g.
+>
+> --
+> Bill Gatliff
+> bgat@billgatliff.com
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
