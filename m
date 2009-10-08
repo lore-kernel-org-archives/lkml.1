@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbZJHO5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932515AbZJHO7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932478AbZJHO5f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 10:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757109AbZJHO5e
+	id S932515AbZJHO7S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 10:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbZJHO7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 10:57:34 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37879 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756089AbZJHO5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 10:57:34 -0400
-Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
-From: James Bottomley <James.Bottomley@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
-References: <1254844007.4383.85.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
-	 <1254862442.4383.183.camel@mulgrave.site>
-	 <1255012399.4187.24.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 08 Oct 2009 14:56:50 +0000
-Message-Id: <1255013810.4187.34.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Oct 2009 10:59:17 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54261 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757109AbZJHO7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 10:59:16 -0400
+Date: Thu, 8 Oct 2009 10:58:39 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
+In-Reply-To: <200910081543.01933.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0910081054300.2986-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 07:39 -0700, Linus Torvalds wrote:
+On Thu, 8 Oct 2009, Oliver Neukum wrote:
+
+> Am Mittwoch, 7. Oktober 2009 23:34:12 schrieb Alan Stern:
+> > I'm losing track of the original point of this thread.  IIRC, the
+> > problem is how the resume method should know whether or not to submit
+> > the receive URB(s).  It can't afford to acquire the port mutex because
+> > it might be called by open or close, at which time the mutex is already
+> > held.
+> >
+> > Other schemes could work, but to me it seems simplest to rely on a flag
+> > protected by a spinlock.  The flag would mean "URBs are supposed to be
+> > queued unless we are suspended".  It would be set by open and
+> > unthrottle, and cleared by close and throttle.
 > 
-> On Thu, 8 Oct 2009, James Bottomley wrote:
-> > 
-> > So what do you want to do about this? 
-> 
-> I'm taking it (and the parisc one I was also unhappy with), but I'm a bit 
-> grumpy as usual. The parisc pull came totally outside the merge window, 
-> and the SCSI fix pull is technically perfectly fine, but what makes me 
-> grumpy is that I get the strong feeling that people aren't even _trying_ 
-> to hit the merge window with new drivers, because they decide that they 
-> instead can just push them any time.
+> 1. Why a spinlock?
 
-OK, so we still have a bit of a mismatch here.  I *do* tell people who
-come to SCSI with new drivers that for the *first* submission they don't
-need to worry about the merge window because of the new driver
-exception.  This allows us to clean them up ready for going in without
-the submitter feeling huge pressure to hit the merge window rather than
-concentrating on code quality and what we need to make a technically
-correct submission.
+Because the amount of work involved seems too small for a mutex.  But 
+you could use a mutex if you wanted, since everything occurs in process 
+context.
 
-I think this is the correct thing to do for new drivers (which often
-come with new writers) because training people to hit the merge window
-is often long an painful (when I say not yet to their important driver
-enhancements) ... starting people off with the carrot is better than the
-stick.
+> 2. Can we get by with only one flag?
 
-> So I don't think I necessarily want to change the "new driver" policy per 
-> se, but I want people to see the merge window as the _primary_ time you 
-> get any new code in. The "yes, we'll take new drivers" thing should be the 
-> exception rather than the rule. It doesn't seem to be an exception.
+If all you want to do is answer a single question ("Should URBs be 
+submitted") then a single flag should be all you need.  Why, do you 
+think more information will be necessary?  You can always add more.
 
-Like I said, this will be my fourth new driver under the exception in
-the whole year it's been going.  On the other hand, I do have pm8001
-still going ... it just got resubmitted after another round of fixes.
-If it's ready for the next rc submissions round, it will be my fifth ...
-
-James
-
+Alan Stern
 
