@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933774AbZJHVbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933620AbZJHVbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933774AbZJHVbs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 17:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933727AbZJHVbq
+	id S933620AbZJHVbX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 17:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932330AbZJHVbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 17:31:46 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:44054 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932675AbZJHVbo (ORCPT
+	Thu, 8 Oct 2009 17:31:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38197 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932273AbZJHVbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 17:31:44 -0400
-Date: Thu, 8 Oct 2009 17:31:07 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Oliver Neukum <oliver@neukum.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
-In-Reply-To: <200910082240.36607.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.44L0.0910081722340.2765-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 Oct 2009 17:31:21 -0400
+Date: Thu, 8 Oct 2009 22:32:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Nick Bowler <nbowler@elliptictech.com>
+Cc: linux-kernel@vger.kernel.org, alan@linux.intel.com, gregkh@suse.de
+Subject: Re: [Regression, bisected] Transmit failure in et131x.
+Message-ID: <20091008223202.6e1b1303@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091008140805.GA21535@emergent.ellipticsemi.com>
+References: <20091008140805.GA21535@emergent.ellipticsemi.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Oct 2009, Oliver Neukum wrote:
-
-> Am Donnerstag, 8. Oktober 2009 22:06:10 schrieb Alan Stern:
+> I bisected the problem to the following commit.  The WARN messages and
+> bisection log are at the end of this email.
 > 
-> >
-> > On further thought, unthrottle should autoresume if the device is
-> > open and autosuspended (but it shouldn't do anything if the device is
-> > suspended).  After all, the reason for the autosuspend may have been
-> > the lack of activity caused by the throttling.
-> >
-> > In practice this isn't likely to come up.  It would be surprising if
-> > throttling lasted long enough to cause an autosuspend or if the core
-> > decided to throttle while the device was autosuspended and hence idle.
-> 
-> So you say that throttle() should do an autopm_put?
+> 356c74b401f6b05ae5d793e9d1a9ba8297b8e3ff is first bad commit
+> commit 356c74b401f6b05ae5d793e9d1a9ba8297b8e3ff
+> Author: Alan Cox <alan@linux.intel.com>
+> Date:   Thu Aug 27 11:01:57 2009 +0100
 
-The way you've coded the sierra and option drivers, it's not necessary.  
-Those drivers do an autopm_get_async during submission and an
-autopm_put_async after the completion of every output URB (and they
-update the last_busy time in the completion of every input URB).  When
-the driver is throttled no URBs will be submitted, so the usage count
-will remain at 0 with no effort on the part of throttle().
+Thanks. I'll go through that patch again see what I broke on your card.
+Probably a wrapping bug with a long queue that my box for some reason
+didn't manage to hit.
 
-For other drivers that use the simpler "autoresume on tty install,
-autosuspend on tty cleanup" approach provided by usb-serial.c, the
-throttle routines obviously don't need to worry about runtime PM.
+> Oct  5 23:37:53 aphrodite WARNING: at net/sched/sch_generic.c:261 dev_watchdog+0x13c/0x1fd()
+> Oct  5 23:37:53 aphrodite Hardware name: System Product Name
+> Oct  5 23:37:53 aphrodite NETDEV WATCHDOG: eth0 (et131x): transmit queue 0 timed out
 
-Alan Stern
+That is the important bit. The rest is fall out from the fact the driver
+doesn't recover properly when it fails.
 
+Alan
