@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbZJHOkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbZJHKnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758275AbZJHOkv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 10:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932352AbZJHOku
+	id S1757403AbZJHKnm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 06:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757345AbZJHKnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 10:40:50 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:45132 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756453AbZJHOkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 10:40:41 -0400
-Date: Thu, 8 Oct 2009 16:39:52 +0200
-From: Pierre Ossman <pierre-list@ossman.eu>
-To: neilb@suse.de, LKML <linux-kernel@vger.kernel.org>
-Subject: Raid not shutting down when disks are lost?
-Message-ID: <20091008163952.679572b5@mjolnir.ossman.eu>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-19831-1255012805-0001-2"
+	Thu, 8 Oct 2009 06:43:41 -0400
+Received: from smtp.ispras.ru ([83.149.198.201]:48674 "EHLO smtp.ispras.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756606AbZJHKnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 06:43:39 -0400
+From: Alexander Strakh <strakh@ispras.ru>
+Organization: ISP RAS
+To: Benjamin Kong <benjamin_kong@ali.com.tw>, Samuel Ortiz <samuel@sortiz.org>,
+       rda-users@lists.sourceforge.net,
+       Linux Kernlel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] ali-ircc.c sleeping function called from invalid context
+Date: Thu, 8 Oct 2009 14:45:40 +0000
+User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200910081445.43125.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+	KERNEL_VERSION: 2.6.31
+	DESCRIBE:
+(wrong message before that)
+Driver reports/drivers/net/irda/ali-ircc.c  - get spin_lock twice 
 
---=_freyr.ossman.eu-19831-1255012805-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+drivers/net/irda/ali-ircc.c:
+2028static int ali_ircc_net_ioctl(struct net_device *dev, struct ifreq *rq, 
+int cmd)
+...
+2056 ? ? ? ? ? ? ? ?spin_lock_irqsave(&self->lock, flags);
+2057 ? ? ? ? ? ? ? ?ali_ircc_change_speed(self, irq->ifr_baudrate); ? ? ? ? 
+...
 
-Today one RAID6 array I manage decided to lose four out of eight disks.
-Oddly enough, the array did not shut down but instead I got
-intermittent read and writer errors from the filesystem.
+Path to second spin_lock_irqsave(&self->lock, flags)  from 
+ali_ircc_change_speed:
+1. ali_ircc_change_speed calls ali_ircc_sir_change_speed 
+./drivers/net/irda/ali-ircc.c:999
+2. ali_ircc_sir_change_speed calls spin_lock_irqsave at 
+./drivers/net/irda/ali-ircc.c:1084:
 
-It's been some time since I had a failure of this magnitude, but I seem
-to recall that once the array lost too many disks, it would shut down
-and refuse to write a single byte. The nice effect of this was that if
-it was a temporary error, you could just reboot and the array would
-start nicely (albeit in degraded mode).
+1050static void ali_ircc_sir_change_speed(struct ali_ircc_cb *priv, __u32 
+speed)
+1084        spin_lock_irqsave(&self->lock, flags);
 
-Has something changed? Is this perhaps an effect of using RAID6 (I used
-to run RAID5 arrays)? Or was I simply lucky the previous instances I've
-had?
+Found by: Linux Driver Verification
 
-Related, it would be nice if you could control how it handles lost
-disks. E.g. I'd like it to go read-only when it goes in to fully
-degraded mode. In case the last disk lost was only a temporary glitch,
-the array could be made to recover without a lengthy resync.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-19831-1255012805-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-
-iEYEARECAAYFAkrN+cEACgkQ7b8eESbyJLj+BwCgiM5J62B3tGzVDPBXSif1Yoni
-HfIAoJHH3s96/hKsnSXODxAqwxR6kbco
-=NCMf
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-19831-1255012805-0001-2--
