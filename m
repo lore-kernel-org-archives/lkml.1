@@ -1,93 +1,284 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760141AbZJHXy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbZJHX5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760141AbZJHXy0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 19:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbZJHXyZ
+	id S1760161AbZJHX5k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 19:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbZJHX5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 19:54:25 -0400
-Received: from 71-20-254-182.war.clearwire-wmx.net ([71.20.254.182]:44751 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757855AbZJHXyY (ORCPT
+	Thu, 8 Oct 2009 19:57:37 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60893 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760146AbZJHX5g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 19:54:24 -0400
-Subject: [git pull] drm-intel fixes for 2.6.32-rc3
-From: Eric Anholt <eric@anholt.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-/8PUrpswgyvDwP6B49ex"
-Date: Thu, 08 Oct 2009 16:53:41 -0700
-Message-Id: <1255046021.9296.42.camel@gaiman.anholt.net>
+	Thu, 8 Oct 2009 19:57:36 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 9 Oct 2009 08:54:35 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 2/2] memcg: coalescing charges per cpu
+Message-Id: <20091009085435.889c9a26.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091008152620.e81d6209.akpm@linux-foundation.org>
+References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091002140343.ae63e932.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091008152620.e81d6209.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 8 Oct 2009 15:26:20 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
---=-/8PUrpswgyvDwP6B49ex
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> On Fri, 2 Oct 2009 14:03:43 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > This is a patch for coalescing access to res_counter at charging by
+> > percpu caching. At charge, memcg charges 64pages and remember it in
+> > percpu cache. Because it's cache, drain/flush is done if necessary.
+> > 
+> > This version uses public percpu area.
+> >  2 benefits of using public percpu area.
+> >  1. Sum of stocked charge in the system is limited to # of cpus
+> >     not to the number of memcg. This shows better synchonization.
+> >  2. drain code for flush/cpuhotplug is very easy (and quick)
+> > 
+> > The most important point of this patch is that we never touch res_counter
+> > in fast path. The res_counter is system-wide shared counter which is modified
+> > very frequently. We shouldn't touch it as far as we can for avoiding
+> > false sharing.
+> > 
+> > ...
+> > 
+> > +/* size of first charge trial. "32" comes from vmscan.c's magic value */
+> > +#define CHARGE_SIZE	(32 * PAGE_SIZE)
+> > +struct memcg_stock_pcp {
+> > +	struct mem_cgroup *cached;
+> > +	int charge;
+> > +	struct work_struct work;
+> > +};
+> > +static DEFINE_PER_CPU(struct memcg_stock_pcp, memcg_stock);
+> > +static DEFINE_MUTEX(memcg_drain_mutex);
+> > +
+> > +static bool consume_stock(struct mem_cgroup *mem)
+> > +{
+> > +	struct memcg_stock_pcp *stock;
+> > +	bool ret = true;
+> > +
+> > +	stock = &get_cpu_var(memcg_stock);
+> > +	if (mem == stock->cached && stock->charge)
+> > +		stock->charge -= PAGE_SIZE;
+> > +	else
+> > +		ret = false;
+> > +	put_cpu_var(memcg_stock);
+> > +	return ret;
+> > +}
+> 
+> It's unobvious what the return value from this function means.  A nice
+> comment would help.
 
-The following changes since commit 17d857be649a21ca90008c6dc425d849fa83db5c=
-:
-  Linus Torvalds (1):
-        Linux 2.6.32-rc1
+will do.
 
-are available in the git repository at:
+> 
+> > +static void drain_stock(struct memcg_stock_pcp *stock)
+> > +{
+> > +	struct mem_cgroup *old = stock->cached;
+> > +
+> > +	if (stock->charge) {
+> > +		res_counter_uncharge(&old->res, stock->charge);
+> > +		if (do_swap_account)
+> > +			res_counter_uncharge(&old->memsw, stock->charge);
+> > +	}
+> > +	stock->cached = NULL;
+> > +	stock->charge = 0;
+> > +}
+> > +
+> > +static void drain_local_stock(struct work_struct *dummy)
+> > +{
+> > +	struct memcg_stock_pcp *stock = &get_cpu_var(memcg_stock);
+> > +	drain_stock(stock);
+> > +	put_cpu_var(memcg_stock);
+> > +}
+> 
+> drain_local_stock() is only ever run by a thread which is pinned to a
+> particular CPU, so we can use plain old __get_cpu_var() here and remove
+> the put_cpu_var(), methinks.  If this is done, a comment shuold be
+> added explaining why we can use that optimisation.
+> 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm-intel-=
-next
-
-Pretty minor fixes.  We've still got some outstanding regressions
-related to the power saving code, which jbarnes and keithp are looking
-into.  Hopefully we'll have some results soon.
-
-Adam Jackson (1):
-      drm/i915: Initialize HDMI outputs as HDMI connectors, not DVI.
-
-Brian Rogers (1):
-      drm/i915: Don't call intel_update_fbc from intel_crtc_cursor_set
-
-Chris Wilson (3):
-      drm/i915: Record device minor rather than pointer in TRACE_EVENT
-      drm/i915: batch submit seqno off-by-one.
-      drm/i915: Enable irq to trace batch buffer completion.
-
-Eric Anholt (1):
-      Merge commit 'ickle/for-anholt' into drm-intel-next
-
-Zhao Yakui (1):
-      drm/i915: Multiply the refresh by 1000 in TV mode validatiion
-
- drivers/gpu/drm/i915/i915_dma.c      |    1 +
- drivers/gpu/drm/i915/i915_drv.h      |    2 +
- drivers/gpu/drm/i915/i915_gem.c      |   10 +++++-
- drivers/gpu/drm/i915/i915_irq.c      |   10 +++++++
- drivers/gpu/drm/i915/i915_trace.h    |   49 +++++++++++++++++-------------=
----
- drivers/gpu/drm/i915/intel_display.c |    4 ---
- drivers/gpu/drm/i915/intel_hdmi.c    |    2 +-
- drivers/gpu/drm/i915/intel_tv.c      |    3 +-
- 8 files changed, 49 insertions(+), 32 deletions(-)
+Ok. I'll try and test that.
 
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+> > +static void refill_stock(struct mem_cgroup *mem, int val)
+> > +{
+> > +	struct memcg_stock_pcp *stock = &get_cpu_var(memcg_stock);
+> > +
+> > +	if (stock->cached != mem) {
+> > +		drain_stock(stock);
+> > +		stock->cached = mem;
+> > +	}
+> > +	stock->charge += val;
+> > +	put_cpu_var(memcg_stock);
+> > +}
+> > +
+> > +static void drain_all_stock_async(void)
+> > +{
+> > +	int cpu;
+> > +	/* Contention means someone tries to flush. */
+> > +	if (!mutex_trylock(&memcg_drain_mutex))
+> > +		return;
+> 
+> Any time I see a trylock I ask "hm, what happens when it fails - what
+> are the consequences and how to we later rerun the aborted operation".
+> 
+I'll add more comments.
 
+> That's unobvious here and merits a comment.
+> 
+> > +	for_each_online_cpu(cpu) {
+> 
+> Did we need get_online_cpus() here?
+> 
 
+Ahhhh, yes. It's necessary.
 
---=-/8PUrpswgyvDwP6B49ex
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+> > +		struct memcg_stock_pcp *stock = &per_cpu(memcg_stock, cpu);
+> > +		if (work_pending(&stock->work))
+> > +			continue;
+> > +		INIT_WORK(&stock->work, drain_local_stock);
+> > +		schedule_work_on(cpu, &stock->work);
+> > +	}
+> > +	mutex_unlock(&memcg_drain_mutex);
+> > +	/* We don't wait for flush_work */
+> > +}
+> > +
+> > +static void drain_all_stock_sync(void)
+> > +{
+> > +	/* called when force_empty is called */
+> > +	mutex_lock(&memcg_drain_mutex);
+> > +	schedule_on_each_cpu(drain_local_stock);
+> > +	mutex_unlock(&memcg_drain_mutex);
+> > +}
+> 
+> In fact it would be nice were each of these functions to have a brief
+> note describing their role.
+> 
+Okay. I'll add.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> > +static int __cpuinit memcg_stock_cpu_callback(struct notifier_block *nb,
+> > +					unsigned long action,
+> > +					void *hcpu)
+> > +{
+> > +#ifdef CONFIG_HOTPLUG_CPU
+> > +	int cpu = (unsigned long)hcpu;
+> > +	struct memcg_stock_pcp *stock;
+> > +
+> > +	if (action != CPU_DEAD)
+> > +		return NOTIFY_OK;
+> > +	stock = &per_cpu(memcg_stock, cpu);
+> > +	drain_stock(stock);
+> > +#endif
+> > +	return NOTIFY_OK;
+> > +}
+> 
+> Is the ifdef needed?  Using hotcpu_notifier() should cause this entire
+> function to disappear from vmlinux when CONFIG_HOTPLUG_CPU=n.
+> 
+Ah, I didn't notice that. I'll try.
 
-iEYEABECAAYFAkrOe4QACgkQHUdvYGzw6vdJXwCfWljOMggGKgpyCAA88srg+aZf
-aKcAniA7jqCmXVRqgS2ZGk7gHV3k/92v
-=g8eq
------END PGP SIGNATURE-----
+Thank you.
 
---=-/8PUrpswgyvDwP6B49ex--
+Regards,
+-Kame
+
+> >  /*
+> >   * Unlike exported interface, "oom" parameter is added. if oom==true,
+> >   * oom-killer can be invoked.
+> > @@ -1269,6 +1370,7 @@ static int __mem_cgroup_try_charge(struc
+> >  	struct mem_cgroup *mem, *mem_over_limit;
+> >  	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+> >  	struct res_counter *fail_res;
+> > +	int csize = CHARGE_SIZE;
+> >  
+> >  	if (unlikely(test_thread_flag(TIF_MEMDIE))) {
+> >  		/* Don't account this! */
+> > @@ -1293,23 +1395,25 @@ static int __mem_cgroup_try_charge(struc
+> >  		return 0;
+> >  
+> >  	VM_BUG_ON(css_is_removed(&mem->css));
+> > +	if (mem_cgroup_is_root(mem))
+> > +		goto done;
+> >  
+> >  	while (1) {
+> >  		int ret = 0;
+> >  		unsigned long flags = 0;
+> >  
+> > -		if (mem_cgroup_is_root(mem))
+> > -			goto done;
+> > -		ret = res_counter_charge(&mem->res, PAGE_SIZE, &fail_res);
+> > +		if (consume_stock(mem))
+> > +			goto charged;
+> > +
+> > +		ret = res_counter_charge(&mem->res, csize, &fail_res);
+> >  		if (likely(!ret)) {
+> >  			if (!do_swap_account)
+> >  				break;
+> > -			ret = res_counter_charge(&mem->memsw, PAGE_SIZE,
+> > -							&fail_res);
+> > +			ret = res_counter_charge(&mem->memsw, csize, &fail_res);
+> >  			if (likely(!ret))
+> >  				break;
+> >  			/* mem+swap counter fails */
+> > -			res_counter_uncharge(&mem->res, PAGE_SIZE);
+> > +			res_counter_uncharge(&mem->res, csize);
+> >  			flags |= MEM_CGROUP_RECLAIM_NOSWAP;
+> >  			mem_over_limit = mem_cgroup_from_res_counter(fail_res,
+> >  									memsw);
+> > @@ -1318,6 +1422,11 @@ static int __mem_cgroup_try_charge(struc
+> >  			mem_over_limit = mem_cgroup_from_res_counter(fail_res,
+> >  									res);
+> >  
+> > +		/* reduce request size and retry */
+> > +		if (csize > PAGE_SIZE) {
+> > +			csize = PAGE_SIZE;
+> > +			continue;
+> > +		}
+> >  		if (!(gfp_mask & __GFP_WAIT))
+> >  			goto nomem;
+> >  
+> > @@ -1347,6 +1456,9 @@ static int __mem_cgroup_try_charge(struc
+> >  			goto nomem;
+> >  		}
+> >  	}
+> > +	if (csize > PAGE_SIZE)
+> > +		refill_stock(mem, csize - PAGE_SIZE);
+> > +charged:
+> >  	/*
+> >  	 * Insert ancestor (and ancestor's ancestors), to softlimit RB-tree.
+> >  	 * if they exceeds softlimit.
+> > @@ -2463,6 +2575,7 @@ move_account:
+> >  			goto out;
+> >  		/* This is for making all *used* pages to be on LRU. */
+> >  		lru_add_drain_all();
+> > +		drain_all_stock_sync();
+> >  		ret = 0;
+> >  		for_each_node_state(node, N_HIGH_MEMORY) {
+> >  			for (zid = 0; !ret && zid < MAX_NR_ZONES; zid++) {
+> > @@ -3181,6 +3294,7 @@ mem_cgroup_create(struct cgroup_subsys *
+> >  		root_mem_cgroup = mem;
+> >  		if (mem_cgroup_soft_limit_tree_init())
+> >  			goto free_out;
+> > +		hotcpu_notifier(memcg_stock_cpu_callback, 0);
+> >  
+> >  	} else {
+> >  		parent = mem_cgroup_from_cont(cont->parent);
+> 
 
