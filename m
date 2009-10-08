@@ -1,172 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbZJHGCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbZJHF7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbZJHGCQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 02:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbZJHGCP
+	id S1753860AbZJHF7v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 01:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZJHF7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 02:02:15 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39912 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751721AbZJHGCO (ORCPT
+	Thu, 8 Oct 2009 01:59:50 -0400
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:39641 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbZJHF7t convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 02:02:14 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 8 Oct 2009 14:59:07 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 18/45] writeback: introduce wait queue for
- balance_dirty_pages()
-Message-Id: <20091008145907.7f1799ca.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091008040136.GA30292@localhost>
-References: <20091007073818.318088777@intel.com>
-	<20091007074903.422089703@intel.com>
-	<20091008100159.fb6770cf.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091008015822.GB14224@localhost>
-	<20091008114037.56f78b0e.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091008040136.GA30292@localhost>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Oct 2009 01:59:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rWzHF6pmrwiT/iSGkNESbFLwPqInqDX9WqMN8ASJaHh8gi+MLi4/T7aEFwdrMP4cN7
+         s5N+d/R/cWtPaTooB75FXXabjqHKs6uEwdA4Sp5OzSxLIu0dhTsnmi+V9HbqR+bEBzyI
+         fbtnODJbrHyLEPJdJhP8Sm0hfNJIUoIgl4y30=
+MIME-Version: 1.0
+In-Reply-To: <25B60CDC2F704E4E9D88FFD52780CB4C04B6A37960@SC-VEXCH1.marvell.com>
+References: <20091006130202.5e18a332.sfr@canb.auug.org.au>
+	 <25B60CDC2F704E4E9D88FFD52780CB4C04B6A3794F@SC-VEXCH1.marvell.com>
+	 <20091006145425.a9cc611a.sfr@canb.auug.org.au>
+	 <25B60CDC2F704E4E9D88FFD52780CB4C04B6A37960@SC-VEXCH1.marvell.com>
+Date: Thu, 8 Oct 2009 01:59:12 -0400
+Message-ID: <771cded00910072259m5aeaf900w376deb99b7f2b081@mail.gmail.com>
+Subject: Re: linux-next: mfd tree build failure
+From: Haojian Zhuang <haojian.zhuang@gmail.com>
+To: sfr@canb.auug.org.au
+Cc: Samuel Ortiz <sameo@openedhand.com>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Oct 2009 12:01:36 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+> -----Original Message-----
+> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]
+> Sent: 2009Äê10ÔÂ6ÈÕ 11:54 AM
+> To: Haojian Zhuang
+> Cc: Samuel Ortiz; linux-next@vger.kernel.org; linux-kernel@vger.kernel.org; Mark Brown
+> Subject: Re: linux-next: mfd tree build failure
+>
+> Hi Haojian,
+>
+> On Mon, 5 Oct 2009 19:35:05 -0700 Haojian Zhuang <hzhuang1@marvell.com> wrote:
+>>
+>> Could you send your .config file to me? The 88pm8607 patch is just for mfd-2.6 git tree. I didn't try it in linux-next git tree before. I can try it now. If I could have your .config file, it would be better.
+>
+> I am sorry, but I don't have the exact .config file any more (I have
+> moved on in my creation of linux-next)  however, as I said, this was an
+> allmodconfig build on x86_64.  I also noted that CONFIG_I2C=m and
+> CONFIG_MFD_CORE=m, while the config entry that controls the building of
+> this driver is a bool so must have been 'y'.  So from a builtin driver,
+> you are referring to symbols that are only defined in modules.
+>
+> --
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
+>
 
-> On Thu, Oct 08, 2009 at 10:40:37AM +0800, KAMEZAWA Hiroyuki wrote:
-> > Thank you for clarification.
-> > Then, hmm, %iotwait (which 'top' shows) didn't work as desgined and we need
-> > to update throttle_vm_writeout() and some in vmscan.c. Thanks for input.
-> 
-> Thanks, you also reminds me to do io_schedule() in the nfs writeback
-> wait queue :)
-> 
-good side effect ;)
+Hi Stephen & Samuel,
 
-> > BTW, I'm glad if I can know "how many threads/ios are throttoled now" per bdi.
-> 
-> Good suggestion. How about this patch?
-> 
+Please ignore the original fix patch on 88pm8607 dependancy. I write a
+new patch on it and paste it in below. Please help to review it.
 
-Seems attractive. 
-Hmm..
-==
-struct dirty_throttle_task {
-+	pid_t	owner_pid;
-==
-and show it ? (too verbose ?
+Thanks
+Haojian
 
+>From 26174b67184759ac2fe33748eeb43d3738732e21 Mon Sep 17 00:00:00 2001
+From: Haojian Zhuang <haojian.zhuang@marvell.com>
+Date: Thu, 8 Oct 2009 09:07:05 -0400
+Subject: [PATCH] mfd: fix the dependancy of 88PM8607
 
-Regards,
--Kame
+88PM8607 module is dependant on I2C. I2C module must be built-in.
 
-> CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  fs/fs-writeback.c           |    1 +
->  include/linux/backing-dev.h |    2 ++
->  mm/backing-dev.c            |   33 +++++++++++++++++++++++++++++++++
->  3 files changed, 36 insertions(+)
-> 
-> --- linux.orig/include/linux/backing-dev.h	2009-10-08 11:46:28.000000000 +0800
-> +++ linux/include/linux/backing-dev.h	2009-10-08 11:47:39.000000000 +0800
-> @@ -101,6 +101,7 @@ struct backing_dev_info {
->  #ifdef CONFIG_DEBUG_FS
->  	struct dentry *debug_dir;
->  	struct dentry *debug_stats;
-> +	struct dentry *debug_throttle;
->  #endif
->  };
->  
-> @@ -116,6 +117,7 @@ struct backing_dev_info {
->  #define DIRTY_THROTTLE_PAGES_STOP	(1 << 22)
->  
->  struct dirty_throttle_task {
-> +	unsigned long		start_time;
->  	long			nr_pages;
->  	struct list_head	list;
->  	struct completion	complete;
-> --- linux.orig/mm/backing-dev.c	2009-10-08 11:47:37.000000000 +0800
-> +++ linux/mm/backing-dev.c	2009-10-08 11:59:06.000000000 +0800
-> @@ -115,6 +115,23 @@ static int bdi_debug_stats_show(struct s
->  	return 0;
->  }
->  
-> +static int bdi_debug_throttle_show(struct seq_file *m, void *v)
-> +{
-> +	struct backing_dev_info *bdi = m->private;
-> +	struct dirty_throttle_task *tt;
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&bdi->throttle_lock, flags);
-> +	list_for_each_entry(tt, &bdi->throttle_list, list) {
-> +		seq_printf(m, "goal=%lukb\twaited=%lums\n",
-> +			   tt->nr_pages << (PAGE_SHIFT - 10),
-> +			   (jiffies - tt->start_time) * 1000 / HZ);
-> +	}
-> +	spin_unlock_irqrestore(&bdi->throttle_lock, flags);
-> +
-> +	return 0;
-> +}
-> +
->  static int bdi_debug_stats_open(struct inode *inode, struct file *file)
->  {
->  	return single_open(file, bdi_debug_stats_show, inode->i_private);
-> @@ -127,15 +144,31 @@ static const struct file_operations bdi_
->  	.release	= single_release,
->  };
->  
-> +static int bdi_debug_throttle_open(struct inode *inode, struct file *file)
-> +{
-> +	return single_open(file, bdi_debug_throttle_show, inode->i_private);
-> +}
-> +
-> +static const struct file_operations bdi_debug_throttle_fops = {
-> +	.open		= bdi_debug_throttle_open,
-> +	.read		= seq_read,
-> +	.llseek		= seq_lseek,
-> +	.release	= single_release,
-> +};
-> +
->  static void bdi_debug_register(struct backing_dev_info *bdi, const char *name)
->  {
->  	bdi->debug_dir = debugfs_create_dir(name, bdi_debug_root);
->  	bdi->debug_stats = debugfs_create_file("stats", 0444, bdi->debug_dir,
->  					       bdi, &bdi_debug_stats_fops);
-> +	bdi->debug_throttle = debugfs_create_file("throttle_list", 0444,
-> +						  bdi->debug_dir, bdi,
-> +						  &bdi_debug_throttle_fops);
->  }
->  
->  static void bdi_debug_unregister(struct backing_dev_info *bdi)
->  {
-> +	debugfs_remove(bdi->debug_throttle);
->  	debugfs_remove(bdi->debug_stats);
->  	debugfs_remove(bdi->debug_dir);
->  }
-> --- linux.orig/fs/fs-writeback.c	2009-10-08 11:44:27.000000000 +0800
-> +++ linux/fs/fs-writeback.c	2009-10-08 11:47:39.000000000 +0800
-> @@ -284,6 +284,7 @@ static void bdi_calc_write_bandwidth(str
->  void bdi_writeback_wait(struct backing_dev_info *bdi, long nr_pages)
->  {
->  	struct dirty_throttle_task tt = {
-> +		.start_time = jiffies,
->  		.nr_pages = nr_pages,
->  		.complete = COMPLETION_INITIALIZER_ONSTACK(tt.complete),
->  	};
-> 
+Signed-off-by: Haojian Zhuang <haojian.zhuang@marvell.com>
+---
+ drivers/mfd/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index fbe684b..00064e2 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -307,7 +307,7 @@ config EZX_PCAP
+
+ config MFD_88PM8607
+        bool "Support Marvell 88PM8607"
+-       depends on I2C
++       depends on I2C=y
+        select MFD_CORE
+        help
+          This supports for Marvell 88PM8607 Power Management IC. This includes
+--
+1.5.6.5
