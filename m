@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932739AbZJHQ0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932719AbZJHQ0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932739AbZJHQ0n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 12:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932702AbZJHQ0n
+	id S932719AbZJHQ0S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 12:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932692AbZJHQ0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 12:26:43 -0400
-Received: from trinity.develer.com ([83.149.158.210]:47033 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932544AbZJHQ0m (ORCPT
+	Thu, 8 Oct 2009 12:26:17 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54892 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932678AbZJHQ0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 12:26:42 -0400
-Subject: Re: sata_mv 0000:03:06.0: PCI ERROR; PCI IRQ cause=0x30000040
-From: Bernie Innocenti <bernie@codewiz.org>
-To: Harri Olin <harri.olin@gmail.com>
-Cc: Mark Lord <liml@rtr.ca>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, sysadmin <sysadmin@gnu.org>
-In-Reply-To: <1254852272.1471.172.camel@giskard>
-References: <1254546642.1438.135.camel@giskard> <4ACA6904.1060509@rtr.ca>
-	 <4ACB3741.2030101@gmail.com>  <1254852272.1471.172.camel@giskard>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Sugar Labs - http://www.sugarlabs.org/
-Date: Thu, 08 Oct 2009 12:26:00 -0400
-Message-Id: <1255019160.30440.666.camel@giskard>
+	Thu, 8 Oct 2009 12:26:14 -0400
+Subject: Re: [RFC][PATCH] kmap_atomic_push
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Avi Kivity <avi@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       David Howells <dhowells@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>
+In-Reply-To: <20091008155344.GA11727@elte.hu>
+References: <1255016123.17055.17.camel@laptop>
+	 <20091008155344.GA11727@elte.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 08 Oct 2009 18:29:22 +0200
+Message-Id: <1255019362.26976.311.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-1.fc12) 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Tue, 06-10-2009 a las 14:04 -0400, Bernie Innocenti escribió:
-> > I have heard same thing happened with same kind of configuration, using 
-> > Supermicro H8DME-2 motherboard, Opteron 2378 CPU.
-> >
-> >Even the controllers were on same slots.
+On Thu, 2009-10-08 at 17:53 +0200, Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> Close.  Mine is a Supermicro H8DM8-2 with 2x Opteron 2374 HE CPU.
+> > The below patchlet changes the kmap_atomic interface to a stack based 
+> > one that doesn't require the KM_types anymore.
+> > 
+> > This significantly simplifies some code (more still than are present 
+> > in this patch -- ie. pte_map_nested can go now)
+> > 
+> > This obviously requires that push and pop are matched, I fixed a few 
+> > cases that were not properly nested, the (x86) code checks for this 
+> > and will go BUG when trying to pop a vaddr that isn't the top one so 
+> > abusers should be rather visible.
+> 
+> Looks great IMO! Last i proposed this i think either Andrew or Avi had 
+> second thoughts about the hard-to-calculate worst-case mapping limit - 
+> but i dont think that's a big issue.
 
-I was wrong (the BIOS DMI block is wrong).  The motherboard is labeled
-as H8DME-2.
+That would've been me ;-)
 
--- 
-   // Bernie Innocenti - http://codewiz.org/
- \X/  Sugar Labs       - http://sugarlabs.org/
+> Lets not change the API names though - the rule is that map/unmap must 
+> be properly nested.
+
+Right, so I did that full rename just so that people wouldn't get
+confused or something, but if both you and Linus think it should remain:
+kmap_atomic() and kunmap_atomic(), I can certainly undo that part.
+
 
