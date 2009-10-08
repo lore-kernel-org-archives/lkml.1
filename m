@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933417AbZJHUE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933455AbZJHUGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933417AbZJHUE7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 16:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933387AbZJHUE6
+	id S933455AbZJHUGs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 16:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933407AbZJHUGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 16:04:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56768 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933095AbZJHUE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 16:04:57 -0400
-Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
-From: James Bottomley <James.Bottomley@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain>
-References: <1254844007.4383.85.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
-	 <1254862442.4383.183.camel@mulgrave.site>
-	 <1255012399.4187.24.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
-	 <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain>
-	 <1255031298.4187.260.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 08 Oct 2009 16:04:04 -0400
-Message-Id: <1255032244.4187.267.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Oct 2009 16:06:47 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45359 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933397AbZJHUGr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 16:06:47 -0400
+Date: Thu, 8 Oct 2009 16:06:10 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
+In-Reply-To: <Pine.LNX.4.44L0.0910081253420.2765-100000@iolanthe.rowland.org>
+Message-ID: <Pine.LNX.4.44L0.0910081601350.2765-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 12:55 -0700, Linus Torvalds wrote:
-> On Thu, 8 Oct 2009, James Bottomley wrote:
+On Thu, 8 Oct 2009, Alan Stern wrote:
+
+> > > > 2. Can we get by with only one flag?
+> > >
+> > > If all you want to do is answer a single question ("Should URBs be
+> > > submitted") then a single flag should be all you need.  Why, do you
+> > > think more information will be necessary?  You can always add more.
 > > 
-> > Could I remind you that at the last kernel summit I was the one
-> > advocating for holding drivers out of tree until they met our standards
-> > and you were the one who told me not to do this ... Jon even captured
-> > it:
+> > We have at least three reasons URBs should not be submitted.
+> > - closure
+> > - throttling
+> > - suspension
+> > Resume() should not submit if either closure or throttling are active,
+> > neither should unthrottle() resubmit if closure or suspension are active.
 > 
-> What the hell is wrong with you?
-> 
-> You're bringing up total red herrings that have nothing to do with 
-> anything.
-> 
-> My point is:
->  - that's not just another driver. That's FIFTY THOUSANDS LINES OF 
->    LARGELY INFRASTRUCTURE CRAP.
-> 
->  - I'm not arguing that we shouldn't merge the driver
-> 
->  - I'm arguing that you damn well should have used the merge window for 
->    something like this!
-> 
-> What part of "it's already -rc3, and you're pushing 50kloc of crap that 
-> almost nobody will care about" can you not understand?
-> 
-> What part of "merge window" do you have issues with?
+> True.  Nor should open() submit if throttling is active.  Feel free to 
+> use three separate flags.  :-)
 
-OK, you're saying the merge window exemption should only apply to
-drivers which meet our coding standards.
+On further thought, unthrottle should autoresume if the device is 
+open and autosuspended (but it shouldn't do anything if the device is 
+suspended).  After all, the reason for the autosuspend may have been 
+the lack of activity caused by the throttling.
 
-That's fine, I can live with that ... and that's how we'll operate in
-future.
+In practice this isn't likely to come up.  It would be surprising if 
+throttling lasted long enough to cause an autosuspend or if the core 
+decided to throttle while the device was autosuspended and hence idle.
 
-> What part of "sure, I'll take new drivers after the merge window, but COME 
-> &*^@ ON!" do you have trouble understanding?
-
-What does the ^@ mean again?
-
-> Stop bringing up totally irrelevant crap.
-
-James
-
+Alan Stern
 
