@@ -1,85 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbZJHNTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbZJHNWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758228AbZJHNTZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 09:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758202AbZJHNTY
+	id S1758249AbZJHNWj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 09:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758069AbZJHNWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 09:19:24 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33155 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758136AbZJHNTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 09:19:23 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX198IVUTxtJ84THPaGT6C2vlF8JE9IkrZqXbvqjPYt
-	QH1pixbGe0r7O2
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
- CPU"
-From: Mike Galbraith <efault@gmx.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: Arjan van de Ven <arjan@infradead.org>,
+	Thu, 8 Oct 2009 09:22:38 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45075 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757853AbZJHNWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 09:22:37 -0400
+Date: Thu, 8 Oct 2009 15:22:00 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <200910081509.05394.elendil@planet.nl>
-References: <200910051500.55875.elendil@planet.nl>
-	 <200910072034.57511.elendil@planet.nl>
-	 <1255001062.7500.1.camel@marge.simson.net>
-	 <200910081509.05394.elendil@planet.nl>
-Content-Type: text/plain
-Date: Thu, 08 Oct 2009 15:18:33 +0200
-Message-Id: <1255007913.8381.23.camel@marge.simson.net>
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [rfc][patch] store-free path walking
+Message-ID: <20091008132200.GB30316@wotan.suse.de>
+References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain> <20091008123622.GA30316@wotan.suse.de> <20091008125746.GL9228@kernel.dk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091008125746.GL9228@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 15:09 +0200, Frans Pop wrote:
-> On Thursday 08 October 2009, Mike Galbraith wrote:
-> > Care to try a patch?
-> >
-> > latencytop: only account on-runqueue wait time as being scheduler
-> > latency.
-> >
-> > Latencytop was accounting uninterruptible and interruptible sleep time
-> > up to 5ms, which is not the latency the user is looking for.  Account
-> > time waiting on-runqueue instead.  Also add a clock update to
-> > update_curr() for the case where there's nobody home.  When coming out
-> > of idle with NO_HZ, not updating the clock leads to bogus max latency
-> > report.
+On Thu, Oct 08, 2009 at 02:57:46PM +0200, Jens Axboe wrote:
+> On Thu, Oct 08 2009, Nick Piggin wrote:
+> > On Wed, Oct 07, 2009 at 07:56:33AM -0700, Linus Torvalds wrote:
+> > > On Wed, 7 Oct 2009, Nick Piggin wrote:
+> > > > 
+> > > > OK, I have a really basic patch that does store-free path walking
+> > > > (except on the final element).
+> > > 
+> > > Yay!
+> > > 
+> > > > dbench is pretty nasty still because it seems to do a lot of stupid 
+> > > > things like reading from /proc/mounts all the time.
+> > > 
+> > > You should largely forget about dbench, it can certainly be a useful 
+> > > benchmark, but at the same time it's certainly not a _meaningful_ one.
+> > > There are better things to try.
+> > 
+> > OK, here's one you might find interesting. It is a cached git diff
+> > workload in a linux kernel tree. I actually ran it in a loop 100
+> > times in order to get some reasonable sample sizes, then I ran
+> > parallel and serial configs (PreloadIndex = true/false). Compared
+> > plain kernel with all vfs patches to now.
+> > 
+> > 2.6.32-rc3 serial
+> > 5.35user 7.12system 0:12.47elapsed 100%CPU
+> > 
+> > 2.6.32-rc3 parallel
+> > 5.79user 17.69system 0:09.41elapsed 249%CPU
+> > 
+> > vfs serial
+> > 5.30user 5.62system 0:10.92elapsed 100%CPU
+> > 
+> > vfs parallel
+> > 4.86user 0.68system 0:06.82elapsed 81%CPU
 > 
-> With this patch the high values for iwlagn and phy0 are gone. The values 
-> now match roughly with the output of your script.
+> Since the box was booted anyway, I tried the git test too. Results are
+> with 2.6.32-rc3 serial being the baseline 1.00 scores, smaller than 1.00
+> are faster and vice versa.
 > 
-> If (un)interruptible sleep is worth displaying in latencytop then maybe it 
-> should be identified as a separate cause instead of lumped under "waiting 
-> for CPU"?
-
-That's what I was just thing about trying, add a cause sleep.
-
-> > TODO: Figure out where the heck empty braces come from.
+> 2.6.32-rc3 serial
+> real    1.00
+> user    1.00
+> sys     1.00
 > 
-> I also see these lines with "[]" sometimes; looks to come from 'sleep'.
+> 2.6.32-rc3 parallel
+> real    0.80
+> user    0.83
+> sys     8.38
 > 
-> And I still see lines with only a "." as the cause; this seems specific to 
-> targets marked with the penguin (work queues?).
+> sys time, auch...
 > 
-> > Signed-off-by: Mike Galbraith <efault@gmx.de>
-> > Arjan van de Ven <arjan@infradead.org>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > LKML-Reference: <new-submission>
+> vfs serial
+> real    0.86
+> user    0.93
+> sys     0.84
+
+This is actualy nice too. My tests were on a 2s8c Barcelona system,
+but this is showing we have a nice serial win on Nehalem as well.
+Actually K8 CPUs have a bit faster lock primitives than earlier
+Intel CPUs I think (closer to Nehalem), so we might see an even
+bigger win with a Core2.
+
+ 
+> vfs parallel
+> real    0.43
+> user    0.72
+> sys     0.13
 > 
-> If Arjan is happy with the patch, please add my:
+> Let me know if you want profiles or anything like that. I'd say that
+> looks veeeery tasty.
 
-Probably just a diagnostic, but...
-
-> Reported-and-tested-by: Frans Pop <elendil@planet.nl>
-
-Saved.
-
-	-Mike
+It doesn't look all that different to mine, so profiles probably
+not required at this point. Is the CPU accounting going wrong? It
+looks like thread times are not being accumulated back properly,
+which IIRC they should be. But 'real' time should be accurate, so
+it is going a lot faster.
 
