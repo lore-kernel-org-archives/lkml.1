@@ -1,98 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbZJHXwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760141AbZJHXy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbZJHXwf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 19:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760097AbZJHXwe
+	id S1760141AbZJHXy0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 19:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758050AbZJHXyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 19:52:34 -0400
-Received: from mail-vw0-f203.google.com ([209.85.212.203]:54752 "EHLO
-	mail-vw0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760094AbZJHXwd convert rfc822-to-8bit (ORCPT
+	Thu, 8 Oct 2009 19:54:25 -0400
+Received: from 71-20-254-182.war.clearwire-wmx.net ([71.20.254.182]:44751 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757855AbZJHXyY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 19:52:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=bpP+rl0q+NancozQ/eozMyzr2jdCaaGpLsmenMdzs1gTu4MaCjKfpHjyQucwmMcNKa
-         YwxwGa75aORWi6igtHK1gkpGNeKpb5+w0zHYKMqvAa4bJrKgoLwYICs82YfB6QjycyaJ
-         roZjqTGdPg79G+y80WYy5GkExtkkS2RzvMQLo=
-MIME-Version: 1.0
-In-Reply-To: <4ACE3124.4060109@billgatliff.com>
-References: <20091007061822.GA7602@july>
-	 <5d5443650910081128l58f45148m87735185a0094c31@mail.gmail.com>
-	 <4ACE3124.4060109@billgatliff.com>
-Date: Fri, 9 Oct 2009 08:51:56 +0900
-X-Google-Sender-Auth: 236ad48b7c00b1c5
-Message-ID: <9c9fda240910081651n7c30bcd1y931ee1d58198e2c3@mail.gmail.com>
-Subject: Re: [PATCH 5/6] haptic: Samsung SoCs PWM controlled haptic support
-From: Kyungmin Park <kmpark@infradead.org>
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, ben-linux@fluff.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 8 Oct 2009 19:54:24 -0400
+Subject: [git pull] drm-intel fixes for 2.6.32-rc3
+From: Eric Anholt <eric@anholt.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-/8PUrpswgyvDwP6B49ex"
+Date: Thu, 08 Oct 2009 16:53:41 -0700
+Message-Id: <1255046021.9296.42.camel@gaiman.anholt.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I agree use the generic PWM framework. But it's not support on Samsung SoCs yet.
+--=-/8PUrpswgyvDwP6B49ex
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I also wrote the OMAP driver. Of course it uses the OMAP specific PWM drivers.
+The following changes since commit 17d857be649a21ca90008c6dc425d849fa83db5c=
+:
+  Linus Torvalds (1):
+        Linux 2.6.32-rc1
 
-I think after full integration of PWM frameworks as GPIO does, It will
-be replace with new PWM frameworks.
+are available in the git repository at:
 
-Thank you,
-Kyungmin Park
+  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm-intel-=
+next
+
+Pretty minor fixes.  We've still got some outstanding regressions
+related to the power saving code, which jbarnes and keithp are looking
+into.  Hopefully we'll have some results soon.
+
+Adam Jackson (1):
+      drm/i915: Initialize HDMI outputs as HDMI connectors, not DVI.
+
+Brian Rogers (1):
+      drm/i915: Don't call intel_update_fbc from intel_crtc_cursor_set
+
+Chris Wilson (3):
+      drm/i915: Record device minor rather than pointer in TRACE_EVENT
+      drm/i915: batch submit seqno off-by-one.
+      drm/i915: Enable irq to trace batch buffer completion.
+
+Eric Anholt (1):
+      Merge commit 'ickle/for-anholt' into drm-intel-next
+
+Zhao Yakui (1):
+      drm/i915: Multiply the refresh by 1000 in TV mode validatiion
+
+ drivers/gpu/drm/i915/i915_dma.c      |    1 +
+ drivers/gpu/drm/i915/i915_drv.h      |    2 +
+ drivers/gpu/drm/i915/i915_gem.c      |   10 +++++-
+ drivers/gpu/drm/i915/i915_irq.c      |   10 +++++++
+ drivers/gpu/drm/i915/i915_trace.h    |   49 +++++++++++++++++-------------=
+---
+ drivers/gpu/drm/i915/intel_display.c |    4 ---
+ drivers/gpu/drm/i915/intel_hdmi.c    |    2 +-
+ drivers/gpu/drm/i915/intel_tv.c      |    3 +-
+ 8 files changed, 49 insertions(+), 32 deletions(-)
 
 
-On Fri, Oct 9, 2009 at 3:36 AM, Bill Gatliff <bgat@billgatliff.com> wrote:
-> Trilok Soni wrote:
->>
->> Adding Bill Gatliff.
->>
->> Hi Kyungmin,
->>
->> Most of the driver looks fine. I have only one generic comment, but
->> not for this driver:
->>
->> - Someone should really work on getting PWM framework (may be the one
->> written by Bill Gatliff) into the kernel, because
->>  if we don't do this and if new PWM controller provides it's own APIs
->> then we can't leverage the chips using them, like the
->>  case here for ISA1000 and ISA1200. These chips are using the pwm
->> APIs exported by Samsung PWM controller, but it would
->>  be painful to integrate other PWM controller if that has slightly
->> little different API due to its nature.
->>
->>  So, it would be better to get one generic PWM framework mainline in
->> the kernel.
->>
->
-> I can repost for review, if you like.
->
-> The only objection I received last time, IIRC, was that I proffered it as a
-> "generic" API but only provided support for a couple of AT91 parts.  I
-> haven't had much time to add other support, so I haven't pushed for
-> inclusion.
->
-> I would be happy to coordinate the development/migration of support to the
-> API.  I can still do the AT91 parts and probably PXA, maybe
-> OMAP3430/Beagleboard.  But I would need others to help me with the rest.
->
-> b.g.
->
-> --
-> Bill Gatliff
-> bgat@billgatliff.com
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-/8PUrpswgyvDwP6B49ex
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAkrOe4QACgkQHUdvYGzw6vdJXwCfWljOMggGKgpyCAA88srg+aZf
+aKcAniA7jqCmXVRqgS2ZGk7gHV3k/92v
+=g8eq
+-----END PGP SIGNATURE-----
+
+--=-/8PUrpswgyvDwP6B49ex--
+
