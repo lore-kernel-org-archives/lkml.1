@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZJHLP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758418AbZJHPVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbZJHLP6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 07:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbZJHLP5
+	id S1758418AbZJHPVF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 11:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758347AbZJHPVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 07:15:57 -0400
-Received: from smtp.ispras.ru ([83.149.198.201]:48885 "EHLO smtp.ispras.ru"
+	Thu, 8 Oct 2009 11:21:04 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:3529 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757250AbZJHLP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 07:15:57 -0400
-From: Alexander Strakh <strakh@ispras.ru>
-Organization: ISP RAS
-To: Pierre Ossman <pierre@ossman.eu>, sdhci-devel@lists.ossman.eu,
-       Linux Kernlel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [BUG] wbsd.c: after spin_lock_bh uses spin_unlock instead spin_unlock_bh
-Date: Thu, 8 Oct 2009 15:18:00 +0000
-User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
+	id S1753891AbZJHPVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 11:21:02 -0400
+Date: Thu, 8 Oct 2009 17:20:15 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: hpa@zytor.com, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+cc: linux-rt-users@vger.kernel.org, Clark Williams <williams@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+Subject: Simplify the code in cpuid_open
+Message-ID: <alpine.LFD.2.00.0910081706250.24270@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910081518.00707.strakh@ispras.ru>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	KERNEL_VERSION: 2.6.31
-	DESCRIBE:
-Driver ./drivers/mmc/host/wbsd.c calls spin_lock_bh and then spin_unlock 
-instead of spin_unlock_bh:
+Peter picked up my patch for tip/x86/cpu that removes the bkl in 
+cpuid_open. Ingo subsequently merged that into tip/master.
 
- 753 static void wbsd_request(struct mmc_host *mmc, struct mmc_request *mrq)
-...
- 761         spin_lock_bh(&host->lock);
-...
- 844 done:
- 845         wbsd_request_end(host, mrq);
- 846
- 847         spin_unlock_bh(&host->lock);
- 848 }
+The following patch folds back-in tglx's patch that we should have known 
+about if we had looked into tip/rt/bkl in the first place!
 
-But in wsdb_request calls spin_unlock/spin_lock instead of 
-spin_unlock_bh/spin_lock_bh;
+Please pick it up for tip/x86/cpu and tip/master.
 
- 206 static void wbsd_request_end(struct wbsd_host *host, struct mmc_request 
-...
- 230         spin_unlock(&host->lock);
- 231         mmc_request_done(host->mmc, mrq);
- 232         spin_lock(&host->lock);
- 233 }
+>From b416b75555aca5e7f066f6edd824fce4b7d08d28 Mon Sep 17 00:00:00 2001
+From: John Kacur <jkacur@redhat.com>
+Date: Thu, 8 Oct 2009 16:31:57 +0200
+Subject: [PATCH] Simplify the code in cpuid_open
 
-Found by : Linux Driver Verification
+This patch folds back in tglx's 55968ede164ae523692f00717f50cd926f1382a0
+to my patch that removed the bkl.
+
+This simplifies the code, and makes it consistent with the changes to
+kill the bkl in msr.c as well.
+
+This is applied against tip/master
+
+Signed-off-by: John Kacur <jkacur@redhat.com>
+---
+ arch/x86/kernel/cpuid.c |   14 ++++++--------
+ 1 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
+index 8bb8401..7ef24a7 100644
+--- a/arch/x86/kernel/cpuid.c
++++ b/arch/x86/kernel/cpuid.c
+@@ -116,18 +116,16 @@ static int cpuid_open(struct inode *inode, struct file *file)
+ {
+ 	unsigned int cpu;
+ 	struct cpuinfo_x86 *c;
+-	int ret = 0;
+ 
+ 	cpu = iminor(file->f_path.dentry->d_inode);
+-	if (cpu >= nr_cpu_ids || !cpu_online(cpu)) {
+-		ret = -ENXIO;	/* No such CPU */
+-		goto out;
+-	}
++	if (cpu >= nr_cpu_ids || !cpu_online(cpu))
++		return -ENXIO;	/* No such CPU */
++
+ 	c = &cpu_data(cpu);
+ 	if (c->cpuid_level < 0)
+-		ret = -EIO;	/* CPUID not supported */
+-out:
+-	return ret;
++		return -EIO;	/* CPUID not supported */
++
++	return 0;
+ }
+ 
+ /*
+-- 
+1.6.0.6
+
