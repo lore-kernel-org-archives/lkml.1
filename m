@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbZJHNMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbZJHNMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbZJHNMs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 09:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbZJHNMr
+	id S1758131AbZJHNMJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 09:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758098AbZJHNMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 09:12:47 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:50148 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758100AbZJHNMq (ORCPT
+	Thu, 8 Oct 2009 09:12:08 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37840 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758064AbZJHNMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 09:12:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=SOY7wZdRV4FZunYXjZAAO6m7OK/urFL/ZXZuse7W/SvDfbDFQytl5B21XGhGaSm3G7
-         zs68S8ctlk17wbyz5mJE2X6DUHyCKF/ajcaPljAWzLpffXwrpYoIo1351ir91HfP364o
-         Zrm4R70Ly/Uepgy9XmhZePhzzZ/dJEnBfOfEc=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.01.0910071450510.3432@localhost.localdomain>
-References: <20091006101414.GM5216@kernel.dk>
-	 <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain>
-	 <alpine.LFD.2.01.0910070911080.3432@localhost.localdomain>
-	 <20091007164622.GX30316@wotan.suse.de>
-	 <alpine.LFD.2.01.0910071222230.3432@localhost.localdomain>
-	 <87eipfymcv.fsf@basil.nowhere.org>
-	 <alpine.LFD.2.01.0910071349190.3432@localhost.localdomain>
-	 <20091007210651.GB1656@one.firstfloor.org>
-	 <alpine.LFD.2.01.0910071417300.3432@localhost.localdomain>
-	 <alpine.LFD.2.01.0910071450510.3432@localhost.localdomain>
-Date: Thu, 8 Oct 2009 15:12:08 +0200
-Message-ID: <1158166a0910080612h29d93d50y875d5305cd4d985f@mail.gmail.com>
-Subject: Re: [rfc][patch] store-free path walking
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 8 Oct 2009 09:12:07 -0400
+Date: Thu, 8 Oct 2009 14:12:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ian Abbott <abbotti@mev.co.uk>
+Cc: Thomas Chou <thomas@wytron.com.tw>,
+       "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+       Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ian Abbott <ian.abbott@mev.co.uk>
+Subject: Re: [PATCH v2] ata: New PATA driver for Altera CompactFlash.
+Message-ID: <20091008141241.550a09bd@lxorguk.ukuu.org.uk>
+In-Reply-To: <4ACDCB6E.4040905@mev.co.uk>
+References: <1254967110-3495-1-git-send-email-thomas@wytron.com.tw>
+	<20091008105503.6ce414f5@lxorguk.ukuu.org.uk>
+	<4ACDCB6E.4040905@mev.co.uk>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 7, 2009 at 11:57 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> This, btw, is exactly the kind of thing we saw with some of the
-> non-temporal work, when we used nontemporal stores to copy pages on COW
-> faults, or when doing pre-zeroing of pages. You get rid of some of the
-> hot-spots in the kernel, and you then replace them with user space taking
-> the cache misses in random spots instead. The kernel profile looks better,
-> and system time may go down, but actual performace never went down - you
-> just moved your cache miss cost from one place to another.
+On Thu, 8 Oct 2009 12:22:22 +0100
+Ian Abbott <abbotti@mev.co.uk> wrote:
 
-A few years ago when K7s were not ancient yet, after hearing
-argument for and against non-temporal stores,
-I decided to finally figure it for myself.
+> On 08/10/09 10:55, Alan Cox wrote:
+> > On Thu,  8 Oct 2009 09:58:30 +0800
+> > Thomas Chou <thomas@wytron.com.tw> wrote:
+> > 
+> >> This patch adds a new PATA driver to support the Altera SOPC Builder
+> >> CompactFlash component as a PATA device with support for insertion
+> >> and removal of CF cards.  It uses the platform driver model.
+> > 
+> > Can you explain why you remove the interface rather than the device on
+> > the interface when you detect a card removal ?
+> 
+> As the originator of the driver, the only answer I have is "I don't know
+> how."  I was hoping for inspiration from some of the other PATA CF
+> drivers, but alas, I couldn't find it.  I admit that removing the whole
+> ATA host is a bit on the extreme side.
 
-I tested kernel build workload on two kernels with the only
-one difference - clear_page with and without non-temporal stores.
+I think the bit you want is something like:
 
-"Non-temporal stores" kernel was faster, not slower. Just a little bit,
-but reproducibly.
---
-vda
+	struct ata_eh_info *ehi = &ap->link->eh_info;
+	if (mumblemumble & whatever) {
+		ata_ehi_clear_desc(ehi);
+		ata_ehi_hotplugged(ehi);
+		ata_ehi_push_desc(ehi, "CF connection changed");
+		ata_port_freeze(ap);
+	}
+
+The core code also assumes your freeze method will mask any further
+connection change reports until the port is unfrozen (so you don't get
+multiple parallel "in/out/in/out" events at once)
+
+Alan
