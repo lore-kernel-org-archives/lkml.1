@@ -1,121 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932172AbZJHNam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932223AbZJHNb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932172AbZJHNam (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 09:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758271AbZJHNam
+	id S932223AbZJHNb4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 09:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932136AbZJHNbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 09:30:42 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:39011 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750947AbZJHNal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 09:30:41 -0400
-Date: Thu, 8 Oct 2009 15:30:04 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [rfc][patch] store-free path walking
-Message-ID: <20091008133003.GM9228@kernel.dk>
-References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain> <20091008123622.GA30316@wotan.suse.de> <20091008125746.GL9228@kernel.dk> <20091008132200.GB30316@wotan.suse.de>
+	Thu, 8 Oct 2009 09:31:55 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:63326 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932132AbZJHNbz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 09:31:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=fjimHkjtQ1JGQzmVU8kXvpnB89R8oRLLW7YUz87u3xr2lV7CI1B27Qvv0Zg72KKpRh
+         J+fKNnEBIEnfMw5jMa7ZshdYFGBbkg8e34E/GlIHX80YDFFCtfDfIyRDeeymVXMobJQp
+         fHVjpkwQGL1G1k+1IqRWGXhAnzejiqsuodbeM=
+Message-ID: <4ACDE9AF.8040001@gmail.com>
+Date: Thu, 08 Oct 2009 15:31:27 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.1 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091008132200.GB30316@wotan.suse.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, strakh@ispras.ru
+Subject: Re: [PATCH 2/4] isicom: switch to the new tty_port_open helper
+References: <20091007144455.14550.95003.stgit@localhost.localdomain>	<20091007144621.14550.62068.stgit@localhost.localdomain>	<4ACCF5D5.7010505@gmail.com> <20091008141353.342fd2ae@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091008141353.342fd2ae@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08 2009, Nick Piggin wrote:
-> On Thu, Oct 08, 2009 at 02:57:46PM +0200, Jens Axboe wrote:
-> > On Thu, Oct 08 2009, Nick Piggin wrote:
-> > > On Wed, Oct 07, 2009 at 07:56:33AM -0700, Linus Torvalds wrote:
-> > > > On Wed, 7 Oct 2009, Nick Piggin wrote:
-> > > > > 
-> > > > > OK, I have a really basic patch that does store-free path walking
-> > > > > (except on the final element).
-> > > > 
-> > > > Yay!
-> > > > 
-> > > > > dbench is pretty nasty still because it seems to do a lot of stupid 
-> > > > > things like reading from /proc/mounts all the time.
-> > > > 
-> > > > You should largely forget about dbench, it can certainly be a useful 
-> > > > benchmark, but at the same time it's certainly not a _meaningful_ one.
-> > > > There are better things to try.
-> > > 
-> > > OK, here's one you might find interesting. It is a cached git diff
-> > > workload in a linux kernel tree. I actually ran it in a loop 100
-> > > times in order to get some reasonable sample sizes, then I ran
-> > > parallel and serial configs (PreloadIndex = true/false). Compared
-> > > plain kernel with all vfs patches to now.
-> > > 
-> > > 2.6.32-rc3 serial
-> > > 5.35user 7.12system 0:12.47elapsed 100%CPU
-> > > 
-> > > 2.6.32-rc3 parallel
-> > > 5.79user 17.69system 0:09.41elapsed 249%CPU
-> > > 
-> > > vfs serial
-> > > 5.30user 5.62system 0:10.92elapsed 100%CPU
-> > > 
-> > > vfs parallel
-> > > 4.86user 0.68system 0:06.82elapsed 81%CPU
-> > 
-> > Since the box was booted anyway, I tried the git test too. Results are
-> > with 2.6.32-rc3 serial being the baseline 1.00 scores, smaller than 1.00
-> > are faster and vice versa.
-> > 
-> > 2.6.32-rc3 serial
-> > real    1.00
-> > user    1.00
-> > sys     1.00
-> > 
-> > 2.6.32-rc3 parallel
-> > real    0.80
-> > user    0.83
-> > sys     8.38
-> > 
-> > sys time, auch...
-> > 
-> > vfs serial
-> > real    0.86
-> > user    0.93
-> > sys     0.84
-> 
-> This is actualy nice too. My tests were on a 2s8c Barcelona system,
-> but this is showing we have a nice serial win on Nehalem as well.
-> Actually K8 CPUs have a bit faster lock primitives than earlier
-> Intel CPUs I think (closer to Nehalem), so we might see an even
-> bigger win with a Core2.
+On 10/08/2009 03:13 PM, Alan Cox wrote:
+> Ok fixed that the simple way the buffer allocator now has its own private
+> mutex. Any other problems strike you ?
 
-Yes, this is just as interesting as the parallel results imho. I don't
-have a core 2 test box, so I cannot test that.
-
-> > vfs parallel
-> > real    0.43
-> > user    0.72
-> > sys     0.13
-> > 
-> > Let me know if you want profiles or anything like that. I'd say that
-> > looks veeeery tasty.
-> 
-> It doesn't look all that different to mine, so profiles probably
-> not required at this point. Is the CPU accounting going wrong? It
-> looks like thread times are not being accumulated back properly,
-> which IIRC they should be. But 'real' time should be accurate, so
-> it is going a lot faster.
-
-Yes, it looks very similar, the higher CPU count just makes the parallel
-git preload on -rc3 stock look even more crappy (you had roughly 2x
-number of sys time, I have roughly 8x) when compared to the serialized
-approach.
-
-IIRC, there was a bug with thread accounting very recently. Why would it
-not hit -rc3 alone, though? Does look fishy, though.
-
--- 
-Jens Axboe
-
+I don't see any. It looks good. Thanks.
