@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbZJHSY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759169AbZJHS3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759292AbZJHSY3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 14:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932699AbZJHSY2
+	id S1759169AbZJHS3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 14:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbZJHS3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 14:24:28 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58451 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1759093AbZJHSY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 14:24:27 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+xo81BRmCx/4pUc5A/dmykDigQeouXvuSFElIxk/
-	NNVmTsrMHbYoem
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
- CPU"
-From: Mike Galbraith <efault@gmx.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <200910081655.37485.elendil@planet.nl>
-References: <200910051500.55875.elendil@planet.nl>
-	 <1254974743.7797.21.camel@marge.simson.net>
-	 <20091008064041.67219b13@infradead.org>
-	 <200910081655.37485.elendil@planet.nl>
-Content-Type: text/plain
-Date: Thu, 08 Oct 2009 20:23:37 +0200
-Message-Id: <1255026217.6643.12.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.49
+	Thu, 8 Oct 2009 14:29:16 -0400
+Received: from mail-qy0-f190.google.com ([209.85.221.190]:41260 "EHLO
+	mail-qy0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754273AbZJHS3P convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 14:29:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=U4qcdy4jvmmzGGpVhT3PeuTBPHm8h/wjzomSV6s3tCqPG/YSnYCbRr8Z7bbJ8q28cR
+         XgT/+3OWuLqICu/b4RD3+QvJka5/8iRzzCcM6i6NtkyJuxGebu8MLAbJg+tqN3fj5QGU
+         rffHBMpWKTNd9GcXUznkCtb8PD8xmw98kz1ws=
+MIME-Version: 1.0
+In-Reply-To: <20091007061822.GA7602@july>
+References: <20091007061822.GA7602@july>
+Date: Thu, 8 Oct 2009 23:58:37 +0530
+Message-ID: <5d5443650910081128l58f45148m87735185a0094c31@mail.gmail.com>
+Subject: Re: [PATCH 5/6] haptic: Samsung SoCs PWM controlled haptic support
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       Bill Gatliff <bgat@billgatliff.com>, ben-linux@fluff.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 16:55 +0200, Frans Pop wrote:
-> On Thursday 08 October 2009, Arjan van de Ven wrote:
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Date: Thu, 24 Sep 2009 13:24:16 +0200
-> > Subject: [PATCH] x86, timers: check for pending timers after (device)
-> > interrupts
-> >
-> > Now that range timers and deferred timers are common, I found a
-> > problem with these using the "perf timechart" tool.
-> >
-> > It turns out that on x86, these two 'opportunistic' timers only
-> > get checked when another "real" timer happens.
-> > These opportunistic timers have the objective to save power by
-> > hitchhiking on other wakeups, as to avoid CPU wakeups by themselves
-> > as much as possible.
-> 
-> This patch makes quite a difference for me. iwlagn and phy0 now 
-> consistently show at ~10 ms or lower.
-> 
-> I do still get occasional high latencies, but those are for things like
-> "[rpc_wait_bit_killable]" or "Writing a page to disk", where I guess you'd 
-> expect them. Those high latencies are mostly only listed for "Global" and 
-> don't translate to individual processes.
+Adding Bill Gatliff.
 
-I still see very high latencies coming out of idle (last noted was >
-300ms, NO_HZ) with this patch, and wonder if the hunk below makes any
-difference whatsoever for you.  Here, it definitely does. (shouldn't)
+Hi Kyungmin,
 
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -495,8 +495,10 @@ static void update_curr(struct cfs_rq *c
- 	u64 now = rq_of(cfs_rq)->clock;
- 	unsigned long delta_exec;
- 
--	if (unlikely(!curr))
-+	if (unlikely(!curr)) {
-+		update_rq_clock(rq_of(cfs_rq));
- 		return;
-+	}
- 
- 	/*
- 	 * Get the amount of time the current task was running
+Most of the driver looks fine. I have only one generic comment, but
+not for this driver:
+
+- Someone should really work on getting PWM framework (may be the one
+written by Bill Gatliff) into the kernel, because
+  if we don't do this and if new PWM controller provides it's own APIs
+then we can't leverage the chips using them, like the
+  case here for ISA1000 and ISA1200. These chips are using the pwm
+APIs exported by Samsung PWM controller, but it would
+  be painful to integrate other PWM controller if that has slightly
+little different API due to its nature.
+
+  So, it would be better to get one generic PWM framework mainline in
+the kernel.
+
+> +static int __devexit samsung_pwm_haptic_remove(struct platform_device *pdev)
+> +{
+> +       struct samsung_pwm_haptic *haptic = platform_get_drvdata(pdev);
+> +
+> +       samsung_pwm_haptic_set(&haptic->cdev, HAPTIC_OFF);
+> +       del_timer_sync(&haptic->timer);
+
+cancel_work_sync ?
 
 
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
