@@ -1,373 +1,677 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZJHBNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbZJHBNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbZJHBNa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 Oct 2009 21:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbZJHBN3
+	id S1755552AbZJHBNY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 Oct 2009 21:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZJHBNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 Oct 2009 21:13:29 -0400
-Received: from qmta03.westchester.pa.mail.comcast.net ([76.96.62.32]:38537
-	"EHLO QMTA03.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754124AbZJHBN0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 Oct 2009 21:13:26 -0400
-Date: Wed, 7 Oct 2009 20:12:47 -0500
-From: Tim Walberg <twalberg@comcast.net>
-To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
-       Stefan Lippers-Hollmann <s.L-H@gmx.de>, linux-wireless@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Disassociating atheros wlan with 2.6.31
-Message-ID: <20091008011247.GC22458@comcast.net>
-Reply-To: Tim Walberg <twalberg@comcast.net>
-Mail-Followup-To: Tim Walberg <twalberg@comcast.net>,
-	Kristoffer Ericson <kristoffer.ericson@gmail.com>,
-	"Justin P. Mattock" <justinmattock@gmail.com>,
-	Stefan Lippers-Hollmann <s.L-H@gmx.de>,
-	linux-wireless@vger.kernel.org,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20090924121617.c0c7222d.kristoffer.ericson@gmail.com> <4ABBB9D3.4020200@gmail.com> <200909242155.49890.s.L-H@gmx.de> <4ABBD170.6060702@gmail.com> <20091004174535.777d233c.kristoffer.ericson@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="adlATi0AGRzVk0TM"
-Content-Disposition: inline
-In-Reply-To: <20091004174535.777d233c.kristoffer.ericson@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 7 Oct 2009 21:13:23 -0400
+Received: from msr32.hinet.net ([168.95.4.132]:53091 "EHLO msr32.hinet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754089AbZJHBNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 Oct 2009 21:13:22 -0400
+From: Thomas Chou <thomas@wytron.com.tw>
+To: linux-ide@vger.kernel.org
+Cc: Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
+       linux-kernel@vger.kernel.org, Ian Abbott <abbotti@mev.co.uk>,
+       Thomas Chou <thomas@wytron.com.tw>
+Subject: [PATCH] ata: New PATA driver for Altera CompactFlash.
+Date: Thu,  8 Oct 2009 09:13:35 +0800
+Message-Id: <1254964415-2809-1-git-send-email-thomas@wytron.com.tw>
+X-Mailer: git-send-email 1.6.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Ian Abbott <abbotti@mev.co.uk>
 
---adlATi0AGRzVk0TM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch adds a new PATA driver to support the Altera SOPC Builder
+CompactFlash component as a PATA device with support for insertion
+and removal of CF cards.  It uses the platform driver model.
 
+For each probed platform device, the driver spawns a kthread to
+handle insertion and removal of CF cards by creating and removing the
+underlying ATA host interface.  The Altera CompactFlash component
+includes a register bit to indicate whether a CF card is detected
+and an interrupt triggered when this bit changes.  The driver has a
+handler for this interrupt which flags that something has changed and
+wakes up the kthread to deal with it.
 
-Another confirmed instance of this on ath9k - on 2.6.31.2 and 2.6.31.3 - di=
-dn't
-happen on 2.6.30.6 or 2.6.30.9. A couple other interesting facts:
+The platform device uses 2 IORESOURCE_MEM resources and 2
+IORESOURCE_IRQ resources.  The first memory resource is for the
+CompactFlash component's IDE registers and the second is for the
+component's CF status and control registers.  The first IRQ resource
+is for the IDE and the second is for the CF detection interrupt.
 
-- it seems to be related (at least in my case) to heavy transmit load -
-  I can download a kernel tarball without it failing, but if I try to
-  copy it to another system, it fails within 2 seconds reliably...
-- running 'rmmod ath9k ath mac80211 cfg80211' followed by 'modprobe ath9k'
-  clears it up
+Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
+Signed-off-by: Thomas Chou <thomas@wytron.com.tw>
+---
+ drivers/ata/Kconfig          |   11 +
+ drivers/ata/Makefile         |    1 +
+ drivers/ata/pata_altera_cf.c |  582 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 594 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/ata/pata_altera_cf.c
 
-No indication in dmesg except:
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index f2df6e2..c99f7c5 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -781,5 +781,16 @@ config PATA_BF54X
+ 
+ 	  If unsure, say N.
+ 
++config PATA_ALTERA_CF
++	tristate "Altera SOPC Builder CompactFlash support"
++	depends on EMBEDDED && PATA_PLATFORM
++	help
++	  This option enables support for the CompactFlash core in an
++	  Altera SOPC Builder system.  It supports insertion and removal
++	  of CompactFlash cards.  It can be used instead of the generic
++	  PATA platform device support if this functionality is desired.
++
++	  If unsure, say N.
++
+ endif # ATA_SFF
+ endif # ATA
+diff --git a/drivers/ata/Makefile b/drivers/ata/Makefile
+index 01e126f..9be42c2 100644
+--- a/drivers/ata/Makefile
++++ b/drivers/ata/Makefile
+@@ -77,6 +77,7 @@ obj-$(CONFIG_PATA_PLATFORM)	+= pata_platform.o
+ obj-$(CONFIG_PATA_AT91)	+= pata_at91.o
+ obj-$(CONFIG_PATA_OF_PLATFORM)	+= pata_of_platform.o
+ obj-$(CONFIG_PATA_ICSIDE)	+= pata_icside.o
++obj-$(CONFIG_PATA_ALTERA_CF)	+= pata_altera_cf.o
+ # Should be last but two libata driver
+ obj-$(CONFIG_PATA_ACPI)		+= pata_acpi.o
+ # Should be last but one libata driver
+diff --git a/drivers/ata/pata_altera_cf.c b/drivers/ata/pata_altera_cf.c
+new file mode 100644
+index 0000000..3f6d71f
+--- /dev/null
++++ b/drivers/ata/pata_altera_cf.c
+@@ -0,0 +1,582 @@
++/*
++ *  pata_altera_cf.c - PATA driver for Altera SOPC Builder CompactFlash core.
++ *
++ *  Copyright (C) 2009 MEV Limited <http://www.mev.co.uk>
++ *  Author: Ian Abbott <abbotti@mev.co.uk>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2, or (at your option)
++ *  any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; see the file COPYING.  If not, write to
++ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ *  This file was based on/inspired by:
++ *    drivers/ata/pata_platform.c
++ *    drivers/ata/pata_pcmcia.c
++ *    drivers/ata/pata_ixp4xx_cf.c
++ *    altcf.c from the Microtronix Nios II Linux distribution.
++ *
++ *  This is a platform device driver and expects two memory resources and
++ *  two IRQ resources per platform device in the following:
++ *
++ *    IDE memory resource -- 64 byte memory area consisting of IDE registers
++ *                           on 4-byte boundaries.
++ *    IDE IRQ resource    -- IRQ resource consisting of IRQ number and desired
++ *                           IRQ flags for the IDE interface.  The IRQ number
++ *                           can be set to 0 to avoid setting up the IRQ.
++ *    CF CONTROL memory resource -- 16 byte resource consisting of the CF
++ *                           CONTROL registers on 4-byte boundaries.
++ *    CF CONTROL IRQ resource -- IRQ resource consisting of IRQ number and
++ *                           desired IRQ flags for the CF CONTROL interface.
++ */
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/blkdev.h>
++#include <scsi/scsi_host.h>
++#include <linux/ata.h>
++#include <linux/libata.h>
++#include <linux/platform_device.h>
++#include <linux/kthread.h>
++
++#define DRV_NAME "pata_altera_cf"
++#define DRV_VERSION "0.01"
++
++
++#define ALTCF_SHIFT		2
++
++/* IDE registers */
++#define ALTCF_IDE_LEN		(16 << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_DATA	(ATA_REG_DATA << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_ERR	(ATA_REG_ERR << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_NSECT	(ATA_REG_NSECT << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_LBAL	(ATA_REG_LBAL << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_LBAM	(ATA_REG_LBAM << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_LBAH	(ATA_REG_LBAH << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_DEVICE	(ATA_REG_DEVICE << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_STATUS	(ATA_REG_STATUS << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_FEATURE	(ATA_REG_FEATURE << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_CMD	(ATA_REG_CMD << ALTCF_SHIFT)
++#define ALTCF_IDE_REG_CTL	(14 << ALTCF_SHIFT)
++
++/* CF CONTROL registers */
++#define ALTCF_CFC_LEN		(4 << ALTCF_SHIFT)
++#define ALTCF_CFC_REG_CFCTL	(0 << ALTCF_SHIFT)
++#define ALTCF_CFC_REG_IDECTL	(1 << ALTCF_SHIFT)
++
++/* CFCTL register bitmasks */
++#define ALTCF_CFCTL_DET		0x01	/* CF detected */
++#define ALTCF_CFCTL_PWR		0x02	/* power */
++#define ALTCF_CFCTL_RST		0x04	/* reset */
++#define ALTCF_CFCTL_IDET	0x08	/* "CF detect change" intr enable */
++
++/* IDECTL register bitmasks */
++#define ALTCF_IDECTL_IIDE	0x01	/* IDE interrupt enable */
++
++/* Macros to read/write CF CONTROL registers. */
++#define READ_CFCTL(altcf)	readl((altcf)->cfc_base + ALTCF_CFC_REG_CFCTL)
++#define WRITE_CFCTL(altcf, d)	\
++	writel((d), (altcf)->cfc_base + ALTCF_CFC_REG_CFCTL)
++#define READ_IDECTL(altcf)	readl((altcf)->cfc_base + ALTCF_CFC_REG_IDECTL)
++#define WRITE_IDECTL(altcf, d)	\
++	writel((d), (altcf)->cfc_base + ALTCF_CFC_REG_IDECTL)
++
++/*
++ * This is the driver's private data for the device.  The struct device's
++ * private data pointer is used by the libata core so we can't use it ourselves.
++ * Instead, we use the devres functions to access it.  This is a lot slower
++ * than using the device's private data pointer but we shouldn't have to do it
++ * very often.
++ */
++struct altcf_private {
++	struct device *dev;		/* point back to device */
++	resource_size_t ide_raw_base;	/* unmapped IDE registers */
++	unsigned char __iomem *ide_base;/* mapped IDE registers */
++	unsigned char __iomem *cfc_base;/* mapped CF CONTROL registers */
++	struct task_struct *cf_thread;	/* kthread to handle CF events */
++	int cfc_irq;			/* IRQ for CF CONTROL */
++	int ide_irq;			/* IRQ for IDE */
++	unsigned long ide_irqflags;	/* IRQ flags for IDE */
++	unsigned long event;		/* event/state bits */
++	spinlock_t cfctl_lock;		/* spinlock to change CFCTL */
++	unsigned char cfctl;		/* CFCTL register */
++	void *ata_group_id;		/* devres group ID of ATA resources */
++};
++
++/* Event/state bits. */
++enum altcf_event {
++	EV_CHANGE,
++	EV_HOLD,
++	EV_DEAD
++};
++
++/* Update the CFCTL register. */
++static void update_cfctl(struct altcf_private *altcf,
++		unsigned char mask, unsigned char set)
++{
++	unsigned long flags;
++
++	set &= mask;
++	spin_lock_irqsave(&altcf->cfctl_lock, flags);
++	altcf->cfctl = (altcf->cfctl & ~mask) | set;
++	WRITE_CFCTL(altcf, altcf->cfctl);
++	spin_unlock_irqrestore(&altcf->cfctl_lock, flags);
++}
++
++/* IRQ handler to handle CF detection state changes. */
++static irqreturn_t altcf_cf_interrupt(int irq, void *context)
++{
++	struct altcf_private *altcf = context;
++
++	READ_CFCTL(altcf);	/* Clear interrupt */
++	/* Record the fact that something changed. */
++	set_bit(EV_CHANGE, &altcf->event);
++	smp_mb();
++	/* Wake up the kthread to deal with it. */
++	wake_up_process(altcf->cf_thread);
++	return IRQ_HANDLED;
++}
++
++/* Provide our own set_mode(). */
++static int altcf_set_mode(struct ata_link *link, struct ata_device **error)
++{
++	struct ata_device *dev;
++
++	ata_for_each_dev(dev, link, ENABLED) {
++		ata_dev_printk(dev, KERN_INFO, "configured for PIO0\n");
++		dev->pio_mode = XFER_PIO_0;
++		dev->xfer_mode = XFER_PIO_0;
++		dev->xfer_shift = ATA_SHIFT_PIO;
++		dev->flags |= ATA_DFLAG_PIO;
++	}
++	return 0;
++}
++
++static struct scsi_host_template altcf_sht = {
++	ATA_PIO_SHT(DRV_NAME),
++};
++
++static struct ata_port_operations altcf_port_ops = {
++	.inherits		= &ata_sff_port_ops,
++	.sff_data_xfer		= ata_sff_data_xfer_noirq,
++	.cable_detect		= ata_cable_40wire,
++	.set_mode		= altcf_set_mode,
++	.port_start		= ATA_OP_NULL,
++};
++
++/* Checks if CF present and sets up ATA host. */
++static void altcf_detect_cf(struct altcf_private *altcf)
++{
++	struct ata_host *host;
++	struct ata_port *ap;
++	void *group_id;
++
++	if ((READ_CFCTL(altcf) & ALTCF_CFCTL_DET) == 0)
++		return;
++
++	dev_dbg(altcf->dev, "CF detected\n");
++	/* Hold in reset powered down for 0.5 seconds. */
++	update_cfctl(altcf, ALTCF_CFCTL_RST | ALTCF_CFCTL_PWR, ALTCF_CFCTL_RST);
++	msleep(500);
++	if (test_bit(EV_CHANGE, &altcf->event)
++			|| test_bit(EV_DEAD, &altcf->event)) {
++		goto fail_reset_sleep;
++	}
++	/* Remove reset, power up and wait 0.5 seconds. */
++	update_cfctl(altcf, ALTCF_CFCTL_RST | ALTCF_CFCTL_PWR, ALTCF_CFCTL_PWR);
++	msleep(500);
++	if (test_bit(EV_CHANGE, &altcf->event)
++			|| test_bit(EV_DEAD, &altcf->event)) {
++		goto fail_power_sleep;
++	}
++
++	/* Create devres group to manage ATA host resources. */
++	group_id = devres_open_group(altcf->dev, NULL, GFP_KERNEL);
++	if (group_id == NULL) {
++		dev_warn(altcf->dev, "failed to allocate ATA group\n");
++		goto fail_open_group;
++	}
++
++	/* Allocate ATA host with single port. */
++	host = ata_host_alloc(altcf->dev, 1);
++	if (host == NULL) {
++		dev_warn(altcf->dev, "failed to allocate ATA host\n");
++		goto fail_ata_host_alloc;
++	}
++
++	ap = host->ports[0];
++	ap->ops = &altcf_port_ops;
++	ap->pio_mask = 0x1f;	/* PIO4 */
++	ap->flags = ATA_FLAG_NO_LEGACY | ATA_FLAG_MMIO;
++
++	/* Use polling mode if there's no IRQ. */
++	if (!altcf->ide_irq) {
++		ap->flags |= ATA_FLAG_PIO_POLLING;
++		ata_port_desc(ap, "no IRQ, using PIO polling");
++	}
++
++	/* Set up register addresses. */
++	/* command section */
++	ap->ioaddr.cmd_addr = altcf->ide_base;
++	ap->ioaddr.data_addr = ap->ioaddr.cmd_addr + ALTCF_IDE_REG_DATA;
++	ap->ioaddr.error_addr = ap->ioaddr.cmd_addr + ALTCF_IDE_REG_ERR;
++	ap->ioaddr.feature_addr = ap->ioaddr.cmd_addr + ALTCF_IDE_REG_FEATURE;
++	ap->ioaddr.nsect_addr = ap->ioaddr.cmd_addr + ALTCF_IDE_REG_NSECT;
++	ap->ioaddr.lbal_addr = ap->ioaddr.cmd_addr + ALTCF_IDE_REG_LBAL;
++	ap->ioaddr.lbam_addr = ap->ioaddr.cmd_addr + ALTCF_IDE_REG_LBAM;
++	ap->ioaddr.lbah_addr = ap->ioaddr.cmd_addr + ALTCF_IDE_REG_LBAH;
++	ap->ioaddr.device_addr = ap->ioaddr.cmd_addr + ALTCF_IDE_REG_DEVICE;
++	ap->ioaddr.status_addr = ap->ioaddr.cmd_addr + ALTCF_IDE_REG_STATUS;
++	ap->ioaddr.command_addr = ap->ioaddr.cmd_addr + ALTCF_IDE_REG_CMD;
++	/* control section */
++	ap->ioaddr.ctl_addr = altcf->ide_base + ALTCF_IDE_REG_CTL;
++	ap->ioaddr.altstatus_addr = ap->ioaddr.ctl_addr;
++	ata_port_desc(ap, "mmio cmd 0x%llx ctl 0x%llx",
++			(unsigned long long)altcf->ide_raw_base,
++			(unsigned long long)altcf->ide_raw_base
++			+ ALTCF_IDE_REG_CTL);
++
++	/* Enable the IDE IRQ if using it. */
++	if (altcf->ide_irq)
++		WRITE_IDECTL(altcf, ALTCF_IDECTL_IIDE);
++
++	/* Activate the ATA host. */
++	if (ata_host_activate(host, altcf->ide_irq,
++				altcf->ide_irq ? ata_sff_interrupt : NULL,
++				altcf->ide_irqflags, &altcf_sht)) {
++		dev_warn(altcf->dev, "failed to activate ATA host\n");
++		goto fail_ata_host_activate;
++	}
++
++	/* Success! */
++	altcf->ata_group_id = group_id;
++	devres_close_group(altcf->dev, group_id);
++	return;
++
++fail_ata_host_activate:
++
++	/* Disable IDE IRQ. */
++	WRITE_IDECTL(altcf, 0);
++fail_ata_host_alloc:
++
++	devres_release_group(altcf->dev, group_id);
++fail_open_group:
++fail_power_sleep:
++
++	/* Hold in reset powered down. */
++	update_cfctl(altcf, ALTCF_CFCTL_RST | ALTCF_CFCTL_PWR, ALTCF_CFCTL_RST);
++fail_reset_sleep:
++
++	dev_dbg(altcf->dev, "CF detection cancelled\n");
++}
++
++/* Get rid of old ATA host, if any. */
++static void altcf_remove_ata(struct altcf_private *altcf)
++{
++	void *group_id;
++	struct ata_host *host;
++
++	/* Disable IDE IRQ. */
++	WRITE_IDECTL(altcf, 0);
++	/* Look for ATA resources. */
++	group_id = altcf->ata_group_id;
++	altcf->ata_group_id = NULL;
++	if (group_id) {
++		dev_dbg(altcf->dev, "removing old CF\n");
++		/* Look for ATA host and detach it. */
++		host = dev_get_drvdata(altcf->dev);
++		if (host)
++			ata_host_detach(host);
++		/* Release ATA resources. */
++		devres_release_group(altcf->dev, group_id);
++	}
++	/* Hold CF in reset powered down. */
++	update_cfctl(altcf, ALTCF_CFCTL_RST | ALTCF_CFCTL_PWR, ALTCF_CFCTL_RST);
++}
++
++/*
++ * Kthread function to handle CF detection state changes.
++ * It is responsible for adding and removing the ATA host.
++ */
++static int altcf_thread(void *context)
++{
++	struct altcf_private *altcf = context;
++
++	for (;;) {
++		dev_dbg(altcf->dev, "altcf_thread loop\n");
++		set_current_state(TASK_INTERRUPTIBLE);
++		while (!kthread_should_stop()
++				&& (test_bit(EV_HOLD, &altcf->event)
++					|| (!test_and_clear_bit(EV_CHANGE,
++							&altcf->event)
++						&& !test_bit(EV_DEAD,
++							&altcf->event)))) {
++			dev_dbg(altcf->dev, "altcf_thread sleeping\n");
++			schedule();
++			dev_dbg(altcf->dev, "altcf_thread woken\n");
++			set_current_state(TASK_INTERRUPTIBLE);
++		}
++		__set_current_state(TASK_RUNNING);
++		if (kthread_should_stop()) {
++			dev_dbg(altcf->dev, "altcf_thread stopping\n");
++			break;
++		}
++		/* State changed, so remove ATA host if previously set up. */
++		altcf_remove_ata(altcf);
++		if (!test_bit(EV_DEAD, &altcf->event)) {
++			/* Check if CF is present and set it up. */
++			altcf_detect_cf(altcf);
++		}
++	}
++	/* Finally, remove ATA host if set up. */
++	altcf_remove_ata(altcf);
++	dev_dbg(altcf->dev, "altcf_thread exit\n");
++	return 0;
++}
++
++/* This is the devres release function for our private data. */
++static void altcf_private_release(struct device *dev, void *res)
++{
++	/* no op */
++}
++
++/* Add a device. */
++static int __devinit altcf_probe(struct device *dev,
++		struct resource *ide_mem_res, struct resource *ide_irq_res,
++		struct resource *cfc_mem_res, struct resource *cfc_irq_res)
++{
++	struct altcf_private *altcf;
++	int rc = -ENXIO;
++
++	/* Check resources */
++	if (resource_type(ide_mem_res) != IORESOURCE_MEM) {
++		dev_err(dev, "IDE region wrong type\n");
++		return rc;
++	}
++	if (resource_size(ide_mem_res) < ALTCF_IDE_LEN) {
++		dev_err(dev, "IDE region too small");
++		return rc;
++	}
++	if (resource_type(ide_irq_res) != IORESOURCE_IRQ) {
++		dev_err(dev, "IDE IRQ wrong type\n");
++		return rc;
++	}
++	if (resource_type(cfc_mem_res) != IORESOURCE_MEM) {
++		dev_err(dev, "CF CONTROL region wrong type\n");
++		return rc;
++	}
++	if (resource_size(cfc_mem_res) < ALTCF_CFC_LEN) {
++		dev_err(dev, "CF CONTROL region too small");
++		return rc;
++	}
++
++	/* Allocate private data and add it to the device. */
++	rc = -ENOMEM;
++	altcf = devres_alloc(altcf_private_release,
++			sizeof(struct altcf_private), GFP_KERNEL);
++	if (!altcf) {
++		dev_err(dev, "failed to alloc private data\n");
++		return rc;
++	}
++	altcf->dev = dev;	/* point back to device */
++	devres_add(dev, altcf);
++	/* Some more initialization. */
++	altcf->ide_irq = (int)ide_irq_res->start;
++	altcf->ide_irqflags = ide_irq_res->flags & IORESOURCE_BITS;
++	altcf->cfc_irq = (int)cfc_irq_res->start;
++	spin_lock_init(&altcf->cfctl_lock);
++
++	/* Map registers. */
++	altcf->ide_raw_base = ide_mem_res->start;
++	altcf->ide_base = devm_ioremap_nocache(dev, ide_mem_res->start,
++			ALTCF_IDE_LEN);
++	if (!altcf->ide_base) {
++		dev_err(dev, "failed to remap IDE registers\n");
++		return rc;
++	}
++	altcf->cfc_base = devm_ioremap_nocache(dev, cfc_mem_res->start,
++			ALTCF_CFC_LEN);
++	if (!altcf->cfc_base) {
++		dev_err(dev, "failed to remap CF CONTROL registers\n");
++		return rc;
++	}
++
++	/* Initialize CF CONTROL registers. */
++	altcf->cfctl = ALTCF_CFCTL_RST;
++	WRITE_CFCTL(altcf, altcf->cfctl);
++	WRITE_IDECTL(altcf, 0);
++	READ_CFCTL(altcf);	/* Clear "CF detect change" interrupt. */
++
++	/* Set event to hold off processing of CF state changes. */
++	set_bit(EV_HOLD, &altcf->event);
++	smp_mb();
++
++	/* Create kthread to handle CF state changes. */
++	altcf->cf_thread = kthread_create(altcf_thread, altcf,
++			DRV_NAME "/%s", dev_name(dev));
++	if (IS_ERR(altcf->cf_thread)) {
++		rc = PTR_ERR(altcf->cf_thread);
++		altcf->cf_thread = NULL;
++		dev_err(dev, "failed to create thread (%d)\n", rc);
++		return rc;
++	}
++
++	/* Request IRQ handler to handle "CF detect change" interrupt. */
++	rc = request_irq(altcf->cfc_irq, altcf_cf_interrupt,
++			(cfc_irq_res->flags & IORESOURCE_BITS),
++			DRV_NAME, altcf);
++	if (rc) {
++		dev_err(dev, "failed to request CF CONTROL IRQ %d flags 0x%lx"
++				" (%d)\n",
++				altcf->cfc_irq,
++				(cfc_irq_res->flags & IORESOURCE_BITS), rc);
++		goto fail_request_irq_cf;
++	}
++
++	/* Enable the "CF detect change" interrupt. */
++	update_cfctl(altcf, ALTCF_CFCTL_IDET, ALTCF_CFCTL_IDET);
++
++	/* Generate initial CF state change event. */
++	set_bit(EV_CHANGE, &altcf->event);
++	smp_mb__before_clear_bit();
++	clear_bit(EV_HOLD, &altcf->event);
++	smp_mb__after_clear_bit();
++	wake_up_process(altcf->cf_thread);
++
++	return 0;
++
++#ifdef unused
++	/* Disable the "CF detect change" interrupt and free the IRQ. */
++	update_cfctl(altcf, ALTCF_CFCTL_IDET, 0);
++	free_irq(altcf->cfc_irq, altcf);
++#endif
++fail_request_irq_cf:
++
++	/* Stop the thread. */
++	kthread_stop(altcf->cf_thread);
++	/* Reinitialize CF CONTROL registers. */
++	altcf->cfctl = ALTCF_CFCTL_RST;
++	WRITE_CFCTL(altcf, altcf->cfctl);
++	WRITE_IDECTL(altcf, 0);
++	/* Everything else is removed by devres. */
++	return rc;
++}
++
++/* Remove a device. */
++static int __devexit altcf_remove(struct device *dev)
++{
++	struct altcf_private *altcf;
++
++	/* Get pointer to our private data resource. */
++	altcf = devres_find(dev, altcf_private_release, NULL, NULL);
++	if (altcf == NULL)
++		return -ENXIO;
++	/* Hold off CF detect thread processing and mark device as dead. */
++	set_bit(EV_HOLD, &altcf->event);
++	set_bit(EV_DEAD, &altcf->event);
++	smp_mb();
++	/* Disable the "CF detect change" interrupt and free the IRQ. */
++	update_cfctl(altcf, ALTCF_CFCTL_IDET, 0);
++	free_irq(altcf->cfc_irq, altcf);
++	/* Stop the thread. */
++	if (altcf->cf_thread) {
++		kthread_stop(altcf->cf_thread);
++		altcf->cf_thread = NULL;
++	}
++	/* Reinitialize CF CONTROL registers. */
++	altcf->cfctl = ALTCF_CFCTL_RST;
++	WRITE_CFCTL(altcf, altcf->cfctl);
++	WRITE_IDECTL(altcf, 0);
++	/* Everything else is removed by devres. */
++	return 0;
++}
++
++/* Add a platform device. */
++static int __devinit altcf_platform_probe(struct platform_device *pdev)
++{
++	struct resource *ide_mem_res;
++	struct resource *ide_irq_res;
++	struct resource *cfc_mem_res;
++	struct resource *cfc_irq_res;
++
++	if (pdev->num_resources != 4) {
++		dev_err(&pdev->dev, "invalid number of resources\n");
++		return -EINVAL;
++	}
++
++	/* Get the IDE MMIO resource. */
++	ide_mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (unlikely(ide_mem_res == NULL)) {
++		dev_err(&pdev->dev, "no IDE mem resource\n");
++		return -EINVAL;
++	}
++
++	/* Get the IDE IRQ resource. */
++	ide_irq_res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
++	if ((unlikely(ide_irq_res == NULL))) {
++		dev_err(&pdev->dev, "no IDE IRQ resource\n");
++		return -EINVAL;
++	}
++
++	/* Get the CF CONTROL MMIO resource. */
++	cfc_mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
++	if (unlikely(ide_mem_res == NULL)) {
++		dev_err(&pdev->dev, "no CF CONTROL mem resource\n");
++		return -EINVAL;
++	}
++
++	/* Get the CF CONTROL IRQ resource. */
++	cfc_irq_res = platform_get_resource(pdev, IORESOURCE_IRQ, 1);
++	if ((unlikely(cfc_irq_res == NULL))) {
++		dev_err(&pdev->dev, "no CF CONTROL IRQ resource\n");
++		return -EINVAL;
++	}
++
++	return altcf_probe(&pdev->dev, ide_mem_res, ide_irq_res,
++			cfc_mem_res, cfc_irq_res);
++}
++
++/* Remove a platform device. */
++static int __devexit altcf_platform_remove(struct platform_device *pdev)
++{
++	return altcf_remove(&pdev->dev);
++}
++
++/* We are a platform device driver. */
++static struct platform_driver altcf_platform_driver = {
++	.probe		= altcf_platform_probe,
++	.remove		= __devexit_p(altcf_platform_remove),
++	.driver = {
++		.name		= DRV_NAME,
++		.owner		= THIS_MODULE,
++	},
++};
++
++/* module_init function */
++static int __init altcf_init(void)
++{
++	return platform_driver_register(&altcf_platform_driver);
++}
++
++/* module_exit function */
++static void __exit altcf_exit(void)
++{
++	platform_driver_unregister(&altcf_platform_driver);
++}
++
++MODULE_AUTHOR("Ian Abbott");
++MODULE_DESCRIPTION("low-level driver for Altera SOPC Builder CompactFlash ATA");
++MODULE_LICENSE("GPL");
++MODULE_VERSION(DRV_VERSION);
++MODULE_ALIAS("platform:" DRV_NAME);
++
++module_init(altcf_init);
++module_exit(altcf_exit);
+-- 
+1.6.2.5
 
-	wlan<n>: no probe response from AP AA:BB:DD:EE:FF:GG - disassociating
-
-and suddenly no packets going in either direction.
-
-I'm in the process of moving back to 2.6.30.x for now...
-
-
-
-
-
-On 10/04/2009 17:45 +0200, Kristoffer Ericson wrote:
->>	Hi,
->>=09
->>	Did a bisect or more exactly tried to do a bisect. Ive managed to bisect=
- myself
->>	into a deadend so far (must have marked good in wrong place). The disass=
-ociation happens
->>	at seemingly regular intervalls but once I started bisecting it started
->>	to be more irregular. Perhaps it was simply due to me not being able
->>	to user internet (and share) since my 3G modem oopsed all the time.
->>	Suspecting its load sensitive.
->>=09
->>	Anyhow heres what I got so far. The bad versions should be correct
->>	while the good versions might not be. Reason being that I didnt wait
->>	long enough for the disassociation to appear and thus faulty marking
->>	something as good.=20
->>	Using the bad should however narrow it down somewhat. From what
->>	I can see between my last good and bad is only non-related stuff,
->>	so must be atleast one "good" mistake in there.
->>=09
->>	git bisect start
->>	# good: [07a2039b8eb0af4ff464efd3dfd95de5c02648c6] Linux 2.6.30
->>	git bisect good 07a2039b8eb0af4ff464efd3dfd95de5c02648c6
->>	# bad: [74fca6a42863ffacaf7ba6f1936a9f228950f657] Linux 2.6.31
->>	git bisect bad 74fca6a42863ffacaf7ba6f1936a9f228950f657
->>	# good: [925d74ae717c9a12d3618eb4b36b9fb632e2cef3] V4L/DVB (11736): vide=
-obuf: modify return value of VIDIOC_REQBUFS ioctl
->>	git bisect good 925d74ae717c9a12d3618eb4b36b9fb632e2cef3
->>	# bad: [a380137900fca5c79e6daa9500bdb6ea5649188e] ixgbe: Fix device capa=
-bilities of 82599 single speed fiber NICs.
->>	git bisect bad a380137900fca5c79e6daa9500bdb6ea5649188e
->>	# bad: [1dbb5765acc7a6fe4bc1957c001037cc9d02ae03] Staging: android: lowm=
-emorykiller: fix up remaining checkpatch warnings
->>	git bisect bad 1dbb5765acc7a6fe4bc1957c001037cc9d02ae03
->>	# bad: [2b1b62e841867326fa260a581d97941c32abc35b] MIPS: Cavium-Octeon: A=
-dd more board type constants.
->>	git bisect bad 2b1b62e841867326fa260a581d97941c32abc35b
->>	# good: [517d08699b250021303f9a7cf0d758b6dc0748ed] Merge branch 'akpm'
->>	git bisect good 517d08699b250021303f9a7cf0d758b6dc0748ed
->>	# good: [5e2c217eee18a4627a32c49f57f47dbac67dcf23] V4L/DVB (11958): usbv=
-ision-core.c: vfree does its own NULL check
->>	git bisect good 5e2c217eee18a4627a32c49f57f47dbac67dcf23
->>	# bad: [a9349315f65cd6a16e8fab1f6cf0fd40f379c4db] V4L/DVB (11819): Siano=
-: smscore - fix get_common_buffer bug
->>	git bisect bad a9349315f65cd6a16e8fab1f6cf0fd40f379c4db
->>	# good: [06f837cadbcdedb45f0702cb57c99c404ae921e6] V4L/DVB (11784): cx88=
-: Fix race condition between cx8800 startup and hald
->>	git bisect good 06f837cadbcdedb45f0702cb57c99c404ae921e6
->>	# good: [1339f9108a84710969903e892dcf1849ae1215cf] V4L/DVB (11726): Modi=
-fy the file license to match all other Siano's files
->>	git bisect good 1339f9108a84710969903e892dcf1849ae1215cf
->>=09
->>	Best wishes
->>	Kristoffer Ericson
->>=09
->>	On Thu, 24 Sep 2009 13:07:12 -0700
->>	"Justin P. Mattock" <justinmattock@gmail.com> wrote:
->>=09
->>	> Stefan Lippers-Hollmann wrote:
->>	> > Hi
->>	> >
->>	> > CCing linux-wireless@vger.kernel.org, as it's not very likely to get
->>	> > noticed here by wireless developers.
->>	> >
->>	> > On Thursday 24 September 2009, Justin P. Mattock wrote:
->>	> >   =20
->>	> >> Kristoffer Ericson wrote:
->>	> >>     =20
->>	> >>> Greetings,
->>	> >>>
->>	> >>> When moving from vanilla 2.6.30->2.6.31 I noticed that I get dissa=
-sociated from
->>	> >>> my wlan hub with regular intervalls. This did not happen on 2.6.30.
->>	> >>> I cant see any pattern aside from that it happens at regular inter=
-valls
->>	> >>> (around 10-15mins). It works again when I re-identifies myself.
->>	> >>>
->>	> >>> Got an Asus 1000HE with Atheros chipset.
->>	> >>> Havent had time to bisect it, just wanted to check
->>	> >>> if this is an known issue. Ive ruled out faulty wlan hub
->>	> >>> since everything works fine when going back to 2.6.30.
->>	> >>>
->>	> >>> nothing much on dmesg:
->>	> >>> uhci_hcd 0000:00:1d.1: UHCI Host Controller
->>	> >>> uhci_hcd 0000:00:1d.1: new USB bus registered, assigned bus number=
- 3
->>	> >>> uhci_hcd 0000:00:1d.1: irq 19, io base 0x0000d480
->>	> >>> usb usb3: configuration #1 chosen from 1 choice
->>	> >>> hub 3-0:1.0: USB hub found
->>	> >>> hub 3-0:1.0: 2 ports detected
->>	> >>> uhci_hcd 0000:00:1d.2: PCI INT C ->   GSI 18 (level, low) ->   IRQ=
- 18
->>	> >>> uhci_hcd 0000:00:1d.2: setting latency timer to 64
->>	> >>> uhci_hcd 0000:00:1d.2: UHCI Host Controller
->>	> >>> uhci_hcd 0000:00:1d.2: new USB bus registered, assigned bus number=
- 4
->>	> >>> uhci_hcd 0000:00:1d.2: irq 18, io base 0x0000d800
->>	> >>> usb usb4: configuration #1 chosen from 1 choice
->>	> >>> hub 4-0:1.0: USB hub found
->>	> >>> hub 4-0:1.0: 2 ports detected
->>	> >>> uhci_hcd 0000:00:1d.3: PCI INT D ->   GSI 16 (level, low) ->   IRQ=
- 16
->>	> >>> uhci_hcd 0000:00:1d.3: setting latency timer to 64
->>	> >>> uhci_hcd 0000:00:1d.3: UHCI Host Controller
->>	> >>> uhci_hcd 0000:00:1d.3: new USB bus registered, assigned bus number=
- 5
->>	> >>> uhci_hcd 0000:00:1d.3: irq 16, io base 0x0000d880
->>	> >>> usb usb5: configuration #1 chosen from 1 choice
->>	> >>> hub 5-0:1.0: USB hub found
->>	> >>> hub 5-0:1.0: 2 ports detected
->>	> >>> input: ETPS/2 Elantech Touchpad as /devices/platform/i8042/serio1/=
-input/input7
->>	> >>> usb 1-4: new high speed USB device using ehci_hcd and address 3
->>	> >>> usb 1-4: configuration #1 chosen from 1 choice
->>	> >>> hub 1-4:1.0: USB hub found
->>	> >>> hub 1-4:1.0: 4 ports detected
->>	> >>> usb 1-5: new high speed USB device using ehci_hcd and address 4
->>	> >>> usb 1-5: configuration #1 chosen from 1 choice
->>	> >>> usb 1-8: new high speed USB device using ehci_hcd and address 6
->>	> >>> usb 1-8: configuration #1 chosen from 1 choice
->>	> >>> Initializing USB Mass Storage driver...
->>	> >>> scsi4 : SCSI emulation for USB Mass Storage devices
->>	> >>> usbcore: registered new interface driver usb-storage
->>	> >>> USB Mass Storage support registered.
->>	> >>> usb-storage: device found at 4
->>	> >>> usb-storage: waiting for device to settle before scanning
->>	> >>> HDA Intel 0000:00:1b.0: PCI INT A ->   GSI 16 (level, low) ->   IR=
-Q 16
->>	> >>> HDA Intel 0000:00:1b.0: setting latency timer to 64
->>	> >>> usb 2-2: new full speed USB device using uhci_hcd and address 2
->>	> >>> ath9k 0000:01:00.0: PCI INT A ->   GSI 19 (level, low) ->   IRQ 19
->>	> >>> ath9k 0000:01:00.0: setting latency timer to 64
->>	> >>> usb 2-2: configuration #1 chosen from 1 choice
->>	> >>> input: HDA Digital PCBeep as /devices/pci0000:00/0000:00:1b.0/inpu=
-t/input8
->>	> >>> usbcore: registered new interface driver usbserial
->>	> >>> USB Serial support registered for generic
->>	> >>> usb 5-1: new full speed USB device using uhci_hcd and address 2
->>	> >>> usb 5-1: configuration #1 chosen from 1 choice
->>	> >>> usb 1-4.1: new full speed USB device using ehci_hcd and address 7
->>	> >>> ath: EEPROM regdomain: 0x60
->>	> >>> ath: EEPROM indicates we should expect a direct regpair map
->>	> >>> ath: Country alpha2 being used: 00
->>	> >>> ath: Regpair used: 0x60
->>	> >>> Bluetooth: Core ver 2.15
->>	> >>> NET: Registered protocol family 31
->>	> >>> Bluetooth: HCI device and connection manager initialized
->>	> >>> Bluetooth: HCI socket layer initialized
->>	> >>> Bluetooth: Generic Bluetooth USB driver ver 0.5
->>	> >>> usb 1-4.1: configuration #1 chosen from 1 choice
->>	> >>> usb 1-4.2: new low speed USB device using ehci_hcd and address 8
->>	> >>> usb 1-4.2: configuration #1 chosen from 1 choice
->>	> >>> usb 1-4.4: new low speed USB device using ehci_hcd and address 9
->>	> >>> usbcore: registered new interface driver hiddev
->>	> >>> input: HID 04d9:1203 as /devices/pci0000:00/0000:00:1d.7/usb1/1-4/=
-1-4.2/1-4.2:1.0/input/input9
->>	> >>> generic-usb 0003:04D9:1203.0001: input,hidraw0: USB HID v1.11 Keyb=
-oard [HID 04d9:1203] on usb-0000:00:1d.7-4.2/input0
->>	> >>> input: HID 04d9:1203 as /devices/pci0000:00/0000:00:1d.7/usb1/1-4/=
-1-4.2/1-4.2:1.1/input/input10
->>	> >>> generic-usb 0003:04D9:1203.0002: input,hidraw1: USB HID v1.11 Devi=
-ce [HID 04d9:1203] on usb-0000:00:1d.7-4.2/input1
->>	> >>> usbcore: registered new interface driver usbhid
->>	> >>> usbhid: v2.6:USB HID core driver
->>	> >>> usb 1-4.4: configuration #1 chosen from 1 choice
->>	> >>> input: B16_b_02 USB-PS/2 Optical Mouse as /devices/pci0000:00/0000=
-:00:1d.7/usb1/1-4/1-4.4/1-4.4:1.0/input/input11
->>	> >>> generic-usb 0003:046D:C025.0003: input,hidraw2: USB HID v1.10 Mous=
-e [B16_b_02 USB-PS/2 Optical Mouse] on usb-0000:00:1d.7-4.4/input0
->>	> >>> usbcore: registered new interface driver btusb
->>	> >>> usbcore: registered new interface driver usbserial_generic
->>	> >>> usbserial: USB Serial Driver core
->>	> >>> USB Serial support registered for GSM modem (1-port)
->>	> >>> option 2-2:1.0: GSM modem (1-port) converter detected
->>	> >>> usb 2-2: GSM modem (1-port) converter now attached to ttyUSB0
->>	> >>> option 2-2:1.1: GSM modem (1-port) converter detected
->>	> >>> usb 2-2: GSM modem (1-port) converter now attached to ttyUSB1
->>	> >>> usbcore: registered new interface driver option
->>	> >>> option: v0.7.2:USB Driver for GSM modems
->>	> >>> USB Serial support registered for pl2303
->>	> >>> pl2303 1-4.1:1.0: pl2303 converter detected
->>	> >>> usb 1-4.1: pl2303 converter now attached to ttyUSB2
->>	> >>> usbcore: registered new interface driver pl2303
->>	> >>> pl2303: Prolific PL2303 USB to serial adaptor driver
->>	> >>> phy0: Selected rate control algorithm 'ath9k_rate_control'
->>	> >>> Registered led device: ath9k-phy0::radio
->>	> >>> Registered led device: ath9k-phy0::assoc
->>	> >>> Registered led device: ath9k-phy0::tx
->>	> >>> Registered led device: ath9k-phy0::rx
->>	> >>> phy0: Atheros AR9280 MAC/BB Rev:2 AR5133 RF Rev:d0: mem=3D0xf88800=
-00, irq=3D19
->>	> >>> scsi 4:0:0:0: Direct-Access     Single   Flash Reader     1.00 PQ:=
- 0 ANSI: 0
->>	> >>> sd 4:0:0:0: Attached scsi generic sg1 type 0
->>	> >>> sd 4:0:0:0: [sdb] 15954944 512-byte logical blocks: (8.16 GB/7.60 =
-GiB)
->>	> >>> usb-storage: device scan complete
->>	> >>> sd 4:0:0:0: [sdb] Write Protect is off
->>	> >>> sd 4:0:0:0: [sdb] Mode Sense: 03 00 00 00
->>	> >>> sd 4:0:0:0: [sdb] Assuming drive cache: write through
->>	> >>> sd 4:0:0:0: [sdb] Assuming drive cache: write through
->>	> >>>    sdb: sdb1
->>	> >>> sd 4:0:0:0: [sdb] Assuming drive cache: write through
->>	> >>> sd 4:0:0:0: [sdb] Attached SCSI removable disk
->>	> >>> EXT3-fs warning: maximal mount count reached, running e2fsck is re=
-commended
->>	> >>> EXT3 FS on sda1, internal journal
->>	> >>> Bluetooth: L2CAP ver 2.13
->>	> >>> Bluetooth: L2CAP socket layer initialized
->>	> >>> Bluetooth: SCO (Voice Link) ver 0.6
->>	> >>> Bluetooth: SCO socket layer initialized
->>	> >>> Bluetooth: BNEP (Ethernet Emulation) ver 1.3
->>	> >>> Bridge firewalling registered
->>	> >>> Bluetooth: RFCOMM TTY layer initialized
->>	> >>> Bluetooth: RFCOMM socket layer initialized
->>	> >>> Bluetooth: RFCOMM ver 1.11
->>	> >>> ATL1E 0000:03:00.0: irq 27 for MSI/MSI-X
->>	> >>> fuse init (API version 7.12)
->>	> >>> ip_tables: (C) 2000-2006 Netfilter Core Team
->>	> >>> nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
->>	> >>> CONFIG_NF_CT_ACCT is deprecated and will be removed soon. Please u=
-se
->>	> >>> nf_conntrack.acct=3D1 kernel parameter, acct=3D1 nf_conntrack modu=
-le option or
->>	> >>> sysctl net.netfilter.nf_conntrack_acct=3D1 to enable it.
->>	> >>> wlan0: authenticate with AP 00:14:7c:ae:d1:90
->>	> >>> wlan0: authenticated
->>	> >>> wlan0: associate with AP 00:14:7c:ae:d1:90
->>	> >>> wlan0: RX AssocResp from 00:14:7c:ae:d1:90 (capab=3D0x431 status=
-=3D0 aid=3D5)
->>	> >>> wlan0: associated
->>	> >>> PPP generic driver version 2.4.2
->>	> >>> NET: Registered protocol family 10
->>	> >>> lo: Disabled Privacy Extensions
->>	> >>> ADDRCONF(NETDEV_UP): eth0: link is not ready
->>	> >>> PPP BSD Compression module registered
->>	> >>> PPP Deflate Compression module registered
->>	> >>> wlan0: no IPv6 routers present
->>	> >>> CE: hpet increasing min_delta_ns to 15000 nsec
->>	> >>> wlan0: no probe response from AP 00:14:7c:ae:d1:90 - disassociating
->>	> >>> wlan0: authenticate with AP 00:14:7c:ae:d1:90
->>	> >>> wlan0: authenticated
->>	> >>> wlan0: associate with AP 00:14:7c:ae:d1:90
->>	> >>> wlan0: RX AssocResp from 00:14:7c:ae:d1:90 (capab=3D0x431 status=
-=3D0 aid=3D5)
->>	> >>> wlan0: associated
->>	> >>> wlan0: authenticate with AP 00:14:7c:ae:d1:90
->>	> >>> wlan0: authenticated
->>	> >>> wlan0: associate with AP 00:14:7c:ae:d1:90
->>	> >>> wlan0: RX AssocResp from 00:14:7c:ae:d1:90 (capab=3D0x431 status=
-=3D0 aid=3D5)
->>	> >>> wlan0: associated
->>	> >>> [kristoffer@boggieman wine.git]$
->>	> >>>
->>	> >>>
->>	> >>>
->>	> >>>       =20
->>	> >> yeah I'm seeing this with my macbook pro(ath9k)
->>	> >> while streaming music, all of a sudden things just crap out.
->>	> >> (not sure if this is why, or something else).
->>	> >>
->>	> >> Justin P. Mattock
->>	> >>     =20
->>	> >
->>	> > I'm getting similar reports for iwl3945 and 2.6.31.[01], but can't c=
-onfirm
->>	> > this on my own (non-iwl{3945,agn}, non-ath9k) hardware yet.
->>	> >
->>	> > Regards
->>	> > 	Stefan Lippers-Hollmann
->>	> >
->>	> >   =20
->>	> I don't mind doing a bisect from 30 - present, but first I need to
->>	> do some other stuff.
->>	>=20
->>	> Justin P. Mattock
->>=09
->>=09
->>	--=20
->>	Kristoffer Ericson <kristoffer.ericson@gmail.com>
->>	--
->>	To unsubscribe from this list: send the line "unsubscribe linux-kernel" =
-in
->>	the body of a message to majordomo@vger.kernel.org
->>	More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>	Please read the FAQ at  http://www.tux.org/lkml/
-End of included message
-
-
-
---=20
-twalberg@comcast.net
-
---adlATi0AGRzVk0TM
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkrNPI8ACgkQw+Wcj22rJWb2fACeNV14VlZkJ5jX6RbcJjqquvp7
-Nh0AnjJxb9xXRHftL99U2WAMi5n/OZOp
-=W57u
------END PGP SIGNATURE-----
-
---adlATi0AGRzVk0TM--
