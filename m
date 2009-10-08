@@ -1,90 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbZJHSDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759344AbZJHSOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbZJHSDt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 14:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758302AbZJHSDs
+	id S1759344AbZJHSOD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 14:14:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbZJHSOC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 14:03:48 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:32483 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751492AbZJHSDr (ORCPT
+	Thu, 8 Oct 2009 14:14:02 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:52413 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757392AbZJHSOB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 14:03:47 -0400
-X-Trace: 268527581/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.117.236/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.117.236
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtMEAH/FzUpQKXXs/2dsb2JhbACBUtl6hCoE
-X-IronPort-AV: E=Sophos;i="4.44,526,1249254000"; 
-   d="scan'208";a="268527581"
-Date: Thu, 8 Oct 2009 19:02:59 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>
-Subject: Re: [RFC][PATCH] kmap_atomic_push
-In-Reply-To: <alpine.LFD.2.01.0910080945230.3432@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0910081850270.4553@sister.anvils>
-References: <1255016123.17055.17.camel@laptop>  <20091008155344.GA11727@elte.hu>
- <1255019362.26976.311.camel@twins> <alpine.LFD.2.01.0910080945230.3432@localhost.localdomain>
+	Thu, 8 Oct 2009 14:14:01 -0400
+Date: Thu, 8 Oct 2009 14:06:45 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       Tejun Heo <tj@kernel.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <200910062034.40864.rusty@rustcorp.com.au>
+Message-ID: <alpine.DEB.1.10.0910081403200.7735@gentwo.org>
+References: <20091001212521.123389189@gentwo.org> <20091002093453.GA21427@elte.hu> <alpine.DEB.1.10.0910021311440.26189@gentwo.org> <200910062034.40864.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Oct 2009, Linus Torvalds wrote:
-> On Thu, 8 Oct 2009, Peter Zijlstra wrote:
-> > 
-> > Right, so I did that full rename just so that people wouldn't get
-> > confused or something, but if both you and Linus think it should remain:
-> > kmap_atomic() and kunmap_atomic(), I can certainly undo that part.
+On Tue, 6 Oct 2009, Rusty Russell wrote:
 
-I love the patch, Peter: thank you.  But agree with the others to
-keep the old names, just let the change in prototype (vanishing
-second arg) do the work of weeding out any stragglers.
+> Does this mean we can kill local.h soon?
 
-> 
-> I think the renaming probably helps find all the places (simple "grep -w" 
-> shows the difference, and no fear of confusion with comma-expressions and 
-> multi-line arguments etc). But once they've all been converted, you might 
-> as well then do a search-and-replace-back on the patch, and make the end 
-> result look like you just removed the (now pointless) argument.
-> 
-> In fact, I'd personally be inclined to split the patch into two patches:
-> 
->  - one that just ignores the now redundant argument (but still keeps it), 
->    and fixes the cases that didn't nest
-> 
->  - one that then removes the argument.
-> 
-> Why? The _bugs_ are going to be shown by the first patch, and it would be 
-> nice to keep that patch small. When a bug shows up, it would be either 
-> because there's something wrong in that (much smaller) patch, or because 
-> some not-properly-nested casel wasn't fixed.
-> 
-> In contrast, the second patch would be large, but if done right, you could 
-> then prove that it has no actual semantic changes (ie "binary is same 
-> before and after"). That just sounds _much_ nicer from a debug standpoint. 
-> Developers would look at the small and concentrated "real changes" patch, 
-> rather than be distracted by all the trivial noise.
+We can kill cpu_local_xx right now. this_cpu_xx is a superset of that
+functionality and cpu_local_xx is not used at all. We have to wait for the
+merging of other patches to do more.
 
-And I very much agree with Linus's two patch approach: it also makes
-it much easier to review, separating the wheat of the interesting
-changes from the chaff of eliminating the unnecessary arg.  It was
-hard to find the interesting part in the patch as you sent it.
 
-I wasn't really checking it, but think I noticed something called
-swap_two_pages() somewhere, which wasn't doing the unnesting right:
-you may need to swap two lines ;)
+Subject: [percpu next] Remove cpu_local_xx macros
 
-Hugh
+These macros have not been used for awhile now.
+
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+
+
+---
+ arch/alpha/include/asm/local.h   |   17 -----------------
+ arch/m32r/include/asm/local.h    |   25 -------------------------
+ arch/mips/include/asm/local.h    |   25 -------------------------
+ arch/powerpc/include/asm/local.h |   25 -------------------------
+ arch/x86/include/asm/local.h     |   37 -------------------------------------
+ include/asm-generic/local.h      |   19 -------------------
+ 6 files changed, 148 deletions(-)
+
+Index: linux-2.6/arch/alpha/include/asm/local.h
+===================================================================
+--- linux-2.6.orig/arch/alpha/include/asm/local.h	2009-10-08 12:57:38.000000000 -0500
++++ linux-2.6/arch/alpha/include/asm/local.h	2009-10-08 12:57:40.000000000 -0500
+@@ -98,21 +98,4 @@ static __inline__ long local_sub_return(
+ #define __local_add(i,l)	((l)->a.counter+=(i))
+ #define __local_sub(i,l)	((l)->a.counter-=(i))
+
+-/* Use these for per-cpu local_t variables: on some archs they are
+- * much more efficient than these naive implementations.  Note they take
+- * a variable, not an address.
+- */
+-#define cpu_local_read(l)	local_read(&__get_cpu_var(l))
+-#define cpu_local_set(l, i)	local_set(&__get_cpu_var(l), (i))
+-
+-#define cpu_local_inc(l)	local_inc(&__get_cpu_var(l))
+-#define cpu_local_dec(l)	local_dec(&__get_cpu_var(l))
+-#define cpu_local_add(i, l)	local_add((i), &__get_cpu_var(l))
+-#define cpu_local_sub(i, l)	local_sub((i), &__get_cpu_var(l))
+-
+-#define __cpu_local_inc(l)	__local_inc(&__get_cpu_var(l))
+-#define __cpu_local_dec(l)	__local_dec(&__get_cpu_var(l))
+-#define __cpu_local_add(i, l)	__local_add((i), &__get_cpu_var(l))
+-#define __cpu_local_sub(i, l)	__local_sub((i), &__get_cpu_var(l))
+-
+ #endif /* _ALPHA_LOCAL_H */
+Index: linux-2.6/arch/m32r/include/asm/local.h
+===================================================================
+--- linux-2.6.orig/arch/m32r/include/asm/local.h	2009-10-08 12:57:38.000000000 -0500
++++ linux-2.6/arch/m32r/include/asm/local.h	2009-10-08 12:57:40.000000000 -0500
+@@ -338,29 +338,4 @@ static inline void local_set_mask(unsign
+  * a variable, not an address.
+  */
+
+-/* Need to disable preemption for the cpu local counters otherwise we could
+-   still access a variable of a previous CPU in a non local way. */
+-#define cpu_local_wrap_v(l)	 	\
+-	({ local_t res__;		\
+-	   preempt_disable(); 		\
+-	   res__ = (l);			\
+-	   preempt_enable();		\
+-	   res__; })
+-#define cpu_local_wrap(l)		\
+-	({ preempt_disable();		\
+-	   l;				\
+-	   preempt_enable(); })		\
+-
+-#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
+-#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
+-#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
+-#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
+-#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
+-#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
+-
+-#define __cpu_local_inc(l)	cpu_local_inc(l)
+-#define __cpu_local_dec(l)	cpu_local_dec(l)
+-#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
+-#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
+-
+ #endif /* __M32R_LOCAL_H */
+Index: linux-2.6/arch/mips/include/asm/local.h
+===================================================================
+--- linux-2.6.orig/arch/mips/include/asm/local.h	2009-10-08 12:57:38.000000000 -0500
++++ linux-2.6/arch/mips/include/asm/local.h	2009-10-08 12:57:40.000000000 -0500
+@@ -193,29 +193,4 @@ static __inline__ long local_sub_return(
+ #define __local_add(i, l)	((l)->a.counter+=(i))
+ #define __local_sub(i, l)	((l)->a.counter-=(i))
+
+-/* Need to disable preemption for the cpu local counters otherwise we could
+-   still access a variable of a previous CPU in a non atomic way. */
+-#define cpu_local_wrap_v(l)	 	\
+-	({ local_t res__;		\
+-	   preempt_disable(); 		\
+-	   res__ = (l);			\
+-	   preempt_enable();		\
+-	   res__; })
+-#define cpu_local_wrap(l)		\
+-	({ preempt_disable();		\
+-	   l;				\
+-	   preempt_enable(); })		\
+-
+-#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
+-#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
+-#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
+-#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
+-#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
+-#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
+-
+-#define __cpu_local_inc(l)	cpu_local_inc(l)
+-#define __cpu_local_dec(l)	cpu_local_dec(l)
+-#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
+-#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
+-
+ #endif /* _ARCH_MIPS_LOCAL_H */
+Index: linux-2.6/arch/powerpc/include/asm/local.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/include/asm/local.h	2009-10-08 12:57:38.000000000 -0500
++++ linux-2.6/arch/powerpc/include/asm/local.h	2009-10-08 12:57:40.000000000 -0500
+@@ -172,29 +172,4 @@ static __inline__ long local_dec_if_posi
+ #define __local_add(i,l)	((l)->a.counter+=(i))
+ #define __local_sub(i,l)	((l)->a.counter-=(i))
+
+-/* Need to disable preemption for the cpu local counters otherwise we could
+-   still access a variable of a previous CPU in a non atomic way. */
+-#define cpu_local_wrap_v(l)	 	\
+-	({ local_t res__;		\
+-	   preempt_disable(); 		\
+-	   res__ = (l);			\
+-	   preempt_enable();		\
+-	   res__; })
+-#define cpu_local_wrap(l)		\
+-	({ preempt_disable();		\
+-	   l;				\
+-	   preempt_enable(); })		\
+-
+-#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
+-#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
+-#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
+-#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
+-#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
+-#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
+-
+-#define __cpu_local_inc(l)	cpu_local_inc(l)
+-#define __cpu_local_dec(l)	cpu_local_dec(l)
+-#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
+-#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
+-
+ #endif /* _ARCH_POWERPC_LOCAL_H */
+Index: linux-2.6/arch/x86/include/asm/local.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/local.h	2009-10-08 12:57:38.000000000 -0500
++++ linux-2.6/arch/x86/include/asm/local.h	2009-10-08 12:57:40.000000000 -0500
+@@ -195,41 +195,4 @@ static inline long local_sub_return(long
+ #define __local_add(i, l)	local_add((i), (l))
+ #define __local_sub(i, l)	local_sub((i), (l))
+
+-/* Use these for per-cpu local_t variables: on some archs they are
+- * much more efficient than these naive implementations.  Note they take
+- * a variable, not an address.
+- *
+- * X86_64: This could be done better if we moved the per cpu data directly
+- * after GS.
+- */
+-
+-/* Need to disable preemption for the cpu local counters otherwise we could
+-   still access a variable of a previous CPU in a non atomic way. */
+-#define cpu_local_wrap_v(l)		\
+-({					\
+-	local_t res__;			\
+-	preempt_disable(); 		\
+-	res__ = (l);			\
+-	preempt_enable();		\
+-	res__;				\
+-})
+-#define cpu_local_wrap(l)		\
+-({					\
+-	preempt_disable();		\
+-	(l);				\
+-	preempt_enable();		\
+-})					\
+-
+-#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var((l))))
+-#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var((l)), (i)))
+-#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var((l))))
+-#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var((l))))
+-#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var((l))))
+-#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var((l))))
+-
+-#define __cpu_local_inc(l)	cpu_local_inc((l))
+-#define __cpu_local_dec(l)	cpu_local_dec((l))
+-#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
+-#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
+-
+ #endif /* _ASM_X86_LOCAL_H */
+Index: linux-2.6/include/asm-generic/local.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/local.h	2009-10-08 12:57:38.000000000 -0500
++++ linux-2.6/include/asm-generic/local.h	2009-10-08 12:57:40.000000000 -0500
+@@ -52,23 +52,4 @@ typedef struct
+ #define __local_add(i,l)	local_set((l), local_read(l) + (i))
+ #define __local_sub(i,l)	local_set((l), local_read(l) - (i))
+
+-/* Use these for per-cpu local_t variables: on some archs they are
+- * much more efficient than these naive implementations.  Note they take
+- * a variable (eg. mystruct.foo), not an address.
+- */
+-#define cpu_local_read(l)	local_read(&__get_cpu_var(l))
+-#define cpu_local_set(l, i)	local_set(&__get_cpu_var(l), (i))
+-#define cpu_local_inc(l)	local_inc(&__get_cpu_var(l))
+-#define cpu_local_dec(l)	local_dec(&__get_cpu_var(l))
+-#define cpu_local_add(i, l)	local_add((i), &__get_cpu_var(l))
+-#define cpu_local_sub(i, l)	local_sub((i), &__get_cpu_var(l))
+-
+-/* Non-atomic increments, ie. preemption disabled and won't be touched
+- * in interrupt, etc.  Some archs can optimize this case well.
+- */
+-#define __cpu_local_inc(l)	__local_inc(&__get_cpu_var(l))
+-#define __cpu_local_dec(l)	__local_dec(&__get_cpu_var(l))
+-#define __cpu_local_add(i, l)	__local_add((i), &__get_cpu_var(l))
+-#define __cpu_local_sub(i, l)	__local_sub((i), &__get_cpu_var(l))
+-
+ #endif /* _ASM_GENERIC_LOCAL_H */
+
+
+
+
