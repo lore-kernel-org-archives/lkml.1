@@ -1,43 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759975AbZJHWaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbZJHWbO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759975AbZJHWaE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 18:30:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZJHWaC
+	id S1760034AbZJHWbO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 18:31:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759932AbZJHWbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 18:30:02 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46137 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755075AbZJHWaA (ORCPT
+	Thu, 8 Oct 2009 18:31:13 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37489 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756557AbZJHWbM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 18:30:00 -0400
-Subject: Re: [RFC][PATCH] kmap_atomic_push
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>
-In-Reply-To: <13417.1255039961@redhat.com>
-References: <1255016123.17055.17.camel@laptop> <13417.1255039961@redhat.com>
-Content-Type: text/plain
-Date: Fri, 09 Oct 2009 00:29:02 +0200
-Message-Id: <1255040942.17055.21.camel@laptop>
+	Thu, 8 Oct 2009 18:31:12 -0400
+Date: Thu, 8 Oct 2009 23:31:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
+Message-ID: <20091008233150.5e033c11@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.44L0.0910081722340.2765-100000@iolanthe.rowland.org>
+References: <200910082240.36607.oliver@neukum.org>
+	<Pine.LNX.4.44L0.0910081722340.2765-100000@iolanthe.rowland.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 23:12 +0100, David Howells wrote:
-> Do we have any code that uses two slots and then calls more code that
-> ultimately requires further slots?  In other words, do we need more than two
-> slots?
+> update the last_busy time in the completion of every input URB).  When
+> the driver is throttled no URBs will be submitted, so the usage count
+> will remain at 0 with no effort on the part of throttle().
 
-I can think of code that does a lot more than that, suppose you have
-both KM_USER[01], get an interrupt that takes KM_IRQ[01], take an NMI
-that takes KM_NMI.
-
-Maybe we can stack the SOFTIRQ ones in as well ;-)
+You can still get modem changes (set_mctrl), break etc with the port
+throttled, or indeed output.
 
