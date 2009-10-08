@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933134AbZJHXAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933524AbZJHXKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933134AbZJHXAQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 19:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932819AbZJHXAO
+	id S933524AbZJHXKg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 19:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759629AbZJHXKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 19:00:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:4009 "EHLO mx1.redhat.com"
+	Thu, 8 Oct 2009 19:10:35 -0400
+Received: from kroah.org ([198.145.64.141]:34461 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932635AbZJHXAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 19:00:13 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1255040942.17055.21.camel@laptop>
-References: <1255040942.17055.21.camel@laptop> <1255016123.17055.17.camel@laptop> <13417.1255039961@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: dhowells@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>
-Subject: Re: [RFC][PATCH] kmap_atomic_push
-Date: Thu, 08 Oct 2009 23:58:30 +0100
-Message-ID: <13794.1255042710@redhat.com>
+	id S1757298AbZJHXKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 19:10:33 -0400
+Date: Thu, 8 Oct 2009 15:58:38 -0700
+From: Greg KH <greg@kroah.com>
+To: Nitin Gupta <ngupta@vflare.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, linux-mm-cc <linux-mm-cc@laptop.org>
+Subject: Re: [PATCH 3/3] documentation
+Message-ID: <20091008225838.GA31046@kroah.com>
+References: <1253595414-2855-1-git-send-email-ngupta@vflare.org>
+ <1253595414-2855-4-git-send-email-ngupta@vflare.org>
+ <20091008225724.GB22949@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091008225724.GB22949@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Thu, Oct 08, 2009 at 03:57:24PM -0700, Greg KH wrote:
+> On Tue, Sep 22, 2009 at 10:26:54AM +0530, Nitin Gupta wrote:
+> > Short guide on how to setup and use ramzswap.
+> 
+> Can you also send a patch that adds a drivers/staging/ramzswap/TODO file
+> that follows the format of the other drivers/staging/*/TODO file
+> describing what is needed to be done to get the code merged into the
+> main kernel tree?
 
-> I can think of code that does a lot more than that, suppose you have
-> both KM_USER[01], get an interrupt that takes KM_IRQ[01], take an NMI
-> that takes KM_NMI.
+Doh, nevermind, you already did that.
 
-But whilst the interrupt might want to use two slots, it's probably a bug for
-it to want to access the mappings set up by whatever called KM_USER[01] - so
-it can probably reuse those slots, provided it puts them back again.
+stupid me...
 
-Similarly for NMI taking KM_NMI - it probably shouldn't be attempting to
-access the mappings set up by the normal mode or the interrupt mode - in which
-case, why can't it reuse those slots?
-
-> Maybe we can stack the SOFTIRQ ones in as well ;-)
-
-Ditto.
-
-David
+greg k-h
