@@ -1,46 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbZJHNN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbZJHNOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758183AbZJHNN3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 09:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757974AbZJHNN2
+	id S1758123AbZJHNOg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 09:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757974AbZJHNOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 09:13:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37846 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757939AbZJHNN1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 09:13:27 -0400
-Date: Thu, 8 Oct 2009 14:13:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       strakh@ispras.ru
-Subject: Re: [PATCH 2/4] isicom: switch to the new tty_port_open helper
-Message-ID: <20091008141353.342fd2ae@lxorguk.ukuu.org.uk>
-In-Reply-To: <4ACCF5D5.7010505@gmail.com>
-References: <20091007144455.14550.95003.stgit@localhost.localdomain>
-	<20091007144621.14550.62068.stgit@localhost.localdomain>
-	<4ACCF5D5.7010505@gmail.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Oct 2009 09:14:36 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:50591 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757917AbZJHNOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 09:14:35 -0400
+Date: Thu, 8 Oct 2009 08:13:56 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: gerald.schaefer@de.ibm.com
+Cc: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2][v2] powerpc: Make the CMM memory hotplug aware
+Message-ID: <20091008131355.GA22118@austin.ibm.com>
+Mail-Followup-To: gerald.schaefer@de.ibm.com, Mel Gorman <mel@csn.ul.ie>,
+	Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linuxppc-dev@ozlabs.org
+References: <20091002184458.GC4908@austin.ibm.com> <20091002185248.GD4908@austin.ibm.com> <4ACDD71D.30809@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ACDD71D.30809@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 Oct 2009 22:11:01 +0200
-Jiri Slaby <jirislaby@gmail.com> wrote:
+* Gerald Schaefer (geralds@linux.vnet.ibm.com) wrote:
+> Hi,
+>
+> I am currently working on the s390 port for the cmm + hotplug
+> patch, and I'm a little confused about the memory allocation
+> policy, see below. Is it correct that the balloon cannot grow
+> into ZONE_MOVABLE, while the pages for the balloon page list
+> can?
+>
+> Robert Jennings wrote:
+>> @@ -110,6 +125,9 @@ static long cmm_alloc_pages(long nr)
+>>  	cmm_dbg("Begin request for %ld pages\n", nr);
+>>
+>>  	while (nr) {
+>> +		if (atomic_read(&hotplug_active))
+>> +			break;
+>> +
+>>  		addr = __get_free_page(GFP_NOIO | __GFP_NOWARN |
+>>  				       __GFP_NORETRY | __GFP_NOMEMALLOC);
+>>  		if (!addr)
+>> @@ -119,8 +137,10 @@ static long cmm_alloc_pages(long nr)
+>>  		if (!pa || pa->index >= CMM_NR_PAGES) {
+>>  			/* Need a new page for the page list. */
+>>  			spin_unlock(&cmm_lock);
+>> -			npa = (struct cmm_page_array *)__get_free_page(GFP_NOIO | __GFP_NOWARN |
+>> -								       __GFP_NORETRY | __GFP_NOMEMALLOC);
+>> +			npa = (struct cmm_page_array *)__get_free_page(
+>> +					GFP_NOIO | __GFP_NOWARN |
+>> +					__GFP_NORETRY | __GFP_NOMEMALLOC |
+>> +					__GFP_MOVABLE);
+>>  			if (!npa) {
+>>  				pr_info("%s: Can not allocate new page list\n", __func__);
+>>  				free_page(addr);
+>
+> Why is the __GFP_MOVABLE added here, for the page list alloc, and not
+> above for the balloon page alloc?
 
-> On 10/07/2009 04:46 PM, Alan Cox wrote:
-> > -	if (port->port.flags & ASYNC_INITIALIZED)
-> > -		return 0;
-> > -	if (tty_port_alloc_xmit_buf(&port->port) < 0)
-> > +	if (tty_port_alloc_xmit_buf(tport) < 0)
-> 
-> I think this won't work well with 1/4. ->activate is called with
-> port->port.mutex (the name in this context), but tty_port_alloc_xmit_buf
-> wants it again.
+The pages allocated as __GFP_MOVABLE are used to store the list of pages
+allocated by the balloon.  They reference virtual addresses and it would
+be fine for the kernel to migrate the physical pages for those, the
+balloon would not notice this.
 
-Ok fixed that the simple way the buffer allocator now has its own private
-mutex. Any other problems strike you ?
+The pages loaned by the balloon are not allocated with __GFP_MOVABLE
+because we will inform the hypervisor which page has been loaned by
+Linux according to the physical address.  Migration of those physical
+pages would invalidate the loan, so we do not mark them as movable.
+
+Regards,
+Robert Jennings
