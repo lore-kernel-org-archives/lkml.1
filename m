@@ -1,54 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbZJHJ2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbZJHJ3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756679AbZJHJ2Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 05:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756277AbZJHJ2Y
+	id S1756803AbZJHJ3d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 05:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbZJHJ3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 05:28:24 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:33494 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756062AbZJHJ2X (ORCPT
+	Thu, 8 Oct 2009 05:29:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39891 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756566AbZJHJ3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 05:28:23 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090909092822.GA18355@electric-eye.fr.zoreil.com>
-References: <b2cdc9f30909090013q1741da26la73da66f1eef975f@mail.gmail.com>
-	 <20090909092822.GA18355@electric-eye.fr.zoreil.com>
-Date: Thu, 8 Oct 2009 10:27:10 +0100
-X-Google-Sender-Auth: d012dae78cdc3438
-Message-ID: <b2cdc9f30910080227s17effd97vf13d7e91b153ad17@mail.gmail.com>
-Subject: Re: r8169 ethernet hangs after a pm-suspend (and resume)
-From: Alex Bennee <kernel-hacker@bennee.com>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 8 Oct 2009 05:29:32 -0400
+Subject: Re: [PATCH tip/core/rcu 3/3] rcu: place root rcu_node structure in
+ separate lockdep class
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+In-Reply-To: <12548908983277-git-send-email->
+References: <20091007044748.GA12763@linux.vnet.ibm.com>
+	 <12548908983277-git-send-email->
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 08 Oct 2009 11:31:59 +0200
+Message-Id: <1254994319.26976.264.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/9 Francois Romieu <romieu@fr.zoreil.com>:
-> Alex Bennee <kernel-hacker@bennee.com> :
-> [...]
->> I've just recently gotten suspend working on my system. Unfortunately
->> after the resume event I loose access to the network.
->> As far as the system is concerned the network is configured properly
->> but every attempt to ping local nodes fails with "Host not reachable".
->
-> Can the problem be described as "gigabit link setting does not survive
-> suspend/resume" ?
+On Tue, 2009-10-06 at 21:48 -0700, Paul E. McKenney wrote:
+> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> Before this patch, all of the rcu_node structures were in the same lockdep
+> class, so that lockdep would complain when rcu_preempt_offline_tasks()
+> acquired the root rcu_node structure's lock while holding one of the leaf
+> rcu_nodes' locks.  This patch changes rcu_init_one() to use a separate
+> spin_lock_init() for the root rcu_node structure's lock than is used for
+> that of all of the rest of the rcu_node structures, which puts the root
+> rcu_node structure's lock in its own lockdep class.
+> 
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+>  kernel/rcutree.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+> index d8d9865..705f02a 100644
+> --- a/kernel/rcutree.c
+> +++ b/kernel/rcutree.c
+> @@ -1647,7 +1647,8 @@ static void __init rcu_init_one(struct rcu_state *rsp)
+>  		cpustride *= rsp->levelspread[i];
+>  		rnp = rsp->level[i];
+>  		for (j = 0; j < rsp->levelcnt[i]; j++, rnp++) {
+> -			spin_lock_init(&rnp->lock);
+> +			if (rnp != rcu_get_root(rsp))
+> +				spin_lock_init(&rnp->lock);
+>  			rnp->gpnum = 0;
+>  			rnp->qsmask = 0;
+>  			rnp->qsmaskinit = 0;
+> @@ -1670,6 +1671,7 @@ static void __init rcu_init_one(struct rcu_state *rsp)
+>  			INIT_LIST_HEAD(&rnp->blocked_tasks[1]);
+>  		}
+>  	}
+> +	spin_lock_init(&rcu_get_root(rsp)->lock);
+>  }
+>  
+>  /*
 
-Even further experimentation shows that ethernet functionality can
-survive the resume for a few minutes before reseting. Once it gets
-into this state even rmmod/modprobing the r8169 driver won't unwedge
-the driver.
 
-The symptoms are either the driver detecting an unknown MAC or setting
-the physical address to 0xfffffffff which is obviously broken. I
-suspect the hardware has gotten itself wedged somehow.
+An alternative version that would not change any code in the !LOCKDEP
+case would read as:
 
-Is there any way to hard reset the chipset (without power cycling the
-system)?
+---
+ kernel/rcutree.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
--- 
-Alex, homepage: http://www.bennee.com/~alex/
-http://www.half-llama.co.uk
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index d8d9865..113f274 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -1625,6 +1625,8 @@ static void __init rcu_init_levelspread(struct rcu_state *rsp)
+ }
+ #endif /* #else #ifdef CONFIG_RCU_FANOUT_EXACT */
+ 
++static struct lock_class_key rcu_root_class;
++
+ /*
+  * Helper function for rcu_init() that initializes one rcu_state structure.
+  */
+@@ -1670,6 +1672,7 @@ static void __init rcu_init_one(struct rcu_state *rsp)
+ 			INIT_LIST_HEAD(&rnp->blocked_tasks[1]);
+ 		}
+ 	}
++	lockdep_set_class(&rcu_get_root(rsp)->lock, &rcu_root_class);
+ }
+ 
+ /*
+
