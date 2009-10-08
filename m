@@ -1,153 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbZJHKBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbZJHKEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757425AbZJHKBP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 06:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757400AbZJHKBO
+	id S1757457AbZJHKEm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 06:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbZJHKEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 06:01:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41734 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757248AbZJHKBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 06:01:13 -0400
-Date: Thu, 8 Oct 2009 12:00:42 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org
-Subject: [PATCH v4] add MAP_UNLOCKED mmap flag
-Message-ID: <20091008100042.GF16702@redhat.com>
+	Thu, 8 Oct 2009 06:04:40 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:43550
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757432AbZJHKEj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 06:04:39 -0400
+X-SpamScore: -8
+X-BigFish: VPS-8(zz15bfO4015Lzz1202hzzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KR6X9U-04-3JX-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/9 v2] KVM: Nested SVM fixes and tracepoint conversion
+Date: Thu, 8 Oct 2009 12:03:10 +0200
+Message-ID: <1254996199-17667-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.4.3
+X-OriginalArrivalTime: 08 Oct 2009 10:03:23.0494 (UTC) FILETIME=[92480860:01CA47FE]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If application does mlockall(MCL_FUTURE) it is no longer possible to
-mmap file bigger than main memory or allocate big area of anonymous
-memory. Sometimes it is desirable to lock everything related to program
-execution into memory, but still be able to mmap big file or allocate
-huge amount of memory and allow OS to swap them on demand. MAP_UNLOCKED
-allows to do that.
+Hi Avi, Marcelo,
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
----
+this series of patches contains bugfixes for the Nested SVM code and the
+conversion of Nested SVM debugging to tracepoints. The fixes are:
 
-v1->v2
- - adding new flag to all archs
- - fixing typo
-v2->v3
- - one more typo fix 
-v3>v4
- - return error if MAP_LOCKED | MAP_UNLOCKED is specified
+           1) A patch Alex already sent (1/9) but which was not yet
+              applied. It fixes a lost event_inj problem when we emulate
+              a vmrun and a vmexit without entering the guest in
+	      the meantime.
 
-diff --git a/arch/alpha/include/asm/mman.h b/arch/alpha/include/asm/mman.h
-index 99c56d4..cfc51ac 100644
---- a/arch/alpha/include/asm/mman.h
-+++ b/arch/alpha/include/asm/mman.h
-@@ -30,6 +30,7 @@
- #define MAP_NONBLOCK	0x40000		/* do not block on IO */
- #define MAP_STACK	0x80000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x100000	/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x200000	/* force page unlocking */
- 
- #define MS_ASYNC	1		/* sync memory asynchronously */
- #define MS_SYNC		2		/* synchronous memory sync */
-diff --git a/arch/mips/include/asm/mman.h b/arch/mips/include/asm/mman.h
-index a2250f3..c161e27 100644
---- a/arch/mips/include/asm/mman.h
-+++ b/arch/mips/include/asm/mman.h
-@@ -48,6 +48,7 @@
- #define MAP_NONBLOCK	0x20000		/* do not block on IO */
- #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x100000	/* force page unlocking */
- 
- /*
-  * Flags for msync
-diff --git a/arch/parisc/include/asm/mman.h b/arch/parisc/include/asm/mman.h
-index 9749c8a..4e8b9bf 100644
---- a/arch/parisc/include/asm/mman.h
-+++ b/arch/parisc/include/asm/mman.h
-@@ -24,6 +24,7 @@
- #define MAP_NONBLOCK	0x20000		/* do not block on IO */
- #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x100000	/* force page unlocking */
- 
- #define MS_SYNC		1		/* synchronous memory sync */
- #define MS_ASYNC	2		/* sync memory asynchronously */
-diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
-index d4a7f64..7d33f01 100644
---- a/arch/powerpc/include/asm/mman.h
-+++ b/arch/powerpc/include/asm/mman.h
-@@ -27,6 +27,7 @@
- #define MAP_NONBLOCK	0x10000		/* do not block on IO */
- #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x80000		/* force page unlocking */
- 
- #ifdef __KERNEL__
- #ifdef CONFIG_PPC64
-diff --git a/arch/sparc/include/asm/mman.h b/arch/sparc/include/asm/mman.h
-index c3029ad..f80d203 100644
---- a/arch/sparc/include/asm/mman.h
-+++ b/arch/sparc/include/asm/mman.h
-@@ -22,6 +22,7 @@
- #define MAP_NONBLOCK	0x10000		/* do not block on IO */
- #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x80000		/* force page unlocking */
- 
- #ifdef __KERNEL__
- #ifndef __ASSEMBLY__
-diff --git a/arch/xtensa/include/asm/mman.h b/arch/xtensa/include/asm/mman.h
-index fca4db4..c62bcd8 100644
---- a/arch/xtensa/include/asm/mman.h
-+++ b/arch/xtensa/include/asm/mman.h
-@@ -55,6 +55,7 @@
- #define MAP_NONBLOCK	0x20000		/* do not block on IO */
- #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x100000	/* force page unlocking */
- 
- /*
-  * Flags for msync
-diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
-index 32c8bd6..59e0f29 100644
---- a/include/asm-generic/mman.h
-+++ b/include/asm-generic/mman.h
-@@ -12,6 +12,7 @@
- #define MAP_NONBLOCK	0x10000		/* do not block on IO */
- #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x80000         /* force page unlocking */
- 
- #define MCL_CURRENT	1		/* lock all current mappings */
- #define MCL_FUTURE	2		/* lock all future mappings */
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 73f5e4b..0cbbc59 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -949,6 +949,10 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
- 	if (mm->map_count > sysctl_max_map_count)
- 		return -ENOMEM;
- 
-+	if ((flags & (MAP_LOCKED | MAP_UNLOCKED)) ==
-+		(MAP_LOCKED | MAP_UNLOCKED))
-+		return -EINVAL;
-+
- 	if (flags & MAP_HUGETLB) {
- 		struct user_struct *user = NULL;
- 		if (file)
-@@ -985,6 +989,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
- 		if (!can_do_mlock())
- 			return -EPERM;
- 
-+        if (flags & MAP_UNLOCKED)
-+                vm_flags &= ~VM_LOCKED;
-+
- 	/* mlock MCL_FUTURE? */
- 	if (vm_flags & VM_LOCKED) {
- 		unsigned long locked, lock_limit;
---
-			Gleb.
+	   2) The patch 2/9 fixes a schedule() while atomic bug in the
+	      Nested SVM code. The KVM interrupt injection code runs
+	      with preemtion and interrupts disabled. But the
+	      enable_irq_window() function from SVM may emulate a
+              #vmexit.  This emulation migth sleep which causes the
+	      schedule() while atomic() bug.
+
+These fixes (patches 1 and 2) should also be considered for -stable
+backporting.
+
+The patches 3 to 8 convert the old printk based debugging for Nested SVM
+to tracepoints. Patch 9 removes the nsvm_printk code. Please review
+and/or consider to apply these changes.
+
+Thanks,
+
+	Joerg
+
+Changes to v1:
+
+* Fixed typo on comment in patch
+  "KVM: SVM: Notify nested hypervisor of lost event injections"
+* Made the fix for the schedule()-while-atomic bug out of the generic
+  code. It touches only SVM code now.
+
+diffstat:
+
+
+ arch/x86/kvm/svm.c   |  107 +++++++++++++++++++++-----------
+ arch/x86/kvm/trace.h |  165 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kvm/x86.c   |    6 ++
+ 3 files changed, 242 insertions(+), 36 deletions(-)
+
+shortlog:
+
+Alexander Graf (1):
+      KVM: SVM: Notify nested hypervisor of lost event injections
+
+Joerg Roedel (8):
+      KVM: SVM: Move INTR vmexit out of atomic code
+      KVM: SVM: Add tracepoint for nested vmrun
+      KVM: SVM: Add tracepoint for nested #vmexit
+      KVM: SVM: Add tracepoint for injected #vmexit
+      KVM: SVM: Add tracepoint for #vmexit because intr pending
+      KVM: SVM: Add tracepoint for invlpga instruction
+      KVM: SVM: Add tracepoint for skinit instruction
+      KVM: SVM: Remove nsvm_printk debugging code
+
+
