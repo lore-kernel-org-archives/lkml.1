@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933713AbZJHVSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933680AbZJHVST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933713AbZJHVSi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 17:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933666AbZJHVSh
+	id S933680AbZJHVST (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 17:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933524AbZJHVSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 17:18:37 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:40231 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933652AbZJHVSg (ORCPT
+	Thu, 8 Oct 2009 17:18:17 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44316 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932881AbZJHVSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 17:18:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DPwi6W/6lfrX6HB6BjluOaVT+LUGDVidrge41zI6F+1+ph2xjhwjWmP7ZrYQmBVNgD
-         Dqh69ftNHbMdRy0deWbPLANBD/bUZwzSLxURfcDTOPpnQgPVIewrj19KGBuYDpVKENpk
-         ywvUC0Y7uXU7qV7r6PgtoTeTfR0viYLUaEQDY=
-Date: Thu, 8 Oct 2009 23:17:57 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [PATCH tracing/kprobes v3 6/7] perf: Add perf probe subcommand
-	for kprobe-event setup helper
-Message-ID: <20091008211755.GG5073@nowhere>
-References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222822.1684.3251.stgit@dhcp-100-2-132.bos.redhat.com> <4ACE56EE.8060000@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ACE56EE.8060000@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 8 Oct 2009 17:18:17 -0400
+Date: Thu, 8 Oct 2009 22:19:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
+Message-ID: <20091008221901.2321cca6@lxorguk.ukuu.org.uk>
+In-Reply-To: <200910082240.36607.oliver@neukum.org>
+References: <Pine.LNX.4.44L0.0910081601350.2765-100000@iolanthe.rowland.org>
+	<200910082240.36607.oliver@neukum.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 05:17:34PM -0400, Masami Hiramatsu wrote:
-> Masami Hiramatsu wrote:
->> Add perf probe subcommand for kprobe-event setup helper to perf command.
->> This allows user to define kprobe events by C expressions (C line numbers,
->> C function names, and C local variables).
->>
->> Usage
->> -----
->>   perf probe [<options>] -P 'PROBEDEF' [-P 'PROBEDEF' ...]
->>
->>      -k, --vmlinux<file>   vmlinux/module pathname
->>      -P, --probe<p|r:[GRP/]NAME FUNC[+OFFS][@SRC]|@SRC:LINE [ARG ...]>
->>                            probe point definition, where
->> 		p:	kprobe probe
->> 		r:	kretprobe probe
->> 		GRP:	Group name (optional)
->> 		NAME:	Event name
->> 		FUNC:	Function name
->> 		OFFS:	Offset from function entry (in byte)
->> 		SRC:	Source code path
->> 		LINE:	Line number
->> 		ARG:	Probe argument (local variable name or
->> 			kprobe-tracer argument format is supported.)
->
-> Oops, I found it caused compilation error on gcc < 4.4 as below:
->
->     CC builtin-trace.o
->     CC builtin-probe.o
-> cc1: warnings being treated as errors
-> builtin-probe.c: In function 'parse_probepoint':
-> builtin-probe.c:109: error: implicit declaration of function 'strndup'
-> builtin-probe.c:109: error: incompatible implicit declaration of built-in function 'strndup'
->
-> Since I forgot to add _GNU_SOURCE...
->
+On Thu, 8 Oct 2009 22:40:36 +0200
+Oliver Neukum <oliver@neukum.org> wrote:
 
+> Am Donnerstag, 8. Oktober 2009 22:06:10 schrieb Alan Stern:
+> 
+> >
+> > On further thought, unthrottle should autoresume if the device is
+> > open and autosuspended (but it shouldn't do anything if the device is
+> > suspended).  After all, the reason for the autosuspend may have been
+> > the lack of activity caused by the throttling.
+> >
+> > In practice this isn't likely to come up.  It would be surprising if
+> > throttling lasted long enough to cause an autosuspend or if the core
+> > decided to throttle while the device was autosuspended and hence idle.
+> 
+> So you say that throttle() should do an autopm_put?
 
-No problem, I can add it, or rather include util/util.h as it includes
-everything necessary for the string functions + _GNU_SOURCE :)
-
+You need to be very very sure you cannot lose a byte of data or have the
+modem lines disrupted in any way if you do that.
