@@ -1,38 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932848AbZJHRXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932841AbZJHR0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932848AbZJHRXH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 13:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932821AbZJHRXG
+	id S932841AbZJHR0g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 13:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932677AbZJHR0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 13:23:06 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:32810 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932817AbZJHRXF (ORCPT
+	Thu, 8 Oct 2009 13:26:36 -0400
+Received: from outbound-mail-317.bluehost.com ([67.222.54.10]:37615 "HELO
+	outbound-mail-317.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932651AbZJHR0f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 13:23:05 -0400
-Message-ID: <4ACE1FD1.6070400@canonical.com>
-Date: Thu, 08 Oct 2009 10:22:25 -0700
-From: John Johansen <john.johansen@canonical.com>
-Organization: Canonical
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-CC: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [TOMOYO #16 03/25] LSM: Pass original mount flags to security_sb_mount().
-References: <20091004124946.788396453@I-love.SAKURA.ne.jp> <20091004125327.997524942@I-love.SAKURA.ne.jp>
-In-Reply-To: <20091004125327.997524942@I-love.SAKURA.ne.jp>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 8 Oct 2009 13:26:35 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=Sro0X7szh63IB8wXIutewhv+rgusf2x7NRtIEAPpYlGRuL/L1gDGQaQB8o94eiTIzWgS73K8VDLG8+nwlbLhvnrgYTFD1fkhcB8OQD40914Ha1H1ZLxGZ9b2cyjOfp6I;
+Date: Thu, 8 Oct 2009 10:25:42 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH pci-2.6#linux-next] pci: pci_dfl_cache_line_size is
+ __devinitdata
+Message-ID: <20091008102542.4006c04c@jbarnes-g45>
+In-Reply-To: <4ACDB819.4060606@kernel.org>
+References: <20091008152725.1351485a.sfr@canb.auug.org.au>
+	<4ACDB819.4060606@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa wrote:
-> This patch allows LSM modules to determine based on original mount flags
-> passed to mount(). A LSM module can get masked mount flags (if needed) by
->
->	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
->		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT |
->		   MS_STRICTATIME);
+On Thu, 08 Oct 2009 18:59:53 +0900
+Tejun Heo <tj@kernel.org> wrote:
 
-This looks good, and would also have use in AppArmor.
+> pci_dfl_cache_line_size is marked as __initdata but referenced by
+> pci_init() which is __devinit.  Make it __devinitdata instead of
+> __initdata.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/pci/pci.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 1ae95df..a6e22fd 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -53,7 +53,7 @@ unsigned long pci_hotplug_mem_size =
+> DEFAULT_HOTPLUG_MEM_SIZE;
+>   * the dfl or actual value as it sees fit.  Don't forget this is
+>   * measured in 32-bit words, not bytes.
+>   */
+> -u8 pci_dfl_cache_line_size __initdata = L1_CACHE_BYTES >> 2;
+> +u8 pci_dfl_cache_line_size __devinitdata = L1_CACHE_BYTES >> 2;
+>  u8 pci_cache_line_size;
+
+Fix pushed, thanks for the quick turnaround Tejun.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
