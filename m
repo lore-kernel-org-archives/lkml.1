@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbZJHONM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758260AbZJHOOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758221AbZJHONM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 10:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbZJHONM
+	id S1758260AbZJHOOF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 10:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758068AbZJHOOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 10:13:12 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:41780 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756677AbZJHONL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 10:13:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:date:message-id:subject:from:to:cc
-         :content-type;
-        b=LbxAHALUrPyzCWSsSWgtiNL6ICNJ9GkRasYA00OghnCk+r9/Q1TDwLovnaf2O89xvG
-         O5zv1bBciwi1EEy2b5N2lVMiJtD+jshnZF1eZCCOvbLUvRlfO7RAd862Yzhbb220QD+R
-         caNUy3LwHVgpbEhbtkuo7GlM/ot7hzyJs9W8w=
-MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-Date: Thu, 8 Oct 2009 16:12:33 +0200
-Message-ID: <7c86c4470910080712v730a4c7fxbd71d97b605a1f6e@mail.gmail.com>
-Subject: perf_events: issue with scaling information
-From: stephane eranian <eranian@googlemail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 8 Oct 2009 10:14:05 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57026 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758024AbZJHOOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 10:14:03 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18AAMhDIeUArLh/791WT0vz1DCL3vGrio08v0Hcu6
+	6unMrCby196zT1
+Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
+ CPU"
+From: Mike Galbraith <efault@gmx.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Frans Pop <elendil@planet.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <20091008064041.67219b13@infradead.org>
+References: <200910051500.55875.elendil@planet.nl>
+	 <200910061749.02805.elendil@planet.nl>
+	 <200910071910.53907.elendil@planet.nl>
+	 <200910072034.57511.elendil@planet.nl>
+	 <1254974743.7797.21.camel@marge.simson.net>
+	 <20091008064041.67219b13@infradead.org>
+Content-Type: text/plain
+Date: Thu, 08 Oct 2009 16:13:06 +0200
+Message-Id: <1255011186.7294.1.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 2009-10-08 at 06:40 -0700, Arjan van de Ven wrote:
+> On Thu, 08 Oct 2009 06:05:43 +0200
+> Mike Galbraith <efault@gmx.de> wrote:
 
+> > OK, I see latencytop spikes here on an idle box too, to the tune of up
+> > to a _second_.  Booting with nohz=off seems to have cured it.
+> 
+> interesting..
+> 
+> 
+> by chance, does this patch fix it ?
 
-With libpfm4, I have developed a set of examples which are using
-perf_events to demonstrate typical counting and sampling scenarios.
+I haven't seen incredible yet, but with idle box, have seen > 200ms, so
+would say no.
 
-In two of the sampling program, it appears time_enabled, time_running
-included in the samples are incorrect.
+	-Mike
 
-The program notify_self.c uses IOC_REFRESH to get a notification for
-each sample. The first sample comes out with time_running = time_enabled =0,
-subsequent samples return non-zero information. I suspect something is
-wrong initially because of IOC_REFRESH. This is using an event group.
-
-The program task_smpl.c is sampling another process. Although the scaling
-information is requested, all samples come out with time_running =
-time_enabled=0.
-The rest of the sample is correct, so it's not like I am not correctly
-reading the
-sample. The program is using an event group.
-
-I suspect both issues may be related.
-
-You can obtain the test programs (which are open-source!), by cloning
-the GIT tree
-at:
-         git://perfmon2.git.sourceforge.net/gitroot/perfmon2/libpfm4
-
-
-Thanks.
