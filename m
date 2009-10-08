@@ -1,174 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZJHGID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059AbZJHGPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbZJHGID (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 02:08:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZJHGIB
+	id S1752059AbZJHGPZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 02:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbZJHGPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 02:08:01 -0400
-Received: from mga03.intel.com ([143.182.124.21]:29053 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754030AbZJHGH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 02:07:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,523,1249282800"; 
-   d="scan'208";a="196413240"
-Date: Thu, 8 Oct 2009 14:07:05 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 18/45] writeback: introduce wait queue for
-	balance_dirty_pages()
-Message-ID: <20091008060705.GA20892@localhost>
-References: <20091007073818.318088777@intel.com> <20091007074903.422089703@intel.com> <20091008100159.fb6770cf.kamezawa.hiroyu@jp.fujitsu.com> <20091008015822.GB14224@localhost> <20091008114037.56f78b0e.kamezawa.hiroyu@jp.fujitsu.com> <20091008040136.GA30292@localhost> <20091008145907.7f1799ca.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 8 Oct 2009 02:15:24 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:65083 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbZJHGPW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 02:15:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Jv4VPVgj2auNoDrFK9578uzG66XLmX4zQY/cTlzfmjt4I29A+Ivr7JD0RAl6G27DJQ
+         9UJ37GW8E6FY75qRH4MsR+PjIdy/ZCIJLJZ+r9RbA/AV7eXNaY3XyWa4vS6zjhl0eRMJ
+         XayEtgROmukscMnEoP2P7Z557dUVw21g4K1bU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091008145907.7f1799ca.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091007215116.GB29320@atomide.com>
+References: <65168.192.168.10.89.1253788033.squirrel@dbdmail.itg.ti.com>
+	 <20091007215116.GB29320@atomide.com>
+Date: Thu, 8 Oct 2009 11:44:15 +0530
+Message-ID: <d6a0f7aa0910072314h77383e31r2330725b614ba472@mail.gmail.com>
+Subject: Re: [PATCHv1 1/3] OMAP UART: Adds omap-serial driver support.
+From: Govindraj <govindraj.ti@gmail.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: "Govindraj.R" <govindraj.raja@ti.com>, linux-omap@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 01:59:07PM +0800, KAMEZAWA Hiroyuki wrote:
-> On Thu, 8 Oct 2009 12:01:36 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > On Thu, Oct 08, 2009 at 10:40:37AM +0800, KAMEZAWA Hiroyuki wrote:
-> > > Thank you for clarification.
-> > > Then, hmm, %iotwait (which 'top' shows) didn't work as desgined and we need
-> > > to update throttle_vm_writeout() and some in vmscan.c. Thanks for input.
-> > 
-> > Thanks, you also reminds me to do io_schedule() in the nfs writeback
-> > wait queue :)
-> > 
-> good side effect ;)
+On Thu, Oct 8, 2009 at 3:21 AM, Tony Lindgren <tony@atomide.com> wrote:
+> * Govindraj.R <govindraj.raja@ti.com> [090924 03:29]:
+>> From: Govindraj R <govindraj.raja@ti.com>
+>>
+>> This patch adds support for OMAP3430-HIGH SPEED UART Controller.
+>>
+>> Signed-off-by:        Govindraj R <govindraj.raja@ti.com>
+>> Reviewed-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+>> Reviewed-by: Tony Lindgren <tony@atomide.com>
+>
+> You should only add Reviewed-by if Alan or me have replied with it.
+>
+> So far I've only replied with some comments that have not yet
+> been fixed, so we're few more steps from being Reviewd-by.
+>
+> <snip>
+>
+>> diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+>> index 6553833..67a7129 100644
+>> --- a/drivers/serial/Kconfig
+>> +++ b/drivers/serial/Kconfig
+>> @@ -1359,6 +1359,53 @@ config SERIAL_OF_PLATFORM
+>>         Currently, only 8250 compatible ports are supported, but
+>>         others can easily be added.
+>>
+>> +config SERIAL_OMAP
+>> +     bool "OMAP serial port support"
+>> +     depends on ARM && ARCH_OMAP
+>> +     select SERIAL_CORE
+>> +     help
+>> +     If you have a machine based on an Texas Instruments OMAP CPU you
+>> +     can enable its onboard serial ports by enabling this option.
+>> +
+>> +config SERIAL_OMAP_CONSOLE
+>> +     bool "Console on OMAP serial port"
+>> +     depends on SERIAL_OMAP
+>> +     select SERIAL_CORE_CONSOLE
+>> +     help
+>> +     If you have enabled the serial port on the Texas Instruments OMAP
+>> +     CPU you can make it the console by answering Y to this option.
+>> +
+>> +     Even if you say Y here, the currently visible virtual console
+>> +     (/dev/tty0) will still be used as the system console by default, but
+>> +     you can alter that using a kernel command line option such as
+>> +     "console=ttyS0". (Try "man bootparam" or see the documentation of
+>> +     your boot loader (lilo or loadlin) about how to pass options to the
+>> +     kernel at boot time.)
+>> +
+>> +config SERIAL_OMAP_DMA_UART1
+>> +     bool "UART1 DMA support"
+>> +     depends on SERIAL_OMAP
+>> +     help
+>> +     If you have enabled the serial port on the Texas Instruments OMAP
+>> +     CPU you can enable the DMA transfer on UART 1 by answering
+>> +     to this option.
+>> +
+>> +config SERIAL_OMAP_DMA_UART2
+>> +     bool "UART2 DMA support"
+>> +     depends on SERIAL_OMAP
+>> +     help
+>> +     If you have enabled the serial port on the Texas Instruments OMAP
+>> +     CPU you can enable the DMA transfer on UART 2 by answering
+>> +     to this option.
+>> +
+>> +config SERIAL_OMAP_DMA_UART3
+>> +     bool "UART3 DMA support"
+>> +     depends on SERIAL_OMAP
+>> +     help
+>> +     If you have enabled the serial port on the Texas Instruments OMAP
+>> +     CPU you can enable the DMA transfer on UART 3 by answering
+>> +     to this option.
+>> +
+>>  config SERIAL_OF_PLATFORM_NWPSERIAL
+>>       tristate "NWP serial port driver"
+>>       depends on PPC_OF && PPC_DCR
+>
+> There's absolutely no need for having Kconfig options for the DMA
+> support. Please pass that in platform_data from the board-*.c files.
+>
+> This is the third time I'm commenting on the same issue!
+>
+> What's the point of posting these patches for review if the issues
+> don't get solved?
 
-Done, hehe.
 
-> > > BTW, I'm glad if I can know "how many threads/ios are throttoled now" per bdi.
-> > 
-> > Good suggestion. How about this patch?
-> > 
-> 
-> Seems attractive. 
-> Hmm..
-> ==
-> struct dirty_throttle_task {
-> +	pid_t	owner_pid;
-> ==
-> and show it ? (too verbose ?
+The omap-serial uart driver is designed to work either in interrupt
+mode or in DMA mode,
+We have provided this option so that one can select interrupt mode or
+DMA mode based on the uart usage, if somebody is using uart as console
+then interrupt mode will do, else if used with bluetooth which does
+huge data transfer then DMA mode can be selected.
 
-I even thought of adding the task pointer - it won't go away anyway :)
+Don't you think this should be a configurable option using kconfig
+rather than passing as platform data?
 
-Thanks,
-Fengguang
+if used as platform data then one has to modify platform data to
+switch between the interrupt and DMA mode.
 
-> 
+Regards,
+Govindraj.R
+
+
+>
 > Regards,
-> -Kame
-> 
-> > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  fs/fs-writeback.c           |    1 +
-> >  include/linux/backing-dev.h |    2 ++
-> >  mm/backing-dev.c            |   33 +++++++++++++++++++++++++++++++++
-> >  3 files changed, 36 insertions(+)
-> > 
-> > --- linux.orig/include/linux/backing-dev.h	2009-10-08 11:46:28.000000000 +0800
-> > +++ linux/include/linux/backing-dev.h	2009-10-08 11:47:39.000000000 +0800
-> > @@ -101,6 +101,7 @@ struct backing_dev_info {
-> >  #ifdef CONFIG_DEBUG_FS
-> >  	struct dentry *debug_dir;
-> >  	struct dentry *debug_stats;
-> > +	struct dentry *debug_throttle;
-> >  #endif
-> >  };
-> >  
-> > @@ -116,6 +117,7 @@ struct backing_dev_info {
-> >  #define DIRTY_THROTTLE_PAGES_STOP	(1 << 22)
-> >  
-> >  struct dirty_throttle_task {
-> > +	unsigned long		start_time;
-> >  	long			nr_pages;
-> >  	struct list_head	list;
-> >  	struct completion	complete;
-> > --- linux.orig/mm/backing-dev.c	2009-10-08 11:47:37.000000000 +0800
-> > +++ linux/mm/backing-dev.c	2009-10-08 11:59:06.000000000 +0800
-> > @@ -115,6 +115,23 @@ static int bdi_debug_stats_show(struct s
-> >  	return 0;
-> >  }
-> >  
-> > +static int bdi_debug_throttle_show(struct seq_file *m, void *v)
-> > +{
-> > +	struct backing_dev_info *bdi = m->private;
-> > +	struct dirty_throttle_task *tt;
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&bdi->throttle_lock, flags);
-> > +	list_for_each_entry(tt, &bdi->throttle_list, list) {
-> > +		seq_printf(m, "goal=%lukb\twaited=%lums\n",
-> > +			   tt->nr_pages << (PAGE_SHIFT - 10),
-> > +			   (jiffies - tt->start_time) * 1000 / HZ);
-> > +	}
-> > +	spin_unlock_irqrestore(&bdi->throttle_lock, flags);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> >  static int bdi_debug_stats_open(struct inode *inode, struct file *file)
-> >  {
-> >  	return single_open(file, bdi_debug_stats_show, inode->i_private);
-> > @@ -127,15 +144,31 @@ static const struct file_operations bdi_
-> >  	.release	= single_release,
-> >  };
-> >  
-> > +static int bdi_debug_throttle_open(struct inode *inode, struct file *file)
-> > +{
-> > +	return single_open(file, bdi_debug_throttle_show, inode->i_private);
-> > +}
-> > +
-> > +static const struct file_operations bdi_debug_throttle_fops = {
-> > +	.open		= bdi_debug_throttle_open,
-> > +	.read		= seq_read,
-> > +	.llseek		= seq_lseek,
-> > +	.release	= single_release,
-> > +};
-> > +
-> >  static void bdi_debug_register(struct backing_dev_info *bdi, const char *name)
-> >  {
-> >  	bdi->debug_dir = debugfs_create_dir(name, bdi_debug_root);
-> >  	bdi->debug_stats = debugfs_create_file("stats", 0444, bdi->debug_dir,
-> >  					       bdi, &bdi_debug_stats_fops);
-> > +	bdi->debug_throttle = debugfs_create_file("throttle_list", 0444,
-> > +						  bdi->debug_dir, bdi,
-> > +						  &bdi_debug_throttle_fops);
-> >  }
-> >  
-> >  static void bdi_debug_unregister(struct backing_dev_info *bdi)
-> >  {
-> > +	debugfs_remove(bdi->debug_throttle);
-> >  	debugfs_remove(bdi->debug_stats);
-> >  	debugfs_remove(bdi->debug_dir);
-> >  }
-> > --- linux.orig/fs/fs-writeback.c	2009-10-08 11:44:27.000000000 +0800
-> > +++ linux/fs/fs-writeback.c	2009-10-08 11:47:39.000000000 +0800
-> > @@ -284,6 +284,7 @@ static void bdi_calc_write_bandwidth(str
-> >  void bdi_writeback_wait(struct backing_dev_info *bdi, long nr_pages)
-> >  {
-> >  	struct dirty_throttle_task tt = {
-> > +		.start_time = jiffies,
-> >  		.nr_pages = nr_pages,
-> >  		.complete = COMPLETION_INITIALIZER_ONSTACK(tt.complete),
-> >  	};
-> > 
+>
+> Tony
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-serial" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
