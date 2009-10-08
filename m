@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbZJHTtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbZJHTzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759145AbZJHTtG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 15:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbZJHTtF
+	id S1758991AbZJHTzx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 15:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbZJHTzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 15:49:05 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56262 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757915AbZJHTtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 15:49:04 -0400
-Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
-From: James Bottomley <James.Bottomley@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 8 Oct 2009 15:55:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49419 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754139AbZJHTzw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 15:55:52 -0400
+Date: Thu, 8 Oct 2009 12:55:10 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: James Bottomley <James.Bottomley@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
        linux-scsi <linux-scsi@vger.kernel.org>,
        linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain>
-References: <1254844007.4383.85.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
-	 <1254862442.4383.183.camel@mulgrave.site>
-	 <1255012399.4187.24.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
-	 <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 08 Oct 2009 19:48:18 +0000
-Message-Id: <1255031298.4187.260.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+In-Reply-To: <1255031298.4187.260.camel@mulgrave.site>
+Message-ID: <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain>
+References: <1254844007.4383.85.camel@mulgrave.site>  <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>  <1254862442.4383.183.camel@mulgrave.site>  <1255012399.4187.24.camel@mulgrave.site>  <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
+  <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain> <1255031298.4187.260.camel@mulgrave.site>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 07:54 -0700, Linus Torvalds wrote:
+
+
+On Thu, 8 Oct 2009, James Bottomley wrote:
 > 
-> On Thu, 8 Oct 2009, Linus Torvalds wrote:
-> > 
-> > I'm taking it (and the parisc one I was also unhappy with)
-> 
-> Actually, looking at it again, I'm wavering.
-> 
-> That BFA driver isn't a "driver". It's a huge subsystem of it's own. It's 
-> almost 50 _thousand_ lines of code for just a single "driver", and for 
-> rare hardware at that.
+> Could I remind you that at the last kernel summit I was the one
+> advocating for holding drivers out of tree until they met our standards
+> and you were the one who told me not to do this ... Jon even captured
+> it:
 
-It's a huge glue layer driver, like the aic7xxx, yes.
+What the hell is wrong with you?
 
-So the tradeoff here is that I estimate it would take years to get it to
-where a linux driver should be.
+You're bringing up total red herrings that have nothing to do with 
+anything.
 
-Could I remind you that at the last kernel summit I was the one
-advocating for holding drivers out of tree until they met our standards
-and you were the one who told me not to do this ... Jon even captured
-it:
+My point is:
+ - that's not just another driver. That's FIFTY THOUSANDS LINES OF 
+   LARGELY INFRASTRUCTURE CRAP.
 
-https://lwn.net/Articles/298570/
+ - I'm not arguing that we shouldn't merge the driver
 
-I'll certainly offer this driver to Greg's drivers project to see if
-they can unglue it ... I just think it's going to take a while.
+ - I'm arguing that you damn well should have used the merge window for 
+   something like this!
 
-> Quite frankly, the "bang per line" is almost zero. 
-> 
-> What the ^&@* is wrong with "enterprise SCSI" people? The amount of crazy 
-> is overwhelming.
-> 
-> So I've pulled it, but I'm still considering just unpulling it. That 
-> driver is _not_ "just a driver".  It's something more. Something dank and 
-> smelly, that has grown in dark and forbidding places.
-> 
-> The whole crazy "high end SCSI" industry needs a f*cking exorcism.
-> 
-> Even if I don't unpull, I don't _ever_ want to see a driver like this 
-> outside the merge window. And dammit, James, you should have realized 
-> that.
+What part of "it's already -rc3, and you're pushing 50kloc of crap that 
+almost nobody will care about" can you not understand?
 
-Well certainly in an ideal world ... and in fact the world before KS2008
-I wouldn't have accepted it until it was well cleaned up.
+What part of "merge window" do you have issues with?
 
-James
+What part of "sure, I'll take new drivers after the merge window, but COME 
+&*^@ ON!" do you have trouble understanding?
 
+Stop bringing up totally irrelevant crap.
 
+		Linus
