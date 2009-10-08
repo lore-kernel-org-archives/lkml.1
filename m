@@ -1,65 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbZJHXtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbZJHXvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760122AbZJHXtk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 19:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758263AbZJHXtj
+	id S1760136AbZJHXvy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 19:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760093AbZJHXvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 19:49:39 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:45773 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756855AbZJHXti (ORCPT
+	Thu, 8 Oct 2009 19:51:54 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37162 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759191AbZJHXvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 19:49:38 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=kFCXrVrQvNwwvQYEimfuHMZB5FyW2t9OVpEubqM8O5781EQhTlAZNKRgFZBeEsZY7
-	xM9CHaH6sYd0kCpiaqW9Q==
-Date: Thu, 8 Oct 2009 16:48:23 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Greg KH <gregkh@suse.de>
-cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, sfr@canb.auug.org.au,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arve Hjonnevag <arve@android.com>, San Mehat <san@android.com>
-Subject: Re: [PATCH] linux-next: 20090929 - android driver build breaks
-In-Reply-To: <20091008232825.GA540@suse.de>
-Message-ID: <alpine.DEB.1.00.0910081644200.14247@chino.kir.corp.google.com>
-References: <20090929140404.dfb2c5f5.sfr@canb.auug.org.au> <20090929152027.GC4373@linux.vnet.ibm.com> <20091008224725.GA22949@kroah.com> <alpine.DEB.1.00.0910081621340.10613@chino.kir.corp.google.com> <20091008232825.GA540@suse.de>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Thu, 8 Oct 2009 19:51:53 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 9 Oct 2009 08:48:53 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nis@tyo205.gate.nec.co.jp>
+Subject: Re: [PATCH 1/2] memcg: coalescing uncharge at unmap and truncation
+ (fixed coimpile bug)
+Message-Id: <20091009084853.26975150.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091008151710.1216a615.akpm@linux-foundation.org>
+References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091002140126.61d15e5e.kamezawa.hiroyu@jp.fujitsu.com>
+	<4AC5A1FA.1080208@ct.jp.nec.com>
+	<20091002160213.32ae2bb5.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091008151710.1216a615.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 Oct 2009, Greg KH wrote:
+On Thu, 8 Oct 2009 15:17:10 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> > What are you specifically referring to?  Kamalesh provided a patch[*] that 
-> > fixes this particular compile error, which you said you were queueing.
+> On Fri, 2 Oct 2009 16:02:13 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> Hm, I did say I was queueing it, but I still can't figure out if this is
-> needed for the 2.6.32 tree.  Is it?
+> >
+> > ...
+> >
+> > In massive parallel enviroment, res_counter can be a performance bottleneck.
+> > One strong techinque to reduce lock contention is reducing calls by
+> > coalescing some amount of calls into one.
+> > 
+> > Considering charge/uncharge chatacteristic,
+> > 	- charge is done one by one via demand-paging.
+> > 	- uncharge is done by
+> > 		- in chunk at munmap, truncate, exit, execve...
+> > 		- one by one via vmscan/paging.
+> > 
+> > It seems we have a chance in uncharge at unmap/truncation.
+> > 
+> > This patch is a for coalescing uncharge. For avoiding scattering memcg's
+> > structure to functions under /mm, this patch adds memcg batch uncharge
+> > information to the task. 
+> > 
+> > The degree of coalescing depends on callers
+> >   - at invalidate/trucate... pagevec size
+> >   - at unmap ....ZAP_BLOCK_SIZE
+> > (memory itself will be freed in this degree.)
+> > Then, we'll not coalescing too much.
+> > 
+> >
+> > ...
+> >
+> > +static void
+> > +__do_uncharge(struct mem_cgroup *mem, const enum charge_type ctype)
+> > +{
+> > +	struct memcg_batch_info *batch = NULL;
+> > +	bool uncharge_memsw = true;
+> > +	/* If swapout, usage of swap doesn't decrease */
+> > +	if (!do_swap_account || ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
+> > +		uncharge_memsw = false;
+> > +	/*
+> > +	 * do_batch > 0 when unmapping pages or inode invalidate/truncate.
+> > +	 * In those cases, all pages freed continously can be expected to be in
+> > +	 * the same cgroup and we have chance to coalesce uncharges.
+> > +	 * And, we do uncharge one by one if this is killed by OOM.
+> > +	 */
+> > +	if (!current->memcg_batch.do_batch || test_thread_flag(TIF_MEMDIE))
+> > +		goto direct_uncharge;
+> > +
+> > +	batch = &current->memcg_batch;
+> > +	/*
+> > +	 * In usual, we do css_get() when we remember memcg pointer.
+> > +	 * But in this case, we keep res->usage until end of a series of
+> > +	 * uncharges. Then, it's ok to ignore memcg's refcnt.
+> > +	 */
+> > +	if (!batch->memcg)
+> > +		batch->memcg = mem;
+> > +	/*
+> > +	 * In typical case, batch->memcg == mem. This means we can
+> > +	 * merge a series of uncharges to an uncharge of res_counter.
+> > +	 * If not, we uncharge res_counter ony by one.
+> > +	 */
+> > +	if (batch->memcg != mem)
+> > +		goto direct_uncharge;
+> > +	/* remember freed charge and uncharge it later */
+> > +	batch->pages += PAGE_SIZE;
 > 
+> ->pages is really confusingly named.  It doesn't count pages, it counts
+> bytes!
+> 
+> We could call it `bytes', but perhaps charge_bytes would be more
+> communicative?
+> 
+Ah, I agree. I'll change this "bytes".
 
-Yes, 28b83c5 was merged during the merge window for 2.6.32 so this needs 
-to be pushed for the staging tree if it's not ripped out.
-
-> > If it's a criticism of the staleness of the Android code within the 
-> > staging tree or no recent activity, then we should probably loop in some 
-> > Android developers to find our about their plans.  I've added them to the 
-> > cc.
+> > +/*
+> > + * batch_start/batch_end is called in unmap_page_range/invlidate/trucate.
+> > + * In that cases, pages are freed continuously and we can expect pages
+> > + * are in the same memcg. All these calls itself limits the number of
+> > + * pages freed at once, then uncharge_start/end() is called properly.
+> > + */
+> > +
+> > +void mem_cgroup_uncharge_start(void)
+> > +{
+> > +	if (!current->memcg_batch.do_batch) {
+> > +		current->memcg_batch.memcg = NULL;
+> > +		current->memcg_batch.pages = 0;
+> > +		current->memcg_batch.memsw = 0;
 > 
-> They know all about this and agreed that the code should be dropped for
-> 2.6.33 if no one sends me patches.  If someone does, then I will remove
-> my 'delete the android code' patch in the staging tree.
+> what's memsw?
 > 
+Ah, memccontol.c uses "memsw" in several parts.
 
-I don't work with Android, but the "no support from Google" phrase caught 
-my attention :)  It seems like this isn't necessarily about support or 
-raised issues not being addressed, but rather about a lack of progress 
-being made developmentally or a general lack of interest in upstream 
-inclusion.  If it was agreed to simply remove it, that's fine, I just was 
-curious about the rationale.
+For example, memory usage interface to user is shown as
+
+   memory.usage_in_bytes
+
+memory+swap usage interface to suer is shown as
+
+    memory.memsw.usage_in_bytes.
+
+But, Hmm, this is visible from sched.c then...
+
+  memsw_bytes or memory_and_swap_bytes ?
+
+
+
+> > +	}
+> > +	current->memcg_batch.do_batch++;
+> > +}
+> > +
+> >
+> > ...
+> >
+> > +#ifdef CONFIG_CGROUP_MEM_RES_CTLR /* memcg uses this to do batch job */
+> > +	struct memcg_batch_info {
+> > +		int do_batch;
+> > +		struct mem_cgroup *memcg;
+> > +		long pages, memsw;
+> > +	} memcg_batch;
+> > +#endif
+> 
+> I find the most valuable documetnation is that which is devoted to the
+> data structures.  This one didn't get any :(
+> 
+> Negative values of `pages' and `memsw' are meaningless, so it would be
+> better to give them an unsigned type.  That matches the
+> res_counter_charge() expectations also.
+> 
+Agreed. I'll rewrite this part with appropriate comments.
+Thank you for pointing out.
+
+Regards,
+-Kame
+
