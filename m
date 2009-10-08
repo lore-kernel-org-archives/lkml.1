@@ -1,73 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbZJHNJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbZJHNLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758082AbZJHNJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 09:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758011AbZJHNJn
+	id S1758113AbZJHNLG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 09:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758093AbZJHNLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 09:09:43 -0400
-Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:64685 "EHLO
-	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758009AbZJHNJn (ORCPT
+	Thu, 8 Oct 2009 09:11:04 -0400
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:47007 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758068AbZJHNLB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 09:09:43 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for CPU"
-Date: Thu, 8 Oct 2009 15:09:04 +0200
-User-Agent: KMail/1.9.9
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-References: <200910051500.55875.elendil@planet.nl> <200910072034.57511.elendil@planet.nl> <1255001062.7500.1.camel@marge.simson.net>
-In-Reply-To: <1255001062.7500.1.camel@marge.simson.net>
+	Thu, 8 Oct 2009 09:11:01 -0400
+Date: Thu, 8 Oct 2009 18:40:15 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: arun@linux.vnet.ibm.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
+ register a set of idle routines.
+Message-ID: <20091008131015.GD3735@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20091008094828.GA20595@linux.vnet.ibm.com>
+ <20091008095027.GC20595@linux.vnet.ibm.com>
+ <1254998162.26976.270.camel@twins>
+ <20091008104249.GJ20595@linux.vnet.ibm.com>
+ <1254999033.26976.272.camel@twins>
+ <20091008110106.GK20595@linux.vnet.ibm.com>
+ <1255001110.26976.292.camel@twins>
+ <20091008120120.GL20595@linux.vnet.ibm.com>
+ <1255004737.26976.307.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200910081509.05394.elendil@planet.nl>
-X-OriginalArrivalTime: 08 Oct 2009 13:09:05.0693 (UTC) FILETIME=[838CACD0:01CA4818]
+In-Reply-To: <1255004737.26976.307.camel@twins>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 October 2009, Mike Galbraith wrote:
-> Care to try a patch?
->
-> latencytop: only account on-runqueue wait time as being scheduler
-> latency.
->
-> Latencytop was accounting uninterruptible and interruptible sleep time
-> up to 5ms, which is not the latency the user is looking for.  Account
-> time waiting on-runqueue instead.  Also add a clock update to
-> update_curr() for the case where there's nobody home.  When coming out
-> of idle with NO_HZ, not updating the clock leads to bogus max latency
-> report.
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-08 14:25:37]:
 
-With this patch the high values for iwlagn and phy0 are gone. The values 
-now match roughly with the output of your script.
+> On Thu, 2009-10-08 at 17:31 +0530, Arun R Bharadwaj wrote:
+> > 
+> > > Uhm, no, it would mean ACPI putting its idle routines on the same level
+> > > as all others.
+> > > 
+> > 
+> > Putting them all on the same level would mean, we need an
+> > enable/disable routine to enable only the currently active routines.
+> 
+> What's this enable/disable stuff about?
 
-If (un)interruptible sleep is worth displaying in latencytop then maybe it 
-should be identified as a separate cause instead of lumped under "waiting 
-for CPU"?
+Don't we need an explicit 'don't use this routine' apart from having
+the weights based on power consumption and latency.  In multiple
+registration the assumption is that the top most 'set' has all
+necessary routines and we do not need any other idle routines for
+optimum operation.
 
-> TODO: Figure out where the heck empty braces come from.
+Otherwise the governor has to select from larger 'set' which could
+have redundant or conflicting idle routines.
 
-I also see these lines with "[]" sometimes; looks to come from 'sleep'.
+For example we now have c1e_idle to start with and then a set of ACPI
+C1, C2, C3 routines.  The expectation now is that once we have the
+ACPI's routines, we do not need the previous used c1e_idle because
+this new set is self contained and picking one from this set based on
+latency is good for power savings.
+ 
+> > Also, the way governor works is that, it assumes that idle routines
+> > are indexed in the increasing order of power benefit that can be got
+> > out of the state. So this would get messed up.
+> 
+> Right, which is why I initially had a power-savings field in my
+> proposal, so it could weight the power savings vs the wakeup latency.
+> 
+>   http://lkml.org/lkml/2009/8/27/159
 
-And I still see lines with only a "." as the cause; this seems specific to 
-targets marked with the penguin (work queues?).
+This proposal that you had suggested is being used for the 'set' of
+idle routines.  The patch changes the idle routines as 'sets' and does
+not mix use of routines between two registrations.
+ 
+> There it was said that was exactly what these governors were doing,
+> seems its not.
 
-> Signed-off-by: Mike Galbraith <efault@gmx.de>
-> Arjan van de Ven <arjan@infradead.org>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> LKML-Reference: <new-submission>
+Governors select from a set of idle routines based on latency.  But
+there is a probability that any of the routine in the set can be
+selected.  
 
-If Arjan is happy with the patch, please add my:
+> > > Sounds like something is wrong alright. If you can register an idle
+> > > routine you should be able to unregister it too.
+> > >
+> > 
+> > Yes, we can register and unregister in a clean way now.
+> > Consider this. We have a set of routines A, B, C currently registered.
+> > Now a module comes and registers D and E, and later on at some point
+> > of time wants to unregister. So how do you keep track of what all idle
+> > routines the module registered and unregister only those?
+> > Best way to do that is a stack, which is how I have currently
+> > implemented.
+> 
+> Right, so destroy that inner set thing, that way we only have one
+> left ;-)
 
-Reported-and-tested-by: Frans Pop <elendil@planet.nl>
+If un-registration is not needed, then this framework can easily
+override the current set with the new one and not worry about the set
+of sets.
 
-Thanks,
-FJP
+Ideally, during system boot, we could wait until we know enough
+information about idle states and then have a single registration.
+The boot process can be in poll-idle until this decision happens.
+Like in x86, we can register either c1e_idle or ACPI's routines at
+a stage where we know for sure if ACPI is enabled or not.
+
+--Vaidy
+ 
