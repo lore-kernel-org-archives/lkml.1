@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932345AbZJHOkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932305AbZJHOkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932345AbZJHOkm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 10:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757543AbZJHOkm
+	id S932305AbZJHOkS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 10:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757543AbZJHOkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 10:40:42 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:56408 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753255AbZJHOkl convert rfc822-to-8bit (ORCPT
+	Thu, 8 Oct 2009 10:40:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47133 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753255AbZJHOkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 10:40:41 -0400
+	Thu, 8 Oct 2009 10:40:16 -0400
+Date: Thu, 8 Oct 2009 07:39:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: James Bottomley <James.Bottomley@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+In-Reply-To: <1255012399.4187.24.camel@mulgrave.site>
+Message-ID: <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
+References: <1254844007.4383.85.camel@mulgrave.site>  <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>  <1254862442.4383.183.camel@mulgrave.site> <1255012399.4187.24.camel@mulgrave.site>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-In-Reply-To: <200910081050.02215.dl9pf@gmx.de>
-References: <f326ee1a0910030539pd5e00e2xb9f6de9975b64b9b@mail.gmail.com>
-	 <f326ee1a0910030602w2518f66q2d6e185c473d5ad@mail.gmail.com>
-	 <20091005095343.6b9afa65@pedra.chehab.org>
-	 <200910081050.02215.dl9pf@gmx.de>
-Date: Thu, 8 Oct 2009 10:39:27 -0400
-Message-ID: <829197380910080739h75ddba76pe7d28c60f47dd235@mail.gmail.com>
-Subject: Re: TM6010 driver and firmware
-From: Devin Heitmueller <dheitmueller@kernellabs.com>
-To: =?ISO-8859-1?Q?Jan=2DSimon_M=F6ller?= <dl9pf@gmx.de>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       =?ISO-8859-1?Q?D=EAnis_Goes?= <denishark@gmail.com>,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 8, 2009 at 4:50 AM, Jan-Simon Möller <dl9pf@gmx.de> wrote:
-> Hi !
->
-> Using the 3.7 firmware on HVR900H, I get up to this point:
->
-> http://pastebin.ca/1603643
->
-> [...]
-> Error during zl10353_attach!
-> tm6000: couldn't attach the frontend!
-> xc2028 4-0061: destroying instance
-> tm6000: Error -1 while registering
-> tm6000: probe of 1-5.1:1.0 failed with error -1
-> usbcore: registered new interface driver tm6000
-> Original value=255
->
->
-> Best,
-> Jan-Simon
 
-I keep seeing people trying out that driver, apparently thinking that
-they just need to compile the correct tree in order for their product
-to work.  For the record, this driver is currently *TOTALLY BROKEN*.
-Unless you are a developer who is prepared to reverse engineer the
-wire protocol and debug the driver, then you should not be wasting
-your time compiling the tree in the hope that it will work for you.
 
-Cheers,
+On Thu, 8 Oct 2009, James Bottomley wrote:
+> 
+> So what do you want to do about this? 
 
-Devin
+I'm taking it (and the parisc one I was also unhappy with), but I'm a bit 
+grumpy as usual. The parisc pull came totally outside the merge window, 
+and the SCSI fix pull is technically perfectly fine, but what makes me 
+grumpy is that I get the strong feeling that people aren't even _trying_ 
+to hit the merge window with new drivers, because they decide that they 
+instead can just push them any time.
 
--- 
-Devin J. Heitmueller - Kernel Labs
-http://www.kernellabs.com
+So I don't think I necessarily want to change the "new driver" policy per 
+se, but I want people to see the merge window as the _primary_ time you 
+get any new code in. The "yes, we'll take new drivers" thing should be the 
+exception rather than the rule. It doesn't seem to be an exception.
+
+		Linus
