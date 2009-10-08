@@ -1,213 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbZJHLqC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbZJHLWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757784AbZJHLqC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 07:46:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757690AbZJHLqB
+	id S1757484AbZJHLWK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 07:22:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757220AbZJHLWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 07:46:01 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46580 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757243AbZJHLqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 07:46:00 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18FMYcCkugFIS7fH5twqAbz1dwDfjCj7fyQCm6IO6
-	2Qs8CzueipsW28
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
- CPU"
-From: Mike Galbraith <efault@gmx.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <200910072034.57511.elendil@planet.nl>
-References: <200910051500.55875.elendil@planet.nl>
-	 <200910061749.02805.elendil@planet.nl>
-	 <200910071910.53907.elendil@planet.nl>
-	 <200910072034.57511.elendil@planet.nl>
+	Thu, 8 Oct 2009 07:22:10 -0400
+Received: from viefep16-int.chello.at ([62.179.121.36]:9731 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757090AbZJHLWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 07:22:08 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [v8 PATCH 2/8]: cpuidle: implement a list based approach to
+ register a set of idle routines.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <20091008110106.GK20595@linux.vnet.ibm.com>
+References: <20091008094828.GA20595@linux.vnet.ibm.com>
+	 <20091008095027.GC20595@linux.vnet.ibm.com>
+	 <1254998162.26976.270.camel@twins>
+	 <20091008104249.GJ20595@linux.vnet.ibm.com>
+	 <1254999033.26976.272.camel@twins>
+	 <20091008110106.GK20595@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Thu, 08 Oct 2009 13:24:22 +0200
-Message-Id: <1255001062.7500.1.camel@marge.simson.net>
+Date: Thu, 08 Oct 2009 13:25:10 +0200
+Message-Id: <1255001110.26976.292.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.43
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-10-07 at 20:34 +0200, Frans Pop wrote:
-> On Wednesday 07 October 2009, Frans Pop wrote:
-> > On Tuesday 06 October 2009, Frans Pop wrote:
-> > > I've checked for 2.6.31.1 now and iwlagn is listed high there too when
-> > > the system is idle, but with normal values of 60-100 ms. And phy0 has
-> > > normal values of below 10 ms.
-> > > I've now rebooted with today's mainline git; phy0 now frequently shows
-> > > with values of around 100 ms too (i.e. higher than last time).
-> >
-> > Mike privately sent me a script to try to capture the latencies with
-> > perf, but the perf output does not show any high latencies at all. It
-> > looks as if we may have found a bug in latencytop here instead.
+On Thu, 2009-10-08 at 16:31 +0530, Arun R Bharadwaj wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-10-08 12:50:33]:
 > 
-> Not sure if it's relevant nor what it means, but I frequently see two lines 
-> for iwlagn, e.g:
+> > On Thu, 2009-10-08 at 16:12 +0530, Arun R Bharadwaj wrote:
+> > > 
+> > > > So cpuidle didn't already have a list of idle functions it takes an
+> > > > appropriate one from?
+> > > > 
+> > > 
+> > > No.. As of now, cpuidle supported only one _set_ of idle states that
+> > > can be registered. So in this one set, it would choose the appropriate
+> > > idle state. But this list mechanism(actually a stack) allows for
+> > > multiple sets.
+> > > 
+> > > This is needed because we have a hierarchy of idle states discovery
+> > > in x86. First, select_idle_routine() would select poll/mwait/default/c1e.
+> > > It doesn't know of existance of ACPI. Later when ACPI comes up,
+> > > it registers a set of routines on top of the earlier set.
+> > > 
+> > > > Then what does this governor do?
+> > > >
+> > > 
+> > > The governor would only select the best idle state available from the
+> > > set of states which is at the top of the stack. (In the above case, it
+> > > would only consider the states registered by ACPI).
+> > > 
+> > > If the top-of-the-stack set of idle states is unregistered, the next
+> > > set of states on the stack are considered.
+> > > 
+> > > > Also, does this imply the governor doesn't consider these idle routines?
+> > > >
+> > > 
+> > > As i said above, governor would only consider the idle routines which
+> > > are at the top of the stack.
+> > > 
+> > > Hope this gave a better idea..
+> > 
+> > So does it make sense to have a set of sets?
+> > 
+> > Why not integrate them all into one set to be ruled by this governor
+> > thing?
+> > 
 > 
->     Scheduler: waiting for cpu              102.4 msec         99.7 %
->     .                                         3.3 msec          0.3 %
-> 
-> I get the same results with both latencytop 0.4 and 0.5.
+> Right now there is a clean hierarchy. So breaking that would mean
+> putting the registration of all idle routines under ACPI. 
 
-Care to try a patch?
+Uhm, no, it would mean ACPI putting its idle routines on the same level
+as all others.
 
+> So, if ACPI
+> fails to come up or if ACPI is not supported, that would lead to
+> problems.
 
-latencytop: only account on-runqueue wait time as being scheduler latency.
+I think the problem is that ACPI is thinking its special, that should be
+rectified, its not.
 
-Latencytop was accounting uninterruptible and interruptible sleep time up to
-5ms, which is not the latency the user is looking for.  Account time waiting
-on-runqueue instead.  Also add a clock update to update_curr() for the case
-where there's nobody home.  When coming out of idle with NO_HZ, not updating
-the clock leads to bogus max latency report.
+>  Because if that happens now, we can fallback to the
+> initially registered set.
 
-After on mostly idle NO_HZ box, was up to a second "waiting for cpu":
+I'm thinking its all daft and we should be having one set of idle
+routines, if ACPI fails (a tautology if ever there was one) we simply
+wouldn't have its idle routines to pick from.
 
-   LatencyTOP version 0.5       (C) 2008 Intel Corporation
+> Also, if a module wants to register a set of routines later on, that
+> cant be added to the initially registered set. So i think we need this
+> set of sets.
 
-Cause                                                Maximum     Percentage
-Scheduler: waiting for cpu                          9.3 msec         50.3 %
-[sysret_careful]                                    9.1 msec         21.6 %
-Waiting for data on unix socket                     7.9 msec          0.5 %
-Waiting for event (select)                          3.8 msec         21.8 %
-[retint_careful]                                    1.2 msec          2.4 %
-[]                                                  0.4 msec          0.0 %
-Waiting for event (poll)                            0.4 msec          0.4 %
-[__cond_resched]                                    0.4 msec          0.0 %
-Userspace lock contention                           0.2 msec          3.0 %
+Sounds like something is wrong alright. If you can register an idle
+routine you should be able to unregister it too.
 
-TODO: Examine migration, pull may create max latency fib.
-TODO: Figure out where the heck empty braces come from.
+What about making ACPI register its idle routines too, 1 for each C
+state, and have the governor make a selection out of the full set?
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-
----
- include/linux/latencytop.h |    6 +++---
- kernel/latencytop.c        |   19 +------------------
- kernel/sched_fair.c        |   16 +++++++++-------
- 3 files changed, 13 insertions(+), 28 deletions(-)
-
-Index: linux-2.6/include/linux/latencytop.h
-===================================================================
---- linux-2.6.orig/include/linux/latencytop.h
-+++ linux-2.6/include/linux/latencytop.h
-@@ -26,12 +26,12 @@ struct latency_record {
- struct task_struct;
- 
- extern int latencytop_enabled;
--void __account_scheduler_latency(struct task_struct *task, int usecs, int inter);
-+void __account_scheduler_latency(struct task_struct *task, unsigned long usecs);
- static inline void
--account_scheduler_latency(struct task_struct *task, int usecs, int inter)
-+account_scheduler_latency(struct task_struct *task, unsigned long usecs)
- {
- 	if (unlikely(latencytop_enabled))
--		__account_scheduler_latency(task, usecs, inter);
-+		__account_scheduler_latency(task, usecs);
- }
- 
- void clear_all_latency_tracing(struct task_struct *p);
-Index: linux-2.6/kernel/latencytop.c
-===================================================================
---- linux-2.6.orig/kernel/latencytop.c
-+++ linux-2.6/kernel/latencytop.c
-@@ -157,34 +157,17 @@ static inline void store_stacktrace(stru
-  * __account_scheduler_latency - record an occured latency
-  * @tsk - the task struct of the task hitting the latency
-  * @usecs - the duration of the latency in microseconds
-- * @inter - 1 if the sleep was interruptible, 0 if uninterruptible
-  *
-  * This function is the main entry point for recording latency entries
-  * as called by the scheduler.
-- *
-- * This function has a few special cases to deal with normal 'non-latency'
-- * sleeps: specifically, interruptible sleep longer than 5 msec is skipped
-- * since this usually is caused by waiting for events via select() and co.
-- *
-- * Negative latencies (caused by time going backwards) are also explicitly
-- * skipped.
-  */
- void __sched
--__account_scheduler_latency(struct task_struct *tsk, int usecs, int inter)
-+__account_scheduler_latency(struct task_struct *tsk, unsigned long usecs)
- {
- 	unsigned long flags;
- 	int i, q;
- 	struct latency_record lat;
- 
--	/* Long interruptible waits are generally user requested... */
--	if (inter && usecs > 5000)
--		return;
--
--	/* Negative sleeps are time going backwards */
--	/* Zero-time sleeps are non-interesting */
--	if (usecs <= 0)
--		return;
--
- 	memset(&lat, 0, sizeof(lat));
- 	lat.count = 1;
- 	lat.time = usecs;
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -495,8 +495,10 @@ static void update_curr(struct cfs_rq *c
- 	u64 now = rq_of(cfs_rq)->clock;
- 	unsigned long delta_exec;
- 
--	if (unlikely(!curr))
-+	if (unlikely(!curr)) {
-+		update_rq_clock(rq_of(cfs_rq));
- 		return;
-+	}
- 
- 	/*
- 	 * Get the amount of time the current task was running
-@@ -548,8 +550,11 @@ update_stats_wait_end(struct cfs_rq *cfs
- 			rq_of(cfs_rq)->clock - se->wait_start);
- #ifdef CONFIG_SCHEDSTATS
- 	if (entity_is_task(se)) {
--		trace_sched_stat_wait(task_of(se),
--			rq_of(cfs_rq)->clock - se->wait_start);
-+		struct task_struct *tsk = task_of(se);
-+		u64 delta = rq_of(cfs_rq)->clock - se->wait_start;
-+
-+		trace_sched_stat_wait(tsk, delta);
-+		account_scheduler_latency(tsk, delta >> 10);
- 	}
- #endif
- 	schedstat_set(se->wait_start, 0);
-@@ -643,10 +648,8 @@ static void enqueue_sleeper(struct cfs_r
- 		se->sleep_start = 0;
- 		se->sum_sleep_runtime += delta;
- 
--		if (tsk) {
--			account_scheduler_latency(tsk, delta >> 10, 1);
-+		if (tsk)
- 			trace_sched_stat_sleep(tsk, delta);
--		}
- 	}
- 	if (se->block_start) {
- 		u64 delta = rq_of(cfs_rq)->clock - se->block_start;
-@@ -677,7 +680,6 @@ static void enqueue_sleeper(struct cfs_r
- 						(void *)get_wchan(tsk),
- 						delta >> 20);
- 			}
--			account_scheduler_latency(tsk, delta >> 10, 0);
- 		}
- 	}
- #endif
-
+That also allows you to do away with this default_idle() nonsense and
+simply panic the box when there are no registered idle routines when the
+box wants to go idle.
 
