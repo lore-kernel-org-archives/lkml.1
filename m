@@ -1,49 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbZJHUjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933431AbZJHUsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760079AbZJHUjc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 16:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759663AbZJHUjb
+	id S933431AbZJHUsL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 16:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932107AbZJHUsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 16:39:31 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:53292 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757258AbZJHUjb (ORCPT
+	Thu, 8 Oct 2009 16:48:11 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:42227 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757702AbZJHUsJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 16:39:31 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 4/5] usb_serial: Kill port mutex
-Date: Thu, 8 Oct 2009 22:40:36 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc9-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0910081601350.2765-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0910081601350.2765-100000@iolanthe.rowland.org>
+	Thu, 8 Oct 2009 16:48:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NRRdeTpOdNhpiIeKkc7ZDIbJ3A8FLRwxr3gER9LsJXfiaZQBN7EQF+JiPXYEK69S6M
+         xMoRLKsSAu1D6qHnkd+p1wGArgMJHPPxjQMvD9CjyUSw7DccrammHwThvsMnht2xIyBT
+         Z0FKPSDbgRBJnRhT3M0Mba/CR7A9Tq2RIHxYo=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910082240.36607.oliver@neukum.org>
+In-Reply-To: <Pine.LNX.4.44L0.0910061604160.3002-100000@iolanthe.rowland.org>
+References: <94a0d4530910061157q7b682750r3279bca4716cd532@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0910061604160.3002-100000@iolanthe.rowland.org>
+Date: Thu, 8 Oct 2009 23:46:21 +0300
+Message-ID: <94a0d4530910081346j57b155a1o10e4a4545e7548b3@mail.gmail.com>
+Subject: Re: Annoying problems with lacie external hd (JMicron 0x2339?)
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Sarah Sharp <sarah.a.sharp@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 8. Oktober 2009 22:06:10 schrieb Alan Stern:
-
+On Tue, Oct 6, 2009 at 11:10 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Tue, 6 Oct 2009, Felipe Contreras wrote:
 >
-> On further thought, unthrottle should autoresume if the device is
-> open and autosuspended (but it shouldn't do anything if the device is
-> suspended).  After all, the reason for the autosuspend may have been
-> the lack of activity caused by the throttling.
+>> On Sun, Oct 4, 2009 at 12:26 AM, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> > On Sat, 3 Oct 2009, Felipe Contreras wrote:
+>> >
+>> >> Hi,
+>> >>
+>> >> This is with 2.6.31.1.
+>> >>
+>> >> I'm having a lot of problems with a lacie external hd[1]. It seems the
+>> >> actual disk is a seagate ST375064, and the bridge is a JMicron 2339.
+>> >>
+>> >> In normal usage what I see is that if I don't use the disk after a
+>> >> while hear a loud click (as if something got stuck) and then I cannot
+>> >> use it any more; I have to turn it off and on again.
+>> >
+>> > This sounds very much like a hardware problem, either in the drive or
+>> > in the bridge chip.  There's no direct way to tell which; you would
+>> > have to try attaching the drive to a different chip or the chip to a
+>> > different drive.
+>>
+>> I'm not sure I can do that. There doesn't seem to be any way to open
+>> the device and I don't have a way to test neither the disk, nor the
+>> bridge. I would like to leave that as last option.
 >
-> In practice this isn't likely to come up.  It would be surprising if
-> throttling lasted long enough to cause an autosuspend or if the core
-> decided to throttle while the device was autosuspended and hence idle.
+> Then it doesn't really matter whether the problem is in the drive or in
+> the chip, since separating them is impractical.
 
-So you say that throttle() should do an autopm_put?
+Not in my particular case, but if it turns out to be some kind of
+hardware defect then we know other people would not be affected.
 
-	Regards
-		Oliver
+>> > The two places where your listings showed the Serial number (the kernel
+>> > log and the /sys/kernel/debug/usb/devices file) have different values,
+>> > suggesting that the chip is at fault.  But this isn't definitive.
+>>
+>> The first reported serial number seems to be correct, but the second
+>> one (after the click) isn't.
+>>
+>> Anyway, what about all the errors before the loud click? Couldn't it
+>> be that the driver is causing the device to malfunction?
+>
+> I doubt that very much.  And besides, if the device were designed
+> properly then it wouldn't malfunction, no matter what the driver did.
 
+Indeed, but I guess there's a reason you have a quirks list: some
+devices are not designed properly.
+
+>>  At least the
+>> patch seems to decrease the number of reported bad blocks. Once
+>> applying the patch the first block of bad blocks is always the same,
+>> but the second is always different, then the click happens.
+>>
+>> I'm attaching the full log.
+>
+> A usbmon trace would contain more information.  We could see the exact
+> sequence of commands and error codes.  I'm not sure it would help solve
+> anything, though.
+
+I followed the tutorial and the resulting log is 73M long. I don't
+know what I'm looking for, so there it is:
+http://people.freedesktop.org/~felipec/1.mon.out
+
+> You could try plugging the device into a different computer and see if
+> it behaves the same way.  If it does, your best course might be to
+> exchange it for something that works better.
+
+I'll try to do that, but it might take me a while to find one that
+doesn't run Linux.
+
+Thanks for the help so far.
+
+-- 
+Felipe Contreras
