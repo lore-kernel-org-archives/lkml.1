@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932772AbZJHSRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbZJHSY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932772AbZJHSRQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 14:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932621AbZJHSRP
+	id S1759292AbZJHSY3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 14:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932699AbZJHSY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 14:17:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39010 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932532AbZJHSRP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 14:17:15 -0400
-Subject: Re: [BUG] wbsd.c: after spin_lock_bh uses spin_unlock instead
- spin_unlock_bh
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alexander Strakh <strakh@ispras.ru>
-Cc: Pierre Ossman <pierre@ossman.eu>, sdhci-devel@lists.ossman.eu,
-       Linux Kernlel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200910081518.00707.strakh@ispras.ru>
-References: <200910081518.00707.strakh@ispras.ru>
+	Thu, 8 Oct 2009 14:24:28 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58451 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759093AbZJHSY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 14:24:27 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+xo81BRmCx/4pUc5A/dmykDigQeouXvuSFElIxk/
+	NNVmTsrMHbYoem
+Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
+ CPU"
+From: Mike Galbraith <efault@gmx.de>
+To: Frans Pop <elendil@planet.nl>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <200910081655.37485.elendil@planet.nl>
+References: <200910051500.55875.elendil@planet.nl>
+	 <1254974743.7797.21.camel@marge.simson.net>
+	 <20091008064041.67219b13@infradead.org>
+	 <200910081655.37485.elendil@planet.nl>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 08 Oct 2009 20:20:25 +0200
-Message-Id: <1255026025.26976.333.camel@twins>
+Date: Thu, 08 Oct 2009 20:23:37 +0200
+Message-Id: <1255026217.6643.12.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 15:18 +0000, Alexander Strakh wrote:
-> 	KERNEL_VERSION: 2.6.31
-> 	DESCRIBE:
-> Driver ./drivers/mmc/host/wbsd.c calls spin_lock_bh and then spin_unlock 
-> instead of spin_unlock_bh:
+On Thu, 2009-10-08 at 16:55 +0200, Frans Pop wrote:
+> On Thursday 08 October 2009, Arjan van de Ven wrote:
+> > From: Arjan van de Ven <arjan@linux.intel.com>
+> > Date: Thu, 24 Sep 2009 13:24:16 +0200
+> > Subject: [PATCH] x86, timers: check for pending timers after (device)
+> > interrupts
+> >
+> > Now that range timers and deferred timers are common, I found a
+> > problem with these using the "perf timechart" tool.
+> >
+> > It turns out that on x86, these two 'opportunistic' timers only
+> > get checked when another "real" timer happens.
+> > These opportunistic timers have the objective to save power by
+> > hitchhiking on other wakeups, as to avoid CPU wakeups by themselves
+> > as much as possible.
 > 
->  753 static void wbsd_request(struct mmc_host *mmc, struct mmc_request *mrq)
-> ....
->  761         spin_lock_bh(&host->lock);
-> ....
->  844 done:
->  845         wbsd_request_end(host, mrq);
->  846
->  847         spin_unlock_bh(&host->lock);
->  848 }
+> This patch makes quite a difference for me. iwlagn and phy0 now 
+> consistently show at ~10 ms or lower.
 > 
-> But in wsdb_request calls spin_unlock/spin_lock instead of 
-> spin_unlock_bh/spin_lock_bh;
-> 
->  206 static void wbsd_request_end(struct wbsd_host *host, struct mmc_request 
-> ....
->  230         spin_unlock(&host->lock);
->  231         mmc_request_done(host->mmc, mrq);
->  232         spin_lock(&host->lock);
->  233 }
+> I do still get occasional high latencies, but those are for things like
+> "[rpc_wait_bit_killable]" or "Writing a page to disk", where I guess you'd 
+> expect them. Those high latencies are mostly only listed for "Global" and 
+> don't translate to individual processes.
 
-Doesn't look too odd, it simply leaves BH disabled, but unlocks the
-spinlock.
+I still see very high latencies coming out of idle (last noted was >
+300ms, NO_HZ) with this patch, and wonder if the hunk below makes any
+difference whatsoever for you.  Here, it definitely does. (shouldn't)
+
+Index: linux-2.6/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.orig/kernel/sched_fair.c
++++ linux-2.6/kernel/sched_fair.c
+@@ -495,8 +495,10 @@ static void update_curr(struct cfs_rq *c
+ 	u64 now = rq_of(cfs_rq)->clock;
+ 	unsigned long delta_exec;
+ 
+-	if (unlikely(!curr))
++	if (unlikely(!curr)) {
++		update_rq_clock(rq_of(cfs_rq));
+ 		return;
++	}
+ 
+ 	/*
+ 	 * Get the amount of time the current task was running
+
+
