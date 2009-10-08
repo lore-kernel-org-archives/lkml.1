@@ -1,255 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbZJHW1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759937AbZJHW2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759595AbZJHW1j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 18:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756957AbZJHW1f
+	id S1759937AbZJHW2L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 18:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757638AbZJHW2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 18:27:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36271 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756064AbZJHW1e (ORCPT
+	Thu, 8 Oct 2009 18:28:08 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:1853 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757185AbZJHW2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 18:27:34 -0400
-Date: Thu, 8 Oct 2009 15:26:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH 2/2] memcg: coalescing charges per cpu
-Message-Id: <20091008152620.e81d6209.akpm@linux-foundation.org>
-In-Reply-To: <20091002140343.ae63e932.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091002140343.ae63e932.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 8 Oct 2009 18:28:07 -0400
+Message-ID: <4ACE674E.30403@hp.com>
+Date: Thu, 08 Oct 2009 18:27:26 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>
+Subject: Re: [RFC][PATCH] kmap_atomic_push
+References: <1255016123.17055.17.camel@laptop>  <20091008155344.GA11727@elte.hu> <1255019362.26976.311.camel@twins> <alpine.LFD.2.01.0910080945230.3432@localhost.localdomain> <Pine.LNX.4.64.0910081850270.4553@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0910081850270.4553@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 Oct 2009 14:03:43 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+So if I understand this correctly, the sequence:
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> This is a patch for coalescing access to res_counter at charging by
-> percpu caching. At charge, memcg charges 64pages and remember it in
-> percpu cache. Because it's cache, drain/flush is done if necessary.
-> 
-> This version uses public percpu area.
->  2 benefits of using public percpu area.
->  1. Sum of stocked charge in the system is limited to # of cpus
->     not to the number of memcg. This shows better synchonization.
->  2. drain code for flush/cpuhotplug is very easy (and quick)
-> 
-> The most important point of this patch is that we never touch res_counter
-> in fast path. The res_counter is system-wide shared counter which is modified
-> very frequently. We shouldn't touch it as far as we can for avoiding
-> false sharing.
-> 
-> ...
-> 
-> +/* size of first charge trial. "32" comes from vmscan.c's magic value */
-> +#define CHARGE_SIZE	(32 * PAGE_SIZE)
-> +struct memcg_stock_pcp {
-> +	struct mem_cgroup *cached;
-> +	int charge;
-> +	struct work_struct work;
-> +};
-> +static DEFINE_PER_CPU(struct memcg_stock_pcp, memcg_stock);
-> +static DEFINE_MUTEX(memcg_drain_mutex);
-> +
-> +static bool consume_stock(struct mem_cgroup *mem)
-> +{
-> +	struct memcg_stock_pcp *stock;
-> +	bool ret = true;
-> +
-> +	stock = &get_cpu_var(memcg_stock);
-> +	if (mem == stock->cached && stock->charge)
-> +		stock->charge -= PAGE_SIZE;
-> +	else
-> +		ret = false;
-> +	put_cpu_var(memcg_stock);
-> +	return ret;
-> +}
+in = kmap_atomic(inpage, KM_USER1);
 
-It's unobvious what the return value from this function means.  A nice
-comment would help.
+out = kmap_atomic(outpage, KM_USER0);
 
-> +static void drain_stock(struct memcg_stock_pcp *stock)
-> +{
-> +	struct mem_cgroup *old = stock->cached;
-> +
-> +	if (stock->charge) {
-> +		res_counter_uncharge(&old->res, stock->charge);
-> +		if (do_swap_account)
-> +			res_counter_uncharge(&old->memsw, stock->charge);
-> +	}
-> +	stock->cached = NULL;
-> +	stock->charge = 0;
-> +}
-> +
-> +static void drain_local_stock(struct work_struct *dummy)
-> +{
-> +	struct memcg_stock_pcp *stock = &get_cpu_var(memcg_stock);
-> +	drain_stock(stock);
-> +	put_cpu_var(memcg_stock);
-> +}
+kunmap_atomic(in, KM_USER1);
 
-drain_local_stock() is only ever run by a thread which is pinned to a
-particular CPU, so we can use plain old __get_cpu_var() here and remove
-the put_cpu_var(), methinks.  If this is done, a comment shuold be
-added explaining why we can use that optimisation.
+in = kmap_atomic(next_inpage, KM_USER1);
 
-> +static void refill_stock(struct mem_cgroup *mem, int val)
-> +{
-> +	struct memcg_stock_pcp *stock = &get_cpu_var(memcg_stock);
-> +
-> +	if (stock->cached != mem) {
-> +		drain_stock(stock);
-> +		stock->cached = mem;
-> +	}
-> +	stock->charge += val;
-> +	put_cpu_var(memcg_stock);
-> +}
-> +
-> +static void drain_all_stock_async(void)
-> +{
-> +	int cpu;
-> +	/* Contention means someone tries to flush. */
-> +	if (!mutex_trylock(&memcg_drain_mutex))
-> +		return;
+is now illegal with this patch, which breaks code
+I am testing now for btrfs.
 
-Any time I see a trylock I ask "hm, what happens when it fails - what
-are the consequences and how to we later rerun the aborted operation".
+My code does this because the in/out are zlib inflate
+and the in/out run at different rates.
 
-That's unobvious here and merits a comment.
+OK, the code is not submitted yet and I can redesign the
+code using a temp buffer for out and copy every byte or
+use kmap(), either of them at some performance cost.
 
-> +	for_each_online_cpu(cpu) {
+I'm just pointing out that there are cases where this
+stack design puts an ugly restriction on use.
 
-Did we need get_online_cpus() here?
+So if I understand this right, I don't love the patch (:
 
-> +		struct memcg_stock_pcp *stock = &per_cpu(memcg_stock, cpu);
-> +		if (work_pending(&stock->work))
-> +			continue;
-> +		INIT_WORK(&stock->work, drain_local_stock);
-> +		schedule_work_on(cpu, &stock->work);
-> +	}
-> +	mutex_unlock(&memcg_drain_mutex);
-> +	/* We don't wait for flush_work */
-> +}
-> +
-> +static void drain_all_stock_sync(void)
-> +{
-> +	/* called when force_empty is called */
-> +	mutex_lock(&memcg_drain_mutex);
-> +	schedule_on_each_cpu(drain_local_stock);
-> +	mutex_unlock(&memcg_drain_mutex);
-> +}
-
-In fact it would be nice were each of these functions to have a brief
-note describing their role.
-
-> +static int __cpuinit memcg_stock_cpu_callback(struct notifier_block *nb,
-> +					unsigned long action,
-> +					void *hcpu)
-> +{
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +	int cpu = (unsigned long)hcpu;
-> +	struct memcg_stock_pcp *stock;
-> +
-> +	if (action != CPU_DEAD)
-> +		return NOTIFY_OK;
-> +	stock = &per_cpu(memcg_stock, cpu);
-> +	drain_stock(stock);
-> +#endif
-> +	return NOTIFY_OK;
-> +}
-
-Is the ifdef needed?  Using hotcpu_notifier() should cause this entire
-function to disappear from vmlinux when CONFIG_HOTPLUG_CPU=n.
-
->  /*
->   * Unlike exported interface, "oom" parameter is added. if oom==true,
->   * oom-killer can be invoked.
-> @@ -1269,6 +1370,7 @@ static int __mem_cgroup_try_charge(struc
->  	struct mem_cgroup *mem, *mem_over_limit;
->  	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
->  	struct res_counter *fail_res;
-> +	int csize = CHARGE_SIZE;
->  
->  	if (unlikely(test_thread_flag(TIF_MEMDIE))) {
->  		/* Don't account this! */
-> @@ -1293,23 +1395,25 @@ static int __mem_cgroup_try_charge(struc
->  		return 0;
->  
->  	VM_BUG_ON(css_is_removed(&mem->css));
-> +	if (mem_cgroup_is_root(mem))
-> +		goto done;
->  
->  	while (1) {
->  		int ret = 0;
->  		unsigned long flags = 0;
->  
-> -		if (mem_cgroup_is_root(mem))
-> -			goto done;
-> -		ret = res_counter_charge(&mem->res, PAGE_SIZE, &fail_res);
-> +		if (consume_stock(mem))
-> +			goto charged;
-> +
-> +		ret = res_counter_charge(&mem->res, csize, &fail_res);
->  		if (likely(!ret)) {
->  			if (!do_swap_account)
->  				break;
-> -			ret = res_counter_charge(&mem->memsw, PAGE_SIZE,
-> -							&fail_res);
-> +			ret = res_counter_charge(&mem->memsw, csize, &fail_res);
->  			if (likely(!ret))
->  				break;
->  			/* mem+swap counter fails */
-> -			res_counter_uncharge(&mem->res, PAGE_SIZE);
-> +			res_counter_uncharge(&mem->res, csize);
->  			flags |= MEM_CGROUP_RECLAIM_NOSWAP;
->  			mem_over_limit = mem_cgroup_from_res_counter(fail_res,
->  									memsw);
-> @@ -1318,6 +1422,11 @@ static int __mem_cgroup_try_charge(struc
->  			mem_over_limit = mem_cgroup_from_res_counter(fail_res,
->  									res);
->  
-> +		/* reduce request size and retry */
-> +		if (csize > PAGE_SIZE) {
-> +			csize = PAGE_SIZE;
-> +			continue;
-> +		}
->  		if (!(gfp_mask & __GFP_WAIT))
->  			goto nomem;
->  
-> @@ -1347,6 +1456,9 @@ static int __mem_cgroup_try_charge(struc
->  			goto nomem;
->  		}
->  	}
-> +	if (csize > PAGE_SIZE)
-> +		refill_stock(mem, csize - PAGE_SIZE);
-> +charged:
->  	/*
->  	 * Insert ancestor (and ancestor's ancestors), to softlimit RB-tree.
->  	 * if they exceeds softlimit.
-> @@ -2463,6 +2575,7 @@ move_account:
->  			goto out;
->  		/* This is for making all *used* pages to be on LRU. */
->  		lru_add_drain_all();
-> +		drain_all_stock_sync();
->  		ret = 0;
->  		for_each_node_state(node, N_HIGH_MEMORY) {
->  			for (zid = 0; !ret && zid < MAX_NR_ZONES; zid++) {
-> @@ -3181,6 +3294,7 @@ mem_cgroup_create(struct cgroup_subsys *
->  		root_mem_cgroup = mem;
->  		if (mem_cgroup_soft_limit_tree_init())
->  			goto free_out;
-> +		hotcpu_notifier(memcg_stock_cpu_callback, 0);
->  
->  	} else {
->  		parent = mem_cgroup_from_cont(cont->parent);
+jim
