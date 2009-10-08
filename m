@@ -1,41 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbZJHJye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZJHJ4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbZJHJye (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 05:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbZJHJyd
+	id S1757279AbZJHJ4w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 05:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757104AbZJHJ4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 05:54:33 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56294 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756281AbZJHJyc (ORCPT
+	Thu, 8 Oct 2009 05:56:51 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:48194 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757068AbZJHJ4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 05:54:32 -0400
-Date: Thu, 8 Oct 2009 10:55:03 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Thomas Chou <thomas@wytron.com.tw>
-Cc: linux-ide@vger.kernel.org,
-       Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
-       linux-kernel@vger.kernel.org, Thomas Chou <thomas@wytron.com.tw>,
-       Ian Abbott <abbotti@mev.co.uk>
-Subject: Re: [PATCH v2] ata: New PATA driver for Altera CompactFlash.
-Message-ID: <20091008105503.6ce414f5@lxorguk.ukuu.org.uk>
-In-Reply-To: <1254967110-3495-1-git-send-email-thomas@wytron.com.tw>
-References: <1254967110-3495-1-git-send-email-thomas@wytron.com.tw>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 Oct 2009 05:56:49 -0400
+Date: Thu, 8 Oct 2009 15:26:05 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: [v8 PATCH 8/8]: POWER: Enable default_idle when power_save=off.
+Message-ID: <20091008095605.GI20595@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20091008094828.GA20595@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091008094828.GA20595@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  8 Oct 2009 09:58:30 +0800
-Thomas Chou <thomas@wytron.com.tw> wrote:
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-10-08 15:18:28]:
 
-> This patch adds a new PATA driver to support the Altera SOPC Builder
-> CompactFlash component as a PATA device with support for insertion
-> and removal of CF cards.  It uses the platform driver model.
+This patch enables default_idle when power_save=off kernel boot
+option is specified.
 
-Can you explain why you remove the interface rather than the device on
-the interface when you detect a card removal ?
+Earlier, this was done by setting ppc_md.power_save = NULL and hence
+HMT_low() and HMT_very_low() was called. Now this is defined under
+default_idle() and hence by setting boot_option_idle_override = 1,
+the cpuidle registration stuff does not happen and hence default_idle
+is chosen in cpuidle_idle_call.
 
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/processor.h            |    2 ++
+ arch/powerpc/kernel/idle.c                      |    4 +++-
+ arch/powerpc/platforms/pseries/processor_idle.c |    5 +++++
+ 3 files changed, 10 insertions(+), 1 deletion(-)
+
+Index: linux.trees.git/arch/powerpc/include/asm/processor.h
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/include/asm/processor.h
++++ linux.trees.git/arch/powerpc/include/asm/processor.h
+@@ -332,6 +332,8 @@ static inline unsigned long get_clean_sp
+ }
+ #endif
+ 
++extern int boot_option_idle_override;
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_PROCESSOR_H */
+Index: linux.trees.git/arch/powerpc/kernel/idle.c
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/kernel/idle.c
++++ linux.trees.git/arch/powerpc/kernel/idle.c
+@@ -40,9 +40,11 @@
+ #define cpu_should_die()	0
+ #endif
+ 
++int boot_option_idle_override = 0;
++
+ static int __init powersave_off(char *arg)
+ {
+-	ppc_md.power_save = NULL;
++	boot_option_idle_override = 1;
+ 	return 0;
+ }
+ __setup("powersave=off", powersave_off);
+Index: linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
+===================================================================
+--- linux.trees.git.orig/arch/powerpc/platforms/pseries/processor_idle.c
++++ linux.trees.git/arch/powerpc/platforms/pseries/processor_idle.c
+@@ -185,6 +185,11 @@ static int __init pseries_processor_idle
+ 	int cpu;
+ 	int result;
+ 
++	if (boot_option_idle_override) {
++		printk(KERN_DEBUG "Using default idle\n");
++		return 0;
++	}
++
+ 	result = cpuidle_register_driver(&pseries_idle_driver);
+ 
+ 	if (result < 0)
