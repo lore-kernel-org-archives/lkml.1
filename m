@@ -1,157 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760200AbZJICWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760206AbZJIC2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760200AbZJICWl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 22:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbZJICWh
+	id S1760206AbZJIC2D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 22:28:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbZJIC2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 22:22:37 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43756 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758690AbZJICWh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 22:22:37 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Oleg Nesterov <onestero@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [resend][PATCH v2] mlock() doesn't wait to finish lru_add_drain_all()
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20091009111709.1291.A69D9226@jp.fujitsu.com>
+	Thu, 8 Oct 2009 22:28:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:33328 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758351AbZJIC17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 22:27:59 -0400
+Message-ID: <4ACE9F51.5060103@redhat.com>
+Date: Fri, 09 Oct 2009 10:26:25 +0800
+From: Danny Feng <dfeng@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Alex Chiang <achiang@hp.com>, lenb@kernel.org, bjorn.helgaas@hp.com,
+       andrew.patterson@hp.com, jbarnes@virtuousgeek.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] acpi: pci_root: fix NULL pointer deref after resume from
+ suspend
+References: <1254119480-9730-1-git-send-email-dfeng@redhat.com> <4AC16682.50207@redhat.com> <20091001200522.GF31915@ldl.fc.hp.com> <200910040056.00247.rjw@sisk.pl>
+In-Reply-To: <200910040056.00247.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri,  9 Oct 2009 11:21:55 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Changelog
-  since v1
-    - rewrote description
-    - fold patch 1/2 and 2/2
-
-==========================================================
-Recently, Mike Galbraith reported mlock() makes hang-up very long time in
-his system. Peter Zijlstra explainted the reason.
-
-  Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
-  cpu0 does mlock()->lru_add_drain_all(), which does
-  schedule_on_each_cpu(), which then waits for all cpus to complete the
-  work. Except that cpu1, which is busy with the RT task, will never run
-  keventd until the RT load goes away.
-
-  This is not so much an actual deadlock as a serious starvation case.
-
-His system has two partions using cpusets and RT-task partion cpu doesn't
-have any PCP cache. thus, this result was pretty unexpected.
-
-The fact is, mlock() doesn't need to wait to finish lru_add_drain_all().
-if mlock() can't turn on PG_mlock, vmscan turn it on later.
-
-Thus, this patch replace it with lru_add_drain_all_async().
-
-
-Reported-by: Peter Zijlstra <a.p.zijlstra@chello.nl> 
-Reported-by: Mike Galbraith <efault@gmx.de> 
-Cc: Oleg Nesterov <onestero@redhat.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- include/linux/swap.h |    1 +
- mm/mlock.c           |    4 ++--
- mm/swap.c            |   24 ++++++++++++++++++++++++
- 3 files changed, 27 insertions(+), 2 deletions(-)
-
-Index: b/include/linux/swap.h
-===================================================================
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -204,6 +204,7 @@ extern void activate_page(struct page *)
- extern void mark_page_accessed(struct page *);
- extern void lru_add_drain(void);
- extern int lru_add_drain_all(void);
-+extern int lru_add_drain_all_async(void);
- extern void rotate_reclaimable_page(struct page *page);
- extern void swap_setup(void);
- 
-Index: b/mm/swap.c
-===================================================================
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -38,6 +38,7 @@ int page_cluster;
- 
- static DEFINE_PER_CPU(struct pagevec[NR_LRU_LISTS], lru_add_pvecs);
- static DEFINE_PER_CPU(struct pagevec, lru_rotate_pvecs);
-+static DEFINE_PER_CPU(struct work_struct, lru_drain_work);
- 
- /*
-  * This path almost never happens for VM activity - pages are normally
-@@ -312,6 +313,24 @@ int lru_add_drain_all(void)
- }
- 
- /*
-+ * Returns 0 for success
-+ */
-+int lru_add_drain_all_async(void)
-+{
-+	int cpu;
-+
-+	get_online_cpus();
-+	for_each_online_cpu(cpu) {
-+		struct work_struct *work = &per_cpu(lru_drain_work, cpu);
-+		schedule_work_on(cpu, work);
-+	}
-+	put_online_cpus();
-+
-+	return 0;
-+}
-+
-+
-+/*
-  * Batched page_cache_release().  Decrement the reference count on all the
-  * passed pages.  If it fell to zero then remove the page from the LRU and
-  * free it.
-@@ -497,6 +516,7 @@ EXPORT_SYMBOL(pagevec_lookup_tag);
- void __init swap_setup(void)
- {
- 	unsigned long megs = totalram_pages >> (20 - PAGE_SHIFT);
-+	int cpu;
- 
- #ifdef CONFIG_SWAP
- 	bdi_init(swapper_space.backing_dev_info);
-@@ -511,4 +531,8 @@ void __init swap_setup(void)
- 	 * Right now other parts of the system means that we
- 	 * _really_ don't want to cluster much more
- 	 */
-+
-+	for_each_possible_cpu(cpu) {
-+		INIT_WORK(&per_cpu(lru_drain_work, cpu), lru_add_drain_per_cpu);
-+	}
- }
-Index: b/mm/mlock.c
-===================================================================
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -481,7 +481,7 @@ SYSCALL_DEFINE2(mlock, unsigned long, st
- 	if (!can_do_mlock())
- 		return -EPERM;
- 
--	lru_add_drain_all();	/* flush pagevec */
-+	lru_add_drain_all_async();	/* flush pagevec */
- 
- 	down_write(&current->mm->mmap_sem);
- 	len = PAGE_ALIGN(len + (start & ~PAGE_MASK));
-@@ -549,7 +549,7 @@ SYSCALL_DEFINE1(mlockall, int, flags)
- 	if (!can_do_mlock())
- 		goto out;
- 
--	lru_add_drain_all();	/* flush pagevec */
-+	lru_add_drain_all_async();	/* flush pagevec */
- 
- 	down_write(&current->mm->mmap_sem);
- 
-
+On 10/04/2009 06:56 AM, Rafael J. Wysocki wrote:
+> On Thursday 01 October 2009, Alex Chiang wrote:
+>> Hi Danny,
+>>
+>> * Danny Feng<dfeng@redhat.com>:
+>>> Call Trace:
+>>>   [<ffffffff81254193>] acpi_get_pci_dev+0x106/0x167
+>>>   [<ffffffff8125545a>] acpi_pci_bind+0x1c/0x86
+>>>   [<ffffffff8116230a>] ? sysfs_create_file+0x2a/0x2c
+>>>   [<ffffffff8125141f>] acpi_add_single_object+0x964/0xa0c
+>>>   [<ffffffff812515a7>] acpi_bus_check_add+0xe0/0x138
+>>>   [<ffffffff81251667>] acpi_bus_scan+0x68/0xa0
+>>>   [<ffffffff812516f4>] acpi_bus_add+0x2a/0x2e
+>>>   [<ffffffff81252c59>] hotplug_dock_devices+0x114/0x13e
+>>>   [<ffffffff8125301a>] acpi_dock_deferred_cb+0xbf/0x192
+>>>   [<ffffffff8124d6ca>] acpi_os_execute_deferred+0x29/0x36
+>>>   [<ffffffff8106a244>] worker_thread+0x251/0x347
+>>>   [<ffffffff8106a1ef>] ? worker_thread+0x1fc/0x347
+>>>   [<ffffffff8124d6a1>] ? acpi_os_execute_deferred+0x0/0x36
+>>>   [<ffffffff8106e426>] ? autoremove_wake_function+0x0/0x39
+>>>   [<ffffffff81069ff3>] ? worker_thread+0x0/0x347
+>>>   [<ffffffff8106e0e0>] kthread+0x7f/0x87
+>>>   [<ffffffff81012cea>] child_rip+0xa/0x20
+>>>   [<ffffffff81012650>] ? restore_args+0x0/0x30
+>>>   [<ffffffff8106e061>] ? kthread+0x0/0x87
+>>>   [<ffffffff81012ce0>] ? child_rip+0x0/0x20
+>>> Code: ff 49 89 fc 41 89 f5 a9 00 ff ff 07 74 11 be 87 00 00 00 48 c7 c7
+>>> 45 6d 5a 81 e8 f6 2b e3 ff 48 c7 c7 30 ab 68 81 e8 29 77 20 00<49>  8b
+>>> 5c 24 28 49 83 c4 28 eb 09 44 39 6b 38 74 10 48 89 c3 48
+>>> RIP  [<ffffffff812217e7>] pci_get_slot+0x4c/0x8c
+>>>   RSP<ffff88022ee69aa0>
+>>> CR2: 0000000000000028
+>>> ---[ end trace b5a7793bd9db2a4d ]---
+>>
+>> Can you please reproduce with this debug patch? I'm guessing that
+>> we're dying because we have a NULL parent device, but I'm curious
+>> as to what causes this situation to occur.
+>
+> If we had a NULL parent, acpi_get_parent() would return an error.  Also, if we
+> one of the devices is NULL at the PCI level, pci_get_slot() will return NULL.
+> The only possibility left is that one of the buses we find in the ACPI tables
+> doesn't have a secondary PCI bus.
+>
+> I think what happens is that on resume we get a dock notification
+> (via dock_acpi_notifier registered in dock_init()) for a dock station device
+> that is present in the ACPI tables, but not physically accessible at the moment
+> (I guess that falls into the "BIOS bug" category, but we can fix this easily in
+> the kernel).
+>
+> So, IMO, the appended patch is the right fix.
+>
+> Danny, please test it and report back (in particular, please tell us if you see
+> the "Secondary bus not present" message in dmesg).
+Yes, this patch works. I got "ata_piix 0000:00:1f.2: Secondary bus not 
+present". Thanks.
+>
+> Thanks,
+> Rafael
+>
+>
+> ---
+>   drivers/acpi/pci_root.c |   12 ++++++++++++
+>   1 file changed, 12 insertions(+)
+>
+> Index: linux-2.6/drivers/acpi/pci_root.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/acpi/pci_root.c
+> +++ linux-2.6/drivers/acpi/pci_root.c
+> @@ -389,6 +389,18 @@ struct pci_dev *acpi_get_pci_dev(acpi_ha
+>
+>   		pbus = pdev->subordinate;
+>   		pci_dev_put(pdev);
+> +
+> +		/*
+> +		 * During resume from a sleep state we can get a dock
+> +		 * notification for a device that is present in ACPI tables,
+> +		 * but not physically accessible at the moment, so tell the
+> +		 * caller it's not present.
+> +		 */
+> +		if (!pbus) {
+> +			dev_info(&pdev->dev, "Secondary bus not present\n");
+> +			pdev = NULL;
+> +			break;
+> +		}
+>   	}
+>   out:
+>   	list_for_each_entry_safe(node, tmp,&device_list, node)
+>
 
