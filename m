@@ -1,69 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbZJIN6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933218AbZJIN70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933012AbZJIN6v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 09:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932672AbZJIN6t
+	id S933218AbZJIN70 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 09:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932987AbZJIN7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 09:58:49 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:37649 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760864AbZJIN6q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 09:58:46 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: James.Bottomley@suse.de
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH -repost 4/4] SCSI: scsi_lib, fix potential NULL dereference
-Date: Fri,  9 Oct 2009 15:58:08 +0200
-Message-Id: <1255096688-23399-4-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1255096688-23399-1-git-send-email-jirislaby@gmail.com>
-References: <1255096688-23399-1-git-send-email-jirislaby@gmail.com>
+	Fri, 9 Oct 2009 09:59:25 -0400
+Received: from mga03.intel.com ([143.182.124.21]:17577 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754144AbZJIN7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 09:59:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,532,1249282800"; 
+   d="scan'208";a="197040134"
+Date: Fri, 9 Oct 2009 21:58:31 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ehrhardt Christian <ehrhardt@linux.vnet.ibm.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mm: make VM_MAX_READAHEAD configurable
+Message-ID: <20091009135831.GA15425@localhost>
+References: <1255087175-21200-1-git-send-email-ehrhardt@linux.vnet.ibm.com> <1255090830.8802.60.camel@laptop> <20091009122952.GI9228@kernel.dk> <20091009154950.43f01784@mschwide.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091009154950.43f01784@mschwide.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanse found a potential NULL dereference in scsi_kill_request.
+On Fri, Oct 09, 2009 at 09:49:50PM +0800, Martin Schwidefsky wrote:
+> On Fri, 9 Oct 2009 14:29:52 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Fri, Oct 09 2009, Peter Zijlstra wrote:
+> > > On Fri, 2009-10-09 at 13:19 +0200, Ehrhardt Christian wrote:
+> > > > From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+> > > > 
+> > > > On one hand the define VM_MAX_READAHEAD in include/linux/mm.h is just a default
+> > > > and can be configured per block device queue.
+> > > > On the other hand a lot of admins do not use it, therefore it is reasonable to
+> > > > set a wise default.
+> > > > 
+> > > > This path allows to configure the value via Kconfig mechanisms and therefore
+> > > > allow the assignment of different defaults dependent on other Kconfig symbols.
+> > > > 
+> > > > Using this, the patch increases the default max readahead for s390 improving
+> > > > sequential throughput in a lot of scenarios with almost no drawbacks (only
+> > > > theoretical workloads with a lot concurrent sequential read patterns on a very
+> > > > low memory system suffer due to page cache trashing as expected).
+> > > 
+> > > Why can't this be solved in userspace?
+> > > 
+> > > Also, can't we simply raise this number if appropriate? Wu did some
+> > > read-ahead trashing detection bits a long while back which should scale
+> > > the read-ahead window back when we're low on memory, not sure that ever
+> > > made it in, but that sounds like a better option than having different
+> > > magic numbers for each platform.
+> > 
+> > Agree, making this a config option (and even defaulting to a different
+> > number because of an arch setting) is crazy.
+> 
+> The patch from Christian fixes a performance regression in the latest
+> distributions for s390. So we would opt for a larger value, 512KB seems
+> to be a good one. I have no idea what that will do to the embedded
+> space which is why Christian choose to make it configurable. Clearly
+> the better solution would be some sort of system control that can be
+> modified at runtime. 
 
-Instead of triggering BUG() in 'if (unlikely(cmd == NULL))' branch,
-the kernel will Oops earlier on cmd dereference.
+So how about doing two patches together?
 
-Move the dereferences after the if.
+- lift default readahead size to around 512KB
+- add some readahead logic to better support the thrashing case
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: James E.J. Bottomley <James.Bottomley@suse.de>
----
- drivers/scsi/scsi_lib.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 39b5858..53bdd25 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1359,9 +1359,9 @@ static int scsi_lld_busy(struct request_queue *q)
- static void scsi_kill_request(struct request *req, struct request_queue *q)
- {
- 	struct scsi_cmnd *cmd = req->special;
--	struct scsi_device *sdev = cmd->device;
--	struct scsi_target *starget = scsi_target(sdev);
--	struct Scsi_Host *shost = sdev->host;
-+	struct scsi_device *sdev;
-+	struct scsi_target *starget;
-+	struct Scsi_Host *shost;
- 
- 	blk_start_request(req);
- 
-@@ -1371,6 +1371,9 @@ static void scsi_kill_request(struct request *req, struct request_queue *q)
- 		BUG();
- 	}
- 
-+	sdev = cmd->device;
-+	starget = scsi_target(sdev);
-+	shost = sdev->host;
- 	scsi_init_cmd_errh(cmd);
- 	cmd->result = DID_NO_CONNECT << 16;
- 	atomic_inc(&cmd->device->iorequest_cnt);
--- 
-1.6.4.2
-
+Thanks,
+Fengguang
