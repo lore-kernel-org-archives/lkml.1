@@ -1,51 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760124AbZJIBB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbZJIBHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760124AbZJIBB2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 21:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758353AbZJIBB0
+	id S1760154AbZJIBHn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 21:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbZJIBHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 21:01:26 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54625
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758147AbZJIBBZ (ORCPT
+	Thu, 8 Oct 2009 21:07:41 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43687 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758180AbZJIBHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 21:01:25 -0400
-Date: Thu, 08 Oct 2009 18:01:19 -0700 (PDT)
-Message-Id: <20091008.180119.242402327.davem@davemloft.net>
-To: mb@bu3sch.de
-Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2009-10-08
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200910090108.08838.mb@bu3sch.de>
-References: <20091008223454.GB2798@tuxdriver.com>
-	<200910090108.08838.mb@bu3sch.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 8 Oct 2009 21:07:40 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [PATCH 1/3] mm: move inc_zone_page_state(NR_ISOLATED) to just isolated place
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20091009100527.1284.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri,  9 Oct 2009 10:06:58 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Buesch <mb@bu3sch.de>
-Date: Fri, 9 Oct 2009 01:08:06 +0200
+This patch series is trivial cleanup and fix of page migration.
 
-> I was planning to do a better solution, but I didn't have the time, yet.
 
-The change is harmless while we're twiddling our thumbs waiting
-for you to implement the fix "properly."
+==========================================================
 
-Not having the fix in is a developer burdon because people turn
-on the DMA API debugger and are going to keep reporting it's
-complaints here and elsewhere.
+Christoph pointed out inc_zone_page_state(NR_ISOLATED) should be placed
+in right after isolate_page().
 
-Get over your Napoleon complex, and let reasonable working fixes
-get into the tree even if you don't find them optimal.  You can
-always improve them later, "when you get around to it."
+This patch does it.
 
-People put fixes in without my ACK in my areas of expertiece all
-the time.  I got over it a long time ago, it's OK, and not worth
-stressing out over.
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ mm/memory_hotplug.c |    4 ++++
+ mm/mempolicy.c      |    3 +++
+ mm/migrate.c        |   12 ++++--------
+ 3 files changed, 11 insertions(+), 8 deletions(-)
 
-Thanks.
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 821dee5..653bf1e 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -26,6 +26,7 @@
+ #include <linux/migrate.h>
+ #include <linux/page-isolation.h>
+ #include <linux/pfn.h>
++#include <linux/mm_inline.h>
+ 
+ #include <asm/tlbflush.h>
+ 
+@@ -663,6 +664,9 @@ do_migrate_range(unsigned long start_pfn, unsigned long end_pfn)
+ 		if (!ret) { /* Success */
+ 			list_add_tail(&page->lru, &source);
+ 			move_pages--;
++			inc_zone_page_state(page, NR_ISOLATED_ANON +
++					    page_is_file_cache(page));
++
+ 		} else {
+ 			/* Becasue we don't have big zone->lock. we should
+ 			   check this again here. */
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 7dd9d9f..473f888 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -89,6 +89,7 @@
+ #include <linux/security.h>
+ #include <linux/syscalls.h>
+ #include <linux/ctype.h>
++#include <linux/mm_inline.h>
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/uaccess.h>
+@@ -809,6 +810,8 @@ static void migrate_page_add(struct page *page, struct list_head *pagelist,
+ 	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1) {
+ 		if (!isolate_lru_page(page)) {
+ 			list_add_tail(&page->lru, pagelist);
++			inc_zone_page_state(page, NR_ISOLATED_ANON +
++					    page_is_file_cache(page));
+ 		}
+ 	}
+ }
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 1a4bf48..0f66803 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -746,13 +746,6 @@ int migrate_pages(struct list_head *from,
+ 	struct page *page2;
+ 	int swapwrite = current->flags & PF_SWAPWRITE;
+ 	int rc;
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-	list_for_each_entry(page, from, lru)
+-		__inc_zone_page_state(page, NR_ISOLATED_ANON +
+-				page_is_file_cache(page));
+-	local_irq_restore(flags);
+ 
+ 	if (!swapwrite)
+ 		current->flags |= PF_SWAPWRITE;
+@@ -878,8 +871,11 @@ static int do_move_page_to_node_array(struct mm_struct *mm,
+ 			goto put_and_set;
+ 
+ 		err = isolate_lru_page(page);
+-		if (!err)
++		if (!err) {
+ 			list_add_tail(&page->lru, &pagelist);
++			inc_zone_page_state(page, NR_ISOLATED_ANON +
++					    page_is_file_cache(page));
++		}
+ put_and_set:
+ 		/*
+ 		 * Either remove the duplicate refcount from
+-- 
+1.6.0.GIT
+
+
+
