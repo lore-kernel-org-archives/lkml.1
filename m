@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760434AbZJIJVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760503AbZJIJYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760434AbZJIJVS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 05:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbZJIJVR
+	id S1760503AbZJIJYp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 05:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760494AbZJIJYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 05:21:17 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40155 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758479AbZJIJVQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 05:21:16 -0400
-Subject: Re: select system call's implementation may have some bug, need
- your  help and confirm !!!
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: wu Jianfeng <stormplayer@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <9b2b86520910090052n267f94ebj7619b6c5b94b3539@mail.gmail.com>
-References: <a5b3ea7b0910082255x5767726du4721d2ee38df38fa@mail.gmail.com>
-	 <9b2b86520910090052n267f94ebj7619b6c5b94b3539@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 09 Oct 2009 11:20:38 +0200
-Message-Id: <1255080038.8802.1.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Oct 2009 05:24:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35861 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760492AbZJIJYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 05:24:44 -0400
+Date: Fri, 9 Oct 2009 11:23:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [regressions] Re: kbuild: save ARCH & CROSS_COMPILE when
+	building a kernel
+Message-ID: <20091009092352.GA7381@elte.hu>
+References: <20091003103441.GA10874@elte.hu> <1255078731.17055.39.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255078731.17055.39.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-09 at 08:52 +0100, Alan Jenkins wrote:
-> On 10/9/09, wu Jianfeng <stormplayer@gmail.com> wrote:
-> > A process may sleep for ever when he call select system call.
-> > In detail, if the process was scheduled out just at the point it set
-> > its state to TASK_INTERRUPTIBLE.
-> >
 
-> > set_current_state(TASK_INTERRUPTIBLE);
-> > ## here set the process state TASK_INTERRUPTIBLE
-> >
-> >  ## if  the process was scheduled out here, then the process will
-> > never can be waked up, because it has not been attached to any file 's
-> > wait queue.
-> 
-> I'm not sure about that, but if you look at the current code (e.g. in
-> linus' git tree) you will see this code has been changed.  Now
-> set_current_state() is only called from poll_schedule_timeout(), and
-> it won't suffer from the problem you suggested:
-> 
-> 
-> int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
-> 			  ktime_t *expires, unsigned long slack)
-> {
-> 	int rc = -EINTR;
-> 
-> 	set_current_state(state);
-> 	if (!pwq->triggered)
-> 		rc = schedule_hrtimeout_range(expires, slack, HRTIMER_MODE_ABS);
-> 	__set_current_state(TASK_RUNNING);
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-It would still be liable to the problem suggested, if it were real,
-which it is not, as Thomas pointed out.
+> On Sat, 2009-10-03 at 12:34 +0200, Ingo Molnar wrote:
+> > 
+> > that arch-cache thing introduced in:
+> > 
+> >  5755433: kbuild: save ARCH & CROSS_COMPILE when building a kernel
+> > 
+> > isnt working very well in my experience.
+> 
+> Its breaking things for me too. When I build a .config using distcc 
+> and cross compilers on my build farm, and then try a make install on 
+> another machine which doesn't have either it utterly shits itself.
+> 
+> Please revert this.
 
-The distinction is between getting preempted and calling schedule().
+I'm hitting problems with this several times a day.
 
+I'm used to switching from 32-bit to 64-bit x86 kernels and now i have 
+to via the extra 'make mrproper' and that's quite annoying as i already 
+tell kbuild that i want a 64-bit config via:
+
+  make ARCH=x86_64 defconfig
+
+Why the extra forced step?
+
+Also, there's things that need even more steps: i often take a config 
+that triggers a breakage on 32-bit and change it to 64-bit via 'make 
+oldconfig' - to see whether the bug is bitness invariant. I have to do 
+something like:
+
+  mv .config .config.tmp
+  make mrproper
+  mv .config.tmp .config
+  make ARCH=x86_64 oldconfig
+
+This doesnt look right at all.
+
+	Ingo
