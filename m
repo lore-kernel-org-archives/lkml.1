@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933938AbZJIQkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933990AbZJIQdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933938AbZJIQkp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 12:40:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758949AbZJIQko
+	id S933990AbZJIQdf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 12:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933914AbZJIQde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 12:40:44 -0400
-Received: from cantor.suse.de ([195.135.220.2]:48433 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758882AbZJIQkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 12:40:43 -0400
-Date: Fri, 9 Oct 2009 09:32:02 -0700
-From: Greg KH <gregkh@suse.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, devel@driverdev.osuosl.org,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] wireless: make WEXT_SPY and WEXT_PRIV select WEXT_CORE
-Message-ID: <20091009163202.GA3342@suse.de>
-References: <4ACD0E5A.7060106@oracle.com>
- <1254954842.3713.7.camel@johannes.local>
- <4ACD1C3D.3030506@oracle.com>
- <1254957256.3713.10.camel@johannes.local>
- <20091007171235.d40f0cc2.randy.dunlap@oracle.com>
- <1254995282.3713.18.camel@johannes.local>
- <20091008080615.09c8b803.randy.dunlap@oracle.com>
- <1255026563.3713.28.camel@johannes.local>
- <20091009090601.73de5dc6.randy.dunlap@oracle.com>
- <1255104846.4095.2.camel@johannes.local>
+	Fri, 9 Oct 2009 12:33:34 -0400
+Received: from mga10.intel.com ([192.55.52.92]:65228 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933644AbZJIQdd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 12:33:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,533,1249282800"; 
+   d="scan'208";a="734763870"
+Message-ID: <4ACF658D.4010605@linux.intel.com>
+Date: Fri, 09 Oct 2009 09:32:13 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255104846.4095.2.camel@johannes.local>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Andreas Mohr <andi@lisas.de>
+CC: Kyle McMartin <kyle@mcmartin.ca>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.32-rc3: floating-point build failure (undefined reference
+ to `__udivdi3' in menu governor)
+References: <20091007104125.GA1449@rhlx01.hs-esslingen.de> <4ACCA44B.3070706@linux.intel.com> <20091007173457.GA25415@rhlx01.hs-esslingen.de> <20091007174553.GC11702@bombadil.infradead.org> <20091009160123.GA14808@rhlx01.hs-esslingen.de>
+In-Reply-To: <20091009160123.GA14808@rhlx01.hs-esslingen.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 06:14:06PM +0200, Johannes Berg wrote:
-> On Fri, 2009-10-09 at 09:06 -0700, Randy Dunlap wrote:
+Andreas Mohr wrote:
+> Hi,
 > 
-> > >  menuconfig WLAN
-> > >  	bool "Wireless LAN"
-> > >  	depends on !S390
-> > > +	select WIRELESS
-> > >  	default y
-> > >  	---help---
-> > >  	  This section contains all the pre 802.11 and 802.11 wireless
-> > 
-> > 
-> > I suppose that's OK, although I prefer "depends" rather than "select".
+> On Wed, Oct 07, 2009 at 01:45:54PM -0400, Kyle McMartin wrote:
+>> On Wed, Oct 07, 2009 at 07:34:58PM +0200, Andreas Mohr wrote:
+>>> Still happening.
+>>> IOW it must be somewhere inside the DIV_ROUND_CLOSEST macro or so.
+>>>
+>> It's being a jerk and not realizing that RESOLUTION * DECAY is a power
+>> of 2, so it can just do a shift...
+>>
+>> I don't recall if gcc 3 had these magic builtins, but if it does,
+>> something like this might help since it's the u64 case that's
+>> problematic.
 > 
-> I tend to as well, but in this case the WIRELESS itself is just an
-> option that makes other options invisible, it's not used elsewhere, and
-> as such I think this is ok -- why hide the wireless drivers unless the
-> user first selects the wireless core options?
+> Uh... nope:
 > 
-> OTOH, you already need to select cfg80211/mac80211 for most drivers, so
-> I suppose "depends on WIRELESS" would be ok too.
+> In file included from kernel/sched.c:1818:
+> kernel/sched_fair.c: In function `select_task_rq_fair':
+> kernel/sched_fair.c:1366: implicit declaration of function `__builtin_popcountll'
+> kernel/sched_fair.c:1366: implicit declaration of function `__builtin_ffsll'
+> kernel/sched_fair.c:1366: warning: suggest parentheses around + or - inside shift
+> kernel/sched.c: In function `update_sg_lb_stats':
+> kernel/sched.c:3755: warning: suggest parentheses around + or - inside shift
+> kernel/sched.c: In function `find_busiest_queue':
+> kernel/sched.c:4050: warning: suggest parentheses around + or - inside shift
+> make[1]: *** [kernel/sched.o] Error 1
+> make: *** [kernel] Error 2
 > 
-> > I tracked down one of the problems that I was seeing:
-> > 
-> > net/wireless/wext-priv.c:206: error: implicit declaration of function 'call_commit_handler'
-> > 
-> > with:
-> > # CONFIG_WIRELESS is not set
-> > CONFIG_WIRELESS_EXT=y
-> > CONFIG_WEXT_PRIV=y
-> > 
-> > This is being caused by several drivers in drivers/staging/ doing
-> > 	select WEXT_PRIV
-> > without using either enough dependencies or even more (ugly) selects.
-> > (or just because kconfig isn't sufficient)
 > 
-> Hah, staging/, well, that's kinda hard to solve I guess. Except by
-> fixing all the staging/ drivers to depend on WIRELESS too, like the
-> patch would do for the regular drivers.
+> Hmpf. Rather stuck now, ain'tcha, given that gcc 3.2.3 doesn't even have those?
+> 
 
-That's fine, I'll gladly take patches to do that.
-
-thanks,
-
-greg k-h
+wonder if making a new define with the value of RESOLUTION * DECAY
+(the actual value obviously) convinces your gcc that it really is a power of two ?
