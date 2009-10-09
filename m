@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934575AbZJIXSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761732AbZJIXRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934575AbZJIXSh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761804AbZJIXSL
+	id S1761732AbZJIXRs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761675AbZJIXRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:18:11 -0400
-Received: from kroah.org ([198.145.64.141]:36867 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:17:47 -0400
+Received: from kroah.org ([198.145.64.141]:36849 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761791AbZJIXSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:18:09 -0400
+	id S1761708AbZJIXRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:17:44 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:10:03 2009
-Message-Id: <20091009231003.148054572@mini.kroah.org>
+Message-Id: <20091009231003.272029049@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:09:00 -0700
+Date: Fri, 09 Oct 2009 16:09:01 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mimi Zohar <zohar@us.ibm.com>, James Morris <jmorris@namei.org>
-Subject: [patch 24/26] IMA: open new file for read
+       Jean Delvare <jdelvare@suse.de>, Thomas Renninger <trenn@suse.de>,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 25/26] ACPI: Clarify resource conflict message
 References: <20091009230836.316410305@mini.kroah.org>
-Content-Disposition: inline; filename=ima-open-new-file-for-read.patch
+Content-Disposition: inline; filename=acpi-clarify-resource-conflict-message.patch
 In-Reply-To: <20091009231249.GA31084@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,34 +31,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+From: Jean Delvare <jdelvare@suse.de>
 
-commit 6c1488fd581a447ec87c4b59f0d33f95f0aa441b upstream.
+commit 14f03343ad1080c2fea29ab2c13f05b976c4584e upstream.
 
-When creating a new file, ima_path_check() assumed the new file
-was being opened for write. Call ima_path_check() with the
-appropriate acc_mode so that the read/write counters are
-incremented correctly.
+The message "ACPI: Device needs an ACPI driver" is misleading. The
+device _may_ need an ACPI driver, if the BIOS implemented a custom
+API for the device in question (which, AFAIK, can't be checked.) If
+not, then either a generic ACPI driver may be used (for example
+"thermal"), or nothing can be done (other than a white list).
 
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-Signed-off-by: James Morris <jmorris@namei.org>
+I propose to reword the message to:
+
+ACPI: If an ACPI driver is available for this device, you should use
+it instead of the native driver
+
+which I think is more correct. Comments and suggestions welcome.
+
+I also added a message warning about possible problems and system
+instability when users pass acpi_enforce_resources=lax, as suggested
+by Len.
+
+Signed-off-by: Jean Delvare <jdelvare@suse.de>
+Cc: Thomas Renninger <trenn@suse.de>
+Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1533,9 +1533,11 @@ int may_open(struct path *path, int acc_mode, int flag)
- 	if (error)
- 		return error;
- 
--	error = ima_path_check(path,
--			       acc_mode & (MAY_READ | MAY_WRITE | MAY_EXEC),
-+	error = ima_path_check(path, acc_mode ?
-+			       acc_mode & (MAY_READ | MAY_WRITE | MAY_EXEC) :
-+			       ACC_MODE(flag) & (MAY_READ | MAY_WRITE),
- 			       IMA_COUNT_UPDATE);
-+
- 	if (error)
- 		return error;
- 	/*
+---
+ drivers/acpi/osl.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -1182,7 +1182,13 @@ int acpi_check_resource_conflict(struct 
+ 			       res_list_elem->name,
+ 			       (long long) res_list_elem->start,
+ 			       (long long) res_list_elem->end);
+-			printk(KERN_INFO "ACPI: Device needs an ACPI driver\n");
++			if (acpi_enforce_resources == ENFORCE_RESOURCES_LAX)
++				printk(KERN_NOTICE "ACPI: This conflict may"
++				       " cause random problems and system"
++				       " instability\n");
++			printk(KERN_INFO "ACPI: If an ACPI driver is available"
++			       " for this device, you should use it instead of"
++			       " the native driver\n");
+ 		}
+ 		if (acpi_enforce_resources == ENFORCE_RESOURCES_STRICT)
+ 			return -EBUSY;
 
 
