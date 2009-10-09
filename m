@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760842AbZJINud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760849AbZJINyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760842AbZJINud (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 09:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760819AbZJINud
+	id S1760849AbZJINyF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 09:54:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760798AbZJINyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 09:50:33 -0400
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:38363 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760806AbZJINuc (ORCPT
+	Fri, 9 Oct 2009 09:54:04 -0400
+Received: from server1.wserver.cz ([82.113.45.157]:37639 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753936AbZJINyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 09:50:32 -0400
-Date: Fri, 9 Oct 2009 15:49:50 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ehrhardt Christian <ehrhardt@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH] mm: make VM_MAX_READAHEAD configurable
-Message-ID: <20091009154950.43f01784@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20091009122952.GI9228@kernel.dk>
-References: <1255087175-21200-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
-	<1255090830.8802.60.camel@laptop>
-	<20091009122952.GI9228@kernel.dk>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Oct 2009 09:54:03 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: len.brown@intel.com
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1] ACPI: Kconfig, fix proc aggregator text
+Date: Fri,  9 Oct 2009 15:53:24 +0200
+Message-Id: <1255096404-23017-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Oct 2009 14:29:52 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+Fix two typos in the Kconfig text about ACPI_PROCESSOR_AGGREGATOR.
 
-> On Fri, Oct 09 2009, Peter Zijlstra wrote:
-> > On Fri, 2009-10-09 at 13:19 +0200, Ehrhardt Christian wrote:
-> > > From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> > > 
-> > > On one hand the define VM_MAX_READAHEAD in include/linux/mm.h is just a default
-> > > and can be configured per block device queue.
-> > > On the other hand a lot of admins do not use it, therefore it is reasonable to
-> > > set a wise default.
-> > > 
-> > > This path allows to configure the value via Kconfig mechanisms and therefore
-> > > allow the assignment of different defaults dependent on other Kconfig symbols.
-> > > 
-> > > Using this, the patch increases the default max readahead for s390 improving
-> > > sequential throughput in a lot of scenarios with almost no drawbacks (only
-> > > theoretical workloads with a lot concurrent sequential read patterns on a very
-> > > low memory system suffer due to page cache trashing as expected).
-> > 
-> > Why can't this be solved in userspace?
-> > 
-> > Also, can't we simply raise this number if appropriate? Wu did some
-> > read-ahead trashing detection bits a long while back which should scale
-> > the read-ahead window back when we're low on memory, not sure that ever
-> > made it in, but that sounds like a better option than having different
-> > magic numbers for each platform.
-> 
-> Agree, making this a config option (and even defaulting to a different
-> number because of an arch setting) is crazy.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/acpi/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-The patch from Christian fixes a performance regression in the latest
-distributions for s390. So we would opt for a larger value, 512KB seems
-to be a good one. I have no idea what that will do to the embedded
-space which is why Christian choose to make it configurable. Clearly
-the better solution would be some sort of system control that can be
-modified at runtime. 
-
+diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+index 0ed42d8..93d2c79 100644
+--- a/drivers/acpi/Kconfig
++++ b/drivers/acpi/Kconfig
+@@ -218,10 +218,10 @@ config ACPI_PROCESSOR_AGGREGATOR
+ 	depends on X86
+ 	help
+ 	  ACPI 4.0 defines processor Aggregator, which enables OS to perform
+-	  specfic processor configuration and control that applies to all
++	  specific processor configuration and control that applies to all
+ 	  processors in the platform. Currently only logical processor idling
+ 	  is defined, which is to reduce power consumption. This driver
+-	  support the new device.
++	  supports the new device.
+ 
+ config ACPI_THERMAL
+ 	tristate "Thermal Zone"
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+1.6.4.2
 
