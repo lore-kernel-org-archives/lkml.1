@@ -1,53 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934720AbZJIWIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbZJIWKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934720AbZJIWIf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 18:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbZJIWIe
+	id S964792AbZJIWKg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 18:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934539AbZJIWKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 18:08:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35153
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754870AbZJIWIe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 18:08:34 -0400
-Date: Fri, 09 Oct 2009 15:08:29 -0700 (PDT)
-Message-Id: <20091009.150829.218507309.davem@davemloft.net>
-To: heyongli@gmail.com
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Linux guest domain with two vnets bound to the same vswitch
- experiences hung in bootup (sun_netraT5220)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <505766fa0909231903t2fe2f7b6y26d2681d6d38ef0e@mail.gmail.com>
-References: <505766fa0909222137q217be3d0x8fc12ab467833666@mail.gmail.com>
-	<505766fa0909230040m13e3dc34x2ceb83848767d825@mail.gmail.com>
-	<505766fa0909231903t2fe2f7b6y26d2681d6d38ef0e@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 9 Oct 2009 18:10:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50476 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934517AbZJIWKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 18:10:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [RFC][PATCH 1/4] PCI PM: Add function for checking PME status of devices
+Date: Sat, 10 Oct 2009 00:11:28 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Shaohua Li <shaohua.li@intel.com>
+References: <200910090051.50932.rjw@sisk.pl> <200910090052.48493.rjw@sisk.pl> <200910081732.03157.bjorn.helgaas@hp.com>
+In-Reply-To: <200910081732.03157.bjorn.helgaas@hp.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910100011.28268.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: hyl <heyongli@gmail.com>
-Date: Thu, 24 Sep 2009 10:03:25 +0800
+On Friday 09 October 2009, Bjorn Helgaas wrote:
+> On Thursday 08 October 2009 04:52:48 pm Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Add function pci_check_pme_status() that will check the PME status
+> > bit of given device and clear it along with the PME enable bit.  It
+> > will be necessary for PCI run-time power management.
+> > 
+> > Based on a patch from Shaohua Li <shaohua.li@intel.com>
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/pci/pci.c |   35 +++++++++++++++++++++++++++++++++++
+> >  drivers/pci/pci.h |    1 +
+> >  2 files changed, 36 insertions(+)
+> > 
+> > Index: linux-2.6/drivers/pci/pci.h
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/pci/pci.h
+> > +++ linux-2.6/drivers/pci/pci.h
+> > @@ -49,6 +49,7 @@ struct pci_platform_pm_ops {
+> >  extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+> >  extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+> >  extern void pci_disable_enabled_device(struct pci_dev *dev);
+> > +extern bool pci_check_pme_status(struct pci_dev *dev);
+> >  extern void pci_pm_init(struct pci_dev *dev);
+> >  extern void platform_pci_wakeup_init(struct pci_dev *dev);
+> >  extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+> > Index: linux-2.6/drivers/pci/pci.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/pci/pci.c
+> > +++ linux-2.6/drivers/pci/pci.c
+> > @@ -1167,6 +1167,41 @@ int pci_set_pcie_reset_state(struct pci_
+> >  }
+> >  
+> >  /**
+> > + * pci_check_pme_status - Check if given device has generated PME.
+> > + * @dev: Device to check.
+> > + *
+> > + * Check the PME status of the device, clear PME status and PME enable.  Return
+> > + * 'true' if PME has been generated by the device (and hasn't been spurious) or
+> > + * 'false' otherwise.
+> 
+> This comment confuses me because it implies that we always clear PME enable,
+> but that's not what the code does.  If PME_STATUS is not asserted, the code
+> doesn't write anything.
 
-> Subject: [PATCH] Sun ldom vnet driver dead lock
-> 
-> if 2 vnet attach to same vswitch, ldom will report
-> 2 same irq then lead to dead lock on the lp->lock
-> or the vio->lock
-> 
-> static irqreturn_t ldc_rx(int irq, void *dev_id){
-> ...
-> out:
-> 	spin_unlock_irqrestore(&lp->lock, flags);
->            << here run with out any lock
-> 	send_events(lp, event_mask);
->            >> vnet evetn process will dead lock on
->            >> lp->lock or the vio->lock
-> 
-> Signed-off-by: Yongli He <heyongli@gmail.com>
+Well, that's a shortcut, perhaps going too far.  It should say "clear PME
+status and PME enable, if the PME status was set".  Will fix.
 
-Thank you for this bug report and patch, I am looking at
-it now.
+> > + */
+> > +bool pci_check_pme_status(struct pci_dev *dev)
+> > +{
+> > +	int pmcsr_pos;
+> > +	u16 pmcsr;
+> > +	bool ret = false;
+> > +
+> > +	if (!dev->pm_cap)
+> > +		return false;
+> > +
+> > +	pmcsr_pos = dev->pm_cap + PCI_PM_CTRL;
+> > +	/* clear PME status and disable PME to avoid interrupt flood */
+> > +	pci_read_config_word(dev, pmcsr_pos, &pmcsr);
+> > +	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
+> > +		return false;
+> > +
+> > +	pmcsr |= PCI_PM_CTRL_PME_STATUS;
+> > +	/* Ignore spurious PME or clear PME enable if it's not spurious. */
+> > +	if (pmcsr & PCI_PM_CTRL_PME_ENABLE) {
+> > +		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
+> > +		ret = true;
+> > +	}
+> > +
+> > +	pci_write_config_word(dev, pmcsr_pos, pmcsr);
+> 
+> I can't tell whether the comment or the code is what was intended,
+
+The code.  I'll fix the comment.
+
+> but I think the following would be a clearer way to implement the
+> comment:
+> 
+> 	pci_read_config_word(..., &pmcsr);
+> 	pci_write_config_word(..., (pmcsr | STATUS) & ~ENABLE);
+> 
+> 	if ((pmcsr & ENABLE) && (pmcsr & STATUS))
+> 		return true;
+> 	return false;
+
+Thanks,
+Rafael
