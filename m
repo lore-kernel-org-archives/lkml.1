@@ -1,85 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761517AbZJIVlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761527AbZJIVmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761517AbZJIVlz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761511AbZJIVly
+	id S1761527AbZJIVmU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761503AbZJIVmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:41:54 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39677 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1761501AbZJIVlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:41:53 -0400
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX19EvigtRB9EfqHA0PZX/ZERhIRLc3r5umK7AKVc8n
-	A4Q4u5wtJbVKL3
-Message-ID: <4ACFADED.2040209@gmx.de>
-Date: Fri, 09 Oct 2009 23:41:01 +0200
-From: Helge Deller <deller@gmx.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Wu Zhangjin <wuzhangjin@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Kyle McMartin <kyle@mcmartin.ca>,
-       "James E.J. Bottomley" <jejb@parisc-linux.org>,
-       linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] kernel/time/tick-sched.c: fix warning of printk's argument
- format
-References: <1255013172-31599-1-git-send-email-wuzhangjin@gmail.com> <alpine.LFD.2.01.0910080755390.3432@localhost.localdomain> <200910091542.29457.arnd@arndb.de>
-In-Reply-To: <200910091542.29457.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 9 Oct 2009 17:42:20 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:33959 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753285AbZJIVmT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 17:42:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:mime-version:content-type:from:in-reply-to:date:cc
+         :content-transfer-encoding:message-id:references:to:x-mailer;
+        b=FJ5erImGox+rhfdg7BTP6C23WQyHbdOW2TMqH9yRU9fTQCdrW3PbVqrzULRh9/f5BL
+         nF6myZUnbpnzH0raMxF89u8VDSpMiMcVOUOXi5JTXGzj94cpQvR9TOMYI1lghKwtM1wF
+         dabi4hfb1PM19nJSB8yr3lezM5aiHbEZtz+o4=
+Subject: Re: [PATCH] Cleanups for: line length, printk KERN_ argument, stack frame size > 2048 (added a kmalloc/kfree), style/formatting errors, incorrect include files
+Mime-Version: 1.0 (Apple Message framework v1076)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+From: Bruce B <bbeare1@gmail.com>
+In-Reply-To: <20091009212947.GA10187@suse.de>
+Date: Fri, 9 Oct 2009 14:41:41 -0700
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+Message-Id: <7186A162-7CF4-4FE1-B0C8-9D296DF20572@gmail.com>
+References: <1255122698-12390-1-git-send-email-bbeare1@gmail.com> <20091009211610.GA5005@suse.de> <20091009142742.b12b80b1.randy.dunlap@oracle.com> <20091009212947.GA10187@suse.de>
+To: Greg KH <gregkh@suse.de>
+X-Mailer: Apple Mail (2.1076)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/09/2009 03:42 PM, Arnd Bergmann wrote:
-> On Thursday 08 October 2009, Linus Torvalds wrote:
->> for some unfathomable reason. Quite frankly, I think Arnd just screwed up
->> the "generic" version, and the fix is almost certainly to just make the
->> generic version match all the main architectures.
+
+On Oct 9, 2009, at 2:29 PM, Greg KH wrote:
+
+> On Fri, Oct 09, 2009 at 02:27:42PM -0700, Randy Dunlap wrote:
+>> On Fri, 9 Oct 2009 14:16:10 -0700 Greg KH wrote:
 >>
->> I don't have any architectures using the generic header file, though, so
->> I'm not going to do that change blindly. People who do should look at it
->> (alpha, powerpc and mips look like the only ones that might be 64-bit, but
->> I didn't check very carefully - just grepped for it)
+>>>
+>>> Try changing one thing at a time per patch please.
+>>>
+>>> There's some bugs in here:
+>>>
+>>>> -		struct config_t dig_in_config[32];
+>>>> -		struct config_t dig_out_config[32];
+>>>> -		struct config_t chan_in_config[32];
+>>>> -		struct config_t chan_out_config[32];
+>>>> 		int i;
+>>>> +		config_data = kmalloc(sizeof(struct config_data_t), GFP_KERNEL);
+>>>
+>>> Shouldn't that be:
+>>> 		config_data = kmalloc(sizeof(struct config_data_t)*32,  
+>>> GFP_KERNEL);
 >>
->> Added Cc's for some people that have worked on, or used, that generic
->> header file. Is there any possible reason why it is "unsigned long" in
->> that one?
+>> The new struct already includes the [32]s.
 >
-> It was intentional to make it unsigned long in the asm-generic
-> version, based on the observation that some of the 64-bit architectures
-> (alpha and parisc) were using unsigned long in their arch specific
-> files. The original parisc file contained
+> Ah, missed that.
 >
-> typedef struct {
->         unsigned long __softirq_pending; /* set_bit is used on this */
-> } ____cacheline_aligned irq_cpustat_t;
+> But your other comment about checking the kmalloc is valid.  We should
+> not add new calls to kmalloc that doesn't check, let's not _add_ new
+> errors to the code :)
 >
-> which would imply that unsigned int wouldn't work for it, and looked
-> like a good idea. It turns out that the comment is outdated, set_bit
-> hasn't been used on __softirq_pending on any architecture for a long
-> time as far as I can tell, and 32 bits is obviously enough for it.
+> Bruce, care to split this up into individual patches, each doing only
+> one thing, and check for the return value of this call?
+>
+> thanks,
+>
+> greg k-h
 
-Yes, I just tested it on the parisc architecture.
-It seems we don't even touch this variable in our code.
+Sure. Glad to.  A little head scratching will be required for the  
+general cleanups in the .open routing for the kmalloc calls.
+There are several different types of formatting errors that I have  
+addressed. Those can be bundled as one patch?
 
-> The patch that Ralf just sent looks good therefore, but I'd suggest
-> either reverting two of Christophs patches that changed parisc and alpha
-> just to be on the safe side, or getting explicit Acks for Ralfs patch
-> from the maintainers of those two architectures.
-
-Don't revert for parisc, as either "unsigned long" or "unsigned int" is OK.
-So, Ralf's patch (switching __softirq_pending back to "unsigned int") get's my Ack:
-Acked-by: Helge Deller <deller@gmx.de>
-
-Helge
