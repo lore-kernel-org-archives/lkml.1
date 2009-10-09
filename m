@@ -1,40 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933976AbZJIQcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933938AbZJIQkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933976AbZJIQcR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 12:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933938AbZJIQcQ
+	id S933938AbZJIQkp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 12:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758949AbZJIQko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 12:32:16 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:43274 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933933AbZJIQcP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 12:32:15 -0400
-Message-ID: <4ACF6562.9040109@gmail.com>
-Date: Fri, 09 Oct 2009 18:31:30 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 9 Oct 2009 12:40:44 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48433 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758882AbZJIQkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 12:40:43 -0400
+Date: Fri, 9 Oct 2009 09:32:02 -0700
+From: Greg KH <gregkh@suse.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, devel@driverdev.osuosl.org,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] wireless: make WEXT_SPY and WEXT_PRIV select WEXT_CORE
+Message-ID: <20091009163202.GA3342@suse.de>
+References: <4ACD0E5A.7060106@oracle.com>
+ <1254954842.3713.7.camel@johannes.local>
+ <4ACD1C3D.3030506@oracle.com>
+ <1254957256.3713.10.camel@johannes.local>
+ <20091007171235.d40f0cc2.randy.dunlap@oracle.com>
+ <1254995282.3713.18.camel@johannes.local>
+ <20091008080615.09c8b803.randy.dunlap@oracle.com>
+ <1255026563.3713.28.camel@johannes.local>
+ <20091009090601.73de5dc6.randy.dunlap@oracle.com>
+ <1255104846.4095.2.camel@johannes.local>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: thomas@wytron.com.tw, netdev@vger.kernel.org,
-       thierry.reding@avionic-design.de, nios2-dev@sopc.et.ntust.edu.tw,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: Add netdev_alloc_skb_ip_align() helper
-References: <1254969161-3609-1-git-send-email-thomas@wytron.com.tw>	<4ACD585B.5080106@gmail.com> <20091007.224036.247820677.davem@davemloft.net>
-In-Reply-To: <20091007.224036.247820677.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 09 Oct 2009 18:31:32 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255104846.4095.2.camel@johannes.local>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller a écrit :
+On Fri, Oct 09, 2009 at 06:14:06PM +0200, Johannes Berg wrote:
+> On Fri, 2009-10-09 at 09:06 -0700, Randy Dunlap wrote:
+> 
+> > >  menuconfig WLAN
+> > >  	bool "Wireless LAN"
+> > >  	depends on !S390
+> > > +	select WIRELESS
+> > >  	default y
+> > >  	---help---
+> > >  	  This section contains all the pre 802.11 and 802.11 wireless
+> > 
+> > 
+> > I suppose that's OK, although I prefer "depends" rather than "select".
+> 
+> I tend to as well, but in this case the WIRELESS itself is just an
+> option that makes other options invisible, it's not used elsewhere, and
+> as such I think this is ok -- why hide the wireless drivers unless the
+> user first selects the wireless core options?
+> 
+> OTOH, you already need to select cfg80211/mac80211 for most drivers, so
+> I suppose "depends on WIRELESS" would be ok too.
+> 
+> > I tracked down one of the problems that I was seeing:
+> > 
+> > net/wireless/wext-priv.c:206: error: implicit declaration of function 'call_commit_handler'
+> > 
+> > with:
+> > # CONFIG_WIRELESS is not set
+> > CONFIG_WIRELESS_EXT=y
+> > CONFIG_WEXT_PRIV=y
+> > 
+> > This is being caused by several drivers in drivers/staging/ doing
+> > 	select WEXT_PRIV
+> > without using either enough dependencies or even more (ugly) selects.
+> > (or just because kconfig isn't sufficient)
+> 
+> Hah, staging/, well, that's kinda hard to solve I guess. Except by
+> fixing all the staging/ drivers to depend on WIRELESS too, like the
+> patch would do for the regular drivers.
 
-> Looks ok, but I want to look at how often this exact sequence
-> would match.  If it applies to a lot of cases, I'll add this
-> but I know of many exceptions in my head already :-)
+That's fine, I'll gladly take patches to do that.
 
-Well, it was more as a reference. I believe about 20-30 call sites
-could use it. Do you want me to provide a combo patch ?
+thanks,
 
+greg k-h
