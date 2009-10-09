@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933121AbZJIHXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbZJIH2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933121AbZJIHXb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 03:23:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZJIHXb
+	id S1758564AbZJIH2W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 03:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757187AbZJIH2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 03:23:31 -0400
-Received: from www.tglx.de ([62.245.132.106]:56946 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755864AbZJIHXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 03:23:30 -0400
-Date: Fri, 9 Oct 2009 09:22:49 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: wu Jianfeng <stormplayer@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: the select system call's implementation may have some bug in
- preempt kernel mode
-In-Reply-To: <a5b3ea7b0910090011k7558faf2p4de252875587291e@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0910090921530.9428@localhost.localdomain>
-References: <a5b3ea7b0910082242s6ce8275dr7f962ce526e55cd2@mail.gmail.com>  <a5b3ea7b0910082250o659d4fd3l8f319fd6bde24f3d@mail.gmail.com>  <alpine.LFD.2.00.0910090849400.9428@localhost.localdomain>
- <a5b3ea7b0910090011k7558faf2p4de252875587291e@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 9 Oct 2009 03:28:22 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56993 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752727AbZJIH2V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 03:28:21 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4ACEE5E0.3050701@jp.fujitsu.com>
+Date: Fri, 09 Oct 2009 16:27:28 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Huang Ying <ying.huang@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 6/6] mce-inject: use injected mce only during faked handler
+ call
+References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com>	 <4AC95F5A.4000708@jp.fujitsu.com>  <4AC96391.1060001@jp.fujitsu.com> <1255072482.5228.157.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1255072482.5228.157.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Oct 2009, wu Jianfeng wrote:
+Huang Ying wrote:
+> This is another example for you to use my idea, implement it in a
+> similar way and send it out as your own.
 
-> > Right, but that does not cause the task to be scheduled out for ever.
-> 
-> I don't know why ???
-> the process state is TASK_INTERRUPTIBLE, and was scheduled out.
-> 
-> if no one wake up it or any signals received, it will sleep for ever.
-> The process does't entered any file's wait queue at that point, so I
-> am sure no one will wake up it.
-> 
-> Am i right?
+I used "Reported-by:" for this patch, having some intent to indicate
+that this patch uses an idea different from the original one, and that
+this patch aims at the problem certainly reported by you.
 
-No. Did you actually read, what I wrote further down ?
- 
-> > When the task is scheduled out at that point, it is not
-> > deactivated. It is preempted, which means it stays on the run queue
-> > despite of the TASK_INTERRUPTIBLE state and is scheduled back in later
-> > on.
+> On Mon, 2009-10-05 at 11:10 +0800, Hidetoshi Seto wrote: 
+>> Reported-by: Huang Ying <ying.huang@intel.com>
+>> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+
 
 Thanks,
+H.Seto
 
-	tglx
