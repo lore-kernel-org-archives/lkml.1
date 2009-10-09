@@ -1,44 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760735AbZJIMRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760671AbZJIMRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760735AbZJIMRR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 08:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760685AbZJIMRR
+	id S1760671AbZJIMRH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 08:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760489AbZJIMRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 08:17:17 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:28923 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760623AbZJIMRO (ORCPT
+	Fri, 9 Oct 2009 08:17:06 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:35370 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760194AbZJIMRF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 08:17:14 -0400
-Message-ID: <4ACF296E.3000000@hp.com>
-Date: Fri, 09 Oct 2009 08:15:42 -0400
-From: jim owens <jowens@hp.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 9 Oct 2009 08:17:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=gJDkoBPjVCERFjWq3tY9NuQOszBPIfF32m56kSquFX+Mj8DdjYTKuyBdcphGzeYg38
+         7/x/lQdSeEuMCcDlJWAQyp1zn0zjpuFtwUkrCVDpvNDTHE/S3ZR/TkkATLVGrxrFKlPh
+         Hu65G1qwmZ0cN7biEyQgAzUt35VTi/+IQXjyY=
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>
-Subject: Re: [RFC][PATCH] kmap_atomic_push
-References: <1255016123.17055.17.camel@laptop>	 <20091008155344.GA11727@elte.hu> <1255019362.26976.311.camel@twins>	 <alpine.LFD.2.01.0910080945230.3432@localhost.localdomain>	 <Pine.LNX.4.64.0910081850270.4553@sister.anvils>  <4ACE674E.30403@hp.com> <1255042636.17055.33.camel@laptop>
-In-Reply-To: <1255042636.17055.33.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091009093034.4365.34259.stgit@pc1117.cambridge.arm.com>
+References: <20091009093028.4365.4391.stgit@pc1117.cambridge.arm.com>
+	 <20091009093034.4365.34259.stgit@pc1117.cambridge.arm.com>
+Date: Fri, 9 Oct 2009 15:16:27 +0300
+X-Google-Sender-Auth: ac67b10ae6f4a471
+Message-ID: <84144f020910090516gac3d598rad20ea3ced063acf@mail.gmail.com>
+Subject: Re: [PATCH 2/2] kmemleak: Check for NULL pointer returned by 
+	create_object()
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> 
-> The double unmap gives a preemption point, which sounds like a good
-> thing to have, because your scheme could run for a long while without
-> enabling preemption, which is badness.
+On Fri, Oct 9, 2009 at 12:30 PM, Catalin Marinas
+<catalin.marinas@arm.com> wrote:
+> This patch adds NULL pointer checking in the early_alloc() function.
+>
+> Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 
-Thanks, optimizing my loop, I forgot all about
-the old long code path not preempting problem.
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Now I have to love the patch for making it harder to be stupid :)
+> ---
+>  mm/kmemleak.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+>
+> diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+> index a617518..8bf765c 100644
+> --- a/mm/kmemleak.c
+> +++ b/mm/kmemleak.c
+> @@ -834,11 +834,14 @@ static void early_alloc(struct early_log *log)
+>        rcu_read_lock();
+>        object = create_object((unsigned long)log->ptr, log->size,
+>                               log->min_count, GFP_ATOMIC);
+> +       if (!object)
+> +               goto out;
+>        spin_lock_irqsave(&object->lock, flags);
+>        for (i = 0; i < log->trace_len; i++)
+>                object->trace[i] = log->trace[i];
+>        object->trace_len = log->trace_len;
+>        spin_unlock_irqrestore(&object->lock, flags);
+> +out:
+>        rcu_read_unlock();
+>  }
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
