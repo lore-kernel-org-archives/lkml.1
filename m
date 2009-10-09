@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933901AbZJIQWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933943AbZJIQ30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933901AbZJIQWA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 12:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933841AbZJIQWA
+	id S933943AbZJIQ30 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 12:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933929AbZJIQ3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 12:22:00 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:35508 "EHLO mx1.redhat.com"
+	Fri, 9 Oct 2009 12:29:24 -0400
+Received: from kroah.org ([198.145.64.141]:33641 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933828AbZJIQV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 12:21:59 -0400
-Date: Fri, 9 Oct 2009 12:20:51 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: move gfs2 tracepoints to inclue/trace/events dir
-Message-ID: <20091009162051.GB2647@redhat.com>
-References: <20091009160115.GA2647@redhat.com> <1255104319.6052.558.camel@localhost.localdomain>
+	id S933862AbZJIQ3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 12:29:23 -0400
+Date: Fri, 9 Oct 2009 09:22:10 -0700
+From: Greg KH <greg@kroah.com>
+To: Steve Friedl <steve@unixwiz.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/8] staging: hv: Fixed typo in Hyper-V struct name:
+ VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER
+Message-ID: <20091009162210.GB2766@kroah.com>
+References: <20090922054928.GA6077@dcent.unixwiz.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255104319.6052.558.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090922054928.GA6077@dcent.unixwiz.lan>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 05:05:19PM +0100, Steven Whitehouse wrote:
-> Hi,
+On Mon, Sep 21, 2009 at 10:49:28PM -0700, Steve Friedl wrote:
+> [ This may be a dup, didn't see the previous try ]
 > 
-> On Fri, 2009-10-09 at 12:01 -0400, Jason Baron wrote:
-> > hi,
-> > 
-> > I'd like to move the gfs2 tracepoints to the the common
-> > include/trace/events directory along with all of the other trace events.
-> > It makes understanding what tracepoints are available easier, and I see
-> > no reason why gfs2 should be different. For example, 'ext4.h' is already
-> > in the include/trace/events directory.
-> > 
-> > thanks,
-> > 
-> > -Jason
-> > 
-> I've no objection to that, it sounds like a good plan. Should I stick
-> this in the GFS2 tree, or would you rather keep it in the trace tree? I
-> was thinking probably the GFS2 tree would be better as it reduces the
-> chances of any future conflicts.
+> It seems that the VMBUS_CHANNEL_PACKET_MULITPAGE_BUFFER typedef/struct was
+> misspelled (...MULIT.. -> ...MULTI...) so I felt compelled to fix it. This
+> was the only change in this patch.
+> 
+> ~~~ Steve
+> 
+> Signed-off-by: Steve Friedl <steve@unixwiz.net>
 
-gfs2 tree works for me.
+The file, drivers/staging/hv/TODO say who to cc: for when you want to
+submit patches for the drivers/staging/hv/* files.
+
+So, do you still want these patches applied?  Do they apply to
+2.6.32-rc3?
+
+If not, please resend.
+
+Heck, please resend them all again anyway, with the correct cc: in place
+so that all involved can review them properly.
 
 thanks,
 
--Jason
-
+greg k-h
