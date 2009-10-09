@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbZJIG6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933101AbZJIHDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757585AbZJIG6Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 02:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbZJIG6Y
+	id S933101AbZJIHDT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 03:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbZJIHDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 02:58:24 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:63365 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755075AbZJIG6X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 02:58:23 -0400
+	Fri, 9 Oct 2009 03:03:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:56672 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753165AbZJIHDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 03:03:18 -0400
+Date: Fri, 9 Oct 2009 09:02:37 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: wu Jianfeng <stormplayer@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: the select system call's implementation may have some bug in
+ preempt kernel mode
+In-Reply-To: <a5b3ea7b0910082250o659d4fd3l8f319fd6bde24f3d@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0910090849400.9428@localhost.localdomain>
+References: <a5b3ea7b0910082242s6ce8275dr7f962ce526e55cd2@mail.gmail.com> <a5b3ea7b0910082250o659d4fd3l8f319fd6bde24f3d@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Date: Fri, 9 Oct 2009 08:57:45 +0200
-X-Google-Sender-Auth: 28ab39f88bebfe2c
-Message-ID: <e8eb01770910082357n2d4fa33dk75b6c45f55bebcbd@mail.gmail.com>
-Subject: ftdi_sio regresion 2.6.31-r1
-From: Zbynek Drlik <drlik.zbynek@kingparking.sk>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-After upgrade kernel from 2.6.30 to 2.6.31-r1 my device connected by
-ftdi converter stop working. This device use rts/cts handshake.
-In this thread
-http://www.gossamer-threads.com/lists/linux/kernel/1128189
-i see that similar problem is reported, but in my situation, reconnect
-doesn't help. Write is ok. Read not ok.
+On Fri, 9 Oct 2009, wu Jianfeng wrote:
+> A process may sleep for ever when he call select system call.
+> In detail, if the process was scheduled out just at the point it set
+> its state to TASK_INTERRUPTIBLE.
+> 
+> The events that may cause the process to be scheduled out is(in
+> preempt kernel) :
+> 1) time interrupt and the process's time slice is exhausted.
+> 2) an interrupt accured, and wake up another process with high priority.
 
--- 
-S pozdravom Drlik Zbynek.
+Right, but that does not cause the task to be scheduled out for ever.
 
-Fakturacna, dodacia adresa:
-VILLA PRO s.r.o
-Chrapciakova 1
-05201 Spisska Nova Ves
-ICO: 31682731IC DPH: SK 2020503518
-DIC: 2020503518
-Tel: +421 904 380 860
-Web: www.kingparking.sk
-Skype: drlikzbynek ICQ: 365156504 Gtalk: drlik.zbynek@kingparking.sk
+> 		set_current_state(TASK_INTERRUPTIBLE);   ######## here set the
+> interrupt to  TASK_INTERRUPTIBLE state
+> 
+>                ########### if the process was schedued out here, it
+> will can never been waken up .
+>                ########### Because the process wasn't attached to any
+> file's waitqueue at this point yet
+
+When the task is scheduled out at that point, it is not
+deactivated. It is preempted, which means it stays on the run queue
+despite of the TASK_INTERRUPTIBLE state and is scheduled back in later
+on.
+
+Thanks,
+
+	tglx
