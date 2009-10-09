@@ -1,93 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbZJIOSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760917AbZJIOXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933167AbZJIOSa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 10:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932529AbZJIOS3
+	id S1760917AbZJIOXQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 10:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZJIOXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 10:18:29 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:48179 "EHLO isrv.corpit.ru"
+	Fri, 9 Oct 2009 10:23:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42781 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932392AbZJIOS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 10:18:28 -0400
-Message-ID: <4ACF460E.7000901@msgid.tls.msk.ru>
-Date: Fri, 09 Oct 2009 18:17:50 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1756503AbZJIOXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 10:23:14 -0400
+Date: Fri, 9 Oct 2009 14:22:07 GMT
+From: tip-bot for Stephane Eranian <eranian@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       eranian@googlemail.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       eranian@gmail.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       eranian@googlemail.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       eranian@gmail.com, mingo@elte.hu
+In-Reply-To: <1254840129-6198-2-git-send-email-eranian@gmail.com>
+References: <1254840129-6198-2-git-send-email-eranian@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf_events: Check for filters on fixed counter events
+Message-ID: <tip-04a705df47d1ea27ca2b066f24b1951c51792d0d@git.kernel.org>
+Git-Commit-ID: 04a705df47d1ea27ca2b066f24b1951c51792d0d
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: wrong final bzImage build (regading #14270)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 09 Oct 2009 14:22:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, finally the mystery solved.  After a week of
-digging.
+Commit-ID:  04a705df47d1ea27ca2b066f24b1951c51792d0d
+Gitweb:     http://git.kernel.org/tip/04a705df47d1ea27ca2b066f24b1951c51792d0d
+Author:     Stephane Eranian <eranian@googlemail.com>
+AuthorDate: Tue, 6 Oct 2009 16:42:08 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 9 Oct 2009 15:56:10 +0200
 
-The original problem was titled "Cannot boot on
-a PIII Celeron", and Rafael filed a bug #14270
-for this.
+perf_events: Check for filters on fixed counter events
 
-In short, what I observed was that a new kernel
-(2.6.31) fails to boot on a PIII Celeron machine.
-But changing just the CPU to plain PIII and voila,
-it now works.  I don't know why it behaved this
-way, but I found where was the problem, finally.
+Intel fixed counters do not support all the filters possible with a
+generic counter. Thus, if a fixed counter event is passed but with
+certain filters set, then the fixed_mode_idx() function must fail
+and the event must be measured in a generic counter instead.
 
-And the problem is in the last stage of build, when
-building the bzImage.
+Reject filters are: inv, edge, cnt-mask.
 
-make -f scripts/Makefile.build obj=arch/x86/boot/compressed arch/x86/boot/compressed/vmlinux
-...
-   (cat arch/x86/boot/compressed/vmlinux.bin | lzma -9 && echo -ne \\x38\\xd6\\x37\\x00) > arch/x86/boot/compressed/vmlinux.bin.lzma
-...
+Signed-off-by: Stephane Eranian <eranian@gmail.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1254840129-6198-2-git-send-email-eranian@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/perf_event.h |   13 ++++++++++++-
+ arch/x86/kernel/cpu/perf_event.c  |    6 ++++++
+ 2 files changed, 18 insertions(+), 1 deletions(-)
 
-Note the echo command.
-
-Now, Debian switched to dash as /bin/sh.  And dash
-does not understand the -e option:
-
-$ dash -c 'echo -ne \\x38\\xd6\\x37\\x00' | od -x
-0000000 6e2d 2065 785c 3833 785c 3664 785c 3733
-0000020 785c 3030 000a
-
-$ bash -c 'echo -ne \\x38\\xd6\\x37\\x00' | od -x
-0000000 d638 0037
-
-So the final size (it's the size of uncompressed file)
-becomes incorrect.  Here's what mkpiggy outputs for
-this (in arch/x86/boot/compressed/piggy.S):
-
-  z_output_len = 170930296
-
-while it should be
-
-  z_output_len = 3659320
-
-And with the former (wrong, larger) size, the whole
-thing just reboots on a PIII Celeron.  I've no idea
-why, but the original problem is here.
-
-The same thing happens with bzip2 algorithm which is
-not new, not only with lzma.
-
-The whole thing looks quite hackish to me, -- mkpiggy
-can know the size from the original image just fine,
-instead of getting it from the end of already compressed
-file.
-
-For now, quick fix is to change echo to printf in there.
-Correct fix is to re-write mkpiggy to look at the
-original file for size (IMHO anyway).
-
-And this is a very good candidate for -stable as well.
-The bug is very difficult to find.  And now when more
-and more people who use Debian are switching to dash,
-it will be more common.
-
-Thanks!
-
-/mjt
+diff --git a/arch/x86/include/asm/perf_event.h b/arch/x86/include/asm/perf_event.h
+index ad7ce3f..8d9f854 100644
+--- a/arch/x86/include/asm/perf_event.h
++++ b/arch/x86/include/asm/perf_event.h
+@@ -28,9 +28,20 @@
+  */
+ #define ARCH_PERFMON_EVENT_MASK				    0xffff
+ 
++/*
++ * filter mask to validate fixed counter events.
++ * the following filters disqualify for fixed counters:
++ *  - inv
++ *  - edge
++ *  - cnt-mask
++ *  The other filters are supported by fixed counters.
++ *  The any-thread option is supported starting with v3.
++ */
++#define ARCH_PERFMON_EVENT_FILTER_MASK			0xff840000
++
+ #define ARCH_PERFMON_UNHALTED_CORE_CYCLES_SEL		      0x3c
+ #define ARCH_PERFMON_UNHALTED_CORE_CYCLES_UMASK		(0x00 << 8)
+-#define ARCH_PERFMON_UNHALTED_CORE_CYCLES_INDEX 		 0
++#define ARCH_PERFMON_UNHALTED_CORE_CYCLES_INDEX			 0
+ #define ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT \
+ 		(1 << (ARCH_PERFMON_UNHALTED_CORE_CYCLES_INDEX))
+ 
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index b5801c3..1d16bd6 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -1349,6 +1349,12 @@ fixed_mode_idx(struct perf_event *event, struct hw_perf_event *hwc)
+ 	if (!x86_pmu.num_events_fixed)
+ 		return -1;
+ 
++	/*
++	 * fixed counters do not take all possible filters
++	 */
++	if (hwc->config & ARCH_PERFMON_EVENT_FILTER_MASK)
++		return -1;
++
+ 	if (unlikely(hw_event == x86_pmu.event_map(PERF_COUNT_HW_INSTRUCTIONS)))
+ 		return X86_PMC_IDX_FIXED_INSTRUCTIONS;
+ 	if (unlikely(hw_event == x86_pmu.event_map(PERF_COUNT_HW_CPU_CYCLES)))
