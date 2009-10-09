@@ -1,70 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934625AbZJIXv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934644AbZJIXwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934625AbZJIXv3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934530AbZJIXv2
+	id S934644AbZJIXwu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934629AbZJIXwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:51:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43651 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934546AbZJIXv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:51:27 -0400
-Date: Fri, 9 Oct 2009 16:50:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       h-shimamoto@ct.jp.nec.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] memcg: coalescing charge by percpu (Oct/9)
-Message-Id: <20091009165002.629a91d2.akpm@linux-foundation.org>
-In-Reply-To: <20091009170105.170e025f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091009165826.59c6f6e3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091009170105.170e025f.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Oct 2009 19:52:49 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:37839 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934618AbZJIXws convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:52:48 -0400
+From: Shreyas Bhatewara <sbhatewara@vmware.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jeff Garzik <jgarzik@pobox.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       pv-drivers <pv-drivers@vmware.com>
+Date: Fri, 9 Oct 2009 16:52:09 -0700
+Subject: RE: [PATCH 2.6.32-rc3] net: VMware virtual Ethernet NIC driver:
+ vmxnet3
+Thread-Topic: [PATCH 2.6.32-rc3] net: VMware virtual Ethernet NIC driver:
+ vmxnet3
+Thread-Index: AcpJKJ+lrQ9f7pWSTxKPDRUMSasBcgAEUfow
+Message-ID: <89E2752CFA8EC044846EB849981913410174041DA5@EXCH-MBX-4.vmware.com>
+References: <alpine.LRH.2.00.0910061202510.24669@localhost.localdomain>
+	<alpine.LRH.2.00.0910081053460.19107@localhost.localdomain>
+ <20091009143538.644844aa@nehalam>
+In-Reply-To: <20091009143538.644844aa@nehalam>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Oct 2009 17:01:05 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> -----Original Message-----
+> From: Stephen Hemminger [mailto:shemminger@linux-foundation.org]
+> Sent: Friday, October 09, 2009 2:36 PM
+> To: Shreyas Bhatewara
+> Cc: linux-kernel; netdev; David S. Miller; Jeff Garzik; Anthony
+> Liguori; Chris Wright; Greg Kroah-Hartman; Andrew Morton;
+> virtualization; pv-drivers
+> Subject: Re: [PATCH 2.6.32-rc3] net: VMware virtual Ethernet NIC
+> driver: vmxnet3
+> 
+> On Thu, 8 Oct 2009 10:59:26 -0700 (PDT)
+> Shreyas Bhatewara <sbhatewara@vmware.com> wrote:
+> 
+> > Hello all,
+> >
+> > I do not mean to be bothersome but this thread has been unusually
+> silent.
+> > Could you please review the patch for me and reply with your comments
+> /
+> > acks ?
+> >
+> > Thanks.
+> > ->Shreyas
+> 
+> 
+> Looks fine, but just a minor style nit (can be changed after insertion
+> in mainline).
+> 
+> The code:
+> 
+> static void
+> vmxnet3_do_poll(struct vmxnet3_adapter *adapter, int budget, int
+> *txd_done,
+> 		int *rxd_done)
+> {
+> 	if (unlikely(adapter->shared->ecr))
+> 		vmxnet3_process_events(adapter);
+> 
+> 	*txd_done = vmxnet3_tq_tx_complete(&adapter->tx_queue, adapter);
+> 	*rxd_done = vmxnet3_rq_rx_complete(&adapter->rx_queue, adapter,
+> budget);
+> }
+> 
+> 
+> static int
+> vmxnet3_poll(struct napi_struct *napi, int budget)
+> {
+> 	struct vmxnet3_adapter *adapter = container_of(napi,
+> 					  struct vmxnet3_adapter, napi);
+> 	int rxd_done, txd_done;
+> 
+> 	vmxnet3_do_poll(adapter, budget, &txd_done, &rxd_done);
+> 
+> 	if (rxd_done < budget) {
+> 		napi_complete(napi);
+> 		vmxnet3_enable_intr(adapter, 0);
+> 	}
+> 	return rxd_done;
+> }
+> 
+> 
+> Is simpler if you just have do_poll return rx done value. Probably Gcc
+> inline's it all anyway.
+> 
+> static int
+> vmxnet3_do_poll(struct vmxnet3_adapter *adapter, int budget)
+> {
+> 	if (unlikely(adapter->shared->ecr))
+> 		vmxnet3_process_events(adapter);
+> 
+> 	vmxnet3_tq_tx_complete(&adapter->tx_queue, adapter);
+> 	return vmxnet3_rq_rx_complete(&adapter->rx_queue, adapter,
+> budget);
+> }
+> 
+> 
+> static int
+> vmxnet3_poll(struct napi_struct *napi, int budget)
+> {
+> 	struct vmxnet3_adapter *adapter = container_of(napi,
+> 					  struct vmxnet3_adapter, napi);
+> 	int rxd_done;
+> 
+> 	rxd_done = vmxnet3_do_poll(adapter, budget);
+> 	if (rxd_done < budget) {
+> 		napi_complete(napi);
+> 		vmxnet3_enable_intr(adapter, 0);
+> 	}
+> 	return rxd_done;
+> }
 
-> +static void drain_all_stock_async(void)
-> +{
-> +	int cpu;
-> +	/* This function is for scheduling "drain" in asynchronous way.
-> +	 * The result of "drain" is not directly handled by callers. Then,
-> +	 * if someone is calling drain, we don't have to call drain more.
-> +	 * Anyway, work_pending() will catch if there is a race. We just do
-> +	 * loose check here.
-> +	 */
-> +	if (atomic_read(&memcg_drain_count))
-> +		return;
-> +	/* Notify other cpus that system-wide "drain" is running */
-> +	atomic_inc(&memcg_drain_count);
-> +	get_online_cpus();
-> +	for_each_online_cpu(cpu) {
-> +		struct memcg_stock_pcp *stock = &per_cpu(memcg_stock, cpu);
-> +		if (work_pending(&stock->work))
-> +			continue;
-> +		INIT_WORK(&stock->work, drain_local_stock);
-> +		schedule_work_on(cpu, &stock->work);
-> +	}
-> + 	put_online_cpus();
-> +	atomic_dec(&memcg_drain_count);
-> +	/* We don't wait for flush_work */
-> +}
 
-It's unusual to run INIT_WORK() each time we use a work_struct. 
-Usually we will run INIT_WORK a single time, then just repeatedly use
-that structure.  Because after the work has completed, it is still in a
-ready-to-use state.
 
-Running INIT_WORK() repeatedly against the same work_struct adds a risk
-that we'll scribble on an in-use work_struct, which would make a big
-mess.
+Thanks Stephen.
+
+Yes, the vmxnet3_do_poll() was an inline function in the very first patch. It was thought of as a better idea to let gcc handle the inlining.
+I will piggyback this nit on a forthcoming change.
+
+->Shreyas
+
 
