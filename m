@@ -1,107 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934484AbZJIVc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934481AbZJIVed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934484AbZJIVc0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934475AbZJIVcZ
+	id S934481AbZJIVed (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934462AbZJIVec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:32:25 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:51470 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934453AbZJIVcY (ORCPT
+	Fri, 9 Oct 2009 17:34:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54150 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934192AbZJIVeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:32:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:mime-version:content-type:from:in-reply-to:date:cc
-         :content-transfer-encoding:message-id:references:to:x-mailer;
-        b=Pqk9JYijQXvF9Nah3W0WaVPjXOUExxTr8zbW0+cVcrBE/yEgFkdb/QQn6XmyPOsfTN
-         ILIiaiwStRCJIr1DWzesr54sDycxOZ1uAf/PNYyKTwoPY3ka9lHacNVTsVN70NVwWOrY
-         Z3lmV24M1Sjc+E/qbwK92A2JPYnQfBnWTGpqM=
-Subject: Re: [PATCH] Cleanups for: line length, printk KERN_ argument, stack frame size > 2048 (added a kmalloc/kfree), style/formatting errors, incorrect include files
-Mime-Version: 1.0 (Apple Message framework v1076)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Bruce B <bbeare1@gmail.com>
-In-Reply-To: <20091009211610.GA5005@suse.de>
-Date: Fri, 9 Oct 2009 14:31:46 -0700
-Cc: Bill Pemberton <wfp5p@virginia.edu>, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-Message-Id: <936929F4-6F9E-4DE2-B3C1-1B2E16D2AEC2@gmail.com>
-References: <1255122698-12390-1-git-send-email-bbeare1@gmail.com> <20091009211610.GA5005@suse.de>
+	Fri, 9 Oct 2009 17:34:31 -0400
+Date: Fri, 9 Oct 2009 14:33:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Greg KH <gregkh@suse.de>
-X-Mailer: Apple Mail (2.1076)
+Cc: Felipe Contreras <felipe.contreras@gmail.com>,
+       Tony Lindgren <tony@atomide.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       Denis Karpov <ext-denis.2.karpov@nokia.com>,
+       Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>
+Subject: Re: [GIT PULL] omap fixes for v2.6.32-rc3
+Message-Id: <20091009143327.783b33c3.akpm@linux-foundation.org>
+In-Reply-To: <20091009192642.GB32084@suse.de>
+References: <20091007185112.GJ7899@atomide.com>
+	<94a0d4530910081429m7ad88b43q38245109f3252078@mail.gmail.com>
+	<20091008214140.GJ7417@atomide.com>
+	<94a0d4530910081513w1a919dc2s50eca41966a2261d@mail.gmail.com>
+	<94a0d4530910081520t66ce7567xe142979a35b1245@mail.gmail.com>
+	<20091008232603.GB25892@atomide.com>
+	<94a0d4530910090508o1e3d19cew881d2eb348199674@mail.gmail.com>
+	<20091009144840.GA9561@suse.de>
+	<94a0d4530910091029p12f8c28fve91e95db533e78e5@mail.gmail.com>
+	<20091009192642.GB32084@suse.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 9 Oct 2009 12:26:42 -0700
+Greg KH <gregkh@suse.de> wrote:
 
+> > >
+> > > What kind of issues? __Why would I be interested, where is the problem?
+> > 
+> > The obvious-brain-dead-duh kind of issues, like this one.
+> > 
+> > The problem is that OMAP devices (like beagleboard) are not booting
+> > correctly right now because of a wrong merge. It has been identified,
+> > tested, and acked, but nobody has picked it up for a pull request, so
+> > it's not clear it will be on -rc4.
+> 
+> Has the patches been sent from the maintainer to Linus?
+> 
+> Who is the maintainer?  Who normally sends this stuff?
+> 
+> > To me it's not clear who should push the patch, it seems it doesn't
+> > belong on linux-omap, so Tony is pushing it through linux-mmc, which I
+> > don't think is the right place. They should be handling mmc-related
+> > issues, not obvious breakage.
+> 
+> Well, mmc related breakage is fine to handle :)
+> 
+> > In order to keep the engines oiled I think there must be a process to
+> > flag obvious generic breakage so it's immediately picked; maybe an
+> > 'obvious-fixes' tree, or a 'simple-fixes' that has 'trivial',
+> > 'includecheck', and similar, or maybe nothing needs to be done. Up to
+> > you to decide.
+> 
+> Andrew usually sends stuff like this at times.
 
+yeah, when in doubt, send it to me.  When not in doubt send it to me
+anyway ;)
 
-On Oct 9, 2009, at 2:16 PM, Greg KH wrote:
-
->
-> Try changing one thing at a time per patch please.
->
-> There's some bugs in here:
->
->> -		struct config_t dig_in_config[32];
->> -		struct config_t dig_out_config[32];
->> -		struct config_t chan_in_config[32];
->> -		struct config_t chan_out_config[32];
->> 		int i;
->> +		config_data = kmalloc(sizeof(struct config_data_t), GFP_KERNEL);
->
-> Shouldn't that be:
-> 		config_data = kmalloc(sizeof(struct config_data_t)*32, GFP_KERNEL);
-
-
-The structure already has the [32]'s copied from the original defn's.
-If you like... I can still break up the commit into two patches. Also,  
-moving the *32 out isn't a bad idea; were I
-to break it up, I would likely do so.
-
-
->
-> Otherwise you overflow your buffer here:
->>
->> 		for (i = 0; i < 32; i++) {
->> -			dig_in_config[i].kind = 0;
->> -			dig_in_config[i].bits = 0;
->> -			dig_in_config[i].min = 0;
->> -			dig_in_config[i].max = 0;
->> -			dig_out_config[i].kind = 0;
->> -			dig_out_config[i].bits = 0;
->> -			dig_out_config[i].min = 0;
->> -			dig_out_config[i].max = 0;
->> -			chan_in_config[i].kind = 0;
->> -			chan_in_config[i].bits = 0;
->> -			chan_in_config[i].min = 0;
->> -			chan_in_config[i].max = 0;
->> -			chan_out_config[i].kind = 0;
->> -			chan_out_config[i].bits = 0;
->> -			chan_out_config[i].min = 0;
->> -			chan_out_config[i].max = 0;
->> +			config_data->dig_in_config[i].kind = 0;
->> +			config_data->dig_in_config[i].bits = 0;
->> +			config_data->dig_in_config[i].min = 0;
->> +			config_data->dig_in_config[i].max = 0;
->> +			config_data->dig_out_config[i].kind = 0;
->> +			config_data->dig_out_config[i].bits = 0;
->> +			config_data->dig_out_config[i].min = 0;
->> +			config_data->dig_out_config[i].max = 0;
->> +			config_data->chan_in_config[i].kind = 0;
->> +			config_data->chan_in_config[i].bits = 0;
->> +			config_data->chan_in_config[i].min = 0;
->> +			config_data->chan_in_config[i].max = 0;
->> +			config_data->chan_out_config[i].kind = 0;
->> +			config_data->chan_out_config[i].bits = 0;
->> +			config_data->chan_out_config[i].min = 0;
->> +			config_data->chan_out_config[i].max = 0;
->> 		}
->
-> Or am I mistaken?
->
-> thanks,
->
-> greg k-h
+I'll take care of bugging the appropriate maintainer or merging it directly.
 
