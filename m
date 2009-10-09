@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933986AbZJIQ3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933911AbZJIQ1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933986AbZJIQ3m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 12:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933694AbZJIQ3l
+	id S933911AbZJIQ1k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 12:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933629AbZJIQ1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 12:29:41 -0400
-Received: from kroah.org ([198.145.64.141]:33648 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933862AbZJIQ3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 12:29:25 -0400
-Date: Fri, 9 Oct 2009 09:24:19 -0700
-From: Greg KH <greg@kroah.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/8] Staging: updates for Ralink drivers
-Message-ID: <20091009162419.GD2766@kroah.com>
-References: <20090922184321.7695.11150.sendpatchset@localhost.localdomain>
+	Fri, 9 Oct 2009 12:27:40 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:65271 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933569AbZJIQ1j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 12:27:39 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for CPU"
+Date: Fri, 9 Oct 2009 18:27:00 +0200
+User-Agent: KMail/1.9.9
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-wireless@vger.kernel.org
+References: <200910051500.55875.elendil@planet.nl> <200910082259.35204.elendil@planet.nl> <1255070103.7639.30.camel@marge.simson.net>
+In-Reply-To: <1255070103.7639.30.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090922184321.7695.11150.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200910091827.01774.elendil@planet.nl>
+X-OriginalArrivalTime: 09 Oct 2009 16:27:02.0292 (UTC) FILETIME=[54F79D40:01CA48FD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 22, 2009 at 08:43:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> Here are some major updates to Ralink drivers from the staging tree.
-> 
-> rt28x0 drivers are updated to match V2.1.0.0 vendor's drivers, rt2860
-> driver gets RT3090 PCIe chipset support and no longer needed separate
-> rt3090 driver is removed.
-> 
-> The end result is 100 KLOC gone and shared common code for all chipsets.
-> 
-> The patchset was tested with RT2860 and RT3070 chipsets.
+On Friday 09 October 2009, Mike Galbraith wrote:
+> sched: update the clock of runqueue select_task_rq() selected.
+>
+> In try_to_wake_up(), we update the runqueue clock, but select_task_rq()
+> may select a different runqueue than the one we updated, leaving the new
+> runqueue's clock stale for a bit.
+>
+> This patch cures occasional huge latencies reported by latencytop when
+> coming out of idle on a mostly idle NO_HZ box.
 
-Very cool work, thanks so much.  They are all now in my tree and in
-linux-next.
+This patch (without Arjan's previous one applied) also fixes my latency 
+issues. Nice work!
 
-greg k-h
+Cheers,
+FJP
