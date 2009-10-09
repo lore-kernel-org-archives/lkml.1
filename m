@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934475AbZJIWTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761397AbZJIWil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934475AbZJIWTY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 18:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934014AbZJIWTY
+	id S1761397AbZJIWil (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 18:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759009AbZJIWik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 18:19:24 -0400
-Received: from mga07.intel.com ([143.182.124.22]:45223 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751410AbZJIWTX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 18:19:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,534,1249282800"; 
-   d="scan'208";a="197219129"
-Date: Sat, 10 Oct 2009 00:20:13 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [Uclinux-dist-devel] [PATCH v4] mfd: ADP5520 Multifunction LCD
- Backlight and Keypad Input Device Driver
-Message-ID: <20091009222012.GD7523@sortiz.org>
-References: <1254988727-31726-1-git-send-email-vapier@gentoo.org>
- <20091009153219.GB7523@sortiz.org>
- <8bd0f97a0910091323x7392ccdcxf54f74d7f454110f@mail.gmail.com>
+	Fri, 9 Oct 2009 18:38:40 -0400
+Received: from kroah.org ([198.145.64.141]:54895 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758864AbZJIWij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 18:38:39 -0400
+Date: Fri, 9 Oct 2009 15:25:05 -0700
+From: Greg KH <greg@kroah.com>
+To: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, dm-devel@redhat.com,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH 0/8] SECURITY ISSUE with connector
+Message-ID: <20091009222505.GA28979@kroah.com>
+References: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a0910091323x7392ccdcxf54f74d7f454110f@mail.gmail.com>
+In-Reply-To: <1254487211-11810-1-git-send-email-philipp.reisner@linbit.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike,
-
-On Fri, Oct 09, 2009 at 04:23:42PM -0400, Mike Frysinger wrote:
-> On Fri, Oct 9, 2009 at 11:36, Samuel Ortiz wrote:
-> > On Thu, Oct 08, 2009 at 03:58:47AM -0400, Mike Frysinger wrote:
-> >> From: Michael Hennerich <michael.hennerich@analog.com>
-> >>
-> >> Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
-> >>
-> >> Subdevs:
-> >> LCD Backlight   : drivers/video/backlight/adp5520_bl
-> >> LEDs            : drivers/led/leds-adp5520
-> >> GPIO            : drivers/gpio/adp5520-gpio (ADP5520 only)
-> >> Keys            : drivers/input/keyboard/adp5520-keys (ADP5520 only)
-> >
-> > With your mfd core patch applied, adp5520-gpio.c and adp5520_bl.c are supposed
-> > to be buildable. Unfortunately, they both give build errors.
-> > So, you either provide me with a patch that fixes both of those, and I carry
-> > it with my mfd patchset, or you get your fixes applied upstream and I apply
-> > the mfd core patch after that.
+On Fri, Oct 02, 2009 at 02:40:03PM +0200, Philipp Reisner wrote:
+> Affected: All code that uses connector, in kernel and out of mainline
 > 
-> yes, the typo fixes in this patch had pieces propagate to the other
-> drivers.  if you dont mind carrying the other patchsets, i can send
-> them all to you ;). 
-Yes, I'm fine with that solution.
+> The connector, as it is today, does not allow the in kernel receiving
+> parts to do any checks on privileges of a message's sender.
+> 
+> I know, there are not many out there that like connector, but as
+> long as it is in the kernel, we have to fix the security issues it has!
+> 
+> Please either drop connector, or someone who feels a bit responsible
+> and has our beloved dictator's blessing, PLEASE PLEASE PLEASE take 
+> this into your tree, and send the pull request to Linus.
+> 
+> Patches 1 to 4 are already Acked-by Evgeny, the connector's maintainer.
+> Patches 5 to 7 are the obvious fixes to the connector user's code.
 
-Thanks in advance.
+These don't apply to the 2.6.31-stable tree at all.
 
-Cheers,
-Samuel.
+Could you provide them backported to that tree if you want to see them
+go into a .31-stable release?
 
+thanks,
 
-> there should be like 3 or 4 of them.
-> -mike
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+greg k-h
