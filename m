@@ -1,68 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbZJIK2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbZJIKfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760737AbZJIK2H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 06:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760726AbZJIK2G
+	id S1760731AbZJIKfH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 06:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760512AbZJIKfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 06:28:06 -0400
-Received: from eddie.linux-mips.org ([78.24.191.182]:51606 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760722AbZJIK2F (ORCPT
+	Fri, 9 Oct 2009 06:35:07 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:36336 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760389AbZJIKfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 06:28:05 -0400
-Date: Fri, 9 Oct 2009 12:28:14 +0200
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Wu Zhangjin <wuzhangjin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] kernel/time/tick-sched.c: fix warning of printk's
-	argument format
-Message-ID: <20091009102814.GA619@linux-mips.org>
-References: <1255013172-31599-1-git-send-email-wuzhangjin@gmail.com> <alpine.LFD.2.01.0910080755390.3432@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0910080755390.3432@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Fri, 9 Oct 2009 06:35:05 -0400
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, devicetree-discuss@ozlabs.org,
+       Wolfram Sang <w.sang@pengutronix.de>, Joe Perches <joe@perches.com>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Date: Fri,  9 Oct 2009 12:32:59 +0200
+Message-Id: <1255084379-12954-1-git-send-email-w.sang@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.3
+X-SA-Exim-Connect-IP: 92.198.50.58
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+Subject: [RFC] scripts/get_maintainer: add emails based on keywords in the patch
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 08:03:40AM -0700, Linus Torvalds wrote:
+Make get_maintainer.pl scan the modifying lines of a patch for a list of
+keywords and add an associated email if found. The first user is the
+devicetree-discuss mailing list which should always be cc'ed if a device tree
+property is inserted/removed (keyword 'of_get_property'). This patch is the
+result from commit 1965d30356c1c65660ba3330927671cfe81acdd5 entering mainline
+which seems to have been missed by all parties interested in the device tree
+(and at least had the documentation missing). As adding properties can happen
+anywhere and so there is no fitting fileglob, this keyword based approach is
+proposed.
 
-> > This patch will fix the following warning:
-> 
-> No it won't. It will add a lot of new warnings.
-> 
-> The thing is, almost all architectures (including x86) have
-> 
-> 	unsigned int __softirq_pending;
-> 
-> but then in <asm-generic/hardirq.h> we have
-> 
-> 	unsigned long __softirq_pending;
-> 
-> for some unfathomable reason. Quite frankly, I think Arnd just screwed up 
-> the "generic" version, and the fix is almost certainly to just make the 
-> generic version match all the main architectures. 
-> 
-> I don't have any architectures using the generic header file, though, so 
-> I'm not going to do that change blindly. People who do should look at it 
-> (alpha, powerpc and mips look like the only ones that might be 64-bit, but 
-> I didn't check very carefully - just grepped for it)
-> 
-> Added Cc's for some people that have worked on, or used, that generic 
-> header file. Is there any possible reason why it is "unsigned long" in 
-> that one?
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Joe Perches <joe@perches.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ scripts/get_maintainer.pl |   24 ++++++++++++++++--------
+ 1 files changed, 16 insertions(+), 8 deletions(-)
 
-I think for no other reason than many other bitfields in kernel being
-unsigned long or arrays of unsigned long.  Except of course that
-__softirq_pending is never being used with the <asm/bitops.h> operations
-that operate on unsigned longs.
+diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+index cdb44b6..e1150ea 100755
+--- a/scripts/get_maintainer.pl
++++ b/scripts/get_maintainer.pl
+@@ -44,6 +44,11 @@ my $help = 0;
+ 
+ my $exit = 0;
+ 
++my %keywords_to_mail = (
++	'of_get_property' => 'L: devicetree-discuss@lists.ozlabs.org',
++);
++my $keywords_to_mail_match = join('|', keys %keywords_to_mail);
++
+ my @penguin_chief = ();
+ push(@penguin_chief,"Linus Torvalds:torvalds\@linux-foundation.org");
+ #Andrew wants in on most everything - 2009/01/14
+@@ -188,6 +193,12 @@ if ($email_remove_duplicates) {
+ 
+ my @files = ();
+ my @range = ();
++my @email_to = ();
++my @list_to = ();
++my @scm = ();
++my @web = ();
++my @subsystem = ();
++my @status = ();
+ 
+ foreach my $file (@ARGV) {
+     ##if $file is a directory and it lacks a trailing slash, add one
+@@ -213,7 +224,11 @@ foreach my $file (@ARGV) {
+ 		if ($email_git_blame) {
+ 		    push(@range, "$lastfile:$1:$2");
+ 		}
+-	    }
++	    # Check the lines which a patch modifies for keywords; add mail if found.
++	    } elsif (m/^[+-].*($keywords_to_mail_match)/o) {
++		(my $keyword_mail = $keywords_to_mail{$1}) =~ s/^([LM]): //;
++		push( @{ ($1 eq 'L') ? \@list_to : \@email_to }, $keyword_mail );
++	   }
+ 	}
+ 	close(PATCH);
+ 	if ($file_cnt == @files) {
+@@ -224,13 +239,6 @@ foreach my $file (@ARGV) {
+     }
+ }
+ 
+-my @email_to = ();
+-my @list_to = ();
+-my @scm = ();
+-my @web = ();
+-my @subsystem = ();
+-my @status = ();
+-
+ # Find responsible parties
+ 
+ foreach my $file (@files) {
+-- 
+1.6.3.3
 
-Patch in followup email.
-
-  Ralf
