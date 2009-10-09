@@ -1,130 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761461AbZJIUjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbZJIUiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761461AbZJIUjf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 16:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758931AbZJIUje
+	id S1761467AbZJIUiv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 16:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761419AbZJIUip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 16:39:34 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:52309 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753443AbZJIUjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 16:39:33 -0400
-Message-ID: <4ACF9EDF.5000808@redhat.com>
-Date: Fri, 09 Oct 2009 10:36:47 -1000
-From: Zachary Amsden <zamsden@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Fri, 9 Oct 2009 16:38:45 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60104 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760694AbZJIUio (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 16:38:44 -0400
+Date: Fri, 9 Oct 2009 22:38:02 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: staging: where to put system-wide includes
+Message-ID: <20091009203802.GD2040@elf.ucw.cz>
+References: <20091008112817.GA28916@elf.ucw.cz>
+ <20091008184027.GA5890@infradead.org>
 MIME-Version: 1.0
-To: Jan Kiszka <jan.kiszka@web.de>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [PATCH v4: kvm 2/4] Kill the confusing tsc_ref_khz and ref_freq
- variables.
-References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com> <1254260317-3490-2-git-send-email-zamsden@redhat.com> <4ACE734D.10600@web.de> <4ACF9C9B.2040006@redhat.com> <4ACF9EC3.2050901@web.de>
-In-Reply-To: <4ACF9EC3.2050901@web.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091008184027.GA5890@infradead.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/09/2009 10:36 AM, Jan Kiszka wrote:
-> Zachary Amsden wrote:
->    
->> On 10/08/2009 01:18 PM, Jan Kiszka wrote:
->>      
->>> Zachary Amsden wrote:
->>>
->>>        
->>>> They are globals, not clearly protected by any ordering or locking, and
->>>> vulnerable to various startup races.
->>>>
->>>> Instead, for variable TSC machines, register the cpufreq notifier and
->>>> get
->>>> the TSC frequency directly from the cpufreq machinery.  Not only is it
->>>> always right, it is also perfectly accurate, as no error prone
->>>> measurement
->>>> is required.
->>>>
->>>> On such machines, when a new CPU online is brought online, it isn't
->>>> clear what
->>>> frequency it will start with, and it may not correspond to the
->>>> reference, thus
->>>> in hardware_enable we clear the cpu_tsc_khz variable to zero and make
->>>> sure
->>>> it is set before running on a VCPU.
->>>>
->>>> Signed-off-by: Zachary Amsden<zamsden@redhat.com>
->>>> ---
->>>>    arch/x86/kvm/x86.c |   26 ++++++++++++++++----------
->>>>    1 files changed, 16 insertions(+), 10 deletions(-)
->>>>
->>>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
->>>> index 15d2ace..de4ce8f 100644
->>>> --- a/arch/x86/kvm/x86.c
->>>> +++ b/arch/x86/kvm/x86.c
->>>> @@ -1326,6 +1326,8 @@ out:
->>>>    void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
->>>>    {
->>>>        kvm_x86_ops->vcpu_load(vcpu, cpu);
->>>> +    if (unlikely(per_cpu(cpu_tsc_khz, cpu) == 0))
->>>> +        per_cpu(cpu_tsc_khz, cpu) = cpufreq_quick_get(cpu);
->>>>        kvm_request_guest_time_update(vcpu);
->>>>    }
->>>>
->>>> @@ -3061,9 +3063,6 @@ static void bounce_off(void *info)
->>>>        /* nothing */
->>>>    }
->>>>
->>>> -static unsigned int  ref_freq;
->>>> -static unsigned long tsc_khz_ref;
->>>> -
->>>>    static int kvmclock_cpufreq_notifier(struct notifier_block *nb,
->>>> unsigned long val,
->>>>                         void *data)
->>>>    {
->>>> @@ -3072,14 +3071,11 @@ static int kvmclock_cpufreq_notifier(struct
->>>> notifier_block *nb, unsigned long va
->>>>        struct kvm_vcpu *vcpu;
->>>>        int i, send_ipi = 0;
->>>>
->>>> -    if (!ref_freq)
->>>> -        ref_freq = freq->old;
->>>> -
->>>>        if (val == CPUFREQ_PRECHANGE&&   freq->old>   freq->new)
->>>>            return 0;
->>>>        if (val == CPUFREQ_POSTCHANGE&&   freq->old<   freq->new)
->>>>            return 0;
->>>> -    per_cpu(cpu_tsc_khz, freq->cpu) = cpufreq_scale(tsc_khz_ref,
->>>> ref_freq, freq->new);
->>>> +    per_cpu(cpu_tsc_khz, freq->cpu) = freq->new;
->>>>
->>>>        spin_lock(&kvm_lock);
->>>>        list_for_each_entry(kvm,&vm_list, vm_list) {
->>>> @@ -3120,12 +3116,14 @@ static void kvm_timer_init(void)
->>>>    {
->>>>        int cpu;
->>>>
->>>> -    for_each_possible_cpu(cpu)
->>>> -        per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
->>>>        if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
->>>> -        tsc_khz_ref = tsc_khz;
->>>>            cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
->>>>                          CPUFREQ_TRANSITION_NOTIFIER);
->>>> +        for_each_online_cpu(cpu)
->>>> +            per_cpu(cpu_tsc_khz, cpu) = cpufreq_get(cpu);
->>>>
->>>>          
->>> This doesn't build for !CONFIG_CPU_FREQ.
->>>
->>>        
->> And did it before?
->>      
-> Yes, because cpufreq_get, which is undefined without CONFIG_CPU_FREQ,
-> did not exist so far. One may argue that this is a deficit of the
-> cpufreq API. However, it needs fixing.
->    
+On Thu 2009-10-08 14:40:27, Christoph Hellwig wrote:
+> On Thu, Oct 08, 2009 at 01:28:18PM +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > In staging, I need some includes that will become "system-wide" at the
+> > end.
+> > 
+> > Is it acceptable to create drivers/staging/include/linux (and
+> > friends), and then use -I magic to include those headers?
+> 
+> If you need system-wide inclusions it's pretty good sign that what
+> you add is not a simple driver and thus should not just go into the
+> staging tree.  Given that you're a long-timer kernel hackers what's the
+> problem with getting your code fully up to kernel standards anyway?
 
-I'll send a patch today.  I'm going with API deficient and will fix 
-that, but this means I will also require a fix for kvm-kmod :(
+Well, it is not exactly my code -- I'm trying to merge HTC Dream
+support. Problem with "simply cleaning it up" is that its 122Kloc.
 
-Zach
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
