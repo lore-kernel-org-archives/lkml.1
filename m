@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760802AbZJINbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbZJINbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760802AbZJINbp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 09:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760540AbZJINbo
+	id S1760771AbZJINbR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 09:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760685AbZJINbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 09:31:44 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:57511 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751367AbZJINbn (ORCPT
+	Fri, 9 Oct 2009 09:31:16 -0400
+Received: from omr8.networksolutionsemail.com ([205.178.146.58]:41878 "EHLO
+	omr8.networksolutionsemail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760342AbZJINbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 09:31:43 -0400
-Date: Fri, 9 Oct 2009 09:23:17 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2009-10-08
-Message-ID: <20091009132317.GA22719@tuxdriver.com>
-References: <20091008223454.GB2798@tuxdriver.com> <200910090108.08838.mb@bu3sch.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200910090108.08838.mb@bu3sch.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Fri, 9 Oct 2009 09:31:16 -0400
+Message-Id: <449C2FDE-42DD-490C-8288-CF03224BDA34@kayser.net>
+From: Donald Kayser <linux@kayser.net>
+To: linuxkernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <7AD77164-8476-4138-A390-B604CD18A221@kayser.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: ppc_md.SMI replacement for 2.6
+Date: Fri, 9 Oct 2009 08:30:30 -0500
+References: <61241B44-32BD-4708-954F-AEE7560382DE@kayser.net> <7AD77164-8476-4138-A390-B604CD18A221@kayser.net>
+X-Mailer: Apple Mail (2.936)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 01:08:06AM +0200, Michael Buesch wrote:
-> On Friday 09 October 2009 00:34:54 John W. Linville wrote:
-> > Albert Herranz (1):
-> >       b43: do not stack-allocate pio rx/tx header and tail buffers
-> 
-> Come on, this is _not_ funny anymore. I did _not_ ack this patch, because I do _not_ like it.
-> I was planning to do a better solution, but I didn't have the time, yet.
-> Can you _please_ either:
-> - Wait for my ack before you apply random b43 patches
-> or
-> - Remove me from MAINTAINERS
+On further comparison, this section of code has been added by the  
+vendor that actually ported linux 2.4 to this PPC HPPB target. So, if  
+anyone would like to lend a thought towards System Managment  
+Exceptions on PPC, please cc me at linux@kayser.net. I will be  
+stopping the subscription to this list shortly. Regards, Donald
 
-Michael,
+On Oct 8, 2009, at 8:37 AM, Donald Kayser wrote:
 
-After Albert posted his first version of the patch, you said:
+> I have found the differences between the 2.4 and 2.6 kernel. It is  
+> in linux-2.4/arch/ppc/kernel/traps.c and linux-2.6/arch/powerpc/ 
+> kernel/traps.c in the function SMIException(). There is no longer  
+> the code segment
+>
+> if (ppc_md.SMI)
+> {
+>  ppc_md.SMI(regs);
+>  return;
+> }
+>
+> There is now only a
+>
+> die("System Management Interrupt", regs, SIGABRT);
+>
+> I am guessing that the SMI callback is no longer needed by the linux  
+> community at large, so I modified the code for my specific hardware  
+> (HPPB) and acknowledged the exception as in the 2.4 kernel, and  
+> returned from the exception without the call to die(). My problem  
+> now is that it doesn't seem to work. Does anyone have a reason why  
+> the SMI exception might hang the system when it has been provided a  
+> handler?
+>
+> Thanks in advance.
+>
+> Donald Kayser
+>
+> On Oct 7, 2009, at 10:06 AM, Donald Kayser wrote:
+>
+>> I have ported the 2.6 kernel to an embedded PPC target (old stuff).  
+>> I have managed to figure everything out, but can't find any  
+>> replacement for a SMI handler. The original 2.4 version for this  
+>> target has a bit of code ppc_md.SMI == SmiFuncHandler; I have not  
+>> been able to find in the current source anything like this. I am  
+>> not certain that I need to provide a handler at all, but the  
+>> original developers saw some reason for including it. The  
+>> particular handler does not do anything more than cancel a watchdog  
+>> listener for this specific target. I have been living without the  
+>> handler, but would like to find any kind of replacement if it is  
+>> supported.
+>>
+>> Thanks,
+>> Donald Kayser
+>> linux@kayser.net
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-"Just embed it into struct b43_wl (surround it by #ifdef CONFIG_B43_PIO). No need
-to kzalloc then and it saves some memory.
-You also need to alloc 4 bytes for the tail buffer (that currently is on the stack, too)."
-
-AFAICT he complied with that request when he posted the second version.
-Since the patch seemed fine otherwise, I applied it; and since it is
-a fix I sent it on for 2.6.32.
-
-As Dave suggested, there is plenty of time to fix it "properly"
-for 2.6.33 and beyond.  I'm happy to accomodate you.
-
-John
-
-P.S.  Please understand that while some driver maintainers want to
-ack every patch, others see that as a burden and get annoyed with me
-if I don't apply reasonable patches without bothering them.  It can
-be a bit difficult these things...
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
