@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760336AbZJIIcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758415AbZJIIeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760336AbZJIIcN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 04:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758446AbZJIIcL
+	id S1758415AbZJIIeJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 04:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZJIIeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 04:32:11 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60520 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760158AbZJIIcJ (ORCPT
+	Fri, 9 Oct 2009 04:34:07 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:5706 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754542AbZJIIeE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 04:32:09 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4ACEF4D9.9090600@jp.fujitsu.com>
-Date: Fri, 09 Oct 2009 17:31:21 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 9 Oct 2009 04:34:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qDNQF9JQ2Dr2lHQ+eJSxnOa3s9FpPhbW9VBUShZ8g1unrhjuF9yMAjFMSxPAKhGRph
+         3O+BbYq+mpf87nXnzNfreFGjc/WoXEXml7IlmfMvyqNOijFLo2XEWc+i9KzOkuiLgnLW
+         zm6h7F133VcYQH8hMqampflL+AXnm+U0Dsj64=
 MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 6/6] mce-inject: use injected mce only during faked handler
- call
-References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com>	 <4AC95F5A.4000708@jp.fujitsu.com>  <4AC96391.1060001@jp.fujitsu.com>	 <1255072482.5228.157.camel@yhuang-dev.sh.intel.com>	 <4ACEE5E0.3050701@jp.fujitsu.com> <1255074286.5228.163.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1255074286.5228.163.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4ACE3124.4060109@billgatliff.com>
+References: <20091007061822.GA7602@july>
+	 <5d5443650910081128l58f45148m87735185a0094c31@mail.gmail.com>
+	 <4ACE3124.4060109@billgatliff.com>
+Date: Fri, 9 Oct 2009 14:02:57 +0530
+Message-ID: <5d5443650910090132x5712b027j5d75d10821de5cfd@mail.gmail.com>
+Subject: Re: [PATCH 5/6] haptic: Samsung SoCs PWM controlled haptic support
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Bill Gatliff <bgat@billgatliff.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, ben-linux@fluff.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> On Fri, 2009-10-09 at 15:27 +0800, Hidetoshi Seto wrote: 
->> Huang Ying wrote:
->>> This is another example for you to use my idea, implement it in a
->>> similar way and send it out as your own.
->> I used "Reported-by:" for this patch, having some intent to indicate
->> that this patch uses an idea different from the original one, and that
->> this patch aims at the problem certainly reported by you.
-> 
-> The point of the idea is to use two flags instead of one flag, not the
-> name of the flag or they are inside/outside of struct mce.
+Hi Bill,
 
-Humm, I could be wrong and could misread your comment...
+On Fri, Oct 9, 2009 at 12:06 AM, Bill Gatliff <bgat@billgatliff.com> wrote:
+> Trilok Soni wrote:
+>>
+>> Adding Bill Gatliff.
+>>
+>> Hi Kyungmin,
+>>
+>> Most of the driver looks fine. I have only one generic comment, but
+>> not for this driver:
+>>
+>> - Someone should really work on getting PWM framework (may be the one
+>> written by Bill Gatliff) into the kernel, because
+>>  if we don't do this and if new PWM controller provides it's own APIs
+>> then we can't leverage the chips using them, like the
+>>  case here for ISA1000 and ISA1200. These chips are using the pwm
+>> APIs exported by Samsung PWM controller, but it would
+>>  be painful to integrate other PWM controller if that has slightly
+>> little different API due to its nature.
+>>
+>>  So, it would be better to get one generic PWM framework mainline in
+>> the kernel.
+>>
+>
+> I can repost for review, if you like.
+>
+> The only objection I received last time, IIRC, was that I proffered it as a
+> "generic" API but only provided support for a couple of AT91 parts.  I
+> haven't had much time to add other support, so I haven't pushed for
+> inclusion.
+>
+> I would be happy to coordinate the development/migration of support to the
+> API.  I can still do the AT91 parts and probably PXA, maybe
+> OMAP3430/Beagleboard.  But I would need others to help me with the rest.
 
-The point of my idea is to use two separated flags, "inject_flags" for
-inject tool and "valid" for kernel, instead of one flag as you proposed,
-"inject_flags" shared by both. 
-And I think the flag for kernel should be outside of struct mce.
+Two drivers are OK to begin with and for mainline. It is expected that
+framework author may not have all parts with him to demonstrate a
+thumbrule of atleast three driver per framework in-order to make it
+mainline to test most the framework logic.
 
-Once I complained about the name of flag ".finished", because you were
-trying to add "LOADED" flag.  I thought that "if .finished but !LOADED, it
-means the loading data to struct is finished but not loaded.. ???what???"
+If mainline authors doesn't agree still, we can still target this
+through drivers\stagic area through Greg KH. Please post your
+refreshed version.
 
-So at first I tried to add 3rd state to ".finished", but soon I agreed
-that it is not good idea.
-
-After that I started to think about having two separated flags, and the
-result is this [6/6] patch in -v2.
-
-In short, I believe that my idea is "use two flags" and your idea is
-"share one flag" ... right?
-
-
-The only thing what I want to do here is merge your "fix" into upstream.
-
-
-Thanks,
-H.Seto
-
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
