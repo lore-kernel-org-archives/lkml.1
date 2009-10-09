@@ -1,228 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbZJIPww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933666AbZJIP5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761053AbZJIPww (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 11:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758267AbZJIPwv
+	id S933666AbZJIP5W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 11:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932947AbZJIP5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 11:52:51 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:56175 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755191AbZJIPwu (ORCPT
+	Fri, 9 Oct 2009 11:57:22 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:52887 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932688AbZJIP5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 11:52:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=OZQW60eeeAcUDwB/8wnoYFcleC+6hChEiSwdgs+tmlS0Y8GwpfUlSxXEN/DwwrLvxT
-         YSJN0aA4SrTmEq1wkqatQevizRzB6xW5ZDE6l2itfk5AwuU0s4/SAI/n3OR829VGa/Bf
-         t0Bl4cPgQyIrYJIzShTP8jW4NVTyNcX1IIU6k=
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-To: linux-mips <linux-mips@linux-mips.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, ralf@linux-mips.org, rjw@sisk.pl,
-       yuasa@linux-mips.org, Wu Zhangjin <wuzhangjin@gmail.com>
-Subject: [PATCH -v1] MIPS: add IRQF_TIMER flag for Timer Interrupts
-Date: Fri,  9 Oct 2009 23:50:50 +0800
-Message-Id: <1255103450-12537-1-git-send-email-wuzhangjin@gmail.com>
-X-Mailer: git-send-email 1.6.2.1
+	Fri, 9 Oct 2009 11:57:21 -0400
+Message-ID: <4ACF5CD7.8050306@nokia.com>
+Date: Fri, 09 Oct 2009 18:55:03 +0300
+From: Roger Quadros <ext-roger.quadros@nokia.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Samuel Ortiz <sameo@linux.intel.com>
+CC: ext Roger Quadros <quadros.roger@gmail.com>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       Felipe Contreras <felipe.contreras@gmail.com>, jouni.hogander@nokia.com
+Subject: Re: [PATCH v2] twl4030: Fix boot with twl4030 usb transceiver enabled
+References: <1254385536-26912-1-git-send-email-ext-roger.quadros@nokia.com> <b90c0690910090532y60cced09j2c805a5a04dbcbb7@mail.gmail.com>
+In-Reply-To: <b90c0690910090532y60cced09j2c805a5a04dbcbb7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Oct 2009 15:55:43.0378 (UTC) FILETIME=[F50C1720:01CA48F8]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add IRQF_TIMER flag for all Timer interrupts in linux-MIPS,
-which will help to not disable the Timer IRQ when suspending to ensure
-resuming normally(d6c585a4342a2ff627a29f9aea77c5ed4cd76023) and not
-thread them when enabled PREEMPT_RT.
+Hi,
 
-NOTE: Perhaps there are also some board-specific Timer interrupts
-missing here!
+I just observed that this patch does not work as intended with 2.6.31.3
 
-(This -v1 version Incorporated the feedback from Atsushi Nemoto
- <anemo@mba.ocn.ne.jp>.)
+It seems that twl4030_usb_probe() and hence twl4030_usb_ldo_init() is called 
+before the required regulators have been 'linked' to the device in 
+twl4030-core.c, thus causing regulator_get(twl->dev, "usb3v1"); to fail, and the 
+boot lockup
 
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
----
- arch/mips/jazz/irq.c                |    2 +-
- arch/mips/kernel/cevt-bcm1480.c     |    2 +-
- arch/mips/kernel/cevt-ds1287.c      |    2 +-
- arch/mips/kernel/cevt-gt641xx.c     |    2 +-
- arch/mips/kernel/cevt-r4k.c         |    2 +-
- arch/mips/kernel/cevt-sb1250.c      |    2 +-
- arch/mips/kernel/cevt-txx9.c        |    2 +-
- arch/mips/kernel/i8253.c            |    2 +-
- arch/mips/nxp/pnx8550/common/int.c  |    2 +-
- arch/mips/nxp/pnx8550/common/time.c |    4 ++--
- arch/mips/sgi-ip27/ip27-timer.c     |    2 +-
- arch/mips/sni/time.c                |    2 +-
- 12 files changed, 13 insertions(+), 13 deletions(-)
+Isn't there a better way to avoid such a situation?
 
-diff --git a/arch/mips/jazz/irq.c b/arch/mips/jazz/irq.c
-index 7fd170d..7bd32d0 100644
---- a/arch/mips/jazz/irq.c
-+++ b/arch/mips/jazz/irq.c
-@@ -134,7 +134,7 @@ static irqreturn_t r4030_timer_interrupt(int irq, void *dev_id)
- 
- static struct irqaction r4030_timer_irqaction = {
- 	.handler	= r4030_timer_interrupt,
--	.flags		= IRQF_DISABLED,
-+	.flags		= IRQF_DISABLED | IRQF_TIMER,
- 	.name		= "R4030 timer",
- };
- 
-diff --git a/arch/mips/kernel/cevt-bcm1480.c b/arch/mips/kernel/cevt-bcm1480.c
-index e02f79b..bfea327 100644
---- a/arch/mips/kernel/cevt-bcm1480.c
-+++ b/arch/mips/kernel/cevt-bcm1480.c
-@@ -144,7 +144,7 @@ void __cpuinit sb1480_clockevent_init(void)
- 	bcm1480_unmask_irq(cpu, irq);
- 
- 	action->handler	= sibyte_counter_handler;
--	action->flags	= IRQF_DISABLED | IRQF_PERCPU;
-+	action->flags	= IRQF_DISABLED | IRQF_PERCPU | IRQF_TIMER;
- 	action->name	= name;
- 	action->dev_id	= cd;
- 
-diff --git a/arch/mips/kernel/cevt-ds1287.c b/arch/mips/kernel/cevt-ds1287.c
-index 6996da4..00a4da2 100644
---- a/arch/mips/kernel/cevt-ds1287.c
-+++ b/arch/mips/kernel/cevt-ds1287.c
-@@ -107,7 +107,7 @@ static irqreturn_t ds1287_interrupt(int irq, void *dev_id)
- 
- static struct irqaction ds1287_irqaction = {
- 	.handler	= ds1287_interrupt,
--	.flags		= IRQF_DISABLED | IRQF_PERCPU,
-+	.flags		= IRQF_DISABLED | IRQF_PERCPU | IRQF_TIMER,
- 	.name		= "ds1287",
- };
- 
-diff --git a/arch/mips/kernel/cevt-gt641xx.c b/arch/mips/kernel/cevt-gt641xx.c
-index 92351e0..f5d265e 100644
---- a/arch/mips/kernel/cevt-gt641xx.c
-+++ b/arch/mips/kernel/cevt-gt641xx.c
-@@ -113,7 +113,7 @@ static irqreturn_t gt641xx_timer0_interrupt(int irq, void *dev_id)
- 
- static struct irqaction gt641xx_timer0_irqaction = {
- 	.handler	= gt641xx_timer0_interrupt,
--	.flags		= IRQF_DISABLED | IRQF_PERCPU,
-+	.flags		= IRQF_DISABLED | IRQF_PERCPU | IRQF_TIMER,
- 	.name		= "gt641xx_timer0",
- };
- 
-diff --git a/arch/mips/kernel/cevt-r4k.c b/arch/mips/kernel/cevt-r4k.c
-index 2652362..b469ad0 100644
---- a/arch/mips/kernel/cevt-r4k.c
-+++ b/arch/mips/kernel/cevt-r4k.c
-@@ -83,7 +83,7 @@ out:
- 
- struct irqaction c0_compare_irqaction = {
- 	.handler = c0_compare_interrupt,
--	.flags = IRQF_DISABLED | IRQF_PERCPU,
-+	.flags = IRQF_DISABLED | IRQF_PERCPU | IRQF_TIMER,
- 	.name = "timer",
- };
- 
-diff --git a/arch/mips/kernel/cevt-sb1250.c b/arch/mips/kernel/cevt-sb1250.c
-index ac5903d..da78eea 100644
---- a/arch/mips/kernel/cevt-sb1250.c
-+++ b/arch/mips/kernel/cevt-sb1250.c
-@@ -143,7 +143,7 @@ void __cpuinit sb1250_clockevent_init(void)
- 	sb1250_unmask_irq(cpu, irq);
- 
- 	action->handler	= sibyte_counter_handler;
--	action->flags	= IRQF_DISABLED | IRQF_PERCPU;
-+	action->flags	= IRQF_DISABLED | IRQF_PERCPU | IRQF_TIMER;
- 	action->name	= name;
- 	action->dev_id	= cd;
- 
-diff --git a/arch/mips/kernel/cevt-txx9.c b/arch/mips/kernel/cevt-txx9.c
-index 0037f21..218ee6b 100644
---- a/arch/mips/kernel/cevt-txx9.c
-+++ b/arch/mips/kernel/cevt-txx9.c
-@@ -146,7 +146,7 @@ static irqreturn_t txx9tmr_interrupt(int irq, void *dev_id)
- 
- static struct irqaction txx9tmr_irq = {
- 	.handler	= txx9tmr_interrupt,
--	.flags		= IRQF_DISABLED | IRQF_PERCPU,
-+	.flags		= IRQF_DISABLED | IRQF_PERCPU | IRQF_TIMER,
- 	.name		= "txx9tmr",
- 	.dev_id		= &txx9_clock_event_device,
- };
-diff --git a/arch/mips/kernel/i8253.c b/arch/mips/kernel/i8253.c
-index f7d8d5d..ed5c441 100644
---- a/arch/mips/kernel/i8253.c
-+++ b/arch/mips/kernel/i8253.c
-@@ -98,7 +98,7 @@ static irqreturn_t timer_interrupt(int irq, void *dev_id)
- 
- static struct irqaction irq0  = {
- 	.handler = timer_interrupt,
--	.flags = IRQF_DISABLED | IRQF_NOBALANCING,
-+	.flags = IRQF_DISABLED | IRQF_NOBALANCING | IRQF_TIMER,
- 	.name = "timer"
- };
- 
-diff --git a/arch/mips/nxp/pnx8550/common/int.c b/arch/mips/nxp/pnx8550/common/int.c
-index f080f11..7aca7d5 100644
---- a/arch/mips/nxp/pnx8550/common/int.c
-+++ b/arch/mips/nxp/pnx8550/common/int.c
-@@ -172,7 +172,7 @@ static struct irqaction gic_action = {
- 
- static struct irqaction timer_action = {
- 	.handler =	no_action,
--	.flags =	IRQF_DISABLED,
-+	.flags =	IRQF_DISABLED | IRQF_TIMER,
- 	.name =		"Timer",
- };
- 
-diff --git a/arch/mips/nxp/pnx8550/common/time.c b/arch/mips/nxp/pnx8550/common/time.c
-index 18b1927..8836c62 100644
---- a/arch/mips/nxp/pnx8550/common/time.c
-+++ b/arch/mips/nxp/pnx8550/common/time.c
-@@ -59,7 +59,7 @@ static irqreturn_t pnx8xxx_timer_interrupt(int irq, void *dev_id)
- 
- static struct irqaction pnx8xxx_timer_irq = {
- 	.handler	= pnx8xxx_timer_interrupt,
--	.flags		= IRQF_DISABLED | IRQF_PERCPU,
-+	.flags		= IRQF_DISABLED | IRQF_PERCPU | IRQF_TIMER,
- 	.name		= "pnx8xxx_timer",
- };
- 
-@@ -72,7 +72,7 @@ static irqreturn_t monotonic_interrupt(int irq, void *dev_id)
- 
- static struct irqaction monotonic_irqaction = {
- 	.handler = monotonic_interrupt,
--	.flags = IRQF_DISABLED,
-+	.flags = IRQF_DISABLED | IRQF_TIMER,
- 	.name = "Monotonic timer",
- };
- 
-diff --git a/arch/mips/sgi-ip27/ip27-timer.c b/arch/mips/sgi-ip27/ip27-timer.c
-index 6d0e59f..d6802d6 100644
---- a/arch/mips/sgi-ip27/ip27-timer.c
-+++ b/arch/mips/sgi-ip27/ip27-timer.c
-@@ -105,7 +105,7 @@ static irqreturn_t hub_rt_counter_handler(int irq, void *dev_id)
- 
- struct irqaction hub_rt_irqaction = {
- 	.handler	= hub_rt_counter_handler,
--	.flags		= IRQF_DISABLED | IRQF_PERCPU,
-+	.flags		= IRQF_DISABLED | IRQF_PERCPU | IRQF_TIMER,
- 	.name		= "hub-rt",
- };
- 
-diff --git a/arch/mips/sni/time.c b/arch/mips/sni/time.c
-index 62df6a5..f3b60e6 100644
---- a/arch/mips/sni/time.c
-+++ b/arch/mips/sni/time.c
-@@ -67,7 +67,7 @@ static irqreturn_t a20r_interrupt(int irq, void *dev_id)
- 
- static struct irqaction a20r_irqaction = {
- 	.handler	= a20r_interrupt,
--	.flags		= IRQF_DISABLED | IRQF_PERCPU,
-+	.flags		= IRQF_DISABLED | IRQF_PERCPU | IRQF_TIMER,
- 	.name		= "a20r-timer",
- };
- 
--- 
-1.6.2.1
+cheers,
+-roger
+
+ext Roger Quadros wrote:
+> Hi Samuel,
+> 
+> What is the status of this patch?
+> Without this patch we are unable to boot on systems using musb usb controller.
+> 
+> cheers,
+> -roger.
+> 
+> On Thu, Oct 1, 2009 at 11:25 AM, Roger Quadros
+> <ext-roger.quadros@nokia.com> wrote:
+>> The usb regulator supplies (usb1v5, usb1v8 & usb3v1) must be available
+>> before adding the twl4030_usb child, else twl4030_usb_ldo_init() will
+>> always fail thus causing boot lock-up.
+>>
+>> This patch fixes boot on OMAP systems using the twl4030 usb transceiver.
+>> CONFIG_TWL4030_USB=y
+>>
+>> Signed-off-by: Roger Quadros <ext-roger.quadros@nokia.com>
+>> ---
+>>  drivers/mfd/twl4030-core.c |   89 ++++++++++++++++++++++---------------------
+>>  1 files changed, 46 insertions(+), 43 deletions(-)
+>>
+>> diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+>> index e424cf6..e832e97 100644
+>> --- a/drivers/mfd/twl4030-core.c
+>> +++ b/drivers/mfd/twl4030-core.c
+>> @@ -480,7 +480,6 @@ static int
+>>  add_children(struct twl4030_platform_data *pdata, unsigned long features)
+>>  {
+>>        struct device   *child;
+>> -       struct device   *usb_transceiver = NULL;
+>>
+>>        if (twl_has_bci() && pdata->bci && !(features & TPS_SUBSET)) {
+>>                child = add_child(3, "twl4030_bci",
+>> @@ -532,16 +531,61 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+>>        }
+>>
+>>        if (twl_has_usb() && pdata->usb) {
+>> +
+>> +               static struct regulator_consumer_supply usb1v5 = {
+>> +                       .supply =       "usb1v5",
+>> +               };
+>> +               static struct regulator_consumer_supply usb1v8 = {
+>> +                       .supply =       "usb1v8",
+>> +               };
+>> +               static struct regulator_consumer_supply usb3v1 = {
+>> +                       .supply =       "usb3v1",
+>> +               };
+>> +
+>> +       /* First add the regulators so that they can be used by transceiver */
+>> +               if (twl_has_regulator()) {
+>> +                       /* this is a template that gets copied */
+>> +                       struct regulator_init_data usb_fixed = {
+>> +                               .constraints.valid_modes_mask =
+>> +                                       REGULATOR_MODE_NORMAL
+>> +                                       | REGULATOR_MODE_STANDBY,
+>> +                               .constraints.valid_ops_mask =
+>> +                                       REGULATOR_CHANGE_MODE
+>> +                                       | REGULATOR_CHANGE_STATUS,
+>> +                       };
+>> +
+>> +                       child = add_regulator_linked(TWL4030_REG_VUSB1V5,
+>> +                                                     &usb_fixed, &usb1v5, 1);
+>> +                       if (IS_ERR(child))
+>> +                               return PTR_ERR(child);
+>> +
+>> +                       child = add_regulator_linked(TWL4030_REG_VUSB1V8,
+>> +                                                     &usb_fixed, &usb1v8, 1);
+>> +                       if (IS_ERR(child))
+>> +                               return PTR_ERR(child);
+>> +
+>> +                       child = add_regulator_linked(TWL4030_REG_VUSB3V1,
+>> +                                                     &usb_fixed, &usb3v1, 1);
+>> +                       if (IS_ERR(child))
+>> +                               return PTR_ERR(child);
+>> +
+>> +               }
+>> +
+>>                child = add_child(0, "twl4030_usb",
+>>                                pdata->usb, sizeof(*pdata->usb),
+>>                                true,
+>>                                /* irq0 = USB_PRES, irq1 = USB */
+>>                                pdata->irq_base + 8 + 2, pdata->irq_base + 4);
+>> +
+>>                if (IS_ERR(child))
+>>                        return PTR_ERR(child);
+>>
+>>                /* we need to connect regulators to this transceiver */
+>> -               usb_transceiver = child;
+>> +               if (twl_has_regulator() && child) {
+>> +                       usb1v5.dev = child;
+>> +                       usb1v8.dev = child;
+>> +                       usb3v1.dev = child;
+>> +               }
+>>        }
+>>
+>>        if (twl_has_watchdog()) {
+>> @@ -580,47 +624,6 @@ add_children(struct twl4030_platform_data *pdata, unsigned long features)
+>>                        return PTR_ERR(child);
+>>        }
+>>
+>> -       if (twl_has_regulator() && usb_transceiver) {
+>> -               static struct regulator_consumer_supply usb1v5 = {
+>> -                       .supply =       "usb1v5",
+>> -               };
+>> -               static struct regulator_consumer_supply usb1v8 = {
+>> -                       .supply =       "usb1v8",
+>> -               };
+>> -               static struct regulator_consumer_supply usb3v1 = {
+>> -                       .supply =       "usb3v1",
+>> -               };
+>> -
+>> -               /* this is a template that gets copied */
+>> -               struct regulator_init_data usb_fixed = {
+>> -                       .constraints.valid_modes_mask =
+>> -                                 REGULATOR_MODE_NORMAL
+>> -                               | REGULATOR_MODE_STANDBY,
+>> -                       .constraints.valid_ops_mask =
+>> -                                 REGULATOR_CHANGE_MODE
+>> -                               | REGULATOR_CHANGE_STATUS,
+>> -               };
+>> -
+>> -               usb1v5.dev = usb_transceiver;
+>> -               usb1v8.dev = usb_transceiver;
+>> -               usb3v1.dev = usb_transceiver;
+>> -
+>> -               child = add_regulator_linked(TWL4030_REG_VUSB1V5, &usb_fixed,
+>> -                               &usb1v5, 1);
+>> -               if (IS_ERR(child))
+>> -                       return PTR_ERR(child);
+>> -
+>> -               child = add_regulator_linked(TWL4030_REG_VUSB1V8, &usb_fixed,
+>> -                               &usb1v8, 1);
+>> -               if (IS_ERR(child))
+>> -                       return PTR_ERR(child);
+>> -
+>> -               child = add_regulator_linked(TWL4030_REG_VUSB3V1, &usb_fixed,
+>> -                               &usb3v1, 1);
+>> -               if (IS_ERR(child))
+>> -                       return PTR_ERR(child);
+>> -       }
+>> -
+>>        /* maybe add LDOs that are omitted on cost-reduced parts */
+>>        if (twl_has_regulator() && !(features & TPS_SUBSET)) {
+>>                child = add_regulator(TWL4030_REG_VPLL2, pdata->vpll2);
+>> --
+>> 1.6.0.4
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
