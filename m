@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932236AbZJIGPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZJIGSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932236AbZJIGPd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 02:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZJIGPd
+	id S1755334AbZJIGSJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 02:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZJIGSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 02:15:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55022
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751294AbZJIGPc (ORCPT
+	Fri, 9 Oct 2009 02:18:08 -0400
+Received: from straum.hexapodia.org ([64.81.70.185]:41390 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbZJIGSH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 02:15:32 -0400
-Date: Thu, 08 Oct 2009 23:15:27 -0700 (PDT)
-Message-Id: <20091008.231527.251721755.davem@davemloft.net>
-To: npiggin@suse.de
-Cc: torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       kiran@scalex86.org, peterz@infradead.org
-Subject: Re: [rfc][patch] store-free path walking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091009035050.GC4287@wotan.suse.de>
-References: <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain>
-	<20091008123622.GA30316@wotan.suse.de>
-	<20091009035050.GC4287@wotan.suse.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 9 Oct 2009 02:18:07 -0400
+Date: Thu, 8 Oct 2009 23:17:29 -0700
+From: Andy Isaacson <adi@hexapodia.org>
+To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: DMAR regression in 2.6.31 leads to ext4 corruption?
+Message-ID: <20091009061729.GA31242@hexapodia.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
+X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
+X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <npiggin@suse.de>
-Date: Fri, 9 Oct 2009 05:50:50 +0200
+[resending to fit under vger's size limits, sorry if anybody gets this
+twice.]
 
-> OK, I got rid of this guy from the RCU walk. Basically now hold
-> vfsmount_lock over the entire RCU path walk (which also pins the mnt)
-> and use a seqlock in the fs struct to get a consistent mnt,dentry
-> pair. This also simplifies the walk because we don't need the
-> complexity to avoid mntget/mntput (just do one final mntget on the
-> resulting mnt before dropping vfsmount_lock).
-> 
-> vfsmount_lock adds one per-cpu atomic for the spinlock, and we
-> remove two thread-shared atomics for fs->lock so a net win for
-> both single threaded performance and thread-shared scalability.
-> Latency is no problem because we hold rcu_read_lock for the same
-> length of time anyway.
-> 
-> The parallel git diff workload is improved by serveral percent.
+I'm testing DMAR support on 2.6.32 on Intel VT-d laptop platforms.  It
+was pretty stable circa 2.6.31-rc5 (we have dozens of machines running
+2.6.31-rc8), but in the last two weeks I've had a bunch of instability
+on Linus' tip kernels that looked potentially like IOMMU badness.
 
-Sounds sweet Nick, can't wait to play with your next set of
-patches here.
+For example,
+<20090928191644.GR12922@hexapodia.org>
+http://lkml.org/lkml/2009/9/28/201
+
+Today while running 817b33d38 I got the following (on a Thinkpad X200
+I'd replaced the Dell with, just in case it was previously-good hardware
+going bad).
+
+[   29.450550] EXT4-fs error (device sda1): ext4_lookup: deleted inode referenced: 79
+[   30.022328] DRHD: handling fault status reg 3
+[   30.022328] DMAR:[DMA Write] Request device [00:02.0] fault addr ddae28000 
+[   30.022328] DMAR:[fault reason 05] PTE Write access is not set
+[   30.146136] DRHD: handling fault status reg 3
+[   30.248938] DMAR:[DMA Write] Request device [00:02.0] fault addr ddae28000 
+[   30.248939] DMAR:[fault reason 05] PTE Write access is not set
+
+The full output of fsck and full dmesg are at the URL below.
+
+I don't know that DMAR is resulting in my repeated filesystem
+corruption, but it does seem like a potential cause (and would explain
+why I'm seeing this whereas most people aren't, since few people are
+using VT-d *and* i915).
+
+I see that the BROKEN_GFX_WA code has been removed; do we actually
+believe that the relevant code is working?  Could it be corrupting my
+AHCI DMAs if not?  At the end of the last thread Ted thought that we'd
+lost a write of an inode block; this time the symptoms look different,
+in that I don't see one inode block representing a significant data
+loss (though I'm by no means an expert).
+
+Complete dmesg etc are at
+http://web.hexapodia.org/~adi/bugs/20091008-ext4-dmar/
+
+I'll try running with BROKEN_GFX_WA turned back on and see if that
+improves things at all.
+
+Thanks,
+-andy
