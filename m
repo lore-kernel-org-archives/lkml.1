@@ -1,59 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934050AbZJIUYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbZJIU3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934050AbZJIUYj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 16:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbZJIUYj
+	id S1761410AbZJIU3z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 16:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZJIU3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 16:24:39 -0400
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:43688 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbZJIUYi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 16:24:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=IJw6/NyCq4ckFErwOS0XZFqF1hfQezi+08nr9KjXuoerUN3BqqaSR5+DsOFg/PNbBw
-         3EMxs2aO5PeAv9ht83kr+hWwczx/GQ4yAueMaCfVKC0cEFeOgxXdT0t12JteIMZCrxsV
-         NxoDciFCJy+eu5crBra5nbYhYZsi2thbqQYRA=
+	Fri, 9 Oct 2009 16:29:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:58058 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752130AbZJIU3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 16:29:53 -0400
+Message-ID: <4ACF9C9B.2040006@redhat.com>
+Date: Fri, 09 Oct 2009 10:27:07 -1000
+From: Zachary Amsden <zamsden@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <20091009153219.GB7523@sortiz.org>
-References: <1254988727-31726-1-git-send-email-vapier@gentoo.org> 
-	<20091009153219.GB7523@sortiz.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Fri, 9 Oct 2009 16:23:42 -0400
-Message-ID: <8bd0f97a0910091323x7392ccdcxf54f74d7f454110f@mail.gmail.com>
-Subject: Re: [Uclinux-dist-devel] [PATCH v4] mfd: ADP5520 Multifunction LCD 
-	Backlight and Keypad Input Device Driver
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Jan Kiszka <jan.kiszka@web.de>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [PATCH v4: kvm 2/4] Kill the confusing tsc_ref_khz and ref_freq
+ variables.
+References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com> <1254260317-3490-2-git-send-email-zamsden@redhat.com> <4ACE734D.10600@web.de>
+In-Reply-To: <4ACE734D.10600@web.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 9, 2009 at 11:36, Samuel Ortiz wrote:
-> On Thu, Oct 08, 2009 at 03:58:47AM -0400, Mike Frysinger wrote:
->> From: Michael Hennerich <michael.hennerich@analog.com>
+On 10/08/2009 01:18 PM, Jan Kiszka wrote:
+> Zachary Amsden wrote:
+>    
+>> They are globals, not clearly protected by any ordering or locking, and
+>> vulnerable to various startup races.
 >>
->> Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
+>> Instead, for variable TSC machines, register the cpufreq notifier and get
+>> the TSC frequency directly from the cpufreq machinery.  Not only is it
+>> always right, it is also perfectly accurate, as no error prone measurement
+>> is required.
 >>
->> Subdevs:
->> LCD Backlight   : drivers/video/backlight/adp5520_bl
->> LEDs            : drivers/led/leds-adp5520
->> GPIO            : drivers/gpio/adp5520-gpio (ADP5520 only)
->> Keys            : drivers/input/keyboard/adp5520-keys (ADP5520 only)
->
-> With your mfd core patch applied, adp5520-gpio.c and adp5520_bl.c are supposed
-> to be buildable. Unfortunately, they both give build errors.
-> So, you either provide me with a patch that fixes both of those, and I carry
-> it with my mfd patchset, or you get your fixes applied upstream and I apply
-> the mfd core patch after that.
+>> On such machines, when a new CPU online is brought online, it isn't clear what
+>> frequency it will start with, and it may not correspond to the reference, thus
+>> in hardware_enable we clear the cpu_tsc_khz variable to zero and make sure
+>> it is set before running on a VCPU.
+>>
+>> Signed-off-by: Zachary Amsden<zamsden@redhat.com>
+>> ---
+>>   arch/x86/kvm/x86.c |   26 ++++++++++++++++----------
+>>   1 files changed, 16 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+>> index 15d2ace..de4ce8f 100644
+>> --- a/arch/x86/kvm/x86.c
+>> +++ b/arch/x86/kvm/x86.c
+>> @@ -1326,6 +1326,8 @@ out:
+>>   void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+>>   {
+>>   	kvm_x86_ops->vcpu_load(vcpu, cpu);
+>> +	if (unlikely(per_cpu(cpu_tsc_khz, cpu) == 0))
+>> +		per_cpu(cpu_tsc_khz, cpu) = cpufreq_quick_get(cpu);
+>>   	kvm_request_guest_time_update(vcpu);
+>>   }
+>>
+>> @@ -3061,9 +3063,6 @@ static void bounce_off(void *info)
+>>   	/* nothing */
+>>   }
+>>
+>> -static unsigned int  ref_freq;
+>> -static unsigned long tsc_khz_ref;
+>> -
+>>   static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+>>   				     void *data)
+>>   {
+>> @@ -3072,14 +3071,11 @@ static int kvmclock_cpufreq_notifier(struct notifier_block *nb, unsigned long va
+>>   	struct kvm_vcpu *vcpu;
+>>   	int i, send_ipi = 0;
+>>
+>> -	if (!ref_freq)
+>> -		ref_freq = freq->old;
+>> -
+>>   	if (val == CPUFREQ_PRECHANGE&&  freq->old>  freq->new)
+>>   		return 0;
+>>   	if (val == CPUFREQ_POSTCHANGE&&  freq->old<  freq->new)
+>>   		return 0;
+>> -	per_cpu(cpu_tsc_khz, freq->cpu) = cpufreq_scale(tsc_khz_ref, ref_freq, freq->new);
+>> +	per_cpu(cpu_tsc_khz, freq->cpu) = freq->new;
+>>
+>>   	spin_lock(&kvm_lock);
+>>   	list_for_each_entry(kvm,&vm_list, vm_list) {
+>> @@ -3120,12 +3116,14 @@ static void kvm_timer_init(void)
+>>   {
+>>   	int cpu;
+>>
+>> -	for_each_possible_cpu(cpu)
+>> -		per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
+>>   	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
+>> -		tsc_khz_ref = tsc_khz;
+>>   		cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
+>>   					  CPUFREQ_TRANSITION_NOTIFIER);
+>> +		for_each_online_cpu(cpu)
+>> +			per_cpu(cpu_tsc_khz, cpu) = cpufreq_get(cpu);
+>>      
+> This doesn't build for !CONFIG_CPU_FREQ.
+>    
 
-yes, the typo fixes in this patch had pieces propagate to the other
-drivers.  if you dont mind carrying the other patchsets, i can send
-them all to you ;).  there should be like 3 or 4 of them.
--mike
+And did it before?
