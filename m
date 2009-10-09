@@ -1,84 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934532AbZJIVzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934535AbZJIVyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934532AbZJIVzM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934502AbZJIVzM
+	id S934535AbZJIVyQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934513AbZJIVyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:55:12 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55473 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934504AbZJIVzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:55:11 -0400
-Date: Fri, 9 Oct 2009 14:50:43 -0700
-From: Greg KH <gregkh@suse.de>
-To: Bruce B <bbeare1@gmail.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Cleanups for: line length, printk KERN_ argument,
- stack frame size > 2048 (added a kmalloc/kfree), style/formatting errors,
- incorrect include files
-Message-ID: <20091009215043.GA28139@suse.de>
-References: <1255122698-12390-1-git-send-email-bbeare1@gmail.com>
- <20091009211610.GA5005@suse.de>
- <20091009142742.b12b80b1.randy.dunlap@oracle.com>
- <20091009212947.GA10187@suse.de>
- <7186A162-7CF4-4FE1-B0C8-9D296DF20572@gmail.com>
+	Fri, 9 Oct 2009 17:54:14 -0400
+Received: from [207.36.208.214] ([207.36.208.214]:42783 "EHLO mail.dvmed.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S934514AbZJIVyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 17:54:04 -0400
+Message-ID: <4ACFB0C9.605@garzik.org>
+Date: Fri, 09 Oct 2009 17:53:13 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7186A162-7CF4-4FE1-B0C8-9D296DF20572@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata build fix
+References: <20091009043248.GA12304@havoc.gtf.org> <20091009083903.GA20687@elte.hu>
+In-Reply-To: <20091009083903.GA20687@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 02:41:41PM -0700, Bruce B wrote:
-> 
-> On Oct 9, 2009, at 2:29 PM, Greg KH wrote:
-> 
-> > On Fri, Oct 09, 2009 at 02:27:42PM -0700, Randy Dunlap wrote:
-> >> On Fri, 9 Oct 2009 14:16:10 -0700 Greg KH wrote:
-> >>
-> >>>
-> >>> Try changing one thing at a time per patch please.
-> >>>
-> >>> There's some bugs in here:
-> >>>
-> >>>> -		struct config_t dig_in_config[32];
-> >>>> -		struct config_t dig_out_config[32];
-> >>>> -		struct config_t chan_in_config[32];
-> >>>> -		struct config_t chan_out_config[32];
-> >>>> 		int i;
-> >>>> +		config_data = kmalloc(sizeof(struct config_data_t), GFP_KERNEL);
-> >>>
-> >>> Shouldn't that be:
-> >>> 		config_data = kmalloc(sizeof(struct config_data_t)*32,  
-> >>> GFP_KERNEL);
-> >>
-> >> The new struct already includes the [32]s.
-> >
-> > Ah, missed that.
-> >
-> > But your other comment about checking the kmalloc is valid.  We should
-> > not add new calls to kmalloc that doesn't check, let's not _add_ new
-> > errors to the code :)
-> >
-> > Bruce, care to split this up into individual patches, each doing only
-> > one thing, and check for the return value of this call?
-> >
-> > thanks,
-> >
-> > greg k-h
-> 
-> Sure. Glad to.  A little head scratching will be required for the  
-> general cleanups in the .open routing for the kmalloc calls.
-> There are several different types of formatting errors that I have  
-> addressed. Those can be bundled as one patch?
+On 10/09/2009 04:39 AM, Ingo Molnar wrote:
+> From: Ingo Molnar<mingo@elte.hu>
+> Date: Fri, 9 Oct 2009 10:13:56 +0200
+> Subject: [PATCH] ahci: Fix "filter FPDMA non-zero offset enable for Aspire 3810T" on !CONFIG_ATA_ACPI
+> MIME-Version: 1.0
+> Content-Type: text/plain; charset=utf-8
+> Content-Transfer-Encoding: 8bit
+>
+> Commit f80ae7e ("ahci: filter FPDMA non-zero offset enable for Aspire
+> 3810T") introduced a new build breakage:
+>
+>    drivers/ata/ahci.c: In function ‘ahci_gtf_filter_workaround’:
+>    drivers/ata/ahci.c:2927: error: ‘struct ata_device’ has no member named ‘gtf_filter’
+>    make[2]: *** [drivers/ata/ahci.o] Error 1
+>    make[1]: *** [drivers/ata] Error 2
+>    make[1]: *** Waiting for unfinished jobs....
+>
+> As the acpi taskfile command filter support is a property of
+> libata-acpi - so the ata_device::gtf_filter field only exists
+> under CONFIG_ATA_ACPI.
+>
+> Add the trivial #ifdef to turn ahci_gtf_filter_workaround()
+> into a NOP on !CONFIG_ATA_ACPI.
+>
+> Cc: Marcus Meissner<meissner@novell.com>
+> Cc: Jeff Garzik<jgarzik@redhat.com>
+> Signed-off-by: Ingo Molnar<mingo@elte.hu>
+> ---
+>   drivers/ata/ahci.c |    2 ++
+>   1 files changed, 2 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+> index 4edca6e..fc8d527 100644
+> --- a/drivers/ata/ahci.c
+> +++ b/drivers/ata/ahci.c
+> @@ -2886,6 +2886,7 @@ static bool ahci_broken_online(struct pci_dev *pdev)
+>
+>   static void ahci_gtf_filter_workaround(struct ata_host *host)
+>   {
+> +#ifdef CONFIG_ATA_ACPI
+>   	static const struct dmi_system_id sysids[] = {
+>   		/*
+>   		 * Aspire 3810T issues a bunch of SATA enable commands
+> @@ -2926,6 +2927,7 @@ static void ahci_gtf_filter_workaround(struct ata_host *host)
+>   			ata_for_each_dev(dev, link, ALL)
+>   				dev->gtf_filter |= filter;
+>   	}
+> +#endif
+>   }
 
-Sure, just try to do one logical thing per patch to make it easy to
-review and say "of course that is obvious, why would I even think of
-rejecting that patch?"
 
-thanks,
+Either way is fine with me.  I tend to prefer conditional compilation to 
+be outside a function, but it's not a big deal.  Linus can pull my 
+submit, or add
+	Acked-by: Jeff Garzik <jgarzik@redhat.com>
+to this Ingo patch.
 
-greg k-h
+Same end result; whichever makes people happier, and fixes builds the 
+most rapidly...
+
+	Jeff
+
+
+
