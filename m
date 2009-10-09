@@ -1,56 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934448AbZJIVpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934477AbZJIVqC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934448AbZJIVpP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:45:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758903AbZJIVpO
+	id S934477AbZJIVqC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:46:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932533AbZJIVqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:45:14 -0400
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:64721 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756113AbZJIVpM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:45:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type;
-        b=U6CWDOUVg5QdxhCYGweWATRZF7gHZ7IqfmGDB9sZBvQBuKpOARLGdiDeLOcmNL60iV
-         ZY3Tua2v+/c9BY3BKhp54SkJpQQPelfmcPxHYfhYLv1GagruBlwVmjotYEGLAV3Ck5kj
-         pXxaUfT3ZY/vGU8MZYDxFUCdJF4vkeYccR4s0=
+	Fri, 9 Oct 2009 17:46:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50384 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932376AbZJIVp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 17:45:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Danny Feng <dfeng@redhat.com>
+Subject: Re: [PATCH] acpi: pci_root: fix NULL pointer deref after resume from suspend
+Date: Fri, 9 Oct 2009 23:46:57 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Alex Chiang <achiang@hp.com>, lenb@kernel.org, bjorn.helgaas@hp.com,
+       andrew.patterson@hp.com, jbarnes@virtuousgeek.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1254119480-9730-1-git-send-email-dfeng@redhat.com> <200910040056.00247.rjw@sisk.pl> <4ACE9F51.5060103@redhat.com>
+In-Reply-To: <4ACE9F51.5060103@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <cdb43e8a0910081723v1adeea80p6a1360ae22a3afcf@mail.gmail.com>
-References: <haj471$fn8$1@ger.gmane.org>
-	 <58965d8a0910071618s2420fed1k4ccde4823e57f756@mail.gmail.com>
-	 <haj8uj$fn8$2@ger.gmane.org>
-	 <a8e1da0910072255r38f95e59lf9559b4ecd1cc9d2@mail.gmail.com>
-	 <cdb43e8a0910080331l1faa426cq9c2e1e0467003ec9@mail.gmail.com>
-	 <a8e1da0910080351w4fe8827eyd583eb903748ed92@mail.gmail.com>
-	 <a8e1da0910080440u6367cdcbq55f57d6a16d97533@mail.gmail.com>
-	 <cdb43e8a0910081723v1adeea80p6a1360ae22a3afcf@mail.gmail.com>
-Date: Fri, 9 Oct 2009 16:44:35 -0500
-X-Google-Sender-Auth: edcb3e8b4b651e81
-Message-ID: <58965d8a0910091444w1d913527u11a1ab896da918ce@mail.gmail.com>
-Subject: Re: iso9660 mount problem
-From: Paul Hartman <paul.hartman+linux@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910092346.58021.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 8, 2009 at 7:23 PM, Jack Byer <ojbyer@usa.net> wrote:
->> So it must be an apple hfs disc, (or hybrid disc?).
->> Maybe you may try mount it as hfs, this problem is not relevant to iso9660.
->
-> I can mount the disc as hfsplus but it shows the OS X contents instead
-> of the Windows contents.
+On Friday 09 October 2009, Danny Feng wrote:
+> On 10/04/2009 06:56 AM, Rafael J. Wysocki wrote:
+> > On Thursday 01 October 2009, Alex Chiang wrote:
+> >> Hi Danny,
+> >>
+> >> * Danny Feng<dfeng@redhat.com>:
+> >>> Call Trace:
+> >>>   [<ffffffff81254193>] acpi_get_pci_dev+0x106/0x167
+> >>>   [<ffffffff8125545a>] acpi_pci_bind+0x1c/0x86
+> >>>   [<ffffffff8116230a>] ? sysfs_create_file+0x2a/0x2c
+> >>>   [<ffffffff8125141f>] acpi_add_single_object+0x964/0xa0c
+> >>>   [<ffffffff812515a7>] acpi_bus_check_add+0xe0/0x138
+> >>>   [<ffffffff81251667>] acpi_bus_scan+0x68/0xa0
+> >>>   [<ffffffff812516f4>] acpi_bus_add+0x2a/0x2e
+> >>>   [<ffffffff81252c59>] hotplug_dock_devices+0x114/0x13e
+> >>>   [<ffffffff8125301a>] acpi_dock_deferred_cb+0xbf/0x192
+> >>>   [<ffffffff8124d6ca>] acpi_os_execute_deferred+0x29/0x36
+> >>>   [<ffffffff8106a244>] worker_thread+0x251/0x347
+> >>>   [<ffffffff8106a1ef>] ? worker_thread+0x1fc/0x347
+> >>>   [<ffffffff8124d6a1>] ? acpi_os_execute_deferred+0x0/0x36
+> >>>   [<ffffffff8106e426>] ? autoremove_wake_function+0x0/0x39
+> >>>   [<ffffffff81069ff3>] ? worker_thread+0x0/0x347
+> >>>   [<ffffffff8106e0e0>] kthread+0x7f/0x87
+> >>>   [<ffffffff81012cea>] child_rip+0xa/0x20
+> >>>   [<ffffffff81012650>] ? restore_args+0x0/0x30
+> >>>   [<ffffffff8106e061>] ? kthread+0x0/0x87
+> >>>   [<ffffffff81012ce0>] ? child_rip+0x0/0x20
+> >>> Code: ff 49 89 fc 41 89 f5 a9 00 ff ff 07 74 11 be 87 00 00 00 48 c7 c7
+> >>> 45 6d 5a 81 e8 f6 2b e3 ff 48 c7 c7 30 ab 68 81 e8 29 77 20 00<49>  8b
+> >>> 5c 24 28 49 83 c4 28 eb 09 44 39 6b 38 74 10 48 89 c3 48
+> >>> RIP  [<ffffffff812217e7>] pci_get_slot+0x4c/0x8c
+> >>>   RSP<ffff88022ee69aa0>
+> >>> CR2: 0000000000000028
+> >>> ---[ end trace b5a7793bd9db2a4d ]---
+> >>
+> >> Can you please reproduce with this debug patch? I'm guessing that
+> >> we're dying because we have a NULL parent device, but I'm curious
+> >> as to what causes this situation to occur.
+> >
+> > If we had a NULL parent, acpi_get_parent() would return an error.  Also, if we
+> > one of the devices is NULL at the PCI level, pci_get_slot() will return NULL.
+> > The only possibility left is that one of the buses we find in the ACPI tables
+> > doesn't have a secondary PCI bus.
+> >
+> > I think what happens is that on resume we get a dock notification
+> > (via dock_acpi_notifier registered in dock_init()) for a dock station device
+> > that is present in the ACPI tables, but not physically accessible at the moment
+> > (I guess that falls into the "BIOS bug" category, but we can fix this easily in
+> > the kernel).
+> >
+> > So, IMO, the appended patch is the right fix.
+> >
+> > Danny, please test it and report back (in particular, please tell us if you see
+> > the "Secondary bus not present" message in dmesg).
+> Yes, this patch works. I got "ata_piix 0000:00:1f.2: Secondary bus not 
+> present".
 
-Looks like Rosetta Stone :) and i think it is hybrid HFS/iso9660. I
-can see windows-related filenames in the sample you uploaded, so we
-know they are out there somewhere. Maybe try this in your mount
-options (thanks google):
+Now that's a puzzle!
 
-mount -t iso9660 -o norock,map=off
+Can you please attach the output of acpidump from this machine?
 
-Also, if that doesn't work, do you have CONFIG_JOLIET=y in your kernel
-.config? Maybe it's needed...
+Rafael
