@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934520AbZJIVzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934569AbZJIV4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934520AbZJIVzz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934466AbZJIVzz
+	id S934569AbZJIV4J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934544AbZJIV4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:55:55 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:48259 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933132AbZJIVzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:55:54 -0400
-Date: Fri, 9 Oct 2009 23:55:08 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Hannes Eder <hannes@hanneseder.net>
-Subject: Re: [PATCH] move stk17ta8's probe function to .devinit.text
-Message-ID: <20091009235508.30c6c4a9@i1501.lan.towertech.it>
-In-Reply-To: <alpine.LSU.2.00.0910092322250.19284@wotan.suse.de>
-References: <20090711170548.GC5205@suse.de>
-	<1247345591-22643-27-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1247345591-22643-28-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1247345591-22643-29-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1247345591-22643-30-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1247345591-22643-31-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1247345591-22643-32-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1247345591-22643-33-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1247345591-22643-34-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1247345591-22643-35-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1247345591-22643-36-git-send-email-u.kleine-koenig@pengutronix.de>
-	<1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de>
-	<alpine.LSU.2.00.0910091724170.19284@wotan.suse.de>
-	<20091009203319.28a220e6@i1501.lan.towertech.it>
-	<alpine.LSU.2.00.0910092322250.19284@wotan.suse.de>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 9 Oct 2009 17:56:08 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:9547 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934529AbZJIV4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 17:56:06 -0400
+Date: Fri, 9 Oct 2009 17:55:21 -0400 (EDT)
+From: John Kacur <jkacur@redhat.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Clark Williams <williams@redhat.com>
+Message-ID: <571973584.1452471255125321659.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+In-Reply-To: <1033457751.1452271255124941735.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+Subject: Re: [PATCH RFC] BKL not necessary in cpuid_open
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.5.5.72]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Oct 2009 23:22:52 +0200 (CEST)
-Jiri Kosina <jkosina@suse.cz> wrote:
 
-> It was probably sent only to you personally ...
+----- "Arnd Bergmann" <arnd@arndb.de> wrote:
 
- Always Cc the mailing list, that way it will enter patchwork.
- I'm bad enough at patch tracking and patchwork gives a nice help ;)
+> On Wednesday 07 October 2009, John Kacur wrote:
+> > 
+> > I've been staring at the BKL lock in cpuid_open, and I can't see
+> what it 
+> > is protecting. However, I may have missed something - even something
+> 
+> > obvious, so comments are welcome.
+> > 
+> 
+> Hi John,
+> 
+> In general, the lock_kernel() calls in any chardev open() file
+> operation
+> are the result of the BKL pushdown by Jon Corbet and others, which has
+> happened
+> some time last year[1]. I'd assume that the vast majority is not
+> needed
+> at all, so these are an easy target for removal.
+> 
+> 	Arnd
+> 
+> [1] http://lkml.indiana.edu/hypermail/linux/kernel/0805.2/0257.html
 
+yup - I'm aware of all the hard work that many people put in before I ever looked at this.
+Thomas asked the -rt folks to have a look at removing the bkl look during the rt-mini summit
+in Dresden. I was looking for low hanging fruit to get started. The confusion was over what
+was already implemented in tip/rt/bkl. I merely looked at the latest linus/master build.
+The result was a good one though, because basically Thomas' work got pushed from tip/rt/bkl
+into tip/master, and can hopefully be pushed upstream during the next merge window.
 
--- 
+Even if getting starting means just reviewing what is in rt/bkl and not yet in linus/master,
+I think that would be positive. I'm sure Thomas will stomp on me if I start to annoy him. :)
 
- Best regards,
+Thanks
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+John
