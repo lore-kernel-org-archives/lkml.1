@@ -1,29 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933235AbZJIOKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760924AbZJIOJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933235AbZJIOKk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 10:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933163AbZJIOKi
+	id S1760924AbZJIOJc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 10:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbZJIOJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 10:10:38 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:58806 "EHLO
-	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932392AbZJIOKT (ORCPT
+	Fri, 9 Oct 2009 10:09:31 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:39405
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1760902AbZJIOJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 10:10:19 -0400
-X-SpamScore: -8
-X-BigFish: VPS-8(zz15bfO4015Lzz1202hzzz32i2a8h6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KR93AD-03-0N7-02
+	Fri, 9 Oct 2009 10:09:29 -0400
+X-SpamScore: 10
+X-BigFish: VPS10(zza4b1ozz1202hzzz32i2a8h6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KR93AE-03-0N8-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
 CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 0/9 v3] KVM: Nested SVM fixes and tracepoint conversion
-Date: Fri, 9 Oct 2009 16:08:24 +0200
-Message-ID: <1255097313-23267-1-git-send-email-joerg.roedel@amd.com>
+       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 1/9] KVM: SVM: Notify nested hypervisor of lost event injections
+Date: Fri, 9 Oct 2009 16:08:25 +0200
+Message-ID: <1255097313-23267-2-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.4.3
-X-OriginalArrivalTime: 09 Oct 2009 14:08:36.0263 (UTC) FILETIME=[FE302B70:01CA48E9]
+In-Reply-To: <1255097313-23267-1-git-send-email-joerg.roedel@amd.com>
+References: <1255097313-23267-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 09 Oct 2009 14:08:36.0325 (UTC) FILETIME=[FE39A150:01CA48E9]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: unknown
@@ -31,64 +34,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Avi, Marcelo,
+From: Alexander Graf <agraf@suse.de>
 
-this series of patches contains bugfixes for the Nested SVM code and the
-conversion of Nested SVM debugging to tracepoints. The fixes are:
+If event_inj is valid on a #vmexit the host CPU would write
+the contents to exit_int_info, so the hypervisor knows that
+the event wasn't injected.
 
-	1) A patch Alex already sent (1/9) but which was not yet
-	   applied. It fixes a lost event_inj problem when we emulate a
-	   vmrun and a vmexit without entering the guest in the
-	   meantime.
+We don't do this in nested SVM by now which is a bug and
+fixed by this patch.
 
-	2) The patch 2/9 fixes a schedule() while atomic bug in the
-	   Nested SVM code. The KVM interrupt injection code runs with
-	   preemtion and interrupts disabled. But the
-	   enable_irq_window() function from SVM may emulate a #vmexit.
-	   This emulation might sleep which causes the schedule() while
-	   atomic() bug.
+Signed-off-by: Alexander Graf <agraf@suse.de>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/svm.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-These fixes (patches 1 and 2) should also be considered for -stable
-backporting.  The patches 3 to 8 convert the old printk based debugging
-for Nested SVM to tracepoints.  Patch 9 removes the nsvm_printk code.
-Please review and/or consider to apply these changes.
-
-Thanks,
-
-	Joerg
-
-Changes to v2:
-
-* Fixed typo in trace_printk message for invlpga
-* Converted "key=value" strings into "key: value"
-
-Changes to v1:
-
-* Fixed typo on comment in patch
-  "KVM: SVM: Notify nested hypervisor of lost event injections"
-* Made the fix for the schedule()-while-atomic bug out of the generic
-  code. It touches only SVM code now.
-
-Diffstat:
-
- arch/x86/kvm/svm.c   |  107 +++++++++++++++++++++-----------
- arch/x86/kvm/trace.h |  165 ++++++++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/kvm/x86.c   |    6 ++
- 3 files changed, 242 insertions(+), 36 deletions(-)
-
-Shortlog:
-
-Alexander Graf (1):
-      KVM: SVM: Notify nested hypervisor of lost event injections
-
-Joerg Roedel (8):
-      KVM: SVM: Move INTR vmexit out of atomic code
-      KVM: SVM: Add tracepoint for nested vmrun
-      KVM: SVM: Add tracepoint for nested #vmexit
-      KVM: SVM: Add tracepoint for injected #vmexit
-      KVM: SVM: Add tracepoint for #vmexit because intr pending
-      KVM: SVM: Add tracepoint for invlpga instruction
-      KVM: SVM: Add tracepoint for skinit instruction
-      KVM: SVM: Remove nsvm_printk debugging code
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 279a2ae..e372854 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1615,6 +1615,22 @@ static int nested_svm_vmexit(struct vcpu_svm *svm)
+ 	nested_vmcb->control.exit_info_2       = vmcb->control.exit_info_2;
+ 	nested_vmcb->control.exit_int_info     = vmcb->control.exit_int_info;
+ 	nested_vmcb->control.exit_int_info_err = vmcb->control.exit_int_info_err;
++
++	/*
++	 * If we emulate a VMRUN/#VMEXIT in the same host #vmexit cycle we have
++	 * to make sure that we do not lose injected events. So check event_inj
++	 * here and copy it to exit_int_info if it is valid.
++	 * Exit_int_info and event_inj can't be both valid because the case
++	 * below only happens on a VMRUN instruction intercept which has
++	 * no valid exit_int_info set.
++	 */
++	if (vmcb->control.event_inj & SVM_EVTINJ_VALID) {
++		struct vmcb_control_area *nc = &nested_vmcb->control;
++
++		nc->exit_int_info     = vmcb->control.event_inj;
++		nc->exit_int_info_err = vmcb->control.event_inj_err;
++	}
++
+ 	nested_vmcb->control.tlb_ctl           = 0;
+ 	nested_vmcb->control.event_inj         = 0;
+ 	nested_vmcb->control.event_inj_err     = 0;
+-- 
+1.6.4.3
 
 
