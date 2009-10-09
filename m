@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760296AbZJIJTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760434AbZJIJVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760296AbZJIJTS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 05:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756765AbZJIJTR
+	id S1760434AbZJIJVS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 05:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbZJIJVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 05:19:17 -0400
-Received: from mga06.intel.com ([134.134.136.21]:38368 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753774AbZJIJTR (ORCPT
+	Fri, 9 Oct 2009 05:21:17 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40155 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758479AbZJIJVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 05:19:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,530,1249282800"; 
-   d="scan'208";a="455932018"
-Subject: hackbench regression with kernel 2.6.32-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>
+	Fri, 9 Oct 2009 05:21:16 -0400
+Subject: Re: select system call's implementation may have some bug, need
+ your  help and confirm !!!
+From: Peter Zijlstra <peterz@infradead.org>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Cc: wu Jianfeng <stormplayer@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <9b2b86520910090052n267f94ebj7619b6c5b94b3539@mail.gmail.com>
+References: <a5b3ea7b0910082255x5767726du4721d2ee38df38fa@mail.gmail.com>
+	 <9b2b86520910090052n267f94ebj7619b6c5b94b3539@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 09 Oct 2009 17:19:03 +0800
-Message-Id: <1255079943.25078.23.camel@ymzhang>
+Date: Fri, 09 Oct 2009 11:20:38 +0200
+Message-Id: <1255080038.8802.1.camel@laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comparing with 2.6.31's results, hackbench has some regression on a couple of
-machines woth kernel 2.6.32-rc1.
-I run it with commandline:
-./hackbench 100 process 2000
+On Fri, 2009-10-09 at 08:52 +0100, Alan Jenkins wrote:
+> On 10/9/09, wu Jianfeng <stormplayer@gmail.com> wrote:
+> > A process may sleep for ever when he call select system call.
+> > In detail, if the process was scheduled out just at the point it set
+> > its state to TASK_INTERRUPTIBLE.
+> >
 
-1) On 4*4 core tigerton: 70%;
-2) On 2*4 core stoakley: 7%.
+> > set_current_state(TASK_INTERRUPTIBLE);
+> > ## here set the process state TASK_INTERRUPTIBLE
+> >
+> >  ## if  the process was scheduled out here, then the process will
+> > never can be waked up, because it has not been attached to any file 's
+> > wait queue.
+> 
+> I'm not sure about that, but if you look at the current code (e.g. in
+> linus' git tree) you will see this code has been changed.  Now
+> set_current_state() is only called from poll_schedule_timeout(), and
+> it won't suffer from the problem you suggested:
+> 
+> 
+> int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
+> 			  ktime_t *expires, unsigned long slack)
+> {
+> 	int rc = -EINTR;
+> 
+> 	set_current_state(state);
+> 	if (!pwq->triggered)
+> 		rc = schedule_hrtimeout_range(expires, slack, HRTIMER_MODE_ABS);
+> 	__set_current_state(TASK_RUNNING);
 
-I located below 2 patches.
-commit 29cd8bae396583a2ee9a3340db8c5102acf9f6fd
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Thu Sep 17 09:01:14 2009 +0200
+It would still be liable to the problem suggested, if it were real,
+which it is not, as Thomas pointed out.
 
-    sched: Fix SD_POWERSAVING_BALANCE|SD_PREFER_LOCAL vs SD_WAKE_AFFINE
-
-and 
-
-commit de69a80be32445b0a71e8e3b757e584d7beb90f7
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Thu Sep 17 09:01:20 2009 +0200
-
-    sched: Stop buddies from hogging the system
-
-
-1) On 4*4 core tigerton: if I revert patch 29cd8b, the regression becomes
-less than 55%; If I revert the 2 patches, all regression disappears.
-2) On 2*4 core stakley: If I revert the 2 patches, comparing with 2.6.31,
-I get about 8% improvement instead of regression.
-
-Sorry for reporting the regression later as there is a long national holiday.
-
-Yanmin
-
+The distinction is between getting preempted and calling schedule().
 
