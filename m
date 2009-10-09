@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752274AbZJIHgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbZJIHp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752274AbZJIHgD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 03:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZJIHgB
+	id S1753061AbZJIHp1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 03:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZJIHp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 03:36:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44755 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751248AbZJIHgA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 03:36:00 -0400
-Date: Fri, 9 Oct 2009 00:35:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Matt Mackall <mpm@selenic.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] random: kmalloc failure ignored in init_std_data()
-Message-Id: <20091009003507.35f617d7.akpm@linux-foundation.org>
-In-Reply-To: <4AB42BAF.90204@gmail.com>
-References: <4AB411D9.6070702@gmail.com>
-	<1253319020.3364.180.camel@calx>
-	<4AB42BAF.90204@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 9 Oct 2009 03:45:26 -0400
+Received: from mga11.intel.com ([192.55.52.93]:2423 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752503AbZJIHp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 03:45:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,530,1249282800"; 
+   d="scan'208";a="501386470"
+Subject: Re: [PATCH 6/6] mce-inject: use injected mce only during faked
+ handler call
+From: Huang Ying <ying.huang@intel.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4ACEE5E0.3050701@jp.fujitsu.com>
+References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com>
+	 <4AC95F5A.4000708@jp.fujitsu.com>  <4AC96391.1060001@jp.fujitsu.com>
+	 <1255072482.5228.157.camel@yhuang-dev.sh.intel.com>
+	 <4ACEE5E0.3050701@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Fri, 09 Oct 2009 15:44:46 +0800
+Message-Id: <1255074286.5228.163.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 19 Sep 2009 02:54:07 +0200 Roel Kluin <roel.kluin@gmail.com> wrote:
+On Fri, 2009-10-09 at 15:27 +0800, Hidetoshi Seto wrote: 
+> Huang Ying wrote:
+> > This is another example for you to use my idea, implement it in a
+> > similar way and send it out as your own.
+> 
+> I used "Reported-by:" for this patch, having some intent to indicate
+> that this patch uses an idea different from the original one, and that
+> this patch aims at the problem certainly reported by you.
 
-> kmalloc may fail so build the array into the statically allocated
-> pool structures instead.
+The point of the idea is to use two flags instead of one flag, not the
+name of the flag or they are inside/outside of struct mce.
 
-x86_64 allnoconfig:
+Best Regards,
+Huang Ying
 
-drivers/char/random.c: In function 'extract_entropy':
-drivers/char/random.c:867: error: 'struct entropy_store' has no member named 'last_data'
-drivers/char/random.c:869: error: 'struct entropy_store' has no member named 'last_data'
-drivers/char/random.c:871: error: 'struct entropy_store' has no member named 'last_data'
-drivers/char/random.c:871: error: 'struct entropy_store' has no member named 'last_data'
 
