@@ -1,148 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761442AbZJIVGC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934250AbZJIVHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761442AbZJIVGC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:06:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759281AbZJIVGB
+	id S934250AbZJIVHJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:07:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759305AbZJIVHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:06:01 -0400
-Received: from kroah.org ([198.145.64.141]:55129 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758827AbZJIVF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:05:59 -0400
-Date: Fri, 9 Oct 2009 14:02:46 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: [GIT PATCH] STAGING fixes for 2.6.32-git
-Message-ID: <20091009210246.GB4348@kroah.com>
+	Fri, 9 Oct 2009 17:07:08 -0400
+Received: from fmmailgate02.web.de ([217.72.192.227]:43530 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753710AbZJIVHH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 17:07:07 -0400
+Message-ID: <4ACFA5B3.502@web.de>
+Date: Fri, 09 Oct 2009 23:05:55 +0200
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Zachary Amsden <zamsden@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: [PATCH v4: kvm 2/4] Kill the confusing tsc_ref_khz and ref_freq
+ variables.
+References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com> <1254260317-3490-2-git-send-email-zamsden@redhat.com> <4ACE734D.10600@web.de> <4ACF9C9B.2040006@redhat.com> <4ACF9EC3.2050901@web.de> <4ACF9EDF.5000808@redhat.com> <4ACFA178.2040203@web.de> <4ACFA14E.9040005@redhat.com>
+In-Reply-To: <4ACFA14E.9040005@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigF203B1D2A66722E9E476111C"
+X-Provags-ID: V01U2FsdGVkX18kpIVMGl4PDha0GvONA6AkNpNC4UM/WQqOwq6h
+	mN/BIeTHHxc7ZfXPE6YX9I1BumSg1GLPn5jbljLORW6Tkya+oO
+	+a/uY1hRA=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some staging fixes for your 2.6.32-git tree.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigF203B1D2A66722E9E476111C
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-The big things here is the removal of two drivers:
-	- agnx, this is broken and the wireless developers asked me to
-	  remove it.
-	- cowloop.  Turns out to not work well with the recent block
-	  layer changes, so the author asked me to remove it for now so
-	  that people will not have problems.  It will be returning in a
-	  later merge.
+Zachary Amsden wrote:
+> On 10/09/2009 10:47 AM, Jan Kiszka wrote:
+>> Zachary Amsden wrote:
+>>  =20
+>>> On 10/09/2009 10:36 AM, Jan Kiszka wrote:
+>>>    =20
+>>>> Zachary Amsden wrote:
+>>>>
+>>>>      =20
+>>>>> On 10/08/2009 01:18 PM, Jan Kiszka wrote:
+>>>>>
+>>>>>        =20
+>>>>>> Zachary Amsden wrote:
+>>>>>>
+>>>>>>
+>>>>>>          =20
+>>>>>>> They are globals, not clearly protected by any ordering or lockin=
+g,
+>>>>>>> and
+>>>>>>> vulnerable to various startup races.
+>>>>>>>
+>>>>>>> Instead, for variable TSC machines, register the cpufreq notifier=
 
-There's a number of other fixes in here:
-	- build fixes
-	- comedi logic fixes
-	- other minor fixes
+>>>>>>> and
+>>>>>>> get
+>>>>>>> the TSC frequency directly from the cpufreq machinery.  Not only
+>>>>>>> is it
+>>>>>>> always right, it is also perfectly accurate, as no error prone
+>>>>>>> measurement
+>>>>>>> is required.
+>>>>>>>
+>>>>>>> On such machines, when a new CPU online is brought online, it isn=
+'t
+>>>>>>> clear what
+>>>>>>> frequency it will start with, and it may not correspond to the
+>>>>>>> reference, thus
+>>>>>>> in hardware_enable we clear the cpu_tsc_khz variable to zero and
+>>>>>>> make
+>>>>>>> sure
+>>>>>>> it is set before running on a VCPU.
+>>>>>>>
+>>>>>>> Signed-off-by: Zachary Amsden<zamsden@redhat.com>
+>>>>>>> ---
+>>>>>>>     arch/x86/kvm/x86.c |   26 ++++++++++++++++----------
+>>>>>>>     1 files changed, 16 insertions(+), 10 deletions(-)
+>>>>>>>
+>>>>>>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+>>>>>>> index 15d2ace..de4ce8f 100644
+>>>>>>> --- a/arch/x86/kvm/x86.c
+>>>>>>> +++ b/arch/x86/kvm/x86.c
+>>>>>>> @@ -1326,6 +1326,8 @@ out:
+>>>>>>>     void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+>>>>>>>     {
+>>>>>>>         kvm_x86_ops->vcpu_load(vcpu, cpu);
+>>>>>>> +    if (unlikely(per_cpu(cpu_tsc_khz, cpu) =3D=3D 0))
+>>>>>>> +        per_cpu(cpu_tsc_khz, cpu) =3D cpufreq_quick_get(cpu);
+>>>>>>>         kvm_request_guest_time_update(vcpu);
+>>>>>>>     }
+>>>>>>>
+>>>>>>> @@ -3061,9 +3063,6 @@ static void bounce_off(void *info)
+>>>>>>>         /* nothing */
+>>>>>>>     }
+>>>>>>>
+>>>>>>> -static unsigned int  ref_freq;
+>>>>>>> -static unsigned long tsc_khz_ref;
+>>>>>>> -
+>>>>>>>     static int kvmclock_cpufreq_notifier(struct notifier_block *n=
+b,
+>>>>>>> unsigned long val,
+>>>>>>>                          void *data)
+>>>>>>>     {
+>>>>>>> @@ -3072,14 +3071,11 @@ static int kvmclock_cpufreq_notifier(stru=
+ct
+>>>>>>> notifier_block *nb, unsigned long va
+>>>>>>>         struct kvm_vcpu *vcpu;
+>>>>>>>         int i, send_ipi =3D 0;
+>>>>>>>
+>>>>>>> -    if (!ref_freq)
+>>>>>>> -        ref_freq =3D freq->old;
+>>>>>>> -
+>>>>>>>         if (val =3D=3D CPUFREQ_PRECHANGE&&    freq->old>    freq-=
+>new)
+>>>>>>>             return 0;
+>>>>>>>         if (val =3D=3D CPUFREQ_POSTCHANGE&&    freq->old<    freq=
+->new)
+>>>>>>>             return 0;
+>>>>>>> -    per_cpu(cpu_tsc_khz, freq->cpu) =3D cpufreq_scale(tsc_khz_re=
+f,
+>>>>>>> ref_freq, freq->new);
+>>>>>>> +    per_cpu(cpu_tsc_khz, freq->cpu) =3D freq->new;
+>>>>>>>
+>>>>>>>         spin_lock(&kvm_lock);
+>>>>>>>         list_for_each_entry(kvm,&vm_list, vm_list) {
+>>>>>>> @@ -3120,12 +3116,14 @@ static void kvm_timer_init(void)
+>>>>>>>     {
+>>>>>>>         int cpu;
+>>>>>>>
+>>>>>>> -    for_each_possible_cpu(cpu)
+>>>>>>> -        per_cpu(cpu_tsc_khz, cpu) =3D tsc_khz;
+>>>>>>>         if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
+>>>>>>> -        tsc_khz_ref =3D tsc_khz;
+>>>>>>>           =20
+>>>>>>> cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
+>>>>>>>                           CPUFREQ_TRANSITION_NOTIFIER);
+>>>>>>> +        for_each_online_cpu(cpu)
+>>>>>>> +            per_cpu(cpu_tsc_khz, cpu) =3D cpufreq_get(cpu);
+>>>>>>>
+>>>>>>>
+>>>>>>>             =20
+>>>>>> This doesn't build for !CONFIG_CPU_FREQ.
+>>>>>>
+>>>>>>
+>>>>>>           =20
+>>>>> And did it before?
+>>>>>
+>>>>>         =20
+>>>> Yes, because cpufreq_get, which is undefined without CONFIG_CPU_FREQ=
+,
+>>>> did not exist so far. One may argue that this is a deficit of the
+>>>> cpufreq API. However, it needs fixing.
+>>>>
+>>>>       =20
+>>> I'll send a patch today.  I'm going with API deficient and will fix
+>>> that, but this means I will also require a fix for kvm-kmod :(
+>>>     =20
+>> That won't be tricky, I will queue up a fix.
+>>
+>> BTW, is the KVM prepared for cpufreq_get returning 0?
+>>   =20
+>=20
+> That will be part of the fix, I think.
+>=20
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
+That's good, specifically as it looks like cpufreq_get can return 0 even
+in the CONFIG_CPU_FREQ case, at least theoretically.
 
-The patches will be sent as a follow-on to this message to the
-driver-devel list for people to see.
+Jan
 
-thanks,
+PS:
 
-greg k-h
+diff --git a/external-module-compat-comm.h b/external-module-compat-comm.=
+h
+index 47fdc86..de8ab23 100644
+--- a/external-module-compat-comm.h
++++ b/external-module-compat-comm.h
+@@ -993,3 +993,10 @@ unsigned long kvm_vma_kernel_pagesize(struct vm_area=
+_struct *vma)
+ 	}					\
+ })
+ #endif
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,33) && !defined(CONFIG_CPU_F=
+REQ)
++static inline unsigned int cpufreq_get(unsigned int cpu)
++{
++	return 0;
++}
++#endif
 
---------------
 
- drivers/staging/Kconfig                          |    4 -
- drivers/staging/Makefile                         |    2 -
- drivers/staging/agnx/Kconfig                     |    5 -
- drivers/staging/agnx/Makefile                    |    8 -
- drivers/staging/agnx/TODO                        |   22 -
- drivers/staging/agnx/agnx.h                      |  156 --
- drivers/staging/agnx/debug.h                     |  416 ----
- drivers/staging/agnx/pci.c                       |  635 -----
- drivers/staging/agnx/phy.c                       |  960 --------
- drivers/staging/agnx/phy.h                       |  409 ----
- drivers/staging/agnx/rf.c                        |  893 -------
- drivers/staging/agnx/sta.c                       |  218 --
- drivers/staging/agnx/sta.h                       |  222 --
- drivers/staging/agnx/table.c                     |  168 --
- drivers/staging/agnx/table.h                     |   10 -
- drivers/staging/agnx/xmit.c                      |  836 -------
- drivers/staging/agnx/xmit.h                      |  250 --
- drivers/staging/comedi/Kconfig                   |    2 +-
- drivers/staging/comedi/comedi_fops.c             |    2 +-
- drivers/staging/comedi/drivers/cb_das16_cs.c     |    2 +-
- drivers/staging/comedi/drivers/cb_pcidio.c       |    8 +-
- drivers/staging/comedi/drivers/jr3_pci.c         |   18 +-
- drivers/staging/comedi/drivers/ni_65xx.c         |   12 +-
- drivers/staging/comedi/drivers/ni_daq_700.c      |    2 +-
- drivers/staging/comedi/drivers/ni_daq_dio24.c    |    2 +-
- drivers/staging/comedi/drivers/ni_labpc_cs.c     |    2 +-
- drivers/staging/comedi/drivers/ni_mio_cs.c       |    2 +-
- drivers/staging/comedi/drivers/ni_pcimio.c       |   22 +-
- drivers/staging/comedi/drivers/quatech_daqp_cs.c |    2 +-
- drivers/staging/comedi/drivers/s526.c            |  109 +-
- drivers/staging/comedi/drivers/serial2002.c      |    1 +
- drivers/staging/cowloop/Kconfig                  |   16 -
- drivers/staging/cowloop/Makefile                 |    1 -
- drivers/staging/cowloop/TODO                     |   11 -
- drivers/staging/cowloop/cowloop.c                | 2842 ----------------------
- drivers/staging/cowloop/cowloop.h                |   66 -
- drivers/staging/iio/Kconfig                      |    1 +
- drivers/staging/p9auth/p9auth.c                  |   14 +-
- drivers/staging/rtl8192e/r8192E_core.c           |    1 +
- drivers/staging/winbond/wbusb.c                  |   44 +-
- 40 files changed, 148 insertions(+), 8248 deletions(-)
- delete mode 100644 drivers/staging/agnx/Kconfig
- delete mode 100644 drivers/staging/agnx/Makefile
- delete mode 100644 drivers/staging/agnx/TODO
- delete mode 100644 drivers/staging/agnx/agnx.h
- delete mode 100644 drivers/staging/agnx/debug.h
- delete mode 100644 drivers/staging/agnx/pci.c
- delete mode 100644 drivers/staging/agnx/phy.c
- delete mode 100644 drivers/staging/agnx/phy.h
- delete mode 100644 drivers/staging/agnx/rf.c
- delete mode 100644 drivers/staging/agnx/sta.c
- delete mode 100644 drivers/staging/agnx/sta.h
- delete mode 100644 drivers/staging/agnx/table.c
- delete mode 100644 drivers/staging/agnx/table.h
- delete mode 100644 drivers/staging/agnx/xmit.c
- delete mode 100644 drivers/staging/agnx/xmit.h
- delete mode 100644 drivers/staging/cowloop/Kconfig
- delete mode 100644 drivers/staging/cowloop/Makefile
- delete mode 100644 drivers/staging/cowloop/TODO
- delete mode 100644 drivers/staging/cowloop/cowloop.c
- delete mode 100644 drivers/staging/cowloop/cowloop.h
+--------------enigF203B1D2A66722E9E476111C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
----------------
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-Frank Mori Hess (2):
-      Staging: comedi: ni_pcimio: Added device id for pxi-6225.
-      Staging: comedi: pcmcia irq fixes
+iEYEARECAAYFAkrPpbgACgkQitSsb3rl5xSZkwCeIyTFweFNwzbabOPJsqEBOoHi
+FXcAoL9Lqk3b8Km1188Ld6agVLqyNWn7
+=bsLF
+-----END PGP SIGNATURE-----
 
-Greg Kroah-Hartman (4):
-      Staging: comedi: serial2002: fix include build issue
-      Staging: remove agnx driver
-      Staging: remove cowloop driver
-      Staging: comedi: fix build on arches that don't want comedi drivers
-
-Ian Abbott (9):
-      Staging: comedi: Corrected type of a printk argument in resize_async_buffer().
-      Staging: comedi: jr3_pci: Initialize transf variable fully in jr3_pci_poll_subdevice().
-      Staging: comedi: cb_pcidio: fix "section mismatch" error
-      Staging: comedi: s526: Fix number of channels on DIO subdevice
-      Staging: comedi: s526: Get rid of global variable 'cmReg'.
-      Staging: comedi: s526: Take account of arch's byte order.
-      Staging: comedi: s526: fixes for pulse generator
-      Staging: comedi: ni_65xx.c: fix insn_bits shift calculation.
-      Staging: comedi: ni_65xx.c: fix output inversion problem.
-
-Jeff Mahoney (3):
-      Staging: winbond: implement prepare_multicast and fix API usage
-      Staging: iio: Don't build on s390
-      Staging: rtl8192e: Add #include <linux/vmalloc.h>
-
-Pekka Enberg (1):
-      Staging: w35und: Fix ->beacon_int breakage
-
-Serge E. Hallyn (1):
-      Staging: p9auth: a few fixes
-
+--------------enigF203B1D2A66722E9E476111C--
