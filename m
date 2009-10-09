@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbZJIC4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbZJIDFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932583AbZJIC4G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 22:56:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932308AbZJIC4D
+	id S932803AbZJIDFY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 23:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbZJIDFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 22:56:03 -0400
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:65006 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932269AbZJIC4C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 22:56:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:in-reply-to:message-id:references:user-agent
-         :x-archive:mime-version:content-type;
-        b=M/9oIUl/+cJ1ZiHDH4WGcvqStH0CCjMeNXjpv8AwE9j0O8hI90Xf6ydTqlT4VQjoun
-         QKbtpSMrWPLuQ63gQ/CL4IHXc4nA/K1HFT0MOXUxUIqPcRZZm6HqwyVX4mR0LmTznAwE
-         Pn1FNCb+SJFRyuX4ZU+ao5Fmz2MxQCscufyd4=
-Date: Thu, 8 Oct 2009 23:55:19 -0300 (BRST)
-From: "=?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?=" 
-	<fredlwm@gmail.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: keyboard under X with 2.6.31
-In-Reply-To: <20091009023844.GA26462@core.coreip.homeip.net>
-Message-ID: <alpine.LNX.2.01.0910082347470.23080@dyndns.pervalidus.net>
-References: <alpine.LNX.2.01.0910071706490.11297@dyndns.pervalidus.net> <20091009023844.GA26462@core.coreip.homeip.net>
-User-Agent: Alpine 2.01 (LNX 1266 2009-07-14)
-X-Archive: encrypt
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1249076227-1255056923=:23080"
+	Thu, 8 Oct 2009 23:05:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38345 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932317AbZJIDFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 23:05:23 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/ratZkiZbrduZ2bDABIVmzmjn5jGk7DSnExR8E0I
+	jiJIMBjLvsbgPs
+Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
+ CPU"
+From: Mike Galbraith <efault@gmx.de>
+To: Frans Pop <elendil@planet.nl>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <200910082259.35204.elendil@planet.nl>
+References: <200910051500.55875.elendil@planet.nl>
+	 <200910081655.37485.elendil@planet.nl>
+	 <1255026217.6643.12.camel@marge.simson.net>
+	 <200910082259.35204.elendil@planet.nl>
+Content-Type: text/plain
+Date: Fri, 09 Oct 2009 05:04:33 +0200
+Message-Id: <1255057473.6600.11.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, 2009-10-08 at 22:59 +0200, Frans Pop wrote:
+> On Thursday 08 October 2009, Mike Galbraith wrote:
+> > I still see very high latencies coming out of idle (last noted was >
+> > 300ms, NO_HZ) with this patch,
+> >
+> > Like this:
+> >
+> > Cause                                           Maximum    Percentage
+> > Scheduler: waiting for cpu                   604.2 msec        49.0 %
+> 
+> I'm not seeing anything even remotely like that.
+> 
+> I've tried quieting the system down as much as possible, but that made
+> no difference. I do have NO_HZ set; will send my full config privately.
+> 
+> If you'd still like me to try your patch I will, but I'm not sure if
+> that has much value.
 
---8323328-1249076227-1255056923=:23080
-Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+No, if you watch for a bit with box mostly idle, and don't see > 100ms
+hits occasionally, testing patchlet is likely a waste of time.  To get
+one like the above, I have to hold my tongue just right ;-) they're not
+common.
 
-On Thu, 8 Oct 2009, Dmitry Torokhov wrote:
+	-Mike
 
-> On Wed, Oct 07, 2009 at 05:19:25PM -0300, Frédéric L. W. Meunier wrote:
->> My keyboard (ABNT2 PS/2) seems to be broken under X with 2.6.31.2. After
->> less than an hour, it starts acting crazy. The first time, all leds
->> turned off and I couldn't type anything. The second time, all leds also
->> turned off, but since it happened while I was pressing the Backspace key
->> to delete text, it continued deleting, like if the key was pressed.
->>
->> In both cases, the mouse (USB) still works and I can exit X, where the
->> keyboard works. There's nothing in the logs.
->>
->> No problem with 2.6.30.9. Is it supposed to be a kernel or X bug ?
->
-> It would be interestig to see if the same keyboard continues to work in
-> console... if it does then I'd blame X.
-
-I can exit X with the mouse and do anything in the console after 
-that.
-
-I just reported it to the XOrg mailing-list.
-
-Anyway, I wonder if DRI could mess with the keyboard. I suppose 
-there were changes (and Radeon related) from 2.6.30 to 2.6.31. 
-But I can test with it disabled.
---8323328-1249076227-1255056923=:23080--
