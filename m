@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbZJIDFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932885AbZJIDIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932803AbZJIDFY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 23:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbZJIDFX
+	id S932885AbZJIDIT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 23:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932503AbZJIDIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 23:05:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38345 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932317AbZJIDFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 23:05:23 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/ratZkiZbrduZ2bDABIVmzmjn5jGk7DSnExR8E0I
-	jiJIMBjLvsbgPs
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
- CPU"
-From: Mike Galbraith <efault@gmx.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <200910082259.35204.elendil@planet.nl>
-References: <200910051500.55875.elendil@planet.nl>
-	 <200910081655.37485.elendil@planet.nl>
-	 <1255026217.6643.12.camel@marge.simson.net>
-	 <200910082259.35204.elendil@planet.nl>
-Content-Type: text/plain
-Date: Fri, 09 Oct 2009 05:04:33 +0200
-Message-Id: <1255057473.6600.11.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Thu, 8 Oct 2009 23:08:19 -0400
+Received: from rtr.ca ([76.10.145.34]:50000 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932475AbZJIDIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 23:08:18 -0400
+Message-ID: <4ACEA8FB.4060901@rtr.ca>
+Date: Thu, 08 Oct 2009 23:07:39 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Bernie Innocenti <bernie@codewiz.org>
+Cc: Harri Olin <harri.olin@gmail.com>, linux-ide@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, sysadmin <sysadmin@gnu.org>
+Subject: Re: sata_mv 0000:03:06.0: PCI ERROR; PCI IRQ cause=0x30000040
+References: <1254546642.1438.135.camel@giskard> <4ACA6904.1060509@rtr.ca>	 <4ACB3741.2030101@gmail.com> <1254852272.1471.172.camel@giskard>	 <4ACBA33C.7090606@rtr.ca>  <1254873978.1471.463.camel@giskard>	 <1254879618.1471.525.camel@giskard>  <4ACC076F.7020000@rtr.ca> <1255020134.30440.698.camel@giskard>
+In-Reply-To: <1255020134.30440.698.camel@giskard>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-10-08 at 22:59 +0200, Frans Pop wrote:
-> On Thursday 08 October 2009, Mike Galbraith wrote:
-> > I still see very high latencies coming out of idle (last noted was >
-> > 300ms, NO_HZ) with this patch,
-> >
-> > Like this:
-> >
-> > Cause                                           Maximum    Percentage
-> > Scheduler: waiting for cpu                   604.2 msec        49.0 %
-> 
-> I'm not seeing anything even remotely like that.
-> 
-> I've tried quieting the system down as much as possible, but that made
-> no difference. I do have NO_HZ set; will send my full config privately.
-> 
-> If you'd still like me to try your patch I will, but I'm not sure if
-> that has much value.
+Bernie Innocenti wrote:
+>
+> I want to try reducing the frequency of the PCI-X bus, but the BIOS does
+> not seem to provide a setting for it.  Is there another way?
+..
 
-No, if you watch for a bit with box mostly idle, and don't see > 100ms
-hits occasionally, testing patchlet is likely a waste of time.  To get
-one like the above, I have to hold my tongue just right ;-) they're not
-common.
+Nothing that's easy.
 
-	-Mike
+Here.. apply this patch, and post the output after you reboot with it.
 
+
+--- 2.6.31/drivers/ata/sata_mv.c.orig	2009-08-21 22:16:05.000000000 -0400
++++ linux/drivers/ata/sata_mv.c	2009-10-08 23:05:37.392203506 -0400
+@@ -3738,6 +3738,12 @@
+ 			hp_flags |= MV_HP_ERRATA_60X1B2;
+ 			break;
+ 		case 0x9:
++		{
++			struct mv_host_priv *hpriv = host->private_data;
++			void __iomem *mmio = hpriv->base;
++			printk(KERN_INFO "sata_mv: pcix_mode=%d\n", mv_in_pcix_mode(host));
++			printk(KERN_INFO "sata_mv: MV_PCI_COMMAND=%08x\n", readl(mmio + MV_PCI_COMMAND);
++		}
+ 			hp_flags |= MV_HP_ERRATA_60X1C0;
+ 			break;
+ 		default:
