@@ -1,146 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932407AbZJIBLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932792AbZJIBPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932407AbZJIBLK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 21:11:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760132AbZJIBLI
+	id S932792AbZJIBPw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 21:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932433AbZJIBPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 21:11:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58477 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760127AbZJIBLH (ORCPT
+	Thu, 8 Oct 2009 21:15:50 -0400
+Received: from mail-qy0-f172.google.com ([209.85.221.172]:54763 "EHLO
+	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932143AbZJIBPt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 21:11:07 -0400
-Message-ID: <4ACE8D51.1080606@zytor.com>
-Date: Thu, 08 Oct 2009 18:09:37 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Thu, 8 Oct 2009 21:15:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=iWIRYbqNcoWOSzelnMQzUrOZ8evxnl0F/pAnsp5Vt/ybnj7/RGRw8VNSB0iKMrR3nv
+         EZAX4gMUJ1nEuAMkQDjDVRyQnai/HzRaZbxsW/kkfmNrytVvEUKr2BrG3VuYpW/vpstD
+         RWODC9o+wndiBqFXBT83klLxn+INSidfwDnVk=
+Message-ID: <4ACE8E9D.2040009@gmail.com>
+Date: Thu, 08 Oct 2009 19:15:09 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [RFC] x86-64: make compat_start_thread() match start_thread()
-Content-Type: multipart/mixed;
- boundary="------------070708070503040007070003"
+To: Andreas <andreas2@logic.univie.ac.at>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Allocated Mem - 700MB missing
+References: <20091008175939.GA31126@logic.univie.ac.at>
+In-Reply-To: <20091008175939.GA31126@logic.univie.ac.at>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070708070503040007070003
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+On 10/08/2009 11:59 AM, Andreas wrote:
+> Hi experts!
+>
+> Where are the missing 700MB ???		(4GB installed)
+> 700 MB is too much, that can't be only because of version-differences!
+>
+> I compared (unmodified) stable/testing kernels with Xen and OpenVZ-kernel:
+> all out of main debian packages:
+>
+> Only3200:
+> ----------
+> *Linux host 2.6.18-5-686 #1 SMP Mon Dec 24 16:41:07 UTC 2007 i686 GNU/Linux
+> *Linux knoppix 2.6.24.4 #2 SMP PREEMPT Tue Mar 25 21:35:28 CET 2008 i686 GNU/Linux
+> *Linux host 2.6.26-2-686 #1 SMP Sun Jun 21 04:57:38 UTC 2009 i686 GNU/Linux
+>
+>
+> Full4GB:
+> ---------
+> *Linux host 2.6.26-2-openvz-686 #1 SMP Sun Jun 21 07:07:25 UTC 2009 i686 GNU/Linux
 
-[This is an RFC post; I intend to commit this tomorrow but I would
-appreciate anyone looking over it.]
-
---------------070708070503040007070003
-Content-Type: text/x-patch;
- name="0001-x86-64-make-compat_start_thread-match-start_threa.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename*0="0001-x86-64-make-compat_start_thread-match-start_threa.patch"
-
->From c843d5b6bd5923b91359e4806f5fca905774b41f Mon Sep 17 00:00:00 2001
-From: H. Peter Anvin <hpa@zytor.com>
-Date: Thu, 8 Oct 2009 18:02:54 -0700
-Subject: [PATCH] x86-64: make compat_start_thread() match start_thread()
-
-For no real good reason, compat_start_thread() was embedded inline in
-<asm/elf.h> whereas the native start_thread() lives in process_*.c.
-Move compat_start_thread() to process_64.c, remove gratuitious
-differences, and fix a few items which mostly look like bit rot.
-
-In particular, compat_start_thread() didn't do free_thread_xstate(),
-which means it was hanging on to the xstate store area even when it
-was not needed.  It was also not setting old_rsp, but it looks like
-that generally shouldn't matter for a 32-bit process.
-
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/include/asm/elf.h   |   19 +------------------
- arch/x86/kernel/process_64.c |   23 ++++++++++++++++++++++-
- 2 files changed, 23 insertions(+), 19 deletions(-)
-
-diff --git a/arch/x86/include/asm/elf.h b/arch/x86/include/asm/elf.h
-index 456a304..5a5d541 100644
---- a/arch/x86/include/asm/elf.h
-+++ b/arch/x86/include/asm/elf.h
-@@ -157,19 +157,6 @@ do {						\
- 
- #define compat_elf_check_arch(x)	elf_check_arch_ia32(x)
- 
--static inline void start_ia32_thread(struct pt_regs *regs, u32 ip, u32 sp)
--{
--	loadsegment(fs, 0);
--	loadsegment(ds, __USER32_DS);
--	loadsegment(es, __USER32_DS);
--	load_gs_index(0);
--	regs->ip = ip;
--	regs->sp = sp;
--	regs->flags = X86_EFLAGS_IF;
--	regs->cs = __USER32_CS;
--	regs->ss = __USER32_DS;
--}
--
- static inline void elf_common_init(struct thread_struct *t,
- 				   struct pt_regs *regs, const u16 ds)
- {
-@@ -191,11 +178,7 @@ do {							\
- #define	COMPAT_ELF_PLAT_INIT(regs, load_addr)		\
- 	elf_common_init(&current->thread, regs, __USER_DS)
- 
--#define	compat_start_thread(regs, ip, sp)		\
--do {							\
--	start_ia32_thread(regs, ip, sp);		\
--	set_fs(USER_DS);				\
--} while (0)
-+void compat_start_thread(struct pt_regs *regs, u32 new_ip, u32 new_sp);
- 
- #define COMPAT_SET_PERSONALITY(ex)			\
- do {							\
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index ad535b6..ec223a8 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -356,7 +356,7 @@ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
- 	percpu_write(old_rsp, new_sp);
- 	regs->cs		= __USER_CS;
- 	regs->ss		= __USER_DS;
--	regs->flags		= 0x200;
-+	regs->flags		= X86_EFLAGS_IF;
- 	set_fs(USER_DS);
- 	/*
- 	 * Free the old FP and other extended state
-@@ -365,6 +365,27 @@ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
- }
- EXPORT_SYMBOL_GPL(start_thread);
- 
-+#ifdef CONFIG_IA32_EMULATION
-+void compat_start_thread(struct pt_regs *regs, u32 new_ip, u32 new_sp)
-+{
-+	loadsegment(fs, 0);
-+	loadsegment(ds, __USER32_DS);
-+	loadsegment(es, __USER32_DS);
-+	load_gs_index(0);
-+	regs->ip		= new_ip;
-+	regs->sp		= new_sp;
-+	percpu_write(old_rsp, new_sp);
-+	regs->cs		= __USER32_CS;
-+	regs->ss		= __USER32_DS;
-+	regs->flags		= X86_EFLAGS_IF;
-+	set_fs(USER_DS);
-+	/*
-+	 * Free the old FP and other extended state
-+	 */
-+	free_thread_xstate(current);
-+}
-+#endif
-+
- /*
-  *	switch_to(x,y) should switch tasks from x to y.
-  *
--- 
-1.6.2.5
-
-
---------------070708070503040007070003--
+Check the kernel configuration. For 32-bit kernels you need 
+CONFIG_HIGHMEM64G enabled to use memory above 4GB (including in your 
+case, because of the PCI, etc. memory holes). Though it would be better 
+to use a 64-bit kernel.
