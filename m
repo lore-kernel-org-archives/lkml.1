@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761862AbZJIXTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761676AbZJIXRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761862AbZJIXTs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761664AbZJIXRb
+	id S1761676AbZJIXRc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761635AbZJIXRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:17:31 -0400
-Received: from kroah.org ([198.145.64.141]:36851 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:17:30 -0400
+Received: from kroah.org ([198.145.64.141]:36852 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761636AbZJIXR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761634AbZJIXR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Oct 2009 19:17:28 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:10:01 2009
-Message-Id: <20091009231001.532024807@mini.kroah.org>
+Message-Id: <20091009231001.649051837@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:08:47 -0700
+Date: Fri, 09 Oct 2009 16:08:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eero Nurkkala <ext-eero.nurkkala@nokia.com>,
-       Rik van Riel <riel@redhat.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Steven Noonan <steven@uplinklabs.net>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 11/26] NOHZ: update idle state also when NOHZ is inactive
+       Eric Paris <eparis@redhat.com>,
+       Dustin Kirkland <kirkland@canonical.com>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>,
+       Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+Subject: [patch 12/26] ima: ecryptfs fix imbalance message
 References: <20091009230836.316410305@mini.kroah.org>
-Content-Disposition: inline; filename=nohz-update-idle-state-also-when-nohz-is-inactive.patch
+Content-Disposition: inline; filename=ima-ecryptfs-fix-imbalance-message.patch
 In-Reply-To: <20091009231249.GA31084@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,61 +33,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Eero Nurkkala <ext-eero.nurkkala@nokia.com>
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 
-commit fdc6f192e7e1ae80565af23cc33dc88e3dcdf184 upstream.
+commit 36520be8e32b49bd85a63b7b8b40cd07c3da59a5 upstream.
 
-Commit f2e21c9610991e95621a81407cdbab881226419b had unfortunate side
-effects with cpufreq governors on some systems.
+The unencrypted files are being measured.  Update the counters to get
+rid of the ecryptfs imbalance message. (http://bugzilla.redhat.com/519737)
 
-If the system did not switch into NOHZ mode ts->inidle is not set when
-tick_nohz_stop_sched_tick() is called from the idle routine. Therefor
-all subsequent calls from irq_exit() to tick_nohz_stop_sched_tick()
-fail to call tick_nohz_start_idle(). This results in bogus idle
-accounting information which is passed to cpufreq governors.
-
-Set the inidle flag unconditionally of the NOHZ active state to keep
-the idle time accounting correct in any case.
-
-[ tglx: Added comment and tweaked the changelog ]
-
-Reported-by: Steven Noonan <steven@uplinklabs.net>
-Signed-off-by: Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Steven Noonan <steven@uplinklabs.net>
-LKML-Reference: <1254907901.30157.93.camel@eenurkka-desktop>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Reported-by: Sachin Garg
+Cc: Eric Paris <eparis@redhat.com>
+Cc: Dustin Kirkland <kirkland@canonical.com>
+Cc: James Morris <jmorris@namei.org>
+Cc: David Safford <safford@watson.ibm.com>
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/time/tick-sched.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ fs/ecryptfs/main.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -231,6 +231,13 @@ void tick_nohz_stop_sched_tick(int inidl
- 	if (!inidle && !ts->inidle)
- 		goto end;
+--- a/fs/ecryptfs/main.c
++++ b/fs/ecryptfs/main.c
+@@ -35,6 +35,7 @@
+ #include <linux/key.h>
+ #include <linux/parser.h>
+ #include <linux/fs_stack.h>
++#include <linux/ima.h>
+ #include "ecryptfs_kernel.h"
  
-+	/*
-+	 * Set ts->inidle unconditionally. Even if the system did not
-+	 * switch to NOHZ mode the cpu frequency governers rely on the
-+	 * update of the idle time accounting in tick_nohz_start_idle().
-+	 */
-+	ts->inidle = 1;
-+
- 	now = tick_nohz_start_idle(ts);
+ /**
+@@ -118,6 +119,7 @@ int ecryptfs_init_persistent_file(struct
+ 	const struct cred *cred = current_cred();
+ 	struct ecryptfs_inode_info *inode_info =
+ 		ecryptfs_inode_to_private(ecryptfs_dentry->d_inode);
++	int opened_lower_file = 0;
+ 	int rc = 0;
  
- 	/*
-@@ -248,8 +255,6 @@ void tick_nohz_stop_sched_tick(int inidl
- 	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
- 		goto end;
- 
--	ts->inidle = 1;
--
- 	if (need_resched())
- 		goto end;
+ 	mutex_lock(&inode_info->lower_file_mutex);
+@@ -134,9 +136,12 @@ int ecryptfs_init_persistent_file(struct
+ 			       "for lower_dentry [0x%p] and lower_mnt [0x%p]; "
+ 			       "rc = [%d]\n", lower_dentry, lower_mnt, rc);
+ 			inode_info->lower_file = NULL;
+-		}
++		} else
++			opened_lower_file = 1;
+ 	}
+ 	mutex_unlock(&inode_info->lower_file_mutex);
++	if (opened_lower_file)
++		ima_counts_get(inode_info->lower_file);
+ 	return rc;
+ }
  
 
 
