@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934477AbZJIVqC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934500AbZJIVtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934477AbZJIVqC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:46:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932533AbZJIVqB
+	id S934500AbZJIVtX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934469AbZJIVtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:46:01 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50384 "EHLO ogre.sisk.pl"
+	Fri, 9 Oct 2009 17:49:22 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35311 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932376AbZJIVp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:45:59 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Danny Feng <dfeng@redhat.com>
-Subject: Re: [PATCH] acpi: pci_root: fix NULL pointer deref after resume from suspend
-Date: Fri, 9 Oct 2009 23:46:57 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Alex Chiang <achiang@hp.com>, lenb@kernel.org, bjorn.helgaas@hp.com,
-       andrew.patterson@hp.com, jbarnes@virtuousgeek.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1254119480-9730-1-git-send-email-dfeng@redhat.com> <200910040056.00247.rjw@sisk.pl> <4ACE9F51.5060103@redhat.com>
-In-Reply-To: <4ACE9F51.5060103@redhat.com>
+	id S932877AbZJIVtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 17:49:21 -0400
+Date: Fri, 9 Oct 2009 23:48:43 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, lftp@uniyar.ac.ru
+Subject: Re: 2.6.31/lftp: WARNING: at drivers/char/tty_io.c:1267
+ tty_open+0x439/0x4f0()
+In-Reply-To: <alpine.DEB.2.00.0910091353230.3264@p34.internal.lan>
+Message-ID: <alpine.LRH.2.00.0910092345210.12171@twin.jikos.cz>
+References: <alpine.DEB.2.00.0910081304080.11551@p34.internal.lan> <alpine.DEB.2.00.0910091353230.3264@p34.internal.lan>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910092346.58021.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 October 2009, Danny Feng wrote:
-> On 10/04/2009 06:56 AM, Rafael J. Wysocki wrote:
-> > On Thursday 01 October 2009, Alex Chiang wrote:
-> >> Hi Danny,
-> >>
-> >> * Danny Feng<dfeng@redhat.com>:
-> >>> Call Trace:
-> >>>   [<ffffffff81254193>] acpi_get_pci_dev+0x106/0x167
-> >>>   [<ffffffff8125545a>] acpi_pci_bind+0x1c/0x86
-> >>>   [<ffffffff8116230a>] ? sysfs_create_file+0x2a/0x2c
-> >>>   [<ffffffff8125141f>] acpi_add_single_object+0x964/0xa0c
-> >>>   [<ffffffff812515a7>] acpi_bus_check_add+0xe0/0x138
-> >>>   [<ffffffff81251667>] acpi_bus_scan+0x68/0xa0
-> >>>   [<ffffffff812516f4>] acpi_bus_add+0x2a/0x2e
-> >>>   [<ffffffff81252c59>] hotplug_dock_devices+0x114/0x13e
-> >>>   [<ffffffff8125301a>] acpi_dock_deferred_cb+0xbf/0x192
-> >>>   [<ffffffff8124d6ca>] acpi_os_execute_deferred+0x29/0x36
-> >>>   [<ffffffff8106a244>] worker_thread+0x251/0x347
-> >>>   [<ffffffff8106a1ef>] ? worker_thread+0x1fc/0x347
-> >>>   [<ffffffff8124d6a1>] ? acpi_os_execute_deferred+0x0/0x36
-> >>>   [<ffffffff8106e426>] ? autoremove_wake_function+0x0/0x39
-> >>>   [<ffffffff81069ff3>] ? worker_thread+0x0/0x347
-> >>>   [<ffffffff8106e0e0>] kthread+0x7f/0x87
-> >>>   [<ffffffff81012cea>] child_rip+0xa/0x20
-> >>>   [<ffffffff81012650>] ? restore_args+0x0/0x30
-> >>>   [<ffffffff8106e061>] ? kthread+0x0/0x87
-> >>>   [<ffffffff81012ce0>] ? child_rip+0x0/0x20
-> >>> Code: ff 49 89 fc 41 89 f5 a9 00 ff ff 07 74 11 be 87 00 00 00 48 c7 c7
-> >>> 45 6d 5a 81 e8 f6 2b e3 ff 48 c7 c7 30 ab 68 81 e8 29 77 20 00<49>  8b
-> >>> 5c 24 28 49 83 c4 28 eb 09 44 39 6b 38 74 10 48 89 c3 48
-> >>> RIP  [<ffffffff812217e7>] pci_get_slot+0x4c/0x8c
-> >>>   RSP<ffff88022ee69aa0>
-> >>> CR2: 0000000000000028
-> >>> ---[ end trace b5a7793bd9db2a4d ]---
-> >>
-> >> Can you please reproduce with this debug patch? I'm guessing that
-> >> we're dying because we have a NULL parent device, but I'm curious
-> >> as to what causes this situation to occur.
-> >
-> > If we had a NULL parent, acpi_get_parent() would return an error.  Also, if we
-> > one of the devices is NULL at the PCI level, pci_get_slot() will return NULL.
-> > The only possibility left is that one of the buses we find in the ACPI tables
-> > doesn't have a secondary PCI bus.
-> >
-> > I think what happens is that on resume we get a dock notification
-> > (via dock_acpi_notifier registered in dock_init()) for a dock station device
-> > that is present in the ACPI tables, but not physically accessible at the moment
-> > (I guess that falls into the "BIOS bug" category, but we can fix this easily in
-> > the kernel).
-> >
-> > So, IMO, the appended patch is the right fix.
-> >
-> > Danny, please test it and report back (in particular, please tell us if you see
-> > the "Secondary bus not present" message in dmesg).
-> Yes, this patch works. I got "ata_piix 0000:00:1f.2: Secondary bus not 
-> present".
+On Fri, 9 Oct 2009, Justin Piszcz wrote:
 
-Now that's a puzzle!
+> > [1628036.347248] WARNING: at drivers/char/tty_io.c:1267
+> > tty_open+0x439/0x4f0()
+> > [1628036.347250] Hardware name:
+> > [1628036.347252] Pid: 23495, comm: lftp Not tainted 2.6.31 #3
+> > [1628036.347254] Call Trace:
+> > [1628036.347259]  [<ffffffff810b5733>] ? do_lookup+0x143/0x270
+> > [1628036.347261]  [<ffffffff8126a8f9>] ? tty_open+0x439/0x4f0
+> > [1628036.347265]  [<ffffffff8105473f>] ? warn_slowpath_common+0x6f/0xc0
+> > [1628036.347267]  [<ffffffff8126a8f9>] ? tty_open+0x439/0x4f0
+> > [1628036.347270]  [<ffffffff813af3c2>] ? sock_aio_read+0x142/0x150
+> > [1628036.347274]  [<ffffffff810afd78>] ? chrdev_open+0x88/0x170
+> > [1628036.347277]  [<ffffffff810c50a3>] ? mntput_no_expire+0x23/0xf0
+> > [1628036.347279]  [<ffffffff810afcf0>] ? chrdev_open+0x0/0x170
+> > [1628036.347282]  [<ffffffff810ab00a>] ? __dentry_open+0x9a/0x260
+> > [1628036.347284]  [<ffffffff810b9ace>] ? do_filp_open+0x71e/0xac0
+> > [1628036.347287]  [<ffffffff810bac3f>] ? vfs_ioctl+0x2f/0xb0
+> > [1628036.347289]  [<ffffffff810bb143>] ? do_vfs_ioctl+0x3e3/0x570
+> > [1628036.347302]  [<ffffffff810c357a>] ? alloc_fd+0x4a/0x140
+> > [1628036.347304]  [<ffffffff810aae77>] ? do_sys_open+0x97/0x150
+> > [1628036.347308]  [<ffffffff8102c42b>] ? system_call_fastpath+0x16/0x1b
+> > [1628036.347309] ---[ end trace b69ffec827da9b40 ]---
+> > 
+> > The lftp process was running in a screened session.
+> > 
+> > Any thoughts as to the bug here?
+> > 
+> > Justin.
+> 
+> If anyone has replied--
+> 
+> Please CC me as I am not on the LKML list, thanks.
 
-Can you please attach the output of acpidump from this machine?
+This should already be fixed by commit 0b5759c6. 
 
-Rafael
+In case it is not, please shout.
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
+
