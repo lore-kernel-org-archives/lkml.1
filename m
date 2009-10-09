@@ -1,295 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760997AbZJIOoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbZJIOpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760997AbZJIOoK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 10:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760824AbZJIOoJ
+	id S1761012AbZJIOpJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 10:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760950AbZJIOpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 10:44:09 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:49473 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757187AbZJIOoI (ORCPT
+	Fri, 9 Oct 2009 10:45:08 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:50129 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756828AbZJIOpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 10:44:08 -0400
-Date: Fri, 9 Oct 2009 09:43:16 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2][v2] mm: add notifier in pageblock isolation for
-	balloon drivers
-Message-ID: <20091009144316.GB11543@austin.ibm.com>
-Mail-Followup-To: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	linuxppc-dev@ozlabs.org
-References: <20091002184458.GC4908@austin.ibm.com> <20091009112136.GB24845@csn.ul.ie>
+	Fri, 9 Oct 2009 10:45:06 -0400
+Message-ID: <4ACF4C1C.4050505@gmail.com>
+Date: Fri, 09 Oct 2009 16:43:40 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091009112136.GB24845@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: "David S. Miller" <davem@davemloft.net>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>, Takahiro Yasui <tyasui@redhat.com>,
+       Hideo Aoki <haoki@redhat.com>
+Subject: [PATCH] udp: Fix udp_poll() and ioctl()
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <COE24pZSBH.A.mdH.sMTxKB@chimera> <4AC70D20.4060009@gmail.com> <4AC710DF.5070705@gmail.com> <4AC78F7C.40908@gmail.com> <4ACCB6BE.5040602@gmail.com>
+In-Reply-To: <4ACCB6BE.5040602@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 09 Oct 2009 16:43:41 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mel Gorman (mel@csn.ul.ie) wrote:
-> On Fri, Oct 02, 2009 at 01:44:58PM -0500, Robert Jennings wrote:
-> > Memory balloon drivers can allocate a large amount of memory which
-> > is not movable but could be freed to accomodate memory hotplug remove.
-> > 
-> > Prior to calling the memory hotplug notifier chain the memory in the
-> > pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
-> > isolation will not proceed, causing the memory removal for that page
-> > range to fail.
-> > 
-> > Rather than failing pageblock isolation if the the migrateteype is not
+Eric Dumazet a écrit :
+> Eric Dumazet a écrit :
+>> Eric Dumazet a écrit :
+>>> Eric Dumazet a écrit :
+>>>> Rafael J. Wysocki a écrit :
+>>>>> This message has been generated automatically as a part of a report
+>>>>> of regressions introduced between 2.6.30 and 2.6.31.
+>>>>>
+>>>>> The following bug entry is on the current list of known regressions
+>>>>> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+>>>>> be listed and let me know (either way).
+>>>>>
+>>>>>
+>>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14301
+>>>>> Subject		: WARNING: at net/ipv4/af_inet.c:154
+>>>>> Submitter	: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+>>>>> Date		: 2009-09-30 12:24 (2 days old)
+>>>>> References	: http://marc.info/?l=linux-kernel&m=125431350218137&w=4
+>>>>>
+>> Investigation still needed...
+>>
 > 
-> s/the the migrateteype/the migratetype/
+> OK, my last (buggy ???) feeling is about commit 95766fff6b9a78d1
 > 
-> > MIGRATE_MOVABLE, this patch checks if all of the pages in the pageblock
-> > are owned by a registered balloon driver (or other entity) using a
-> > notifier chain.  If all of the non-movable pages are owned by a balloon,
-> > they can be freed later through the memory notifier chain and the range
-> > can still be isolated in set_migratetype_isolate().
-> > 
-> > Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-> > 
-> > ---
-> >  drivers/base/memory.c  |   19 +++++++++++++++++++
-> >  include/linux/memory.h |   26 ++++++++++++++++++++++++++
-> >  mm/page_alloc.c        |   45 ++++++++++++++++++++++++++++++++++++++-------
-> >  3 files changed, 83 insertions(+), 7 deletions(-)
-> > 
-> > Index: b/drivers/base/memory.c
-> > ===================================================================
-> > --- a/drivers/base/memory.c
-> > +++ b/drivers/base/memory.c
-> > @@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
-> >  }
-> >  EXPORT_SYMBOL(unregister_memory_notifier);
-> >  
-> > +static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
-> > +
-> > +int register_memory_isolate_notifier(struct notifier_block *nb)
-> > +{
-> > +	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
-> > +}
-> > +EXPORT_SYMBOL(register_memory_isolate_notifier);
-> > +
-> > +void unregister_memory_isolate_notifier(struct notifier_block *nb)
-> > +{
-> > +	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
-> > +}
-> > +EXPORT_SYMBOL(unregister_memory_isolate_notifier);
-> > +
-> >  /*
-> >   * register_memory - Setup a sysfs device for a memory block
-> >   */
-> > @@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
-> >  	return blocking_notifier_call_chain(&memory_chain, val, v);
-> >  }
-> >  
-> > +int memory_isolate_notify(unsigned long val, void *v)
-> > +{
-> > +	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
-> > +}
-> > +
-> >  /*
-> >   * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
-> >   * OK to have direct references to sparsemem variables in here.
-> > Index: b/include/linux/memory.h
-> > ===================================================================
-> > --- a/include/linux/memory.h
-> > +++ b/include/linux/memory.h
-> > @@ -50,6 +50,18 @@ struct memory_notify {
-> >  	int status_change_nid;
-> >  };
-> >  
-> > +/*
-> > + * During pageblock isolation, count the number of pages in the
-> > + * range [start_pfn, start_pfn + nr_pages)
-> > + */
-> > 
+> [UDP]: Add memory accounting.
 > 
-> The comment could have been slightly better. The count of pages in the
-> range is nr_pages - memory_holes but what you're counting is the number
-> of pages owned by the balloon driver in the notification chain.
-
-Right, it is misleading.  I'll fix this.
-
-> > +#define MEM_ISOLATE_COUNT	(1<<0)
-> > +
-> > +struct memory_isolate_notify {
-> > +	unsigned long start_pfn;
-> > +	unsigned int nr_pages;
-> > +	unsigned int pages_found;
-> > +};
-> > +
-> >  struct notifier_block;
-> >  struct mem_section;
-> >  
-> > @@ -76,14 +88,28 @@ static inline int memory_notify(unsigned
-> >  {
-> >  	return 0;
-> >  }
-> > +static inline int register_memory_isolate_notifier(struct notifier_block *nb)
-> > +{
-> > +	return 0;
-> > +}
-> > +static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
-> > +{
-> > +}
-> > +static inline int memory_isolate_notify(unsigned long val, void *v)
-> > +{
-> > +	return 0;
-> > +}
-> >  #else
-> >  extern int register_memory_notifier(struct notifier_block *nb);
-> >  extern void unregister_memory_notifier(struct notifier_block *nb);
-> > +extern int register_memory_isolate_notifier(struct notifier_block *nb);
-> > +extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
-> >  extern int register_new_memory(int, struct mem_section *);
-> >  extern int unregister_memory_section(struct mem_section *);
-> >  extern int memory_dev_init(void);
-> >  extern int remove_memory_block(unsigned long, struct mem_section *, int);
-> >  extern int memory_notify(unsigned long val, void *v);
-> > +extern int memory_isolate_notify(unsigned long val, void *v);
-> >  extern struct memory_block *find_memory_block(struct mem_section *);
-> >  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
-> >  enum mem_add_context { BOOT, HOTPLUG };
-> > Index: b/mm/page_alloc.c
-> > ===================================================================
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -48,6 +48,7 @@
-> >  #include <linux/page_cgroup.h>
-> >  #include <linux/debugobjects.h>
-> >  #include <linux/kmemleak.h>
-> > +#include <linux/memory.h>
-> >  #include <trace/events/kmem.h>
-> >  
-> >  #include <asm/tlbflush.h>
-> > @@ -4985,23 +4986,53 @@ void set_pageblock_flags_group(struct pa
-> >  int set_migratetype_isolate(struct page *page)
-> >  {
-> >  	struct zone *zone;
-> > -	unsigned long flags;
-> > +	unsigned long flags, pfn, iter;
-> > +	unsigned long immobile = 0;
-> > +	struct memory_isolate_notify arg;
-> > +	int notifier_ret;
-> >  	int ret = -EBUSY;
-> >  	int zone_idx;
-> >  
-> >  	zone = page_zone(page);
-> >  	zone_idx = zone_idx(zone);
-> > +
-> >  	spin_lock_irqsave(&zone->lock, flags);
-> > +	if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE ||
-> > +	    zone_idx == ZONE_MOVABLE) {
-> > +		ret = 0;
-> > +		goto out;
-> > +	}
-> > +
-> > +	pfn = page_to_pfn(page);
-> > +	arg.start_pfn = pfn;
-> > +	arg.nr_pages = pageblock_nr_pages;
-> > +	arg.pages_found = 0;
-> > +
-> >  	/*
-> > -	 * In future, more migrate types will be able to be isolation target.
-> > +	 * The pageblock can be isolated even if the migrate type is
-> > +	 * not *_MOVABLE.  The memory isolation notifier chain counts
-> > +	 * the number of pages in this pageblock that can be freed later
-> > +	 * through the memory notifier chain.  If all of the pages are
-> > +	 * accounted for, isolation can continue.
+> (Its a two years old patch, oh well...)
 > 
-> This comment could have been clearer as well
+> Problem is the udp_poll() :
 > 
-> * It may be possible to isolate a pageblock even if the migratetype is
-> * not MIGRATE_MOVABLE. The memory isolation notifier chain is used by
-> * balloon drivers to return the number of pages in a range that are held
-> * by the balloon driver to shrink memory. If all the pages are accounted
-> * for by balloons or are free, isolation can continue
-
- * It may be possible to isolate a pageblock even if the migratetype is
- * not MIGRATE_MOVABLE. The memory isolation notifier chain is used by
- * balloon drivers to return the number of pages in a range that are held
- * by the balloon driver to shrink memory. If all the pages are accounted
- * for by balloons, are free, or on the LRU, isolation can continue.
- * Later, for example, when memory hotplug notifier runs, these pages
- * reported as "can be isolated" should be isolated(freed) by the balloon
- * driver through the memory notifier chain.
-
-> >  	 */
-> > -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
-> > -	    zone_idx != ZONE_MOVABLE)
-> > +	notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
-> > +	notifier_ret = notifier_to_errno(notifier_ret);
-> > +       	if (notifier_ret || !arg.pages_found)
-> >  		goto out;
-> > -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
-> > -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
-> > -	ret = 0;
-> > +
-> > +	for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
-> > +		if (page_count(pfn_to_page(iter)))
-> > +			immobile++;
-> > +
+> We check the first frame to be dequeued from sk_receive_queue has a good checksum.
 > 
-> This part here is not safe when CONFIG_HOLES_IN_ZONE is set. You need to
-> make it something like
+> If it doesnt, we drop the frame ( calling kfree_skb(skb); )
 > 
-> for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++) {
-> 	if (!pfn_valid_within(pfn))
-> 		continue;
-> 
-> 	if (page_count(pfn_to_page(iter)))
-> 		immobile++;
-> }
-> 
-> You shouldn't need to run pfn_valid() as you're always starting from a valid
-> page and never going outside MAX_ORDER_NR_PAGES in this iterator.
+> Problem is now we perform memory accounting on UDP, this kfree_skb()
+> should be done with socket locked, but are we allowed to
+> call lock_sock() from this udp_poll() context ?
 > 
 
-I will make this change.
+It seems we can lock_sock() from udp_poll() context, so here is a patch.
 
-> > +	if (arg.pages_found == immobile)
-> > +		ret = 0;
-> > +
-> 
-> Ok, so if all pages in a range that are in use match the count returned
-> by the balloon, then it's ok to isolate.
+[PATCH] udp: Fix udp_poll()
 
-Correct. 
+udp_poll() can in some circumstances drop frames with incorrect checksums.
 
-> >  out:
-> > +	if (!ret) {
-> > +		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
-> > +		move_freepages_block(zone, page, MIGRATE_ISOLATE);
-> > +	}
-> > +
-> >  	spin_unlock_irqrestore(&zone->lock, flags);
-> >  	if (!ret)
-> >  		drain_all_pages();
-> > 
-> 
-> The patch looks more or less sane. It would be nice to have a follow-on patch
-> that clarified some details but it's not necessary. The pfn_valid_within()
-> should be done as a follow-on patch. I haven't actually tested this but
-> otherwise it looks ok. Once the pfn_valid_within() is sorted out, it has
-> my Ack.
+Problem is we now have to lock the socket while dropping frames, or risk
+sk_forward corruption.
 
-I'll be sending out a new revision of this patch rather than a
-follow-on due to other changes (change from BLOCKING_NOTIFIER_HEAD to
-ATOMIC_NOTIFIER_HEAD) and I will include changes discussed here.  Thank
-you for the review.
+This bug is present since commit 95766fff6b9a78d1
+([UDP]: Add memory accounting.)
+
+While we are at it, we can correct ioctl(SIOCINQ) to also drop bad frames.
+
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
+ net/ipv4/udp.c |   73 +++++++++++++++++++++++++++--------------------
+ 1 files changed, 43 insertions(+), 30 deletions(-)
+
+diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
+index 6ec6a8a..d0d436d 100644
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -841,6 +841,42 @@ out:
+ 	return ret;
+ }
+ 
++
++/**
++ *	first_packet_length	- return length of first packet in receive queue
++ *	@sk: socket
++ *
++ *	Drops all bad checksum frames, until a valid one is found.
++ *	Returns the length of found skb, or 0 if none is found.
++ */
++static unsigned int first_packet_length(struct sock *sk)
++{
++	struct sk_buff_head list_kill, *rcvq = &sk->sk_receive_queue;
++	struct sk_buff *skb;
++	unsigned int res;
++
++	__skb_queue_head_init(&list_kill);
++
++	spin_lock_bh(&rcvq->lock);
++	while ((skb = skb_peek(rcvq)) != NULL &&
++		udp_lib_checksum_complete(skb)) {
++		UDP_INC_STATS_BH(sock_net(sk), UDP_MIB_INERRORS,
++				 IS_UDPLITE(sk));
++		__skb_unlink(skb, rcvq);
++		__skb_queue_tail(&list_kill, skb);
++	}
++	res = skb ? skb->len : 0;
++	spin_unlock_bh(&rcvq->lock);
++
++	if (!skb_queue_empty(&list_kill)) {
++		lock_sock(sk);
++		__skb_queue_purge(&list_kill);
++		sk_mem_reclaim_partial(sk);
++		release_sock(sk);
++	}
++	return res;
++}
++
+ /*
+  *	IOCTL requests applicable to the UDP protocol
+  */
+@@ -857,21 +893,16 @@ int udp_ioctl(struct sock *sk, int cmd, unsigned long arg)
+ 
+ 	case SIOCINQ:
+ 	{
+-		struct sk_buff *skb;
+-		unsigned long amount;
++		unsigned int amount = first_packet_length(sk);
+ 
+-		amount = 0;
+-		spin_lock_bh(&sk->sk_receive_queue.lock);
+-		skb = skb_peek(&sk->sk_receive_queue);
+-		if (skb != NULL) {
++		if (amount)
+ 			/*
+ 			 * We will only return the amount
+ 			 * of this packet since that is all
+ 			 * that will be read.
+ 			 */
+-			amount = skb->len - sizeof(struct udphdr);
+-		}
+-		spin_unlock_bh(&sk->sk_receive_queue.lock);
++			amount -= sizeof(struct udphdr);
++
+ 		return put_user(amount, (int __user *)arg);
+ 	}
+ 
+@@ -1540,29 +1571,11 @@ unsigned int udp_poll(struct file *file, struct socket *sock, poll_table *wait)
+ {
+ 	unsigned int mask = datagram_poll(file, sock, wait);
+ 	struct sock *sk = sock->sk;
+-	int 	is_lite = IS_UDPLITE(sk);
+ 
+ 	/* Check for false positives due to checksum errors */
+-	if ((mask & POLLRDNORM) &&
+-	    !(file->f_flags & O_NONBLOCK) &&
+-	    !(sk->sk_shutdown & RCV_SHUTDOWN)) {
+-		struct sk_buff_head *rcvq = &sk->sk_receive_queue;
+-		struct sk_buff *skb;
+-
+-		spin_lock_bh(&rcvq->lock);
+-		while ((skb = skb_peek(rcvq)) != NULL &&
+-		       udp_lib_checksum_complete(skb)) {
+-			UDP_INC_STATS_BH(sock_net(sk),
+-					UDP_MIB_INERRORS, is_lite);
+-			__skb_unlink(skb, rcvq);
+-			kfree_skb(skb);
+-		}
+-		spin_unlock_bh(&rcvq->lock);
+-
+-		/* nothing to see, move along */
+-		if (skb == NULL)
+-			mask &= ~(POLLIN | POLLRDNORM);
+-	}
++	if ((mask & POLLRDNORM) && !(file->f_flags & O_NONBLOCK) &&
++	    !(sk->sk_shutdown & RCV_SHUTDOWN) && !first_packet_length(sk))
++		mask &= ~(POLLIN | POLLRDNORM);
+ 
+ 	return mask;
+ 
