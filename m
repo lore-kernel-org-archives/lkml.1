@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933968AbZJIQ3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933986AbZJIQ3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933968AbZJIQ3a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 12:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933935AbZJIQ3Z
+	id S933986AbZJIQ3m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 12:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933694AbZJIQ3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 12:29:25 -0400
-Received: from kroah.org ([198.145.64.141]:33644 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 12:29:41 -0400
+Received: from kroah.org ([198.145.64.141]:33648 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933841AbZJIQ3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 12:29:24 -0400
-Date: Fri, 9 Oct 2009 09:23:19 -0700
+	id S933862AbZJIQ3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 12:29:25 -0400
+Date: Fri, 9 Oct 2009 09:24:19 -0700
 From: Greg KH <greg@kroah.com>
-To: Steve Friedl <steve@unixwiz.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/8] staging: hv: Changed |typedef RING_BUFFER| to
- |struct hv_ring_buffer| throughout.
-Message-ID: <20091009162319.GC2766@kroah.com>
-References: <20090922054026.GA5959@dcent.unixwiz.lan>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8] Staging: updates for Ralink drivers
+Message-ID: <20091009162419.GD2766@kroah.com>
+References: <20090922184321.7695.11150.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090922054026.GA5959@dcent.unixwiz.lan>
+In-Reply-To: <20090922184321.7695.11150.sendpatchset@localhost.localdomain>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 21, 2009 at 10:40:26PM -0700, Steve Friedl wrote:
-> The style guide (and Greg's prior work) have suggested that the typedef
-> UPPERCASENAME style is not appropriate in the Linux kernel (even though
-> it's been de rigueur in Win32 development for 20 years), so I'm fixing
-> a couple more of them that remain... one at a time.
+On Tue, Sep 22, 2009 at 08:43:21PM +0200, Bartlomiej Zolnierkiewicz wrote:
 > 
-> ~~~ Steve
+> Hi,
 > 
-> Signed-off-by: Steve Friedl <steve@unixwiz.net>
+> Here are some major updates to Ralink drivers from the staging tree.
 > 
-> ---
->  drivers/staging/hv/RingBuffer.c |    6 +++---
+> rt28x0 drivers are updated to match V2.1.0.0 vendor's drivers, rt2860
+> driver gets RT3090 PCIe chipset support and no longer needed separate
+> rt3090 driver is removed.
+> 
+> The end result is 100 KLOC gone and shared common code for all chipsets.
+> 
+> The patchset was tested with RT2860 and RT3070 chipsets.
 
-I'd rather not polish this turd anymore.  Can someone just replace the
-ringbuffer.c code by using the in-kernel ringbuffer or kfifo code
-instead?  I'd love to just delete this file completly, it does not
-belong in the tree at all.
-
-thanks,
+Very cool work, thanks so much.  They are all now in my tree and in
+linux-next.
 
 greg k-h
