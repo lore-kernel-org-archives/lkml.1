@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760661AbZJIMQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760735AbZJIMRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760661AbZJIMQM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 08:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760617AbZJIMQM
+	id S1760735AbZJIMRR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 08:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760685AbZJIMRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 08:16:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50285 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760535AbZJIMQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 08:16:11 -0400
-Date: Fri, 9 Oct 2009 14:15:34 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Jesper Nilsson <Jesper.Nilsson@axis.com>
-Cc: Mikael Starvik <mikael.starvik@axis.com>,
-       linux-cris-kernel <linux-cris-kernel@axis.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] CIRS: turn local_save_flags() + local_irq_disable()into
- local_irq_save()
-In-Reply-To: <20091009105215.GC24141@axis.com>
-Message-ID: <alpine.LSU.2.00.0910091414540.19284@wotan.suse.de>
-References: <alpine.LSU.2.00.0910091138500.19284@wotan.suse.de> <20091009105215.GC24141@axis.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Fri, 9 Oct 2009 08:17:17 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:28923 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760623AbZJIMRO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 08:17:14 -0400
+Message-ID: <4ACF296E.3000000@hp.com>
+Date: Fri, 09 Oct 2009 08:15:42 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>
+Subject: Re: [RFC][PATCH] kmap_atomic_push
+References: <1255016123.17055.17.camel@laptop>	 <20091008155344.GA11727@elte.hu> <1255019362.26976.311.camel@twins>	 <alpine.LFD.2.01.0910080945230.3432@localhost.localdomain>	 <Pine.LNX.4.64.0910081850270.4553@sister.anvils>  <4ACE674E.30403@hp.com> <1255042636.17055.33.camel@laptop>
+In-Reply-To: <1255042636.17055.33.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Oct 2009, Jesper Nilsson wrote:
-
-> > This is a followup to my patches that fixed this all over the tree quite some
-> > time ago. This one went unnoticed for some reason.
-> > 
-> > TLB handling for CRIS contains local_irq_disable() after local_save_flags().
-> > Turn this into local_irq_save().
+Peter Zijlstra wrote:
 > 
-> Thanks, that looks good.
+> The double unmap gives a preemption point, which sounds like a good
+> thing to have, because your scheme could run for a long while without
+> enabling preemption, which is badness.
 
-I will then add
+Thanks, optimizing my loop, I forgot all about
+the old long code path not preempting problem.
 
-	Acked-by: Jesper Nilsson <Jesper.Nilsson@axis.com>
-
-to it if you don't mind (the same for the old debug stuff removal).
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Now I have to love the patch for making it harder to be stupid :)
