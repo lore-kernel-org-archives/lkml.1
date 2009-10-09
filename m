@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760242AbZJIDlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbZJIDow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760242AbZJIDlh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 23:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbZJIDlg
+	id S1760251AbZJIDow (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 23:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760226AbZJIDot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 23:41:36 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:57340 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759080AbZJIDlg (ORCPT
+	Thu, 8 Oct 2009 23:44:49 -0400
+Received: from mail-px0-f189.google.com ([209.85.216.189]:45739 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760216AbZJIDot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 23:41:36 -0400
-Date: Fri, 9 Oct 2009 12:40:04 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: hw-breakpoints: Actually flush thread breakpoints in flush_thread().
-Message-ID: <20091009034003.GA7747@linux-sh.org>
-References: <20091005102306.GA7889@linux-sh.org> <20091005104955.GA14852@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091005104955.GA14852@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 8 Oct 2009 23:44:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=OTdVwTZbyFAaedFtBj7zLrkcv1smWL8oXUZJIrzmdcDI5LT12iQbdu7+nbg95YMger
+         Apajf53SQvziIUQjguU4+RXQyyI43QE6RpINMYc6/CwUuNQefgttB9IA1sTUgZmmM7vg
+         FJCgY4qCx7LbbY6uBYq9pHpWp2vLhHA4FSR9Y=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>
+Cc: Andres Salomon <dilinger@debian.org>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+       loongson-dev@googlegroups.com, Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: [PATCH] CS5535: Remove the X86 platform dependence of SND_CS5535AUDIO
+Date: Fri,  9 Oct 2009 11:44:02 +0800
+Message-Id: <1255059842-12160-1-git-send-email-wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 05, 2009 at 04:19:55PM +0530, K.Prasad wrote:
-> On Mon, Oct 05, 2009 at 07:23:06PM +0900, Paul Mundt wrote:
-> > [ I noticed this whilst hacking up SH support, applies to the current
-> >   tracing/hw-breakpoints topic branch. ]
-> > 
-> > flush_thread() tries to do a TIF_DEBUG check before calling in to
-> > flush_thread_hw_breakpoint() (which subsequently clears the thread flag),
-> > but for some reason, the x86 code is manually clearing TIF_DEBUG
-> > immediately before the test, so this path will never be taken.
-> > 
-> > This kills off the erroneous clear_tsk_thread_flag() and lets
-> > flush_thread_hw_breakpoint() actually get invoked.
-> > 
-> 
-> Yes, this is wrong and we missed it. Thanks for fixing!
-> 
-> > Presumably folks were getting lucky with testing and the
-> > free_thread_info() -> free_thread_xstate() path was taking care of the
-> > flush there.
-> > 
-> > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> 
-> Acked-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> 
-> 
-Ingo, are you planning on picking this up? Or is there a hw-breakpoints
-tree somewhere outside of -tip that I'm unaware of?
+There is no platform dependence of SND_CS5535AUDIO before 2.6.31, Not
+sure who have touched this part, but SND_CS5535AUDIO is at least
+available on Loongson family machines, so, Remove the platform
+dependence directly.
+
+Reported-by: rixed@happyleptic.org
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+---
+ sound/pci/Kconfig |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/sound/pci/Kconfig b/sound/pci/Kconfig
+index fb5ee3c..75c602b 100644
+--- a/sound/pci/Kconfig
++++ b/sound/pci/Kconfig
+@@ -259,7 +259,6 @@ config SND_CS5530
+ 
+ config SND_CS5535AUDIO
+ 	tristate "CS5535/CS5536 Audio"
+-	depends on X86 && !X86_64
+ 	select SND_PCM
+ 	select SND_AC97_CODEC
+ 	help
+-- 
+1.6.2.1
+
