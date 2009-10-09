@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933911AbZJIQ1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761102AbZJIQ3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933911AbZJIQ1k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 12:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933629AbZJIQ1k
+	id S1761102AbZJIQ3L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 12:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758839AbZJIQ3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 12:27:40 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:65271 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933569AbZJIQ1j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 12:27:39 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for CPU"
-Date: Fri, 9 Oct 2009 18:27:00 +0200
-User-Agent: KMail/1.9.9
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-wireless@vger.kernel.org
-References: <200910051500.55875.elendil@planet.nl> <200910082259.35204.elendil@planet.nl> <1255070103.7639.30.camel@marge.simson.net>
-In-Reply-To: <1255070103.7639.30.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 9 Oct 2009 12:29:10 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:15236 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756472AbZJIQ3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 12:29:09 -0400
+Subject: Re: move gfs2 tracepoints to inclue/trace/events dir
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20091009162051.GB2647@redhat.com>
+References: <20091009160115.GA2647@redhat.com>
+	 <1255104319.6052.558.camel@localhost.localdomain>
+	 <20091009162051.GB2647@redhat.com>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+ 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+ Street, Windsor, Berkshire, SL4 ITE
+Date: Fri, 09 Oct 2009 17:28:41 +0100
+Message-Id: <1255105721.6052.559.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910091827.01774.elendil@planet.nl>
-X-OriginalArrivalTime: 09 Oct 2009 16:27:02.0292 (UTC) FILETIME=[54F79D40:01CA48FD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 October 2009, Mike Galbraith wrote:
-> sched: update the clock of runqueue select_task_rq() selected.
->
-> In try_to_wake_up(), we update the runqueue clock, but select_task_rq()
-> may select a different runqueue than the one we updated, leaving the new
-> runqueue's clock stale for a bit.
->
-> This patch cures occasional huge latencies reported by latencytop when
-> coming out of idle on a mostly idle NO_HZ box.
+Hi,
 
-This patch (without Arjan's previous one applied) also fixes my latency 
-issues. Nice work!
+On Fri, 2009-10-09 at 12:20 -0400, Jason Baron wrote:
+> On Fri, Oct 09, 2009 at 05:05:19PM +0100, Steven Whitehouse wrote:
+> > Hi,
+> > 
+> > On Fri, 2009-10-09 at 12:01 -0400, Jason Baron wrote:
+> > > hi,
+> > > 
+> > > I'd like to move the gfs2 tracepoints to the the common
+> > > include/trace/events directory along with all of the other trace events.
+> > > It makes understanding what tracepoints are available easier, and I see
+> > > no reason why gfs2 should be different. For example, 'ext4.h' is already
+> > > in the include/trace/events directory.
+> > > 
+> > > thanks,
+> > > 
+> > > -Jason
+> > > 
+> > I've no objection to that, it sounds like a good plan. Should I stick
+> > this in the GFS2 tree, or would you rather keep it in the trace tree? I
+> > was thinking probably the GFS2 tree would be better as it reduces the
+> > chances of any future conflicts.
+> 
+> gfs2 tree works for me.
+> 
+> thanks,
+> 
+> -Jason
+> 
+Ok, done. Should be appearing shortly. Thanks,
 
-Cheers,
-FJP
+Steve.
+
+
