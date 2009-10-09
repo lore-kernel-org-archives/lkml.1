@@ -1,112 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933553AbZJIRbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761237AbZJIRam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933553AbZJIRbR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 13:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761127AbZJIRbQ
+	id S1761237AbZJIRam (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 13:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZJIRal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 13:31:16 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:62193 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755137AbZJIRbP convert rfc822-to-8bit (ORCPT
+	Fri, 9 Oct 2009 13:30:41 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:32961 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753055AbZJIRak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 13:31:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=aLiCr8RjMPKAYhqbnwy6yEW5gaEzZbwQZtv/sM4UKa+NS/wy3Q1nQgAXsr+dDFd4EP
-         krCsoFkD/lz/cQCkiktAgckdMQ3LyyWN6oqV+3TX859KWaEgJZ56ag5dltCNVcb+bxnj
-         kPTqdvQDRkikIq0MfOHFpphl6Hp4d+i1Qw1TI=
+	Fri, 9 Oct 2009 13:30:40 -0400
+Date: Fri, 9 Oct 2009 13:29:44 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
+Subject: [GIT PULL] Btrfs updates for 2.6.32-rc
+Message-ID: <20091009172944.GB2632@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <20091009144840.GA9561@suse.de>
-References: <20091007185112.GJ7899@atomide.com>
-	 <94a0d4530910081429m7ad88b43q38245109f3252078@mail.gmail.com>
-	 <20091008214140.GJ7417@atomide.com>
-	 <94a0d4530910081513w1a919dc2s50eca41966a2261d@mail.gmail.com>
-	 <94a0d4530910081520t66ce7567xe142979a35b1245@mail.gmail.com>
-	 <20091008232603.GB25892@atomide.com>
-	 <94a0d4530910090508o1e3d19cew881d2eb348199674@mail.gmail.com>
-	 <20091009144840.GA9561@suse.de>
-Date: Fri, 9 Oct 2009 20:29:24 +0300
-Message-ID: <94a0d4530910091029p12f8c28fve91e95db533e78e5@mail.gmail.com>
-Subject: Re: [GIT PULL] omap fixes for v2.6.32-rc3
-From: Felipe Contreras <felipe.contreras@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Tony Lindgren <tony@atomide.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       Denis Karpov <ext-denis.2.karpov@nokia.com>,
-       "Uwe Kleine-K??nig" <u.kleine-koenig@pengutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4ACF730F.0167:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 9, 2009 at 5:48 PM, Greg KH <gregkh@suse.de> wrote:
-> On Fri, Oct 09, 2009 at 03:08:00PM +0300, Felipe Contreras wrote:
->> On Fri, Oct 9, 2009 at 2:26 AM, Tony Lindgren <tony@atomide.com> wrote:
->> > * Felipe Contreras <felipe.contreras@gmail.com> [091008 15:20]:
->>
->> <snip/>
->>
->> >> > Here you can see Uwe Kleine-K??nig sending the original patch without
->> >> > even CC'ing the mmc list:
->> >> > http://marc.info/?l=linux-kernel&m=124820861213849&w=2
->> >> >
->> >> > And it was unintentionally broken by this one:
->> >> > http://marc.info/?l=linux-mmc&m=125249763422227&w=2
->> >>
->> >> Er, actually that one was ok, the problem was introduced only in the
->> >> final version:
->> >> http://marc.info/?l=linux-mmc&m=125366315417006&w=2
->> >
->> > Right, looks like Roger forgot to Cc linux-mmc.
->> >
->> >> > I don't see what we are waiting for, the code is clearly broken, even
->> >> > the compiler warns that nobody is using omap_hsmmc_probe().
->> >
->> > I've sent Roger's patch to Andrew & linux-mmc so hopefully it will get
->> > merged soon:
->> >
->> > http://www.mail-archive.com/linux-mmc@vger.kernel.org/msg00539.html
->>
->> I don't see what's specific about mmc in that patch, nor omap. It's
->> just a fix for an obvious mistake that must be picked ASAP and can't
->> possibly be NAK'ed.
->>
->> There's a tree for trivial fixes:
->> git://git.kernel.org/pub/scm/linux/kernel/git/jikos/trivial
->>
->> And one for includecheck:
->> git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6
->>
->> What's the procedure for obvious fixes? I'm CC'ing Greg KH and Andrew
->> Morton because I think they might interested in fixing these kinds of
->> issues quickly in the future.
->
-> What kind of issues?  Why would I be interested, where is the problem?
+Hello everyone,
 
-The obvious-brain-dead-duh kind of issues, like this one.
+Btrfs updates are in the master branch of the btrfs-unstable repo:
 
-The problem is that OMAP devices (like beagleboard) are not booting
-correctly right now because of a wrong merge. It has been identified,
-tested, and acked, but nobody has picked it up for a pull request, so
-it's not clear it will be on -rc4.
+git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git master
 
-To me it's not clear who should push the patch, it seems it doesn't
-belong on linux-omap, so Tony is pushing it through linux-mmc, which I
-don't think is the right place. They should be handling mmc-related
-issues, not obvious breakage.
+This branch is still against 2.6.31, but git merging lets it work with
+the code Linus has already pulled and merged into 2.6.32-rc
 
-In order to keep the engines oiled I think there must be a process to
-flag obvious generic breakage so it's immediately picked; maybe an
-'obvious-fixes' tree, or a 'simple-fixes' that has 'trivial',
-'includecheck', and similar, or maybe nothing needs to be done. Up to
-you to decide.
+This bunch fine tunes the enospc support, removing a window where the
+accounting would let people allocate even though space wasn't yet
+available.
 
-Cheers.
+There is a deadlock fix where the worker threads would get stuck waiting
+for memory while trying to start more worker threads, and an important
+fix for the file clone ioctl where it can incorrectly setup extents on the
+clone.
 
--- 
-Felipe Contreras
+Alexey Dobriyan (1) commits (+2/-2):
+    Btrfs: constify dentry_operations
+
+Chris Mason (5) commits (+166/-73):
+    Btrfs: delay clearing EXTENT_DELALLOC for compressed extents (+4/-2)
+    Btrfs: fix uninit compiler warning in cow_file_range_nocow (+1/-0)
+    Btrfs: cleanup extent_clear_unlock_delalloc flags (+51/-37)
+    Btrfs: fix file clone ioctl for bookend extents (+4/-2)
+    Btrfs: fix deadlock on async thread startup (+106/-32)
+
+Josef Bacik (4) commits (+225/-55):
+    Btrfs: release delalloc reservations on extent item insertion (+107/-37)
+    Btrfs: async delalloc flushing under space pressure (+88/-11)
+    Btrfs: optimize fsync for the single writer case (+13/-1)
+    Btrfs: fix possible softlockup in the allocator (+17/-6)
+
+Zheng Yan (2) commits (+61/-34):
+    Btrfs: optimize back reference update during btrfs_drop_snapshot (+53/-29)
+    Btrfs: remove negative dentry when deleting subvolumne (+8/-5)
+
+Total: (12) commits
+
+ fs/btrfs/async-thread.c |   81 ++++++++++++++--
+ fs/btrfs/async-thread.h |   10 +-
+ fs/btrfs/btrfs_inode.h  |   12 +-
+ fs/btrfs/ctree.h        |   21 ++--
+ fs/btrfs/disk-io.c      |   48 +++++----
+ fs/btrfs/extent-tree.c  |  239 +++++++++++++++++++++++++++++++++++++-----------
+ fs/btrfs/extent_io.c    |   46 ++++-----
+ fs/btrfs/extent_io.h    |   18 ++-
+ fs/btrfs/file.c         |    3 
+ fs/btrfs/inode.c        |  111 ++++++++++++++--------
+ fs/btrfs/ioctl.c        |    7 +
+ fs/btrfs/ordered-data.c |    6 +
+ fs/btrfs/relocation.c   |    4 
+ fs/btrfs/tree-log.c     |   12 ++
+ 14 files changed, 454 insertions(+), 164 deletions(-)
