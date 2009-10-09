@@ -1,100 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbZJIPpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933572AbZJIPqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760843AbZJIPpx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 11:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756153AbZJIPpw
+	id S933572AbZJIPqh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 11:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932688AbZJIPqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 11:45:52 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:55819 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753062AbZJIPpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 11:45:51 -0400
-Date: Fri, 9 Oct 2009 17:45:10 +0200
-From: Jan Kara <jack@suse.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 07/45] writeback: dont redirty tail an inode with dirty
-	pages
-Message-ID: <20091009154510.GI7654@duck.suse.cz>
-References: <20091007073818.318088777@intel.com> <20091007074902.029561941@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091007074902.029561941@intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 9 Oct 2009 11:46:37 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:43487 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932183AbZJIPqg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 11:46:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=rSXfLwXY+BM7DktltWZ6RllhFUMMFZ7gb2jkZpBtyjM6BH1Mzjl33r5Z6w+O3fWB1+
+         j21+xcOgExNkYf846J8BPPs/mdyj2XEH07Vu/q8YtVgtfPmYUFFPI1IOD3I2gNUi7BYU
+         nxDfY+ay0ooWMPZw2NWr/SjOIj1dKj0dQsI0g=
+Subject: Re: [PATCH] MIPS: add IRQF_TIMER flag for Timer Interrupts
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: linux-mips@linux-mips.org, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, ralf@linux-mips.org,
+       rjw@sisk.pl, yuasa@linux-mips.org
+In-Reply-To: <20091010.001754.229727131.anemo@mba.ocn.ne.jp>
+References: <1255007874-19574-1-git-send-email-wuzhangjin@gmail.com>
+	 <20091010.001754.229727131.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Fri, 09 Oct 2009 23:45:49 +0800
+Message-Id: <1255103149.3658.112.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 07-10-09 15:38:25, Wu Fengguang wrote:
-> This avoids delaying writeback for an expired (XFS) inode with lots of
-> dirty pages, but no active dirtier at the moment.
-  OK, looks good.
-Acked-by: Jan Kara <jack@suse.cz>
+On Sat, 2009-10-10 at 00:17 +0900, Atsushi Nemoto wrote:
+> On Thu,  8 Oct 2009 21:17:54 +0800, Wu Zhangjin <wuzhangjin@gmail.com> wrote:
+> > This patch add IRQF_TIMER flag for all Timer interrupts in linux-MIPS,
+> > which will help to not disable the Timer IRQ when suspending to ensure
+> > resuming normally(d6c585a4342a2ff627a29f9aea77c5ed4cd76023) and not
+> > thread them when enabled PREEMPT_RT.
+> > 
+> > Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+> > ---
+> >  arch/mips/jazz/irq.c                |    2 +-
+> >  arch/mips/kernel/cevt-gt641xx.c     |    2 +-
+> >  arch/mips/kernel/cevt-r4k.c         |    2 +-
+> >  arch/mips/kernel/i8253.c            |    2 +-
+> >  arch/mips/nxp/pnx8550/common/time.c |    2 +-
+> >  arch/mips/sgi-ip27/ip27-timer.c     |    2 +-
+> >  arch/mips/sni/time.c                |    2 +-
+> >  7 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> Maybe cevt-bcm1480.c, cevt-ds1287.c, cevt-sb1250.c, cevt-txx9.c and
+> i8253.c need same fix?
+> 
 
-								Honza
-> 
-> CC: Dave Chinner <david@fromorbit.com> 
-> CC: Christoph Hellwig <hch@infradead.org> 
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  fs/fs-writeback.c |   20 +++++++-------------
->  1 file changed, 7 insertions(+), 13 deletions(-)
-> 
-> --- linux.orig/fs/fs-writeback.c	2009-10-06 23:37:57.000000000 +0800
-> +++ linux/fs/fs-writeback.c	2009-10-06 23:38:28.000000000 +0800
-> @@ -479,18 +479,7 @@ writeback_single_inode(struct inode *ino
->  	spin_lock(&inode_lock);
->  	inode->i_state &= ~I_SYNC;
->  	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
-> -		if ((inode->i_state & I_DIRTY_PAGES) && wbc->for_kupdate) {
-> -			/*
-> -			 * More pages get dirtied by a fast dirtier.
-> -			 */
-> -			goto select_queue;
-> -		} else if (inode->i_state & I_DIRTY) {
-> -			/*
-> -			 * At least XFS will redirty the inode during the
-> -			 * writeback (delalloc) and on io completion (isize).
-> -			 */
-> -			redirty_tail(inode);
-> -		} else if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
-> +		if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
->  			/*
->  			 * We didn't write back all the pages.  nfs_writepages()
->  			 * sometimes bales out without doing anything. Redirty
-> @@ -512,7 +501,6 @@ writeback_single_inode(struct inode *ino
->  				 * soon as the queue becomes uncongested.
->  				 */
->  				inode->i_state |= I_DIRTY_PAGES;
-> -select_queue:
->  				if (wbc->nr_to_write <= 0) {
->  					/*
->  					 * slice used up: queue for next turn
-> @@ -535,6 +523,12 @@ select_queue:
->  				inode->i_state |= I_DIRTY_PAGES;
->  				redirty_tail(inode);
->  			}
-> +		} else if (inode->i_state & I_DIRTY) {
-> +			/*
-> +			 * At least XFS will redirty the inode during the
-> +			 * writeback (delalloc) and on io completion (isize).
-> +			 */
-> +			redirty_tail(inode);
->  		} else if (atomic_read(&inode->i_count)) {
->  			/*
->  			 * The inode is clean, inuse
-> 
-> 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+I got them via "grep timer -ur arch/mips | grep name", so, perhaps there
+are also some other timer interrupts missing here.
+
+just get more via "grep Timer -ur arch/mips | grep name", "grep IRQF_
+-ur arch/mips/ | grep -v TIMER | grep =", a new patch will be sent out
+in the next E-mail.
+
+Regards,
+	Wu Zhangjin
+
