@@ -1,105 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933964AbZJISfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934106AbZJISkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933964AbZJISfq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 14:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933685AbZJISfq
+	id S934106AbZJISkd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 14:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934076AbZJISkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 14:35:46 -0400
-Received: from www.tglx.de ([62.245.132.106]:32809 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933351AbZJISfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 14:35:45 -0400
-Date: Fri, 9 Oct 2009 20:34:32 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, John Kacur <jkacur@redhat.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Alessio Igor Bogani <abogani@texware.it>
-Subject: Re: [PATCH] mem_class: Drop the bkl from memory_open()
-In-Reply-To: <1255113062-5835-1-git-send-email-fweisbec@gmail.com>
-Message-ID: <alpine.LFD.2.00.0910092033560.9428@localhost.localdomain>
-References: <1255113062-5835-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 9 Oct 2009 14:40:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33141 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934040AbZJISjy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 14:39:54 -0400
+Date: Fri, 9 Oct 2009 14:39:14 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
+Subject: Re: linux-next: manual merge of the parisc tree with Linus' tree
+Message-ID: <20091009183914.GG11702@bombadil.infradead.org>
+References: <20091009112158.7d37ed23.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091009112158.7d37ed23.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Oct 2009, Frederic Weisbecker wrote:
+On Fri, Oct 09, 2009 at 11:21:58AM +1100, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Today's linux-next merge of the parisc tree got conflicts in
+> arch/parisc/include/asm/thread_info.h and arch/parisc/kernel/entry.S
+> between commit d0420c83f39f79afb82010c2d2cafd150eef651b ("KEYS: Extend
+> TIF_NOTIFY_RESUME to (almost) all architectures [try #6]") from Linus'
+> tree and commit 9f4259771faf1ffd99888796d925adae4c93630b ("parisc: add
+> TIF_NOTIFY_RESUME and use tracehook_notify_resume") from the parisc tree.
+> 
+> It looks like the parisc tree version is a superset of the version in
+> Linus' tree (for parisc).  I fixed it up (hopefully - using the parisc
+> tree versions) and can carry the fix for a while.
 
-> The generic open callback for the mem class devices is "protected" by
-> the bkl.
-> 
-> Let's look at the datas manipulated inside memory_open:
-> 
-> - inode and file: safe
-> - the devlist: safe because it is constant
-> - the memdev classes inside this array are safe too (constant)
-> 
-> After we find out which memdev file operation we need to use, we call
-> its open callback. Depending on the targeted memdev, we call either
-> open_port() that doesn't manipulate any racy data (just a capable()
-> check), or we call nothing.
-> 
-> So it's safe to remove the big kernel lock there.
+Sorry, forgot to push out a new #next. Should be sorted now.
 
-Thanks, queued.
-
-	tglx
-
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: John Kacur <jkacur@redhat.com>
-> Cc: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: Alessio Igor Bogani <abogani@texware.it>
-> ---
->  drivers/char/mem.c |   16 +++++-----------
->  1 files changed, 5 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-> index a074fce..599846a 100644
-> --- a/drivers/char/mem.c
-> +++ b/drivers/char/mem.c
-> @@ -892,29 +892,23 @@ static int memory_open(struct inode *inode, struct file *filp)
->  {
->  	int minor;
->  	const struct memdev *dev;
-> -	int ret = -ENXIO;
-> -
-> -	lock_kernel();
->  
->  	minor = iminor(inode);
->  	if (minor >= ARRAY_SIZE(devlist))
-> -		goto out;
-> +		return -ENXIO;
->  
->  	dev = &devlist[minor];
->  	if (!dev->fops)
-> -		goto out;
-> +		return -ENXIO;
->  
->  	filp->f_op = dev->fops;
->  	if (dev->dev_info)
->  		filp->f_mapping->backing_dev_info = dev->dev_info;
->  
->  	if (dev->fops->open)
-> -		ret = dev->fops->open(inode, filp);
-> -	else
-> -		ret = 0;
-> -out:
-> -	unlock_kernel();
-> -	return ret;
-> +		return dev->fops->open(inode, filp);
-> +
-> +	return 0;
->  }
->  
->  static const struct file_operations memory_fops = {
-> -- 
-> 1.6.2.3
-> 
+Thanks for the heads up.
+ - Kyle
