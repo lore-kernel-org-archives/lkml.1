@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760349AbZJIKCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760415AbZJIKD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760349AbZJIKCu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 06:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZJIKCt
+	id S1760415AbZJIKD3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 06:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZJIKD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 06:02:49 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:40355 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbZJIKCs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 06:02:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=MprYLLphNqenSE1+Gjx4QGpJdAlp6BSuJZS8nxFgpn+g6+3F0bZ4Mk6UIL5/Yq+3LZ
-         2t9AD6tk9c5Q6VrV6ybfGB5Ab3PvSGiX3oOwfico/zky+GhGNoXqIyYbig5GF+plOr5x
-         Xb9uvlrZe4KB8CNkJrfWQd/IfYHv0dBLiKIoA=
-Message-ID: <4ACF09D7.9030901@gmail.com>
-Date: Fri, 09 Oct 2009 12:00:55 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.7 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: mm-commits@vger.kernel.org, Avi Kivity <avi@redhat.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org
-Subject: [was: mmotm 2009-10-09-01-07 uploaded]
-References: <200910090830.n998Ubvv020464@imap1.linux-foundation.org>
-In-Reply-To: <200910090830.n998Ubvv020464@imap1.linux-foundation.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Oct 2009 06:03:28 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46421 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752920AbZJIKD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 06:03:27 -0400
+Date: Fri, 9 Oct 2009 12:02:49 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>, chris.mason@oracle.com
+Subject: Re: [rfc][patch] store-free path walking
+Message-ID: <20091009100249.GD17818@wotan.suse.de>
+References: <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain> <20091008123622.GA30316@wotan.suse.de> <20091008125746.GL9228@kernel.dk> <20091008132200.GB30316@wotan.suse.de> <20091009085451.GS9228@kernel.dk> <20091009095119.GT9228@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091009095119.GT9228@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/09/2009 10:07 AM, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-10-09-01-07 has been uploaded to
+On Fri, Oct 09, 2009 at 11:51:19AM +0200, Jens Axboe wrote:
+> Nick,
+> 
+> One more thing... I see you converted part of btrfs, but there's still
+> this one sitting in btrfs_invalidate_inodes()
+> 
+>         if (atomic_read(&inode->i_count) > 1)
+>                 d_prune_aliases(inode);
+> 
+> Not sure how best to solve that, with a __d_prune_aliases() that assumed
+> the lock was held it would be easy. But perhaps you have better ideas,
+> this email is more of a heads-up since perhaps you missed this spot
+> (CC'ing Chris).
 
-Hi, build fails with:
-ERROR: "cpufreq_get" [arch/x86/kvm/kvm.ko] undefined!
-because of
-CONFIG_KVM=m
-...
-# CONFIG_CPU_FREQ is not set
+It's OK, you can load inode->i_count integer atomically -- in this
+sequence d_prune_aliases can't have assumed anything about i_count
+anyway because regardless of its type it might have changed in
+between.
 
-Should cpufreq_get be defined as inline return 0 the same as
-cpufreq_quick_get on !CONFIG_CPU_FREQ?
