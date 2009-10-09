@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964843AbZJIX1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934533AbZJIXmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964843AbZJIX1c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934606AbZJIX1b
+	id S934533AbZJIXmL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932741AbZJIXmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:27:31 -0400
-Received: from kroah.org ([198.145.64.141]:56340 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:42:10 -0400
+Received: from kroah.org ([198.145.64.141]:51432 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934596AbZJIX1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:27:25 -0400
-Date: Fri, 9 Oct 2009 16:23:00 -0700
-From: Greg KH <gregkh@suse.de>, gregkh@mini.kroah.org
+	id S1757123AbZJIXmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:42:09 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:34:39 2009
+Message-Id: <20091009233439.552024626@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 09 Oct 2009 16:34:38 -0700
+From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [0/8] 2.6.27.37-stable review
-Message-ID: <20091009232300.GA403@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 27/37] net: restore tx timestamping for accelerated vlans
+References: <20091009233411.852013234@mini.kroah.org>
+Content-Disposition: inline; filename=net-restore-tx-timestamping-for-accelerated-vlans.patch
+In-Reply-To: <20091009233812.GA15982@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.27.37 release.
-There are 8 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
-Responses should be made by Sunday October 11, 23:00:00 UTC.  Anything
-received after that time might be too late.
+------------------
+From: Eric Dumazet <eric.dumazet@gmail.com>
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.37-rc1.gz
-and the diffstat can be found below.
+[ Upstream commit 81bbb3d4048cf577b5babcb0834230de391a35c5 ]
+
+Since commit 9b22ea560957de1484e6b3e8538f7eef202e3596
+( net: fix packet socket delivery in rx irq handler )
+
+We lost rx timestamping of packets received on accelerated vlans.
+
+Effect is that tcpdump on real dev can show strange timings, since it gets rx timestamps
+too late (ie at skb dequeueing time, not at skb queueing time)
+
+14:47:26.986871 IP 192.168.20.110 > 192.168.20.141: icmp 64: echo request seq 1
+14:47:26.986786 IP 192.168.20.141 > 192.168.20.110: icmp 64: echo reply seq 1
+
+14:47:27.986888 IP 192.168.20.110 > 192.168.20.141: icmp 64: echo request seq 2
+14:47:27.986781 IP 192.168.20.141 > 192.168.20.110: icmp 64: echo reply seq 2
+
+14:47:28.986896 IP 192.168.20.110 > 192.168.20.141: icmp 64: echo request seq 3
+14:47:28.986780 IP 192.168.20.141 > 192.168.20.110: icmp 64: echo reply seq 3
+
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ net/core/dev.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2248,6 +2248,9 @@ int netif_receive_skb(struct sk_buff *sk
+ 	int ret = NET_RX_DROP;
+ 	__be16 type;
+ 
++	if (!skb->tstamp.tv64)
++		net_timestamp(skb);
++
+ 	if (skb->vlan_tci && vlan_hwaccel_do_receive(skb))
+ 		return NET_RX_SUCCESS;
+ 
+@@ -2255,9 +2258,6 @@ int netif_receive_skb(struct sk_buff *sk
+ 	if (netpoll_receive_skb(skb))
+ 		return NET_RX_DROP;
+ 
+-	if (!skb->tstamp.tv64)
+-		net_timestamp(skb);
+-
+ 	if (!skb->iif)
+ 		skb->iif = skb->dev->ifindex;
+ 
 
 
-thanks,
-
-greg k-h
-
- Makefile                   |    2 +-
- arch/x86/ia32/ia32entry.S  |   56 +++++++++++++++++++++++--------------------
- arch/x86/kvm/x86.c         |    6 ++++
- arch/x86/mm/mmap.c         |   17 +++++++++++-
- drivers/net/iseries_veth.c |    2 +-
- drivers/watchdog/hpwdt.c   |   15 +++++------
- fs/ecryptfs/inode.c        |    2 +
- include/asm-x86/elf.h      |    2 +
- include/linux/kvm_para.h   |    1 +
- kernel/time/timekeeping.c  |   22 +++++++++++++++++
- 10 files changed, 87 insertions(+), 38 deletions(-)
