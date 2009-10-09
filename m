@@ -1,82 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933963AbZJIRx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934043AbZJIRrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933963AbZJIRx7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 13:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbZJIRx6
+	id S934043AbZJIRrZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 13:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933782AbZJIRrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 13:53:58 -0400
-Received: from smtp143.mail.ukl.yahoo.com ([77.238.184.74]:23256 "HELO
-	smtp143.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752596AbZJIRx6 (ORCPT
+	Fri, 9 Oct 2009 13:47:24 -0400
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:54624 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933772AbZJIRrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 13:53:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.es;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=lOqgCaIizqtfX5OOyFzVSw8juGwEgYOqCcJp0M8ZF1BaKpO4wRnpQu9WqskMZuB65ahjoeH399tw5ut6ejjODHTWhyqBa/XJjw4y3/mxenBZ8XWpbnboHE7aXjN4Jfk/5Xscd3118VWfMgLPptcosfiIc8srGP86XY0I8W0Z9ao=  ;
-X-Yahoo-SMTP: czee06uswBAtfIYshc.kP27UlfEXaxwWNSjJ
-X-YMail-OSG: EKeRp_gVM1nEWp8g.AxriqxPOV4jgn6xCUWqXwvwQ5cnRtUW2vpVXD.2QhvysYfJohkeyoWBr5cKeSR8GUbdxJQGyOtCqwSMQ8GUqJp3wtE0jYGylAsYONSKHgzw4QiC7d6EdIWU0o9e.h_OodiHt4NDVoYdsFDqTKlfhY1Nre86FuVPtugM2SPQYEH77lBxHf.Vx5VOqGxnMvNvk.50wsSpOlNBpXLcPFu13Zz3J9TxWM5hezODFCH8eIVVusOmhSoUMrmdAU0J0.MURbPZUVeAULF5ltTHxvQXJmEHjIo7GMv4ot.htWW46Luw5rlrRTCMooqc0PX7geLyjKS0msA-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4ACF76F7.30406@yahoo.es>
-Date: Fri, 09 Oct 2009 19:46:31 +0200
-From: Albert Herranz <albert_herranz@yahoo.es>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 9 Oct 2009 13:47:22 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+CWTxF8BepWcQk+Ntqf8Cd
+Date: Fri, 9 Oct 2009 10:46:36 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: "G, Manjunath Kondaiah" <manjugk@ti.com>
+Cc: Govindraj <govindraj.ti@gmail.com>,
+       "Raja, Govindraj" <govindraj.raja@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>
+Subject: Re: [PATCHv1 1/3] OMAP UART: Adds omap-serial driver support.
+Message-ID: <20091009174635.GH25892@atomide.com>
+References: <65168.192.168.10.89.1253788033.squirrel@dbdmail.itg.ti.com> <20091007215116.GB29320@atomide.com> <d6a0f7aa0910072314h77383e31r2330725b614ba472@mail.gmail.com> <E0D41E29EB0DAC4E9F3FF173962E9E940253C6C560@dbde02.ent.ti.com>
 MIME-Version: 1.0
-To: mb@bu3sch.de
-CC: bcm43xx-dev@lists.berlios.de, linux-netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: b43: do not stack-allocate pio rx/tx header and tail buffers (was:
- pull request: wireless-2.6 2009-10-08)
-References: <200910062252.17565.mb@bu3sch.de> <1254866864-18265-1-git-send-email-albert_herranz@yahoo.es> <4ACCC516.7050002@lwfinger.net> <4ACCC893.1010402@yahoo.es> <4ACCD765.7080604@lwfinger.net>
-In-Reply-To: <4ACCD765.7080604@lwfinger.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <E0D41E29EB0DAC4E9F3FF173962E9E940253C6C560@dbde02.ent.ti.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael,
+* G, Manjunath Kondaiah <manjugk@ti.com> [091008 00:41]:
+> 
+> Govind,
+> > -----Original Message-----
+> > From: linux-omap-owner@vger.kernel.org 
+> > [mailto:linux-omap-owner@vger.kernel.org] On Behalf Of Govindraj
+> > Sent: Thursday, October 08, 2009 11:44 AM
+> > To: Tony Lindgren
+> > Cc: Raja, Govindraj; linux-omap@vger.kernel.org; 
+> > linux-kernel@vger.kernel.org; linux-serial@vger.kernel.org
+> > Subject: Re: [PATCHv1 1/3] OMAP UART: Adds omap-serial driver support.
+> > 
+> > On Thu, Oct 8, 2009 at 3:21 AM, Tony Lindgren 
+> > <tony@atomide.com> wrote:
+> > > * Govindraj.R <govindraj.raja@ti.com> [090924 03:29]:
+> > >> From: Govindraj R <govindraj.raja@ti.com>
+> > >>
+> > >> This patch adds support for OMAP3430-HIGH SPEED UART Controller.
+> > >>
+> > >> Signed-off-by:        Govindraj R <govindraj.raja@ti.com>
+> > >> Reviewed-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> > >> Reviewed-by: Tony Lindgren <tony@atomide.com>
+> > >
+> > > You should only add Reviewed-by if Alan or me have replied with it.
+> > >
+> > > So far I've only replied with some comments that have not yet
+> > > been fixed, so we're few more steps from being Reviewd-by.
+> > >
+> > > <snip>
+> > >
+> > >> diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+> > >> index 6553833..67a7129 100644
+> > >> --- a/drivers/serial/Kconfig
+> > >> +++ b/drivers/serial/Kconfig
+> > >> @@ -1359,6 +1359,53 @@ config SERIAL_OF_PLATFORM
+> > >>         Currently, only 8250 compatible ports are supported, but
+> > >>         others can easily be added.
+> > >>
+> > >> +config SERIAL_OMAP
+> > >> +     bool "OMAP serial port support"
+> > >> +     depends on ARM && ARCH_OMAP
+> > >> +     select SERIAL_CORE
+> > >> +     help
+> > >> +     If you have a machine based on an Texas Instruments 
+> > OMAP CPU you
+> > >> +     can enable its onboard serial ports by enabling this option.
+> > >> +
+> > >> +config SERIAL_OMAP_CONSOLE
+> > >> +     bool "Console on OMAP serial port"
+> > >> +     depends on SERIAL_OMAP
+> > >> +     select SERIAL_CORE_CONSOLE
+> > >> +     help
+> > >> +     If you have enabled the serial port on the Texas 
+> > Instruments OMAP
+> > >> +     CPU you can make it the console by answering Y to 
+> > this option.
+> > >> +
+> > >> +     Even if you say Y here, the currently visible virtual console
+> > >> +     (/dev/tty0) will still be used as the system console 
+> > by default, but
+> > >> +     you can alter that using a kernel command line option such as
+> > >> +     "console=ttyS0". (Try "man bootparam" or see the 
+> > documentation of
+> > >> +     your boot loader (lilo or loadlin) about how to pass 
+> > options to the
+> > >> +     kernel at boot time.)
+> > >> +
+> > >> +config SERIAL_OMAP_DMA_UART1
+> > >> +     bool "UART1 DMA support"
+> > >> +     depends on SERIAL_OMAP
+> > >> +     help
+> > >> +     If you have enabled the serial port on the Texas 
+> > Instruments OMAP
+> > >> +     CPU you can enable the DMA transfer on UART 1 by answering
+> > >> +     to this option.
+> > >> +
+> > >> +config SERIAL_OMAP_DMA_UART2
+> > >> +     bool "UART2 DMA support"
+> > >> +     depends on SERIAL_OMAP
+> > >> +     help
+> > >> +     If you have enabled the serial port on the Texas 
+> > Instruments OMAP
+> > >> +     CPU you can enable the DMA transfer on UART 2 by answering
+> > >> +     to this option.
+> > >> +
+> > >> +config SERIAL_OMAP_DMA_UART3
+> > >> +     bool "UART3 DMA support"
+> > >> +     depends on SERIAL_OMAP
+> > >> +     help
+> > >> +     If you have enabled the serial port on the Texas 
+> > Instruments OMAP
+> > >> +     CPU you can enable the DMA transfer on UART 3 by answering
+> > >> +     to this option.
+> > >> +
+> > >>  config SERIAL_OF_PLATFORM_NWPSERIAL
+> > >>       tristate "NWP serial port driver"
+> > >>       depends on PPC_OF && PPC_DCR
+> > >
+> > > There's absolutely no need for having Kconfig options for the DMA
+> > > support. Please pass that in platform_data from the board-*.c files.
+> > >
+> > > This is the third time I'm commenting on the same issue!
+> > >
+> > > What's the point of posting these patches for review if the issues
+> > > don't get solved?
+> > 
+> > 
+> > The omap-serial uart driver is designed to work either in interrupt
+> > mode or in DMA mode,
+> > We have provided this option so that one can select interrupt mode or
+> > DMA mode based on the uart usage, if somebody is using uart as console
+> > then interrupt mode will do, else if used with bluetooth which does
+> > huge data transfer then DMA mode can be selected.
+> > 
+> > Don't you think this should be a configurable option using kconfig
+> > rather than passing as platform data?
 
-> Wait for my ack before you apply random b43 patches
-                                   ^^^^^^
-> The patch needlessly moves huge chunks of crap, adds stupid comments, wastes memory.
-                                  ^^^^^^^^^^^^^^       ^^^^^^^^^^^^^^^
-> This touched a lot of crap for fixing something that
-       ^^^^^^^^^^^^^^^^^^^^^
+Nope. I think it should be platform_data and should be possible to override
+vith a kernel cmdline option. That's because we support compiling in and
+booting many boards the same kernel binary.
 
-If using that strong language helps you get your anger out of you I'm fine with that. But I think it is a bit unfair.
+> > if used as platform data then one has to modify platform data to
+> > switch between the interrupt and DMA mode.
 
-I'm not arguing if the patch should have been immediately merged upstream or not without your ack (I'm probably more on your side here, as the patch was still being discussed on the ML).
-The patch [1] may not be up to your quality standards or may not take into account other requirements (that you have not expressed nor on the ML nor on IRC) but I'm sure it's far from being "random", "move crap" or "add stupid comments". That's the unfair part.
+How about set some kernel cmdline options if you want to override the
+default settings?
 
-The reason I posted the initial patch for review was because you kind of told me [2].
+> Usage of UART is board dependent. It's usage will not change dynamically for
+> a given board. This can be removed from Kconfig and move it to respective 
+> board file-> board-*.c
 
-[20:06] <mb_> Anyway, I'm not going to fix this. If you need it fixed, please send patches
+Or can be changed from kernel cmdline if necessary.
 
-Then I tried to address your concerns [3] and sent v2 (the patch merged).
-In that patch I moved slightly struct b43_wl within b43.h to satisfy the dependencies generated by the addition of the new members to that struct (which was one of your concerns).
-There was even a bit of public discussion about the relocation of the struct declaration [4].
+Regards,
 
-After ~22 hours if I'm not mistaken (yes, less than 24...) John, who had previously expressed his intentions to merge the patch [5], picked it for wireless-2.6.
-And a day later, more or less again, John did the GIT PULL request.
-
-That's it. IMHO, even if the patch was (mistakenly) merged too early for your standards, it doesn't break anything (AFAIK) and delivers what promises.
-And (yes!) it can still be modeled to perfection later.
-
-My point here is that there's no reason for such strong words concerning the quality of the patch code. It's really not that bad for such wording.
-I'm sure that if the patch was really crap it would have been immediately NAK'ed by you or by any sane maintainer.
-
-Other than that, I'm happy to see that the side conflict generated seems to be in a good shape now.
-It would have been a total waste otherwise.
-
-Thanks,
-Albert
-
-PS: Sorry to generate a new post, but I wasn't directly CC'ed on this and I'm not subscribed to the MLs. And I did also want to express my opinion! :)
-
-[1] http://git.kernel.org/?p=linux/kernel/git/linville/wireless-2.6.git;a=commitdiff;h=7e937c633f718e0916a294db7282c922c1bf3ce3
-[2] http://bcm-specs.sipsolutions.net/irc-logs/bcm-specs.2009-10-01
-[3] http://marc.info/?l=linux-wireless&m=125486249831043
-[4] http://marc.info/?l=linux-wireless&m=125493883613139
-[5] http://marc.info/?l=linux-wireless&m=125486386100505
-
+Tony
