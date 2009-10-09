@@ -1,133 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbZJIFou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbZJIFoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753328AbZJIFou (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 01:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZJIFos
+	id S1752980AbZJIFoW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 01:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZJIFoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 01:44:48 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54183 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752719AbZJIFor (ORCPT
+	Fri, 9 Oct 2009 01:44:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42241
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751607AbZJIFoT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 01:44:47 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4ACECDA1.7020004@jp.fujitsu.com>
-Date: Fri, 09 Oct 2009 14:44:01 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/4] mce-inject: make raise_global()
-References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com>	 <4AC95F5A.4000708@jp.fujitsu.com>  <4AC96391.1060001@jp.fujitsu.com> <1255053299.5228.28.camel@yhuang-dev.sh.intel.com> <4ACECC49.7000602@jp.fujitsu.com>
-In-Reply-To: <4ACECC49.7000602@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Fri, 9 Oct 2009 01:44:19 -0400
+Date: Thu, 08 Oct 2009 22:44:15 -0700 (PDT)
+Message-Id: <20091008.224415.205034676.davem@davemloft.net>
+To: jin.dongming@np.css.fujitsu.com
+Cc: linux-kernel@vger.kernel.org, cratiu@ixiacom.com, opurdila@ixiacom.com,
+       kaneshige.kenji@jp.fujitsu.com, seto.hidetoshi@jp.fujitsu.com,
+       netdev@vger.kernel.org
+Subject: Re: [Patch-next] Fix the size overflow of addrconf_sysctl array
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4ACEA207.7010208@np.css.fujitsu.com>
+References: <4ACEA207.7010208@np.css.fujitsu.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move large block into a function.  No code changed.
+From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+Date: Fri, 09 Oct 2009 11:37:59 +0900
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
----
- arch/x86/kernel/cpu/mcheck/mce-inject.c |   73 ++++++++++++++++++-------------
- 1 files changed, 42 insertions(+), 31 deletions(-)
+Please post networking patches always CC:'d to netdev@vger.kernel.org
+so that it gets added to our networking patch tracking system at:
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce-inject.c b/arch/x86/kernel/cpu/mcheck/mce-inject.c
-index a481291..835c072 100644
---- a/arch/x86/kernel/cpu/mcheck/mce-inject.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce-inject.c
-@@ -148,6 +148,45 @@ static int raise_local(void)
- 	return ret;
- }
- 
-+#ifdef CONFIG_X86_LOCAL_APIC
-+static void raise_global(void)
-+{
-+	unsigned long start;
-+	int cpu;
-+
-+	get_online_cpus();
-+	mce_inject_cpumask = cpu_online_map;
-+	cpu_clear(get_cpu(), mce_inject_cpumask);
-+
-+	for_each_online_cpu(cpu) {
-+		struct mce *m = &per_cpu(mce_fake_banks, cpu).injectm;
-+		if (!m->finished || MCE_INJ_CTX(m->inject_flags)
-+							!= MCE_INJ_CTX_RANDOM)
-+			cpu_clear(cpu, mce_inject_cpumask);
-+	}
-+	/* make sure mce_inject_cpumask is visible on other CPUs */
-+	smp_mb();
-+
-+	if (!cpus_empty(mce_inject_cpumask))
-+		apic->send_IPI_mask(&mce_inject_cpumask, NMI_VECTOR);
-+
-+	start = jiffies;
-+	while (!cpus_empty(mce_inject_cpumask)) {
-+		if (!time_before(jiffies, start + 2*HZ)) {
-+			printk(KERN_ERR
-+				"Timeout waiting for mce inject NMI %lx\n",
-+				*cpus_addr(mce_inject_cpumask));
-+			break;
-+		}
-+		cpu_relax();
-+	}
-+	raise_local();
-+
-+	put_cpu();
-+	put_online_cpus();
-+}
-+#endif
-+
- static void raise_mce(struct mce *m)
- {
- 	/*
-@@ -157,37 +196,9 @@ static void raise_mce(struct mce *m)
- 	schedule_timeout(2);
- 
- #ifdef CONFIG_X86_LOCAL_APIC
--	if (m->inject_flags & MCE_INJ_NMI_BROADCAST) {
--		unsigned long start;
--		int cpu;
--		get_online_cpus();
--		mce_inject_cpumask = cpu_online_map;
--		cpu_clear(get_cpu(), mce_inject_cpumask);
--		for_each_online_cpu(cpu) {
--			struct mce *m = &per_cpu(mce_fake_banks, cpu).injectm;
--			if (!m->finished || MCE_INJ_CTX(m->inject_flags)
--							!= MCE_INJ_CTX_RANDOM)
--				cpu_clear(cpu, mce_inject_cpumask);
--		}
--		/* make sure mce_inject_cpumask is visible on other CPUs */
--		smp_mb();
--
--		if (!cpus_empty(mce_inject_cpumask))
--			apic->send_IPI_mask(&mce_inject_cpumask, NMI_VECTOR);
--		start = jiffies;
--		while (!cpus_empty(mce_inject_cpumask)) {
--			if (!time_before(jiffies, start + 2*HZ)) {
--				printk(KERN_ERR
--				"Timeout waiting for mce inject NMI %lx\n",
--					*cpus_addr(mce_inject_cpumask));
--				break;
--			}
--			cpu_relax();
--		}
--		raise_local();
--		put_cpu();
--		put_online_cpus();
--	} else
-+	if (m->inject_flags & MCE_INJ_NMI_BROADCAST)
-+		raise_global();
-+	else
- #endif
- 		raise_local();
- }
--- 
-1.6.2.2
+	http://patchwork.ozlabs.org/project/netdev/list/
 
+Thank you.
 
+I've applied your fix, thanks!
+
+> (This patch fixes bug of commit f7734fdf61ec6bb848e0bafc1fb8bad2c124bb50
+>  title "make TLLAO option for NA packets configurable")
+> 
+> When the IPV6 conf is used, the function sysctl_set_parent is called and the
+> array addrconf_sysctl is used as a parameter of the function.
+> 
+> The above patch added new conf "force_tllao" into the array addrconf_sysctl,
+> but the size of the array was not modified, the static allocated size is
+> DEVCONF_MAX + 1 but the real size is DEVCONF_MAX + 2, so the problem is
+> that the function sysctl_set_parent accessed wrong address.
+> 
+> I got the following information.
+> Call Trace:
+>     [<ffffffff8106085d>] sysctl_set_parent+0x29/0x3e
+>     [<ffffffff8106085d>] sysctl_set_parent+0x29/0x3e
+>     [<ffffffff8106085d>] sysctl_set_parent+0x29/0x3e
+>     [<ffffffff8106085d>] sysctl_set_parent+0x29/0x3e
+>     [<ffffffff8106085d>] sysctl_set_parent+0x29/0x3e
+>     [<ffffffff810622d5>] __register_sysctl_paths+0xde/0x272
+>     [<ffffffff8110892d>] ? __kmalloc_track_caller+0x16e/0x180
+>     [<ffffffffa00cfac3>] ? __addrconf_sysctl_register+0xc5/0x144 [ipv6]
+>     [<ffffffff8141f2c9>] register_net_sysctl_table+0x48/0x4b
+>     [<ffffffffa00cfaf5>] __addrconf_sysctl_register+0xf7/0x144 [ipv6]
+>     [<ffffffffa00cfc16>] addrconf_init_net+0xd4/0x104 [ipv6]
+>     [<ffffffff8139195f>] setup_net+0x35/0x82
+>     [<ffffffff81391f6c>] copy_net_ns+0x76/0xe0
+>     [<ffffffff8107ad60>] create_new_namespaces+0xf0/0x16e
+>     [<ffffffff8107afee>] copy_namespaces+0x65/0x9f
+>     [<ffffffff81056dff>] copy_process+0xb2c/0x12c3
+>     [<ffffffff810576e1>] do_fork+0x14b/0x2d2
+>     [<ffffffff8107ac4e>] ? up_read+0xe/0x10
+>     [<ffffffff81438e73>] ? do_page_fault+0x27a/0x2aa
+>     [<ffffffff8101044b>] sys_clone+0x28/0x2a
+>     [<ffffffff81011fb3>] stub_clone+0x13/0x20
+>     [<ffffffff81011c72>] ? system_call_fastpath+0x16/0x1b
+> 
+> And the information of IPV6 in .config is as following.
+> IPV6 in .config:
+>     CONFIG_IPV6=m
+>     CONFIG_IPV6_PRIVACY=y
+>     CONFIG_IPV6_ROUTER_PREF=y
+>     CONFIG_IPV6_ROUTE_INFO=y
+>     CONFIG_IPV6_OPTIMISTIC_DAD=y
+>     CONFIG_IPV6_MIP6=m
+>     CONFIG_IPV6_SIT=m
+>     # CONFIG_IPV6_SIT_6RD is not set
+>     CONFIG_IPV6_NDISC_NODETYPE=y
+>     CONFIG_IPV6_TUNNEL=m
+>     CONFIG_IPV6_MULTIPLE_TABLES=y
+>     CONFIG_IPV6_SUBTREES=y
+>     CONFIG_IPV6_MROUTE=y
+>     CONFIG_IPV6_PIMSM_V2=y
+>     # CONFIG_IP_VS_IPV6 is not set
+>     CONFIG_NF_CONNTRACK_IPV6=m
+>     CONFIG_IP6_NF_MATCH_IPV6HEADER=m
+> 
+> I confirmed this patch fixes this problem.
+> 
+> Signed-off-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+> ---
+>  include/linux/ipv6.h |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/ipv6.h b/include/linux/ipv6.h
+> index ae74ede..5640425 100644
+> --- a/include/linux/ipv6.h
+> +++ b/include/linux/ipv6.h
+> @@ -208,6 +208,7 @@ enum {
+>  	DEVCONF_MC_FORWARDING,
+>  	DEVCONF_DISABLE_IPV6,
+>  	DEVCONF_ACCEPT_DAD,
+> +	DEVCONF_FORCE_TLLAO,
+>  	DEVCONF_MAX
+>  };
+>  
+> -- 
+> 1.6.2.2
+> 
+> 
