@@ -1,131 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964819AbZJIX13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964843AbZJIX1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964819AbZJIX13 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934546AbZJIX12
+	id S964843AbZJIX1c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934606AbZJIX1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:27:28 -0400
-Received: from kroah.org ([198.145.64.141]:56342 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:27:31 -0400
+Received: from kroah.org ([198.145.64.141]:56340 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934609AbZJIX10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:27:26 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:22:34 2009
-Message-Id: <20091009232234.419680073@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:21:31 -0700
-From: Greg KH <gregkh@suse.de>
+	id S934596AbZJIX1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:27:25 -0400
+Date: Fri, 9 Oct 2009 16:23:00 -0700
+From: Greg KH <gregkh@suse.de>, gregkh@mini.kroah.org
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       John Stultz <johnstul@us.ibm.com>,
-       Yanmin Zhang <yanmin_zhang@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [8/8] time: catch xtime_nsec underflows and fix them
-From: gregkh@mini.kroah.org
-References: <20091009232123.464253035@mini.kroah.org>
-Content-Disposition: inline; filename=time-catch-xtime_nsec-underflows-and-fix-them.patch
-In-Reply-To: <20091009232300.GA403@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [0/8] 2.6.27.37-stable review
+Message-ID: <20091009232300.GA403@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: john stultz <johnstul@us.ibm.com>
+This is the start of the stable review cycle for the 2.6.27.37 release.
+There are 8 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-commit 6c9bacb41c10ba84ff68f238e234d96f35fb64f7 upstream.
+Responses should be made by Sunday October 11, 23:00:00 UTC.  Anything
+received after that time might be too late.
 
-Impact: fix time warp bug
-
-Alex Shi, along with Yanmin Zhang have been noticing occasional time
-inconsistencies recently. Through their great diagnosis, they found that
-the xtime_nsec value used in update_wall_time was occasionally going
-negative. After looking through the code for awhile, I realized we have
-the possibility for an underflow when three conditions are met in
-update_wall_time():
-
-  1) We have accumulated a second's worth of nanoseconds, so we
-     incremented xtime.tv_sec and appropriately decrement xtime_nsec.
-     (This doesn't cause xtime_nsec to go negative, but it can cause it
-      to be small).
-
-  2) The remaining offset value is large, but just slightly less then
-     cycle_interval.
-
-  3) clocksource_adjust() is speeding up the clock, causing a
-     corrective amount (compensating for the increase in the multiplier
-     being multiplied against the unaccumulated offset value) to be
-     subtracted from xtime_nsec.
-
-This can cause xtime_nsec to underflow.
-
-Unfortunately, since we notify the NTP subsystem via second_overflow()
-whenever we accumulate a full second, and this effects the error
-accumulation that has already occured, we cannot simply revert the
-accumulated second from xtime nor move the second accumulation to after
-the clocksource_adjust call without a change in behavior.
-
-This leaves us with (at least) two options:
-
-1) Simply return from clocksource_adjust() without making a change if we
-   notice the adjustment would cause xtime_nsec to go negative.
-
-This would work, but I'm concerned that if a large adjustment was needed
-(due to the error being large), it may be possible to get stuck with an
-ever increasing error that becomes too large to correct (since it may
-always force xtime_nsec negative). This may just be paranoia on my part.
-
-2) Catch xtime_nsec if it is negative, then add back the amount its
-   negative to both xtime_nsec and the error.
-
-This second method is consistent with how we've handled earlier rounding
-issues, and also has the benefit that the error being added is always in
-the oposite direction also always equal or smaller then the correction
-being applied. So the risk of a corner case where things get out of
-control is lessened.
-
-This patch fixes bug 11970, as tested by Yanmin Zhang
-http://bugzilla.kernel.org/show_bug.cgi?id=11970
-
-Reported-by: alex.shi@intel.com
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Acked-by: Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Tested-by: Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- kernel/time/timekeeping.c |   22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
-
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -477,6 +477,28 @@ void update_wall_time(void)
- 	/* correct the clock when NTP error is too big */
- 	clocksource_adjust(offset);
- 
-+	/*
-+	 * Since in the loop above, we accumulate any amount of time
-+	 * in xtime_nsec over a second into xtime.tv_sec, its possible for
-+	 * xtime_nsec to be fairly small after the loop. Further, if we're
-+	 * slightly speeding the clocksource up in clocksource_adjust(),
-+	 * its possible the required corrective factor to xtime_nsec could
-+	 * cause it to underflow.
-+	 *
-+	 * Now, we cannot simply roll the accumulated second back, since
-+	 * the NTP subsystem has been notified via second_overflow. So
-+	 * instead we push xtime_nsec forward by the amount we underflowed,
-+	 * and add that amount into the error.
-+	 *
-+	 * We'll correct this error next time through this function, when
-+ 	 * xtime_nsec is not as small.
-+	 */
-+	if (unlikely((s64)clock->xtime_nsec < 0)) {
-+		s64 neg = -(s64)clock->xtime_nsec;
-+		clock->xtime_nsec = 0;
-+		clock->error += neg << (NTP_SCALE_SHIFT - clock->shift);
-+	}
-+
- 	/* store full nanoseconds into xtime */
- 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
- 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.37-rc1.gz
+and the diffstat can be found below.
 
 
+thanks,
+
+greg k-h
+
+ Makefile                   |    2 +-
+ arch/x86/ia32/ia32entry.S  |   56 +++++++++++++++++++++++--------------------
+ arch/x86/kvm/x86.c         |    6 ++++
+ arch/x86/mm/mmap.c         |   17 +++++++++++-
+ drivers/net/iseries_veth.c |    2 +-
+ drivers/watchdog/hpwdt.c   |   15 +++++------
+ fs/ecryptfs/inode.c        |    2 +
+ include/asm-x86/elf.h      |    2 +
+ include/linux/kvm_para.h   |    1 +
+ kernel/time/timekeeping.c  |   22 +++++++++++++++++
+ 10 files changed, 87 insertions(+), 38 deletions(-)
