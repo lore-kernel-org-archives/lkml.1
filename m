@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400AbZJILmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759920AbZJILnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754400AbZJILmQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 07:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZJILmP
+	id S1759920AbZJILnh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 07:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbZJILng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 07:42:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:32808 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752767AbZJILmP (ORCPT
+	Fri, 9 Oct 2009 07:43:36 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:45319 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757233AbZJILnf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 07:42:15 -0400
-Subject: Re: [regressions] Re: kbuild: save ARCH & CROSS_COMPILE when
- building a kernel
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1255078731.17055.39.camel@laptop>
-References: <20091003103441.GA10874@elte.hu>
-	 <1255078731.17055.39.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 09 Oct 2009 13:41:24 +0200
-Message-Id: <1255088484.8802.55.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Oct 2009 07:43:35 -0400
+Date: Fri, 9 Oct 2009 11:42:56 +0000
+From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+To: ieidus@redhat.com
+Cc: mtosatti@redhat.com, linux-kernel@vger.kernel.org
+Subject: [patch] kvm: fix pointer cast
+Message-ID: <20091009114256.GA29528@gambetta>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-09 at 10:58 +0200, Peter Zijlstra wrote:
-> On Sat, 2009-10-03 at 12:34 +0200, Ingo Molnar wrote:
-> > 
-> > that arch-cache thing introduced in:
-> > 
-> >  5755433: kbuild: save ARCH & CROSS_COMPILE when building a kernel
-> > 
-> > isnt working very well in my experience.
-> 
-> Its breaking things for me too. When I build a .config using distcc and
-> cross compilers on my build farm, and then try a make install on another
-> machine which doesn't have either it utterly shits itself.
+Hi,
 
-It also wrecks the online/offline workflow I have.
+On a 32 bits compile, commit 3da0dd433dc399a8c0124d0614d82a09b6a49bce
+introduced the following warnings:
 
-When connected with 10gbe I use the build cluster from my laptop, when
-wireless or offline I clearly cannot use distcc.
+arch/x86/kvm/mmu.c: In function ‘kvm_set_pte_rmapp’:
+arch/x86/kvm/mmu.c:770: warning: cast to pointer from integer of different size
+arch/x86/kvm/mmu.c: In function ‘kvm_set_spte_hva’:
+arch/x86/kvm/mmu.c:849: warning: cast from pointer to integer of different size
 
-My scripts automagically do this right, except now they barf.
+The following patch uses 'unsigned long' instead of u64 to match the
+pointer size on both arches.
 
-It basically means I have to now script around this crap by trap'ing the
-build script and always deleting the $BUILD_DIR/include/generated crap.
+Regards,
+Frederik
 
-Is there really anybody out there who hasn't scripted their distcc/cross
-build stuff and types that incredibly long make line every time?
 
+Signed-off-by: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 685a4ff..818b92a 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -748,7 +748,8 @@ static int rmap_write_protect(struct kvm *kvm, u64 gfn)
+ 	return write_protected;
+ }
+ 
+-static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp, u64 data)
++static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
++			   unsigned long data)
+ {
+ 	u64 *spte;
+ 	int need_tlb_flush = 0;
+@@ -763,7 +764,8 @@ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp, u64 data)
+ 	return need_tlb_flush;
+ }
+ 
+-static int kvm_set_pte_rmapp(struct kvm *kvm, unsigned long *rmapp, u64 data)
++static int kvm_set_pte_rmapp(struct kvm *kvm, unsigned long *rmapp,
++			     unsigned long data)
+ {
+ 	int need_flush = 0;
+ 	u64 *spte, new_spte;
+@@ -799,9 +801,10 @@ static int kvm_set_pte_rmapp(struct kvm *kvm, unsigned long *rmapp, u64 data)
+ 	return 0;
+ }
+ 
+-static int kvm_handle_hva(struct kvm *kvm, unsigned long hva, u64 data,
++static int kvm_handle_hva(struct kvm *kvm, unsigned long hva,
++			  unsigned long data,
+ 			  int (*handler)(struct kvm *kvm, unsigned long *rmapp,
+-					 u64 data))
++					 unsigned long data))
+ {
+ 	int i, j;
+ 	int retval = 0;
+@@ -846,10 +849,11 @@ int kvm_unmap_hva(struct kvm *kvm, unsigned long hva)
+ 
+ void kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
+ {
+-	kvm_handle_hva(kvm, hva, (u64)&pte, kvm_set_pte_rmapp);
++	kvm_handle_hva(kvm, hva, (unsigned long)&pte, kvm_set_pte_rmapp);
+ }
+ 
+-static int kvm_age_rmapp(struct kvm *kvm, unsigned long *rmapp, u64 data)
++static int kvm_age_rmapp(struct kvm *kvm, unsigned long *rmapp,
++			 unsigned long data)
+ {
+ 	u64 *spte;
+ 	int young = 0;
