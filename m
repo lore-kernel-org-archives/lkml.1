@@ -1,86 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760988AbZJIXEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbZJIXQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760988AbZJIXEg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757123AbZJIXEg
+	id S1761544AbZJIXQq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759045AbZJIXQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:04:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50593 "EHLO ogre.sisk.pl"
+	Fri, 9 Oct 2009 19:16:46 -0400
+Received: from kroah.org ([198.145.64.141]:36722 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756847AbZJIXEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:04:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFC][PATCH 3/4] PCI / ACPI PM: Platform support for PCI PME wake-up (rev. 2)
-Date: Sat, 10 Oct 2009 01:05:08 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Shaohua Li <shaohua.li@intel.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-References: <200910090051.50932.rjw@sisk.pl> <200910090054.18693.rjw@sisk.pl> <20091009112320.GA23990@srcf.ucam.org>
-In-Reply-To: <20091009112320.GA23990@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910100105.08356.rjw@sisk.pl>
+	id S1758959AbZJIXQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:16:45 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:10:00 2009
+Message-Id: <20091009231000.229589417@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 09 Oct 2009 16:08:37 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: [patch 01/26] x86: fix csum_ipv6_magic asm memory clobber
+References: <20091009230836.316410305@mini.kroah.org>
+Content-Disposition: inline; filename=x86-fix-csum_ipv6_magic-asm-memory-clobber.patch
+In-Reply-To: <20091009231249.GA31084@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 October 2009, Matthew Garrett wrote:
-> On Fri, Oct 09, 2009 at 12:54:18AM +0200, Rafael J. Wysocki wrote:
-> 
-> > Unfortunately, the subset of PCI devices that have GPEs associated
-> > with them is quite limited and the other devices have to rely on
-> > the GPEs associated with their upstream bridges and, possibly, the
-> > root bridge to generate ACPI wake-up events in response to PMEs from
-> > them.  Moreover, ACPI devices tend to share wake-up GPEs, in which
-> > cases it makes sense to install an ACPI notify handler for only one
-> > of them and "bind" the other devices to it.  Furthermore, ACPI-based
-> > PCI hotplug also uses ACPI notify handlers that in general may
-> > conflict with the PM notify handlers, unless this issue is
-> > specifically taken care of.
-> 
-> I'm not sure this approach is correct - for instance, from a Dell 
-> system:
-> 
->         Method (_L0D, 0, NotSerialized)
->         {
->             Store (SMI (0xC6, 0x00), Local0)
->             If (And (Local0, 0x01))
->             {
->                 Notify (\_SB.PCI0.AZAL, 0x02)
->             }
-> 
->             If (And (Local0, 0x02))
->             {
->                 Notify (\_SB.PCI0.EHCI, 0x02)
->             }
-> 
->             If (And (Local0, 0x04))
->             {
->                 Notify (\_SB.PCI0.EHC2, 0x02)
->             }
->         }
-> 
-> All these devices share a GPE, but registering only one notify handler 
-> would result in us missing the notification in some cases.
+2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
-Ok, I see.  The notification may be device-specific, although if we receive
-one, we'll need to check all devices sharing the GPE anyway.
+------------------
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
-I think that's not going to be difficult to take into account, but I won't be
-able to work on this until after the KS.
+commit 392d814daf460a9564d29b2cebc51e1ea34e0504 upstream.
 
-> I also suspect that this should wait until the GPE rework is done.
+Just like ip_fast_csum, the assembly snippet in csum_ipv6_magic needs a
+memory clobber, as it is only passed the address of the buffer, not a
+memory reference to the buffer itself.
 
-It certainly is better if the GPE rework is done first, although I'm not sure
-it's strictly necessary.  At least I don't see why exactly at the moment.
+This caused failures in Hurd's pfinetv4 when we tried to compile it with
+gcc-4.3 (bogus checksums).
 
-Thanks,
-Rafael
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Acked-by: "David S. Miller" <davem@davemloft.net>
+Cc: Andi Kleen <andi@firstfloor.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/x86/include/asm/checksum_32.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/arch/x86/include/asm/checksum_32.h
++++ b/arch/x86/include/asm/checksum_32.h
+@@ -161,7 +161,8 @@ static inline __sum16 csum_ipv6_magic(co
+ 	    "adcl $0, %0	;\n"
+ 	    : "=&r" (sum)
+ 	    : "r" (saddr), "r" (daddr),
+-	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum));
++	      "r" (htonl(len)), "r" (htonl(proto)), "0" (sum)
++	    : "memory");
+ 
+ 	return csum_fold(sum);
+ }
+
+
