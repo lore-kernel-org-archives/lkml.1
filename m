@@ -1,52 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934237AbZJIV2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934441AbZJIV3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934237AbZJIV2A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761469AbZJIV17
+	id S934441AbZJIV3Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933380AbZJIV3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:27:59 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:45596 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761416AbZJIV15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:27:57 -0400
-Message-ID: <4ACFAAB7.4000308@msgid.tls.msk.ru>
-Date: Sat, 10 Oct 2009 01:27:19 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>,
-       linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: wrong final bzImage build (regading #14270)
-References: <4ACF460E.7000901@msgid.tls.msk.ru> <20091009145825.GE5311@lenovo> <4ACF9184.9040104@msgid.tls.msk.ru> <200910092202.51208.a.miskiewicz@gmail.com> <4ACFA36F.6000105@zytor.com>
-In-Reply-To: <4ACFA36F.6000105@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 9 Oct 2009 17:29:22 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:24931 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933174AbZJIV3W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 17:29:22 -0400
+Date: Fri, 9 Oct 2009 14:27:42 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Bruce Beare <bbeare1@gmail.com>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Cleanups for: line length, printk KERN_ argument, stack
+ frame size > 2048 (added a kmalloc/kfree), style/formatting errors,
+ incorrect include files
+Message-Id: <20091009142742.b12b80b1.randy.dunlap@oracle.com>
+In-Reply-To: <20091009211610.GA5005@suse.de>
+References: <1255122698-12390-1-git-send-email-bbeare1@gmail.com>
+	<20091009211610.GA5005@suse.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4ACFAB05.00F1:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 10/09/2009 01:02 PM, Arkadiusz Miskiewicz wrote:
->> I had exactly this problem few weeks ago with pdksh as /bin/sh (and 
->> bugreported to author of that change). As I workaround I used /bin/echo but 
->> using printf is more sane/portable.
->>
+On Fri, 9 Oct 2009 14:16:10 -0700 Greg KH wrote:
+
 > 
-> Yes, using printf is the right thing to do.
+> Try changing one thing at a time per patch please.
 > 
-> A patch would be appreciated.
+> There's some bugs in here:
+> 
+> > -		struct config_t dig_in_config[32];
+> > -		struct config_t dig_out_config[32];
+> > -		struct config_t chan_in_config[32];
+> > -		struct config_t chan_out_config[32];
+> >  		int i;
+> > +		config_data = kmalloc(sizeof(struct config_data_t), GFP_KERNEL);
+> 
+> Shouldn't that be:
+> 		config_data = kmalloc(sizeof(struct config_data_t)*32, GFP_KERNEL);
 
-Come on, it's just a one-word change (s/echo/printf/ in
-scripts/Makefile.lib).
+The new struct already includes the [32]s.
 
-But it should go to Sam's tree first I guess, which already
-has s|echo|/bin/echo| so it'll conflict.
-It's easier to change it in whatever tree it will be changed
-without complete patches.
 
-/mjt
+> Otherwise you overflow your buffer here:
+> >  
+> >  		for (i = 0; i < 32; i++) {
+> > -			dig_in_config[i].kind = 0;
+> > -			dig_in_config[i].bits = 0;
+> > -			dig_in_config[i].min = 0;
+> > -			dig_in_config[i].max = 0;
+> > -			dig_out_config[i].kind = 0;
+> > -			dig_out_config[i].bits = 0;
+> > -			dig_out_config[i].min = 0;
+> > -			dig_out_config[i].max = 0;
+> > -			chan_in_config[i].kind = 0;
+> > -			chan_in_config[i].bits = 0;
+> > -			chan_in_config[i].min = 0;
+> > -			chan_in_config[i].max = 0;
+> > -			chan_out_config[i].kind = 0;
+> > -			chan_out_config[i].bits = 0;
+> > -			chan_out_config[i].min = 0;
+> > -			chan_out_config[i].max = 0;
+> > +			config_data->dig_in_config[i].kind = 0;
+> > +			config_data->dig_in_config[i].bits = 0;
+> > +			config_data->dig_in_config[i].min = 0;
+> > +			config_data->dig_in_config[i].max = 0;
+> > +			config_data->dig_out_config[i].kind = 0;
+> > +			config_data->dig_out_config[i].bits = 0;
+> > +			config_data->dig_out_config[i].min = 0;
+> > +			config_data->dig_out_config[i].max = 0;
+> > +			config_data->chan_in_config[i].kind = 0;
+> > +			config_data->chan_in_config[i].bits = 0;
+> > +			config_data->chan_in_config[i].min = 0;
+> > +			config_data->chan_in_config[i].max = 0;
+> > +			config_data->chan_out_config[i].kind = 0;
+> > +			config_data->chan_out_config[i].bits = 0;
+> > +			config_data->chan_out_config[i].min = 0;
+> > +			config_data->chan_out_config[i].max = 0;
+> >  		}
+> 
+> Or am I mistaken?
+
+yep.
+
+---
+~Randy
