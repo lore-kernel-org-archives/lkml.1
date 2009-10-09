@@ -1,75 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZJIGSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbZJIGcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755334AbZJIGSJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 02:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZJIGSI
+	id S1756198AbZJIGcz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 02:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZJIGcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 02:18:08 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:41390 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbZJIGSH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 02:18:07 -0400
-Date: Thu, 8 Oct 2009 23:17:29 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: DMAR regression in 2.6.31 leads to ext4 corruption?
-Message-ID: <20091009061729.GA31242@hexapodia.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 Oct 2009 02:32:54 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:50700 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752143AbZJIGcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 02:32:53 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [Linux-uvc-devel] [PATCH] Re: uvcvideo: Finally fix Logitech Quickcam for Notebooks Pro
+Date: Fri, 9 Oct 2009 08:32:06 +0200
+User-Agent: KMail/1.9.10
+Cc: linux-uvc-devel@lists.berlios.de, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+References: <200910061607.07195.linux@rainbow-software.org> <200910071459.43622.linux@rainbow-software.org> <200910090104.26371.laurent.pinchart@ideasonboard.com>
+In-Reply-To: <200910090104.26371.laurent.pinchart@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+Message-Id: <200910090832.09254.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[resending to fit under vger's size limits, sorry if anybody gets this
-twice.]
+On Friday 09 October 2009, Laurent Pinchart wrote:
+> Hi Ondrej,
+>
+> On Wednesday 07 October 2009 14:59:40 Ondrej Zary wrote:
+> > On Tuesday 06 October 2009, Ondrej Zary wrote:
+> > > Hello,
+> > > I have a Logitech Quickcam for Notebooks Pro camera (046d:08c3) which
+> > > just does not work even with kernel 2.6.31 and has never worked well
+> > > before.
+> > >
+> > > On http://linux-uvc.berlios.de/, there are two problems listed. I want
+> > > to really fix these two problems so the camera will just work after
+> > > plugging in (and not disconnect). I started with problem no. 2 as this
+> > > causes the camera not to work at all when plugged in:
+> > >
+> > > usb 5-2.4: new high speed USB device using ehci_hcd and address 7
+> > > usb 5-2.4: configuration #1 chosen from 1 choice
+> > > uvcvideo: Found UVC 1.00 device <unnamed> (046d:08c3)
+> > > uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+> > > workaround.
+> > > uvcvideo: Failed to query (129) UVC probe control : -110 (exp. 26).
+> > > uvcvideo: Failed to initialize the device (-5).
+> > >
+> > > When I do "modprobe snd_usb_audio", then "rmmod snd_usb_audio" and
+> > > finally "modprobe uvcvideo", it works. So it looks like snd_usb_audio
+> > > does some initialization that allows uvcvideo to work. It didn't work
+> > > at all I didn't have snd_usb_audio module compiled.
+> > >
+> > > What was the change that supposedly broke this in 2.6.22?
+> >
+> > I discovered that it's not related to usb audio at all. Doing "rmmod
+> >  uvcvideo" and "modprobe uvcvideo" repeatedly succeeded after a couple of
+> >  tries. Increasing UVC_CTRL_STREAMING_TIMEOUT to 3000 helped (2000 was
+> > not enough).
+> >
+> >
+> > Increase UVC_CTRL_STREAMING_TIMEOUT to fix initialization of
+> > Logitech Quickcam for Notebooks Pro.
+> > This fixes following error messages:
+> > uvcvideo: UVC non compliance - GET_DEF(PROBE) not supported. Enabling
+> >  workaround. uvcvideo: Failed to query (129) UVC probe control : -110
+> > (exp. 26). uvcvideo: Failed to initialize the device (-5).
+> >
+> > Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+> >
+> > --- linux-2.6.31-orig/drivers/media/video/uvc/uvcvideo.h	2009-09-10
+> >  00:13:59.000000000 +0200 +++
+> >  linux-2.6.31/drivers/media/video/uvc/uvcvideo.h	2009-10-07
+> >  13:47:27.000000000 +0200 @@ -304,7 +304,7 @@
+> >  #define UVC_MAX_STATUS_SIZE	16
+> >
+> >  #define UVC_CTRL_CONTROL_TIMEOUT	300
+> > -#define UVC_CTRL_STREAMING_TIMEOUT	1000
+> > +#define UVC_CTRL_STREAMING_TIMEOUT	3000
+> >
+> >  /* Devices quirks */
+> >  #define UVC_QUIRK_STATUS_INTERVAL	0x00000001
+>
+> Thanks for the patch. I wonder if it will help other Logitech users.
+>
+> The UVC specification unfortunately doesn't give a time boundary for
+> answering streaming requests, so that's up to the developers. I'm pretty
+> sure we will find at least one webcam model that will require 3001ms at
+> some point :-)
+>
+> I was thinking about adding a module parameter to set the streaming control
+> timeout. I'm not sure what the default value should be though. What's your
+> opinion on this ? If we decide to increase the default value, where should
+> we stop ?
 
-I'm testing DMAR support on 2.6.32 on Intel VT-d laptop platforms.  It
-was pretty stable circa 2.6.31-rc5 (we have dozens of machines running
-2.6.31-rc8), but in the last two weeks I've had a bunch of instability
-on Linus' tip kernels that looked potentially like IOMMU badness.
+I really don't know. Maybe only the first request is slow as the hardware 
+needs some time to initialize?
 
-For example,
-<20090928191644.GR12922@hexapodia.org>
-http://lkml.org/lkml/2009/9/28/201
+If someone knows what value is used by Windows or Mac OS X, that's probably 
+the "right" choice as most devices are tested with them.
 
-Today while running 817b33d38 I got the following (on a Thinkpad X200
-I'd replaced the Dell with, just in case it was previously-good hardware
-going bad).
-
-[   29.450550] EXT4-fs error (device sda1): ext4_lookup: deleted inode referenced: 79
-[   30.022328] DRHD: handling fault status reg 3
-[   30.022328] DMAR:[DMA Write] Request device [00:02.0] fault addr ddae28000 
-[   30.022328] DMAR:[fault reason 05] PTE Write access is not set
-[   30.146136] DRHD: handling fault status reg 3
-[   30.248938] DMAR:[DMA Write] Request device [00:02.0] fault addr ddae28000 
-[   30.248939] DMAR:[fault reason 05] PTE Write access is not set
-
-The full output of fsck and full dmesg are at the URL below.
-
-I don't know that DMAR is resulting in my repeated filesystem
-corruption, but it does seem like a potential cause (and would explain
-why I'm seeing this whereas most people aren't, since few people are
-using VT-d *and* i915).
-
-I see that the BROKEN_GFX_WA code has been removed; do we actually
-believe that the relevant code is working?  Could it be corrupting my
-AHCI DMAs if not?  At the end of the last thread Ted thought that we'd
-lost a write of an inode block; this time the symptoms look different,
-in that I don't see one inode block representing a significant data
-loss (though I'm by no means an expert).
-
-Complete dmesg etc are at
-http://web.hexapodia.org/~adi/bugs/20091008-ext4-dmar/
-
-I'll try running with BROKEN_GFX_WA turned back on and see if that
-improves things at all.
-
-Thanks,
--andy
+-- 
+Ondrej Zary
