@@ -1,67 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933157AbZJIHMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbZJIHKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933157AbZJIHMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 03:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933105AbZJIHMR
+	id S1757433AbZJIHKe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 03:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbZJIHKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 03:12:17 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56257 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933078AbZJIHMQ (ORCPT
+	Fri, 9 Oct 2009 03:10:34 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44726 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752917AbZJIHKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 03:12:16 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4ACEE220.1020705@jp.fujitsu.com>
-Date: Fri, 09 Oct 2009 16:11:28 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Matt Domsch <Matt_Domsch@dell.com>
-CC: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Zhang Yanmin <yanmin.zhang@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCIe AER: honor ACPI HEST FIRMWARE FIRST mode
-References: <20091006173311.GA15751@auslistsprd01.us.dell.com>
-In-Reply-To: <20091006173311.GA15751@auslistsprd01.us.dell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 9 Oct 2009 03:10:33 -0400
+Subject: Re: [.32-rc3] scheduler: iwlagn consistently high in "waiting for
+ CPU"
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Frans Pop <elendil@planet.nl>, Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-wireless@vger.kernel.org
+In-Reply-To: <1255070103.7639.30.camel@marge.simson.net>
+References: <200910051500.55875.elendil@planet.nl>
+	 <200910081655.37485.elendil@planet.nl>
+	 <1255026217.6643.12.camel@marge.simson.net>
+	 <200910082259.35204.elendil@planet.nl>
+	 <1255070103.7639.30.camel@marge.simson.net>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 09 Oct 2009 09:13:53 +0200
+Message-Id: <1255072433.26976.351.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Domsch wrote:
-> For review and comment.
+On Fri, 2009-10-09 at 08:35 +0200, Mike Galbraith wrote:
 > 
-> Today, the PCIe Advanced Error Reporting (AER) driver attaches itself
-> to every PCIe root port for which BIOS reports it should, via ACPI
-> _OSC.
+> sched: update the clock of runqueue select_task_rq() selected.
 > 
-> However, _OSC alone is insufficient for newer BIOSes.  Part of ACPI
-> 4.0 is the new Platform Environment Control Interface (PECI), which is
-> a way for OS and BIOS to handshake over which errors for which
-> components each will handle.  One table in ACPI 4.0 is the Hardware
-> Error Source Table (HEST), where BIOS can define that errors for
-> certain PCIe devices (or all devices), should be handled by BIOS
-> ("Firmware First mode"), rather than be handled by the OS.
+> In try_to_wake_up(), we update the runqueue clock, but select_task_rq()
+> may select a different runqueue than the one we updated, leaving the new
+> runqueue's clock stale for a bit.
 > 
-> Dell PowerEdge 11G server BIOS defines Firmware First mode in HEST, so
-> that it may manage such errors, log them to the System Event Log, and
-> possibly take other actions.  The aer driver should honor this, and
-> not attach itself to devices noted as such.
+> This patch cures occasional huge latencies reported by latencytop when
+> coming out of idle on a mostly idle NO_HZ box.
 > 
-> 
-> Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
-> 
-
-In the current AER driver implementation, correctable, non-fatal,
-fatal, unsupported request reporting enable bits in PCIe device
-control register can be changed by adapter card drivers through pci_enable_pcie_error_reporting() or pci_disable_pcie_error_reporting()
-APIs, regardless of _OSC evaluation result.
-
-I'm not sure, but I guess you might need to prevent those bits
-from being changed in the Firmware First mode.
-
-Thanks,
-Kenji Kaneshige
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
 
+Awesome catch Mike, seems I goofed up in my recent ttwu changes.
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> 
+> ---
+>  kernel/sched.c |    8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched.c
+> +++ linux-2.6/kernel/sched.c
+> @@ -2311,7 +2311,7 @@ static int try_to_wake_up(struct task_st
+>  {
+>         int cpu, orig_cpu, this_cpu, success = 0;
+>         unsigned long flags;
+> -       struct rq *rq;
+> +       struct rq *rq, *orig_rq;
+>  
+>         if (!sched_feat(SYNC_WAKEUPS))
+>                 wake_flags &= ~WF_SYNC;
+> @@ -2319,7 +2319,7 @@ static int try_to_wake_up(struct task_st
+>         this_cpu = get_cpu();
+>  
+>         smp_wmb();
+> -       rq = task_rq_lock(p, &flags);
+> +       rq = orig_rq = task_rq_lock(p, &flags);
+>         update_rq_clock(rq);
+>         if (!(p->state & state))
+>                 goto out;
+> @@ -2350,6 +2350,10 @@ static int try_to_wake_up(struct task_st
+>                 set_task_cpu(p, cpu);
+>  
+>         rq = task_rq_lock(p, &flags);
+> +
+> +       if (rq != orig_rq)
+> +               update_rq_clock(rq);
+> +
+>         WARN_ON(p->state != TASK_WAKING);
+>         cpu = task_cpu(p);
+>  
+> 
+> 
+> 
