@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761224AbZJIRyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934082AbZJIRyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761224AbZJIRyQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 13:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760563AbZJIRyP
+	id S934082AbZJIRyY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 13:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934060AbZJIRyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 13:54:15 -0400
-Received: from lucidpixels.com ([75.144.35.66]:41786 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934057AbZJIRyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 13:54:14 -0400
-Date: Fri, 9 Oct 2009 13:53:38 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-cc: lftp@uniyar.ac.ru
-Subject: Re: 2.6.31/lftp: WARNING: at drivers/char/tty_io.c:1267
- tty_open+0x439/0x4f0()
-In-Reply-To: <alpine.DEB.2.00.0910081304080.11551@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0910091353230.3264@p34.internal.lan>
-References: <alpine.DEB.2.00.0910081304080.11551@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 9 Oct 2009 13:54:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41377 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934055AbZJIRyW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 13:54:22 -0400
+Date: Fri, 9 Oct 2009 19:53:45 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [rfc][patch] store-free path walking
+Message-ID: <20091009175345.GE1656@one.firstfloor.org>
+References: <alpine.LFD.2.01.0910070911080.3432@localhost.localdomain> <20091007164622.GX30316@wotan.suse.de> <alpine.LFD.2.01.0910071222230.3432@localhost.localdomain> <87eipfymcv.fsf@basil.nowhere.org> <alpine.LFD.2.01.0910071349190.3432@localhost.localdomain> <20091007210651.GB1656@one.firstfloor.org> <alpine.LFD.2.01.0910071417300.3432@localhost.localdomain> <alpine.LFD.2.01.0910071450510.3432@localhost.localdomain> <20091007222235.GC1656@one.firstfloor.org> <20091008073930.GZ30316@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091008073930.GZ30316@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Oct 08, 2009 at 09:39:30AM +0200, Nick Piggin wrote:
+> > My point (probably not very well written expressed)
+> > was that in a typical VFS operation there are hundreds
+> > of cache lines touched for various things (code, global, various
+> > objects, random stuff) and one more or less in the final dentry 
+> > is not that big a difference in the global picture.
+> > (ok I realize final in this case means the elements in the path)
+> 
+> Yes I do know what you were getting at... Although I would
+> say dcache is still fairly significant. It's 3 cachelines
+> for every single path element we look up. Now I suspect it
 
+That's true, for deeply nested paths where the elements add up 
+it's a concern. I was assuming that paths are not that deep, but that might 
+be too optimistic.
 
-On Thu, 8 Oct 2009, Justin Piszcz wrote:
+> Actually no, it does look relatively sane (I guess it doesn't
+> change that much), except it might actualy be a nice idea
+> to move d_iname up to about above d_lru, so we could actually
+> do path lookup in 2 cachelines per entry (or even 1 if we
+> they have very short names).
+> 
+> I will do a bit of profiling on the lookup code and see...
 
-> Hello,
->
-> First time I have ever seen this issue, I am running 2.6.31 x86_64 & lftp:
->
-> $ lftp --version
-> LFTP | Version 4.0.2 | Copyright (c) 1996-2009 Alexander V. Lukyanov
->
-> I ran: lftp -f script where script downloads some files and then this 
-> occurred:
->
-> [1628036.347248] WARNING: at drivers/char/tty_io.c:1267 
-> tty_open+0x439/0x4f0()
-> [1628036.347250] Hardware name:
-> [1628036.347252] Pid: 23495, comm: lftp Not tainted 2.6.31 #3
-> [1628036.347254] Call Trace:
-> [1628036.347259]  [<ffffffff810b5733>] ? do_lookup+0x143/0x270
-> [1628036.347261]  [<ffffffff8126a8f9>] ? tty_open+0x439/0x4f0
-> [1628036.347265]  [<ffffffff8105473f>] ? warn_slowpath_common+0x6f/0xc0
-> [1628036.347267]  [<ffffffff8126a8f9>] ? tty_open+0x439/0x4f0
-> [1628036.347270]  [<ffffffff813af3c2>] ? sock_aio_read+0x142/0x150
-> [1628036.347274]  [<ffffffff810afd78>] ? chrdev_open+0x88/0x170
-> [1628036.347277]  [<ffffffff810c50a3>] ? mntput_no_expire+0x23/0xf0
-> [1628036.347279]  [<ffffffff810afcf0>] ? chrdev_open+0x0/0x170
-> [1628036.347282]  [<ffffffff810ab00a>] ? __dentry_open+0x9a/0x260
-> [1628036.347284]  [<ffffffff810b9ace>] ? do_filp_open+0x71e/0xac0
-> [1628036.347287]  [<ffffffff810bac3f>] ? vfs_ioctl+0x2f/0xb0
-> [1628036.347289]  [<ffffffff810bb143>] ? do_vfs_ioctl+0x3e3/0x570
-> [1628036.347302]  [<ffffffff810c357a>] ? alloc_fd+0x4a/0x140
-> [1628036.347304]  [<ffffffff810aae77>] ? do_sys_open+0x97/0x150
-> [1628036.347308]  [<ffffffff8102c42b>] ? system_call_fastpath+0x16/0x1b
-> [1628036.347309] ---[ end trace b69ffec827da9b40 ]---
->
-> The lftp process was running in a screened session.
->
-> Any thoughts as to the bug here?
->
-> Justin.
->
+Yes numbers would be great.
 
-If anyone has replied--
-
-Please CC me as I am not on the LKML list, thanks.
-
-Justin.
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
