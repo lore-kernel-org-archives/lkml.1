@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760352AbZJIJAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbZJIJKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760352AbZJIJAq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 05:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759180AbZJIJAp
+	id S1757156AbZJIJKy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 05:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbZJIJKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 05:00:45 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:53955 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754403AbZJIJAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 05:00:44 -0400
-Message-ID: <4ACEFC26.3000603@redhat.com>
-Date: Fri, 09 Oct 2009 17:02:30 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	Fri, 9 Oct 2009 05:10:54 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:63970 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752951AbZJIJKx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 05:10:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SnUYI3YXBQEbYjJ64Z06ogifikaCxNVqzvmz9heqjEGF2FgahZLyyD5bTZ9yblsX+R
+         pBIaehuvhS0RrAMDoAVO31waDSMiiX7ff7eO5LMbZdIH14pF0X6HOEEd+GjL7LG+d0C0
+         R8sFcnrnYZ7hFglnvmHZSEAxz/5XtRS6hwUxE=
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: linux-kernel@vger.kernel.org, Ben Woodard <bwoodard@llnl.gov>,
-       akpm@linux-foundation.org, Brian Behlendorf <behlendorf1@llnl.gov>
-Subject: Re: [Patch v4] rwsem: fix rwsem_is_locked() bugs
-References: <20091008092632.7101.62229.sendpatchset@localhost.localdomain> <19121.1254998734@redhat.com>
-In-Reply-To: <19121.1254998734@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <129600E5E5FB004392DDC3FB599660D7B78C93C0@irsmsx504.ger.corp.intel.com>
+References: <1253630313-20225-1-git-send-email-linus.walleij@stericsson.com>
+	 <129600E5E5FB004392DDC3FB599660D7B78C93C0@irsmsx504.ger.corp.intel.com>
+Date: Fri, 9 Oct 2009 11:10:16 +0200
+Message-ID: <63386a3d0910090210u19e20035l9e88bfc806022f4@mail.gmail.com>
+Subject: Re: [PATCH 1/2] Add COH 901 318 DMA block driver
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+Cc: Linus Walleij <linus.walleij@stericsson.com>,
+       "Williams, Dan J" <dan.j.williams@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> Amerigo Wang <amwang@redhat.com> wrote:
-> 
->> rwsem_is_locked() tests ->activity without locks, so we should always
->> keep ->activity consistent. However, the code in __rwsem_do_wake()
->> breaks this rule, it updates ->activity after _all_ readers waken up,
->> this may give some reader a wrong ->activity value, thus cause
->> rwsem_is_locked() behaves wrong.
->>
->> Quote from Andrew:
->>
->> "
->> - we have one or more processes sleeping in down_read(), waiting for access.
->>
->> - we wake one or more processes up without altering ->activity
->>
->> - they start to run and they do rwsem_is_locked().  This incorrectly
->>   returns "false", because the waker process is still crunching away in
->>   __rwsem_do_wake().
->>
->> - the waker now alters ->activity, but it was too late.
->> "
->>
->> So we need get a spinlock to protect this. And rwsem_is_locked()
->> should not block, thus we use spin_trylock.
->>
->> Reported-by: Brian Behlendorf <behlendorf1@llnl.gov>
->> Cc: Ben Woodard <bwoodard@llnl.gov>
->> Cc: David Howells <dhowells@redhat.com>
->> Signed-off-by: WANG Cong <amwang@redhat.com>
-> 
-> I'd say the comment in __rwsem_do_wake() is unnecessary, but other than
-> that...
+Then a quick comment in addition to the COH 901 318 v2...
 
+2009/9/30 Sosnowski, Maciej <maciej.sosnowski@intel.com>:
 
-The reason why I added it is to show that we have considered that
-case already. :) If you have strong opinions to remove it, I can
-update the patch.
+>> +     coh901318_stop(chan);
+>> +
+>> +     spin_lock_irqsave(&cohc->lock, flags);
+>> +
+>> +     /* Clear any pending BE or TC interrupt */
+>> +     if (cohc->id < 32) {
+>> +             writel(1 << cohc->id, virtbase + COH901318_BE_INT_CLEAR1);
+>> +             writel(1 << cohc->id, virtbase + COH901318_TC_INT_CLEAR1);
+>> +     } else {
+>> +             writel(1 << (cohc->id - 32), virtbase +
+>> +                    COH901318_BE_INT_CLEAR2);
+>> +             writel(1 << (cohc->id - 32), virtbase +
+>> +                    COH901318_TC_INT_CLEAR2);
+>> +     }
+>> +
+>> +     enable_powersave(cohc);
+>
+> enable_powersave() has been called in coh901318_stop() already
 
-> 
-> Acked-by: David Howells <dhowells@redhat.com>
+Yes, however an IRQ can come in between coh901318_stop() and
+spin_lock_irqsave(), disabling powersave. So to avoid a possible race,
+we enable it again. We cannot move coh901318_stop() after the spinlock
+either, because the coh901318_stop() use the same spinlock, and then it
+deadlocks. And I cannot require the lock to be held while calling
+coh901318_stop() because it is an exported symbol.
 
-
-Thanks!
+Linus Walleij
