@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbZJIHS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933121AbZJIHXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757900AbZJIHS5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 03:18:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZJIHS5
+	id S933121AbZJIHXb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 03:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZJIHXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 03:18:57 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50064 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753270AbZJIHS4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 03:18:56 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4ACEE3AB.5040308@jp.fujitsu.com>
-Date: Fri, 09 Oct 2009 16:18:03 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 9 Oct 2009 03:23:31 -0400
+Received: from www.tglx.de ([62.245.132.106]:56946 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755864AbZJIHXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 03:23:30 -0400
+Date: Fri, 9 Oct 2009 09:22:49 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: wu Jianfeng <stormplayer@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: the select system call's implementation may have some bug in
+ preempt kernel mode
+In-Reply-To: <a5b3ea7b0910090011k7558faf2p4de252875587291e@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0910090921530.9428@localhost.localdomain>
+References: <a5b3ea7b0910082242s6ce8275dr7f962ce526e55cd2@mail.gmail.com>  <a5b3ea7b0910082250o659d4fd3l8f319fd6bde24f3d@mail.gmail.com>  <alpine.LFD.2.00.0910090849400.9428@localhost.localdomain>
+ <a5b3ea7b0910090011k7558faf2p4de252875587291e@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/4] mce-inject: use individual members instead of struct
- mce
-References: <1254100882.15717.1312.camel@yhuang-dev.sh.intel.com>	 <4AC95F5A.4000708@jp.fujitsu.com>  <4AC96391.1060001@jp.fujitsu.com>	 <1255053299.5228.28.camel@yhuang-dev.sh.intel.com>	 <4ACECC49.7000602@jp.fujitsu.com>  <4ACECDDD.1040206@jp.fujitsu.com> <1255071040.5228.147.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1255071040.5228.147.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> On Fri, 2009-10-09 at 13:45 +0800, Hidetoshi Seto wrote: 
->> struct mce have many members and almost half of them are not used
->> for mce injection.  So make struct mce_fake_banks to have required
->> members instead of having struct mce in it.
+On Fri, 9 Oct 2009, wu Jianfeng wrote:
+
+> > Right, but that does not cause the task to be scheduled out for ever.
 > 
-> I don't think this is necessary. struct mce works fine.
+> I don't know why ???
+> the process state is TASK_INTERRUPTIBLE, and was scheduled out.
+> 
+> if no one wake up it or any signals received, it will sleep for ever.
+> The process does't entered any file's wait queue at that point, so I
+> am sure no one will wake up it.
+> 
+> Am i right?
 
-Why do you think so?
-I think having unused space in precious per-CPU is not good idea.
-
-And this change is required to reduces the size of allocation unit
-in later patch to support multiple error injection.
-
+No. Did you actually read, what I wrote further down ?
+ 
+> > When the task is scheduled out at that point, it is not
+> > deactivated. It is preempted, which means it stays on the run queue
+> > despite of the TASK_INTERRUPTIBLE state and is scheduled back in later
+> > on.
 
 Thanks,
-H.Seto
 
+	tglx
