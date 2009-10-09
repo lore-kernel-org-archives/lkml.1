@@ -1,71 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbZJIAcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbZJIAXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbZJIAcW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 20:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757841AbZJIAcV
+	id S932736AbZJIAXk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 20:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbZJIAXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 20:32:21 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53607 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757291AbZJIAcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 20:32:20 -0400
-Date: Thu, 8 Oct 2009 17:22:30 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, sfr@canb.auug.org.au,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arve Hjonnevag <arve@android.com>, San Mehat <san@android.com>
-Subject: Re: [PATCH] linux-next: 20090929 - android driver build breaks
-Message-ID: <20091009002230.GB28982@suse.de>
-References: <20090929140404.dfb2c5f5.sfr@canb.auug.org.au>
- <20090929152027.GC4373@linux.vnet.ibm.com>
- <20091008224725.GA22949@kroah.com>
- <alpine.DEB.1.00.0910081621340.10613@chino.kir.corp.google.com>
- <20091008232825.GA540@suse.de>
- <alpine.DEB.1.00.0910081644200.14247@chino.kir.corp.google.com>
+	Thu, 8 Oct 2009 20:23:39 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:49940 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756791AbZJIAXi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 20:23:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=u20bEfSEJUWHOuJIB3lt3Koz4Zy2/FK2Tpln0W5WSatdn13TbuAE4kZZ/919Uf1e1F
+         CLFULXdHHLdaVttT153dfEwKLbp/Yp9HO/H6FmuUafIAw674aD03L5d4nhial7T5t6S/
+         w2wl8l4e1AWPZabXj/lDvPNh6mYRp881IbhkE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0910081644200.14247@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <a8e1da0910080440u6367cdcbq55f57d6a16d97533@mail.gmail.com>
+References: <haj471$fn8$1@ger.gmane.org>
+	 <58965d8a0910071618s2420fed1k4ccde4823e57f756@mail.gmail.com>
+	 <haj8uj$fn8$2@ger.gmane.org>
+	 <a8e1da0910072255r38f95e59lf9559b4ecd1cc9d2@mail.gmail.com>
+	 <cdb43e8a0910080331l1faa426cq9c2e1e0467003ec9@mail.gmail.com>
+	 <a8e1da0910080351w4fe8827eyd583eb903748ed92@mail.gmail.com>
+	 <a8e1da0910080440u6367cdcbq55f57d6a16d97533@mail.gmail.com>
+Date: Thu, 8 Oct 2009 19:23:01 -0500
+X-Google-Sender-Auth: 136bf8799f82d274
+Message-ID: <cdb43e8a0910081723v1adeea80p6a1360ae22a3afcf@mail.gmail.com>
+Subject: Re: iso9660 mount problem
+From: Jack Byer <ojbyer@usa.net>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 04:48:23PM -0700, David Rientjes wrote:
-> On Thu, 8 Oct 2009, Greg KH wrote:
-> 
-> > > What are you specifically referring to?  Kamalesh provided a patch[*] that 
-> > > fixes this particular compile error, which you said you were queueing.
-> > 
-> > Hm, I did say I was queueing it, but I still can't figure out if this is
-> > needed for the 2.6.32 tree.  Is it?
-> > 
-> 
-> Yes, 28b83c5 was merged during the merge window for 2.6.32 so this needs 
-> to be pushed for the staging tree if it's not ripped out.
+> So it must be an apple hfs disc, (or hybrid disc?).
+> Maybe you may try mount it as hfs, this problem is not relevant to iso9660.
 
-Ok, I'll dig it up, thanks.
-
-> > > If it's a criticism of the staleness of the Android code within the 
-> > > staging tree or no recent activity, then we should probably loop in some 
-> > > Android developers to find our about their plans.  I've added them to the 
-> > > cc.
-> > 
-> > They know all about this and agreed that the code should be dropped for
-> > 2.6.33 if no one sends me patches.  If someone does, then I will remove
-> > my 'delete the android code' patch in the staging tree.
-> > 
-> 
-> I don't work with Android, but the "no support from Google" phrase caught 
-> my attention :)  It seems like this isn't necessarily about support or 
-> raised issues not being addressed, but rather about a lack of progress 
-> being made developmentally or a general lack of interest in upstream 
-> inclusion.
-
-Yes, that is exactly correct.
-
-thanks,
-
-greg k-h
+I can mount the disc as hfsplus but it shows the OS X contents instead
+of the Windows contents.
