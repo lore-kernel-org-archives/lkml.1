@@ -1,163 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761551AbZJIWjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964785AbZJIWoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761551AbZJIWjk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 18:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbZJIWjj
+	id S964785AbZJIWoQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 18:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761544AbZJIWoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 18:39:39 -0400
-Received: from kroah.org ([198.145.64.141]:55018 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 18:44:15 -0400
+Received: from claw.goop.org ([74.207.240.146]:34604 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761521AbZJIWji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 18:39:38 -0400
-Subject: patch pit-fixes-to-unbreak-suspend-resume.patch added to 2.6.31-stable tree
-To: johnstul@us.ibm.com, linux-kernel@vger.kernel.org, tglx@linutronix.de
-Cc: <stable@kernel.org>, <stable-commits@vger.kernel.org>
-From: <gregkh@suse.de>
-Date: Fri, 09 Oct 2009 15:35:21 -0700
-In-Reply-To: <1255033906.4846.12.camel@localhost.localdomain>
-Message-Id: <20091009223822.9A5B348A43@coco.kroah.org>
+	id S1761515AbZJIWoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 18:44:14 -0400
+Message-ID: <4ACFBC98.4070701@goop.org>
+Date: Fri, 09 Oct 2009 15:43:36 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Avi Kivity <avi@redhat.com>,
+       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH RFC] sched: add notifier for process migration
+References: <4ACFA4C5.4020607@goop.org> <1255125738.7439.17.camel@laptop>
+In-Reply-To: <1255125738.7439.17.camel@laptop>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/09/09 15:02, Peter Zijlstra wrote:
+>> I'm working on adding vsyscall (vread) support for
+>> arch/x86/kernel/pvclock.c.  The algorithm needs to look up per-cpu tsc
+>> parameters (aka pvclock_vcpu_time_info) so that it can compute global
+>> system time from the tsc.  To do this, it needs to grab a consistent
+>> snapshot of (tsc, time_info).
+>>     
+> time_info as in gettimeofday()?, that's supposed to be globally
+> consistent, so get that first and then get the tsc and you're as race
+> free as you're ever going to get from userspace.
+>   
 
-This is a note to let you know that we have just queued up the patch titled
+pvclock_vcpu_time_info is a structure which is part of the hypervisor
+ABI (implemented by both Xen and KVM at the moment), which provides all
+the info needed to compute a global system time (ns from host boot, for
+example) from the tsc, even if the CPU's tscs are not synced, or running
+at the same frequency, or can stop/change at any moment.  The hypervisor
+provides it for each guest virtual CPU containing the parameters for the
+underlying physical CPU the vCPU is currently running on.
 
-    Subject: PIT fixes to unbreak suspend/resume (bug #14222)
+This is all done in pvclock_clocksource_read, which is then used as the
+input for all the rest of the kernel's gettimeofday/clock_gettime/etc
+functions.  I'm extending this so I can also implement
+pvclock_clocksource_vread and do the same thing from userspace.
 
-to the 2.6.31-stable tree.  Its filename is
+>> Obviously this is all racy from usermode, because there are two levels
+>> of scheduling going on the virtual case: kernel scheduling of tasks to
+>> vcpus, and hypervisor scheduling of vcpus to pcpus.  The latter is dealt
+>> with a version number in the tsc parameter structure to indicate changes
+>> in the params (which could be due to scheduling, power events, etc).
+>>
+>> To deal with kernel scheduling I want a second version number to let
+>> usermode know they've been migrated to a new (v)cpu and need to try
+>> again with updated time parameters.  Specifically, update the version on
+>> the "from" vcpu so that usermode (vsyscall) code holding an old pointer
+>> can see the number change and reload the cpu number and get a pointer to
+>> the new cpu's time_info.
+>>     
+> /me utterly confused.
+>   
 
-    pit-fixes-to-unbreak-suspend-resume.patch
+OK, concretely:
 
-A git repo of this tree can be found at 
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+   1. allocate a page and fixmap it into userspace
+   2. keep an array of structures containing tsc->cycle_t
+      (pvclock_vcpu_time_info) params, indexed by cpu
+   3. register those structures with the hypervisor so it can update
+      them as either the pcpus change freq and/or the vcpus get moved to
+      different pcpus
+   4. associate a "migration_count" with each structure (ie, how many
+      times this cpu has had tasks migrated off it)
 
+The algorithm is basically:
 
->From johnstul@us.ibm.com  Fri Oct  9 15:32:22 2009
-From: john stultz <johnstul@us.ibm.com>
-Date: Thu, 08 Oct 2009 13:31:45 -0700
-Subject: PIT fixes to unbreak suspend/resume (bug #14222)
-To: stable@kernel.org, lkml <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux@rainbow-software.org
-Message-ID: <1255033906.4846.12.camel@localhost.localdomain>
+    do {
+        cpu = vgetcpu();    	/* get current cpu */
+        ti = &timeinfo[cpu];	/* get scaling+offset for tsc */
 
-From: john stultz <johnstul@us.ibm.com>
+        /* !!! migration race */
 
-Resolved differently upstream in commit 8cab02dc3c58a12235c6d463ce684dded9696848
+        migration_count = ti->migration_count;
+        version = ti->version;
 
-Ondrej Zary reported a suspend/resume hang with 2.6.31 in bug #14222.
+        barrier();
 
-http://bugzilla.kernel.org/show_bug.cgi?id=14222
+        local_time_info = *ti;
 
-The hang was bisected to c7121843685de2bf7f3afd3ae1d6a146010bf1fc
-however, that was really just the last straw that caused the issue.
+        tsc = rdtsc();
+        cycles = compute_cycles_from_tsc(tsc, &local_time_info);
 
-The problem was that on suspend, the PIT is removed as a clocksource,
-and was using the mult value essentially as a is_enabled() flag. The
-mult adjustments done in the commit above caused that usage to break,
-causing bad list manipulation and the oops.
+        barrier();
 
-Further, on resume, the PIT clocksource is never restored, causing the
-system to run in a degraded mode with jiffies as the clocksource.
+        cpu1 = vgetcpu();
 
-This issue has since been resolved in 2.6.32-rc by commit
-8cab02dc3c58a12235c6d463ce684dded9696848 which removes the clocksource
-disabling on suspend. Testing shows no issues there.
+    /* loop if anything changed under our feet:
+        - we changed cpus (if we got migrated at "!!! migration race" above
+           then the migration_count test won't pick it up)
+        - the time info changed
+        - we got migrated to a different cpu (we need to check this as well
+           as cpu != cpu1 in case we got migrated from A->B->A)
+     */
 
-So the following patch rectifies the situation for 2.6.31 users of the
-PIT clocksource that use suspend and resume (which is probably not that
-many).
+    } while(unlikely(cpu1 != cpu ||
+    		 timeinfo->version != version ||
+    		 timeinfo->migration_count != migration_count));
 
-Many thanks to Ondrej for helping narrow down what was happening, what
-caused it, and verifying the fix.
+    return cycles;
+      
 
----------------
+This is executed in usermode as part of vsyscall gettimeofday via the
+clocksource.vread function.
 
-Avoid using the unprotected clocksource.mult value as an "is_registered"
-flag, instead us an explicit flag variable. This avoids possible list
-corruption if the clocksource is double-unregistered.
+>> Initially I was doing this with a preempt notifier on sched_out, but Avi
+>> pointed out that this was a pessimistic approximation of what I really
+>> want, which is notification on cross-cpu migration.  And since migration
+>> is an inherently expensive operation, the overhead of a notifier here
+>> should be negligible.  (Aside from that, the preempt notifier mechanism
+>> isn't intended to be enabled on every process on the system.)
+>>     
+> And here you're utterly failing to explain what you want such a notifier
+> would do.
+>   
 
-Also re-register the PIT clocksource on resume so folks don't have to
-use jiffies after suspend.
+Referring to the code above, it does:
 
+	time_info[from_cpu]->migrate_count++;
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+so that usermode can see that it has been moved to a different cpu and
+needs to try again.
 
----
- arch/x86/kernel/i8253.c |   27 ++++++++++++++++++++-------
- 1 file changed, 20 insertions(+), 7 deletions(-)
+>> So I'm proposing this patch.  My questions are:
+>>
+>>    1. Does this look generally reasonable?
+>>     
+> I'm generally confused and not at all clear as to how things would work.
+> Afaik the vdso is a global entity and does not contain per-cpu or
+> per-task state.
+>   
 
---- a/arch/x86/kernel/i8253.c
-+++ b/arch/x86/kernel/i8253.c
-@@ -21,8 +21,10 @@ EXPORT_SYMBOL(i8253_lock);
- 
- #ifdef CONFIG_X86_32
- static void pit_disable_clocksource(void);
-+static void pit_enable_clocksource(void);
- #else
- static inline void pit_disable_clocksource(void) { }
-+static inline void pit_enable_clocksource(void) { }
- #endif
- 
- /*
-@@ -67,7 +69,7 @@ static void init_pit_timer(enum clock_ev
- 		break;
- 
- 	case CLOCK_EVT_MODE_RESUME:
--		/* Nothing to do here */
-+		pit_enable_clocksource();
- 		break;
- 	}
- 	spin_unlock(&i8253_lock);
-@@ -200,19 +202,27 @@ static struct clocksource pit_cs = {
- 	.shift		= 20,
- };
- 
-+int pit_cs_registered;
- static void pit_disable_clocksource(void)
- {
--	/*
--	 * Use mult to check whether it is registered or not
--	 */
--	if (pit_cs.mult) {
-+	if (pit_cs_registered) {
- 		clocksource_unregister(&pit_cs);
--		pit_cs.mult = 0;
-+		pit_cs_registered = 0;
-+	}
-+}
-+
-+static void pit_enable_clocksource(void)
-+{
-+	if (!pit_cs_registered && !clocksource_register(&pit_cs)) {
-+		pit_cs_registered = 1;
- 	}
- }
- 
-+
-+
- static int __init init_pit_clocksource(void)
- {
-+	int ret;
- 	 /*
- 	  * Several reasons not to register PIT as a clocksource:
- 	  *
-@@ -226,7 +236,10 @@ static int __init init_pit_clocksource(v
- 
- 	pit_cs.mult = clocksource_hz2mult(CLOCK_TICK_RATE, pit_cs.shift);
- 
--	return clocksource_register(&pit_cs);
-+	ret = clocksource_register(&pit_cs);
-+	if (!ret)
-+		pit_cs_registered = 1;
-+	return ret;
- }
- arch_initcall(init_pit_clocksource);
- 
+Yep.  For this implementation I fixmap another page of per-cpu time info
+into usermode for use by the pvclock vread implementation.  This is
+mapped RO and global, of course.
 
+> If you're proposing to increment a global seq count on every task
+> migration, then I think its a terribly bad idea.
+>   
 
-Patches currently in stable-queue which might be from johnstul@us.ibm.com are
+A per-cpu counter on each migration.
 
-queue-2.6.31/futex-fix-requeue_pi-key-imbalance.patch
-queue-2.6.31/pit-fixes-to-unbreak-suspend-resume.patch
+>>    2. Will this notifier actually be called every time a task gets
+>>       migrated between CPUs?  Are there cases where migration may happen
+>>       via some other path? (Though for my particular case I only care
+>>       about migration when the task is actually preempted; if it goes to
+>>       sleep on one cpu and happens to wake on another then it wasn't in
+>>       the middle of getting time so it doesn't matter.)
+>>     
+> No, you've missed quite a lot of cases.
+>   
+
+Could you expand on that?  Where else would we need to catch a migration?
+
+> I've got no idea how vgetcpu() works, but since the vdso page is global
+> and not per-task, I can't really see how it could work sanely.
+>   
+
+It works either by using "lsl" to fetch cpu+node number info encoded in
+a segment limit, or via rdtscp which encodes cpu+node in the TSC_AUX
+register.
+
+Thanks,
+    J
+
