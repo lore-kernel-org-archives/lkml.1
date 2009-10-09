@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761780AbZJIXVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761565AbZJIX0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761780AbZJIXVa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761642AbZJIXV2
+	id S1761565AbZJIX0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761386AbZJIX0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:21:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50217
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761603AbZJIXVZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:21:25 -0400
-Date: Fri, 09 Oct 2009 16:21:20 -0700 (PDT)
-Message-Id: <20091009.162120.164441279.davem@davemloft.net>
-To: heyongli@gmail.com
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Linux guest domain with two vnets bound to the same vswitch
- experiences hung in bootup (sun_netraT5220)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091009.150829.218507309.davem@davemloft.net>
-References: <505766fa0909230040m13e3dc34x2ceb83848767d825@mail.gmail.com>
-	<505766fa0909231903t2fe2f7b6y26d2681d6d38ef0e@mail.gmail.com>
-	<20091009.150829.218507309.davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Oct 2009 19:26:45 -0400
+Received: from kroah.org ([198.145.64.141]:56291 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761314AbZJIX0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:26:44 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:22:33 2009
+Message-Id: <20091009232233.573039908@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 09 Oct 2009 16:21:24 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Jean Delvare <khali@linux-fr.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [1/8] net: Fix wrong sizeof
+From: gregkh@mini.kroah.org
+References: <20091009232123.464253035@mini.kroah.org>
+Content-Disposition: inline; filename=net-fix-wrong-sizeof.patch
+In-Reply-To: <20091009232300.GA403@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Fri, 09 Oct 2009 15:08:29 -0700 (PDT)
+From: Jean Delvare <khali@linux-fr.org>
 
-> Thank you for this bug report and patch, I am looking at
-> it now.
+commit b607bd900051efc3308c4edc65dd98b34b230021 upstream.
 
-I'm trying to figure out how the deadlock can even occur,
-and I've failed so far, please help me :-)
+Which is why I have always preferred sizeof(struct foo) over
+sizeof(var).
 
-See, we always take the VIO and LDC locks in the same order
-(VIO then LDC) and always with interrupts disabled, so it is
-not possible to deadlock.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-The only way we could deadlock is if:
+---
+ drivers/net/iseries_veth.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-1) There is some path that takes the LDC lock before the VIO one.
+--- a/drivers/net/iseries_veth.c
++++ b/drivers/net/iseries_veth.c
+@@ -495,7 +495,7 @@ static void veth_take_cap_ack(struct vet
+ 			   cnx->remote_lp);
+ 	} else {
+ 		memcpy(&cnx->cap_ack_event, event,
+-		       sizeof(&cnx->cap_ack_event));
++		       sizeof(cnx->cap_ack_event));
+ 		cnx->state |= VETH_STATE_GOTCAPACK;
+ 		veth_kick_statemachine(cnx);
+ 	}
 
-2) There is some path that takes either lock with interrupts
-   enabled.
 
-And I cannot find any such case.
-
-It might help if you run your test case with lockdep enabled.  It will
-find such deadlocks and report them precisely to the kernel logs.
-
-Thank you!
