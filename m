@@ -1,60 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934422AbZJIVXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761451AbZJIVX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934422AbZJIVXk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934141AbZJIVXj
+	id S1761451AbZJIVX4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760973AbZJIVXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:23:39 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34866 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934123AbZJIVXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:23:38 -0400
-Date: Fri, 9 Oct 2009 23:22:52 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hannes Eder <hannes@hanneseder.net>
-Subject: Re: [PATCH] move stk17ta8's probe function to .devinit.text
-In-Reply-To: <20091009203319.28a220e6@i1501.lan.towertech.it>
-Message-ID: <alpine.LSU.2.00.0910092322250.19284@wotan.suse.de>
-References: <20090711170548.GC5205@suse.de> <1247345591-22643-26-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-27-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-28-git-send-email-u.kleine-koenig@pengutronix.de>
- <1247345591-22643-29-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-30-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-31-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-32-git-send-email-u.kleine-koenig@pengutronix.de>
- <1247345591-22643-33-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-34-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-35-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-36-git-send-email-u.kleine-koenig@pengutronix.de>
- <1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LSU.2.00.0910091724170.19284@wotan.suse.de> <20091009203319.28a220e6@i1501.lan.towertech.it>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 Oct 2009 17:23:55 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:40953 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760915AbZJIVXy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 17:23:54 -0400
+Date: Fri, 9 Oct 2009 14:23:03 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Bruce Beare <bbeare1@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Bill Pemberton <wfp5p@virginia.edu>,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Cleanups for: line length, printk KERN_ argument, stack
+ frame size > 2048 (added a kmalloc/kfree), style/formatting errors,
+ incorrect include files
+Message-Id: <20091009142303.c807a531.randy.dunlap@oracle.com>
+In-Reply-To: <1255122698-12390-1-git-send-email-bbeare1@gmail.com>
+References: <1255122698-12390-1-git-send-email-bbeare1@gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4ACFA9BE.007B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Oct 2009, Alessandro Zummo wrote:
+On Fri,  9 Oct 2009 14:11:38 -0700 Bruce Beare wrote:
 
-> > > -static int __init stk17ta8_rtc_probe(struct platform_device *pdev)
-> > > +static int __devinit stk17ta8_rtc_probe(struct platform_device *pdev)
-> > >  {
-> > >  	struct rtc_device *rtc;
-> > >  	struct resource *res;  
-> > 
-> > This seems to get lost ... should I take it through my tree, or is anyone 
-> > going to merge it? Andrew? Alessandro?
->  Did you sent it to the rtc mailing list? I can't find it in patchwork.
+> ---
+>  drivers/staging/comedi/drivers/serial2002.c |  342 +++++++++++---------------
+>  1 files changed, 145 insertions(+), 197 deletions(-)
+> 
+> diff --git a/drivers/staging/comedi/drivers/serial2002.c b/drivers/staging/comedi/drivers/serial2002.c
+> index a219679..0232186 100644
+> --- a/drivers/staging/comedi/drivers/serial2002.c
+> +++ b/drivers/staging/comedi/drivers/serial2002.c
+> @@ -413,34 +408,37 @@ static void serial_2002_open(struct comedi_device *dev)
+>  			int min;
+>  			int max;
+>  		};
+> +		struct config_data_t {
+> +			struct config_t dig_in_config[32];
+> +			struct config_t dig_out_config[32];
+> +			struct config_t chan_in_config[32];
+> +			struct config_t chan_out_config[32];
+> +		} *config_data = NULL;
+>  
+> -		struct config_t dig_in_config[32];
+> -		struct config_t dig_out_config[32];
+> -		struct config_t chan_in_config[32];
+> -		struct config_t chan_out_config[32];
+>  		int i;
+> +		config_data = kmalloc(sizeof(struct config_data_t), GFP_KERNEL);
 
-It was probably sent only to you personally ...
+what happens when the kmalloc() fails??
 
->  You can carry it in your tree.
->  Acked-by: Alessandro Zummo <a.zummo@towertech.it>
 
-Queued, thanks.
+>  
+>  		for (i = 0; i < 32; i++) {
+> -			dig_in_config[i].kind = 0;
+> -			dig_in_config[i].bits = 0;
+> -			dig_in_config[i].min = 0;
+> -			dig_in_config[i].max = 0;
+> -			dig_out_config[i].kind = 0;
+> -			dig_out_config[i].bits = 0;
+> -			dig_out_config[i].min = 0;
+> -			dig_out_config[i].max = 0;
+> -			chan_in_config[i].kind = 0;
+> -			chan_in_config[i].bits = 0;
+> -			chan_in_config[i].min = 0;
+> -			chan_in_config[i].max = 0;
+> -			chan_out_config[i].kind = 0;
+> -			chan_out_config[i].bits = 0;
+> -			chan_out_config[i].min = 0;
+> -			chan_out_config[i].max = 0;
+> +			config_data->dig_in_config[i].kind = 0;
+> +			config_data->dig_in_config[i].bits = 0;
+> +			config_data->dig_in_config[i].min = 0;
+> +			config_data->dig_in_config[i].max = 0;
+> +			config_data->dig_out_config[i].kind = 0;
+> +			config_data->dig_out_config[i].bits = 0;
+> +			config_data->dig_out_config[i].min = 0;
+> +			config_data->dig_out_config[i].max = 0;
+> +			config_data->chan_in_config[i].kind = 0;
+> +			config_data->chan_in_config[i].bits = 0;
+> +			config_data->chan_in_config[i].min = 0;
+> +			config_data->chan_in_config[i].max = 0;
+> +			config_data->chan_out_config[i].kind = 0;
+> +			config_data->chan_out_config[i].bits = 0;
+> +			config_data->chan_out_config[i].min = 0;
+> +			config_data->chan_out_config[i].max = 0;
+>  		}
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+
+---
+~Randy
