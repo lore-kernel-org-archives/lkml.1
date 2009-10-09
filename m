@@ -1,45 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbZJIAXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760097AbZJIAuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932736AbZJIAXk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 20:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbZJIAXj
+	id S1760097AbZJIAuw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 20:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759586AbZJIAuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 20:23:39 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:49940 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756791AbZJIAXi (ORCPT
+	Thu, 8 Oct 2009 20:50:52 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39655 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757424AbZJIAuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 20:23:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=u20bEfSEJUWHOuJIB3lt3Koz4Zy2/FK2Tpln0W5WSatdn13TbuAE4kZZ/919Uf1e1F
-         CLFULXdHHLdaVttT153dfEwKLbp/Yp9HO/H6FmuUafIAw674aD03L5d4nhial7T5t6S/
-         w2wl8l4e1AWPZabXj/lDvPNh6mYRp881IbhkE=
-MIME-Version: 1.0
-In-Reply-To: <a8e1da0910080440u6367cdcbq55f57d6a16d97533@mail.gmail.com>
-References: <haj471$fn8$1@ger.gmane.org>
-	 <58965d8a0910071618s2420fed1k4ccde4823e57f756@mail.gmail.com>
-	 <haj8uj$fn8$2@ger.gmane.org>
-	 <a8e1da0910072255r38f95e59lf9559b4ecd1cc9d2@mail.gmail.com>
-	 <cdb43e8a0910080331l1faa426cq9c2e1e0467003ec9@mail.gmail.com>
-	 <a8e1da0910080351w4fe8827eyd583eb903748ed92@mail.gmail.com>
-	 <a8e1da0910080440u6367cdcbq55f57d6a16d97533@mail.gmail.com>
-Date: Thu, 8 Oct 2009 19:23:01 -0500
-X-Google-Sender-Auth: 136bf8799f82d274
-Message-ID: <cdb43e8a0910081723v1adeea80p6a1360ae22a3afcf@mail.gmail.com>
-Subject: Re: iso9660 mount problem
-From: Jack Byer <ojbyer@usa.net>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 8 Oct 2009 20:50:51 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 9 Oct 2009 09:47:40 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2][v2] mm: add notifier in pageblock isolation for
+ balloon drivers
+Message-Id: <20091009094740.fe84e46a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091002184458.GC4908@austin.ibm.com>
+References: <20091002184458.GC4908@austin.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So it must be an apple hfs disc, (or hybrid disc?).
-> Maybe you may try mount it as hfs, this problem is not relevant to iso9660.
+On Fri, 2 Oct 2009 13:44:58 -0500
+Robert Jennings <rcj@linux.vnet.ibm.com> wrote:
 
-I can mount the disc as hfsplus but it shows the OS X contents instead
-of the Windows contents.
+> Memory balloon drivers can allocate a large amount of memory which
+> is not movable but could be freed to accomodate memory hotplug remove.
+> 
+> Prior to calling the memory hotplug notifier chain the memory in the
+> pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
+> isolation will not proceed, causing the memory removal for that page
+> range to fail.
+> 
+> Rather than failing pageblock isolation if the the migrateteype is not
+> MIGRATE_MOVABLE, this patch checks if all of the pages in the pageblock
+> are owned by a registered balloon driver (or other entity) using a
+> notifier chain.  If all of the non-movable pages are owned by a balloon,
+> they can be freed later through the memory notifier chain and the range
+> can still be isolated in set_migratetype_isolate().
+> 
+> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+> 
+> ---
+>  drivers/base/memory.c  |   19 +++++++++++++++++++
+>  include/linux/memory.h |   26 ++++++++++++++++++++++++++
+>  mm/page_alloc.c        |   45 ++++++++++++++++++++++++++++++++++++++-------
+>  3 files changed, 83 insertions(+), 7 deletions(-)
+> 
+> Index: b/drivers/base/memory.c
+> ===================================================================
+> --- a/drivers/base/memory.c
+> +++ b/drivers/base/memory.c
+> @@ -63,6 +63,20 @@ void unregister_memory_notifier(struct n
+>  }
+>  EXPORT_SYMBOL(unregister_memory_notifier);
+>  
+> +static BLOCKING_NOTIFIER_HEAD(memory_isolate_chain);
+> +
+
+IIUC, this notifier is called under zone->lock.
+please ATOMIC_NOTIFIER_HEAD().
+
+
+
+
+> +int register_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	return blocking_notifier_chain_register(&memory_isolate_chain, nb);
+> +}
+> +EXPORT_SYMBOL(register_memory_isolate_notifier);
+> +
+> +void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	blocking_notifier_chain_unregister(&memory_isolate_chain, nb);
+> +}
+> +EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+> +
+>  /*
+>   * register_memory - Setup a sysfs device for a memory block
+>   */
+> @@ -157,6 +171,11 @@ int memory_notify(unsigned long val, voi
+>  	return blocking_notifier_call_chain(&memory_chain, val, v);
+>  }
+>  
+> +int memory_isolate_notify(unsigned long val, void *v)
+> +{
+> +	return blocking_notifier_call_chain(&memory_isolate_chain, val, v);
+> +}
+> +
+>  /*
+>   * MEMORY_HOTPLUG depends on SPARSEMEM in mm/Kconfig, so it is
+>   * OK to have direct references to sparsemem variables in here.
+> Index: b/include/linux/memory.h
+> ===================================================================
+> --- a/include/linux/memory.h
+> +++ b/include/linux/memory.h
+> @@ -50,6 +50,18 @@ struct memory_notify {
+>  	int status_change_nid;
+>  };
+>  
+> +/*
+> + * During pageblock isolation, count the number of pages in the
+> + * range [start_pfn, start_pfn + nr_pages)
+> + */
+> +#define MEM_ISOLATE_COUNT	(1<<0)
+> +
+> +struct memory_isolate_notify {
+> +	unsigned long start_pfn;
+> +	unsigned int nr_pages;
+> +	unsigned int pages_found;
+> +};
+
+Could you add commentary for each field ?
+
+> +
+>  struct notifier_block;
+>  struct mem_section;
+>  
+> @@ -76,14 +88,28 @@ static inline int memory_notify(unsigned
+>  {
+>  	return 0;
+>  }
+> +static inline int register_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +	return 0;
+> +}
+> +static inline void unregister_memory_isolate_notifier(struct notifier_block *nb)
+> +{
+> +}
+> +static inline int memory_isolate_notify(unsigned long val, void *v)
+> +{
+> +	return 0;
+> +}
+>  #else
+>  extern int register_memory_notifier(struct notifier_block *nb);
+>  extern void unregister_memory_notifier(struct notifier_block *nb);
+> +extern int register_memory_isolate_notifier(struct notifier_block *nb);
+> +extern void unregister_memory_isolate_notifier(struct notifier_block *nb);
+>  extern int register_new_memory(int, struct mem_section *);
+>  extern int unregister_memory_section(struct mem_section *);
+>  extern int memory_dev_init(void);
+>  extern int remove_memory_block(unsigned long, struct mem_section *, int);
+>  extern int memory_notify(unsigned long val, void *v);
+> +extern int memory_isolate_notify(unsigned long val, void *v);
+>  extern struct memory_block *find_memory_block(struct mem_section *);
+>  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+>  enum mem_add_context { BOOT, HOTPLUG };
+> Index: b/mm/page_alloc.c
+> ===================================================================
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -48,6 +48,7 @@
+>  #include <linux/page_cgroup.h>
+>  #include <linux/debugobjects.h>
+>  #include <linux/kmemleak.h>
+> +#include <linux/memory.h>
+>  #include <trace/events/kmem.h>
+>  
+>  #include <asm/tlbflush.h>
+> @@ -4985,23 +4986,53 @@ void set_pageblock_flags_group(struct pa
+>  int set_migratetype_isolate(struct page *page)
+>  {
+>  	struct zone *zone;
+> -	unsigned long flags;
+> +	unsigned long flags, pfn, iter;
+> +	unsigned long immobile = 0;
+> +	struct memory_isolate_notify arg;
+> +	int notifier_ret;
+>  	int ret = -EBUSY;
+>  	int zone_idx;
+>  
+>  	zone = page_zone(page);
+>  	zone_idx = zone_idx(zone);
+> +
+>  	spin_lock_irqsave(&zone->lock, flags);
+> +	if (get_pageblock_migratetype(page) == MIGRATE_MOVABLE ||
+> +	    zone_idx == ZONE_MOVABLE) {
+> +		ret = 0;
+> +		goto out;
+> +	}
+> +
+> +	pfn = page_to_pfn(page);
+> +	arg.start_pfn = pfn;
+> +	arg.nr_pages = pageblock_nr_pages;
+> +	arg.pages_found = 0;
+> +
+>  	/*
+> -	 * In future, more migrate types will be able to be isolation target.
+> +	 * The pageblock can be isolated even if the migrate type is
+> +	 * not *_MOVABLE.  The memory isolation notifier chain counts
+> +	 * the number of pages in this pageblock that can be freed later
+> +	 * through the memory notifier chain.  If all of the pages are
+> +	 * accounted for, isolation can continue.
+>  	 */
+
+Could add explanation like this ?
+==
+  Later, for example, when memory hotplug notifier runs, these pages reported as
+  "can be isoalted" should be isolated(freed) by callbacks.
+==
+
+
+
+> -	if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE &&
+> -	    zone_idx != ZONE_MOVABLE)
+> +	notifier_ret = memory_isolate_notify(MEM_ISOLATE_COUNT, &arg);
+> +	notifier_ret = notifier_to_errno(notifier_ret);
+> +       	if (notifier_ret || !arg.pages_found)
+>  		goto out;
+> -	set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> -	move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> -	ret = 0;
+> +
+> +	for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++)
+> +		if (page_count(pfn_to_page(iter)))
+> +			immobile++;
+> +
+> +	if (arg.pages_found == immobile)
+> +		ret = 0;
+> +
+
+I can't understand this part. Does this mean all pages under this pageblock
+are used by balloon driver ?
+IOW, memory is hotpluggable only when all pages under this pageblock is used
+by balloon ?
+
+
+Hmm. Can't we do this kind of check..?
+==
+     for (iter = pfn; iter < (pfn + pageblock_nr_pages); iter++) {
+	page = pfn_to_page(iter);
+	if (!page_count(page) || PageLRU(page)) // This page is movable.
+		continue;
+	immobile++
+     }
+==
+Then, if a page is luckyly on LRU, we have more chances.
+(This check can fail if a page is on percpu pagevec etc...)
+
+Thanks,
+-Kame
+
+>  out:
+> +	if (!ret) {
+> +		set_pageblock_migratetype(page, MIGRATE_ISOLATE);
+> +		move_freepages_block(zone, page, MIGRATE_ISOLATE);
+> +	}
+> +
+>  	spin_unlock_irqrestore(&zone->lock, flags);
+>  	if (!ret)
+>  		drain_all_pages();
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+
