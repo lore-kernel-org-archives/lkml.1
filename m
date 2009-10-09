@@ -1,45 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934635AbZJIXqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934625AbZJIXv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934635AbZJIXqd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934626AbZJIXqd
+	id S934625AbZJIXv3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934530AbZJIXv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:46:33 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60775 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934625AbZJIXqc (ORCPT
+	Fri, 9 Oct 2009 19:51:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43651 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934546AbZJIXv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:46:32 -0400
-Date: Fri, 9 Oct 2009 19:45:55 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jason Baron <jbaron@redhat.com>
-Cc: swhiteho@redhat.com, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: move gfs2 tracepoints to inclue/trace/events dir
-Message-ID: <20091009234555.GA28257@infradead.org>
-References: <20091009160115.GA2647@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091009160115.GA2647@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 9 Oct 2009 19:51:27 -0400
+Date: Fri, 9 Oct 2009 16:50:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       h-shimamoto@ct.jp.nec.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] memcg: coalescing charge by percpu (Oct/9)
+Message-Id: <20091009165002.629a91d2.akpm@linux-foundation.org>
+In-Reply-To: <20091009170105.170e025f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091009165826.59c6f6e3.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091009170105.170e025f.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 12:01:16PM -0400, Jason Baron wrote:
-> hi,
-> 
-> I'd like to move the gfs2 tracepoints to the the common
-> include/trace/events directory along with all of the other trace events.
-> It makes understanding what tracepoints are available easier, and I see
-> no reason why gfs2 should be different. For example, 'ext4.h' is already
-> in the include/trace/events directory.
+On Fri, 9 Oct 2009 17:01:05 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Folks, no.  Drivers and filesystems should be as self-contained as
-possible.  include/trace/ is an extremly bad idea for everything that's
-not actually global kernel functionality.  There's a reason all other
-fs headers have moved out of include/linux, too.
+> +static void drain_all_stock_async(void)
+> +{
+> +	int cpu;
+> +	/* This function is for scheduling "drain" in asynchronous way.
+> +	 * The result of "drain" is not directly handled by callers. Then,
+> +	 * if someone is calling drain, we don't have to call drain more.
+> +	 * Anyway, work_pending() will catch if there is a race. We just do
+> +	 * loose check here.
+> +	 */
+> +	if (atomic_read(&memcg_drain_count))
+> +		return;
+> +	/* Notify other cpus that system-wide "drain" is running */
+> +	atomic_inc(&memcg_drain_count);
+> +	get_online_cpus();
+> +	for_each_online_cpu(cpu) {
+> +		struct memcg_stock_pcp *stock = &per_cpu(memcg_stock, cpu);
+> +		if (work_pending(&stock->work))
+> +			continue;
+> +		INIT_WORK(&stock->work, drain_local_stock);
+> +		schedule_work_on(cpu, &stock->work);
+> +	}
+> + 	put_online_cpus();
+> +	atomic_dec(&memcg_drain_count);
+> +	/* We don't wait for flush_work */
+> +}
+
+It's unusual to run INIT_WORK() each time we use a work_struct. 
+Usually we will run INIT_WORK a single time, then just repeatedly use
+that structure.  Because after the work has completed, it is still in a
+ready-to-use state.
+
+Running INIT_WORK() repeatedly against the same work_struct adds a risk
+that we'll scribble on an in-use work_struct, which would make a big
+mess.
 
