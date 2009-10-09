@@ -1,311 +1,333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbZJID7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751060AbZJIEC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932819AbZJID7u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 23:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760128AbZJID7u
+	id S1751060AbZJIEC0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 00:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZJIECY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 23:59:50 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39451 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758834AbZJID7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 23:59:49 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Pull request blackfin.git (for-linus branch)
-Date: Thu,  8 Oct 2009 23:59:12 -0400
-Message-Id: <1255060752-10683-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.5.rc2
+	Fri, 9 Oct 2009 00:02:24 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:55054 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750889AbZJIECX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 00:02:23 -0400
+Date: Fri, 9 Oct 2009 09:31:42 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 1/2] memcg: coalescing uncharge at unmap and truncation
+Message-ID: <20091009040142.GN6818@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091002140126.61d15e5e.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091002140126.61d15e5e.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 0eca52a92735f43462165efe00a7e394345fb38e:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/ide-2.6
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-10-02 14:01:26]:
 
-are available in the git repository at:
+> 
+> In massive parallel enviroment, res_counter can be a performance bottleneck.
+> One strong techinque to reduce lock contention is reducing calls by
+> coalescing some amount of calls into one.
+> 
+> Considering charge/uncharge chatacteristic,
+> 	- charge is done one by one via demand-paging.
+> 	- uncharge is done by
+> 		- in chunk at munmap, truncate, exit, execve...
+> 		- one by one via vmscan/paging.
+> 
+> It seems we have a chance in uncharge at unmap/truncation.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/vapier/blackfin.git for-linus
+A chance to improve scalability?
 
-Barry Song (1):
-      Blackfin: BF51x: add PTP MMR defines
+> 
+> This patch is a for coalescing uncharge. For avoiding scattering memcg's
+> structure to functions under /mm, this patch adds memcg batch uncharge
+> information to the task. 
+>
 
-Graf Yang (1):
-      Blackfin: fix missed cache config renames
+Is there a reason for associating batch with the task rather than
+per-cpu or per-memcg? per-memcg, I suspect would add some locking
+overhead, per-cpu would require synchronization across cpu's while
+uncharging, is that where per-task helps?  I suspect per-mm,
+per-signal will have the issues above.
+ 
+> The degree of coalescing depends on callers
+>   - at invalidate/trucate... pagevec size
+>   - at unmap ....ZAP_BLOCK_SIZE
+> (memory itself will be freed in this degree.)
+> Then, we'll not coalescing too much.
+> 
+> Changelog(now):
+>  - rebased onto the latest mmotm + softlimit fix patches.
+> 
+> Changelog(old):
+>  - unified patch for callers
+>  - added commetns.
+>  - make ->do_batch as bool.
+>  - removed css_get() at el. We don't need it.
+> 
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  include/linux/memcontrol.h |   13 ++++++
+>  include/linux/sched.h      |    7 +++
+>  mm/memcontrol.c            |   91 ++++++++++++++++++++++++++++++++++++++++++---
+>  mm/memory.c                |    2 
+>  mm/truncate.c              |    6 ++
+>  5 files changed, 113 insertions(+), 6 deletions(-)
+> 
+> Index: mmotm-2.6.31-Sep28/include/linux/memcontrol.h
+> ===================================================================
+> --- mmotm-2.6.31-Sep28.orig/include/linux/memcontrol.h
+> +++ mmotm-2.6.31-Sep28/include/linux/memcontrol.h
+> @@ -54,6 +54,11 @@ extern void mem_cgroup_rotate_lru_list(s
+>  extern void mem_cgroup_del_lru(struct page *page);
+>  extern void mem_cgroup_move_lists(struct page *page,
+>  				  enum lru_list from, enum lru_list to);
+> +
+> +/* For coalescing uncharge for reducing memcg' overhead*/
+> +extern void mem_cgroup_uncharge_start(void);
+> +extern void mem_cgroup_uncharge_end(void);
+> +
+>  extern void mem_cgroup_uncharge_page(struct page *page);
+>  extern void mem_cgroup_uncharge_cache_page(struct page *page);
+>  extern int mem_cgroup_shmem_charge_fallback(struct page *page,
+> @@ -151,6 +156,14 @@ static inline void mem_cgroup_cancel_cha
+>  {
+>  }
+> 
+> +static inline void mem_cgroup_uncharge_batch_start(void)
+> +{
+> +}
+> +
+> +static inline void mem_cgroup_uncharge_batch_start(void)
+> +{
+> +}
+> +
+>  static inline void mem_cgroup_uncharge_page(struct page *page)
+>  {
+>  }
+> Index: mmotm-2.6.31-Sep28/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.31-Sep28.orig/mm/memcontrol.c
+> +++ mmotm-2.6.31-Sep28/mm/memcontrol.c
+> @@ -1826,6 +1826,49 @@ void mem_cgroup_cancel_charge_swapin(str
+>  	css_put(&mem->css);
+>  }
+> 
+> +static void
+> +__do_uncharge(struct mem_cgroup *mem, const enum charge_type ctype)
+> +{
+> +	struct memcg_batch_info *batch = NULL;
+> +	bool uncharge_memsw = true;
+> +	/* If swapout, usage of swap doesn't decrease */
+> +	if (!do_swap_account || ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
+> +		uncharge_memsw = false;
+> +	/*
+> +	 * do_batch > 0 when unmapping pages or inode invalidate/truncate.
+> +	 * In those cases, all pages freed continously can be expected to be in
+> +	 * the same cgroup and we have chance to coalesce uncharges.
+> +	 * And, we do uncharge one by one if this is killed by OOM.
+> +	 */
+> +	if (!current->memcg_batch.do_batch || test_thread_flag(TIF_MEMDIE))
+> +		goto direct_uncharge;
 
-Jaswinder Singh Rajput (1):
-      Blackfin: includecheck fix: mach-bf548, ezkit.c
+Should we also not uncharge the current batch when the task is dying?
 
-John Stultz (1):
-      Blackfin: convert to use arch_gettimeoffset()
+> +
+> +	batch = &current->memcg_batch;
+> +	/*
+> +	 * In usual, we do css_get() when we remember memcg pointer.
+> +	 * But in this case, we keep res->usage until end of a series of
+> +	 * uncharges. Then, it's ok to ignore memcg's refcnt.
+> +	 */
+> +	if (!batch->memcg)
+> +		batch->memcg = mem;
+> +	/*
+> +	 * In typical case, batch->memcg == mem. This means we can
+> +	 * merge a series of uncharges to an uncharge of res_counter.
+> +	 * If not, we uncharge res_counter ony by one.
+> +	 */
+> +	if (batch->memcg != mem)
+> +		goto direct_uncharge;
+> +	/* remember freed charge and uncharge it later */
+> +	batch->pages += PAGE_SIZE;
+> +	if (uncharge_memsw)
+> +		batch->memsw += PAGE_SIZE;
+> +	return;
+> +direct_uncharge:
+> +	res_counter_uncharge(&mem->res, PAGE_SIZE);
+> +	if (uncharge_memsw)
+> +		res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+> +	return;
+> +}
+> 
+>  /*
+>   * uncharge if !page_mapped(page)
+> @@ -1874,12 +1917,8 @@ __mem_cgroup_uncharge_common(struct page
+>  		break;
+>  	}
+> 
+> -	if (!mem_cgroup_is_root(mem)) {
+> -		res_counter_uncharge(&mem->res, PAGE_SIZE);
+> -		if (do_swap_account &&
+> -				(ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+> -			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+> -	}
+> +	if (!mem_cgroup_is_root(mem))
+> +		__do_uncharge(mem, ctype);
+>  	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
+>  		mem_cgroup_swap_statistics(mem, true);
+>  	mem_cgroup_charge_statistics(mem, pc, false);
+> @@ -1925,6 +1964,46 @@ void mem_cgroup_uncharge_cache_page(stru
+>  	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+>  }
+> 
+> +/*
+> + * batch_start/batch_end is called in unmap_page_range/invlidate/trucate.
+> + * In that cases, pages are freed continuously and we can expect pages
+> + * are in the same memcg. All these calls itself limits the number of
+> + * pages freed at once, then uncharge_start/end() is called properly.
+> + */
+> +
+> +void mem_cgroup_uncharge_start(void)
+> +{
+> +	if (!current->memcg_batch.do_batch) {
+> +		current->memcg_batch.memcg = NULL;
+> +		current->memcg_batch.pages = 0;
+> +		current->memcg_batch.memsw = 0;
+> +	}
+> +	current->memcg_batch.do_batch++;
+> +}
+> +
+> +void mem_cgroup_uncharge_end(void)
+> +{
+> +	struct mem_cgroup *mem;
+> +
+> +	if (!current->memcg_batch.do_batch)
+> +		return;
+> +
+> +	current->memcg_batch.do_batch--;
+> +	if (current->memcg_batch.do_batch) /* Nested ? */
+> +		return;
+> +
+> +	mem = current->memcg_batch.memcg;
+> +	if (!mem)
+> +		return;
+> +	/* This "mem" is valid bacause we hide charges behind us. */
+> +	if (current->memcg_batch.pages)
+> +		res_counter_uncharge(&mem->res, current->memcg_batch.pages);
+> +	if (current->memcg_batch.memsw)
+> +		res_counter_uncharge(&mem->memsw, current->memcg_batch.memsw);
+> +	/* Not necessary. but forget this pointer */
+> +	current->memcg_batch.memcg = NULL;
+> +}
+> +
+>  #ifdef CONFIG_SWAP
+>  /*
+>   * called after __delete_from_swap_cache() and drop "page" account.
+> Index: mmotm-2.6.31-Sep28/include/linux/sched.h
+> ===================================================================
+> --- mmotm-2.6.31-Sep28.orig/include/linux/sched.h
+> +++ mmotm-2.6.31-Sep28/include/linux/sched.h
+> @@ -1549,6 +1549,13 @@ struct task_struct {
+>  	unsigned long trace_recursion;
+>  #endif /* CONFIG_TRACING */
+>  	unsigned long stack_start;
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR /* memcg uses this to do batch job */
+> +	struct memcg_batch_info {
+> +		int do_batch;
+> +		struct mem_cgroup *memcg;
+> +		long pages, memsw;
+> +	} memcg_batch;
+> +#endif
+>  };
+> 
+>  /* Future-safe accessor for struct task_struct's cpus_allowed. */
+> Index: mmotm-2.6.31-Sep28/mm/memory.c
+> ===================================================================
+> --- mmotm-2.6.31-Sep28.orig/mm/memory.c
+> +++ mmotm-2.6.31-Sep28/mm/memory.c
+> @@ -940,6 +940,7 @@ static unsigned long unmap_page_range(st
+>  		details = NULL;
+> 
+>  	BUG_ON(addr >= end);
+> +	mem_cgroup_uncharge_start();
+>  	tlb_start_vma(tlb, vma);
+>  	pgd = pgd_offset(vma->vm_mm, addr);
+>  	do {
+> @@ -952,6 +953,7 @@ static unsigned long unmap_page_range(st
+>  						zap_work, details);
+>  	} while (pgd++, addr = next, (addr != end && *zap_work > 0));
+>  	tlb_end_vma(tlb, vma);
+> +	mem_cgroup_uncharge_end();
+> 
+>  	return addr;
+>  }
+> Index: mmotm-2.6.31-Sep28/mm/truncate.c
+> ===================================================================
+> --- mmotm-2.6.31-Sep28.orig/mm/truncate.c
+> +++ mmotm-2.6.31-Sep28/mm/truncate.c
+> @@ -272,6 +272,7 @@ void truncate_inode_pages_range(struct a
+>  			pagevec_release(&pvec);
+>  			break;
+>  		}
+> +		mem_cgroup_uncharge_start();
+>  		for (i = 0; i < pagevec_count(&pvec); i++) {
+>  			struct page *page = pvec.pages[i];
+> 
+> @@ -286,6 +287,7 @@ void truncate_inode_pages_range(struct a
+>  			unlock_page(page);
+>  		}
+>  		pagevec_release(&pvec);
+> +		mem_cgroup_uncharge_end();
+>  	}
+>  }
+>  EXPORT_SYMBOL(truncate_inode_pages_range);
+> @@ -327,6 +329,7 @@ unsigned long invalidate_mapping_pages(s
+>  	pagevec_init(&pvec, 0);
+>  	while (next <= end &&
+>  			pagevec_lookup(&pvec, mapping, next, PAGEVEC_SIZE)) {
+> +		mem_cgroup_uncharge_start();
+>  		for (i = 0; i < pagevec_count(&pvec); i++) {
+>  			struct page *page = pvec.pages[i];
+>  			pgoff_t index;
+> @@ -354,6 +357,7 @@ unsigned long invalidate_mapping_pages(s
+>  				break;
+>  		}
+>  		pagevec_release(&pvec);
+> +		mem_cgroup_uncharge_end();
+>  		cond_resched();
+>  	}
+>  	return ret;
+> @@ -428,6 +432,7 @@ int invalidate_inode_pages2_range(struct
+>  	while (next <= end && !wrapped &&
+>  		pagevec_lookup(&pvec, mapping, next,
+>  			min(end - next, (pgoff_t)PAGEVEC_SIZE - 1) + 1)) {
+> +		mem_cgroup_uncharge_start();
+>  		for (i = 0; i < pagevec_count(&pvec); i++) {
+>  			struct page *page = pvec.pages[i];
+>  			pgoff_t page_index;
+> @@ -477,6 +482,7 @@ int invalidate_inode_pages2_range(struct
+>  			unlock_page(page);
+>  		}
+>  		pagevec_release(&pvec);
+> +		mem_cgroup_uncharge_end();
+>  		cond_resched();
+>  	}
+>  	return ret;
+>
 
-Michael Hennerich (2):
-      Blackfin: convert adv7393 resources to new i2c framework
-      Blackfin: convert to GENERIC_HARDIRQS_NO__DO_IRQ
+The patch overall looks good, just some questions about it. 
 
-Mike Frysinger (5):
-      Blackfin: asm/irq.h: pull in mach/anomaly.h for anomaly defines
-      Blackfin: cplbinfo: drop d_path() hacks
-      Blackfin: bf533-ezkit: convert to physmap/jedec_probe
-      Blackfin: drop cs_change_per_word setting
-      Blackfin: drop all simple-gpio board resources
-
-Robin Getz (1):
-      Blackfin: mass clean up of copyright/licensing info
-
-Thomas Chou (1):
-      Blackfin: fix framebuffer mmap bug for nommu
-
- arch/blackfin/ADI_BSD.txt                          |   41 ++++++
- arch/blackfin/Kconfig                              |   13 ++-
- arch/blackfin/include/asm/atomic.h                 |    6 +
- arch/blackfin/include/asm/bfin-global.h            |   26 +----
- arch/blackfin/include/asm/bfin5xx_spi.h            |    2 -
- arch/blackfin/include/asm/bfin_rotary.h            |    4 +
- arch/blackfin/include/asm/bfin_simple_timer.h      |    6 +
- arch/blackfin/include/asm/bitops.h                 |    6 +
- arch/blackfin/include/asm/blackfin.h               |    5 +-
- arch/blackfin/include/asm/bug.h                    |    6 +
- arch/blackfin/include/asm/byteorder.h              |    5 -
- arch/blackfin/include/asm/cache.h                  |    9 +-
- arch/blackfin/include/asm/cacheflush.h             |   27 +----
- arch/blackfin/include/asm/cdef_LPBlackfin.h        |   32 +----
- arch/blackfin/include/asm/checksum.h               |    9 +-
- arch/blackfin/include/asm/clocks.h                 |   27 +----
- arch/blackfin/include/asm/context.S                |   27 +----
- arch/blackfin/include/asm/cplb.h                   |   27 +----
- arch/blackfin/include/asm/cplbinit.h               |   27 +----
- arch/blackfin/include/asm/cpu.h                    |   21 +---
- arch/blackfin/include/asm/def_LPBlackfin.h         |   36 +-----
- arch/blackfin/include/asm/dma-mapping.h            |    6 +
- arch/blackfin/include/asm/dpmc.h                   |    6 +-
- arch/blackfin/include/asm/early_printk.h           |   22 +---
- arch/blackfin/include/asm/elf.h                    |    6 +-
- arch/blackfin/include/asm/entry.h                  |    6 +
- arch/blackfin/include/asm/fcntl.h                  |    6 +
- arch/blackfin/include/asm/fixed_code.h             |   10 ++-
- arch/blackfin/include/asm/flat.h                   |    5 +-
- arch/blackfin/include/asm/gpio.h                   |   27 +----
- arch/blackfin/include/asm/hardirq.h                |    6 +
- arch/blackfin/include/asm/io.h                     |    6 +
- arch/blackfin/include/asm/irq.h                    |   19 +--
- arch/blackfin/include/asm/irq_handler.h            |    6 +
- arch/blackfin/include/asm/l1layout.h               |    5 +-
- arch/blackfin/include/asm/linkage.h                |    6 +
- arch/blackfin/include/asm/mmu.h                    |    9 +-
- arch/blackfin/include/asm/mmu_context.h            |   27 +----
- arch/blackfin/include/asm/module.h                 |    6 +
- arch/blackfin/include/asm/mutex.h                  |    4 +
- arch/blackfin/include/asm/nand.h                   |   12 +--
- arch/blackfin/include/asm/page.h                   |    6 +
- arch/blackfin/include/asm/page_offset.h            |    9 +-
- arch/blackfin/include/asm/pda.h                    |   21 +---
- arch/blackfin/include/asm/pgtable.h                |   12 ++
- arch/blackfin/include/asm/poll.h                   |    7 +
- arch/blackfin/include/asm/portmux.h                |    5 +-
- arch/blackfin/include/asm/posix_types.h            |    6 +
- arch/blackfin/include/asm/processor.h              |    6 +
- arch/blackfin/include/asm/ptrace.h                 |    6 +
- arch/blackfin/include/asm/sections.h               |    6 +
- arch/blackfin/include/asm/segment.h                |    6 +
- arch/blackfin/include/asm/sigcontext.h             |    6 +
- arch/blackfin/include/asm/siginfo.h                |    6 +
- arch/blackfin/include/asm/smp.h                    |   21 +---
- arch/blackfin/include/asm/spinlock.h               |    6 +
- arch/blackfin/include/asm/spinlock_types.h         |    6 +
- arch/blackfin/include/asm/stat.h                   |    6 +
- arch/blackfin/include/asm/string.h                 |    6 +
- arch/blackfin/include/asm/swab.h                   |    6 +
- arch/blackfin/include/asm/system.h                 |   32 +-----
- arch/blackfin/include/asm/thread_info.h            |   24 +----
- arch/blackfin/include/asm/tlb.h                    |    6 +
- arch/blackfin/include/asm/trace.h                  |    5 +-
- arch/blackfin/include/asm/traps.h                  |   13 +--
- arch/blackfin/include/asm/uaccess.h                |    5 +-
- arch/blackfin/include/asm/unistd.h                 |    6 +
- arch/blackfin/kernel/asm-offsets.c                 |   27 +----
- arch/blackfin/kernel/bfin_dma_5xx.c                |    1 +
- arch/blackfin/kernel/bfin_gpio.c                   |   27 +----
- arch/blackfin/kernel/cplb-mpu/cplbinit.c           |   20 +---
- arch/blackfin/kernel/cplb-mpu/cplbmgr.c            |   19 +---
- arch/blackfin/kernel/cplb-nompu/cplbinit.c         |   19 +---
- arch/blackfin/kernel/cplb-nompu/cplbmgr.c          |   16 +--
- arch/blackfin/kernel/cplbinfo.c                    |   26 ++--
- arch/blackfin/kernel/dma-mapping.c                 |   27 +----
- arch/blackfin/kernel/early_printk.c                |   23 +---
- arch/blackfin/kernel/entry.S                       |   27 +----
- arch/blackfin/kernel/fixed_code.S                  |    5 +
- arch/blackfin/kernel/flat.c                        |   18 +---
- arch/blackfin/kernel/init_task.c                   |   27 +----
- arch/blackfin/kernel/irqchip.c                     |   27 +----
- arch/blackfin/kernel/module.c                      |   27 +----
- arch/blackfin/kernel/process.c                     |   27 +----
- arch/blackfin/kernel/ptrace.c                      |   28 +----
- arch/blackfin/kernel/setup.c                       |    6 +-
- arch/blackfin/kernel/shadow_console.c              |    2 -
- arch/blackfin/kernel/signal.c                      |   27 +----
- arch/blackfin/kernel/sys_bfin.c                    |   41 +++----
- arch/blackfin/kernel/time-ts.c                     |   10 +-
- arch/blackfin/kernel/time.c                        |   63 +---------
- arch/blackfin/kernel/traps.c                       |   27 +----
- arch/blackfin/kernel/vmlinux.lds.S                 |   27 +----
- arch/blackfin/lib/ashldi3.c                        |   27 +----
- arch/blackfin/lib/ashrdi3.c                        |   27 +----
- arch/blackfin/lib/checksum.c                       |   30 +----
- arch/blackfin/lib/divsi3.S                         |   28 +----
- arch/blackfin/lib/gcclib.h                         |   27 +----
- arch/blackfin/lib/lshrdi3.c                        |   27 +----
- arch/blackfin/lib/memchr.S                         |   27 +----
- arch/blackfin/lib/memcmp.S                         |   27 +----
- arch/blackfin/lib/memcpy.S                         |   37 +-----
- arch/blackfin/lib/memmove.S                        |   27 +----
- arch/blackfin/lib/memset.S                         |   27 +----
- arch/blackfin/lib/modsi3.S                         |   36 +-----
- arch/blackfin/lib/muldi3.S                         |    6 +
- arch/blackfin/lib/outs.S                           |   29 +----
- arch/blackfin/lib/smulsi3_highpart.S               |    6 +
- arch/blackfin/lib/udivsi3.S                        |   27 +----
- arch/blackfin/lib/umodsi3.S                        |   27 +----
- arch/blackfin/lib/umulsi3_highpart.S               |    6 +
- arch/blackfin/mach-bf518/boards/ezbrd.c            |   45 +------
- arch/blackfin/mach-bf518/dma.c                     |   28 +----
- arch/blackfin/mach-bf518/include/mach/bf518.h      |   27 +----
- .../mach-bf518/include/mach/bfin_serial_5xx.h      |   29 +----
- arch/blackfin/mach-bf518/include/mach/blackfin.h   |   29 +----
- arch/blackfin/mach-bf518/include/mach/cdefBF512.h  |   29 +----
- arch/blackfin/mach-bf518/include/mach/cdefBF514.h  |   29 +----
- arch/blackfin/mach-bf518/include/mach/cdefBF516.h  |   29 +----
- arch/blackfin/mach-bf518/include/mach/cdefBF518.h  |   70 +++++++----
- .../mach-bf518/include/mach/cdefBF51x_base.h       |   28 +----
- arch/blackfin/mach-bf518/include/mach/defBF512.h   |   28 +----
- arch/blackfin/mach-bf518/include/mach/defBF514.h   |   28 +----
- arch/blackfin/mach-bf518/include/mach/defBF516.h   |   28 +----
- arch/blackfin/mach-bf518/include/mach/defBF518.h   |   56 +++++----
- .../mach-bf518/include/mach/defBF51x_base.h        |   28 +----
- arch/blackfin/mach-bf518/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf518/include/mach/irq.h        |   29 +----
- arch/blackfin/mach-bf518/include/mach/portmux.h    |    6 +
- arch/blackfin/mach-bf518/ints-priority.c           |   27 +----
- arch/blackfin/mach-bf527/boards/cm_bf527.c         |   61 ++--------
- arch/blackfin/mach-bf527/boards/ezbrd.c            |   45 +------
- arch/blackfin/mach-bf527/boards/ezkit.c            |   60 ++--------
- arch/blackfin/mach-bf527/dma.c                     |   28 +----
- arch/blackfin/mach-bf527/include/mach/bf527.h      |   27 +----
- .../mach-bf527/include/mach/bfin_serial_5xx.h      |   29 +----
- arch/blackfin/mach-bf527/include/mach/blackfin.h   |   29 +----
- arch/blackfin/mach-bf527/include/mach/cdefBF522.h  |   29 +----
- arch/blackfin/mach-bf527/include/mach/cdefBF525.h  |   29 +----
- arch/blackfin/mach-bf527/include/mach/cdefBF527.h  |   29 +----
- .../mach-bf527/include/mach/cdefBF52x_base.h       |   28 +----
- arch/blackfin/mach-bf527/include/mach/defBF522.h   |   28 +----
- arch/blackfin/mach-bf527/include/mach/defBF525.h   |   28 +----
- arch/blackfin/mach-bf527/include/mach/defBF527.h   |   28 +----
- .../mach-bf527/include/mach/defBF52x_base.h        |   28 +----
- arch/blackfin/mach-bf527/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf527/include/mach/irq.h        |   29 +----
- arch/blackfin/mach-bf527/include/mach/portmux.h    |    6 +
- arch/blackfin/mach-bf527/ints-priority.c           |   27 +----
- arch/blackfin/mach-bf533/boards/H8606.c            |   33 +----
- arch/blackfin/mach-bf533/boards/blackstamp.c       |   29 +----
- arch/blackfin/mach-bf533/boards/cm_bf533.c         |   45 +------
- arch/blackfin/mach-bf533/boards/ezkit.c            |  132 ++++++++-----------
- arch/blackfin/mach-bf533/boards/ip0x.c             |   37 +-----
- arch/blackfin/mach-bf533/boards/stamp.c            |   60 ++--------
- arch/blackfin/mach-bf533/dma.c                     |   28 +----
- arch/blackfin/mach-bf533/include/mach/bf533.h      |   27 +----
- .../mach-bf533/include/mach/bfin_serial_5xx.h      |   29 +----
- arch/blackfin/mach-bf533/include/mach/blackfin.h   |   28 +----
- arch/blackfin/mach-bf533/include/mach/cdefBF532.h  |   28 +----
- arch/blackfin/mach-bf533/include/mach/defBF532.h   |   44 +------
- arch/blackfin/mach-bf533/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf533/include/mach/irq.h        |   28 +----
- arch/blackfin/mach-bf533/include/mach/portmux.h    |    6 +
- arch/blackfin/mach-bf533/ints-priority.c           |   27 +----
- arch/blackfin/mach-bf537/boards/cm_bf537e.c        |   46 +------
- arch/blackfin/mach-bf537/boards/cm_bf537u.c        |   46 +------
- arch/blackfin/mach-bf537/boards/minotaur.c         |    6 +
- arch/blackfin/mach-bf537/boards/pnav10.c           |   31 +----
- arch/blackfin/mach-bf537/boards/stamp.c            |   60 ++--------
- arch/blackfin/mach-bf537/boards/tcm_bf537.c        |   46 +------
- arch/blackfin/mach-bf537/dma.c                     |   28 +----
- arch/blackfin/mach-bf537/include/mach/bf537.h      |   27 +----
- .../mach-bf537/include/mach/bfin_serial_5xx.h      |   29 +----
- arch/blackfin/mach-bf537/include/mach/blackfin.h   |   29 +----
- arch/blackfin/mach-bf537/include/mach/cdefBF534.h  |   29 +----
- arch/blackfin/mach-bf537/include/mach/cdefBF537.h  |   29 +----
- arch/blackfin/mach-bf537/include/mach/defBF534.h   |   28 +----
- arch/blackfin/mach-bf537/include/mach/defBF537.h   |   29 +----
- arch/blackfin/mach-bf537/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf537/include/mach/irq.h        |   29 +----
- arch/blackfin/mach-bf537/include/mach/portmux.h    |    6 +
- arch/blackfin/mach-bf537/ints-priority.c           |   27 +----
- arch/blackfin/mach-bf538/boards/ezkit.c            |   46 +------
- arch/blackfin/mach-bf538/dma.c                     |   28 +----
- arch/blackfin/mach-bf538/include/mach/bf538.h      |   27 +----
- .../mach-bf538/include/mach/bfin_serial_5xx.h      |   29 +----
- arch/blackfin/mach-bf538/include/mach/blackfin.h   |   29 +----
- arch/blackfin/mach-bf538/include/mach/cdefBF538.h  |   28 +----
- arch/blackfin/mach-bf538/include/mach/defBF539.h   |   44 +------
- arch/blackfin/mach-bf538/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf538/include/mach/irq.h        |   29 +----
- arch/blackfin/mach-bf538/include/mach/portmux.h    |    6 +
- arch/blackfin/mach-bf538/ints-priority.c           |   27 +----
- arch/blackfin/mach-bf548/boards/cm_bf548.c         |   48 +-------
- arch/blackfin/mach-bf548/boards/ezkit.c            |   49 +-------
- arch/blackfin/mach-bf548/dma.c                     |   27 +----
- arch/blackfin/mach-bf548/include/mach/bf548.h      |   27 +----
- .../blackfin/mach-bf548/include/mach/bf54x-lq043.h |    6 +
- arch/blackfin/mach-bf548/include/mach/bf54x_keys.h |    6 +
- .../mach-bf548/include/mach/bfin_serial_5xx.h      |   29 +----
- arch/blackfin/mach-bf548/include/mach/blackfin.h   |   29 +----
- arch/blackfin/mach-bf548/include/mach/cdefBF542.h  |   28 +----
- arch/blackfin/mach-bf548/include/mach/cdefBF544.h  |   28 +----
- arch/blackfin/mach-bf548/include/mach/cdefBF547.h  |   28 +----
- arch/blackfin/mach-bf548/include/mach/cdefBF548.h  |   28 +----
- arch/blackfin/mach-bf548/include/mach/cdefBF549.h  |   28 +----
- .../mach-bf548/include/mach/cdefBF54x_base.h       |   28 +----
- arch/blackfin/mach-bf548/include/mach/defBF542.h   |   28 +----
- arch/blackfin/mach-bf548/include/mach/defBF544.h   |   28 +----
- arch/blackfin/mach-bf548/include/mach/defBF547.h   |   28 +----
- arch/blackfin/mach-bf548/include/mach/defBF548.h   |   28 +----
- arch/blackfin/mach-bf548/include/mach/defBF549.h   |   28 +----
- .../mach-bf548/include/mach/defBF54x_base.h        |   28 +----
- arch/blackfin/mach-bf548/include/mach/gpio.h       |   30 +----
- arch/blackfin/mach-bf548/include/mach/irq.h        |   29 +----
- arch/blackfin/mach-bf548/include/mach/portmux.h    |    6 +
- arch/blackfin/mach-bf548/ints-priority.c           |   27 +----
- arch/blackfin/mach-bf561/atomic.S                  |   21 +---
- arch/blackfin/mach-bf561/boards/cm_bf561.c         |   45 +------
- arch/blackfin/mach-bf561/boards/ezkit.c            |   44 +------
- arch/blackfin/mach-bf561/boards/tepla.c            |   14 +--
- arch/blackfin/mach-bf561/dma.c                     |   28 +----
- arch/blackfin/mach-bf561/include/mach/bf561.h      |   27 +----
- .../mach-bf561/include/mach/bfin_serial_5xx.h      |   29 +----
- arch/blackfin/mach-bf561/include/mach/blackfin.h   |   28 +----
- arch/blackfin/mach-bf561/include/mach/cdefBF561.h  |   28 +----
- arch/blackfin/mach-bf561/include/mach/defBF561.h   |   29 +----
- arch/blackfin/mach-bf561/include/mach/gpio.h       |    3 -
- arch/blackfin/mach-bf561/include/mach/irq.h        |   29 +----
- arch/blackfin/mach-bf561/include/mach/portmux.h    |    6 +
- arch/blackfin/mach-bf561/include/mach/smp.h        |    6 +
- arch/blackfin/mach-bf561/ints-priority.c           |   27 +----
- arch/blackfin/mach-bf561/secondary.S               |   24 +---
- arch/blackfin/mach-bf561/smp.c                     |   21 +---
- arch/blackfin/mach-common/arch_checks.c            |   27 +----
- arch/blackfin/mach-common/cache-c.c                |    2 -
- arch/blackfin/mach-common/cache.S                  |    2 -
- arch/blackfin/mach-common/cpufreq.c                |   27 +----
- arch/blackfin/mach-common/entry.S                  |   31 +----
- arch/blackfin/mach-common/head.S                   |    2 -
- arch/blackfin/mach-common/interrupt.S              |   30 +----
- arch/blackfin/mach-common/ints-priority.c          |   35 ++----
- arch/blackfin/mach-common/irqpanic.c               |   27 +----
- arch/blackfin/mach-common/pm.c                     |   34 +-----
- arch/blackfin/mach-common/smp.c                    |   22 +---
- arch/blackfin/mm/blackfin_sram.h                   |   27 +----
- arch/blackfin/mm/init.c                            |   27 +----
- arch/blackfin/mm/isram-driver.c                    |   14 +--
- arch/blackfin/mm/sram-alloc.c                      |   27 +----
- 250 files changed, 1078 insertions(+), 4717 deletions(-)
- create mode 100644 arch/blackfin/ADI_BSD.txt
+-- 
+	Balbir
