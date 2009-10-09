@@ -1,126 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbZJIWKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934475AbZJIWTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964792AbZJIWKg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 18:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934539AbZJIWKg
+	id S934475AbZJIWTY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 18:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934014AbZJIWTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 18:10:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50476 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934517AbZJIWKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 18:10:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [RFC][PATCH 1/4] PCI PM: Add function for checking PME status of devices
-Date: Sat, 10 Oct 2009 00:11:28 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Shaohua Li <shaohua.li@intel.com>
-References: <200910090051.50932.rjw@sisk.pl> <200910090052.48493.rjw@sisk.pl> <200910081732.03157.bjorn.helgaas@hp.com>
-In-Reply-To: <200910081732.03157.bjorn.helgaas@hp.com>
+	Fri, 9 Oct 2009 18:19:24 -0400
+Received: from mga07.intel.com ([143.182.124.22]:45223 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751410AbZJIWTX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 18:19:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,534,1249282800"; 
+   d="scan'208";a="197219129"
+Date: Sat, 10 Oct 2009 00:20:13 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: Re: [Uclinux-dist-devel] [PATCH v4] mfd: ADP5520 Multifunction LCD
+ Backlight and Keypad Input Device Driver
+Message-ID: <20091009222012.GD7523@sortiz.org>
+References: <1254988727-31726-1-git-send-email-vapier@gentoo.org>
+ <20091009153219.GB7523@sortiz.org>
+ <8bd0f97a0910091323x7392ccdcxf54f74d7f454110f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910100011.28268.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0910091323x7392ccdcxf54f74d7f454110f@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 October 2009, Bjorn Helgaas wrote:
-> On Thursday 08 October 2009 04:52:48 pm Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Add function pci_check_pme_status() that will check the PME status
-> > bit of given device and clear it along with the PME enable bit.  It
-> > will be necessary for PCI run-time power management.
-> > 
-> > Based on a patch from Shaohua Li <shaohua.li@intel.com>
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/pci/pci.c |   35 +++++++++++++++++++++++++++++++++++
-> >  drivers/pci/pci.h |    1 +
-> >  2 files changed, 36 insertions(+)
-> > 
-> > Index: linux-2.6/drivers/pci/pci.h
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/pci/pci.h
-> > +++ linux-2.6/drivers/pci/pci.h
-> > @@ -49,6 +49,7 @@ struct pci_platform_pm_ops {
-> >  extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
-> >  extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
-> >  extern void pci_disable_enabled_device(struct pci_dev *dev);
-> > +extern bool pci_check_pme_status(struct pci_dev *dev);
-> >  extern void pci_pm_init(struct pci_dev *dev);
-> >  extern void platform_pci_wakeup_init(struct pci_dev *dev);
-> >  extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
-> > Index: linux-2.6/drivers/pci/pci.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/pci/pci.c
-> > +++ linux-2.6/drivers/pci/pci.c
-> > @@ -1167,6 +1167,41 @@ int pci_set_pcie_reset_state(struct pci_
-> >  }
-> >  
-> >  /**
-> > + * pci_check_pme_status - Check if given device has generated PME.
-> > + * @dev: Device to check.
-> > + *
-> > + * Check the PME status of the device, clear PME status and PME enable.  Return
-> > + * 'true' if PME has been generated by the device (and hasn't been spurious) or
-> > + * 'false' otherwise.
+Hi Mike,
+
+On Fri, Oct 09, 2009 at 04:23:42PM -0400, Mike Frysinger wrote:
+> On Fri, Oct 9, 2009 at 11:36, Samuel Ortiz wrote:
+> > On Thu, Oct 08, 2009 at 03:58:47AM -0400, Mike Frysinger wrote:
+> >> From: Michael Hennerich <michael.hennerich@analog.com>
+> >>
+> >> Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
+> >>
+> >> Subdevs:
+> >> LCD Backlight   : drivers/video/backlight/adp5520_bl
+> >> LEDs            : drivers/led/leds-adp5520
+> >> GPIO            : drivers/gpio/adp5520-gpio (ADP5520 only)
+> >> Keys            : drivers/input/keyboard/adp5520-keys (ADP5520 only)
+> >
+> > With your mfd core patch applied, adp5520-gpio.c and adp5520_bl.c are supposed
+> > to be buildable. Unfortunately, they both give build errors.
+> > So, you either provide me with a patch that fixes both of those, and I carry
+> > it with my mfd patchset, or you get your fixes applied upstream and I apply
+> > the mfd core patch after that.
 > 
-> This comment confuses me because it implies that we always clear PME enable,
-> but that's not what the code does.  If PME_STATUS is not asserted, the code
-> doesn't write anything.
+> yes, the typo fixes in this patch had pieces propagate to the other
+> drivers.  if you dont mind carrying the other patchsets, i can send
+> them all to you ;). 
+Yes, I'm fine with that solution.
 
-Well, that's a shortcut, perhaps going too far.  It should say "clear PME
-status and PME enable, if the PME status was set".  Will fix.
+Thanks in advance.
 
-> > + */
-> > +bool pci_check_pme_status(struct pci_dev *dev)
-> > +{
-> > +	int pmcsr_pos;
-> > +	u16 pmcsr;
-> > +	bool ret = false;
-> > +
-> > +	if (!dev->pm_cap)
-> > +		return false;
-> > +
-> > +	pmcsr_pos = dev->pm_cap + PCI_PM_CTRL;
-> > +	/* clear PME status and disable PME to avoid interrupt flood */
-> > +	pci_read_config_word(dev, pmcsr_pos, &pmcsr);
-> > +	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
-> > +		return false;
-> > +
-> > +	pmcsr |= PCI_PM_CTRL_PME_STATUS;
-> > +	/* Ignore spurious PME or clear PME enable if it's not spurious. */
-> > +	if (pmcsr & PCI_PM_CTRL_PME_ENABLE) {
-> > +		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
-> > +		ret = true;
-> > +	}
-> > +
-> > +	pci_write_config_word(dev, pmcsr_pos, pmcsr);
-> 
-> I can't tell whether the comment or the code is what was intended,
+Cheers,
+Samuel.
 
-The code.  I'll fix the comment.
 
-> but I think the following would be a clearer way to implement the
-> comment:
-> 
-> 	pci_read_config_word(..., &pmcsr);
-> 	pci_write_config_word(..., (pmcsr | STATUS) & ~ENABLE);
-> 
-> 	if ((pmcsr & ENABLE) && (pmcsr & STATUS))
-> 		return true;
-> 	return false;
+> there should be like 3 or 4 of them.
+> -mike
 
-Thanks,
-Rafael
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
