@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761929AbZJIXVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761617AbZJIXRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761929AbZJIXVp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761579AbZJIXQu
+	id S1761617AbZJIXRR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761600AbZJIXRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:16:50 -0400
-Received: from kroah.org ([198.145.64.141]:36737 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:17:16 -0400
+Received: from kroah.org ([198.145.64.141]:36844 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753998AbZJIXQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:16:48 -0400
+	id S1761488AbZJIXRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:17:14 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:10:00 2009
-Message-Id: <20091009231000.609618671@mini.kroah.org>
+Message-Id: <20091009231000.733529740@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:08:40 -0700
+Date: Fri, 09 Oct 2009 16:08:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Manoj Iyer <manoj.iyer@canonical.com>, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 04/26] ALSA: hda - Added quirk to enable sound on Toshiba NB200
+       Jiri Olsa <jolsa@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
+Subject: [patch 05/26] tracing: correct module boundaries for ftrace_release
 References: <20091009230836.316410305@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-hda-added-quirk-to-enable-sound-on-toshiba-nb200.patch
+Content-Disposition: inline; filename=tracing-correct-module-boundaries-for-ftrace_release.patch
 In-Reply-To: <20091009231249.GA31084@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,29 +29,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Manoj Iyer <manoj.iyer@canonical.com>
+From: jolsa@redhat.com <jolsa@redhat.com>
 
-commit 3db6c037c6954ed6d98ef199938e4004fea96908 upstream.
+commit e7247a15ff3bbdab0a8b402dffa1171e5c05a8e0 upstream.
 
-Patch was tested on Toshiba NB200 and is found to enable sound.
+When the module is about the unload we release its call records.
+The ftrace_release function was given wrong values representing
+the module core boundaries, thus not releasing its call records.
 
-Signed-off-by: Manoj Iyer <manoj.iyer@canonical.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Plus making ftrace_release function module specific.
+
+Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+LKML-Reference: <1254934835-363-3-git-send-email-jolsa@redhat.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_realtek.c |    1 +
- 1 file changed, 1 insertion(+)
+ include/linux/ftrace.h |    2 +-
+ kernel/trace/ftrace.c  |   12 ++++--------
+ 2 files changed, 5 insertions(+), 9 deletions(-)
 
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -16876,6 +16876,7 @@ static struct snd_pci_quirk alc662_cfg_t
- 	SND_PCI_QUIRK(0x105b, 0x0cd6, "Foxconn", ALC662_ECS),
- 	SND_PCI_QUIRK(0x105b, 0x0d47, "Foxconn 45CMX/45GMX/45CMX-K",
- 		      ALC662_3ST_6ch_DIG),
-+	SND_PCI_QUIRK(0x1179, 0xff6e, "Toshiba NB200", ALC663_ASUS_MODE4),
- 	SND_PCI_QUIRK(0x144d, 0xca00, "Samsung NC10", ALC272_SAMSUNG_NC10),
- 	SND_PCI_QUIRK(0x1458, 0xa002, "Gigabyte 945GCM-S2L",
- 		      ALC662_3ST_6ch_DIG),
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -241,7 +241,7 @@ extern void ftrace_enable_daemon(void);
+ # define ftrace_set_filter(buf, len, reset)	do { } while (0)
+ # define ftrace_disable_daemon()		do { } while (0)
+ # define ftrace_enable_daemon()			do { } while (0)
+-static inline void ftrace_release(void *start, unsigned long size) { }
++static inline void ftrace_release_mod(struct module *mod) {}
+ static inline int register_ftrace_command(struct ftrace_func_command *cmd)
+ {
+ 	return -EINVAL;
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2801,19 +2801,17 @@ static int ftrace_convert_nops(struct mo
+ }
+ 
+ #ifdef CONFIG_MODULES
+-void ftrace_release(void *start, void *end)
++void ftrace_release_mod(struct module *mod)
+ {
+ 	struct dyn_ftrace *rec;
+ 	struct ftrace_page *pg;
+-	unsigned long s = (unsigned long)start;
+-	unsigned long e = (unsigned long)end;
+ 
+-	if (ftrace_disabled || !start || start == end)
++	if (ftrace_disabled)
+ 		return;
+ 
+ 	mutex_lock(&ftrace_lock);
+ 	do_for_each_ftrace_rec(pg, rec) {
+-		if ((rec->ip >= s) && (rec->ip < e)) {
++		if (within_module_core(rec->ip, mod)) {
+ 			/*
+ 			 * rec->ip is changed in ftrace_free_rec()
+ 			 * It should not between s and e if record was freed.
+@@ -2845,9 +2843,7 @@ static int ftrace_module_notify(struct n
+ 				   mod->num_ftrace_callsites);
+ 		break;
+ 	case MODULE_STATE_GOING:
+-		ftrace_release(mod->ftrace_callsites,
+-			       mod->ftrace_callsites +
+-			       mod->num_ftrace_callsites);
++		ftrace_release_mod(mod);
+ 		break;
+ 	}
+ 
 
 
