@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934533AbZJIXmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934607AbZJIXmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934533AbZJIXmL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932741AbZJIXmK
+	id S934607AbZJIXmO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932741AbZJIXmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:42:10 -0400
-Received: from kroah.org ([198.145.64.141]:51432 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:42:12 -0400
+Received: from kroah.org ([198.145.64.141]:51437 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757123AbZJIXmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:42:09 -0400
+	id S932839AbZJIXmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:42:10 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:34:39 2009
-Message-Id: <20091009233439.552024626@mini.kroah.org>
+Message-Id: <20091009233439.684030931@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:34:38 -0700
+Date: Fri, 09 Oct 2009 16:34:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Dumazet <eric.dumazet@gmail.com>,
+       Miklos Szeredi <mszeredi@suse.cz>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 27/37] net: restore tx timestamping for accelerated vlans
+Subject: [patch 28/37] net: unix: fix sending fds in multiple buffers
 References: <20091009233411.852013234@mini.kroah.org>
-Content-Disposition: inline; filename=net-restore-tx-timestamping-for-accelerated-vlans.patch
+Content-Disposition: inline; filename=net-unix-fix-sending-fds-in-multiple-buffers.patch
 In-Reply-To: <20091009233812.GA15982@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,55 +30,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Eric Dumazet <eric.dumazet@gmail.com>
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-[ Upstream commit 81bbb3d4048cf577b5babcb0834230de391a35c5 ]
+[ Upstream commit 8ba69ba6a324b13e1190fc31e41954d190fd4f1d ]
 
-Since commit 9b22ea560957de1484e6b3e8538f7eef202e3596
-( net: fix packet socket delivery in rx irq handler )
+Kalle Olavi Niemitalo reported that:
 
-We lost rx timestamping of packets received on accelerated vlans.
+  "..., when one process calls sendmsg once to send 43804 bytes of
+  data and one file descriptor, and another process then calls recvmsg
+  three times to receive the 16032+16032+11740 bytes, each of those
+  recvmsg calls returns the file descriptor in the ancillary data.  I
+  confirmed this with strace.  The behaviour differs from Linux
+  2.6.26, where reportedly only one of those recvmsg calls (I think
+  the first one) returned the file descriptor."
 
-Effect is that tcpdump on real dev can show strange timings, since it gets rx timestamps
-too late (ie at skb dequeueing time, not at skb queueing time)
+This bug was introduced by a patch from me titled "net: unix: fix inflight
+counting bug in garbage collector", commit 6209344f5.
 
-14:47:26.986871 IP 192.168.20.110 > 192.168.20.141: icmp 64: echo request seq 1
-14:47:26.986786 IP 192.168.20.141 > 192.168.20.110: icmp 64: echo reply seq 1
+And the reason is, quoting Kalle:
 
-14:47:27.986888 IP 192.168.20.110 > 192.168.20.141: icmp 64: echo request seq 2
-14:47:27.986781 IP 192.168.20.141 > 192.168.20.110: icmp 64: echo reply seq 2
+  "Before your patch, unix_attach_fds() would set scm->fp = NULL, so
+  that if the loop in unix_stream_sendmsg() ran multiple iterations,
+  it could not call unix_attach_fds() again.  But now,
+  unix_attach_fds() leaves scm->fp unchanged, and I think this causes
+  it to be called multiple times and duplicate the same file
+  descriptors to each struct sk_buff."
 
-14:47:28.986896 IP 192.168.20.110 > 192.168.20.141: icmp 64: echo request seq 3
-14:47:28.986780 IP 192.168.20.141 > 192.168.20.110: icmp 64: echo reply seq 3
+Fix this by introducing a flag that is cleared at the start and set
+when the fds attached to the first buffer.  The resulting code should
+work equivalently to the one on 2.6.26.
 
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Reported-by: Kalle Olavi Niemitalo <kon@iki.fi>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/core/dev.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ net/unix/af_unix.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2248,6 +2248,9 @@ int netif_receive_skb(struct sk_buff *sk
- 	int ret = NET_RX_DROP;
- 	__be16 type;
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -1501,6 +1501,7 @@ static int unix_stream_sendmsg(struct ki
+ 	struct sk_buff *skb;
+ 	int sent = 0;
+ 	struct scm_cookie tmp_scm;
++	bool fds_sent = false;
  
-+	if (!skb->tstamp.tv64)
-+		net_timestamp(skb);
-+
- 	if (skb->vlan_tci && vlan_hwaccel_do_receive(skb))
- 		return NET_RX_SUCCESS;
+ 	if (NULL == siocb->scm)
+ 		siocb->scm = &tmp_scm;
+@@ -1562,12 +1563,14 @@ static int unix_stream_sendmsg(struct ki
+ 		size = min_t(int, size, skb_tailroom(skb));
  
-@@ -2255,9 +2258,6 @@ int netif_receive_skb(struct sk_buff *sk
- 	if (netpoll_receive_skb(skb))
- 		return NET_RX_DROP;
+ 		memcpy(UNIXCREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
+-		if (siocb->scm->fp) {
++		/* Only send the fds in the first buffer */
++		if (siocb->scm->fp && !fds_sent) {
+ 			err = unix_attach_fds(siocb->scm, skb);
+ 			if (err) {
+ 				kfree_skb(skb);
+ 				goto out_err;
+ 			}
++			fds_sent = true;
+ 		}
  
--	if (!skb->tstamp.tv64)
--		net_timestamp(skb);
--
- 	if (!skb->iif)
- 		skb->iif = skb->dev->ifindex;
- 
+ 		err = memcpy_fromiovec(skb_put(skb, size), msg->msg_iov, size);
 
 
