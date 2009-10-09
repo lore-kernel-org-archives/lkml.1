@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761760AbZJIXmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761881AbZJIXnO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761760AbZJIXmz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761726AbZJIXmy
+	id S1761881AbZJIXnO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:43:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761653AbZJIXnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:42:54 -0400
-Received: from kroah.org ([198.145.64.141]:51488 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:43:13 -0400
+Received: from kroah.org ([198.145.64.141]:51492 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761685AbZJIXmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:42:51 -0400
+	id S1761701AbZJIXmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:42:52 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:34:40 2009
-Message-Id: <20091009233440.435295049@mini.kroah.org>
+Message-Id: <20091009233440.560038564@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:34:45 -0700
+Date: Fri, 09 Oct 2009 16:34:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [patch 34/37] appletalk: Fix skb leak when ipddp interface is not loaded
+       Jarek Poplawski <jarkao2@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 35/37] ax25: Fix possible oops in ax25_make_new
 References: <20091009233411.852013234@mini.kroah.org>
-Content-Disposition: inline; filename=appletalk-fix-skb-leak-when-ipddp-interface-is-not-loaded.patch
+Content-Disposition: inline; filename=ax25-fix-possible-oops-in-ax25_make_new.patch
 In-Reply-To: <20091009233812.GA15982@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,222 +30,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+From: Jarek Poplawski <jarkao2@gmail.com>
 
-[ Upstream commit ffcfb8db540ff879c2a85bf7e404954281443414 ]
+[ Upstream commit 8c185ab6185bf5e67766edb000ce428269364c86 ]
 
-And also do a better job of returning proper NET_{RX,XMIT}_ values.
+In ax25_make_new, if kmemdup of digipeat returns an error, there would
+be an oops in sk_free while calling sk_destruct, because sk_protinfo
+is NULL at the moment; move sk->sk_destruct initialization after this.
 
-Based on a patch by Mark Smith.
+BTW of reported-by: Bernard Pidoux F6BVP <f6bvp@free.fr>
 
-This fixes CVE-2009-2903
-
-Reported-by: Mark Smith <lk-netdev@lk-netdev.nosense.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/appletalk/ipddp.c |    3 --
- net/appletalk/aarp.c          |   16 +++++++----
- net/appletalk/ddp.c           |   58 ++++++++++++++++++++++--------------------
- 3 files changed, 43 insertions(+), 34 deletions(-)
+ net/ax25/af_ax25.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/appletalk/ipddp.c
-+++ b/drivers/net/appletalk/ipddp.c
-@@ -176,8 +176,7 @@ static int ipddp_xmit(struct sk_buff *sk
- 	dev->stats.tx_packets++;
- 	dev->stats.tx_bytes += skb->len;
+--- a/net/ax25/af_ax25.c
++++ b/net/ax25/af_ax25.c
+@@ -893,7 +893,6 @@ struct sock *ax25_make_new(struct sock *
  
--        if(aarp_send_ddp(rt->dev, skb, &rt->at, NULL) < 0)
--                dev_kfree_skb(skb);
-+	aarp_send_ddp(rt->dev, skb, &rt->at, NULL);
+ 	sock_init_data(NULL, sk);
  
- 	spin_unlock(&ipddp_route_lock);
- 
---- a/net/appletalk/aarp.c
-+++ b/net/appletalk/aarp.c
-@@ -599,7 +599,7 @@ int aarp_send_ddp(struct net_device *dev
- 
- 	/* Non ELAP we cannot do. */
- 	if (dev->type != ARPHRD_ETHER)
--		return -1;
-+		goto free_it;
- 
- 	skb->dev = dev;
- 	skb->protocol = htons(ETH_P_ATALK);
-@@ -634,7 +634,7 @@ int aarp_send_ddp(struct net_device *dev
- 	if (!a) {
- 		/* Whoops slipped... good job it's an unreliable protocol 8) */
- 		write_unlock_bh(&aarp_lock);
--		return -1;
-+		goto free_it;
+-	sk->sk_destruct = ax25_free_sock;
+ 	sk->sk_type     = osk->sk_type;
+ 	sk->sk_priority = osk->sk_priority;
+ 	sk->sk_protocol = osk->sk_protocol;
+@@ -931,6 +930,7 @@ struct sock *ax25_make_new(struct sock *
  	}
  
- 	/* Set up the queue */
-@@ -663,15 +663,21 @@ out_unlock:
- 	write_unlock_bh(&aarp_lock);
+ 	sk->sk_protinfo = ax25;
++	sk->sk_destruct = ax25_free_sock;
+ 	ax25->sk    = sk;
  
- 	/* Tell the ddp layer we have taken over for this frame. */
--	return 0;
-+	goto sent;
- 
- sendit:
- 	if (skb->sk)
- 		skb->priority = skb->sk->sk_priority;
--	dev_queue_xmit(skb);
-+	if (dev_queue_xmit(skb))
-+		goto drop;
- sent:
--	return 1;
-+	return NET_XMIT_SUCCESS;
-+free_it:
-+	kfree_skb(skb);
-+drop:
-+	return NET_XMIT_DROP;
- }
-+EXPORT_SYMBOL(aarp_send_ddp);
- 
- /*
-  *	An entry in the aarp unresolved queue has become resolved. Send
---- a/net/appletalk/ddp.c
-+++ b/net/appletalk/ddp.c
-@@ -1270,8 +1270,10 @@ static int handle_ip_over_ddp(struct sk_
- 	struct net_device_stats *stats;
- 
- 	/* This needs to be able to handle ipddp"N" devices */
--	if (!dev)
--		return -ENODEV;
-+	if (!dev) {
-+		kfree_skb(skb);
-+		return NET_RX_DROP;
-+	}
- 
- 	skb->protocol = htons(ETH_P_IP);
- 	skb_pull(skb, 13);
-@@ -1281,8 +1283,7 @@ static int handle_ip_over_ddp(struct sk_
- 	stats = netdev_priv(dev);
- 	stats->rx_packets++;
- 	stats->rx_bytes += skb->len + 13;
--	netif_rx(skb);  /* Send the SKB up to a higher place. */
--	return 0;
-+	return netif_rx(skb);  /* Send the SKB up to a higher place. */
- }
- #else
- /* make it easy for gcc to optimize this test out, i.e. kill the code */
-@@ -1290,9 +1291,8 @@ static int handle_ip_over_ddp(struct sk_
- #define handle_ip_over_ddp(skb) 0
- #endif
- 
--static void atalk_route_packet(struct sk_buff *skb, struct net_device *dev,
--			       struct ddpehdr *ddp, __u16 len_hops,
--			       int origlen)
-+static int atalk_route_packet(struct sk_buff *skb, struct net_device *dev,
-+			      struct ddpehdr *ddp, __u16 len_hops, int origlen)
- {
- 	struct atalk_route *rt;
- 	struct atalk_addr ta;
-@@ -1359,8 +1359,6 @@ static void atalk_route_packet(struct sk
- 		/* 22 bytes - 12 ether, 2 len, 3 802.2 5 snap */
- 		struct sk_buff *nskb = skb_realloc_headroom(skb, 32);
- 		kfree_skb(skb);
--		if (!nskb)
--			goto out;
- 		skb = nskb;
- 	} else
- 		skb = skb_unshare(skb, GFP_ATOMIC);
-@@ -1369,12 +1367,18 @@ static void atalk_route_packet(struct sk
- 	 * If the buffer didn't vanish into the lack of space bitbucket we can
- 	 * send it.
- 	 */
--	if (skb && aarp_send_ddp(rt->dev, skb, &ta, NULL) == -1)
--		goto free_it;
--out:
--	return;
-+	if (skb == NULL)
-+		goto drop;
-+
-+	/*
-+	 * It is OK, NET_XMIT_SUCCESS == NET_RX_SUCCESS and
-+	 * NET_XMIT_DROP == NET_RX_DROP
-+	 */
-+	return aarp_send_ddp(rt->dev, skb, &ta, NULL);
- free_it:
- 	kfree_skb(skb);
-+drop:
-+	return NET_RX_DROP;
- }
- 
- /**
-@@ -1404,7 +1408,7 @@ static int atalk_rcv(struct sk_buff *skb
- 
- 	/* Don't mangle buffer if shared */
- 	if (!(skb = skb_share_check(skb, GFP_ATOMIC)))
--		goto out;
-+		goto drop;
- 
- 	/* Size check and make sure header is contiguous */
- 	if (!pskb_may_pull(skb, sizeof(*ddp)))
-@@ -1448,8 +1452,7 @@ static int atalk_rcv(struct sk_buff *skb
- 		/* Not ours, so we route the packet via the correct
- 		 * AppleTalk iface
- 		 */
--		atalk_route_packet(skb, dev, ddp, len_hops, origlen);
--		goto out;
-+		return atalk_route_packet(skb, dev, ddp, len_hops, origlen);
- 	}
- 
- 	/* if IP over DDP is not selected this code will be optimized out */
-@@ -1472,11 +1475,12 @@ static int atalk_rcv(struct sk_buff *skb
- 
- 	if (sock_queue_rcv_skb(sock, skb) < 0)
- 		goto freeit;
--out:
--	return 0;
-+
-+	return NET_RX_SUCCESS;
- freeit:
- 	kfree_skb(skb);
--	goto out;
-+drop:
-+	return NET_RX_DROP;
- }
- 
- /*
-@@ -1652,10 +1656,10 @@ static int atalk_sendmsg(struct kiocb *i
- 		if (skb2) {
- 			loopback = 1;
- 			SOCK_DEBUG(sk, "SK %p: send out(copy).\n", sk);
--			if (aarp_send_ddp(dev, skb2,
--					  &usat->sat_addr, NULL) == -1)
--				kfree_skb(skb2);
--				/* else queued/sent above in the aarp queue */
-+			/*
-+			 * If it fails it is queued/sent above in the aarp queue
-+			 */
-+			aarp_send_ddp(dev, skb2, &usat->sat_addr, NULL);
- 		}
- 	}
- 
-@@ -1685,9 +1689,10 @@ static int atalk_sendmsg(struct kiocb *i
- 		    usat = &gsat;
- 		}
- 
--		if (aarp_send_ddp(dev, skb, &usat->sat_addr, NULL) == -1)
--			kfree_skb(skb);
--		/* else queued/sent above in the aarp queue */
-+		/*
-+		 * If it fails it is queued/sent above in the aarp queue
-+		 */
-+		aarp_send_ddp(dev, skb, &usat->sat_addr, NULL);
- 	}
- 	SOCK_DEBUG(sk, "SK %p: Done write (%Zd).\n", sk, len);
- 
-@@ -1865,7 +1870,6 @@ static struct packet_type ppptalk_packet
- static unsigned char ddp_snap_id[] = { 0x08, 0x00, 0x07, 0x80, 0x9B };
- 
- /* Export symbols for use by drivers when AppleTalk is a module */
--EXPORT_SYMBOL(aarp_send_ddp);
- EXPORT_SYMBOL(atrtr_get_dev);
- EXPORT_SYMBOL(atalk_find_dev_addr);
- 
+ 	return sk;
 
 
