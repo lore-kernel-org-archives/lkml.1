@@ -1,124 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760154AbZJIBHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbZJIBJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760154AbZJIBHn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 21:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbZJIBHl
+	id S1760168AbZJIBJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 21:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095AbZJIBJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 21:07:41 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43687 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758180AbZJIBHk (ORCPT
+	Thu, 8 Oct 2009 21:09:16 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40538 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758353AbZJIBJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 21:07:40 -0400
+	Thu, 8 Oct 2009 21:09:15 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/3] Fix memory leak of never putback pages in mbind()
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Christoph Lameter <cl@linux-foundation.org>
-Subject: [PATCH 1/3] mm: move inc_zone_page_state(NR_ISOLATED) to just isolated place
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20091009100527.1284.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091009100527.1284.A69D9226@jp.fujitsu.com>
+References: <20091009100527.1284.A69D9226@jp.fujitsu.com>
+Message-Id: <20091009100708.1287.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri,  9 Oct 2009 10:06:58 +0900 (JST)
+Date: Fri,  9 Oct 2009 10:08:36 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series is trivial cleanup and fix of page migration.
+
+if mbind() receive invalid address, do_mbind makes leaked page.
+following test program detect its leak.
+
+This patch fixes it.
 
 
-==========================================================
+migrate_efault.c
+============================================
+ #include <numaif.h>
+ #include <numa.h>
+ #include <sys/mman.h>
+ #include <stdio.h>
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <string.h>
 
-Christoph pointed out inc_zone_page_state(NR_ISOLATED) should be placed
-in right after isolate_page().
+static unsigned long pagesize;
 
-This patch does it.
+static void* make_hole_mapping(void)
+{
 
-Cc: Christoph Lameter <cl@linux-foundation.org>
+	void* addr;
+
+	addr = mmap(NULL, pagesize*3, PROT_READ|PROT_WRITE,
+		    MAP_ANON|MAP_PRIVATE, 0, 0);
+	if (addr == MAP_FAILED)
+		return NULL;
+
+	/* make page populate */
+	memset(addr, 0, pagesize*3);
+
+	/* make memory hole */
+	munmap(addr+pagesize, pagesize);
+
+	return addr;
+}
+
+int main(int argc, char** argv)
+{
+	void* addr;
+	int ch;
+	int node;
+	struct bitmask *nmask = numa_allocate_nodemask();
+	int err;
+	int node_set = 0;
+
+	while ((ch = getopt(argc, argv, "n:")) != -1){
+		switch (ch){
+		case 'n':
+			node = strtol(optarg, NULL, 0);
+			numa_bitmask_setbit(nmask, node);
+			node_set = 1;
+			break;
+		default:
+			;
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
+	if (!node_set)
+		numa_bitmask_setbit(nmask, 0);
+
+	pagesize = getpagesize();
+
+	addr = make_hole_mapping();
+
+	err = mbind(addr, pagesize*3, MPOL_BIND, nmask->maskp, nmask->size, MPOL_MF_MOVE_ALL);
+	if (err)
+		perror("mbind ");
+
+	return 0;
+}
+============================================
+
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- mm/memory_hotplug.c |    4 ++++
- mm/mempolicy.c      |    3 +++
- mm/migrate.c        |   12 ++++--------
- 3 files changed, 11 insertions(+), 8 deletions(-)
+ mm/mempolicy.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 821dee5..653bf1e 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -26,6 +26,7 @@
- #include <linux/migrate.h>
- #include <linux/page-isolation.h>
- #include <linux/pfn.h>
-+#include <linux/mm_inline.h>
- 
- #include <asm/tlbflush.h>
- 
-@@ -663,6 +664,9 @@ do_migrate_range(unsigned long start_pfn, unsigned long end_pfn)
- 		if (!ret) { /* Success */
- 			list_add_tail(&page->lru, &source);
- 			move_pages--;
-+			inc_zone_page_state(page, NR_ISOLATED_ANON +
-+					    page_is_file_cache(page));
-+
- 		} else {
- 			/* Becasue we don't have big zone->lock. we should
- 			   check this again here. */
 diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index 7dd9d9f..473f888 100644
+index 473f888..824abf3 100644
 --- a/mm/mempolicy.c
 +++ b/mm/mempolicy.c
-@@ -89,6 +89,7 @@
- #include <linux/security.h>
- #include <linux/syscalls.h>
- #include <linux/ctype.h>
-+#include <linux/mm_inline.h>
+@@ -1061,6 +1061,8 @@ static long do_mbind(unsigned long start, unsigned long len,
  
- #include <asm/tlbflush.h>
- #include <asm/uaccess.h>
-@@ -809,6 +810,8 @@ static void migrate_page_add(struct page *page, struct list_head *pagelist,
- 	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1) {
- 		if (!isolate_lru_page(page)) {
- 			list_add_tail(&page->lru, pagelist);
-+			inc_zone_page_state(page, NR_ISOLATED_ANON +
-+					    page_is_file_cache(page));
- 		}
+ 		if (!err && nr_failed && (flags & MPOL_MF_STRICT))
+ 			err = -EIO;
++	} else {
++		putback_lru_pages(&pagelist);
  	}
- }
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 1a4bf48..0f66803 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -746,13 +746,6 @@ int migrate_pages(struct list_head *from,
- 	struct page *page2;
- 	int swapwrite = current->flags & PF_SWAPWRITE;
- 	int rc;
--	unsigned long flags;
--
--	local_irq_save(flags);
--	list_for_each_entry(page, from, lru)
--		__inc_zone_page_state(page, NR_ISOLATED_ANON +
--				page_is_file_cache(page));
--	local_irq_restore(flags);
  
- 	if (!swapwrite)
- 		current->flags |= PF_SWAPWRITE;
-@@ -878,8 +871,11 @@ static int do_move_page_to_node_array(struct mm_struct *mm,
- 			goto put_and_set;
- 
- 		err = isolate_lru_page(page);
--		if (!err)
-+		if (!err) {
- 			list_add_tail(&page->lru, &pagelist);
-+			inc_zone_page_state(page, NR_ISOLATED_ANON +
-+					    page_is_file_cache(page));
-+		}
- put_and_set:
- 		/*
- 		 * Either remove the duplicate refcount from
+ 	up_write(&mm->mmap_sem);
 -- 
 1.6.0.GIT
 
