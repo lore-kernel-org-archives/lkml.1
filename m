@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbZJIOFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760911AbZJIOIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760861AbZJIOFs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 10:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757654AbZJIOFr
+	id S1760911AbZJIOIw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 10:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758440AbZJIOIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 10:05:47 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:28473 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754373AbZJIOFq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 10:05:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=n1/aBMbg8eCaD11jItqWQu9V9R2EgGc9VRUObmLEpXn0lWnQSmqf0pOO7EE5bbE54w
-         mZmjl3/8i8jqPaSXQyST1ph7ysRhgomuXZbDQ6cJ1bzYDw0nxp8upMWiEVoVqGvoY2pr
-         dOE+m0KJWV16Ejbrvnp+wZPxvEa7j2xHWxOPo=
-Date: Fri, 9 Oct 2009 16:04:34 +0200
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Bryan Donlan <bdonlan@gmail.com>, "Fred ." <eldmannen@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Microsoft is planning Windows 8 to be 128-bit
-Message-ID: <20091009160434.5616931d@varda>
-In-Reply-To: <1255074577.26976.355.camel@twins>
-References: <f188924b0910081605i6f5cc1c3ibb4cfe6b17543521@mail.gmail.com>
-	<3e8340490910081620s4f259320h583b91192c4ab88e@mail.gmail.com>
-	<1255074577.26976.355.camel@twins>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Fri, 9 Oct 2009 10:08:51 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44438 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756670AbZJIOIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 10:08:50 -0400
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+From: James Bottomley <James.Bottomley@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>
+In-Reply-To: <20091009091538.GA4154@elte.hu>
+References: <alpine.LFD.2.01.0910060851590.3432@localhost.localdomain>
+	 <1254862442.4383.183.camel@mulgrave.site>
+	 <1255012399.4187.24.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
+	 <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain>
+	 <1255031298.4187.260.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain>
+	 <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
+	 <20091008210737.GD29181@mit.edu>
+	 <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
+	 <20091009091538.GA4154@elte.hu>
+Content-Type: text/plain
+Date: Fri, 09 Oct 2009 09:08:07 -0500
+Message-Id: <1255097287.2934.21.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Fri, 09 Oct 2009 09:49:37 +0200
-Peter Zijlstra <peterz@infradead.org> escribió:
-
-> On Thu, 2009-10-08 at 19:20 -0400, Bryan Donlan wrote:
-> > The CPU architecture would have to exist first (it doesn't)
+On Fri, 2009-10-09 at 11:15 +0200, Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> And here I was going to ask Fred to send me such a machine so that I
-> could port Linux for him ;-)
+> > On Thu, 8 Oct 2009, Theodore Tso wrote:
+> > > 
+> > > So would it be acceptable to merge the 50 kloc of crap _during_ the
+> > > merge window?
+> > 
+> > Yes. I actually looked at the driver (since I had pulled it - I've 
+> > unpulled it but am still mulling it over), and while I think it looked 
+> > huge and overly complex, it by no means gave me the kinds of vibes I 
+> > get from some "obviously-ported-from-windows-with-no-clue" drivers.
+> > 
+> > So at least from my quick look I didn't get the feeling that the 
+> > driver was "evil". For me, it's a timing issue.  I hate getting big 
+> > pull requests after -rc1 is out, and I really don't like the feeling 
+> > that people are just ignoring the merge window.
+> > 
+> > That said, if somebody wants to look more closely at the driver, and 
+> > then wants to convince people that it should have gone through 
+> > "staging", feel free. But that's not what I've personally been arguing 
+> > about.
+> 
+> Greg, what's your take on the quality of this new driver? Do you have 
+> some time to do a review of this with drivers/staging/ versus drivers/ 
+> glasses on? The Git URI is at:
 
- The confusion comes (I think) from a bad worded article[1] in, the otherwise
- quite fine, arstechnica website. They where talking about 128 bit file system
- support (again afaics) but in the article it all sounds as if it where talking
- about 128 bit CPU's ;)
+To me, the matter of staging versus actual tree isn't a quality issue
+(otherwise we'd be shifting ~75% of SCSI drivers to staging, depending
+on whose view of "quality" was being used).  It's an ABI issue.  If we
+would have to change the user visible ABI while the driver was being
+cleaned up, I'd want it in staging to warn users to expect these
+problems.  Although we couldn't clean up everything, I did make sure
+this driver plugs correctly into the standard linux FC ABI before
+putting it in the SCSI tree, so there are no ABI changes anticipated
+even though there will likely be a lot of code changes.  Therefore, the
+correct clean up path for this one is through the SCSI tree.
 
+James
 
-[1]
-http://arstechnica.com/microsoft/news/2009/10/microsoft-mulling-128-bit-versions-of-windows-8-windows-9.ars
 
