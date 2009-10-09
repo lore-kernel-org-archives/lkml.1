@@ -1,71 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbZJINP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760655AbZJINT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760703AbZJINP1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 09:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757298AbZJINP0
+	id S1760655AbZJINT3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 09:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594AbZJINT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 09:15:26 -0400
-Received: from mga03.intel.com ([143.182.124.21]:56425 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbZJINP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 09:15:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,532,1249282800"; 
-   d="scan'208";a="197027867"
-Date: Fri, 9 Oct 2009 21:14:36 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ehrhardt Christian <ehrhardt@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH] mm: make VM_MAX_READAHEAD configurable
-Message-ID: <20091009131436.GA23774@localhost>
-References: <1255087175-21200-1-git-send-email-ehrhardt@linux.vnet.ibm.com> <1255090830.8802.60.camel@laptop>
+	Fri, 9 Oct 2009 09:19:29 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:55427 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752227AbZJINT2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 09:19:28 -0400
+Message-ID: <4ACF381F.9050808@fr.ibm.com>
+Date: Fri, 09 Oct 2009 15:18:23 +0200
+From: Daniel Lezcano <dlezcano@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255090830.8802.60.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+CC: Pavel Emelianov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: pidns memory leak
+References: <4AC5F198.2070407@fr.ibm.com> <20091006040526.GA22923@us.ibm.com> <4ACAFD6A.3060008@fr.ibm.com> <20091008030828.GA18973@us.ibm.com> <4ACD9ECC.90508@fr.ibm.com> <20091009032928.GA2031@us.ibm.com>
+In-Reply-To: <20091009032928.GA2031@us.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------000807030909080707080107"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 02:20:30PM +0200, Peter Zijlstra wrote:
-> On Fri, 2009-10-09 at 13:19 +0200, Ehrhardt Christian wrote:
-> > From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> > 
-> > On one hand the define VM_MAX_READAHEAD in include/linux/mm.h is just a default
-> > and can be configured per block device queue.
-> > On the other hand a lot of admins do not use it, therefore it is reasonable to
-> > set a wise default.
-> > 
-> > This path allows to configure the value via Kconfig mechanisms and therefore
-> > allow the assignment of different defaults dependent on other Kconfig symbols.
-> > 
-> > Using this, the patch increases the default max readahead for s390 improving
-> > sequential throughput in a lot of scenarios with almost no drawbacks (only
-> > theoretical workloads with a lot concurrent sequential read patterns on a very
-> > low memory system suffer due to page cache trashing as expected).
+This is a multi-part message in MIME format.
+--------------000807030909080707080107
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Sukadev Bhattiprolu wrote:
+> Daniel Lezcano [dlezcano@fr.ibm.com] wrote:
+>> Sukadev Bhattiprolu wrote:
+>>> Still digging through some traces, but below I have some questions that 
+>>> I am still trying to answer.
+>>>
+>>>> I am not sure what you mean by 'struct pids' but what I observed is:
+>>> Ok, I see that too. If pids leak, then pid-namespace will leak too.
+>>> Do you see any leaks in proc_inode_cache ?
+>> Yes, right. It leaks too.
 > 
-> Why can't this be solved in userspace?
+> Ok, some progress...
 > 
-> Also, can't we simply raise this number if appropriate? Wu did some
+> Can you please verify these observations:
+> 
+> - If the container exits normally, the leak does not seem to happen.
+>   (i.e reduce your sleep 3600 to say sleep 3 and remove the lxc-stop).
+> 
+> - Revert the following commit and check if the leak happens:
+> 
+> 	commit 7766755a2f249e7e0dabc5255a0a3d151ff79821
+> 	Author: Andrea Arcangeli <andrea@suse.de>
+> 	Date:   Mon Feb 4 22:29:21 2008 -0800
+> 
+> (this commit added the check for PF_EXITING in proc_flush_task_mnt 
+> loosely explained below).
 
-Agreed, and Ehrhardt's 512KB readahead size looks like a good default :)
 
-> read-ahead trashing detection bits a long while back which should scale
-> the read-ahead window back when we're low on memory, not sure that ever
-> made it in, but that sounds like a better option than having different
-> magic numbers for each platform.
 
-The current kernel could roughly estimate the thrashing safe size (the
-context readahead). However that's not enough. Context readahead is
-normally active only for interleaved reads. The normal behavior is to
-scale up readahead size aggressively. For better support for embedded
-systems, we may need a flag/mode which tells: "we recently experienced
-thrashing, so estimate and stick to the thrashing safe size instead of
-keep scaling up readahead size and thus risk thrashing again".
+> Incomplete analysis :-)
+> 
+> If the container-init is terminated (by the lxc-stop), the container zaps
+> other processes in the container and waits for them. The leak happens in
+> this case.
+> 
+> Following sequence of events occur:
+> 
+> 	- container-init calls do_exit and sets PF_EXITING (in exit_signals())
+> 
+> 	- container init calls zaps_pid_ns_processes() (exit_notify /
+> 	  forget_orignal_parent() / find_new_reaper())
+> 
+> 	- In zap_pid_ns_processes() container-init sends SIGKILL to
+> 	  descendants and calls sys_wait().
+> 
+> 	- The sys_wait() is expected to call release_task() which calls
+> 	  proc_flush_task_mnt().
+> 
+> 	- proc_flush_task_mnt() looks up the dentry for the pid (2 in
+> 	  our example) and finds the dentry.
+> 
+> 	  But since container-init is itself exiting (i.e PF_EXITING is
+> 	  set) it does NOT call the shrink_dcache_parent(), but,
+> 	  interestingly calls d_drop() and dput().
+> 
+> 	  Now the d_drop() unhashes the dentry for the pid 2.
+> 
+> 	- proc_flush_task_mnt() then tries to find the dentry for the
+> 	  tgid of the process. In our case, the tgid == pid == 2 and
+> 	  we just unhashed the dentry for "2".
+> 
+> 	  So, we don't find the dentry for the leader either (and hence
+> 	  don't make the second shrink_dcache_parent() call in
+> 	  proc_flush_task_mnt() either).
+> 
+> 	  Without a call to shrink_dcache_parent(), the proc inode
+> 	  for the process that was terminated by container init is
+> 	  not deleted (i.e we don't call proc_delete_inode() or
+> 	  the put_pid() inside it) causing us to leak proc_inodes,
+> 	  struct pid and hence struct pid_namespace.
 
-Thanks,
-Fengguang
+Ouch !
+
+Nice analysis :)
+
+Following your explanation I was able to reproduce a simple program 
+added in attachment. But there is something I do not understand is why 
+the leak does not appear if I do the 'lstat' (cf. test program) in the 
+pid 2 context.
+
+
+> There should be a better fix, but first please confirm if reverting the
+> above commit fixes the leak for you also.
+
+I confirm the leak does no longer appear when reverting this patch.
+
+Thanks
+   -- Daniel
+
+--------------000807030909080707080107
+Content-Type: text/x-csrc;
+ name="bugpidns_leak.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="bugpidns_leak.c"
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/prctl.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/poll.h>
+#include <signal.h>
+#include <sched.h>
+
+#ifndef CLONE_NEWPID
+#  define CLONE_NEWPID            0x20000000
+#endif
+
+int child(void *arg)
+{
+	pid_t pid;
+	struct stat s;
+
+	if (mount("proc", "/proc", "proc", 0, NULL)) {
+		perror("mount");
+		return -1;
+	}
+
+	pid = fork();
+	if (pid < 0) {
+		perror("fork");
+		return -1;
+	}
+
+	if (!pid) {
+		poll(0, 0 , -1);
+		exit(-1);
+	}
+
+	poll(0, 0, -1);
+
+	return 0;
+}
+
+pid_t clonens(int (*fn)(void *), void *arg, int flags)
+{
+	long stack_size = sysconf(_SC_PAGESIZE);
+ 	void *stack = alloca(stack_size) + stack_size;
+	return clone(fn, stack, flags | SIGCHLD, arg);
+}
+
+int main(int argc, char *argv[])
+{
+	pid_t pid;
+	struct stat s;
+	char path[MAXPATHLEN];
+
+	pid = clonens(child, NULL, CLONE_NEWNS|CLONE_NEWPID);
+	if (pid < 0) {
+		perror("clone");
+		return -1;
+	}
+
+	/* yes ugly.*/
+	sleep(1);
+
+	/* !! assumption : child of my child is pid + 1 
+	 * any reliable simple solution is welcome :) */
+	snprintf(path, sizeof(path), "/proc/%d/exe", pid + 1);
+	
+	if (lstat(path, &s)) {
+		perror("lstat");
+		exit(-1);
+	}
+
+	if (kill(pid, SIGKILL)) {
+		perror("kill");
+		return -1;
+	}
+
+	return 0;
+}
+
+--------------000807030909080707080107--
