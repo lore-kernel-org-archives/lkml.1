@@ -1,93 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964856AbZJIX14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964819AbZJIX13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964856AbZJIX14 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934609AbZJIX13
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S964819AbZJIX13 (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 9 Oct 2009 19:27:29 -0400
-Received: from kroah.org ([198.145.64.141]:56341 "EHLO coco.kroah.org"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934546AbZJIX12
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 9 Oct 2009 19:27:28 -0400
+Received: from kroah.org ([198.145.64.141]:56342 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934608AbZJIX10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934609AbZJIX10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Oct 2009 19:27:26 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:22:34 2009
-Message-Id: <20091009232234.333042452@mini.kroah.org>
+Message-Id: <20091009232234.419680073@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:21:30 -0700
+Date: Fri, 09 Oct 2009 16:21:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Mingarelli <Thomas.Mingarelli@hp.com>,
-       Wim Van Sebroeck <wim@iguana.be>
-Subject: [7/8] [WATCHDOG] hpwdt.c: Add new HP BMC controller.
+       John Stultz <johnstul@us.ibm.com>,
+       Yanmin Zhang <yanmin_zhang@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [8/8] time: catch xtime_nsec underflows and fix them
 From: gregkh@mini.kroah.org
 References: <20091009232123.464253035@mini.kroah.org>
-Content-Disposition: inline; filename=hpwdt.c-add-new-hp-bmc-controller.patch
+Content-Disposition: inline; filename=time-catch-xtime_nsec-underflows-and-fix-them.patch
 In-Reply-To: <20091009232300.GA403@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Mingarelli <Thomas.Mingarelli@hp.com>
+From: john stultz <johnstul@us.ibm.com>
 
-commit d8100c3abfd32986a8820ce4e614b0223a2d22a9 upstream.
+commit 6c9bacb41c10ba84ff68f238e234d96f35fb64f7 upstream.
 
-Add the PCI-ID for the upcoming new BMC controller for HP hardware.
+Impact: fix time warp bug
 
-Signed-off-by: Thomas Mingarelli <Thomas.Mingarelli@hp.com>
-Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+Alex Shi, along with Yanmin Zhang have been noticing occasional time
+inconsistencies recently. Through their great diagnosis, they found that
+the xtime_nsec value used in update_wall_time was occasionally going
+negative. After looking through the code for awhile, I realized we have
+the possibility for an underflow when three conditions are met in
+update_wall_time():
+
+  1) We have accumulated a second's worth of nanoseconds, so we
+     incremented xtime.tv_sec and appropriately decrement xtime_nsec.
+     (This doesn't cause xtime_nsec to go negative, but it can cause it
+      to be small).
+
+  2) The remaining offset value is large, but just slightly less then
+     cycle_interval.
+
+  3) clocksource_adjust() is speeding up the clock, causing a
+     corrective amount (compensating for the increase in the multiplier
+     being multiplied against the unaccumulated offset value) to be
+     subtracted from xtime_nsec.
+
+This can cause xtime_nsec to underflow.
+
+Unfortunately, since we notify the NTP subsystem via second_overflow()
+whenever we accumulate a full second, and this effects the error
+accumulation that has already occured, we cannot simply revert the
+accumulated second from xtime nor move the second accumulation to after
+the clocksource_adjust call without a change in behavior.
+
+This leaves us with (at least) two options:
+
+1) Simply return from clocksource_adjust() without making a change if we
+   notice the adjustment would cause xtime_nsec to go negative.
+
+This would work, but I'm concerned that if a large adjustment was needed
+(due to the error being large), it may be possible to get stuck with an
+ever increasing error that becomes too large to correct (since it may
+always force xtime_nsec negative). This may just be paranoia on my part.
+
+2) Catch xtime_nsec if it is negative, then add back the amount its
+   negative to both xtime_nsec and the error.
+
+This second method is consistent with how we've handled earlier rounding
+issues, and also has the benefit that the error being added is always in
+the oposite direction also always equal or smaller then the correction
+being applied. So the risk of a corner case where things get out of
+control is lessened.
+
+This patch fixes bug 11970, as tested by Yanmin Zhang
+http://bugzilla.kernel.org/show_bug.cgi?id=11970
+
+Reported-by: alex.shi@intel.com
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+Acked-by: Yanmin Zhang <yanmin_zhang@linux.intel.com>
+Tested-by: Yanmin Zhang <yanmin_zhang@linux.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/watchdog/hpwdt.c |   15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+ kernel/time/timekeeping.c |   22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
---- a/drivers/watchdog/hpwdt.c
-+++ b/drivers/watchdog/hpwdt.c
-@@ -47,6 +47,7 @@
- #define PCI_BIOS32_PARAGRAPH_LEN	16
- #define PCI_ROM_BASE1			0x000F0000
- #define ROM_SIZE			0x10000
-+#define HPWDT_VERSION			"1.01"
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -477,6 +477,28 @@ void update_wall_time(void)
+ 	/* correct the clock when NTP error is too big */
+ 	clocksource_adjust(offset);
  
- struct bios32_service_dir {
- 	u32 signature;
-@@ -130,12 +131,8 @@ static void *cru_rom_addr;
- static struct cmn_registers cmn_regs;
- 
- static struct pci_device_id hpwdt_devices[] = {
--	{
--	 .vendor = PCI_VENDOR_ID_COMPAQ,
--	 .device = 0xB203,
--	 .subvendor = PCI_ANY_ID,
--	 .subdevice = PCI_ANY_ID,
--	},
-+	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB203) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_HP, 0x3306) },
- 	{0},			/* terminate list */
- };
- MODULE_DEVICE_TABLE(pci, hpwdt_devices);
-@@ -704,10 +701,11 @@ static int __devinit hpwdt_init_one(stru
- 	}
- 
- 	printk(KERN_INFO
--		"hp Watchdog Timer Driver: 1.00"
-+		"hp Watchdog Timer Driver: %s"
- 		", timer margin: %d seconds (nowayout=%d)"
- 		", allow kernel dump: %s (default = 0/OFF).\n",
--		soft_margin, nowayout, (allow_kdump == 0) ? "OFF" : "ON");
-+		HPWDT_VERSION, soft_margin, nowayout,
-+		(allow_kdump == 0) ? "OFF" : "ON");
- 
- 	return 0;
- 
-@@ -757,6 +755,7 @@ static int __init hpwdt_init(void)
- MODULE_AUTHOR("Tom Mingarelli");
- MODULE_DESCRIPTION("hp watchdog driver");
- MODULE_LICENSE("GPL");
-+MODULE_VERSION(HPWDT_VERSION);
- MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
- 
- module_param(soft_margin, int, 0);
++	/*
++	 * Since in the loop above, we accumulate any amount of time
++	 * in xtime_nsec over a second into xtime.tv_sec, its possible for
++	 * xtime_nsec to be fairly small after the loop. Further, if we're
++	 * slightly speeding the clocksource up in clocksource_adjust(),
++	 * its possible the required corrective factor to xtime_nsec could
++	 * cause it to underflow.
++	 *
++	 * Now, we cannot simply roll the accumulated second back, since
++	 * the NTP subsystem has been notified via second_overflow. So
++	 * instead we push xtime_nsec forward by the amount we underflowed,
++	 * and add that amount into the error.
++	 *
++	 * We'll correct this error next time through this function, when
++ 	 * xtime_nsec is not as small.
++	 */
++	if (unlikely((s64)clock->xtime_nsec < 0)) {
++		s64 neg = -(s64)clock->xtime_nsec;
++		clock->xtime_nsec = 0;
++		clock->error += neg << (NTP_SCALE_SHIFT - clock->shift);
++	}
++
+ 	/* store full nanoseconds into xtime */
+ 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
+ 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
 
 
