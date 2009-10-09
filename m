@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761663AbZJIXmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761716AbZJIXmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761663AbZJIXmh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbZJIXmg
+	id S1761716AbZJIXmx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761655AbZJIXmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:42:36 -0400
-Received: from kroah.org ([198.145.64.141]:51457 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:42:51 -0400
+Received: from kroah.org ([198.145.64.141]:51487 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934577AbZJIXmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:42:13 -0400
+	id S1761602AbZJIXmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:42:50 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:34:40 2009
-Message-Id: <20091009233440.056033028@mini.kroah.org>
+Message-Id: <20091009233440.157774034@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:34:42 -0700
+Date: Fri, 09 Oct 2009 16:34:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Dumazet <eric.dumazet@gmail.com>,
+       Steve Glendinning <steve.glendinning@smsc.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 31/37] net: Fix sock_wfree() race
+Subject: [patch 32/37] smsc95xx: fix transmission where ZLP is expected
 References: <20091009233411.852013234@mini.kroah.org>
-Content-Disposition: inline; filename=net-fix-sock_wfree-race.patch
+Content-Disposition: inline; filename=smsc95xx-fix-transmission-where-zlp-is-expected.patch
 In-Reply-To: <20091009233812.GA15982@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,57 +30,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Eric Dumazet <eric.dumazet@gmail.com>
+From: Steve Glendinning <steve.glendinning@smsc.com>
 
-[ Upstream commit d99927f4d93f36553699573b279e0ff98ad7dea6 ]
+[ Upstream commit ec4756238239f1a331d9fb95bad8b281dad56855 ]
 
-Commit 2b85a34e911bf483c27cfdd124aeb1605145dc80
-(net: No more expensive sock_hold()/sock_put() on each tx)
-opens a window in sock_wfree() where another cpu
-might free the socket we are working on.
+Usbnet framework assumes USB hardware doesn't handle zero length
+packets, but SMSC LAN95xx requires these to be sent for correct
+operation.
 
-A fix is to call sk->sk_write_space(sk) while still
-holding a reference on sk.
+This patch fixes an easily reproducible tx lockup when sending a frame
+that results in exactly 512 bytes in a USB transmission (e.g. a UDP
+frame with 458 data bytes, due to IP headers and our USB headers).  It
+adds an extra flag to usbnet for the hardware driver to indicate that
+it can handle and requires the zero length packets.
 
-Reported-by: Jike Song <albcamus@gmail.com>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+This patch should not affect other usbnet users, please also consider
+for -stable.
+
+Signed-off-by: Steve Glendinning <steve.glendinning@smsc.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/core/sock.c |   19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
+ drivers/net/usb/smsc95xx.c |    2 +-
+ drivers/net/usb/usbnet.c   |    2 +-
+ include/linux/usb/usbnet.h |    1 +
+ 3 files changed, 3 insertions(+), 2 deletions(-)
 
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -1218,17 +1218,22 @@ void __init sk_init(void)
- void sock_wfree(struct sk_buff *skb)
- {
- 	struct sock *sk = skb->sk;
--	int res;
-+	unsigned int len = skb->truesize;
+--- a/drivers/net/usb/smsc95xx.c
++++ b/drivers/net/usb/smsc95xx.c
+@@ -1232,7 +1232,7 @@ static const struct driver_info smsc95xx
+ 	.rx_fixup	= smsc95xx_rx_fixup,
+ 	.tx_fixup	= smsc95xx_tx_fixup,
+ 	.status		= smsc95xx_status,
+-	.flags		= FLAG_ETHER,
++	.flags		= FLAG_ETHER | FLAG_SEND_ZLP,
+ };
  
--	/* In case it might be waiting for more memory. */
--	res = atomic_sub_return(skb->truesize, &sk->sk_wmem_alloc);
--	if (!sock_flag(sk, SOCK_USE_WRITE_QUEUE))
-+	if (!sock_flag(sk, SOCK_USE_WRITE_QUEUE)) {
-+		/*
-+		 * Keep a reference on sk_wmem_alloc, this will be released
-+		 * after sk_write_space() call
-+		 */
-+		atomic_sub(len - 1, &sk->sk_wmem_alloc);
- 		sk->sk_write_space(sk);
-+		len = 1;
-+	}
- 	/*
--	 * if sk_wmem_alloc reached 0, we are last user and should
--	 * free this sock, as sk_free() call could not do it.
-+	 * if sk_wmem_alloc reaches 0, we must finish what sk_free()
-+	 * could not do because of in-flight packets
+ static const struct usb_device_id products[] = {
+--- a/drivers/net/usb/usbnet.c
++++ b/drivers/net/usb/usbnet.c
+@@ -988,7 +988,7 @@ int usbnet_start_xmit (struct sk_buff *s
+ 	 * NOTE:  strictly conforming cdc-ether devices should expect
+ 	 * the ZLP here, but ignore the one-byte packet.
  	 */
--	if (res == 0)
-+	if (atomic_sub_and_test(len, &sk->sk_wmem_alloc))
- 		__sk_free(sk);
- }
- EXPORT_SYMBOL(sock_wfree);
+-	if ((length % dev->maxpacket) == 0) {
++	if (!(info->flags & FLAG_SEND_ZLP) && (length % dev->maxpacket) == 0) {
+ 		urb->transfer_buffer_length++;
+ 		if (skb_tailroom(skb)) {
+ 			skb->data[skb->len] = 0;
+--- a/include/linux/usb/usbnet.h
++++ b/include/linux/usb/usbnet.h
+@@ -86,6 +86,7 @@ struct driver_info {
+ 
+ #define FLAG_FRAMING_AX 0x0040		/* AX88772/178 packets */
+ #define FLAG_WLAN	0x0080		/* use "wlan%d" names */
++#define FLAG_SEND_ZLP	0x0200		/* hw requires ZLPs are sent */
+ 
+ 
+ 	/* init device ... can sleep, or cause probe() failure */
 
 
