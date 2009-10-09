@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbZJICzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932583AbZJIC4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760219AbZJICzV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 22:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758818AbZJICzR
+	id S932583AbZJIC4G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 22:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932308AbZJIC4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 22:55:17 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:56985 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758747AbZJICzQ (ORCPT
+	Thu, 8 Oct 2009 22:56:03 -0400
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:65006 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932269AbZJIC4C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 22:55:16 -0400
-Date: Fri, 9 Oct 2009 11:53:44 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.32-rc4
-Message-ID: <20091009025344.GB7179@linux-sh.org>
+	Thu, 8 Oct 2009 22:56:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:in-reply-to:message-id:references:user-agent
+         :x-archive:mime-version:content-type;
+        b=M/9oIUl/+cJ1ZiHDH4WGcvqStH0CCjMeNXjpv8AwE9j0O8hI90Xf6ydTqlT4VQjoun
+         QKbtpSMrWPLuQ63gQ/CL4IHXc4nA/K1HFT0MOXUxUIqPcRZZm6HqwyVX4mR0LmTznAwE
+         Pn1FNCb+SJFRyuX4ZU+ao5Fmz2MxQCscufyd4=
+Date: Thu, 8 Oct 2009 23:55:19 -0300 (BRST)
+From: "=?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?=" 
+	<fredlwm@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: keyboard under X with 2.6.31
+In-Reply-To: <20091009023844.GA26462@core.coreip.homeip.net>
+Message-ID: <alpine.LNX.2.01.0910082347470.23080@dyndns.pervalidus.net>
+References: <alpine.LNX.2.01.0910071706490.11297@dyndns.pervalidus.net> <20091009023844.GA26462@core.coreip.homeip.net>
+User-Agent: Alpine 2.01 (LNX 1266 2009-07-14)
+X-Archive: encrypt
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1249076227-1255056923=:23080"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.32
+--8323328-1249076227-1255056923=:23080
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-Which contains:
+On Thu, 8 Oct 2009, Dmitry Torokhov wrote:
 
-Kuninori Morimoto (3):
-      sh: mach-ecovec24: Add TouchScreen support
-      sh: mach-ecovec24: modify 1st MTD area to read only
-      sh: mach-ecovec24: Document DS2 switch settings.
+> On Wed, Oct 07, 2009 at 05:19:25PM -0300, Frédéric L. W. Meunier wrote:
+>> My keyboard (ABNT2 PS/2) seems to be broken under X with 2.6.31.2. After
+>> less than an hour, it starts acting crazy. The first time, all leds
+>> turned off and I couldn't type anything. The second time, all leds also
+>> turned off, but since it happened while I was pressing the Backspace key
+>> to delete text, it continued deleting, like if the key was pressed.
+>>
+>> In both cases, the mouse (USB) still works and I can exit X, where the
+>> keyboard works. There's nothing in the logs.
+>>
+>> No problem with 2.6.30.9. Is it supposed to be a kernel or X bug ?
+>
+> It would be interestig to see if the same keyboard continues to work in
+> console... if it does then I'd blame X.
 
-Lubomir Rintel (1):
-      sh: Build fix: export __movmem
+I can exit X with the mouse and do anything in the console after 
+that.
 
-Magnus Damm (2):
-      usb: r8a66597-udc unaligned fifo fix
-      sh: enable sleep state LEDs on Ecovec24
+I just reported it to the XOrg mailing-list.
 
-Matt Fleming (5):
-      sh: Don't enable interrupts in the page fault path
-      sh: Sprinkle __uses_jump_to_uncached
-      sh: Plug PMB alloc memory leak
-      sh: Try PMB mapping based on physical address, not mapping size
-      sh: Don't allocate smaller sized mappings on every iteration
-
-Paul Mundt (4):
-      sh: Handle ioport_map() cases for >= P1SEG addresses.
-      sh: Set the default I/O port base to P2SEG.
-      sh: magicpanelr2 and dreamcast can use the generic I/O base.
-      sh: Disable unaligned kernel access printks by default.
-
- arch/sh/boards/board-magicpanelr2.c   |    2 -
- arch/sh/boards/mach-dreamcast/setup.c |    2 -
- arch/sh/boards/mach-ecovec24/setup.c  |   63 +++++++++++++++++++-
- arch/sh/kernel/cpu/sh3/entry.S        |    2 -
- arch/sh/kernel/io_generic.c           |    3 +
- arch/sh/kernel/machvec.c              |    3 +
- arch/sh/kernel/sh_ksyms_32.c          |    1 +
- arch/sh/kernel/traps_32.c             |    4 +-
- arch/sh/mm/cache-sh4.c                |    2 +-
- arch/sh/mm/cache-sh7705.c             |    4 +-
- arch/sh/mm/ioremap_32.c               |    2 +-
- arch/sh/mm/pmb.c                      |   37 ++++++++++--
- drivers/usb/gadget/r8a66597-udc.h     |  105 +++++++++++++++++++-------------
- 13 files changed, 168 insertions(+), 62 deletions(-)
+Anyway, I wonder if DRI could mess with the keyboard. I suppose 
+there were changes (and Radeon related) from 2.6.30 to 2.6.31. 
+But I can test with it disabled.
+--8323328-1249076227-1255056923=:23080--
