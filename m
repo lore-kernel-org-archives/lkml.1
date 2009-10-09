@@ -1,48 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934134AbZJIThW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934167AbZJITk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934134AbZJIThW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 15:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761331AbZJIThV
+	id S934167AbZJITk2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 15:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934112AbZJITk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 15:37:21 -0400
-Received: from web53206.mail.re2.yahoo.com ([206.190.49.76]:36799 "HELO
-	web53206.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761318AbZJIThU convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 15:37:20 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=zU0X8j+KR69AppRvXzeCC3sk6M4bhNhQ6gEGUyTeN6YaKLB3OHdFtKCiH6SBavbk8AoCYMgZTAw41zlVQ5DuKaGgIQGL44cyPdaCHlRpwtarRdDMD4ZcSrG8RZChgSV7udXoWnrH8TderZ87xwkXG2lxb9LivLAPDV/MQoTLYZ0=;
-Message-ID: <840534.40534.qm@web53206.mail.re2.yahoo.com>
-X-YMail-OSG: wLxV7HIVM1nCzro5D.FuJqQKklsoRzR4M2dtGms.kRSc_6QLTp_G_pJmXYeTcov6VR2iByBsaat6bT2LzYqTtzPW6IN3vCzXvmthfzrnIa6ikQILKMOpw6N.DzgP4vTvUaHv4c9XKNO8TzhPHbNH.Tblym.CpzCrP3i2bdW2UJR5_ipFZ6CSMKTkrMGkg4AZrPqUhI3ZUG7pHYvTRlcwVN6m9EMx8D5UxgwbWEvEWua4VMy6S.8EWBBZvroiGoQPIEd1mX5wTBdvfIAjqXiL0uHMRkQJnkrAQwa.XGzIyD4nOZM1N7mt_4J9EbltaA1svbTXLsXcDVyXDxF8ZF5KwdcmRhyWDaUwlExMpHbXNQSHkb6u1.66Hs0O0YEW8PvO8WCnbHNwcvVXNMkqBBb3xNmySJTxtWpxj4En8wj_8FvF4vF2bt_ifBiMmoIzecpTb1jasg--
-X-Mailer: YahooMailRC/182.10 YahooMailWebService/0.7.347.3
-Date: Fri, 9 Oct 2009 12:36:38 -0700 (PDT)
-From: Reza Salehi <rezsalehi@yahoo.com>
-Subject: Question about "scheduling while atomic"
-To: linux-kernel@vger.kernel.org
-Cc: linux-net@vger.kernel.org
+	Fri, 9 Oct 2009 15:40:27 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:53236 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933271AbZJITk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 15:40:26 -0400
+Message-ID: <4ACF9184.9040104@msgid.tls.msk.ru>
+Date: Fri, 09 Oct 2009 23:39:48 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: wrong final bzImage build (regading #14270)
+References: <4ACF460E.7000901@msgid.tls.msk.ru> <20091009145825.GE5311@lenovo>
+In-Reply-To: <20091009145825.GE5311@lenovo>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Ok, some more to this.
 
-I am wonder where I can post my general questions for help about kernel oopps ?
+It turns out dash's built-in echo command interprets \nnn octal
+sequences by default, and there's no way to turn that off.  So,
+for example, sed-zoffset command from arch/x86/boot/Makefile
+(which includes \1 \2 etc substitutions for sed), when echoed
+in verbose mode (V=1), produces.. interesting characters (with
+ascii code 1 and 2).
 
-I am getting kernel oops "  scheduling while atomic: watchdog or swapper" it doesn't make kernel to crash but i am sure it is not a good sign..
-I am not holding any spin lock at all.
-I am wonder what would be the right approch to debug this issue. I am using kernel 2.6.28 on MIPS procesor. 
+It's not practival to replace V=1's echo with /bin/echo I think.
 
-Thanks for your help in advance. 
+So I'd say it's not a bug in the build system after all, but
+a bug in dash.  Well, at least this expanding-by-default didn't
+trigger another very-difficult-to-find bug (hopefully), but it
+has good potential.
 
-Best Regards,
-Reza
+I'll file a bug report against dash.
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+/mjt
+
+> [Michael Tokarev - Fri, Oct 09, 2009 at 06:17:50PM +0400]
+>> Ok, finally the mystery solved.  After a week of
+>> digging.
+>>
+>> The original problem was titled "Cannot boot on
+>> a PIII Celeron", and Rafael filed a bug #14270
+>> for this.
+>>
+>> In short, what I observed was that a new kernel
+>> (2.6.31) fails to boot on a PIII Celeron machine.
+>> But changing just the CPU to plain PIII and voila,
+>> it now works.  I don't know why it behaved this
+>> way, but I found where was the problem, finally.
+>>
+>> And the problem is in the last stage of build, when
+>> building the bzImage.
+>>
+>> make -f scripts/Makefile.build obj=arch/x86/boot/compressed arch/x86/boot/compressed/vmlinux
+>> ...
+>>   (cat arch/x86/boot/compressed/vmlinux.bin | lzma -9 && echo -ne \\x38\\xd6\\x37\\x00) > arch/x86/boot/compressed/vmlinux.bin.lzma
+>> ...
+>>
+>> Note the echo command.
+>>
+>> Now, Debian switched to dash as /bin/sh.  And dash
+>> does not understand the -e option:
+>>
+>> $ dash -c 'echo -ne \\x38\\xd6\\x37\\x00' | od -x
+>> 0000000 6e2d 2065 785c 3833 785c 3664 785c 3733
+>> 0000020 785c 3030 000a
+>>
+>> $ bash -c 'echo -ne \\x38\\xd6\\x37\\x00' | od -x
+>> 0000000 d638 0037
+>>
+>> So the final size (it's the size of uncompressed file)
+>> becomes incorrect.  Here's what mkpiggy outputs for
+>> this (in arch/x86/boot/compressed/piggy.S):
+>>
+>>  z_output_len = 170930296
+>>
+>> while it should be
+>>
+>>  z_output_len = 3659320
+>>
+>> And with the former (wrong, larger) size, the whole
+>> thing just reboots on a PIII Celeron.  I've no idea
+>> why, but the original problem is here.
+>>
+>> The same thing happens with bzip2 algorithm which is
+>> not new, not only with lzma.
+>>
+>> The whole thing looks quite hackish to me, -- mkpiggy
+>> can know the size from the original image just fine,
+>> instead of getting it from the end of already compressed
+>> file.
+>>
+>> For now, quick fix is to change echo to printf in there.
+>> Correct fix is to re-write mkpiggy to look at the
+>> original file for size (IMHO anyway).
+>>
+>> And this is a very good candidate for -stable as well.
+>> The bug is very difficult to find.  And now when more
+>> and more people who use Debian are switching to dash,
+>> it will be more common.
+>>
+>> Thanks!
+
