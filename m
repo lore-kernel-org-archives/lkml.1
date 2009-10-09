@@ -1,239 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760830AbZJIPLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761082AbZJIPNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760830AbZJIPLR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 11:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbZJIPLQ
+	id S1761082AbZJIPNZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 11:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760891AbZJIPNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 11:11:16 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:10681 "EHLO mx1.redhat.com"
+	Fri, 9 Oct 2009 11:13:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46254 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751505AbZJIPLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 11:11:15 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1255093530.8802.64.camel@laptop>
-References: <1255093530.8802.64.camel@laptop> <20091008232226.768382977@chello.nl>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: dhowells@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>
-Subject: Re: [RFC][PATCH 0/4] stack based kmap_atomic -v2
-Date: Fri, 09 Oct 2009 16:10:24 +0100
-Message-ID: <13895.1255101024@redhat.com>
+	id S1758440AbZJIPNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 11:13:23 -0400
+Date: Fri, 9 Oct 2009 17:12:31 +0200
+From: Jan Kara <jack@suse.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Myklebust Trond <Trond.Myklebust@netapp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
+       linux-fsdevel@vger.kernel.org,
+       Richard Kennedy <richard@rsk.demon.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
+	balance_dirty_pages()
+Message-ID: <20091009151230.GF7654@duck.suse.cz>
+References: <20091007073818.318088777@intel.com> <20091007074901.251116016@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091007074901.251116016@intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <peterz@infradead.org> wrote:
+  Hi,
 
->  	type = kmap_atomic_idx_push();
-> ...
-> +	switch (type + 4) {
+On Wed 07-10-09 15:38:19, Wu Fengguang wrote:
+> From: Richard Kennedy <richard@rsk.demon.co.uk>
+> 
+> Reducing the number of times balance_dirty_pages calls global_page_state
+> reduces the cache references and so improves write performance on a
+> variety of workloads.
+> 
+> 'perf stats' of simple fio write tests shows the reduction in cache
+> access.
+> Where the test is fio 'write,mmap,600Mb,pre_read' on AMD AthlonX2 with
+> 3Gb memory (dirty_threshold approx 600 Mb)
+> running each test 10 times, dropping the fasted & slowest values then
+> taking 
+> the average & standard deviation
+> 
+> 		average (s.d.) in millions (10^6)
+> 2.6.31-rc8	648.6 (14.6)
+> +patch		620.1 (16.5)
+> 
+> Achieving this reduction is by dropping clip_bdi_dirty_limit as it  
+> rereads the counters to apply the dirty_threshold and moving this check
+> up into balance_dirty_pages where it has already read the counters.
+> 
+> Also by rearrange the for loop to only contain one copy of the limit
+> tests allows the pdflush test after the loop to use the local copies of
+> the counters rather than rereading them.
+> 
+> In the common case with no throttling it now calls global_page_state 5
+> fewer times and bdi_stat 2 fewer.
+  Hmm, but the patch changes the behavior of balance_dirty_pages() in
+several ways:
 
-This bit is the bit I particularly dislike.  'type' is not fixed at compile
-time, which means that the switch-statement cannot be optimised down.  With
-your original patch, for example, the following code seems to simplify quite
-nicely from:
+> -/*
+> - * Clip the earned share of dirty pages to that which is actually available.
+> - * This avoids exceeding the total dirty_limit when the floating averages
+> - * fluctuate too quickly.
+> - */
+> -static void clip_bdi_dirty_limit(struct backing_dev_info *bdi,
+> -		unsigned long dirty, unsigned long *pbdi_dirty)
+> -{
+> -	unsigned long avail_dirty;
+> -
+> -	avail_dirty = global_page_state(NR_FILE_DIRTY) +
+> -		 global_page_state(NR_WRITEBACK) +
+> -		 global_page_state(NR_UNSTABLE_NFS) +
+> -		 global_page_state(NR_WRITEBACK_TEMP);
+> -
+> -	if (avail_dirty < dirty)
+> -		avail_dirty = dirty - avail_dirty;
+> -	else
+> -		avail_dirty = 0;
+> -
+> -	avail_dirty += bdi_stat(bdi, BDI_RECLAIMABLE) +
+> -		bdi_stat(bdi, BDI_WRITEBACK);
+> -
+> -	*pbdi_dirty = min(*pbdi_dirty, avail_dirty);
+> -}
+> -
+>  static inline void task_dirties_fraction(struct task_struct *tsk,
+>  		long *numerator, long *denominator)
+>  {
+> @@ -468,7 +442,6 @@ get_dirty_limits(unsigned long *pbackgro
+>  			bdi_dirty = dirty * bdi->max_ratio / 100;
+>  
+>  		*pbdi_dirty = bdi_dirty;
+> -		clip_bdi_dirty_limit(bdi, dirty, pbdi_dirty);
+  I don't see, what test in balance_dirty_limits() should replace this
+clipping... OTOH clipping does not seem to have too much effect on the
+behavior of balance_dirty_pages - the limit we clip to (at least
+BDI_WRITEBACK + BDI_RECLAIMABLE) is large enough so that we break from the
+loop immediately. So just getting rid of the function is fine but
+I'd update the changelog accordingly.
 
-	int test_kmap(struct page *page)
-	{
-		int *p, q;
-		p = kmap_atomic(page, KM_USER0);
-		q = *p;
-		kunmap_atomic(page, KM_USER0);
-		return q;
-	}
+> @@ -503,16 +476,36 @@ static void balance_dirty_pages(struct a
+>  		};
+>  
+>  		get_dirty_limits(&background_thresh, &dirty_thresh,
+> -				&bdi_thresh, bdi);
+> +				 &bdi_thresh, bdi);
+>  
+>  		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+> -					global_page_state(NR_UNSTABLE_NFS);
+> -		nr_writeback = global_page_state(NR_WRITEBACK);
+> +				 global_page_state(NR_UNSTABLE_NFS);
+> +		nr_writeback = global_page_state(NR_WRITEBACK) +
+> +			       global_page_state(NR_WRITEBACK_TEMP);
+>  
+> -		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+> -		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+> +		/*
+> +		 * In order to avoid the stacked BDI deadlock we need
+> +		 * to ensure we accurately count the 'dirty' pages when
+> +		 * the threshold is low.
+> +		 *
+> +		 * Otherwise it would be possible to get thresh+n pages
+> +		 * reported dirty, even though there are thresh-m pages
+> +		 * actually dirty; with m+n sitting in the percpu
+> +		 * deltas.
+> +		 */
+> +		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
+> +			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
+> +			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
+> +		} else {
+> +			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+> +			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+> +		}
+> +
+> +		dirty_exceeded =
+> +			(bdi_nr_reclaimable + bdi_nr_writeback >= bdi_thresh)
+> +			|| (nr_reclaimable + nr_writeback >= dirty_thresh);
+>  
+> -		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> +		if (!dirty_exceeded)
+>  			break;
+  Ugh, but this is not equivalent! We would block the writer on some BDI
+without any dirty data if we are over global dirty limit. That didn't
+happen before.
 
-to:
+>  		/*
+> @@ -521,7 +514,7 @@ static void balance_dirty_pages(struct a
+>  		 * when the bdi limits are ramping up.
+>  		 */
+>  		if (nr_reclaimable + nr_writeback <
+> -				(background_thresh + dirty_thresh) / 2)
+> +		    (background_thresh + dirty_thresh) / 2)
+>  			break;
+>  
+>  		if (!bdi->dirty_exceeded)
+> @@ -539,33 +532,10 @@ static void balance_dirty_pages(struct a
+>  		if (bdi_nr_reclaimable > bdi_thresh) {
+>  			writeback_inodes_wbc(&wbc);
+>  			pages_written += write_chunk - wbc.nr_to_write;
+> -			get_dirty_limits(&background_thresh, &dirty_thresh,
+> -				       &bdi_thresh, bdi);
+> -		}
+> -
+> -		/*
+> -		 * In order to avoid the stacked BDI deadlock we need
+> -		 * to ensure we accurately count the 'dirty' pages when
+> -		 * the threshold is low.
+> -		 *
+> -		 * Otherwise it would be possible to get thresh+n pages
+> -		 * reported dirty, even though there are thresh-m pages
+> -		 * actually dirty; with m+n sitting in the percpu
+> -		 * deltas.
+> -		 */
+> -		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
+> -			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
+> -			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
+> -		} else if (bdi_nr_reclaimable) {
+> -			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+> -			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+> +			/* don't wait if we've done enough */
+> +			if (pages_written >= write_chunk)
+> +				break;
+>  		}
+> -
+> -		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> -			break;
+> -		if (pages_written >= write_chunk)
+> -			break;		/* We've done our duty */
+> -
+  Here, we had an opportunity to break from the loop even if we didn't
+manage to write everything (for example because per-bdi thread managed to
+write enough or because enough IO has completed while we were trying to
+write). After the patch, we will sleep. IMHO that's not good...
+  I'd think that if we did all that work in writeback_inodes_wbc we could
+spend the effort on regetting and rechecking the stats...
 
-	int test_kmap(struct page *page)
-	{
-		int *p, q;
-		p = kmap_atomic(page);
-		q = *p;
-		kunmap_atomic(page);
-		return q;
-	}
+>  		schedule_timeout_interruptible(pause);
+>  
+>  		/*
+> @@ -577,8 +547,7 @@ static void balance_dirty_pages(struct a
+>  			pause = HZ / 10;
+>  	}
+>  
+> -	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
+> -			bdi->dirty_exceeded)
+> +	if (!dirty_exceeded && bdi->dirty_exceeded)
+>  		bdi->dirty_exceeded = 0;
+  Here we fail to clear dirty_exceeded if we are over global dirty limit
+but not over per-bdi dirty limit...
 
-but, the assembly goes from:
+> @@ -593,9 +562,7 @@ static void balance_dirty_pages(struct a
+>  	 * background_thresh, to keep the amount of dirty memory low.
+>  	 */
+>  	if ((laptop_mode && pages_written) ||
+> -	    (!laptop_mode && ((global_page_state(NR_FILE_DIRTY)
+> -			       + global_page_state(NR_UNSTABLE_NFS))
+> -					  > background_thresh)))
+> +	    (!laptop_mode && (nr_reclaimable > background_thresh)))
+>  		bdi_start_writeback(bdi, NULL, 0);
+>  }
+  This might be based on rather old values in case we break from the loop
+after calling writeback_inodes_wbc.
 
-	000002a0 <test_kmap>:
-	 2a0:   82 40 1f f0     addi sp,-16,sp
-	 2a4:   05 48 10 00     sti.p fp,@(sp,0)
-	 2a8:   84 88 10 00     ori sp,0,fp
-	 2ac:   88 0d 01 c5     movsg lr,gr5
-	 2b0:   8b 48 20 08     sti gr5,@(fp,8)
-	 2b4:   88 c8 f0 14     ldi @(gr15,20),gr4
-	 2b8:   88 40 40 01     addi gr4,1,gr4
-	 2bc:   89 48 f0 14     sti gr4,@(gr15,20)
-	 2c0:   88 c9 00 00     ldi @(gr16,0),gr4
-	 2c4:   10 00 81 04     sub.p gr8,gr4,gr8
-	 2c8:   88 fc 0c 09     setlos 0xc09,gr4
-	 2cc:   90 b0 80 05     srai gr8,5,gr8
-	 2d0:   90 a0 80 0e     slli gr8,14,gr8
-	 2d4:   90 04 80 84     or gr8,gr4,gr8
-	 2d8:   ba 0c 91 88     movgs gr8,dampr9
-	 2dc:   b8 0c 91 c4     movsg damlr9,gr4
-	 2e0:   90 08 41 00     ld @(gr4,gr0),gr8
-	 2e4:   ba 0c 91 80     movgs gr0,dampr9
-	 2e8:   88 c8 f0 14     ldi @(gr15,20),gr4
-	 2ec:   88 40 4f ff     addi gr4,-1,gr4
-	 2f0:   89 48 f0 14     sti gr4,@(gr15,20)
-	 2f4:   8a c8 20 08     ldi @(fp,8),gr5
-	 2f8:   84 08 21 00     ld @(fp,gr0),fp
-	 2fc:   00 30 50 00     jmpl.p @(gr5,gr0)
-	 300:   82 40 10 10     addi sp,16,sp
-
-to:
-
-	000002a0 <test_kmap>:
-	 2a0:	82 40 1f f0 	addi sp,-16,sp
-	 2a4:	05 48 10 00 	sti.p fp,@(sp,0)
-	 2a8:	84 88 10 00 	ori sp,0,fp
-	 2ac:	88 0d 01 c5 	movsg lr,gr5
-	 2b0:	0b 48 20 08 	sti.p gr5,@(fp,8)
-	 2b4:	94 88 80 00 	ori gr8,0,gr10
-	 2b8:	88 c8 f0 14 	ldi @(gr15,20),gr4
-	 2bc:	88 40 40 01 	addi gr4,1,gr4
-	 2c0:	89 48 f0 14 	sti gr4,@(gr15,20)
-	 2c4:	08 c9 00 00 	ldi.p @(gr16,0),gr4
-	 2c8:	96 f8 00 00 	sethi hi(0x0),gr11
-	 2cc:	96 f4 00 00 	setlo lo(0x0),gr11
-	 2d0:	92 08 b1 00 	ld @(gr11,gr0),gr9
-	 2d4:	88 00 81 04 	sub gr8,gr4,gr4
-	 2d8:	88 b0 40 05 	srai gr4,5,gr4
-	 2dc:	0a 40 90 01 	addi.p gr9,1,gr5
-	 2e0:	80 54 90 48 	subicc gr9,72,gr0,icc0
-	 2e4:	0a 0c b0 80 	st.p gr5,@(gr11,gr0)
-	 2e8:	8e a0 40 0e 	slli gr4,14,gr7
-	 2ec:	e8 1a 00 06 	bhi icc0,0x2,304 <test_kmap+0x64>
-	 2f0:	08 a0 90 02 	slli.p gr9,2,gr4
-	 2f4:	8a f8 00 00 	sethi hi(0x0),gr5
-	 2f8:	8a f4 00 00 	setlo lo(0x0),gr5
-	 2fc:	8c 08 41 05 	ld @(gr4,gr5),gr6
-	 300:	80 30 60 00 	jmpl @(gr6,gr0)
-	 304:	10 f8 00 00 	sethi.p hi(0x0),gr8
-	 308:	92 fc 00 8b 	setlos 0x8b,gr9
-	 30c:	10 f4 00 00 	setlo.p lo(0x0),gr8
-	 310:	80 3c 00 00 	call 310 <test_kmap+0x70>
-	 314:	10 fc 00 06 	setlos.p 0x6,gr8
-	 318:	80 3c 00 00 	call 318 <test_kmap+0x78>
-	 31c:	80 88 00 00 	nop
-	 320:	c0 1a ff fd 	bra 314 <test_kmap+0x74>
-	 324:	08 a0 90 0e 	slli.p gr9,14,gr4
-	 328:	8c f8 db fd 	sethi 0xdbfd,gr6
-	 32c:	0a fc 0c 09 	setlos.p 0xc09,gr5
-	 330:	8c f4 c0 00 	setlo 0xc000,gr6
-	 334:	08 00 40 06 	add.p gr4,gr6,gr4
-	 338:	8a 04 70 85 	or gr7,gr5,gr5
-	 33c:	bc 0d 21 84 	movgs gr4,tplr
-	 340:	bc 0d 31 85 	movgs gr5,tppr
-	 344:	8a 0c 49 00 	tlbpr gr4,gr0,0x2,0x1
-	 348:	8a 88 40 00 	ori gr4,0,gr5
-	 34c:	88 08 b1 00 	ld @(gr11,gr0),gr4
-	 350:	90 08 51 00 	ld @(gr5,gr0),gr8
-	 354:	88 40 4f ff 	addi gr4,-1,gr4
-	 358:	08 0c b0 80 	st.p gr4,@(gr11,gr0)
-	 35c:	80 54 40 48 	subicc gr4,72,gr0,icc0
-	 360:	e8 1a 00 27 	bhi icc0,0x2,3fc <test_kmap+0x15c>
-	 364:	08 a0 40 02 	slli.p gr4,2,gr4
-	 368:	8a f8 00 00 	sethi hi(0x0),gr5
-	 36c:	8a f4 00 00 	setlo lo(0x0),gr5
-	 370:	8c 08 41 05 	ld @(gr4,gr5),gr6
-	 374:	80 30 60 00 	jmpl @(gr6,gr0)
-	 378:	88 fc 0c 09 	setlos 0xc09,gr4
-	 37c:	88 04 70 84 	or gr7,gr4,gr4
-	 380:	b6 0c 21 84 	movgs gr4,iampr2
-	 384:	ba 0c 21 84 	movgs gr4,dampr2
-	 388:	b8 0c 21 c5 	movsg damlr2,gr5
-	 38c:	c0 1a ff f0 	bra 34c <test_kmap+0xac>
-	 390:	ba 0c 21 80 	movgs gr0,dampr2
-	 394:	b6 0c 21 80 	movgs gr0,iampr2
-	 398:	88 c8 f0 14 	ldi @(gr15,20),gr4
-	 39c:	88 40 4f ff 	addi gr4,-1,gr4
-	 3a0:	89 48 f0 14 	sti gr4,@(gr15,20)
-	 3a4:	8a c8 20 08 	ldi @(fp,8),gr5
-	 3a8:	84 08 21 00 	ld @(fp,gr0),fp
-	 3ac:	00 30 50 00 	jmpl.p @(gr5,gr0)
-	 3b0:	82 40 10 10 	addi sp,16,sp
-	 3b4:	ba 0c 31 80 	movgs gr0,dampr3
-	 3b8:	c0 1a ff f8 	bra 398 <test_kmap+0xf8>
-	 3bc:	ba 0c 41 80 	movgs gr0,dampr4
-	 3c0:	c0 1a ff f6 	bra 398 <test_kmap+0xf8>
-	 3c4:	ba 0c 51 80 	movgs gr0,dampr5
-	 3c8:	c0 1a ff f4 	bra 398 <test_kmap+0xf8>
-	 3cc:	ba 0c 61 80 	movgs gr0,dampr6
-	 3d0:	c0 1a ff f2 	bra 398 <test_kmap+0xf8>
-	 3d4:	ba 0c 71 80 	movgs gr0,dampr7
-	 3d8:	c0 1a ff f0 	bra 398 <test_kmap+0xf8>
-	 3dc:	ba 0c 81 80 	movgs gr0,dampr8
-	 3e0:	c0 1a ff ee 	bra 398 <test_kmap+0xf8>
-	 3e4:	ba 0c 91 80 	movgs gr0,dampr9
-	 3e8:	c0 1a ff ec 	bra 398 <test_kmap+0xf8>
-	 3ec:	ba 0c a1 80 	movgs gr0,dampr10
-	 3f0:	c0 1a ff ea 	bra 398 <test_kmap+0xf8>
-	 3f4:	92 0c a9 00 	tlbpr gr10,gr0,0x4,0x1
-	 3f8:	c0 1a ff e8 	bra 398 <test_kmap+0xf8>
-	 3fc:	10 f8 00 00 	sethi.p hi(0x0),gr8
-	 400:	92 fc 00 b0 	setlos 0xb0,gr9
-	 404:	10 f4 00 00 	setlo.p lo(0x0),gr8
-	 408:	80 3c 00 00 	call 408 <test_kmap+0x168>
-	 40c:	10 fc 00 06 	setlos.p 0x6,gr8
-	 410:	80 3c 00 00 	call 410 <test_kmap+0x170>
-	 414:	80 88 00 00 	nop
-	 418:	c0 1a ff fd 	bra 40c <test_kmap+0x16c>
-	 41c:	88 fc 0c 09 	setlos 0xc09,gr4
-	 420:	88 04 70 84 	or gr7,gr4,gr4
-	 424:	ba 0c 31 84 	movgs gr4,dampr3
-	 428:	b8 0c 31 c5 	movsg damlr3,gr5
-	 42c:	c0 1a ff c8 	bra 34c <test_kmap+0xac>
-	 430:	88 fc 0c 09 	setlos 0xc09,gr4
-	 434:	88 04 70 84 	or gr7,gr4,gr4
-	 438:	ba 0c 41 84 	movgs gr4,dampr4
-	 43c:	b8 0c 41 c5 	movsg damlr4,gr5
-	 440:	c0 1a ff c3 	bra 34c <test_kmap+0xac>
-	 444:	88 fc 0c 09 	setlos 0xc09,gr4
-	 448:	88 04 70 84 	or gr7,gr4,gr4
-	 44c:	ba 0c 51 84 	movgs gr4,dampr5
-	 450:	b8 0c 51 c5 	movsg damlr5,gr5
-	 454:	c0 1a ff be 	bra 34c <test_kmap+0xac>
-	 458:	88 fc 0c 09 	setlos 0xc09,gr4
-	 45c:	88 04 70 84 	or gr7,gr4,gr4
-	 460:	ba 0c 61 84 	movgs gr4,dampr6
-	 464:	b8 0c 61 c5 	movsg damlr6,gr5
-	 468:	c0 1a ff b9 	bra 34c <test_kmap+0xac>
-	 46c:	88 fc 0c 09 	setlos 0xc09,gr4
-	 470:	88 04 70 84 	or gr7,gr4,gr4
-	 474:	ba 0c 71 84 	movgs gr4,dampr7
-	 478:	b8 0c 71 c5 	movsg damlr7,gr5
-	 47c:	c0 1a ff b4 	bra 34c <test_kmap+0xac>
-	 480:	88 fc 0c 09 	setlos 0xc09,gr4
-	 484:	88 04 70 84 	or gr7,gr4,gr4
-	 488:	ba 0c 81 84 	movgs gr4,dampr8
-	 48c:	b8 0c 81 c5 	movsg damlr8,gr5
-	 490:	c0 1a ff af 	bra 34c <test_kmap+0xac>
-	 494:	88 fc 0c 09 	setlos 0xc09,gr4
-	 498:	88 04 70 84 	or gr7,gr4,gr4
-	 49c:	ba 0c 91 84 	movgs gr4,dampr9
-	 4a0:	b8 0c 91 c5 	movsg damlr9,gr5
-	 4a4:	c0 1a ff aa 	bra 34c <test_kmap+0xac>
-	 4a8:	88 fc 0c 09 	setlos 0xc09,gr4
-	 4ac:	88 04 70 84 	or gr7,gr4,gr4
-	 4b0:	ba 0c a1 84 	movgs gr4,dampr10
-	 4b4:	b8 0c a1 c5 	movsg damlr10,gr5
-	 4b8:	c0 1a ff a5 	bra 34c <test_kmap+0xac>
-
-Your revised patch reduces the size of the overburden, but still has the
-irritating jump table.
-
-> You'd need to disallow nested hardirqs, but I'm not sure FRV suffers
-> that particular issue?
-
-It does permit such.
-
-David
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
