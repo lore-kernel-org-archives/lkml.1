@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934465AbZJIVbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934472AbZJIVcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934465AbZJIVbL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934141AbZJIVbK
+	id S934472AbZJIVcS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934453AbZJIVcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:31:10 -0400
-Received: from mx08.lb01.inode.at ([62.99.145.8]:47335 "EHLO mx.inode.at"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934112AbZJIVbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:31:09 -0400
-Message-ID: <4ACFAB71.1070806@sbg.ac.at>
-Date: Fri, 09 Oct 2009 23:30:25 +0200
-From: Alexander Huemer <alexander.huemer@sbg.ac.at>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090826)
-MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, stable@kernel.org
-Subject: Re: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
-References: <4ABBB8C2.2080901@sbg.ac.at> <200909251424.25334.elendil@planet.nl> <4ABCB732.9050609@sbg.ac.at> <200909251448.17671.elendil@planet.nl> <4ACDD45C.5090009@sbg.ac.at>
-In-Reply-To: <4ACDD45C.5090009@sbg.ac.at>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 9 Oct 2009 17:32:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46794 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934452AbZJIVcR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 17:32:17 -0400
+Date: Fri, 9 Oct 2009 14:31:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ehrhardt Christian <ehrhardt@linux.vnet.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH] mm: make VM_MAX_READAHEAD configurable
+Message-Id: <20091009143124.1241a6bc.akpm@linux-foundation.org>
+In-Reply-To: <20091009122952.GI9228@kernel.dk>
+References: <1255087175-21200-1-git-send-email-ehrhardt@linux.vnet.ibm.com>
+	<1255090830.8802.60.camel@laptop>
+	<20091009122952.GI9228@kernel.dk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Huemer wrote:
-> Frans Pop wrote:
->> On Friday 25 September 2009, Alexander Huemer wrote:
->>>> So with the revert already in mainline for .32, the only thing left is
->>>> for that to get included in stable updates for .30 and .31.
->>> please see the last comment in [1].
->>> can i do anything else to help ?
->>> [1] http://bugzilla.kernel.org/show_bug.cgi?id=14124
->> Yes, adding that comment was excellent. I also added the relevant people
->> in the CC of my previous mail, so it should get taken care of now. Unless 
->> they have additional questions no further action from you should be 
->> needed.
-> it seems like the problem is _not_ solved.
-> i just booted with 2.6.31.3.
-> 2.6.31-gentoo-r2 is vanilla-2.6.31-r2 with a few unrelated patches.
-> did the usual verification (compilation of gcc-4.3.4),
-> and got this again:
->
->     [ 1018.059729] irq 23: nobody cared (try booting with the "irqpoll"
->     option)
->     [ 1018.059734] Pid: 8656, comm: sh Tainted: G        W
->     2.6.31-gentoo-r2-blackbit #1
->     [ 1018.059736] Call Trace:
->     [ 1018.059738]  <IRQ>  [<ffffffff81066ecf>] ? __report_bad_irq+0x30/0x7d
->     [ 1018.059748]  [<ffffffff81067023>] ? note_interrupt+0x107/0x170
->     [ 1018.059751]  [<ffffffff81067610>] ? handle_fasteoi_irq+0x8a/0xaa
->     [ 1018.059755]  [<ffffffff8100d1cf>] ? handle_irq+0x17/0x1d
->     [ 1018.059757]  [<ffffffff8100c84b>] ? do_IRQ+0x54/0xb2
->     [ 1018.059761]  [<ffffffff8100b6d3>] ? ret_from_intr+0x0/0xa
->     [ 1018.059762]  <EOI>  [<ffffffff815c7d2c>] ? do_page_fault+0xed/0x2ef
->     [ 1018.059769]  [<ffffffff815c7f12>] ? do_page_fault+0x2d3/0x2ef
->     [ 1018.059773]  [<ffffffff812dd5ed>] ? __put_user_4+0x1d/0x30
->     [ 1018.059776]  [<ffffffff815c5fdf>] ? page_fault+0x1f/0x30
->     [ 1018.059777] handlers:
->     [ 1018.059778] [<ffffffff813d2d8c>] (ahci_interrupt+0x0/0x426)
->     [ 1018.059783] Disabling IRQ #23
->
-> so in my opinion reverting commit [1] with commit [2] missed the point.
-> please comment.
->
-> -alex
->
-> [1] a5bfc4714b3f01365aef89a92673f2ceb1ccf246
-> [2] 31b239ad1ba7225435e13f5afc47e48eb674c0cc
->
-i hope i do not annoy anybody by posting again, but i am afraid my last
-message was not noticed by anybody.
-is there something i don't know but should ? as it seems the problem is
-still existing.
-i would be happy do test whatever is needed to trace the problem.
+On Fri, 9 Oct 2009 14:29:52 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-please respond.
-regards
--alex
+> On Fri, Oct 09 2009, Peter Zijlstra wrote:
+> > On Fri, 2009-10-09 at 13:19 +0200, Ehrhardt Christian wrote:
+> > > From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+> > > 
+> > > On one hand the define VM_MAX_READAHEAD in include/linux/mm.h is just a default
+> > > and can be configured per block device queue.
+> > > On the other hand a lot of admins do not use it, therefore it is reasonable to
+> > > set a wise default.
+> > > 
+> > > This path allows to configure the value via Kconfig mechanisms and therefore
+> > > allow the assignment of different defaults dependent on other Kconfig symbols.
+> > > 
+> > > Using this, the patch increases the default max readahead for s390 improving
+> > > sequential throughput in a lot of scenarios with almost no drawbacks (only
+> > > theoretical workloads with a lot concurrent sequential read patterns on a very
+> > > low memory system suffer due to page cache trashing as expected).
+> > 
+> > Why can't this be solved in userspace?
+> > 
+> > Also, can't we simply raise this number if appropriate? Wu did some
+> > read-ahead trashing detection bits a long while back which should scale
+> > the read-ahead window back when we're low on memory, not sure that ever
+> > made it in, but that sounds like a better option than having different
+> > magic numbers for each platform.
+> 
+> Agree, making this a config option (and even defaulting to a different
+> number because of an arch setting) is crazy.
+
+Given the (increasing) level of disparity between different kinds of
+storage devices, having _any_ default is crazy.
+
+Would be better to make some sort of vaguely informed guess at
+runtime, based upon the characteristics of the device.
+
