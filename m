@@ -1,73 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933572AbZJIPqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933677AbZJIPr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933572AbZJIPqh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 11:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932688AbZJIPqh
+	id S933677AbZJIPr7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 11:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933646AbZJIPr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 11:46:37 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:43487 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932183AbZJIPqg (ORCPT
+	Fri, 9 Oct 2009 11:47:59 -0400
+Received: from mail-iw0-f180.google.com ([209.85.223.180]:34976 "EHLO
+	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756622AbZJIPr4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 11:46:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=rSXfLwXY+BM7DktltWZ6RllhFUMMFZ7gb2jkZpBtyjM6BH1Mzjl33r5Z6w+O3fWB1+
-         j21+xcOgExNkYf846J8BPPs/mdyj2XEH07Vu/q8YtVgtfPmYUFFPI1IOD3I2gNUi7BYU
-         nxDfY+ay0ooWMPZw2NWr/SjOIj1dKj0dQsI0g=
-Subject: Re: [PATCH] MIPS: add IRQF_TIMER flag for Timer Interrupts
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-mips@linux-mips.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, ralf@linux-mips.org,
-       rjw@sisk.pl, yuasa@linux-mips.org
-In-Reply-To: <20091010.001754.229727131.anemo@mba.ocn.ne.jp>
-References: <1255007874-19574-1-git-send-email-wuzhangjin@gmail.com>
-	 <20091010.001754.229727131.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Fri, 09 Oct 2009 23:45:49 +0800
-Message-Id: <1255103149.3658.112.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Oct 2009 11:47:56 -0400
+MIME-Version: 1.0
+In-Reply-To: <1255084379-12954-1-git-send-email-w.sang@pengutronix.de>
+References: <1255084379-12954-1-git-send-email-w.sang@pengutronix.de>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Fri, 9 Oct 2009 09:46:58 -0600
+X-Google-Sender-Auth: c135d23076e67cd7
+Message-ID: <fa686aa40910090846u38cc3463j4f5d934aa412763f@mail.gmail.com>
+Subject: Re: [RFC] scripts/get_maintainer: add emails based on keywords in the 
+	patch
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       devicetree-discuss@ozlabs.org, Joe Perches <joe@perches.com>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-10 at 00:17 +0900, Atsushi Nemoto wrote:
-> On Thu,  8 Oct 2009 21:17:54 +0800, Wu Zhangjin <wuzhangjin@gmail.com> wrote:
-> > This patch add IRQF_TIMER flag for all Timer interrupts in linux-MIPS,
-> > which will help to not disable the Timer IRQ when suspending to ensure
-> > resuming normally(d6c585a4342a2ff627a29f9aea77c5ed4cd76023) and not
-> > thread them when enabled PREEMPT_RT.
-> > 
-> > Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
-> > ---
-> >  arch/mips/jazz/irq.c                |    2 +-
-> >  arch/mips/kernel/cevt-gt641xx.c     |    2 +-
-> >  arch/mips/kernel/cevt-r4k.c         |    2 +-
-> >  arch/mips/kernel/i8253.c            |    2 +-
-> >  arch/mips/nxp/pnx8550/common/time.c |    2 +-
-> >  arch/mips/sgi-ip27/ip27-timer.c     |    2 +-
-> >  arch/mips/sni/time.c                |    2 +-
-> >  7 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> Maybe cevt-bcm1480.c, cevt-ds1287.c, cevt-sb1250.c, cevt-txx9.c and
-> i8253.c need same fix?
-> 
+On Fri, Oct 9, 2009 at 4:32 AM, Wolfram Sang <w.sang@pengutronix.de> wrote:
+> Make get_maintainer.pl scan the modifying lines of a patch for a list of
+> keywords and add an associated email if found. The first user is the
+> devicetree-discuss mailing list which should always be cc'ed if a device tree
+> property is inserted/removed (keyword 'of_get_property'). This patch is the
+> result from commit 1965d30356c1c65660ba3330927671cfe81acdd5 entering mainline
+> which seems to have been missed by all parties interested in the device tree
+> (and at least had the documentation missing). As adding properties can happen
+> anywhere and so there is no fitting fileglob, this keyword based approach is
+> proposed.
 
-I got them via "grep timer -ur arch/mips | grep name", so, perhaps there
-are also some other timer interrupts missing here.
+Nice.  I cannot comment on the implementation, but I like the approach.
 
-just get more via "grep Timer -ur arch/mips | grep name", "grep IRQF_
--ur arch/mips/ | grep -v TIMER | grep =", a new patch will be sent out
-in the next E-mail.
+g.
 
-Regards,
-	Wu Zhangjin
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Cc: Joe Perches <joe@perches.com>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  scripts/get_maintainer.pl |   24 ++++++++++++++++--------
+>  1 files changed, 16 insertions(+), 8 deletions(-)
+>
+> diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
+> index cdb44b6..e1150ea 100755
+> --- a/scripts/get_maintainer.pl
+> +++ b/scripts/get_maintainer.pl
+> @@ -44,6 +44,11 @@ my $help = 0;
+>
+>  my $exit = 0;
+>
+> +my %keywords_to_mail = (
+> +       'of_get_property' => 'L: devicetree-discuss@lists.ozlabs.org',
+> +);
+> +my $keywords_to_mail_match = join('|', keys %keywords_to_mail);
+> +
+>  my @penguin_chief = ();
+>  push(@penguin_chief,"Linus Torvalds:torvalds\@linux-foundation.org");
+>  #Andrew wants in on most everything - 2009/01/14
+> @@ -188,6 +193,12 @@ if ($email_remove_duplicates) {
+>
+>  my @files = ();
+>  my @range = ();
+> +my @email_to = ();
+> +my @list_to = ();
+> +my @scm = ();
+> +my @web = ();
+> +my @subsystem = ();
+> +my @status = ();
+>
+>  foreach my $file (@ARGV) {
+>     ##if $file is a directory and it lacks a trailing slash, add one
+> @@ -213,7 +224,11 @@ foreach my $file (@ARGV) {
+>                if ($email_git_blame) {
+>                    push(@range, "$lastfile:$1:$2");
+>                }
+> -           }
+> +           # Check the lines which a patch modifies for keywords; add mail if found.
+> +           } elsif (m/^[+-].*($keywords_to_mail_match)/o) {
+> +               (my $keyword_mail = $keywords_to_mail{$1}) =~ s/^([LM]): //;
+> +               push( @{ ($1 eq 'L') ? \@list_to : \@email_to }, $keyword_mail );
+> +          }
+>        }
+>        close(PATCH);
+>        if ($file_cnt == @files) {
+> @@ -224,13 +239,6 @@ foreach my $file (@ARGV) {
+>     }
+>  }
+>
+> -my @email_to = ();
+> -my @list_to = ();
+> -my @scm = ();
+> -my @web = ();
+> -my @subsystem = ();
+> -my @status = ();
+> -
+>  # Find responsible parties
+>
+>  foreach my $file (@files) {
+> --
+> 1.6.3.3
+>
+>
 
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
