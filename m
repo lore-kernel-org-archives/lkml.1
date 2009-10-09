@@ -1,47 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933307AbZJIOgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933422AbZJIOi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933307AbZJIOgt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 10:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756210AbZJIOgs
+	id S933422AbZJIOi3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 10:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933205AbZJIOi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 10:36:48 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:6750 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932110AbZJIOgr (ORCPT
+	Fri, 9 Oct 2009 10:38:28 -0400
+Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:44641 "EHLO
+	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932110AbZJIOi0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 10:36:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=k44LV/8ZIn5Xfbzz2SCoALohEXkel0FdK2h2bm17ZAbvFGy0taCE9couEGBs4Djf+5
-         3y2dBXzBUtkhgwc39tPy8NmfKLxYL37Y3NEw4v7PiKzw5meyqyJF4Zo3Ewn44HoYSMps
-         tO3e2HI7EIlBTYLw/ml5tVLePlKGMdvCxdmTE=
-Message-ID: <4ACF4A0C.60508@lwfinger.net>
-Date: Fri, 09 Oct 2009 09:34:52 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.1 Thunderbird/3.0b4
+	Fri, 9 Oct 2009 10:38:26 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4ACF4AC6.7070802@cam.ac.uk>
+Date: Fri, 09 Oct 2009 15:37:58 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091007)
 MIME-Version: 1.0
-To: Miguel Boton <waninkoko@gmail.com>
-CC: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, mb@bu3sch.de,
-       linville@tuxdriver.com, bcm43xx-dev@lists.berlios.de
-Subject: Re: [PATCH] b43: add 'struct b43_wl' missing declaration
-References: <200910091613.53960.mboton@gmail.com>
-In-Reply-To: <200910091613.53960.mboton@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Zhang Rui <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
+       Linux I2C <linux-i2c@vger.kernel.org>
+Subject: [PATCH] ALS: TSL2550 driver move from i2c/chips 
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/09/2009 09:13 AM, Miguel Boton wrote:
-> 'struct b43_wl' declaration is missing at 'leds.h'.
-> It should be declared to avoid getting some GCC warnings at 'b43_leds_unregister'.
-> 
-> Signed-off-by: Miguel Botón <mboton@gmail.com>
 
-What architecture? There must be something strange with your
-configuration as I see no such warnings. Please post your .CONFIG.
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
-Larry
+---
+Minimal changes made. Untested due to lack of hardware.
+All comments welcome.
+
+illuminance is already documented as part of the class.
+operating mode and power state are both as per the original
+driver. I can't find any documentation for them, but if people
+want it I can probably figure out what they are from
+the data sheet.  
+
+Might be worth dropping the power state control and moving
+over to runtime pm but that is definitely the topic for another
+patch.
+
+Does anyone want a patch without using Git's move functionality?
+
+Have copied all the users Jean knows about, but please cc any other
+users as this does involve a change to the userspace interface.
+
+Applies on 2.6.31-rc3 with the ALS patches
+http://patchwork.kernel.org/patch/49153/
+
+ drivers/als/Kconfig                  |   14 ++++++
+ drivers/als/Makefile                 |    2 +
+ drivers/{i2c/chips => als}/tsl2550.c |   73 ++++++++++++++++++++++++++++++---
+ 3 files changed, 82 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/als/Kconfig b/drivers/als/Kconfig
+index 200c52b..0c5dbb2 100644
+--- a/drivers/als/Kconfig
++++ b/drivers/als/Kconfig
+@@ -8,3 +8,17 @@ menuconfig ALS
+ 	  This framework provides a generic sysfs I/F for Ambient Light
+ 	  Sensor devices.
+ 	  If you want this support, you should say Y or M here.
++
++if ALS
++
++config ALS_TSL2550
++	tristate "Taos TSL2550 ambient light sensor"
++	depends on EXPERIMENTAL
++	help
++	  If you say yes here you get support for the Taos TSL2550
++	  ambient light sensor.
++
++	  This driver can also be built as a module.  If so, the module
++	  will be called tsl2550.
++
++endif #ALS
+diff --git a/drivers/als/Makefile b/drivers/als/Makefile
+index a527197..7be5631 100644
+--- a/drivers/als/Makefile
++++ b/drivers/als/Makefile
+@@ -3,3 +3,5 @@
+ #
+ 
+ obj-$(CONFIG_ALS)		+= als_sys.o
++
++obj-$(CONFIG_ALS_TSL2550)	+= tsl2550.o
+\ No newline at end of file
+diff --git a/drivers/i2c/chips/tsl2550.c b/drivers/als/tsl2550.c
+similarity index 87%
+rename from drivers/i2c/chips/tsl2550.c
+rename to drivers/als/tsl2550.c
+index aa96bd2..6c11695 100644
+--- a/drivers/i2c/chips/tsl2550.c
++++ b/drivers/als/tsl2550.c
+@@ -24,9 +24,12 @@
+ #include <linux/slab.h>
+ #include <linux/i2c.h>
+ #include <linux/mutex.h>
++#include <linux/err.h>
++#include <linux/idr.h>
++#include <linux/als_sys.h>
+ 
+ #define TSL2550_DRV_NAME	"tsl2550"
+-#define DRIVER_VERSION		"1.2"
++#define DRIVER_VERSION		"2"
+ 
+ /*
+  * Defines
+@@ -44,8 +47,10 @@
+  */
+ 
+ struct tsl2550_data {
++	struct device *classdev;
+ 	struct i2c_client *client;
+ 	struct mutex update_lock;
++	unsigned int id;
+ 
+ 	unsigned int power_state : 1;
+ 	unsigned int operating_mode : 1;
+@@ -60,9 +65,41 @@ static const u8 TSL2550_MODE_RANGE[2] = {
+ };
+ 
+ /*
++ * IDR to assign each registered device a unique id
++ */
++static DEFINE_IDR(tsl2550_idr);
++static DEFINE_SPINLOCK(tsl2550_idr_lock);
++#define TSL2550_DEV_MAX 9
++
++/*
+  * Management functions
+  */
+ 
++static int tsl2550_get_id(void)
++{
++	int ret, val;
++
++idr_again:
++	if (unlikely(idr_pre_get(&tsl2550_idr, GFP_KERNEL) == 0))
++		return -ENOMEM;
++	spin_lock(&tsl2550_idr_lock);
++	ret = idr_get_new(&tsl2550_idr, NULL, &val);
++	if (unlikely(ret == -EAGAIN))
++		goto idr_again;
++	else if (unlikely(ret))
++		return ret;
++	if (val > TSL2550_DEV_MAX)
++		return -ENOMEM;
++	return val;
++}
++
++static void tsl2550_free_id(int val)
++{
++	spin_lock(&tsl2550_idr_lock);
++	idr_remove(&tsl2550_idr, val);
++	spin_unlock(&tsl2550_idr_lock);
++}
++
+ static int tsl2550_set_operating_mode(struct i2c_client *client, int mode)
+ {
+ 	struct tsl2550_data *data = i2c_get_clientdata(client);
+@@ -296,13 +333,13 @@ static ssize_t tsl2550_show_lux1_input(struct device *dev,
+ 	return ret;
+ }
+ 
+-static DEVICE_ATTR(lux1_input, S_IRUGO,
++static DEVICE_ATTR(illuminance, S_IRUGO,
+ 		   tsl2550_show_lux1_input, NULL);
+ 
+ static struct attribute *tsl2550_attributes[] = {
+ 	&dev_attr_power_state.attr,
+ 	&dev_attr_operating_mode.attr,
+-	&dev_attr_lux1_input.attr,
++	&dev_attr_illuminance.attr,
+ 	NULL
+ };
+ 
+@@ -350,6 +387,7 @@ static int __devinit tsl2550_probe(struct i2c_client *client,
+ 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+ 	struct tsl2550_data *data;
+ 	int *opmode, err = 0;
++	char name[9];
+ 
+ 	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_WRITE_BYTE
+ 					    | I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
+@@ -387,15 +425,31 @@ static int __devinit tsl2550_probe(struct i2c_client *client,
+ 	if (err)
+ 		goto exit_kfree;
+ 
++	data->id = tsl2550_get_id();
++	if (data->id < 0) {
++		err = data->id;
++		goto exit_kfree;
++	}
++	sprintf(name, "tsl2550%d", data->id);
+ 	/* Register sysfs hooks */
+-	err = sysfs_create_group(&client->dev.kobj, &tsl2550_attr_group);
++	data->classdev = als_device_register(&client->dev, name);
++	if (IS_ERR(data->classdev)) {
++		err = PTR_ERR(data->classdev);
++		goto exit_free_id;
++	}
++
++	err = sysfs_create_group(&data->classdev->kobj, &tsl2550_attr_group);
+ 	if (err)
+-		goto exit_kfree;
++		goto exit_unreg;
+ 
+ 	dev_info(&client->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+ 
+ 	return 0;
+ 
++exit_unreg:
++	als_device_unregister(data->classdev);
++exit_free_id:
++	tsl2550_free_id(data->id);
+ exit_kfree:
+ 	kfree(data);
+ exit:
+@@ -404,12 +458,17 @@ exit:
+ 
+ static int __devexit tsl2550_remove(struct i2c_client *client)
+ {
+-	sysfs_remove_group(&client->dev.kobj, &tsl2550_attr_group);
++	struct tsl2550_data *data = i2c_get_clientdata(client);
++
++	sysfs_remove_group(&data->classdev->kobj, &tsl2550_attr_group);
++	als_device_unregister(data->classdev);
+ 
+ 	/* Power down the device */
+ 	tsl2550_set_power_state(client, 0);
+ 
+-	kfree(i2c_get_clientdata(client));
++	tsl2550_free_id(data->id);
++
++	kfree(data);
+ 
+ 	return 0;
+ }
+-- 
+1.6.3.3
 
