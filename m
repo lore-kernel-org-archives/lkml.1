@@ -1,219 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbZJIF4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbZJIF4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904AbZJIF4J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 01:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbZJIF4I
+	id S1756221AbZJIF4U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 01:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbZJIF4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 01:56:08 -0400
-Received: from mga01.intel.com ([192.55.52.88]:38657 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755525AbZJIF4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 01:56:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,530,1249282800"; 
-   d="scan'208";a="501360550"
-Subject: Re: Fwd: [PATCH] PCIe AER: honor ACPI HEST FIRMWARE FIRST mode
-From: Huang Ying <ying.huang@intel.com>
-To: Matt Domsch <Matt_Domsch@dell.com>
-Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Tom Long Nguyen <tom.l.nguyen@intel.com>,
-       Zhang Yanmin <yanmin.zhang@intel.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <851fc09e0910082221q7f832c22xfc0d01ab72a97c3f@mail.gmail.com>
-References: <20091006173311.GA15751@auslistsprd01.us.dell.com>
-	 <851fc09e0910082221q7f832c22xfc0d01ab72a97c3f@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 09 Oct 2009 13:55:27 +0800
-Message-Id: <1255067727.5228.111.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Oct 2009 01:56:19 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:53775 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755976AbZJIF4T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 01:56:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=QrGxL+FQS2scYpw2MKhXnuaWSnsIWzXdIuxHoyqaahxDx72TvnBZt5Q7iFAGVBK1zF
+         z1p4FSnoW2KZiORAmCRspyDHvhJJ/iwXiVFXIZQk8p0RWVXkbTbHQTwDtbclTocRv11u
+         dKkHL5Q4+ARlMUTRUlDIHMkfaTXEbpnAVIxqE=
+MIME-Version: 1.0
+Date: Fri, 9 Oct 2009 13:55:43 +0800
+Message-ID: <a5b3ea7b0910082255x5767726du4721d2ee38df38fa@mail.gmail.com>
+Subject: select system call's implementation may have some bug, need your help 
+	and confirm !!!
+From: wu Jianfeng <stormplayer@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Matt,
+A process may sleep for ever when he call select system call.
+In detail, if the process was scheduled out just at the point it set
+its state to TASK_INTERRUPTIBLE.
 
-Thanks for your work.
+The events that cause the process to be scheduled out is(in preempt kernel) :
+1) time interrupt and the process's time slice is exhausted.
+2) an interrupt accured, and wake up another process with high priority.
 
-Matt Domsch wrote: 
-> For review and comment.
-> 
-> Today, the PCIe Advanced Error Reporting (AER) driver attaches itself
-> to every PCIe root port for which BIOS reports it should, via ACPI
-> _OSC.
-> 
-> However, _OSC alone is insufficient for newer BIOSes.  Part of ACPI
-> 4.0 is the new Platform Environment Control Interface (PECI), which is
+see the comments after "##"
 
-I can not find Platform Environment Control Interface in ACPI 4.0. There
-is something about that here:
-http://en.wikipedia.org/wiki/Platform_Environment_Control_Interface. But
-it seems have nothing to do with OS/BIOS interface.
+int do_select(int n, fd_set_bits *fds, s64 *timeout)
+{
+struct poll_wqueues table;
+poll_table *wait;
+int retval, i;
 
-Can you tell me where can I find more about PECI? Or you mean APEI (ACPI
-Platform Error Interfaces)?
+rcu_read_lock();
+retval = max_select_fd(n, fds);
+rcu_read_unlock();
 
-We are working on APEI supporting now too, mainly on the general part.
-We will release the code after it passes our internal testing.
+if (retval < 0)
+return retval;
+n = retval;
 
-> a way for OS and BIOS to handshake over which errors for which
-> components each will handle.  One table in ACPI 4.0 is the Hardware
-> Error Source Table (HEST), where BIOS can define that errors for
-> certain PCIe devices (or all devices), should be handled by BIOS
-> ("Firmware First mode"), rather than be handled by the OS.
-> 
-> Dell PowerEdge 11G server BIOS defines Firmware First mode in HEST, so
-> that it may manage such errors, log them to the System Event Log, and
-> possibly take other actions.  The aer driver should honor this, and
-> not attach itself to devices noted as such.
-> 
-> 
-> Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
-> 
-> --
-> Matt Domsch
-> Technology Strategist, Dell Office of the CTO
-> linux.dell.com & www.dell.com/linux
-> 
-> 
-> ---
->  drivers/pci/pcie/aer/aerdrv.h      |    4 +-
->  drivers/pci/pcie/aer/aerdrv_acpi.c |  106 +++++++++++++++++++++++++++++++++++-
->  drivers/pci/pcie/aer/aerdrv_core.c |    2 +-
->  include/acpi/actbl1.h              |    8 ++-
->  4 files changed, 112 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/pci/pcie/aer/aerdrv.h b/drivers/pci/pcie/aer/aerdrv.h
-> index bbd7428..2e00a22 100644
-> --- a/drivers/pci/pcie/aer/aerdrv.h
-> +++ b/drivers/pci/pcie/aer/aerdrv.h
-> @@ -128,9 +128,9 @@ extern void aer_print_error(struct pci_dev *dev,
-> struct aer_err_info *info);
->  extern irqreturn_t aer_irq(int irq, void *context);
-> 
->  #ifdef CONFIG_ACPI
-> -extern int aer_osc_setup(struct pcie_device *pciedev);
-> +extern int aer_osc_setup(struct pcie_device *pciedev, int forceload);
->  #else
-> -static inline int aer_osc_setup(struct pcie_device *pciedev)
-> +static inline int aer_osc_setup(struct pcie_device *pciedev, int forceload)
->  {
->        return 0;
->  }
-> diff --git a/drivers/pci/pcie/aer/aerdrv_acpi.c
-> b/drivers/pci/pcie/aer/aerdrv_acpi.c
-> index 8edb2f3..10bd83c 100644
-> --- a/drivers/pci/pcie/aer/aerdrv_acpi.c
-> +++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
-> @@ -18,20 +18,112 @@
->  #include <linux/delay.h>
->  #include "aerdrv.h"
-> 
-> +static unsigned long parse_aer_hest_xpf_machine_check(struct
-> acpi_hest_xpf_machine_check *p)
-> +{
-> +       return sizeof(*p) +
-> +               (sizeof(struct acpi_hest_xpf_error_bank) *
-> p->num_hardware_banks);
-> +}
-> +
-> +static unsigned long
-> parse_aer_hest_xpf_corrected_machine_check(struct
-> acpi_table_hest_xpf_corrected *p)
-> +{
-> +       return sizeof(*p) +
-> +               (sizeof(struct acpi_hest_xpf_error_bank) *
-> p->num_hardware_banks);
-> +}
-> +
-> +static unsigned long parse_aer_hest_xpf_nmi(struct acpi_hest_xpf_nmi *p)
-> +{
-> +       return sizeof(*p);
-> +}
-> +
-> +static unsigned long parse_hest_generic(struct acpi_hest_generic *p)
-> +{
-> +       return sizeof(*p);
-> +}
-> +
-> +static unsigned long parse_hest_aer(void *hdr, int type, struct
-> pcie_device *pciedev, int *firmware_first)
-> +{
-> +       struct acpi_hest_aer_common *p = hdr + sizeof(struct acpi_hest_header);
-> +       unsigned long rc=0;
-> +       switch (type) {
-> +       case ACPI_HEST_TYPE_AER_ROOT_PORT:
-> +               rc = sizeof(struct acpi_hest_aer_root);
-> +               break;
-> +       case ACPI_HEST_TYPE_AER_ENDPOINT:
-> +               rc = sizeof(struct acpi_hest_aer);
-> +               break;
-> +       case ACPI_HEST_TYPE_AER_BRIDGE:
-> +               rc = sizeof(struct acpi_hest_aer_bridge);
-> +               break;
-> +       }
-> +
-> +       if (p->flags & ACPI_HEST_AER_FIRMWARE_FIRST &&
-> +           (p->flags & ACPI_HEST_AER_GLOBAL ||
-> +            (p->bus      == pciedev->port->bus->number &&
-> +             p->device   == PCI_SLOT(pciedev->port->devfn) &&
-> +             p->function == PCI_FUNC(pciedev->port->devfn))))
-> +               *firmware_first = 1;
-> +       return rc;
-> +}
-> +
-> +static int aer_hest_firmware_first(struct acpi_table_header
-> *stdheader, struct pcie_device *pciedev)
-> +{
-> +       struct acpi_table_hest *hest = (struct acpi_table_hest *)stdheader;
-> +       void *p = (void *)hest + sizeof(*hest); /* defined by the ACPI
-> 4.0 spec */
-> +       struct acpi_hest_header *hdr = p;
-> +
-> +       int i;
-> +       int firmware_first = 0;
-> +
-> +       for (i=0, hdr=p; p < (((void *)hest) + hest->header.length) &&
-> i < hest->error_source_count; i++) {
-> +               switch (hdr->type) {
-> +               case ACPI_HEST_TYPE_XPF_MACHINE_CHECK:
-> +                       p += parse_aer_hest_xpf_machine_check(p);
-> +                       break;
-> +               case ACPI_HEST_TYPE_XPF_CORRECTED_MACHINE_CHECK:
-> +                       p += parse_aer_hest_xpf_corrected_machine_check(p);
-> +                       break;
-> +               case ACPI_HEST_TYPE_XPF_NON_MASKABLE_INTERRUPT:
-> +                       p += parse_aer_hest_xpf_nmi(p);
-> +                       break;
-> +               /* These three should never appear */
-> +               case ACPI_HEST_TYPE_XPF_UNUSED:
-> +               case ACPI_HEST_TYPE_IPF_CORRECTED_MACHINE_CHECK:
-> +               case ACPI_HEST_TYPE_IPF_CORRECTED_PLATFORM_ERROR:
-> +                       break;
-> +               case ACPI_HEST_TYPE_AER_ROOT_PORT:
-> +               case ACPI_HEST_TYPE_AER_ENDPOINT:
-> +               case ACPI_HEST_TYPE_AER_BRIDGE:
-> +                       p += parse_hest_aer(p, hdr->type, pciedev,
-> &firmware_first);
-> +                       break;
-> +               case ACPI_HEST_TYPE_GENERIC_HARDWARE_ERROR_SOURCE:
-> +                       p += parse_hest_generic(p);
-> +                       break;
-> +               /* These should never appear either */
-> +               case ACPI_HEST_TYPE_RESERVED:
-> +               default:
-> +                       break;
-> +               }
-> +       }
-> +       return firmware_first;
-> +}
+poll_initwait(&table);
+wait = &table.pt;
+if (!*timeout)
+wait = NULL;
+retval = 0;
+for (;;) {
+unsigned long *rinp, *routp, *rexp, *inp, *outp, *exp;
+long __timeout;
 
-As H.Seto said, HEST table parsing code should go the general APEI
-supporting code. We have some HEST table parsing code, hope that can be
-used by your code too.
+set_current_state(TASK_INTERRUPTIBLE);
+## here set the process state TASK_INTERRUPTIBLE
 
-Best Regards,
-Huang Ying
+ ## if  the process was scheduled out here, then the process will
+never can be waked up, because it has not been attached to any file 's
+wait queue.
 
+inp = fds->in; outp = fds->out; exp = fds->ex;
+rinp = fds->res_in; routp = fds->res_out; rexp = fds->res_ex;
 
+for (i = 0; i < n; ++rinp, ++routp, ++rexp) {
+unsigned long in, out, ex, all_bits, bit = 1, mask, j;
+unsigned long res_in = 0, res_out = 0, res_ex = 0;
+struct file_operations *f_op = NULL;
+struct file *file = NULL;
+
+in = *inp++; out = *outp++; ex = *exp++;
+all_bits = in | out | ex;
+if (all_bits == 0) {
+i += __NFDBITS;
+continue;
+}
+
+for (j = 0; j < __NFDBITS; ++j, ++i, bit <<= 1) {
+if (i >= n)
+break;
+if (!(bit & all_bits))
+continue;
+file = fget(i);
+if (file) {
+f_op = file->f_op;
+mask = DEFAULT_POLLMASK;
+if (f_op && f_op->poll)
+mask = (*f_op->poll)(file, retval ? NULL : wait);
+fput(file);
+if ((mask & POLLIN_SET) && (in & bit)) {
+res_in |= bit;
+retval++;
+}
+if ((mask & POLLOUT_SET) && (out & bit)) {
+res_out |= bit;
+retval++;
+}
+if ((mask & POLLEX_SET) && (ex & bit)) {
+res_ex |= bit;
+retval++;
+}
+}
+cond_resched();
+}
+if (res_in)
+*rinp = res_in;
+if (res_out)
+*routp = res_out;
+if (res_ex)
+*rexp = res_ex;
+}
+wait = NULL;
+if (retval || !*timeout || signal_pending(current))
+break;
+if(table.error) {
+retval = table.error;
+break;
+}
+
+if (*timeout < 0) {
+/* Wait indefinitely */
+__timeout = MAX_SCHEDULE_TIMEOUT;
+} else if (unlikely(*timeout >= (s64)MAX_SCHEDULE_TIMEOUT - 1)) {
+/* Wait for longer than MAX_SCHEDULE_TIMEOUT. Do it in a loop */
+__timeout = MAX_SCHEDULE_TIMEOUT - 1;
+*timeout -= __timeout;
+} else {
+__timeout = *timeout;
+*timeout = 0;
+}
+__timeout = schedule_timeout(__timeout);
+if (*timeout >= 0)
+*timeout += __timeout;
+}
+__set_current_state(TASK_RUNNING);
+
+poll_freewait(&table);
+
+return retval;
+}
