@@ -1,111 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761008AbZJIO7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbZJIPFC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761008AbZJIO7J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 10:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbZJIO7I
+	id S1758890AbZJIPFC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 11:05:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758241AbZJIPFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 10:59:08 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:53235 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbZJIO7G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 10:59:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ILq0UHSGPZLpOou+IQWrV2M24ZvFo3b/pcaaSwJznGtfS5IJ92KV57ZeRH58UMlC/0
-         InOKSUpRJhBcDaTeEdu/bmY7mR92WIzGgVojhN/daUf6Ss8YzpDDsVxPFF/bMoPIrnYE
-         uJDaITJBWHaW8S+Nsvjh/vBIDCkrw6ANLU1u0=
-Date: Fri, 9 Oct 2009 18:58:25 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: wrong final bzImage build (regading #14270)
-Message-ID: <20091009145825.GE5311@lenovo>
-References: <4ACF460E.7000901@msgid.tls.msk.ru>
+	Fri, 9 Oct 2009 11:05:01 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46090 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756472AbZJIPFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 11:05:00 -0400
+Date: Fri, 9 Oct 2009 17:04:22 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Matheos Worku <Matheos.Worku@Sun.COM>
+Cc: Peter Huewe <PeterHuewe@gmx.de>, Alan Cox <alan@redhat.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] char/vme_scc: adding __init macro to vme_scc.c
+In-Reply-To: <4A8DB766.9020701@sun.com>
+Message-ID: <alpine.LSU.2.00.0910091704010.19284@wotan.suse.de>
+References: <200908202242.31778.PeterHuewe@gmx.de> <4A8DB766.9020701@sun.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ACF460E.7000901@msgid.tls.msk.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter and Sam CC'ed
+On Thu, 20 Aug 2009, Matheos Worku wrote:
 
-[Michael Tokarev - Fri, Oct 09, 2009 at 06:17:50PM +0400]
-> Ok, finally the mystery solved.  After a week of
-> digging.
->
-> The original problem was titled "Cannot boot on
-> a PIII Celeron", and Rafael filed a bug #14270
-> for this.
->
-> In short, what I observed was that a new kernel
-> (2.6.31) fails to boot on a PIII Celeron machine.
-> But changing just the CPU to plain PIII and voila,
-> it now works.  I don't know why it behaved this
-> way, but I found where was the problem, finally.
->
-> And the problem is in the last stage of build, when
-> building the bzImage.
->
-> make -f scripts/Makefile.build obj=arch/x86/boot/compressed arch/x86/boot/compressed/vmlinux
-> ...
->   (cat arch/x86/boot/compressed/vmlinux.bin | lzma -9 && echo -ne \\x38\\xd6\\x37\\x00) > arch/x86/boot/compressed/vmlinux.bin.lzma
-> ...
->
-> Note the echo command.
->
-> Now, Debian switched to dash as /bin/sh.  And dash
-> does not understand the -e option:
->
-> $ dash -c 'echo -ne \\x38\\xd6\\x37\\x00' | od -x
-> 0000000 6e2d 2065 785c 3833 785c 3664 785c 3733
-> 0000020 785c 3030 000a
->
-> $ bash -c 'echo -ne \\x38\\xd6\\x37\\x00' | od -x
-> 0000000 d638 0037
->
-> So the final size (it's the size of uncompressed file)
-> becomes incorrect.  Here's what mkpiggy outputs for
-> this (in arch/x86/boot/compressed/piggy.S):
->
->  z_output_len = 170930296
->
-> while it should be
->
->  z_output_len = 3659320
->
-> And with the former (wrong, larger) size, the whole
-> thing just reboots on a PIII Celeron.  I've no idea
-> why, but the original problem is here.
->
-> The same thing happens with bzip2 algorithm which is
-> not new, not only with lzma.
->
-> The whole thing looks quite hackish to me, -- mkpiggy
-> can know the size from the original image just fine,
-> instead of getting it from the end of already compressed
-> file.
->
-> For now, quick fix is to change echo to printf in there.
-> Correct fix is to re-write mkpiggy to look at the
-> original file for size (IMHO anyway).
->
-> And this is a very good candidate for -stable as well.
-> The bug is very difficult to find.  And now when more
-> and more people who use Debian are switching to dash,
-> it will be more common.
->
-> Thanks!
->
-> /mjt
->
+> > Alan or Geert, please have a look at the small patch and either pull it
+> > through your tree, or please ack' it so Jiri can pull it through the trivial
+> > tree.
+> > 
+> > linux version 2.6.31-rc6 - linus git tree, Do 20. Aug 22:26:06 CEST 2009
+> > 
+> > Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+> > ---
+> > diff --git a/drivers/char/vme_scc.c b/drivers/char/vme_scc.c
+> > index 994e1a5..8b24729 100644
+> > --- a/drivers/char/vme_scc.c
+> > +++ b/drivers/char/vme_scc.c
+> > @@ -136,7 +136,7 @@ static const struct tty_port_operations scc_port_ops = {
+> >   * vme_scc_init() and support functions
+> >   *---------------------------------------------------------------------------*/
+> >  -static int scc_init_drivers(void)
+> > +static int __init scc_init_drivers(void)
+> >  {
+> >  	int error;
+> >  @@ -172,7 +172,7 @@ static int scc_init_drivers(void)
+> >  /* ports[] array is indexed by line no (i.e. [0] for ttyS0, [1] for ttyS1).
+> >   */
+> >  -static void scc_init_portstructs(void)
+> > +static void __init scc_init_portstructs(void)
+> >  {
+> >  	struct scc_port *port;
+> >  	int i;
+> > @@ -195,7 +195,7 @@ static void scc_init_portstructs(void)
+> >    #ifdef CONFIG_MVME147_SCC
+> > -static int mvme147_scc_init(void)
+> > +static int __init mvme147_scc_init(void)
+> >  {
+> >  	struct scc_port *port;
+> >  	int error;
+> > @@ -298,7 +298,7 @@ fail:
+> >    #ifdef CONFIG_MVME162_SCC
+> > -static int mvme162_scc_init(void)
+> > +static int __init mvme162_scc_init(void)
+> >  {
+> >  	struct scc_port *port;
+> >  	int error;
+> > @@ -404,7 +404,7 @@ fail:
+> >    #ifdef CONFIG_BVME6000_SCC
+> > -static int bvme6000_scc_init(void)
+> > +static int __init bvme6000_scc_init(void)
+> >  {
+> >  	struct scc_port *port;
+> >  	int error;
+> > @@ -503,7 +503,7 @@ fail_free_b_rx:
+> >  #endif
+> >   -static int vme_scc_init(void)
+> > +static int __init vme_scc_init(void)
+> >  {
+> >  	int res = -ENODEV;
+> Then there are issnvram.txt iss.conf etc ... I guess we need to change 
+> these as well. How about error messages? I assume they would have ISS in 
+> them.
 
-	-- Cyrill
+Confused ... how is this related to the patch?
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
