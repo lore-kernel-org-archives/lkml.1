@@ -1,173 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934043AbZJIRrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761118AbZJIRsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934043AbZJIRrZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 13:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933782AbZJIRrY
+	id S1761118AbZJIRsk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 13:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758720AbZJIRsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 13:47:24 -0400
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:54624 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933772AbZJIRrW (ORCPT
+	Fri, 9 Oct 2009 13:48:39 -0400
+Received: from complete.lackof.org ([198.49.126.79]:53961 "EHLO
+	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbZJIRsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 13:47:22 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+CWTxF8BepWcQk+Ntqf8Cd
-Date: Fri, 9 Oct 2009 10:46:36 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: "G, Manjunath Kondaiah" <manjugk@ti.com>
-Cc: Govindraj <govindraj.ti@gmail.com>,
-       "Raja, Govindraj" <govindraj.raja@ti.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>
-Subject: Re: [PATCHv1 1/3] OMAP UART: Adds omap-serial driver support.
-Message-ID: <20091009174635.GH25892@atomide.com>
-References: <65168.192.168.10.89.1253788033.squirrel@dbdmail.itg.ti.com> <20091007215116.GB29320@atomide.com> <d6a0f7aa0910072314h77383e31r2330725b614ba472@mail.gmail.com> <E0D41E29EB0DAC4E9F3FF173962E9E940253C6C560@dbde02.ent.ti.com>
+	Fri, 9 Oct 2009 13:48:39 -0400
+Date: Fri, 9 Oct 2009 11:48:02 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: mankan srinivas <s_mankan@hotmail.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Sample PCI Linux Device Driver
+Message-ID: <20091009174802.GA10309@lackof.org>
+References: <BAY108-F18507D362F5105C57CCC2FE59E0@phx.gbl> <20070214064427.GA15497@kroah.com> <BAY138-W981A223FAD78C301641E6E5CC0@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <E0D41E29EB0DAC4E9F3FF173962E9E940253C6C560@dbde02.ent.ti.com>
+In-Reply-To: <BAY138-W981A223FAD78C301641E6E5CC0@phx.gbl>
+X-Home-Page: http://www.parisc-linux.org/
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* G, Manjunath Kondaiah <manjugk@ti.com> [091008 00:41]:
-> 
-> Govind,
-> > -----Original Message-----
-> > From: linux-omap-owner@vger.kernel.org 
-> > [mailto:linux-omap-owner@vger.kernel.org] On Behalf Of Govindraj
-> > Sent: Thursday, October 08, 2009 11:44 AM
-> > To: Tony Lindgren
-> > Cc: Raja, Govindraj; linux-omap@vger.kernel.org; 
-> > linux-kernel@vger.kernel.org; linux-serial@vger.kernel.org
-> > Subject: Re: [PATCHv1 1/3] OMAP UART: Adds omap-serial driver support.
-> > 
-> > On Thu, Oct 8, 2009 at 3:21 AM, Tony Lindgren 
-> > <tony@atomide.com> wrote:
-> > > * Govindraj.R <govindraj.raja@ti.com> [090924 03:29]:
-> > >> From: Govindraj R <govindraj.raja@ti.com>
-> > >>
-> > >> This patch adds support for OMAP3430-HIGH SPEED UART Controller.
-> > >>
-> > >> Signed-off-by:        Govindraj R <govindraj.raja@ti.com>
-> > >> Reviewed-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> > >> Reviewed-by: Tony Lindgren <tony@atomide.com>
-> > >
-> > > You should only add Reviewed-by if Alan or me have replied with it.
-> > >
-> > > So far I've only replied with some comments that have not yet
-> > > been fixed, so we're few more steps from being Reviewd-by.
-> > >
-> > > <snip>
-> > >
-> > >> diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-> > >> index 6553833..67a7129 100644
-> > >> --- a/drivers/serial/Kconfig
-> > >> +++ b/drivers/serial/Kconfig
-> > >> @@ -1359,6 +1359,53 @@ config SERIAL_OF_PLATFORM
-> > >>         Currently, only 8250 compatible ports are supported, but
-> > >>         others can easily be added.
-> > >>
-> > >> +config SERIAL_OMAP
-> > >> +     bool "OMAP serial port support"
-> > >> +     depends on ARM && ARCH_OMAP
-> > >> +     select SERIAL_CORE
-> > >> +     help
-> > >> +     If you have a machine based on an Texas Instruments 
-> > OMAP CPU you
-> > >> +     can enable its onboard serial ports by enabling this option.
-> > >> +
-> > >> +config SERIAL_OMAP_CONSOLE
-> > >> +     bool "Console on OMAP serial port"
-> > >> +     depends on SERIAL_OMAP
-> > >> +     select SERIAL_CORE_CONSOLE
-> > >> +     help
-> > >> +     If you have enabled the serial port on the Texas 
-> > Instruments OMAP
-> > >> +     CPU you can make it the console by answering Y to 
-> > this option.
-> > >> +
-> > >> +     Even if you say Y here, the currently visible virtual console
-> > >> +     (/dev/tty0) will still be used as the system console 
-> > by default, but
-> > >> +     you can alter that using a kernel command line option such as
-> > >> +     "console=ttyS0". (Try "man bootparam" or see the 
-> > documentation of
-> > >> +     your boot loader (lilo or loadlin) about how to pass 
-> > options to the
-> > >> +     kernel at boot time.)
-> > >> +
-> > >> +config SERIAL_OMAP_DMA_UART1
-> > >> +     bool "UART1 DMA support"
-> > >> +     depends on SERIAL_OMAP
-> > >> +     help
-> > >> +     If you have enabled the serial port on the Texas 
-> > Instruments OMAP
-> > >> +     CPU you can enable the DMA transfer on UART 1 by answering
-> > >> +     to this option.
-> > >> +
-> > >> +config SERIAL_OMAP_DMA_UART2
-> > >> +     bool "UART2 DMA support"
-> > >> +     depends on SERIAL_OMAP
-> > >> +     help
-> > >> +     If you have enabled the serial port on the Texas 
-> > Instruments OMAP
-> > >> +     CPU you can enable the DMA transfer on UART 2 by answering
-> > >> +     to this option.
-> > >> +
-> > >> +config SERIAL_OMAP_DMA_UART3
-> > >> +     bool "UART3 DMA support"
-> > >> +     depends on SERIAL_OMAP
-> > >> +     help
-> > >> +     If you have enabled the serial port on the Texas 
-> > Instruments OMAP
-> > >> +     CPU you can enable the DMA transfer on UART 3 by answering
-> > >> +     to this option.
-> > >> +
-> > >>  config SERIAL_OF_PLATFORM_NWPSERIAL
-> > >>       tristate "NWP serial port driver"
-> > >>       depends on PPC_OF && PPC_DCR
-> > >
-> > > There's absolutely no need for having Kconfig options for the DMA
-> > > support. Please pass that in platform_data from the board-*.c files.
-> > >
-> > > This is the third time I'm commenting on the same issue!
-> > >
-> > > What's the point of posting these patches for review if the issues
-> > > don't get solved?
-> > 
-> > 
-> > The omap-serial uart driver is designed to work either in interrupt
-> > mode or in DMA mode,
-> > We have provided this option so that one can select interrupt mode or
-> > DMA mode based on the uart usage, if somebody is using uart as console
-> > then interrupt mode will do, else if used with bluetooth which does
-> > huge data transfer then DMA mode can be selected.
-> > 
-> > Don't you think this should be a configurable option using kconfig
-> > rather than passing as platform data?
+On Thu, Oct 08, 2009 at 06:58:01PM +0000, mankan srinivas wrote:
+> I am working on developing PCI based Linux Device Driver. Could you
+> please send me few sample code. I am looking for the code which has more
+> information about low-level driver code talks to the hardware. Any real
+> example code is greatly appreciated.
 
-Nope. I think it should be platform_data and should be possible to override
-vith a kernel cmdline option. That's because we support compiling in and
-booting many boards the same kernel binary.
+Please start by reading Documentation/PCI/pci.txt and MSI-HOWTO.txt
+Lots more useful info in Documentation/ that should help you out
+(e.g. suspend/resume, hotplug, DMA API, etc)
 
-> > if used as platform data then one has to modify platform data to
-> > switch between the interrupt and DMA mode.
+Here are some specific driver examples:
+    drivers/net/forcedeth.c
+    drivers/net/e1000e/
+    drivers/scsi/mpt2sas/
+    drivers/ata/sata_sil24.c
+    drivers/ata/sata_mv.c
 
-How about set some kernel cmdline options if you want to override the
-default settings?
-
-> Usage of UART is board dependent. It's usage will not change dynamically for
-> a given board. This can be removed from Kconfig and move it to respective 
-> board file-> board-*.c
-
-Or can be changed from kernel cmdline if necessary.
-
-Regards,
-
-Tony
+hth,
+grant
