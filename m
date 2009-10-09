@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933909AbZJIRJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbZJIRP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933909AbZJIRJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 13:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbZJIRJZ
+	id S1761190AbZJIRP2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 13:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009AbZJIRP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 13:09:25 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:4665 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756009AbZJIRJY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 13:09:24 -0400
-Authentication-Results: sj-iport-2.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAEcLz0qrR7Hu/2dsb2JhbADDD5hIhCwEgVho
-X-IronPort-AV: E=Sophos;i="4.44,533,1249257600"; 
-   d="scan'208";a="213084968"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 09 Oct 2009 10:08:46 -0700
-Message-ID: <adaskdsjy01.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Fri, 9 Oct 2009 13:15:28 -0400
+Received: from kroah.org ([198.145.64.141]:38928 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761180AbZJIRP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 13:15:27 -0400
+Date: Fri, 9 Oct 2009 10:11:37 -0700
+From: Greg KH <greg@kroah.com>
+To: =?iso-8859-1?B?RnLpZOlyaWMgTC4gVy4=?= Meunier <fredlwm@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31: no login prompt
+Message-ID: <20091009171137.GA4131@kroah.com>
+References: <alpine.LNX.2.01.0909191941270.24796@pervalidus>
+ <20091009160951.GA2766@kroah.com>
+ <alpine.LNX.2.01.0910091349490.5219@dyndns.pervalidus.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 09 Oct 2009 17:08:47.0612 (UTC) FILETIME=[2A411BC0:01CA4903]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LNX.2.01.0910091349490.5219@dyndns.pervalidus.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Fri, Oct 09, 2009 at 01:53:14PM -0300, Frédéric L. W. Meunier wrote:
+> On Fri, 9 Oct 2009, Greg KH wrote:
+> 
+> > On Sat, Sep 19, 2009 at 07:43:04PM -0300, Frédéric L. W. Meunier wrote:
+> >> While booting 2.6.31, I don't get a login prompt after runlevel
+> >> 3:
+> >>
+> >> Sep 19 18:31:25 pervalidus init: Id "c1" respawning too fast: disabled for 5 minutes
+> >> Sep 19 18:31:25 pervalidus init: Id "c3" respawning too fast: disabled for 5 minutes
+> >> Sep 19 18:31:25 pervalidus init: Id "c2" respawning too fast: disabled for 5 minutes
+> >>
+> >> It works fine with 2.6.30.5.
+> >>
+> >> What can be causing it ?
+> >
+> > This should be fixed in 2.6.31.3, can you verify this?
+> 
+> Greg, this was caused by using vc/* entries in /etc/inittab and 
+> old devfs rules in udev.
+> 
+> I don't think the fix would make any difference for it. Would it 
+> ?
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+Ah, if you found the problem, great, I was worried it was a tty layer
+issue.
 
-This tree is also available from kernel.org mirrors at:
+thanks,
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
-
-This will get another small batch of small RDMA/InfiniBand fixes, and
-one device ID addition:
-
-Bart Van Assche (1):
-      IB: Fix typo in udev rule documentation
-
-David J. Wilder (1):
-      RDMA/addr: Fix resolution of local IPv6 addresses
-
-Roland Dreier (1):
-      Merge branches 'cxgb3', 'misc' and 'mlx4' into for-next
-
-Steve Wise (2):
-      RDMA/iwcm: Don't call provider reject func with irqs disabled
-      RDMA/cxgb3: Handle NULL inetdev pointer in iwch_query_port()
-
-Yevgeny Petrilin (1):
-      mlx4_core: Add 40GigE device ID
-
- Documentation/infiniband/user_mad.txt       |    4 ++--
- Documentation/infiniband/user_verbs.txt     |    2 +-
- drivers/infiniband/core/addr.c              |    2 +-
- drivers/infiniband/core/iwcm.c              |    2 ++
- drivers/infiniband/hw/cxgb3/iwch_provider.c |   11 +++++++----
- drivers/net/mlx4/main.c                     |    1 +
- 6 files changed, 14 insertions(+), 8 deletions(-)
+greg k-h
