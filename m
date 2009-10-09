@@ -1,39 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934007AbZJIRKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760908AbZJIRE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934007AbZJIRKM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 13:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbZJIRKL
+	id S1760908AbZJIRE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 13:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756828AbZJIRE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 13:10:11 -0400
-Received: from smtp.ing.unipi.it ([131.114.28.23]:56120 "EHLO
-	smtp.ing.unipi.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932462AbZJIRKK (ORCPT
+	Fri, 9 Oct 2009 13:04:58 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60442 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755137AbZJIRE6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 13:10:10 -0400
-X-Greylist: delayed 471 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Oct 2009 13:10:10 EDT
-Message-ID: <63867e674597643786c749e912bd3b88.squirrel@webmail.ing.unipi.it>
-Date: Fri, 9 Oct 2009 12:58:50 -0400
-Subject: Qualification Numbers (G-999-747, UZ-900-77)
-From: "United Nation Foundation" <unf@ing.unipi.it>
-Reply-To: robinsteven.unfoundation@yahoo.com.hk
-User-Agent: SquirrelMail/1.4.19
+	Fri, 9 Oct 2009 13:04:58 -0400
+Message-ID: <4ACF6CF8.4060204@zytor.com>
+Date: Fri, 09 Oct 2009 10:03:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-CSIFI-MailScanner-Information: Please contact Centro Servizi Informatici della Facolta` di Ingegneria for more information
-X-CSIFI-MailScanner-ID: 50063690063.A477D
-X-CSIFI-MailScanner: Found to be clean
-X-CSIFI-MailScanner-SpamScore: sss
-X-CSIFI-MailScanner-From: unf@ing.unipi.it
-To: unlisted-recipients:; (no To-header on input)
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Michael Tokarev <mjt@tls.msk.ru>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: wrong final bzImage build (regading #14270)
+References: <4ACF460E.7000901@msgid.tls.msk.ru> <20091009145825.GE5311@lenovo>
+In-Reply-To: <20091009145825.GE5311@lenovo>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You have been choosen by the U.N Foundation to receive a Grant Donation of
-One Million USD. Your Qualification Numbers (G-999-747, UZ-900-77) Contact
-Mr. Robin Steven with Name,address,country for claim: E-mail:
-robinsteven.unfoundation@yahoo.com.hk
+On 10/09/2009 07:58 AM, Cyrill Gorcunov wrote:
+> Peter and Sam CC'ed
+> 
+> [Michael Tokarev - Fri, Oct 09, 2009 at 06:17:50PM +0400]
+>> Ok, finally the mystery solved.  After a week of
+>> digging.
+>>
+>> The original problem was titled "Cannot boot on
+>> a PIII Celeron", and Rafael filed a bug #14270
+>> for this.
+>>
+>> In short, what I observed was that a new kernel
+>> (2.6.31) fails to boot on a PIII Celeron machine.
+>> But changing just the CPU to plain PIII and voila,
+>> it now works.  I don't know why it behaved this
+>> way, but I found where was the problem, finally.
+>>
+
+We should switch to printf here.  Hexadecimal constants in echo aren't
+guaranteed by POSIX.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
