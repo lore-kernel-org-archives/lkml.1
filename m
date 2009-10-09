@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761732AbZJIXRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933552AbZJIXSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761732AbZJIXRs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761675AbZJIXRr
+	id S933552AbZJIXSV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761811AbZJIXSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:17:47 -0400
-Received: from kroah.org ([198.145.64.141]:36849 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:18:12 -0400
+Received: from kroah.org ([198.145.64.141]:36868 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761708AbZJIXRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:17:44 -0400
+	id S1761736AbZJIXSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:18:09 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:10:03 2009
-Message-Id: <20091009231003.272029049@mini.kroah.org>
+Message-Id: <20091009231003.396030841@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:09:01 -0700
+Date: Fri, 09 Oct 2009 16:09:02 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <jdelvare@suse.de>, Thomas Renninger <trenn@suse.de>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 25/26] ACPI: Clarify resource conflict message
+       Zhao Yakui <yakui.zhao@intel.com>, Len Brown <len.brown@intel.com>
+Subject: [patch 26/26] ACPI: fix Compaq Evo N800c (Pentium 4m) boot hang regression
 References: <20091009230836.316410305@mini.kroah.org>
-Content-Disposition: inline; filename=acpi-clarify-resource-conflict-message.patch
+Content-Disposition: inline; filename=acpi-fix-compaq-evo-n800c-boot-hang-regression.patch
 In-Reply-To: <20091009231249.GA31084@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,53 +29,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jean Delvare <jdelvare@suse.de>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-commit 14f03343ad1080c2fea29ab2c13f05b976c4584e upstream.
+commit 3e2ada5867b7e9fa0b296d30fa8f3726ebd0a8b7 upstream.
 
-The message "ACPI: Device needs an ACPI driver" is misleading. The
-device _may_ need an ACPI driver, if the BIOS implemented a custom
-API for the device in question (which, AFAIK, can't be checked.) If
-not, then either a generic ACPI driver may be used (for example
-"thermal"), or nothing can be done (other than a white list).
+Don't disable ARB_DISABLE when the familary ID is 0x0F.
 
-I propose to reword the message to:
+http://bugzilla.kernel.org/show_bug.cgi?id=14211
 
-ACPI: If an ACPI driver is available for this device, you should use
-it instead of the native driver
+This was a 2.6.31 regression, and so this patch
+needs to be applied to 2.6.31.stable
 
-which I think is more correct. Comments and suggestions welcome.
-
-I also added a message warning about possible problems and system
-instability when users pass acpi_enforce_resources=lax, as suggested
-by Len.
-
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
-Cc: Thomas Renninger <trenn@suse.de>
-Cc: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/osl.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/x86/kernel/acpi/cstate.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/acpi/osl.c
-+++ b/drivers/acpi/osl.c
-@@ -1182,7 +1182,13 @@ int acpi_check_resource_conflict(struct 
- 			       res_list_elem->name,
- 			       (long long) res_list_elem->start,
- 			       (long long) res_list_elem->end);
--			printk(KERN_INFO "ACPI: Device needs an ACPI driver\n");
-+			if (acpi_enforce_resources == ENFORCE_RESOURCES_LAX)
-+				printk(KERN_NOTICE "ACPI: This conflict may"
-+				       " cause random problems and system"
-+				       " instability\n");
-+			printk(KERN_INFO "ACPI: If an ACPI driver is available"
-+			       " for this device, you should use it instead of"
-+			       " the native driver\n");
- 		}
- 		if (acpi_enforce_resources == ENFORCE_RESOURCES_STRICT)
- 			return -EBUSY;
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -48,7 +48,7 @@ void acpi_processor_power_init_bm_check(
+ 	 * P4, Core and beyond CPUs
+ 	 */
+ 	if (c->x86_vendor == X86_VENDOR_INTEL &&
+-	    (c->x86 > 0x6 || (c->x86 == 6 && c->x86_model >= 14)))
++	    (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 14)))
+ 			flags->bm_control = 0;
+ }
+ EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
 
 
