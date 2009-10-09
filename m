@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbZJIRP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933754AbZJIRNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761190AbZJIRP2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 13:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009AbZJIRP2
+	id S933754AbZJIRNc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 13:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761176AbZJIRNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 13:15:28 -0400
-Received: from kroah.org ([198.145.64.141]:38928 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 13:13:31 -0400
+Received: from mga09.intel.com ([134.134.136.24]:49664 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761180AbZJIRP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 13:15:27 -0400
-Date: Fri, 9 Oct 2009 10:11:37 -0700
-From: Greg KH <greg@kroah.com>
-To: =?iso-8859-1?B?RnLpZOlyaWMgTC4gVy4=?= Meunier <fredlwm@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31: no login prompt
-Message-ID: <20091009171137.GA4131@kroah.com>
-References: <alpine.LNX.2.01.0909191941270.24796@pervalidus>
- <20091009160951.GA2766@kroah.com>
- <alpine.LNX.2.01.0910091349490.5219@dyndns.pervalidus.net>
+	id S1761158AbZJIRNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 13:13:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,533,1249282800"; 
+   d="scan'208";a="456039197"
+Message-ID: <4ACF6EEF.3090101@linux.intel.com>
+Date: Fri, 09 Oct 2009 10:12:15 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LNX.2.01.0910091349490.5219@dyndns.pervalidus.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Kyle McMartin <kyle@mcmartin.ca>
+CC: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.32-rc3: floating-point build failure (undefined reference
+ to `__udivdi3' in menu governor)
+References: <20091007104125.GA1449@rhlx01.hs-esslingen.de> <4ACCA44B.3070706@linux.intel.com> <20091007173457.GA25415@rhlx01.hs-esslingen.de> <20091007174553.GC11702@bombadil.infradead.org> <20091009160123.GA14808@rhlx01.hs-esslingen.de> <4ACF658D.4010605@linux.intel.com> <20091009170803.GE11702@bombadil.infradead.org>
+In-Reply-To: <20091009170803.GE11702@bombadil.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 01:53:14PM -0300, Frédéric L. W. Meunier wrote:
-> On Fri, 9 Oct 2009, Greg KH wrote:
+Kyle McMartin wrote:
+> On Fri, Oct 09, 2009 at 09:32:13AM -0700, Arjan van de Ven wrote:
+>>> Hmpf. Rather stuck now, ain'tcha, given that gcc 3.2.3 doesn't even have those?
+>>>
+>> wonder if making a new define with the value of RESOLUTION * DECAY
+>> (the actual value obviously) convinces your gcc that it really is a power of two ?
+>>
 > 
-> > On Sat, Sep 19, 2009 at 07:43:04PM -0300, Frédéric L. W. Meunier wrote:
-> >> While booting 2.6.31, I don't get a login prompt after runlevel
-> >> 3:
-> >>
-> >> Sep 19 18:31:25 pervalidus init: Id "c1" respawning too fast: disabled for 5 minutes
-> >> Sep 19 18:31:25 pervalidus init: Id "c3" respawning too fast: disabled for 5 minutes
-> >> Sep 19 18:31:25 pervalidus init: Id "c2" respawning too fast: disabled for 5 minutes
-> >>
-> >> It works fine with 2.6.30.5.
-> >>
-> >> What can be causing it ?
-> >
-> > This should be fixed in 2.6.31.3, can you verify this?
+> It shouldn't. Maybe just add a BUILD_BUG_ON and change the divide to a
+> shift directly. How expected are these values to ever change, really?
 > 
-> Greg, this was caused by using vc/* entries in /etc/inittab and 
-> old devfs rules in udev.
-> 
-> I don't think the fix would make any difference for it. Would it 
-> ?
 
-Ah, if you found the problem, great, I was worried it was a tty layer
-issue.
+so far... they haven't. I don't really expect these to change much.
+maybe once a year or so... to other powers of two
 
-thanks,
-
-greg k-h
