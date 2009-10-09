@@ -1,90 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964831AbZJIX1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964856AbZJIX14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964831AbZJIX1b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934546AbZJIX1a
+	id S964856AbZJIX14 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934609AbZJIX13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:27:30 -0400
-Received: from kroah.org ([198.145.64.141]:56339 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:27:29 -0400
+Received: from kroah.org ([198.145.64.141]:56341 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934606AbZJIX1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:27:25 -0400
+	id S934608AbZJIX10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:27:26 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:22:34 2009
-Message-Id: <20091009232234.187547993@mini.kroah.org>
+Message-Id: <20091009232234.333042452@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:21:29 -0700
+Date: Fri, 09 Oct 2009 16:21:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jan Kiszka <jan.kiszka@siemens.com>, Avi Kivity <avi@redhat.com>,
-       Chuck Ebbert <cebbert@redhat.com>
-Subject: [6/8] KVM: x86: Disallow hypercalls for guest callers in rings > 0 [CVE-2009-3290]
+       Thomas Mingarelli <Thomas.Mingarelli@hp.com>,
+       Wim Van Sebroeck <wim@iguana.be>
+Subject: [7/8] [WATCHDOG] hpwdt.c: Add new HP BMC controller.
 From: gregkh@mini.kroah.org
 References: <20091009232123.464253035@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-x86-disallow-hypercalls-for-guest-callers-in-rings-0.patch
+Content-Disposition: inline; filename=hpwdt.c-add-new-hp-bmc-controller.patch
 In-Reply-To: <20091009232300.GA403@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Thomas Mingarelli <Thomas.Mingarelli@hp.com>
 
-From: Jan Kiszka <jan.kiszka@siemens.com>
+commit d8100c3abfd32986a8820ce4e614b0223a2d22a9 upstream.
 
-[ backport to 2.6.27 by Chuck Ebbert <cebbert@redhat.com> ]
+Add the PCI-ID for the upcoming new BMC controller for HP hardware.
 
-commit 07708c4af1346ab1521b26a202f438366b7bcffd upstream.
-
-So far unprivileged guest callers running in ring 3 can issue, e.g., MMU
-hypercalls. Normally, such callers cannot provide any hand-crafted MMU
-command structure as it has to be passed by its physical address, but
-they can still crash the guest kernel by passing random addresses.
-
-To close the hole, this patch considers hypercalls valid only if issued
-from guest ring 0. This may still be relaxed on a per-hypercall base in
-the future once required.
-
-Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Thomas Mingarelli <Thomas.Mingarelli@hp.com>
+Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kvm/x86.c       |    6 ++++++
- include/linux/kvm_para.h |    1 +
- 2 files changed, 7 insertions(+)
+ drivers/watchdog/hpwdt.c |   15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2571,6 +2571,11 @@ int kvm_emulate_hypercall(struct kvm_vcp
- 		a3 &= 0xFFFFFFFF;
+--- a/drivers/watchdog/hpwdt.c
++++ b/drivers/watchdog/hpwdt.c
+@@ -47,6 +47,7 @@
+ #define PCI_BIOS32_PARAGRAPH_LEN	16
+ #define PCI_ROM_BASE1			0x000F0000
+ #define ROM_SIZE			0x10000
++#define HPWDT_VERSION			"1.01"
+ 
+ struct bios32_service_dir {
+ 	u32 signature;
+@@ -130,12 +131,8 @@ static void *cru_rom_addr;
+ static struct cmn_registers cmn_regs;
+ 
+ static struct pci_device_id hpwdt_devices[] = {
+-	{
+-	 .vendor = PCI_VENDOR_ID_COMPAQ,
+-	 .device = 0xB203,
+-	 .subvendor = PCI_ANY_ID,
+-	 .subdevice = PCI_ANY_ID,
+-	},
++	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB203) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_HP, 0x3306) },
+ 	{0},			/* terminate list */
+ };
+ MODULE_DEVICE_TABLE(pci, hpwdt_devices);
+@@ -704,10 +701,11 @@ static int __devinit hpwdt_init_one(stru
  	}
  
-+	if (kvm_x86_ops->get_cpl(vcpu) != 0) {
-+		ret = -KVM_EPERM;
-+		goto out;
-+	}
-+
- 	switch (nr) {
- 	case KVM_HC_VAPIC_POLL_IRQ:
- 		ret = 0;
-@@ -2582,6 +2587,7 @@ int kvm_emulate_hypercall(struct kvm_vcp
- 		ret = -KVM_ENOSYS;
- 		break;
- 	}
-+out:
- 	vcpu->arch.regs[VCPU_REGS_RAX] = ret;
- 	kvm_x86_ops->decache_regs(vcpu);
- 	++vcpu->stat.hypercalls;
---- a/include/linux/kvm_para.h
-+++ b/include/linux/kvm_para.h
-@@ -13,6 +13,7 @@
- #define KVM_ENOSYS		1000
- #define KVM_EFAULT		EFAULT
- #define KVM_E2BIG		E2BIG
-+#define KVM_EPERM		EPERM
+ 	printk(KERN_INFO
+-		"hp Watchdog Timer Driver: 1.00"
++		"hp Watchdog Timer Driver: %s"
+ 		", timer margin: %d seconds (nowayout=%d)"
+ 		", allow kernel dump: %s (default = 0/OFF).\n",
+-		soft_margin, nowayout, (allow_kdump == 0) ? "OFF" : "ON");
++		HPWDT_VERSION, soft_margin, nowayout,
++		(allow_kdump == 0) ? "OFF" : "ON");
  
- #define KVM_HC_VAPIC_POLL_IRQ		1
- #define KVM_HC_MMU_OP			2
+ 	return 0;
+ 
+@@ -757,6 +755,7 @@ static int __init hpwdt_init(void)
+ MODULE_AUTHOR("Tom Mingarelli");
+ MODULE_DESCRIPTION("hp watchdog driver");
+ MODULE_LICENSE("GPL");
++MODULE_VERSION(HPWDT_VERSION);
+ MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
+ 
+ module_param(soft_margin, int, 0);
 
 
