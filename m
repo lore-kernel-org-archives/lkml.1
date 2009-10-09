@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760907AbZJIOOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933257AbZJIObo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760907AbZJIOOr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 10:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760883AbZJIOOq
+	id S933257AbZJIObo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 10:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932987AbZJIObo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 10:14:46 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:36029 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755362AbZJIOOo convert rfc822-to-8bit (ORCPT
+	Fri, 9 Oct 2009 10:31:44 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:58608 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932548AbZJIObn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 10:14:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:message-id;
-        b=ulUG1oc27mBVtF49g7JLE+IR/h0+xOFQWeKO0PtKdkcx+FA19J6u9I9NSM0DbSxDX0
-         TI9tg1i3HIPKQvSq5E9mKOZDL9EXOU522o98Megz/4m3ht8FDu1vOYSWzHZFr3oMb2AV
-         iRHNStfS35tpQLZYweEnFOypRgfC9PXwzYSCY=
-From: Miguel Boton <waninkoko@gmail.com>
-To: linux-wireless@vger.kernel.org
-Subject: [PATCH] b43: add 'struct b43_wl' missing declaration
-Date: Fri, 9 Oct 2009 16:13:53 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-zen2; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, mb@bu3sch.de, linville@tuxdriver.com,
-       bcm43xx-dev@lists.berlios.de
+	Fri, 9 Oct 2009 10:31:43 -0400
+Date: Fri, 9 Oct 2009 10:15:39 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: hce <webmail.hce@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: support TOE
+Message-ID: <20091009141538.GA22861@tuxdriver.com>
+References: <95455e980910090412i32f401abmf4cc901be2e9acc8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200910091613.53960.mboton@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <95455e980910090412i32f401abmf4cc901be2e9acc8@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'struct b43_wl' declaration is missing at 'leds.h'.
-It should be declared to avoid getting some GCC warnings at 'b43_leds_unregister'.
+On Fri, Oct 09, 2009 at 09:12:20PM +1000, hce wrote:
 
-Signed-off-by: Miguel Botón <mboton@gmail.com>
+> Which Linux kernel version supports TOE (TCP Offload Engine)? Or not
+> at all, I have to use TOE patch?
 
----
+Google is your friend...
 
- drivers/net/wireless/b43/leds.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+	http://www.linuxfoundation.org/en/Net:TOE
 
-diff --git a/drivers/net/wireless/b43/leds.h b/drivers/net/wireless/b43/leds.h
-index 4c56187..32b66d5 100644
---- a/drivers/net/wireless/b43/leds.h
-+++ b/drivers/net/wireless/b43/leds.h
-@@ -1,6 +1,7 @@
- #ifndef B43_LEDS_H_
- #define B43_LEDS_H_
- 
-+struct b43_wl;
- struct b43_wldev;
- 
- #ifdef CONFIG_B43_LEDS
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
