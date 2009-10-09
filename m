@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761444AbZJIUXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934050AbZJIUYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761444AbZJIUXp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 16:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761404AbZJIUXo
+	id S934050AbZJIUYj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 16:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbZJIUYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 16:23:44 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:50375 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761421AbZJIUXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 16:23:43 -0400
-Date: Fri, 9 Oct 2009 15:23:04 -0500
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Gerald Schaefer <geralds@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linuxppc-dev@ozlabs.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/2][v2] mm: add notifier in pageblock isolation for
-	balloon drivers
-Message-ID: <20091009202304.GB19114@austin.ibm.com>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
-	Badari Pulavarty <pbadari@us.ibm.com>,
-	Brian King <brking@linux.vnet.ibm.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Gerald Schaefer <geralds@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	linuxppc-dev@ozlabs.org,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091002184458.GC4908@austin.ibm.com> <20091008163449.00dce972.akpm@linux-foundation.org>
+	Fri, 9 Oct 2009 16:24:39 -0400
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:43688 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752388AbZJIUYi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 16:24:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=IJw6/NyCq4ckFErwOS0XZFqF1hfQezi+08nr9KjXuoerUN3BqqaSR5+DsOFg/PNbBw
+         3EMxs2aO5PeAv9ht83kr+hWwczx/GQ4yAueMaCfVKC0cEFeOgxXdT0t12JteIMZCrxsV
+         NxoDciFCJy+eu5crBra5nbYhYZsi2thbqQYRA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091008163449.00dce972.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20091009153219.GB7523@sortiz.org>
+References: <1254988727-31726-1-git-send-email-vapier@gentoo.org> 
+	<20091009153219.GB7523@sortiz.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 9 Oct 2009 16:23:42 -0400
+Message-ID: <8bd0f97a0910091323x7392ccdcxf54f74d7f454110f@mail.gmail.com>
+Subject: Re: [Uclinux-dist-devel] [PATCH v4] mfd: ADP5520 Multifunction LCD 
+	Backlight and Keypad Input Device Driver
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Fri, 2 Oct 2009 13:44:58 -0500
-> Robert Jennings <rcj@linux.vnet.ibm.com> wrote:
-> 
-> > Memory balloon drivers can allocate a large amount of memory which
-> > is not movable but could be freed to accomodate memory hotplug remove.
-> > 
-> > Prior to calling the memory hotplug notifier chain the memory in the
-> > pageblock is isolated.  If the migrate type is not MIGRATE_MOVABLE the
-> > isolation will not proceed, causing the memory removal for that page
-> > range to fail.
-> > 
-> > Rather than failing pageblock isolation if the the migrateteype is not
-> > MIGRATE_MOVABLE, this patch checks if all of the pages in the pageblock
-> > are owned by a registered balloon driver (or other entity) using a
-> > notifier chain.  If all of the non-movable pages are owned by a balloon,
-> > they can be freed later through the memory notifier chain and the range
-> > can still be isolated in set_migratetype_isolate().
-> 
-> The patch looks sane enough to me.
-> 
-> I expect that if the powerpc and s390 guys want to work on CMM over the
-> next couple of months, they'd like this patch merged into 2.6.32.  It's
-> a bit larger and more involved than one would like, but I guess we can
-> do that if suitable people (Mel?  Kamezawa?) have had a close look and
-> are OK with it.
+On Fri, Oct 9, 2009 at 11:36, Samuel Ortiz wrote:
+> On Thu, Oct 08, 2009 at 03:58:47AM -0400, Mike Frysinger wrote:
+>> From: Michael Hennerich <michael.hennerich@analog.com>
+>>
+>> Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
+>>
+>> Subdevs:
+>> LCD Backlight   : drivers/video/backlight/adp5520_bl
+>> LEDs            : drivers/led/leds-adp5520
+>> GPIO            : drivers/gpio/adp5520-gpio (ADP5520 only)
+>> Keys            : drivers/input/keyboard/adp5520-keys (ADP5520 only)
 >
-> What do people think?
+> With your mfd core patch applied, adp5520-gpio.c and adp5520_bl.c are supposed
+> to be buildable. Unfortunately, they both give build errors.
+> So, you either provide me with a patch that fixes both of those, and I carry
+> it with my mfd patchset, or you get your fixes applied upstream and I apply
+> the mfd core patch after that.
 
-I'd love to get it in 2.6.32 if that's possible.  I have gone over the 
-comments from Mel and Kamezawa I produced a new patchset.  I just
-finished testing it (and I also tested with
-CONFIG_MEMORY_HOTPLUG_SPARSE=n) and it will be posted shortly.
-
-> 
-> Has it been carefully compile- and run-time tested with
-> CONFIG_MEMORY_HOTPLUG_SPARSE=n?
-
-Yes, I have compiled the kernel CONFIG_MEMORY_HOTPLUG_SPARSE=n and made
-sure that we didn't have any problems.
-
---Robert Jennings
+yes, the typo fixes in this patch had pieces propagate to the other
+drivers.  if you dont mind carrying the other patchsets, i can send
+them all to you ;).  there should be like 3 or 4 of them.
+-mike
