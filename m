@@ -1,132 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934212AbZJITtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934134AbZJIThW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934212AbZJITtV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 15:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934189AbZJITtV
+	id S934134AbZJIThW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 15:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761331AbZJIThV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 15:49:21 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:57108 "EHLO
-	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934185AbZJITtU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 15:49:20 -0400
-X-SpamScore: 2
-X-BigFish: VPS2(zzzz1202hzzz32i2a8I87h6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KR9IZZ-04-9FN-02
-X-M-MSG: 
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Robert Richter <robert.richter@amd.com>,
-       David Rientjes <rientjes@google.com>,
-       Stephane Eranian <eranian@google.com>
-Subject: [PATCH 2/2] oprofile: warn on freeing event buffer too early
-Date: Fri, 9 Oct 2009 21:33:30 +0200
-Message-ID: <1255116810-26514-2-git-send-email-robert.richter@amd.com>
-X-Mailer: git-send-email 1.6.5.rc2
-In-Reply-To: <20091009160532.GD638@erda.amd.com>
-References: <20091009160532.GD638@erda.amd.com>
-X-OriginalArrivalTime: 09 Oct 2009 19:47:57.0016 (UTC) FILETIME=[66248580:01CA4919]
+	Fri, 9 Oct 2009 15:37:21 -0400
+Received: from web53206.mail.re2.yahoo.com ([206.190.49.76]:36799 "HELO
+	web53206.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761318AbZJIThU convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 15:37:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=zU0X8j+KR69AppRvXzeCC3sk6M4bhNhQ6gEGUyTeN6YaKLB3OHdFtKCiH6SBavbk8AoCYMgZTAw41zlVQ5DuKaGgIQGL44cyPdaCHlRpwtarRdDMD4ZcSrG8RZChgSV7udXoWnrH8TderZ87xwkXG2lxb9LivLAPDV/MQoTLYZ0=;
+Message-ID: <840534.40534.qm@web53206.mail.re2.yahoo.com>
+X-YMail-OSG: wLxV7HIVM1nCzro5D.FuJqQKklsoRzR4M2dtGms.kRSc_6QLTp_G_pJmXYeTcov6VR2iByBsaat6bT2LzYqTtzPW6IN3vCzXvmthfzrnIa6ikQILKMOpw6N.DzgP4vTvUaHv4c9XKNO8TzhPHbNH.Tblym.CpzCrP3i2bdW2UJR5_ipFZ6CSMKTkrMGkg4AZrPqUhI3ZUG7pHYvTRlcwVN6m9EMx8D5UxgwbWEvEWua4VMy6S.8EWBBZvroiGoQPIEd1mX5wTBdvfIAjqXiL0uHMRkQJnkrAQwa.XGzIyD4nOZM1N7mt_4J9EbltaA1svbTXLsXcDVyXDxF8ZF5KwdcmRhyWDaUwlExMpHbXNQSHkb6u1.66Hs0O0YEW8PvO8WCnbHNwcvVXNMkqBBb3xNmySJTxtWpxj4En8wj_8FvF4vF2bt_ifBiMmoIzecpTb1jasg--
+X-Mailer: YahooMailRC/182.10 YahooMailWebService/0.7.347.3
+Date: Fri, 9 Oct 2009 12:36:38 -0700 (PDT)
+From: Reza Salehi <rezsalehi@yahoo.com>
+Subject: Question about "scheduling while atomic"
+To: linux-kernel@vger.kernel.org
+Cc: linux-net@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: unknown
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A race shouldn't happen since all workqueues or handlers are canceled
-or flushed before the event buffer is freed. A warning is triggered
-now if the buffer is freed too early.
+Hi all,
 
-Also, this patch adds some comments about event buffer protection,
-reworks some code and adds code to clear buffer_pos during alloc and
-free of the event buffer.
+I am wonder where I can post my general questions for help about kernel oopps ?
 
-Cc: David Rientjes <rientjes@google.com>
-Cc: Stephane Eranian <eranian@google.com>
-Signed-off-by: Robert Richter <robert.richter@amd.com>
----
- drivers/oprofile/event_buffer.c |   25 +++++++++++++++----------
- 1 files changed, 15 insertions(+), 10 deletions(-)
+I am getting kernel oops "  scheduling while atomic: watchdog or swapper" it doesn't make kernel to crash but i am sure it is not a good sign..
+I am not holding any spin lock at all.
+I am wonder what would be the right approch to debug this issue. I am using kernel 2.6.28 on MIPS procesor. 
 
-diff --git a/drivers/oprofile/event_buffer.c b/drivers/oprofile/event_buffer.c
-index c38adb3..5df60a6 100644
---- a/drivers/oprofile/event_buffer.c
-+++ b/drivers/oprofile/event_buffer.c
-@@ -35,17 +35,22 @@ static size_t buffer_pos;
- /* atomic_t because wait_event checks it outside of buffer_mutex */
- static atomic_t buffer_ready = ATOMIC_INIT(0);
- 
--/* Add an entry to the event buffer. When we
-- * get near to the end we wake up the process
-- * sleeping on the read() of the file.
-+/*
-+ * Add an entry to the event buffer. When we get near to the end we
-+ * wake up the process sleeping on the read() of the file. To protect
-+ * the event_buffer this function may only be called when buffer_mutex
-+ * is set.
-  */
- void add_event_entry(unsigned long value)
- {
- 	/*
--	 * catch potential error
-+	 * This shouldn't happen since all workqueues or handlers are
-+	 * canceled or flushed before the event buffer is freed.
- 	 */
--	if (!event_buffer)
-+	if (!event_buffer) {
-+		WARN_ON_ONCE(1);
- 		return;
-+	}
- 
- 	if (buffer_pos == buffer_size) {
- 		atomic_inc(&oprofile_stats.event_lost_overflow);
-@@ -75,7 +80,6 @@ void wake_up_buffer_waiter(void)
- 
- int alloc_event_buffer(void)
- {
--	int err = -ENOMEM;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&oprofilefs_lock, flags);
-@@ -86,13 +90,12 @@ int alloc_event_buffer(void)
- 	if (buffer_watershed >= buffer_size)
- 		return -EINVAL;
- 
-+	buffer_pos = 0;
- 	event_buffer = vmalloc(sizeof(unsigned long) * buffer_size);
- 	if (!event_buffer)
--		goto out;
-+		return -ENOMEM;
- 
--	err = 0;
--out:
--	return err;
-+	return 0;
- }
- 
- 
-@@ -100,6 +103,7 @@ void free_event_buffer(void)
- {
- 	mutex_lock(&buffer_mutex);
- 	vfree(event_buffer);
-+	buffer_pos = 0;
- 	event_buffer = NULL;
- 	mutex_unlock(&buffer_mutex);
- }
-@@ -174,6 +178,7 @@ static ssize_t event_buffer_read(struct file *file, char __user *buf,
- 
- 	mutex_lock(&buffer_mutex);
- 
-+	/* May happen if the buffer is freed during pending reads. */
- 	if (!event_buffer) {
- 		retval = -EINTR;
- 		goto out;
--- 
-1.6.5.rc2
+Thanks for your help in advance. 
 
+Best Regards,
+Reza
 
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
