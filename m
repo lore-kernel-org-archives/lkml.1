@@ -1,109 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760941AbZJIOJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934001AbZJIRGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760941AbZJIOJf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 10:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760927AbZJIOJd
+	id S934001AbZJIRGb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 13:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933807AbZJIRGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 10:09:33 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:36492
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756715AbZJIOJ3 (ORCPT
+	Fri, 9 Oct 2009 13:06:31 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:15449 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933802AbZJIRGa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 10:09:29 -0400
-X-SpamScore: 1
-X-BigFish: VPS1(zzzz1202hzzz32i2a8h6bh62h)
-X-Spam-TCS-SCL: 1:0
+	Fri, 9 Oct 2009 13:06:30 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i2a8h6bh43j64h)
+X-Spam-TCS-SCL: 3:0
 X-FB-SS: 5,
-X-WSS-ID: 0KR93AB-02-05R-02
+X-WSS-ID: 0KR9BHF-02-069-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
 CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 2/9] KVM: SVM: Move INTR vmexit out of atomic code
-Date: Fri, 9 Oct 2009 16:08:26 +0200
-Message-ID: <1255097313-23267-3-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 3/9] KVM: SVM: Add tracepoint for nested vmrun
+Date: Fri, 9 Oct 2009 16:08:27 +0200
+Message-ID: <1255097313-23267-4-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.4.3
 In-Reply-To: <1255097313-23267-1-git-send-email-joerg.roedel@amd.com>
 References: <1255097313-23267-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 09 Oct 2009 14:08:36.0309 (UTC) FILETIME=[FE373050:01CA48E9]
+X-OriginalArrivalTime: 09 Oct 2009 14:08:36.0325 (UTC) FILETIME=[FE39A150:01CA48E9]
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Reverse-DNS: ausb3extmailp02.amd.com
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The nested SVM code emulates a #vmexit caused by a request
-to open the irq window right in the request function. This
-is a bug because the request function runs with preemption
-and interrupts disabled but the #vmexit emulation might
-sleep. This can cause a schedule()-while-atomic bug and is
-fixed with this patch.
+This patch adds a dedicated kvm tracepoint for a nested
+vmrun.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/svm.c |   26 +++++++++++++++++++++++++-
- 1 files changed, 25 insertions(+), 1 deletions(-)
+ arch/x86/kvm/svm.c   |    6 ++++++
+ arch/x86/kvm/trace.h |   33 +++++++++++++++++++++++++++++++++
+ arch/x86/kvm/x86.c   |    1 +
+ 3 files changed, 40 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index e372854..884bffc 100644
+index 884bffc..907af3f 100644
 --- a/arch/x86/kvm/svm.c
 +++ b/arch/x86/kvm/svm.c
-@@ -85,6 +85,9 @@ struct nested_state {
- 	/* gpa pointers to the real vectors */
- 	u64 vmcb_msrpm;
+@@ -1726,6 +1726,12 @@ static bool nested_svm_vmrun(struct vcpu_svm *svm)
+ 	/* nested_vmcb is our indicator if nested SVM is activated */
+ 	svm->nested.vmcb = svm->vmcb->save.rax;
  
-+	/* A VMEXIT is required but not yet emulated */
-+	bool exit_required;
++	trace_kvm_nested_vmrun(svm->vmcb->save.rip - 3, svm->nested.vmcb,
++			       nested_vmcb->save.rip,
++			       nested_vmcb->control.int_ctl,
++			       nested_vmcb->control.event_inj,
++			       nested_vmcb->control.nested_ctl);
 +
- 	/* cache for intercepts of the guest */
- 	u16 intercept_cr_read;
- 	u16 intercept_cr_write;
-@@ -1379,7 +1382,14 @@ static inline int nested_svm_intr(struct vcpu_svm *svm)
+ 	/* Clear internal status */
+ 	kvm_clear_exception_queue(&svm->vcpu);
+ 	kvm_clear_interrupt_queue(&svm->vcpu);
+diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
+index 0d480e7..b5798e1 100644
+--- a/arch/x86/kvm/trace.h
++++ b/arch/x86/kvm/trace.h
+@@ -349,6 +349,39 @@ TRACE_EVENT(kvm_apic_accept_irq,
+ 		  __entry->coalesced ? " (coalesced)" : "")
+ );
  
- 	svm->vmcb->control.exit_code = SVM_EXIT_INTR;
- 
--	if (nested_svm_exit_handled(svm)) {
-+	if (svm->nested.intercept & 1ULL) {
-+		/*
-+		 * The #vmexit can't be emulated here directly because this
-+		 * code path runs with irqs and preemtion disabled. A
-+		 * #vmexit emulation might sleep. Only signal request for
-+		 * the #vmexit here.
-+		 */
-+		svm->nested.exit_required = true;
- 		nsvm_printk("VMexit -> INTR\n");
- 		return 1;
- 	}
-@@ -2340,6 +2350,13 @@ static int handle_exit(struct kvm_vcpu *vcpu)
- 
- 	trace_kvm_exit(exit_code, svm->vmcb->save.rip);
- 
-+	if (unlikely(svm->nested.exit_required)) {
-+		nested_svm_vmexit(svm);
-+		svm->nested.exit_required = false;
++/*
++ * Tracepoint for nested VMRUN
++ */
++TRACE_EVENT(kvm_nested_vmrun,
++	    TP_PROTO(__u64 rip, __u64 vmcb, __u64 nested_rip, __u32 int_ctl,
++		     __u32 event_inj, bool npt),
++	    TP_ARGS(rip, vmcb, nested_rip, int_ctl, event_inj, npt),
 +
-+		return 1;
-+	}
++	TP_STRUCT__entry(
++		__field(	__u64,		rip		)
++		__field(	__u64,		vmcb		)
++		__field(	__u64,		nested_rip	)
++		__field(	__u32,		int_ctl		)
++		__field(	__u32,		event_inj	)
++		__field(	bool,		npt		)
++	),
 +
- 	if (is_nested(svm)) {
- 		int vmexit;
- 
-@@ -2615,6 +2632,13 @@ static void svm_vcpu_run(struct kvm_vcpu *vcpu)
- 	u16 gs_selector;
- 	u16 ldt_selector;
- 
-+	/*
-+	 * A vmexit emulation is required before the vcpu can be executed
-+	 * again.
-+	 */
-+	if (unlikely(svm->nested.exit_required))
-+		return;
++	TP_fast_assign(
++		__entry->rip		= rip;
++		__entry->vmcb		= vmcb;
++		__entry->nested_rip	= nested_rip;
++		__entry->int_ctl	= int_ctl;
++		__entry->event_inj	= event_inj;
++		__entry->npt		= npt;
++	),
 +
- 	svm->vmcb->save.rax = vcpu->arch.regs[VCPU_REGS_RAX];
- 	svm->vmcb->save.rsp = vcpu->arch.regs[VCPU_REGS_RSP];
- 	svm->vmcb->save.rip = vcpu->arch.regs[VCPU_REGS_RIP];
++	TP_printk("rip: 0x%016llx vmcb: 0x%016llx nrip: 0x%016llx int_ctl: 0x%08x "
++		  "event_inj: 0x%08x npt: %s\n",
++		__entry->rip, __entry->vmcb, __entry->nested_rip,
++		__entry->int_ctl, __entry->event_inj,
++		__entry->npt ? "on" : "off")
++);
++
+ #endif /* _TRACE_KVM_H */
+ 
+ /* This part must be outside protection */
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 11a6f2f..f1e44e9 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -4980,3 +4980,4 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_inj_virq);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_page_fault);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_msr);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_cr);
++EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_nested_vmrun);
 -- 
 1.6.4.3
 
