@@ -1,86 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758415AbZJIIeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760283AbZJIIj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758415AbZJIIeJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 04:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZJIIeH
+	id S1760283AbZJIIj5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 04:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756774AbZJIIj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 04:34:07 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:5706 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754542AbZJIIeE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 04:34:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qDNQF9JQ2Dr2lHQ+eJSxnOa3s9FpPhbW9VBUShZ8g1unrhjuF9yMAjFMSxPAKhGRph
-         3O+BbYq+mpf87nXnzNfreFGjc/WoXEXml7IlmfMvyqNOijFLo2XEWc+i9KzOkuiLgnLW
-         zm6h7F133VcYQH8hMqampflL+AXnm+U0Dsj64=
+	Fri, 9 Oct 2009 04:39:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55026 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754196AbZJIIjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 04:39:55 -0400
+Date: Fri, 9 Oct 2009 10:39:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata build fix
+Message-ID: <20091009083903.GA20687@elte.hu>
+References: <20091009043248.GA12304@havoc.gtf.org>
 MIME-Version: 1.0
-In-Reply-To: <4ACE3124.4060109@billgatliff.com>
-References: <20091007061822.GA7602@july>
-	 <5d5443650910081128l58f45148m87735185a0094c31@mail.gmail.com>
-	 <4ACE3124.4060109@billgatliff.com>
-Date: Fri, 9 Oct 2009 14:02:57 +0530
-Message-ID: <5d5443650910090132x5712b027j5d75d10821de5cfd@mail.gmail.com>
-Subject: Re: [PATCH 5/6] haptic: Samsung SoCs PWM controlled haptic support
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, ben-linux@fluff.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091009043248.GA12304@havoc.gtf.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bill,
 
-On Fri, Oct 9, 2009 at 12:06 AM, Bill Gatliff <bgat@billgatliff.com> wrote:
-> Trilok Soni wrote:
->>
->> Adding Bill Gatliff.
->>
->> Hi Kyungmin,
->>
->> Most of the driver looks fine. I have only one generic comment, but
->> not for this driver:
->>
->> - Someone should really work on getting PWM framework (may be the one
->> written by Bill Gatliff) into the kernel, because
->>  if we don't do this and if new PWM controller provides it's own APIs
->> then we can't leverage the chips using them, like the
->>  case here for ISA1000 and ISA1200. These chips are using the pwm
->> APIs exported by Samsung PWM controller, but it would
->>  be painful to integrate other PWM controller if that has slightly
->> little different API due to its nature.
->>
->>  So, it would be better to get one generic PWM framework mainline in
->> the kernel.
->>
->
-> I can repost for review, if you like.
->
-> The only objection I received last time, IIRC, was that I proffered it as a
-> "generic" API but only provided support for a couple of AT91 parts.  I
-> haven't had much time to add other support, so I haven't pushed for
-> inclusion.
->
-> I would be happy to coordinate the development/migration of support to the
-> API.  I can still do the AT91 parts and probably PXA, maybe
-> OMAP3430/Beagleboard.  But I would need others to help me with the rest.
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-Two drivers are OK to begin with and for mainline. It is expected that
-framework author may not have all parts with him to demonstrate a
-thumbrule of atleast three driver per framework in-order to make it
-mainline to test most the framework logic.
+> Please pull from 'upstream-linus' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+> 
+> to receive the following updates:
+> 
+>  drivers/ata/ahci.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> Markus Trippelsdorf (1):
+>       ahci: Add ifdef wrapper to ahci_gtf_filter_workaround
+> 
+> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+> index 4edca6e..b1a2577 100644
+> --- a/drivers/ata/ahci.c
+> +++ b/drivers/ata/ahci.c
+> @@ -2884,6 +2884,7 @@ static bool ahci_broken_online(struct pci_dev *pdev)
+>  	return pdev->bus->number == (val >> 8) && pdev->devfn == (val & 0xff);
+>  }
+>  
+> +#ifdef CONFIG_ATA_ACPI
+>  static void ahci_gtf_filter_workaround(struct ata_host *host)
+>  {
+>  	static const struct dmi_system_id sysids[] = {
+> @@ -2927,6 +2928,10 @@ static void ahci_gtf_filter_workaround(struct ata_host *host)
+>  				dev->gtf_filter |= filter;
+>  	}
+>  }
+> +#else
+> +static inline void ahci_gtf_filter_workaround(struct ata_host *host)
+> +{}
+> +#endif
 
-If mainline authors doesn't agree still, we can still target this
-through drivers\stagic area through Greg KH. Please post your
-refreshed version.
+btw., i made the slightly different fix below before i saw your fix on 
+lkml, and i think it's slightly cleaner to have a single definition of a 
+function instead of an
+#else branch.
 
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+	Ingo
+
+---------------------->
+>From 1f4a08ff9647d24d9590a7e23349036dbeafbb1b Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 9 Oct 2009 10:13:56 +0200
+Subject: [PATCH] ahci: Fix "filter FPDMA non-zero offset enable for Aspire 3810T" on !CONFIG_ATA_ACPI
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Commit f80ae7e ("ahci: filter FPDMA non-zero offset enable for Aspire
+3810T") introduced a new build breakage:
+
+  drivers/ata/ahci.c: In function â€˜ahci_gtf_filter_workaroundâ€™:
+  drivers/ata/ahci.c:2927: error: â€˜struct ata_deviceâ€™ has no member named â€˜gtf_filterâ€™
+  make[2]: *** [drivers/ata/ahci.o] Error 1
+  make[1]: *** [drivers/ata] Error 2
+  make[1]: *** Waiting for unfinished jobs....
+
+As the acpi taskfile command filter support is a property of
+libata-acpi - so the ata_device::gtf_filter field only exists
+under CONFIG_ATA_ACPI.
+
+Add the trivial #ifdef to turn ahci_gtf_filter_workaround()
+into a NOP on !CONFIG_ATA_ACPI.
+
+Cc: Marcus Meissner <meissner@novell.com>
+Cc: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/ata/ahci.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+index 4edca6e..fc8d527 100644
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -2886,6 +2886,7 @@ static bool ahci_broken_online(struct pci_dev *pdev)
+ 
+ static void ahci_gtf_filter_workaround(struct ata_host *host)
+ {
++#ifdef CONFIG_ATA_ACPI
+ 	static const struct dmi_system_id sysids[] = {
+ 		/*
+ 		 * Aspire 3810T issues a bunch of SATA enable commands
+@@ -2926,6 +2927,7 @@ static void ahci_gtf_filter_workaround(struct ata_host *host)
+ 			ata_for_each_dev(dev, link, ALL)
+ 				dev->gtf_filter |= filter;
+ 	}
++#endif
+ }
+ 
+ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
