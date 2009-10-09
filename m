@@ -1,102 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbZJIKRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760647AbZJIKTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760642AbZJIKRX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 06:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760622AbZJIKRW
+	id S1760647AbZJIKTj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 06:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760587AbZJIKTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 06:17:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53523 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760538AbZJIKRV (ORCPT
+	Fri, 9 Oct 2009 06:19:39 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33906 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760542AbZJIKTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 06:17:21 -0400
-Subject: Re: tbench regression with 2.6.32-rc1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1255081889.25078.42.camel@ymzhang>
-References: <1255081889.25078.42.camel@ymzhang>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 09 Oct 2009 12:16:40 +0200
-Message-Id: <1255083400.8802.15.camel@laptop>
+	Fri, 9 Oct 2009 06:19:38 -0400
+Date: Fri, 9 Oct 2009 11:20:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Nick Bowler <nbowler@elliptictech.com>
+Cc: linux-kernel@vger.kernel.org, alan@linux.intel.com, gregkh@suse.de
+Subject: Re: [Regression, bisected] Transmit failure in et131x.
+Message-ID: <20091009112016.4fb07eb7@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091008140805.GA21535@emergent.ellipticsemi.com>
+References: <20091008140805.GA21535@emergent.ellipticsemi.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-09 at 17:51 +0800, Zhang, Yanmin wrote:
-> Comparing with 2.6.31's results, tebench has some regression with
-> 2.6.32-rc1.
-> COmmandline to start tbench:
-> #./tbench_srv &
-> #./tbench -t 600 CPU_NUM*2 127.0.0.1  #Use real cpu num to replace CPU_NUM
-> So start 2 client processes per cpu.
-> 
-> 1) On 4*4 core tigerton: 30%;
-> 2) On 2*4 core stoakley: 15%;
-> 3) On 2*8 core Nehalem: 6%.
-> 
-> As there are couple of patches which try to turn on/off some sched domain
-> flags such like SD_BALANCE_WAKE, I used some walkaround to bisect it.
-> On tigerton, below patch is captured. 
-> commit 59abf02644c45f1591e1374ee7bb45dc757fcb88
-> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date:   Wed Sep 16 08:28:30 2009 +0200
-> 
->     sched: Add SD_PREFER_LOCAL
-> 
-> 
-> The patch reverting is not clean, so I did some testing by turning on/off
-> some domain flags and sched_feaures manually.
-> 
-> 1) On tigerton: if SD_PREFER_LOCAL=0 (disable it), the regression becomes about 2%.
-> 2) On stoakley: if ﻿SD_PREFER_LOCAL=0 (disable it), the regression becomes about 4%.
-> 3) On Nehalem: Above method couldn't improve result. I'm still checking it.
-> 
-> I also tried to turn on/off﻿ FAIR_SLEEPERS and GENTLE_FAIR_SLEEPERS. It seems they
-> has limited impact on tbench. I need double check these 2 flags.
+Please test the following if you would.
 
-So the c2q cpus, and esp the one with smaller cache hurt from this. I
-guess we can turn this off without too much down sides. Maybe turn it on
-for NUMA on the nehalem?
+If it doesn't work see if you can tell from the other end and tcpdump if the receiver or sender side dies, and let me know if you are using 10, 100 or Gbit and if you have the mtu set over 1500.
 
 
+et131x: Correct WRAP bit handling
+
+From: Alan Cox <alan@linux.intel.com>
+
+add_10bit loses the existing wrap value
+
+Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 25a9284..d823c24 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -143,6 +143,7 @@ extern unsigned long node_remap_size[];
- 				| 1*SD_BALANCE_FORK			\
- 				| 0*SD_BALANCE_WAKE			\
- 				| 1*SD_WAKE_AFFINE			\
-+				| 1*SD_PREFER_LOCAL			\
- 				| 0*SD_SHARE_CPUPOWER			\
- 				| 0*SD_POWERSAVINGS_BALANCE		\
- 				| 0*SD_SHARE_PKG_RESOURCES		\
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index fc0bf3e..57e6357 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -129,7 +129,7 @@ int arch_update_cpu_topology(void);
- 				| 1*SD_BALANCE_FORK			\
- 				| 0*SD_BALANCE_WAKE			\
- 				| 1*SD_WAKE_AFFINE			\
--				| 1*SD_PREFER_LOCAL			\
-+				| 0*SD_PREFER_LOCAL			\
- 				| 0*SD_SHARE_CPUPOWER			\
- 				| 1*SD_SHARE_PKG_RESOURCES		\
- 				| 0*SD_SERIALIZE			\
-@@ -162,7 +162,7 @@ int arch_update_cpu_topology(void);
- 				| 1*SD_BALANCE_FORK			\
- 				| 0*SD_BALANCE_WAKE			\
- 				| 1*SD_WAKE_AFFINE			\
--				| 1*SD_PREFER_LOCAL			\
-+				| 0*SD_PREFER_LOCAL			\
- 				| 0*SD_SHARE_CPUPOWER			\
- 				| 0*SD_SHARE_PKG_RESOURCES		\
- 				| 0*SD_SERIALIZE			\
+
+ drivers/staging/et131x/et1310_rx.c |   20 ++++++++++++++------
+ 1 files changed, 14 insertions(+), 6 deletions(-)
 
 
+diff --git a/drivers/staging/et131x/et1310_rx.c b/drivers/staging/et131x/et1310_rx.c
+index 5356d0f..4c4555d 100644
+--- a/drivers/staging/et131x/et1310_rx.c
++++ b/drivers/staging/et131x/et1310_rx.c
+@@ -1074,12 +1074,20 @@ void et131x_handle_recv_interrupt(struct et131x_adapter *etdev)
+ 
+ static inline u32 bump_fbr(u32 *fbr, u32 limit)
+ {
+-	u32 v = *fbr;
+-	add_10bit(&v, 1);
+-	if (v > limit)
+-		v = (*fbr & ~ET_DMA10_MASK) ^ ET_DMA10_WRAP;
+-	*fbr = v;
+-	return v;
++        u32 v = *fbr;
++        v++;
++        /* This works for all cases where limit < 1024. The 1023 case
++           works because 1023++ is 1024 which means the if condition is not
++           taken but the carry of the bit into the wrap bit toggles the wrap
++           value correctly */
++        if ((v & ET_DMA10_MASK) > limit) {
++                v &= ~ET_DMA10_MASK;
++                v ^= ET_DMA10_WRAP;
++        }
++        /* For the 1023 case */
++        v &= (ET_DMA10_MASK|ET_DMA10_WRAP);
++        *fbr = v;
++        return v;
+ }
+ 
+ /**
