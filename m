@@ -1,108 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbZJICie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932610AbZJICj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932289AbZJICie (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 22:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbZJICia
+	id S932610AbZJICj3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 22:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932471AbZJICj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 22:38:30 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47447 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753848AbZJICi3 (ORCPT
+	Thu, 8 Oct 2009 22:39:27 -0400
+Received: from mail-px0-f189.google.com ([209.85.216.189]:49460 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932464AbZJICj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 22:38:29 -0400
-Message-ID: <4ACEA207.7010208@np.css.fujitsu.com>
-Date: Fri, 09 Oct 2009 11:37:59 +0900
-From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 8 Oct 2009 22:39:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=Lv95qhfX2F/6GNVEbYLM2aD6HBFJM1Gje69D/uNgzGHnae6P73Rin+95G6ludUA9xk
+         ntkjXrhmTn4cX4PEq6t1yCSu/oN1M2C74188lt7xonY8EApuzUrg/wl5LOg9ng5nZM+m
+         OW9X/JBrIwgNljqUKxX7xfgMZHn2eRIera3dY=
+Date: Thu, 8 Oct 2009 19:38:44 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: =?iso-8859-1?B?RnLpZOlyaWMgTC4gVy4=?= Meunier <fredlwm@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: keyboard under X with 2.6.31
+Message-ID: <20091009023844.GA26462@core.coreip.homeip.net>
+References: <alpine.LNX.2.01.0910071706490.11297@dyndns.pervalidus.net>
 MIME-Version: 1.0
-To: LKLM <linux-kernel@vger.kernel.org>
-Cc: Cosmin Ratiu <cratiu@ixiacom.com>, Octavian Purdila <opurdila@ixiacom.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: [Patch-next] Fix the size overflow of addrconf_sysctl array
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LNX.2.01.0910071706490.11297@dyndns.pervalidus.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(This patch fixes bug of commit f7734fdf61ec6bb848e0bafc1fb8bad2c124bb50
- title "make TLLAO option for NA packets configurable")
+On Wed, Oct 07, 2009 at 05:19:25PM -0300, Frédéric L. W. Meunier wrote:
+> My keyboard (ABNT2 PS/2) seems to be broken under X with 2.6.31.2. After 
+> less than an hour, it starts acting crazy. The first time, all leds 
+> turned off and I couldn't type anything. The second time, all leds also 
+> turned off, but since it happened while I was pressing the Backspace key 
+> to delete text, it continued deleting, like if the key was pressed.
+>
+> In both cases, the mouse (USB) still works and I can exit X, where the 
+> keyboard works. There's nothing in the logs.
+>
+> No problem with 2.6.30.9. Is it supposed to be a kernel or X bug ?
 
-When the IPV6 conf is used, the function sysctl_set_parent is called and the
-array addrconf_sysctl is used as a parameter of the function.
+It would be interestig to see if the same keyboard continues to work in
+console... if it does then I'd blame X.
 
-The above patch added new conf "force_tllao" into the array addrconf_sysctl,
-but the size of the array was not modified, the static allocated size is
-DEVCONF_MAX + 1 but the real size is DEVCONF_MAX + 2, so the problem is
-that the function sysctl_set_parent accessed wrong address.
-
-I got the following information.
-Call Trace:
-    [<ffffffff8106085d>] sysctl_set_parent+0x29/0x3e
-    [<ffffffff8106085d>] sysctl_set_parent+0x29/0x3e
-    [<ffffffff8106085d>] sysctl_set_parent+0x29/0x3e
-    [<ffffffff8106085d>] sysctl_set_parent+0x29/0x3e
-    [<ffffffff8106085d>] sysctl_set_parent+0x29/0x3e
-    [<ffffffff810622d5>] __register_sysctl_paths+0xde/0x272
-    [<ffffffff8110892d>] ? __kmalloc_track_caller+0x16e/0x180
-    [<ffffffffa00cfac3>] ? __addrconf_sysctl_register+0xc5/0x144 [ipv6]
-    [<ffffffff8141f2c9>] register_net_sysctl_table+0x48/0x4b
-    [<ffffffffa00cfaf5>] __addrconf_sysctl_register+0xf7/0x144 [ipv6]
-    [<ffffffffa00cfc16>] addrconf_init_net+0xd4/0x104 [ipv6]
-    [<ffffffff8139195f>] setup_net+0x35/0x82
-    [<ffffffff81391f6c>] copy_net_ns+0x76/0xe0
-    [<ffffffff8107ad60>] create_new_namespaces+0xf0/0x16e
-    [<ffffffff8107afee>] copy_namespaces+0x65/0x9f
-    [<ffffffff81056dff>] copy_process+0xb2c/0x12c3
-    [<ffffffff810576e1>] do_fork+0x14b/0x2d2
-    [<ffffffff8107ac4e>] ? up_read+0xe/0x10
-    [<ffffffff81438e73>] ? do_page_fault+0x27a/0x2aa
-    [<ffffffff8101044b>] sys_clone+0x28/0x2a
-    [<ffffffff81011fb3>] stub_clone+0x13/0x20
-    [<ffffffff81011c72>] ? system_call_fastpath+0x16/0x1b
-
-And the information of IPV6 in .config is as following.
-IPV6 in .config:
-    CONFIG_IPV6=m
-    CONFIG_IPV6_PRIVACY=y
-    CONFIG_IPV6_ROUTER_PREF=y
-    CONFIG_IPV6_ROUTE_INFO=y
-    CONFIG_IPV6_OPTIMISTIC_DAD=y
-    CONFIG_IPV6_MIP6=m
-    CONFIG_IPV6_SIT=m
-    # CONFIG_IPV6_SIT_6RD is not set
-    CONFIG_IPV6_NDISC_NODETYPE=y
-    CONFIG_IPV6_TUNNEL=m
-    CONFIG_IPV6_MULTIPLE_TABLES=y
-    CONFIG_IPV6_SUBTREES=y
-    CONFIG_IPV6_MROUTE=y
-    CONFIG_IPV6_PIMSM_V2=y
-    # CONFIG_IP_VS_IPV6 is not set
-    CONFIG_NF_CONNTRACK_IPV6=m
-    CONFIG_IP6_NF_MATCH_IPV6HEADER=m
-
-I confirmed this patch fixes this problem.
-
-Signed-off-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
----
- include/linux/ipv6.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/ipv6.h b/include/linux/ipv6.h
-index ae74ede..5640425 100644
---- a/include/linux/ipv6.h
-+++ b/include/linux/ipv6.h
-@@ -208,6 +208,7 @@ enum {
- 	DEVCONF_MC_FORWARDING,
- 	DEVCONF_DISABLE_IPV6,
- 	DEVCONF_ACCEPT_DAD,
-+	DEVCONF_FORCE_TLLAO,
- 	DEVCONF_MAX
- };
- 
 -- 
-1.6.2.2
-
-
+Dmitry
