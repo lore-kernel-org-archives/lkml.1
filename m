@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934019AbZJIQlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761134AbZJIQpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934019AbZJIQlY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 12:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760995AbZJIQlY
+	id S1761134AbZJIQpV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 12:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761122AbZJIQpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 12:41:24 -0400
-Received: from fanny.its.uu.se ([130.238.4.241]:48069 "EHLO fanny.its.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758949AbZJIQlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 12:41:23 -0400
+	Fri, 9 Oct 2009 12:45:20 -0400
+Received: from james.oetiker.ch ([213.144.138.195]:33415 "EHLO
+	james.oetiker.ch" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752404AbZJIQpT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 12:45:19 -0400
+Date: Fri, 9 Oct 2009 18:44:12 +0200 (CEST)
+From: Tobias Oetiker <tobi@oetiker.ch>
+To: linux-kernel@vger.kernel.org
+Subject: Linux IO service time - a perfect source of randomness ?
+Message-ID: <alpine.DEB.2.00.0910091814470.14413@sebohet.brgvxre.pu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19151.26501.727411.584056@pilspetsen.it.uu.se>
-Date: Fri, 9 Oct 2009 18:40:37 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #14256] kernel BUG at fs/ext3/super.c:435
-In-Reply-To: <19145.10741.402938.867088@pilspetsen.it.uu.se>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
-	<COE24pZSBH.A.ot.9MTxKB@chimera>
-	<19144.56721.786457.979953@pilspetsen.it.uu.se>
-	<200910042249.54639.rjw@sisk.pl>
-	<19145.10741.402938.867088@pilspetsen.it.uu.se>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson writes:
- > Rafael J. Wysocki writes:
- >  > On Sunday 04 October 2009, Mikael Pettersson wrote:
- >  > > Rafael J. Wysocki wrote:
- >  > > > The following bug entry is on the current list of known regressions
- >  > > > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
- >  > > > be listed and let me know (either way).
- >  > > > 
- >  > > > 
- >  > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14256
- >  > > > Subject		: kernel BUG at fs/ext3/super.c:435
- >  > > > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
- >  > > > Date		: 2009-09-21 7:29 (11 days old)
- >  > > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125351816109264&w=3D4
- >  > > 
- >  > > The exact same bug (same cause, same symptom) just hit me again in 2.6.32-rc1.
- >  > 
- >  > Thanks for the update.
- >  > 
- >  > Could you check the current Linus' tree, please?  There are some known
- >  > regression fixes in there.
- > 
- > I tried simplified versions of the bug trigger on two machines
- > running 2.6.32-rc1-git6, and neither triggered the kernel bug.
- > 
- > The original recipe involved doing a glibc rebuild, run its test
- > suite, install it, and reboot. Today however machine 1 was already
- > doing a rebuild so after the rebuild it did a reboot into the new
- > kernel before the install. The second machine booted the new kernel
- > directly to install the binary packages from the first machine.
- > 
- > I'll re-run the full bug trigger recipe on a third machine later next
- > week (it must rebuild glibc itself anyway due to arch differences).
+I have just completed extensive benchmarking of ext3 on 2.6.31.2
+both on HW RAID6 as well as single Hard Drive. I have written a new
+file system benchmark that creates load by reading and writing large
+file trees in paralle to simulate a busy fileserver.
 
-Not fixed in 2.6.32-rc3. A glibc rebuild + install triggered the
-exact same bug on the third machine.
+The results are as follows:
 
-/Mikael
+ * as soon as the system comes under strain the service time
+   for single io operations becomes almost random with huge
+   outliers of several seconds.
+
+ * on HW RAID the best performance is to be gained with
+   data=ordered and cfq scheduler
+
+ * on single HDD setups, only (!) data=writeback with cfq provides
+   good performance.
+
+ * the deadline scheduler did not perform well in any of the
+   read/write scenarios.
+
+ * btrfs has fantastic read performance but does not (yet?) do well
+   when readers and writers are competing.
+
+my report is on
+
+  http://insights.oetiker.ch/linux/fsopbench/
+
+cheers
+tobi
+
+-- 
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
