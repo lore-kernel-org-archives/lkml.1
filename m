@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761893AbZJIXUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761780AbZJIXVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761893AbZJIXUf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761703AbZJIXUc
+	id S1761780AbZJIXVa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761642AbZJIXV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:20:32 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:61960 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761645AbZJIXU3 (ORCPT
+	Fri, 9 Oct 2009 19:21:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50217
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761603AbZJIXVZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:20:29 -0400
-Date: Fri, 9 Oct 2009 16:17:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-wireless@vger.kernel.org,
-       Dan Williams <dcbw@redhat.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       libertas-dev@lists.infradead.org
-Subject: [PATCH -next] libertas: depends on CFG80211
-Message-Id: <20091009161730.6ae5fe59.randy.dunlap@oracle.com>
-In-Reply-To: <20091009190654.741eeffd.sfr@canb.auug.org.au>
-References: <20091009190654.741eeffd.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Fri, 9 Oct 2009 19:21:25 -0400
+Date: Fri, 09 Oct 2009 16:21:20 -0700 (PDT)
+Message-Id: <20091009.162120.164441279.davem@davemloft.net>
+To: heyongli@gmail.com
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Linux guest domain with two vnets bound to the same vswitch
+ experiences hung in bootup (sun_netraT5220)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091009.150829.218507309.davem@davemloft.net>
+References: <505766fa0909230040m13e3dc34x2ceb83848767d825@mail.gmail.com>
+	<505766fa0909231903t2fe2f7b6y26d2681d6d38ef0e@mail.gmail.com>
+	<20091009.150829.218507309.davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4ACFC4FF.004F:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+From: David Miller <davem@davemloft.net>
+Date: Fri, 09 Oct 2009 15:08:29 -0700 (PDT)
 
-libertas uses CFG80211 functions so it should depend on that symbol.
+> Thank you for this bug report and patch, I am looking at
+> it now.
 
-drivers/built-in.o: In function `lbs_cfg_free':
-(.text+0x9ca93): undefined reference to `wiphy_unregister'
-drivers/built-in.o: In function `lbs_cfg_free':
-(.text+0x9ca9a): undefined reference to `wiphy_free'
-drivers/built-in.o: In function `lbs_cfg_register':
-(.text+0x9cb45): undefined reference to `wiphy_register'
-drivers/built-in.o: In function `lbs_cfg_alloc':
-(.text+0x9cc64): undefined reference to `wiphy_new'
+I'm trying to figure out how the deadlock can even occur,
+and I've failed so far, please help me :-)
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/net/wireless/libertas/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+See, we always take the VIO and LDC locks in the same order
+(VIO then LDC) and always with interrupts disabled, so it is
+not possible to deadlock.
 
---- linux-next-20091009.orig/drivers/net/wireless/libertas/Kconfig
-+++ linux-next-20091009/drivers/net/wireless/libertas/Kconfig
-@@ -1,6 +1,6 @@
- config LIBERTAS
- 	tristate "Marvell 8xxx Libertas WLAN driver support"
--	depends on WLAN_80211
-+	depends on WLAN_80211 && CFG80211
- 	select WIRELESS_EXT
- 	select WEXT_SPY
- 	select LIB80211
+The only way we could deadlock is if:
+
+1) There is some path that takes the LDC lock before the VIO one.
+
+2) There is some path that takes either lock with interrupts
+   enabled.
+
+And I cannot find any such case.
+
+It might help if you run your test case with lockdep enabled.  It will
+find such deadlocks and report them precisely to the kernel logs.
+
+Thank you!
