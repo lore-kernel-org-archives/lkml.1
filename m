@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbZJIJiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760598AbZJIJkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760581AbZJIJiY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 05:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760564AbZJIJiX
+	id S1760598AbZJIJkl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 05:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760567AbZJIJkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 05:38:23 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:53407 "EHLO
+	Fri, 9 Oct 2009 05:40:40 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:53609 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760553AbZJIJiV (ORCPT
+	by vger.kernel.org with ESMTP id S1760553AbZJIJkj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 05:38:21 -0400
-Subject: Re: [PATCH 1/2] kmemleak: Use GFP_ATOMIC for early_alloc().
-From: Catalin Marinas <catalin.marinas@arm.com>
+	Fri, 9 Oct 2009 05:40:39 -0400
+Subject: [PATCH] kmemleak: Use GFP_ATOMIC for early_alloc().
 To: Linus Torvalds <torvalds@linux-foundation.org>
+From: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
        linux-kernel@vger.kernel.org
+Date: Fri, 09 Oct 2009 10:39:24 +0100
+Message-ID: <20091009093854.5226.14374.stgit@pc1117.cambridge.arm.com>
 In-Reply-To: <20091009093028.4365.4391.stgit@pc1117.cambridge.arm.com>
 References: <20091009093028.4365.4391.stgit@pc1117.cambridge.arm.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 09 Oct 2009 10:37:10 +0100
-Message-Id: <1255081030.27873.37.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+User-Agent: StGit/0.15-rc3-10-g00be
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Oct 2009 09:37:11.0241 (UTC) FILETIME=[138F0390:01CA48C4]
+X-OriginalArrivalTime: 09 Oct 2009 09:39:25.0037 (UTC) FILETIME=[634EA9D0:01CA48C4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-09 at 10:30 +0100, Catalin Marinas wrote:
-> We can't use GFP_KERNEL inside rcu_read_lock().
-> 
-> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 
-I mistakenly dropped the author information. The correct patch should
-have a "From: Tetsuo" line. I'll re-post in reply to this message.
+We can't use GFP_KERNEL inside rcu_read_lock().
 
--- 
-Catalin
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
+
+Please ignore [PATCH 1/2] with the same subject as it didn't have the
+correct author information. Thanks.
+
+ mm/kmemleak.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 4ea4510..a617518 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -833,7 +833,7 @@ static void early_alloc(struct early_log *log)
+ 	 */
+ 	rcu_read_lock();
+ 	object = create_object((unsigned long)log->ptr, log->size,
+-			       log->min_count, GFP_KERNEL);
++			       log->min_count, GFP_ATOMIC);
+ 	spin_lock_irqsave(&object->lock, flags);
+ 	for (i = 0; i < log->trace_len; i++)
+ 		object->trace[i] = log->trace[i];
 
