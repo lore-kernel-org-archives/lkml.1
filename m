@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934082AbZJIRyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761311AbZJISbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934082AbZJIRyY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 13:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934060AbZJIRyY
+	id S1761311AbZJISbs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 14:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761299AbZJISbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 13:54:24 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41377 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934055AbZJIRyW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 13:54:22 -0400
-Date: Fri, 9 Oct 2009 19:53:45 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [rfc][patch] store-free path walking
-Message-ID: <20091009175345.GE1656@one.firstfloor.org>
-References: <alpine.LFD.2.01.0910070911080.3432@localhost.localdomain> <20091007164622.GX30316@wotan.suse.de> <alpine.LFD.2.01.0910071222230.3432@localhost.localdomain> <87eipfymcv.fsf@basil.nowhere.org> <alpine.LFD.2.01.0910071349190.3432@localhost.localdomain> <20091007210651.GB1656@one.firstfloor.org> <alpine.LFD.2.01.0910071417300.3432@localhost.localdomain> <alpine.LFD.2.01.0910071450510.3432@localhost.localdomain> <20091007222235.GC1656@one.firstfloor.org> <20091008073930.GZ30316@wotan.suse.de>
-Mime-Version: 1.0
+	Fri, 9 Oct 2009 14:31:46 -0400
+Received: from kroah.org ([198.145.64.141]:35332 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761266AbZJISbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 14:31:44 -0400
+Date: Fri, 9 Oct 2009 10:56:02 -0700
+From: Greg KH <greg@kroah.com>
+To: Johan Hovold <jhovold@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb@vger.kernel.org,
+       e9hack <e9hack@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: serial: Fix read regression in 2.6.31.
+Message-ID: <20091009175602.GC5718@kroah.com>
+References: <Pine.LNX.4.44L0.0909191217430.15223-100000@netrider.rowland.org>
+ <20090920201836.GA5602@localhost>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091008073930.GZ30316@wotan.suse.de>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090920201836.GA5602@localhost>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 09:39:30AM +0200, Nick Piggin wrote:
-> > My point (probably not very well written expressed)
-> > was that in a typical VFS operation there are hundreds
-> > of cache lines touched for various things (code, global, various
-> > objects, random stuff) and one more or less in the final dentry 
-> > is not that big a difference in the global picture.
-> > (ok I realize final in this case means the elements in the path)
+On Sun, Sep 20, 2009 at 10:18:36PM +0200, Johan Hovold wrote:
+> Use ASYNCB_INITIALIZED to determine when to stop reading.
 > 
-> Yes I do know what you were getting at... Although I would
-> say dcache is still fairly significant. It's 3 cachelines
-> for every single path element we look up. Now I suspect it
-
-That's true, for deeply nested paths where the elements add up 
-it's a concern. I was assuming that paths are not that deep, but that might 
-be too optimistic.
-
-> Actually no, it does look relatively sane (I guess it doesn't
-> change that much), except it might actualy be a nice idea
-> to move d_iname up to about above d_lru, so we could actually
-> do path lookup in 2 cachelines per entry (or even 1 if we
-> they have very short names).
+> Port count can no longer be used to determine when to stop reading from
+> the device as it can be zero when the first read callbacks are made (see
+> tty_port_block_til_read where port count is temporarily decremented
+> during serial_open).
 > 
-> I will do a bit of profiling on the lookup code and see...
+> Signed-off-by: Johan Hovold <jhovold@gmail.com>
+> ---
+> 
+> Hi, 
+> 
+> Here's a patch which fixes the port count issue for all drivers. I only
+> have access to an ftdi device at the moment so that's the only driver
+> I've been able to test (against latest git with latest patches from
+> Greg's tree). 
 
-Yes numbers would be great.
+Hm, this doesn't apply on top of the other ftdi patches.  Could you
+respin this?
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+thanks,
+
+greg k-h
