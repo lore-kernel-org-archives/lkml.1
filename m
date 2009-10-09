@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761304AbZJISl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933782AbZJISx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761304AbZJISl4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 14:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761239AbZJISlz
+	id S933782AbZJISx1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 14:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933198AbZJISx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 14:41:55 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:50565 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761180AbZJISlx (ORCPT
+	Fri, 9 Oct 2009 14:53:26 -0400
+Received: from smtp129.mail.ukl.yahoo.com ([77.238.184.60]:23510 "HELO
+	smtp129.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932844AbZJISx0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 14:41:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aw2ZTvBGRuwJkyVa2stcj41u/6cIXSiydwPEjBAT2lD4Y1ru6b+2kL+tGyLhIWB5E1
-         +7Gp+hiLTVasyrdS0RT/mY6sKTaE8rZM2Knar92cLhSGrTWb9njaNjMHSt063WDT8RrD
-         ebHPCvVWSAizEBpIK/CttlCeJ9SEi6VQdkkpk=
-Date: Fri, 9 Oct 2009 20:41:13 +0200
-From: Johan Hovold <jhovold@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Johan Hovold <jhovold@gmail.com>, Alan Stern <stern@rowland.harvard.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb@vger.kernel.org,
-       e9hack <e9hack@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: serial: Fix read regression in 2.6.31.
-Message-ID: <20091009184113.GE21054@localhost>
-References: <Pine.LNX.4.44L0.0909191217430.15223-100000@netrider.rowland.org>
- <20090920201836.GA5602@localhost>
- <20091009175602.GC5718@kroah.com>
+	Fri, 9 Oct 2009 14:53:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.es;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=ewrEyWmixum9L6XmGT9+gN3eWSkWeC0vWqZ9d6mZIRwPlgAQfiHd6KSEOQ5RWnQ6NitOYdb2I+ECd0eglwmk8BHHncCy0IJ9ss4MgfnMY0kfe18b+LKHrkrRZttiGp7NYUZIwNDaWNbXhsixDGfH35RAr9cY11epoKdPQOMot34=  ;
+X-Yahoo-SMTP: czee06uswBAtfIYshc.kP27UlfEXaxwWNSjJ
+X-YMail-OSG: URZLtiYVM1nHFW89ORjRrYyHDtMPfZIRuV5GS4IbkGmhpy2D.YSz7QTmQwV3hPFTLLqSAX708mMlyhao_uJFNO4mibDfq6IX0aNc9QoUajpw0fI2sv5zDrzbZNTqUnP8WBlDZ.ZO.zEJKDPRahWt9ELKmd9zvOtI982cXJsWwElkz._O6rdU4fyYeJC_toSx9ZA6AXiOX_6zYRxefoEWdzDyiSkQuvA5eClu8ynJ.nTRDat3mCFme86AOuFneb9jMIbFQeR49gu7DYJWqN8-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4ACF867E.5000006@yahoo.es>
+Date: Fri, 09 Oct 2009 20:52:46 +0200
+From: Albert Herranz <albert_herranz@yahoo.es>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091009175602.GC5718@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Michael Buesch <mb@bu3sch.de>
+CC: bcm43xx-dev@lists.berlios.de, linux-netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: b43: do not stack-allocate pio rx/tx header and tail buffers
+References: <200910062252.17565.mb@bu3sch.de> <4ACCD765.7080604@lwfinger.net> <4ACF76F7.30406@yahoo.es> <200910092005.59916.mb@bu3sch.de>
+In-Reply-To: <200910092005.59916.mb@bu3sch.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 10:56:02AM -0700, Greg KH wrote:
-> On Sun, Sep 20, 2009 at 10:18:36PM +0200, Johan Hovold wrote:
-> > Use ASYNCB_INITIALIZED to determine when to stop reading.
-> > 
-> > Port count can no longer be used to determine when to stop reading from
-> > the device as it can be zero when the first read callbacks are made (see
-> > tty_port_block_til_read where port count is temporarily decremented
-> > during serial_open).
-> > 
-> > Signed-off-by: Johan Hovold <jhovold@gmail.com>
-> > ---
-> > 
-> > Hi, 
-> > 
-> > Here's a patch which fixes the port count issue for all drivers. I only
-> > have access to an ftdi device at the moment so that's the only driver
-> > I've been able to test (against latest git with latest patches from
-> > Greg's tree). 
+Michael Buesch wrote:
+>> The reason I posted the initial patch for review was because you kind of told me [2].
+>>
+>> [20:06] <mb_> Anyway, I'm not going to fix this. If you need it fixed, please send patches
 > 
-> Hm, this doesn't apply on top of the other ftdi patches.  Could you
-> respin this?
+> Yeah, but that doesn't mean that either hack is acceptable. It just means that my time is limited
+> and I added this non-issue (which I still think it is) to the very bottom of my priority list.
 
-There were some issues with that patch, so please disregard that one.
-Sorry. There are probably still some problems with some of the other
-drivers (at least theoretical ones) due to the tty changes that broke
-ftdi, but there is currently no patch to fix them all.
+The patch got elaborated and discussed publicly (successfully or not) by following your instructions.
 
-/Johan
+>> My point here is that there's no reason for such strong words concerning the quality of the patch code. It's really not that bad for such wording.
+>> I'm sure that if the patch was really crap it would have been immediately NAK'ed by you or by any sane maintainer.
+> 
+> It _was_ immediately NAK'ed by me. I did not know that I need to NAK
+> every single new version of a patch explicitely.
+> I thought NAK-ing a patch would put it into some special state that only an explicit ACK could
+> take it out of.
+
+We all sure had a communication issue here.
+
+What you thought it was an (implicit) NAK for the _initial_ version of the patch, others took that as "fix-those-concerns-and-its-fine".
+And the expressed concerns where addressed later in the merged patch, sub-optimally (not crappily).
+
+Looking at your new "[PATCH] b43: Optimize PIO scratchbuffer usage" to address the changes introduced by the merged patch, the merged solution is not that _blatantly_ far from your solution.
+The patch would have probably got there in one iteration if you have had the chance again to express your new concerns about v2.
+
+I'm sure we can avoid this in the future by being a bit more explicit.
+
+Thanks,
+Albert
 
