@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933218AbZJIN70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760881AbZJIOEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933218AbZJIN70 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 09:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932987AbZJIN7Z
+	id S1760881AbZJIOEb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 10:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZJIOEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 09:59:25 -0400
-Received: from mga03.intel.com ([143.182.124.21]:17577 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754144AbZJIN7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 09:59:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,532,1249282800"; 
-   d="scan'208";a="197040134"
-Date: Fri, 9 Oct 2009 21:58:31 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ehrhardt Christian <ehrhardt@linux.vnet.ibm.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mm: make VM_MAX_READAHEAD configurable
-Message-ID: <20091009135831.GA15425@localhost>
-References: <1255087175-21200-1-git-send-email-ehrhardt@linux.vnet.ibm.com> <1255090830.8802.60.camel@laptop> <20091009122952.GI9228@kernel.dk> <20091009154950.43f01784@mschwide.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091009154950.43f01784@mschwide.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 9 Oct 2009 10:04:31 -0400
+Received: from server1.wserver.cz ([82.113.45.157]:35078 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753989AbZJIOEa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 10:04:30 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: jgarzik@pobox.com
+Cc: josephchan@via.com.tw, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH -repost 1/1] ATA: pata_via, fix double put on isa bridge
+Date: Fri,  9 Oct 2009 16:03:52 +0200
+Message-Id: <1255097032-23949-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 09:49:50PM +0800, Martin Schwidefsky wrote:
-> On Fri, 9 Oct 2009 14:29:52 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Fri, Oct 09 2009, Peter Zijlstra wrote:
-> > > On Fri, 2009-10-09 at 13:19 +0200, Ehrhardt Christian wrote:
-> > > > From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> > > > 
-> > > > On one hand the define VM_MAX_READAHEAD in include/linux/mm.h is just a default
-> > > > and can be configured per block device queue.
-> > > > On the other hand a lot of admins do not use it, therefore it is reasonable to
-> > > > set a wise default.
-> > > > 
-> > > > This path allows to configure the value via Kconfig mechanisms and therefore
-> > > > allow the assignment of different defaults dependent on other Kconfig symbols.
-> > > > 
-> > > > Using this, the patch increases the default max readahead for s390 improving
-> > > > sequential throughput in a lot of scenarios with almost no drawbacks (only
-> > > > theoretical workloads with a lot concurrent sequential read patterns on a very
-> > > > low memory system suffer due to page cache trashing as expected).
-> > > 
-> > > Why can't this be solved in userspace?
-> > > 
-> > > Also, can't we simply raise this number if appropriate? Wu did some
-> > > read-ahead trashing detection bits a long while back which should scale
-> > > the read-ahead window back when we're low on memory, not sure that ever
-> > > made it in, but that sounds like a better option than having different
-> > > magic numbers for each platform.
-> > 
-> > Agree, making this a config option (and even defaulting to a different
-> > number because of an arch setting) is crazy.
-> 
-> The patch from Christian fixes a performance regression in the latest
-> distributions for s390. So we would opt for a larger value, 512KB seems
-> to be a good one. I have no idea what that will do to the embedded
-> space which is why Christian choose to make it configurable. Clearly
-> the better solution would be some sort of system control that can be
-> modified at runtime. 
+In via_init_one, when via_isa_bridges iterator reaches
+PCI_DEVICE_ID_VIA_ANON and last but one via_isa_bridges bridge is
+found but rev doesn't match, pci_dev_put(isa) is called twice.
 
-So how about doing two patches together?
+Do pci_dev_put only once.
 
-- lift default readahead size to around 512KB
-- add some readahead logic to better support the thrashing case
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>
+---
+ drivers/ata/pata_via.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-Thanks,
-Fengguang
+diff --git a/drivers/ata/pata_via.c b/drivers/ata/pata_via.c
+index 45657ca..9688fe5 100644
+--- a/drivers/ata/pata_via.c
++++ b/drivers/ata/pata_via.c
+@@ -526,7 +526,7 @@ static int via_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 		.port_ops = &via_port_ops
+ 	};
+ 	const struct ata_port_info *ppi[] = { NULL, NULL };
+-	struct pci_dev *isa = NULL;
++	struct pci_dev *isa;
+ 	const struct via_isa_bridge *config;
+ 	static int printed_version;
+ 	u8 enable;
+@@ -551,15 +551,13 @@ static int via_init_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 		if ((isa = pci_get_device(PCI_VENDOR_ID_VIA +
+ 			!!(config->flags & VIA_BAD_ID),
+ 			config->id, NULL))) {
++			u8 rev = isa->revision;
++			pci_dev_put(isa);
+ 
+-			if (isa->revision >= config->rev_min &&
+-			    isa->revision <= config->rev_max)
++			if (rev >= config->rev_min && rev <= config->rev_max)
+ 				break;
+-			pci_dev_put(isa);
+ 		}
+ 
+-	pci_dev_put(isa);
+-
+ 	if (!(config->flags & VIA_NO_ENABLES)) {
+ 		/* 0x40 low bits indicate enabled channels */
+ 		pci_read_config_byte(pdev, 0x40 , &enable);
+-- 
+1.6.4.2
+
