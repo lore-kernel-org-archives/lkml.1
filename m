@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbZJIVnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934448AbZJIVpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761533AbZJIVnI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 17:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761505AbZJIVnH
+	id S934448AbZJIVpP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 17:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758903AbZJIVpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 17:43:07 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35190 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761453AbZJIVnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 17:43:05 -0400
-Date: Fri, 9 Oct 2009 23:42:27 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Greg KH <gregkh@suse.de>
-Cc: Felipe Contreras <felipe.contreras@gmail.com>,
-       Tony Lindgren <tony@atomide.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       Denis Karpov <ext-denis.2.karpov@nokia.com>,
-       Uwe Kleine-K??nig <u.kleine-koenig@pengutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>
-Subject: Re: [GIT PULL] omap fixes for v2.6.32-rc3
-In-Reply-To: <20091009192642.GB32084@suse.de>
-Message-ID: <alpine.LRH.2.00.0910092336280.12171@twin.jikos.cz>
-References: <20091007185112.GJ7899@atomide.com> <94a0d4530910081429m7ad88b43q38245109f3252078@mail.gmail.com> <20091008214140.GJ7417@atomide.com> <94a0d4530910081513w1a919dc2s50eca41966a2261d@mail.gmail.com> <94a0d4530910081520t66ce7567xe142979a35b1245@mail.gmail.com>
- <20091008232603.GB25892@atomide.com> <94a0d4530910090508o1e3d19cew881d2eb348199674@mail.gmail.com> <20091009144840.GA9561@suse.de> <94a0d4530910091029p12f8c28fve91e95db533e78e5@mail.gmail.com> <20091009192642.GB32084@suse.de>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Fri, 9 Oct 2009 17:45:14 -0400
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:64721 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756113AbZJIVpM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 17:45:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type;
+        b=U6CWDOUVg5QdxhCYGweWATRZF7gHZ7IqfmGDB9sZBvQBuKpOARLGdiDeLOcmNL60iV
+         ZY3Tua2v+/c9BY3BKhp54SkJpQQPelfmcPxHYfhYLv1GagruBlwVmjotYEGLAV3Ck5kj
+         pXxaUfT3ZY/vGU8MZYDxFUCdJF4vkeYccR4s0=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <cdb43e8a0910081723v1adeea80p6a1360ae22a3afcf@mail.gmail.com>
+References: <haj471$fn8$1@ger.gmane.org>
+	 <58965d8a0910071618s2420fed1k4ccde4823e57f756@mail.gmail.com>
+	 <haj8uj$fn8$2@ger.gmane.org>
+	 <a8e1da0910072255r38f95e59lf9559b4ecd1cc9d2@mail.gmail.com>
+	 <cdb43e8a0910080331l1faa426cq9c2e1e0467003ec9@mail.gmail.com>
+	 <a8e1da0910080351w4fe8827eyd583eb903748ed92@mail.gmail.com>
+	 <a8e1da0910080440u6367cdcbq55f57d6a16d97533@mail.gmail.com>
+	 <cdb43e8a0910081723v1adeea80p6a1360ae22a3afcf@mail.gmail.com>
+Date: Fri, 9 Oct 2009 16:44:35 -0500
+X-Google-Sender-Auth: edcb3e8b4b651e81
+Message-ID: <58965d8a0910091444w1d913527u11a1ab896da918ce@mail.gmail.com>
+Subject: Re: iso9660 mount problem
+From: Paul Hartman <paul.hartman+linux@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 Oct 2009, Greg KH wrote:
+On Thu, Oct 8, 2009 at 7:23 PM, Jack Byer <ojbyer@usa.net> wrote:
+>> So it must be an apple hfs disc, (or hybrid disc?).
+>> Maybe you may try mount it as hfs, this problem is not relevant to iso9660.
+>
+> I can mount the disc as hfsplus but it shows the OS X contents instead
+> of the Windows contents.
 
-> > >> There's a tree for trivial fixes:
-> > >> git://git.kernel.org/pub/scm/linux/kernel/git/jikos/trivial
+Looks like Rosetta Stone :) and i think it is hybrid HFS/iso9660. I
+can see windows-related filenames in the sample you uploaded, so we
+know they are out there somewhere. Maybe try this in your mount
+options (thanks google):
 
-Well, as this is quite a high-priority functional fix, I'd suggest using 
-other channels that trivial tree, as this one is primarily intended for 
-simple fixes that are not really urgent.
+mount -t iso9660 -o norock,map=off
 
-> > The problem is that OMAP devices (like beagleboard) are not booting 
-> > correctly right now because of a wrong merge. It has been identified, 
-> > tested, and acked, but nobody has picked it up for a pull request, so 
-> > it's not clear it will be on -rc4.
-> Has the patches been sent from the maintainer to Linus?
-> Who is the maintainer?  Who normally sends this stuff?
-
-The problem is that MMC now doesn't have proper maintainer, since Pierre 
-stepped down from maintaining this stuff.
-
-Still, for the fix mentioned on
-
-	http://www.mail-archive.com/linux-mmc@vger.kernel.org/msg00539.html
-
-the most appropriate contact would probably be Madhusudhan Chikkature. 
-Adding him to CC of this thread.
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Also, if that doesn't work, do you have CONFIG_JOLIET=y in your kernel
+.config? Maybe it's needed...
