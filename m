@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbZJIXMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761530AbZJIXQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761485AbZJIXMP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758846AbZJIXMP
+	id S1761530AbZJIXQf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760555AbZJIXQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:12:15 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:23041 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755137AbZJIXMO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:12:14 -0400
-Date: Fri, 9 Oct 2009 16:10:42 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, David Howells <dhowells@redhat.com>
-Subject: [PATCH -mmotm] synchro-test: add missing header file
-Message-Id: <20091009161042.b301700c.randy.dunlap@oracle.com>
-In-Reply-To: <200910090830.n998Ubvv020464@imap1.linux-foundation.org>
-References: <200910090830.n998Ubvv020464@imap1.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4ACFC311.00FC:SCFMA4539814,ss=1,fgs=0
+	Fri, 9 Oct 2009 19:16:34 -0400
+Received: from kroah.org ([198.145.64.141]:36712 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750746AbZJIXQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:16:33 -0400
+Date: Fri, 9 Oct 2009 16:12:49 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/26] 2.6.31.4-stable review
+Message-ID: <20091009231249.GA31084@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+This is the start of the stable review cycle for the 2.6.31.4 release.
+There are 26 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-Fix build errors, add <sched.h> header file:
+Responses should be made by Sunday October 11, 23:00:00 UTC.
+Anything received after that time might be too late.
 
-kernel/synchro-test.c: In function 'sched':
-kernel/synchro-test.c:220: error: implicit declaration of function 'schedule'
-kernel/synchro-test.c: In function 'mutexer':
-kernel/synchro-test.c:227: error: implicit declaration of function 'daemonize'
-kernel/synchro-test.c:228: error: implicit declaration of function 'set_user_nice'
-kernel/synchro-test.c:241: error: dereferencing pointer to incomplete type
-kernel/synchro-test.c: In function 'semaphorer':
-kernel/synchro-test.c:263: error: dereferencing pointer to incomplete type
-kernel/synchro-test.c: In function 'reader':
-kernel/synchro-test.c:287: error: dereferencing pointer to incomplete type
-kernel/synchro-test.c: In function 'writer':
-kernel/synchro-test.c:311: error: dereferencing pointer to incomplete type
-kernel/synchro-test.c: In function 'downgrader':
-kernel/synchro-test.c:340: error: dereferencing pointer to incomplete type
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.31.4-rc1.gz
+and the diffstat can be found below.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- kernel/synchro-test.c |    1 +
- 1 file changed, 1 insertion(+)
 
---- mmotm-2009-1009-0107.orig/kernel/synchro-test.c
-+++ mmotm-2009-1009-0107/kernel/synchro-test.c
-@@ -21,6 +21,7 @@
- #include <linux/module.h>
- #include <linux/poll.h>
- #include <linux/moduleparam.h>
-+#include <linux/sched.h>
- #include <linux/stat.h>
- #include <linux/init.h>
- #include <asm/atomic.h>
+thanks,
+
+greg k-h
+
+-----------
+
+ .../networking/timestamping/timestamping.c         |    2 +-
+ Makefile                                           |    2 +-
+ arch/x86/ia32/ia32entry.S                          |   36 +++++++----
+ arch/x86/include/asm/checksum_32.h                 |    3 +-
+ arch/x86/kernel/acpi/cstate.c                      |    2 +-
+ arch/x86/kernel/i8253.c                            |   27 ++++++--
+ arch/x86/kvm/lapic.c                               |    2 +-
+ arch/x86/kvm/svm.c                                 |    2 +
+ arch/x86/kvm/vmx.c                                 |    2 +-
+ arch/x86/kvm/x86.c                                 |    2 +
+ drivers/acpi/osl.c                                 |    8 ++-
+ drivers/ata/libata-eh.c                            |   50 +++++++++-----
+ drivers/char/tty_ldisc.c                           |    7 +--
+ drivers/ide/sis5513.c                              |   10 ++-
+ drivers/net/iseries_veth.c                         |    2 +-
+ fs/ecryptfs/main.c                                 |    7 ++-
+ fs/namei.c                                         |    6 +-
+ include/linux/ftrace.h                             |    2 +-
+ kernel/exit.c                                      |    2 -
+ kernel/fork.c                                      |   10 ++-
+ kernel/futex.c                                     |    3 +-
+ kernel/time/tick-sched.c                           |    9 ++-
+ kernel/trace/ftrace.c                              |   23 ++-----
+ mm/swap_state.c                                    |   70 +++++++++++++-------
+ sound/pci/hda/patch_realtek.c                      |    1 +
+ sound/pci/via82xx.c                                |   27 +++++---
+ sound/soc/codecs/wm8350.c                          |    4 +-
+ 27 files changed, 203 insertions(+), 118 deletions(-)
