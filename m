@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933946AbZJIRoJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933963AbZJIRx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933946AbZJIRoJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 13:44:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932596AbZJIRoI
+	id S933963AbZJIRx7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 13:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbZJIRx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 13:44:08 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:38061 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932095AbZJIRoH (ORCPT
+	Fri, 9 Oct 2009 13:53:58 -0400
+Received: from smtp143.mail.ukl.yahoo.com ([77.238.184.74]:23256 "HELO
+	smtp143.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752596AbZJIRx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 13:44:07 -0400
-Message-ID: <4ACF763C.5070308@emulex.com>
-Date: Fri, 9 Oct 2009 13:43:24 -0400
-From: James Smart <James.Smart@Emulex.Com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 9 Oct 2009 13:53:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.es;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=lOqgCaIizqtfX5OOyFzVSw8juGwEgYOqCcJp0M8ZF1BaKpO4wRnpQu9WqskMZuB65ahjoeH399tw5ut6ejjODHTWhyqBa/XJjw4y3/mxenBZ8XWpbnboHE7aXjN4Jfk/5Xscd3118VWfMgLPptcosfiIc8srGP86XY0I8W0Z9ao=  ;
+X-Yahoo-SMTP: czee06uswBAtfIYshc.kP27UlfEXaxwWNSjJ
+X-YMail-OSG: EKeRp_gVM1nEWp8g.AxriqxPOV4jgn6xCUWqXwvwQ5cnRtUW2vpVXD.2QhvysYfJohkeyoWBr5cKeSR8GUbdxJQGyOtCqwSMQ8GUqJp3wtE0jYGylAsYONSKHgzw4QiC7d6EdIWU0o9e.h_OodiHt4NDVoYdsFDqTKlfhY1Nre86FuVPtugM2SPQYEH77lBxHf.Vx5VOqGxnMvNvk.50wsSpOlNBpXLcPFu13Zz3J9TxWM5hezODFCH8eIVVusOmhSoUMrmdAU0J0.MURbPZUVeAULF5ltTHxvQXJmEHjIo7GMv4ot.htWW46Luw5rlrRTCMooqc0PX7geLyjKS0msA-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4ACF76F7.30406@yahoo.es>
+Date: Fri, 09 Oct 2009 19:46:31 +0200
+From: Albert Herranz <albert_herranz@yahoo.es>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: "James.Bottomley@suse.de" <James.Bottomley@suse.de>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -repost 3/4] SCSI: lpfc, fix memory leak
-References: <1255096688-23399-1-git-send-email-jirislaby@gmail.com> <1255096688-23399-3-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1255096688-23399-3-git-send-email-jirislaby@gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+To: mb@bu3sch.de
+CC: bcm43xx-dev@lists.berlios.de, linux-netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: b43: do not stack-allocate pio rx/tx header and tail buffers (was:
+ pull request: wireless-2.6 2009-10-08)
+References: <200910062252.17565.mb@bu3sch.de> <1254866864-18265-1-git-send-email-albert_herranz@yahoo.es> <4ACCC516.7050002@lwfinger.net> <4ACCC893.1010402@yahoo.es> <4ACCD765.7080604@lwfinger.net>
+In-Reply-To: <4ACCD765.7080604@lwfinger.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Oct 2009 17:43:26.0373 (UTC) FILETIME=[014ADD50:01CA4908]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: James Smart <james.smart@emulex.com>
+Michael,
 
--- james s
+> Wait for my ack before you apply random b43 patches
+                                   ^^^^^^
+> The patch needlessly moves huge chunks of crap, adds stupid comments, wastes memory.
+                                  ^^^^^^^^^^^^^^       ^^^^^^^^^^^^^^^
+> This touched a lot of crap for fixing something that
+       ^^^^^^^^^^^^^^^^^^^^^
 
-Jiri Slaby wrote:
-> Stanse found a memory leak on one fail path in lpfc_sli4_read_rev.
->
-> Add there kfree.
->
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: James Smart <james.smart@emulex.com>
-> Cc: James E.J. Bottomley <James.Bottomley@suse.de>
-> ---
->  drivers/scsi/lpfc/lpfc_sli.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/scsi/lpfc/lpfc_sli.c b/drivers/scsi/lpfc/lpfc_sli.c
-> index 43cbe33..7750868 100644
-> --- a/drivers/scsi/lpfc/lpfc_sli.c
-> +++ b/drivers/scsi/lpfc/lpfc_sli.c
-> @@ -4211,6 +4211,7 @@ lpfc_sli4_read_rev(struct lpfc_hba *phba, LPFC_MBOXQ_t *mboxq,
->  	if (rc) {
->  		dma_free_coherent(&phba->pcidev->dev, dma_size,
->  				  dmabuf->virt, dmabuf->phys);
-> +		kfree(dmabuf);
->  		return -EIO;
->  	}
->  
->   
+If using that strong language helps you get your anger out of you I'm fine with that. But I think it is a bit unfair.
+
+I'm not arguing if the patch should have been immediately merged upstream or not without your ack (I'm probably more on your side here, as the patch was still being discussed on the ML).
+The patch [1] may not be up to your quality standards or may not take into account other requirements (that you have not expressed nor on the ML nor on IRC) but I'm sure it's far from being "random", "move crap" or "add stupid comments". That's the unfair part.
+
+The reason I posted the initial patch for review was because you kind of told me [2].
+
+[20:06] <mb_> Anyway, I'm not going to fix this. If you need it fixed, please send patches
+
+Then I tried to address your concerns [3] and sent v2 (the patch merged).
+In that patch I moved slightly struct b43_wl within b43.h to satisfy the dependencies generated by the addition of the new members to that struct (which was one of your concerns).
+There was even a bit of public discussion about the relocation of the struct declaration [4].
+
+After ~22 hours if I'm not mistaken (yes, less than 24...) John, who had previously expressed his intentions to merge the patch [5], picked it for wireless-2.6.
+And a day later, more or less again, John did the GIT PULL request.
+
+That's it. IMHO, even if the patch was (mistakenly) merged too early for your standards, it doesn't break anything (AFAIK) and delivers what promises.
+And (yes!) it can still be modeled to perfection later.
+
+My point here is that there's no reason for such strong words concerning the quality of the patch code. It's really not that bad for such wording.
+I'm sure that if the patch was really crap it would have been immediately NAK'ed by you or by any sane maintainer.
+
+Other than that, I'm happy to see that the side conflict generated seems to be in a good shape now.
+It would have been a total waste otherwise.
+
+Thanks,
+Albert
+
+PS: Sorry to generate a new post, but I wasn't directly CC'ed on this and I'm not subscribed to the MLs. And I did also want to express my opinion! :)
+
+[1] http://git.kernel.org/?p=linux/kernel/git/linville/wireless-2.6.git;a=commitdiff;h=7e937c633f718e0916a294db7282c922c1bf3ce3
+[2] http://bcm-specs.sipsolutions.net/irc-logs/bcm-specs.2009-10-01
+[3] http://marc.info/?l=linux-wireless&m=125486249831043
+[4] http://marc.info/?l=linux-wireless&m=125493883613139
+[5] http://marc.info/?l=linux-wireless&m=125486386100505
+
