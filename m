@@ -1,140 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760192AbZJICAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760200AbZJICWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760192AbZJICAr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 22:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbZJICAq
+	id S1760200AbZJICWl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 22:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758745AbZJICWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 22:00:46 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:55073 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758683AbZJICAp (ORCPT
+	Thu, 8 Oct 2009 22:22:37 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43756 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758690AbZJICWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 22:00:45 -0400
-Date: Thu, 8 Oct 2009 22:00:11 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/3] extend get/setrlimit to support setting rlimits
-	external to a process (v4)
-Message-ID: <20091009020011.GA18784@localhost.localdomain>
-References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org> <20091005002617.GA5736@localhost.localdomain> <20091005005321.GA7180@localhost.localdomain> <4ACE5A53.3010502@gmail.com>
+	Thu, 8 Oct 2009 22:22:37 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Oleg Nesterov <onestero@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [resend][PATCH v2] mlock() doesn't wait to finish lru_add_drain_all()
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20091009111709.1291.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ACE5A53.3010502@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -4.4 (----)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri,  9 Oct 2009 11:21:55 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 11:32:03PM +0200, Marcin Slusarz wrote:
-> I found some new issues in this patch, sorry ;).
-> 
-> Neil Horman wrote:
-> > (...)
-> > diff --git a/fs/proc/base.c b/fs/proc/base.c
-> > index 6f742f6..631f01b 100644
-> > --- a/fs/proc/base.c
-> > +++ b/fs/proc/base.c
-> > @@ -49,6 +49,8 @@
-> >  
-> >  #include <asm/uaccess.h>
-> >  
-> > +#include <linux/string.h>
-> > +#include <linux/ctype.h>
-> >  #include <linux/errno.h>
-> >  #include <linux/time.h>
-> >  #include <linux/proc_fs.h>
-> > @@ -455,72 +457,193 @@ static int proc_oom_score(struct task_struct *task, char *buffer)
-> >  struct limit_names {
-> >  	char *name;
-> >  	char *unit;
-> > +	char *match;
-> >  };
-> >  
-> >  static const struct limit_names lnames[RLIM_NLIMITS] = {
-> > -	[RLIMIT_CPU] = {"Max cpu time", "ms"},
-> > -	[RLIMIT_FSIZE] = {"Max file size", "bytes"},
-> > -	[RLIMIT_DATA] = {"Max data size", "bytes"},
-> > -	[RLIMIT_STACK] = {"Max stack size", "bytes"},
-> > -	[RLIMIT_CORE] = {"Max core file size", "bytes"},
-> > -	[RLIMIT_RSS] = {"Max resident set", "bytes"},
-> > -	[RLIMIT_NPROC] = {"Max processes", "processes"},
-> > -	[RLIMIT_NOFILE] = {"Max open files", "files"},
-> > -	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes"},
-> > -	[RLIMIT_AS] = {"Max address space", "bytes"},
-> > -	[RLIMIT_LOCKS] = {"Max file locks", "locks"},
-> > -	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals"},
-> > -	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes"},
-> > -	[RLIMIT_NICE] = {"Max nice priority", NULL},
-> > -	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL},
-> > -	[RLIMIT_RTTIME] = {"Max realtime timeout", "us"},
-> > +	[RLIMIT_CPU] = {"Max cpu time", "ms", "cpu"},
-> > +	[RLIMIT_FSIZE] = {"Max file size", "bytes", "fsize"},
-> > +	[RLIMIT_DATA] = {"Max data size", "bytes", "data"},
-> > +	[RLIMIT_STACK] = {"Max stack size", "bytes", "stack"},
-> > +	[RLIMIT_CORE] = {"Max core file size", "bytes", "core"},
-> > +	[RLIMIT_RSS] = {"Max resident set", "bytes", "rss"},
-> > +	[RLIMIT_NPROC] = {"Max processes", "processes", "nproc"},
-> > +	[RLIMIT_NOFILE] = {"Max open files", "files", "nofile"},
-> > +	[RLIMIT_MEMLOCK] = {"Max locked memory", "bytes", "memlock"},
-> > +	[RLIMIT_AS] = {"Max address space", "bytes", "as"},
-> > +	[RLIMIT_LOCKS] = {"Max file locks", "locks", "locks"},
-> > +	[RLIMIT_SIGPENDING] = {"Max pending signals", "signals", "sigpending"},
-> > +	[RLIMIT_MSGQUEUE] = {"Max msgqueue size", "bytes", "msgqueue"},
-> > +	[RLIMIT_NICE] = {"Max nice priority", NULL, "nice"},
-> > +	[RLIMIT_RTPRIO] = {"Max realtime priority", NULL, "rtprio"},
-> > +	[RLIMIT_RTTIME] = {"Max realtime timeout", "us", "rttime"},
-> >  };
-> 
-> There's no way user can figure out what's the "match" for every limit.
-> Maybe you could print it after "limit name"?
-> 
-I was figuring we could just document the names, but sure, thats fine.  I'll
-likely do a format in which I do "Limit Name(id)" to display the name and id.
 
-> > +	bufptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
-> 
-> I think you could derive size of allocation from RLIM_NLIMITS.
-> If I'm reading correctly it will be something like (RLIM_NLIMITS + 1) * 80.
-> 
-meh, ok.  It should be more like *90 if I add the id, but we can do that.
+Changelog
+  since v1
+    - rewrote description
+    - fold patch 1/2 and 2/2
 
-> > +
-> > +	for (i = 0; i < strlen(element); i++)
-> > +		element[i] = tolower(element[i]);
-> 
-> I don't think we should fix user mistakes like this...
-> 
-I guess not, if we display the id's
+==========================================================
+Recently, Mike Galbraith reported mlock() makes hang-up very long time in
+his system. Peter Zijlstra explainted the reason.
 
-> > +
-> > +	if (!strncmp(vmc, "unlimited", 9))
-> > +		new_rlim.rlim_cur = RLIM_INFINITY;
-> > +	else
-> > +		new_rlim.rlim_cur = simple_strtoull(vmc, NULL, 10);
-> 
-> rlim_cur and rlim_max are unsigned long so you should use simple_strtoul
-> 
-Ok
+  Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
+  cpu0 does mlock()->lru_add_drain_all(), which does
+  schedule_on_each_cpu(), which then waits for all cpus to complete the
+  work. Except that cpu1, which is busy with the RT task, will never run
+  keventd until the RT load goes away.
 
-> > +
-> > +	if (!strncmp(vmm, "unlimited", 9))
-> > +		new_rlim.rlim_max = RLIM_INFINITY;
-> > +	else
-> > +		new_rlim.rlim_max = simple_strtoull(vmm, NULL, 10);
-> > +
-> > +
-> > +	for (i = 0; i < RLIM_NLIMITS; i++) {
-> > +		if ((lnames[i].match) &&
-> 
-> match is always not null, you can drop this check
-> 
-Ok.
+  This is not so much an actual deadlock as a serious starvation case.
 
-fine, one more version.  It'll take me a few days to test, the system I
-developed this on is otherwise occupied at the moment.
+His system has two partions using cpusets and RT-task partion cpu doesn't
+have any PCP cache. thus, this result was pretty unexpected.
 
-Neil
+The fact is, mlock() doesn't need to wait to finish lru_add_drain_all().
+if mlock() can't turn on PG_mlock, vmscan turn it on later.
+
+Thus, this patch replace it with lru_add_drain_all_async().
+
+
+Reported-by: Peter Zijlstra <a.p.zijlstra@chello.nl> 
+Reported-by: Mike Galbraith <efault@gmx.de> 
+Cc: Oleg Nesterov <onestero@redhat.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ include/linux/swap.h |    1 +
+ mm/mlock.c           |    4 ++--
+ mm/swap.c            |   24 ++++++++++++++++++++++++
+ 3 files changed, 27 insertions(+), 2 deletions(-)
+
+Index: b/include/linux/swap.h
+===================================================================
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -204,6 +204,7 @@ extern void activate_page(struct page *)
+ extern void mark_page_accessed(struct page *);
+ extern void lru_add_drain(void);
+ extern int lru_add_drain_all(void);
++extern int lru_add_drain_all_async(void);
+ extern void rotate_reclaimable_page(struct page *page);
+ extern void swap_setup(void);
+ 
+Index: b/mm/swap.c
+===================================================================
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -38,6 +38,7 @@ int page_cluster;
+ 
+ static DEFINE_PER_CPU(struct pagevec[NR_LRU_LISTS], lru_add_pvecs);
+ static DEFINE_PER_CPU(struct pagevec, lru_rotate_pvecs);
++static DEFINE_PER_CPU(struct work_struct, lru_drain_work);
+ 
+ /*
+  * This path almost never happens for VM activity - pages are normally
+@@ -312,6 +313,24 @@ int lru_add_drain_all(void)
+ }
+ 
+ /*
++ * Returns 0 for success
++ */
++int lru_add_drain_all_async(void)
++{
++	int cpu;
++
++	get_online_cpus();
++	for_each_online_cpu(cpu) {
++		struct work_struct *work = &per_cpu(lru_drain_work, cpu);
++		schedule_work_on(cpu, work);
++	}
++	put_online_cpus();
++
++	return 0;
++}
++
++
++/*
+  * Batched page_cache_release().  Decrement the reference count on all the
+  * passed pages.  If it fell to zero then remove the page from the LRU and
+  * free it.
+@@ -497,6 +516,7 @@ EXPORT_SYMBOL(pagevec_lookup_tag);
+ void __init swap_setup(void)
+ {
+ 	unsigned long megs = totalram_pages >> (20 - PAGE_SHIFT);
++	int cpu;
+ 
+ #ifdef CONFIG_SWAP
+ 	bdi_init(swapper_space.backing_dev_info);
+@@ -511,4 +531,8 @@ void __init swap_setup(void)
+ 	 * Right now other parts of the system means that we
+ 	 * _really_ don't want to cluster much more
+ 	 */
++
++	for_each_possible_cpu(cpu) {
++		INIT_WORK(&per_cpu(lru_drain_work, cpu), lru_add_drain_per_cpu);
++	}
+ }
+Index: b/mm/mlock.c
+===================================================================
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -481,7 +481,7 @@ SYSCALL_DEFINE2(mlock, unsigned long, st
+ 	if (!can_do_mlock())
+ 		return -EPERM;
+ 
+-	lru_add_drain_all();	/* flush pagevec */
++	lru_add_drain_all_async();	/* flush pagevec */
+ 
+ 	down_write(&current->mm->mmap_sem);
+ 	len = PAGE_ALIGN(len + (start & ~PAGE_MASK));
+@@ -549,7 +549,7 @@ SYSCALL_DEFINE1(mlockall, int, flags)
+ 	if (!can_do_mlock())
+ 		goto out;
+ 
+-	lru_add_drain_all();	/* flush pagevec */
++	lru_add_drain_all_async();	/* flush pagevec */
+ 
+ 	down_write(&current->mm->mmap_sem);
+ 
+
 
