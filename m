@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761716AbZJIXmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761934AbZJIXnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761716AbZJIXmx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761655AbZJIXmv
+	id S1761934AbZJIXnl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761694AbZJIXmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:42:51 -0400
-Received: from kroah.org ([198.145.64.141]:51487 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:42:52 -0400
+Received: from kroah.org ([198.145.64.141]:51486 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761602AbZJIXmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761619AbZJIXmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 Oct 2009 19:42:50 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:34:40 2009
-Message-Id: <20091009233440.157774034@mini.kroah.org>
+Message-Id: <20091009233440.284809932@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:34:43 -0700
+Date: Fri, 09 Oct 2009 16:34:44 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Steve Glendinning <steve.glendinning@smsc.com>,
+       Mike McCormack <mikem@ring3k.org>,
+       Stephen Hemminger <shemminger@vyatta.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 32/37] smsc95xx: fix transmission where ZLP is expected
+Subject: [patch 33/37] sky2: Set SKY2_HW_RAM_BUFFER in sky2_init
 References: <20091009233411.852013234@mini.kroah.org>
-Content-Disposition: inline; filename=smsc95xx-fix-transmission-where-zlp-is-expected.patch
+Content-Disposition: inline; filename=sky2-set-sky2_hw_ram_buffer-in-sky2_init.patch
 In-Reply-To: <20091009233812.GA15982@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,63 +31,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Steve Glendinning <steve.glendinning@smsc.com>
+From: Mike McCormack <mikem@ring3k.org>
 
-[ Upstream commit ec4756238239f1a331d9fb95bad8b281dad56855 ]
+[ Upstream commit 74a61ebf653c6abe459f228eb40e9f24f7ef1fb7 ]
 
-Usbnet framework assumes USB hardware doesn't handle zero length
-packets, but SMSC LAN95xx requires these to be sent for correct
-operation.
+The SKY2_HW_RAM_BUFFER bit in hw->flags was checked in sky2_mac_init(),
+ before being set later in sky2_up().
 
-This patch fixes an easily reproducible tx lockup when sending a frame
-that results in exactly 512 bytes in a USB transmission (e.g. a UDP
-frame with 458 data bytes, due to IP headers and our USB headers).  It
-adds an extra flag to usbnet for the hardware driver to indicate that
-it can handle and requires the zero length packets.
+Setting SKY2_HW_RAM_BUFFER in sky2_init() where other hw->flags are set
+ should avoid this problem recurring.
 
-This patch should not affect other usbnet users, please also consider
-for -stable.
-
-Signed-off-by: Steve Glendinning <steve.glendinning@smsc.com>
+Signed-off-by: Mike McCormack <mikem@ring3k.org>
+Acked-by: Stephen Hemminger <shemminger@vyatta.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/usb/smsc95xx.c |    2 +-
- drivers/net/usb/usbnet.c   |    2 +-
- include/linux/usb/usbnet.h |    1 +
- 3 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/net/sky2.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/net/usb/smsc95xx.c
-+++ b/drivers/net/usb/smsc95xx.c
-@@ -1232,7 +1232,7 @@ static const struct driver_info smsc95xx
- 	.rx_fixup	= smsc95xx_rx_fixup,
- 	.tx_fixup	= smsc95xx_tx_fixup,
- 	.status		= smsc95xx_status,
--	.flags		= FLAG_ETHER,
-+	.flags		= FLAG_ETHER | FLAG_SEND_ZLP,
- };
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -1455,7 +1455,6 @@ static int sky2_up(struct net_device *de
+ 	if (ramsize > 0) {
+ 		u32 rxspace;
  
- static const struct usb_device_id products[] = {
---- a/drivers/net/usb/usbnet.c
-+++ b/drivers/net/usb/usbnet.c
-@@ -988,7 +988,7 @@ int usbnet_start_xmit (struct sk_buff *s
- 	 * NOTE:  strictly conforming cdc-ether devices should expect
- 	 * the ZLP here, but ignore the one-byte packet.
- 	 */
--	if ((length % dev->maxpacket) == 0) {
-+	if (!(info->flags & FLAG_SEND_ZLP) && (length % dev->maxpacket) == 0) {
- 		urb->transfer_buffer_length++;
- 		if (skb_tailroom(skb)) {
- 			skb->data[skb->len] = 0;
---- a/include/linux/usb/usbnet.h
-+++ b/include/linux/usb/usbnet.h
-@@ -86,6 +86,7 @@ struct driver_info {
+-		hw->flags |= SKY2_HW_RAM_BUFFER;
+ 		pr_debug(PFX "%s: ram buffer %dK\n", dev->name, ramsize);
+ 		if (ramsize < 16)
+ 			rxspace = ramsize / 2;
+@@ -2942,6 +2941,9 @@ static int __devinit sky2_init(struct sk
+ 			++hw->ports;
+ 	}
  
- #define FLAG_FRAMING_AX 0x0040		/* AX88772/178 packets */
- #define FLAG_WLAN	0x0080		/* use "wlan%d" names */
-+#define FLAG_SEND_ZLP	0x0200		/* hw requires ZLPs are sent */
++	if (sky2_read8(hw, B2_E_0))
++		hw->flags |= SKY2_HW_RAM_BUFFER;
++
+ 	return 0;
+ }
  
- 
- 	/* init device ... can sleep, or cause probe() failure */
 
 
