@@ -1,84 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934723AbZJIW3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761503AbZJIWin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934723AbZJIW3G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 18:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934696AbZJIW3F
+	id S1761503AbZJIWin (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 18:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761476AbZJIWim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 18:29:05 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:34254 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934692AbZJIW3D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 18:29:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=bbYfsOyrF05V0xHlkgObcxukvqPa8V8f9p5d3jEeYoDbS6/H7AhbGORAodPeP4jjOT
-         MKxwQyPpjW6/5j/csFgAwCY4nGsBZIHtY68e2HfWaAr9nSU7sH2PN4nh5Cw48twNe26T
-         jPpE6QthjcXqUj8F4mSAGIJmmPNIsF50MSK5I=
-Message-ID: <4ACFB908.6070708@gmail.com>
-Date: Sat, 10 Oct 2009 00:28:24 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.7 Thunderbird/3.0b4
+	Fri, 9 Oct 2009 18:38:42 -0400
+Received: from kroah.org ([198.145.64.141]:54909 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759009AbZJIWil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 18:38:41 -0400
+Date: Fri, 9 Oct 2009 15:30:23 -0700
+From: Greg KH <greg@kroah.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Greg KH <gregkh@suse.de>, Alok Kataria <akataria@vmware.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       alan@lxorguk.ukuu.org.uk, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [Stable-review] [000/136] 2.6.31.2-stable review
+Message-ID: <20091009223023.GC28979@kroah.com>
+References: <20091002012911.GA18542@kroah.com>
+ <20091006091254.448d45e2.nishimura@mxp.nes.nec.co.jp>
 MIME-Version: 1.0
-To: Bruce Beare <bbeare1@gmail.com>
-CC: Greg Kroah-Hartman <gregkh@suse.de>, Bill Pemberton <wfp5p@virginia.edu>,
-       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Cleanups for: line length, printk KERN_ argument, stack
- frame size > 2048 (added a kmalloc/kfree), style/formatting errors, incorrect
- include files
-References: <1255122698-12390-1-git-send-email-bbeare1@gmail.com>
-In-Reply-To: <1255122698-12390-1-git-send-email-bbeare1@gmail.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091006091254.448d45e2.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/09/2009 11:11 PM, Bruce Beare wrote:
-> -		struct config_t dig_in_config[32];
-> -		struct config_t dig_out_config[32];
-> -		struct config_t chan_in_config[32];
-> -		struct config_t chan_out_config[32];
->  		int i;
-> +		config_data = kmalloc(sizeof(struct config_data_t), GFP_KERNEL);
+On Tue, Oct 06, 2009 at 09:12:54AM +0900, Daisuke Nishimura wrote:
+> Hi, Greg.
+> 
+> Could you consider adding the following commit in linus-tree to 2.6.31-stable ?
+> I've verified the commit can be applied onto v2.6.31.2.
 
-And possibly switch this to kzalloc and remove the for below. (As a
-separate patch.)
+Now queued up.
 
->  		for (i = 0; i < 32; i++) {
-> -			dig_in_config[i].kind = 0;
-> -			dig_in_config[i].bits = 0;
-> -			dig_in_config[i].min = 0;
-> -			dig_in_config[i].max = 0;
-> -			dig_out_config[i].kind = 0;
-> -			dig_out_config[i].bits = 0;
-> -			dig_out_config[i].min = 0;
-> -			dig_out_config[i].max = 0;
-> -			chan_in_config[i].kind = 0;
-> -			chan_in_config[i].bits = 0;
-> -			chan_in_config[i].min = 0;
-> -			chan_in_config[i].max = 0;
-> -			chan_out_config[i].kind = 0;
-> -			chan_out_config[i].bits = 0;
-> -			chan_out_config[i].min = 0;
-> -			chan_out_config[i].max = 0;
-> +			config_data->dig_in_config[i].kind = 0;
-> +			config_data->dig_in_config[i].bits = 0;
-> +			config_data->dig_in_config[i].min = 0;
-> +			config_data->dig_in_config[i].max = 0;
-> +			config_data->dig_out_config[i].kind = 0;
-> +			config_data->dig_out_config[i].bits = 0;
-> +			config_data->dig_out_config[i].min = 0;
-> +			config_data->dig_out_config[i].max = 0;
-> +			config_data->chan_in_config[i].kind = 0;
-> +			config_data->chan_in_config[i].bits = 0;
-> +			config_data->chan_in_config[i].min = 0;
-> +			config_data->chan_in_config[i].max = 0;
-> +			config_data->chan_out_config[i].kind = 0;
-> +			config_data->chan_out_config[i].bits = 0;
-> +			config_data->chan_out_config[i].min = 0;
-> +			config_data->chan_out_config[i].max = 0;
+thanks,
+
+greg k-h
