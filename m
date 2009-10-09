@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932367AbZJIAWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbZJIAcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932367AbZJIAWu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 20:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932109AbZJIAWt
+	id S1758236AbZJIAcW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 20:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757841AbZJIAcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 20:22:49 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59521 "EHLO smtps.tip.net.au"
+	Thu, 8 Oct 2009 20:32:21 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53607 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757314AbZJIAWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 20:22:48 -0400
-Date: Fri, 9 Oct 2009 11:21:58 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kyle McMartin <kyle@mcmartin.ca>, <linux-parisc@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Subject: linux-next: manual merge of the parisc tree with Linus' tree
-Message-Id: <20091009112158.7d37ed23.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__9_Oct_2009_11_21_58_+1100_J6RvzgaLr98JJIIY"
+	id S1757291AbZJIAcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 Oct 2009 20:32:20 -0400
+Date: Thu, 8 Oct 2009 17:22:30 -0700
+From: Greg KH <gregkh@suse.de>
+To: David Rientjes <rientjes@google.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, sfr@canb.auug.org.au,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arve Hjonnevag <arve@android.com>, San Mehat <san@android.com>
+Subject: Re: [PATCH] linux-next: 20090929 - android driver build breaks
+Message-ID: <20091009002230.GB28982@suse.de>
+References: <20090929140404.dfb2c5f5.sfr@canb.auug.org.au>
+ <20090929152027.GC4373@linux.vnet.ibm.com>
+ <20091008224725.GA22949@kroah.com>
+ <alpine.DEB.1.00.0910081621340.10613@chino.kir.corp.google.com>
+ <20091008232825.GA540@suse.de>
+ <alpine.DEB.1.00.0910081644200.14247@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0910081644200.14247@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__9_Oct_2009_11_21_58_+1100_J6RvzgaLr98JJIIY
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Oct 08, 2009 at 04:48:23PM -0700, David Rientjes wrote:
+> On Thu, 8 Oct 2009, Greg KH wrote:
+> 
+> > > What are you specifically referring to?  Kamalesh provided a patch[*] that 
+> > > fixes this particular compile error, which you said you were queueing.
+> > 
+> > Hm, I did say I was queueing it, but I still can't figure out if this is
+> > needed for the 2.6.32 tree.  Is it?
+> > 
+> 
+> Yes, 28b83c5 was merged during the merge window for 2.6.32 so this needs 
+> to be pushed for the staging tree if it's not ripped out.
 
-Hi all,
+Ok, I'll dig it up, thanks.
 
-Today's linux-next merge of the parisc tree got conflicts in
-arch/parisc/include/asm/thread_info.h and arch/parisc/kernel/entry.S
-between commit d0420c83f39f79afb82010c2d2cafd150eef651b ("KEYS: Extend
-TIF_NOTIFY_RESUME to (almost) all architectures [try #6]") from Linus'
-tree and commit 9f4259771faf1ffd99888796d925adae4c93630b ("parisc: add
-TIF_NOTIFY_RESUME and use tracehook_notify_resume") from the parisc tree.
+> > > If it's a criticism of the staleness of the Android code within the 
+> > > staging tree or no recent activity, then we should probably loop in some 
+> > > Android developers to find our about their plans.  I've added them to the 
+> > > cc.
+> > 
+> > They know all about this and agreed that the code should be dropped for
+> > 2.6.33 if no one sends me patches.  If someone does, then I will remove
+> > my 'delete the android code' patch in the staging tree.
+> > 
+> 
+> I don't work with Android, but the "no support from Google" phrase caught 
+> my attention :)  It seems like this isn't necessarily about support or 
+> raised issues not being addressed, but rather about a lack of progress 
+> being made developmentally or a general lack of interest in upstream 
+> inclusion.
 
-It looks like the parisc tree version is a superset of the version in
-Linus' tree (for parisc).  I fixed it up (hopefully - using the parisc
-tree versions) and can carry the fix for a while.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Yes, that is exactly correct.
 
---Signature=_Fri__9_Oct_2009_11_21_58_+1100_J6RvzgaLr98JJIIY
-Content-Type: application/pgp-signature
+thanks,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrOgiYACgkQjjKRsyhoI8xQhACeOuI78SNvXU7t3VV9JEEhqKBz
-GUIAn0IWXIkFGxiD7SDRT2zY4bUtzAzu
-=Am0X
------END PGP SIGNATURE-----
-
---Signature=_Fri__9_Oct_2009_11_21_58_+1100_J6RvzgaLr98JJIIY--
+greg k-h
