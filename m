@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933974AbZJIQf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934019AbZJIQlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933974AbZJIQf6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 12:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933904AbZJIQf6
+	id S934019AbZJIQlY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 12:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760995AbZJIQlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 12:35:58 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:36658 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933629AbZJIQf5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 12:35:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=EeMpbyqNhbEapztzFd+7iZD+nFLp7UocGmbG5vRzgF3M7XFJtJVcqd6FAQjGq9Arjt
-         4+sCA/gNZxsa1ZtBsWN5L9NLBVWmUskHFS7KwOGR9eBCPEGbOWIe/R+iNb529tgftRG8
-         QVo3U8AXdht4ifd0L7Vlj/PyM4nbOybyXd1uw=
-Date: Fri, 9 Oct 2009 09:35:07 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: ads7846 touchscreen: fix pressure
-Message-ID: <20091009163506.GE1092@core.coreip.homeip.net>
-References: <20091006195413.GA1469@ucw.cz> <5d5443650910072209t63e3fa9dvff7ab2fee7bb2f88@mail.gmail.com> <20091008092433.GA26837@elf.ucw.cz>
+	Fri, 9 Oct 2009 12:41:24 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:48069 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758949AbZJIQlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 12:41:23 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091008092433.GA26837@elf.ucw.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19151.26501.727411.584056@pilspetsen.it.uu.se>
+Date: Fri, 9 Oct 2009 18:40:37 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14256] kernel BUG at fs/ext3/super.c:435
+In-Reply-To: <19145.10741.402938.867088@pilspetsen.it.uu.se>
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera>
+	<COE24pZSBH.A.ot.9MTxKB@chimera>
+	<19144.56721.786457.979953@pilspetsen.it.uu.se>
+	<200910042249.54639.rjw@sisk.pl>
+	<19145.10741.402938.867088@pilspetsen.it.uu.se>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 11:24:33AM +0200, Pavel Machek wrote:
-> On Thu 2009-10-08 10:39:39, Trilok Soni wrote:
-> > Hi Pavel,
-> > 
-> > On Wed, Oct 7, 2009 at 1:24 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > >
-> > > On Zaurus, pressure is reported inverted -- the lighter the pressure,
-> > > the bigger numerical value. This should fix it.
-> > >
-> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> > >
-> > > --- linux-rc/drivers/input.ofic/touchscreen/ads7846.c   2009-10-06 13:49:56.000000000 +0200
-> > > +++ linux-rc/drivers/input/touchscreen/ads7846.c        2009-10-06 21:18:25.000000000 +0200
-> > > @@ -608,12 +609,12 @@
-> > >
-> > >                input_report_abs(input, ABS_X, x);
-> > >                input_report_abs(input, ABS_Y, y);
-> > > -               input_report_abs(input, ABS_PRESSURE, Rt);
-> > > +               input_report_abs(input, ABS_PRESSURE, ts->pressure_max-Rt);
-> > 
-> > but same behavior is seen by others using this chip on different
-> > boards? If not, this has to be done through platform data.
-> 
-> Well, I'd expect the chip to behave in similar way on all
-> platforms. Of course, it would be good if someone with different hw
-> tested it, but I do not have that hw...
-> 
-> So I guess the best way is to make it go in early and see how it does
-> in testing....
+Mikael Pettersson writes:
+ > Rafael J. Wysocki writes:
+ >  > On Sunday 04 October 2009, Mikael Pettersson wrote:
+ >  > > Rafael J. Wysocki wrote:
+ >  > > > The following bug entry is on the current list of known regressions
+ >  > > > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
+ >  > > > be listed and let me know (either way).
+ >  > > > 
+ >  > > > 
+ >  > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14256
+ >  > > > Subject		: kernel BUG at fs/ext3/super.c:435
+ >  > > > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+ >  > > > Date		: 2009-09-21 7:29 (11 days old)
+ >  > > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125351816109264&w=3D4
+ >  > > 
+ >  > > The exact same bug (same cause, same symptom) just hit me again in 2.6.32-rc1.
+ >  > 
+ >  > Thanks for the update.
+ >  > 
+ >  > Could you check the current Linus' tree, please?  There are some known
+ >  > regression fixes in there.
+ > 
+ > I tried simplified versions of the bug trigger on two machines
+ > running 2.6.32-rc1-git6, and neither triggered the kernel bug.
+ > 
+ > The original recipe involved doing a glibc rebuild, run its test
+ > suite, install it, and reboot. Today however machine 1 was already
+ > doing a rebuild so after the rebuild it did a reboot into the new
+ > kernel before the install. The second machine booted the new kernel
+ > directly to install the binary packages from the first machine.
+ > 
+ > I'll re-run the full bug trigger recipe on a third machine later next
+ > week (it must rebuild glibc itself anyway due to arch differences).
 
-No, this is not how it works. Please do
+Not fixed in 2.6.32-rc3. A glibc rebuild + install triggered the
+exact same bug on the third machine.
 
-	git log -- drivers/input/touchscreen/ads7846.c
-
-and try to check with people who were working on this driver. I somehow
-doubt that they'd overlook such obvious issue as inverted pressure
-readings.
-
--- 
-Dmitry
+/Mikael
