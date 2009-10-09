@@ -1,67 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760229AbZJIDUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759141AbZJID32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760229AbZJIDUU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 Oct 2009 23:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760209AbZJIDUR
+	id S1759141AbZJID32 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 Oct 2009 23:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758384AbZJID32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 Oct 2009 23:20:17 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:44758 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755689AbZJIDUQ (ORCPT
+	Thu, 8 Oct 2009 23:29:28 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:57241 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758318AbZJID31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 Oct 2009 23:20:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=lNwuiU82fAlbyP97qS9YLf5AwWnKZACuqTclpI3ZHzW6r9LsvGAKGzxK6Z43Smcs80
-         AX8pjl7dY+UuTlj0Okr2H2gVAYVvFRTFtJZx3MCVrs1od5sMv7nx9CX/Sg1TiHJ7T3LJ
-         /Anx0K6BCBPHmU3vKYGLKtmHpSY7xKpFKMvNQ=
-Message-ID: <4ACEABAA.3070707@gmail.com>
-Date: Thu, 08 Oct 2009 20:19:06 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+	Thu, 8 Oct 2009 23:29:27 -0400
+Date: Thu, 8 Oct 2009 20:29:28 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Daniel Lezcano <dlezcano@fr.ibm.com>
+Cc: Pavel Emelianov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: pidns memory leak
+Message-ID: <20091009032928.GA2031@us.ibm.com>
+References: <4AC5F198.2070407@fr.ibm.com> <20091006040526.GA22923@us.ibm.com> <4ACAFD6A.3060008@fr.ibm.com> <20091008030828.GA18973@us.ibm.com> <4ACD9ECC.90508@fr.ibm.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=22Fr=E9d=E9ric_L=2E_W=2E_Meunier=22?= 
-	<fredlwm@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: keyboard under X with 2.6.31
-References: <alpine.LNX.2.01.0910071706490.11297@dyndns.pervalidus.net> <20091009023844.GA26462@core.coreip.homeip.net> <alpine.LNX.2.01.0910082347470.23080@dyndns.pervalidus.net>
-In-Reply-To: <alpine.LNX.2.01.0910082347470.23080@dyndns.pervalidus.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ACD9ECC.90508@fr.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frédéric L. W. Meunier wrote:
-> On Thu, 8 Oct 2009, Dmitry Torokhov wrote:
->
->> On Wed, Oct 07, 2009 at 05:19:25PM -0300, Frédéric L. W. Meunier wrote:
->>> My keyboard (ABNT2 PS/2) seems to be broken under X with 2.6.31.2. 
->>> After
->>> less than an hour, it starts acting crazy. The first time, all leds
->>> turned off and I couldn't type anything. The second time, all leds also
->>> turned off, but since it happened while I was pressing the Backspace 
->>> key
->>> to delete text, it continued deleting, like if the key was pressed.
->>>
->>> In both cases, the mouse (USB) still works and I can exit X, where the
->>> keyboard works. There's nothing in the logs.
->>>
->>> No problem with 2.6.30.9. Is it supposed to be a kernel or X bug ?
+Daniel Lezcano [dlezcano@fr.ibm.com] wrote:
+> Sukadev Bhattiprolu wrote:
+>> Still digging through some traces, but below I have some questions that 
+>> I am still trying to answer.
 >>
->> It would be interestig to see if the same keyboard continues to work in
->> console... if it does then I'd blame X.
+>>> I am not sure what you mean by 'struct pids' but what I observed is:
+>>
+>> Ok, I see that too. If pids leak, then pid-namespace will leak too.
+>> Do you see any leaks in proc_inode_cache ?
 >
-> I can exit X with the mouse and do anything in the console after that.
->
-> I just reported it to the XOrg mailing-list.
->
-> Anyway, I wonder if DRI could mess with the keyboard. I suppose there 
-> were changes (and Radeon related) from 2.6.30 to 2.6.31. But I can 
-> test with it disabled.
-mess around(maybe) with .xmodmap,
-if before X mess with /usr/share/keymap/ *.gz(whatever your using)
+> Yes, right. It leaks too.
 
-Justin P. Mattock
+Ok, some progress...
+
+Can you please verify these observations:
+
+- If the container exits normally, the leak does not seem to happen.
+  (i.e reduce your sleep 3600 to say sleep 3 and remove the lxc-stop).
+
+- Revert the following commit and check if the leak happens:
+
+	commit 7766755a2f249e7e0dabc5255a0a3d151ff79821
+	Author: Andrea Arcangeli <andrea@suse.de>
+	Date:   Mon Feb 4 22:29:21 2008 -0800
+
+(this commit added the check for PF_EXITING in proc_flush_task_mnt 
+loosely explained below).
+
+Incomplete analysis :-)
+
+If the container-init is terminated (by the lxc-stop), the container zaps
+other processes in the container and waits for them. The leak happens in
+this case.
+
+Following sequence of events occur:
+
+	- container-init calls do_exit and sets PF_EXITING (in exit_signals())
+
+	- container init calls zaps_pid_ns_processes() (exit_notify /
+	  forget_orignal_parent() / find_new_reaper())
+
+	- In zap_pid_ns_processes() container-init sends SIGKILL to
+	  descendants and calls sys_wait().
+
+	- The sys_wait() is expected to call release_task() which calls
+	  proc_flush_task_mnt().
+
+	- proc_flush_task_mnt() looks up the dentry for the pid (2 in
+	  our example) and finds the dentry.
+
+	  But since container-init is itself exiting (i.e PF_EXITING is
+	  set) it does NOT call the shrink_dcache_parent(), but,
+	  interestingly calls d_drop() and dput().
+
+	  Now the d_drop() unhashes the dentry for the pid 2.
+
+	- proc_flush_task_mnt() then tries to find the dentry for the
+	  tgid of the process. In our case, the tgid == pid == 2 and
+	  we just unhashed the dentry for "2".
+
+	  So, we don't find the dentry for the leader either (and hence
+	  don't make the second shrink_dcache_parent() call in
+	  proc_flush_task_mnt() either).
+
+	  Without a call to shrink_dcache_parent(), the proc inode
+	  for the process that was terminated by container init is
+	  not deleted (i.e we don't call proc_delete_inode() or
+	  the put_pid() inside it) causing us to leak proc_inodes,
+	  struct pid and hence struct pid_namespace.
+
+There should be a better fix, but first please confirm if reverting the
+above commit fixes the leak for you also.
+
+Sukadev
