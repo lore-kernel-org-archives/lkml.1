@@ -1,126 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934593AbZJIXoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934635AbZJIXqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934593AbZJIXoS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761651AbZJIXoP
+	id S934635AbZJIXqd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934626AbZJIXqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:44:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57829 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761619AbZJIXoM (ORCPT
+	Fri, 9 Oct 2009 19:46:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60775 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934625AbZJIXqc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:44:12 -0400
-Date: Fri, 9 Oct 2009 16:41:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Lothar Wassmann <LW@KARO-electronics.de>, linux-usb@vger.kernel.org,
-       Roland Dreier <rolandd@cisco.com>,
-       Yevgeny Petrilin <yevgenyp@mellanox.co.il>, netdev@vger.kernel.org,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       linux-ia64@vger.kernel.org, linux-altix@sgi.com
-Subject: Re: [PATCH 2/8] bitmap: Introduce bitmap_set, bitmap_clear,
- bitmap_find_next_zero_area
-Message-Id: <20091009164100.85a36188.akpm@linux-foundation.org>
-In-Reply-To: <1255076961-21325-2-git-send-email-akinobu.mita@gmail.com>
-References: <1255076961-21325-1-git-send-email-akinobu.mita@gmail.com>
-	<1255076961-21325-2-git-send-email-akinobu.mita@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 Oct 2009 19:46:32 -0400
+Date: Fri, 9 Oct 2009 19:45:55 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jason Baron <jbaron@redhat.com>
+Cc: swhiteho@redhat.com, cluster-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: move gfs2 tracepoints to inclue/trace/events dir
+Message-ID: <20091009234555.GA28257@infradead.org>
+References: <20091009160115.GA2647@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091009160115.GA2647@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  9 Oct 2009 17:29:15 +0900
-Akinobu Mita <akinobu.mita@gmail.com> wrote:
-
-> This introduces new bitmap functions:
+On Fri, Oct 09, 2009 at 12:01:16PM -0400, Jason Baron wrote:
+> hi,
 > 
-> bitmap_set: Set specified bit area
-> bitmap_clear: Clear specified bit area
-> bitmap_find_next_zero_area: Find free bit area
-> 
-> These are stolen from iommu helper.
-> 
-> I changed the return value of bitmap_find_next_zero_area if there is
-> no zero area.
-> 
-> find_next_zero_area in iommu helper: returns -1
-> bitmap_find_next_zero_area: return >= bitmap size
+> I'd like to move the gfs2 tracepoints to the the common
+> include/trace/events directory along with all of the other trace events.
+> It makes understanding what tracepoints are available easier, and I see
+> no reason why gfs2 should be different. For example, 'ext4.h' is already
+> in the include/trace/events directory.
 
-I'll plan to merge this patch into 2.6.32 so we can trickle all the
-other patches into subsystems in an orderly fashion.
-
-> +void bitmap_set(unsigned long *map, int i, int len)
-> +{
-> +	int end = i + len;
-> +
-> +	while (i < end) {
-> +		__set_bit(i, map);
-> +		i++;
-> +	}
-> +}
-
-This is really inefficient, isn't it?  It's a pretty trivial matter to
-romp through memory 32 or 64 bits at a time.
-
-> +EXPORT_SYMBOL(bitmap_set);
-> +
-> +void bitmap_clear(unsigned long *map, int start, int nr)
-> +{
-> +	int end = start + nr;
-> +
-> +	while (start < end) {
-> +		__clear_bit(start, map);
-> +		start++;
-> +	}
-> +}
-> +EXPORT_SYMBOL(bitmap_clear);
-
-Ditto.
-
-> +unsigned long bitmap_find_next_zero_area(unsigned long *map,
-> +					 unsigned long size,
-> +					 unsigned long start,
-> +					 unsigned int nr,
-> +					 unsigned long align_mask)
-> +{
-> +	unsigned long index, end, i;
-> +again:
-> +	index = find_next_zero_bit(map, size, start);
-> +
-> +	/* Align allocation */
-> +	index = (index + align_mask) & ~align_mask;
-> +
-> +	end = index + nr;
-> +	if (end >= size)
-> +		return end;
-> +	i = find_next_bit(map, end, index);
-> +	if (i < end) {
-> +		start = i + 1;
-> +		goto again;
-> +	}
-> +	return index;
-> +}
-> +EXPORT_SYMBOL(bitmap_find_next_zero_area);
-
-This needs documentation, please.  It appears that `size' is the size
-of the bitmap and `nr' is the number of zeroed bits we're looking for,
-but an inattentive programmer could get those reversed.
-
-Also the semantics of `align_mask' could benefit from spelling out.  Is
-the alignment with respect to memory boundaries or with respect to
-`map' or with respect to map+start or what?
-
-And why does align_mask exist at all?  I was a bit surprised to see it
-there.  In which scenarios will it be non-zero?
+Folks, no.  Drivers and filesystems should be as self-contained as
+possible.  include/trace/ is an extremly bad idea for everything that's
+not actually global kernel functionality.  There's a reason all other
+fs headers have moved out of include/linux, too.
 
