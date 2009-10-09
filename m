@@ -1,42 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934030AbZJIRIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933909AbZJIRJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934030AbZJIRIo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 13:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbZJIRIn
+	id S933909AbZJIRJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 13:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbZJIRJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 13:08:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53182 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932110AbZJIRIn (ORCPT
+	Fri, 9 Oct 2009 13:09:25 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:4665 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756009AbZJIRJY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 13:08:43 -0400
-Date: Fri, 9 Oct 2009 13:08:04 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Andreas Mohr <andi@lisas.de>, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: 2.6.32-rc3: floating-point build failure (undefined reference
-	to `__udivdi3' in menu governor)
-Message-ID: <20091009170803.GE11702@bombadil.infradead.org>
-References: <20091007104125.GA1449@rhlx01.hs-esslingen.de> <4ACCA44B.3070706@linux.intel.com> <20091007173457.GA25415@rhlx01.hs-esslingen.de> <20091007174553.GC11702@bombadil.infradead.org> <20091009160123.GA14808@rhlx01.hs-esslingen.de> <4ACF658D.4010605@linux.intel.com>
+	Fri, 9 Oct 2009 13:09:24 -0400
+Authentication-Results: sj-iport-2.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAEcLz0qrR7Hu/2dsb2JhbADDD5hIhCwEgVho
+X-IronPort-AV: E=Sophos;i="4.44,533,1249257600"; 
+   d="scan'208";a="213084968"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 09 Oct 2009 10:08:46 -0700
+Message-ID: <adaskdsjy01.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4ACF658D.4010605@linux.intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-OriginalArrivalTime: 09 Oct 2009 17:08:47.0612 (UTC) FILETIME=[2A411BC0:01CA4903]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 09:32:13AM -0700, Arjan van de Ven wrote:
->> Hmpf. Rather stuck now, ain'tcha, given that gcc 3.2.3 doesn't even have those?
->>
->
-> wonder if making a new define with the value of RESOLUTION * DECAY
-> (the actual value obviously) convinces your gcc that it really is a power of two ?
->
+Linus, please pull from
 
-It shouldn't. Maybe just add a BUILD_BUG_ON and change the divide to a
-shift directly. How expected are these values to ever change, really?
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
--Kyle
+This tree is also available from kernel.org mirrors at:
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+
+This will get another small batch of small RDMA/InfiniBand fixes, and
+one device ID addition:
+
+Bart Van Assche (1):
+      IB: Fix typo in udev rule documentation
+
+David J. Wilder (1):
+      RDMA/addr: Fix resolution of local IPv6 addresses
+
+Roland Dreier (1):
+      Merge branches 'cxgb3', 'misc' and 'mlx4' into for-next
+
+Steve Wise (2):
+      RDMA/iwcm: Don't call provider reject func with irqs disabled
+      RDMA/cxgb3: Handle NULL inetdev pointer in iwch_query_port()
+
+Yevgeny Petrilin (1):
+      mlx4_core: Add 40GigE device ID
+
+ Documentation/infiniband/user_mad.txt       |    4 ++--
+ Documentation/infiniband/user_verbs.txt     |    2 +-
+ drivers/infiniband/core/addr.c              |    2 +-
+ drivers/infiniband/core/iwcm.c              |    2 ++
+ drivers/infiniband/hw/cxgb3/iwch_provider.c |   11 +++++++----
+ drivers/net/mlx4/main.c                     |    1 +
+ 6 files changed, 14 insertions(+), 8 deletions(-)
