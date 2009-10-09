@@ -1,287 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbZJIIHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760306AbZJIIbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbZJIIHl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 04:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523AbZJIIHk
+	id S1760306AbZJIIbu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 04:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760284AbZJIIbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 04:07:40 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34887 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755432AbZJIIHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 04:07:37 -0400
-Date: Fri, 9 Oct 2009 19:06:54 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for October 9
-Message-Id: <20091009190654.741eeffd.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__9_Oct_2009_19_06_54_+1100_=bjS1hj_TcI2/CxS"
+	Fri, 9 Oct 2009 04:31:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45532 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760285AbZJIIbq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 04:31:46 -0400
+Message-Id: <200910090830.n998Ubvv020464@imap1.linux-foundation.org>
+Subject: mmotm 2009-10-09-01-07 uploaded
+To: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
+From: akpm@linux-foundation.org
+Date: Fri, 09 Oct 2009 01:07:49 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__9_Oct_2009_19_06_54_+1100_=bjS1hj_TcI2/CxS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The mm-of-the-moment snapshot 2009-10-09-01-07 has been uploaded to
 
-Hi all,
+   http://userweb.kernel.org/~akpm/mmotm/
 
-Changes since 20091008:
+and will soon be available at
 
-New trees: staging.current
-	reiserfs-bkl
+   git://git.zen-sources.org/zen/mmotm.git
 
-My fixes tree contains a build fix for powerpc/kvm.
+It contains the following patches against 2.6.32-rc3:
 
-Linus' tree gained a build failure for which I reverted a commit.
-
-The parisc tree gained a conflict against Linus' tree.
-
-The mfd tree still has a build failure so I used the version from
-next-20091005.
-
-The drm tree lost its conflicts.
-
-The suspend tree lost its build failure.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 142 trees (counting Linus' and 22 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (content): Merge conflict in arch/mips/Kconfig
-CONFLICT (add/add): Merge conflict in arch/mips/bcm63xx/Makefile
-CONFLICT (add/add): Merge conflict in arch/mips/bcm63xx/boards/board_bcm963=
-xx.c
-CONFLICT (delete/modify): arch/mips/lemote/lm2e/Makefile deleted in HEAD an=
-d modified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of=
- arch/mips/lemote/lm2e/Makefile left in tree.
-CONFLICT (delete/modify): arch/mips/lemote/lm2e/pci.c deleted in HEAD and m=
-odified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of ar=
-ch/mips/lemote/lm2e/pci.c left in tree.
-CONFLICT (delete/modify): arch/mips/lemote/lm2e/prom.c deleted in HEAD and =
-modified in mips/mips-for-linux-next. Version mips/mips-for-linux-next of a=
-rch/mips/lemote/lm2e/prom.c left in tree.
-$ git rm -f arch/mips/lemote/lm2e/Makefile arch/mips/lemote/lm2e/pci.c arch=
-/mips/lemote/lm2e/prom.c
-Merging parisc/next
-CONFLICT (content): Merge conflict in arch/parisc/include/asm/thread_info.h
-CONFLICT (content): Merge conflict in arch/parisc/kernel/entry.S
-CONFLICT (content): Merge conflict in arch/parisc/kernel/ptrace.c
-CONFLICT (content): Merge conflict in arch/parisc/kernel/signal.c
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-$ git reset --hard HEAD^
-Merging refs/next/20091005/mfd
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging drbd/for-jens
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/Kconfig
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/Makefile
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_actlog.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_int.h
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_main.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_nl.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_receiver.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_req.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_worker.c
-CONFLICT (add/add): Merge conflict in include/linux/drbd.h
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in drivers/mtd/maps/gpio-addr-flash.c
-Merging oprofile/for-next
-Merging percpu/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-[master 9b2aec4] Revert "ahci: filter FPDMA non-zero offset enable for Aspi=
-re 3810T"
-
---Signature=_Fri__9_Oct_2009_19_06_54_+1100_=bjS1hj_TcI2/CxS
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrO7x4ACgkQjjKRsyhoI8xVuACdF+n4jbCih18p6XhPgnblfWDN
-xykAni8rY8xsZzKwj1t5wLGWxg+22vR/
-=1Yxh
------END PGP SIGNATURE-----
-
---Signature=_Fri__9_Oct_2009_19_06_54_+1100_=bjS1hj_TcI2/CxS--
+origin.patch
+ksm-more-on-default-values.patch
+mm-includecheck-fix-vmallocc.patch
+fs-includecheck-fix-proc-kcorec.patch
+video-includecheck-fix-msm-mddic.patch
+video-includecheck-fix-da8xx-fbc.patch
+cgroups-update-documentation-of-cgroups-tasks-and-procs-files.patch
+pagemap-export-kpf_hwpoison.patch
+pagemap-document-kpf_ksm-and-show-it-in-page-types.patch
+page-types-add-gpl-note.patch
+page-types-introduce-checked_open.patch
+page-types-make-standalone-pagemap-kpageflags-read-routines.patch
+page-types-make-voffset-local-variables.patch
+page-types-introduce-kpageflags_flags.patch
+page-types-add-hwpoison-unpoison-feature.patch
+mmc-sdio-dont-require-cistpl_vers_1-to-contain-4-strings.patch
+lis3lv02d_spi-module-unload-didnt-remove-sysfs-entry.patch
+linux-next.patch
+next-remove-localversion.patch
+i-need-old-gcc.patch
+include-linux-compiler-gcc4h-gcc-402-doesnt-understand-__builtin_object_size.patch
+kernel-core-add-smp_call_function_any.patch
+arch-x86-kernel-cpu-cpufreq-acpi-cpufreqc-avoid-cross-cpu-interrupts-by-using-smp_call_function_any.patch
+dell_laptop-when-the-hardware-switch-is-disabled-dont-actually-allow-changing-the-softblock-status.patch
+cmpc_acpi-add-support-for-classmate-pc-acpi-devices.patch
+cmpc_acpi-add-support-for-classmate-pc-acpi-devices-fix.patch
+acpi-clean-up-videoc-boundary-checks-and-types.patch
+acpi-annote-acpi_processor_add-with-__cpuinit.patch
+eeepc_laptop-properly-annote-eeepc_enable_camera.patch
+acpi-reintroduce-acpi_device_ops-shutdown-method.patch
+cs5535-gpio-add-amd-cs5535-cs5536-gpio-driver-support.patch
+cs5535-gpio-request-function-mask-names-added.patch
+alsa-cs5535audio-free-olpc-quirks-from-reliance-on-mgeode_lx-cpu-optimization.patch
+agp-correct-missing-cleanup-on-error-in-agp_add_bridge.patch
+avr32-convert-to-asm-generic-hardirqh.patch
+powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned.patch
+hpilo-add-locking-comment.patch
+drm-via-add-pci-id-for-via-vx800-chipset.patch
+radio-add-support-for-tef6862-tuner.patch
+genirq-switch-proc-irq-spurious-to-seq_file.patch
+timer-stats-fix-del_timer_sync-and-try_to_del_timer_sync.patch
+ia64-use-printk_once.patch
+wistron_btnsc-add-dmi-entry-for-medion-wim2030-laptop.patch
+kbuild-generate-modulesbuiltin.patch
+kbuild-rebuild-fix-for-makefilemodbuiltin.patch
+kconfig-cross_compile-option.patch
+mfd-adp5520-multifunction-lcd-backlight-and-keypad-input-device-driver.patch
+mtdpart-memory-accessor-interface-for-mtd-layer.patch
+isdn-hisax-fix-lock-imbalance.patch
+hfc_usb-fix-read-buffer-overflow.patch
+misdn-fix-reversed-if-in-st_own_ctrl.patch
+isdn-eicon-use-offsetof.patch
+isdn-eicon-return-on-error.patch
+3x59x-fix-pci-resource-management.patch
+bluetooth-fix-for-acer-bluetooth-optical-rechargeable-mouse.patch
+sunrpc-use-formatting-of-module-name-in-sunrpc.patch
+serial-fit-blackfin-uart-over-sport-driver-into-common-uart-infrastructure.patch
+jsm-irq-handlers-doesnt-need-to-have-irq_disabled-enabled.patch
+jsm-rewriting-a-bad-log-message.patch
+jsm-remove-the-ch_custom_speed-field.patch
+jsm-remove-ch_old_baud-field.patch
+jsm-remove-ch_cpstime-field.patch
+jsm-remove-unused-jsm_channel-ch_wopen-field.patch
+jsm-remove-the-field-jsm_board-intr_count.patch
+drivers-md-introduce-missing-kfree.patch
+include-trace-events-lockdeph-fix-do_div-warning.patch
+scsi-add-__init-__exit-macros-to-ibmvstgtc.patch
+drivers-scsi-fnic-fnic_scsic-clean-up.patch
+ibmmca-buffer-overflow.patch
+scsi-eata-fix-buffer-overflow.patch
+drivers-scsi-gdthc-fix-buffer-overflow.patch
+drivers-scsi-u14-34fc-fix-uffer-overflow.patch
+drivers-scsi-lpfc-lpfc_vportc-fix-read-buffer-overflow.patch
+osst-fix-read-buffer-overflow.patch
+scsi-fix-func-names-in-kernel-doc.patch
+gdth-unmap-ccb_phys-when-scsi_add_host-fails-in-gdth_eisa_probe_one.patch
+zfcp-test-kmalloc-failure-in-scsi_get_vpd_page.patch
+st-fix-test-of-value-range-in-st_set_options.patch
+drivers-scsi-libsas-use-sam_good.patch
+scsi-add-hpsa-driver-for-hp-smart-array-controllers.patch
+scsi-add-hpsa-driver-for-hp-smart-array-controllers-fix.patch
+drivers-block-dac960c-use-dac960_v2_controller.patch
+synaptics-touchscreen-for-htc-dream-check-that-smbus-is-available.patch
+drivers-staging-octeon-ethernet-rgmiic-dont-ignore-request_irq-return-code.patch
+usb-digi_acceleport-fix-broken-unthrottle.patch
+vfs-fix-vfs_rename_dir-for-fs_rename_does_d_move-filesystems.patch
+raw-fix-rawctl-compat-ioctls-breakage-on-amd64-and-itanic.patch
+vfs-improve-comment-describing-fget_light.patch
+ecryptfs-another-lockdep-issue.patch
+fs-remove-unneeded-dcache_unhashed-tricks.patch
+fs-improve-remountro-vs-buffercache-coherency.patch
+vfs-make-real_lookup-do-dentry-revalidation-with-i_mutex-held.patch
+vfs-clean-up-real_lookup.patch
+xtensa-use-generic-sys_pipe.patch
+xtensa-convert-to-asm-generic-hardirqh.patch
+xtensa-includecheck-fix-vectorss.patch
+percpu-avoid-calling-__pcpu_ptr_to_addrnull.patch
+mm.patch
+connector-fix-regression-introduced-by-sid-connector.patch
+congestion_wait-dont-use-write.patch
+elv_iosched_store-fix-strstrip-misuse.patch
+cgroup-fix-strstrip-misuse.patch
+strstrip-mark-as-as-must_check.patch
+rwsem-fix-rwsem_is_locked-bug.patch
+cpuidle-always-return-with-interrupts-enabled.patch
+dma-debug-allow-dma_bidirectional-mappings-to-be-synced-with-dma_from_device-and.patch
+drivers-gpu-drm-i915-i915_dmac-fix-unused-var.patch
+drm-make-sure-page-protections-are-updated-after-changing-vm_flags.patch
+x86-_end-symbol-missing-from-symbolmap.patch
+sched-fix-htmldocs-schedc.patch
+scsi_libc-avoid-calling-scsi_device_put-from-under-host_lock.patch
+staging-rtl8192e-add-missing-vmalloch-include.patch
+hrtimers-remove-the-timer_stats_active-check-when-setting-the-start-info.patch
+itimers-fix-racy-writes-to-cpu_itimer-fields.patch
+posix-cpu-timers-optimize-and-document-timer_create-callback.patch
+x86-fix-kernel-panic-on-i386-machine-when-booting-with-profile=2.patch
+vfs-implement-posix-o_sync-and-o_dsync-semantics.patch
+vfs-implement-posix-o_sync-and-o_dsync-semantics-checkpatch-fixes.patch
+oom-dump-stack-and-vm-state-when-oom-killer-panics.patch
+munmap-dont-check-sysctl_max_mapcount.patch
+munmap-dont-check-sysctl_max_mapcount-fix.patch
+mm-add-notifier-in-pageblock-isolation-for-balloon-drivers.patch
+powerpc-make-the-cmm-memory-hotplug-aware.patch
+readahead-add-blk_run_backing_dev.patch
+mm-warn-once-when-a-page-is-freed-with-pg_mlocked-set.patch
+mm-vsmcan-check-shrink_active_list-sc-isolate_pages-return-value.patch
+dev-mem-remove-redundant-test-on-len.patch
+dev-mem-introduce-size_inside_page.patch
+dev-mem-cleanup-unxlate_dev_mem_ptr-calls.patch
+dev-mem-cleanup-unxlate_dev_mem_ptr-calls-fix.patch
+dev-mem-cleanup-unxlate_dev_mem_ptr-calls-fix-fix.patch
+dev-mem-make-size_inside_page-logic-straight.patch
+dev-mem-remove-the-written-variable-in-write_kmem.patch
+dev-mem-remove-the-written-variable-in-write_kmem-fix.patch
+dev-mem-remove-redundant-parameter-from-do_write_kmem.patch
+pcmcia-fix-controller-printk-warnings.patch
+frv-duplicate-output_buffer-of-e03.patch
+frv-duplicate-output_buffer-of-e03-checkpatch-fixes.patch
+cris-convert-to-use-arch_gettimeoffset.patch
+floppy-add-an-extra-bound-check-on-ioctl-arguments.patch
+floppy-add-an-extra-bound-check-on-ioctl-arguments-fix.patch
+timecompare-fix-half-y2k38-problem-in-timecompare_update-while-calculating-offset.patch
+warn_once-use-bool-for-boolean-flag.patch
+dynamic_debugh-kernelh-remove-kbuild_modname-from-dynamic_pr_debug.patch
+ad525x_dpot-new-driver-for-ad525x-digital-potentiometers.patch
+errh-add-helper-function-to-simplify-pointer-error-checking.patch
+errh-add-helper-function-to-simplify-pointer-error-checking-fix.patch
+generic-ipi-cleanup-for-generic_smp_call_function_interrupt.patch
+maintainers-update-generic-uio-for-pci-devices.patch
+maintainers-update-tracing-section.patch
+maintainers-update-omap-tony-lindgren-email-name.patch
+maintainers-change-atm-mailing-list-to-moderated.patch
+maintainers-use-tab-not-spaces-after-field-types.patch
+maintainers-update-kernel-janitors-after-mismerge.patch
+maintainers-update-score-architecture-name-style-and-add-file-pattern.patch
+maintainers-simple-firmware-interface-update-email-style.patch
+maintainers-winbond-cir-integrate-p-m-lines-fixup-david-härdemans-name.patch
+maintainers-fix-up-peripheral-spelling.patch
+maintainers-update-wolfson-microelectronics.patch
+atmel-mci-change-use-of-dma-slave-interface.patch
+mmc-atmel-mci-new-mci2-module-support-in-atmel-mci-driver.patch
+davinci-mmc-mmc-sd-controller-driver-for-davinci-family.patch
+sdio-recognize-io-card-without-powercycle.patch
+hwmon-driver-for-texas-instruments-amc6821-chip.patch
+lis3lv02d-axis-remap-and-resource-setup-release.patch
+lis3lv02d-i2c-support.patch
+xilinx_spi-split-into-generic-of-and-platform-driver-add-support-for-ds570.patch
+atmel_spi-fix-dma-addr-calculation-for-len-buffer_size.patch
+autofs4-use-helper-functions-for-active-list-handling.patch
+autofs4-use-helper-functions-for-expiring-list.patch
+autofs4-use-helper-function-for-need-mount-check.patch
+autofs4-use-autofs_info-for-pending-flag.patch
+autofs4-renamer-unhashed-to-active-in-autofs4_lookup.patch
+autofs4-cleanup-active-and-expire-lookup.patch
+autofs4-eliminate-d_unhashed-in-path-walk-checks.patch
+autofs4-rename-dentry-to-active-in-autofs4_lookup_active.patch
+autofs4-rename-dentry-to-expiring-in-autofs4_lookup_expiring.patch
+autofs4-always-use-lookup-for-lookup.patch
+rtc-cmos-convert-rtc_aie-rtc_uie-to-rtc-irq-api.patch
+rtc-set-wakeup-capability-for-i2c-and-spi-rtc-drivers.patch
+gpiolib-add-names-file-in-gpio-chip-sysfs.patch
+fbdev-bfin-lq035q1-fb-new-blackfin-landscape-lcd-ez-extender-driver.patch
+fbdev-bfin-t350mcqb-fb-handle-all-resources-in-suspend-resume.patch
+fbdev-bfin-t350mcqb-fb-fix-lcd-dimensions.patch
+intelfb-fix-setting-of-active-pipe-with-lvds-displays.patch
+hfsplus-identify-journal-info-block-in-volume-header.patch
+hfsplus-fix-journal-detection.patch
+reiserfs-remove-proc-fs-reiserfs-version.patch
+reiserfs-dont-compile-procfso-at-all-if-no-support.patch
+reiserfs-truncate-blocks-not-used-by-a-write-v2.patch
+fatfs-use-common-time_to_tm-in-fat_time_unix2fat.patch
+do_wait-optimization-do-not-place-sub-threads-on-task_struct-children-list.patch
+utrace-core.patch
+ipc-semc-sem-optimise-undo-list-search.patch
+ipc-semc-sem-use-list-operations.patch
+ipc-semc-sem-preempt-improve.patch
+ipc-semc-optimize-if-semops-fail.patch
+ipc-semc-add-a-per-semaphore-pending-list.patch
+ipc-semc-optimize-single-semop-operations.patch
+ipc-semc-optimize-single-sops-when-semval-is-zero.patch
+drivers-char-ipmi-use-kcs_idle_state.patch
+elf-kill-use_elf_core_dump.patch
+cyclades-allow-overriding-isa-defaults-also-when-the-driver-is-built-in.patch
+char-mxser-remove-unnecessary-tty-test.patch
+isicomc-use-pr_fmt-and-pr_level.patch
+edac-i5100-clean-controller-to-channel-terms.patch
+edac-i5100-add-scrubbing.patch
+edac-i5100-add-6-ranks-per-channel.patch
+sound-core-pcm_timerc-use-lib-gcdc.patch
+net-netfilter-ipvs-ip_vs_wrrc-use-lib-gcdc.patch
+net-netfilter-ipvs-ip_vs_wrrc-use-lib-gcdc-fix.patch
+vfs-take-2add-set_page_dirty_notag.patch
+reiser4-vfs-add-super_operationssync_inodes-2.patch
+reiser4-export-remove_from_page_cache.patch
+reiser4-export-remove_from_page_cache-fix.patch
+reiser4-export-find_get_pages.patch
+reiser4.patch
+reiser4-adjust-to-the-new-aops.patch
+reiser4-adjust-to-the-new-aops-fixup.patch
+reiser4-remove-simple_prepare_write-usage.patch
+reiser4-remove-simple_prepare_write-usage-checkpatch-fixes.patch
+fs-symlink-write_begin-allocation-context-fix-reiser4-fix.patch
+reiser4-handling-error-returned-by-d_obtain_alias-fixup.patch
+reiser4-update-names-of-quota-methods.patch
+reiser4-use-set_page_dirty_notag.patch
+fs-reiser4-add-parenths-around-x-y.patch
+fs-reiser4-contextc-current_is_pdflush-got-removed.patch
+reiser4-fix.patch
+reiser4-disable.patch
+make-sure-nobodys-leaking-resources.patch
+journal_add_journal_head-debug.patch
+releasing-resources-with-children.patch
+make-frame_pointer-default=y.patch
+mutex-subsystem-synchro-test-module.patch
+slab-leaks3-default-y.patch
+put_bh-debug.patch
+add-debugging-aid-for-memory-initialisation-problems.patch
+keep-track-of-network-interface-renaming.patch
+workaround-for-a-pci-restoring-bug.patch
+prio_tree-debugging-patch.patch
+single_open-seq_release-leak-diagnostics.patch
+add-a-refcount-check-in-dput.patch
+getblk-handle-2tb-devices.patch
+getblk-handle-2tb-devices-fix.patch
+undeprecate-pci_find_device.patch
+notify_change-callers-must-hold-i_mutex.patch
