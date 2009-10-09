@@ -1,147 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761392AbZJIUt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761483AbZJIUss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761392AbZJIUt6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 16:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758971AbZJIUt5
+	id S1761483AbZJIUss (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 16:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761473AbZJIUsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 16:49:57 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:22048 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758804AbZJIUt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 16:49:56 -0400
-Message-ID: <4ACFA14E.9040005@redhat.com>
-Date: Fri, 09 Oct 2009 10:47:10 -1000
-From: Zachary Amsden <zamsden@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Fri, 9 Oct 2009 16:48:47 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:41002 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761457AbZJIUsq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 16:48:46 -0400
+Message-ID: <4ACFA178.2040203@web.de>
+Date: Fri, 09 Oct 2009 22:47:52 +0200
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: Jan Kiszka <jan.kiszka@web.de>
+To: Zachary Amsden <zamsden@redhat.com>
 CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
 Subject: Re: [PATCH v4: kvm 2/4] Kill the confusing tsc_ref_khz and ref_freq
  variables.
-References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com> <1254260317-3490-2-git-send-email-zamsden@redhat.com> <4ACE734D.10600@web.de> <4ACF9C9B.2040006@redhat.com> <4ACF9EC3.2050901@web.de> <4ACF9EDF.5000808@redhat.com> <4ACFA178.2040203@web.de>
-In-Reply-To: <4ACFA178.2040203@web.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <4AC1C59F.6010703@redhat.com> <1254260317-3490-1-git-send-email-zamsden@redhat.com> <1254260317-3490-2-git-send-email-zamsden@redhat.com> <4ACE734D.10600@web.de> <4ACF9C9B.2040006@redhat.com> <4ACF9EC3.2050901@web.de> <4ACF9EDF.5000808@redhat.com>
+In-Reply-To: <4ACF9EDF.5000808@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig3BE09A1B500EF657D60BBA35"
+X-Provags-ID: V01U2FsdGVkX18h/+y7UWpU+KKYzLNTSLo9CsMMz8BfwsLr8u2S
+	FdOwyJsUIQBZkRfsuPykgKpx6h7uvgx89jZaGAIIbct5FFaUBU
+	+0QOgipNE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/09/2009 10:47 AM, Jan Kiszka wrote:
-> Zachary Amsden wrote:
->    
->> On 10/09/2009 10:36 AM, Jan Kiszka wrote:
->>      
->>> Zachary Amsden wrote:
->>>
->>>        
->>>> On 10/08/2009 01:18 PM, Jan Kiszka wrote:
->>>>
->>>>          
->>>>> Zachary Amsden wrote:
->>>>>
->>>>>
->>>>>            
->>>>>> They are globals, not clearly protected by any ordering or locking,
->>>>>> and
->>>>>> vulnerable to various startup races.
->>>>>>
->>>>>> Instead, for variable TSC machines, register the cpufreq notifier and
->>>>>> get
->>>>>> the TSC frequency directly from the cpufreq machinery.  Not only is it
->>>>>> always right, it is also perfectly accurate, as no error prone
->>>>>> measurement
->>>>>> is required.
->>>>>>
->>>>>> On such machines, when a new CPU online is brought online, it isn't
->>>>>> clear what
->>>>>> frequency it will start with, and it may not correspond to the
->>>>>> reference, thus
->>>>>> in hardware_enable we clear the cpu_tsc_khz variable to zero and make
->>>>>> sure
->>>>>> it is set before running on a VCPU.
->>>>>>
->>>>>> Signed-off-by: Zachary Amsden<zamsden@redhat.com>
->>>>>> ---
->>>>>>     arch/x86/kvm/x86.c |   26 ++++++++++++++++----------
->>>>>>     1 files changed, 16 insertions(+), 10 deletions(-)
->>>>>>
->>>>>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
->>>>>> index 15d2ace..de4ce8f 100644
->>>>>> --- a/arch/x86/kvm/x86.c
->>>>>> +++ b/arch/x86/kvm/x86.c
->>>>>> @@ -1326,6 +1326,8 @@ out:
->>>>>>     void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
->>>>>>     {
->>>>>>         kvm_x86_ops->vcpu_load(vcpu, cpu);
->>>>>> +    if (unlikely(per_cpu(cpu_tsc_khz, cpu) == 0))
->>>>>> +        per_cpu(cpu_tsc_khz, cpu) = cpufreq_quick_get(cpu);
->>>>>>         kvm_request_guest_time_update(vcpu);
->>>>>>     }
->>>>>>
->>>>>> @@ -3061,9 +3063,6 @@ static void bounce_off(void *info)
->>>>>>         /* nothing */
->>>>>>     }
->>>>>>
->>>>>> -static unsigned int  ref_freq;
->>>>>> -static unsigned long tsc_khz_ref;
->>>>>> -
->>>>>>     static int kvmclock_cpufreq_notifier(struct notifier_block *nb,
->>>>>> unsigned long val,
->>>>>>                          void *data)
->>>>>>     {
->>>>>> @@ -3072,14 +3071,11 @@ static int kvmclock_cpufreq_notifier(struct
->>>>>> notifier_block *nb, unsigned long va
->>>>>>         struct kvm_vcpu *vcpu;
->>>>>>         int i, send_ipi = 0;
->>>>>>
->>>>>> -    if (!ref_freq)
->>>>>> -        ref_freq = freq->old;
->>>>>> -
->>>>>>         if (val == CPUFREQ_PRECHANGE&&    freq->old>    freq->new)
->>>>>>             return 0;
->>>>>>         if (val == CPUFREQ_POSTCHANGE&&    freq->old<    freq->new)
->>>>>>             return 0;
->>>>>> -    per_cpu(cpu_tsc_khz, freq->cpu) = cpufreq_scale(tsc_khz_ref,
->>>>>> ref_freq, freq->new);
->>>>>> +    per_cpu(cpu_tsc_khz, freq->cpu) = freq->new;
->>>>>>
->>>>>>         spin_lock(&kvm_lock);
->>>>>>         list_for_each_entry(kvm,&vm_list, vm_list) {
->>>>>> @@ -3120,12 +3116,14 @@ static void kvm_timer_init(void)
->>>>>>     {
->>>>>>         int cpu;
->>>>>>
->>>>>> -    for_each_possible_cpu(cpu)
->>>>>> -        per_cpu(cpu_tsc_khz, cpu) = tsc_khz;
->>>>>>         if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
->>>>>> -        tsc_khz_ref = tsc_khz;
->>>>>>             cpufreq_register_notifier(&kvmclock_cpufreq_notifier_block,
->>>>>>                           CPUFREQ_TRANSITION_NOTIFIER);
->>>>>> +        for_each_online_cpu(cpu)
->>>>>> +            per_cpu(cpu_tsc_khz, cpu) = cpufreq_get(cpu);
->>>>>>
->>>>>>
->>>>>>              
->>>>> This doesn't build for !CONFIG_CPU_FREQ.
->>>>>
->>>>>
->>>>>            
->>>> And did it before?
->>>>
->>>>          
->>> Yes, because cpufreq_get, which is undefined without CONFIG_CPU_FREQ,
->>> did not exist so far. One may argue that this is a deficit of the
->>> cpufreq API. However, it needs fixing.
->>>
->>>        
->> I'll send a patch today.  I'm going with API deficient and will fix
->> that, but this means I will also require a fix for kvm-kmod :(
->>      
-> That won't be tricky, I will queue up a fix.
->
-> BTW, is the KVM prepared for cpufreq_get returning 0?
->    
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig3BE09A1B500EF657D60BBA35
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-That will be part of the fix, I think.
+Zachary Amsden wrote:
+> On 10/09/2009 10:36 AM, Jan Kiszka wrote:
+>> Zachary Amsden wrote:
+>>  =20
+>>> On 10/08/2009 01:18 PM, Jan Kiszka wrote:
+>>>    =20
+>>>> Zachary Amsden wrote:
+>>>>
+>>>>      =20
+>>>>> They are globals, not clearly protected by any ordering or locking,=
 
+>>>>> and
+>>>>> vulnerable to various startup races.
+>>>>>
+>>>>> Instead, for variable TSC machines, register the cpufreq notifier a=
+nd
+>>>>> get
+>>>>> the TSC frequency directly from the cpufreq machinery.  Not only is=
+ it
+>>>>> always right, it is also perfectly accurate, as no error prone
+>>>>> measurement
+>>>>> is required.
+>>>>>
+>>>>> On such machines, when a new CPU online is brought online, it isn't=
+
+>>>>> clear what
+>>>>> frequency it will start with, and it may not correspond to the
+>>>>> reference, thus
+>>>>> in hardware_enable we clear the cpu_tsc_khz variable to zero and ma=
+ke
+>>>>> sure
+>>>>> it is set before running on a VCPU.
+>>>>>
+>>>>> Signed-off-by: Zachary Amsden<zamsden@redhat.com>
+>>>>> ---
+>>>>>    arch/x86/kvm/x86.c |   26 ++++++++++++++++----------
+>>>>>    1 files changed, 16 insertions(+), 10 deletions(-)
+>>>>>
+>>>>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+>>>>> index 15d2ace..de4ce8f 100644
+>>>>> --- a/arch/x86/kvm/x86.c
+>>>>> +++ b/arch/x86/kvm/x86.c
+>>>>> @@ -1326,6 +1326,8 @@ out:
+>>>>>    void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+>>>>>    {
+>>>>>        kvm_x86_ops->vcpu_load(vcpu, cpu);
+>>>>> +    if (unlikely(per_cpu(cpu_tsc_khz, cpu) =3D=3D 0))
+>>>>> +        per_cpu(cpu_tsc_khz, cpu) =3D cpufreq_quick_get(cpu);
+>>>>>        kvm_request_guest_time_update(vcpu);
+>>>>>    }
+>>>>>
+>>>>> @@ -3061,9 +3063,6 @@ static void bounce_off(void *info)
+>>>>>        /* nothing */
+>>>>>    }
+>>>>>
+>>>>> -static unsigned int  ref_freq;
+>>>>> -static unsigned long tsc_khz_ref;
+>>>>> -
+>>>>>    static int kvmclock_cpufreq_notifier(struct notifier_block *nb,
+>>>>> unsigned long val,
+>>>>>                         void *data)
+>>>>>    {
+>>>>> @@ -3072,14 +3071,11 @@ static int kvmclock_cpufreq_notifier(struct=
+
+>>>>> notifier_block *nb, unsigned long va
+>>>>>        struct kvm_vcpu *vcpu;
+>>>>>        int i, send_ipi =3D 0;
+>>>>>
+>>>>> -    if (!ref_freq)
+>>>>> -        ref_freq =3D freq->old;
+>>>>> -
+>>>>>        if (val =3D=3D CPUFREQ_PRECHANGE&&   freq->old>   freq->new)=
+
+>>>>>            return 0;
+>>>>>        if (val =3D=3D CPUFREQ_POSTCHANGE&&   freq->old<   freq->new=
+)
+>>>>>            return 0;
+>>>>> -    per_cpu(cpu_tsc_khz, freq->cpu) =3D cpufreq_scale(tsc_khz_ref,=
+
+>>>>> ref_freq, freq->new);
+>>>>> +    per_cpu(cpu_tsc_khz, freq->cpu) =3D freq->new;
+>>>>>
+>>>>>        spin_lock(&kvm_lock);
+>>>>>        list_for_each_entry(kvm,&vm_list, vm_list) {
+>>>>> @@ -3120,12 +3116,14 @@ static void kvm_timer_init(void)
+>>>>>    {
+>>>>>        int cpu;
+>>>>>
+>>>>> -    for_each_possible_cpu(cpu)
+>>>>> -        per_cpu(cpu_tsc_khz, cpu) =3D tsc_khz;
+>>>>>        if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
+>>>>> -        tsc_khz_ref =3D tsc_khz;
+>>>>>            cpufreq_register_notifier(&kvmclock_cpufreq_notifier_blo=
+ck,
+>>>>>                          CPUFREQ_TRANSITION_NOTIFIER);
+>>>>> +        for_each_online_cpu(cpu)
+>>>>> +            per_cpu(cpu_tsc_khz, cpu) =3D cpufreq_get(cpu);
+>>>>>
+>>>>>         =20
+>>>> This doesn't build for !CONFIG_CPU_FREQ.
+>>>>
+>>>>       =20
+>>> And did it before?
+>>>     =20
+>> Yes, because cpufreq_get, which is undefined without CONFIG_CPU_FREQ,
+>> did not exist so far. One may argue that this is a deficit of the
+>> cpufreq API. However, it needs fixing.
+>>   =20
+>=20
+> I'll send a patch today.  I'm going with API deficient and will fix
+> that, but this means I will also require a fix for kvm-kmod :(
+
+That won't be tricky, I will queue up a fix.
+
+BTW, is the KVM prepared for cpufreq_get returning 0?
+
+Jan
+
+
+--------------enig3BE09A1B500EF657D60BBA35
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkrPoXsACgkQitSsb3rl5xTzYACfYSEiV/asi/G0h1V3PBKCWQkv
+Ry4AoJ3nSdedYzkL3b9/wMv4PFUe6rRw
+=tE2d
+-----END PGP SIGNATURE-----
+
+--------------enig3BE09A1B500EF657D60BBA35--
