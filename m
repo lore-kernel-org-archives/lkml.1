@@ -1,155 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbZJIIrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760263AbZJIIzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759117AbZJIIrW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 04:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbZJIIrV
+	id S1760263AbZJIIzb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 04:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757638AbZJIIz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 04:47:21 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33074 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754287AbZJIIrU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 04:47:20 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 2/3] Fix memory leak of never putback pages in mbind()
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20091009100708.1287.A69D9226@jp.fujitsu.com>
-References: <20091009100527.1284.A69D9226@jp.fujitsu.com> <20091009100708.1287.A69D9226@jp.fujitsu.com>
-Message-Id: <20091009174505.12B3.A69D9226@jp.fujitsu.com>
+	Fri, 9 Oct 2009 04:55:29 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:43902 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754153AbZJIIz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 04:55:28 -0400
+Date: Fri, 9 Oct 2009 10:54:52 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [rfc][patch] store-free path walking
+Message-ID: <20091009085451.GS9228@kernel.dk>
+References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <alpine.LFD.2.01.0910070742260.3432@localhost.localdomain> <20091008123622.GA30316@wotan.suse.de> <20091008125746.GL9228@kernel.dk> <20091008132200.GB30316@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri,  9 Oct 2009 17:46:31 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091008132200.GB30316@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  mm/mempolicy.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-> index 473f888..824abf3 100644
-> --- a/mm/mempolicy.c
-> +++ b/mm/mempolicy.c
-> @@ -1061,6 +1061,8 @@ static long do_mbind(unsigned long start, unsigned long len,
->  
->  		if (!err && nr_failed && (flags & MPOL_MF_STRICT))
->  			err = -EIO;
-> +	} else {
-> +		putback_lru_pages(&pagelist);
->  	}
->  
->  	up_write(&mm->mmap_sem);
+On Thu, Oct 08 2009, Nick Piggin wrote:
+> This is actualy nice too. My tests were on a 2s8c Barcelona system,
+> but this is showing we have a nice serial win on Nehalem as well.
+> Actually K8 CPUs have a bit faster lock primitives than earlier
+> Intel CPUs I think (closer to Nehalem), so we might see an even
+> bigger win with a Core2.
 
+Ran it on another box. This isn't quite a core 2 though, it's a sparc64
+(Niagara 2). It has 64 threads, too, but just 8 cores.
 
-Oops, I forgot to remove unnecessary brace.
-updated patch is here.
+2.6.32-rc3 serial
+real    0m5.390s
+user    0m1.340s
+sys     0m2.970s
 
-================================================================
-Subject: [PATCH] Fix memory leak of never putback pages in mbind()
+2.6.32-rc3 parallel
+real    0m2.009s
+user    0m0.900s
+sys     0m2.490s
 
-if mbind() receive invalid address, do_mbind makes leaked page.
-following test program detect its leak.
+vfs serial
+real    0m4.816s
+user    0m1.250s
+sys     0m2.270s
 
-This patch fixes it.
+vfs parallel
+real    0m1.967s
+user    0m0.920s
+sys     0m1.960s
 
-migrate_efault.c
-=======================================
- #include <numaif.h>
- #include <numa.h>
- #include <sys/mman.h>
- #include <stdio.h>
- #include <unistd.h>
- #include <stdlib.h>
- #include <string.h>
+So it's a win-win there on that platform too.
 
-static unsigned long pagesize;
-
-static void* make_hole_mapping(void)
-{
-
-	void* addr;
-
-	addr = mmap(NULL, pagesize*3, PROT_READ|PROT_WRITE,
-		    MAP_ANON|MAP_PRIVATE, 0, 0);
-	if (addr == MAP_FAILED)
-		return NULL;
-
-	/* make page populate */
-	memset(addr, 0, pagesize*3);
-
-	/* make memory hole */
-	munmap(addr+pagesize, pagesize);
-
-	return addr;
-}
-
-int main(int argc, char** argv)
-{
-	void* addr;
-	int ch;
-	int node;
-	struct bitmask *nmask = numa_allocate_nodemask();
-	int err;
-	int node_set = 0;
-
-	while ((ch = getopt(argc, argv, "n:")) != -1){
-		switch (ch){
-		case 'n':
-			node = strtol(optarg, NULL, 0);
-			numa_bitmask_setbit(nmask, node);
-			node_set = 1;
-			break;
-		default:
-			;
-		}
-	}
-	argc -= optind;
-	argv += optind;
-
-	if (!node_set)
-		numa_bitmask_setbit(nmask, 0);
-
-	pagesize = getpagesize();
-
-	addr = make_hole_mapping();
-
-	err = mbind(addr, pagesize*3, MPOL_BIND, nmask->maskp, nmask->size, MPOL_MF_MOVE_ALL);
-	if (err)
-		perror("mbind ");
-
-	return 0;
-}
-=======================================
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/mempolicy.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: b/mm/mempolicy.c
-===================================================================
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -1061,7 +1061,8 @@ static long do_mbind(unsigned long start
- 
- 		if (!err && nr_failed && (flags & MPOL_MF_STRICT))
- 			err = -EIO;
--	}
-+	} else
-+		putback_lru_pages(&pagelist);
- 
- 	up_write(&mm->mmap_sem);
- 	mpol_put(new);
-
-
+-- 
+Jens Axboe
 
