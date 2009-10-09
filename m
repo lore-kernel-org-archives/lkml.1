@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934607AbZJIXmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964822AbZJIXmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934607AbZJIXmO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932741AbZJIXmM
+	id S964822AbZJIXmP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932741AbZJIXmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:42:12 -0400
-Received: from kroah.org ([198.145.64.141]:51437 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:42:14 -0400
+Received: from kroah.org ([198.145.64.141]:51444 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932839AbZJIXmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:42:10 -0400
+	id S934530AbZJIXmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:42:11 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:34:39 2009
-Message-Id: <20091009233439.684030931@mini.kroah.org>
+Message-Id: <20091009233439.813028112@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:34:39 -0700
+Date: Fri, 09 Oct 2009 16:34:40 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Miklos Szeredi <mszeredi@suse.cz>,
+       Kusanagi Kouichi <slash@ma.neweb.ne.jp>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 28/37] net: unix: fix sending fds in multiple buffers
+Subject: [patch 29/37] tun: Return -EINVAL if neither IFF_TUN nor IFF_TAP is set.
 References: <20091009233411.852013234@mini.kroah.org>
-Content-Disposition: inline; filename=net-unix-fix-sending-fds-in-multiple-buffers.patch
+Content-Disposition: inline; filename=tun-return-einval-if-neither-iff_tun-nor-iff_tap-is-set.patch
 In-Reply-To: <20091009233812.GA15982@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,69 +30,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Miklos Szeredi <mszeredi@suse.cz>
+From: Kusanagi Kouichi <slash@ma.neweb.ne.jp>
 
-[ Upstream commit 8ba69ba6a324b13e1190fc31e41954d190fd4f1d ]
+[ Upstream commit 36989b90879c785f95b877bdcf65a2527dadd893 ]
 
-Kalle Olavi Niemitalo reported that:
+After commit 2b980dbd77d229eb60588802162c9659726b11f4
+("lsm: Add hooks to the TUN driver") tun_set_iff doesn't
+return -EINVAL though neither IFF_TUN nor IFF_TAP is set.
 
-  "..., when one process calls sendmsg once to send 43804 bytes of
-  data and one file descriptor, and another process then calls recvmsg
-  three times to receive the 16032+16032+11740 bytes, each of those
-  recvmsg calls returns the file descriptor in the ancillary data.  I
-  confirmed this with strace.  The behaviour differs from Linux
-  2.6.26, where reportedly only one of those recvmsg calls (I think
-  the first one) returned the file descriptor."
-
-This bug was introduced by a patch from me titled "net: unix: fix inflight
-counting bug in garbage collector", commit 6209344f5.
-
-And the reason is, quoting Kalle:
-
-  "Before your patch, unix_attach_fds() would set scm->fp = NULL, so
-  that if the loop in unix_stream_sendmsg() ran multiple iterations,
-  it could not call unix_attach_fds() again.  But now,
-  unix_attach_fds() leaves scm->fp unchanged, and I think this causes
-  it to be called multiple times and duplicate the same file
-  descriptors to each struct sk_buff."
-
-Fix this by introducing a flag that is cleared at the start and set
-when the fds attached to the first buffer.  The resulting code should
-work equivalently to the one on 2.6.26.
-
-Reported-by: Kalle Olavi Niemitalo <kon@iki.fi>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: Kusanagi Kouichi <slash@ma.neweb.ne.jp>
+Reviewed-by: Paul Moore <paul.moore@hp.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/unix/af_unix.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/net/tun.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
---- a/net/unix/af_unix.c
-+++ b/net/unix/af_unix.c
-@@ -1501,6 +1501,7 @@ static int unix_stream_sendmsg(struct ki
- 	struct sk_buff *skb;
- 	int sent = 0;
- 	struct scm_cookie tmp_scm;
-+	bool fds_sent = false;
+--- a/drivers/net/tun.c
++++ b/drivers/net/tun.c
+@@ -943,8 +943,6 @@ static int tun_set_iff(struct net *net, 
+ 		char *name;
+ 		unsigned long flags = 0;
  
- 	if (NULL == siocb->scm)
- 		siocb->scm = &tmp_scm;
-@@ -1562,12 +1563,14 @@ static int unix_stream_sendmsg(struct ki
- 		size = min_t(int, size, skb_tailroom(skb));
+-		err = -EINVAL;
+-
+ 		if (!capable(CAP_NET_ADMIN))
+ 			return -EPERM;
  
- 		memcpy(UNIXCREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
--		if (siocb->scm->fp) {
-+		/* Only send the fds in the first buffer */
-+		if (siocb->scm->fp && !fds_sent) {
- 			err = unix_attach_fds(siocb->scm, skb);
- 			if (err) {
- 				kfree_skb(skb);
- 				goto out_err;
- 			}
-+			fds_sent = true;
- 		}
+@@ -958,7 +956,7 @@ static int tun_set_iff(struct net *net, 
+ 			flags |= TUN_TAP_DEV;
+ 			name = "tap%d";
+ 		} else
+-			goto failed;
++			return -EINVAL;
  
- 		err = memcpy_fromiovec(skb_put(skb, size), msg->msg_iov, size);
+ 		if (*ifr->ifr_name)
+ 			name = ifr->ifr_name;
 
 
