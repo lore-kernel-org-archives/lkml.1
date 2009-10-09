@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761722AbZJIXRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761817AbZJIXSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761722AbZJIXRq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 19:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761675AbZJIXRo
+	id S1761817AbZJIXSO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 19:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761795AbZJIXSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 19:17:44 -0400
-Received: from kroah.org ([198.145.64.141]:36847 "EHLO coco.kroah.org"
+	Fri, 9 Oct 2009 19:18:08 -0400
+Received: from kroah.org ([198.145.64.141]:36865 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761692AbZJIXRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 19:17:42 -0400
+	id S1761736AbZJIXSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 19:18:07 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Oct  9 16:10:02 2009
-Message-Id: <20091009231002.521034233@mini.kroah.org>
+Message-Id: <20091009231002.649026484@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 09 Oct 2009 16:08:55 -0700
+Date: Fri, 09 Oct 2009 16:08:56 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [patch 19/26] KVM: SVM: Fix tsc offset adjustment when running nested
+       Jean Delvare <khali@linux-fr.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 20/26] net: Fix wrong sizeof
 References: <20091009230836.316410305@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-svm-fix-tsc-offset-adjustment-when-running-nested.patch
+Content-Disposition: inline; filename=net-fix-wrong-sizeof.patch
 In-Reply-To: <20091009231249.GA31084@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,35 +30,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Jean Delvare <khali@linux-fr.org>
 
-commit 77b1ab1732feb5e3dcbaf31d2f7547c5229f5f3a upstream.
+commit b607bd900051efc3308c4edc65dd98b34b230021 upstream.
 
-When svm_vcpu_load is called while the vcpu is running in
-guest mode the tsc adjustment made there is lost on the next
-emulated #vmexit. This causes the tsc running backwards in
-the guest. This patch fixes the issue by also adjusting the
-tsc_offset in the emulated hsave area so that it will not
-get lost.
+Which is why I have always preferred sizeof(struct foo) over
+sizeof(var).
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kvm/svm.c |    2 ++
- 1 file changed, 2 insertions(+)
+ Documentation/networking/timestamping/timestamping.c |    2 +-
+ drivers/net/iseries_veth.c                           |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -709,6 +709,8 @@ static void svm_vcpu_load(struct kvm_vcp
- 		rdtscll(tsc_this);
- 		delta = vcpu->arch.host_tsc - tsc_this;
- 		svm->vmcb->control.tsc_offset += delta;
-+		if (is_nested(svm))
-+			svm->nested.hsave->control.tsc_offset += delta;
- 		vcpu->cpu = cpu;
- 		kvm_migrate_timers(vcpu);
- 		svm->asid_generation = 0;
+--- a/Documentation/networking/timestamping/timestamping.c
++++ b/Documentation/networking/timestamping/timestamping.c
+@@ -381,7 +381,7 @@ int main(int argc, char **argv)
+ 	memset(&hwtstamp, 0, sizeof(hwtstamp));
+ 	strncpy(hwtstamp.ifr_name, interface, sizeof(hwtstamp.ifr_name));
+ 	hwtstamp.ifr_data = (void *)&hwconfig;
+-	memset(&hwconfig, 0, sizeof(&hwconfig));
++	memset(&hwconfig, 0, sizeof(hwconfig));
+ 	hwconfig.tx_type =
+ 		(so_timestamping_flags & SOF_TIMESTAMPING_TX_HARDWARE) ?
+ 		HWTSTAMP_TX_ON : HWTSTAMP_TX_OFF;
+--- a/drivers/net/iseries_veth.c
++++ b/drivers/net/iseries_veth.c
+@@ -495,7 +495,7 @@ static void veth_take_cap_ack(struct vet
+ 			   cnx->remote_lp);
+ 	} else {
+ 		memcpy(&cnx->cap_ack_event, event,
+-		       sizeof(&cnx->cap_ack_event));
++		       sizeof(cnx->cap_ack_event));
+ 		cnx->state |= VETH_STATE_GOTCAPACK;
+ 		veth_kick_statemachine(cnx);
+ 	}
 
 
