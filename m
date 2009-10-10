@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934512AbZJJPqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933651AbZJJPyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934512AbZJJPqL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 11:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933829AbZJJPqJ
+	id S933651AbZJJPyl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 11:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZJJPyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 11:46:09 -0400
-Received: from mga09.intel.com ([134.134.136.24]:21841 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932823AbZJJPqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 11:46:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,538,1249282800"; 
-   d="scan'208";a="558374309"
-Message-ID: <4AD0ABFF.1020209@linux.intel.com>
-Date: Sat, 10 Oct 2009 08:45:03 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Thomas Schlichter <thomas.schlichter@web.de>
-CC: linux-kernel@vger.kernel.org, Thomas Hellstrom <thellstrom@vmware.com>
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not available
-References: <200910100322.36857.thomas.schlichter@web.de> <4AD00C89.3000503@linux.intel.com> <200910101031.15620.thomas.schlichter@web.de>
-In-Reply-To: <200910101031.15620.thomas.schlichter@web.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Oct 2009 11:54:39 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:50086 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752827AbZJJPyi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 11:54:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=o3yse2Otv0ihExfBqKKdch+sI1UsruHxgqIL482GcR4YwvrqqtI/wvMv9LxSqwWgxw
+         Zpy9b3e1yDmPMl4JFvOPKdSRLC3Wij2EWdOnhjaN3yzf/g1/0p7nIVtjiORm6vMU1lMA
+         eAuLEVuKDUN/0UFlleZr/asICK7Sroq3ei1i4=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>, loongson-dev@googlegroups.com
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: [PATCH] SND_CS5535AUDIO: Remove the X86 platform dependency
+Date: Sat, 10 Oct 2009 23:53:48 +0800
+Message-Id: <1255190029-17584-1-git-send-email-wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Schlichter wrote:
+SND_CS5535AUDIO is available on Loongson(MIPS compatible) family
+machines, and checked it with ARCH=x86_64, no relative compiling
+warnings & errors, so, remove the platform dependency directly.
 
-> Hmm, my CPU (VIA Nano) seems to support PAT, but Ubuntu disables this
-> feature in its kernel config. I'm using 9.04, but even 9.10 will have PAT
-> disabled:
+Reported-by: rixed@happyleptic.org
+Acked-by: Andres Salomon <dilinger@collabora.co.uk>
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+---
+ sound/pci/Kconfig |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-that sounds like a bad idea. But to each distro their own I suppose.
+diff --git a/sound/pci/Kconfig b/sound/pci/Kconfig
+index fb5ee3c..75c602b 100644
+--- a/sound/pci/Kconfig
++++ b/sound/pci/Kconfig
+@@ -259,7 +259,6 @@ config SND_CS5530
+ 
+ config SND_CS5535AUDIO
+ 	tristate "CS5535/CS5536 Audio"
+-	depends on X86 && !X86_64
+ 	select SND_PCM
+ 	select SND_AC97_CODEC
+ 	help
+-- 
+1.6.2.1
 
-
-> 
-> http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-
-> karmic.git;a=blob;f=debian.master/config/config.common.ubuntu;h=a43cbabd02bfdf5412de6fea232db86aa5d3e742;hb=HEAD
-
-> So, convincing Ubuntu to enable PAT would be a workaround, but I think
-> the problem would still exist and should be fixed.
-
-I think it's time to get rid of CONFIG_PAT at all.. and just have it be there.
-Making 10+ year old CPU features that are essential functionality a config option...
-... not a good idea to be honest.
