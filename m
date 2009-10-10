@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761907AbZJJPhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761869AbZJJPhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761907AbZJJPhi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 11:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932406AbZJJPhg
+	id S1761869AbZJJPhu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 11:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761925AbZJJPht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 11:37:36 -0400
-Received: from www.tglx.de ([62.245.132.106]:55328 "EHLO www.tglx.de"
+	Sat, 10 Oct 2009 11:37:49 -0400
+Received: from www.tglx.de ([62.245.132.106]:55378 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761710AbZJJPhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 11:37:33 -0400
-Message-Id: <20091010153349.277882707@linutronix.de>
+	id S1761901AbZJJPhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 11:37:46 -0400
+Message-Id: <20091010153349.318535932@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Sat, 10 Oct 2009 15:35:48 -0000
+Date: Sat, 10 Oct 2009 15:35:52 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
-       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>
-Subject: [patch 06/28] drivers: Remove BKL from cs5535_gpio
+       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 07/28] spi: Remove BKL from spidev_open
 References: <20091010153314.827301943@linutronix.de>
-Content-Disposition: inline; filename=drivers-char-cs5535-gpio-remove-BKL.patch
+Content-Disposition: inline; filename=spi-remove-bkl.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The big BKL pushdown added cycle_kernel_lock(). There is nothing to
-wait for in this driver. Remove it.
+The BKL was added there with the big pushdown. Remove it as the code
+is serialized already.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- drivers/char/cs5535_gpio.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Cc: David Brownell <dbrownell@users.sourceforge.net>
 
-Index: linux-2.6-tip/drivers/char/cs5535_gpio.c
+---
+ drivers/spi/spidev.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+Index: linux-2.6-tip/drivers/spi/spidev.c
 ===================================================================
---- linux-2.6-tip.orig/drivers/char/cs5535_gpio.c
-+++ linux-2.6-tip/drivers/char/cs5535_gpio.c
-@@ -17,7 +17,7 @@
- #include <linux/cdev.h>
- #include <linux/ioport.h>
- #include <linux/pci.h>
+--- linux-2.6-tip.orig/drivers/spi/spidev.c
++++ linux-2.6-tip/drivers/spi/spidev.c
+@@ -30,7 +30,6 @@
+ #include <linux/errno.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
 -#include <linux/smp_lock.h>
-+
- #include <asm/uaccess.h>
- #include <asm/io.h>
  
-@@ -158,7 +158,6 @@ static int cs5535_gpio_open(struct inode
- {
- 	u32 m = iminor(inode);
+ #include <linux/spi/spi.h>
+ #include <linux/spi/spidev.h>
+@@ -477,7 +476,6 @@ static int spidev_open(struct inode *ino
+ 	struct spidev_data	*spidev;
+ 	int			status = -ENXIO;
  
--	cycle_kernel_lock();
- 	/* the mask says which pins are usable by this driver */
- 	if ((mask & (1 << m)) == 0)
- 		return -EINVAL;
+-	lock_kernel();
+ 	mutex_lock(&device_list_lock);
+ 
+ 	list_for_each_entry(spidev, &device_list, device_entry) {
+@@ -503,7 +501,6 @@ static int spidev_open(struct inode *ino
+ 		pr_debug("spidev: nothing for minor %d\n", iminor(inode));
+ 
+ 	mutex_unlock(&device_list_lock);
+-	unlock_kernel();
+ 	return status;
+ }
+ 
 
 
