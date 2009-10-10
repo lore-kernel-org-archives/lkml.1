@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934369AbZJJPjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934384AbZJJPj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934369AbZJJPjW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 11:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbZJJPjU
+	id S934384AbZJJPj6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 11:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761795AbZJJPj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 11:39:20 -0400
-Received: from www.tglx.de ([62.245.132.106]:55655 "EHLO www.tglx.de"
+	Sat, 10 Oct 2009 11:39:28 -0400
+Received: from www.tglx.de ([62.245.132.106]:55664 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934335AbZJJPjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 11:39:17 -0400
-Message-Id: <20091010153350.127093710@linutronix.de>
+	id S934353AbZJJPjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 11:39:22 -0400
+Message-Id: <20091010153350.167321547@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Sat, 10 Oct 2009 15:37:31 -0000
+Date: Sat, 10 Oct 2009 15:37:36 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
@@ -20,9 +20,9 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
        Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>,
        Jim Cromie <jim.cromie@gmail.com>
-Subject: [patch 26/28] drivers: Remove BKL from pc8736x_gpio
+Subject: [patch 27/28] drivers: Remove BKL from scx200_gpio
 References: <20091010153314.827301943@linutronix.de>
-Content-Disposition: inline; filename=pc8736x_gpio-remove-bkl.patch
+Content-Disposition: inline; filename=scx200_gpio-remove-bkl.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,28 +34,28 @@ is nothing to serialize. Remove it.
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Cc: Jim Cromie <jim.cromie@gmail.com>
 ---
- drivers/char/pc8736x_gpio.c |    2 --
+ drivers/char/scx200_gpio.c |    2 --
  1 file changed, 2 deletions(-)
 
-Index: linux-2.6-tip/drivers/char/pc8736x_gpio.c
+Index: linux-2.6-tip/drivers/char/scx200_gpio.c
 ===================================================================
---- linux-2.6-tip.orig/drivers/char/pc8736x_gpio.c
-+++ linux-2.6-tip/drivers/char/pc8736x_gpio.c
-@@ -20,7 +20,6 @@
- #include <linux/mutex.h>
- #include <linux/nsc_gpio.h>
+--- linux-2.6-tip.orig/drivers/char/scx200_gpio.c
++++ linux-2.6-tip/drivers/char/scx200_gpio.c
+@@ -12,7 +12,6 @@
+ #include <linux/kernel.h>
+ #include <linux/init.h>
  #include <linux/platform_device.h>
 -#include <linux/smp_lock.h>
  #include <asm/uaccess.h>
+ #include <asm/io.h>
  
- #define DEVNAME "pc8736x_gpio"
-@@ -223,7 +222,6 @@ static int pc8736x_gpio_open(struct inod
+@@ -52,7 +51,6 @@ static int scx200_gpio_open(struct inode
  	unsigned m = iminor(inode);
- 	file->private_data = &pc8736x_gpio_ops;
+ 	file->private_data = &scx200_gpio_ops;
  
 -	cycle_kernel_lock();
- 	dev_dbg(&pdev->dev, "open %d\n", m);
- 
- 	if (m >= PC8736X_GPIO_CT)
+ 	if (m >= MAX_PINS)
+ 		return -EINVAL;
+ 	return nonseekable_open(inode, file);
 
 
