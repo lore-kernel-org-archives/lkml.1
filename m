@@ -1,109 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbZJJANj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934629AbZJJAOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761569AbZJJANj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 20:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZJJANi
+	id S934629AbZJJAOj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 20:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758959AbZJJAOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 20:13:38 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:45277 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752982AbZJJANh (ORCPT
+	Fri, 9 Oct 2009 20:14:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44548 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756847AbZJJAOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 20:13:37 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>, Zhu Yi <yi.zhu@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: mmotm 2009-10-09-01-07 - iwl3945 fails to do firmware load request
-In-Reply-To: Your message of "Fri, 09 Oct 2009 01:07:49 PDT."
-             <200910090830.n998Ubvv020464@imap1.linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <200910090830.n998Ubvv020464@imap1.linux-foundation.org>
+	Fri, 9 Oct 2009 20:14:37 -0400
+Date: Fri, 9 Oct 2009 17:13:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Bryan Donlan <bdonlan@gmail.com>, linux-kernel@vger.kernel.org,
+       Ulrich Drepper <drepper@redhat.com>, linux-api@vger.kernel.org
+Subject: Re: [resend][PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
+Message-Id: <20091009171344.3fc5f28b.akpm@linux-foundation.org>
+In-Reply-To: <20091009134354.12A7.A69D9226@jp.fujitsu.com>
+References: <20091009134354.12A7.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1255133561_2897P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Fri, 09 Oct 2009 20:12:41 -0400
-Message-ID: <16108.1255133561@turing-police.cc.vt.edu>
-X-Mirapoint-Received-SPF: 128.173.38.202 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=zidane.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020203.4ACFD17C.00A5,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-07-29 21:33:33,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1255133561_2897P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <16101.1255133561.1@turing-police.cc.vt.edu>
+On Fri,  9 Oct 2009 13:50:17 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-On Fri, 09 Oct 2009 01:07:49 PDT, akpm@linux-foundation.org said:
-> The mm-of-the-moment snapshot 2009-10-09-01-07 has been uploaded to
+> ok, all lkml reviewer ack this patch.
+> then, I've switched to linux-api review.
 > 
->    http://userweb.kernel.org/~akpm/mmotm/
+> Any comments?
+> 
+> 
+> 
+> ==================================================
+> From: Timo Sirainen <tss@iki.fi>
+> 
+> Currently glibc2 doesn't have setproctitle(3), so several userland 
+> daemons attempt to emulate it by doing some brutal stack modifications.
+> This works most of the time, but it has problems. For example:
+> 
+>  % ps -ef |grep avahi-daemon
+>  avahi     1679     1  0 09:20 ?        00:00:00 avahi-daemon: running [kosadesk.local]
+> 
+>  # cat /proc/1679/cmdline
+>  avahi-daemon: running [kosadesk.local]
+> 
+> This looks good, but the process has also overwritten its environment
+> area and made the environ file useless:
+> 
+>  # cat /proc/1679/environ
+>  adesk.local]
+> 
+> Another problem is that the process title length is limited by the size of
+> the environment. Security conscious people try to avoid potential information
+> leaks by clearing most of the environment before running a daemon:
+> 
+>  # env - MINIMUM_NEEDED_VAR=foo /path/to/daemon
+> 
+> The resulting environment size may be too small to fit the wanted process
+> titles.
+> 
+> This patch makes it possible for userspace to implement setproctitle()
+> cleanly. It adds a new PR_SET_PROCTITLE_AREA option for prctl(), which
+> updates task's mm_struct->arg_start and arg_end to the given area.
+> 
+>  test_setproctitle.c
+>  ================================================
+>  #define ERR(str) (perror(str), exit(1))
+> 
+>  void settitle(char* title){
+>          int err;
+> 
+>          err = prctl(34, title, strlen(title)+1);
+>          if (err < 0)
+>                  ERR("prctl ");
+>  }
+> 
+>  void main(void){
+>          long i;
+>          char buf[1024];
+> 
+>          for (i = 0; i < 10000000000LL; i++){
+>                  sprintf(buf, "loooooooooooooooooooooooong string %d",i);
+>                  settitle(buf);
+>          }
+>  }
 
-Broke my iwl3945 wireless card:
+gee that's a good changelog.
 
-Good (2.6.31-mmotm0917)
-Oct  8 09:55:33 turing-police kernel: [    0.809101] iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for Linux, 1.2.26ks
-Oct  8 09:55:33 turing-police kernel: [    0.809106] iwl3945: Copyright(c) 2003-2009 Intel Corporation
-Oct  8 09:55:33 turing-police kernel: [    0.809201] iwl3945 0000:0c:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-Oct  8 09:55:33 turing-police kernel: [    0.879463] iwl3945 0000:0c:00.0: Tunable channels: 11 802.11bg, 13 802.11a channels
-Oct  8 09:55:33 turing-police kernel: [    0.879466] iwl3945 0000:0c:00.0: Detected Intel Wireless WiFi Link 3945ABG
-...
-Oct  8 09:55:35 turing-police kernel: [   31.599751] iwl3945 0000:0c:00.0: firmware: requesting iwlwifi-3945-2.ucode
-Oct  8 09:55:35 turing-police kernel: [   31.697046] iwl3945 0000:0c:00.0: loaded firmware version 15.28.2.8
-Oct  8 09:55:35 turing-police kernel: [   31.777214] Registered led device: iwl-phy0::radio
-Oct  8 09:55:35 turing-police kernel: [   31.777430] Registered led device: iwl-phy0::assoc
-Oct  8 09:55:35 turing-police kernel: [   31.777545] Registered led device: iwl-phy0::RX
-Oct  8 09:55:35 turing-police kernel: [   31.777676] Registered led device: iwl-phy0::TX
-Oct  8 09:55:35 turing-police kernel: [   31.789446] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-(and then wpa-supplicant is able to bring the card up when it finally gets launched by initscripts)
+> ...
+>
+> @@ -255,32 +255,47 @@ static int proc_pid_cmdline(struct task_struct *task, char * buffer)
+>  	int res = 0;
+>  	unsigned int len;
+>  	struct mm_struct *mm = get_task_mm(task);
+> +	unsigned seq;
+> +
+>  	if (!mm)
+>  		goto out;
+> +
+> +	/* The process was not constructed yet? */
+>  	if (!mm->arg_end)
+> -		goto out_mm;	/* Shh! No looking before we're done */
+> +		goto out_mm;
+>  
+> - 	len = mm->arg_end - mm->arg_start;
+> - 
+> -	if (len > PAGE_SIZE)
+> -		len = PAGE_SIZE;
+> - 
+> -	res = access_process_vm(task, mm->arg_start, buffer, len, 0);
+> -
+> -	// If the nul at the end of args has been overwritten, then
+> -	// assume application is using setproctitle(3).
+> -	if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
+> -		len = strnlen(buffer, res);
+> -		if (len < res) {
+> -		    res = len;
+> -		} else {
+> -			len = mm->env_end - mm->env_start;
+> -			if (len > PAGE_SIZE - res)
+> -				len = PAGE_SIZE - res;
+> -			res += access_process_vm(task, mm->env_start, buffer+res, len, 0);
+> +	do {
+> +		seq = read_seqbegin(&mm->arg_lock);
+> +
+> +		len = mm->arg_end - mm->arg_start;
+> +		if (len > PAGE_SIZE)
+> +			len = PAGE_SIZE;
+> +
+> +		res = access_process_vm(task, mm->arg_start, buffer, len, 0);
+> +
+> +		if (mm->arg_end != mm->env_start)
+> +			/* PR_SET_PROCTITLE_AREA used */
+>  			res = strnlen(buffer, res);
 
-Bad 2.6.32-rc3-mmotm1009:
+Hang on.
 
-Oct  9 13:50:19 turing-police kernel: [    0.931788] iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for Linux, 1.2.26ks
-Oct  9 13:50:19 turing-police kernel: [    0.944678] iwl3945: Copyright(c) 2003-2009 Intel Corporation
-Oct  9 13:50:19 turing-police kernel: [    0.957831] iwl3945 0000:0c:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-Oct  9 13:50:19 turing-police kernel: [    1.038946] iwl3945 0000:0c:00.0: Tunable channels: 11 802.11bg, 13 802.11a channels
-Oct  9 13:50:19 turing-police kernel: [    1.038950] iwl3945 0000:0c:00.0: Detected Intel Wireless WiFi Link 3945ABG
+If PR_SET_PROCTITLE_AREA installed a bad address then
+access_process_vm() will return -EFAULT and nothing was written to
+`buffer'?
 
-We never see the firmware load request, and of course everything goes
-pear-shaped after that doesn't happen....
+Also, concurrent PR_SET_PROCTITLE_AREA could cause arg_start and
+arg_end to have inconsistent/incoherent values.  This might result in a
+fault but it also might result in a read of garbage userspace memory.
 
-Kernel is built with:
+I guess all of these issues could be written off as "userspace bugs",
+but our behaviour here isn't nice.  We should at least return that
+-EFAULT!.
 
-%  zgrep -i iwl /proc/config.gz 
-CONFIG_IWLWIFI=y
-CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT=y
-# CONFIG_IWLWIFI_DEBUG is not set
-CONFIG_IWLWIFI_DEVICE_TRACING=y
-# CONFIG_IWLAGN is not set
-CONFIG_IWL3945=y
-CONFIG_IWL3945_SPECTRUM_MEASUREMENT=y
+> +		else if (res > 0 && buffer[res-1] != '\0' && len < PAGE_SIZE) {
+> +			/*
+> +			 * If the nul at the end of args has been overwritten,
+> +			 * then assume application is using sendmail's
+> +			 * SPT_REUSEARGV style argv override.
+> +			 */
+> +			len = strnlen(buffer, res);
+> +			if (len < res) {
+> +				res = len;
+> +			} else {
+> +				len = mm->env_end - mm->env_start;
+> +				if (len > PAGE_SIZE - res)
+> +					len = PAGE_SIZE - res;
+> +				res += access_process_vm(task, mm->env_start,
+> +							 buffer+res, len, 0);
+> +				res = strnlen(buffer, res);
+> +			}
 
+And if access_process_vm() returns a -ve errno here, the code simply
+flies off into the weeds.
 
---==_Exmh_1255133561_2897P
-Content-Type: application/pgp-signature
+>  		}
+> -	}
+> +	} while (read_seqretry(&mm->arg_lock, seq));
+> +
+>  out_mm:
+>  	mmput(mm);
+>
+> ...
+>
+> @@ -236,6 +237,7 @@ struct mm_struct {
+>  	unsigned long stack_vm, reserved_vm, def_flags, nr_ptes;
+>  	unsigned long start_code, end_code, start_data, end_data;
+>  	unsigned long start_brk, brk, start_stack;
+> +	seqlock_t arg_lock;
+>  	unsigned long arg_start, arg_end, env_start, env_end;
+>  
+>  	unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+seqlocks are nice but I have to wonder if they made this patch
+unnecessarily complex.  Couldn't we just do:
 
-iD8DBQFKz9F5cC3lWbTT17ARAp0PAKCM8GkD+4UH5mjcp7Z7rfDmqDl26QCfRhX3
-C6+JE99sXVKrkIhQAsNXqCQ=
-=HEg4
------END PGP SIGNATURE-----
+	 PR_SET_PROCTITLE_AREA:
 
---==_Exmh_1255133561_2897P--
+		spin_lock(mm->lock);
+		mm->arg_start = addr;
+		mm->arg_end = addr + len;
+		spin_unlock(mm->lock);
+
+and
+
+	proc_pid_cmdline()
+	{
+		unsigned long addr;
+		unsigned long end;
+
+		spin_lock(mm->lock);
+		addr = mm->arg_start;
+		end = mm->arg_end;
+		spin_unlock(mm->lock);
+
+		<use `addr' and `len'>
+	}
+
+?
+
 
