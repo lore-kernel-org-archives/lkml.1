@@ -1,103 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761536AbZJJBOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934639AbZJJAnO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761536AbZJJBOf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 21:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758003AbZJJBOe
+	id S934639AbZJJAnO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 20:43:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758754AbZJJAnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 21:14:34 -0400
-Received: from stl-smtpout-01.boeing.com ([130.76.96.56]:34371 "EHLO
-	stl-smtpout-01.boeing.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757335AbZJJBOd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 21:14:33 -0400
-X-Greylist: delayed 2244 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 Oct 2009 21:14:32 EDT
-From: "Templin, Fred L" <Fred.L.Templin@boeing.com>
-To: Greg KH <gregkh@suse.de>,
+	Fri, 9 Oct 2009 20:43:14 -0400
+Received: from mga11.intel.com ([192.55.52.93]:21877 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757338AbZJJAnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 20:43:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,535,1249282800"; 
+   d="scan'208";a="734920040"
+Subject: Re: mmotm 2009-10-09-01-07 - iwl3945 fails to do firmware load
+ request
+From: Zhu Yi <yi.zhu@intel.com>
+To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>
-CC: "stable-review@kernel.org" <stable-review@kernel.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       Sascha Hlusiak <contact@saschahlusiak.de>,
-       "David S. Miller" <davem@davemloft.net>,
-       =?iso-2022-jp?B?WU9TSElGVUpJIEhpZGVha2kgLyA=?=
-	 =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= <yoshfuji@linux-ipv6.org>
-Date: Fri, 9 Oct 2009 17:34:49 -0700
-Subject: RE: [patch 37/37] sit: fix off-by-one in ipip6_tunnel_get_prl
-Thread-Topic: [patch 37/37] sit: fix off-by-one in ipip6_tunnel_get_prl
-Thread-Index: AcpJOg/FjvKaDlXITfumPnfH12A71AABi3qQ
-Message-ID: <12F4112206976147A34FEC0277597CCF27A416492F@XCH-NW-15V.nw.nos.boeing.com>
-References: <20091009233411.852013234@mini.kroah.org>
- <20091009233440.786680001@mini.kroah.org>
-In-Reply-To: <20091009233440.786680001@mini.kroah.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-x-tm-as-product-ver: SMEX-8.0.0.1181-5.600.1016-16936.002
-x-tm-as-result: No--57.374800-8.000000-31
-x-tm-as-user-approved-sender: No
-x-tm-as-user-blocked-sender: No
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <16108.1255133561@turing-police.cc.vt.edu>
+References: <200910090830.n998Ubvv020464@imap1.linux-foundation.org>
+	 <16108.1255133561@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Sat, 10 Oct 2009 08:42:35 +0800
+Message-Id: <1255135355.3719.22.camel@debian>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wait a moment - I remember now that this code came
-from Yoshifuji, and I believe there was a reason for
-the cmax+1. The application is expected to know this
-and to post a large enough buffer.
+On Sat, 2009-10-10 at 08:12 +0800, Valdis.Kletnieks@vt.edu wrote:
+> On Fri, 09 Oct 2009 01:07:49 PDT, akpm@linux-foundation.org said:
+> > The mm-of-the-moment snapshot 2009-10-09-01-07 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> 
+> Broke my iwl3945 wireless card:
+> 
+> Good (2.6.31-mmotm0917)
+> Oct  8 09:55:33 turing-police kernel: [    0.809101] iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for Linux, 1.2.26ks
+> Oct  8 09:55:33 turing-police kernel: [    0.809106] iwl3945: Copyright(c) 2003-2009 Intel Corporation
+> Oct  8 09:55:33 turing-police kernel: [    0.809201] iwl3945 0000:0c:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> Oct  8 09:55:33 turing-police kernel: [    0.879463] iwl3945 0000:0c:00.0: Tunable channels: 11 802.11bg, 13 802.11a channels
+> Oct  8 09:55:33 turing-police kernel: [    0.879466] iwl3945 0000:0c:00.0: Detected Intel Wireless WiFi Link 3945ABG
+> ...
+> Oct  8 09:55:35 turing-police kernel: [   31.599751] iwl3945 0000:0c:00.0: firmware: requesting iwlwifi-3945-2.ucode
+> Oct  8 09:55:35 turing-police kernel: [   31.697046] iwl3945 0000:0c:00.0: loaded firmware version 15.28.2.8
+> Oct  8 09:55:35 turing-police kernel: [   31.777214] Registered led device: iwl-phy0::radio
+> Oct  8 09:55:35 turing-police kernel: [   31.777430] Registered led device: iwl-phy0::assoc
+> Oct  8 09:55:35 turing-police kernel: [   31.777545] Registered led device: iwl-phy0::RX
+> Oct  8 09:55:35 turing-police kernel: [   31.777676] Registered led device: iwl-phy0::TX
+> Oct  8 09:55:35 turing-police kernel: [   31.789446] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+> (and then wpa-supplicant is able to bring the card up when it finally gets launched by initscripts)
+> 
+> Bad 2.6.32-rc3-mmotm1009:
+> 
+> Oct  9 13:50:19 turing-police kernel: [    0.931788] iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for Linux, 1.2.26ks
+> Oct  9 13:50:19 turing-police kernel: [    0.944678] iwl3945: Copyright(c) 2003-2009 Intel Corporation
+> Oct  9 13:50:19 turing-police kernel: [    0.957831] iwl3945 0000:0c:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> Oct  9 13:50:19 turing-police kernel: [    1.038946] iwl3945 0000:0c:00.0: Tunable channels: 11 802.11bg, 13 802.11a channels
+> Oct  9 13:50:19 turing-police kernel: [    1.038950] iwl3945 0000:0c:00.0: Detected Intel Wireless WiFi Link 3945ABG
+> 
+> We never see the firmware load request, and of course everything goes
+> pear-shaped after that doesn't happen....
 
-Can we put this on hold until I have had a chance to
-check my e-mail archives and my local iproute changes
-(will respond on monday)?
+The firmware loading happens when the user space brings the interface
+up. Can you check NM is running for the bad case?
 
-Thanks - Fred
-fred.l.templin@boeing.com
-
-> -----Original Message-----
-> From: Greg KH [mailto:gregkh@suse.de]
-> Sent: Friday, October 09, 2009 4:35 PM
-> To: linux-kernel@vger.kernel.org; stable@kernel.org
-> Cc: stable-review@kernel.org; torvalds@linux-foundation.org; akpm@linux-foundation.org;
-> alan@lxorguk.ukuu.org.uk; Sascha Hlusiak; Templin, Fred L; David S. Miller
-> Subject: [patch 37/37] sit: fix off-by-one in ipip6_tunnel_get_prl
-> 
-> 2.6.31-stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> From: Sascha Hlusiak <contact@saschahlusiak.de>
-> 
-> [ Upstream commit 298bf12ddb25841804f26234a43b89da1b1c0e21 ]
-> 
-> When requesting all prl entries (kprl.addr == INADDR_ANY) and there are
-> more prl entries than there is space passed from userspace, the existing
-> code would always copy cmax+1 entries, which is more than can be handled.
-> 
-> This patch makes the kernel copy only exactly cmax entries.
-> 
-> Signed-off-by: Sascha Hlusiak <contact@saschahlusiak.de>
-> Acked-By: Fred L. Templin <Fred.L.Templin@boeing.com>
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  net/ipv6/sit.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/net/ipv6/sit.c
-> +++ b/net/ipv6/sit.c
-> @@ -313,7 +313,7 @@ static int ipip6_tunnel_get_prl(struct i
-> 
->  	c = 0;
->  	for (prl = t->prl; prl; prl = prl->next) {
-> -		if (c > cmax)
-> +		if (c >= cmax)
->  			break;
->  		if (kprl.addr != htonl(INADDR_ANY) && prl->addr != kprl.addr)
->  			continue;
-> 
+Thanks,
+-yi
 
