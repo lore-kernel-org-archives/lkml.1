@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934614AbZJJAJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbZJJAKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934614AbZJJAJQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 20:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758881AbZJJAJP
+	id S1761524AbZJJAKS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 20:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbZJJAKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 20:09:15 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57562 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757322AbZJJAJO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 20:09:14 -0400
-X-Sasl-enc: 0HEjKSeWxOXHqfMxbncY3AgiFfLvwq7pEZfp4qvORPIM 1255133291
-Date: Fri, 9 Oct 2009 21:08:08 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, lenb@kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -next] thinkpad_acpi: fix build, HOTKEY_POLL is optional
-Message-ID: <20091010000808.GA10637@khazad-dum.debian.net>
-References: <20091009190654.741eeffd.sfr@canb.auug.org.au>
- <20091009161723.b68b91a7.randy.dunlap@oracle.com>
+	Fri, 9 Oct 2009 20:10:16 -0400
+Received: from sous-sol.org ([216.99.217.87]:53003 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752841AbZJJAKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 20:10:15 -0400
+Date: Fri, 9 Oct 2009 17:09:26 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Andy Isaacson <adi@hexapodia.org>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: DMAR regression in 2.6.31 leads to ext4 corruption?
+Message-ID: <20091010000926.GA17547@sequoia.sous-sol.org>
+References: <20091009061729.GA31242@hexapodia.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091009161723.b68b91a7.randy.dunlap@oracle.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091009061729.GA31242@hexapodia.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 Oct 2009, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+* Andy Isaacson (adi@hexapodia.org) wrote:
+> Today while running 817b33d38 I got the following (on a Thinkpad X200
+> I'd replaced the Dell with, just in case it was previously-good hardware
+> going bad).
 > 
-> Fix optional part of driver to be built optionally:
+> [   29.450550] EXT4-fs error (device sda1): ext4_lookup: deleted inode referenced: 79
+> [   30.022328] DRHD: handling fault status reg 3
+> [   30.022328] DMAR:[DMA Write] Request device [00:02.0] fault addr ddae28000 
+> [   30.022328] DMAR:[fault reason 05] PTE Write access is not set
+> [   30.146136] DRHD: handling fault status reg 3
+> [   30.248938] DMAR:[DMA Write] Request device [00:02.0] fault addr ddae28000 
+> [   30.248939] DMAR:[fault reason 05] PTE Write access is not set
 
-NAK!
+There's some timing coincidence there, but it's a full 1/2 second between
+the ext4 error and the DMAR fault (and there's various DMAR faults
+along the way for the same buffer before and after the ext4 error).
+That fault is quite typical of a driver bug, and it's the VGA device
+(rather its driver) that is culpable.  The IOMMU caught the VGA device
+trying to do a DMA write to a buffer mapped r/o.
 
-This happens because of (linux-next) commit
-7f6443f7238a0aa9014b11a0a31ab76825d75cdf 
-"thinkpad-acpi: Fix build on !CONFIG_THINKPAD_ACPI_HOTKEY_POLL" by
-Ingo.
+> The full output of fsck and full dmesg are at the URL below.
+> 
+> I don't know that DMAR is resulting in my repeated filesystem
+> corruption, but it does seem like a potential cause (and would explain
+> why I'm seeing this whereas most people aren't, since few people are
+> using VT-d *and* i915).
 
-That commit is wrong, it must NOT be applied as explained in the thread
-starting at http://lkml.org/lkml/2009/9/27/30.
+I do use it every day on my primary workstation (x200), and haven't
+had any issue (I'm using ext3).
 
-Ingo, can you please check if you don't have that commit still in one of
-your trees that are fed into linux-next?  It broke the driver now that the
-"backlight/thinkpad-acpi: issue backlight class events" patch landed in
--next, just like I said it would happen...
+> I see that the BROKEN_GFX_WA code has been removed; do we actually
+> believe that the relevant code is working?  Could it be corrupting my
+> AHCI DMAs if not?
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+It should be for your adapter (after 66a4fe0c merged in agp fixes).
+While it could still be broken (aside of the initial faults before the
+device is even initialized in Linux -- I'm not seeing any faults, btw),
+iommu=pt will put all devices in a 1:1 mapped domain and would suppress
+the DMAR faults you see (similar to intel_iommu=off, but allowing the
+iommu to still be used for pci device assignment).  However, doing that
+or enabling the gfx workaround would allow the device to generate invalid
+DMA requests since if effectively disables the IOMMU for the gfx device,
+which would leave a better opportunity for DMA related corruption.
+The earlier fs issues we saw w/ the IOMMU were when it was actively
+blocking disk DMA requests, but that's not happening here.
+
+> At the end of the last thread Ted thought that we'd
+> lost a write of an inode block; this time the symptoms look different,
+> in that I don't see one inode block representing a significant data
+> loss (though I'm by no means an expert).
+> 
+> Complete dmesg etc are at
+> http://web.hexapodia.org/~adi/bugs/20091008-ext4-dmar/
+> 
+> I'll try running with BROKEN_GFX_WA turned back on and see if that
+> improves things at all.
+
+thanks,
+-chris
