@@ -1,138 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934811AbZJJTyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934828AbZJJTzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934811AbZJJTyW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 15:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934797AbZJJTyV
+	id S934828AbZJJTzZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 15:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934806AbZJJTzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 15:54:21 -0400
-Received: from vena.lwn.net ([206.168.112.25]:48250 "EHLO vena.lwn.net"
+	Sat, 10 Oct 2009 15:55:23 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:53562 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934790AbZJJTyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 15:54:21 -0400
-Date: Sat, 10 Oct 2009 13:53:43 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2] GPIO: Add gpio_lookup
-Message-ID: <20091010135343.775e535f@bike.lwn.net>
-In-Reply-To: <20091010134814.0bac8624@bike.lwn.net>
-References: <20091010134814.0bac8624@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	id S934801AbZJJTzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 15:55:22 -0400
+Date: Sat, 10 Oct 2009 21:54:22 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, Jonathan Corbet <corbet@lwn.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       Mark Gross <mgross@linux.intel.com>
+Subject: Re: [patch 02/28] pm_qos: clean up racy global "name" variable
+In-Reply-To: <20091010153349.113570550@linutronix.de>
+Message-ID: <alpine.LFD.2.00.0910102147020.3669@localhost.localdomain>
+References: <20091010153314.827301943@linutronix.de> <20091010153349.113570550@linutronix.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Functionally the same, but will hopefully head off a visit from the
-checkpatch police.  I could *swear* I saved that buffer before
-committing...  sorry for the noise.
 
-jon
 
----
-GPIO: add gpio_lookup()
+On Sat, 10 Oct 2009, Thomas Gleixner wrote:
 
-GPIOs have names associated with them, but drivers cannot use those names
-and must thus rely on hardwired GPIO numbers.  That, in turn, makes dynamic
-assignment hard to use.  This patch adds a little function gpio_lookup()
-which returns the GPIO number associated with a name.
+> "name" is a poor name for a file-global variable.  It was used in three
+> different functions, with no mutual exclusion.  But it's just a tiny,
+> temporary string; let's just move it onto the stack in the functions that
+> need it.  Also use snprintf() just in case.
+> 
+> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+> Cc: Mark Gross <mgross@linux.intel.com>
+> Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
+> index d96b83e..3db49b9 100644
+> --- a/kernel/pm_qos_params.c
+> +++ b/kernel/pm_qos_params.c
+> @@ -343,18 +343,18 @@ int pm_qos_remove_notifier(int pm_qos_class, struct notifier_block *notifier)
+>  }
+>  EXPORT_SYMBOL_GPL(pm_qos_remove_notifier);
+>  
+> -#define PID_NAME_LEN sizeof("process_1234567890")
+> -static char name[PID_NAME_LEN];
+> +#define PID_NAME_LEN 32
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
----
- Documentation/gpio.txt     |    8 ++++++++
- drivers/gpio/gpiolib.c     |   25 +++++++++++++++++++++++++
- include/asm-generic/gpio.h |    1 +
- include/linux/gpio.h       |    5 +++++
- 4 files changed, 39 insertions(+), 0 deletions(-)
+Hmnn, why 32? Seems arbitrary. At least you see with "process_1234567890" 
+which is 19, an attempt to show what the maximum string size would be. If 
+a system were configured to enlarge the maximum PID from 32767 to 4194303 
+that would still only be 7 digits, so "process_1234567" - which is 16 
+digits with the newline would enough.
 
-diff --git a/Documentation/gpio.txt b/Documentation/gpio.txt
-index fa4dc07..b3b3dd5 100644
---- a/Documentation/gpio.txt
-+++ b/Documentation/gpio.txt
-@@ -253,6 +253,14 @@ pin setup (e.g. controlling which pin the GPIO uses, pullup/pulldown).
- Also note that it's your responsibility to have stopped using a GPIO
- before you free it.
- 
-+GPIO users can look up GPIO numbers using the names which were provided by
-+the GPIO driver, using:
-+
-+	int gpio_lookup(const char *name);
-+
-+The return value will be the associated GPIO number, or -EINVAL if no GPIO
-+with the given name is found.
-+
- 
- GPIOs mapped to IRQs
- --------------------
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 662ed92..99d796c 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -1102,6 +1102,31 @@ void gpio_free(unsigned gpio)
- }
- EXPORT_SYMBOL_GPL(gpio_free);
- 
-+/**
-+ * gpio_lookup - Look up a GPIO by name
-+ * @name: the name of the desired GPIO
-+ *
-+ * Returns the GPIO number associated with name, or -EINVAL if
-+ * the GPIO is not found.
-+ */
-+int gpio_lookup(const char *name)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARCH_NR_GPIOS; i++) {
-+		struct gpio_chip *chip = gpio_desc[i].chip;
-+
-+		if (chip == NULL || chip->names == NULL)
-+			continue;
-+		if (!strcmp(name, chip->names[i - chip->base])) {
-+			printk(KERN_NOTICE "grbn found %d\n", i);
-+			return i;
-+		}
-+	}
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL_GPL(gpio_lookup);
-+
- 
- /**
-  * gpiochip_is_requested - return string iff signal was requested
-diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-index 66d6106..667b86a 100644
---- a/include/asm-generic/gpio.h
-+++ b/include/asm-generic/gpio.h
-@@ -116,6 +116,7 @@ extern int __must_check gpiochip_remove(struct gpio_chip *chip);
-  */
- extern int gpio_request(unsigned gpio, const char *label);
- extern void gpio_free(unsigned gpio);
-+extern int gpio_lookup(const char *name);
- 
- extern int gpio_direction_input(unsigned gpio);
- extern int gpio_direction_output(unsigned gpio, int value);
-diff --git a/include/linux/gpio.h b/include/linux/gpio.h
-index 059bd18..2c3f179 100644
---- a/include/linux/gpio.h
-+++ b/include/linux/gpio.h
-@@ -41,6 +41,11 @@ static inline void gpio_free(unsigned gpio)
- 	WARN_ON(1);
- }
- 
-+static inline int gpio_lookup(const char *name)
-+{
-+	return -ENOSYS;
-+}
-+
- static inline int gpio_direction_input(unsigned gpio)
- {
- 	return -ENOSYS;
--- 
-1.6.2.5
+So, I suggest you change that to
+#define PID_NAME_LEN sizeof("process_1234567")
 
+Other than that, Reviewed-by: John Kacur <jkacur@redhat.com>
+
+>  
+>  static int pm_qos_power_open(struct inode *inode, struct file *filp)
+>  {
+>  	int ret;
+>  	long pm_qos_class;
+> +	char name[PID_NAME_LEN];
+>  
+>  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
+>  	if (pm_qos_class >= 0) {
+>  		filp->private_data = (void *)pm_qos_class;
+> -		sprintf(name, "process_%d", current->pid);
+> +		snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
+>  		ret = pm_qos_add_requirement(pm_qos_class, name,
+>  					PM_QOS_DEFAULT_VALUE);
+>  		if (ret >= 0)
+> @@ -366,9 +366,10 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+>  static int pm_qos_power_release(struct inode *inode, struct file *filp)
+>  {
+>  	int pm_qos_class;
+> +	char name[PID_NAME_LEN];
+>  
+>  	pm_qos_class = (long)filp->private_data;
+> -	sprintf(name, "process_%d", current->pid);
+> +	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
+>  	pm_qos_remove_requirement(pm_qos_class, name);
+>  
+>  	return 0;
+> @@ -379,13 +380,14 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+>  {
+>  	s32 value;
+>  	int pm_qos_class;
+> +	char name[PID_NAME_LEN];
+>  
+>  	pm_qos_class = (long)filp->private_data;
+>  	if (count != sizeof(s32))
+>  		return -EINVAL;
+>  	if (copy_from_user(&value, buf, sizeof(s32)))
+>  		return -EFAULT;
+> -	sprintf(name, "process_%d", current->pid);
+> +	snprintf(name, PID_NAME_LEN, "process_%d", current->pid);
+>  	pm_qos_update_requirement(pm_qos_class, name, value);
+>  
+>  	return  sizeof(s32);
+> 
+> 
+> 
