@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933651AbZJJPyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934511AbZJJPyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933651AbZJJPyl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 11:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZJJPyj
+	id S934511AbZJJPyv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 11:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934068AbZJJPys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 11:54:39 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:50086 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752827AbZJJPyi (ORCPT
+	Sat, 10 Oct 2009 11:54:48 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:36750 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934060AbZJJPyp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 11:54:38 -0400
+	Sat, 10 Oct 2009 11:54:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=o3yse2Otv0ihExfBqKKdch+sI1UsruHxgqIL482GcR4YwvrqqtI/wvMv9LxSqwWgxw
-         Zpy9b3e1yDmPMl4JFvOPKdSRLC3Wij2EWdOnhjaN3yzf/g1/0p7nIVtjiORm6vMU1lMA
-         eAuLEVuKDUN/0UFlleZr/asICK7Sroq3ei1i4=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=cMc/0e0tZbcCSnHPjXEF+74goqBbJFPynKOCP+2zY6qpgiNrM1zhDkeexL29MJLwG/
+         h9xDoP9KrigMDDWFr4JKtzt66wlNwa2+15Y3P/MMlHJHEcJ8VsGGUZ+N84RkBQZhg/9r
+         kDA5kjAD40fHUtlcS/cR0lHrnV4H65jGGeLas=
 From: Wu Zhangjin <wuzhangjin@gmail.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-mips <linux-mips@linux-mips.org>, loongson-dev@googlegroups.com
@@ -23,9 +23,11 @@ Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Wu Zhangjin <wuzhangjin@gmail.com>
 Subject: [PATCH] SND_CS5535AUDIO: Remove the X86 platform dependency
-Date: Sat, 10 Oct 2009 23:53:48 +0800
-Message-Id: <1255190029-17584-1-git-send-email-wuzhangjin@gmail.com>
+Date: Sat, 10 Oct 2009 23:53:49 +0800
+Message-Id: <1255190029-17584-2-git-send-email-wuzhangjin@gmail.com>
 X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1255190029-17584-1-git-send-email-wuzhangjin@gmail.com>
+References: <1255190029-17584-1-git-send-email-wuzhangjin@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
