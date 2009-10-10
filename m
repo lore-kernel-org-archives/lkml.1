@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759991AbZJJMUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbZJJMYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759991AbZJJMUI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 08:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759098AbZJJMUG
+	id S1760764AbZJJMYc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 08:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758127AbZJJMYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 08:20:06 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:59904 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759053AbZJJMUF (ORCPT
+	Sat, 10 Oct 2009 08:24:30 -0400
+Received: from viefep13-int.chello.at ([62.179.121.33]:49233 "EHLO
+	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757047AbZJJMYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 08:20:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=uzf7Tqt9yOsfDyxeuhUOUTs8bqfLBtxx7Pi8AJdDoso4ZSk1YuJvsiLVl50Uk5DDxK
-         FrLBPO3ocpviZU2hzl5DhF/9MjZJlW03vS/5EM/neevX6PYTVl9k9kNM97hF/eBM2iFU
-         Taf/jrxdkmj68dWxOOdCKMHv1aGEGhGmeC5Pk=
-Message-ID: <4AD07BCD.1000902@gmail.com>
-Date: Sat, 10 Oct 2009 14:19:25 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.7 Thunderbird/3.0b4
-MIME-Version: 1.0
+	Sat, 10 Oct 2009 08:24:30 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 00/31] Swap over NFS -v20
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Pavel Machek <pavel@ucw.cz>
-CC: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] PM / Hibernate: swap, use KERN_CONT
-References: <1255176024-12420-1-git-send-email-jirislaby@gmail.com> <20091010121504.GB1943@ucw.cz>
-In-Reply-To: <20091010121504.GB1943@ucw.cz>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Suresh Jayaraman <sjayaraman@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
+       trond.myklebust@fys.uio.no
+In-Reply-To: <20091010120614.GC1811@ucw.cz>
+References: <1254405858-15651-1-git-send-email-sjayaraman@suse.de>
+	 <20091001174201.GA30068@infradead.org> <1254692482.21044.15.camel@laptop>
+	 <20091010120614.GC1811@ucw.cz>
+Content-Type: text/plain
+Date: Sat, 10 Oct 2009 14:23:41 +0200
+Message-Id: <1255177421.11081.0.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/10/2009 02:15 PM, Pavel Machek wrote:
-> On Sat 2009-10-10 14:00:24, Jiri Slaby wrote:
->> Use KERN_CONT in save_image for printks. So that anybody won't
->> try to add a loglevel.
+On Sat, 2009-10-10 at 14:06 +0200, Pavel Machek wrote:
+> Hi!
 > 
-> Someone has a big, pending patch to switch to pr_*. Should we take
-> that instead?
+> > > One of them
+> > > would be the whole VM/net work to just make swap over nbd/iscsi safe.
+> > 
+> > Getting those two 'fixed' is going to be tons of interesting work
+> > because they involve interaction with userspace daemons.
+> > 
+> > NBD has fairly simple userspace, but iSCSI has a rather large userspace
+> > footprint and a rather complicated user/kernel interaction which will be
+> > mighty interesting to get allocation safe.
+> > 
+> > Ideally the swap-over-$foo bits have no userspace component.
+> > 
+> > That said, Wouter is the NBD userspace maintainer and has expressed
+> > interest into looking at making that work, but its sure going to be
+> > non-trivial, esp. since exposing PF_MEMALLOC to userspace is a, not over
+> > my dead-bodym like thing.
+> 
+> Well, as long as nbd-server is on separate machine (with real swap),
+> safe swapping over network should be ok, without PF_MEMALLOC for
+> userspace or similar nightmares, right?
 
-I have no problem with that at all.
+Nope, as soon as the nbd-client looses its connection you're up shit
+creek.
+
