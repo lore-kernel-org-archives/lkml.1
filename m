@@ -1,67 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758495AbZJJXZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbZJJXZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758495AbZJJXZU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 19:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758192AbZJJXZT
+	id S1757904AbZJJXZF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 19:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZJJXZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 19:25:19 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:49011 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755430AbZJJXZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 19:25:18 -0400
-Date: Sun, 11 Oct 2009 01:24:14 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-cc: Jonathan Corbet <corbet@lwn.net>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vincent Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] sound_core.c: Remove BKL from soundcore_open
-Message-ID: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 10 Oct 2009 19:25:05 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38697 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754266AbZJJXZE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 19:25:04 -0400
+Date: Sun, 11 Oct 2009 00:25:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bernhard Walle <bernhard@bwalle.de>, akpm@linuxfoundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] Use vt_get_kmsg_redirect() and
+ vt_set_kmsg_redirect()
+Message-ID: <20091011002544.32c6f196@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091011000632.3148849e@lxorguk.ukuu.org.uk>
+References: <1255207870-24496-1-git-send-email-bernhard@bwalle.de>
+	<1255207870-24496-4-git-send-email-bernhard@bwalle.de>
+	<20091011000632.3148849e@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 030af455d4f54482130c8eccb47fe90aaba8808c Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Sat, 10 Oct 2009 23:39:56 +0200
-Subject: [PATCH] This code is already protected by spin_lock, and doesn't require the bkl
+> variable is now function local and the whole pile of stuff you posted
+> becomes
+> 
+> #if defined(CONFIG_VT_CONSOLE)
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- sound/sound_core.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
-
-diff --git a/sound/sound_core.c b/sound/sound_core.c
-index 49c9981..03bb943 100644
---- a/sound/sound_core.c
-+++ b/sound/sound_core.c
-@@ -576,8 +576,6 @@ static int soundcore_open(struct inode *inode, struct file *file)
- 	struct sound_unit *s;
- 	const struct file_operations *new_fops = NULL;
- 
--	lock_kernel ();
--
- 	chain=unit&0x0F;
- 	if(chain==4 || chain==5)	/* dsp/audio/dsp16 */
- 	{
-@@ -637,11 +635,9 @@ static int soundcore_open(struct inode *inode, struct file *file)
- 			file->f_op = fops_get(old_fops);
- 		}
- 		fops_put(old_fops);
--		unlock_kernel();
- 		return err;
- 	}
- 	spin_unlock(&sound_loader_lock);
--	unlock_kernel();
- 	return -ENODEV;
- }
- 
--- 
-1.6.0.6
+Umm testing it this seems gcc/ld isn't quite smart enough to get that
+right so the function can't be inlined - the rest holds though, it can be
+hidden in function just not in the header file.
 
