@@ -1,40 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756467AbZJJJhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbZJJJrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756467AbZJJJhd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 05:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbZJJJha
+	id S932227AbZJJJrs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 05:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbZJJJrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 05:37:30 -0400
-Received: from claw.goop.org ([74.207.240.146]:45231 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755077AbZJJJha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 05:37:30 -0400
-Message-ID: <4AD055B3.8070705@goop.org>
-Date: Sat, 10 Oct 2009 02:36:51 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH RFC] sched: add notifier for process migration
-References: <4ACFA4C5.4020607@goop.org> <1255125738.7439.17.camel@laptop>	 <4ACFBC98.4070701@goop.org> <1255158863.7866.25.camel@twins>	 <4AD04E50.7060001@redhat.com> <1255166662.7866.28.camel@twins>
-In-Reply-To: <1255166662.7866.28.camel@twins>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-15
+	Sat, 10 Oct 2009 05:47:46 -0400
+Received: from mga05.intel.com ([192.55.52.89]:26141 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756146AbZJJJrq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 05:47:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,536,1249282800"; 
+   d="scan'208";a="735013526"
+Subject: Re: fio rand read/write regression with 2.6.32-rc3
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20091010080200.GO9228@kernel.dk>
+References: <1255153724.25078.68.camel@ymzhang>
+	 <20091010080117.GN9228@kernel.dk>  <20091010080200.GO9228@kernel.dk>
+Content-Type: text/plain
+Date: Sat, 10 Oct 2009 17:47:42 +0800
+Message-Id: <1255168062.25078.79.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/10/09 02:24, Peter Zijlstra wrote:
-> Is that a real issue? If its not supported by the early hardware virt
-> chips, tough luck, they sucked anyway :-)
->   
+On Sat, 2009-10-10 at 10:02 +0200, Jens Axboe wrote:
+> On Sat, Oct 10 2009, Jens Axboe wrote:
+> > On Sat, Oct 10 2009, Zhang, Yanmin wrote:
+> > > Comparing with 2.6.23-rc1's result, fio rand read write has regression
+> > > on my 2*4 core stoakley machine (8GB memory) with a JBOD of 12 disks.
+> > > 
+> > > Every disk has 8 1-GB files. Start 8 sub-processes per disk and every
+> > > process random chooses a file on the disk to do 36 times of file read or
+> > > write on the file and then choose another file.
+> > > 
+> > > 
+> > > fio_mmap_rand_read_4k regresion is about 35%.
+> > 
+> > Heh, I seem to recollect I told Linus that this would cost is 30-40%
+> > performance. So not totally crazy.
+> > 
+> > So yes, this isn't hugely unexpected. If you send me your fio job files,
+> > I'll try and see what I can do about it.
+> 
+> Oh, and can you check whether setting
+> 
+> /sys/block/sdX/queue/iosched/low_latency
+> 
+> to 0 for the involved devices makes the regression go away?
+Echo 0 to low_latency makes the regression become less than 3%.
 
-Nehalem is the first Intel chip to support it, and Xen doesn't rely on
-hardware virt support anyway.
 
-    J
