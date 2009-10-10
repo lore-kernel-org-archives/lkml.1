@@ -1,90 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbZJJKjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZJJKlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757415AbZJJKjU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 06:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZJJKjS
+	id S1757914AbZJJKlT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 06:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZJJKlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 06:39:18 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:46486 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbZJJKjR convert rfc822-to-8bit (ORCPT
+	Sat, 10 Oct 2009 06:41:17 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:56895 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751922AbZJJKlQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 06:39:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kCjJCDcNNSsZZY7A4wLtEOd/3Gs6gJVom4nWlye4ymv5SIjZyqwYXJ0TLrRzQvNlKo
-         8gwhyxbmhIRCw2wZe3tGbqTUmp6M6eCnwxKETwMyFNwwhVCSv0emDGqHtika2FoHR7eo
-         97/HLOmQq6Fkt3AnEIaHH2ojdtfGiwN3aN6kI=
-MIME-Version: 1.0
-In-Reply-To: <20091009143327.783b33c3.akpm@linux-foundation.org>
-References: <20091007185112.GJ7899@atomide.com>
-	 <20091008214140.GJ7417@atomide.com>
-	 <94a0d4530910081513w1a919dc2s50eca41966a2261d@mail.gmail.com>
-	 <94a0d4530910081520t66ce7567xe142979a35b1245@mail.gmail.com>
-	 <20091008232603.GB25892@atomide.com>
-	 <94a0d4530910090508o1e3d19cew881d2eb348199674@mail.gmail.com>
-	 <20091009144840.GA9561@suse.de>
-	 <94a0d4530910091029p12f8c28fve91e95db533e78e5@mail.gmail.com>
-	 <20091009192642.GB32084@suse.de>
-	 <20091009143327.783b33c3.akpm@linux-foundation.org>
-Date: Sat, 10 Oct 2009 13:38:39 +0300
-Message-ID: <94a0d4530910100338s6fb32d0dwb898d31053a423f5@mail.gmail.com>
-Subject: Re: [GIT PULL] omap fixes for v2.6.32-rc3
-From: Felipe Contreras <felipe.contreras@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, Tony Lindgren <tony@atomide.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       Denis Karpov <ext-denis.2.karpov@nokia.com>,
-       "Uwe Kleine-K??nig" <u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 10 Oct 2009 06:41:16 -0400
+Subject: Re: Bluetooth is very ill in -next
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20091002105740.GA2809@darkstar>
+References: <20090930142636.5366dafe@lxorguk.ukuu.org.uk>
+	 <20091002105740.GA2809@darkstar>
+Content-Type: text/plain
+Date: Sat, 10 Oct 2009 12:40:24 +0200
+Message-Id: <1255171224.19127.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10, 2009 at 12:33 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Fri, 9 Oct 2009 12:26:42 -0700
-> Greg KH <gregkh@suse.de> wrote:
->
->> > >
->> > > What kind of issues? __Why would I be interested, where is the problem?
->> >
->> > The obvious-brain-dead-duh kind of issues, like this one.
->> >
->> > The problem is that OMAP devices (like beagleboard) are not booting
->> > correctly right now because of a wrong merge. It has been identified,
->> > tested, and acked, but nobody has picked it up for a pull request, so
->> > it's not clear it will be on -rc4.
->>
->> Has the patches been sent from the maintainer to Linus?
->>
->> Who is the maintainer?  Who normally sends this stuff?
->>
->> > To me it's not clear who should push the patch, it seems it doesn't
->> > belong on linux-omap, so Tony is pushing it through linux-mmc, which I
->> > don't think is the right place. They should be handling mmc-related
->> > issues, not obvious breakage.
->>
->> Well, mmc related breakage is fine to handle :)
->>
->> > In order to keep the engines oiled I think there must be a process to
->> > flag obvious generic breakage so it's immediately picked; maybe an
->> > 'obvious-fixes' tree, or a 'simple-fixes' that has 'trivial',
->> > 'includecheck', and similar, or maybe nothing needs to be done. Up to
->> > you to decide.
->>
->> Andrew usually sends stuff like this at times.
->
-> yeah, when in doubt, send it to me.  When not in doubt send it to me
-> anyway ;)
->
-> I'll take care of bugging the appropriate maintainer or merging it directly.
+Hi Dave,
 
-Ah, that's exactly what I wanted to know, thanks :)
+> > Doing "sdptool search DUN" reliably crashes the kernel when using a USB
+> > bluetooth dongle
+> > 
+> > Language Base Attr List:
+> >   code_ISO639: 0x656e
+> >   encoding:    0x6a
+> >   base_offset: 0x100
+> > Profile Descriptor List:
+> >   "Dialup Networking" (0x1103)
+> >     Version: 0x0100
+> > 
+> > 
+> > is as far as it gets
+> > 
+> > It then explodes
+> > 
+> > _spin_lock_irqsave
+> > ?skb_dequeue
+> > skb_dequeue
+> > skb_queue_purge
+> > l2cap_recv_frame
+> > ?__lock_acquire
+> > ?__usb_hcd_submit_urb
+> > ?__lock_acquire
+> > l2cap_recv_acldata
+> > hci_rx_task
+> > ?l2cap_recv_acldata
+> > tasklet_action
+> > 
+> > reliably.
+> > 
+> 
+> Marcel, please take a look at following patch, same as previous
+> dev_set_name problem.
+> 
+> ---
+> Due to driver core changes dev_set_drvdata will call kzalloc which should be
+> in might_sleep context, but hci_conn_add will be called in atomic context
+> 
+> Like dev_set_name just put all other device callbacks to work queue function.
+> 
+> oops as following:
+> 
+> Oct  2 17:41:59 darkstar kernel: [  438.001341] BUG: sleeping function called from invalid context at mm/slqb.c:1546
+> Oct  2 17:41:59 darkstar kernel: [  438.001345] in_atomic(): 1, irqs_disabled(): 0, pid: 2133, name: sdptool
+> Oct  2 17:41:59 darkstar kernel: [  438.001348] 2 locks held by sdptool/2133:
+> Oct  2 17:41:59 darkstar kernel: [  438.001350]  #0:  (sk_lock-AF_BLUETOOTH-BTPROTO_L2CAP){+.+.+.}, at: [<faa1d2f5>] lock_sock+0xa/0xc [l2cap]
+> Oct  2 17:41:59 darkstar kernel: [  438.001360]  #1:  (&hdev->lock){+.-.+.}, at: [<faa20e16>] l2cap_sock_connect+0x103/0x26b [l2cap]
+> Oct  2 17:41:59 darkstar kernel: [  438.001371] Pid: 2133, comm: sdptool Not tainted 2.6.31-mm1 #2
+> Oct  2 17:41:59 darkstar kernel: [  438.001373] Call Trace:
+> Oct  2 17:41:59 darkstar kernel: [  438.001381]  [<c022433f>] __might_sleep+0xde/0xe5
+> Oct  2 17:41:59 darkstar kernel: [  438.001386]  [<c0298843>] __kmalloc+0x4a/0x15a
+> Oct  2 17:41:59 darkstar kernel: [  438.001392]  [<c03f0065>] ? kzalloc+0xb/0xd
+> Oct  2 17:41:59 darkstar kernel: [  438.001396]  [<c03f0065>] kzalloc+0xb/0xd
+> Oct  2 17:41:59 darkstar kernel: [  438.001400]  [<c03f04ff>] device_private_init+0x15/0x3d
+> Oct  2 17:41:59 darkstar kernel: [  438.001405]  [<c03f24c5>] dev_set_drvdata+0x18/0x26
+> Oct  2 17:41:59 darkstar kernel: [  438.001414]  [<fa51fff7>] hci_conn_init_sysfs+0x40/0xd9 [bluetooth]
+> Oct  2 17:41:59 darkstar kernel: [  438.001422]  [<fa51cdc0>] ? hci_conn_add+0x128/0x186 [bluetooth]
+> Oct  2 17:41:59 darkstar kernel: [  438.001429]  [<fa51ce0f>] hci_conn_add+0x177/0x186 [bluetooth]
+> Oct  2 17:41:59 darkstar kernel: [  438.001437]  [<fa51cf8a>] hci_connect+0x3c/0xfb [bluetooth]
+> Oct  2 17:41:59 darkstar kernel: [  438.001442]  [<faa20e87>] l2cap_sock_connect+0x174/0x26b [l2cap]
+> Oct  2 17:41:59 darkstar kernel: [  438.001448]  [<c04c8df5>] sys_connect+0x60/0x7a
+> Oct  2 17:41:59 darkstar kernel: [  438.001453]  [<c024b703>] ? lock_release_non_nested+0x84/0x1de
+> Oct  2 17:41:59 darkstar kernel: [  438.001458]  [<c028804b>] ? might_fault+0x47/0x81
+> Oct  2 17:41:59 darkstar kernel: [  438.001462]  [<c028804b>] ? might_fault+0x47/0x81
+> Oct  2 17:41:59 darkstar kernel: [  438.001468]  [<c033361f>] ? __copy_from_user_ll+0x11/0xce
+> Oct  2 17:41:59 darkstar kernel: [  438.001472]  [<c04c9419>] sys_socketcall+0x82/0x17b
+> Oct  2 17:41:59 darkstar kernel: [  438.001477]  [<c020329d>] syscall_call+0x7/0xb
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> ---
+> net/bluetooth/hci_sysfs.c |   18 ++++++++----------
+> 1 file changed, 8 insertions(+), 10 deletions(-)
+> 
+> --- linux-2.6.31.orig/net/bluetooth/hci_sysfs.c	2009-10-02 18:04:14.000000000 +0800
+> +++ linux-2.6.31/net/bluetooth/hci_sysfs.c	2009-10-02 18:05:22.000000000 +0800
+> @@ -90,6 +90,14 @@ static void add_conn(struct work_struct 
+>  	struct hci_conn *conn = container_of(work, struct hci_conn, work_add);
+>  	struct hci_dev *hdev = conn->hdev;
+>  
+> +	conn->dev.type = &bt_link;
+> +	conn->dev.class = bt_class;
+> +	conn->dev.parent = &hdev->dev;
+> +
+> +	dev_set_drvdata(&conn->dev, conn);
+> +
+> +	device_initialize(&conn->dev);
+> +
+>  	dev_set_name(&conn->dev, "%s:%d", hdev->name, conn->handle);
+>  
+>  	if (device_add(&conn->dev) < 0) {
+> @@ -136,18 +144,8 @@ static void del_conn(struct work_struct 
+>  
+>  void hci_conn_init_sysfs(struct hci_conn *conn)
+>  {
+> -	struct hci_dev *hdev = conn->hdev;
+> -
+>  	BT_DBG("conn %p", conn);
+>  
+> -	conn->dev.type = &bt_link;
+> -	conn->dev.class = bt_class;
+> -	conn->dev.parent = &hdev->dev;
+> -
+> -	dev_set_drvdata(&conn->dev, conn);
+> -
+> -	device_initialize(&conn->dev);
+> -
+>  	INIT_WORK(&conn->work_add, add_conn);
+>  	INIT_WORK(&conn->work_del, del_conn);
+>  }
+> 
 
--- 
-Felipe Contreras
+I prefer if we only move dev_set_drvdata into the work queue and
+actually do initialize the struct device here. I have tested this a bit
+during this week and have not seen any problems. Would this work, too.
+
+Regards
+
+Marcel
+ 
+
