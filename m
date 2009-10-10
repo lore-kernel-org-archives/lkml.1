@@ -1,144 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbZJJMlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761266AbZJJNDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760237AbZJJMlf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 08:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbZJJMld
+	id S1761266AbZJJNDF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 09:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761129AbZJJNDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 08:41:33 -0400
-Received: from mga03.intel.com ([143.182.124.21]:34144 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750761AbZJJMlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 08:41:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,537,1249282800"; 
-   d="scan'208";a="197380744"
-Date: Sat, 10 Oct 2009 20:40:42 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ehrhardt Christian <ehrhardt@linux.vnet.ibm.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH] mm: make VM_MAX_READAHEAD configurable
-Message-ID: <20091010124042.GA9179@localhost>
-References: <1255087175-21200-1-git-send-email-ehrhardt@linux.vnet.ibm.com> <1255090830.8802.60.camel@laptop> <20091009122952.GI9228@kernel.dk> <20091009143124.1241a6bc.akpm@linux-foundation.org> <20091010105333.GR9228@kernel.dk>
+	Sat, 10 Oct 2009 09:03:05 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:23127 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761005AbZJJNDD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 09:03:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=DwRSzzSjSqFCKJrdeFLOnEerkAfaN66ZGByv+bPRwqbdSfdCSxo1xh2BafQ3MKBbYB
+         jEjQH8n5qBR5B5twx+95e65QaJRrSdL8eBAJ/cZKKm0YKTnw4BQXytvHfPazuMqpr8v8
+         DppqzEJN3qPGe/ygLkKKAAkHTKB0zpsTjp3Jg=
+Date: Sat, 10 Oct 2009 15:01:10 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: alsa-devel@alsa-project.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [BUG] GPF in snd_hda_intel
+Message-ID: <20091010130110.GA5445@nb-core2.darkstar.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091010105333.GR9228@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10, 2009 at 06:53:33PM +0800, Jens Axboe wrote:
-> On Fri, Oct 09 2009, Andrew Morton wrote:
-> > On Fri, 9 Oct 2009 14:29:52 +0200
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > On Fri, Oct 09 2009, Peter Zijlstra wrote:
-> > > > On Fri, 2009-10-09 at 13:19 +0200, Ehrhardt Christian wrote:
-> > > > > From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> > > > > 
-> > > > > On one hand the define VM_MAX_READAHEAD in include/linux/mm.h is just a default
-> > > > > and can be configured per block device queue.
-> > > > > On the other hand a lot of admins do not use it, therefore it is reasonable to
-> > > > > set a wise default.
-> > > > > 
-> > > > > This path allows to configure the value via Kconfig mechanisms and therefore
-> > > > > allow the assignment of different defaults dependent on other Kconfig symbols.
-> > > > > 
-> > > > > Using this, the patch increases the default max readahead for s390 improving
-> > > > > sequential throughput in a lot of scenarios with almost no drawbacks (only
-> > > > > theoretical workloads with a lot concurrent sequential read patterns on a very
-> > > > > low memory system suffer due to page cache trashing as expected).
-> > > > 
-> > > > Why can't this be solved in userspace?
-> > > > 
-> > > > Also, can't we simply raise this number if appropriate? Wu did some
-> > > > read-ahead trashing detection bits a long while back which should scale
-> > > > the read-ahead window back when we're low on memory, not sure that ever
-> > > > made it in, but that sounds like a better option than having different
-> > > > magic numbers for each platform.
-> > > 
-> > > Agree, making this a config option (and even defaulting to a different
-> > > number because of an arch setting) is crazy.
-> > 
-> > Given the (increasing) level of disparity between different kinds of
-> > storage devices, having _any_ default is crazy.
-> 
-> You have to start somewhere :-). 0 is a default, too.
+Hello,
+with current git kernel (bd381934) I see a GPF when the snd_hda_intel driver is
+loaded; the regression is recent, 0eca52a works fine.
+The machine is an ASUS laptop (F3Sa), this is the sound card:
 
-Yes, an obvious and viable way is to start with a default size, and to
-back off in runtime if experienced thrashing.
+00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio Controller (rev 03)
 
-Ideally we use 4MB readahead size per disk, however there are several
-constraints:
-- readahead thrashing
-  can be detected and handled very well if necessary :)
-- mmap readaround size
-  currently one single size is used for both sequential readahead and
-  mmap readaround, and a larger readaround size risks more prefetch
-  misses (comparing to the pretty accurate readahead). I guess in
-  despite of the increased readaound misses, a large readaround size
-  would still help application startup time in a 4GB desktop. However
-  it does risk working-set thrashings for memory tight desktops. Maybe
-  we can try to detect working-set thrashings too.
-- IO latency
-  Some workloads may be sensitive to IO latencies. The max_sectors_kb
-  may help keep IO latency under control with a large readahead size,
-  but there may be some tradeoffs in the IO scheduler.
+The codec is ALC660-VD (snd_hda_codec_realtek). The is the GFP message:
 
-In summary, towards the runtime dynamic prefetching size, we
-- can reliably adapt readahead size to readahead thrashings
-- may reliably adapt readaround size to working set thrashings
-- don't know in general whether workload is IO latency sensitive
+general protection fault: 0000 [#1] PREEMPT SMP
+last sysfs file: /sys/devices/pci0000:00/0000:00:1c.1/0000:03:00.0/net/wlan0/
+CPU 0
+Modules linked in: arc4 snd_hda_codec_realtek ecb iwlagn snd_hda_intel(+) usbhid hid btusb snd_hda_codec iwlcore snd_hwdep bluetooth snd_pcm rtc_cmos rtc_core asus_laptop snd_seq snd_timer snd_seq_device snd psmouse mac80211 rtc_lib video soundcore cfg80211 evdev output snd_page_alloc rfkill battery button pcspkr ac processor ext4 mbcache jbd2 crc16 dm_mod sg sr_mod cdrom sd_mod ahci uhci_hcd ata_piix ohci1394 sdhci_pci sdhci mmc_core led_class ieee1394 libata ehci_hcd scsi_mod usbcore intel_agp thermal fan unix [last unloaded: scsi_wait_scan]
+Pid: 1027, comm: modprobe Not tainted 2.6.32-rc3-00337-gbd38193 #160 F3Sa    
+RIP: 0010:[<ffffffffa033aebd>]  [<ffffffffa033aebd>] snd_hda_sequence_write+0x27/0x34 [snd_hda_codec]
+RSP: 0018:ffff88013e0afbe8  EFLAGS: 00010207
+RAX: 0000000000000000 RBX: 36434c4100000006 RCX: 000000000000009a
+RDX: ffff88013e0afb28 RSI: 36434c4100000006 RDI: ffff88013e259000
+RBP: ffff88013e0afbf8 R08: 000000000000005e R09: ffff88013e0af9d8
+R10: 0000000000000000 R11: 000000000000d2d0 R12: ffff88013e259000
+R13: ffff88013e259000 R14: ffff88013d12c800 R15: ffff88013e0afd08
+FS:  00007f423f9086f0(0000) GS:ffff880028200000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 000000000061d468 CR3: 000000013e568000 CR4: 00000000000006f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process modprobe (pid: 1027, threadinfo ffff88013e0ae000, task ffff88013ddbc290)
+Stack:
+ 0000000000000006 ffff88013d12c830 ffff88013e0afc28 ffffffffa03bc117
+<0> ffff88013e259000 0000000000000002 ffff88013dd68258 ffff88013de4f600
+<0> ffff88013e0afc48 ffffffffa033aef5 ffff88013dd68258 ffff88013e259000
+Call Trace:
+ [<ffffffffa03bc117>] alc_init+0x2f8/0x31e [snd_hda_codec_realtek]
+ [<ffffffffa033aef5>] snd_hda_codec_build_controls+0x2b/0x4c [snd_hda_codec]
+ [<ffffffffa033c8ca>] snd_hda_build_controls+0x23/0x7f [snd_hda_codec]
+ [<ffffffffa03899a0>] azx_probe+0x9d9/0xa97 [snd_hda_intel]
+ [<ffffffffa0388e10>] ? azx_send_cmd+0x0/0x174 [snd_hda_intel]
+ [<ffffffffa0388c19>] ? azx_get_response+0x0/0x1f7 [snd_hda_intel]
+ [<ffffffffa0388276>] ? azx_attach_pcm_stream+0x0/0x209 [snd_hda_intel]
+ [<ffffffffa0387ec4>] ? azx_bus_reset+0x0/0x79 [snd_hda_intel]
+ [<ffffffffa0387d28>] ? azx_power_notify+0x0/0x5d [snd_hda_intel]
+ [<ffffffff811829f3>] local_pci_probe+0x12/0x16
+ [<ffffffff811836b9>] pci_device_probe+0x5f/0x89
+ [<ffffffff81207f68>] ? driver_sysfs_add+0x4c/0x72
+ [<ffffffff812080b4>] driver_probe_device+0xad/0x15f
+ [<ffffffff812081be>] __driver_attach+0x58/0x7b
+ [<ffffffff81208166>] ? __driver_attach+0x0/0x7b
+ [<ffffffff81207893>] bus_for_each_dev+0x4e/0x84
+ [<ffffffff81207f1a>] driver_attach+0x1c/0x1e
+ [<ffffffff81207205>] bus_add_driver+0x126/0x26f
+ [<ffffffff812084b2>] driver_register+0xb3/0x121
+ [<ffffffffa038f000>] ? alsa_card_azx_init+0x0/0x20 [snd_hda_intel]
+ [<ffffffff811838fe>] __pci_register_driver+0x51/0xbc
+ [<ffffffffa038f000>] ? alsa_card_azx_init+0x0/0x20 [snd_hda_intel]
+ [<ffffffffa038f01e>] alsa_card_azx_init+0x1e/0x20 [snd_hda_intel]
+ [<ffffffff81009060>] do_one_initcall+0x5a/0x14a
+ [<ffffffff8107270a>] sys_init_module+0xd0/0x229
+ [<ffffffff8100baeb>] system_call_fastpath+0x16/0x1b
+Code: 31 c0 c9 c3 55 48 89 e5 41 54 49 89 fc 53 48 89 f3 eb 18 8b 4b 04 44 8b 43 08 0f b7 f0 31 d2 4c 89 e7 48 83 c3 0c e8 ce f4 ff ff <66> 8b 03 66 85 c0 75 e0 5b 41 5c c9 c3 55 48 89 e5 53 48 89 fb
+RIP  [<ffffffffa033aebd>] snd_hda_sequence_write+0x27/0x34 [snd_hda_codec]
+ RSP <ffff88013e0afbe8>
+---[ end trace 91ec1e9b500145fa ]---
 
-> > Would be better to make some sort of vaguely informed guess at
-> > runtime, based upon the characteristics of the device.
-> 
-> I'm pretty sure the readahead logic already does respond to eg memory
-> pressure,
+The disassembly:
+1e96:       55                      push   %rbp
+1e97:       48 89 e5                mov    %rsp,%rbp
+1e9a:       41 54                   push   %r12
+1e9c:       49 89 fc                mov    %rdi,%r12
+1e9f:       53                      push   %rbx
+1ea0:       48 89 f3                mov    %rsi,%rbx
+1ea3:       eb 18                   jmp    1ebd <snd_hda_sequence_write+0x27>
+1ea5:       8b 4b 04                mov    0x4(%rbx),%ecx
+1ea8:       44 8b 43 08             mov    0x8(%rbx),%r8d
+1eac:       0f b7 f0                movzwl %ax,%esi
+1eaf:       31 d2                   xor    %edx,%edx
+1eb1:       4c 89 e7                mov    %r12,%rdi
+1eb4:       48 83 c3 0c             add    $0xc,%rbx
+1eb8:       e8 00 00 00 00          callq  1ebd <snd_hda_sequence_write+0x27>
+1ebd:       66 8b 03                mov    (%rbx),%ax <-- fault here
+1ec0:       66 85 c0                test   %ax,%ax
+1ec3:       75 e0                   jne    1ea5 <snd_hda_sequence_write+0xf>
+1ec5:       5b                      pop    %rbx
+1ec6:       41 5c                   pop    %r12
+1ec8:       c9                      leaveq
+1ec9:       c3                      retq
 
-Yes, it's much better than before. Once thrashed, old kernels are
-basically reduced to do 1-page (random) IOs, which is disastrous.
 
-Current kernel does this. Given
-
-        default_readahead_size > thrashing_readahead_size
-
-The readahead sequence would be
-
-        read_size, 2*read_size, 4*read_size, ..., (until > thrashing_readahead_size)
-        read_size, 2*read_size, 4*read_size, ..., (until > thrashing_readahead_size)
-        read_size, 2*read_size, 4*read_size, ..., (until > thrashing_readahead_size)
-        ...
-
-So if read_size=1, it roughly holds that
-
-        average_readahead_size = thrashing_readahead_size/log2(thrashing_readahead_size)
-        thrashed_pages = total_read_pages/2
-
-And if read_size=LONG_MAX (eg. sendfile(large_file))
-
-        average_readahead_size = default_readahead_size
-        thrashed_pages = default_readahead_size - thrashing_readahead_size
-
-In summary, readahead for sendfile() is not adaptive at all.  Normal
-reads are somehow adaptive, but not optimal.
-
-But anyway, optimal thrashing readahead is approachable if it's a
-desirable goal :).
-
-> not sure if it attempts to do anything based on how quickly
-> the device is doing IO. Wu?
-
-Not for current kernel.  But in fact it's possible to estimate the
-read speed for each individual sequential stream, and possibly drop
-some hint to the IO scheduler: someone will block on this IO after 3
-seconds. But it may not deserve the complexity.
-
-Thanks,
-Fengguang
+Luca
