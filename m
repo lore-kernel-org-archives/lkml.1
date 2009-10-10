@@ -1,95 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761945AbZJJQJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761962AbZJJQQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761945AbZJJQJX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 12:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761794AbZJJQJW
+	id S1761962AbZJJQQM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 12:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761949AbZJJQQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 12:09:22 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:46031 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761699AbZJJQJW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 12:09:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=RTK6wC2fszY0ZJ21ZdqAv3jiyvw5wZvRq14IF3M49LswVuWxJTRKqJoIXjGbEVF5UT
-         ATsZOVwhuSwBvjgjycLIdwbqjh0d4FHtR0z8phG5IJVEzVEtwFwJBxWpKh0uV08kspQL
-         f8MksSmEGzGEV0uR1qycLvQ9e75mvVDJ/dMAA=
-Date: Sat, 10 Oct 2009 18:08:41 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
-       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>,
-       Mark Gross <mgross@linux.intel.com>
-Subject: Re: [patch 01/28] pm_qos: remove BKL
-Message-ID: <20091010160839.GE5150@nowhere>
-References: <20091010153314.827301943@linutronix.de> <20091010153349.071381158@linutronix.de>
-MIME-Version: 1.0
+	Sat, 10 Oct 2009 12:16:09 -0400
+Received: from verein.lst.de ([213.95.11.210]:34982 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761948AbZJJQQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 12:16:08 -0400
+Date: Sat, 10 Oct 2009 18:15:31 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] blkdev: flush disk cache on ->fsync
+Message-ID: <20091010161531.GA30289@lst.de>
+References: <20090820182432.GA31520@lst.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091010153349.071381158@linutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090820182432.GA31520@lst.de>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10, 2009 at 03:35:24PM -0000, Thomas Gleixner wrote:
-> pm_qos_power_open got its lock_kernel() calls from the open() pushdown.  A
-> look at the code shows that the only global resources accessed are
-> pm_qos_array and "name".  pm_qos_array doesn't change (things pointed to
-> therein do change, but they are atomics and/or are protected by
-> pm_qos_lock).  Accesses to "name" are totally unprotected with or without
-> the BKL; that will be fixed shortly.  The BKL is not helpful here; take it
-> out.
+Is anyone going to pick up this patch?
+
+On Thu, Aug 20, 2009 at 08:24:32PM +0200, Christoph Hellwig wrote:
+> Currently there is no barrier support in the block device code.  That
+> means we cannot guarantee any sort of data integerity when using the
+> block device node with dis kwrite caches enabled.  Using the raw block
+> device node is a typical use case for virtualization (and I assume
+> databases, too).  This patch changes block_fsync to issue a cache flush
+> and thus make fsync on block device nodes actually useful.
 > 
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-> Cc: Mark Gross <mgross@linux.intel.com>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-
-Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-
+> Note that in mainline we would also need to add such code to the
+> ->aio_write method for O_SYNC handling, but assuming that Jan's patch
+> series for the O_SYNC rewrite goes in it will also call into ->fsync
+> for 2.6.32.
 > 
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index dfdec52..d96b83e 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -29,7 +29,6 @@
->  
->  #include <linux/pm_qos_params.h>
->  #include <linux/sched.h>
-> -#include <linux/smp_lock.h>
->  #include <linux/spinlock.h>
->  #include <linux/slab.h>
->  #include <linux/time.h>
-> @@ -352,20 +351,15 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
->  	int ret;
->  	long pm_qos_class;
->  
-> -	lock_kernel();
->  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
->  	if (pm_qos_class >= 0) {
->  		filp->private_data = (void *)pm_qos_class;
->  		sprintf(name, "process_%d", current->pid);
->  		ret = pm_qos_add_requirement(pm_qos_class, name,
->  					PM_QOS_DEFAULT_VALUE);
-> -		if (ret >= 0) {
-> -			unlock_kernel();
-> +		if (ret >= 0)
->  			return 0;
-> -		}
->  	}
-> -	unlock_kernel();
-> -
->  	return -EPERM;
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> 
+> 
+> diff --git a/fs/block_dev.c b/fs/block_dev.c
+> index 94dfda2..298ad75 100644
+> --- a/fs/block_dev.c
+> +++ b/fs/block_dev.c
+> @@ -398,7 +398,17 @@ static loff_t block_llseek(struct file *file, loff_t offset, int origin)
+>   
+>  static int block_fsync(struct file *filp, struct dentry *dentry, int datasync)
+>  {
+> -	return sync_blockdev(I_BDEV(filp->f_mapping->host));
+> +	struct block_device *bdev = I_BDEV(filp->f_mapping->host);
+> +	int error;
+> +
+> +	error = sync_blockdev(bdev);
+> +	if (error)
+> +		return error;
+> +	
+> +	error = blkdev_issue_flush(bdev, NULL);
+> +	if (error == -EOPNOTSUPP)
+> +		error = 0;
+> +	return error;
 >  }
 >  
-> 
-> 
-
+>  /*
+---end quoted text---
