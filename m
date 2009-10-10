@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751490AbZJJGFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbZJJGGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751490AbZJJGFx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 02:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZJJGFn
+	id S1754538AbZJJGGG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 02:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZJJGFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 02:05:43 -0400
-Received: from mail.perches.com ([173.55.12.10]:2046 "EHLO mail.perches.com"
+	Sat, 10 Oct 2009 02:05:53 -0400
+Received: from mail.perches.com ([173.55.12.10]:2051 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752542AbZJJGFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 02:05:41 -0400
+	id S1751490AbZJJGFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 02:05:42 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Wolfram Sang <w.sang@pengutronix.de>,
        Grant Likely <grant.likely@secretlab.ca>,
        Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: [PATCH 1/3] scripts/get_maintainer.pl: Add patch/file search for keywords
-Date: Fri,  9 Oct 2009 23:05:02 -0700
-Message-Id: <73a375fb516cc420fcff9a0489e29a5509fbf34e.1255153863.git.joe@perches.com>
+Subject: [PATCH 2/3] MAINTAINERS: Document new "K:" entry type
+Date: Fri,  9 Oct 2009 23:05:03 -0700
+Message-Id: <6773e26fed99c1e686bf6efa3dd59eba525c7633.1255153863.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.5.rc3.dirty
 In-Reply-To: <cover.1255153863.git.joe@perches.com>
 References: <cover.1255153863.git.joe@perches.com>
@@ -25,141 +25,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Based on an idea from Wolfram Sang <w.sang@pengutronix.de>
+K: is for keyword.  Syntax is perl extended regex.
 
-Add search for MAINTAINERS line "K:" regex pattern match in a patch or file
-Matches are added after file pattern matches
-Add --keywords command line switch (default 1, on)
-Change version to 0.21
+Reorganized header documentation and indent the section
+entry descriptions so that the first K: would not be
+considered a regex to match by get_maintainer.pl
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- scripts/get_maintainer.pl |   37 +++++++++++++++++++++++++++++++++++--
- 1 files changed, 35 insertions(+), 2 deletions(-)
+ MAINTAINERS |   70 ++++++++++++++++++++++++++++++++--------------------------
+ 1 files changed, 39 insertions(+), 31 deletions(-)
 
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index cdb44b6..102b766 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -13,7 +13,7 @@
- use strict;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e1da925..4407de2 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -65,43 +65,51 @@ trivial patch so apply some common sense.
  
- my $P = $0;
--my $V = '0.20';
-+my $V = '0.21';
+ 8.	Happy hacking.
  
- use Getopt::Long qw(:config no_auto_abbrev);
- 
-@@ -37,6 +37,7 @@ my $scm = 0;
- my $web = 0;
- my $subsystem = 0;
- my $status = 0;
-+my $keywords = 1;
- my $from_filename = 0;
- my $pattern_depth = 0;
- my $version = 0;
-@@ -84,6 +85,7 @@ if (!GetOptions(
- 		'scm!' => \$scm,
- 		'web!' => \$web,
- 		'pattern-depth=i' => \$pattern_depth,
-+		'k|keywords!' => \$keywords,
- 		'f|file' => \$from_filename,
- 		'v|version' => \$version,
- 		'h|help' => \$help,
-@@ -132,6 +134,8 @@ if (!top_of_kernel_tree($lk_path)) {
- ## Read MAINTAINERS for type/value pairs
- 
- my @typevalue = ();
-+my %keyword_hash;
-+
- open(MAINT, "<${lk_path}MAINTAINERS") || die "$P: Can't open MAINTAINERS\n";
- while (<MAINT>) {
-     my $line = $_;
-@@ -149,6 +153,8 @@ while (<MAINT>) {
- 	    if ((-d $value)) {
- 		$value =~ s@([^/])$@$1/@;
- 	    }
-+	} elsif ($type eq "K") {
-+	    $keyword_hash{@typevalue} = $value;
- 	}
- 	push(@typevalue, "$type:$value");
-     } elsif (!/^(\s)*$/) {
-@@ -188,6 +194,7 @@ if ($email_remove_duplicates) {
- 
- my @files = ();
- my @range = ();
-+my @keyword_tvi = ();
- 
- foreach my $file (@ARGV) {
-     ##if $file is a directory and it lacks a trailing slash, add one
-@@ -198,11 +205,24 @@ foreach my $file (@ARGV) {
-     }
-     if ($from_filename) {
- 	push(@files, $file);
-+	if (-f $file && $keywords) {
-+	    open(FILE, "<$file") or die "$P: Can't open ${file}\n";
-+	    while (<FILE>) {
-+		my $patch_line = $_;
-+		foreach my $line (keys %keyword_hash) {
-+		    if ($patch_line =~ m/^.*$keyword_hash{$line}/x) {
-+			push(@keyword_tvi, $line);
-+		    }
-+		}
-+	    }
-+	    close(FILE);
-+	}
-     } else {
- 	my $file_cnt = @files;
- 	my $lastfile;
- 	open(PATCH, "<$file") or die "$P: Can't open ${file}\n";
- 	while (<PATCH>) {
-+	    my $patch_line = $_;
- 	    if (m/^\+\+\+\s+(\S+)/) {
- 		my $filename = $1;
- 		$filename =~ s@^[^/]*/@@;
-@@ -213,6 +233,12 @@ foreach my $file (@ARGV) {
- 		if ($email_git_blame) {
- 		    push(@range, "$lastfile:$1:$2");
- 		}
-+	    } elsif ($keywords) {
-+		foreach my $line (keys %keyword_hash) {
-+		    if ($patch_line =~ m/^[+-].*$keyword_hash{$line}/x) {
-+			push(@keyword_tvi, $line);
-+		    }
-+		}
- 	    }
- 	}
- 	close(PATCH);
-@@ -286,6 +312,13 @@ foreach my $file (@files) {
-     }
- }
- 
-+if ($keywords) {
-+    @keyword_tvi = sort_and_uniq(@keyword_tvi);
-+    foreach my $line (@keyword_tvi) {
-+	add_categories($line);
-+    }
-+}
-+
- if ($email) {
-     foreach my $chief (@penguin_chief) {
- 	if ($chief =~ m/^(.*):(.*)/) {
-@@ -384,6 +417,7 @@ Output type options:
- 
- Other options:
-   --pattern-depth => Number of pattern directory traversals (default: 0 (all))
-+  --keywords => scan patch for keywords (default: 1 (on))
-   --version => show version
-   --help => show this help information
- 
-@@ -486,7 +520,6 @@ sub format_email {
- }
- 
- sub find_starting_index {
+-		-----------------------------------
 -
-     my ($index) = @_;
+-Maintainers List (try to look for most precise areas first)
++Descriptions of section entries:
++
++	P: Person (obsolete)
++	M: Mail patches to: FullName <address@domain>
++	L: Mailing list that is relevant to this area
++	W: Web-page with status/info
++	T: SCM tree type and location.  Type is one of: git, hg, quilt, stgit.
++	S: Status, one of the following:
++	   Supported:	Someone is actually paid to look after this.
++	   Maintained:	Someone actually looks after it.
++	   Odd Fixes:	It has a maintainer but they don't have time to do
++			much other than throw the odd patch in. See below..
++	   Orphan:	No current maintainer [but maybe you could take the
++			role as you write your new code].
++	   Obsolete:	Old code. Something tagged obsolete generally means
++			it has been replaced by a better system and you
++			should be using that.
++	F: Files and directories with wildcard patterns.
++	   A trailing slash includes all files and subdirectory files.
++	   F:	drivers/net/	all files in and below drivers/net
++	   F:	drivers/net/*	all files in drivers/net, but not below
++	   F:	*/net/*		all files in "any top level directory"/net
++	   One pattern per line.  Multiple F: lines acceptable.
++	X: Files and directories that are NOT maintained, same rules as F:
++	   Files exclusions are tested before file matches.
++	   Can be useful for excluding a specific subdirectory, for instance:
++	   F:	net/
++	   X:	net/ipv6/
++	   matches all files in and below net excluding net/ipv6/
++	K: Keyword perl extended regex pattern to match content in a
++	   patch or file.  For instance:
++	   K: of_get_profile
++	      matches patches or files that contain "of_get_profile"
++	   K: \b(printk|pr_(info|err))\b
++	      matches patches or files that contain one or more of the words
++	      printk, pr_info or pr_err
++	   One regex pattern per line.  Multiple K: lines acceptable.
  
-     while ($index > 0) {
+ Note: For the hard of thinking, this list is meant to remain in alphabetical
+ order. If you could add yourselves to it in alphabetical order that would be
+ so much easier [Ed]
+ 
+-P: Person (obsolete)
+-M: Mail patches to: FullName <address@domain>
+-L: Mailing list that is relevant to this area
+-W: Web-page with status/info
+-T: SCM tree type and location.  Type is one of: git, hg, quilt, stgit.
+-S: Status, one of the following:
+-
+-	Supported:	Someone is actually paid to look after this.
+-	Maintained:	Someone actually looks after it.
+-	Odd Fixes:	It has a maintainer but they don't have time to do
+-			much other than throw the odd patch in. See below..
+-	Orphan:		No current maintainer [but maybe you could take the
+-			role as you write your new code].
+-	Obsolete:	Old code. Something tagged obsolete generally means
+-			it has been replaced by a better system and you
+-			should be using that.
++Maintainers List (try to look for most precise areas first)
+ 
+-F: Files and directories with wildcard patterns.
+-   A trailing slash includes all files and subdirectory files.
+-	F:	drivers/net/	all files in and below drivers/net
+-	F:	drivers/net/*	all files in drivers/net, but not below
+-	F:	*/net/*		all files in "any top level directory"/net
+-   One pattern per line.  Multiple F: lines acceptable.
+-X: Files and directories that are NOT maintained, same rules as F:
+-   Files exclusions are tested before file matches.
+-   Can be useful for excluding a specific subdirectory, for instance:
+-	F:	net/
+-	X:	net/ipv6/
+-   matches all files in and below net excluding net/ipv6/
++		-----------------------------------
+ 
+ 3C505 NETWORK DRIVER
+ M:	Philip Blundell <philb@gnu.org>
 -- 
 1.6.5.rc3.dirty
 
