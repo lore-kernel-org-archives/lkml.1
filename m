@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbZJJXZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758364AbZJJX1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904AbZJJXZF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 19:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZJJXZF
+	id S1758364AbZJJX1y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 19:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZJJX1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 19:25:05 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38697 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754266AbZJJXZE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 19:25:04 -0400
-Date: Sun, 11 Oct 2009 00:25:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bernhard Walle <bernhard@bwalle.de>, akpm@linuxfoundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] Use vt_get_kmsg_redirect() and
- vt_set_kmsg_redirect()
-Message-ID: <20091011002544.32c6f196@lxorguk.ukuu.org.uk>
-In-Reply-To: <20091011000632.3148849e@lxorguk.ukuu.org.uk>
-References: <1255207870-24496-1-git-send-email-bernhard@bwalle.de>
-	<1255207870-24496-4-git-send-email-bernhard@bwalle.de>
-	<20091011000632.3148849e@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Sat, 10 Oct 2009 19:27:53 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57396 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755052AbZJJX1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 19:27:52 -0400
+Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Josua Dietze <digidietze@draisberghof.de>, Ben Efros <ben@pc-doctor.com>,
+       fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>
+In-Reply-To: <Pine.LNX.4.44L0.0910101851430.7922-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0910101851430.7922-100000@netrider.rowland.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 11 Oct 2009 10:26:26 +1100
+Message-Id: <1255217186.2192.18.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> variable is now function local and the whole pile of stuff you posted
-> becomes
+On Sat, 2009-10-10 at 18:52 -0400, Alan Stern wrote:
+> > Maybe a better approach would be to go back to 18 bytes when it fails,
+> > what do you think ?
 > 
-> #if defined(CONFIG_VT_CONSOLE)
+> We certainly could do that.  But should we turn off the SANE_SENSE flag 
+> at the same time? 
 
-Umm testing it this seems gcc/ld isn't quite smart enough to get that
-right so the function can't be inlined - the rest holds though, it can be
-hidden in function just not in the header file.
+I would think so, and not set it back the next time the sense buffer
+claims more data in it (something like setting a NOT_REALLY_SANE_SENSE
+flag ? :-)
+
+Or not care and always do double sense on those devices. Whatever
+works. It's not that sense was a fast path.
+
+Cheers,
+Ben.
+
 
