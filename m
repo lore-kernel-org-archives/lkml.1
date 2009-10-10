@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762129AbZJJVdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbZJJVpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762129AbZJJVdn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 17:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbZJJVdm
+	id S1757112AbZJJVpW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 17:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbZJJVpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 17:33:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54328 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754835AbZJJVdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 17:33:41 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ondrej Hujnak <hujnak.ondrej@gmail.com>
-Subject: Re: Suspend to RAM on MSI PR200YA - do not recover, system immediately turns down
-Date: Sat, 10 Oct 2009 23:34:42 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, mschmidt@redhat.com,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <37b436160910101054t7765c253ta98b983f226b57c3@mail.gmail.com>
-In-Reply-To: <37b436160910101054t7765c253ta98b983f226b57c3@mail.gmail.com>
+	Sat, 10 Oct 2009 17:45:21 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:47773 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754794AbZJJVpU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 17:45:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=cvje2zB9ykME3Vt3hgMFxqCPt/Fk2eIKGodvERLsI1/XsdrYs70MGwQp0/8NRm89jn
+         nwNK1GBGEVKy47atxmeT8QWKGZb8WqjD0Evq4zenBOty8ILts7pEZZiu2ZUbnEuLzhL1
+         I67mwGJxGmKVQNk+J71BH5Ohn03HNjKs6GUF8=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910102334.42399.rjw@sisk.pl>
+In-Reply-To: <20091010212521.GD14051@elf.ucw.cz>
+References: <4AC8F02B.6080209@suse.de> <4AC91578.2020807@suse.de>
+	 <ca2dc2820910041455h18ece909rc2280a40f1899c0a@mail.gmail.com>
+	 <4AC923F4.9050100@suse.de>
+	 <ca2dc2820910041653o29d4b253n69270d231e56e447@mail.gmail.com>
+	 <4AC93B45.8090707@suse.de>
+	 <ca2dc2820910061005k2beae176lece9792bb15cda90@mail.gmail.com>
+	 <20091010120448.GB1811@ucw.cz>
+	 <ca2dc2820910101353g65e4591ds82bf9fff8378abd4@mail.gmail.com>
+	 <20091010212521.GD14051@elf.ucw.cz>
+Date: Sat, 10 Oct 2009 23:44:42 +0200
+Message-ID: <ca2dc2820910101444v16b44645se826ae2bfbdb90a3@mail.gmail.com>
+Subject: Re: [PATCH] battery: Fix charge_now returned by broken batteries
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 October 2009, Ondrej Hujnak wrote:
-> Hello,
-> 
-> I am trying to make work "Suspend to RAM".
-> My laptop is MSI PR200YA, linux
-> kernel 2.6.30.8-64.fc11.i586 (fedora 11, 32bit),
-> the same is with 2.6.31.1-56.fc12.i686.
-> Motherboard - MSI 1221, graphics:
-> Mobile GM965/GL960 Integrated Graphics Controller
-> 
-> When I do suspend to RAM it seem to work ok, it sleeps.
-> But when I want to wake it, it only switches off (the power
-> LED stops blinking).  If I'm having my notebook connected
-> to electricity, after start it don't  start screen and keyboard.
-> Notebook is running, but there is no HDD activity according
-> to the LED indicator. When it is on battery, it normally starts,
-> as if I had switched it normally off. Every time after trying to
-> suspend it to RAM, on the next start I have
-> "last write to superblock in future".
-> 
-> I tried:
->  - suspend from "single" mode
->  - suspend from "single" mode with as many modules as possible rmmod'ed
->  - using "nomodeset"
->  - early suspend-to-RAM at boot test with "test_suspend=mem"
-> All with the same result.
-> 
-> I also tried using pm_trace, but this gave no useful results in dmesg
-> in the next boot. The clock was not changed by it (the documentation
-> said it would be).
-> 
-> I have attached printout of "lspci -vv" and "dmesg" after switching
-> pm_trace on.
-> 
-> I'd welcome any ideas how to debug this further.
-> I'm looking forward to your reply.
+On Sat, Oct 10, 2009 at 11:25 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> >> In "broken" batteries (is it broken finally? or is it expected
+>> >> behaviour?) like mine the old problem will be corrected, as it was
+>> >> only present in the charged state.
+>> >
+>> > I believe you better work around this in userspace... or agree that
+>> >>100% charge is possible.
+>>
+>> I agree that >100% charge is possible while charging (because that
+>> would mean the battery is over the last charged level); however, what
+>> does it mean when charged?
+>
+> Well, maybe the battery only updates full_charge_capacity during
+> powerdown or when the moon is full or something? (IOW you may be
+> breaking already working machines).
+>
 
-Does the pm_test 'core' test work (please see
-Documentation/power/basic-pm-debugging.txt)?
+I do not know about batteries as I said, I was waiting for someone to
+point out how batteries (normally/should) work.
 
-Rafael
+>> In any case, my laptop's battery is not charging over 100% its
+>> original capacity anyway, just reporting a wrong value.
+>
+> True. But I do not think  you are fixing it properly. Maybe ask for
+> fixed BIOS?
 
+Well, many BIOS/systems are broken and Linux has to workaround them. I
+am sure there are a lot of broken batteries out there.
 
-> 
+>
+> Or perhaps add quirk based on DMI or something?
 
+My battery is easily identified by its model name, so maybe we can
+apply the workaround only to known hardware. Still, that is a "heavy"
+solution, as I suppose there are many many battery models in the
+world. That is why I was asking whether some kind of standard/unified
+batteries' values/behavior exists (or implement it) that we can try to
+achieve easily with some heuristics like the one I proposed, instead
+of some kind of huge table-based workaround system.
+
+>                                                                        Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
