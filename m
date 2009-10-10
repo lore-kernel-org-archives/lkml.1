@@ -1,54 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761717AbZJJPgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761957AbZJJPh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761717AbZJJPgg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 11:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761128AbZJJPgg
+	id S1761957AbZJJPh4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 11:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761948AbZJJPhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 11:36:36 -0400
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:56744 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757412AbZJJPgf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 11:36:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=r2wjByHaOsK2wbIpj5VO6Ws+ZjKnghpsN0WuKASOp8wqQVdPwmavAi6/cjx35nH1ni
-         gji6e6+Oub0oIsUzp5Px9tbm/6LdvV61ntrmP2WIzaynkoOCDBaU54UIaOFnyROsrrzP
-         WTmaHaeC6Q6H/XeYlUw6lZDW4SossnJARTgRI=
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0910090946220.26484@gentwo.org>
-References: <20091009100527.1284.A69D9226@jp.fujitsu.com>
-	 <20091009100708.1287.A69D9226@jp.fujitsu.com>
-	 <20091009174505.12B3.A69D9226@jp.fujitsu.com>
-	 <alpine.DEB.1.10.0910090946220.26484@gentwo.org>
-Date: Sun, 11 Oct 2009 00:35:58 +0900
-X-Google-Sender-Auth: e2e14cc698e37fd2
-Message-ID: <2f11576a0910100835t4cba94a9v3ccd7473de229af5@mail.gmail.com>
-Subject: Re: [PATCH 2/3] Fix memory leak of never putback pages in mbind()
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 10 Oct 2009 11:37:54 -0400
+Received: from www.tglx.de ([62.245.132.106]:55404 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761945AbZJJPhw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 11:37:52 -0400
+Message-Id: <20091010153349.405590702@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Sat, 10 Oct 2009 15:36:05 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
+       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>
+Subject: [patch 09/28] sys: Remove BKL from sys_reboot
+References: <20091010153314.827301943@linutronix.de>
+Content-Disposition: inline; filename=sys-remove-bkl-from-reboot.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Oops, I forgot to remove unnecessary brace.
->> updated patch is here.
->
-> Thats a style issue. There are other weird things in do_mbind as well
-> like starting a new block in the middle of another.
->
-> Having
->
-> }
-> {
->
-> in a program is a bit confusing. So could you do a cleanup patch for
-> mpol_bind? Preferably it should make it easy to read to and bring some
-> order to the confusing error handling.
+Serialization of sys_reboot can be done local. The BKL is not
+protecting anything else.
 
-Yes, I'll do.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/sys.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+Index: linux-2.6-tip/kernel/sys.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/sys.c
++++ linux-2.6-tip/kernel/sys.c
+@@ -8,7 +8,6 @@
+ #include <linux/mm.h>
+ #include <linux/utsname.h>
+ #include <linux/mman.h>
+-#include <linux/smp_lock.h>
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/prctl.h>
+@@ -349,6 +348,9 @@ void kernel_power_off(void)
+ 	machine_power_off();
+ }
+ EXPORT_SYMBOL_GPL(kernel_power_off);
++
++static DEFINE_MUTEX(reboot_mutex);
++
+ /*
+  * Reboot system call: for obvious reasons only root may call it,
+  * and even root needs to set up some magic numbers in the registers
+@@ -381,7 +383,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int
+ 	if ((cmd == LINUX_REBOOT_CMD_POWER_OFF) && !pm_power_off)
+ 		cmd = LINUX_REBOOT_CMD_HALT;
+ 
+-	lock_kernel();
++	mutex_lock(&reboot_mutex);
+ 	switch (cmd) {
+ 	case LINUX_REBOOT_CMD_RESTART:
+ 		kernel_restart(NULL);
+@@ -397,20 +399,18 @@ SYSCALL_DEFINE4(reboot, int, magic1, int
+ 
+ 	case LINUX_REBOOT_CMD_HALT:
+ 		kernel_halt();
+-		unlock_kernel();
+ 		do_exit(0);
+ 		panic("cannot halt");
+ 
+ 	case LINUX_REBOOT_CMD_POWER_OFF:
+ 		kernel_power_off();
+-		unlock_kernel();
+ 		do_exit(0);
+ 		break;
+ 
+ 	case LINUX_REBOOT_CMD_RESTART2:
+ 		if (strncpy_from_user(&buffer[0], arg, sizeof(buffer) - 1) < 0) {
+-			unlock_kernel();
+-			return -EFAULT;
++			ret = -EFAULT;
++			break;
+ 		}
+ 		buffer[sizeof(buffer) - 1] = '\0';
+ 
+@@ -433,7 +433,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int
+ 		ret = -EINVAL;
+ 		break;
+ 	}
+-	unlock_kernel();
++	mutex_unlock(&reboot_mutex);
+ 	return ret;
+ }
+ 
+
+
