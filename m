@@ -1,89 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934778AbZJJTdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762075AbZJJTJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934778AbZJJTdG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 15:33:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934750AbZJJTdE
+	id S1762075AbZJJTJj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 15:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762039AbZJJTJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 15:33:04 -0400
-Received: from web.keli.cz ([77.48.235.227]:40329 "EHLO web.keli.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932948AbZJJTdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 15:33:03 -0400
-X-Greylist: delayed 1510 seconds by postgrey-1.27 at vger.kernel.org; Sat, 10 Oct 2009 15:33:02 EDT
-Message-ID: <4AD0DB52.20800@century.cz>
-Date: Sat, 10 Oct 2009 21:06:58 +0200
-From: =?ISO-8859-2?Q?Petr_Tit=ECra?= <P.Titera@century.cz>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sat, 10 Oct 2009 15:09:36 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:54153 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762008AbZJJTJf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 15:09:35 -0400
 MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: Norbert Preining <preining@logic.at>,
-       Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: complete IO hang since a few kernel revision
-References: <20091005011626.GH4335@gamma.logic.tuwien.ac.at>	 <4AC9607D.6050900@datenparkplatz.de>	 <20091005083308.GB5612@gandalf.dynalias.org>	 <1254813111.6293.22.camel@marge.simson.net>	 <20091006071609.GB21772@gandalf.dynalias.org> <1254815060.8758.14.camel@marge.simson.net>
-In-Reply-To: <1254815060.8758.14.camel@marge.simson.net>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <alpine.LFD.2.00.0910101931080.9428@localhost.localdomain>
+References: <1255165747.6385.117.camel@doodleydee> <alpine.LFD.2.00.0910101931080.9428@localhost.localdomain>
+From: Jeremy Leibs <leibs@willowgarage.com>
+Date: Sat, 10 Oct 2009 12:08:03 -0700
+Message-ID: <92be2ef30910101208p1b2eb493wdfa46d363ca96f99@mail.gmail.com>
+Subject: Re: ERESTARTSYS escaping from sem_wait with RTLinux patch
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Blaise Gassend <blaise@willowgarage.com>,
+       LKML <linux-kernel@vger.kernel.org>, Darren Hart <dvhltc@us.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Galbraith napsal(a):
-> On Tue, 2009-10-06 at 16:16 +0900, Norbert Preining wrote:
->   
->> On Tue, 06 Oct 2009, Mike Galbraith wrote:
->>     
->>> I've tried unsuccessfully to reproduce this behavior.
->>>
->>> Since it doesn't appear to be something readily reproducible, more
->>> information and/or some digging on your part may be needed.
->>>       
->> Hm, how could I do that? I am fine with compiling some strange 
->> kernel options, or running some debugging task, but I don't have
->> and netconsole or serial console available.
->>     
->
-> Locating when it started for you would be valuable, even if it's not
-> pin-pointed such as a git bisection could do.  A bisection is the best
-> bet to nail it down, but can be quite time consuming.
->
->   
-I see something similar here. Processes just get stuck in 
-balance_dirty_pages for infinite time. It helps if, when process is 
-stuck another process generates some dirty pages. Unfotunately last 
-kernel I'm prety sure everything worked is 2.6.31-rc9-tip-01355-ge035e96 
-(yes its x86 -tip kernel). I'm building new kernel now.
+Thomas, thanks for the quick reply.
 
-Petr
-
-> One thing you can try is to drop to a non-gui shell, and see it the
-> symptom is reproducible without the GUI.  If it is, poke SysRq-W while
-> things are thoroughly jammed up, and post the output+config here.
+On Sat, Oct 10, 2009 at 10:59 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Blaise,
 >
-> 	-Mike
+> On Sat, 10 Oct 2009, Blaise Gassend wrote:
+>> 1) Where is the ERESTARTSYS being prevented from getting to user space?
+>>
+>> The only likely place I see for preventing ERESTARTSYS from escaping to
+>> user space is in arch/*/kernel/signal*.c. However, I don't see how the
+>> code there is being called if there no signal pending. Is that a path
+>> for ERESTARTSYS to escape from the kernel?
+>>
+>> The following comment in kernel/futex.h in futex_wait makes me wonder if
+>> two threads are getting marked as ERESTARTSYS. The first one to leave
+>> the kernel processes the signal and restarts. The second one doesn't
+>> have a signal to handle, so it returns to user space without getting
+>> into signal*.c and wreaks havoc.
+>>
+>>     (...)
+>>         /*
+>>          * We expect signal_pending(current), but another thread may
+>>          * have handled it for us already.
+>>          */
+>>         if (!abs_time)
+>>                 return -ERESTARTSYS;
+>>     (...)
 >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> If the task is woken by a signal, then the task private flag
+> TIF_SIGPENDING is set, but in case of a process wide signal the signal
+> might have been handled by another thread of the same process before
+> that thread reaches the signal handling code, but then ERESTARTSYS is
+> handled gracefully. So you seem to trigger a code path which does not
+> go through do_signal.
 >
+>> 2) Why would this be happening only with RT kernels?
 >
-> __________ Informace od ESET Smart Security, verze databaze 4496 (20091010) __________
+> Slightly different timing and locking semantics.
 >
-> Tuto zpravu proveril ESET Smart Security.
+>> 3) Any suggestions on the best place to patch/workaround this?
+>>
+>> My understanding is that if I was to treat ERESTARTSYS as an EAGAIN,
+>> most applications would be perfectly happy. Would bad things happen if I
+>> replaced the ERESTARTSYS in futex_wait with an EAGAIN?
 >
-> http://www.eset.cz
+> No workarounds please. We really want to know what's wrong.
 >
+> Two things to look at:
 >
->   
+> 1) Does that happen with 2.6.31.2-rt13 as well ?
 
+I am nearly certain we saw the problems with the newer kernel as well,
+although that was back with a much less concise test and I've since
+reinstalled over that machine in the process of trying a number of
+different 32/64 hardy/jaunty configurations on different hardware.
+I'll do a fresh install of that particular kernel with default
+configuration options on our hardware and let you know a little later
+today.
 
-
-__________ Informace od ESET Smart Security, verze databaze 4496 (20091010) __________
-
-Tuto zpravu proveril ESET Smart Security.
-
-http://www.eset.cz
-
-
+> 2) Add a check to the code path where ERESTARTSYS is returned:
+>
+>   if (!signal_pending(current))
+>      printk(KERN_ERR ".....");
+>
+> If you can see that message then we'll look further. I'll give your
+> script a test ride on my systems as well.
+>
+> Thanks,
+>
+>        tglx
+>
