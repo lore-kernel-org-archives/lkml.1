@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbZJJPjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762015AbZJJPjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762021AbZJJPjM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 11:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762016AbZJJPjK
+	id S1762015AbZJJPjJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 11:39:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761940AbZJJPjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 11:39:10 -0400
-Received: from www.tglx.de ([62.245.132.106]:55629 "EHLO www.tglx.de"
+	Sat, 10 Oct 2009 11:39:04 -0400
+Received: from www.tglx.de ([62.245.132.106]:55623 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761860AbZJJPjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 11:39:02 -0400
-Message-Id: <20091010153349.925243928@linutronix.de>
+	id S1762007AbZJJPi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 11:38:58 -0400
+Message-Id: <20091010153349.966159859@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Sat, 10 Oct 2009 15:37:06 -0000
+Date: Sat, 10 Oct 2009 15:37:12 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
@@ -19,181 +19,159 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
        Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>,
-       Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 21/28] bkl: pushdown BKL locking to do_sysctl()
+       linuxppc-dev@ozlabs.org
+Subject: [patch 22/28] macintosh: Remove BKL from ans-lcd
 References: <20091010153314.827301943@linutronix.de>
-Content-Disposition: inline; filename=push-bkl-to-do-sysctl.patch
+Content-Disposition: inline; filename=drivers-mac-ans-lcd-remove-bkl.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Push lock/unlock_kernel() into do_sysctl() and remove it from all call
-sites of do_sysctl().
+The ans-lcd driver got the cycle_kernel_lock() in anslcd_open() from
+the BKL pushdown and it still uses the locked ioctl.
+
+The BKL serialization in this driver is more than obscure and
+definitely does not cover all possible corner cases. Protect the
+access to the hardware with a local mutex and get rid of BKL and
+locked ioctl.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: "David S. Miller" <davem@davemloft.net>
-
+Cc: linuxppc-dev@ozlabs.org
 ---
- arch/ia64/ia32/sys_ia32.c         |    2 --
- arch/mips/kernel/linux32.c        |    2 --
- arch/parisc/kernel/sys_parisc32.c |    2 --
- arch/powerpc/kernel/sys_ppc32.c   |    2 --
- arch/s390/kernel/compat_linux.c   |    2 --
- arch/sparc/kernel/sys_sparc32.c   |    2 --
- arch/x86/ia32/sys_ia32.c          |    2 --
- kernel/sysctl.c                   |    6 ++++--
- 8 files changed, 4 insertions(+), 16 deletions(-)
+ drivers/macintosh/ans-lcd.c |   45 +++++++++++++++++++++++++++-----------------
+ 1 file changed, 28 insertions(+), 17 deletions(-)
 
-Index: linux-2.6-tip/arch/ia64/ia32/sys_ia32.c
+Index: linux-2.6-tip/drivers/macintosh/ans-lcd.c
 ===================================================================
---- linux-2.6-tip.orig/arch/ia64/ia32/sys_ia32.c
-+++ linux-2.6-tip/arch/ia64/ia32/sys_ia32.c
-@@ -1670,10 +1670,8 @@ sys32_sysctl (struct sysctl32 __user *ar
+--- linux-2.6-tip.orig/drivers/macintosh/ans-lcd.c
++++ linux-2.6-tip/drivers/macintosh/ans-lcd.c
+@@ -3,7 +3,6 @@
+  */
+ 
+ #include <linux/types.h>
+-#include <linux/smp_lock.h>
+ #include <linux/errno.h>
+ #include <linux/kernel.h>
+ #include <linux/miscdevice.h>
+@@ -26,6 +25,7 @@
+ static unsigned long anslcd_short_delay = 80;
+ static unsigned long anslcd_long_delay = 3280;
+ static volatile unsigned char __iomem *anslcd_ptr;
++static DEFINE_MUTEX(anslcd_mutex);
+ 
+ #undef DEBUG
+ 
+@@ -65,26 +65,31 @@ anslcd_write( struct file * file, const 
+ 
+ 	if (!access_ok(VERIFY_READ, buf, count))
  		return -EFAULT;
- 
- 	set_fs(KERNEL_DS);
--	lock_kernel();
- 	ret = do_sysctl(namep, a32.nlen, oldvalp, (size_t __user *) &oldlen,
- 			newvalp, (size_t) a32.newlen);
--	unlock_kernel();
- 	set_fs(old_fs);
- 
- 	if (oldvalp && put_user (oldlen, (int __user *) compat_ptr(a32.oldlenp)))
-Index: linux-2.6-tip/arch/mips/kernel/linux32.c
-===================================================================
---- linux-2.6-tip.orig/arch/mips/kernel/linux32.c
-+++ linux-2.6-tip/arch/mips/kernel/linux32.c
-@@ -302,10 +302,8 @@ SYSCALL_DEFINE1(32_sysctl, struct sysctl
- 		oldlenp = (size_t __user *)addr;
- 	}
- 
--	lock_kernel();
- 	error = do_sysctl((int __user *)A(tmp.name), tmp.nlen, (void __user *)A(tmp.oldval),
- 			  oldlenp, (void __user *)A(tmp.newval), tmp.newlen);
--	unlock_kernel();
- 	if (oldlenp) {
- 		if (!error) {
- 			if (get_user(oldlen, (size_t __user *)addr) ||
-Index: linux-2.6-tip/arch/parisc/kernel/sys_parisc32.c
-===================================================================
---- linux-2.6-tip.orig/arch/parisc/kernel/sys_parisc32.c
-+++ linux-2.6-tip/arch/parisc/kernel/sys_parisc32.c
-@@ -137,11 +137,9 @@ asmlinkage long sys32_sysctl(struct __sy
- 		oldlenp = (size_t *)addr;
- 	}
- 
--	lock_kernel();
- 	error = do_sysctl((int __user *)(u64)tmp.name, tmp.nlen,
- 			  (void __user *)(u64)tmp.oldval, oldlenp,
- 			  (void __user *)(u64)tmp.newval, tmp.newlen);
--	unlock_kernel();
- 	if (oldlenp) {
- 		if (!error) {
- 			if (get_user(oldlen, (size_t *)addr)) {
-Index: linux-2.6-tip/arch/powerpc/kernel/sys_ppc32.c
-===================================================================
---- linux-2.6-tip.orig/arch/powerpc/kernel/sys_ppc32.c
-+++ linux-2.6-tip/arch/powerpc/kernel/sys_ppc32.c
-@@ -555,11 +555,9 @@ asmlinkage long compat_sys_sysctl(struct
- 			return -EFAULT;
- 	}
- 
--	lock_kernel();
- 	error = do_sysctl(compat_ptr(tmp.name), tmp.nlen,
- 			  compat_ptr(tmp.oldval), oldlenp,
- 			  compat_ptr(tmp.newval), tmp.newlen);
--	unlock_kernel();
- 	if (oldlenp) {
- 		if (!error) {
- 			if (get_user(oldlen, oldlenp) ||
-Index: linux-2.6-tip/arch/s390/kernel/compat_linux.c
-===================================================================
---- linux-2.6-tip.orig/arch/s390/kernel/compat_linux.c
-+++ linux-2.6-tip/arch/s390/kernel/compat_linux.c
-@@ -562,10 +562,8 @@ asmlinkage long sys32_sysctl(struct __sy
- 		oldlenp = (size_t __user *)addr;
- 	}
- 
--	lock_kernel();
- 	error = do_sysctl(compat_ptr(tmp.name), tmp.nlen, compat_ptr(tmp.oldval),
- 			  oldlenp, compat_ptr(tmp.newval), tmp.newlen);
--	unlock_kernel();
- 	if (oldlenp) {
- 		if (!error) {
- 			if (get_user(oldlen, (size_t __user *)addr) ||
-Index: linux-2.6-tip/arch/sparc/kernel/sys_sparc32.c
-===================================================================
---- linux-2.6-tip.orig/arch/sparc/kernel/sys_sparc32.c
-+++ linux-2.6-tip/arch/sparc/kernel/sys_sparc32.c
-@@ -627,14 +627,12 @@ asmlinkage long sys32_sysctl(struct __sy
- 		oldlenp = (size_t __user *)addr;
- 	}
- 
--	lock_kernel();
- 	error = do_sysctl((int __user *)(unsigned long) tmp.name,
- 			  tmp.nlen,
- 			  (void __user *)(unsigned long) tmp.oldval,
- 			  oldlenp,
- 			  (void __user *)(unsigned long) tmp.newval,
- 			  tmp.newlen);
--	unlock_kernel();
- 	if (oldlenp) {
- 		if (!error) {
- 			if (get_user(oldlen, (size_t __user *)addr) ||
-Index: linux-2.6-tip/arch/x86/ia32/sys_ia32.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/ia32/sys_ia32.c
-+++ linux-2.6-tip/arch/x86/ia32/sys_ia32.c
-@@ -477,10 +477,8 @@ asmlinkage long sys32_sysctl(struct sysc
- 		return -EFAULT;
- 
- 	set_fs(KERNEL_DS);
--	lock_kernel();
- 	ret = do_sysctl(namep, a32.nlen, oldvalp, (size_t __user *)&oldlen,
- 			newvalp, (size_t) a32.newlen);
--	unlock_kernel();
- 	set_fs(old_fs);
- 
- 	if (oldvalp && put_user(oldlen, (int __user *)compat_ptr(a32.oldlenp)))
-Index: linux-2.6-tip/kernel/sysctl.c
-===================================================================
---- linux-2.6-tip.orig/kernel/sysctl.c
-+++ linux-2.6-tip/kernel/sysctl.c
-@@ -1848,6 +1848,8 @@ int do_sysctl(int __user *name, int nlen
- 			return -EFAULT;
- 	}
- 
-+	lock_kernel();
 +
- 	for (head = sysctl_head_next(NULL); head;
- 			head = sysctl_head_next(head)) {
- 		error = parse_table(name, nlen, oldval, oldlenp, 
-@@ -1858,6 +1860,8 @@ int do_sysctl(int __user *name, int nlen
- 			break;
++	mutex_lock(&anslcd_mutex);
+ 	for ( i = *ppos; count > 0; ++i, ++p, --count ) 
+ 	{
+ 		char c;
+ 		__get_user(c, p);
+ 		anslcd_write_byte_data( c );
+ 	}
++	mutex_unlock(&anslcd_mutex);
+ 	*ppos = i;
+ 	return p - buf;
+ }
+ 
+-static int
+-anslcd_ioctl( struct inode * inode, struct file * file,
+-				unsigned int cmd, unsigned long arg )
++static long
++anslcd_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	char ch, __user *temp;
++	long ret = 0;
+ 
+ #ifdef DEBUG
+ 	printk(KERN_DEBUG "LCD: ioctl(%d,%d)\n",cmd,arg);
+ #endif
+ 
++	mutex_lock(&anslcd_mutex);
++
+ 	switch ( cmd )
+ 	{
+ 	case ANSLCD_CLEAR:
+@@ -93,7 +98,7 @@ anslcd_ioctl( struct inode * inode, stru
+ 		anslcd_write_byte_ctrl ( 0x06 );
+ 		anslcd_write_byte_ctrl ( 0x01 );
+ 		anslcd_write_byte_ctrl ( 0x02 );
+-		return 0;
++		break;
+ 	case ANSLCD_SENDCTRL:
+ 		temp = (char __user *) arg;
+ 		__get_user(ch, temp);
+@@ -101,33 +106,37 @@ anslcd_ioctl( struct inode * inode, stru
+ 			anslcd_write_byte_ctrl ( ch );
+ 			__get_user(ch, temp);
  		}
+-		return 0;
++		break;
+ 	case ANSLCD_SETSHORTDELAY:
+ 		if (!capable(CAP_SYS_ADMIN))
+-			return -EACCES;
+-		anslcd_short_delay=arg;
+-		return 0;
++			ret =-EACCES;
++		else
++			anslcd_short_delay=arg;
++		break;
+ 	case ANSLCD_SETLONGDELAY:
+ 		if (!capable(CAP_SYS_ADMIN))
+-			return -EACCES;
+-		anslcd_long_delay=arg;
+-		return 0;
++			ret = -EACCES;
++		else
++			anslcd_long_delay=arg;
++		break;
+ 	default:
+-		return -EINVAL;
++		ret = -EINVAL;
  	}
 +
-+	unlock_kernel();
- 	return error;
++	mutex_unlock(&anslcd_mutex);
++	return ret;
  }
  
-@@ -1873,10 +1877,8 @@ SYSCALL_DEFINE1(sysctl, struct __sysctl_
- 	if (error)
- 		goto out;
- 
--	lock_kernel();
- 	error = do_sysctl(tmp.name, tmp.nlen, tmp.oldval, tmp.oldlenp,
- 			  tmp.newval, tmp.newlen);
--	unlock_kernel();
- out:
- 	return error;
+ static int
+ anslcd_open( struct inode * inode, struct file * file )
+ {
+-	cycle_kernel_lock();
+ 	return 0;
  }
+ 
+ const struct file_operations anslcd_fops = {
+-	.write	= anslcd_write,
+-	.ioctl	= anslcd_ioctl,
+-	.open	= anslcd_open,
++	.write		= anslcd_write,
++	.unlocked_ioctl	= anslcd_ioctl,
++	.open		= anslcd_open,
+ };
+ 
+ static struct miscdevice anslcd_dev = {
+@@ -168,6 +177,7 @@ anslcd_init(void)
+ 	printk(KERN_DEBUG "LCD: init\n");
+ #endif
+ 
++	mutex_lock(&anslcd_mutex);
+ 	anslcd_write_byte_ctrl ( 0x38 );
+ 	anslcd_write_byte_ctrl ( 0x0c );
+ 	anslcd_write_byte_ctrl ( 0x06 );
+@@ -176,6 +186,7 @@ anslcd_init(void)
+ 	for(a=0;a<80;a++) {
+ 		anslcd_write_byte_data(anslcd_logo[a]);
+ 	}
++	mutex_unlock(&anslcd_mutex);
+ 	return 0;
+ }
+ 
 
 
