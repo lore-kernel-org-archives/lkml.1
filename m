@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZJJKEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbZJJKNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbZJJKEM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 06:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbZJJKEM
+	id S1757280AbZJJKNA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 06:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbZJJKM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 06:04:12 -0400
-Received: from www.tglx.de ([62.245.132.106]:38419 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751123AbZJJKEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 06:04:11 -0400
-Date: Sat, 10 Oct 2009 12:03:28 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Miller <davem@davemloft.net>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] watchdog: Fix rio watchdog probe function
-Message-ID: <alpine.LFD.2.00.0910101201470.9428@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 10 Oct 2009 06:12:59 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46625 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755680AbZJJKM6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 06:12:58 -0400
+Subject: Re: [PATCH RFC] sched: add notifier for process migration
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <4AD055B3.8070705@goop.org>
+References: <4ACFA4C5.4020607@goop.org> <1255125738.7439.17.camel@laptop>
+	 <4ACFBC98.4070701@goop.org> <1255158863.7866.25.camel@twins>
+	 <4AD04E50.7060001@redhat.com> <1255166662.7866.28.camel@twins>
+	 <4AD055B3.8070705@goop.org>
+Content-Type: text/plain
+Date: Sat, 10 Oct 2009 12:12:08 +0200
+Message-Id: <1255169528.7521.3.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After sucessfully registering the misc device the driver iounmaps the
-hardware registers and kfree's the device data structure. Ouch !
+On Sat, 2009-10-10 at 02:36 -0700, Jeremy Fitzhardinge wrote:
+> On 10/10/09 02:24, Peter Zijlstra wrote:
+> > Is that a real issue? If its not supported by the early hardware virt
+> > chips, tough luck, they sucked anyway :-)
+> >   
+> 
+> Nehalem is the first Intel chip to support it, and Xen doesn't rely on
+> hardware virt support anyway.
 
-This was introduced with commit e42311d75 (riowatchdog: Convert to
-pure OF driver) and went unnoticed for more than a year :)
+Ah, nehalem is too limited indeed :-/
 
-Return success instead of dropping into the error cleanup code path.
+A well, look at set_task_cpu(): new_rq->nr_migrations_in++;
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: David S. Miller <davem@davemloft.net>
----
- drivers/watchdog/riowd.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6-tip/drivers/watchdog/riowd.c
-===================================================================
---- linux-2.6-tip.orig/drivers/watchdog/riowd.c
-+++ linux-2.6-tip/drivers/watchdog/riowd.c
-@@ -206,7 +206,7 @@ static int __devinit riowd_probe(struct 
- 
- 	dev_set_drvdata(&op->dev, p);
- 	riowd_device = p;
--	err = 0;
-+	return 0;
- 
- out_iounmap:
- 	of_iounmap(&op->resource[0], p->regs, 2);
