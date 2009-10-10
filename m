@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbZJJMHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbZJJMKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbZJJMHW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 08:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757047AbZJJMHU
+	id S1758961AbZJJMKg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 08:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758661AbZJJMKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 08:07:20 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37695 "EHLO
+	Sat, 10 Oct 2009 08:10:35 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47150 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756457AbZJJMHT (ORCPT
+	with ESMTP id S1758152AbZJJMKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 08:07:19 -0400
-Date: Sat, 10 Oct 2009 14:06:14 +0200
+	Sat, 10 Oct 2009 08:10:34 -0400
+Date: Sat, 10 Oct 2009 14:09:51 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Suresh Jayaraman <sjayaraman@suse.de>,
+To: Theodore Tso <tytso@mit.edu>, Dave Airlie <airlied@gmail.com>, G@ucw.cz,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
-       trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 00/31] Swap over NFS -v20
-Message-ID: <20091010120614.GC1811@ucw.cz>
-References: <1254405858-15651-1-git-send-email-sjayaraman@suse.de> <20091001174201.GA30068@infradead.org> <1254692482.21044.15.camel@laptop>
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.32-rc3
+Message-ID: <20091010120950.GD1811@ucw.cz>
+References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <1254864803.6035.25.camel@pasglop> <alpine.LFD.2.01.0910061513510.3432@localhost.localdomain> <21d7e9970910061822i429344amb47b0bceb552abc6@mail.gmail.com> <20091007023119.GJ17883@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1254692482.21044.15.camel@laptop>
+In-Reply-To: <20091007023119.GJ17883@mit.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue 2009-10-06 22:31:19, Theodore Tso wrote:
+> On Wed, Oct 07, 2009 at 11:22:38AM +1000, Dave Airlie wrote:
+> > 
+> > Why don't you just have the kernel version Linux-commitid?
+> > 
+> > why keep up the pretense that the 2.6.xx bit means anything outside of release?
+> > 
+> > You could just have the tarball generation scripts make it into a 2.6.31 but
+> > for everyone else we never see it.
+> 
+> The tarball generation scripts for the daily snapshots already set
+> EXTRAVERSION to -git15, -git16, etc.
+> 
+> So the problem seems to be localized to those users/developers who are
+> smart enough to use git, and dumb enough not to set
+> CONFIG_LOCALVERSION_AUTO.  So big of a set this actually is, I can't
+> say.  Do we have any statistics about how many bug reporters make this
+> mistake?
 
-> > One of them
-> > would be the whole VM/net work to just make swap over nbd/iscsi safe.
-> 
-> Getting those two 'fixed' is going to be tons of interesting work
-> because they involve interaction with userspace daemons.
-> 
-> NBD has fairly simple userspace, but iSCSI has a rather large userspace
-> footprint and a rather complicated user/kernel interaction which will be
-> mighty interesting to get allocation safe.
-> 
-> Ideally the swap-over-$foo bits have no userspace component.
-> 
-> That said, Wouter is the NBD userspace maintainer and has expressed
-> interest into looking at making that work, but its sure going to be
-> non-trivial, esp. since exposing PF_MEMALLOC to userspace is a, not over
-> my dead-bodym like thing.
+I admit -- I did not know about LOCALVERSION_AUTO, and many times
+wished -rc0 would be labeled as such.
 
-Well, as long as nbd-server is on separate machine (with real swap),
-safe swapping over network should be ok, without PF_MEMALLOC for
-userspace or similar nightmares, right?
-								Pavel  
+Now...perhaps LOCALVERSION_AUTO should not be option? Just hardwire it
+to Y? (But that still does not solve systems when someone, probably
+me, did rm -rf .git, for space and speed reasons). 
 
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
