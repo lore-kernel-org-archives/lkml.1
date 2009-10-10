@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762064AbZJJSjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934700AbZJJSkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762064AbZJJSjo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 14:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761550AbZJJSjn
+	id S934700AbZJJSkA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 14:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762046AbZJJSj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 14:39:43 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:37913 "EHLO mx1.redhat.com"
+	Sat, 10 Oct 2009 14:39:58 -0400
+Received: from www.tglx.de ([62.245.132.106]:58454 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757475AbZJJSjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 14:39:43 -0400
-Date: Sat, 10 Oct 2009 20:38:30 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>,
+	id S1762078AbZJJSj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 14:39:58 -0400
+Date: Sat, 10 Oct 2009 20:38:38 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Vincent Sanders <vince@simtec.co.uk>, Jonathan Corbet <corbet@lwn.net>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 00/28] BKL removal queued patches
-In-Reply-To: <20091010153314.827301943@linutronix.de>
-Message-ID: <alpine.LFD.2.00.0910102036480.3669@localhost.localdomain>
-References: <20091010153314.827301943@linutronix.de>
+       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
+       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 23/28] i2c: Remove big kernel lock from i2cdev_open
+In-Reply-To: <1255198531.7521.558.camel@laptop>
+Message-ID: <alpine.LFD.2.00.0910102038060.9428@localhost.localdomain>
+References: <20091010153314.827301943@linutronix.de>  <20091010153350.006406413@linutronix.de>  <20091010190436.1a48f98e@hyperion.delvare>  <alpine.LFD.2.00.0910101907420.9428@localhost.localdomain>  <20091010193915.0e34f0e9@hyperion.delvare> 
+ <alpine.LFD.2.00.0910102010180.9428@localhost.localdomain> <1255198531.7521.558.camel@laptop>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -30,25 +29,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 10 Oct 2009, Peter Zijlstra wrote:
 
-
-On Sat, 10 Oct 2009, Thomas Gleixner wrote:
-
-> Hi all,
+> On Sat, 2009-10-10 at 20:10 +0200, Thomas Gleixner wrote:
+> > 
+> > > Will do. I guess I can assume that the patch is from Vincent Sanders,
+> > > not you, despite the lack of From: header?
+> > 
+> > Duh, yes. Missed that.
 > 
-> I'm sending out the pending BKL removal patches which I collected so
-> far to avoid duplicate work and to solicit review/comments.
-> 
-> If nobody objects I'd like to keep them in one git branch which is
-> going to be included into linux-next.
-> 
-> Thanks,
-> 
-> 	tglx
+> I'm still wanting to fix quilt mail to not mess that up... maybe I
+> should sit down and try and grok that stuff again.
 
-Seems like a great idea to me. I'm applying them all to a private 
-git-branch against the latest from Linus to avoid duplicate work.
+IIRC it worked some time ago. That's why I did not notice.
 
-Please let us know when there is a tip branch we can work with.
+Thanks,
 
-John
+	tglx
+ 
