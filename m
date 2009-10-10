@@ -1,29 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758342AbZJJMG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbZJJMHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758342AbZJJMG2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 08:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZJJMGZ
+	id S1758718AbZJJMHW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 08:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757047AbZJJMHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 08:06:25 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37413 "EHLO
+	Sat, 10 Oct 2009 08:07:20 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37695 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755883AbZJJMGZ (ORCPT
+	with ESMTP id S1756457AbZJJMHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 08:06:25 -0400
-Date: Sat, 10 Oct 2009 14:04:48 +0200
+	Sat, 10 Oct 2009 08:07:19 -0400
+Date: Sat, 10 Oct 2009 14:06:14 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] battery: Fix charge_now returned by broken batteries
-Message-ID: <20091010120448.GB1811@ucw.cz>
-References: <1254669853.26496.0.camel@carter> <ca2dc2820910041046i47a1c3dhba82266bb14a440c@mail.gmail.com> <4AC8F02B.6080209@suse.de> <200910042246.23712.rjw@sisk.pl> <4AC91578.2020807@suse.de> <ca2dc2820910041455h18ece909rc2280a40f1899c0a@mail.gmail.com> <4AC923F4.9050100@suse.de> <ca2dc2820910041653o29d4b253n69270d231e56e447@mail.gmail.com> <4AC93B45.8090707@suse.de> <ca2dc2820910061005k2beae176lece9792bb15cda90@mail.gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Suresh Jayaraman <sjayaraman@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Miklos Szeredi <mszeredi@suse.cz>, Wouter Verhelst <w@uter.be>,
+       trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 00/31] Swap over NFS -v20
+Message-ID: <20091010120614.GC1811@ucw.cz>
+References: <1254405858-15651-1-git-send-email-sjayaraman@suse.de> <20091001174201.GA30068@infradead.org> <1254692482.21044.15.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ca2dc2820910061005k2beae176lece9792bb15cda90@mail.gmail.com>
+In-Reply-To: <1254692482.21044.15.camel@laptop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,33 +34,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > current full charge, when the charging is complete. It may end up lower or
-> > greater than
-> > previous value.
-> > Comparing current charge with the last full charge may correctly give you
-> >>100%.
+> > One of them
+> > would be the whole VM/net work to just make swap over nbd/iscsi safe.
 > 
-> Then maybe we can write something like...
+> Getting those two 'fixed' is going to be tons of interesting work
+> because they involve interaction with userspace daemons.
 > 
-> val->intval = acpi_battery_is_charged(battery)
-> 	? min(battery->capacity_now, battery->full_charge_capacity) * 1000
-> 	: battery->capacity_now * 1000;
+> NBD has fairly simple userspace, but iSCSI has a rather large userspace
+> footprint and a rather complicated user/kernel interaction which will be
+> mighty interesting to get allocation safe.
 > 
-> So we only use the min() operation when it is fully charged (returning
-> to 100%) without losing information when charging.
+> Ideally the swap-over-$foo bits have no userspace component.
 > 
-> The problem is that percentage may jump from >100% to 100% in
-> batteries whose full capacity increase, but I think that is OK, since
-> when completely charged, the >100% is the new 100%.
-> 
-> In "broken" batteries (is it broken finally? or is it expected
-> behaviour?) like mine the old problem will be corrected, as it was
-> only present in the charged state.
+> That said, Wouter is the NBD userspace maintainer and has expressed
+> interest into looking at making that work, but its sure going to be
+> non-trivial, esp. since exposing PF_MEMALLOC to userspace is a, not over
+> my dead-bodym like thing.
 
-I believe you better work around this in userspace... or agree that
->100% charge is possible.
+Well, as long as nbd-server is on separate machine (with real swap),
+safe swapping over network should be ok, without PF_MEMALLOC for
+userspace or similar nightmares, right?
+								Pavel  
 
-								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
