@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934511AbZJJPyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761787AbZJJP5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934511AbZJJPyv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 11:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934068AbZJJPys
+	id S1761787AbZJJP5H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 11:57:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761646AbZJJP5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 11:54:48 -0400
-Received: from mail-px0-f179.google.com ([209.85.216.179]:36750 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934060AbZJJPyp (ORCPT
+	Sat, 10 Oct 2009 11:57:05 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:19177 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761644AbZJJP5D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 11:54:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=cMc/0e0tZbcCSnHPjXEF+74goqBbJFPynKOCP+2zY6qpgiNrM1zhDkeexL29MJLwG/
-         h9xDoP9KrigMDDWFr4JKtzt66wlNwa2+15Y3P/MMlHJHEcJ8VsGGUZ+N84RkBQZhg/9r
-         kDA5kjAD40fHUtlcS/cR0lHrnV4H65jGGeLas=
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mips <linux-mips@linux-mips.org>, loongson-dev@googlegroups.com
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Wu Zhangjin <wuzhangjin@gmail.com>
-Subject: [PATCH] SND_CS5535AUDIO: Remove the X86 platform dependency
-Date: Sat, 10 Oct 2009 23:53:49 +0800
-Message-Id: <1255190029-17584-2-git-send-email-wuzhangjin@gmail.com>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1255190029-17584-1-git-send-email-wuzhangjin@gmail.com>
-References: <1255190029-17584-1-git-send-email-wuzhangjin@gmail.com>
+	Sat, 10 Oct 2009 11:57:03 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=sFIEXyL5ArgA:10 a=w4iE+TBsmj5y1WloLYF40w==:17 a=VwQbUJbxAAAA:8
+ a=Pc8EArvC-NQjzRVdoXwA:9 a=sWpv_8VaoxB9_p1ZcR0A:7
+ a=LLMBQxRRZVZBktIJBUCEEGPJAO8A:4 a=U62fhAwekXMA:10
+From: "Thomas Fjellstrom" <tfjellstrom@shaw.ca>
+Reply-To: tfjellstrom@shaw.ca
+To: "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: MVSAS 1669:mvs_abort_task:rc= 5
+Date: Sat, 10 Oct 2009 09:56:19 -0600
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-git2; KDE/4.3.2; x86_64; ; )
+Cc: "linux-raid" <linux-raid@vger.kernel.org>,
+       "linux-scsi" <linux-scsi@vger.kernel.org>
+References: <200910091141.52303.tfjellstrom@shaw.ca>
+In-Reply-To: <200910091141.52303.tfjellstrom@shaw.ca>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910100956.19241.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SND_CS5535AUDIO is available on Loongson(MIPS compatible) family
-machines, and checked it with ARCH=x86_64, no relative compiling
-warnings & errors, so, remove the platform dependency directly.
+On Fri October 9 2009, Thomas Fjellstrom wrote:
+> Hi,
+> 
+> I've been trying to get an AOC-SASLP-MV8 card (pcie x4 2 port SAS card) to
+> work with linux for the past month or so. I've recently just RMAed my first
+> card, and tested the new one under linux, and I see the same problems.
+> 
+> The very first time I made a new array off the controller, formated (with
+>  xfs) and mounted the volume, it seemed to work. ioozone even seemed to run
+>  for a while. Sadly after a few minutes I got a stream of mvs_abort_task
+>  messages in dmesg, and any accesses to the volume, or any disks connected
+>  to the controller lock up.
+> 
+> After that I updated my 2.6.31 kernel to 2.6.32-rc3-git2 off of kernel.org,
+> and the volume fails to mount with the same mvs_abort_task messages.
+> 
+> I've attached my dmesg log from both attempts. dmesg1 is the first attempt,
+> dmesg2 is the second attempt on the newer kernel.
+> 
+> I would really appreciate some help with this.
+> 
 
-Reported-by: rixed@happyleptic.org
-Acked-by: Andres Salomon <dilinger@collabora.co.uk>
-Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
----
- sound/pci/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+I should also mention that if I attempt to remove any of the drives while the 
+card is in a hung state, the entire machine locks up with the keyboard LEDs 
+blinking.
 
-diff --git a/sound/pci/Kconfig b/sound/pci/Kconfig
-index fb5ee3c..75c602b 100644
---- a/sound/pci/Kconfig
-+++ b/sound/pci/Kconfig
-@@ -259,7 +259,6 @@ config SND_CS5530
- 
- config SND_CS5535AUDIO
- 	tristate "CS5535/CS5536 Audio"
--	depends on X86 && !X86_64
- 	select SND_PCM
- 	select SND_AC97_CODEC
- 	help
+This does seem to be a rather serious error.
+
+If there is more I can do to help track down the problems, please let me know. 
+I really need to get this to work (my current array is FULL, and may be 
+showing signs of failure) as soon as possible.
+
+I can pretty much wipe and reinstall everything at any point on this machine, 
+update/install new kernels, etc. I just don't have a null modem cable atm to 
+hook up a serial console to capture the errors on OOPSes.
+
+Thanks.
+
 -- 
-1.6.2.1
-
+Thomas Fjellstrom
+tfjellstrom@shaw.ca
