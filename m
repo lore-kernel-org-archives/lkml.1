@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbZJJD4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751181AbZJJEPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753891AbZJJD4a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 23:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZJJD43
+	id S1751181AbZJJEPW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 00:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZJJEPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 23:56:29 -0400
-Received: from mail-qy0-f172.google.com ([209.85.221.172]:55911 "EHLO
-	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbZJJD42 (ORCPT
+	Sat, 10 Oct 2009 00:15:21 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41730 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbZJJEPV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 23:56:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=t4neps/BOetXDamxdz7P9Gf2xltvUKkHmSsJewvNpQhmipIG+ioVF8I6BoVtsUEW4l
-         lIQ0O1TXkRna4mI0h2NIN2aSAWdJzUxR4UZikIbbyKxHmC6aND2m4sMA6yP07feaEoJ3
-         ePQ7d3WoiUA7s8TQ4tYr2i4gPrrhIVvzJ/Yt0=
-Message-ID: <4AD005C5.4090705@lwfinger.net>
-Date: Fri, 09 Oct 2009 22:55:49 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.1 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: akpm@linux-foundation.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-10-09-01-07 uploaded (b43)
-References: <200910090830.n998Ubvv020464@imap1.linux-foundation.org> <20091009154732.af708827.rdunlap@xenotime.net>
-In-Reply-To: <20091009154732.af708827.rdunlap@xenotime.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Oct 2009 00:15:21 -0400
+Date: Sat, 10 Oct 2009 06:14:42 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: Duplication of vdso and vsyscall code?
+Message-ID: <20091010041442.GF1656@one.firstfloor.org>
+References: <4ACFA80E.7050701@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ACFA80E.7050701@goop.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/09/2009 05:47 PM, Randy Dunlap wrote:
+On Fri, Oct 09, 2009 at 02:15:58PM -0700, Jeremy Fitzhardinge wrote:
+> arch/x86/kernel/vsyscall_64.c implements vgettimeofday and vgetcpu. 
+> (And vtime)
 > 
-> In file included from mmotm-2009-1009-0107/drivers/net/wireless/b43/b43.h:12,
->                  from mmotm-2009-1009-0107/drivers/net/wireless/b43/main.c:47:
+> arch/x86/vdso/vclock_gettime.c implements __vdso_gettimeofday (and
+> __vdso_clock_gettime), and vgetcpu.c has __vdso_getcpu.
+> 
+> These appear to be functionally identical duplicate definitions.   I
+> don't understand the history here to know how we came to get two sets of
+> these functions, but surely we can share the same code for both of these?
 
-These warnings occur because CONFIG_B43_LEDS is not set, probably
-because CONFIG_MAC80211_LEDS is not set. See the patch in
-http://marc.info/?l=linux-wireless&m=125509895406304&w=2.
+One is at a fixed position in the user address space, and the other at a
+randomized position. The fixed one came first. Fixed doesn't know
+where randomized is. Randomized is also compiled and linked completely
+differently. In theory the randomized one could call the fixed one, but
+originally there were some thoughts about turning off fixed for some
+applications that don't need it and also the path was considered very
+performance critical, so unneeded jumps were avoided.
+In theory you could probably #include the code from a common file, but it 
+wouldn't buy you too much. I think there were originally some 
+differences in the vgettimeofday() implementations too, although
+that might have changed with all the timer reorganizations.
 
-Larry
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
