@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbZJJLkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762004AbZJJQoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755692AbZJJLkJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 07:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZJJLkH
+	id S1762004AbZJJQoN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 12:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZJJQoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 07:40:07 -0400
-Received: from r11na27.net.upc.cz ([94.113.108.27]:53321 "EHLO
-	bimbo.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754229AbZJJLkG (ORCPT
+	Sat, 10 Oct 2009 12:44:12 -0400
+Received: from flounder.pepperfish.net ([87.237.62.181]:42707 "EHLO
+	flounder.pepperfish.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753228AbZJJQoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 07:40:06 -0400
-From: Lubomir Rintel <lkundrak@v3.sk>
-To: alsa-devel@alsa-project.org, linux-sound@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tiwai@suse.de
-Cc: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH] [snd-usb-audio] Add match for JMTek USB sound card
-Date: Sat, 10 Oct 2009 13:15:29 +0200
-Message-Id: <1255173329-20485-1-git-send-email-lkundrak@v3.sk>
-X-Mailer: git-send-email 1.6.5.rc2
+	Sat, 10 Oct 2009 12:44:12 -0400
+From: Vincent Sanders <vince@simtec.co.uk>
+To: linux-kernel@vger.kernel.org
+Cc: tglx@linutronix.de, Vincent Sanders <vince@simtec.co.uk>
+Subject: [PATCH] Remove big kernel lock use from i2cdev_open
+Date: Sat, 10 Oct 2009 12:46:12 +0100
+Message-Id: <1255175172-2666-1-git-send-email-vince@simtec.co.uk>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Entry for JMTek LLC., SSS USB Headphone Set in the quirk table.
----
- sound/usb/usbquirks.h |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+The BKL is held over a kmalloc so cannot protect anything beyond that.
+The two calls before the kmalloc have their own locking.
+Improve device open function by removing the now unnecessary ret variable
 
-diff --git a/sound/usb/usbquirks.h b/sound/usb/usbquirks.h
-index f6f201e..e98ff4c 100644
---- a/sound/usb/usbquirks.h
-+++ b/sound/usb/usbquirks.h
-@@ -80,6 +80,19 @@
- 	.bInterfaceClass = USB_CLASS_AUDIO,
- },
+Signed-off-by: Vincent Sanders <vince@simtec.co.uk>
+---
+ drivers/i2c/i2c-dev.c |   21 ++++++---------------
+ 1 files changed, 6 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/i2c/i2c-dev.c b/drivers/i2c/i2c-dev.c
+index 7e13d2d..3196503 100644
+--- a/drivers/i2c/i2c-dev.c
++++ b/drivers/i2c/i2c-dev.c
+@@ -445,20 +445,14 @@ static int i2cdev_open(struct inode *inode, struct file *file)
+ 	struct i2c_client *client;
+ 	struct i2c_adapter *adap;
+ 	struct i2c_dev *i2c_dev;
+-	int ret = 0;
  
-+/* JMTek, LLC. SSS USB Headphone Set */
-+{
-+	.match_flags = USB_DEVICE_ID_MATCH_DEVICE |
-+		       USB_DEVICE_ID_MATCH_DEV_CLASS |
-+		       USB_DEVICE_ID_MATCH_INT_CLASS |
-+		       USB_DEVICE_ID_MATCH_INT_SUBCLASS,
-+	.idVendor = 0x0c76,
-+	.idProduct = 0x1605,
-+	.bDeviceClass = USB_CLASS_PER_INTERFACE,
-+	.bInterfaceClass = USB_CLASS_AUDIO,
-+	.bInterfaceSubClass = USB_SUBCLASS_AUDIO_CONTROL
-+},
-+
- /*
-  * Logitech QuickCam: bDeviceClass is vendor-specific, so generic interface
-  * class matches do not take effect without an explicit ID match.
+-	lock_kernel();
+ 	i2c_dev = i2c_dev_get_by_minor(minor);
+-	if (!i2c_dev) {
+-		ret = -ENODEV;
+-		goto out;
+-	}
++	if (!i2c_dev)
++		return -ENODEV;
+ 
+ 	adap = i2c_get_adapter(i2c_dev->adap->nr);
+-	if (!adap) {
+-		ret = -ENODEV;
+-		goto out;
+-	}
++	if (!adap)
++		return -ENODEV;
+ 
+ 	/* This creates an anonymous i2c_client, which may later be
+ 	 * pointed to some address using I2C_SLAVE or I2C_SLAVE_FORCE.
+@@ -470,8 +464,7 @@ static int i2cdev_open(struct inode *inode, struct file *file)
+ 	client = kzalloc(sizeof(*client), GFP_KERNEL);
+ 	if (!client) {
+ 		i2c_put_adapter(adap);
+-		ret = -ENOMEM;
+-		goto out;
++		return -ENOMEM;
+ 	}
+ 	snprintf(client->name, I2C_NAME_SIZE, "i2c-dev %d", adap->nr);
+ 	client->driver = &i2cdev_driver;
+@@ -479,9 +472,7 @@ static int i2cdev_open(struct inode *inode, struct file *file)
+ 	client->adapter = adap;
+ 	file->private_data = client;
+ 
+-out:
+-	unlock_kernel();
+-	return ret;
++	return 0;
+ }
+ 
+ static int i2cdev_release(struct inode *inode, struct file *file)
 -- 
-1.6.5.rc2
+1.6.0.4
 
