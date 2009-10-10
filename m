@@ -1,122 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934674AbZJJShX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934748AbZJJSiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934674AbZJJShX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 14:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934567AbZJJShU
+	id S934748AbZJJSiq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 14:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934617AbZJJSip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 14:37:20 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:42707 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934380AbZJJShU (ORCPT
+	Sat, 10 Oct 2009 14:38:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53038 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934541AbZJJSio (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 14:37:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type;
-        b=WY9CyXusq46nea/DpQ+j8ewBbLZ1U+5NQ24Kt84i0vpJ1o2SSBtHRBiPeaSXpJV2TO
-         AhUn/bu6GSFhOxNfWigKy1bPSc6OzYRXFG8vZd+N8Vpbx2hWMt6j2GgpFsqfVjQbZmmO
-         cQcivFoO7vYoiJ8BTbJ25UXxwd4d3wHAK1wiE=
-Date: Sat, 10 Oct 2009 21:37:22 +0300
-From: Sergei Trofimovich <slyich@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: intel-gfx@lists.freedesktop.org, Dave Airlie <airlied@redhat.com>
-Subject: [bisected] i915: linux-2.6.32-rc3+ regression
-Message-ID: <20091010213722.051a60dc@mosly>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/QWHp+DRoU/NTDr50eUn_yoy"; protocol="application/pgp-signature"
+	Sat, 10 Oct 2009 14:38:44 -0400
+Date: Sat, 10 Oct 2009 11:37:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Valdis.Kletnieks@vt.edu
+cc: Jeff Chua <jeff.chua.linux@gmail.com>,
+       Tomasz Chmielewski <mangoo@wpkg.org>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Byron Stanoszek <bstanoszek@comtime.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.32-rc3: low mem - only 378MB on x86_32 with 64GB. Why?
+In-Reply-To: <32059.1255198236@turing-police.cc.vt.edu>
+Message-ID: <alpine.LFD.2.01.0910101121190.3438@localhost.localdomain>
+References: <Pine.LNX.4.64.0910052334480.17655@boston.corp.fedex.com> <alpine.LFD.2.01.0910051110200.3432@localhost.localdomain> <b6a2187b0910051715y4ee63503y148ba2d7e24cad8e@mail.gmail.com> <alpine.LFD.2.01.0910051727420.3432@localhost.localdomain>
+ <b6a2187b0910052312o662642b2teded3d19548b9151@mail.gmail.com> <alpine.LFD.2.01.0910060731190.3432@localhost.localdomain>            <b6a2187b0910090928r648169dax86178a3e8b8c2f21@mail.gmail.com> <32059.1255198236@turing-police.cc.vt.edu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/QWHp+DRoU/NTDr50eUn_yoy
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-Hi!
-
-After syncing git tree to bd381934bf13ccb1af2813ae26c6fe00ec85d254
-I've experienced pixel color corruption in Xorg.
-Some of pixels (not all) have abnormal colors seen on images like this:
-http://trofimeus.narod.ru/2009-10-09-22-00-17.png [1.5M]
-(you won't see any problem until you run -rc3+ kernel).
-
-I've bisected it[2] and found offending commit[1].
-My hardware is HP Compaq 2510p laptop:
-00:02.0 VGA compatible controller: Intel Corporation Mobile GM965/GL960 Int=
-egrated Graphics Controller (rev 0c)
-
-Do you need more info?
-
-Thanks!
-
-[1] offending commit
-> 068143d38804825d59d951a192cfadd2e22f457d is the first bad commit
-> commit 068143d38804825d59d951a192cfadd2e22f457d
-> Author: Dave Airlie <airlied@redhat.com>
-> Date:   Mon Oct 5 09:58:02 2009 +1000
->=20
->     drm/fb: add setcmap and fix 8-bit support.
->    =20
->     This adds support for the setcmap api and fixes the 8bpp
->     support at least on radeon hardware. It adds a new load_lut
->     hook which can be called once the color map is setup.
->    =20
->     Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-[2] bisect log:
-:040000 040000 9334e1ee9d528eaa5babd419bd53b40417e65f0f 7e06eb50488482efd38=
-ac243080c9f27ee8682ec M   drivers
-:040000 040000 31c8cb95831669746c0ee2ff8e34d15dc6c49b0e 0523107fc14ca0bb691=
-4b93ea56dab20c741d61c M   include
-git bisect start
-# bad: [bd381934bf13ccb1af2813ae26c6fe00ec85d254] Merge branch 'for-linus' =
-of git://git.kernel.org/pub/scm/linux/kernel/git/rol
-and/infiniband
-git bisect bad bd381934bf13ccb1af2813ae26c6fe00ec85d254
-# good: [374576a8b6f865022c0fd1ca62396889b23d66dd] Linux 2.6.32-rc3
-git bisect good 374576a8b6f865022c0fd1ca62396889b23d66dd
-# bad: [1c6e6d91b22c4271e8a5dab559a08cb005a77073] Merge branch 'drm-linus' =
-of git://git.kernel.org/pub/scm/linux/kernel/git/air
-lied/drm-2.6
-git bisect bad 1c6e6d91b22c4271e8a5dab559a08cb005a77073
-# good: [d8e7b2b3ac5319fcee616488c628c2bbe7e2937b] Merge branch 'omap-fixes=
--for-linus' of git://git.kernel.org/pub/scm/linux/ke
-rnel/git/tmlind/linux-omap-2.6
-git bisect good d8e7b2b3ac5319fcee616488c628c2bbe7e2937b
-# good: [185974dd596e67e73906790c2a4a4579d75911e6] drm: Delete the DRM_DEBU=
-G_KMS in drm_mode_cursor_ioctl
-git bisect good 185974dd596e67e73906790c2a4a4579d75911e6
-# bad: [01ceae8edd7a0a6d8588dc103ad9f55e2c52cae9] drm/radeon/kms: Fix RS600=
-/RV515/R520/RS690 IRQ
-git bisect bad 01ceae8edd7a0a6d8588dc103ad9f55e2c52cae9
-# bad: [b8c00ac5b50b54491657f8b6740db1df50149944] drm/fb: add more correct =
-8/16/24/32 bpp fb support.
-git bisect bad b8c00ac5b50b54491657f8b6740db1df50149944
-# bad: [068143d38804825d59d951a192cfadd2e22f457d] drm/fb: add setcmap and f=
-ix 8-bit support.
-git bisect bad 068143d38804825d59d951a192cfadd2e22f457d
-# good: [dfee5614e4d83a32cef9193a8b19bc1d8900f93d] drm/radeon/kms: respect =
-single crtc cards, only create one crtc. (v2)
-git bisect good dfee5614e4d83a32cef9193a8b19bc1d8900f93d
 
 
---=20
+On Sat, 10 Oct 2009, Valdis.Kletnieks@vt.edu wrote:
+>
+> When the x86 went 64-bit, the register pressure relief from the 
+> additional registers usually more then outweighs the additional memory 
+> bandwidth (basically, if you're spending twice as much time on each 
+> load/store, but only doing it 40% as often, you come out ahead...)
 
-  Sergei
+That's mainly stack traffic, and x86 has always been good at it. More 
+registers makes for simpler (and fewer) instructions due to less reloads, 
+but for kernel loads, it's not the biggest advantage.
 
---Sig_/QWHp+DRoU/NTDr50eUn_yoy
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+If you have 8GB of RAM or more, the biggest advantage _by_far_ for the 
+kernel is that you don't spend 25% of your system time playing with 
+k[un]map() and the TLB flushing that goes along with it. You also have 
+much more freedom to allocate (and thus cache) inodes, dentries and 
+various other fundamental kernel data structures.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
+Also, the reason MIPS and Sparc had a slowdown for 64-bit code was only 
+partially the bigger cache footprint (and that depends a lot on the app 
+anyway: many applications aren't that pointer-intensive. The kernel is 
+_very_ pointer-intensive, but even for something like that, most data 
+structures tend to blow up by 50%, not 100%).
 
-iEYEARECAAYFAkrQ1GUACgkQcaHudmEf86r4HgCaAsE6rfh5ntGw+R6EUZ/uLLEU
-VFIAoIA/3p4EeDabAe5bb1RuGyKEICwj
-=qs1s
------END PGP SIGNATURE-----
+The other reason for slowdown is that generating those pointers (for 
+function calls in particular) is more complex, and x86-64 is better at 
+that than MIPS and Sparc. That complex instruction encoding with 
+variable-size instructions means that you don't have to try to fit all 
+constants in the instruction stream either in the fixed-sized instruction, 
+or by doing indirect data access to memory through a GP register. 
 
---Sig_/QWHp+DRoU/NTDr50eUn_yoy--
+So x86-64 not only had the register expansion advantage, it had less of a 
+code generation downside to 64-bit mode to begin with. Want to have large 
+constants in the code? No problem. Sure, it makes your code bigger, but 
+you can still have them predecoded in the instruction stream rather than 
+have to load them from memory. Much nicer for everybody.
+
+And for the kernel, the bigger virtual address space really is a _huge_ 
+deal. HIGHMEM accesses really are very slow.  You don't see that in user 
+space, but I really have seen 25% performance differences between 
+non-highmem builds and CONFIG_HIGHMEM4G enabled for things that try to put 
+a lot of data in highmem (and the 64G one is even more expensive). And 
+that was just with 2GB of RAM.
+
+And when it makes the difference between doing IO or not doign IO (ie 
+caching or not caching - when the dentry cache can't grow any more because 
+it _needs_ to be in lowmem), you can literally see an order-of-magnitude 
+difference.
+
+With 8GB+ of ram, I guarantee you that the kernel spent tons of time on 
+just mappign high pages, _and_ it couldn't grow inodes and dentry caches 
+nearly as big as it would have wanted to. Going to x86-64 makes all those 
+issues just go away entirely.
+
+So it's not "you can save a few instructions by not spilling to stack as 
+much". It's a much bigger deal than that. There's a reason I personally 
+refuse to even care about >2GB 32-bit machines. There's just no excuse 
+these days to do that.
+
+			Linus
