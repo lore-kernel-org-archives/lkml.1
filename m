@@ -1,51 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934068AbZJJQV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761995AbZJJQe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934068AbZJJQV2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 12:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761966AbZJJQV1
+	id S1761995AbZJJQe3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 12:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761823AbZJJQe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 12:21:27 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:41756 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761952AbZJJQV0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 12:21:26 -0400
-Date: Sat, 10 Oct 2009 12:20:47 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       Hugh Blemings <hugh@blemings.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2 (and 2.6.32-rc3)
-In-Reply-To: <1255144315.3387.0.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0910101217190.3859-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 10 Oct 2009 12:34:26 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:59114 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756280AbZJJQeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 12:34:25 -0400
+Date: Sat, 10 Oct 2009 18:33:47 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
+       Linux I2C <linux-i2c@vger.kernel.org>
+Subject: Re: [PATCH] ALS: TSL2550 driver move from i2c/chips
+Message-ID: <20091010183347.52b043ed@hyperion.delvare>
+In-Reply-To: <4ACF4AC6.7070802@cam.ac.uk>
+References: <4ACF4AC6.7070802@cam.ac.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 Oct 2009, Benjamin Herrenschmidt wrote:
+Hi Jonathan,
 
-> On Fri, 2009-10-09 at 22:03 -0400, Alan Stern wrote:
+On Fri, 09 Oct 2009 15:37:58 +0100, Jonathan Cameron wrote:
 > 
-> > If it's not a hardware issue and the modem really does work okay in 
-> > 2.6.31.1, you should also collect a usbmon trace under that kernel for 
-> > comparison.
+> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 > 
-> I put some logs at:
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=14355
-> 
-> BTW. Do we have a nice GUI to browse these or it's time for me to work
-> on my pygtk skills ? :-)
+> ---
+> Minimal changes made. Untested due to lack of hardware.
+> All comments welcome.
 
-I don't know of any GUI for browsing these trace files.  On the other
-hand I believe Wireshark is aware of usbmon's binary interface, so you
-can use it to capture and browse packets.  For email purposes, I find
-the simple text interface easier to use.
+Thanks for working on this. I can do any amount of testing you want, as
+I have received a TSL2550 evaluation module from TAOS.
 
-Alan Stern
+> illuminance is already documented as part of the class.
+> operating mode and power state are both as per the original
+> driver. I can't find any documentation for them, but if people
+> want it I can probably figure out what they are from
+> the data sheet.
 
+The operating mode selects the measurable range. Standard range is from
+0 to 1846 lux, extended range is from 0 to 9230 lux, with a resolution
+divided by 5. Extended mode is also 5 times faster.
+
+What do we want to do with this? I am open to suggestions. There are
+several possibilities. The operating mode could be provided as platform
+data and stay internal to the driver. Or we can leave is visible to
+user-space, in which case I'd recommend that we do so in terms of
+"range" rather than "mode", so that other drivers can use the same
+convention, whatever it becomes. For example, one would write the range
+of values he/she wants to be able to measure and the driver would put
+the device in the most appropriate mode.
+
+Alternatively (or additionally), we could implement an automatic mode
+which would change the mode dynamically based on the previous
+measurement. I've done that for one hwmon driver (for fan speed
+measurement) and it works very well, if implemented properly.
+
+> Might be worth dropping the power state control and moving
+> over to runtime pm but that is definitely the topic for another
+> patch.
+
+Power state control is already integrated into the PM framework
+(suspend and resume, is there more?) The sysfs entry is to allow a
+manual control on top of it. I don't much like having a custom sysfs
+entry for this, but I don't know if there is a standard way to achieve
+the same?
+
+> Does anyone want a patch without using Git's move functionality?
+
+Yes please!
+
+> Have copied all the users Jean knows about, but please cc any other
+> users as this does involve a change to the userspace interface.
+> 
+> Applies on 2.6.31-rc3 with the ALS patches
+> http://patchwork.kernel.org/patch/49153/
+> 
+>  drivers/als/Kconfig                  |   14 ++++++
+>  drivers/als/Makefile                 |    2 +
+>  drivers/{i2c/chips => als}/tsl2550.c |   73 ++++++++++++++++++++++++++++++---
+>  3 files changed, 82 insertions(+), 7 deletions(-)
+
+-- 
+Jean Delvare
