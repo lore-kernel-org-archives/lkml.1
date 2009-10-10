@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbZJJGe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZJJGe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753699AbZJJGe1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 02:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbZJJGe0
+	id S1754256AbZJJGe5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 02:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZJJGez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 02:34:26 -0400
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:51798 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752250AbZJJGe0 convert rfc822-to-8bit (ORCPT
+	Sat, 10 Oct 2009 02:34:55 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:46527 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752208AbZJJGey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 02:34:26 -0400
-MIME-Version: 1.0
-In-Reply-To: <774db7b9d6083108e254a3c8bbdb17251bf3b45c.1255153863.git.joe@perches.com>
-References: <cover.1255153863.git.joe@perches.com> <774db7b9d6083108e254a3c8bbdb17251bf3b45c.1255153863.git.joe@perches.com>
+	Sat, 10 Oct 2009 02:34:54 -0400
 From: Grant Likely <grant.likely@secretlab.ca>
-Date: Sat, 10 Oct 2009 00:33:29 -0600
-X-Google-Sender-Auth: 97cb00c288474285
-Message-ID: <fa686aa40910092333v12f66ef0l4ef6cdd5e1e59f7d@mail.gmail.com>
-Subject: Re: [PATCH 3/3] MAINTAINERS: Add OPEN FIRMWARE DEVICE TREE section
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+Subject: [PATCH] Add Open Firmware / Flattened Device Tree entry to maintainers
+To: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        Wolfram Sang <w.sang@pengutronix.de>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       devicetree-discuss@lists.ozlabs.org
+Date: Sat, 10 Oct 2009 00:33:43 -0600
+Message-ID: <20091010063334.6432.57743.stgit@angua>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10, 2009 at 12:05 AM, Joe Perches <joe@perches.com> wrote:
-> Added L: mailing list, W: wiki and K: of_get_property keyword
->
-> Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-NACK.  But only because I've also got a conflicting patch that adds
-the same entry (without the W or K tags).  I'll merge this with that
-and post right now.  :-)
+ MAINTAINERS |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-g.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 09a2028..7c801b0 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3869,6 +3869,15 @@ S:	Maintained
+ F:	Documentation/i2c/busses/i2c-ocores
+ F:	drivers/i2c/busses/i2c-ocores.c
+ 
++OPEN FIRMWARE AND FLATTENED DEVICE TREE
++M:	Grant Likely <grant.likely@secretlab.ca>
++L:	devicetree-discuss@lists.ozlabs.org
++W:	http://fdt.secretlab.ca
++S:	Maintained
++F:	drivers/of
++F:	include/linux/of*.h
++K:	of_get_property
++
+ OPROFILE
+ M:	Robert Richter <robert.richter@amd.com>
+ L:	oprofile-list@lists.sf.net
 
-> ---
->  MAINTAINERS |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 4407de2..a88ea6b 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3884,6 +3884,12 @@ S:       Maintained
->  F:     Documentation/i2c/busses/i2c-ocores
->  F:     drivers/i2c/busses/i2c-ocores.c
->
-> +OPEN FIRMWARE DEVICE TREE
-> +L:     devicetree-discuss@lists.ozlabs.org
-> +W:     http://fdt.secretlab.ca/Main_Page
-> +S:     Odd Fixes
-> +K:     of_get_property
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
