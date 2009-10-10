@@ -1,97 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZJJHPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbZJJHYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbZJJHPO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 03:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbZJJHPM
+	id S1755235AbZJJHYm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 03:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZJJHYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 03:15:12 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60462 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753967AbZJJHPL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 03:15:11 -0400
-Subject: Re: [PATCH RFC] sched: add notifier for process migration
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Avi Kivity <avi@redhat.com>,
-       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <4ACFBC98.4070701@goop.org>
-References: <4ACFA4C5.4020607@goop.org> <1255125738.7439.17.camel@laptop>
-	 <4ACFBC98.4070701@goop.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sat, 10 Oct 2009 09:14:23 +0200
-Message-Id: <1255158863.7866.25.camel@twins>
+	Sat, 10 Oct 2009 03:24:41 -0400
+Received: from 1wt.eu ([62.212.114.60]:50116 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754783AbZJJHYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 03:24:41 -0400
+Date: Sat, 10 Oct 2009 09:17:53 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [Stable-review] [patch 00/26] 2.6.31.4-stable review
+Message-ID: <20091010071753.GB26977@1wt.eu>
+References: <20091009231249.GA31084@kroah.com> <20091009233812.GA15982@kroah.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091009233812.GA15982@kroah.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-09 at 15:43 -0700, Jeremy Fitzhardinge wrote:
+On Fri, Oct 09, 2009 at 04:38:12PM -0700, Greg KH wrote:
+> On Fri, Oct 09, 2009 at 04:12:49PM -0700, Greg KH wrote:
+> > This is the start of the stable review cycle for the 2.6.31.4 release.
+> > There are 26 patches in this series, all will be posted as a response to
+> > this one.  If anyone has any issues with these being applied, please let
+> > us know.  If anyone is a maintainer of the proper subsystem, and wants
+> > to add a Signed-off-by: line to the patch, please respond with it.
+> 
+> Oops, a bunch of network patches came in right when this went out, and I
+> don't want to have to wait to get them on, so I've rolled a -rc2 version
+> now.
 
-> OK, concretely:
-> 
->    1. allocate a page and fixmap it into userspace
->    2. keep an array of structures containing tsc->cycle_t
->       (pvclock_vcpu_time_info) params, indexed by cpu
->    3. register those structures with the hypervisor so it can update
->       them as either the pcpus change freq and/or the vcpus get moved to
->       different pcpus
->    4. associate a "migration_count" with each structure (ie, how many
->       times this cpu has had tasks migrated off it)
-> 
-> The algorithm is basically:
-> 
->     do {
->         cpu = vgetcpu();    	/* get current cpu */
->         ti = &timeinfo[cpu];	/* get scaling+offset for tsc */
-> 
->         /* !!! migration race */
-> 
->         migration_count = ti->migration_count;
->         version = ti->version;
-> 
->         barrier();
-> 
->         local_time_info = *ti;
-> 
->         tsc = rdtsc();
->         cycles = compute_cycles_from_tsc(tsc, &local_time_info);
-> 
->         barrier();
-> 
->         cpu1 = vgetcpu();
-> 
->     /* loop if anything changed under our feet:
->         - we changed cpus (if we got migrated at "!!! migration race" above
->            then the migration_count test won't pick it up)
->         - the time info changed
->         - we got migrated to a different cpu (we need to check this as well
->            as cpu != cpu1 in case we got migrated from A->B->A)
->      */
-> 
->     } while(unlikely(cpu1 != cpu ||
->     		 timeinfo->version != version ||
->     		 timeinfo->migration_count != migration_count));
-> 
->     return cycles;
->       
-> 
-> This is executed in usermode as part of vsyscall gettimeofday via the
-> clocksource.vread function.
+Nice! Will you queue them for 2.6.27.38 too ?
 
-Why not do something like:
+Willy
 
-    struct {
-	u64 tsc;
-	u32 aux;
-    } tscp = rdtscp();
-
-    local_time_info = timeinfo[tscp_cpu(tscp)];
-
-    /* yay, consistent tsc and timeinfo !! */
-
-?
