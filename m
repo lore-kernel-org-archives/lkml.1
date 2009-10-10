@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757280AbZJJKNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbZJJKWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757280AbZJJKNA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 06:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbZJJKM7
+	id S1756041AbZJJKWy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 06:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZJJKWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 06:12:59 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46625 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755680AbZJJKM6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 06:12:58 -0400
-Subject: Re: [PATCH RFC] sched: add notifier for process migration
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <4AD055B3.8070705@goop.org>
-References: <4ACFA4C5.4020607@goop.org> <1255125738.7439.17.camel@laptop>
-	 <4ACFBC98.4070701@goop.org> <1255158863.7866.25.camel@twins>
-	 <4AD04E50.7060001@redhat.com> <1255166662.7866.28.camel@twins>
-	 <4AD055B3.8070705@goop.org>
-Content-Type: text/plain
-Date: Sat, 10 Oct 2009 12:12:08 +0200
-Message-Id: <1255169528.7521.3.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sat, 10 Oct 2009 06:22:53 -0400
+Received: from msr12.hinet.net ([168.95.4.112]:62859 "EHLO msr12.hinet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750805AbZJJKWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 06:22:52 -0400
+Message-ID: <4AD060D0.7090502@wytron.com.tw>
+Date: Sat, 10 Oct 2009 18:24:16 +0800
+From: Thomas Chou <thomas@wytron.com.tw>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: linux-input@vger.kernel.org,
+       Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: New driver for Altera PS/2 controller
+References: <1254985152-32407-1-git-send-email-thomas@wytron.com.tw> <20091010045603.GA9914@core.coreip.homeip.net>
+In-Reply-To: <20091010045603.GA9914@core.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-10 at 02:36 -0700, Jeremy Fitzhardinge wrote:
-> On 10/10/09 02:24, Peter Zijlstra wrote:
-> > Is that a real issue? If its not supported by the early hardware virt
-> > chips, tough luck, they sucked anyway :-)
-> >   
-> 
-> Nehalem is the first Intel chip to support it, and Xen doesn't rely on
-> hardware virt support anyway.
+On 10/10/2009 12:56 PM, Dmitry Torokhov wrote:
+> Hi Thomas,
+>
+> On Thu, Oct 08, 2009 at 02:59:12PM +0800, Thomas Chou wrote:
+>    
+>> This patch adds a new SERIO driver to support the Altera University
+>> Program PS/2 controller.
+>>
+>>      
+> Thank you for the patch, it looks like it is reasonable written although
+> it should do request_mem_region for the IO memory region it tries to
+> remap and also IO addresses should not be cast to unsigned int but
+> rather 'void __iomem *'. I also don;t see the reason for it to depend on
+> EMBEDDED since the things that depend on EMBEDDED are usually features
+> that are used almost by everyone and only in case of embedded arch you
+> may want to turn them off to save some memory.
+>
+> I also prefer even static functions to have the driver name as their
+> prefix - this way if I see a backtrace I know exactly which module is
+> involved.
+>
+> I made a small patch on top of yours, please give it a try and if it did
+> not break anything then I will fold it all together and queue for
+> 2.6.33.
+>
+> Thanks!
+>
+>    
+Hi Dmitry,
 
-Ah, nehalem is too limited indeed :-/
+Thank you very much for your help. I have tested the updated driver with 
+PS/2 keyboard and mouse on boards. They all worked well.
 
-A well, look at set_task_cpu(): new_rq->nr_migrations_in++;
+Cheers,
+Thomas
+
 
