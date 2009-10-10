@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbZJJKyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbZJJLkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756538AbZJJKyM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 06:54:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZJJKyL
+	id S1755692AbZJJLkJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 07:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZJJLkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 06:54:11 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:48115 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753494AbZJJKyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 06:54:11 -0400
-Date: Sat, 10 Oct 2009 12:53:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ehrhardt Christian <ehrhardt@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH] mm: make VM_MAX_READAHEAD configurable
-Message-ID: <20091010105333.GR9228@kernel.dk>
-References: <1255087175-21200-1-git-send-email-ehrhardt@linux.vnet.ibm.com> <1255090830.8802.60.camel@laptop> <20091009122952.GI9228@kernel.dk> <20091009143124.1241a6bc.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091009143124.1241a6bc.akpm@linux-foundation.org>
+	Sat, 10 Oct 2009 07:40:07 -0400
+Received: from r11na27.net.upc.cz ([94.113.108.27]:53321 "EHLO
+	bimbo.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754229AbZJJLkG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 07:40:06 -0400
+From: Lubomir Rintel <lkundrak@v3.sk>
+To: alsa-devel@alsa-project.org, linux-sound@vger.kernel.org,
+       linux-kernel@vger.kernel.org, tiwai@suse.de
+Cc: Lubomir Rintel <lkundrak@v3.sk>
+Subject: [PATCH] [snd-usb-audio] Add match for JMTek USB sound card
+Date: Sat, 10 Oct 2009 13:15:29 +0200
+Message-Id: <1255173329-20485-1-git-send-email-lkundrak@v3.sk>
+X-Mailer: git-send-email 1.6.5.rc2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09 2009, Andrew Morton wrote:
-> On Fri, 9 Oct 2009 14:29:52 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Fri, Oct 09 2009, Peter Zijlstra wrote:
-> > > On Fri, 2009-10-09 at 13:19 +0200, Ehrhardt Christian wrote:
-> > > > From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> > > > 
-> > > > On one hand the define VM_MAX_READAHEAD in include/linux/mm.h is just a default
-> > > > and can be configured per block device queue.
-> > > > On the other hand a lot of admins do not use it, therefore it is reasonable to
-> > > > set a wise default.
-> > > > 
-> > > > This path allows to configure the value via Kconfig mechanisms and therefore
-> > > > allow the assignment of different defaults dependent on other Kconfig symbols.
-> > > > 
-> > > > Using this, the patch increases the default max readahead for s390 improving
-> > > > sequential throughput in a lot of scenarios with almost no drawbacks (only
-> > > > theoretical workloads with a lot concurrent sequential read patterns on a very
-> > > > low memory system suffer due to page cache trashing as expected).
-> > > 
-> > > Why can't this be solved in userspace?
-> > > 
-> > > Also, can't we simply raise this number if appropriate? Wu did some
-> > > read-ahead trashing detection bits a long while back which should scale
-> > > the read-ahead window back when we're low on memory, not sure that ever
-> > > made it in, but that sounds like a better option than having different
-> > > magic numbers for each platform.
-> > 
-> > Agree, making this a config option (and even defaulting to a different
-> > number because of an arch setting) is crazy.
-> 
-> Given the (increasing) level of disparity between different kinds of
-> storage devices, having _any_ default is crazy.
+Entry for JMTek LLC., SSS USB Headphone Set in the quirk table.
+---
+ sound/usb/usbquirks.h |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-You have to start somewhere :-). 0 is a default, too.
-
-> Would be better to make some sort of vaguely informed guess at
-> runtime, based upon the characteristics of the device.
-
-I'm pretty sure the readahead logic already does respond to eg memory
-pressure, not sure if it attempts to do anything based on how quickly
-the device is doing IO. Wu?
-
+diff --git a/sound/usb/usbquirks.h b/sound/usb/usbquirks.h
+index f6f201e..e98ff4c 100644
+--- a/sound/usb/usbquirks.h
++++ b/sound/usb/usbquirks.h
+@@ -80,6 +80,19 @@
+ 	.bInterfaceClass = USB_CLASS_AUDIO,
+ },
+ 
++/* JMTek, LLC. SSS USB Headphone Set */
++{
++	.match_flags = USB_DEVICE_ID_MATCH_DEVICE |
++		       USB_DEVICE_ID_MATCH_DEV_CLASS |
++		       USB_DEVICE_ID_MATCH_INT_CLASS |
++		       USB_DEVICE_ID_MATCH_INT_SUBCLASS,
++	.idVendor = 0x0c76,
++	.idProduct = 0x1605,
++	.bDeviceClass = USB_CLASS_PER_INTERFACE,
++	.bInterfaceClass = USB_CLASS_AUDIO,
++	.bInterfaceSubClass = USB_SUBCLASS_AUDIO_CONTROL
++},
++
+ /*
+  * Logitech QuickCam: bDeviceClass is vendor-specific, so generic interface
+  * class matches do not take effect without an explicit ID match.
 -- 
-Jens Axboe
+1.6.5.rc2
 
