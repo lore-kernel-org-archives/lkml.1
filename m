@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752081AbZJJD2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZJJDmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752081AbZJJD2O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 23:28:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbZJJD2M
+	id S1753089AbZJJDmi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 23:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbZJJDmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 23:28:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:26893 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbZJJD2L (ORCPT
+	Fri, 9 Oct 2009 23:42:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60204
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750966AbZJJDmf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 23:28:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XiS15XMTsOL/qjO3piEFXODOYQ8GRtXpUy3cvqeVkkqOESRzUSQEZI6xRoVelM3Lq8
-         G2ypJxDj19pMQmQf3Wt8udfKXElA4KHE6nBgWz8zvwNzdZtGm39r9MJHWqVqpOYDpHdU
-         MBz8oclQMN1ImX39/4hlaz5L34F73OOjGRVqE=
-Subject: ext4 filesystem corruption
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <1254863215.11577.23.camel@maxim-laptop>
-References: <1254863215.11577.23.camel@maxim-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 10 Oct 2009 05:26:18 +0200
-Message-Id: <1255145178.3542.9.camel@maxim-laptop>
+	Fri, 9 Oct 2009 23:42:35 -0400
+Date: Fri, 09 Oct 2009 20:42:31 -0700 (PDT)
+Message-Id: <20091009.204231.204042155.davem@davemloft.net>
+To: Fred.L.Templin@boeing.com
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, stable@kernel.org,
+       stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       contact@saschahlusiak.de, yoshfuji@linux-ipv6.org
+Subject: Re: [patch 37/37] sit: fix off-by-one in ipip6_tunnel_get_prl
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <12F4112206976147A34FEC0277597CCF27A416492F@XCH-NW-15V.nw.nos.boeing.com>
+References: <20091009233411.852013234@mini.kroah.org>
+	<20091009233440.786680001@mini.kroah.org>
+	<12F4112206976147A34FEC0277597CCF27A416492F@XCH-NW-15V.nw.nos.boeing.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have more information on that issue.
+From: "Templin, Fred L" <Fred.L.Templin@boeing.com>
+Date: Fri, 9 Oct 2009 17:34:49 -0700
 
-First of all this isn't related to s2ram/disk.
-Second, this happened here again 3 times.
+> Wait a moment - I remember now that this code came
+> from Yoshifuji, and I believe there was a reason for
+> the cmax+1. The application is expected to know this
+> and to post a large enough buffer.
+> 
+> Can we put this on hold until I have had a chance to
+> check my e-mail archives and my local iproute changes
+> (will respond on monday)?
 
-Now kernel complains loudly about access to freed inode.
+Sure, we can keep it out of -stable for now.
 
-After a reboot fsck tells the following:
+But it is in Linus's tree so if you find we shouldn't do this
+you'll need to send me a revert for net-2.6
 
-- Some directory entries point to freed inodes,
-   Which means these files are gone, but I never deleted some of them
+Otherwise if it's good, you'll have to remind me to resubmit
+it to -stable.
 
-- Some inodes have shared blocks
-
-- Some orpahaned inodes found
-
-- Free block counts/bitmaps corrupted.
-
-That all happens without any s2ram/disk cycle.
-
-However, yet an unusual situation did happen today.
-I had installed an update to mountall ubuntu package, and it hosed all
-boot process.
-I had to  reboot many times, and once did hold the power button for 4
-seconds.
-
-I also used often the SYSRQ+U/SYSRQ+B tool.
-
-On the contrary, I did several s2disk cycles, and one did fail, but
-there was no corruption.
-
-I must say that until now, I had never seen any ext3/ext4 corruption,
-even though there were many many crashes, power failures, forced
-reboots, etc...
-
-Best regards,
-Maxim Levitsky
-
+Thanks!
