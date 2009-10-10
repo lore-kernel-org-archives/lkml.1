@@ -1,57 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbZJJREq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762023AbZJJRFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933020AbZJJREq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 13:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761960AbZJJREo
+	id S1762023AbZJJRFR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 13:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762000AbZJJRFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 13:04:44 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:38427 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753973AbZJJREn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 13:04:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:user-agent:mime-version
-         :content-type:content-transfer-encoding;
-        b=oQ8yp/76toLfJY7jVMFcJAUD5Rs+Ssx0wfb71tgnqeUR4W0DceCaX0jGpJOl006BmV
-         P6jjpEbfsV6lVSMIJDM2rZRAbixkVlZ6+LQ/uDCAK33hbKlEEmfpTAN+WLlFCF1j9Le3
-         82Lc20D7CVDJ03SzKIGl5D0Or6QVoEHjYZ/kw=
-Date: Sat, 10 Oct 2009 19:03:58 +0200
-From: Luca Niccoli <lultimouomo@gmail.com>
-To: linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net
-Cc: corentincj@iksaif.net
-Subject: [PATCH] eeepc-laptop.c: Don't enable camera at startup if it's
- already on.
-Message-ID: <4ad0be7e.iK8Do4SqIQc+U+yc%lultimouomo@gmail.com>
-User-Agent: Heirloom mailx 12.4 7/29/08
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 10 Oct 2009 13:05:16 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:52859 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761999AbZJJRFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 13:05:15 -0400
+Date: Sat, 10 Oct 2009 19:04:36 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
+       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 23/28] i2c: Remove big kernel lock from i2cdev_open
+Message-ID: <20091010190436.1a48f98e@hyperion.delvare>
+In-Reply-To: <20091010153350.006406413@linutronix.de>
+References: <20091010153314.827301943@linutronix.de>
+	<20091010153350.006406413@linutronix.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Switching the camera takes 500ms, checking if it's on is almost free...
-The BIOS remembers the setting through reboots, so there's good chance the
-camera is already enabled.
+Hi Thomas,
 
-Signed-off-by: Luca Niccoli <lultimouomo@gmail.com>
----
- drivers/platform/x86/eeepc-laptop.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+On Sat, 10 Oct 2009 15:37:17 -0000, Thomas Gleixner wrote:
+> The BKL is held over a kmalloc so cannot protect anything beyond that.
+> The two calls before the kmalloc have their own locking.
+> Improve device open function by removing the now unnecessary ret variable
+> 
+> Signed-off-by: Vincent Sanders <vince@simtec.co.uk>
+> LKML-Reference: <1255175172-2666-1-git-send-email-vince@simtec.co.uk>
+> Cc: Jean Delvare <khali@linux-fr.org>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  drivers/i2c/i2c-dev.c |   22 ++++++----------------
+>  1 file changed, 6 insertions(+), 16 deletions(-)
+> 
+> Index: linux-2.6-tip/drivers/i2c/i2c-dev.c
+> ===================================================================
+> --- linux-2.6-tip.orig/drivers/i2c/i2c-dev.c
+> +++ linux-2.6-tip/drivers/i2c/i2c-dev.c
+> @@ -34,7 +34,6 @@
+>  #include <linux/list.h>
+>  #include <linux/i2c.h>
+>  #include <linux/i2c-dev.h>
+> -#include <linux/smp_lock.h>
+>  #include <linux/jiffies.h>
+>  #include <asm/uaccess.h>
+>  
+> @@ -445,20 +444,14 @@ static int i2cdev_open(struct inode *ino
+>  	struct i2c_client *client;
+>  	struct i2c_adapter *adap;
+>  	struct i2c_dev *i2c_dev;
+> -	int ret = 0;
+>  
+> -	lock_kernel();
+>  	i2c_dev = i2c_dev_get_by_minor(minor);
+> -	if (!i2c_dev) {
+> -		ret = -ENODEV;
+> -		goto out;
+> -	}
+> +	if (!i2c_dev)
+> +		return -ENODEV;
+>  
+>  	adap = i2c_get_adapter(i2c_dev->adap->nr);
+> -	if (!adap) {
+> -		ret = -ENODEV;
+> -		goto out;
+> -	}
+> +	if (!adap)
+> +		return -ENODEV;
+>  
+>  	/* This creates an anonymous i2c_client, which may later be
+>  	 * pointed to some address using I2C_SLAVE or I2C_SLAVE_FORCE.
+> @@ -470,8 +463,7 @@ static int i2cdev_open(struct inode *ino
+>  	client = kzalloc(sizeof(*client), GFP_KERNEL);
+>  	if (!client) {
+>  		i2c_put_adapter(adap);
+> -		ret = -ENOMEM;
+> -		goto out;
+> +		return -ENOMEM;
+>  	}
+>  	snprintf(client->name, I2C_NAME_SIZE, "i2c-dev %d", adap->nr);
+>  	client->driver = &i2cdev_driver;
+> @@ -479,9 +471,7 @@ static int i2cdev_open(struct inode *ino
+>  	client->adapter = adap;
+>  	file->private_data = client;
+>  
+> -out:
+> -	unlock_kernel();
+> -	return ret;
+> +	return 0;
+>  }
+>  
+>  static int i2cdev_release(struct inode *inode, struct file *file)
+> 
 
-diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
-index 749e210..2754304 100644
---- a/drivers/platform/x86/eeepc-laptop.c
-+++ b/drivers/platform/x86/eeepc-laptop.c
-@@ -356,7 +356,8 @@ static void __init eeepc_enable_camera(void)
- 	 * If the following call to set_acpi() fails, it's because there's no
- 	 * camera so we can ignore the error.
- 	 */
--	set_acpi(CM_ASL_CAMERA, 1);
-+	if (get_acpi(CM_ASL_CAMERA) == 0)
-+		set_acpi(CM_ASL_CAMERA, 1);
- }
- 
- /*
+Looks good to me:
+
+Acked-by: Jean Delvare <khali@linux-fr.org>
+
+Do you want me to pick this patch in my i2c tree, or will you take care
+of pushing it upstream? If you're not going to push it quickly, I'd
+prefer the first solution, to avoid conflicts.
+
+(As a side note, i2c-dev would deserve a partial rewrite as it doesn't
+integrate into the standard device driver model, and certainly has a
+number of race conditions. But this is well beyond the scope of your
+patch.)
+
+Thanks,
+-- 
+Jean Delvare
