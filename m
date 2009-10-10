@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934863AbZJJU42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964897AbZJJUyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934863AbZJJU42 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 16:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934838AbZJJU41
+	id S964897AbZJJUyT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 16:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934813AbZJJUyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 16:56:27 -0400
-Received: from smtprelay11.ispgateway.de ([80.67.31.45]:49115 "EHLO
-	smtprelay11.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934832AbZJJU41 (ORCPT
+	Sat, 10 Oct 2009 16:54:19 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:55433 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934814AbZJJUyS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 16:56:27 -0400
-From: Bernhard Walle <bernhard@bwalle.de>
-To: akpm@linuxfoundation.org
-Cc: linux-kernel@vger.kernel.org, Bernhard Walle <bernhard@bwalle.de>
-Subject: [PATCH 5/5] Always print panic message on current console
-Date: Sat, 10 Oct 2009 22:51:10 +0200
-Message-Id: <1255207870-24496-6-git-send-email-bernhard@bwalle.de>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1255207870-24496-1-git-send-email-bernhard@bwalle.de>
-References: <1255207870-24496-1-git-send-email-bernhard@bwalle.de>
-X-Df-Sender: 1227806
+	Sat, 10 Oct 2009 16:54:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gv+d2Ib4OwsxRxh+nJXwNHqgTXzp6RetyyvJUVa0kXhIKrENU74n/b+sKu8kGqpH6y
+         2BwLCSo0/uFfnSNcOOsf6JvFp5L5GmbSa9synvYEmdrGoiEtuDTD/kHcF6A+7aXZ7m00
+         wtL2XQzYwRy8ZXuArbohG58ZECEkSG0Z8u5sI=
+MIME-Version: 1.0
+In-Reply-To: <20091010120448.GB1811@ucw.cz>
+References: <1254669853.26496.0.camel@carter> <4AC8F02B.6080209@suse.de>
+	 <200910042246.23712.rjw@sisk.pl> <4AC91578.2020807@suse.de>
+	 <ca2dc2820910041455h18ece909rc2280a40f1899c0a@mail.gmail.com>
+	 <4AC923F4.9050100@suse.de>
+	 <ca2dc2820910041653o29d4b253n69270d231e56e447@mail.gmail.com>
+	 <4AC93B45.8090707@suse.de>
+	 <ca2dc2820910061005k2beae176lece9792bb15cda90@mail.gmail.com>
+	 <20091010120448.GB1811@ucw.cz>
+Date: Sat, 10 Oct 2009 22:53:39 +0200
+Message-ID: <ca2dc2820910101353g65e4591ds82bf9fff8378abd4@mail.gmail.com>
+Subject: Re: [PATCH] battery: Fix charge_now returned by broken batteries
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Alexey Starikovskiy <astarikovskiy@suse.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kernel offers with TIOCL_GETKMSGREDIRECT ioctl() the possibility to
-redirect the kernel messages to a specific console.
+On Sat, Oct 10, 2009 at 2:04 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> > current full charge, when the charging is complete. It may end up lower or
+>> > greater than
+>> > previous value.
+>> > Comparing current charge with the last full charge may correctly give you
+>> >>100%.
+>>
+>> Then maybe we can write something like...
+>>
+>> val->intval = acpi_battery_is_charged(battery)
+>>       ? min(battery->capacity_now, battery->full_charge_capacity) * 1000
+>>       : battery->capacity_now * 1000;
+>>
+>> So we only use the min() operation when it is fully charged (returning
+>> to 100%) without losing information when charging.
+>>
+>> The problem is that percentage may jump from >100% to 100% in
+>> batteries whose full capacity increase, but I think that is OK, since
+>> when completely charged, the >100% is the new 100%.
+>>
+>> In "broken" batteries (is it broken finally? or is it expected
+>> behaviour?) like mine the old problem will be corrected, as it was
+>> only present in the charged state.
+>
+> I believe you better work around this in userspace... or agree that
+>>100% charge is possible.
 
-However, since it's not possible to switch to the kernel message console after
-a panic(), it would be nice if the kernel would print the panic message on the
-current console.
+I agree that >100% charge is possible while charging (because that
+would mean the battery is over the last charged level); however, what
+does it mean when charged?
 
+In any case, my laptop's battery is not charging over 100% its
+original capacity anyway, just reporting a wrong value.
 
-Signed-off-by: Bernhard Walle <bernhard@bwalle.de>
----
- kernel/panic.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 96b45d0..a230459 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -22,6 +22,7 @@
- #include <linux/init.h>
- #include <linux/nmi.h>
- #include <linux/dmi.h>
-+#include <linux/vt.h>
- 
- int panic_on_oops;
- static unsigned long tainted_mask;
-@@ -65,6 +66,9 @@ NORET_TYPE void panic(const char * fmt, ...)
- 	 */
- 	preempt_disable();
- 
-+	/* don't redirect the panic message to some hidden console */
-+	vt_set_kmsg_redirect(0);
-+
- 	bust_spinlocks(1);
- 	va_start(args, fmt);
- 	vsnprintf(buf, sizeof(buf), fmt, args);
--- 
-1.6.3.3
-
+>
+>                                                                Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
