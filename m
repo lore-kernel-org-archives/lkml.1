@@ -1,87 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761524AbZJJAKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbZJJANj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761524AbZJJAKS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 20:10:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbZJJAKQ
+	id S1761569AbZJJANj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 20:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZJJANi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 20:10:16 -0400
-Received: from sous-sol.org ([216.99.217.87]:53003 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752841AbZJJAKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 20:10:15 -0400
-Date: Fri, 9 Oct 2009 17:09:26 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Andy Isaacson <adi@hexapodia.org>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: DMAR regression in 2.6.31 leads to ext4 corruption?
-Message-ID: <20091010000926.GA17547@sequoia.sous-sol.org>
-References: <20091009061729.GA31242@hexapodia.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091009061729.GA31242@hexapodia.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Fri, 9 Oct 2009 20:13:38 -0400
+Received: from lennier.cc.vt.edu ([198.82.162.213]:45277 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752982AbZJJANh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 Oct 2009 20:13:37 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, Zhu Yi <yi.zhu@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: mmotm 2009-10-09-01-07 - iwl3945 fails to do firmware load request
+In-Reply-To: Your message of "Fri, 09 Oct 2009 01:07:49 PDT."
+             <200910090830.n998Ubvv020464@imap1.linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200910090830.n998Ubvv020464@imap1.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1255133561_2897P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 09 Oct 2009 20:12:41 -0400
+Message-ID: <16108.1255133561@turing-police.cc.vt.edu>
+X-Mirapoint-Received-SPF: 128.173.38.202 turing-police.cc.vt.edu Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (0) 
+X-Junkmail-Status: score=10/50, host=zidane.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020203.4ACFD17C.00A5,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-07-29 21:33:33,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andy Isaacson (adi@hexapodia.org) wrote:
-> Today while running 817b33d38 I got the following (on a Thinkpad X200
-> I'd replaced the Dell with, just in case it was previously-good hardware
-> going bad).
+--==_Exmh_1255133561_2897P
+Content-Type: text/plain; charset="us-ascii"
+Content-Id: <16101.1255133561.1@turing-police.cc.vt.edu>
+
+On Fri, 09 Oct 2009 01:07:49 PDT, akpm@linux-foundation.org said:
+> The mm-of-the-moment snapshot 2009-10-09-01-07 has been uploaded to
 > 
-> [   29.450550] EXT4-fs error (device sda1): ext4_lookup: deleted inode referenced: 79
-> [   30.022328] DRHD: handling fault status reg 3
-> [   30.022328] DMAR:[DMA Write] Request device [00:02.0] fault addr ddae28000 
-> [   30.022328] DMAR:[fault reason 05] PTE Write access is not set
-> [   30.146136] DRHD: handling fault status reg 3
-> [   30.248938] DMAR:[DMA Write] Request device [00:02.0] fault addr ddae28000 
-> [   30.248939] DMAR:[fault reason 05] PTE Write access is not set
+>    http://userweb.kernel.org/~akpm/mmotm/
 
-There's some timing coincidence there, but it's a full 1/2 second between
-the ext4 error and the DMAR fault (and there's various DMAR faults
-along the way for the same buffer before and after the ext4 error).
-That fault is quite typical of a driver bug, and it's the VGA device
-(rather its driver) that is culpable.  The IOMMU caught the VGA device
-trying to do a DMA write to a buffer mapped r/o.
+Broke my iwl3945 wireless card:
 
-> The full output of fsck and full dmesg are at the URL below.
-> 
-> I don't know that DMAR is resulting in my repeated filesystem
-> corruption, but it does seem like a potential cause (and would explain
-> why I'm seeing this whereas most people aren't, since few people are
-> using VT-d *and* i915).
+Good (2.6.31-mmotm0917)
+Oct  8 09:55:33 turing-police kernel: [    0.809101] iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for Linux, 1.2.26ks
+Oct  8 09:55:33 turing-police kernel: [    0.809106] iwl3945: Copyright(c) 2003-2009 Intel Corporation
+Oct  8 09:55:33 turing-police kernel: [    0.809201] iwl3945 0000:0c:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+Oct  8 09:55:33 turing-police kernel: [    0.879463] iwl3945 0000:0c:00.0: Tunable channels: 11 802.11bg, 13 802.11a channels
+Oct  8 09:55:33 turing-police kernel: [    0.879466] iwl3945 0000:0c:00.0: Detected Intel Wireless WiFi Link 3945ABG
+...
+Oct  8 09:55:35 turing-police kernel: [   31.599751] iwl3945 0000:0c:00.0: firmware: requesting iwlwifi-3945-2.ucode
+Oct  8 09:55:35 turing-police kernel: [   31.697046] iwl3945 0000:0c:00.0: loaded firmware version 15.28.2.8
+Oct  8 09:55:35 turing-police kernel: [   31.777214] Registered led device: iwl-phy0::radio
+Oct  8 09:55:35 turing-police kernel: [   31.777430] Registered led device: iwl-phy0::assoc
+Oct  8 09:55:35 turing-police kernel: [   31.777545] Registered led device: iwl-phy0::RX
+Oct  8 09:55:35 turing-police kernel: [   31.777676] Registered led device: iwl-phy0::TX
+Oct  8 09:55:35 turing-police kernel: [   31.789446] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+(and then wpa-supplicant is able to bring the card up when it finally gets launched by initscripts)
 
-I do use it every day on my primary workstation (x200), and haven't
-had any issue (I'm using ext3).
+Bad 2.6.32-rc3-mmotm1009:
 
-> I see that the BROKEN_GFX_WA code has been removed; do we actually
-> believe that the relevant code is working?  Could it be corrupting my
-> AHCI DMAs if not?
+Oct  9 13:50:19 turing-police kernel: [    0.931788] iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network Connection driver for Linux, 1.2.26ks
+Oct  9 13:50:19 turing-police kernel: [    0.944678] iwl3945: Copyright(c) 2003-2009 Intel Corporation
+Oct  9 13:50:19 turing-police kernel: [    0.957831] iwl3945 0000:0c:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+Oct  9 13:50:19 turing-police kernel: [    1.038946] iwl3945 0000:0c:00.0: Tunable channels: 11 802.11bg, 13 802.11a channels
+Oct  9 13:50:19 turing-police kernel: [    1.038950] iwl3945 0000:0c:00.0: Detected Intel Wireless WiFi Link 3945ABG
 
-It should be for your adapter (after 66a4fe0c merged in agp fixes).
-While it could still be broken (aside of the initial faults before the
-device is even initialized in Linux -- I'm not seeing any faults, btw),
-iommu=pt will put all devices in a 1:1 mapped domain and would suppress
-the DMAR faults you see (similar to intel_iommu=off, but allowing the
-iommu to still be used for pci device assignment).  However, doing that
-or enabling the gfx workaround would allow the device to generate invalid
-DMA requests since if effectively disables the IOMMU for the gfx device,
-which would leave a better opportunity for DMA related corruption.
-The earlier fs issues we saw w/ the IOMMU were when it was actively
-blocking disk DMA requests, but that's not happening here.
+We never see the firmware load request, and of course everything goes
+pear-shaped after that doesn't happen....
 
-> At the end of the last thread Ted thought that we'd
-> lost a write of an inode block; this time the symptoms look different,
-> in that I don't see one inode block representing a significant data
-> loss (though I'm by no means an expert).
-> 
-> Complete dmesg etc are at
-> http://web.hexapodia.org/~adi/bugs/20091008-ext4-dmar/
-> 
-> I'll try running with BROKEN_GFX_WA turned back on and see if that
-> improves things at all.
+Kernel is built with:
 
-thanks,
--chris
+%  zgrep -i iwl /proc/config.gz 
+CONFIG_IWLWIFI=y
+CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT=y
+# CONFIG_IWLWIFI_DEBUG is not set
+CONFIG_IWLWIFI_DEVICE_TRACING=y
+# CONFIG_IWLAGN is not set
+CONFIG_IWL3945=y
+CONFIG_IWL3945_SPECTRUM_MEASUREMENT=y
+
+
+--==_Exmh_1255133561_2897P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKz9F5cC3lWbTT17ARAp0PAKCM8GkD+4UH5mjcp7Z7rfDmqDl26QCfRhX3
+C6+JE99sXVKrkIhQAsNXqCQ=
+=HEg4
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1255133561_2897P--
+
