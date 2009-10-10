@@ -1,134 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934758AbZJJCli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964871AbZJJCnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934758AbZJJCli (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 Oct 2009 22:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934749AbZJJCli
+	id S964871AbZJJCnp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 22:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757514AbZJJCnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 Oct 2009 22:41:38 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:20148 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754144AbZJJClh (ORCPT
+	Fri, 9 Oct 2009 22:43:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34974 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756009AbZJJCno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 Oct 2009 22:41:37 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:subject:message-id:user-agent:mime-version:content-type;
-	b=JWZy3obNIWxwx/QhiJjyCIm1amyBKirRvdUHbIyj+JdqeJMlCyAEVCiCMjcqtkx8r
-	5t4K9SoLQtX3yVu+UZWHw==
-Date: Fri, 9 Oct 2009 19:40:06 -0700 (PDT)
-From: Paul Turner <pjt@google.com>
-To: mingo@elte.hu, peterz@infradead.org, linux-kernel@vger.kernel.org
-Subject: sched: race between deactivate and switch sched_info accounting?
-Message-ID: <alpine.DEB.2.00.0910091849070.22548@kitami.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 Oct 2009 22:43:44 -0400
+Date: Fri, 9 Oct 2009 19:42:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
+       linux-api@vger.kernel.org
+Subject: Re: [resend][PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
+Message-Id: <20091009194250.eb76e338.akpm@linux-foundation.org>
+In-Reply-To: <3e8340490910091922g7891b31al649e91f15ffae687@mail.gmail.com>
+References: <20091009134354.12A7.A69D9226@jp.fujitsu.com>
+	<20091009171344.3fc5f28b.akpm@linux-foundation.org>
+	<3e8340490910091922g7891b31al649e91f15ffae687@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 9 Oct 2009 22:22:10 -0400 Bryan Donlan <bdonlan@gmail.com> wrote:
 
-Hi,
+> On Fri, Oct 9, 2009 at 8:13 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> >> + __ __ __ __ __ __ res = access_process_vm(task, mm->arg_start, buffer, len, 0);
+> >> +
+> >> + __ __ __ __ __ __ if (mm->arg_end != mm->env_start)
+> >> + __ __ __ __ __ __ __ __ __ __ /* PR_SET_PROCTITLE_AREA used */
+> >> __ __ __ __ __ __ __ __ __ __ __ res = strnlen(buffer, res);
+> >
+> > Hang on.
+> >
+> > If PR_SET_PROCTITLE_AREA installed a bad address then
+> > access_process_vm() will return -EFAULT and nothing was written to
+> > `buffer'?
+> >
+> > Also, concurrent PR_SET_PROCTITLE_AREA could cause arg_start and
+> > arg_end to have inconsistent/incoherent values. __This might result in a
+> > fault but it also might result in a read of garbage userspace memory.
+> >
+> > I guess all of these issues could be written off as "userspace bugs",
+> > but our behaviour here isn't nice. __We should at least return that
+> > -EFAULT!.
+> 
+> access_process_vm() does not return an error code - just the number of
+> bytes successfully transferred. If there's a fault, we just get 0 (or
+> some intermediate value) back
 
-While chasing down some performance we found inconsistenies in the 
-accounting of run-delay.  Tracking this down I think there exists a race 
-condition in which a task can 're-arrive' without updating its queuing 
-accounting.  This can lead to incorrect run_delay and rq_cpu_time 
-accounting.
+OK.
 
-Consider a flow such as:
+> (as discussed on lkml).
 
-1. task p blocks, enters schedule()
-2. we deactivate p
-3. there's nothing else so we load balance
-4. during load balance we lock balance and a remote cpu succeeds in 
-re-activating p
-5. we then re-pick next==p
-6. we skip the accounting update since prev==next, start running p again
-   (last_arrival is left polluted with our prior arrival) 
+That's not code documentation :(
 
-<time passes>
+> >> + __ __ __ __ __ __ __ __ __ __ __ __ __ __ res += access_process_vm(task, mm->env_start,
 
-7. enter schedule() again, switch into new task
-   a. if p blocks then we'll go through deactivate which then will 
-   charge the last period as run_delay even though we were actually 
-   running.
-   b. if p doesn't block then we'll leave last_queued at the stale prior 
-   value since last_queued != 0 in sched_info_queued.
+Your email client is converting tabs to non-ascii crap.  gmail.  Sigh.
 
-   [*] in depart our delta will cover the span since our original arrival 
-   including some (probably largely inconsequential) extra time that
-   wouldn't normally be charged to us.
+> > __ __ __ __ __ __ __ __mm->arg_start = addr;
+> > __ __ __ __ __ __ __ __mm->arg_end = addr + len;
+> > __ __ __ __ __ __ __ __spin_unlock(mm->lock);
+> >
+> > and
+> >
+> > __ __ __ __proc_pid_cmdline()
+> > __ __ __ __{
+> > __ __ __ __ __ __ __ __unsigned long addr;
+> > __ __ __ __ __ __ __ __unsigned long end;
+> >
+> > __ __ __ __ __ __ __ __spin_lock(mm->lock);
+> > __ __ __ __ __ __ __ __addr = mm->arg_start;
+> > __ __ __ __ __ __ __ __end = mm->arg_end;
+> > __ __ __ __ __ __ __ __spin_unlock(mm->lock);
+> >
+> > __ __ __ __ __ __ __ __<use `addr' and `len'>
+> > __ __ __ __}
+> >
+> > ?
+> 
+> As discussed on the lkml thread, this opens up a nasty race:
+> 
+> Process A: calls PR_SET_PROCTITLE_AREA
+> Process B: read cmdline:
+> Process B: spin_lock
+> Process B: read mm->arg_*
+> Process B: unlock
+> Process A: mm->arg_* = ...
+> Process A: free(old_cmdline_area)
+> Process A: secret_password = malloc(...)
+> Process A: strcpy(secret_password, stuff);
+> Process B: access_process_vm
+> 
+> If secret_password == arg_start, then process B just read secret
+> information from process A's address space. Since process A has no
+> idea when or even if process B will complete its read, it has no way
+> of protecting itself from this, save from never reusing any memory
+> which has ever been assigned to a proctitle area.
 
-<time passes>
+OK.
 
-8. pick p to run again
-   if 7b was true then the queue delay we charge here will again include 
-   p's prior timeslice that was spent running.
+But there's no way in which the reader of either the patch or the
+resulting code can discover this subtlety.
 
-One way to work around this is to charge a switch event which accounts for 
-the fact that the task technically did temporarily depart and re-arrive.  
-A patch for this approach is below but there are definitely other ways to 
-handle it (there may also be additional concerns as further accounting 
-continues to be added).
+> The solution is to use the seqlock to detect this, and prevent the
+> secret information from ever making it back to process B's userspace.
+> Note that it's not enough to just recheck arg_start, as process A may
+> reassign the proctitle area back to its original position after having
+> it somewhere else for a while.
 
-Thanks,
+Well seqlock is _a_ solution.  Another is to use a mutex or an rwsem
+around the whole operation.
 
-- Paul
+With the code as you propose it, what happens if a process sits in a
+tight loop running setproctitle?  Do other processes running `ps' get
+stuck in a livelock until the offending process gets scheduled out?
 
- ---
-
-
-It's possible for our previously de-activated task to be re-activated by a 
-remote cpu during lock balancing.  We have to account for this manually 
-since prev == next, yet the task just went through dequeue accounting.
-
- Signed-off-by: Paul Turner <pjt@google.com>
----
- kernel/sched.c |   15 ++++++++++++---
- 1 files changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index ee61f45..6445d9d 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5381,7 +5381,7 @@ asmlinkage void __sched schedule(void)
- 	struct task_struct *prev, *next;
- 	unsigned long *switch_count;
- 	struct rq *rq;
--	int cpu;
-+	int cpu, deactivated_prev = 0;
- 
- need_resched:
- 	preempt_disable();
-@@ -5406,8 +5406,10 @@ need_resched_nonpreemptible:
- 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
- 		if (unlikely(signal_pending_state(prev->state, prev)))
- 			prev->state = TASK_RUNNING;
--		else
-+		else {
- 			deactivate_task(rq, prev, 1);
-+			deactivated_prev = 1;
-+		}
- 		switch_count = &prev->nvcsw;
- 	}
- 
-@@ -5434,8 +5436,15 @@ need_resched_nonpreemptible:
- 		 */
- 		cpu = smp_processor_id();
- 		rq = cpu_rq(cpu);
--	} else
-+	} else {
-+		/*
-+		 * account for our previous task being re-activated by a
-+		 * remote cpu.
-+		 */
-+		if (unlikely(deactivated_prev))
-+			sched_info_switch(prev, prev);
- 		spin_unlock_irq(&rq->lock);
-+	}
- 
- 	post_schedule(rq);
- 
--- 
-1.5.4.3
 
