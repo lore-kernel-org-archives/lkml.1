@@ -1,55 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760128AbZJJMe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbZJJMlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760128AbZJJMe6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 08:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758929AbZJJMe6
+	id S1760237AbZJJMlf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 08:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbZJJMld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 08:34:58 -0400
-Received: from mailout01.t-online.de ([194.25.134.80]:44764 "EHLO
-	mailout01.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758661AbZJJMe5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 08:34:57 -0400
-Message-ID: <4AD07F15.1060501@t-online.de>
-Date: Sat, 10 Oct 2009 14:33:25 +0200
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090923 Lightning/1.0pre Thunderbird/3.0b4
+	Sat, 10 Oct 2009 08:41:33 -0400
+Received: from mga03.intel.com ([143.182.124.21]:34144 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750761AbZJJMlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 08:41:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,537,1249282800"; 
+   d="scan'208";a="197380744"
+Date: Sat, 10 Oct 2009 20:40:42 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ehrhardt Christian <ehrhardt@linux.vnet.ibm.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] mm: make VM_MAX_READAHEAD configurable
+Message-ID: <20091010124042.GA9179@localhost>
+References: <1255087175-21200-1-git-send-email-ehrhardt@linux.vnet.ibm.com> <1255090830.8802.60.camel@laptop> <20091009122952.GI9228@kernel.dk> <20091009143124.1241a6bc.akpm@linux-foundation.org> <20091010105333.GR9228@kernel.dk>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Logitech Trackman FX detected as "Mouse"?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ID: TJ+pQYZTrhdwmCoJTJn311IDGvTr01l-6y978VGh6VjwH5M-02-4f7FHvDaWP31ZQr
-X-TOI-MSGID: d759a18f-94f0-4897-b4c9-77ba7fe667a1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091010105333.GR9228@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+On Sat, Oct 10, 2009 at 06:53:33PM +0800, Jens Axboe wrote:
+> On Fri, Oct 09 2009, Andrew Morton wrote:
+> > On Fri, 9 Oct 2009 14:29:52 +0200
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Fri, Oct 09 2009, Peter Zijlstra wrote:
+> > > > On Fri, 2009-10-09 at 13:19 +0200, Ehrhardt Christian wrote:
+> > > > > From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+> > > > > 
+> > > > > On one hand the define VM_MAX_READAHEAD in include/linux/mm.h is just a default
+> > > > > and can be configured per block device queue.
+> > > > > On the other hand a lot of admins do not use it, therefore it is reasonable to
+> > > > > set a wise default.
+> > > > > 
+> > > > > This path allows to configure the value via Kconfig mechanisms and therefore
+> > > > > allow the assignment of different defaults dependent on other Kconfig symbols.
+> > > > > 
+> > > > > Using this, the patch increases the default max readahead for s390 improving
+> > > > > sequential throughput in a lot of scenarios with almost no drawbacks (only
+> > > > > theoretical workloads with a lot concurrent sequential read patterns on a very
+> > > > > low memory system suffer due to page cache trashing as expected).
+> > > > 
+> > > > Why can't this be solved in userspace?
+> > > > 
+> > > > Also, can't we simply raise this number if appropriate? Wu did some
+> > > > read-ahead trashing detection bits a long while back which should scale
+> > > > the read-ahead window back when we're low on memory, not sure that ever
+> > > > made it in, but that sounds like a better option than having different
+> > > > magic numbers for each platform.
+> > > 
+> > > Agree, making this a config option (and even defaulting to a different
+> > > number because of an arch setting) is crazy.
+> > 
+> > Given the (increasing) level of disparity between different kinds of
+> > storage devices, having _any_ default is crazy.
+> 
+> You have to start somewhere :-). 0 is a default, too.
 
-I just stumbled over this in logps2pp.c: My Logitech Trackman FX is
-detected as "Mouse" instead of "Trackman". dmesg shows
+Yes, an obvious and viable way is to start with a default size, and to
+back off in runtime if experienced thrashing.
 
-	input: PS2++ Logitech Mouse as /devices/platform/i8042/serio1/input/input4
+Ideally we use 4MB readahead size per disk, however there are several
+constraints:
+- readahead thrashing
+  can be detected and handled very well if necessary :)
+- mmap readaround size
+  currently one single size is used for both sequential readahead and
+  mmap readaround, and a larger readaround size risks more prefetch
+  misses (comparing to the pretty accurate readahead). I guess in
+  despite of the increased readaound misses, a large readaround size
+  would still help application startup time in a 4GB desktop. However
+  it does risk working-set thrashings for memory tight desktops. Maybe
+  we can try to detect working-set thrashings too.
+- IO latency
+  Some workloads may be sensitive to IO latencies. The max_sectors_kb
+  may help keep IO latency under control with a large readahead size,
+  but there may be some tradeoffs in the IO scheduler.
 
-Surely not a big deal, but I wonder whether this could be related to
-the Trackman's wheel emulation not working?
+In summary, towards the runtime dynamic prefetching size, we
+- can reliably adapt readahead size to readahead thrashings
+- may reliably adapt readaround size to working set thrashings
+- don't know in general whether workload is IO latency sensitive
 
-Here is some more information I could find in /sys/devices:
+> > Would be better to make some sort of vaguely informed guess at
+> > runtime, based upon the characteristics of the device.
+> 
+> I'm pretty sure the readahead logic already does respond to eg memory
+> pressure,
 
-	% cat /sys/devices/platform/i8042/serio1/input/input4/uevent
-	PRODUCT=11/2/2/49
-	NAME="PS2++ Logitech Mouse"
-	PHYS="isa0060/serio1/input0"
-	EV==7
-	KEY==f0000 0 0 0 0 0 0 0 0
-	REL==3
-	MODALIAS=input:b0011v0002p0002e0049-e0,1,2,k110,111,112,113,r0,1,amlsfw
+Yes, it's much better than before. Once thrashed, old kernels are
+basically reduced to do 1-page (random) IOs, which is disastrous.
 
+Current kernel does this. Given
 
-It would be very nice if this could be solved. I would be glad to help.
+        default_readahead_size > thrashing_readahead_size
 
+The readahead sequence would be
 
-Regards
+        read_size, 2*read_size, 4*read_size, ..., (until > thrashing_readahead_size)
+        read_size, 2*read_size, 4*read_size, ..., (until > thrashing_readahead_size)
+        read_size, 2*read_size, 4*read_size, ..., (until > thrashing_readahead_size)
+        ...
 
-Harri
+So if read_size=1, it roughly holds that
+
+        average_readahead_size = thrashing_readahead_size/log2(thrashing_readahead_size)
+        thrashed_pages = total_read_pages/2
+
+And if read_size=LONG_MAX (eg. sendfile(large_file))
+
+        average_readahead_size = default_readahead_size
+        thrashed_pages = default_readahead_size - thrashing_readahead_size
+
+In summary, readahead for sendfile() is not adaptive at all.  Normal
+reads are somehow adaptive, but not optimal.
+
+But anyway, optimal thrashing readahead is approachable if it's a
+desirable goal :).
+
+> not sure if it attempts to do anything based on how quickly
+> the device is doing IO. Wu?
+
+Not for current kernel.  But in fact it's possible to estimate the
+read speed for each individual sequential stream, and possibly drop
+some hint to the IO scheduler: someone will block on this IO after 3
+seconds. But it may not deserve the complexity.
+
+Thanks,
+Fengguang
