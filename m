@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758364AbZJJX1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbZJJX2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758364AbZJJX1y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 19:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZJJX1x
+	id S1758211AbZJJX2e (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 19:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbZJJX2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 19:27:53 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57396 "EHLO gate.crashing.org"
+	Sat, 10 Oct 2009 19:28:33 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:63630 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755052AbZJJX1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 19:27:52 -0400
-Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Josua Dietze <digidietze@draisberghof.de>, Ben Efros <ben@pc-doctor.com>,
-       fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>
-In-Reply-To: <Pine.LNX.4.44L0.0910101851430.7922-100000@netrider.rowland.org>
-References: <Pine.LNX.4.44L0.0910101851430.7922-100000@netrider.rowland.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 11 Oct 2009 10:26:26 +1100
-Message-Id: <1255217186.2192.18.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	id S1753981AbZJJX2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 19:28:33 -0400
+Date: Sun, 11 Oct 2009 01:27:24 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, Jonathan Corbet <corbet@lwn.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [patch 22/28] macintosh: Remove BKL from ans-lcd
+In-Reply-To: <20091011001324.49e9733d@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.2.00.0910110125000.4921@localhost.localdomain>
+References: <20091010153314.827301943@linutronix.de> <20091010153349.966159859@linutronix.de> <alpine.LFD.2.00.0910102309570.3669@localhost.localdomain> <20091011001324.49e9733d@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-10 at 18:52 -0400, Alan Stern wrote:
-> > Maybe a better approach would be to go back to 18 bytes when it fails,
-> > what do you think ?
+
+
+On Sun, 11 Oct 2009, Alan Cox wrote:
+
+> > There were 4 checkpatch errors on this patch, all of the type
+> > ERROR: spaces required around that '=' (ctx:WxO)
+> > #1466: FILE: drivers/macintosh/ans-lcd.c:112:
+> > +			ret =-EACCES;
 > 
-> We certainly could do that.  But should we turn off the SANE_SENSE flag 
-> at the same time? 
+> Here's a suggestion. If a few spaces bug you that much then instead of
+> complaining about it and posting checkpatch results deal with the file
+> itself. 
+> 
+> Wait until the patch goes in and send a follow up patch that fixes up the
+> file to fit codingstyle. There's no point whining about the bits a patch
+> touches when the file wasn't in that format before, but if you've got
+> nothing better to do then doing a pass over the whole file *is* useful.
+> 
+> (Plus it gets a patch to your name ;))
+> 
+> Checkpatch whines on files that simple don't follow style are usually
+> best ignored because they make the file formatting less internally
+> consistent.
+> 
+Thanks Alan, I was sincerely debatting whether to send this because I know 
+that checkpatch can be annoying - but on the other hand, I thought it 
+prudent to run it since I was claiming to have reviewed all of those 
+patches.
 
-I would think so, and not set it back the next time the sense buffer
-claims more data in it (something like setting a NOT_REALLY_SANE_SENSE
-flag ? :-)
+I like your suggestion though - next time, I won't send the mail, since 
+since the folks submitting these patches are more than capable of checking 
+that kind of thing themselves, and if I feel it's important enough, I'll 
+follow up with a trivial style patch.
 
-Or not care and always do double sense on those devices. Whatever
-works. It's not that sense was a fast path.
+Cheers!
 
-Cheers,
-Ben.
-
-
+John
