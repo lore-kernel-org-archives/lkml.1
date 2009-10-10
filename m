@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751133AbZJJEDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbZJJD4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751133AbZJJEDb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 00:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750835AbZJJEDa
+	id S1753891AbZJJD4a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 Oct 2009 23:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZJJD43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 00:03:30 -0400
-Received: from slow3-v.mail.gandi.net ([217.70.178.89]:37689 "EHLO
-	slow3-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822AbZJJEDa (ORCPT
+	Fri, 9 Oct 2009 23:56:29 -0400
+Received: from mail-qy0-f172.google.com ([209.85.221.172]:55911 "EHLO
+	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbZJJD42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 00:03:30 -0400
-Date: Fri, 9 Oct 2009 20:47:52 -0700
-From: Josh Triplett <josh@joshtriplett.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
-       mtosatti@redhat.com, torvalds@linux-foundation.org
-Subject: Re: [PATCH RFC tip/core/rcu 0/3] Tiny RCU and expedited SRCU
-Message-ID: <20091010034752.GA3527@feather>
-References: <20091009224954.GA26516@linux.vnet.ibm.com>
+	Fri, 9 Oct 2009 23:56:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=t4neps/BOetXDamxdz7P9Gf2xltvUKkHmSsJewvNpQhmipIG+ioVF8I6BoVtsUEW4l
+         lIQ0O1TXkRna4mI0h2NIN2aSAWdJzUxR4UZikIbbyKxHmC6aND2m4sMA6yP07feaEoJ3
+         ePQ7d3WoiUA7s8TQ4tYr2i4gPrrhIVvzJ/Yt0=
+Message-ID: <4AD005C5.4090705@lwfinger.net>
+Date: Fri, 09 Oct 2009 22:55:49 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.1 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091009224954.GA26516@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Randy Dunlap <rdunlap@xenotime.net>
+CC: akpm@linux-foundation.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-10-09-01-07 uploaded (b43)
+References: <200910090830.n998Ubvv020464@imap1.linux-foundation.org> <20091009154732.af708827.rdunlap@xenotime.net>
+In-Reply-To: <20091009154732.af708827.rdunlap@xenotime.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 03:49:54PM -0700, Paul E. McKenney wrote:
-> This series rebases TINY_RCU and creates an expedited SRCU along with
-> corresponding RCU torture tests.  These are post-2.6.32 material.
+On 10/09/2009 05:47 PM, Randy Dunlap wrote:
 > 
-> 							Thanx, Paul
-> 
-> 
->  include/linux/hardirq.h  |   24 ++++
->  include/linux/rcupdate.h |    6 +
->  include/linux/rcutiny.h  |  103 +++++++++++++++++
->  include/linux/srcu.h     |    1 
->  init/Kconfig             |    9 +
->  kernel/Makefile          |    1 
->  kernel/rcupdate.c        |    4 
->  kernel/rcutiny.c         |  282 ++++++++++++++++++++++++++++++++++++++++++++++-
->  kernel/rcutorture.c      |   26 +++-
->  kernel/srcu.c            |   75 ++++++++----
->  10 files changed, 502 insertions(+), 29 deletions(-)
+> In file included from mmotm-2009-1009-0107/drivers/net/wireless/b43/b43.h:12,
+>                  from mmotm-2009-1009-0107/drivers/net/wireless/b43/main.c:47:
 
-For all three patches:
-Acked-by: Josh Triplett <josh@joshtriplett.org>
+These warnings occur because CONFIG_B43_LEDS is not set, probably
+because CONFIG_MAC80211_LEDS is not set. See the patch in
+http://marc.info/?l=linux-wireless&m=125509895406304&w=2.
+
+Larry
