@@ -1,76 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761787AbZJJP5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761973AbZJJQSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761787AbZJJP5H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 11:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761646AbZJJP5F
+	id S1761973AbZJJQSA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 12:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761948AbZJJQR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 11:57:05 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:19177 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761644AbZJJP5D (ORCPT
+	Sat, 10 Oct 2009 12:17:59 -0400
+Received: from slow3-v.mail.gandi.net ([217.70.178.89]:51080 "EHLO
+	slow3-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754804AbZJJQR6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 11:57:03 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=sFIEXyL5ArgA:10 a=w4iE+TBsmj5y1WloLYF40w==:17 a=VwQbUJbxAAAA:8
- a=Pc8EArvC-NQjzRVdoXwA:9 a=sWpv_8VaoxB9_p1ZcR0A:7
- a=LLMBQxRRZVZBktIJBUCEEGPJAO8A:4 a=U62fhAwekXMA:10
-From: "Thomas Fjellstrom" <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: MVSAS 1669:mvs_abort_task:rc= 5
-Date: Sat, 10 Oct 2009 09:56:19 -0600
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-git2; KDE/4.3.2; x86_64; ; )
-Cc: "linux-raid" <linux-raid@vger.kernel.org>,
-       "linux-scsi" <linux-scsi@vger.kernel.org>
-References: <200910091141.52303.tfjellstrom@shaw.ca>
-In-Reply-To: <200910091141.52303.tfjellstrom@shaw.ca>
+	Sat, 10 Oct 2009 12:17:58 -0400
+Date: Sat, 10 Oct 2009 09:03:05 -0700
+From: Josh Triplett <josh@joshtriplett.org>
+To: Christopher Li <sparse@chrisli.org>
+Cc: linux-sparse@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] New attribute designated_init: mark a struct as
+ requiring designated init
+Message-ID: <20091010160304.GA11876@feather>
+References: <20091010085732.GA10923@feather>
+ <70318cbf0910100333m128e3500vb1659a55a9f49768@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910100956.19241.tfjellstrom@shaw.ca>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <70318cbf0910100333m128e3500vb1659a55a9f49768@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri October 9 2009, Thomas Fjellstrom wrote:
-> Hi,
+On Sat, Oct 10, 2009 at 03:33:20AM -0700, Christopher Li wrote:
+> On Sat, Oct 10, 2009 at 1:58 AM, Josh Triplett <josh@joshtriplett.org> wrote:
+> > Some structure types provide a set of fields of which most users will
+> > only initialize the subset they care about.  Users of these types should
+> > always use designated initializers, to avoid relying on the specific
+> > structure layout.  Examples of this type of structure include the many
 > 
-> I've been trying to get an AOC-SASLP-MV8 card (pcie x4 2 port SAS card) to
-> work with linux for the past month or so. I've recently just RMAed my first
-> card, and tested the new one under linux, and I see the same problems.
+> The patch is very well written with nice documentations and test case.
+> It applies and runs fine.
 > 
-> The very first time I made a new array off the controller, formated (with
->  xfs) and mounted the volume, it seemed to work. ioozone even seemed to run
->  for a while. Sadly after a few minutes I got a stream of mvs_abort_task
->  messages in dmesg, and any accesses to the volume, or any disks connected
->  to the controller lock up.
+> I am curious weather this is some thing the kernel developers want to
+> use. Please speak up if you want to annotate the kernel structure to
+> issue such warning. If some one use it, I have no problem adding it to
+> sparse.
+
+After getting this patch reviewed, I intended to add many such
+annotations myself.  I have patches sitting in my local Linux tree.
+(However, I don't plan to try to get the patches accepted into Linux
+until this attribute shows up in a Sparse release, since I don't want to
+make Linux require the latest Sparse from the git tree.)
+
+> I am not sure how useful this is yet.  If the structure is changed, most
+> likely the positional initialization will fail due to type mismatching.
+> Some real life example how this feature can expose some otherwise
+> hard to detect bug would be nice.
+
+You *hope* that positional initialization will fail. :)  Some of these
+types of structures contain many fields with the same or similar types,
+and initializers don't inherently contain a lot of distinguishing type
+information that helps cause type errors rather than silent failures.
+
+Even if the positional initialization does fail, this failure will occur
+at the time of attempting to change the structure, and many such
+failures may occur all over the tree, making such changes significantly
+more difficult.  With the designated_init attribute, sparse will warn
+when attempting to create the structure initializer.
+
+With the designated_init attribute, someone making changes to a
+structure can check that Sparse produces no warnings about positional
+initializers and then know that certain types of changes can occur
+without having to check every initializer.  For instance, removing a
+field will only require checking any initializer that initializes that
+field, and the compiler will find all of those.  Adding a field that can
+safely remain NULL does not require checking any initializers.
+
+> With this approach, we need to annotate the kernel to benefit from it.
+> Another idea is that we can find out how different part of the kernel
+> initialize the same structure. If most of them using designated init then
+> the few non-conforming can get a warning. This approach is more
+> complicate.  But it does not need to change the kernel.
+
+I agree that we could infer certain types of warnings by saying "99% of
+the kernel does $FOO, but this bit of code doesn't".  Other static
+analysis tools do similar things.  However, such analyses can easily
+lead to false positives, and they prove far more difficult to implement.
+Having an explicit attribute works now, and also provides useful
+documentation of the intended use of a structure.
+
+> > +                               warning(e->pos, "%s%s%spositional init of field in %s %s, declared with attribute designated_init",
+> > +                                       ctype->ident ? "in initializer for " : "",
+> > +                                       ctype->ident ? ctype->ident->name : "",
 > 
-> After that I updated my 2.6.31 kernel to 2.6.32-rc3-git2 off of kernel.org,
-> and the volume fails to mount with the same mvs_abort_task messages.
-> 
-> I've attached my dmesg log from both attempts. dmesg1 is the first attempt,
-> dmesg2 is the second attempt on the newer kernel.
-> 
-> I would really appreciate some help with this.
-> 
+> ident->name has no guarantee of terminating by NUL.
+> You want to use "%.*s" with ident->size, ident->name here.
 
-I should also mention that if I attempt to remove any of the drives while the 
-card is in a hung state, the entire machine locks up with the keyboard LEDs 
-blinking.
+Good catch; will fix and send new patch.
 
-This does seem to be a rather serious error.
+(As an aside, though: any fundamental reason why we use that error-prone
+approach rather than allocating one extra byte and NUL-terminating
+idents?  Then we could drop the (larger) len field, and remove the
+annoying restriction on calling show_ident multiple times in the same
+statement.)
 
-If there is more I can do to help track down the problems, please let me know. 
-I really need to get this to work (my current array is FULL, and may be 
-showing signs of failure) as soon as possible.
-
-I can pretty much wipe and reinstall everything at any point on this machine, 
-update/install new kernels, etc. I just don't have a null modem cable atm to 
-hook up a serial console to capture the errors on OOPSes.
-
-Thanks.
-
--- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
+- Josh Triplett
