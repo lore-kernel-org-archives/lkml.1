@@ -1,153 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZJJKlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbZJJKyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757914AbZJJKlT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 06:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZJJKlR
+	id S1756538AbZJJKyM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 06:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZJJKyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 06:41:17 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:56895 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751922AbZJJKlQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 06:41:16 -0400
-Subject: Re: Bluetooth is very ill in -next
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20091002105740.GA2809@darkstar>
-References: <20090930142636.5366dafe@lxorguk.ukuu.org.uk>
-	 <20091002105740.GA2809@darkstar>
-Content-Type: text/plain
-Date: Sat, 10 Oct 2009 12:40:24 +0200
-Message-Id: <1255171224.19127.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Sat, 10 Oct 2009 06:54:11 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:48115 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753494AbZJJKyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 06:54:11 -0400
+Date: Sat, 10 Oct 2009 12:53:33 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ehrhardt Christian <ehrhardt@linux.vnet.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH] mm: make VM_MAX_READAHEAD configurable
+Message-ID: <20091010105333.GR9228@kernel.dk>
+References: <1255087175-21200-1-git-send-email-ehrhardt@linux.vnet.ibm.com> <1255090830.8802.60.camel@laptop> <20091009122952.GI9228@kernel.dk> <20091009143124.1241a6bc.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091009143124.1241a6bc.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+On Fri, Oct 09 2009, Andrew Morton wrote:
+> On Fri, 9 Oct 2009 14:29:52 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Fri, Oct 09 2009, Peter Zijlstra wrote:
+> > > On Fri, 2009-10-09 at 13:19 +0200, Ehrhardt Christian wrote:
+> > > > From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+> > > > 
+> > > > On one hand the define VM_MAX_READAHEAD in include/linux/mm.h is just a default
+> > > > and can be configured per block device queue.
+> > > > On the other hand a lot of admins do not use it, therefore it is reasonable to
+> > > > set a wise default.
+> > > > 
+> > > > This path allows to configure the value via Kconfig mechanisms and therefore
+> > > > allow the assignment of different defaults dependent on other Kconfig symbols.
+> > > > 
+> > > > Using this, the patch increases the default max readahead for s390 improving
+> > > > sequential throughput in a lot of scenarios with almost no drawbacks (only
+> > > > theoretical workloads with a lot concurrent sequential read patterns on a very
+> > > > low memory system suffer due to page cache trashing as expected).
+> > > 
+> > > Why can't this be solved in userspace?
+> > > 
+> > > Also, can't we simply raise this number if appropriate? Wu did some
+> > > read-ahead trashing detection bits a long while back which should scale
+> > > the read-ahead window back when we're low on memory, not sure that ever
+> > > made it in, but that sounds like a better option than having different
+> > > magic numbers for each platform.
+> > 
+> > Agree, making this a config option (and even defaulting to a different
+> > number because of an arch setting) is crazy.
+> 
+> Given the (increasing) level of disparity between different kinds of
+> storage devices, having _any_ default is crazy.
 
-> > Doing "sdptool search DUN" reliably crashes the kernel when using a USB
-> > bluetooth dongle
-> > 
-> > Language Base Attr List:
-> >   code_ISO639: 0x656e
-> >   encoding:    0x6a
-> >   base_offset: 0x100
-> > Profile Descriptor List:
-> >   "Dialup Networking" (0x1103)
-> >     Version: 0x0100
-> > 
-> > 
-> > is as far as it gets
-> > 
-> > It then explodes
-> > 
-> > _spin_lock_irqsave
-> > ?skb_dequeue
-> > skb_dequeue
-> > skb_queue_purge
-> > l2cap_recv_frame
-> > ?__lock_acquire
-> > ?__usb_hcd_submit_urb
-> > ?__lock_acquire
-> > l2cap_recv_acldata
-> > hci_rx_task
-> > ?l2cap_recv_acldata
-> > tasklet_action
-> > 
-> > reliably.
-> > 
-> 
-> Marcel, please take a look at following patch, same as previous
-> dev_set_name problem.
-> 
-> ---
-> Due to driver core changes dev_set_drvdata will call kzalloc which should be
-> in might_sleep context, but hci_conn_add will be called in atomic context
-> 
-> Like dev_set_name just put all other device callbacks to work queue function.
-> 
-> oops as following:
-> 
-> Oct  2 17:41:59 darkstar kernel: [  438.001341] BUG: sleeping function called from invalid context at mm/slqb.c:1546
-> Oct  2 17:41:59 darkstar kernel: [  438.001345] in_atomic(): 1, irqs_disabled(): 0, pid: 2133, name: sdptool
-> Oct  2 17:41:59 darkstar kernel: [  438.001348] 2 locks held by sdptool/2133:
-> Oct  2 17:41:59 darkstar kernel: [  438.001350]  #0:  (sk_lock-AF_BLUETOOTH-BTPROTO_L2CAP){+.+.+.}, at: [<faa1d2f5>] lock_sock+0xa/0xc [l2cap]
-> Oct  2 17:41:59 darkstar kernel: [  438.001360]  #1:  (&hdev->lock){+.-.+.}, at: [<faa20e16>] l2cap_sock_connect+0x103/0x26b [l2cap]
-> Oct  2 17:41:59 darkstar kernel: [  438.001371] Pid: 2133, comm: sdptool Not tainted 2.6.31-mm1 #2
-> Oct  2 17:41:59 darkstar kernel: [  438.001373] Call Trace:
-> Oct  2 17:41:59 darkstar kernel: [  438.001381]  [<c022433f>] __might_sleep+0xde/0xe5
-> Oct  2 17:41:59 darkstar kernel: [  438.001386]  [<c0298843>] __kmalloc+0x4a/0x15a
-> Oct  2 17:41:59 darkstar kernel: [  438.001392]  [<c03f0065>] ? kzalloc+0xb/0xd
-> Oct  2 17:41:59 darkstar kernel: [  438.001396]  [<c03f0065>] kzalloc+0xb/0xd
-> Oct  2 17:41:59 darkstar kernel: [  438.001400]  [<c03f04ff>] device_private_init+0x15/0x3d
-> Oct  2 17:41:59 darkstar kernel: [  438.001405]  [<c03f24c5>] dev_set_drvdata+0x18/0x26
-> Oct  2 17:41:59 darkstar kernel: [  438.001414]  [<fa51fff7>] hci_conn_init_sysfs+0x40/0xd9 [bluetooth]
-> Oct  2 17:41:59 darkstar kernel: [  438.001422]  [<fa51cdc0>] ? hci_conn_add+0x128/0x186 [bluetooth]
-> Oct  2 17:41:59 darkstar kernel: [  438.001429]  [<fa51ce0f>] hci_conn_add+0x177/0x186 [bluetooth]
-> Oct  2 17:41:59 darkstar kernel: [  438.001437]  [<fa51cf8a>] hci_connect+0x3c/0xfb [bluetooth]
-> Oct  2 17:41:59 darkstar kernel: [  438.001442]  [<faa20e87>] l2cap_sock_connect+0x174/0x26b [l2cap]
-> Oct  2 17:41:59 darkstar kernel: [  438.001448]  [<c04c8df5>] sys_connect+0x60/0x7a
-> Oct  2 17:41:59 darkstar kernel: [  438.001453]  [<c024b703>] ? lock_release_non_nested+0x84/0x1de
-> Oct  2 17:41:59 darkstar kernel: [  438.001458]  [<c028804b>] ? might_fault+0x47/0x81
-> Oct  2 17:41:59 darkstar kernel: [  438.001462]  [<c028804b>] ? might_fault+0x47/0x81
-> Oct  2 17:41:59 darkstar kernel: [  438.001468]  [<c033361f>] ? __copy_from_user_ll+0x11/0xce
-> Oct  2 17:41:59 darkstar kernel: [  438.001472]  [<c04c9419>] sys_socketcall+0x82/0x17b
-> Oct  2 17:41:59 darkstar kernel: [  438.001477]  [<c020329d>] syscall_call+0x7/0xb
-> 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> ---
-> net/bluetooth/hci_sysfs.c |   18 ++++++++----------
-> 1 file changed, 8 insertions(+), 10 deletions(-)
-> 
-> --- linux-2.6.31.orig/net/bluetooth/hci_sysfs.c	2009-10-02 18:04:14.000000000 +0800
-> +++ linux-2.6.31/net/bluetooth/hci_sysfs.c	2009-10-02 18:05:22.000000000 +0800
-> @@ -90,6 +90,14 @@ static void add_conn(struct work_struct 
->  	struct hci_conn *conn = container_of(work, struct hci_conn, work_add);
->  	struct hci_dev *hdev = conn->hdev;
->  
-> +	conn->dev.type = &bt_link;
-> +	conn->dev.class = bt_class;
-> +	conn->dev.parent = &hdev->dev;
-> +
-> +	dev_set_drvdata(&conn->dev, conn);
-> +
-> +	device_initialize(&conn->dev);
-> +
->  	dev_set_name(&conn->dev, "%s:%d", hdev->name, conn->handle);
->  
->  	if (device_add(&conn->dev) < 0) {
-> @@ -136,18 +144,8 @@ static void del_conn(struct work_struct 
->  
->  void hci_conn_init_sysfs(struct hci_conn *conn)
->  {
-> -	struct hci_dev *hdev = conn->hdev;
-> -
->  	BT_DBG("conn %p", conn);
->  
-> -	conn->dev.type = &bt_link;
-> -	conn->dev.class = bt_class;
-> -	conn->dev.parent = &hdev->dev;
-> -
-> -	dev_set_drvdata(&conn->dev, conn);
-> -
-> -	device_initialize(&conn->dev);
-> -
->  	INIT_WORK(&conn->work_add, add_conn);
->  	INIT_WORK(&conn->work_del, del_conn);
->  }
-> 
+You have to start somewhere :-). 0 is a default, too.
 
-I prefer if we only move dev_set_drvdata into the work queue and
-actually do initialize the struct device here. I have tested this a bit
-during this week and have not seen any problems. Would this work, too.
+> Would be better to make some sort of vaguely informed guess at
+> runtime, based upon the characteristics of the device.
 
-Regards
+I'm pretty sure the readahead logic already does respond to eg memory
+pressure, not sure if it attempts to do anything based on how quickly
+the device is doing IO. Wu?
 
-Marcel
- 
+-- 
+Jens Axboe
 
