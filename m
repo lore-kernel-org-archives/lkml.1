@@ -1,85 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbZJKRiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbZJKRm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757198AbZJKRiP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 13:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbZJKRiH
+	id S1757142AbZJKRm7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 13:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbZJKRm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 13:38:07 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36047 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756297AbZJKRiH (ORCPT
+	Sun, 11 Oct 2009 13:42:58 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:24024 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752749AbZJKRm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 13:38:07 -0400
-Date: Sun, 11 Oct 2009 10:37:55 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Jonathan Corbet <corbet@lwn.net>, John Kacur <jkacur@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vincent^M^J Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sound_core.c: Remove BKL from soundcore_open
-Message-ID: <20091011103755.649f5ae1@infradead.org>
-In-Reply-To: <20091011111543.1cbb9a0e@tpl.lwn.net>
-References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain>
-	<20091011004219.74c30f67@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.0910110223510.4921@localhost.localdomain>
-	<20091011092015.37a69847@bike.lwn.net>
-	<20091011111543.1cbb9a0e@tpl.lwn.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 11 Oct 2009 13:42:56 -0400
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAJm10UqrR7Ht/2dsb2JhbAC+FZZNhC0E
+X-IronPort-AV: E=Sophos;i="4.44,542,1249257600"; 
+   d="scan'208";a="406821369"
+From: Roland Dreier <rdreier@cisco.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-rdma@vger.kernel.org,
+       Ralph Campbell <infinipath@qlogic.com>
+Subject: Re: infiniband BKL leftovers
+References: <alpine.LFD.2.00.0910102015400.9428@localhost.localdomain>
+X-Message-Flag: Warning: May contain useful information
+Date: Sun, 11 Oct 2009 10:42:19 -0700
+In-Reply-To: <alpine.LFD.2.00.0910102015400.9428@localhost.localdomain>
+	(Thomas Gleixner's message of "Sat, 10 Oct 2009 20:37:20 +0200
+	(CEST)")
+Message-ID: <adad44tj090.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 11 Oct 2009 17:42:20.0277 (UTC) FILETIME=[2EB8EA50:01CA4A9A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Oct 2009 11:15:43 -0600
-Jonathan Corbet <corbet@lwn.net> wrote:
+[Adding a few CCs]
 
-> On Sun, 11 Oct 2009 09:20:15 -0600
-> Jonathan Corbet <corbet@lwn.net> wrote:
-> 
-> > Changing the
-> > BKL to a mutex is a real semantic change which requires a real
-> > survey of the code affected.
-> 
-> One other aspect of this I forgot to mention...it's actually possible
-> (if unlikely) that one of those lower-level open routines depends on
-> the BKL's release-on-sleep semantics.  Swapping in a mutex would
-> change that behavior, possibly resulting in deadlocks.
-> 
-> I think it was Alan who once pointed out that the BKL is badly
-> misnamed.  It isn't really a lock, it's a modified execution
-> environment designed to let naive kernel code think it's still running
-> in a uniprocessor, no-preemption situation.  Replacing the BKL with a
-> different lock changes that environment, so one has to be *really*
-> careful about looking for any assumptions which may remain in the
-> code.
-> 
+ > I'm looking into removing cycle_kernel_lock() from
+ > drivers/infiniband/hw/ipath/ipath_file_ops.c .
+ > 
+ > cycle_kernel_lock() was pushed down into open functions to "emulate"
+ > the previous BKL protected semantics by "serializing" the open
+ > function against driver init in progress. Nobody knows how effective
+ > this "serialization" was in reality. :)
+ > 
+ > This protection is not necessary when everything what might be needed
+ > by write/aio_write/poll/mmap should be in place before
+ > ipath_user_add() creates the device node.
+ > 
+ > But looking at the callsite ipath_init_one() I'm not so sure about that.
+ > 
+ > At the end of ipath_init_one() I see:
+ > 
+ >         ipath_device_create_group(&pdev->dev, dd);
+ >         ipathfs_add_device(dd);
+ >         ipath_user_add(dd);
+ >         ipath_diag_add(dd);
+ >         ipath_register_ib_device(dd);
+ > 
+ > ipath_user_add() is called before ipath_register_ib_device() which
+ > registers the device with the infiniband core. That makes me wonder
+ > whether the device node is really ready to use right after it is
+ > created.
+ > 
+ > Aside of that I noticed that all the functions above have elaborate
+ > error pathes, but non of the return values of these functions is ever
+ > checked. Intersting approach :)
 
-it's getting time though to bite the bullet and make it a real normal
-mutex. Lockdep will then flag a bunch of sh*t we'll need to fix, but
-without doing that we're never going to really make progress. 
+I guess you guys are getting serious about BKL removal.  I think I made
+about as much progress on the ipath driver when the BKL pushdown first
+happened: I looked at the code with an eye to getting rid of the BKL and
+got too confused and scared to proceed.
 
-The BKL has outlived its usefulness. Many of the things it used to
-protect (device open, module load etc) no longer take the BKL since
-quite a while, making the notion of "if you see the BKL you have a bug" 
-more and more true.
+I'm not sure what the best way to handle this is; as far as I know the
+ipath code is abandoned by Qlogic (they have a new driver that also
+supports newer hw that they have not tried to get upstream yet) and BKL
+issues aside the code looks racy, eg
 
-Going from rather obscure semantics to more defined, and more
-importantly, checkable-by-lockdep semantics is going to be a step
-forward in this sense; while we can't check that it protects what it
-should, we can at least start treating it like a real lock...
+	if (atomic_inc_return(&user_count) == 1) {
+		ret = user_init();
 
+makes sure that only one thread does user_init() but it doesn't make
+sure that user_init() finishes before another thread proceeds.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+So I guess if the BKL stuff is blocking you in any way, we can just drop
+it from ipath and leave it as yet another race condition in a rotting
+old driver.
+
+ - R.
