@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZJKDhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750965AbZJKEol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZJKDhD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 23:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbZJKDhD
+	id S1750965AbZJKEol (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 00:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZJKEol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 23:37:03 -0400
-Received: from mail-px0-f179.google.com ([209.85.216.179]:58692 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756011AbZJKDhC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 23:37:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=Uvp5h1AvcbdkAb/ClR6nxteZpI3p2INPv8Pwoh5ZYrHj11wVUqwwc+3CVwJYEdtBgz
-         iSOY4HjNBXzuptiLY+oCZB10OWD8H1OnYk+ptlLFLcc/3j3imUemzDujjGTzZwIjUtlK
-         DlzFKkOjpnV/PjONDqIj8lL8TYe6ast8bi8W4=
+	Sun, 11 Oct 2009 00:44:41 -0400
+Received: from kroah.org ([198.145.64.141]:60761 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750808AbZJKEol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 00:44:41 -0400
+Date: Sat, 10 Oct 2009 21:42:21 -0700
+From: Greg KH <greg@kroah.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: James Morris <jmorris@namei.org>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       "Stephen D. Smalley" <sds@tycho.nsa.gov>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysfs: mark a locally-only used function static
+Message-ID: <20091011044221.GA8714@kroah.com>
+References: <tkrat.974f8a5e166a4c9f@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Date: Sat, 10 Oct 2009 20:36:25 -0700
-Message-ID: <9ff7a3bc0910102036u6e912817hd335d41a5976f30b@mail.gmail.com>
-Subject: tasklets and queuing.
-From: Joel Fernandes <agnel.joel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tkrat.974f8a5e166a4c9f@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Friends,
+On Sun, Oct 11, 2009 at 03:02:46AM +0200, Stefan Richter wrote:
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-I have a question about tasklets:
+Odd you didn't cc: the sysfs maintainer on this patch.  Any reason?
 
-I understand that they are used to defer work during interrupt
-handling. What I don't understand is - how do they handle queuing of
-deferred work?
-Specially with tasklets, if a tasklet is re-scheduled before the
-previous scheduling of the same tasklet has a chance to run, then the
-tasklet is executed only once - not twice. But what if the work that
-the tasklet was supposed to do in these 2 instances were different and
-that its function was supposed to be passed 2 different structures?
-Shouldn't the tasklet be executed twice with these 2 structures?
+scripts/get_maintainer.pl is your friend...
 
-I know that work queues are there for that, but how do device drivers
-that use tasklets cope with the above?
+thanks,
 
-Thanks,
--Joel
+greg k-h
