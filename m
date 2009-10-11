@@ -1,210 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbZJKJZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZJKJEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbZJKJZH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 05:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbZJKJZG
+	id S1754954AbZJKJEu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 05:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZJKJEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 05:25:06 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46068 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755706AbZJKJZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 05:25:04 -0400
-Subject: Re: [patch 21/28] bkl: pushdown BKL locking to do_sysctl()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
-       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>,
-       Tony Luck <tony.luck@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20091010153349.925243928@linutronix.de>
-References: <20091010153314.827301943@linutronix.de>
-	 <20091010153349.925243928@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 11 Oct 2009 20:03:38 +1100
-Message-Id: <1255251818.2192.34.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Oct 2009 05:04:49 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56542 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753552AbZJKJEs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 05:04:48 -0400
+Date: Sun, 11 Oct 2009 11:04:03 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Greg KH <greg@kroah.com>
+Cc: Mike Lothian <mike@fireburn.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Matthias Hopf <mhopf@suse.de>, Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: Samsung Backlight Patch
+Message-ID: <20091011090403.GA1414@ucw.cz>
+References: <f3f71ab90910071414n482eca2dm18108c79ee08028d@mail.gmail.com> <20091007211916.GA4217@kroah.com> <f3f71ab90910071431g524fa807ib67f5fcfef7c70d1@mail.gmail.com> <20091007225828.GA7892@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091007225828.GA7892@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-10 at 15:37 +0000, Thomas Gleixner wrote:
-> plain text document attachment (push-bkl-to-do-sysctl.patch)
-> Push lock/unlock_kernel() into do_sysctl() and remove it from all call
-> sites of do_sysctl().
+On Wed 2009-10-07 15:58:28, Greg KH wrote:
+> On Wed, Oct 07, 2009 at 10:31:44PM +0100, Mike Lothian wrote:
+> > 2009/10/7 Greg KH <greg@kroah.com>:
+> > > On Wed, Oct 07, 2009 at 10:14:37PM +0100, Mike Lothian wrote:
+> > >> Hi
+> > >>
+> > >> I was hoping the following patch could be included in 2.6.32 so it
+> > >> would hopefully end up in the next round of distros
+> > >>
+> > >> It adds backlight support for some Samsung laptops
+> > >
+> > > You seem to have lost the original authorship of this patch, and not
+> > > included your signed-off-by for it.
+> > >
+> > > Which means it can't be applied :(
+...
+> > It definitely has +MODULE_AUTHOR("Greg Kroah-Hartman
+> > <gregkh@suse.de>"); at the bottom
+> > 
+> > I certainly wasn't trying to steal credit for your work
 > 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Tony Luck <tony.luck@intel.com>
-> Cc: Ralf Baechle <ralf@linux-mips.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-
-For the powerpc parts,
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> ---
->  arch/ia64/ia32/sys_ia32.c         |    2 --
->  arch/mips/kernel/linux32.c        |    2 --
->  arch/parisc/kernel/sys_parisc32.c |    2 --
->  arch/powerpc/kernel/sys_ppc32.c   |    2 --
->  arch/s390/kernel/compat_linux.c   |    2 --
->  arch/sparc/kernel/sys_sparc32.c   |    2 --
->  arch/x86/ia32/sys_ia32.c          |    2 --
->  kernel/sysctl.c                   |    6 ++++--
->  8 files changed, 4 insertions(+), 16 deletions(-)
+> I mean on the patch, when submitting it, you need a:
+> 	From: Greg Kroah-Hartman <gregkh@suse.de>
 > 
-> Index: linux-2.6-tip/arch/ia64/ia32/sys_ia32.c
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/ia64/ia32/sys_ia32.c
-> +++ linux-2.6-tip/arch/ia64/ia32/sys_ia32.c
-> @@ -1670,10 +1670,8 @@ sys32_sysctl (struct sysctl32 __user *ar
->  		return -EFAULT;
->  
->  	set_fs(KERNEL_DS);
-> -	lock_kernel();
->  	ret = do_sysctl(namep, a32.nlen, oldvalp, (size_t __user *) &oldlen,
->  			newvalp, (size_t) a32.newlen);
-> -	unlock_kernel();
->  	set_fs(old_fs);
->  
->  	if (oldvalp && put_user (oldlen, (int __user *) compat_ptr(a32.oldlenp)))
-> Index: linux-2.6-tip/arch/mips/kernel/linux32.c
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/mips/kernel/linux32.c
-> +++ linux-2.6-tip/arch/mips/kernel/linux32.c
-> @@ -302,10 +302,8 @@ SYSCALL_DEFINE1(32_sysctl, struct sysctl
->  		oldlenp = (size_t __user *)addr;
->  	}
->  
-> -	lock_kernel();
->  	error = do_sysctl((int __user *)A(tmp.name), tmp.nlen, (void __user *)A(tmp.oldval),
->  			  oldlenp, (void __user *)A(tmp.newval), tmp.newlen);
-> -	unlock_kernel();
->  	if (oldlenp) {
->  		if (!error) {
->  			if (get_user(oldlen, (size_t __user *)addr) ||
-> Index: linux-2.6-tip/arch/parisc/kernel/sys_parisc32.c
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/parisc/kernel/sys_parisc32.c
-> +++ linux-2.6-tip/arch/parisc/kernel/sys_parisc32.c
-> @@ -137,11 +137,9 @@ asmlinkage long sys32_sysctl(struct __sy
->  		oldlenp = (size_t *)addr;
->  	}
->  
-> -	lock_kernel();
->  	error = do_sysctl((int __user *)(u64)tmp.name, tmp.nlen,
->  			  (void __user *)(u64)tmp.oldval, oldlenp,
->  			  (void __user *)(u64)tmp.newval, tmp.newlen);
-> -	unlock_kernel();
->  	if (oldlenp) {
->  		if (!error) {
->  			if (get_user(oldlen, (size_t *)addr)) {
-> Index: linux-2.6-tip/arch/powerpc/kernel/sys_ppc32.c
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/powerpc/kernel/sys_ppc32.c
-> +++ linux-2.6-tip/arch/powerpc/kernel/sys_ppc32.c
-> @@ -555,11 +555,9 @@ asmlinkage long compat_sys_sysctl(struct
->  			return -EFAULT;
->  	}
->  
-> -	lock_kernel();
->  	error = do_sysctl(compat_ptr(tmp.name), tmp.nlen,
->  			  compat_ptr(tmp.oldval), oldlenp,
->  			  compat_ptr(tmp.newval), tmp.newlen);
-> -	unlock_kernel();
->  	if (oldlenp) {
->  		if (!error) {
->  			if (get_user(oldlen, oldlenp) ||
-> Index: linux-2.6-tip/arch/s390/kernel/compat_linux.c
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/s390/kernel/compat_linux.c
-> +++ linux-2.6-tip/arch/s390/kernel/compat_linux.c
-> @@ -562,10 +562,8 @@ asmlinkage long sys32_sysctl(struct __sy
->  		oldlenp = (size_t __user *)addr;
->  	}
->  
-> -	lock_kernel();
->  	error = do_sysctl(compat_ptr(tmp.name), tmp.nlen, compat_ptr(tmp.oldval),
->  			  oldlenp, compat_ptr(tmp.newval), tmp.newlen);
-> -	unlock_kernel();
->  	if (oldlenp) {
->  		if (!error) {
->  			if (get_user(oldlen, (size_t __user *)addr) ||
-> Index: linux-2.6-tip/arch/sparc/kernel/sys_sparc32.c
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/sparc/kernel/sys_sparc32.c
-> +++ linux-2.6-tip/arch/sparc/kernel/sys_sparc32.c
-> @@ -627,14 +627,12 @@ asmlinkage long sys32_sysctl(struct __sy
->  		oldlenp = (size_t __user *)addr;
->  	}
->  
-> -	lock_kernel();
->  	error = do_sysctl((int __user *)(unsigned long) tmp.name,
->  			  tmp.nlen,
->  			  (void __user *)(unsigned long) tmp.oldval,
->  			  oldlenp,
->  			  (void __user *)(unsigned long) tmp.newval,
->  			  tmp.newlen);
-> -	unlock_kernel();
->  	if (oldlenp) {
->  		if (!error) {
->  			if (get_user(oldlen, (size_t __user *)addr) ||
-> Index: linux-2.6-tip/arch/x86/ia32/sys_ia32.c
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/x86/ia32/sys_ia32.c
-> +++ linux-2.6-tip/arch/x86/ia32/sys_ia32.c
-> @@ -477,10 +477,8 @@ asmlinkage long sys32_sysctl(struct sysc
->  		return -EFAULT;
->  
->  	set_fs(KERNEL_DS);
-> -	lock_kernel();
->  	ret = do_sysctl(namep, a32.nlen, oldvalp, (size_t __user *)&oldlen,
->  			newvalp, (size_t) a32.newlen);
-> -	unlock_kernel();
->  	set_fs(old_fs);
->  
->  	if (oldvalp && put_user(oldlen, (int __user *)compat_ptr(a32.oldlenp)))
-> Index: linux-2.6-tip/kernel/sysctl.c
-> ===================================================================
-> --- linux-2.6-tip.orig/kernel/sysctl.c
-> +++ linux-2.6-tip/kernel/sysctl.c
-> @@ -1848,6 +1848,8 @@ int do_sysctl(int __user *name, int nlen
->  			return -EFAULT;
->  	}
->  
-> +	lock_kernel();
-> +
->  	for (head = sysctl_head_next(NULL); head;
->  			head = sysctl_head_next(head)) {
->  		error = parse_table(name, nlen, oldval, oldlenp, 
-> @@ -1858,6 +1860,8 @@ int do_sysctl(int __user *name, int nlen
->  			break;
->  		}
->  	}
-> +
-> +	unlock_kernel();
->  	return error;
->  }
->  
-> @@ -1873,10 +1877,8 @@ SYSCALL_DEFINE1(sysctl, struct __sysctl_
->  	if (error)
->  		goto out;
->  
-> -	lock_kernel();
->  	error = do_sysctl(tmp.name, tmp.nlen, tmp.oldval, tmp.oldlenp,
->  			  tmp.newval, tmp.newlen);
-> -	unlock_kernel();
->  out:
->  	return error;
->  }
+> as the first line.
 > 
+> > Who should sign it off?
+> 
+> As I stated before, I can not sign off on this patch anymore, but I
+> would like my authorship to remain.  Someone needs to sign off on it...
 
+That's quite crazy, no?
 
+DCO,  a). You say you created the patch. Do you want to say you did
+not have right to submit it? Or do you want to say it is not under
+GPL?
+
+What is going on?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
