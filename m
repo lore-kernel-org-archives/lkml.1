@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751502AbZJKHlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751729AbZJKHpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751502AbZJKHlh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 03:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZJKHlf
+	id S1751729AbZJKHpP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 03:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbZJKHpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 03:41:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42427 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751408AbZJKHle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 03:41:34 -0400
-Date: Sun, 11 Oct 2009 09:40:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Thomas Schlichter <thomas.schlichter@web.de>, linux-kernel@vger.kernel.org,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
-	available
-Message-ID: <20091011074045.GA6555@elte.hu>
-References: <200910100322.36857.thomas.schlichter@web.de> <4AD00C89.3000503@linux.intel.com> <200910101031.15620.thomas.schlichter@web.de> <4AD0ABFF.1020209@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD0ABFF.1020209@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 11 Oct 2009 03:45:15 -0400
+Received: from viefep13-int.chello.at ([62.179.121.33]:54025 "EHLO
+	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332AbZJKHpN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 03:45:13 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
+ balance_dirty_pages()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Myklebust Trond <Trond.Myklebust@netapp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Nick Piggin <npiggin@suse.de>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Richard Kennedy <richard@rsk.demon.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20091011022813.GA21315@localhost>
+References: <20091007073818.318088777@intel.com>
+	 <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz>
+	 <1255101512.8802.65.camel@laptop> <20091009154759.GJ7654@duck.suse.cz>
+	 <20091011022813.GA21315@localhost>
+Content-Type: text/plain
+Date: Sun, 11 Oct 2009 09:44:40 +0200
+Message-Id: <1255247080.11081.3.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2009-10-11 at 10:28 +0800, Wu Fengguang wrote:
+> 
+> Note that the total limit check itself may not be sufficient. For
+> example, there are no nr_writeback limit for NFS (and maybe btrfs)
+> after removing the congestion waits.  Therefore it is very possible
+> 
+>         nr_writeback => dirty_thresh
+>         nr_dirty     => 0
+> 
+> which is obviously undesirable: everything newly dirtied are soon put
+> to writeback. It violates the 30s expire time and the background
+> threshold rules, and will hurt write-and-truncate operations (ie. temp
+> files).
+> 
+> So the better solution would be to impose a nr_writeback limit for
+> every filesystem that didn't already have one (the block io queue).
+> NFS used to have that limit with congestion_wait, but now we need
+> to do a wait queue for it.
+> 
+> With the nr_writeback wait queue, it can be guaranteed that once
+> balance_dirty_pages() asks for writing 1500 pages, it will be done
+> with necessary sleeping in the bdi flush thread. So we can safely
+> remove the loop and double checking of global dirty limit in
+> balance_dirty_pages().
 
-* Arjan van de Ven <arjan@linux.intel.com> wrote:
+nr_reclaim = nr_dirty + nr_writeback + nr_unstable, so anything calling
+into balance_dirty_pages() would still block on seeing such large
+amounts of nr_writeback.
 
-> Thomas Schlichter wrote:
->
->> Hmm, my CPU (VIA Nano) seems to support PAT, but Ubuntu disables this
->> feature in its kernel config. I'm using 9.04, but even 9.10 will have PAT
->> disabled:
->
-> that sounds like a bad idea. But to each distro their own I suppose.
->
->
->>
->> http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-
->> karmic.git;a=blob;f=debian.master/config/config.common.ubuntu;h=a43cbabd02bfdf5412de6fea232db86aa5d3e742;hb=HEAD
->
->> So, convincing Ubuntu to enable PAT would be a workaround, but I think
->> the problem would still exist and should be fixed.
->
-> I think it's time to get rid of CONFIG_PAT at all.. and just have it 
-> be there. Making 10+ year old CPU features that are essential 
-> functionality a config option... ... not a good idea to be honest.
+Having the constraint nr_dirty + nr_writeback + nr_unstable <
+dirty_thresh should ensure we never have nr_writeback > dirty_thresh,
+simply because you cannot dirty more, which then cannot be converted to
+more writeback.
 
-Mind sending a patch that makes the configurability of PAT dependent on 
-EMBEDDED or so? There's still the nopat boot option so it can still be 
-configured by a distro if it wishes to.
+Or am I missing something?
 
-	Ingo
