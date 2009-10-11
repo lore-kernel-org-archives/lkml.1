@@ -1,47 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZJKXHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbZJKXMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbZJKXHs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 19:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbZJKXGT
+	id S1754539AbZJKXMJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 19:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbZJKXMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 19:06:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58162 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754139AbZJKXGR convert rfc822-to-8bit (ORCPT
+	Sun, 11 Oct 2009 19:12:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40001 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753748AbZJKXMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 19:06:17 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Michal Schmidt" <mschmidt@redhat.com>,
-       "Naga Chumbalkar" <nagananda.chumbalkar@hp.com>,
-       "Rusty Russell" <rusty@rustcorp.com.au>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-In-Reply-To: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Sun, 11 Oct 2009 19:12:06 -0400
+Date: Sun, 11 Oct 2009 16:07:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: 2.6.32-rc4: Reported regressions from 2.6.31
+In-Reply-To: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
+Message-ID: <alpine.LFD.2.01.0910111554400.3438@localhost.localdomain>
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <L6tb-VyKHZK.A.gMB.Mzl0KB@chimera>
-Subject: [Bug #14391] use after free of struct powernow_k8_data
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 12 Oct 2009 01:01:11 +0200 (CEST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.30 and 2.6.31.
-
-The following bug entry is on the current list of known regressions
-introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14391
-Subject		: use after free of struct powernow_k8_data
-Submitter	: Michal Schmidt <mschmidt@redhat.com>
-Date		: 2009-09-24 14:51 (18 days old)
-References	: http://marc.info/?l=linux-kernel&m=125380383515615&w=4
+On Mon, 12 Oct 2009, Rafael J. Wysocki wrote:
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14374
+> Subject		: MCEs caused by commit db8be50c4307dac2b37305fc59c8dc0f978d09ea
+> Submitter	: Nick Piggin <npiggin@suse.de>
+> Date		: 2009-10-02 7:34 (10 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=db8be50c4307dac2b37305fc59c8dc0f978d09ea
+> References	: http://marc.info/?l=linux-kernel&m=125446885705223&w=4
 
+I think we're going to have to just revert that commit. It's wrong.
 
+It would be nice to do USB handoff earlier, but
+
+ - the correct fix is to make the damn IOMMU code to do it's thing later
+
+ - the USB handoff cannot be done with just PCI config cycles, and will 
+   need to do ioremap's etc, which in turn will need the resources to be 
+   allocated, which in turn is not possible at FIXUP_HEADER time.
+
+so however much we migth _wish_ to do what that commit does, the commit is 
+obvious crap in retrospect.
+
+The IOMMU should not be reprogrammed until _after_ we have handled and 
+re-initialized all the devices, so I really think the problem is the IOMMU 
+code, not the USB code.
+
+(Of course, the underlying problem is that USB legacy mode handling by 
+BIOS with SMM is some seriously insane crap, no question about that. At 
+the same time, the IOMMU code is just clearly wrong in removing the legacy 
+mappings before we have initialized all devices, so the revert is simply 
+the right thing to do)
+
+		Linus
