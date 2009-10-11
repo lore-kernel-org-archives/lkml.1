@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbZJKXLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZJKXKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbZJKXLv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 19:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbZJKXLt
+	id S1754031AbZJKXKp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 19:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZJKXKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 19:11:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58107 "EHLO ogre.sisk.pl"
+	Sun, 11 Oct 2009 19:10:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58115 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753757AbZJKXE4 convert rfc822-to-8bit (ORCPT
+	id S1753656AbZJKXE5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 19:04:56 -0400
+	Sun, 11 Oct 2009 19:04:57 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Tejun Heo" <tj@kernel.org>, "Tim Blechmann" <tim@klingt.org>
+       "Hannes Reinecke" <hare@suse.de>
 References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
 In-Reply-To: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <L6tb-VyKHZK.A.YoE._0l0KB@chimera>
-Subject: [Bug #14013] hd don't show up
+Message-ID: <L6tb-VyKHZK.A.SiE.60l0KB@chimera>
+Subject: [Bug #14017] _end symbol missing from Symbol.map
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon, 12 Oct 2009 01:01:03 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,11 +35,13 @@ introduced between 2.6.30 and 2.6.31.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14013
-Subject		: hd don't show up
-Submitter	: Tim Blechmann <tim@klingt.org>
-Date		: 2009-08-14 8:26 (59 days old)
-References	: http://marc.info/?l=linux-kernel&m=125023842514480&w=4
-Handled-By	: Tejun Heo <tj@kernel.org>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14017
+Subject		: _end symbol missing from Symbol.map
+Submitter	: Hannes Reinecke <hare@suse.de>
+Date		: 2009-08-13 6:45 (60 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=091e52c3551d3031343df24b573b770b4c6c72b6
+References	: http://marc.info/?l=linux-kernel&m=125014649102253&w=4
+Handled-By	: Hannes Reinecke <hare@suse.de>
+Patch		: http://marc.info/?l=linux-kernel&m=125014649102253&w=4
 
 
