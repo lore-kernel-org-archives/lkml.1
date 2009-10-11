@@ -1,135 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZJKC3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbZJKCeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758870AbZJKC3J (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 22:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbZJKC3F
+	id S1759761AbZJKCeb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 22:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbZJKCeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 22:29:05 -0400
-Received: from mga14.intel.com ([143.182.124.37]:44955 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755842AbZJKC3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 22:29:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,540,1249282800"; 
-   d="scan'208";a="197533272"
-Date: Sun, 11 Oct 2009 10:28:13 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
-	balance_dirty_pages()
-Message-ID: <20091011022813.GA21315@localhost>
-References: <20091007073818.318088777@intel.com> <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz> <1255101512.8802.65.camel@laptop> <20091009154759.GJ7654@duck.suse.cz>
+	Sat, 10 Oct 2009 22:34:31 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53814 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755980AbZJKCea (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 22:34:30 -0400
+Message-ID: <f82dee90d0ab51d5bd33a6c01a9feb17.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <604427e00910091737s52e11ce9p256c95d533dc2837@mail.gmail.com>
+References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+    <604427e00910091737s52e11ce9p256c95d533dc2837@mail.gmail.com>
+Date: Sun, 11 Oct 2009 11:33:50 +0900 (JST)
+Subject: Re: [PATCH 0/2] memcg: improving scalability by reducing lock 
+ contention at charge/uncharge
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Ying Han" <yinghan@google.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091009154759.GJ7654@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 11:47:59PM +0800, Jan Kara wrote:
-> On Fri 09-10-09 17:18:32, Peter Zijlstra wrote:
-> > On Fri, 2009-10-09 at 17:12 +0200, Jan Kara wrote:
-> > >   Ugh, but this is not equivalent! We would block the writer on some BDI
-> > > without any dirty data if we are over global dirty limit. That didn't
-> > > happen before.
-> > 
-> > It should have, we should throttle everything calling
-> > balance_dirty_pages() when we're over the total limit.
->   OK :) I agree it's reasonable. But Wu, please note this in the
-> changelog because it might be a substantial change for some loads.
+Ying Han wrote:
+> Hi KAMEZAWA-san: I tested your patch set based on 2.6.32-rc3 but I don't
+> see
+> much improvement on the page-faults rate.
+> Here is the number I got:
+>
+> [Before]
+>  Performance counter stats for './runpause.sh 10' (5 runs):
+>
+>   226272.271246  task-clock-msecs         #      3.768 CPUs    ( +-
+> 0.193%
+> )
+>            4424  context-switches         #      0.000 M/sec   ( +-
+> 14.418%
+> )
+>              25  CPU-migrations           #      0.000 M/sec   ( +-
+> 23.077%
+> )
+>        80499059  page-faults              #      0.356 M/sec   ( +-
+> 2.586%
+> )
+>    499246232482  cycles                   #   2206.396 M/sec   ( +-
+> 0.055%
+> )
+>    193036122022  instructions             #      0.387 IPC     ( +-
+> 0.281%
+> )
+>     76548856038  cache-references         #    338.304 M/sec   ( +-
+> 0.832%
+> )
+>       480196860  cache-misses             #      2.122 M/sec   ( +-
+> 2.741%
+> )
+>
+>    60.051646892  seconds time elapsed   ( +-   0.010% )
+>
+> [After]
+>  Performance counter stats for './runpause.sh 10' (5 runs):
+>
+>   226491.338475  task-clock-msecs         #      3.772 CPUs    ( +-
+> 0.176%
+> )
+>            3377  context-switches         #      0.000 M/sec   ( +-
+> 14.713%
+> )
+>              12  CPU-migrations           #      0.000 M/sec   ( +-
+> 23.077%
+> )
+>        81867014  page-faults              #      0.361 M/sec   ( +-
+> 3.201%
+> )
+>    499835798750  cycles                   #   2206.865 M/sec   ( +-
+> 0.036%
+> )
+>    196685031865  instructions             #      0.393 IPC     ( +-
+> 0.286%
+> )
+>     81143829910  cache-references         #    358.265 M/sec   ( +-
+> 0.428%
+> )
+>       119362559  cache-misses             #      0.527 M/sec   ( +-
+> 5.291%
+> )
+>
+>    60.048917062  seconds time elapsed   ( +-   0.010% )
+>
+> I ran it on an 4 core machine with 16G of RAM. And I modified
+> the runpause.sh to fork 4 pagefault process instead of 8. I mounted cgroup
+> with only memory subsystem and start running the test on the root cgroup.
+>
+> I believe that we might have different running environment including the
+> cgroup configuration.  Any suggestions?
+>
 
-Thanks, I added the note by Peter :)
+This patch series is only for "child" cgroup. Sorry, I had to write it
+clearer. No effects to root.
 
-Note that the total limit check itself may not be sufficient. For
-example, there are no nr_writeback limit for NFS (and maybe btrfs)
-after removing the congestion waits.  Therefore it is very possible
+Regards,
+-Kame
 
-        nr_writeback => dirty_thresh
-        nr_dirty     => 0
+> --Ying
+>
+> On Thu, Oct 1, 2009 at 9:55 PM, KAMEZAWA Hiroyuki <
+> kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>
+>> Hi,
+>>
+>> This patch is against mmotm + softlimit fix patches.
+>> (which are now in -rc git tree.)
+>>
+>> In the latest -rc series, the kernel avoids accessing res_counter when
+>> cgroup is root cgroup. This helps scalabilty when memcg is not used.
+>>
+>> It's necessary to improve scalabilty even when memcg is used. This patch
+>> is for that. Previous Balbir's work shows that the biggest obstacles for
+>> better scalabilty is memcg's res_counter. Then, there are 2 ways.
+>>
+>> (1) make counter scale well.
+>> (2) avoid accessing core counter as much as possible.
+>>
+>> My first direction was (1). But no, there is no counter which is free
+>> from false sharing when it needs system-wide fine grain synchronization.
+>> And res_counter has several functionality...this makes (1) difficult.
+>> spin_lock (in slow path) around counter means tons of invalidation will
+>> happen even when we just access counter without modification.
+>>
+>> This patch series is for (2). This implements charge/uncharge in bached
+>> manner.
+>> This coalesces access to res_counter at charge/uncharge using nature of
+>> access locality.
+>>
+>> Tested for a month. And I got good reorts from Balbir and Nishimura,
+>> thanks.
+>> One concern is that this adds some members to the bottom of task_struct.
+>> Better idea is welcome.
+>>
+>> Following is test result of continuous page-fault on my 8cpu
+>> box(x86-64).
+>>
+>> A loop like this runs on all cpus in parallel for 60secs.
+>> ==
+>>        while (1) {
+>>                x = mmap(NULL, MEGA, PROT_READ|PROT_WRITE,
+>>                        MAP_PRIVATE|MAP_ANONYMOUS, 0, 0);
+>>
+>>                for (off = 0; off < MEGA; off += PAGE_SIZE)
+>>                        x[off]=0;
+>>                munmap(x, MEGA);
+>>        }
+>> ==
+>> please see # of page faults. I think this is good improvement.
+>>
+>>
+>> [Before]
+>>  Performance counter stats for './runpause.sh' (5 runs):
+>>
+>>  474539.756944  task-clock-msecs         #      7.890 CPUs    ( +-
+>> 0.015%
+>> )
+>>          10284  context-switches         #      0.000 M/sec   ( +-
+>> 0.156%
+>> )
+>>             12  CPU-migrations           #      0.000 M/sec   ( +-
+>> 0.000%
+>> )
+>>       18425800  page-faults              #      0.039 M/sec   ( +-
+>> 0.107%
+>> )
+>>  1486296285360  cycles                   #   3132.080 M/sec   ( +-
+>> 0.029%
+>> )
+>>   380334406216  instructions             #      0.256 IPC     ( +-
+>> 0.058%
+>> )
+>>     3274206662  cache-references         #      6.900 M/sec   ( +-
+>> 0.453%
+>> )
+>>     1272947699  cache-misses             #      2.682 M/sec   ( +-
+>> 0.118%
+>> )
+>>
+>>   60.147907341  seconds time elapsed   ( +-   0.010% )
+>>
+>> [After]
+>>  Performance counter stats for './runpause.sh' (5 runs):
+>>
+>>  474658.997489  task-clock-msecs         #      7.891 CPUs    ( +-
+>> 0.006%
+>> )
+>>          10250  context-switches         #      0.000 M/sec   ( +-
+>> 0.020%
+>> )
+>>             11  CPU-migrations           #      0.000 M/sec   ( +-
+>> 0.000%
+>> )
+>>       33177858  page-faults              #      0.070 M/sec   ( +-
+>> 0.152%
+>> )
+>>  1485264748476  cycles                   #   3129.120 M/sec   ( +-
+>> 0.021%
+>> )
+>>   409847004519  instructions             #      0.276 IPC     ( +-
+>> 0.123%
+>> )
+>>     3237478723  cache-references         #      6.821 M/sec   ( +-
+>> 0.574%
+>> )
+>>     1182572827  cache-misses             #      2.491 M/sec   ( +-
+>> 0.179%
+>> )
+>>
+>>   60.151786309  seconds time elapsed   ( +-   0.014% )
+>>
+>> Regards,
+>> -Kame
+>>
+>> --
+>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>> see: http://www.linux-mm.org/ .
+>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>>
+>
 
-which is obviously undesirable: everything newly dirtied are soon put
-to writeback. It violates the 30s expire time and the background
-threshold rules, and will hurt write-and-truncate operations (ie. temp
-files).
 
-So the better solution would be to impose a nr_writeback limit for
-every filesystem that didn't already have one (the block io queue).
-NFS used to have that limit with congestion_wait, but now we need
-to do a wait queue for it.
-
-With the nr_writeback wait queue, it can be guaranteed that once
-balance_dirty_pages() asks for writing 1500 pages, it will be done
-with necessary sleeping in the bdi flush thread. So we can safely
-remove the loop and double checking of global dirty limit in
-balance_dirty_pages().
-
-
-However, there is still one problem - there are no general
-coordinations between max nr_writeback and the background/dirty
-limits.
-
-It is possible (and very likely for some small memory systems) that
-
-	nr_writeback > dirty_thresh - background_thresh
-	10,000         20,000         15,000
-
-In this case, it is possible that an application to be throttled because
-of
-	nr_reclaimable + nr_writeback > dirty_thresh
-	12,000           10,000         20,000
-
-starts a background writeback work to do job for it, however that work
-quits immediately because
-
-	nr_reclaimable < background_thresh
-	12,000           15,000
-
-In the end, the application did not get throttled at all at dirty_thresh.
-Instead, it will be throttled at (background_thresh + max_nr_writeback).
-
-One solution (aka. the old behavior) is to respect the dirty_thresh, by
-not quiting background writeback when there are throttled tasks (this
-patch). It has the drawback of background writeback not doing its job
-_actively_. Instead, it will frequently be started and quit at times
-when applications enter and leave balanced_dirty_pages().
-
-In the above scheme, the background_thresh is disregarded. The other
-ways would be to disregard dirty_thresh (may be undesirable) or to
-limit max_nr_writeback (not as easy).
-
-It is still very possible to hit nr_dirty all the way down to 0 if
-max_nr_writeback > background_thresh.
-
-This is a bit twisting. Any ideas?
-
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/fs-writeback.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- linux.orig/fs/fs-writeback.c	2009-10-11 09:19:49.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-10-11 09:21:50.000000000 +0800
-@@ -781,7 +781,8 @@ static long wb_writeback(struct bdi_writ
- 		 * For background writeout, stop when we are below the
- 		 * background dirty threshold
- 		 */
--		if (args->for_background && !over_bground_thresh())
-+		if (args->for_background && !over_bground_thresh() &&
-+		    !list_empty(&wb->bdi->throttle_list))
- 			break;
- 
- 		wbc.more_io = 0;
