@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751729AbZJKHpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751635AbZJKHxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751729AbZJKHpP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 03:45:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbZJKHpP
+	id S1751635AbZJKHxN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 03:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZJKHxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 03:45:15 -0400
-Received: from viefep13-int.chello.at ([62.179.121.33]:54025 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332AbZJKHpN (ORCPT
+	Sun, 11 Oct 2009 03:53:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46994 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751332AbZJKHxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 03:45:13 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
- balance_dirty_pages()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091011022813.GA21315@localhost>
-References: <20091007073818.318088777@intel.com>
-	 <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz>
-	 <1255101512.8802.65.camel@laptop> <20091009154759.GJ7654@duck.suse.cz>
-	 <20091011022813.GA21315@localhost>
-Content-Type: text/plain
-Date: Sun, 11 Oct 2009 09:44:40 +0200
-Message-Id: <1255247080.11081.3.camel@twins>
+	Sun, 11 Oct 2009 03:53:11 -0400
+Date: Sun, 11 Oct 2009 00:51:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ben Hutchings <ben@decadent.org.uk>
+Cc: linux-kernel@vger.kernel.org, Eric Sesterhenn <snakebyte@gmx.de>,
+       Roman Zippel <zippel@linux-m68k.org>, 550010@bugs.debian.org
+Subject: Re: [PATCH] hfsplus: Refuse to mount volumes larger than 2TB
+Message-Id: <20091011005153.cc723dca.akpm@linux-foundation.org>
+In-Reply-To: <1255227087.25061.76.camel@localhost>
+References: <1254883878.4246.191.camel@localhost>
+	<1255227087.25061.76.camel@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-11 at 10:28 +0800, Wu Fengguang wrote:
-> 
-> Note that the total limit check itself may not be sufficient. For
-> example, there are no nr_writeback limit for NFS (and maybe btrfs)
-> after removing the congestion waits.  Therefore it is very possible
-> 
->         nr_writeback => dirty_thresh
->         nr_dirty     => 0
-> 
-> which is obviously undesirable: everything newly dirtied are soon put
-> to writeback. It violates the 30s expire time and the background
-> threshold rules, and will hurt write-and-truncate operations (ie. temp
-> files).
-> 
-> So the better solution would be to impose a nr_writeback limit for
-> every filesystem that didn't already have one (the block io queue).
-> NFS used to have that limit with congestion_wait, but now we need
-> to do a wait queue for it.
-> 
-> With the nr_writeback wait queue, it can be guaranteed that once
-> balance_dirty_pages() asks for writing 1500 pages, it will be done
-> with necessary sleeping in the bdi flush thread. So we can safely
-> remove the loop and double checking of global dirty limit in
-> balance_dirty_pages().
+On Sun, 11 Oct 2009 03:11:27 +0100 Ben Hutchings <ben@decadent.org.uk> wrote:
 
-nr_reclaim = nr_dirty + nr_writeback + nr_unstable, so anything calling
-into balance_dirty_pages() would still block on seeing such large
-amounts of nr_writeback.
+> As found in <http://bugs.debian.org/550010>, hfsplus is using type u32
+> rather than sector_t for some sector number calculations.
+> 
+> In particular, hfsplus_get_block() does:
+> 
+>         u32 ablock, dblock, mask;
+> ...
+>         map_bh(bh_result, sb, (dblock << HFSPLUS_SB(sb).fs_shift) + HFSPLUS_SB(sb).blockoffset + (iblock & mask));
+> 
+> I am not confident that I can find and fix all cases where a sector
+> number may be truncated.  For now, avoid data loss by refusing to mount
+> HFS+ volumes with more than 2^32 sectors (2TB).
+> 
+> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+> Cc: stable@kernel.org
+> ---
+> --- a/fs/hfsplus/wrapper.c
+> +++ b/fs/hfsplus/wrapper.c
+> @@ -99,6 +99,10 @@
+>  
+>  	if (hfsplus_get_last_session(sb, &part_start, &part_size))
+>  		return -EINVAL;
+> +	if (part_start + part_size > 0x100000000) {
+> +		pr_err("hfs: volumes larger than 2TB are not supported yet\n");
+> +		return -EINVAL;
+> +	}
 
-Having the constraint nr_dirty + nr_writeback + nr_unstable <
-dirty_thresh should ensure we never have nr_writeback > dirty_thresh,
-simply because you cannot dirty more, which then cannot be converted to
-more writeback.
+part_start and part_size are sector_t.  This code will do weird overflow
+things when sector_t is 32-bit.  Also 32-bit compilers will get upset at the
+excessively large hex constant.
 
-Or am I missing something?
+This should fix both issues:
+
+--- a/fs/hfsplus/wrapper.c~hfsplus-refuse-to-mount-volumes-larger-than-2tb-fix
++++ a/fs/hfsplus/wrapper.c
+@@ -99,7 +99,7 @@ int hfsplus_read_wrapper(struct super_bl
+ 
+ 	if (hfsplus_get_last_session(sb, &part_start, &part_size))
+ 		return -EINVAL;
+-	if (part_start + part_size > 0x100000000) {
++	if ((u64)part_start + part_size > 0x100000000ULL) {
+ 		pr_err("hfs: volumes larger than 2TB are not supported yet\n");
+ 		return -EINVAL;
+ 	}
+_
 
