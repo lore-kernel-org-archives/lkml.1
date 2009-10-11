@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbZJKNQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbZJKMlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbZJKNQc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 09:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbZJKNQa
+	id S1755690AbZJKMlV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 08:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbZJKMlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 09:16:30 -0400
-Received: from server10.gifford.co.uk ([88.208.234.32]:57843 "EHLO
-	smtp.gifford.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757638AbZJKNQa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 09:16:30 -0400
-X-Greylist: delayed 2055 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 09:16:29 EDT
-From: "- Microsoft -" <mailteam@microsoft.com>
-Subject: New Update Revised :                                              LKPEDXHQCV
-Date: Sun, 11 Oct 2009 08:32:23 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1251"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2600.0000
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
-Message-ID: <DELTAHs46tfUDbbkA5J0000017a@2cp.co.uk>
-X-OriginalArrivalTime: 11 Oct 2009 12:32:23.0736 (UTC) FILETIME=[E251F380:01CA4A6E]
-To: unlisted-recipients:; (no To-header on input)
+	Sun, 11 Oct 2009 08:41:20 -0400
+Received: from verein.lst.de ([213.95.11.210]:56627 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752990AbZJKMlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 08:41:20 -0400
+Date: Sun, 11 Oct 2009 14:40:30 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Christoph Hellwig <hch@lst.de>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: perf trace errors
+Message-ID: <20091011124030.GA3859@lst.de>
+References: <20091011025441.GA18152@lst.de> <20091011121926.GD4901@nowhere>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091011121926.GD4901@nowhere>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Security update Revised
+On Sun, Oct 11, 2009 at 02:19:28PM +0200, Frederic Weisbecker wrote:
+> Yeah, there are still some trace events that are not well supported
+> in perf trace, for now... I'll fix that by the time.
 
+Any idea what is the missing part?  I tried to understand the code but
+I haven't even managed to grasp the data structures yet.
 
-When necessary, Microsoft provides a new security update on the second Tuesday of each month and publishes a bulletin to announce the update.
-Occasionally, updates are released more often.
-The links below go to the latest update download.
+The weird thing is that these message seem to come from parsing of
+the filters, and a simple trace the whole system trace shouldn't
+really have to set any filters anyway, nor should the filters depdend
+on what trace point you use.
 
-(Privat secured new link)
-http://mail1.e-corecorporation.com/ef.html
+Note that the in addition to all the block trace points also all my
+new xfs tracepoints also give errors from perf trace.  Things tend
+to work quite nicely with the ASCII output from the kernel.
 
-Each bulletin includes links to the security updates.
-Microsoft has submitted a new update for all Windows OS web browsers, which brings a more stable and secure application, Internet Explorer version 7.0.195.24.
-The new version has no new functionality but fixes one security vulnerability that has been classified as "high", the highest level. Vulnerability refers to the possibility of external attacks through Internet Explorer and Outlook Express . We recommend installing the update to keep you and your system safe .
-
-
-Thank you, Adrian King Director of Security Assurance Microsoft Corp.
- 
-PSFCERKWJGMRKOWFHHPRCLBSSVTUSOFQOJKRHY
