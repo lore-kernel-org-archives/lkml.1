@@ -1,91 +1,295 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbZJKRm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbZJKRwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbZJKRm7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 13:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbZJKRm6
+	id S1757323AbZJKRwK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 13:52:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756868AbZJKRwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 13:42:58 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:24024 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752749AbZJKRm4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 13:42:56 -0400
-Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAJm10UqrR7Ht/2dsb2JhbAC+FZZNhC0E
-X-IronPort-AV: E=Sophos;i="4.44,542,1249257600"; 
-   d="scan'208";a="406821369"
-From: Roland Dreier <rdreier@cisco.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-rdma@vger.kernel.org,
-       Ralph Campbell <infinipath@qlogic.com>
-Subject: Re: infiniband BKL leftovers
-References: <alpine.LFD.2.00.0910102015400.9428@localhost.localdomain>
-X-Message-Flag: Warning: May contain useful information
-Date: Sun, 11 Oct 2009 10:42:19 -0700
-In-Reply-To: <alpine.LFD.2.00.0910102015400.9428@localhost.localdomain>
-	(Thomas Gleixner's message of "Sat, 10 Oct 2009 20:37:20 +0200
-	(CEST)")
-Message-ID: <adad44tj090.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 11 Oct 2009 17:42:20.0277 (UTC) FILETIME=[2EB8EA50:01CA4A9A]
+	Sun, 11 Oct 2009 13:52:07 -0400
+Received: from mba.ocn.ne.jp ([122.28.14.163]:64305 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756499AbZJKRwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 13:52:04 -0400
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: Andrew Sharp <andy.sharp@lsi.com>,
+       Thomas Hommel <thomas.hommel@gefanuc.com>, rtc-linux@googlegroups.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 1/2] rtc-ds1511: Fix races around device registration
+Date: Mon, 12 Oct 2009 02:50:44 +0900
+Message-Id: <1255283445-28940-1-git-send-email-anemo@mba.ocn.ne.jp>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adding a few CCs]
+* Call dev_set_drvdata before rtc device creation
+* Use its own spinlock instead of rtc->irq_lock
+* Check pdata->rtc before calling rtc_update_irq
+* Use {alarm,update}_irq_enable and remove ioctl routine
+* Use devres APIs and simplify error/remove path
 
- > I'm looking into removing cycle_kernel_lock() from
- > drivers/infiniband/hw/ipath/ipath_file_ops.c .
- > 
- > cycle_kernel_lock() was pushed down into open functions to "emulate"
- > the previous BKL protected semantics by "serializing" the open
- > function against driver init in progress. Nobody knows how effective
- > this "serialization" was in reality. :)
- > 
- > This protection is not necessary when everything what might be needed
- > by write/aio_write/poll/mmap should be in place before
- > ipath_user_add() creates the device node.
- > 
- > But looking at the callsite ipath_init_one() I'm not so sure about that.
- > 
- > At the end of ipath_init_one() I see:
- > 
- >         ipath_device_create_group(&pdev->dev, dd);
- >         ipathfs_add_device(dd);
- >         ipath_user_add(dd);
- >         ipath_diag_add(dd);
- >         ipath_register_ib_device(dd);
- > 
- > ipath_user_add() is called before ipath_register_ib_device() which
- > registers the device with the infiniband core. That makes me wonder
- > whether the device node is really ready to use right after it is
- > created.
- > 
- > Aside of that I noticed that all the functions above have elaborate
- > error pathes, but non of the return values of these functions is ever
- > checked. Intersting approach :)
+These fixes are ported from ds1553 driver and just compile-tested only.
 
-I guess you guys are getting serious about BKL removal.  I think I made
-about as much progress on the ipath driver when the BKL pushdown first
-happened: I looked at the code with an eye to getting rid of the BKL and
-got too confused and scared to proceed.
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+ drivers/rtc/rtc-ds1511.c |  148 +++++++++++++++++++---------------------------
+ 1 files changed, 60 insertions(+), 88 deletions(-)
 
-I'm not sure what the best way to handle this is; as far as I know the
-ipath code is abandoned by Qlogic (they have a new driver that also
-supports newer hw that they have not tried to get upstream yet) and BKL
-issues aside the code looks racy, eg
+diff --git a/drivers/rtc/rtc-ds1511.c b/drivers/rtc/rtc-ds1511.c
+index 0b6b773..838351b 100644
+--- a/drivers/rtc/rtc-ds1511.c
++++ b/drivers/rtc/rtc-ds1511.c
+@@ -87,7 +87,6 @@ enum ds1511reg {
+ struct rtc_plat_data {
+ 	struct rtc_device *rtc;
+ 	void __iomem *ioaddr;		/* virtual base address */
+-	unsigned long baseaddr;		/* physical base address */
+ 	int size;				/* amount of memory mapped */
+ 	int irq;
+ 	unsigned int irqen;
+@@ -95,6 +94,7 @@ struct rtc_plat_data {
+ 	int alrm_min;
+ 	int alrm_hour;
+ 	int alrm_mday;
++	spinlock_t lock;
+ };
+ 
+ static DEFINE_SPINLOCK(ds1511_lock);
+@@ -302,7 +302,7 @@ ds1511_rtc_update_alarm(struct rtc_plat_data *pdata)
+ {
+ 	unsigned long flags;
+ 
+-	spin_lock_irqsave(&pdata->rtc->irq_lock, flags);
++	spin_lock_irqsave(&pdata->lock, flags);
+ 	rtc_write(pdata->alrm_mday < 0 || (pdata->irqen & RTC_UF) ?
+ 	       0x80 : bin2bcd(pdata->alrm_mday) & 0x3f,
+ 	       RTC_ALARM_DATE);
+@@ -317,7 +317,7 @@ ds1511_rtc_update_alarm(struct rtc_plat_data *pdata)
+ 	       RTC_ALARM_SEC);
+ 	rtc_write(rtc_read(RTC_CMD) | (pdata->irqen ? RTC_TIE : 0), RTC_CMD);
+ 	rtc_read(RTC_CMD1);	/* clear interrupts */
+-	spin_unlock_irqrestore(&pdata->rtc->irq_lock, flags);
++	spin_unlock_irqrestore(&pdata->lock, flags);
+ }
+ 
+  static int
+@@ -362,61 +362,63 @@ ds1511_interrupt(int irq, void *dev_id)
+ {
+ 	struct platform_device *pdev = dev_id;
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+-	unsigned long events = RTC_IRQF;
++	unsigned long events = 0;
+ 
++	spin_lock(&pdata->lock);
+ 	/*
+ 	 * read and clear interrupt
+ 	 */
+-	if (!(rtc_read(RTC_CMD1) & DS1511_IRQF)) {
+-		return IRQ_NONE;
+-	}
+-	if (rtc_read(RTC_ALARM_SEC) & 0x80) {
+-		events |= RTC_UF;
+-	} else {
+-		events |= RTC_AF;
+-	}
+-	rtc_update_irq(pdata->rtc, 1, events);
+-	return IRQ_HANDLED;
++	if (rtc_read(RTC_CMD1) & DS1511_IRQF) {
++		events = RTC_IRQF;
++		if (rtc_read(RTC_ALARM_SEC) & 0x80)
++			events |= RTC_UF;
++		else
++			events |= RTC_AF;
++		if (likely(pdata->rtc))
++			rtc_update_irq(pdata->rtc, 1, events);
++	}
++	spin_unlock(&pdata->lock);
++	return events ? IRQ_HANDLED : IRQ_NONE;
+ }
+ 
+- static int
+-ds1511_rtc_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
++static int ds1511_rtc_alarm_irq_enable(struct device *dev, unsigned int enabled)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 
+-	if (pdata->irq <= 0) {
+-		return -ENOIOCTLCMD; /* fall back into rtc-dev's emulation */
+-	}
+-	switch (cmd) {
+-	case RTC_AIE_OFF:
++ 	if (pdata->irq <= 0)
++		return -EINVAL;
++	if (enabled)
++ 		pdata->irqen |= RTC_AF;
++	else
+ 		pdata->irqen &= ~RTC_AF;
+-		ds1511_rtc_update_alarm(pdata);
+-		break;
+-	case RTC_AIE_ON:
+-		pdata->irqen |= RTC_AF;
+-		ds1511_rtc_update_alarm(pdata);
+-		break;
+-	case RTC_UIE_OFF:
+-		pdata->irqen &= ~RTC_UF;
+-		ds1511_rtc_update_alarm(pdata);
+-		break;
+-	case RTC_UIE_ON:
++	ds1511_rtc_update_alarm(pdata);
++	return 0;
++}
++
++static int ds1511_rtc_update_irq_enable(struct device *dev,
++	unsigned int enabled)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
++
++	if (pdata->irq <= 0)
++		return -EINVAL;
++	if (enabled)
+ 		pdata->irqen |= RTC_UF;
+-		ds1511_rtc_update_alarm(pdata);
+-		break;
+-	default:
+-		return -ENOIOCTLCMD;
+-	}
++	else
++		pdata->irqen &= ~RTC_UF;
++	ds1511_rtc_update_alarm(pdata);
+ 	return 0;
+ }
+ 
+ static const struct rtc_class_ops ds1511_rtc_ops = {
+-	.read_time	= ds1511_rtc_read_time,
+-	.set_time	= ds1511_rtc_set_time,
+-	.read_alarm	= ds1511_rtc_read_alarm,
+-	.set_alarm	= ds1511_rtc_set_alarm,
+-	.ioctl		= ds1511_rtc_ioctl,
++	.read_time		= ds1511_rtc_read_time,
++	.set_time		= ds1511_rtc_set_time,
++	.read_alarm		= ds1511_rtc_read_alarm,
++	.set_alarm		= ds1511_rtc_set_alarm,
++	.alarm_irq_enable	= ds1511_rtc_alarm_irq_enable,
++	.update_irq_enable	= ds1511_rtc_update_irq_enable,
+ };
+ 
+  static ssize_t
+@@ -492,29 +494,23 @@ ds1511_rtc_probe(struct platform_device *pdev)
+ {
+ 	struct rtc_device *rtc;
+ 	struct resource *res;
+-	struct rtc_plat_data *pdata = NULL;
++	struct rtc_plat_data *pdata;
+ 	int ret = 0;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res) {
+ 		return -ENODEV;
+ 	}
+-	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
+-	if (!pdata) {
++	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
++	if (!pdata)
+ 		return -ENOMEM;
+-	}
+ 	pdata->size = res->end - res->start + 1;
+-	if (!request_mem_region(res->start, pdata->size, pdev->name)) {
+-		ret = -EBUSY;
+-		goto out;
+-	}
+-	pdata->baseaddr = res->start;
+-	pdata->size = pdata->size;
+-	ds1511_base = ioremap(pdata->baseaddr, pdata->size);
+-	if (!ds1511_base) {
+-		ret = -ENOMEM;
+-		goto out;
+-	}
++	if (!devm_request_mem_region(&pdev->dev, res->start, pdata->size,
++			pdev->name))
++		return -EBUSY;
++	ds1511_base = devm_ioremap(&pdev->dev, res->start, pdata->size);
++	if (!ds1511_base)
++		return -ENOMEM;
+ 	pdata->ioaddr = ds1511_base;
+ 	pdata->irq = platform_get_irq(pdev, 0);
+ 
+@@ -540,13 +536,15 @@ ds1511_rtc_probe(struct platform_device *pdev)
+ 		dev_warn(&pdev->dev, "voltage-low detected.\n");
+ 	}
+ 
++	spin_lock_init(&pdata->lock);
++	platform_set_drvdata(pdev, pdata);
+ 	/*
+ 	 * if the platform has an interrupt in mind for this device,
+ 	 * then by all means, set it
+ 	 */
+ 	if (pdata->irq > 0) {
+ 		rtc_read(RTC_CMD1);
+-		if (request_irq(pdata->irq, ds1511_interrupt,
++		if (devm_request_irq(&pdev->dev, pdata->irq, ds1511_interrupt,
+ 			IRQF_DISABLED | IRQF_SHARED, pdev->name, pdev) < 0) {
+ 
+ 			dev_warn(&pdev->dev, "interrupt not available.\n");
+@@ -556,33 +554,13 @@ ds1511_rtc_probe(struct platform_device *pdev)
+ 
+ 	rtc = rtc_device_register(pdev->name, &pdev->dev, &ds1511_rtc_ops,
+ 		THIS_MODULE);
+-	if (IS_ERR(rtc)) {
+-		ret = PTR_ERR(rtc);
+-		goto out;
+-	}
++	if (IS_ERR(rtc))
++		return PTR_ERR(rtc);
+ 	pdata->rtc = rtc;
+-	platform_set_drvdata(pdev, pdata);
++
+ 	ret = sysfs_create_bin_file(&pdev->dev.kobj, &ds1511_nvram_attr);
+-	if (ret) {
+-		goto out;
+-	}
+-	return 0;
+- out:
+-	if (pdata->rtc) {
++	if (ret)
+ 		rtc_device_unregister(pdata->rtc);
+-	}
+-	if (pdata->irq > 0) {
+-		free_irq(pdata->irq, pdev);
+-	}
+-	if (ds1511_base) {
+-		iounmap(ds1511_base);
+-		ds1511_base = NULL;
+-	}
+-	if (pdata->baseaddr) {
+-		release_mem_region(pdata->baseaddr, pdata->size);
+-	}
+-
+-	kfree(pdata);
+ 	return ret;
+ }
+ 
+@@ -593,19 +571,13 @@ ds1511_rtc_remove(struct platform_device *pdev)
+ 
+ 	sysfs_remove_bin_file(&pdev->dev.kobj, &ds1511_nvram_attr);
+ 	rtc_device_unregister(pdata->rtc);
+-	pdata->rtc = NULL;
+ 	if (pdata->irq > 0) {
+ 		/*
+ 		 * disable the alarm interrupt
+ 		 */
+ 		rtc_write(rtc_read(RTC_CMD) & ~RTC_TIE, RTC_CMD);
+ 		rtc_read(RTC_CMD1);
+-		free_irq(pdata->irq, pdev);
+ 	}
+-	iounmap(pdata->ioaddr);
+-	ds1511_base = NULL;
+-	release_mem_region(pdata->baseaddr, pdata->size);
+-	kfree(pdata);
+ 	return 0;
+ }
+ 
+-- 
+1.5.6.5
 
-	if (atomic_inc_return(&user_count) == 1) {
-		ret = user_init();
-
-makes sure that only one thread does user_init() but it doesn't make
-sure that user_init() finishes before another thread proceeds.
-
-So I guess if the BKL stuff is blocking you in any way, we can just drop
-it from ipath and leave it as yet another race condition in a rotting
-old driver.
-
- - R.
