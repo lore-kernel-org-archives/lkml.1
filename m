@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbZJKLFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbZJKLvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760386AbZJKLFH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 07:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbZJKLFF
+	id S1760592AbZJKLvg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 07:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757056AbZJKLvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 07:05:05 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37592 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756933AbZJKLFE (ORCPT
+	Sun, 11 Oct 2009 07:51:35 -0400
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:2283 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757037AbZJKLvf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 07:05:04 -0400
-Subject: Re: make mrproper not resetting kernel saved arch
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ben Dooks <ben@fluff.org>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-In-Reply-To: <20091010221736.GB7793@fluff.org.uk>
-References: <20091010212505.GA7793@fluff.org.uk>
-	 <20091010221736.GB7793@fluff.org.uk>
-Content-Type: text/plain
-Date: Sun, 11 Oct 2009 13:04:24 +0200
-Message-Id: <1255259064.8967.178.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sun, 11 Oct 2009 07:51:35 -0400
+X-Greylist: delayed 1929 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 07:51:34 EDT
+Message-ID: <4AD1BF06.3050103@phoenixsoftware.de>
+Date: Sun, 11 Oct 2009 13:18:30 +0200
+From: Tilman Schmidt <t.schmidt@phoenixsoftware.de>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless <linux-wireless@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: NOHZ: local_softirq_pending 08
+References: <20091011095217.GA2200@darkstar> <1255255735.4095.53.camel@johannes.local>
+In-Reply-To: <1255255735.4095.53.camel@johannes.local>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -0.414 () AWL,BAYES_50,RDNS_NONE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-10 at 23:17 +0100, Ben Dooks wrote:
-> On Sat, Oct 10, 2009 at 10:25:05PM +0100, Ben Dooks wrote:
-> > Having accidentally configured for the wrong arch, I tried going back to ARM
-> > but got the following errro:
-> > 
-> > Makefile:210: *** ARCH changed from "x86_64" to "arm". Use "make mrproper" to fix it up.  Stop.
-> > 
-> > Trying to do 'make mrproper' repeats the error:
-> > 
-> > $ make mrproper
-> > Makefile:210: *** ARCH changed from "x86_64" to "arm". Use "make mrproper" to fix it up.  Stop.
-> > 
-> > I ended up doing 'rm -r include/generated' to get rid of this.
-> > 
-> > My makefile understanding isn't good enough to repair this, so can someone
-> > please fix this.
+On Sun, 11 Oct 2009 12:08:55 +0200, Johannes Berg wrote:
+> On Sun, 2009-10-11 at 17:52 +0800, Dave Young wrote:
 > 
-> Add changing cross compiler to this list.
+>> With kernel 2.6.32-rc3-00052-g0eca52a I got following KERN_ERR
+>> messages just while using firefox:
+>>
+>> [  130.527399] NOHZ: local_softirq_pending 08
+> 
+>> Any idea? or known issue?
+> 
+> Are you using b43 (or wl12x1)? If so, it's a known issue, but the driver
+> was recently left without an active maintainer in a brouhaha about a bug
+> fix.
+> 
+> Cf. http://thread.gmane.org/gmane.linux.kernel.wireless.general/39440
 
-Yeah 575543347b5baed0ca927cb90ba8807396fe9cc9 is utterly annoying and is
-breaking build scripts all over the planet.
+Can you explain a bit more what that message is about?
+I am encountering it in a completely different context
+(PPP over ISDN) and I would like to know where to start
+looking for the cause and developing a fix. The thread
+on linux.kernel.wireless.general only seems to address
+the specific situation in the wireless stack.
 
-All because people don't know how to use their shell.
+Thanks,
+Tilman
 
