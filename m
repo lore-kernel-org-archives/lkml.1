@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbZJKTc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751933AbZJKTcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751975AbZJKTc6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 15:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZJKTc5
+	id S1751933AbZJKTcX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 15:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZJKTcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 15:32:57 -0400
-Received: from ox1.aei.mpg.de ([194.94.224.6]:59623 "EHLO ox1.aei.mpg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751182AbZJKTc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 15:32:56 -0400
-Date: Sun, 11 Oct 2009 21:31:00 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-input@vger.kernel.org
-Subject: Re: [bisected regression] Touchpad "paste" stops working after
-	suspend to RAM
-Message-ID: <20091011193100.GA4410@Pilar.aei.mpg.de>
-References: <20091011162155.GA4260@Pilar.aei.mpg.de> <20091011180134.GA5197@core.coreip.homeip.net>
+	Sun, 11 Oct 2009 15:32:21 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:59535 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbZJKTcU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 15:32:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=bC56aZlRcit8jr7DrIprGuxBdmmIRz5mJfJKsoTw34NTdNL74zqv5GfuV/VZlUNVX0
+         GvDx83tVkaeXoi9A656I/tBfCkXogwXrAhMunFBGssHDl3Urk96qIR/TMGqRUHoRA57r
+         DO6cD5z9q3OHjJtCJPzpKhZXHdF+1FyGm5g70=
+From: Arnd Bergmann <arndbergmann@googlemail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 11/28] nvram: Drop the bkl from nvram_llseek()
+Date: Sun, 11 Oct 2009 21:31:40 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
+       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>,
+       "Sven-Thorsten Dietrich" <sven@thebigcorporation.com>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Greg KH <gregkh@suse.de>
+References: <20091010153314.827301943@linutronix.de> <20091010153349.499835683@linutronix.de>
+In-Reply-To: <20091010153349.499835683@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091011180134.GA5197@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910112131.40608.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 11.Oct'09 at 11:01:34 -0700, Dmitry Torokhov wrote:
-> Hi Carols,
+On Saturday 10 October 2009, Thomas Gleixner wrote:
+> There is nothing to protect inside nvram_llseek(), the file
+> offset doesn't need to be protected and nvram_len is only
+> initialized from an __init path.
 > 
-> On Sun, Oct 11, 2009 at 06:21:55PM +0200, Carlos R. Mafra wrote:
-> > Using the latest 2.6.32-rc3+ kernel, the "paste" operation via the 
-> > touchpad of my Vaio laptop does not work after suspend to RAM.
-> > 
-> > It works flawlessly before s2ram; I select the text with the touchpad
-> > and tap quickly its right corner to paste the selected text.
-> > After a plain 'echo mem > /sys/power/state' the "paste" does not work.
-> > 
-> > I bisected it to commit ffd0db97196c1057f09c2ab42dd5b30e94e511d9 ("Input: 
-> > add generic suspend and resume for input devices").
-> > 
-> > I haven't tested if reverting it from mainline fixes the issue, but 
-> > from the patch description I guess that bisection landed correctly
-> > on the culprit.
-> > 
+> It's safe to remove the big kernel lock there.
 > 
-> Please verify that this is the real offending commit by reverting it - I
-> am surprised that it would give any trouble since it is supposed to
-> restore LED state and repeat rate and therefore should only be affecting
-> keyboards.
 
-Reverting it fixes the issue, I've just tested it now.
+The generic_nvram driver still uses ->ioctl instead of ->unlocked_ioctl.
+I guess it would be helpful to change that in the same series, so we
+don't get the BKL back as soon as someone does a pushdown into the
+remaining ioctl functions.
 
-[ I had to edit the resulting drivers/input/input.c because it did not 
-  revert cleanly. ]
+	Arnd <><
