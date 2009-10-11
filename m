@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbZJKRQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbZJKRTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756414AbZJKRQF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 13:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbZJKRQD
+	id S1756918AbZJKRTs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 13:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbZJKRTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 13:16:03 -0400
-Received: from vena.lwn.net ([206.168.112.25]:40302 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755540AbZJKRQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 13:16:01 -0400
-Date: Sun, 11 Oct 2009 11:15:43 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: John Kacur <jkacur@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vincent^M^J Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sound_core.c: Remove BKL from soundcore_open
-Message-ID: <20091011111543.1cbb9a0e@tpl.lwn.net>
-In-Reply-To: <20091011092015.37a69847@bike.lwn.net>
-References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain>
-	<20091011004219.74c30f67@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.0910110223510.4921@localhost.localdomain>
-	<20091011092015.37a69847@bike.lwn.net>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Sun, 11 Oct 2009 13:19:47 -0400
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:49588 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755536AbZJKRTq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 13:19:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=pdzLADxaLFX5dcfq5LGugkQ3DVtcTYmKmQ3odZaqaf0filCzimq+T6z+pJvzqAl8M3
+         nTUiSHvF6VpHpuqDwkNqM/g8f3V8u8IFc9Ejc92HT7V3gdBgbv0wzRgnLUHxHeG5q4//
+         XapCBqdmqQT34tv4ERaXiOfU2AzkYOFJdUMUA=
+Message-ID: <4AD2138B.1040003@gmail.com>
+Date: Sun, 11 Oct 2009 11:19:07 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linuxtronix.de, hpa@zytor.com
+Subject: Re: [PATCH] x86: Relegate CONFIG_PAT to EMBEDDED
+References: <20091011084311.0ab3c3ea@infradead.org> <adaiqelj20l.fsf@cisco.com>
+In-Reply-To: <adaiqelj20l.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Oct 2009 09:20:15 -0600
-Jonathan Corbet <corbet@lwn.net> wrote:
+On 10/11/2009 11:04 AM, Roland Dreier wrote:
+> Makes sense, but given that X86_PAT depends on MTRR
+>
+>   config X86_PAT
+>   	bool
+> -	prompt "x86 PAT support"
+> +	default y
+> +	prompt "x86 PAT support" if EMBEDDED
+>   	depends on MTRR
+>
+> should we give the same treatment to the MTRR option too?  (As far as I
+> can tell, MTRR defaults to n in the current Kconfig too)
 
-> Changing the
-> BKL to a mutex is a real semantic change which requires a real survey
-> of the code affected.
-
-One other aspect of this I forgot to mention...it's actually possible
-(if unlikely) that one of those lower-level open routines depends on
-the BKL's release-on-sleep semantics.  Swapping in a mutex would change
-that behavior, possibly resulting in deadlocks.
-
-I think it was Alan who once pointed out that the BKL is badly
-misnamed.  It isn't really a lock, it's a modified execution
-environment designed to let naive kernel code think it's still running
-in a uniprocessor, no-preemption situation.  Replacing the BKL with a
-different lock changes that environment, so one has to be *really*
-careful about looking for any assumptions which may remain in the code.
-
-That's why BKL-hunting is harder than it looks - and why the BKL has
-hung around for all these years.
-
-jon
+I think so, you'd have to be fairly insane to want to disable MTRR support..
