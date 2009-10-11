@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758688AbZJJXss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbZJKAEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758688AbZJJXss (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 19:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbZJJXss
+	id S1754732AbZJKAEo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 20:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbZJKAEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 19:48:48 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44410 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755142AbZJJXsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 19:48:47 -0400
-Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Josua Dietze <digidietze@draisberghof.de>, Ben Efros <ben@pc-doctor.com>,
-       fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>
-In-Reply-To: <1255217186.2192.18.camel@pasglop>
-References: <Pine.LNX.4.44L0.0910101851430.7922-100000@netrider.rowland.org>
-	 <1255217186.2192.18.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 11 Oct 2009 10:47:17 +1100
-Message-Id: <1255218437.2192.26.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+	Sat, 10 Oct 2009 20:04:43 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:14494 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754117AbZJKAEm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 20:04:42 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -11.374
+Message-ID: <4AD120F2.3020606@tremplin-utc.net>
+Date: Sun, 11 Oct 2009 02:04:02 +0200
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.6.666
+MIME-Version: 1.0
+To: Dmitry Torokhov <dtor@insightbb.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linux-input@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [REGRESSION] "bind" a device to a driver doesn't not work anymore
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-11 at 10:26 +1100, Benjamin Herrenschmidt wrote:
-> On Sat, 2009-10-10 at 18:52 -0400, Alan Stern wrote:
-> > > Maybe a better approach would be to go back to 18 bytes when it fails,
-> > > what do you think ?
-> > 
-> > We certainly could do that.  But should we turn off the SANE_SENSE flag 
-> > at the same time? 
-> 
-> I would think so, and not set it back the next time the sense buffer
-> claims more data in it (something like setting a NOT_REALLY_SANE_SENSE
-> flag ? :-)
-> 
-> Or not care and always do double sense on those devices. Whatever
-> works. It's not that sense was a fast path.
+Hello,
 
-Ok, so here's an absolutely horrible hack that makes it work here,
-but of course, I think that should be done more cleanly.
+After a suspend, I used to do this (to get the PS2 keyboard working 
+again), and it used to work fine:
+echo -n "i8042" > /sys/bus/platform/drivers/i8042/unbind ; sleep 1 ; 
+echo -n "i8042" > /sys/bus/platform/drivers/i8042/bind
 
-With some printk added I verified that it does ping pong
-US_FL_SANE_SENSE (ie, sets it back as soon as the command
-succeeds) but I don't see that as a big deal though.
+Unfortunately since 2.6.32-rc1, the unbind works fine, but the bind 
+returns a "no such device" error now (and the binding is not done). 
+After that, additional unbinds also report the error. I think 2.6.31 
+worked fine. Any idea what's going wrong?
 
-I doubt you want to apply that as-is though but in case you do:
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Cheers,
-Ben.
-
---- a/drivers/usb/storage/transport.c	2009-10-09 14:34:14.638445171 +1100
-+++ b/drivers/usb/storage/transport.c	2009-10-11 10:40:55.890868361 +1100
-@@ -687,6 +687,7 @@
- 		US_DEBUGP("-- unexpectedly short transfer\n");
- 	}
- 
-+ Retry_Sense:
- 	/* Now, if we need to do the auto-sense, let's do it */
- 	if (need_auto_sense) {
- 		int temp_result;
-@@ -722,6 +723,11 @@
- 		}
- 		if (temp_result != USB_STOR_TRANSPORT_GOOD) {
- 			US_DEBUGP("-- auto-sense failure\n");
-+			if (us->fflags & US_FL_SANE_SENSE) {
-+				us->fflags &= ~US_FL_SANE_SENSE;
-+				US_DEBUGP("-- retry without SANE_SENSE\n");
-+				goto Retry_Sense;
-+			}
- 
- 			/* we skip the reset if this happens to be a
- 			 * multi-target device, since failure of an
-
-
+Thanks,
+Eric
