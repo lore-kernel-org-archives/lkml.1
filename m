@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbZJKXZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751584AbZJKXhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbZJKXZF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 19:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZJKXZE
+	id S1751584AbZJKXhB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 19:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbZJKXg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 19:25:04 -0400
-Received: from mail-qy0-f172.google.com ([209.85.221.172]:52495 "EHLO
-	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753518AbZJKXZB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 19:25:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=AaUOA4jOfTyzo38QkNw07l/ugXa94pVtTogEzwLlFSHI0YZKwqyPtg+Xrp2OpgzeA8
-         0PXVJ15qMh8W0wxL8cLXNPeAV38djMQ3fMyp+5cn0H4T6QHMtto8/k9vkmBLHFkhYyYd
-         FoCDmxbcc4eTr87jU/RFqFpRsPe+ZzUhsAdfU=
-Message-ID: <4AD26926.9030306@lwfinger.net>
-Date: Sun, 11 Oct 2009 18:24:22 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.1 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
+	Sun, 11 Oct 2009 19:36:58 -0400
+Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:51692 "EHLO
+	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750909AbZJKXg6 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 19:36:58 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
+Date: Mon, 12 Oct 2009 01:36:18 +0200
+User-Agent: KMail/1.9.9
+Cc: David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-Subject: Re: 2.6.32-rc4: Reported regressions 2.6.30 -> 2.6.31
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-In-Reply-To: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Karol Lewandowski <karol.k.lewandowski@gmail.com>, linux-mm@kvack.org
+References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910050851.02056.elendil@planet.nl> <200910120110.28061.elendil@planet.nl>
+In-Reply-To: <200910120110.28061.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200910120136.20390.elendil@planet.nl>
+X-OriginalArrivalTime: 11 Oct 2009 23:36:20.0743 (UTC) FILETIME=[A306D170:01CA4ACB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/11/2009 05:41 PM, Rafael J. Wysocki wrote:
-> [Note:
->   10 new reports in the last 10 days, but fortunately we're fixing them faster
->   than they're being reported.]
+On Monday 12 October 2009, Frans Pop wrote:
+> BISECTION of akpm (mm) MERGE
+> ----------------------------
+> So here I went looking for "where does the test start failing on the
+> first try". Again, I was unable to narrow it down to a single commit.
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14181
-> Subject		: b43 causes panic at ifconfig down / shutdown
-> Submitter	: Jeremy Huddleston <jeremyhu@freedesktop.org>
-> Date		: 2009-09-15 18:34 (27 days old)
+Note that this merge is based on mainline at v2.6.30-5415-g03347e2, so a
+number of merges "drop out" once I  started bisecting into this merge. But
+that point is still *after* the net-next-2.6 merge, which is all that's
+really relevant for this issue.
 
-A patch to fix this one is in the hands of the OP. It should be tested
-within the next couple of days.
-
-Larry
+> For a good overview of the area, use 'gitk f83b1e61..517d0869'.
+>
+> v2.6.30-5466-ga1dd268   mm: use alloc_pages_exact in alloc_large_system_hash
+>	2.3     +- 
+> v2.6.30-5478-ge9bb35d   mm: setup_per_zone_inactive_ratio - fix comment and..
+>	2.5     +- 
+> v2.6.30-5486-g35282a2   migration: only migrate_prep() once per move_pages()
+>	2.6     -|+|-   not quite conclusive... 
+> v2.6.30-5492-gbce7394   page-allocator: reset wmark_min and inactive ratio..
+>	2.4     -|- 
