@@ -1,261 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZJKXLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbZJKXLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbZJKXLO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 19:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbZJKXLL
+	id S1754522AbZJKXLV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 19:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbZJKXLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 19:11:11 -0400
-Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:64847 "EHLO
-	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754002AbZJKXLG (ORCPT
+	Sun, 11 Oct 2009 19:11:19 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:53198 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754469AbZJKXLR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 19:11:06 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Date: Mon, 12 Oct 2009 01:10:25 +0200
-User-Agent: KMail/1.9.9
-Cc: David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>, linux-mm@kvack.org
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910050714.01908.elendil@planet.nl> <200910050851.02056.elendil@planet.nl>
-In-Reply-To: <200910050851.02056.elendil@planet.nl>
+	Sun, 11 Oct 2009 19:11:17 -0400
+Date: Sun, 11 Oct 2009 17:10:39 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Brad Spengler <spender@grsecurity.net>
+Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] pci: fix crash about old IA64 about pci_cfg_space_size
+Message-ID: <20091011231039.GB7545@parisc-linux.org>
+References: <20091011074531.GA12357@grsecurity.net> <4AD1AE0D.1030007@kernel.org> <4AD24766.7050205@kernel.org> <20091011213245.GC18513@grsecurity.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910120110.28061.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Oct 2009 23:10:28.0267 (UTC) FILETIME=[05ADC7B0:01CA4AC8]
+In-Reply-To: <20091011213245.GC18513@grsecurity.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for going quiet on this issue for a few days, but I have been 
-spending *a lot* of time on it. I've done what amounts to 5 bisection 
-rounds at ~20 minutes per iteration and in total over 80 boots.
+On Sun, Oct 11, 2009 at 05:32:45PM -0400, Brad Spengler wrote:
+> > Brad reported that his SGI 750 (Itanium 1) will crash from 2.6.26, and 
+> > bisected
+> 
+> 2.6.26 to 2.6.29 are fine -- the commit responsible was introduced in 2.6.30, 
+> so only those kernels >= 2.6.30 exhibit the problem.  For searching 
+> purposes (so that Debian unstable etc can backport the fix to their 
+> 2.6.30 kernel), the error causing the panic at boot was:
+> 
+> General Exception: IA-64 Reserved Register/Field fault (data access) 48
+> 
+> and occurred a few lines after "ACPI: PCI Root Bridge [PCI0] (0000:00)"
 
-The problem with my first bisection was that there are *at least two* 
-changes at the root of this issue, both committed between .30 and .30-rc1. 
-Because of this a normal bisection will not lead to a reliable result and 
-even with my last effort I can only narrow it down to two different areas, 
-and not 100% to specific commits.
+The SAL config code _used_ to use SAL 3.2 if the SAL revision were >3.1.
+Unfortunately, this broke a few HP machines where HP were reporting
+a SAL revision in the 60-80 range (a bug fixed in later firmware, but
+some people had prototype machines which couldn't be upgraded to newer
+firmware ...)
 
-The two identified areas are:
-1) a wireless merge which causes the SKB errors to appear in the first
-   place, but not always;
-2) an mm merge which makes the SKB errors occur *much* quicker; IMHO this
-   is the change that also causes the regressions reported by Pekka and
-   Karol.
+So how about we go back to adding that check ... this does require that
+SGI's 750 machine reports its SAL revision correctly.  Could you send
+the dmesg?
 
-So below my results. The issue is both complex and subtle. Now it's up to 
-you, domain experts for both mm *and* wireless/networking, to make sense of 
-it all and come up with suggestions on how to proceed.
-
-I've improved my test and it's now a lot more reliable, but there are still 
-timing influences. Also, because this is all merge-window stuff, I'm 
-hitting quite a few minor and major regressions between commits that can 
-affect tests.
-
-Please study the information below carefully. I know it's long, but I think 
-this issue justifies that.
-
-On Monday 05 October 2009, Frans Pop wrote:
-> This looks conclusive. I tested .30 and .32-rc3 from clean reboots and
-> only starting gitk. I only started music playing in the background
-> (amarok) from an NFS share to ensure network activity.
->
-> With .32-rc3 I got 4 SKB allocation errors while starting the *second*
-> gitk instance. And the system was completely frozen with music stopped
-> until gitk finished loading.
-
-With .32-rc3, .31.1 and vanilla .31 I will get multiple SKB allocation 
-errors the *first time* I run the test, *every* time.
-
-> With .30 I was able to start *three* gitk's (which meant 2 of them got
-> (partially) swapped out) without any allocation errors. And with the
-> system remaining relatively responsive. There was a short break in the
-> music while I started the 2nd instance, but it just continued playing
-> afterwards. There was also some mild latency in the mouse cursor, but
-> nothing like the full desktop freeze I get with .32-rc3.
-
-With both .30.2 and vanilla .30 I have *never* been able to get any SKB 
-allocation errors. No matter how often I repeat the test.
-
-So, the start and end position are 100% reproducible. Problem is that this 
-changes during the bisection. At some point the test will fail (no SKB 
-errors) the first time I run it, but it will fail on the second or third 
-attempt.
-Apparently at some point memory must already be fragmented (or higher 
-orders already used up) to some extend for the errors to trigger.
-
-TEST METHOD
------------
-As a normal bisection (I tried 3 times...) did not lead anywhere, I had to 
-think of an alternative approach. I decided to start by manually selecting 
-merges by Linus into mainline. The advantage is that that makes the 
-bisection linear and makes it a lot easier to see patterns.
-After narrowing down to a specific merge, I bisected (again semi-manually) 
-inside that merge.
-
-Because I suspected there were multiple changes involved, I deliberately 
-tried to find two points:
-- where do I first start seeing SKB errors at all, even if it is only at
-  the second or third try;
-- where do I start getting SKB errors reliably on the first try.
-
-I worked from "good" to "bad", i.e. I started at .30. The merges were not 
-chosen completely randomly. From the first 3 bisections I strongly 
-suspected the first 'net-next' merge and the first 'akpm' merge, but I did 
-make sure to confirm that suspicion.
-
-TEST DESCRIPTION
-----------------
-The test I've ended up using is:
-1) clean boot
-2) start music in amarok from NFS share; use very long song to avoid file
-   changes and thus ensure a fluent stream of network data during the test
-3) start 'gitk v2.6.29..master &' - to use up some memory
-4) start first 'gitk master &' - after this all normal memory is as good as
-   used up, with minor swap; this never resulted in SKB errors
-5) start second 'gitk master &' - this causes heavy swapping (>700 MB) and
-   is the real test
-6) if there were no SKB errors after 5), kill the gitk processes and repeat
-   steps 3) to 5). I've done this up to 4 times in some cases
-7) if the results are not clear or when there is doubt later, repeat from
-   step 1) with same kernel
-
-Memory after initial 'gitk v2.6.29..master &':
-             total       used       free     shared    buffers     cached
-Mem:       2030776    1153008     877768          0      41572     333968
--/+ buffers/cache:     777468    1253308
-Swap:      2097144          0    2097144
-
-Memory after first 'gitk master &':
-             total       used       free     shared    buffers     cached
-Mem:       2030776    1979040      51736          0      35684     238420
--/+ buffers/cache:    1704936     325840
-Swap:      2097144      21876    2075268
-
-Memory after second 'gitk master &' (with .30.2):
-             total       used       free     shared    buffers     cached
-Mem:       2030776    2011608      19168          0      21836      92336
--/+ buffers/cache:    1897436     133340
-Swap:      2097144     776160    1320984
-
-OVERVIEW OF RESULTS
--------------------
-Below I list the most relevant merges and commits. Note that they are 
-listed in commit order; my kernel version shows the order of testing.
-
-For the commits I tested the test results are listed on the next line.
-The first number on that line consists of the test series + the iteration 
-(and also identifies the kernel I used).
-A "+" means I got no SKB errors, a "-" that I did get them. A "|" means I 
-rebooted for a second series of tests.
-
-v2.6.30-2330-gdb8e7f1	'x86-fixes-for-linus' of linux-2.6-tip
-	1.1	+++	iwlagn sw-error during first test
-v2.6.30-4127-g0fa2133	'merge' of powerpc (last merge before net-next-2.6)
-	1.2	+++
-v2.6.30-5398-g2ed0e21	net-next-2.6 (mega-merge!)
-	1.4	+-	system reboot fails after testing
-v2.6.30-5517-g609106b	'merge' of powerpc
-	1.3	+-	system reboot fails after testing
-v2.6.30-5927-gf83b1e6	'for-linus' of linux1394-2.6 (last merge before akpm)
-	2.2	++-
-v2.6.30-6111-g517d086	'akpm'
-	2.1	-|-
-
-BISECTION OF net-next-2.6 MERGE
--------------------------------
-Note that this merge was based not on .30 vanilla, but partly on 
-v2.6.30-rc1 and partly on v2.6.30-rc6.
-I think this had an influence on the latencies I saw (i.e. because some 
-post-rc6 bug fixes were not present it changes the general behavior of the 
-system during the swapping). For example: with v2.6.30-4127-g0fa2133 the 
-system remained more responsive (smaller music skips) than with 
-v2.6.30-rc1-1219-g82d0481.
-
-I started again by testing merges, this time those by David.
-
-v2.6.30-rc1-1219-g82d0481	'master' of wireless-next-2.6
-	1.5	++++	bad latencies
-v2.6.30-rc6-660-gbb803cf	'master' of net-2.6
-v2.6.30-rc6-808-g45ea4ea	'master' of wireless-next-2.6
-v2.6.30-rc6-850-gc649c0e	'master' of net-2.6
-v2.6.30-rc6-922-g3f1f39c	'linux-2.6.31.y' of wimax
-v2.6.30-rc6-999-gb2f8f75	'master' of net-2.6
-v2.6.30-rc6-1028-ga8c617e	'net-next' of lksctp-dev
-	1.7	++++|++++|++++
-	I went back to this one twice because the bisection inside the
-	next merge (see below) did not give a clear result.
-v2.6.30-rc6-1103-gb1bc81a	'master' of wireless-next-2.6
-	1.8	+-
-v2.6.30-rc6-1224-g84503dd	'master' of wireless-next-2.6
-	1.6	+-
-
-So the problem started in the v2.6.30-rc6-1103-gb1bc81a merge.
-I was unable to narrow it down to an exact commit; AFAICT the remaining 
-ones (between v2.6.30-rc6-1028-g8fc0fee and v2.6.30-rc6-1032-g7ba10a8) are 
-uninteresting. But it *must* be in this area!
-
-For a good overview of the area, use 'gitk 3f1f39c4..b1bc81a0'.
-
-v2.6.30-rc6-1028-g8fc0fee	cfg80211: use key size constants
-	1.11	++++
-v2.6.30-rc6-1031-g1bb5633	iwmc3200wifi: fix printk format
-	1.14	+++-	not quite conclusive...
-v2.6.30-rc6-1032-g7ba10a8	mac80211: fix transposed min/max CW values
-	1.13	-
-	This is a bugfix for aa837ee1d from an earlier merge! Could this maybe
-	influence the test results in between? There are various SKB related
-	changes there, for example: dfbf97f3..e5b9215e.
-v2.6.30-rc6-1037-g2c5b9e5	wireless: libertas: fix unaligned accesses
-	1.12	+-
-v2.6.30-rc6-1044-g729e9c7	cfg80211: fix for duplicate userspace replies
-	1.10	+-
-v2.6.30-rc6-1075-gc587de0	iwlwifi: unify station management
-	1.9	++-|+-
-v2.6.30-rc6-1076-gd14d444	iwl3945: port allow skb allocation in tasklet
-	I thought this was a prime candidate, but as you can see several commits
-	before failed too. Still worth looking at I think!
-
-BISECTION of akpm (mm) MERGE
-----------------------------
-So here I went looking for "where does the test start failing on the first 
-try". Again, I was unable to narrow it down to a single commit.
-
-For a good overview of the area, use 'gitk f83b1e61..517d0869'.
-
-v2.6.30-5466-ga1dd268	mm: use alloc_pages_exact in alloc_large_system_hash
-	2.3	+-
-v2.6.30-5478-ge9bb35d	mm: setup_per_zone_inactive_ratio - fix comment and..
-	2.5	+-
-v2.6.30-5486-g35282a2	migration: only migrate_prep() once per move_pages()
-	2.6	-|+|-	not quite conclusive...
-v2.6.30-5492-gbce7394	page-allocator: reset wmark_min and inactive ratio..
-	2.4	-|-
-
-WHERE NEXT?
-===========
-I think the results confirm there is definitely an issue here and that my 
-test is reliable and consistent enough to show it. And as it currently is 
-the only test we have...
-
-I hope that the info above is enough for the mm and wireless domain 
-experts to identify likely candidates in the areas I've identified.
-
-The next step could be trying specific reverts or debug patches, either on 
-top of current git, or 2.6.31, or inside the identified areas.
-I'll run anything you care to throw at me and will try to provide any 
-additional info you need, but at this point it's up to you.
-
-Cheers,
-FJP
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
