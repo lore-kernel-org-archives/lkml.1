@@ -1,17 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbZJKW3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbZJKW0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbZJKW3S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 18:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZJKW3Q
+	id S1753376AbZJKW0t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 18:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbZJKW0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 18:29:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57851 "EHLO ogre.sisk.pl"
+	Sun, 11 Oct 2009 18:26:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57889 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752938AbZJKW0B convert rfc822-to-8bit (ORCPT
+	id S1752636AbZJKW0i convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 18:26:01 -0400
+	Sun, 11 Oct 2009 18:26:38 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Fabio Comolli" <fabio.comolli@gmail.com>
+       "David Woodhouse" <David.Woodhouse@intel.com>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Mikael Pettersson" <mikpe@it.uu.se>, "Nick Piggin" <npiggin@suse.de>
 References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
 In-Reply-To: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +22,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <r-4Wjt4coy.A.TPD.dal0KB@chimera>
-Subject: [Bug #14372] Wireless not working after suspend-resume
+Message-ID: <r-4Wjt4coy.A.DGD.aal0KB@chimera>
+Subject: [Bug #14374] MCEs caused by commit db8be50c4307dac2b37305fc59c8dc0f978d09ea
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon, 12 Oct 2009 00:22:03 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +38,11 @@ from 2.6.31.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14372
-Subject		: Wireless not working after suspend-resume
-Submitter	: Fabio Comolli <fabio.comolli@gmail.com>
-Date		: 2009-10-03 15:36 (9 days old)
-References	: http://lkml.org/lkml/2009/10/3/91
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14374
+Subject		: MCEs caused by commit db8be50c4307dac2b37305fc59c8dc0f978d09ea
+Submitter	: Nick Piggin <npiggin@suse.de>
+Date		: 2009-10-02 7:34 (10 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=db8be50c4307dac2b37305fc59c8dc0f978d09ea
+References	: http://marc.info/?l=linux-kernel&m=125446885705223&w=4
 
 
