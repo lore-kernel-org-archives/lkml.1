@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbZJKQta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbZJKRJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756439AbZJKQta (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 12:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756297AbZJKQt3
+	id S1756738AbZJKRJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 13:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755422AbZJKRJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 12:49:29 -0400
-Received: from ox1.aei.mpg.de ([194.94.224.6]:51419 "EHLO ox1.aei.mpg.de"
+	Sun, 11 Oct 2009 13:09:29 -0400
+Received: from sologa.tuvalu.tv ([202.2.96.4]:40201 "EHLO sologa.tuvalu.tv"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756184AbZJKQt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 12:49:28 -0400
-X-Greylist: delayed 1538 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 12:49:28 EDT
-Date: Sun, 11 Oct 2009 18:21:55 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-input@vger.kernel.org
-Subject: [bisected regression] Touchpad "paste" stops working after suspend
-	to RAM
-Message-ID: <20091011162155.GA4260@Pilar.aei.mpg.de>
+	id S1754034AbZJKRJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 13:09:28 -0400
+X-Greylist: delayed 2145 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 13:09:27 EDT
+Message-ID: <18438.196.1.177.90.1255278728.squirrel@sologa.tuvalu.tv>
+Date: Mon, 12 Oct 2009 04:32:08 +1200 (TVT)
+Subject: 
+From: "HONGKONG Dwin industrial corporation LTD" <dtl_a@yahoo.com.hk>
+Reply-To: minfo55@gmail.com
+User-Agent: SquirrelMail/1.4.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using the latest 2.6.32-rc3+ kernel, the "paste" operation via the 
-touchpad of my Vaio laptop does not work after suspend to RAM.
-
-It works flawlessly before s2ram; I select the text with the touchpad
-and tap quickly its right corner to paste the selected text.
-After a plain 'echo mem > /sys/power/state' the "paste" does not work.
-
-I bisected it to commit ffd0db97196c1057f09c2ab42dd5b30e94e511d9 ("Input: 
-add generic suspend and resume for input devices").
-
-I haven't tested if reverting it from mainline fixes the issue, but 
-from the patch description I guess that bisection landed correctly
-on the culprit.
-
-I have a recent dmesg from my laptop here: 
-
-http://www.aei.mpg.de/~crmafra/dmesg-2.6.32-rc3-wifi.txt
-
-(the wifi warnings there are related to another issue, and the touchpad
-problem happens independently of those warnings).
-
-I can test patches and provide more info if necessary.
-
-
-PS: Due to some HAL configuration issue I have this line in my .bashrc
-
-synclient RTCornerButton=2
-
-which makes the right corner region capable of pasting. When the
-kernel is "good", it comes back from resume and I don't need to
-run this command again for the 'paste' operation to work. When
-the kernel is "bad" running this command has no effect and 
-"paste" does not work in any way.
 
 
 
+HONGKONG Dwin industrial corporation LTD
+
+#133 zoneng road linhai zhejiang
+Ref 293/rep
+
+Would you like to work and Represent Dwin online from Home/Temporarily and
+get paid Monthly?
+We are glad to offer you a job/position at Dwin industrial corporation LTD
+You do not need to have an Office and this certainly will not affect your
+present job.
+You will be receiving outstanding payments from our clients.
+
+* No form of investments from you.
+* This job takes only 1 hour per day
+If interested reply with below information to
+minfo55@gmail.com
+
+*Full Names
+*Age
+*Home Address (not P.o Box)
+*City
+*State
+*Zip
+*Occupation.
+*Phone number
 
 
+N.B: Send all responses to minfo55@gmail.com for fast correspondence from us.
+
+Best Regards,
+Chin Lee
