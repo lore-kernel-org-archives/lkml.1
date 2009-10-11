@@ -1,133 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751261AbZJKU0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751305AbZJKUkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751261AbZJKU0T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 16:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZJKU0S
+	id S1751305AbZJKUkJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 16:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbZJKUkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 16:26:18 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:10939 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750772AbZJKU0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 16:26:18 -0400
-Date: Sun, 11 Oct 2009 22:24:25 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       David Airlie <airlied@linux.ie>
-cc: Jonathan Corbet <corbet@lwn.net>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Vincent Sanders <vince@simtec.co.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH RFC] frontend.c: Remove the BKL from agp_open
-Message-ID: <alpine.LFD.2.00.0910112216060.12574@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 11 Oct 2009 16:40:07 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:53846 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751214AbZJKUkF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 16:40:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:in-reply-to:message-id:references
+         :user-agent:x-archive:mime-version:content-type;
+        b=SeE/aZjpIeylNodFsD9h3DEDybZpiezUIgdHXqqbDwFtRK6Jy4dEjNvGDONJFL/shs
+         ej5/SXTZT5z15hWO2RVZuaTfrJurgBPCgVwk2dSr3PVVDh8qljcr2pG6gtPj2wN/LwC+
+         hSDHhyJW+AEsbCyziRMGoGPNMT4LSYfvEWj00=
+Date: Sun, 11 Oct 2009 17:39:22 -0300 (BRST)
+From: "=?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?=" 
+	<fredlwm@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+cc: edt@aei.ca, hirofumi@mail.parknet.co.jp, alan@linux.intel.com
+Subject: Re: keyboard under X with 2.6.31
+In-Reply-To: <4AD17C6A.4030902@yahoo.co.uk>
+Message-ID: <alpine.LNX.2.01.0910111735140.19647@dyndns.pervalidus.net>
+References: <4AD17C6A.4030902@yahoo.co.uk>
+User-Agent: Alpine 2.01 (LNX 1266 2009-07-14)
+X-Archive: encrypt
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 11 Oct 2009, Boyan wrote:
 
-@David Airlie. I was looking at the agp driver for removal of the bkl 
-lock. From what I could tell, the mutex_lock(&(agp_fe.agp_mutex)) should 
-cover what we need. However, I may have easily missed something, and would 
-appreciate your review / comments on the patch.
+> (sending again, sorry about last reply, wrong subject...)
+> On Sat, 10 Oct 2009 21:00:05 -0400, Ed Tomlinson wrote:
+>> You are not alone with keyboard problems in 31 in X.  In my case I
+>> blamed a  new wireless setup.
+>> I am building with the the above commit reverted.
+>
+> Not sure why, but after reverting
+> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
+> 'low_latency' tty flag) my analog tv tuner stopped working after booting
+> for the first time. It has TV and FM radio, but only radio worked when
+> reverted this patch. I saw some EIO errors with strace. Then added again
+> the patch and on top of it I've added commit:
+>
+> 3a54297478e6578f96fd54bf4daa1751130aca86
+> pty: quickfix for the pty ENXIO timing problems
+>
+> Everything was ok.
+> Today I've tried to reproduce this and reverted both patches. Recompiled
+> and everything is ok. Not sure what happened yesterday.
+> So to summarize 2.6.31.3 with reverted commit
+> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
+> 'low_latency' tty flag) works for me.
 
->From 261cd08816c2b4c767b6ae038737beef32fe1085 Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Sun, 11 Oct 2009 21:37:51 +0200
-Subject: [PATCH] frontend.c: Remove the BKL from agp_open
+Reverting the commit also works for me. Thanks.
 
-- Remove the BKL from agp_open
-- Perform a few clean-ups.
+The direct link, for those not using git:
 
-Analysis:
----------
-int minor is local to the function.
-
-The following are protected by agp_fe.agp_mutex
-struct agp_file_private *priv;
-struct agp_client *client;
-
-Call-outs:
-
-kzalloc should be safe to call under the mutex_lock
-
-agp_find_client_by_pid:
-	- agp_mmap calls that under agp_fe.agp_mutex which we hold in agp_open
-	- agpioc_reserve_wrap calls it without any locking what-so-ever.
-		- Is that an error? Or is that okay because it has pid that is
-		  a unique handle?
-
-agp_insert_file_private:
-	- This function only manipulates struct agp_file_private, once again
-	  while agp_fe.agp_mutex is held
-
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- drivers/char/agp/frontend.c |   28 +++++++++++-----------------
- 1 files changed, 11 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/char/agp/frontend.c b/drivers/char/agp/frontend.c
-index a96f319..43412c0 100644
---- a/drivers/char/agp/frontend.c
-+++ b/drivers/char/agp/frontend.c
-@@ -676,25 +676,25 @@ static int agp_open(struct inode *inode, struct file *file)
- 	int minor = iminor(inode);
- 	struct agp_file_private *priv;
- 	struct agp_client *client;
--	int rc = -ENXIO;
--
--	lock_kernel();
--	mutex_lock(&(agp_fe.agp_mutex));
- 
- 	if (minor != AGPGART_MINOR)
--		goto err_out;
-+		return -ENXIO;
-+
-+	mutex_lock(&(agp_fe.agp_mutex));
- 
- 	priv = kzalloc(sizeof(struct agp_file_private), GFP_KERNEL);
--	if (priv == NULL)
--		goto err_out_nomem;
-+	if (priv == NULL) {
-+		mutex_unlock(&(agp_fe.agp_mutex));
-+		return -ENOMEM;
-+	}
- 
- 	set_bit(AGP_FF_ALLOW_CLIENT, &priv->access_flags);
- 	priv->my_pid = current->pid;
- 
--	if (capable(CAP_SYS_RAWIO)) {
-+	if (capable(CAP_SYS_RAWIO))
- 		/* Root priv, can be controller */
- 		set_bit(AGP_FF_ALLOW_CONTROLLER, &priv->access_flags);
--	}
-+
- 	client = agp_find_client_by_pid(current->pid);
- 
- 	if (client != NULL) {
-@@ -704,16 +704,10 @@ static int agp_open(struct inode *inode, struct file *file)
- 	file->private_data = (void *) priv;
- 	agp_insert_file_private(priv);
- 	DBG("private=%p, client=%p", priv, client);
--	mutex_unlock(&(agp_fe.agp_mutex));
--	unlock_kernel();
--	return 0;
- 
--err_out_nomem:
--	rc = -ENOMEM;
--err_out:
- 	mutex_unlock(&(agp_fe.agp_mutex));
--	unlock_kernel();
--	return rc;
-+
-+	return 0;
- }
- 
- 
--- 
-1.6.0.6
-
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e043e42bdb66885b3ac10d27a01ccb9972e2b0a3
