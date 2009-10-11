@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZJKJFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbZJKI7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256AbZJKJFX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 05:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZJKJFV
+	id S1753657AbZJKI7h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 04:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZJKI7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 05:05:21 -0400
-Received: from tneu02.synserver.de ([217.119.58.222]:3456 "EHLO
-	tneu02.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754120AbZJKJFU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 05:05:20 -0400
-X-Greylist: delayed 645 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 05:05:20 EDT
-From: Thomas Neumann <tneumann@users.sourceforge.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: deadlock with fallocate
-Date: Sun, 11 Oct 2009 10:53:56 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.28-15-generic; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com,
-       Christoph Hellwig <hch@lst.de>
-References: <hah08m$p1a$1@ger.gmane.org> <20091011005746.56cd3cd4.akpm@linux-foundation.org>
-In-Reply-To: <20091011005746.56cd3cd4.akpm@linux-foundation.org>
+	Sun, 11 Oct 2009 04:59:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33585 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752724AbZJKI7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 04:59:35 -0400
+Date: Sun, 11 Oct 2009 10:58:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com
+Subject: Re: [RFC][PATCH 5/9] perf trace: Add Perl scripting support
+Message-ID: <20091011085846.GF14995@elte.hu>
+References: <1254809398-8078-1-git-send-email-tzanussi@gmail.com> <1254809398-8078-6-git-send-email-tzanussi@gmail.com> <20091006130059.GD15320@elte.hu> <1254888565.28917.135.camel@tropicana> <20091007141332.GA21320@infradead.org> <1254974493.6841.17.camel@tropicana>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910111053.57159.tneumann@users.sourceforge.net>
+In-Reply-To: <1254974493.6841.17.camel@tropicana>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Will legacy applications fail on newer kernels?  Or is it the case that
-> only recently-written applications which utilise new kernel
-> functionality will hit this bug?
-In theory posix_fallocate has been around for a while and glibc will use 
-kernel functionality if available, so applications might break. In practice it 
-is perhaps not that common that applications use fallocate.
 
-The problem is definitively fallocate related. When I replace possix_fallocate 
-with the equivalent ftruncate64 call the problem goes away. (But then again 
-the two calls are not really equivalent, and fallocate is the semantic that I 
-need).
-Furthermore the deadlocks seem to start occurring after writing more data than 
-available main memory, but I did not investigate this thoroughly.
+* Tom Zanussi <tzanussi@gmail.com> wrote:
 
-Thomas
+> On Wed, 2009-10-07 at 10:13 -0400, Christoph Hellwig wrote:
+> > On Tue, Oct 06, 2009 at 11:09:25PM -0500, Tom Zanussi wrote:
+> > > > I think we also want to have a 'perf -s *' kind of thing to get a list 
+> > > > of all available language modules.
+> > > > 
+> > > 
+> > > I knew somebody would point that out (and suggest a better way ;-)  That
+> > > all makes sense - I'll make these changes in the next version.
+> > 
+> > I'm a bit worried about linking two million scripting language into the
+> > main perf binary.  Can't we just have seaprate perlperf / pythonperf,
+> > rubyperf, awkperf binaries that only contain the scripting support?
+> 
+> Yeah, that's a good point. [...]
 
+No, we want to keep a single core binary, it has many advantages. Git 
+has gone through a very painful conversion from many spread out git-* 
+commands back into a central binary. So we avoided that mistake in perf 
+from the get go. We are not going to add separate perf-* commands.
+
+ad-hoc extensions using separate perf-* scripts are fine of course and i 
+use that myself. But once a facility is part of core perf it wants to 
+move into the binary. Especially something as central as scripting 
+support.
+
+Thanks,
+
+	Ingo
