@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750930AbZJKSsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751035AbZJKSwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750930AbZJKSsw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 14:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbZJKSsw
+	id S1751035AbZJKSwW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 14:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbZJKSwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 14:48:52 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:58398 "EHLO
+	Sun, 11 Oct 2009 14:52:21 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51513 "EHLO
 	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750791AbZJKSsv (ORCPT
+	by vger.kernel.org with ESMTP id S1750736AbZJKSwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 14:48:51 -0400
-X-Sasl-enc: Qqxetdoiz+sGCwhlE6tv+1QWwab1g4q9s66Rf/VLjJ2J 1255286867
-Date: Sun, 11 Oct 2009 15:47:45 -0300
+	Sun, 11 Oct 2009 14:52:21 -0400
+X-Sasl-enc: 2kvexFqKOxhMd/wvmGEW/jewvVsvUqVOvtLIejfwvQEW 1255287079
+Date: Sun, 11 Oct 2009 15:51:14 -0300
 From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linuxtronix.de, hpa@zytor.com
-Subject: Re: [PATCH] x86: Relegate CONFIG_PAT to EMBEDDED
-Message-ID: <20091011184745.GA18578@khazad-dum.debian.net>
-References: <20091011084311.0ab3c3ea@infradead.org>
- <adaiqelj20l.fsf@cisco.com>
- <20091011103302.62bded41@infradead.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Thomas Schlichter <thomas.schlichter@web.de>, linux-kernel@vger.kernel.org,
+       Thomas Hellstrom <thellstrom@vmware.com>
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not
+ available
+Message-ID: <20091011185114.GB18578@khazad-dum.debian.net>
+References: <200910100322.36857.thomas.schlichter@web.de>
+ <4AD00C89.3000503@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091011103302.62bded41@infradead.org>
+In-Reply-To: <4AD00C89.3000503@linux.intel.com>
 X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
  1CDB 0FE3
 User-Agent: Mutt/1.5.20 (2009-06-14)
@@ -32,27 +32,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Oct 2009, Arjan van de Ven wrote:
-> MTRR and PAT support (which got added to CPUs over 10 years ago) are no
-> longer really optional in that more and more things are depending on PAT
-> just working, including various drivers and newer versions of X.  (to not
-> even speak of MTRR)
+On Fri, 09 Oct 2009, Arjan van de Ven wrote:
+> >I've found a problem with X.org not setting up MTRR for the
+> >framebuffer memory. After I investigated I think this is not a
+> >X.org problem, but a kernel issue.
+> 
+> is there any CPU left that does not support PAT ?
 
-Please take a look at early_init_intel() in arch/x86/kernel/cpu/intel.c.
-it disables PAT for what must amount to more than a *million* of
-machines.  It certainly includes all Centrino laptops, for example(!).
+A few million of them.  Like every Centrino laptop out there, unless the
+kernel blacklist for PAT on Intel CPUs is wrong.
 
-FYI, these computers will be with us for at least 10 years, still.  I
-still have users of Mobile Pentium II reporting bugs on thinkpad-acpi,
-and I know of a *huge* number of active Pentium II and Pentium III
-desktops in Brazil.  My 5-year-old ThinkPad T43 (Centrino, Pentium M)
-cheerfully reports "PAT not supported by CPU" at boot if I decide to
-waste memory by enabling CONFIG_X86_PAT.
+> eg in other words, should we try instead to get PAT working for you?
 
-So, unless that blacklist can be drastically reduced somehow, can we
-*please* fix anything that depends on PAT "just working"?  Because as
-far as the kernel is concerned right now, way too many machines can't
-even dream of using PAT.
+Is it even possible?  Can you get Intel to fix my Pentium M?  I'd be quite
+happy to test any microcode updates you send my way :)
+
+As things stand right now, you can assume PAT will be there in 2015 or
+thereabouts.  Machine models that can run Linux have a service life of
+around 15 years.
 
 -- 
   "One disk to rule them all, One disk to find them. One disk to bring
