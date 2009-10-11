@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbZJKPQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbZJKPEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753722AbZJKPQB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 11:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZJKPP7
+	id S1753309AbZJKPEL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 11:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZJKPEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 11:15:59 -0400
-Received: from kroah.org ([198.145.64.141]:43147 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752394AbZJKPP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 11:15:59 -0400
-Date: Sun, 11 Oct 2009 07:42:17 -0700
-From: Greg KH <greg@kroah.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Mike Lothian <mike@fireburn.co.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Matthias Hopf <mhopf@suse.de>, Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Samsung Backlight Patch
-Message-ID: <20091011144217.GA9975@kroah.com>
-References: <f3f71ab90910071414n482eca2dm18108c79ee08028d@mail.gmail.com> <20091007211916.GA4217@kroah.com> <f3f71ab90910071431g524fa807ib67f5fcfef7c70d1@mail.gmail.com> <20091007225828.GA7892@kroah.com> <20091011090403.GA1414@ucw.cz>
+	Sun, 11 Oct 2009 11:04:10 -0400
+Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:36699
+	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751991AbZJKPEJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 11:04:09 -0400
+X-Greylist: delayed 689 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 11:04:09 EDT
+Date: Sun, 11 Oct 2009 11:44:19 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, lenb@kernel.org
+Subject: Re: [PATCH -mmotm] cmpc_acpi: depends on ACPI
+Message-ID: <20091011144418.GF30257@vespa.holoscopio.com>
+References: <200910090830.n998Ubvv020464@imap1.linux-foundation.org> <20091009161036.7f752529.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="R6sEYoIZpp9JErk7"
 Content-Disposition: inline
-In-Reply-To: <20091011090403.GA1414@ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20091009161036.7f752529.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 11, 2009 at 11:04:03AM +0200, Pavel Machek wrote:
-> On Wed 2009-10-07 15:58:28, Greg KH wrote:
-> > On Wed, Oct 07, 2009 at 10:31:44PM +0100, Mike Lothian wrote:
-> > > 2009/10/7 Greg KH <greg@kroah.com>:
-> > > > On Wed, Oct 07, 2009 at 10:14:37PM +0100, Mike Lothian wrote:
-> > > >> Hi
-> > > >>
-> > > >> I was hoping the following patch could be included in 2.6.32 so it
-> > > >> would hopefully end up in the next round of distros
-> > > >>
-> > > >> It adds backlight support for some Samsung laptops
-> > > >
-> > > > You seem to have lost the original authorship of this patch, and not
-> > > > included your signed-off-by for it.
-> > > >
-> > > > Which means it can't be applied :(
-> ...
-> > > It definitely has +MODULE_AUTHOR("Greg Kroah-Hartman
-> > > <gregkh@suse.de>"); at the bottom
-> > > 
-> > > I certainly wasn't trying to steal credit for your work
-> > 
-> > I mean on the patch, when submitting it, you need a:
-> > 	From: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > as the first line.
-> > 
-> > > Who should sign it off?
-> > 
-> > As I stated before, I can not sign off on this patch anymore, but I
-> > would like my authorship to remain.  Someone needs to sign off on it...
-> 
-> That's quite crazy, no?
 
-Yes it is.
+--R6sEYoIZpp9JErk7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> DCO,  a). You say you created the patch. Do you want to say you did
-> not have right to submit it? Or do you want to say it is not under
-> GPL?
-> 
-> What is going on?
+On Fri, Oct 09, 2009 at 04:10:36PM -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>=20
+> Fix about 100 build errors/warnings when ACPI is not enabled.  E.g.:
+>=20
+> drivers/platform/x86/cmpc_acpi.c:50: error: dereferencing pointer to inco=
+mplete type
+> drivers/platform/x86/cmpc_acpi.c:55: error: dereferencing pointer to inco=
+mplete type
+> drivers/platform/x86/cmpc_acpi.c:56: error: dereferencing pointer to inco=
+mplete type
+> drivers/platform/x86/cmpc_acpi.c:72: warning: 'struct acpi_device' declar=
+ed inside parameter list
+> drivers/platform/x86/cmpc_acpi.c:77: error: dereferencing pointer to inco=
+mplete type
+> drivers/platform/x86/cmpc_acpi.c:79: error: dereferencing pointer to inco=
+mplete type
+>=20
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-I can not say, sorry.
+Acked-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 
-greg k-h
+> ---
+>  drivers/platform/x86/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> --- mmotm-2009-1009-0107.orig/drivers/platform/x86/Kconfig
+> +++ mmotm-2009-1009-0107/drivers/platform/x86/Kconfig
+> @@ -438,7 +438,7 @@ config ACPI_TOSHIBA
+> =20
+>  config ACPI_CMPC
+>  	tristate "CMPC Laptop Extras"
+> -	depends on X86
+> +	depends on X86 && ACPI
+>  	select INPUT
+>  	select BACKLIGHT_CLASS_DEVICE
+>  	default n
+
+--R6sEYoIZpp9JErk7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkrR70IACgkQyTpryRcqtS1y5QCfZlCSFMxJAJgkQrKISXhTsB0X
+9hcAn3zh5P7l32/8Z9shFZ6k649GMuZ9
+=/ulM
+-----END PGP SIGNATURE-----
+
+--R6sEYoIZpp9JErk7--
