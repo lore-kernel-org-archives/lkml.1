@@ -1,211 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbZJKWdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbZJKWjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753158AbZJKWdK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 18:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZJKWdI
+	id S1752784AbZJKWjo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 18:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbZJKWjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 18:33:08 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:54759 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752452AbZJKWdG (ORCPT
+	Sun, 11 Oct 2009 18:39:43 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:48865 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752468AbZJKWjm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 18:33:06 -0400
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 5/8] drivers/media/video/uvc: Use %pUl to print UUIDs
-Date: Mon, 12 Oct 2009 00:34:58 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31.1; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-media@vger.kernel.org
-References: <1254890742-28245-1-git-send-email-joe@perches.com> <ef810b1f134d8b5f07b849b13751445d7d49956b.1254884776.git.joe@perches.com>
-In-Reply-To: <ef810b1f134d8b5f07b849b13751445d7d49956b.1254884776.git.joe@perches.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910120034.58943.laurent.pinchart@ideasonboard.com>
+	Sun, 11 Oct 2009 18:39:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=mPC2HxAxEI8hkM4FFM/JFtwfnzr3xSh6AaTiXwQoOZfbsvqW9JIXwt3jDcbxCJklyG
+         WAuyQ53EPyi3ZP/5Zs5qPYcwXfotPLsJNwWBnHyqQXtXnGw/bSSYONAqkLvPqe0N8M8c
+         hDngYFsIVHFb0GgBE9li42w07F374tGwTszE4=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       John Kacur <jkacur@redhat.com>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Alessio Igor Bogani <abogani@texware.it>, Arnd Bergmann <arnd@arndb.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH v2] generic_nvram: Turn nvram_ioctl into an unlocked ioctl
+Date: Mon, 12 Oct 2009 00:39:02 +0200
+Message-Id: <1255300742-8863-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <200910120025.05208.arnd@arndb.de>
+References: <200910120025.05208.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joe,
+nvram_ioctl is a bkl locked ioctl, but it can be an unlocked ioctl.
 
-On Wednesday 07 October 2009 06:45:38 Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/media/video/uvc/uvc_ctrl.c   |   69 ++++++++++++++++------------------
->  drivers/media/video/uvc/uvc_driver.c |    7 +--
->  drivers/media/video/uvc/uvcvideo.h   |   10 -----
->  3 files changed, 35 insertions(+), 51 deletions(-)
-> 
-> diff --git a/drivers/media/video/uvc/uvc_ctrl.c
->  b/drivers/media/video/uvc/uvc_ctrl.c index c3225a5..4d06976 100644
-> --- a/drivers/media/video/uvc/uvc_ctrl.c
-> +++ b/drivers/media/video/uvc/uvc_ctrl.c
-> @@ -1093,8 +1093,8 @@ int uvc_xu_ctrl_query(struct uvc_video_chain *chain,
-> 
->  	if (!found) {
->  		uvc_trace(UVC_TRACE_CONTROL,
-> -			"Control " UVC_GUID_FORMAT "/%u not found.\n",
-> -			UVC_GUID_ARGS(entity->extension.guidExtensionCode),
-> +			"Control %pUl/%u not found.\n",
-> +			entity->extension.guidExtensionCode,
->  			xctrl->selector);
->  		return -EINVAL;
->  	}
-> @@ -1171,9 +1171,9 @@ int uvc_ctrl_resume_device(struct uvc_device *dev)
->  			    (ctrl->info->flags & UVC_CONTROL_RESTORE) == 0)
->  				continue;
-> 
-> -			printk(KERN_INFO "restoring control " UVC_GUID_FORMAT
-> -				"/%u/%u\n", UVC_GUID_ARGS(ctrl->info->entity),
-> -				ctrl->info->index, ctrl->info->selector);
-> +			printk(KERN_INFO "restoring control %pUl/%u/%u\n",
-> +			       ctrl->info->entity,
-> +			       ctrl->info->index, ctrl->info->selector);
->  			ctrl->dirty = 1;
->  		}
-> 
-> @@ -1228,46 +1228,43 @@ static void uvc_ctrl_add_ctrl(struct uvc_device
->  *dev, dev->intfnum, info->selector, (__u8 *)&size, 2);
->  		if (ret < 0) {
->  			uvc_trace(UVC_TRACE_CONTROL, "GET_LEN failed on "
-> -				"control " UVC_GUID_FORMAT "/%u (%d).\n",
-> -				UVC_GUID_ARGS(info->entity), info->selector,
-> -				ret);
-> +				  "control %pUl/%u (%d).\n",
-> +				  info->entity, info->selector, ret);
->  			return;
->  		}
-> 
->  		if (info->size != le16_to_cpu(size)) {
-> -			uvc_trace(UVC_TRACE_CONTROL, "Control " UVC_GUID_FORMAT
-> -				"/%u size doesn't match user supplied "
-> -				"value.\n", UVC_GUID_ARGS(info->entity),
-> -				info->selector);
-> +			uvc_trace(UVC_TRACE_CONTROL,
-> +				  "Control %pUl/%u size doesn't match user supplied value.\n",
-> +				  info->entity, info->selector);
->  			return;
->  		}
-> 
->  		ret = uvc_query_ctrl(dev, UVC_GET_INFO, ctrl->entity->id,
->  			dev->intfnum, info->selector, &inf, 1);
->  		if (ret < 0) {
-> -			uvc_trace(UVC_TRACE_CONTROL, "GET_INFO failed on "
-> -				"control " UVC_GUID_FORMAT "/%u (%d).\n",
-> -				UVC_GUID_ARGS(info->entity), info->selector,
-> -				ret);
-> +			uvc_trace(UVC_TRACE_CONTROL,
-> +				  "GET_INFO failed on control %pUl/%u (%d).\n",
-> +				  info->entity, info->selector, ret);
->  			return;
->  		}
-> 
->  		flags = info->flags;
->  		if (((flags & UVC_CONTROL_GET_CUR) && !(inf & (1 << 0))) ||
->  		    ((flags & UVC_CONTROL_SET_CUR) && !(inf & (1 << 1)))) {
-> -			uvc_trace(UVC_TRACE_CONTROL, "Control "
-> -				UVC_GUID_FORMAT "/%u flags don't match "
-> -				"supported operations.\n",
-> -				UVC_GUID_ARGS(info->entity), info->selector);
-> +			uvc_trace(UVC_TRACE_CONTROL,
-> +				  "Control %pUl/%u flags don't match supported operations.\n",
-> +				  info->entity, info->selector);
->  			return;
->  		}
->  	}
-> 
->  	ctrl->info = info;
->  	ctrl->data = kmalloc(ctrl->info->size * UVC_CTRL_NDATA, GFP_KERNEL);
-> -	uvc_trace(UVC_TRACE_CONTROL, "Added control " UVC_GUID_FORMAT "/%u "
-> -		"to device %s entity %u\n", UVC_GUID_ARGS(ctrl->info->entity),
-> -		ctrl->info->selector, dev->udev->devpath, entity->id);
-> +	uvc_trace(UVC_TRACE_CONTROL,
-> +		  "Added control %pUl/%u to device %s entity %u\n",
-> +		  ctrl->info->entity, ctrl->info->selector,
-> +		  dev->udev->devpath, entity->id);
->  }
-> 
->  /*
-> @@ -1293,17 +1290,16 @@ int uvc_ctrl_add_info(struct uvc_control_info
->  *info) continue;
-> 
->  		if (ctrl->selector == info->selector) {
-> -			uvc_trace(UVC_TRACE_CONTROL, "Control "
-> -				UVC_GUID_FORMAT "/%u is already defined.\n",
-> -				UVC_GUID_ARGS(info->entity), info->selector);
-> +			uvc_trace(UVC_TRACE_CONTROL,
-> +				  "Control %pUl/%u is already defined.\n",
-> +				  info->entity, info->selector);
->  			ret = -EEXIST;
->  			goto end;
->  		}
->  		if (ctrl->index == info->index) {
-> -			uvc_trace(UVC_TRACE_CONTROL, "Control "
-> -				UVC_GUID_FORMAT "/%u would overwrite index "
-> -				"%d.\n", UVC_GUID_ARGS(info->entity),
-> -				info->selector, info->index);
-> +			uvc_trace(UVC_TRACE_CONTROL,
-> +				  "Control %pUl/%u would overwrite index %d.\n",
-> +				  info->entity, info->selector, info->index);
->  			ret = -EEXIST;
->  			goto end;
->  		}
-> @@ -1344,10 +1340,9 @@ int uvc_ctrl_add_mapping(struct uvc_control_mapping
->  *mapping) continue;
-> 
->  		if (info->size * 8 < mapping->size + mapping->offset) {
-> -			uvc_trace(UVC_TRACE_CONTROL, "Mapping '%s' would "
-> -				"overflow control " UVC_GUID_FORMAT "/%u\n",
-> -				mapping->name, UVC_GUID_ARGS(info->entity),
-> -				info->selector);
-> +			uvc_trace(UVC_TRACE_CONTROL,
-> +				  "Mapping '%s' would overflow control %pUl/%u\n",
-> +				  mapping->name, info->entity, info->selector);
->  			ret = -EOVERFLOW;
->  			goto end;
->  		}
-> @@ -1366,9 +1361,9 @@ int uvc_ctrl_add_mapping(struct uvc_control_mapping
->  *mapping)
-> 
->  		mapping->ctrl = info;
->  		list_add_tail(&mapping->list, &info->mappings);
-> -		uvc_trace(UVC_TRACE_CONTROL, "Adding mapping %s to control "
-> -			UVC_GUID_FORMAT "/%u.\n", mapping->name,
-> -			UVC_GUID_ARGS(info->entity), info->selector);
-> +		uvc_trace(UVC_TRACE_CONTROL,
-> +			  "Adding mapping %s to control %pUl/%u.\n",
-> +			  mapping->name, info->entity, info->selector);
-> 
->  		ret = 0;
->  		break;
-> diff --git a/drivers/media/video/uvc/uvc_driver.c
->  b/drivers/media/video/uvc/uvc_driver.c index 8756be5..411dc63 100644
-> --- a/drivers/media/video/uvc/uvc_driver.c
-> +++ b/drivers/media/video/uvc/uvc_driver.c
-> @@ -328,11 +328,10 @@ static int uvc_parse_format(struct uvc_device *dev,
->  				sizeof format->name);
->  			format->fcc = fmtdesc->fcc;
->  		} else {
-> -			uvc_printk(KERN_INFO, "Unknown video format "
-> -				UVC_GUID_FORMAT "\n",
-> -				UVC_GUID_ARGS(&buffer[5]));
-> +			uvc_printk(KERN_INFO, "Unknown video format %pUl\n",
-> +				   &buffer[5]);
->  			snprintf(format->name, sizeof format->name,
-> -				UVC_GUID_FORMAT, UVC_GUID_ARGS(&buffer[5]));
-> +				 "%pUl", &Buffer[5]);
+- part is provided by the user
+- offset is provided by pmac_get_partition() which is safe as it only
+  touches nvram_partitions, an array inistialized on __init time and
+  read-only the rest of the time.
+- nvram_sync() only relies on core99_nvram_sync() which checks
+  is_core_99, nvram_data, nvram_image. Those are variables initialized
+  on __init time only and their direct values are not touched further.
+  The rest modifies the nvram image header, protected by nv_lock
+  already.
 
-Buffer should still be written buffer.
+So it's safe to call nvram_ioctl without the big kernel lock held.
 
-As this will go through the linuxtv v4l-dvb tree, I'll have to add backward
-compatibility code (that will not make it to mainline). If that's ok with you
-it will be easier for me to test and apply that part of the patch through my
-tree once the vsprintf extension gets in. 
+v2: Fix nvram_ioctl to fit unlocked_ioctl signature.
 
+Reported-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: John Kacur <jkacur@redhat.com>
+Cc: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Alessio Igor Bogani <abogani@texware.it>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+---
+ drivers/char/generic_nvram.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
+index c49200e..866d04d 100644
+--- a/drivers/char/generic_nvram.c
++++ b/drivers/char/generic_nvram.c
+@@ -85,8 +85,7 @@ static ssize_t write_nvram(struct file *file, const char __user *buf,
+ 	return p - buf;
+ }
+ 
+-static int nvram_ioctl(struct inode *inode, struct file *file,
+-	unsigned int cmd, unsigned long arg)
++static int nvram_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	switch(cmd) {
+ #ifdef CONFIG_PPC_PMAC
+@@ -118,11 +117,11 @@ static int nvram_ioctl(struct inode *inode, struct file *file,
+ }
+ 
+ const struct file_operations nvram_fops = {
+-	.owner		= THIS_MODULE,
+-	.llseek		= nvram_llseek,
+-	.read		= read_nvram,
+-	.write		= write_nvram,
+-	.ioctl		= nvram_ioctl,
++	.owner			= THIS_MODULE,
++	.llseek			= nvram_llseek,
++	.read			= read_nvram,
++	.write			= write_nvram,
++	.unlocked_ioctl		= nvram_ioctl,
+ };
+ 
+ static struct miscdevice nvram_dev = {
 -- 
-Regards,
+1.6.2.3
 
-Laurent Pinchart
