@@ -1,126 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760630AbZJKLeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbZJKLlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760630AbZJKLeF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 07:34:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbZJKLeD
+	id S1760684AbZJKLlm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 07:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760651AbZJKLll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 07:34:03 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:61874 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756790AbZJKLeC (ORCPT
+	Sun, 11 Oct 2009 07:41:41 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:33096 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760633AbZJKLll (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 07:34:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=x6iPqe3kuQifF3zF/m3YqncmDbaqmev0G13IEjYEOOqFPU/BnmiRqNv0sbZTGTPGah
-         WvM+dAgWPGmM6gNTwh9koyauPgKcmX/0dwL44jYbUzr8yNzeSCxudGFAucyCSnWHXqYJ
-         MHxeRz1Hv3qPIntnALWVoROpMucY8JWPWBQqE=
-Date: Sun, 11 Oct 2009 13:33:21 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: John Kacur <jkacur@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Jonathan Corbet <corbet@lwn.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vincent^M^J Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sound_core.c: Remove BKL from soundcore_open
-Message-ID: <20091011113317.GA4901@nowhere>
-References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain> <20091011004219.74c30f67@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0910110223510.4921@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0910110223510.4921@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 11 Oct 2009 07:41:41 -0400
+Subject: Re: NOHZ: local_softirq_pending 08
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Tilman Schmidt <t.schmidt@phoenixsoftware.de>
+Cc: Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-wireless <linux-wireless@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <4AD1BF06.3050103@phoenixsoftware.de>
+References: <20091011095217.GA2200@darkstar>
+	 <1255255735.4095.53.camel@johannes.local>
+	 <4AD1BF06.3050103@phoenixsoftware.de>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-x1esR/MCyQ1Jo0nOU/DC"
+Date: Sun, 11 Oct 2009 13:40:51 +0200
+Message-Id: <1255261251.4095.143.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 11, 2009 at 02:25:53AM +0200, John Kacur wrote:
-> 
-> 
-> On Sun, 11 Oct 2009, Alan Cox wrote:
-> 
-> > On Sun, 11 Oct 2009 01:24:14 +0200 (CEST)
-> > John Kacur <jkacur@redhat.com> wrote:
-> > 
-> > > >From 030af455d4f54482130c8eccb47fe90aaba8808c Mon Sep 17 00:00:00 2001
-> > > From: John Kacur <jkacur@redhat.com>
-> > > Date: Sat, 10 Oct 2009 23:39:56 +0200
-> > > Subject: [PATCH] This code is already protected by spin_lock, and doesn't require the bkl
-> > 
-> > Sorry but I don't think that is true becaue of:
-> > 
-> >            spin_unlock(&sound_loader_lock);
-> >                 if(file->f_op->open)
-> >                         err = file->f_op->open(inode,file);
-> > 
-> > 
-> > So the underlying driver open method expects lock_kernel status and you
-> > don't propogate it down. You really need to track down each thing that
-> > can be called into here and fix it, or maybe just punt for the moment and
-> > push it down to
-> > 
-> > 	{
-> > 		lock_kernel()
-> > 		err = file-f_op->open ...
-> > 		unlock_kernel()
-> > 	}
-> > 
-> > so its obvious to the next person who takes up the war on the BKL what is
-> > to be tackled.
-> > 
-> 
-> Yikes, I missed that. Still I'm loath to just push it down like that. I 
-> wonder if I can use a mutex there. What about the following patch?
-> 
-> From 8b0b91523ee2fcf60ccd82dba44b8da8bad34ce4 Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Sun, 11 Oct 2009 02:14:44 +0200
-> Subject: [PATCH] Remove the bkl in soundcore_open
-> 
-> Remove the bkl in soundcore_open since it is mostly covered by the sound_loader_lock spin_lock
-> 
-> Protect the underlying driver open method with a mutex.
-> 
-> Signed-off-by: John Kacur <jkacur@redhat.com>
-> ---
->  sound/sound_core.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/sound/sound_core.c b/sound/sound_core.c
-> index 49c9981..6afb6f1 100644
-> --- a/sound/sound_core.c
-> +++ b/sound/sound_core.c
-> @@ -14,6 +14,8 @@
->  #include <linux/major.h>
->  #include <sound/core.h>
->  
-> +static DEFINE_MUTEX(osc_mutex);
-> +
->  #ifdef CONFIG_SOUND_OSS_CORE
->  static int __init init_oss_soundcore(void);
->  static void cleanup_oss_soundcore(void);
-> @@ -576,8 +578,6 @@ static int soundcore_open(struct inode *inode, struct file *file)
->  	struct sound_unit *s;
->  	const struct file_operations *new_fops = NULL;
->  
-> -	lock_kernel ();
-> -
->  	chain=unit&0x0F;
->  	if(chain==4 || chain==5)	/* dsp/audio/dsp16 */
->  	{
-> @@ -631,17 +631,17 @@ static int soundcore_open(struct inode *inode, struct file *file)
->  		file->f_op = new_fops;
->  		spin_unlock(&sound_loader_lock);
->  		if(file->f_op->open)
-> +			mutex_lock(&osc_mutex);
->  			err = file->f_op->open(inode,file);
-> +			mutex_unlock(&osc_mutex);
 
+--=-x1esR/MCyQ1Jo0nOU/DC
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Yeah that's tempting, but I fear that also means this mutex will
-never be removed....
+On Sun, 2009-10-11 at 13:18 +0200, Tilman Schmidt wrote:
+
+> Can you explain a bit more what that message is about?
+> I am encountering it in a completely different context
+> (PPP over ISDN) and I would like to know where to start
+> looking for the cause and developing a fix. The thread
+> on linux.kernel.wireless.general only seems to address
+> the specific situation in the wireless stack.
+
+Basically, calling netif_rx() with softirqs enabled.
+
+johannes
+
+--=-x1esR/MCyQ1Jo0nOU/DC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJK0cRAAAoJEODzc/N7+QmaOEgQAKay17lYOfLkKKBXpej1nva4
+i/XvNBAtRDwmOBVG/qG/2MLGMi6mJXdUMya1oJv8JbVAprzNkIMaeXgnDDNKVAsm
+szqT3e9rd//NrUSMc2c11DugOzvIncuzC6TbwJX7r574IT/6rw/YRxAW6+4s881N
+t3zP2soCwpez8BqNv9yqrNuPc8oU28lVzqhfNE0+76Bc277wE50g52pa0fyF+buw
+dpVVGWWpxcwgRZHxLkHK9ivm6RBjieisxqnVAw6kASb2bVuCgucKNSEwnT4ze+4G
+aVTVYNAaAYBsg4p9cg8knFei0+fEabiw8agOd8y8oKzGrVhFqapVgB5MP64M1VNa
+O79lhv6kk66usqnYro+lrAxVT1hJ0O1mIPQRpDz5HrdkgSxU4gV+tlprA4DSYePo
+/XJ1HBlO5bhG8kU8QQ/3YxWYvnfvMJgiSc8fIu8EwW2DBJ5Q8nvhxa/DrHry2zqK
+xt53Ay5LNJat9yFHistRlEOMNDZi6FsvcrhD91/vRY9f1xYcDjlB+e/l5ro6MraX
+HoqSTsRkVAtnGVIhmr5VDu3L/GivE4YQ6wzc0umh/USyAN0lHzOVBavpTCCqpmEv
+RXvpSie2HaMoz9jtd1935DNg9zVlQbFYiz8VydsKu+2yvExEy/3/iNs059mWen8e
+T9EARp4mnhCUqlxj5za/
+=jhS/
+-----END PGP SIGNATURE-----
+
+--=-x1esR/MCyQ1Jo0nOU/DC--
 
