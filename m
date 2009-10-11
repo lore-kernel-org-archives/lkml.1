@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751192AbZJKTYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751859AbZJKT0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751192AbZJKTYo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 15:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbZJKTYo
+	id S1751859AbZJKT0p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 15:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZJKT0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 15:24:44 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:49901 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbZJKTYn (ORCPT
+	Sun, 11 Oct 2009 15:26:44 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42178 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751154AbZJKT0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 15:24:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=vj3nzxBBZSGdjjmtI1bIMlBpNms3LKHO1vdvYTIdyoJUrn6nfS0SAxy6HNSaKXVaNQ
-         vkdWBDSiDcd0nj7uwMEm4WPdWU44/SBt9HT5pimTKJthUZbL1N9BKXAFaJBPB7qwMP+z
-         tHU4a8GRGe2SKh4llr3SCtpfk546E4PJrClZQ=
-From: Arnd Bergmann <arndbergmann@googlemail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 05/28] drivers: Remove BKL from drivers/char/misc.c
-Date: Sun, 11 Oct 2009 21:24:00 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
+	Sun, 11 Oct 2009 15:26:44 -0400
+Date: Sun, 11 Oct 2009 12:26:32 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jonathan Corbet <corbet@lwn.net>, John Kacur <jkacur@redhat.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Vincent Sanders <vince@simtec.co.uk>, John Kacur <jkacur@redhat.com>,
-       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-References: <20091010153314.827301943@linutronix.de> <20091010153349.237173041@linutronix.de>
-In-Reply-To: <20091010153349.237173041@linutronix.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vincent^M^J Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] sound_core.c: Remove BKL from soundcore_open
+Message-ID: <20091011122632.53a61a09@infradead.org>
+In-Reply-To: <20091011201759.435cd93c@lxorguk.ukuu.org.uk>
+References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain>
+	<20091011004219.74c30f67@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.0910110223510.4921@localhost.localdomain>
+	<20091011092015.37a69847@bike.lwn.net>
+	<20091011111543.1cbb9a0e@tpl.lwn.net>
+	<20091011103755.649f5ae1@infradead.org>
+	<20091011201759.435cd93c@lxorguk.ukuu.org.uk>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910112124.00747.arnd@arndb.de>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 October 2009, Thomas Gleixner wrote:
-> misc_open() is already serialized with misc_mtx. Remove the BKL
-> locking which got there via the BKL pushdown.
+On Sun, 11 Oct 2009 20:17:59 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-This only works as long as all misc drivers also don't need the BKL
-in /their/ open methods. I believe that we did a pushdown into them
-last year, but new ones may have crept up.
+> > it's getting time though to bite the bullet and make it a real
+> > normal mutex. Lockdep will then flag a bunch of sh*t we'll need to
+> > fix, but without doing that we're never going to really make
+> > progress. 
+> 
+> It won't. Instead you get situations like one ioctl blocking another
+> to an unrelated device that just causes weird failures and performance
+> problems, or in some cases deadlocks.
 
-I guess we really should have kill this one off back then, but somehow
-it was forgotten about.
+yes the bkl using code will be slower because it'll now hit contention.
 
-	Arnd <><
+The deadlocks we need to catch imo; those are the behaviors that are
+the worst offenders in terms of BKL weird behavior.
+
+> 
+> Open routines block so it takes about 5 seconds of thought to realise
+> that using a mutex here is brain dead and doesn't work.
+
+it also takes 5 seconds to realize "uh oh. they block. BKL is rather
+limited in what it provides".
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
