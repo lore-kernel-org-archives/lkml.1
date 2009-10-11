@@ -1,88 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbZJKPEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbZJKOqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbZJKPEL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 11:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZJKPEK
+	id S1755985AbZJKOqN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 10:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbZJKOqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 11:04:10 -0400
-Received: from 139.254.232.72.static.reverse.ltdomains.com ([72.232.254.139]:36699
-	"EHLO liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751991AbZJKPEJ (ORCPT
+	Sun, 11 Oct 2009 10:46:11 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:42949 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754259AbZJKOqK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 11:04:09 -0400
-X-Greylist: delayed 689 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 11:04:09 EDT
-Date: Sun, 11 Oct 2009 11:44:19 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, lenb@kernel.org
-Subject: Re: [PATCH -mmotm] cmpc_acpi: depends on ACPI
-Message-ID: <20091011144418.GF30257@vespa.holoscopio.com>
-References: <200910090830.n998Ubvv020464@imap1.linux-foundation.org> <20091009161036.7f752529.randy.dunlap@oracle.com>
+	Sun, 11 Oct 2009 10:46:10 -0400
+Date: Sun, 11 Oct 2009 10:45:33 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Josua Dietze <digidietze@draisberghof.de>, Ben Efros <ben@pc-doctor.com>,
+       fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>
+Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2
+In-Reply-To: <1255213021.2192.9.camel@pasglop>
+Message-ID: <Pine.LNX.4.44L0.0910111038310.25068-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="R6sEYoIZpp9JErk7"
-Content-Disposition: inline
-In-Reply-To: <20091009161036.7f752529.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 11 Oct 2009, Benjamin Herrenschmidt wrote:
 
---R6sEYoIZpp9JErk7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Sun, 2009-10-11 at 08:20 +1100, Benjamin Herrenschmidt wrote:
+> 
+> > Yes, that works, you can see the ttyUSBx ports showing up. It looks like
+> > it may just be the resets coming from usb-storage that are breaking
+> > things.
+> 
+> Ok so I did a quick hack to usb-storage, basically put the block that
+> tests for the response size and sets USB_FL_SANE_SENSE into an #if 0 :
 
-On Fri, Oct 09, 2009 at 04:10:36PM -0700, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->=20
-> Fix about 100 build errors/warnings when ACPI is not enabled.  E.g.:
->=20
-> drivers/platform/x86/cmpc_acpi.c:50: error: dereferencing pointer to inco=
-mplete type
-> drivers/platform/x86/cmpc_acpi.c:55: error: dereferencing pointer to inco=
-mplete type
-> drivers/platform/x86/cmpc_acpi.c:56: error: dereferencing pointer to inco=
-mplete type
-> drivers/platform/x86/cmpc_acpi.c:72: warning: 'struct acpi_device' declar=
-ed inside parameter list
-> drivers/platform/x86/cmpc_acpi.c:77: error: dereferencing pointer to inco=
-mplete type
-> drivers/platform/x86/cmpc_acpi.c:79: error: dereferencing pointer to inco=
-mplete type
->=20
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Now, the result in the dmesg log is :
+> 
+> Oct 11 09:04:05 pasglop kernel: [   52.916100] usb 4-1: new full speed USB device using uhci_hcd and address 2
+> Oct 11 09:04:05 pasglop kernel: [   53.076402] usb 4-1: configuration #1 chosen from 1 choice
+> Oct 11 09:04:06 pasglop kernel: [   53.104090] Initializing USB Mass Storage driver...
+> Oct 11 09:04:06 pasglop kernel: [   53.105405] scsi2 : SCSI emulation for USB Mass Storage devices
+> Oct 11 09:04:06 pasglop kernel: [   53.105585] usbcore: registered new interface driver usb-storage
+> Oct 11 09:04:06 pasglop kernel: [   53.105589] USB Mass Storage support registered.
+> Oct 11 09:04:06 pasglop kernel: [   53.107164] usb-storage: device found at 2
+> Oct 11 09:04:06 pasglop kernel: [   53.107167] usb-storage: waiting for device to settle before scanning
+> Oct 11 09:04:06 pasglop kernel: [   53.224104] usb 4-1: USB disconnect, address 2
+> Oct 11 09:04:06 pasglop kernel: [   53.960100] usb 4-1: new full speed USB device using uhci_hcd and address 3
+> Oct 11 09:04:11 pasglop kernel: [   54.121941] usb 4-1: configuration #1 chosen from 1 choice
+> Oct 11 09:04:11 pasglop kernel: [   54.140861] scsi6 : SCSI emulation for USB Mass Storage devices
+> Oct 11 09:04:11 pasglop kernel: [   54.143007] usb-storage: device found at 3
+> Oct 11 09:04:11 pasglop kernel: [   54.143010] usb-storage: waiting for device to settle before scanning
+> Oct 11 09:04:11 pasglop kernel: [   59.141422] usb-storage: device scan complete
+> Oct 11 09:04:11 pasglop kernel: [   59.144370] scsi 6:0:0:0: CD-ROM            HUAWEI   Mass Storage     2.31 PQ: 0 ANSI: 2
+> Oct 11 09:04:11 pasglop kernel: [   59.147379] scsi 6:0:0:1: Direct-Access     HUAWEI   SD Storage       2.31 PQ: 0 ANSI: 2
+> Oct 11 09:04:11 pasglop kernel: [   59.169383] sr1: scsi-1 drive
+> 
+> At which point nothing happens for a while (and no serial stuff shows up).
+> 
+> If I yank the device, I then see:
+> 
+> Oct 11 09:05:28 pasglop kernel: [   59.169494] sr 6:0:0:0: Attached scsi CD-ROM sr1
+> Oct 11 09:05:28 pasglop kernel: [   59.169563] sr 6:0:0:0: Attached scsi generic sg2 type 5
+> Oct 11 09:05:28 pasglop kernel: [   59.169668] sd 6:0:0:1: Attached scsi generic sg3 type 0
+> Oct 11 09:05:28 pasglop kernel: [   59.227809] sd 6:0:0:1: [sdb] Attached SCSI removable disk
+> Oct 11 09:05:28 pasglop kernel: [   71.048322] ISO 9660 Extensions: Microsoft Joliet Level 1
+> Oct 11 09:05:28 pasglop kernel: [   71.057316] ISOFS: changing to secondary root
+> Oct 11 09:05:28 pasglop kernel: [  128.369159] usb 4-1: USB disconnect, address 3
+> Oct 11 09:05:28 pasglop kernel: [  128.429675] scsi 6:0:0:0: rejecting I/O to dead device
 
-Acked-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+The printk timestamps indicate that the first four lines above happened
+before you unplugged the device.  Maybe the first six.  But evidently
+the syslogd process was blocked.
 
-> ---
->  drivers/platform/x86/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> --- mmotm-2009-1009-0107.orig/drivers/platform/x86/Kconfig
-> +++ mmotm-2009-1009-0107/drivers/platform/x86/Kconfig
-> @@ -438,7 +438,7 @@ config ACPI_TOSHIBA
-> =20
->  config ACPI_CMPC
->  	tristate "CMPC Laptop Extras"
-> -	depends on X86
-> +	depends on X86 && ACPI
->  	select INPUT
->  	select BACKLIGHT_CLASS_DEVICE
->  	default n
+> 
+> However, if I put it back in later on ... it works. The storage shows up
+> and the modem too.
+> 
+> Weird. I'll have to reboot to try to reproduce with usbmon logging.
 
---R6sEYoIZpp9JErk7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+You might have to get a stack trace (Alt-SysRq-T) as well.  It sounds 
+like something important got hung up somewhere.  Perhaps the usb-serial 
+modules couldn't be loaded for that reason.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Alan Stern
 
-iEYEARECAAYFAkrR70IACgkQyTpryRcqtS1y5QCfZlCSFMxJAJgkQrKISXhTsB0X
-9hcAn3zh5P7l32/8Z9shFZ6k649GMuZ9
-=/ulM
------END PGP SIGNATURE-----
-
---R6sEYoIZpp9JErk7--
