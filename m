@@ -1,68 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbZJKL0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760630AbZJKLeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760479AbZJKL0Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 07:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbZJKL0Y
+	id S1760630AbZJKLeF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 07:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbZJKLeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 07:26:24 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49657 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757135AbZJKL0Y (ORCPT
+	Sun, 11 Oct 2009 07:34:03 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:61874 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756790AbZJKLeC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 07:26:24 -0400
-Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
- balance_dirty_pages()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091011105012.GB10409@localhost>
-References: <20091007073818.318088777@intel.com>
-	 <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz>
-	 <1255101512.8802.65.camel@laptop> <20091009154759.GJ7654@duck.suse.cz>
-	 <20091011022813.GA21315@localhost> <1255247080.11081.3.camel@twins>
-	 <20091011105012.GB10409@localhost>
-Content-Type: text/plain
-Date: Sun, 11 Oct 2009 13:25:17 +0200
-Message-Id: <1255260317.8967.204.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 11 Oct 2009 07:34:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=x6iPqe3kuQifF3zF/m3YqncmDbaqmev0G13IEjYEOOqFPU/BnmiRqNv0sbZTGTPGah
+         WvM+dAgWPGmM6gNTwh9koyauPgKcmX/0dwL44jYbUzr8yNzeSCxudGFAucyCSnWHXqYJ
+         MHxeRz1Hv3qPIntnALWVoROpMucY8JWPWBQqE=
+Date: Sun, 11 Oct 2009 13:33:21 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: John Kacur <jkacur@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Jonathan Corbet <corbet@lwn.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vincent^M^J Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] sound_core.c: Remove BKL from soundcore_open
+Message-ID: <20091011113317.GA4901@nowhere>
+References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain> <20091011004219.74c30f67@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0910110223510.4921@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0910110223510.4921@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-10-11 at 18:50 +0800, Wu Fengguang wrote:
+On Sun, Oct 11, 2009 at 02:25:53AM +0200, John Kacur wrote:
 > 
-> Sorry for the confusion, but I mean, filesystems have to limit
-> nr_writeback (directly or indirectly via the block io queue),
-> otherwise it either hit nr_dirty to 0 (with the loop), or let
-> nr_writeback grow out of control (without the loop).
+> 
+> On Sun, 11 Oct 2009, Alan Cox wrote:
+> 
+> > On Sun, 11 Oct 2009 01:24:14 +0200 (CEST)
+> > John Kacur <jkacur@redhat.com> wrote:
+> > 
+> > > >From 030af455d4f54482130c8eccb47fe90aaba8808c Mon Sep 17 00:00:00 2001
+> > > From: John Kacur <jkacur@redhat.com>
+> > > Date: Sat, 10 Oct 2009 23:39:56 +0200
+> > > Subject: [PATCH] This code is already protected by spin_lock, and doesn't require the bkl
+> > 
+> > Sorry but I don't think that is true becaue of:
+> > 
+> >            spin_unlock(&sound_loader_lock);
+> >                 if(file->f_op->open)
+> >                         err = file->f_op->open(inode,file);
+> > 
+> > 
+> > So the underlying driver open method expects lock_kernel status and you
+> > don't propogate it down. You really need to track down each thing that
+> > can be called into here and fix it, or maybe just punt for the moment and
+> > push it down to
+> > 
+> > 	{
+> > 		lock_kernel()
+> > 		err = file-f_op->open ...
+> > 		unlock_kernel()
+> > 	}
+> > 
+> > so its obvious to the next person who takes up the war on the BKL what is
+> > to be tackled.
+> > 
+> 
+> Yikes, I missed that. Still I'm loath to just push it down like that. I 
+> wonder if I can use a mutex there. What about the following patch?
+> 
+> From 8b0b91523ee2fcf60ccd82dba44b8da8bad34ce4 Mon Sep 17 00:00:00 2001
+> From: John Kacur <jkacur@redhat.com>
+> Date: Sun, 11 Oct 2009 02:14:44 +0200
+> Subject: [PATCH] Remove the bkl in soundcore_open
+> 
+> Remove the bkl in soundcore_open since it is mostly covered by the sound_loader_lock spin_lock
+> 
+> Protect the underlying driver open method with a mutex.
+> 
+> Signed-off-by: John Kacur <jkacur@redhat.com>
+> ---
+>  sound/sound_core.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/sound/sound_core.c b/sound/sound_core.c
+> index 49c9981..6afb6f1 100644
+> --- a/sound/sound_core.c
+> +++ b/sound/sound_core.c
+> @@ -14,6 +14,8 @@
+>  #include <linux/major.h>
+>  #include <sound/core.h>
+>  
+> +static DEFINE_MUTEX(osc_mutex);
+> +
+>  #ifdef CONFIG_SOUND_OSS_CORE
+>  static int __init init_oss_soundcore(void);
+>  static void cleanup_oss_soundcore(void);
+> @@ -576,8 +578,6 @@ static int soundcore_open(struct inode *inode, struct file *file)
+>  	struct sound_unit *s;
+>  	const struct file_operations *new_fops = NULL;
+>  
+> -	lock_kernel ();
+> -
+>  	chain=unit&0x0F;
+>  	if(chain==4 || chain==5)	/* dsp/audio/dsp16 */
+>  	{
+> @@ -631,17 +631,17 @@ static int soundcore_open(struct inode *inode, struct file *file)
+>  		file->f_op = new_fops;
+>  		spin_unlock(&sound_loader_lock);
+>  		if(file->f_op->open)
+> +			mutex_lock(&osc_mutex);
+>  			err = file->f_op->open(inode,file);
+> +			mutex_unlock(&osc_mutex);
 
-Doesn't this require the writeback queue to have a limit < dirty_thresh?
 
-Or more specifically, for the bdi case:
-
- bdi_dirty + bdi_writeback + bdi_unstable <= bdi_thresh
-
-we require that the writeback queue be smaller than bdi_thresh, which
-could be quite difficult, since bdi_thresh can easily be 0.
-
-Without observing the bdi_thresh constraint we can have:
-
-  \Sum_(over bdis) writeback_queue_size
-
-dirty pages outstanding, which could be significantly higher than
-dirty_thresh.
-
-Or am I confused again?
+Yeah that's tempting, but I fear that also means this mutex will
+never be removed....
 
