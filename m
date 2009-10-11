@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZJKJEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbZJKJFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbZJKJEu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 05:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZJKJEt
+	id S1755545AbZJKJFg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 05:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZJKJFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 05:04:49 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56542 "EHLO
+	Sun, 11 Oct 2009 05:05:35 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56582 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753552AbZJKJEs (ORCPT
+	with ESMTP id S1754551AbZJKJFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 05:04:48 -0400
-Date: Sun, 11 Oct 2009 11:04:03 +0200
+	Sun, 11 Oct 2009 05:05:34 -0400
+Date: Sun, 11 Oct 2009 11:04:23 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <greg@kroah.com>
-Cc: Mike Lothian <mike@fireburn.co.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Matthias Hopf <mhopf@suse.de>, Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Samsung Backlight Patch
-Message-ID: <20091011090403.GA1414@ucw.cz>
-References: <f3f71ab90910071414n482eca2dm18108c79ee08028d@mail.gmail.com> <20091007211916.GA4217@kroah.com> <f3f71ab90910071431g524fa807ib67f5fcfef7c70d1@mail.gmail.com> <20091007225828.GA7892@kroah.com>
+To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz
+Subject: zaurus suspend saga: 2.6.32-rc3
+Message-ID: <20091011090423.GB1414@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091007225828.GA7892@kroah.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-10-07 15:58:28, Greg KH wrote:
-> On Wed, Oct 07, 2009 at 10:31:44PM +0100, Mike Lothian wrote:
-> > 2009/10/7 Greg KH <greg@kroah.com>:
-> > > On Wed, Oct 07, 2009 at 10:14:37PM +0100, Mike Lothian wrote:
-> > >> Hi
-> > >>
-> > >> I was hoping the following patch could be included in 2.6.32 so it
-> > >> would hopefully end up in the next round of distros
-> > >>
-> > >> It adds backlight support for some Samsung laptops
-> > >
-> > > You seem to have lost the original authorship of this patch, and not
-> > > included your signed-off-by for it.
-> > >
-> > > Which means it can't be applied :(
-...
-> > It definitely has +MODULE_AUTHOR("Greg Kroah-Hartman
-> > <gregkh@suse.de>"); at the bottom
-> > 
-> > I certainly wasn't trying to steal credit for your work
-> 
-> I mean on the patch, when submitting it, you need a:
-> 	From: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> as the first line.
-> 
-> > Who should sign it off?
-> 
-> As I stated before, I can not sign off on this patch anymore, but I
-> would like my authorship to remain.  Someone needs to sign off on it...
+Hi!
 
-That's quite crazy, no?
+I'm using patch similar to this for debugging:
 
-DCO,  a). You say you created the patch. Do you want to say you did
-not have right to submit it? Or do you want to say it is not under
-GPL?
+...and good news is that it blinks after pressing of power button.
 
-What is going on?
+...core > pm_test also works.
+
+I also verified that end of pxa_pm_enter() is reached (with similar
+blinking patch). End of corgi_pxa_pm_enter() seems to be reached, too.
+
+Any ideas what to try next?
 								Pavel
+
+--- arm.ofic//mach-pxa/pm.c	2009-09-10 00:13:59.000000000 +0200
++++ arm/mach-pxa/pm.c	2009-10-07 14:21:21.000000000 +0200
+@@ -14,7 +14,10 @@
+ #include <linux/module.h>
+ #include <linux/suspend.h>
+ #include <linux/errno.h>
++#include <linux/gpio.h>
++#include <linux/delay.h>
+ 
++#include <mach/spitz.h>
+ #include <mach/pm.h>
+ 
+ struct pxa_cpu_pm_fns *pxa_cpu_pm_fns;
+@@ -41,6 +44,24 @@
+ 
+ 	/* *** go zzz *** */
+ 	pxa_cpu_pm_fns->enter(state);
++
++	gpio_set_value(SPITZ_GPIO_LED_GREEN, 0);
++	mdelay(100);
++	gpio_set_value(SPITZ_GPIO_LED_GREEN, 1);
++	mdelay(100);
++	gpio_set_value(SPITZ_GPIO_LED_GREEN, 0);
++	mdelay(100);
++	gpio_set_value(SPITZ_GPIO_LED_GREEN, 1);
++	mdelay(100);
++	gpio_set_value(SPITZ_GPIO_LED_GREEN, 0);
++	mdelay(100);
++	gpio_set_value(SPITZ_GPIO_LED_GREEN, 1);
++	mdelay(100);
++	gpio_set_value(SPITZ_GPIO_LED_GREEN, 0);
++	mdelay(100);
++	gpio_set_value(SPITZ_GPIO_LED_GREEN, 1);
++	mdelay(100);
++
+ 	cpu_init();
+ 
+ 	if (state != PM_SUSPEND_STANDBY) {
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
