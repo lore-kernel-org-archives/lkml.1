@@ -1,94 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752117AbZJKVBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752085AbZJKVAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752117AbZJKVBg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 17:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZJKVBf
+	id S1752085AbZJKVAn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 17:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbZJKVAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 17:01:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56118 "EHLO hera.kernel.org"
+	Sun, 11 Oct 2009 17:00:41 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57504 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752056AbZJKVBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 17:01:34 -0400
-Message-ID: <4AD24766.7050205@kernel.org>
-Date: Sun, 11 Oct 2009 14:00:22 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1752046AbZJKVAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 17:00:40 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 2/2] vmscan: kill shrink_all_zones()
+Date: Sun, 11 Oct 2009 23:01:29 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, "linux-mm" <linux-mm@kvack.org>
+References: <20091009174756.12B5.A69D9226@jp.fujitsu.com> <20091009175559.12B8.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091009175559.12B8.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Brad Spengler <spender@grsecurity.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: [PATCH] pci: fix crash about old IA64 about pci_cfg_space_size
-References: <20091011074531.GA12357@grsecurity.net> <4AD1AE0D.1030007@kernel.org>
-In-Reply-To: <4AD1AE0D.1030007@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910112301.29237.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 09 October 2009, KOSAKI Motohiro wrote:
+> shrink_all_zone() was introduced by commit d6277db4ab (swsusp: rework
+> memory shrinker) for hibernate performance improvement. and sc.swap_cluster_max
+> was introduced by commit a06fe4d307 (Speed freeing memory for suspend).
+> 
+> commit a06fe4d307 said
+> 
+>     Without the patch:
+>     Freed  14600 pages in  1749 jiffies = 32.61 MB/s (Anomolous!)
+>     Freed  88563 pages in 14719 jiffies = 23.50 MB/s
+>     Freed 205734 pages in 32389 jiffies = 24.81 MB/s
+> 
+>     With the patch:
+>     Freed  68252 pages in   496 jiffies = 537.52 MB/s
+>     Freed 116464 pages in   569 jiffies = 798.54 MB/s
+>     Freed 209699 pages in   705 jiffies = 1161.89 MB/s
+> 
+> At that time, their patch was pretty worth. However, Modern Hardware
+> trend and recent VM improvement broke its worth. From several reason,
+> I think we should remove shrink_all_zones() at all.
+> 
+> detail:
+> 
+> 1) Old days, shrink_zone()'s slowness was mainly caused by stupid congestion_wait()
+>    at no i/o congestion.
+>    but current shrink_zone() is sane, not slow.
+> 
+> 2) shrink_all_zone() try to shrink all pages at a time. but it doesn't works
+>    fine on numa system.
+>    example)
+>      System has 4GB memory and each node have 2GB. and hibernate need 1GB.
+> 
+>      optimal)
+> 	steal 500MB from each node.
+>      shrink_all_zones)
+> 	steal 1GB from node-0.
+> 
+>    Oh, Cache balancing was broke ;)
+>    Unfortunately, Desktop system moved ahead NUMA.
+>    (Side note, if hibernate require 2GB, shrink_all_zones() never success)
+> 
+> 3) if the node has several I/O flighting pages, shrink_all_zones() makes
+>    pretty bad result.
+> 
+>    schenario) hibernate need 1GB
+> 
+>    1) shrink_all_zones() try to reclaim 1GB from Node-0
+>    2) but it only reclaimed 990MB
+>    3) stupidly, shrink_all_zones() try to reclaim 1GB from Node-1
+>    4) it reclaimed 990MB
+> 
+>    Oh, well. it reclaimed twice much than required.
+>    In the other hand, current shrink_zone() has sane baling out logic.
+>    then, it doesn't make overkill reclaim. then, we lost shrink_zones()'s risk.
+> 
+> 4) SplitLRU VM always keep active/inactive ratio very carefully. inactive list only
+>    shrinking break its assumption. it makes unnecessary OOM risk. it obviously suboptimal.
+> 
+>   Throuput comparision
+>   ==============================================
+>   old		2192.10 MB/s
+>   new		2222.22 MB/s
+> 
+>   ok, it's almost same throuput.
+> 
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+I have no objections to any of the two patches, but I think we may want to drop
+shrink_all_memory() altogether.  Everything should work without it and the
+reason I didn't remove it was because I saw a performance regression on one
+system without it.  It may not be worth keeping it, though.
+
+Have you done any tests with shrink_all_memory() removed?
+
+Rafael
 
 
-Brad reported that his SGI 750 (Itanium 1) will crash from 2.6.26, and bisected
-to 
+> ---
+>  mm/vmscan.c |   75 +++++++++++++---------------------------------------------
+>  1 files changed, 17 insertions(+), 58 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 80e727d..9f28166 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2130,51 +2130,6 @@ unsigned long global_lru_pages(void)
+>  
+>  #ifdef CONFIG_HIBERNATION
+>  /*
+> - * Helper function for shrink_all_memory().  Tries to reclaim 'nr_pages' pages
+> - * from LRU lists system-wide, for given pass and priority.
+> - *
+> - * For pass > 3 we also try to shrink the LRU lists that contain a few pages
+> - */
+> -static void shrink_all_zones(unsigned long nr_pages, int prio,
+> -				      int pass, struct scan_control *sc)
+> -{
+> -	struct zone *zone;
+> -	unsigned long nr_reclaimed = 0;
+> -
+> -	for_each_populated_zone(zone) {
+> -		enum lru_list l;
+> -
+> -		if (zone_is_all_unreclaimable(zone) && prio != DEF_PRIORITY)
+> -			continue;
+> -
+> -		for_each_evictable_lru(l) {
+> -			enum zone_stat_item ls = NR_LRU_BASE + l;
+> -			unsigned long lru_pages = zone_page_state(zone, ls);
+> -
+> -			/* For pass = 0, we don't shrink the active list */
+> -			if (pass == 0 && (l == LRU_ACTIVE_ANON ||
+> -						l == LRU_ACTIVE_FILE))
+> -				continue;
+> -
+> -			zone->lru[l].nr_saved_scan += (lru_pages >> prio) + 1;
+> -			if (zone->lru[l].nr_saved_scan >= nr_pages || pass > 3) {
+> -				unsigned long nr_to_scan;
+> -
+> -				zone->lru[l].nr_saved_scan = 0;
+> -				nr_to_scan = min(nr_pages, lru_pages);
+> -				nr_reclaimed += shrink_list(l, nr_to_scan, zone,
+> -								sc, prio);
+> -				if (nr_reclaimed >= nr_pages) {
+> -					sc->nr_reclaimed += nr_reclaimed;
+> -					return;
+> -				}
+> -			}
+> -		}
+> -	}
+> -	sc->nr_reclaimed += nr_reclaimed;
+> -}
+> -
+> -/*
+>   * Try to free `nr_pages' of memory, system-wide, and return the number of
+>   * freed pages.
+>   *
+> @@ -2188,12 +2143,18 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+>  	int pass;
+>  	struct reclaim_state reclaim_state;
+>  	struct scan_control sc = {
+> -		.gfp_mask = GFP_KERNEL,
+> +		.gfp_mask = GFP_HIGHUSER_MOVABLE,
+> +		.may_swap = 0,
+>  		.may_unmap = 0,
+>  		.may_writepage = 1,
+> +		.swap_cluster_max = SWAP_CLUSTER_MAX,
+> +		.nr_to_reclaim = nr_pages,
+> +		.swappiness = vm_swappiness,
+> +		.order = 0,
+>  		.isolate_pages = isolate_pages_global,
+> -		.nr_reclaimed = 0,
+>  	};
+> +	struct zonelist * zonelist = node_zonelist(first_online_node,
+> +						   GFP_HIGHUSER_MOVABLE);
+>  
+>  	current->reclaim_state = &reclaim_state;
+>  
+> @@ -2215,9 +2176,9 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+>  
+>  	/*
+>  	 * We try to shrink LRUs in 5 passes:
+> -	 * 0 = Reclaim from inactive_list only
+> -	 * 1 = Reclaim from active list but don't reclaim mapped
+> -	 * 2 = 2nd pass of type 1
+> +	 * 0 = Reclaim unmapped pages
+> +	 * 1 = 2nd pass of type 0
+> +	 * 2 = 3rd pass of type 0
+>  	 * 3 = Reclaim mapped (normal reclaim)
+>  	 * 4 = 2nd pass of type 3
+>  	 */
+> @@ -2225,15 +2186,15 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+>  		int prio;
+>  
+>  		/* Force reclaiming mapped pages in the passes #3 and #4 */
+> -		if (pass > 2)
+> +		if (pass > 2) {
+>  			sc.may_unmap = 1;
+> +			sc.may_swap = 1;
+> +		}
+>  
+>  		for (prio = DEF_PRIORITY; prio >= 0; prio--) {
+> -			unsigned long nr_to_scan = nr_pages - sc.nr_reclaimed;
+> -
+>  			sc.nr_scanned = 0;
+> -			sc.swap_cluster_max = nr_to_scan;
+> -			shrink_all_zones(nr_to_scan, prio, pass, &sc);
+> +
+> +			shrink_zones(prio, zonelist, &sc);
+>  			if (sc.nr_reclaimed >= nr_pages)
+>  				goto out;
+>  
+> @@ -2243,10 +2204,8 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+>  			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
+>  			if (sc.nr_reclaimed >= nr_pages)
+>  				goto out;
+> -
+> -			if (sc.nr_scanned && prio < DEF_PRIORITY - 2)
+> -				congestion_wait(BLK_RW_ASYNC, HZ / 10);
+>  		}
+> +		congestion_wait(BLK_RW_ASYNC, HZ / 10);
+>  	}
+>  
+>  	/*
+> 
 
-| commit: dfadd9edff498d767008edc6b2a6e86a7a19934d
-|
-|Many host bridges support a 4k config space, so check them directy
-|instead of using quirks to add them.
-|
-|We only need to do this extra check for host bridges at this point,
-|because only host bridges are known to have extended address space
-|without also having a PCI-X/PCI-E caps.  Other devices with this
-|property could be done with quirks (if there are any).
-|
-|As a bonus, we can remove the quirks for AMD host bridges with family
-|10h and 11h since they're not needed any more.
-|
-|With this patch, we can get correct pci cfg size of new Intel CPUs/IOHs
-|with host bridges.
-
-it turns out for old IA64 without SAL 3.2 pci_cfg_space_size_ext will cause
-problem and those system didn't have PCI-X and PCI-E, so that function was
-not called before.
-
-so don't call it in pci_cfg_sapce_size now.
-later call it after pci ops code in ia64 could detect and use raw_pci_ops
-and raw_pci_ext_ops according to SAL version.
-
-Reported-by: Brad Spengler <spender@grsecurity.net>
-Bisected-by: Brad Spengler <spender@grsecurity.net>
-Tested-by: Brad Spengler <spender@grsecurity.net>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 8105e32..0c80a07 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -901,11 +901,24 @@ int pci_cfg_space_size(struct pci_dev *dev)
- {
- 	int pos;
- 	u32 status;
-+
-+#ifndef CONFIG_IA64
-+/*
-+ * not use it with IA64 at this point
-+ * ia64 SAL 3.2 before doesn't support ext space, so
-+ * pci_read_config_dword(dev, 0x100, &status) would cause GP
-+ * the problem is not triggered, because system with SAL 3.2 before
-+ * doesn't include PCI-X 2.0 or PCI Express, so pci_cfg_spce_size_ext()
-+ * is not called with them.
-+ * need to extend ia64 to detect sal version, and pci_root_ops
-+ * to use raw_pci_ops and raw_pci_ext_ops like x86
-+ */
- 	u16 class;
- 
- 	class = dev->class >> 8;
- 	if (class == PCI_CLASS_BRIDGE_HOST)
- 		return pci_cfg_space_size_ext(dev);
-+#endif
- 
- 	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
- 	if (!pos) {
