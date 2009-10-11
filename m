@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751252AbZJKGNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZJKGW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751252AbZJKGNr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 02:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbZJKGNq
+	id S1753824AbZJKGW3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 02:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbZJKGW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 02:13:46 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:54444 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbZJKGNq (ORCPT
+	Sun, 11 Oct 2009 02:22:27 -0400
+Received: from smtp109.mail.ukl.yahoo.com ([77.238.184.32]:31918 "HELO
+	smtp109.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753244AbZJKGW1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 02:13:46 -0400
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Aaro Koskinen <aaro.koskinen@nokia.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] panic.c: export panic_on_oops
-Date: Sun, 11 Oct 2009 09:10:58 +0300
-Message-Id: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
-X-Mailer: git-send-email 1.6.2.5
-X-OriginalArrivalTime: 11 Oct 2009 06:11:54.0886 (UTC) FILETIME=[BB43E260:01CA4A39]
-X-Nokia-AV: Clean
+	Sun, 11 Oct 2009 02:22:27 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.uk;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:Content-Type:Content-Transfer-Encoding;
+  b=Du7YyOm7ydt9TC2ujzjq99lQVJEKvqIjiRKfB8C5rtFynKjXXP71FQTYWfX2lrLM0VVPV6RmKZIPFS9cF8iWfzJjLd60s5G4gsqq+RQ0+cv28lMar4YnXRYwEjMYH+I+n3sFeRWxhFvTPk3Ky3qQh8Ep7/wcF4c9Kxb5Zh6BHik=  ;
+X-Yahoo-SMTP: dGJefyiswBAq8gjvkVdDD_Aeiz1oX_mV
+X-YMail-OSG: ahHOLLsVM1nZekRSvD9Zbj0udbS59Ku_SE0yeE7VbSA9lwOK5cFx9a.cWw4cLB4OLBJJAwLeMBlTEPfxIej1_Noa0Sm6CrdefQLLNIlHzCJPjOCMToGKbGlV.XT8RpKxvWjE7XDuufYq4ovHS0q11rMgROgCPTpxxivAjHZ.LUdz937jWzTSYtpOHdxyh1ij0tIcqYPxM2nFSXSnr8V1k7sB3o1p5uZGiqe7xH2kgytoF3UrZqKyABdNcu9XPZn8fhnu8RTXlmCMHurAXXtYPenwI77i5kYQipc-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4AD17993.4010405@yahoo.co.uk>
+Date: Sun, 11 Oct 2009 09:22:11 +0300
+From: Boyan <btanastasov@yahoo.co.uk>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.23) Gecko/20090823 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: edt@aei.ca
+CC: fredlwm@gmail.com, hirofumi@mail.parknet.co.jp, alan@linux.intel.com,
+       linux-kernel@vger.kernel.org
+Subject: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+On Sat, 10 Oct 2009 21:00:05 -0400, Ed Tomlinson wrote:
+> You are not alone with keyboard problems in 31 in X.  In my case I
+> blamed a  new wireless setup.
+> I am building with the the above commit reverted.
 
-We use the mtdoops module which stores oopses on the Flash partition,
-in order to make it possible to analyze them later. And mtdoops needs
-to know whether 'panic_on_oops' is on or off. Thus, we need this
-variable to be exported.
+Not sure why, but after reverting
+e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
+'low_latency' tty flag) my analog tv tuner stopped working after booting
+for the first time. It has TV and FM radio, but only radio worked when
+reverted this patch. I saw some EIO errors with strace. Then added again
+the patch and on top of it I've added commit:
 
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Aaro Koskinen <aaro.koskinen@nokia.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
----
- kernel/panic.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+3a54297478e6578f96fd54bf4daa1751130aca86
+pty: quickfix for the pty ENXIO timing problems
 
-diff --git a/kernel/panic.c b/kernel/panic.c
-index bcdef26..6d29be3 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -24,6 +24,8 @@
- #include <linux/dmi.h>
- 
- int panic_on_oops;
-+EXPORT_SYMBOL_GPL(panic_on_oops);
-+
- static unsigned long tainted_mask;
- static int pause_on_oops;
- static int pause_on_oops_flag;
--- 
-1.6.2.5
+Everything was ok.
+Today I've tried to reproduce this and reverted both patches. Recompiled
+and everything is ok. Not sure what happened yesterday.
+
+So to summarize 2.6.31.3 with reverted commit
+e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
+'low_latency' tty flag) works for me.
 
