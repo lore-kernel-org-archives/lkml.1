@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbZJKQTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbZJKQta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917AbZJKQTO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 12:19:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZJKQTN
+	id S1756439AbZJKQta (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 12:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756297AbZJKQt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 12:19:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39246 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755216AbZJKQTM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 12:19:12 -0400
-Date: Sun, 11 Oct 2009 09:19:04 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vincent Sanders <vince@simtec.co.uk>, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH RFC] [PATCH] drivers/scsi/ch.c: Remove BKL in ch_open
-Message-ID: <20091011091904.60a64279@infradead.org>
-In-Reply-To: <20091011171403.13a018f0@lxorguk.ukuu.org.uk>
-References: <alpine.LFD.2.00.0910111443400.3587@localhost.localdomain>
-	<20091011153709.4438cf9c@lxorguk.ukuu.org.uk>
-	<20091011082917.6ebbd810@infradead.org>
-	<20091011165408.51d4f413@lxorguk.ukuu.org.uk>
-	<20091011090313.1b8f0eb1@infradead.org>
-	<20091011171403.13a018f0@lxorguk.ukuu.org.uk>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 11 Oct 2009 12:49:29 -0400
+Received: from ox1.aei.mpg.de ([194.94.224.6]:51419 "EHLO ox1.aei.mpg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756184AbZJKQt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 12:49:28 -0400
+X-Greylist: delayed 1538 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 12:49:28 EDT
+Date: Sun, 11 Oct 2009 18:21:55 +0200
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-input@vger.kernel.org
+Subject: [bisected regression] Touchpad "paste" stops working after suspend
+	to RAM
+Message-ID: <20091011162155.GA4260@Pilar.aei.mpg.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Oct 2009 17:14:03 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Using the latest 2.6.32-rc3+ kernel, the "paste" operation via the 
+touchpad of my Vaio laptop does not work after suspend to RAM.
 
-> > > But module load/unload does
-> > 
-> > it does?
-> > 
-> > looking at the code.... so far failing to find where.
-> 
-> Interesting - it used to and there is code that still relies on that.
+It works flawlessly before s2ram; I select the text with the touchpad
+and tap quickly its right corner to paste the selected text.
+After a plain 'echo mem > /sys/power/state' the "paste" does not work.
 
-I can't find that to be the case anymore though
+I bisected it to commit ffd0db97196c1057f09c2ab42dd5b30e94e511d9 ("Input: 
+add generic suspend and resume for input devices").
 
-> 
-> The more general problem of
-> 
-> 	register_chrdev
-> 					open
-> 	do something
-> 	error
-> 	unload
-> 					whoops
-> 
-> definitely needs looking at however.
+I haven't tested if reverting it from mainline fixes the issue, but 
+from the patch description I guess that bisection landed correctly
+on the culprit.
 
-absolutely
+I have a recent dmesg from my laptop here: 
 
-we used to have the same issue with networking devices,
-and there it ended up with a split "allocate" and "register"
+http://www.aei.mpg.de/~crmafra/dmesg-2.6.32-rc3-wifi.txt
+
+(the wifi warnings there are related to another issue, and the touchpad
+problem happens independently of those warnings).
+
+I can test patches and provide more info if necessary.
 
 
+PS: Due to some HAL configuration issue I have this line in my .bashrc
+
+synclient RTCornerButton=2
+
+which makes the right corner region capable of pasting. When the
+kernel is "good", it comes back from resume and I don't need to
+run this command again for the 'paste' operation to work. When
+the kernel is "bad" running this command has no effect and 
+"paste" does not work in any way.
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+
+
+
