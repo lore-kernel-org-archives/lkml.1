@@ -1,195 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752228AbZJKV1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752298AbZJKV2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752228AbZJKV1J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 17:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZJKV1G
+	id S1752298AbZJKV2f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 17:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZJKV2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 17:27:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:58478 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751958AbZJKV1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 17:27:05 -0400
-Date: Sun, 11 Oct 2009 23:25:43 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Jonathan Corbet <corbet@lwn.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vincent^M^J Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sound_core.c: Remove BKL from soundcore_open
-In-Reply-To: <alpine.LFD.2.00.0910111437270.3587@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0910112323280.12574@localhost.localdomain>
-References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain> <20091011004219.74c30f67@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0910110223510.4921@localhost.localdomain> <20091011113317.GA4901@nowhere>
- <alpine.LFD.2.00.0910111437270.3587@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 11 Oct 2009 17:28:34 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:60491 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbZJKV2e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 17:28:34 -0400
+Date: Sun, 11 Oct 2009 23:27:57 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org
+Subject: Re: 32-rc1: "CROSS_COMPILE changed" message breaks compilation
+Message-ID: <20091011212757.GA2768@merkur.ravnborg.org>
+References: <20090928175605.GB28514@elf.ucw.cz> <20090928190841.GA12004@merkur.ravnborg.org> <20090928192536.GE28514@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090928192536.GE28514@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 11 Oct 2009, John Kacur wrote:
-
+On Mon, Sep 28, 2009 at 09:25:36PM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> 
-> On Sun, 11 Oct 2009, Frederic Weisbecker wrote:
-> 
-> > On Sun, Oct 11, 2009 at 02:25:53AM +0200, John Kacur wrote:
+> > > After update to 2.6.32-rc1, I'm getting
 > > > 
+> > > "Makefile:197: *** CROSS_COMPILE changed from "ccache" to to "ccache ". Use "make mrproper" to fix it up. Stop.
 > > > 
-> > > On Sun, 11 Oct 2009, Alan Cox wrote:
-> > > 
-> > > > On Sun, 11 Oct 2009 01:24:14 +0200 (CEST)
-> > > > John Kacur <jkacur@redhat.com> wrote:
-> > > > 
-> > > > > >From 030af455d4f54482130c8eccb47fe90aaba8808c Mon Sep 17 00:00:00 2001
-> > > > > From: John Kacur <jkacur@redhat.com>
-> > > > > Date: Sat, 10 Oct 2009 23:39:56 +0200
-> > > > > Subject: [PATCH] This code is already protected by spin_lock, and doesn't require the bkl
-> > > > 
-> > > > Sorry but I don't think that is true becaue of:
-> > > > 
-> > > >            spin_unlock(&sound_loader_lock);
-> > > >                 if(file->f_op->open)
-> > > >                         err = file->f_op->open(inode,file);
-> > > > 
-> > > > 
-> > > > So the underlying driver open method expects lock_kernel status and you
-> > > > don't propogate it down. You really need to track down each thing that
-> > > > can be called into here and fix it, or maybe just punt for the moment and
-> > > > push it down to
-> > > > 
-> > > > 	{
-> > > > 		lock_kernel()
-> > > > 		err = file-f_op->open ...
-> > > > 		unlock_kernel()
-> > > > 	}
-> > > > 
-> > > > so its obvious to the next person who takes up the war on the BKL what is
-> > > > to be tackled.
-> > > > 
-> > > 
-> > > Yikes, I missed that. Still I'm loath to just push it down like that. I 
-> > > wonder if I can use a mutex there. What about the following patch?
-> > > 
-> > > From 8b0b91523ee2fcf60ccd82dba44b8da8bad34ce4 Mon Sep 17 00:00:00 2001
-> > > From: John Kacur <jkacur@redhat.com>
-> > > Date: Sun, 11 Oct 2009 02:14:44 +0200
-> > > Subject: [PATCH] Remove the bkl in soundcore_open
-> > > 
-> > > Remove the bkl in soundcore_open since it is mostly covered by the sound_loader_lock spin_lock
-> > > 
-> > > Protect the underlying driver open method with a mutex.
-> > > 
-> > > Signed-off-by: John Kacur <jkacur@redhat.com>
-> > > ---
-> > >  sound/sound_core.c |    8 ++++----
-> > >  1 files changed, 4 insertions(+), 4 deletions(-)
-> > > 
-> > > diff --git a/sound/sound_core.c b/sound/sound_core.c
-> > > index 49c9981..6afb6f1 100644
-> > > --- a/sound/sound_core.c
-> > > +++ b/sound/sound_core.c
-> > > @@ -14,6 +14,8 @@
-> > >  #include <linux/major.h>
-> > >  #include <sound/core.h>
-> > >  
-> > > +static DEFINE_MUTEX(osc_mutex);
-> > > +
-> > >  #ifdef CONFIG_SOUND_OSS_CORE
-> > >  static int __init init_oss_soundcore(void);
-> > >  static void cleanup_oss_soundcore(void);
-> > > @@ -576,8 +578,6 @@ static int soundcore_open(struct inode *inode, struct file *file)
-> > >  	struct sound_unit *s;
-> > >  	const struct file_operations *new_fops = NULL;
-> > >  
-> > > -	lock_kernel ();
-> > > -
-> > >  	chain=unit&0x0F;
-> > >  	if(chain==4 || chain==5)	/* dsp/audio/dsp16 */
-> > >  	{
-> > > @@ -631,17 +631,17 @@ static int soundcore_open(struct inode *inode, struct file *file)
-> > >  		file->f_op = new_fops;
-> > >  		spin_unlock(&sound_loader_lock);
-> > >  		if(file->f_op->open)
-> > > +			mutex_lock(&osc_mutex);
-> > >  			err = file->f_op->open(inode,file);
-> > > +			mutex_unlock(&osc_mutex);
+> > > Note that the message has typo in it ("to to")... What is worse, the
+> > > message triggers even when I try to run make mrproper. Ouch.
 > > 
+> > The massage is changed in kbuild-fixes.git - but it addresses only ARCH=
 > > 
-> > Yeah that's tempting, but I fear that also means this mutex will
-> > never be removed....
+> > As a followup to your other mails:
+> > The reason to use "make mrproper" is that when ARCH or CROSS_COMPILE changes
+> > you have generally either decided to build for a new architecture or
+> > you have changed the way you build the kernel (new toolchain or whatever).
+> > So to clean up using "make mrproper" is perfectly justified.
 > > 
+> > The target group that uses CROSS_COMPILE to enable ccache are using
+> > CROSS_COMPILE is a way it is not designed for so they should expect that it
+> > is not a perfect match.
 > 
-> Sigh... I do see your point - but on the otherhand if measurements don't
-> show that mutex as being too coarse grained, then is it a problem?
-> 
-> Never-the-less here is version 3 of the patch - like Alan suggested, 
-> punting, but at least reducing the area covered by the BKL.
-> From ac9bdbdd192149e2498b6e16dc71f0a3933e1554 Mon Sep 17 00:00:00 2001
-> From: John Kacur <jkacur@redhat.com>
-> Date: Sun, 11 Oct 2009 14:25:46 +0200
-> Subject: [PATCH] soundcore_open: Reduce the area BKL coverage in this function.
-> 
-> Most of this function is protected by the sound_loader_lock.
-> We can push down the BKL to this call out err = file->f_op->open(inode,file);
-> 
-> Signed-off-by: John Kacur <jkacur@redhat.com>
-> ---
->  sound/sound_core.c |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/sound/sound_core.c b/sound/sound_core.c
-> index 49c9981..a7d6956 100644
-> --- a/sound/sound_core.c
-> +++ b/sound/sound_core.c
-> @@ -576,8 +576,6 @@ static int soundcore_open(struct inode *inode, struct file *file)
->  	struct sound_unit *s;
->  	const struct file_operations *new_fops = NULL;
->  
-> -	lock_kernel ();
-> -
->  	chain=unit&0x0F;
->  	if(chain==4 || chain==5)	/* dsp/audio/dsp16 */
->  	{
-> @@ -631,17 +629,17 @@ static int soundcore_open(struct inode *inode, struct file *file)
->  		file->f_op = new_fops;
->  		spin_unlock(&sound_loader_lock);
->  		if(file->f_op->open)
-> +			lock_kernel();
->  			err = file->f_op->open(inode,file);
-> +			unlock_kernel();
->  		if (err) {
->  			fops_put(file->f_op);
->  			file->f_op = fops_get(old_fops);
->  		}
->  		fops_put(old_fops);
-> -		unlock_kernel();
->  		return err;
->  	}
->  	spin_unlock(&sound_loader_lock);
-> -	unlock_kernel();
->  	return -ENODEV;
->  }
->  
-> -- 
-> 1.6.0.6
-> 
+> What is the recommended way to run ccache, then?
+ccache is a frontend to gcc - so I would have expected
+you would use: 
 
-@Alan
+    make CC="ccache gcc"
 
-Are you okay with this 3rd version of the patch that pushes the bkl lock
-further down into the function so that it is only around the 
-err = file->f_op->open(inode,file);
+Or does ccache also benefit ld and as and the other that receive
+the $(CROSS_COMPILE) prefix?
 
-Not ideal - but an improvement and step in the right direction.
-
-If so, maybe I can get an ack, so that Thomas might include it in his new
-kill-the-bkl tree.
-
-Thanks
+	Sam
