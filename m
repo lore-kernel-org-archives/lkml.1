@@ -1,129 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZJKA1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbZJKAyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbZJKA1G (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 20:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZJKA1G
+	id S1755581AbZJKAyn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 20:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbZJKAym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 20:27:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:38443 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754275AbZJKA1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 20:27:05 -0400
-Date: Sun, 11 Oct 2009 02:25:53 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vincent^M^J Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sound_core.c: Remove BKL from soundcore_open
-In-Reply-To: <20091011004219.74c30f67@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.00.0910110223510.4921@localhost.localdomain>
-References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain> <20091011004219.74c30f67@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 10 Oct 2009 20:54:42 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:46150 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754463AbZJKAym (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 20:54:42 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 11 Oct 2009 02:54:01 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] NFS: suppress a build warning
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.c698a40fc77b434b@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+struct sockaddr_storage * can safely be used as struct sockaddr *.
+Suppress an "incompatible pointer type" warning.
 
-
-On Sun, 11 Oct 2009, Alan Cox wrote:
-
-> On Sun, 11 Oct 2009 01:24:14 +0200 (CEST)
-> John Kacur <jkacur@redhat.com> wrote:
-> 
-> > >From 030af455d4f54482130c8eccb47fe90aaba8808c Mon Sep 17 00:00:00 2001
-> > From: John Kacur <jkacur@redhat.com>
-> > Date: Sat, 10 Oct 2009 23:39:56 +0200
-> > Subject: [PATCH] This code is already protected by spin_lock, and doesn't require the bkl
-> 
-> Sorry but I don't think that is true becaue of:
-> 
->            spin_unlock(&sound_loader_lock);
->                 if(file->f_op->open)
->                         err = file->f_op->open(inode,file);
-> 
-> 
-> So the underlying driver open method expects lock_kernel status and you
-> don't propogate it down. You really need to track down each thing that
-> can be called into here and fix it, or maybe just punt for the moment and
-> push it down to
-> 
-> 	{
-> 		lock_kernel()
-> 		err = file-f_op->open ...
-> 		unlock_kernel()
-> 	}
-> 
-> so its obvious to the next person who takes up the war on the BKL what is
-> to be tackled.
-> 
-
-Yikes, I missed that. Still I'm loath to just push it down like that. I 
-wonder if I can use a mutex there. What about the following patch?
-
->From 8b0b91523ee2fcf60ccd82dba44b8da8bad34ce4 Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Sun, 11 Oct 2009 02:14:44 +0200
-Subject: [PATCH] Remove the bkl in soundcore_open
-
-Remove the bkl in soundcore_open since it is mostly covered by the sound_loader_lock spin_lock
-
-Protect the underlying driver open method with a mutex.
-
-Signed-off-by: John Kacur <jkacur@redhat.com>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- sound/sound_core.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/sound/sound_core.c b/sound/sound_core.c
-index 49c9981..6afb6f1 100644
---- a/sound/sound_core.c
-+++ b/sound/sound_core.c
-@@ -14,6 +14,8 @@
- #include <linux/major.h>
- #include <sound/core.h>
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 6dabf6f..f54afbf 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -1848,8 +1848,8 @@ nfs_compare_remount_data(struct nfs_server *nfss,
+ 	    data->timeo != (10U * nfss->client->cl_timeout->to_initval / HZ) ||
+ 	    data->nfs_server.port != nfss->port ||
+ 	    data->nfs_server.addrlen != nfss->nfs_client->cl_addrlen ||
+-	    !rpc_cmp_addr(&data->nfs_server.address,
+-		    &nfss->nfs_client->cl_addr))
++	    !rpc_cmp_addr((struct sockaddr *)&data->nfs_server.address,
++		    	  (struct sockaddr *)&nfss->nfs_client->cl_addr))
+ 		return -EINVAL;
  
-+static DEFINE_MUTEX(osc_mutex);
-+
- #ifdef CONFIG_SOUND_OSS_CORE
- static int __init init_oss_soundcore(void);
- static void cleanup_oss_soundcore(void);
-@@ -576,8 +578,6 @@ static int soundcore_open(struct inode *inode, struct file *file)
- 	struct sound_unit *s;
- 	const struct file_operations *new_fops = NULL;
- 
--	lock_kernel ();
--
- 	chain=unit&0x0F;
- 	if(chain==4 || chain==5)	/* dsp/audio/dsp16 */
- 	{
-@@ -631,17 +631,17 @@ static int soundcore_open(struct inode *inode, struct file *file)
- 		file->f_op = new_fops;
- 		spin_unlock(&sound_loader_lock);
- 		if(file->f_op->open)
-+			mutex_lock(&osc_mutex);
- 			err = file->f_op->open(inode,file);
-+			mutex_unlock(&osc_mutex);
- 		if (err) {
- 			fops_put(file->f_op);
- 			file->f_op = fops_get(old_fops);
- 		}
- 		fops_put(old_fops);
--		unlock_kernel();
- 		return err;
- 	}
- 	spin_unlock(&sound_loader_lock);
--	unlock_kernel();
- 	return -ENODEV;
- }
- 
+ 	return 0;
 -- 
-1.6.0.6
+Stefan Richter
+-=====-==--= =-=- -=-==
+http://arcgraph.de/sr/
 
