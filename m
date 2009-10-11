@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759933AbZJKCJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760085AbZJKCMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759933AbZJKCJa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 Oct 2009 22:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759032AbZJKCJ3
+	id S1760085AbZJKCMN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 Oct 2009 22:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbZJKCMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 Oct 2009 22:09:29 -0400
-Received: from mail-pz0-f177.google.com ([209.85.222.177]:63436 "EHLO
-	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755916AbZJKCJ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 Oct 2009 22:09:29 -0400
-MIME-Version: 1.0
-In-Reply-To: <92be2ef30910101208p1b2eb493wdfa46d363ca96f99@mail.gmail.com>
-References: <1255165747.6385.117.camel@doodleydee> <alpine.LFD.2.00.0910101931080.9428@localhost.localdomain> 
-	<92be2ef30910101208p1b2eb493wdfa46d363ca96f99@mail.gmail.com>
-From: Jeremy Leibs <leibs@willowgarage.com>
-Date: Sat, 10 Oct 2009 19:07:57 -0700
-Message-ID: <92be2ef30910101907h68aa44c0tad678f036f19c8f3@mail.gmail.com>
-Subject: Re: ERESTARTSYS escaping from sem_wait with RTLinux patch
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Blaise Gassend <blaise@willowgarage.com>,
-       LKML <linux-kernel@vger.kernel.org>, Darren Hart <dvhltc@us.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 10 Oct 2009 22:12:12 -0400
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:34782 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755674AbZJKCML convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 Oct 2009 22:12:11 -0400
+From: Ben Hutchings <ben@decadent.org.uk>
+To: linux-kernel@vger.kernel.org
+Cc: Eric Sesterhenn <snakebyte@gmx.de>, Roman Zippel <zippel@linux-m68k.org>,
+       550010@bugs.debian.org
+In-Reply-To: <1254883878.4246.191.camel@localhost>
+References: <1254883878.4246.191.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Sun, 11 Oct 2009 03:11:27 +0100
+Message-Id: <1255227087.25061.76.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: [PATCH] hfsplus: Refuse to mount volumes larger than 2TB
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10, 2009 at 12:08 PM, Jeremy Leibs <leibs@willowgarage.com> wrote:
-> Thomas, thanks for the quick reply.
->
-> On Sat, Oct 10, 2009 at 10:59 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
------snip-----
->>
->> 1) Does that happen with 2.6.31.2-rt13 as well ?
->
-> I am nearly certain we saw the problems with the newer kernel as well,
-> although that was back with a much less concise test and I've since
-> reinstalled over that machine in the process of trying a number of
-> different 32/64 hardy/jaunty configurations on different hardware.
-> I'll do a fresh install of that particular kernel with default
-> configuration options on our hardware and let you know a little later
-> today.
+As found in <http://bugs.debian.org/550010>, hfsplus is using type u32
+rather than sector_t for some sector number calculations.
 
-Running on fresh install of 64 bit jaunty:
+In particular, hfsplus_get_block() does:
 
-leibs@c1:~$ uname -rv
-2.6.31.2-rt13 #1 SMP PREEMPT RT Sat Oct 10 15:34:13 PDT 2009
+        u32 ablock, dblock, mask;
+...
+        map_bh(bh_result, sb, (dblock << HFSPLUS_SB(sb).fs_shift) + HFSPLUS_SB(sb).blockoffset + (iblock & mask));
 
-leibs@c1:~$ python threadprocs8.py
-sem_wait: Unknown error 512
-Fatal Python error: ceval: orphan tstate
-Aborted
+I am not confident that I can find and fix all cases where a sector
+number may be truncated.  For now, avoid data loss by refusing to mount
+HFS+ volumes with more than 2^32 sectors (2TB).
+
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Cc: stable@kernel.org
+---
+--- a/fs/hfsplus/wrapper.c
++++ b/fs/hfsplus/wrapper.c
+@@ -99,6 +99,10 @@
+ 
+ 	if (hfsplus_get_last_session(sb, &part_start, &part_size))
+ 		return -EINVAL;
++	if (part_start + part_size > 0x100000000) {
++		pr_err("hfs: volumes larger than 2TB are not supported yet\n");
++		return -EINVAL;
++	}
+ 	while (1) {
+ 		bh = sb_bread512(sb, part_start + HFSPLUS_VOLHEAD_SECTOR, vhdr);
+ 		if (!bh)
+
+-- 
+Ben Hutchings
+Quantity is no substitute for quality, but it's the only one we've got.
