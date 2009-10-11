@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751305AbZJKUkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZJKUlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751305AbZJKUkJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 16:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbZJKUkH
+	id S1751287AbZJKUlf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 16:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZJKUle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 16:40:07 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:53846 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214AbZJKUkF (ORCPT
+	Sun, 11 Oct 2009 16:41:34 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:56517 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbZJKUld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 16:40:05 -0400
+	Sun, 11 Oct 2009 16:41:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:in-reply-to:message-id:references
-         :user-agent:x-archive:mime-version:content-type;
-        b=SeE/aZjpIeylNodFsD9h3DEDybZpiezUIgdHXqqbDwFtRK6Jy4dEjNvGDONJFL/shs
-         ej5/SXTZT5z15hWO2RVZuaTfrJurgBPCgVwk2dSr3PVVDh8qljcr2pG6gtPj2wN/LwC+
-         hSDHhyJW+AEsbCyziRMGoGPNMT4LSYfvEWj00=
-Date: Sun, 11 Oct 2009 17:39:22 -0300 (BRST)
-From: "=?ISO-8859-15?Q?Fr=E9d=E9ric_L=2E_W=2E_Meunier?=" 
-	<fredlwm@gmail.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-cc: edt@aei.ca, hirofumi@mail.parknet.co.jp, alan@linux.intel.com
-Subject: Re: keyboard under X with 2.6.31
-In-Reply-To: <4AD17C6A.4030902@yahoo.co.uk>
-Message-ID: <alpine.LNX.2.01.0910111735140.19647@dyndns.pervalidus.net>
-References: <4AD17C6A.4030902@yahoo.co.uk>
-User-Agent: Alpine 2.01 (LNX 1266 2009-07-14)
-X-Archive: encrypt
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=IFRNPnZM7cyNb9O2g3IfeNIc+P7cZTYHL8zhemc0JMEUzGRtg+GWLb3FiC6M8eocNP
+         TnfHgKnQJRHfUC4MW9/3D2YA6zf6elxJv3vpHMMLNKUBiLix7VzK9mhS9nfKpb8s7JaL
+         qqTa+8zDf2K1Mzn3gJhe0TW5tEXZ4CotRf19o=
+Date: Sun, 11 Oct 2009 22:40:54 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: John Kacur <jkacur@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Jonathan Corbet <corbet@lwn.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vincent^M^J Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] sound_core.c: Remove BKL from soundcore_open
+Message-ID: <20091011204052.GB5486@nowhere>
+References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain> <20091011113317.GA4901@nowhere> <alpine.LFD.2.00.0910111437270.3587@localhost.localdomain> <200910111612.41717.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200910111612.41717.oliver@neukum.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 Oct 2009, Boyan wrote:
+On Sun, Oct 11, 2009 at 04:12:40PM +0200, Oliver Neukum wrote:
+> Am Sonntag, 11. Oktober 2009 14:41:15 schrieb John Kacur:
+> > @@ -576,8 +576,6 @@ static int soundcore_open(struct inode *inode, struct
+> > file *file) struct sound_unit *s;
+> >         const struct file_operations *new_fops = NULL;
+> >  
+> > -       lock_kernel ();
+> > -
+> >         chain=unit&0x0F;
+> >         if(chain==4 || chain==5)        /* dsp/audio/dsp16 */
+> >         {
+> > @@ -631,17 +629,17 @@ static int soundcore_open(struct inode *inode, struct
+> > file *file) file->f_op = new_fops;
+> >                 spin_unlock(&sound_loader_lock);
+> >                 if(file->f_op->open)
+> > +                       lock_kernel();
+> >                         err = file->f_op->open(inode,file);
+> > +                       unlock_kernel();
+> >                 if (err) {
+> >                         fops_put(file->f_op);
+> >                         file->f_op = fops_get(old_fops);
+> 
+> Is that just me, or is file->f_op unguarded in this version?
+> 
+> 	Regards
+> 		Oliver
 
-> (sending again, sorry about last reply, wrong subject...)
-> On Sat, 10 Oct 2009 21:00:05 -0400, Ed Tomlinson wrote:
->> You are not alone with keyboard problems in 31 in X.  In my case I
->> blamed a  new wireless setup.
->> I am building with the the above commit reverted.
->
-> Not sure why, but after reverting
-> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
-> 'low_latency' tty flag) my analog tv tuner stopped working after booting
-> for the first time. It has TV and FM radio, but only radio worked when
-> reverted this patch. I saw some EIO errors with strace. Then added again
-> the patch and on top of it I've added commit:
->
-> 3a54297478e6578f96fd54bf4daa1751130aca86
-> pty: quickfix for the pty ENXIO timing problems
->
-> Everything was ok.
-> Today I've tried to reproduce this and reverted both patches. Recompiled
-> and everything is ok. Not sure what happened yesterday.
-> So to summarize 2.6.31.3 with reverted commit
-> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
-> 'low_latency' tty flag) works for me.
 
-Reverting the commit also works for me. Thanks.
+Once assigned to file, the new fops won't move again.
+And won't be freed until fops_put is called.
 
-The direct link, for those not using git:
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e043e42bdb66885b3ac10d27a01ccb9972e2b0a3
