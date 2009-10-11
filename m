@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760715AbZJKMUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbZJKMWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760715AbZJKMUK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 08:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbZJKMUI
+	id S1759393AbZJKMWN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 08:22:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZJKMWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 08:20:08 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:35664 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751371AbZJKMUH (ORCPT
+	Sun, 11 Oct 2009 08:22:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50536 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbZJKMWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 08:20:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mctv0Ygee4UERGcwp8DS8OCQbb8mz3BMN5Qxh9Ob4lKl2pygNQSKF+VETjhJrF1qZ4
-         r7Ap0p74j1enzjTO9AOe7XO1w5CgQVVUPRxUuos5bgMksA4g2z2Itx8pHNM3eslZHmiS
-         JcKP1CsnX6kETc9vnjmAzvnISsWaBUWRZntO4=
-Date: Sun, 11 Oct 2009 14:19:28 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: perf trace errors
-Message-ID: <20091011121926.GD4901@nowhere>
-References: <20091011025441.GA18152@lst.de>
+	Sun, 11 Oct 2009 08:22:09 -0400
+Date: Sun, 11 Oct 2009 08:21:30 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, lizf@cn.fujitsu.com
+Subject: Re: [PATCH 2/3] perf trace: Update eval_flag() flags array to
+	match interrupt.h
+Message-ID: <20091011122129.GA16701@infradead.org>
+References: <1254808849-7829-1-git-send-email-tzanussi@gmail.com> <1254808849-7829-3-git-send-email-tzanussi@gmail.com> <20091006132732.GA14978@infradead.org> <20091006151858.GB5152@nowhere> <20091006152106.GA6490@infradead.org> <20091011085345.GE14995@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091011025441.GA18152@lst.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091011085345.GE14995@elte.hu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 11, 2009 at 04:54:41AM +0200, Christoph Hellwig wrote:
-> I get some rather interesting errors using perf trace with the block
-> tracepoints on current mainline, e.g.:
-> 
-> perf record -f -e 'block:block_bio_queue:record' -R -F 1 -a -s
-> <do some disk I/O end then ctrl+c>
-> ^C[ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.237 MB perf.data (~10362 samples) ]
-> 
-> brick:/home/hch# perf trace
->   Fatal: unknown op '-'
->           xfssyncd-4232  [000]    87.798249255: block_bio_queue: 253,
-> 
-> There are lots of occurances of that exactly same warning in
-> builtin-trace.c, and the code sourrouning them is sufficiently enough
-> convoluted that I'm not able to track it down.
+On Sun, Oct 11, 2009 at 10:53:45AM +0200, Ingo Molnar wrote:
+> And you were full of it back then and you are full of it now as well.
 
+Beeing nice today, eh? :)
 
-Yeah, there are still some trace events that are not well supported
-in perf trace, for now... I'll fix that by the time.
+> Of course tools/perf/ can be dependent on the kernel source, as long as 
+> it's all exposed cleanly. Runtime exposure of information is better of 
+> course in many cases, but there's a balance to be stricken.
+> 
+> We already have deep and good dependencies between kernel code and 
+> tools/perf: for example we use the kernel's list.h and lib/rbtree.c in 
+> perf and those facilities are God-sent over user-space crap that for 
+> example Glist is.
 
-Thanks.
+Re-using code is no problem at all.  If you look at typical lowlevel
+userspace code written by kernel developers you'll notice that they
+usually use the kernel data structures, too.  And yeah, glib is
+quite horrible.
+
+The problem is run-time depdency on the kernel it was built with.  It's
+not practival or desirable to have one perf binary per kernel version.
+
+> I tend to agree that softirq names might make sense to expose runtime as 
+> well, but that is totally independent of your _idiotic_ argument that 
+> this issue somehow talks against perf being part of the kernel source.
+
+It is directly related.  If you ship perf as part of the kernel source
+these kinds of thing slip in easily, just because people don't think
+about it enough.  If you have a separate source tree it's much more
+clear that you can't depend on internal implementation details.
 
