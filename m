@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbZJKQAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbZJKQDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754991AbZJKQAk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 12:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbZJKQAj
+	id S1755297AbZJKQDX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 12:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbZJKQDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 12:00:39 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41122 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752108AbZJKQAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 12:00:39 -0400
-Date: Sun, 11 Oct 2009 17:59:54 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: Christoph Hellwig <hch@lst.de>
-cc: linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com,
+	Sun, 11 Oct 2009 12:03:21 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37763 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754353AbZJKQDU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 12:03:20 -0400
+Date: Sun, 11 Oct 2009 09:03:13 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org,
        Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [xfs-masters] INFO: possible circular locking dependency
- detected
-In-Reply-To: <20091011124616.GA4081@lst.de>
-Message-ID: <alpine.LFD.2.00.0910111759030.12574@localhost.localdomain>
-References: <alpine.LFD.2.00.0910110108160.4921@localhost.localdomain> <20091011124616.GA4081@lst.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vincent Sanders <vince@simtec.co.uk>, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH RFC] [PATCH] drivers/scsi/ch.c: Remove BKL in ch_open
+Message-ID: <20091011090313.1b8f0eb1@infradead.org>
+In-Reply-To: <20091011165408.51d4f413@lxorguk.ukuu.org.uk>
+References: <alpine.LFD.2.00.0910111443400.3587@localhost.localdomain>
+	<20091011153709.4438cf9c@lxorguk.ukuu.org.uk>
+	<20091011082917.6ebbd810@infradead.org>
+	<20091011165408.51d4f413@lxorguk.ukuu.org.uk>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 11 Oct 2009 16:54:08 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-
-On Sun, 11 Oct 2009, Christoph Hellwig wrote:
-
-> This has been around for a long time, the VM calls into fput and thus
-> ->release with the mmap_sem held, which makes it really hard for a
-> filesystem to avoid a lock inversion if it uses a lock both in ->release
-> and the I/O path.
+> > > I'm not so sure. In fact there are some quite umm interesting
+> > > questions about this code, and some of them are shared with other
+> > > modules too.
+> > > 
+> > > Consider the following sequence
+> > > 
+> > > 		CPU1				CPU2
+> > > 	register_chrdev
+> > > 		ok
+> > > 						open device
+> > > 						takes lock
+> > 
+> > 
+> > but open does not take the BKL, so the BKL is not protecting you at
+> > all against this..
 > 
-> I have a workaround for this to only acquire the XFS iolock with a
-> trylock in the release path and leave cleaning up stale preallocations
-> until the final iput.  It's not pretty, but given that we're unlikely
-> to see the VM fixed I might aswell finally send it for inclusion.
-> 
+> But module load/unload does
 
-In seems very easy and reliable to reproduce on my machine - so I am happy 
-to test the patch here when you're ready.
+it does?
 
-Thanks
+looking at the code.... so far failing to find where.
 
-John
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
