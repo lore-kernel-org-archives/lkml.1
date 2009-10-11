@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbZJKIye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZJKJFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482AbZJKIye (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 04:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZJKIyc
+	id S1755256AbZJKJFX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 05:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZJKJFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 04:54:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49482 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752487AbZJKIyc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 04:54:32 -0400
-Date: Sun, 11 Oct 2009 10:53:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
-       linux-kernel@vger.kernel.org, rostedt@goodmis.org, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 2/3] perf trace: Update eval_flag() flags array to
-	match interrupt.h
-Message-ID: <20091011085345.GE14995@elte.hu>
-References: <1254808849-7829-1-git-send-email-tzanussi@gmail.com> <1254808849-7829-3-git-send-email-tzanussi@gmail.com> <20091006132732.GA14978@infradead.org> <20091006151858.GB5152@nowhere> <20091006152106.GA6490@infradead.org>
+	Sun, 11 Oct 2009 05:05:21 -0400
+Received: from tneu02.synserver.de ([217.119.58.222]:3456 "EHLO
+	tneu02.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754120AbZJKJFU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 05:05:20 -0400
+X-Greylist: delayed 645 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 05:05:20 EDT
+From: Thomas Neumann <tneumann@users.sourceforge.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: deadlock with fallocate
+Date: Sun, 11 Oct 2009 10:53:56 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.28-15-generic; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com,
+       Christoph Hellwig <hch@lst.de>
+References: <hah08m$p1a$1@ger.gmane.org> <20091011005746.56cd3cd4.akpm@linux-foundation.org>
+In-Reply-To: <20091011005746.56cd3cd4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091006152106.GA6490@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200910111053.57159.tneumann@users.sourceforge.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Will legacy applications fail on newer kernels?  Or is it the case that
+> only recently-written applications which utilise new kernel
+> functionality will hit this bug?
+In theory posix_fallocate has been around for a while and glibc will use 
+kernel functionality if available, so applications might break. In practice it 
+is perhaps not that common that applications use fallocate.
 
-* Christoph Hellwig <hch@infradead.org> wrote:
+The problem is definitively fallocate related. When I replace possix_fallocate 
+with the equivalent ftruncate64 call the problem goes away. (But then again 
+the two calls are not really equivalent, and fallocate is the semantic that I 
+need).
+Furthermore the deadlocks seem to start occurring after writing more data than 
+available main memory, but I did not investigate this thoroughly.
 
-> On Tue, Oct 06, 2009 at 05:19:00PM +0200, Frederic Weisbecker wrote:
-> > Yeah. We may want to do that by including trace/events/irq.h
-> > and then use the show_softirq_name() macro defined there.
-> > 
-> > The rest of the header can be wrapped through no-op macros and
-> > stub includes.
-> 
-> No, not at all.  Performance tracing tools really should not be 
-> dependent on the kernel source.  This kind of creep is exactly what I 
-> feared from putting the perf source in the kernel tree.
+Thomas
 
-And you were full of it back then and you are full of it now as well.
-
-Of course tools/perf/ can be dependent on the kernel source, as long as 
-it's all exposed cleanly. Runtime exposure of information is better of 
-course in many cases, but there's a balance to be stricken.
-
-We already have deep and good dependencies between kernel code and 
-tools/perf: for example we use the kernel's list.h and lib/rbtree.c in 
-perf and those facilities are God-sent over user-space crap that for 
-example Glist is.
-
-I tend to agree that softirq names might make sense to expose runtime as 
-well, but that is totally independent of your _idiotic_ argument that 
-this issue somehow talks against perf being part of the kernel source.
-
-Really, give up that argument already - or if not, please engage in an 
-open, honest exchange about it. These drip-drip attacks you are doing, 
-without actually having the balls to argue your technical position are 
-somewhat annoying.
-
-	Ingo
