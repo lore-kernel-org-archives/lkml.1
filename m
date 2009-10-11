@@ -1,93 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbZJKQRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbZJKQTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbZJKQRV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 12:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754931AbZJKQRU
+	id S1755917AbZJKQTO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 12:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZJKQTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 12:17:20 -0400
-Received: from mail.pc-doctor.com ([66.224.119.10]:59216 "EHLO
-	mail.pc-doctor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753450AbZJKQRT (ORCPT
+	Sun, 11 Oct 2009 12:19:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39246 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755216AbZJKQTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 12:17:19 -0400
-Date: Sun, 11 Oct 2009 09:16:38 -0700 (PDT)
-From: Ben Efros <ben@pc-doctor.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Josua Dietze <digidietze@draisberghof.de>,
-       fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <7550119.564321255277798089.JavaMail.root@mail.pc-doctor.com>
-In-Reply-To: <26767470.564301255277612694.JavaMail.root@mail.pc-doctor.com>
-Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2 [PATCH]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 11 Oct 2009 12:19:12 -0400
+Date: Sun, 11 Oct 2009 09:19:04 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vincent Sanders <vince@simtec.co.uk>, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH RFC] [PATCH] drivers/scsi/ch.c: Remove BKL in ch_open
+Message-ID: <20091011091904.60a64279@infradead.org>
+In-Reply-To: <20091011171403.13a018f0@lxorguk.ukuu.org.uk>
+References: <alpine.LFD.2.00.0910111443400.3587@localhost.localdomain>
+	<20091011153709.4438cf9c@lxorguk.ukuu.org.uk>
+	<20091011082917.6ebbd810@infradead.org>
+	<20091011165408.51d4f413@lxorguk.ukuu.org.uk>
+	<20091011090313.1b8f0eb1@infradead.org>
+	<20091011171403.13a018f0@lxorguk.ukuu.org.uk>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [99.148.190.25]
-X-Mailer: Zimbra 5.0.18_GA_3011.UBUNTU6 (ZimbraWebClient - FF3.0 (Linux)/5.0.18_GA_3011.UBUNTU6)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 11 Oct 2009 17:14:03 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
------ "Alan Stern" <stern@rowland.harvard.edu> wrote:
-> On Sun, 11 Oct 2009, Benjamin Herrenschmidt wrote:
-> 
+> > > But module load/unload does
 > > 
-> > > Further REQUEST SENSE commands therefore requested 96 bytes of
-> data
-> > > instead of the standard 18 bytes.  With LUN 0 this worked okay. 
-> But 
-> > > with LUN 1 it didn't; the device reported a failure of the REQUEST
-> 
-> > > SENSE.  This is what caused usb-storage to issue the device
-> reset.
-> > > 
-> > > After the reset usb-storage continued to ask for 96 bytes of
-> sense
-> > > data, and LUN 1 continued to fail the commands.  Hence the
-> repeated
-> > > resets.
+> > it does?
 > > 
-> > Maybe a better approach would be to go back to 18 bytes when it
-> fails,
-> > what do you think ?
+> > looking at the code.... so far failing to find where.
 > 
-> We certainly could do that.  But should we turn off the SANE_SENSE
-> flag 
-> at the same time?
+> Interesting - it used to and there is code that still relies on that.
 
-No I don't think its a good idea to turn off SANE_SENSE in this situation.  Here is a patch similar to Ben Herrenschmidt's but will not turn off SANE_SENSE just because a transport failure.
+I can't find that to be the case anymore though
 
+> 
+> The more general problem of
+> 
+> 	register_chrdev
+> 					open
+> 	do something
+> 	error
+> 	unload
+> 					whoops
+> 
+> definitely needs looking at however.
 
-Retry with short sense when SANE_SENSE fails.
+absolutely
 
- Signed-off-by: Ben Efros <ben@pc-doctor.com>
-
---- linux-2.6.31.1/drivers/usb/storage/transport.c        2009-09-24 08:45:25.000000000 -0700
-+++ linux-2.6.31.1.new/drivers/usb/storage/transport.c        2009-10-11 08:06:26.000000000 -0700
-@@ -696,7 +696,7 @@ void usb_stor_invoke_transport(struct sc
-                 /* device supports and needs bigger sense buffer */
-                 if (us->fflags & US_FL_SANE_SENSE)
-                         sense_size = ~0;
--
-+Retry_Sense:
-                 US_DEBUGP("Issuing auto-REQUEST_SENSE\n");
- 
-                 scsi_eh_prep_cmnd(srb, &ses, NULL, 0, sense_size);
-@@ -723,6 +723,12 @@ void usb_stor_invoke_transport(struct sc
-                 if (temp_result != USB_STOR_TRANSPORT_GOOD) {
-                         US_DEBUGP("-- auto-sense failure\n");
- 
-+                        if ((us->fflags & US_FL_SANE_SENSE) &&
-+                            sense_size != US_SENSE_SIZE) {
-+                                sense_size = US_SENSE_SIZE;
-+                                US_DEBUGP("-- retry without SANE_SENSE\n");
-+                                goto Retry_Sense;
-+                        }
-                         /* we skip the reset if this happens to be a
-                          * multi-target device, since failure of an
-                          * auto-sense is perfectly valid
+we used to have the same issue with networking devices,
+and there it ended up with a split "allocate" and "register"
 
 
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
