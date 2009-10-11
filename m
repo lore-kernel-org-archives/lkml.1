@@ -1,248 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbZJKRwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbZJKSCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253AbZJKRwJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 13:52:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbZJKRwG
+	id S932096AbZJKSCv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 14:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756926AbZJKSCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 13:52:06 -0400
-Received: from mba.ocn.ne.jp ([122.28.14.163]:64318 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756383AbZJKRwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 13:52:04 -0400
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: Andrew Sharp <andy.sharp@lsi.com>,
-       Thomas Hommel <thomas.hommel@gefanuc.com>, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 2/2] rtc-stk17ta8: Fix races around device registration
-Date: Mon, 12 Oct 2009 02:50:45 +0900
-Message-Id: <1255283445-28940-2-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.5
+	Sun, 11 Oct 2009 14:02:49 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:17748 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752749AbZJKSCs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 14:02:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YYIy+JVU1VWJ4Y5dknulOPvlq9uq7cW2KK0VQlRE4ux+FbpBnSiVjO408ziVIQ4i4J
+         GsYQH2KZpuHUG+27MKRoBjdSWAelWqW4++DTybyJMPgov7UGhKthQHMEI/1pw94O/7N+
+         m+YIy9KdIp1wPG/2KhoYtdOFrPTqE1jS+wTE8=
+Date: Sun, 11 Oct 2009 11:01:34 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-input@vger.kernel.org
+Subject: Re: [bisected regression] Touchpad "paste" stops working after
+	suspend to RAM
+Message-ID: <20091011180134.GA5197@core.coreip.homeip.net>
+References: <20091011162155.GA4260@Pilar.aei.mpg.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091011162155.GA4260@Pilar.aei.mpg.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Call dev_set_drvdata before rtc device creation
-* Use its own spinlock instead of rtc->irq_lock
-* Check pdata->rtc before calling rtc_update_irq
-* Use alarm_irq_enable and remove ioctl routine
-* Use devres APIs and simplify error/remove path
+Hi Carols,
 
-These fixes are ported from ds1553 driver and just compile-tested only.
+On Sun, Oct 11, 2009 at 06:21:55PM +0200, Carlos R. Mafra wrote:
+> Using the latest 2.6.32-rc3+ kernel, the "paste" operation via the 
+> touchpad of my Vaio laptop does not work after suspend to RAM.
+> 
+> It works flawlessly before s2ram; I select the text with the touchpad
+> and tap quickly its right corner to paste the selected text.
+> After a plain 'echo mem > /sys/power/state' the "paste" does not work.
+> 
+> I bisected it to commit ffd0db97196c1057f09c2ab42dd5b30e94e511d9 ("Input: 
+> add generic suspend and resume for input devices").
+> 
+> I haven't tested if reverting it from mainline fixes the issue, but 
+> from the patch description I guess that bisection landed correctly
+> on the culprit.
+> 
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
- drivers/rtc/rtc-stk17ta8.c |  113 +++++++++++++++++--------------------------
- 1 files changed, 45 insertions(+), 68 deletions(-)
+Please verify that this is the real offending commit by reverting it - I
+am surprised that it would give any trouble since it is supposed to
+restore LED state and repeat rate and therefore should only be affecting
+keyboards.
 
-diff --git a/drivers/rtc/rtc-stk17ta8.c b/drivers/rtc/rtc-stk17ta8.c
-index 7d1547b..944e989 100644
---- a/drivers/rtc/rtc-stk17ta8.c
-+++ b/drivers/rtc/rtc-stk17ta8.c
-@@ -62,7 +62,6 @@
- struct rtc_plat_data {
- 	struct rtc_device *rtc;
- 	void __iomem *ioaddr;
--	unsigned long baseaddr;
- 	unsigned long last_jiffies;
- 	int irq;
- 	unsigned int irqen;
-@@ -70,6 +69,7 @@ struct rtc_plat_data {
- 	int alrm_min;
- 	int alrm_hour;
- 	int alrm_mday;
-+	spinlock_t lock;
- };
- 
- static int stk17ta8_rtc_set_time(struct device *dev, struct rtc_time *tm)
-@@ -142,7 +142,7 @@ static void stk17ta8_rtc_update_alarm(struct rtc_plat_data *pdata)
- 	unsigned long irqflags;
- 	u8 flags;
- 
--	spin_lock_irqsave(&pdata->rtc->irq_lock, irqflags);
-+	spin_lock_irqsave(&pdata->lock, irqflags);
- 
- 	flags = readb(ioaddr + RTC_FLAGS);
- 	writeb(flags | RTC_WRITE, ioaddr + RTC_FLAGS);
-@@ -162,7 +162,7 @@ static void stk17ta8_rtc_update_alarm(struct rtc_plat_data *pdata)
- 	writeb(pdata->irqen ? RTC_INTS_AIE : 0, ioaddr + RTC_INTERRUPTS);
- 	readb(ioaddr + RTC_FLAGS);	/* clear interrupts */
- 	writeb(flags & ~RTC_WRITE, ioaddr + RTC_FLAGS);
--	spin_unlock_irqrestore(&pdata->rtc->irq_lock, irqflags);
-+	spin_unlock_irqrestore(&pdata->lock, irqflags);
- }
- 
- static int stk17ta8_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
-@@ -202,48 +202,45 @@ static irqreturn_t stk17ta8_rtc_interrupt(int irq, void *dev_id)
- 	struct platform_device *pdev = dev_id;
- 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
- 	void __iomem *ioaddr = pdata->ioaddr;
--	unsigned long events = RTC_IRQF;
-+	unsigned long events = 0;
- 
-+	spin_lock(&pdata->lock);
- 	/* read and clear interrupt */
--	if (!(readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_AF))
--		return IRQ_NONE;
--	if (readb(ioaddr + RTC_SECONDS_ALARM) & 0x80)
--		events |= RTC_UF;
--	else
--		events |= RTC_AF;
--	rtc_update_irq(pdata->rtc, 1, events);
--	return IRQ_HANDLED;
-+	if (readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_AF) {
-+		events = RTC_IRQF;
-+		if (readb(ioaddr + RTC_SECONDS_ALARM) & 0x80)
-+			events |= RTC_UF;
-+		else
-+			events |= RTC_AF;
-+		if (likely(pdata->rtc))
-+			rtc_update_irq(pdata->rtc, 1, events);
-+	}
-+	spin_unlock(&pdata->lock);
-+	return events ? IRQ_HANDLED : IRQ_NONE;
- }
- 
--static int stk17ta8_rtc_ioctl(struct device *dev, unsigned int cmd,
--			    unsigned long arg)
-+static int stk17ta8_rtc_alarm_irq_enable(struct device *dev,
-+	unsigned int enabled)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
- 
- 	if (pdata->irq <= 0)
--		return -ENOIOCTLCMD; /* fall back into rtc-dev's emulation */
--	switch (cmd) {
--	case RTC_AIE_OFF:
-+		return -EINVAL;
-+	if (enabled)
-+ 		pdata->irqen |= RTC_AF;
-+	else
- 		pdata->irqen &= ~RTC_AF;
--		stk17ta8_rtc_update_alarm(pdata);
--		break;
--	case RTC_AIE_ON:
--		pdata->irqen |= RTC_AF;
--		stk17ta8_rtc_update_alarm(pdata);
--		break;
--	default:
--		return -ENOIOCTLCMD;
--	}
-+	stk17ta8_rtc_update_alarm(pdata);
- 	return 0;
- }
- 
- static const struct rtc_class_ops stk17ta8_rtc_ops = {
--	.read_time	= stk17ta8_rtc_read_time,
--	.set_time	= stk17ta8_rtc_set_time,
--	.read_alarm	= stk17ta8_rtc_read_alarm,
--	.set_alarm	= stk17ta8_rtc_set_alarm,
--	.ioctl		= stk17ta8_rtc_ioctl,
-+	.read_time		= stk17ta8_rtc_read_time,
-+	.set_time		= stk17ta8_rtc_set_time,
-+	.read_alarm		= stk17ta8_rtc_read_alarm,
-+	.set_alarm		= stk17ta8_rtc_set_alarm,
-+	.alarm_irq_enable	= stk17ta8_rtc_alarm_irq_enable,
- };
- 
- static ssize_t stk17ta8_nvram_read(struct kobject *kobj,
-@@ -293,26 +290,22 @@ static int __init stk17ta8_rtc_probe(struct platform_device *pdev)
- 	unsigned int cal;
- 	unsigned int flags;
- 	struct rtc_plat_data *pdata;
--	void __iomem *ioaddr = NULL;
-+	void __iomem *ioaddr;
- 	int ret = 0;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res)
- 		return -ENODEV;
- 
--	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
-+	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
- 	if (!pdata)
- 		return -ENOMEM;
--	if (!request_mem_region(res->start, RTC_REG_SIZE, pdev->name)) {
--		ret = -EBUSY;
--		goto out;
--	}
--	pdata->baseaddr = res->start;
--	ioaddr = ioremap(pdata->baseaddr, RTC_REG_SIZE);
--	if (!ioaddr) {
--		ret = -ENOMEM;
--		goto out;
--	}
-+	if (!devm_request_mem_region(&pdev->dev, res->start, RTC_REG_SIZE,
-+			pdev->name))
-+		return -EBUSY;
-+	ioaddr = devm_ioremap(&pdev->dev, res->start, RTC_REG_SIZE);
-+	if (!ioaddr)
-+		return -ENOMEM;
- 	pdata->ioaddr = ioaddr;
- 	pdata->irq = platform_get_irq(pdev, 0);
- 
-@@ -328,9 +321,13 @@ static int __init stk17ta8_rtc_probe(struct platform_device *pdev)
- 	if (readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_PF)
- 		dev_warn(&pdev->dev, "voltage-low detected.\n");
- 
-+	spin_lock_init(&pdata->lock);
-+	pdata->last_jiffies = jiffies;
-+	platform_set_drvdata(pdev, pdata);
- 	if (pdata->irq > 0) {
- 		writeb(0, ioaddr + RTC_INTERRUPTS);
--		if (request_irq(pdata->irq, stk17ta8_rtc_interrupt,
-+		if (devm_request_irq(&pdev->dev, pdata->irq,
-+				stk17ta8_rtc_interrupt,
- 				IRQF_DISABLED | IRQF_SHARED,
- 				pdev->name, pdev) < 0) {
- 			dev_warn(&pdev->dev, "interrupt not available.\n");
-@@ -340,27 +337,12 @@ static int __init stk17ta8_rtc_probe(struct platform_device *pdev)
- 
- 	rtc = rtc_device_register(pdev->name, &pdev->dev,
- 				  &stk17ta8_rtc_ops, THIS_MODULE);
--	if (IS_ERR(rtc)) {
--		ret = PTR_ERR(rtc);
--		goto out;
--	}
-+	if (IS_ERR(rtc))
-+		return PTR_ERR(rtc);
- 	pdata->rtc = rtc;
--	pdata->last_jiffies = jiffies;
--	platform_set_drvdata(pdev, pdata);
- 	ret = sysfs_create_bin_file(&pdev->dev.kobj, &stk17ta8_nvram_attr);
- 	if (ret)
--		goto out;
--	return 0;
-- out:
--	if (pdata->rtc)
--		rtc_device_unregister(pdata->rtc);
--	if (pdata->irq > 0)
--		free_irq(pdata->irq, pdev);
--	if (ioaddr)
--		iounmap(ioaddr);
--	if (pdata->baseaddr)
--		release_mem_region(pdata->baseaddr, RTC_REG_SIZE);
--	kfree(pdata);
-+		rtc_device_unregister(rtc);
- 	return ret;
- }
- 
-@@ -370,13 +352,8 @@ static int __devexit stk17ta8_rtc_remove(struct platform_device *pdev)
- 
- 	sysfs_remove_bin_file(&pdev->dev.kobj, &stk17ta8_nvram_attr);
- 	rtc_device_unregister(pdata->rtc);
--	if (pdata->irq > 0) {
-+	if (pdata->irq > 0)
- 		writeb(0, pdata->ioaddr + RTC_INTERRUPTS);
--		free_irq(pdata->irq, pdev);
--	}
--	iounmap(pdata->ioaddr);
--	release_mem_region(pdata->baseaddr, RTC_REG_SIZE);
--	kfree(pdata);
- 	return 0;
- }
- 
 -- 
-1.5.6.5
-
+Dmitry
