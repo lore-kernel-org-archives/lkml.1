@@ -1,65 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZJKK1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbZJKK3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbZJKK1Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 06:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675AbZJKK1W
+	id S1756739AbZJKK3D (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 06:29:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756364AbZJKK3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 06:27:22 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:56497 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756656AbZJKK1W (ORCPT
+	Sun, 11 Oct 2009 06:29:01 -0400
+Received: from mail-px0-f111.google.com ([209.85.216.111]:45254 "EHLO
+	mail-px0-f111.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754257AbZJKK3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 06:27:22 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Olaf van der Spek <olafvdspek@gmail.com>, netdev@vger.kernel.org
-Subject: Re: Enable syn cookies by default
-Date: Sun, 11 Oct 2009 12:26:43 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <b2cc26e40910100601q7aed04acjcc9973ef06e6458f@mail.gmail.com>
-In-reply-To: <b2cc26e40910100601q7aed04acjcc9973ef06e6458f@mail.gmail.com>
+	Sun, 11 Oct 2009 06:29:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=q2Zo0N9UOWbzuHUqxX37Yip5i/SJatgFYfTCmcms2HKHAI1pvYjIFyXoeJ1rgOCeBn
+         pSc4fNfE0OELTp/DiUc3rDvme+M3yethgbasZMgY2sL8H8KI6Z+04RQEr0Uit9tAHZUZ
+         4xIgCHOkSPO7Lc83CTvBzyranCJqVEcAfRJwE=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910111226.44828.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Oct 2009 10:26:45.0260 (UTC) FILETIME=[5509CCC0:01CA4A5D]
+Date: Sun, 11 Oct 2009 15:58:24 +0530
+Message-ID: <821ec2800910110328x6967dfc6j71c37149026381d9@mail.gmail.com>
+Subject: Mobile OS
+From: Niamathullah sharief <kernelsha@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This question is better asked on the kernel network development list.
-Original mail from Olaf below.
-
-Cheers,
-FJP
-
-=================
-Hi,
-
-I'm forwarding Debian feature request #520668.
-
-Could syn cookies be enabled by default?
-
-AFAIK syn cookies only get send when the half-open TCP connection
-queue is full. So stuff like window scaling should work fine in normal
-situations.
-
-Speaking of which:
-When the half-open TCP connection queue is full and syn cookies are
-enabled, you get a message like "kernel: possible SYN flooding on port
-2710. Sending cookies."
-However when syn cookies are disabled, you don't get any message (in
-kern.log), although connections to your server are timing out.
-Could such a message be added?
-Maybe with a suggestion to increase the size of that queue or to
-enable syn cookies.
-
-Greetings,
-
-Olaf
-
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=520668
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=520667
-https://bugs.launchpad.net/ubuntu/+bug/57091
+ Hi friends,
+   I want to learn about Mobile operating systems. So i started with
+android. May i know what are all the Other Open Source Mobile Free
+Operating System available?
+    Thank you
