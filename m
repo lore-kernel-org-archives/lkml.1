@@ -1,169 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbZJKNyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZJKOLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754249AbZJKNyA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 09:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZJKNx6
+	id S1755546AbZJKOLj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 10:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbZJKOLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 09:53:58 -0400
-Received: from smtpout1-vf.aruba.it ([62.149.177.235]:44531 "HELO
-	smtp01-vf.aruba.it" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1753118AbZJKNx6 convert rfc822-to-8bit (ORCPT
+	Sun, 11 Oct 2009 10:11:39 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:57422 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755146AbZJKOLi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 09:53:58 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 09:53:57 EDT
+	Sun, 11 Oct 2009 10:11:38 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: John Kacur <jkacur@redhat.com>
+Subject: Re: [PATCH] sound_core.c: Remove BKL from soundcore_open
+Date: Sun, 11 Oct 2009 16:12:40 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.31-rc9-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Jonathan Corbet <corbet@lwn.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Vincent^M^J Sanders" <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
+References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain> <20091011113317.GA4901@nowhere> <alpine.LFD.2.00.0910111437270.3587@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0910111437270.3587@localhost.localdomain>
 MIME-Version: 1.0
-X-Mailer: AtMail PHP 5.1
-Message-ID: <10926.1255268797@bankofindia.com>
-Reply-To: info@bankofindia.com
-Content-Type: text/plain; charset="utf-8"
-X-Origin: 41.204.252.233
-Date: Sun, 11 Oct 2009 15:46:37 +0200
-Subject: =?utf-8?B?0JfQsNC80L7QttC90LjQuSDQkdCG0JfQndCV0KEg0J/QoNCe0J/QntCX0JjQptCG0K8g0JLQhtCUIE1SLiBTSEEgTkFWQVM=?=
-From: info@bankofindia.com
-Content-Transfer-Encoding: 8BIT
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Disposition: inline
+Message-Id: <200910111612.41717.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-
-Дорогий друже! 
-
-Я г-н Ша Навас, виконавчий директор 
-
-і головний фінансовий директор 
-
-операції банку Індії, Лондон 
-
-Відділення 4-й поверх, 63 королеви Вікторії 
-
-Стріт, Лондон EC4N 4UA.I є забезпечений 
-
-ділові пропозиції для клієнтів you.Our 
-
-Полковник Хосам Хассан, що був з 
-
-Іракські сили, а також ділова людина зробив 
-
-номерів фіксованого депозит за 18 календарних 
-
-місяця з значенням Тридцять мільйонів 
-
-Єдиний державний США ($ 30,000,000.00) 
-
-тільки в моїй владі. 
-В кінці строку кілька повідомлення було направлено 
-
-його словами, навіть під час війни на початку минулого 
-
-year.Again після війни іншим 
-
-Повідомлення було направлено і як і раніше немає 
-
-відповідь прийшла від нього. Пізніше ми знайдемо 
-
-Col.Hosam, що Хасан і його сім\'ї 
-
-було вбито під час війни в бомбі 
-
-Вибух, який вражають свої будинки. 
-
-Після подальшого розслідування було також 
-
-виявили, що полковника Хосам Хасан зробив 
-
-не декларувати будь-які найближчі родичі в його 
-
-офіційних документів, включаючи документ роботу 
-
-свого банківського вкладу. І він також 
-
-зізнався мені в останній раз він був у 
-
-мій офіс, що ніхто, крім мене знали 
-
-його внеску у мою bank.So, Тридцять мільйонів 
-
-Єдиний державний долари ($ 30,000,000.00) є 
-
-ще лежить у мене в банку, і ніхто не буде 
-
-коли-небудь виступити вимагати it.What 
-
-мене більше всього турбує те, що відповідно до 
-
-закони моєї країни після закінчення 4 
-
-років ці кошти будуть повернутися до 
-
-володіння Великобританії 
-
-Уряд, якщо ніхто не поширюється на претензії 
-
-funds.Against цьому тлі моя 
-
-Пропозиція до вас, що я хотів 
-
-Ви як іноземець, щоб виступати в якості наступного 
-
-родич полковника Хосам Хассан так, що ви 
-
-зможуть одержати свої кошти. 
-
-ЩО НЕОБХІДНО ЗРОБИТИ: 
-
-Я хочу, щоб ви знали, що я мав 
-
-все задумане так, що ми будемо 
-
-вийти успішним. Я зв\'язався 
-
-адвокат, який підготує необхідну 
-
-документ, який буде підтримувати вас як 
-
-найближчий родич полковника Хосам Хасан. Там 
-
-немає ризику на всіх у цьому питанні 
-
-як ми збираємося прийняти легалізовані 
-
-Метод і адвокатом підготуємо всі 
-
-необхідні документи. Будь ласка, прагнемо 
-
-дотримуватися крайню обережність у всіх 
-
-питання, що стосуються цієї issue.Once 
-
-Ці кошти були переведені на ваш 
-
-призначений банківський рахунок, ми повинні спільно в 
-
-Ставлення 60% для мене, 40% для вас. 
-
-У разі зацікавленості прохання звертатися 
-
-мені через мого приватного Email: 
-
-shanavasindia09@gmail.com 
-
-С нижче інформацію. 
-
-1. Повні імена 
-2. Домашній телефон 
-3. Поточні адреса місця проживання. 
-
-Після цього я надам вам більше 
-
-Подробиці цього transaction.Your 
-
-ранній відповідь на цей лист буде 
-
-високу оцінку. 
-
-Привіт, 
-Г-н Ша Navas
-
- 
-
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n9BEET16012820
+
+Am Sonntag, 11. Oktober 2009 14:41:15 schrieb John Kacur:> @@ -576,8 +576,6 @@ static int soundcore_open(struct inode *inode, struct> file *file) struct sound_unit *s;> ��������const struct file_operations *new_fops = NULL;> �> -�������lock_kernel ();> -> ��������chain=unit&0x0F;> ��������if(chain==4 || chain==5)��������/* dsp/audio/dsp16 */> ��������{> @@ -631,17 +629,17 @@ static int soundcore_open(struct inode *inode, struct> file *file) file->f_op = new_fops;> ����������������spin_unlock(&sound_loader_lock);> ����������������if(file->f_op->open)> +�����������������������lock_kernel();> ������������������������err = file->f_op->open(inode,file);> +�����������������������unlock_kernel();> ����������������if (err) {> ������������������������fops_put(file->f_op);> ������������������������file->f_op = fops_get(old_fops);
+Is that just me, or is file->f_op unguarded in this version?
+	Regards		Oliver
+���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
