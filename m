@@ -1,74 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZJKUlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751586AbZJKUwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751287AbZJKUlf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 16:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZJKUle
+	id S1751586AbZJKUwq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 16:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbZJKUwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 16:41:34 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:56517 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbZJKUld (ORCPT
+	Sun, 11 Oct 2009 16:52:44 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43699 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751390AbZJKUwo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 16:41:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=IFRNPnZM7cyNb9O2g3IfeNIc+P7cZTYHL8zhemc0JMEUzGRtg+GWLb3FiC6M8eocNP
-         TnfHgKnQJRHfUC4MW9/3D2YA6zf6elxJv3vpHMMLNKUBiLix7VzK9mhS9nfKpb8s7JaL
-         qqTa+8zDf2K1Mzn3gJhe0TW5tEXZ4CotRf19o=
-Date: Sun, 11 Oct 2009 22:40:54 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: John Kacur <jkacur@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Sun, 11 Oct 2009 16:52:44 -0400
+Date: Sun, 11 Oct 2009 21:51:31 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, John Kacur <jkacur@redhat.com>,
        linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Jonathan Corbet <corbet@lwn.net>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Christoph Hellwig <hch@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Vincent^M^J Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH] sound_core.c: Remove BKL from soundcore_open
-Message-ID: <20091011204052.GB5486@nowhere>
-References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain> <20091011113317.GA4901@nowhere> <alpine.LFD.2.00.0910111437270.3587@localhost.localdomain> <200910111612.41717.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200910111612.41717.oliver@neukum.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-ID: <20091011215131.03655961@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091011122632.53a61a09@infradead.org>
+References: <alpine.LFD.2.00.0910110123510.4921@localhost.localdomain>
+	<20091011004219.74c30f67@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.0910110223510.4921@localhost.localdomain>
+	<20091011092015.37a69847@bike.lwn.net>
+	<20091011111543.1cbb9a0e@tpl.lwn.net>
+	<20091011103755.649f5ae1@infradead.org>
+	<20091011201759.435cd93c@lxorguk.ukuu.org.uk>
+	<20091011122632.53a61a09@infradead.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 11, 2009 at 04:12:40PM +0200, Oliver Neukum wrote:
-> Am Sonntag, 11. Oktober 2009 14:41:15 schrieb John Kacur:
-> > @@ -576,8 +576,6 @@ static int soundcore_open(struct inode *inode, struct
-> > file *file) struct sound_unit *s;
-> >         const struct file_operations *new_fops = NULL;
-> >  
-> > -       lock_kernel ();
-> > -
-> >         chain=unit&0x0F;
-> >         if(chain==4 || chain==5)        /* dsp/audio/dsp16 */
-> >         {
-> > @@ -631,17 +629,17 @@ static int soundcore_open(struct inode *inode, struct
-> > file *file) file->f_op = new_fops;
-> >                 spin_unlock(&sound_loader_lock);
-> >                 if(file->f_op->open)
-> > +                       lock_kernel();
-> >                         err = file->f_op->open(inode,file);
-> > +                       unlock_kernel();
-> >                 if (err) {
-> >                         fops_put(file->f_op);
-> >                         file->f_op = fops_get(old_fops);
+> > It won't. Instead you get situations like one ioctl blocking another
+> > to an unrelated device that just causes weird failures and performance
+> > problems, or in some cases deadlocks.
 > 
-> Is that just me, or is file->f_op unguarded in this version?
+> yes the bkl using code will be slower because it'll now hit contention.
+
+No - the mutex using ioctls that sleep now block each other out - this
+mistake was made in some video drivers.
+
+> > Open routines block so it takes about 5 seconds of thought to realise
+> > that using a mutex here is brain dead and doesn't work.
 > 
-> 	Regards
-> 		Oliver
+> it also takes 5 seconds to realize "uh oh. they block. BKL is rather
+> limited in what it provides".
+
+Which is what the code was written for.
+
+This is why you can't just slap in a mutex but have to push it down.
+
+Chances are that for a lot of small drivers you go
+
+lock_kernel
+foo->op()
+unlock_kernel
 
 
-Once assigned to file, the new fops won't move again.
-And won't be freed until fops_put is called.
+to
 
+foo->op()
+
+	op()
+	lock_kernel
+	blah
+	unlock_kernel
+
+correctly on to
+
+	op()
+	{
+		mutex_lock(instance->lock);
+		blah
+		mutex_unlock(instance->lock);
+
+but you can't jump those steps and hope to get it right.
+
+Alan
