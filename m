@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbZJKMWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbZJKMej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759393AbZJKMWN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 08:22:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZJKMWJ
+	id S1755950AbZJKMej (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 08:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZJKMeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 08:22:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50536 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480AbZJKMWJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 08:22:09 -0400
-Date: Sun, 11 Oct 2009 08:21:30 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 2/3] perf trace: Update eval_flag() flags array to
-	match interrupt.h
-Message-ID: <20091011122129.GA16701@infradead.org>
-References: <1254808849-7829-1-git-send-email-tzanussi@gmail.com> <1254808849-7829-3-git-send-email-tzanussi@gmail.com> <20091006132732.GA14978@infradead.org> <20091006151858.GB5152@nowhere> <20091006152106.GA6490@infradead.org> <20091011085345.GE14995@elte.hu>
+	Sun, 11 Oct 2009 08:34:37 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:2533 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752532AbZJKMeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 08:34:36 -0400
+Date: Sun, 11 Oct 2009 08:32:19 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       m-ikeda@ds.jp.nec.com, agk@redhat.com, peterz@infradead.org,
+       jmarchan@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       riel@redhat.com
+Subject: Re: Performance numbers with IO throttling patches (Was: Re: IO
+	scheduler based IO controller V10)
+Message-ID: <20091011123219.GA3832@redhat.com>
+References: <1253820332-10246-1-git-send-email-vgoyal@redhat.com> <20090924143315.781cd0ac.akpm@linux-foundation.org> <20091010195316.GB16510@redhat.com> <20091010222728.GA30943@linux>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091011085345.GE14995@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20091010222728.GA30943@linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 11, 2009 at 10:53:45AM +0200, Ingo Molnar wrote:
-> And you were full of it back then and you are full of it now as well.
+On Sun, Oct 11, 2009 at 12:27:30AM +0200, Andrea Righi wrote:
 
-Beeing nice today, eh? :)
-
-> Of course tools/perf/ can be dependent on the kernel source, as long as 
-> it's all exposed cleanly. Runtime exposure of information is better of 
-> course in many cases, but there's a balance to be stricken.
+[..]
+> > 
+> > - Andrea, can you please also run similar tests to see if you see same
+> >   results or not. This is to rule out any testing methodology errors or
+> >   scripting bugs. :-). I also have collected the snapshot of some cgroup
+> >   files like bandwidth-max, throttlecnt, and stats. Let me know if you want
+> >   those to see what is happenig here. 
 > 
-> We already have deep and good dependencies between kernel code and 
-> tools/perf: for example we use the kernel's list.h and lib/rbtree.c in 
-> perf and those facilities are God-sent over user-space crap that for 
-> example Glist is.
+> Sure, I'll do some tests ASAP. Another interesting test would be to set
+> a blockio.iops-max limit also for the sequential readers' cgroup, to be
+> sure we're not touching some iops physical disk limit.
+> 
+> Could you post all the options you used with fio, so I can repeat some
+> tests as similar as possible to yours?
+> 
 
-Re-using code is no problem at all.  If you look at typical lowlevel
-userspace code written by kernel developers you'll notice that they
-usually use the kernel data structures, too.  And yeah, glib is
-quite horrible.
+I will respond to rest of the points later after some testing with iops-max
+rules. In the mean time here are my fio options so that you can try to
+replicate the tests.
 
-The problem is run-time depdency on the kernel it was built with.  It's
-not practival or desirable to have one perf binary per kernel version.
+I am simply copying pasting from my script. I have written my own program
+"semwait" so that two different instances of fio can synchronize on an
+external semaphore. Generally all the jobs go in single fio files but here
+we need to put two fio instances in two different cgroups. It is important
+that two fio jobs are synchronized and start at the same time after laying
+out files. (Becomes primarilly useful in write testing. Reads are fine 
+generally onces the files have been laid out).
 
-> I tend to agree that softirq names might make sense to expose runtime as 
-> well, but that is totally independent of your _idiotic_ argument that 
-> this issue somehow talks against perf being part of the kernel source.
+Sequential readers
+------------------
+fio_args="--rw=read --bs=4K --size=2G --runtime=30 --numjobs=$nr_jobs --direct=1"
+fio $fio_args --name=$jobname --directory=/mnt/$blockdev/fio --exec_prerun="'/usr/local/bin/semwait fiocgroup'" >> $outputdir/$outputfile &
 
-It is directly related.  If you ship perf as part of the kernel source
-these kinds of thing slip in easily, just because people don't think
-about it enough.  If you have a separate source tree it's much more
-clear that you can't depend on internal implementation details.
+Random Reader
+-------------
+fio_args="--rw=randread --bs=4K --size=1G --runtime=30 --direct=1 --numjobs=$nr_jobs"
+fio $fio_args --name=$jobname --directory=/mnt/$blockdev/fio --exec_prerun="'/usr/local/bin/semwait fiocgroup'" >> $outputdir/$outputfile &
 
+Random Writer
+-------------
+fio_args="--rw=randwrite --bs=64K --size=2G --runtime=30 --numjobs=$nr_jobs1 --ioengine=libaio --iodepth=4 --direct=1"
+
+fio $fio_args --name=$jobname --directory=/mnt/$blockdev/fio --exec_prerun="'/usr/local/bin/semwait fiocgroup'" >> $outputdir/$outputfile &
+
+Thanks
+Vivek
