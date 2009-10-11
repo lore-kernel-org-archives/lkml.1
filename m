@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142AbZJKIXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbZJKIYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752142AbZJKIXr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 04:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbZJKIXr
+	id S1752568AbZJKIYR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 04:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZJKIYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 04:23:47 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:54278 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbZJKIXp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 04:23:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=wJY9/pRGdDqvA/PTAeRnNAwuOsgqCvp+HG1lmGVo/7ZD/rk/cciMlOw9yXvD98QoD4
-         mhI+YsrgIvcPEwZxARwtRufgX4Q1z+B13mzcgc9FSS0lhnkTGuYBcbP0Hl8NJNDFmKs+
-         MVTph+74bOjZ6sZTQS+ra5WO1FEWqbi+1lGi0=
+	Sun, 11 Oct 2009 04:24:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42898 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752010AbZJKIYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 04:24:14 -0400
+Date: Sun, 11 Oct 2009 10:23:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][GIT PULL][for 2.6.32] tracing: fix trace_vprintk call
+Message-ID: <20091011082326.GA14995@elte.hu>
+References: <1255067241.1696.1196.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-In-Reply-To: <1255168333.25078.82.camel@ymzhang>
-References: <1255153724.25078.68.camel@ymzhang>
-	 <20091010080117.GN9228@kernel.dk> <1255168333.25078.82.camel@ymzhang>
-Date: Sun, 11 Oct 2009 10:23:09 +0200
-Message-ID: <4e5e476b0910110123s54debc6as435c9cc0d5e8340c@mail.gmail.com>
-Subject: Re: fio rand read/write regression with 2.6.32-rc3
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255067241.1696.1196.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.5
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0985]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10, 2009 at 11:52 AM, Zhang, Yanmin
-<yanmin_zhang@linux.intel.com> wrote:
-> On Sat, 2009-10-10 at 10:01 +0200, Jens Axboe wrote:
->> On Sat, Oct 10 2009, Zhang, Yanmin wrote:
->> > Comparing with 2.6.23-rc1's result, fio rand read write has regression
->> > on my 2*4 core stoakley machine (8GB memory) with a JBOD of 12 disks.
->> >
->> > Every disk has 8 1-GB files. Start 8 sub-processes per disk and every
->> > process random chooses a file on the disk to do 36 times of file read or
->> > write on the file and then choose another file.
->> >
->> >
->> > fio_mmap_rand_read_4k regresion is about 35%.
->>
->> Heh, I seem to recollect I told Linus that this would cost is 30-40%
->> performance. So not totally crazy.
->>
->> So yes, this isn't hugely unexpected. If you send me your fio job files,
->> I'll try and see what I can do about it.
-> See the attachment.
->
-Hi Yanmin,
-the fio test you sent just performs random read, no write seems involved here.
-I suspect that you should be able to observe the same regression if
-you just run on a single disk. Can you confirm?
-Is your disk a SATA2 rotational disk with NCQ?
 
-Thanks,
-Corrado
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
--- 
-__________________________________________________________________________
+> 
+> Ingo,
+> 
+> Please pull the latest tip/tracing/urgent tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/urgent
+> 
+> 
+> Steven Rostedt (1):
+>       tracing: fix trace_vprintk call
 
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
+Pulled, thanks Steve!
+
+	Ingo
