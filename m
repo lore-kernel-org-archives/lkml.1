@@ -1,74 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbZJKNqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbZJKNyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbZJKNqb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 09:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZJKNq2
+	id S1754249AbZJKNyA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 09:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZJKNx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 09:46:28 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:59060 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753950AbZJKNq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 09:46:27 -0400
-Date: Sun, 11 Oct 2009 15:45:16 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>, Jonathan Corbet <corbet@lwn.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vincent Sanders <vince@simtec.co.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH RFC] [PATCH] drivers/scsi/ch.c: Remove BKL in ch_open
-Message-ID: <alpine.LFD.2.00.0910111443400.3587@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 11 Oct 2009 09:53:58 -0400
+Received: from smtpout1-vf.aruba.it ([62.149.177.235]:44531 "HELO
+	smtp01-vf.aruba.it" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1753118AbZJKNx6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 09:53:58 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 09:53:57 EDT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Mailer: AtMail PHP 5.1
+Message-ID: <10926.1255268797@bankofindia.com>
+Reply-To: info@bankofindia.com
+Content-Type: text/plain; charset="utf-8"
+X-Origin: 41.204.252.233
+Date: Sun, 11 Oct 2009 15:46:37 +0200
+Subject: =?utf-8?B?0JfQsNC80L7QttC90LjQuSDQkdCG0JfQndCV0KEg0J/QoNCe0J/QntCX0JjQptCG0K8g0JLQhtCUIE1SLiBTSEEgTkFWQVM=?=
+From: info@bankofindia.com
+Content-Transfer-Encoding: 8BIT
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Locking in ch_open is covered by the spin_lock, it serializes the calls
-to idr_find and scsi_device_get. The BKL appears redundant to me here.
+Дорогий друже! 
 
->From b385c85bb5c2579e542cfe55475b729325eb65e1 Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Sun, 11 Oct 2009 13:06:54 +0200
-Subject: [PATCH] drivers/scsi/ch.c: Remove BKL in ch_open
+Я г-н Ша Навас, виконавчий директор 
 
-Everything in ch_open is covered by a spin_lock, so the lock_kernel is redundant
-Remove it.
+і головний фінансовий директор 
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- drivers/scsi/ch.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+операції банку Індії, Лондон 
 
-diff --git a/drivers/scsi/ch.c b/drivers/scsi/ch.c
-index fe11c1d..4ba8b67 100644
---- a/drivers/scsi/ch.c
-+++ b/drivers/scsi/ch.c
-@@ -579,19 +579,16 @@ ch_open(struct inode *inode, struct file *file)
- 	scsi_changer *ch;
- 	int minor = iminor(inode);
+Відділення 4-й поверх, 63 королеви Вікторії 
+
+Стріт, Лондон EC4N 4UA.I є забезпечений 
+
+ділові пропозиції для клієнтів you.Our 
+
+Полковник Хосам Хассан, що був з 
+
+Іракські сили, а також ділова людина зробив 
+
+номерів фіксованого депозит за 18 календарних 
+
+місяця з значенням Тридцять мільйонів 
+
+Єдиний державний США ($ 30,000,000.00) 
+
+тільки в моїй владі. 
+В кінці строку кілька повідомлення було направлено 
+
+його словами, навіть під час війни на початку минулого 
+
+year.Again після війни іншим 
+
+Повідомлення було направлено і як і раніше немає 
+
+відповідь прийшла від нього. Пізніше ми знайдемо 
+
+Col.Hosam, що Хасан і його сім\'ї 
+
+було вбито під час війни в бомбі 
+
+Вибух, який вражають свої будинки. 
+
+Після подальшого розслідування було також 
+
+виявили, що полковника Хосам Хасан зробив 
+
+не декларувати будь-які найближчі родичі в його 
+
+офіційних документів, включаючи документ роботу 
+
+свого банківського вкладу. І він також 
+
+зізнався мені в останній раз він був у 
+
+мій офіс, що ніхто, крім мене знали 
+
+його внеску у мою bank.So, Тридцять мільйонів 
+
+Єдиний державний долари ($ 30,000,000.00) є 
+
+ще лежить у мене в банку, і ніхто не буде 
+
+коли-небудь виступити вимагати it.What 
+
+мене більше всього турбує те, що відповідно до 
+
+закони моєї країни після закінчення 4 
+
+років ці кошти будуть повернутися до 
+
+володіння Великобританії 
+
+Уряд, якщо ніхто не поширюється на претензії 
+
+funds.Against цьому тлі моя 
+
+Пропозиція до вас, що я хотів 
+
+Ви як іноземець, щоб виступати в якості наступного 
+
+родич полковника Хосам Хассан так, що ви 
+
+зможуть одержати свої кошти. 
+
+ЩО НЕОБХІДНО ЗРОБИТИ: 
+
+Я хочу, щоб ви знали, що я мав 
+
+все задумане так, що ми будемо 
+
+вийти успішним. Я зв\'язався 
+
+адвокат, який підготує необхідну 
+
+документ, який буде підтримувати вас як 
+
+найближчий родич полковника Хосам Хасан. Там 
+
+немає ризику на всіх у цьому питанні 
+
+як ми збираємося прийняти легалізовані 
+
+Метод і адвокатом підготуємо всі 
+
+необхідні документи. Будь ласка, прагнемо 
+
+дотримуватися крайню обережність у всіх 
+
+питання, що стосуються цієї issue.Once 
+
+Ці кошти були переведені на ваш 
+
+призначений банківський рахунок, ми повинні спільно в 
+
+Ставлення 60% для мене, 40% для вас. 
+
+У разі зацікавленості прохання звертатися 
+
+мені через мого приватного Email: 
+
+shanavasindia09@gmail.com 
+
+С нижче інформацію. 
+
+1. Повні імена 
+2. Домашній телефон 
+3. Поточні адреса місця проживання. 
+
+Після цього я надам вам більше 
+
+Подробиці цього transaction.Your 
+
+ранній відповідь на цей лист буде 
+
+високу оцінку. 
+
+Привіт, 
+Г-н Ша Navas
+
  
--	lock_kernel();
- 	spin_lock(&ch_index_lock);
- 	ch = idr_find(&ch_index_idr, minor);
- 
- 	if (NULL == ch || scsi_device_get(ch->device)) {
- 		spin_unlock(&ch_index_lock);
--		unlock_kernel();
- 		return -ENXIO;
- 	}
-+	file->private_data = ch;
- 	spin_unlock(&ch_index_lock);
- 
--	file->private_data = ch;
--	unlock_kernel();
- 	return 0;
- }
- 
--- 
-1.6.0.6
 
