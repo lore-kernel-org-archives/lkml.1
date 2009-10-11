@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbZJKXGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbZJKXGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbZJKXGF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 19:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZJKXGE
+	id S1754136AbZJKXGQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 19:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbZJKXGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 19:06:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58169 "EHLO ogre.sisk.pl"
+	Sun, 11 Oct 2009 19:06:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58180 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753588AbZJKXGB convert rfc822-to-8bit (ORCPT
+	id S1753588AbZJKXGM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 19:06:01 -0400
+	Sun, 11 Oct 2009 19:06:12 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Mikael Pettersson" <mikpe@it.uu.se>
+       "James Bottomley" <James.Bottomley@suse.de>,
+       "Michael Ellerman" <michael@ellerman.id.au>,
+       "Tetsuo Handa" <penguin-kernel@i-love.sakura.ne.jp>
 References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
 In-Reply-To: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +21,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <L6tb-VyKHZK.A.XJD.uzl0KB@chimera>
-Subject: [Bug #14256] kernel BUG at fs/ext3/super.c:435
+Message-ID: <L6tb-VyKHZK.A.HAD.qzl0KB@chimera>
+Subject: [Bug #14258] Memory leak in SCSI initialization
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon, 12 Oct 2009 01:01:07 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +37,13 @@ introduced between 2.6.30 and 2.6.31.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14256
-Subject		: kernel BUG at fs/ext3/super.c:435
-Submitter	: Mikael Pettersson <mikpe@it.uu.se>
-Date		: 2009-09-21 7:29 (21 days old)
-References	: http://marc.info/?l=linux-kernel&m=125351816109264&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14258
+Subject		: Memory leak in SCSI initialization
+Submitter	: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Date		: 2009-09-22 4:18 (20 days old)
+References	: http://marc.info/?l=linux-kernel&m=125359311312243&w=4
+Handled-By	: Michael Ellerman <michael@ellerman.id.au>
+		  James Bottomley <James.Bottomley@suse.de>
+Patch		: http://patchwork.kernel.org/patch/51412/
 
 
