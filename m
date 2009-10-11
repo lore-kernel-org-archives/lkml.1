@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbZJKLCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbZJKLFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758155AbZJKLCV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 07:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756933AbZJKLCT
+	id S1760386AbZJKLFH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 07:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbZJKLFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 07:02:19 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37224 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756647AbZJKLCS (ORCPT
+	Sun, 11 Oct 2009 07:05:05 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37592 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756933AbZJKLFE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 07:02:18 -0400
-X-Sasl-enc: zlPar8/niqHhSpfoXGtBz5in2qnrRAubMCyiYuqSULdP 1255258899
-Message-ID: <4AD1BB06.70309@imap.cc>
-Date: Sun, 11 Oct 2009 13:01:26 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Andy Whitcroft <apw@canonical.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andy Walls <awalls@radix.net>
-Subject: Re: checkpatch is not detecting bad whitespacing when using macros
- on formulas
-References: <20091011071911.54347f2b@pedra.chehab.org>
-In-Reply-To: <20091011071911.54347f2b@pedra.chehab.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4F70A0D95EF06F1FB27C8A0B"
+	Sun, 11 Oct 2009 07:05:04 -0400
+Subject: Re: make mrproper not resetting kernel saved arch
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ben Dooks <ben@fluff.org>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20091010221736.GB7793@fluff.org.uk>
+References: <20091010212505.GA7793@fluff.org.uk>
+	 <20091010221736.GB7793@fluff.org.uk>
+Content-Type: text/plain
+Date: Sun, 11 Oct 2009 13:04:24 +0200
+Message-Id: <1255259064.8967.178.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4F70A0D95EF06F1FB27C8A0B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2009-10-10 at 23:17 +0100, Ben Dooks wrote:
+> On Sat, Oct 10, 2009 at 10:25:05PM +0100, Ben Dooks wrote:
+> > Having accidentally configured for the wrong arch, I tried going back to ARM
+> > but got the following errro:
+> > 
+> > Makefile:210: *** ARCH changed from "x86_64" to "arm". Use "make mrproper" to fix it up.  Stop.
+> > 
+> > Trying to do 'make mrproper' repeats the error:
+> > 
+> > $ make mrproper
+> > Makefile:210: *** ARCH changed from "x86_64" to "arm". Use "make mrproper" to fix it up.  Stop.
+> > 
+> > I ended up doing 'rm -r include/generated' to get rid of this.
+> > 
+> > My makefile understanding isn't good enough to repair this, so can someone
+> > please fix this.
+> 
+> Add changing cross compiler to this list.
 
-Mauro Carvalho Chehab schrieb:
-> While reviewing a patch from Andy Walls, I noticed that checkpatch v 0.=
-29
-> didn't get any errors when bad whitespacing is used on some formulas:
->=20
-> $ checkpatch.pl cx23888-ir-part2_2.patch
-> total: 0 errors, 0 warnings, 1237 lines checked
->=20
-> cx23888-ir-part2_2.patch has no obvious style problems and is ready for=
- submission.
->=20
-> However, there are several places at the patch like:
->=20
-> +static inline u16 ns_to_clock_divider(unsigned int ns)
-> +{
-> +       return count_to_clock_divider(
-> +                 DIV_ROUND_CLOSEST(CX23888_IR_REFCLK_FREQ/1000000 * ns=
-, 1000));
-> +}
+Yeah 575543347b5baed0ca927cb90ba8807396fe9cc9 is utterly annoying and is
+breaking build scripts all over the planet.
 
-checkpatch is already complaining too much rather than too little.
-No need to add even more complaints.
+All because people don't know how to use their shell.
 
-The code you cite above is fine IMHO, but if you don't like it, feel
-free to raise your complaints. You can do so without help from
-checkpatch, too.
-
-Jm2c
-T.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig4F70A0D95EF06F1FB27C8A0B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFK0bsPQ3+did9BuFsRAgVLAJ9J+Rl457F086CZYnkJrAtjgr0YNgCfepyX
-KJs+oBuyCREi4X7vndjj+oY=
-=UAih
------END PGP SIGNATURE-----
-
---------------enig4F70A0D95EF06F1FB27C8A0B--
