@@ -1,125 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932230AbZJLOUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbZJLOTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932230AbZJLOUA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbZJLOT7
+	id S1756834AbZJLOTg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbZJLOTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:19:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50824 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932185AbZJLOT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:19:58 -0400
-Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
-From: James Bottomley <James.Bottomley@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jing Huang <huangj@brocade.com>
-In-Reply-To: <20091012130652.GB25464@elte.hu>
-References: <1255012399.4187.24.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
-	 <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain>
-	 <1255031298.4187.260.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain>
-	 <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
-	 <20091008210737.GD29181@mit.edu>
-	 <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
-	 <20091009091538.GA4154@elte.hu>
-	 <1255097287.2934.21.camel@localhost.localdomain>
-	 <20091012130652.GB25464@elte.hu>
-Content-Type: text/plain
-Date: Mon, 12 Oct 2009 09:19:07 -0500
-Message-Id: <1255357148.2850.91.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Mon, 12 Oct 2009 10:19:35 -0400
+Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:55901 "EHLO
+	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756792AbZJLOTe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:19:34 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4AD33ADB.4000500@cam.ac.uk>
+Date: Mon, 12 Oct 2009 15:19:07 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091007)
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
+       Linux I2C <linux-i2c@vger.kernel.org>
+Subject: Re: [PATCH] ALS: TSL2550 driver move from i2c/chips
+References: <4ACF4AC6.7070802@cam.ac.uk> <20091010185200.671846c5@hyperion.delvare>
+In-Reply-To: <20091010185200.671846c5@hyperion.delvare>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 15:06 +0200, Ingo Molnar wrote:
-> * James Bottomley <James.Bottomley@suse.de> wrote:
+For those not following this driver, Jean does raise the issue
+of device naming again and I think we really need to settle
+this one before progressing with ALS in general.
+
 > 
-> > On Fri, 2009-10-09 at 11:15 +0200, Ingo Molnar wrote:
-> > > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > 
-> > > > On Thu, 8 Oct 2009, Theodore Tso wrote:
-> > > > > 
-> > > > > So would it be acceptable to merge the 50 kloc of crap _during_ the
-> > > > > merge window?
-> > > > 
-> > > > Yes. I actually looked at the driver (since I had pulled it - I've 
-> > > > unpulled it but am still mulling it over), and while I think it looked 
-> > > > huge and overly complex, it by no means gave me the kinds of vibes I 
-> > > > get from some "obviously-ported-from-windows-with-no-clue" drivers.
-> > > > 
-> > > > So at least from my quick look I didn't get the feeling that the 
-> > > > driver was "evil". For me, it's a timing issue.  I hate getting big 
-> > > > pull requests after -rc1 is out, and I really don't like the feeling 
-> > > > that people are just ignoring the merge window.
-> > > > 
-> > > > That said, if somebody wants to look more closely at the driver, and 
-> > > > then wants to convince people that it should have gone through 
-> > > > "staging", feel free. But that's not what I've personally been arguing 
-> > > > about.
-> > > 
-> > > Greg, what's your take on the quality of this new driver? Do you have 
-> > > some time to do a review of this with drivers/staging/ versus drivers/ 
-> > > glasses on? The Git URI is at:
-> > 
-> > To me, the matter of staging versus actual tree isn't a quality issue 
-> > (otherwise we'd be shifting ~75% of SCSI drivers to staging, depending 
-> > on whose view of "quality" was being used). [...]
+> "2.0"?
+True, that would be consistent.
 > 
-> I think you need to update your notion of what goes into 
-> drivers/staging/ - these days it's primarily about code/implementation 
-> quality (Greg please correct me if i'm wrong about that).
+>>  
+>>  /*
+>>   * Defines
+>> @@ -44,8 +47,10 @@
+>>   */
+>>  
+>>  struct tsl2550_data {
+>> +	struct device *classdev;
+>>  	struct i2c_client *client;
+>>  	struct mutex update_lock;
+>> +	unsigned int id;
+>>  
+>>  	unsigned int power_state : 1;
+>>  	unsigned int operating_mode : 1;
+>> @@ -60,9 +65,41 @@ static const u8 TSL2550_MODE_RANGE[2] = {
+>>  };
+>>  
+>>  /*
+>> + * IDR to assign each registered device a unique id
+>> + */
+>> +static DEFINE_IDR(tsl2550_idr);
+>> +static DEFINE_SPINLOCK(tsl2550_idr_lock);
+>> +#define TSL2550_DEV_MAX 9
 > 
-> Driver ABIs are distinctly down the priority list.
-
-Not for me they're not.  We worked hard to unify exposed ABIs for
-drivers, so this is the most important user visible feature.  We can
-clean up code in the drivers tree, that's easy.  We can't break the user
-visible ABI of a supported driver without causing a lot of pain to its
-user community.
-
-> > [...] It's an ABI issue.  If we would have to change the user visible 
-> > ABI while the driver was being cleaned up, I'd want it in staging to 
-> > warn users to expect these problems.  Although we couldn't clean up 
-> > everything, I did make sure this driver plugs correctly into the 
-> > standard linux FC ABI before putting it in the SCSI tree, so there are 
-> > no ABI changes anticipated even though there will likely be a lot of 
-> > code changes.  Therefore, the correct clean up path for this one is 
-> > through the SCSI tree.
+> Such an arbitrary limit is simply not acceptable.
+Fair enough, but it is based on restricting the size
+of the char array needed for the name when registering
+with als.  Hence single digit decimal maximum.
+Do you suggest leaving it unrestricted (which makes code
+a little fiddly given variable size of max idr) or some other
+limit?
+ 
+>> +
+>> +/*
+>>   * Management functions
+>>   */
+>>  
+>> +static int tsl2550_get_id(void)
+>> +{
+>> +	int ret, val;
+>> +
+>> +idr_again:
+>> +	if (unlikely(idr_pre_get(&tsl2550_idr, GFP_KERNEL) == 0))
+>> +		return -ENOMEM;
+>> +	spin_lock(&tsl2550_idr_lock);
+>> +	ret = idr_get_new(&tsl2550_idr, NULL, &val);
+>> +	if (unlikely(ret == -EAGAIN))
+>> +		goto idr_again;
+>> +	else if (unlikely(ret))
+>> +		return ret;
+>> +	if (val > TSL2550_DEV_MAX)
+>> +		return -ENOMEM;
+>> +	return val;
+>> +}
+>> +
+>> +static void tsl2550_free_id(int val)
+>> +{
+>> +	spin_lock(&tsl2550_idr_lock);
+>> +	idr_remove(&tsl2550_idr, val);
+>> +	spin_unlock(&tsl2550_idr_lock);
+>> +}
 > 
-> What kind of significant ABI does this driver expose? If this question 
-> even comes up then it's using the wrong kind of ABI i think. Drivers 
-> should almost never expose significant new ABIs.
-
-The answer was in the email fragment you quoted: none on its own.  It
-plugs into the standard FC transport ABI now.
-
-However, there are various storage bodies who see creating user ABIs as
-part of their job.  The way these tend to get implemented is in the
-driver because that's the way it was done in UNIX (each driver rolls its
-own).  Part of my job is going through drivers and taking them out
-again ... while ensuring we at least have a way to perform whatever task
-it was in a uniform manner for all drivers.
-
-> If it's a storage management ABI then that should have been done at a 
-> higher level - possibly as a system call, but at minimum as a general 
-> facility.
-
-It is: it's implemented in the FC transport class, where it's uniform
-for all FC drivers.
-
-James
-
-> (Anyway ... this cannot be argued without knowing what specific ABI you 
-> mean here.)
+> Having to implement this in _every_ ALS driver sounds wrong and
+> painful. If uniqueness of any kind must be provided, it should be
+> handled by the ALS core and not by individual drivers, otherwise you
+> can be certain that at least one driver will get it wrong someday.
+I agree. The reason this originally occurred is that the acpi layer
+apparently doesn't allow for simultaneous probing of multiple drivers
+and hence can get away with a simple counter and no locking.
 > 
-> 	Ingo
+> I'd imaging that als-class devices are simply named als%u. Just like
+> hwmon devices are named hwmon%u, input devices are names input%u and
+> event%u, etc. I don't know of any class pushing the naming down to its
+> drivers, do you? The only example I can remember are i2c drivers back
+> in year 1999, when they were part of lm-sensors.I have personally put
+> an end to this years ago.
+This debate started in the als thread. Personally I couldn't care less
+either way but it does need to be put to bed before that subsystem merges.
+To my mind either approach is trivially handled in a userspace library
+so it doesn't matter.  I don't suppose you can remember what the original
+reasons for squashing this naming approach were?
+> 
+>> +
+>>  static int tsl2550_set_operating_mode(struct i2c_client *client, int mode)
+>>  {
+>>  	struct tsl2550_data *data = i2c_get_clientdata(client);
+>> @@ -296,13 +333,13 @@ static ssize_t tsl2550_show_lux1_input(struct device *dev,
+>>  	return ret;
+>>  }
+>>  
+>> -static DEVICE_ATTR(lux1_input, S_IRUGO,
+>> +static DEVICE_ATTR(illuminance, S_IRUGO,
+>>  		   tsl2550_show_lux1_input, NULL);
+> 
+> Question: if I have a light sensing chip with two sensors, how are we
+> going to handle it? Will we register 2 als class devices? The initial
+> naming convention had the advantage that you could have more than one
+> sensor per device, but I don't know if it is desirable in practice.
+This only becomes and issue if we have two sensors measuring illuminance
+(or approximation of it).  The only two sensor chips I know of have one
+broadband and one in the infrared tsl2561 and I think the isl chip with
+a driver currently in misc.  The combination of these two are needed to
+calculate illuminance.  Some of the original discussion went into how
+to support separate access to the individual sensors.  Decision was to
+leave that question until it becomes relevant.  Basically we would put
+the current drivers in just supporting illuminance and see if anyone asked
+for furthers support.  One tricky aspect is what the units should be for
+particular frequency ranges. At least illuminance is cleanly defined
+(even if chips are only fairly coarsely approximating it. 
+> 
+>>  
+>>  static struct attribute *tsl2550_attributes[] = {
+>>  	&dev_attr_power_state.attr,
+>>  	&dev_attr_operating_mode.attr,
+>> -	&dev_attr_lux1_input.attr,
+>> +	&dev_attr_illuminance.attr,
+>>  	NULL
+>>  };
+>>  
+>> @@ -350,6 +387,7 @@ static int __devinit tsl2550_probe(struct i2c_client *client,
+>>  	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+>>  	struct tsl2550_data *data;
+>>  	int *opmode, err = 0;
+>> +	char name[9];
+>>  
+>>  	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_WRITE_BYTE
+>>  					    | I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
+>> @@ -387,15 +425,31 @@ static int __devinit tsl2550_probe(struct i2c_client *client,
+>>  	if (err)
+>>  		goto exit_kfree;
+>>  
+>> +	data->id = tsl2550_get_id();
+>> +	if (data->id < 0) {
+>> +		err = data->id;
+>> +		goto exit_kfree;
+>> +	}
+>> +	sprintf(name, "tsl2550%d", data->id);
+> 
+> Please no. For one thing you should always use snprintf and not sprintf
+> when writing to such small buffers. It's way too easy to get things
+> wrong otherwise. And you really want a separator between the chip name
+> and the id, because "tsl25500" will be confusing as hell.
+The length is fine with the restriction above, but I agree we need a separation
+(hadn't really thought this through!).
+> 
+> Not that these comments of mine really matter, as I don't think the
+> above code should stay at all.
+That's fair enough and I'm inclined to agree.
+> 
+>>  	/* Register sysfs hooks */
+>> -	err = sysfs_create_group(&client->dev.kobj, &tsl2550_attr_group);
+>> +	data->classdev = als_device_register(&client->dev, name);
+>> +	if (IS_ERR(data->classdev)) {
+>> +		err = PTR_ERR(data->classdev);
+>> +		goto exit_free_id;
+>> +	}
+>> +
+>> +	err = sysfs_create_group(&data->classdev->kobj, &tsl2550_attr_group);
+>>  	if (err)
+>> -		goto exit_kfree;
+>> +		goto exit_unreg;
+>>  
+>>  	dev_info(&client->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+>>  
+>>  	return 0;
+>>  
+>> +exit_unreg:
+>> +	als_device_unregister(data->classdev);
+>> +exit_free_id:
+>> +	tsl2550_free_id(data->id);
+>>  exit_kfree:
+>>  	kfree(data);
+>>  exit:
+>> @@ -404,12 +458,17 @@ exit:
+>>  
+>>  static int __devexit tsl2550_remove(struct i2c_client *client)
+>>  {
+>> -	sysfs_remove_group(&client->dev.kobj, &tsl2550_attr_group);
+>> +	struct tsl2550_data *data = i2c_get_clientdata(client);
+>> +
+>> +	sysfs_remove_group(&data->classdev->kobj, &tsl2550_attr_group);
+>> +	als_device_unregister(data->classdev);
+>>  
+>>  	/* Power down the device */
+>>  	tsl2550_set_power_state(client, 0);
+>>  
+>> -	kfree(i2c_get_clientdata(client));
+>> +	tsl2550_free_id(data->id);
+>> +
+>> +	kfree(data);
+>>  
+>>  	return 0;
+>>  }
+> 
+> 
 
