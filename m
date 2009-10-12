@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZJLKfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbZJLKmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbZJLKfl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 06:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbZJLKfk
+	id S1756053AbZJLKmZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 06:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbZJLKmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 06:35:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49822 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755145AbZJLKfj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 06:35:39 -0400
-Date: Mon, 12 Oct 2009 11:36:29 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Nick Bowler <nbowler@draconx.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Regression, bisected] Transmit failure in et131x.
-Message-ID: <20091012113629.4ed8e7f4@lxorguk.ukuu.org.uk>
-In-Reply-To: <loom.20091012T004346-812@post.gmane.org>
-References: <20091008140805.GA21535@emergent.ellipticsemi.com>
-	<20091009112016.4fb07eb7@lxorguk.ukuu.org.uk>
-	<loom.20091012T004346-812@post.gmane.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 Oct 2009 06:42:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59702 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755137AbZJLKmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 06:42:23 -0400
+Message-ID: <4AD307A5.105@kernel.org>
+Date: Mon, 12 Oct 2009 19:40:37 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: cl@linux-foundation.org
+CC: linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [this_cpu_xx V6 7/7] this_cpu: slub aggressive use of this_cpu
+ operations in the hotpaths
+References: <20091007211024.442168959@gentwo.org> <20091007211053.378634196@gentwo.org>
+In-Reply-To: <20091007211053.378634196@gentwo.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 12 Oct 2009 10:40:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Thanks a lot for your help.  Alas, this does not resolve the issue.
-> Using tcpdump indicates that receive continues to work while transmit
-> fails.
+cl@linux-foundation.org wrote:
+> Use this_cpu_* operations in the hotpath to avoid calculations of
+> kmem_cache_cpu pointer addresses.
 > 
-> I was using gigabit, but the problem persists when I run at 100mbit.
-> The MTU setting remains at the default 1500 bytes.
+> On x86 there is a trade off: Multiple uses segment prefixes against an
+> address calculation and more register pressure. Code size is reduced
+> also therefore it is an advantage icache wise.
+> 
+> The use of prefixes is necessary if we want to use a scheme
+> for fastpaths that do not require disabling interrupts.
+> 
+> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-et131x: Fix the add_10bit macro
+The rest of the patches look good to me but I'm no expert in this area
+of code.  But you're the maintainer of the allocator and the changes
+definitely are percpu related, so if you're comfortable with it, I can
+happily carry the patches through percpu tree.
 
-From: Alan Cox <alan@linux.intel.com>
+Thanks.
 
-Duh.. we need to preserve the wrap bit when adding.
-
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
-
- drivers/staging/et131x/et1310_address_map.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/staging/et131x/et1310_address_map.h b/drivers/staging/et131x/et1310_address_map.h
-index 2273926..d71e04a 100644
---- a/drivers/staging/et131x/et1310_address_map.h
-+++ b/drivers/staging/et131x/et1310_address_map.h
-@@ -223,7 +223,7 @@ typedef union _TXDMA_PR_NUM_DES_t {
- 
- extern inline void add_10bit(u32 *v, int n)
- {
--	*v = INDEX10(*v + n);
-+	*v = INDEX10(*v + n) | (*v & ET_DMA10_WRAP);
- }
- 
- /*
+-- 
+tejun
