@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933365AbZJLVzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933391AbZJLV7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933365AbZJLVzK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933354AbZJLVzJ
+	id S933391AbZJLV7s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933381AbZJLV7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:55:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36496 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933355AbZJLVzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:55:07 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [Bug #14374] MCEs caused by commit db8be50c4307dac2b37305fc59c8dc0f978d09ea
-Date: Mon, 12 Oct 2009 23:56:09 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "David Woodhouse" <David.Woodhouse@intel.com>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>, "Nick Piggin" <npiggin@suse.de>
-References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera> <r-4Wjt4coy.A.DGD.aal0KB@chimera> <19155.12454.655519.908173@pilspetsen.it.uu.se>
-In-Reply-To: <19155.12454.655519.908173@pilspetsen.it.uu.se>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 12 Oct 2009 17:59:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46384 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933379AbZJLV7q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:59:46 -0400
+Date: Mon, 12 Oct 2009 14:58:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, marcin.slusarz@gmail.com
+Subject: Re: [PATCH 0/3] extend get/setrlimit to support setting rlimits
+ external to a process (v5)
+Message-Id: <20091012145810.b2aed62b.akpm@linux-foundation.org>
+In-Reply-To: <20091012161342.GA32088@hmsreliant.think-freely.org>
+References: <20090928200600.GA3053@hmsreliant.think-freely.org>
+	<20091001171538.GB2456@hmsreliant.think-freely.org>
+	<20091012161342.GA32088@hmsreliant.think-freely.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910122356.09967.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, Mikael Pettersson wrote:
-> Rafael J. Wysocki wrote:
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.31.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14374
-> > Subject		: MCEs caused by commit db8be50c4307dac2b37305fc59c8dc0f978d09ea
-> > Submitter	: Nick Piggin <npiggin@suse.de>
-> > Date		: 2009-10-02 7:34 (10 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linu=
-> > x-2.6.git;a=3Dcommit;h=3Ddb8be50c4307dac2b37305fc59c8dc0f978d09ea
-> > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125446885705223&w=3D4
+On Mon, 12 Oct 2009 12:13:42 -0400
+Neil Horman <nhorman@tuxdriver.com> wrote:
+
+> Its been requested often that we have the ability to read and modify process
+> rlimit values from contexts external to the owning process.  Ideally this allows
+> sysadmins to adjust rlimits on long running processes wihout the need to stop
+> and restart those processes, which incurs undesireable downtime.  This patch
+> enables that functionality,  It does so in two places.  First it enables process
+> limit setting by writing to the /proc/pid/limits file a string in the format:
+> <limit> <current limit> <max limit> > /proc/<pid>/limits
+> where limit is one of
+> [as,core,cpu,data,fsize,locks,memlock,msgqueue,nice,nofile,nproc,rss,rtprio,rttime]
 > 
-> Fixed for 2.6.32-rc5 by d93a8f829fe1d2f3002f2c6ddb553d12db420412
-> 'Revert "USB: Work around BIOS bugs by quiescing USB controllers earlier"'.
+> Secondly it allows for programatic setting of these limits via 2 new syscalls,
+> getprlimit, and setprlimit, which act in an identical fashion to getrlimit and
+> setrlimit respectively, except that they except a process id as an extra
+> argument, to specify the process id of the rlimit values that you wish to
+> read/write
 
-Thanks, closed.
+I'm still not seeing why we need the /proc interface.
 
-Rafael
+We've been using a syscall to set rlimits for ever and we've survived.
+
+It just adds bloat and complexity to the kernel because putting a
+100-line tool into util-linux is All Too Hard.
+
