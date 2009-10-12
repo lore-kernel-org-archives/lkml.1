@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbZJLVte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933343AbZJLVwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbZJLVte (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbZJLVtd
+	id S933343AbZJLVwZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932725AbZJLVwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:49:33 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:28065 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751906AbZJLVtc (ORCPT
+	Mon, 12 Oct 2009 17:52:24 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47055 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758530AbZJLVwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:49:32 -0400
-Date: Mon, 12 Oct 2009 15:48:54 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: pci-express hotplug
-Message-ID: <20091012214854.GA14102@ldl.fc.hp.com>
-References: <20091012120620.GG9228@kernel.dk> <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk>
+	Mon, 12 Oct 2009 17:52:24 -0400
+Message-ID: <4AD3A460.6060505@zytor.com>
+Date: Mon, 12 Oct 2009 14:49:20 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012150603.GK9228@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86/pci: intel bus root res with IOH reading -v2
+References: <4AC97C00.7090503@kernel.org> <200910061257.54877.bjorn.helgaas@hp.com> <20091012203453.GC7648@elte.hu> <200910121545.47794.bjorn.helgaas@hp.com>
+In-Reply-To: <200910121545.47794.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>> On Mon, Oct 12, 2009 at 02:06:20PM +0200, Jens Axboe wrote:
-> >>>> I'm trying to get pci-express hotplug working in a box here. I don't
-> >>>> really care about the hotplug aspect, I just want the darn pci-e slots
-> >>>> that are designated hotplug slots to actually WORK. When I load pciehp,
-> >>>> I get:
-> >>>>
-> >>>> Firmware did not grant requested _OSC control
-> >>>> Firmware did not grant requested _OSC control
-> >>>> Firmware did not grant requested _OSC control
-> >>>> Firmware did not grant requested _OSC control
+On 10/12/2009 02:45 PM, Bjorn Helgaas wrote:
+> For the patch in question, we don't even have a root cause for the bug
+> (or at least, I couldn't decipher it from the changelog). There's a 
+> reference to _CRS being wrong, but we don't currently use _CRS for
+> x86 host bridges.
+> 
+> But in general, my objection is that even if BIOS provides perfectly
+> valid information about host bridge apertures, the the fact that Linux
+> ignores that information means we have to add this sort of vendor-
+> specific code every time we trip over something. And we're tripping
+> over things quite often.
+> 
+> Windows consumes this _CRS information, so while I grant there are
+> certainly BIOS bugs there, I think most of the bugs are actually in
+> Linux.
 
-This isn't just a benign message. It means the OS asked to take
-over control of the slots and firmware really did say, "nope,
-sorry".
+I think the right policy for most if not all things should be "use the
+BIOS information unless we know better."
 
-Which means that this:
-
-> On Mon, Oct 12 2009, Mark Lord wrote:
-> > Tried this yet:
-> >
-> >   options pciehp pciehp_force=1
-
-Is generally a bad idea.
-
-Don't do it unless you really know your platform well.
-
-> >> On Mon, Oct 12 2009, Greg KH wrote:
-> >>> Can you try the acpiphp driver instead?  That's usually the
-> >>> driver you want to use for "modern" systems (i.e. anything
-> >>> made in the past 5 years.)
-> >>
-> >> I should have mentioned that I tried that too. It doesn't
-> >> complain, but I don't see my cards anywhere afterwards. I'm
-> >> a hotplug newbie, do I need to do anything else?
-
-Can you modprobe acpiphp with debug=1? And send the output?
-
-Thanks.
-
-/ac
+	-hpa
 
