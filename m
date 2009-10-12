@@ -1,193 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbZJLPxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932700AbZJLP4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932691AbZJLPxJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932647AbZJLPxI
+	id S932700AbZJLP4n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932676AbZJLP4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:53:08 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:57047 "EHLO poutre.nerim.net"
+	Mon, 12 Oct 2009 11:56:42 -0400
+Received: from mga14.intel.com ([143.182.124.37]:45909 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932619AbZJLPxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:53:06 -0400
-Date: Mon, 12 Oct 2009 17:52:16 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
-       Linux I2C <linux-i2c@vger.kernel.org>
-Subject: Re: [PATCH] ALS: TSL2550 driver move from i2c/chips
-Message-ID: <20091012175216.6d844623@hyperion.delvare>
-In-Reply-To: <4AD33ADB.4000500@cam.ac.uk>
-References: <4ACF4AC6.7070802@cam.ac.uk>
-	<20091010185200.671846c5@hyperion.delvare>
-	<4AD33ADB.4000500@cam.ac.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	id S932653AbZJLP4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 11:56:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,546,1249282800"; 
+   d="scan'208";a="197967059"
+Subject: Re: 2.6.32-rc4: Reported regressions from 2.6.31
+From: David Woodhouse <david.woodhouse@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+In-Reply-To: <alpine.LFD.2.01.0910120725350.3438@localhost.localdomain>
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
+	 <alpine.LFD.2.01.0910111554400.3438@localhost.localdomain>
+	 <1255342738.24732.265.camel@macbook.infradead.org>
+	 <alpine.LFD.2.01.0910120725350.3438@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Intel Corporation. Pipers Way, Swindon, Wiltshire, SN3 1RJ,
+ UK.
+Date: Mon, 12 Oct 2009 16:56:02 +0100
+Message-Id: <1255362962.32729.63.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jonathan,
-
-On Mon, 12 Oct 2009 15:19:07 +0100, Jonathan Cameron wrote:
-> >> @@ -60,9 +65,41 @@ static const u8 TSL2550_MODE_RANGE[2] = {
-> >>  };
-> >>  
-> >>  /*
-> >> + * IDR to assign each registered device a unique id
-> >> + */
-> >> +static DEFINE_IDR(tsl2550_idr);
-> >> +static DEFINE_SPINLOCK(tsl2550_idr_lock);
-> >> +#define TSL2550_DEV_MAX 9
+On Mon, 2009-10-12 at 16:24 +0100, Linus Torvalds wrote:
+> 
+> On Mon, 12 Oct 2009, David Woodhouse wrote:
 > > 
-> > Such an arbitrary limit is simply not acceptable.
->
-> Fair enough, but it is based on restricting the size
-> of the char array needed for the name when registering
-> with als.  Hence single digit decimal maximum.
-> Do you suggest leaving it unrestricted (which makes code
-> a little fiddly given variable size of max idr) or some other
-> limit?
-
-The name size really isn't an issue. You won't notice 16 bytes instead
-of 9. And it's not like we'll have millions of these devices.
-
-> >> +static int tsl2550_get_id(void)
-> >> +{
-> >> +	int ret, val;
-> >> +
-> >> +idr_again:
-> >> +	if (unlikely(idr_pre_get(&tsl2550_idr, GFP_KERNEL) == 0))
-> >> +		return -ENOMEM;
-> >> +	spin_lock(&tsl2550_idr_lock);
-> >> +	ret = idr_get_new(&tsl2550_idr, NULL, &val);
-> >> +	if (unlikely(ret == -EAGAIN))
-> >> +		goto idr_again;
-> >> +	else if (unlikely(ret))
-> >> +		return ret;
-> >> +	if (val > TSL2550_DEV_MAX)
-> >> +		return -ENOMEM;
-> >> +	return val;
-> >> +}
-> >> +
-> >> +static void tsl2550_free_id(int val)
-> >> +{
-> >> +	spin_lock(&tsl2550_idr_lock);
-> >> +	idr_remove(&tsl2550_idr, val);
-> >> +	spin_unlock(&tsl2550_idr_lock);
-> >> +}
+> > Well, according to the design, the IOMMU code is doing the right thing¹.
 > > 
-> > Having to implement this in _every_ ALS driver sounds wrong and
-> > painful. If uniqueness of any kind must be provided, it should be
-> > handled by the ALS core and not by individual drivers, otherwise you
-> > can be certain that at least one driver will get it wrong someday.
->
-> I agree. The reason this originally occurred is that the acpi layer
-> apparently doesn't allow for simultaneous probing of multiple drivers
-> and hence can get away with a simple counter and no locking.
->
-> > I'd imaging that als-class devices are simply named als%u. Just like
-> > hwmon devices are named hwmon%u, input devices are names input%u and
-> > event%u, etc. I don't know of any class pushing the naming down to its
-> > drivers, do you? The only example I can remember are i2c drivers back
-> > in year 1999, when they were part of lm-sensors.I have personally put
-> > an end to this years ago.
->
-> This debate started in the als thread. Personally I couldn't care less
-> either way but it does need to be put to bed before that subsystem merges.
-> To my mind either approach is trivially handled in a userspace library
-> so it doesn't matter.  I don't suppose you can remember what the original
-> reasons for squashing this naming approach were?
+> > The theory is that the BIOS _tells_
+> 
+> There is no "theory". There is only crap BIOSes. Stop living in a dream 
+> world, and stop making arguments that are only relevant in that dream 
+> world.
 
-Code duplication. Having the same unique-id handling code repeated in
-50 drivers was no fun, as it did not add any value compared to a
-central handling.
+You're preaching to the choir, Linus.
 
-> >> @@ -296,13 +333,13 @@ static ssize_t tsl2550_show_lux1_input(struct device *dev,
-> >>  	return ret;
-> >>  }
-> >>  
-> >> -static DEVICE_ATTR(lux1_input, S_IRUGO,
-> >> +static DEVICE_ATTR(illuminance, S_IRUGO,
-> >>  		   tsl2550_show_lux1_input, NULL);
-> > 
-> > Question: if I have a light sensing chip with two sensors, how are we
-> > going to handle it? Will we register 2 als class devices? The initial
-> > naming convention had the advantage that you could have more than one
-> > sensor per device, but I don't know if it is desirable in practice.
->
-> This only becomes and issue if we have two sensors measuring illuminance
-> (or approximation of it).  The only two sensor chips I know of have one
-> broadband and one in the infrared tsl2561 and I think the isl chip with
-> a driver currently in misc.  The combination of these two are needed to
-> calculate illuminance.  Some of the original discussion went into how
-> to support separate access to the individual sensors.  Decision was to
-> leave that question until it becomes relevant.  Basically we would put
-> the current drivers in just supporting illuminance and see if anyone asked
-> for furthers support.  One tricky aspect is what the units should be for
-> particular frequency ranges. At least illuminance is cleanly defined
-> (even if chips are only fairly coarsely approximating it. 
+> > The only viable solution (short of an open source BIOS written by sober
+> > people)
+> 
+> Again, you're living in that dream world. Wake up, sheeple.
 
-Hmm, this isn't the point I was raising. I was thinking of a light
-sensor chip which would sense light in different locations. Think chip
-with remote sensors. This is done frequently for thermal sensors, so I
-guess it could be done for light sensors as well. A practical
-application could be sensing the ambient light on two sides of an
-object, so that you get the correct measurement regardless of the
-position.
+ ... 
 
-I'm not saying such chips exist, I really don't know. I am just raising
-the question of how we'd handle them if they do. The current naming
-scheme implies that we'd need a separate als instance for each sensor,
-and I want you to be aware of this.
+> So your arguments about RMRR tables and "should do" are POINTLESS. Just 
+> give it up.
 
-> >>  static struct attribute *tsl2550_attributes[] = {
-> >>  	&dev_attr_power_state.attr,
-> >>  	&dev_attr_operating_mode.attr,
-> >> -	&dev_attr_lux1_input.attr,
-> >> +	&dev_attr_illuminance.attr,
-> >>  	NULL
-> >>  };
-> >>  
-> >> @@ -350,6 +387,7 @@ static int __devinit tsl2550_probe(struct i2c_client *client,
-> >>  	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
-> >>  	struct tsl2550_data *data;
-> >>  	int *opmode, err = 0;
-> >> +	char name[9];
-> >>  
-> >>  	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_WRITE_BYTE
-> >>  					    | I2C_FUNC_SMBUS_READ_BYTE_DATA)) {
-> >> @@ -387,15 +425,31 @@ static int __devinit tsl2550_probe(struct i2c_client *client,
-> >>  	if (err)
-> >>  		goto exit_kfree;
-> >>  
-> >> +	data->id = tsl2550_get_id();
-> >> +	if (data->id < 0) {
-> >> +		err = data->id;
-> >> +		goto exit_kfree;
-> >> +	}
-> >> +	sprintf(name, "tsl2550%d", data->id);
-> > 
-> > Please no. For one thing you should always use snprintf and not sprintf
-> > when writing to such small buffers. It's way too easy to get things
-> > wrong otherwise. And you really want a separator between the chip name
-> > and the id, because "tsl25500" will be confusing as hell.
->
-> The length is fine with the restriction above, but I agree we need a separation
-> (hadn't really thought this through!).
+I didn't intend that as an argument. That was just a statement of how
+the architecture specifies it's _supposed_ to work. I _said_ it was
+nonsense, in my own footnote.
 
-The length is fine until someone needs more sensors, changes
-TSL2550_DEV_MAX to 16, and then the code crashes and nobody knows why.
-You can't assume that other developers won't touch your code. Thus it
-is much better to handle a given limitation in a single place. Here you
-can simply check the value returned by snprintf() and then you know if
-your name was correctly set.
+> The sane thing to do is to have a legacy IOMMU mapping until all devices 
+> are initialized, so that things work _despite_ the inevitable BIOS 
+> crapola. End of story.
 
-Again, not that it matters, because the name buffer should simply be
-large enough that it always fits.
+Damn right.
+
+That's precisely what the original "kill USB DMA early" patch was
+intending to do -- and that's why I've been telling the people
+responsible for the RMRR design that it was a stupid idea in the first
+place.
+
+The problem with the original patch was just that I didn't realise that
+some architectures didn't have ioremap() working at the time that
+PCI_FIXUP_HEADER() runs.
+
+> So stop blaming the BIOS. We _know_ firmware is crap - there is no point 
+> in blaming it. The response to "firmware bug" should be "oh, of course - 
+> and our code was too fragile, since it didn't take that into account".
+
+Yes. That's why our code has grown a metric shitload of BIOS
+workarounds, and been refactored to be less fragile, since I've taken
+over responsibility for it.
+
+You won't stop me hating the BIOS for it though. And although I agree
+that it wouldn't be perfect if we had an open source BIOS, it _would_ be
+a whole lot better.
+
+> The other solution would be to just _enable_ (and do all the setup) of the 
+> IOMMU early. And then just leave a legacy mapping for the IOMMU, and then 
+> _after_all_devices_are_set_up_ can you then remove the legacy mapping.
+
+That involves allocating a _shitload_ of page tables for a 1:1 mapping
+of all of physical memory. We used to do that to pander to broken
+graphics drivers, and the AMD guys asked me to stop because it was
+actually quite painful for them to do the same.
+
+> But your patch looks fine.
+> 
+> That said, I think your choice of initcall is odd, even if it is 
+> understandable. Right now we have, at least on x86:
+> 
+> 	fs_initcall(pcibios_assign_resources);
+> 
+> and I assume you picked fs_initcall_sync() so that it happens after that 
+> one. No?
+
+Right.
+
+> Which makes sense, but at the same time, it all looks just random. 
+
+No more random than the fact that pcibios_assign_resources() is marked
+as a FILE SYSTEM initcall in the first place, surely?
+
+We have a very limited method of expressing ordering constraints for
+initcalls; we make do with what we have. Some people around here have
+been known to argue _very_ vocally against a more comprehensive
+framework for ordering them.
+
+Yes, sometimes it looks odd :)
+
+> And 
+> different architectures actually do it in different places (some seem to 
+> do it inside pcibios_init() at subsys_initcall time). So I'm not even sure 
+> fs_initcall_sync() will do it for other architectures, although it looks 
+> like most others do their final PCI setup _earlier_ rather than later.
+
+They will do it earlier; never later. It would be completely broken to
+do it any later -- fs_initcall_sync() and rootfs_initcall() are new
+inventions, so such an architecture would have to be doing it in
+device_initcall(). And that would just be totally broken.
+
+> But I guess there could be random ACPI initcalls etc involved too, and 
+> subtle ordering constraints with _those_. And we have way too many 
+> arch-specific details here. So your patch may be the simplest one, but I 
+> wish we could also make some of this be less of a jungle of different 
+> initcalls.
+
+Yeah, it's a complete mess of generic and arch-specific initcalls, all
+invoked at different times. It would be good to clean that up, perhaps,
+but maybe not for 2.6.32.
+
+> Basically, it seems silly to have this kind of subtlety for just the final 
+> quirk, when the _other_ quirks are all handled by generic code in very 
+> well-defined places.
+
+I did think briefly about adding it to pci_subsys_init(), but moving it
+into arch-specific code didn't seem like a great idea. And the
+pcibios_assign_resources() initcall happens _after_ that, anyway.
 
 -- 
-Jean Delvare
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
