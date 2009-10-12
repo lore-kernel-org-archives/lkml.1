@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755734AbZJLM5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbZJLNAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755734AbZJLM5t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 08:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbZJLM5s
+	id S1756144AbZJLNAk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 09:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbZJLNAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 08:57:48 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:52849 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753943AbZJLM5s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 08:57:48 -0400
-Date: Mon, 12 Oct 2009 13:57:07 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Haojian Zhuang <haojian.zhuang@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Liam Girdwood <lrg@slimlogic.co.uk>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>
-Subject: Re: linux-next: voltage tree build failure
-Message-ID: <20091012125707.GE22233@sirena.org.uk>
-References: <20091012132628.2f709e40.sfr@canb.auug.org.au> <771cded00910111950y6104fe0fl4f1d10144d938243@mail.gmail.com>
+	Mon, 12 Oct 2009 09:00:39 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44898 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755194AbZJLNAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 09:00:38 -0400
+Date: Mon, 12 Oct 2009 14:59:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, lenb@kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -next] thinkpad_acpi: fix build, HOTKEY_POLL is optional
+Message-ID: <20091012125942.GA25464@elte.hu>
+References: <20091009190654.741eeffd.sfr@canb.auug.org.au> <20091009161723.b68b91a7.randy.dunlap@oracle.com> <20091010000808.GA10637@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <771cded00910111950y6104fe0fl4f1d10144d938243@mail.gmail.com>
-X-Cookie: Don't hit the keys so hard, it hurts.
+In-Reply-To: <20091010000808.GA10637@khazad-dum.debian.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 11, 2009 at 10:50:54PM -0400, Haojian Zhuang wrote:
 
-> Hi Samuel & Liam,
+* Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
 
-> Please help review and merge this fix patch. I'm sorry for inconvience.
+> On Fri, 09 Oct 2009, Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Fix optional part of driver to be built optionally:
+> 
+> NAK!
+> 
+> This happens because of (linux-next) commit
+> 7f6443f7238a0aa9014b11a0a31ab76825d75cdf 
+> "thinkpad-acpi: Fix build on !CONFIG_THINKPAD_ACPI_HOTKEY_POLL" by
+> Ingo.
+> 
+> That commit is wrong, it must NOT be applied as explained in the 
+> thread starting at http://lkml.org/lkml/2009/9/27/30.
 
-This is waiting for Samuel - it should go via the MFD tree.  I've CCed
-in Samuel's current e-mail address on the off-chance that that helps.
+Yep, that was wrong - it should be gone now.
+
+	Ingo
