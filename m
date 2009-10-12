@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932545AbZJLPFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932488AbZJLPGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932545AbZJLPFE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:05:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932532AbZJLPFD
+	id S932488AbZJLPGn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932166AbZJLPGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:05:03 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:18057 "EHLO mx1.redhat.com"
+	Mon, 12 Oct 2009 11:06:42 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:46528 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932490AbZJLPFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:05:02 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] blkdev: flush disk cache on ->fsync
-References: <20090820182432.GA31520@lst.de> <20091010161531.GA30289@lst.de>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Mon, 12 Oct 2009 11:04:28 -0400
-In-Reply-To: <20091010161531.GA30289@lst.de> (Christoph Hellwig's message of
-	"Sat, 10 Oct 2009 18:15:31 +0200")
-Message-ID: <x49skdoslfn.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
+	id S932100AbZJLPGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 11:06:40 -0400
+Date: Mon, 12 Oct 2009 17:06:04 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org
+Subject: Re: pci-express hotplug
+Message-ID: <20091012150603.GK9228@kernel.dk>
+References: <20091012120620.GG9228@kernel.dk> <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AD34494.7020602@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@lst.de> writes:
-
-> Is anyone going to pick up this patch?
+On Mon, Oct 12 2009, Mark Lord wrote:
+> Jens Axboe wrote:
+>> On Mon, Oct 12 2009, Greg KH wrote:
+>>> On Mon, Oct 12, 2009 at 02:06:20PM +0200, Jens Axboe wrote:
+>>>> Hi,
+>>>>
+>>>> I'm trying to get pci-express hotplug working in a box here. I don't
+>>>> really care about the hotplug aspect, I just want the darn pci-e slots
+>>>> that are designated hotplug slots to actually WORK. When I load pciehp,
+>>>> I get:
+>>>>
+>>>> Firmware did not grant requested _OSC control
+>>>> Firmware did not grant requested _OSC control
+>>>> Firmware did not grant requested _OSC control
+>>>> Firmware did not grant requested _OSC control
+>>>> pciehp 0000:00:05.0:pcie04: HPC vendor_id 8086 device_id 340c ss_vid 0 ss_did 0
+>>>> pciehp 0000:00:05.0:pcie04: service driver pciehp loaded
+>>>> Firmware did not grant requested _OSC control
+>>>> pciehp 0000:00:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
+>>>> pciehp 0000:00:07.0:pcie04: service driver pciehp loaded
+>>>> Firmware did not grant requested _OSC control
+>>>> pciehp 0000:80:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
+>>>> pciehp 0000:80:07.0:pcie04: service driver pciehp loaded
+>>>> pciehp 0000:80:09.0:pcie04: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
+>>>> pciehp 0000:80:09.0:pcie04: service driver pciehp loaded
+>>>> pciehp: PCI Express Hot Plug Controller Driver version: 0.4
+>>>>
+>>>> and the devices in the hotplug slots stay off. Is this an ACPI/bios
+>>>> issue? How can I debug this?
+>>> Can you try the acpiphp driver instead?  That's usually the driver you
+>>> want to use for "modern" systems (i.e. anything made in the past 5
+>>> years.)
+>>
+>> I should have mentioned that I tried that too. It doesn't complain, but
+>> I don't see my cards anywhere afterwards. I'm a hotplug newbie, do I
+>> need to do anything else?
 >
-> On Thu, Aug 20, 2009 at 08:24:32PM +0200, Christoph Hellwig wrote:
->> Currently there is no barrier support in the block device code.  That
->> means we cannot guarantee any sort of data integerity when using the
->> block device node with dis kwrite caches enabled.  Using the raw block
->> device node is a typical use case for virtualization (and I assume
->> databases, too).  This patch changes block_fsync to issue a cache flush
->> and thus make fsync on block device nodes actually useful.
->> 
->> Note that in mainline we would also need to add such code to the
->> ->aio_write method for O_SYNC handling, but assuming that Jan's patch
->> series for the O_SYNC rewrite goes in it will also call into ->fsync
->> for 2.6.32.
->> 
->> 
->> Signed-off-by: Christoph Hellwig <hch@lst.de>
->> 
->> 
->> diff --git a/fs/block_dev.c b/fs/block_dev.c
->> index 94dfda2..298ad75 100644
->> --- a/fs/block_dev.c
->> +++ b/fs/block_dev.c
->> @@ -398,7 +398,17 @@ static loff_t block_llseek(struct file *file, loff_t offset, int origin)
->>   
->>  static int block_fsync(struct file *filp, struct dentry *dentry, int datasync)
->>  {
->> -	return sync_blockdev(I_BDEV(filp->f_mapping->host));
->> +	struct block_device *bdev = I_BDEV(filp->f_mapping->host);
->> +	int error;
->> +
->> +	error = sync_blockdev(bdev);
->> +	if (error)
->> +		return error;
->> +	
->> +	error = blkdev_issue_flush(bdev, NULL);
->> +	if (error == -EOPNOTSUPP)
->> +		error = 0;
->> +	return error;
->>  }
->>  
->>  /*
-> ---end quoted text---
+> Tried this yet:
+>
+>   options pciehp pciehp_force=1
 
-Looks ok to me.  Jens?
+Nope, but it does find and register the hotplug slots, so I didn't think
+it would make a difference. The _OSC is there.
 
-Acked-by: Jeff Moyer <jmoyer@redhat.com>
+I'll try tonight, just in case.
+
+-- 
+Jens Axboe
+
