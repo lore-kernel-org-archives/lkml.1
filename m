@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbZJLQVC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932798AbZJLQVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932810AbZJLQVC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:21:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932785AbZJLQVB
+	id S932798AbZJLQVA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:21:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932785AbZJLQU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:21:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35132 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932789AbZJLQU7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 12 Oct 2009 12:20:59 -0400
-Date: Mon, 12 Oct 2009 09:19:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Greg KH <gregkh@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] NULL pointer dereference at IP: [<ffffffff812e9ccb>]
- uart_close+0x2a/0x1e4
-In-Reply-To: <20091012080511.GA22607@elte.hu>
-Message-ID: <alpine.LFD.2.01.0910120850590.3438@localhost.localdomain>
-References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> <20091012080511.GA22607@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:53909 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932783AbZJLQU6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 12:20:58 -0400
+Date: Mon, 12 Oct 2009 17:20:20 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Kyungmin Park <kmpark@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, soni.trilok@gmail.com
+Subject: Re: [PATCH] Haptic class support (v2)
+Message-ID: <20091012162020.GF22233@sirena.org.uk>
+References: <20091006074533.GA28889@july> <ac3eb2510910120842m3129b76fyaa11b509e7f97038@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510910120842m3129b76fyaa11b509e7f97038@mail.gmail.com>
+X-Cookie: Don't hit the keys so hard, it hurts.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 12, 2009 at 05:42:08PM +0200, Kay Sievers wrote:
+> On Tue, Oct 6, 2009 at 09:45, Kyungmin Park <kmpark@infradead.org> wrote:
 
+> > To enable the haptic, echo 1 > /sys/class/haptic/${name}/enable
+> > You can adjust the level by echo ${level} > /sys/class/haptic/${name}/enable
+> > or
+> > With oneshot feature, echo ${msec time} > /sys/class/haptic/${name}/oneshot
 
-On Mon, 12 Oct 2009, Ingo Molnar wrote:
-> 
-> Note, i have your fix below applied in tip:out-of-tree - it might be the 
-> source of this bug? (If yes then this isnt an .32-rc4 problem.)
+> Please never add any custom files to the top-level of a class
+> directory. This place is reserved for devices, and not for custom
+> files. It's a serious bug in the layout and API of sysfs that this
+> allowed at all.
 
-If yes (but you later reported no), it would still be a 32-rc4 problem, 
-because that patch got committed as 0b5759c654 ("tty: Avoid dropping 
-ldisc_mutex over hangup tty re-initialization").
-
-So you shouldn't need it in the out-of-tree branch any more, and you 
-probably just never noticed because it all merged cleanly.
-
-Commit 46d57a449 (which you then bisected to) looks really irritating, 
-since it just renamed variables in annoying ways (ie the old "port" is now 
-"uport", and there's a new "port" that means something else). That thing 
-should have been split up to do the renaming separately, so that a mis-use 
-of "port" would have caused a compile error.
-
-I'm not seeing anything obvious. Alan obviously found one bug already.
-
-		Linus
+I'm assuming that ${name} is the device name in the above in which case
+it should be fine from that point of view?
