@@ -1,160 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbZJLFJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751710AbZJLFI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751942AbZJLFJT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 01:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZJLFJS
+	id S1751710AbZJLFI6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 01:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZJLFI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 01:09:18 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40740 "EHLO gate.crashing.org"
+	Mon, 12 Oct 2009 01:08:57 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56736 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751457AbZJLFJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 01:09:17 -0400
-Subject: Re: [PATCH 2/2][v3] powerpc: Make the CMM memory hotplug aware
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Robert Jennings <rcj@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Gerald Schaefer <geralds@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linuxppc-dev@ozlabs.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091009204126.GD19114@austin.ibm.com>
-References: <20091009203803.GC19114@austin.ibm.com>
-	 <20091009204126.GD19114@austin.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 12 Oct 2009 16:06:47 +1100
-Message-Id: <1255324007.2192.106.camel@pasglop>
+	id S1751039AbZJLFI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 01:08:57 -0400
+Date: Mon, 12 Oct 2009 16:08:16 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Lydia Wang <lydiawang@viatech.com.cn>,
+       Logan Li <loganli@viatech.com.cn>
+Subject: linux-next: sound tree build failure
+Message-Id: <20091012160816.90fe936d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-09 at 15:41 -0500, Robert Jennings wrote:
-> The Collaborative Memory Manager (CMM) module allocates individual pages
-> over time that are not migratable.  On a long running system this can
-> severely impact the ability to find enough pages to support a hotplug
-> memory remove operation.
-> 
-> This patch adds a memory isolation notifier and a memory hotplug notifier.
-> The memory isolation notifier will return the number of pages found
-> in the range specified.  This is used to determine if all of the used
-> pages in a pageblock are owned by the balloon (or other entities in
-> the notifier chain).  The hotplug notifier will free pages in the range
-> which is to be removed.  The priority of this hotplug notifier is low
-> so that it will be called near last, this helps avoids removing loaned
-> pages in operations that fail due to other handlers.
-> 
-> CMM activity will be halted when hotplug remove operations are active
-> and resume activity after a delay period to allow the hypervisor time
-> to adjust.
-> 
-> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+Hi Takashi,
 
-Do you need me to merge that via the powerpc tree after the relevant
-generic parts go in ? This is 2.6.33 material ?
+Today's linux-next build (i386 defconfig) failed like this:
 
-> +module_param_named(hotplug_delay, hotplug_delay, uint, S_IRUGO | S_IWUSR);
-> +MODULE_PARM_DESC(delay, "Delay (in seconds) after memory hotplug remove "
-> +		 "before activity resumes. "
-> +		 "[Default=" __stringify(CMM_HOTPLUG_DELAY) "]");
+sound/pci/hda/patch_via.c: In function 'patch_vt1718S':
+sound/pci/hda/patch_via.c:4951: error: expected expression before 'return'
 
-What is the above ? That sounds scary :-)
+Caused by commit eb7188cafcb7aa1419b8889494cdbd4e6a01da1c ("ALSA: HDA
+VIA: Add VT1718S support").
 
->  module_param_named(oom_kb, oom_kb, uint, S_IRUGO | S_IWUSR);
->  MODULE_PARM_DESC(oom_kb, "Amount of memory in kb to free on OOM. "
->  		 "[Default=" __stringify(CMM_OOM_KB) "]");
-> @@ -88,6 +101,8 @@ struct cmm_page_array {
->  static unsigned long loaned_pages;
->  static unsigned long loaned_pages_target;
->  static unsigned long oom_freed_pages;
-> +static atomic_t hotplug_active = ATOMIC_INIT(0);
-> +static atomic_t hotplug_occurred = ATOMIC_INIT(0);
+sound/pci/hda/patch_via.c: In function 'patch_vt1716S':
+sound/pci/hda/patch_via.c:5441: error: expected expression before 'return'
 
-That sounds like a hand made lock with atomics... rarely a good idea,
-tends to miss appropriate barriers etc...
+Caused by commit f3db423df84570c9950754a5771ad26f0111235f ("ALSA: HDA
+VIA: Add VT1716S support").
+
+sound/pci/hda/patch_via.c: In function 'patch_vt2002P':
+sound/pci/hda/patch_via.c:5794: error: expected expression before 'return'
+
+Caused by commit 25eaba2f8a6877ba6f58197c4723c2433a316e09 ("ALSA: HDA VIA: Add VT2002P support").
+
+sound/pci/hda/patch_via.c: In function 'patch_vt1812':
+sound/pci/hda/patch_via.c:6148: error: expected expression before 'return'
+
+Caused by commit ab6734e7ea32e9f9cbe0f55eeddf4aa629ed1c3d ("ALSA: HDA VIA: Add VT1812 support").
+
+I applied the following patch for today:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 12 Oct 2009 15:56:17 +1100
+Subject: [PATCH] sound: use semicolons to end statements
+
+Fixes:
+
+sound/pci/hda/patch_via.c: In function 'patch_vt1718S':
+sound/pci/hda/patch_via.c:4951: error: expected expression before 'return'
+sound/pci/hda/patch_via.c: In function 'patch_vt1716S':
+sound/pci/hda/patch_via.c:5441: error: expected expression before 'return'
+sound/pci/hda/patch_via.c: In function 'patch_vt2002P':
+sound/pci/hda/patch_via.c:5794: error: expected expression before 'return'
+sound/pci/hda/patch_via.c: In function 'patch_vt1812':
+sound/pci/hda/patch_via.c:6148: error: expected expression before 'return'
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ sound/pci/hda/patch_via.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/sound/pci/hda/patch_via.c b/sound/pci/hda/patch_via.c
+index 30260e2..a294060 100644
+--- a/sound/pci/hda/patch_via.c
++++ b/sound/pci/hda/patch_via.c
+@@ -4942,7 +4942,7 @@ static int patch_vt1718S(struct hda_codec *codec)
+ 	codec->patch_ops = via_patch_ops;
  
->  static struct cmm_page_array *cmm_page_list;
->  static DEFINE_SPINLOCK(cmm_lock);
-> @@ -110,6 +125,9 @@ static long cmm_alloc_pages(long nr)
->  	cmm_dbg("Begin request for %ld pages\n", nr);
->  
->  	while (nr) {
-> +		if (atomic_read(&hotplug_active))
-> +			break;
-> +
-
-Ok so I'm not familiar with that whole memory hotplug stuff, so the code
-might be right, but wouldn't the above be racy anyways in case hotplug
-just becomes active after this statement ?
-
-Shouldn't you use a mutex_trylock instead ? That has clearer semantics
-and will provide the appropriate memory barriers.
-
->  		addr = __get_free_page(GFP_NOIO | __GFP_NOWARN |
->  				       __GFP_NORETRY | __GFP_NOMEMALLOC);
->  		if (!addr)
-> @@ -119,8 +137,10 @@ static long cmm_alloc_pages(long nr)
->  		if (!pa || pa->index >= CMM_NR_PAGES) {
->  			/* Need a new page for the page list. */
->  			spin_unlock(&cmm_lock);
-> -			npa = (struct cmm_page_array *)__get_free_page(GFP_NOIO | __GFP_NOWARN |
-> -								       __GFP_NORETRY | __GFP_NOMEMALLOC);
-> +			npa = (struct cmm_page_array *)__get_free_page(
-> +					GFP_NOIO | __GFP_NOWARN |
-> +					__GFP_NORETRY | __GFP_NOMEMALLOC |
-> +					__GFP_MOVABLE);
->  			if (!npa) {
->  				pr_info("%s: Can not allocate new page list\n", __func__);
->  				free_page(addr);
-> @@ -273,9 +293,23 @@ static int cmm_thread(void *dummy)
->  	while (1) {
->  		timeleft = msleep_interruptible(delay * 1000);
-> 
-> -		if (kthread_should_stop() || timeleft) {
-> -			loaned_pages_target = loaned_pages;
-> +		if (kthread_should_stop() || timeleft)
->  			break;
-> +
-> +		if (atomic_read(&hotplug_active)) {
-> +			cmm_dbg("Hotplug operation in progress, activity "
-> +					"suspended\n");
-> +			continue;
-> +		}
-> +
-> +		if (atomic_dec_if_positive(&hotplug_occurred) >= 0) {
-> +			cmm_dbg("Hotplug operation has occurred, loaning "
-> +					"activity suspended for %d seconds.\n",
-> +					hotplug_delay);
-> +			timeleft = msleep_interruptible(hotplug_delay * 1000);
-> +			if (kthread_should_stop() || timeleft)
-> +				break;
-> +			continue;
->  		}
-
-I have less problems with hotplug_occured but if you use a
-mutex_trylock, overall, you can turn the above into a normal int instead
-of an atomic.
-
- ../..
-
-> +static int cmm_memory_cb(struct notifier_block *self,
-> +			unsigned long action, void *arg)
-> +{
-> +	int ret = 0;
-> +
-> +	switch (action) {
-> +	case MEM_GOING_OFFLINE:
-> +		atomic_set(&hotplug_active, 1);
-
-So that would become a mutex_lock(). Added advantage is that
-it would wait for a current CMM operation to complete.
+ 	codec->patch_ops.init = via_auto_init;
+-	codec->patch_ops.unsol_event = via_unsol_event,
++	codec->patch_ops.unsol_event = via_unsol_event;
  
+ #ifdef CONFIG_SND_HDA_POWER_SAVE
+ 	spec->loopback.amplist = vt1718S_loopbacks;
+@@ -5432,7 +5432,7 @@ static int patch_vt1716S(struct hda_codec *codec)
+ 	codec->patch_ops = via_patch_ops;
+ 
+ 	codec->patch_ops.init = via_auto_init;
+-	codec->patch_ops.unsol_event = via_unsol_event,
++	codec->patch_ops.unsol_event = via_unsol_event;
+ 
+ #ifdef CONFIG_SND_HDA_POWER_SAVE
+ 	spec->loopback.amplist = vt1716S_loopbacks;
+@@ -5785,7 +5785,7 @@ static int patch_vt2002P(struct hda_codec *codec)
+ 	codec->patch_ops = via_patch_ops;
+ 
+ 	codec->patch_ops.init = via_auto_init;
+-	codec->patch_ops.unsol_event = via_unsol_event,
++	codec->patch_ops.unsol_event = via_unsol_event;
+ 
+ #ifdef CONFIG_SND_HDA_POWER_SAVE
+ 	spec->loopback.amplist = vt2002P_loopbacks;
+@@ -6139,7 +6139,7 @@ static int patch_vt1812(struct hda_codec *codec)
+ 	codec->patch_ops = via_patch_ops;
+ 
+ 	codec->patch_ops.init = via_auto_init;
+-	codec->patch_ops.unsol_event = via_unsol_event,
++	codec->patch_ops.unsol_event = via_unsol_event;
+ 
+ #ifdef CONFIG_SND_HDA_POWER_SAVE
+ 	spec->loopback.amplist = vt1812_loopbacks;
+-- 
+1.6.4.3
+
+-- 
 Cheers,
-Ben.
-
-
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
