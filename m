@@ -1,95 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbZJLQiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932831AbZJLQjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932805AbZJLQiM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932786AbZJLQiL
+	id S932831AbZJLQjL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:39:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932812AbZJLQjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:38:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34684 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932549AbZJLQiK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 12:38:10 -0400
-Date: Mon, 12 Oct 2009 09:37:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Greg KH <gregkh@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] NULL pointer dereference at IP: [<ffffffff812e9ccb>]
- uart_close+0x2a/0x1e4
-In-Reply-To: <alpine.LFD.2.01.0910120850590.3438@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0910120926110.3438@localhost.localdomain>
-References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> <20091012080511.GA22607@elte.hu> <alpine.LFD.2.01.0910120850590.3438@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 12 Oct 2009 12:39:01 -0400
+Received: from mba.ocn.ne.jp ([122.28.14.163]:54927 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932552AbZJLQjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 12:39:00 -0400
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: Andrew Sharp <andy.sharp@lsi.com>,
+       Thomas Hommel <thomas.hommel@gefanuc.com>, rtc-linux@googlegroups.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 1/2] rtc-ds1511: Fix races around device registration
+Date: Tue, 13 Oct 2009 01:37:40 +0900
+Message-Id: <1255365461-5732-1-git-send-email-anemo@mba.ocn.ne.jp>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Call dev_set_drvdata before rtc device creation
+* Use its own spinlock instead of rtc->irq_lock
+* Check pdata->rtc before calling rtc_update_irq
+* Use {alarm,update}_irq_enable and remove ioctl routine
+* Use devres APIs and simplify error/remove path
 
+These fixes are ported from ds1553 driver and just compile-tested only.
 
-On Mon, 12 Oct 2009, Linus Torvalds wrote:
-> 
-> Commit 46d57a449 (which you then bisected to) looks really irritating, 
-> since it just renamed variables in annoying ways (ie the old "port" is now 
-> "uport", and there's a new "port" that means something else). That thing 
-> should have been split up to do the renaming separately, so that a mis-use 
-> of "port" would have caused a compile error.
-> 
-> I'm not seeing anything obvious. Alan obviously found one bug already.
-
-Ok, so I did the "do it as two commits", and when doing that (and being 
-fairly careful at all stages to do everything as no-op conversions), I get 
-this diff.
-
-It looks like there is not just the wrong lock, but also a test for NULL 
-state got dropped by commit 46d57a449.
-
-NOTE! This patch is against that original bad commit. The flags have since 
-been moved from 'state' to 'port', so the test for UIF_INITIALIZED is now
-
-	if (port->flags & UIF_INITIALIZED)
-
-rather than
-
-	if (state->flags & UIF_INITIALIZED)
-
-and you need to either edit the patch or apply it with "git apply -C1" to 
-make it apply to current git.
-
-Does that missing test for NULL 'state' fix your oops?
-
-		Linus
-
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 ---
- drivers/serial/serial_core.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+Changes from previous version:
+* whitespace cleanup
 
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 0ffefb3..943c070 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -1262,6 +1262,9 @@ static void uart_close(struct tty_struct *tty, struct file *filp)
+ drivers/rtc/rtc-ds1511.c |  148 +++++++++++++++++++---------------------------
+ 1 files changed, 60 insertions(+), 88 deletions(-)
+
+diff --git a/drivers/rtc/rtc-ds1511.c b/drivers/rtc/rtc-ds1511.c
+index 0b6b773..6c3ceb1 100644
+--- a/drivers/rtc/rtc-ds1511.c
++++ b/drivers/rtc/rtc-ds1511.c
+@@ -87,7 +87,6 @@ enum ds1511reg {
+ struct rtc_plat_data {
+ 	struct rtc_device *rtc;
+ 	void __iomem *ioaddr;		/* virtual base address */
+-	unsigned long baseaddr;		/* physical base address */
+ 	int size;				/* amount of memory mapped */
+ 	int irq;
+ 	unsigned int irqen;
+@@ -95,6 +94,7 @@ struct rtc_plat_data {
+ 	int alrm_min;
+ 	int alrm_hour;
+ 	int alrm_mday;
++	spinlock_t lock;
+ };
  
- 	BUG_ON(!kernel_locked());
+ static DEFINE_SPINLOCK(ds1511_lock);
+@@ -302,7 +302,7 @@ ds1511_rtc_update_alarm(struct rtc_plat_data *pdata)
+ {
+ 	unsigned long flags;
  
-+	if (!state)
-+		return;
-+
- 	uport = state->uart_port;
- 	port = &state->port;
+-	spin_lock_irqsave(&pdata->rtc->irq_lock, flags);
++	spin_lock_irqsave(&pdata->lock, flags);
+ 	rtc_write(pdata->alrm_mday < 0 || (pdata->irqen & RTC_UF) ?
+ 	       0x80 : bin2bcd(pdata->alrm_mday) & 0x3f,
+ 	       RTC_ALARM_DATE);
+@@ -317,7 +317,7 @@ ds1511_rtc_update_alarm(struct rtc_plat_data *pdata)
+ 	       RTC_ALARM_SEC);
+ 	rtc_write(rtc_read(RTC_CMD) | (pdata->irqen ? RTC_TIE : 0), RTC_CMD);
+ 	rtc_read(RTC_CMD1);	/* clear interrupts */
+-	spin_unlock_irqrestore(&pdata->rtc->irq_lock, flags);
++	spin_unlock_irqrestore(&pdata->lock, flags);
+ }
  
-@@ -1308,9 +1311,9 @@ static void uart_close(struct tty_struct *tty, struct file *filp)
+  static int
+@@ -362,61 +362,63 @@ ds1511_interrupt(int irq, void *dev_id)
+ {
+ 	struct platform_device *pdev = dev_id;
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+-	unsigned long events = RTC_IRQF;
++	unsigned long events = 0;
+ 
++	spin_lock(&pdata->lock);
+ 	/*
+ 	 * read and clear interrupt
  	 */
- 	if (state->flags & UIF_INITIALIZED) {
- 		unsigned long flags;
--		spin_lock_irqsave(&port->lock, flags);
-+		spin_lock_irqsave(&uport->lock, flags);
- 		uport->ops->stop_rx(uport);
--		spin_unlock_irqrestore(&port->lock, flags);
-+		spin_unlock_irqrestore(&uport->lock, flags);
+-	if (!(rtc_read(RTC_CMD1) & DS1511_IRQF)) {
+-		return IRQ_NONE;
+-	}
+-	if (rtc_read(RTC_ALARM_SEC) & 0x80) {
+-		events |= RTC_UF;
+-	} else {
+-		events |= RTC_AF;
+-	}
+-	rtc_update_irq(pdata->rtc, 1, events);
+-	return IRQ_HANDLED;
++	if (rtc_read(RTC_CMD1) & DS1511_IRQF) {
++		events = RTC_IRQF;
++		if (rtc_read(RTC_ALARM_SEC) & 0x80)
++			events |= RTC_UF;
++		else
++			events |= RTC_AF;
++		if (likely(pdata->rtc))
++			rtc_update_irq(pdata->rtc, 1, events);
++	}
++	spin_unlock(&pdata->lock);
++	return events ? IRQ_HANDLED : IRQ_NONE;
+ }
+ 
+- static int
+-ds1511_rtc_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
++static int ds1511_rtc_alarm_irq_enable(struct device *dev, unsigned int enabled)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
+ 
+-	if (pdata->irq <= 0) {
+-		return -ENOIOCTLCMD; /* fall back into rtc-dev's emulation */
+-	}
+-	switch (cmd) {
+-	case RTC_AIE_OFF:
+-		pdata->irqen &= ~RTC_AF;
+-		ds1511_rtc_update_alarm(pdata);
+-		break;
+-	case RTC_AIE_ON:
++	if (pdata->irq <= 0)
++		return -EINVAL;
++	if (enabled)
+ 		pdata->irqen |= RTC_AF;
+-		ds1511_rtc_update_alarm(pdata);
+-		break;
+-	case RTC_UIE_OFF:
+-		pdata->irqen &= ~RTC_UF;
+-		ds1511_rtc_update_alarm(pdata);
+-		break;
+-	case RTC_UIE_ON:
++	else
++		pdata->irqen &= ~RTC_AF;
++	ds1511_rtc_update_alarm(pdata);
++	return 0;
++}
++
++static int ds1511_rtc_update_irq_enable(struct device *dev,
++	unsigned int enabled)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
++
++	if (pdata->irq <= 0)
++		return -EINVAL;
++	if (enabled)
+ 		pdata->irqen |= RTC_UF;
+-		ds1511_rtc_update_alarm(pdata);
+-		break;
+-	default:
+-		return -ENOIOCTLCMD;
+-	}
++	else
++		pdata->irqen &= ~RTC_UF;
++	ds1511_rtc_update_alarm(pdata);
+ 	return 0;
+ }
+ 
+ static const struct rtc_class_ops ds1511_rtc_ops = {
+-	.read_time	= ds1511_rtc_read_time,
+-	.set_time	= ds1511_rtc_set_time,
+-	.read_alarm	= ds1511_rtc_read_alarm,
+-	.set_alarm	= ds1511_rtc_set_alarm,
+-	.ioctl		= ds1511_rtc_ioctl,
++	.read_time		= ds1511_rtc_read_time,
++	.set_time		= ds1511_rtc_set_time,
++	.read_alarm		= ds1511_rtc_read_alarm,
++	.set_alarm		= ds1511_rtc_set_alarm,
++	.alarm_irq_enable	= ds1511_rtc_alarm_irq_enable,
++	.update_irq_enable	= ds1511_rtc_update_irq_enable,
+ };
+ 
+  static ssize_t
+@@ -492,29 +494,23 @@ ds1511_rtc_probe(struct platform_device *pdev)
+ {
+ 	struct rtc_device *rtc;
+ 	struct resource *res;
+-	struct rtc_plat_data *pdata = NULL;
++	struct rtc_plat_data *pdata;
+ 	int ret = 0;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res) {
+ 		return -ENODEV;
+ 	}
+-	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
+-	if (!pdata) {
++	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
++	if (!pdata)
+ 		return -ENOMEM;
+-	}
+ 	pdata->size = res->end - res->start + 1;
+-	if (!request_mem_region(res->start, pdata->size, pdev->name)) {
+-		ret = -EBUSY;
+-		goto out;
+-	}
+-	pdata->baseaddr = res->start;
+-	pdata->size = pdata->size;
+-	ds1511_base = ioremap(pdata->baseaddr, pdata->size);
+-	if (!ds1511_base) {
+-		ret = -ENOMEM;
+-		goto out;
+-	}
++	if (!devm_request_mem_region(&pdev->dev, res->start, pdata->size,
++			pdev->name))
++		return -EBUSY;
++	ds1511_base = devm_ioremap(&pdev->dev, res->start, pdata->size);
++	if (!ds1511_base)
++		return -ENOMEM;
+ 	pdata->ioaddr = ds1511_base;
+ 	pdata->irq = platform_get_irq(pdev, 0);
+ 
+@@ -540,13 +536,15 @@ ds1511_rtc_probe(struct platform_device *pdev)
+ 		dev_warn(&pdev->dev, "voltage-low detected.\n");
+ 	}
+ 
++	spin_lock_init(&pdata->lock);
++	platform_set_drvdata(pdev, pdata);
+ 	/*
+ 	 * if the platform has an interrupt in mind for this device,
+ 	 * then by all means, set it
+ 	 */
+ 	if (pdata->irq > 0) {
+ 		rtc_read(RTC_CMD1);
+-		if (request_irq(pdata->irq, ds1511_interrupt,
++		if (devm_request_irq(&pdev->dev, pdata->irq, ds1511_interrupt,
+ 			IRQF_DISABLED | IRQF_SHARED, pdev->name, pdev) < 0) {
+ 
+ 			dev_warn(&pdev->dev, "interrupt not available.\n");
+@@ -556,33 +554,13 @@ ds1511_rtc_probe(struct platform_device *pdev)
+ 
+ 	rtc = rtc_device_register(pdev->name, &pdev->dev, &ds1511_rtc_ops,
+ 		THIS_MODULE);
+-	if (IS_ERR(rtc)) {
+-		ret = PTR_ERR(rtc);
+-		goto out;
+-	}
++	if (IS_ERR(rtc))
++		return PTR_ERR(rtc);
+ 	pdata->rtc = rtc;
+-	platform_set_drvdata(pdev, pdata);
++
+ 	ret = sysfs_create_bin_file(&pdev->dev.kobj, &ds1511_nvram_attr);
+-	if (ret) {
+-		goto out;
+-	}
+-	return 0;
+- out:
+-	if (pdata->rtc) {
++	if (ret)
+ 		rtc_device_unregister(pdata->rtc);
+-	}
+-	if (pdata->irq > 0) {
+-		free_irq(pdata->irq, pdev);
+-	}
+-	if (ds1511_base) {
+-		iounmap(ds1511_base);
+-		ds1511_base = NULL;
+-	}
+-	if (pdata->baseaddr) {
+-		release_mem_region(pdata->baseaddr, pdata->size);
+-	}
+-
+-	kfree(pdata);
+ 	return ret;
+ }
+ 
+@@ -593,19 +571,13 @@ ds1511_rtc_remove(struct platform_device *pdev)
+ 
+ 	sysfs_remove_bin_file(&pdev->dev.kobj, &ds1511_nvram_attr);
+ 	rtc_device_unregister(pdata->rtc);
+-	pdata->rtc = NULL;
+ 	if (pdata->irq > 0) {
  		/*
- 		 * Before we drop DTR, make sure the UART transmitter
- 		 * has completely drained; this is especially
+ 		 * disable the alarm interrupt
+ 		 */
+ 		rtc_write(rtc_read(RTC_CMD) & ~RTC_TIE, RTC_CMD);
+ 		rtc_read(RTC_CMD1);
+-		free_irq(pdata->irq, pdev);
+ 	}
+-	iounmap(pdata->ioaddr);
+-	ds1511_base = NULL;
+-	release_mem_region(pdata->baseaddr, pdata->size);
+-	kfree(pdata);
+ 	return 0;
+ }
+ 
+-- 
+1.5.6.5
+
