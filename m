@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932916AbZJLQuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932890AbZJLQuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932916AbZJLQuL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932906AbZJLQuI
+	id S932890AbZJLQuF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932881AbZJLQuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:50:08 -0400
-Received: from ru.mvista.com ([213.79.90.228]:55694 "EHLO
+	Mon, 12 Oct 2009 12:50:03 -0400
+Received: from ru.mvista.com ([213.79.90.228]:55711 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932882AbZJLQuH (ORCPT
+	by vger.kernel.org with ESMTP id S932879AbZJLQuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 12:50:07 -0400
-Date: Mon, 12 Oct 2009 20:49:20 +0400
+	Mon, 12 Oct 2009 12:50:01 -0400
+Date: Mon, 12 Oct 2009 20:49:22 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -18,9 +18,8 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>,
        spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 4/8] powerpc/qe&cpm: Implement static inline stubs for
- non-QE/CPM builds
-Message-ID: <20091012164920.GD4578@oksana.dev.rtsoft.ru>
+Subject: [PATCH 5/8] spi_mpc8xxx: Fix uninitialized variable
+Message-ID: <20091012164922.GE4578@oksana.dev.rtsoft.ru>
 References: <20091012164841.GA32214@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -31,134 +30,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed to avoid ugly #ifdefs in drivers. Also update fsl_qe_udc
-driver so that now it doesn't define its own versions that cause build
-breakage when the generic stubs are used.
+This patch fixes the following warning:
+
+CC      drivers/spi/spi_mpc8xxx.o
+  spi_mpc8xxx.c: In function 'of_mpc8xxx_spi_probe':
+  spi_mpc8xxx.c:681: warning: 'ret' may be used uninitialized in this function
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
- arch/powerpc/include/asm/cpm.h  |   44 +++++++++++++++++++++++++++++++++++++++
- arch/powerpc/include/asm/qe.h   |   11 ++++++++-
- drivers/usb/gadget/fsl_qe_udc.h |   15 -------------
- 3 files changed, 54 insertions(+), 16 deletions(-)
+ drivers/spi/spi_mpc8xxx.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cpm.h b/arch/powerpc/include/asm/cpm.h
-index ea3fdb9..0835eb9 100644
---- a/arch/powerpc/include/asm/cpm.h
-+++ b/arch/powerpc/include/asm/cpm.h
-@@ -3,6 +3,7 @@
+diff --git a/drivers/spi/spi_mpc8xxx.c b/drivers/spi/spi_mpc8xxx.c
+index 0fd0ec4..518671b 100644
+--- a/drivers/spi/spi_mpc8xxx.c
++++ b/drivers/spi/spi_mpc8xxx.c
+@@ -709,6 +709,7 @@ static int of_mpc8xxx_spi_get_chipselects(struct device *dev)
+ 		gpio = of_get_gpio_flags(np, i, &flags);
+ 		if (!gpio_is_valid(gpio)) {
+ 			dev_err(dev, "invalid gpio #%d: %d\n", i, gpio);
++			ret = gpio;
+ 			goto err_loop;
+ 		}
  
- #include <linux/compiler.h>
- #include <linux/types.h>
-+#include <linux/errno.h>
- #include <linux/of.h>
- 
- /*
-@@ -131,13 +132,56 @@ typedef struct cpm_buf_desc {
- #define BD_I2C_START		(0x0400)
- 
- int cpm_muram_init(void);
-+
-+#if defined(CONFIG_CPM) || defined(CONFIG_QUICC_ENGINE)
- unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
- int cpm_muram_free(unsigned long offset);
- unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
- void __iomem *cpm_muram_addr(unsigned long offset);
- unsigned long cpm_muram_offset(void __iomem *addr);
- dma_addr_t cpm_muram_dma(void __iomem *addr);
-+#else
-+static inline unsigned long cpm_muram_alloc(unsigned long size,
-+					    unsigned long align)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline int cpm_muram_free(unsigned long offset)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline unsigned long cpm_muram_alloc_fixed(unsigned long offset,
-+						  unsigned long size)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline void __iomem *cpm_muram_addr(unsigned long offset)
-+{
-+	return NULL;
-+}
-+
-+static inline unsigned long cpm_muram_offset(void __iomem *addr)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline dma_addr_t cpm_muram_dma(void __iomem *addr)
-+{
-+	return 0;
-+}
-+#endif /* defined(CONFIG_CPM) || defined(CONFIG_QUICC_ENGINE) */
-+
-+#ifdef CONFIG_CPM
- int cpm_command(u32 command, u8 opcode);
-+#else
-+static inline int cpm_command(u32 command, u8 opcode)
-+{
-+	return -ENOSYS;
-+}
-+#endif /* CONFIG_CPM */
- 
- int cpm2_gpiochip_add32(struct device_node *np);
- 
-diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
-index f388f0a..d013d7e 100644
---- a/arch/powerpc/include/asm/qe.h
-+++ b/arch/powerpc/include/asm/qe.h
-@@ -145,8 +145,17 @@ static inline void qe_pin_set_gpio(struct qe_pin *qe_pin) {}
- static inline void qe_pin_set_dedicated(struct qe_pin *pin) {}
- #endif /* CONFIG_QE_GPIO */
- 
--/* QE internal API */
-+#ifdef CONFIG_QUICC_ENGINE
- int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol, u32 cmd_input);
-+#else
-+static inline int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol,
-+			       u32 cmd_input)
-+{
-+	return -ENOSYS;
-+}
-+#endif /* CONFIG_QUICC_ENGINE */
-+
-+/* QE internal API */
- enum qe_clock qe_clock_source(const char *source);
- unsigned int qe_get_brg_clk(void);
- int qe_setbrg(enum qe_clock brg, unsigned int rate, unsigned int multiplier);
-diff --git a/drivers/usb/gadget/fsl_qe_udc.h b/drivers/usb/gadget/fsl_qe_udc.h
-index 31b2710..bea5b82 100644
---- a/drivers/usb/gadget/fsl_qe_udc.h
-+++ b/drivers/usb/gadget/fsl_qe_udc.h
-@@ -419,19 +419,4 @@ struct qe_udc {
- #define CPM_USB_RESTART_TX_OPCODE 0x0b
- #define CPM_USB_EP_SHIFT 5
- 
--#ifndef CONFIG_CPM
--inline int cpm_command(u32 command, u8 opcode)
--{
--	return -EOPNOTSUPP;
--}
--#endif
--
--#ifndef CONFIG_QUICC_ENGINE
--inline int qe_issue_cmd(u32 cmd, u32 device, u8 mcn_protocol,
--	u32 cmd_input)
--{
--	return -EOPNOTSUPP;
--}
--#endif
--
- #endif  /* __FSL_QE_UDC_H */
 -- 
 1.6.3.3
 
