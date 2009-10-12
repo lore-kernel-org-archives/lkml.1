@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932825AbZJLQlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932842AbZJLQmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932825AbZJLQlh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757016AbZJLQlg
+	id S932842AbZJLQmy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932460AbZJLQmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:41:36 -0400
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:40421 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756840AbZJLQlg (ORCPT
+	Mon, 12 Oct 2009 12:42:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45649 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932434AbZJLQmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 12:41:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=xYsH/XtkQlO/dCt1eiEqvga50/zuqrJMW7EtpnQI6JyCYrcJqRevUXIx7igkgeUkk2
-         y/HLb4xw07+jZgYGKxxfpAlf+hBTpIjFSqZ09JxA/inu1i7jh6W8AGM1lmkGZBrgrlRo
-         hq1iMSguNap+2bA11D/a6iZJLrBFmOVAT9w3k=
+	Mon, 12 Oct 2009 12:42:52 -0400
+Date: Mon, 12 Oct 2009 09:40:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
+       mtosatti@redhat.com
+Subject: Re: [PATCH RFC tip/core/rcu 1/3] rcu: The Bloatwatch Edition, v7
+In-Reply-To: <4AD2F6F5.2060101@cn.fujitsu.com>
+Message-ID: <alpine.LFD.2.01.0910120939510.3438@localhost.localdomain>
+References: <20091009224954.GA26516@linux.vnet.ibm.com> <12551286511987-git-send-email-> <4AD2F6F5.2060101@cn.fujitsu.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-In-Reply-To: <20091012163802.GD20786@sortiz.org>
-References: <1255197244-20121-1-git-send-email-vapier@gentoo.org> 
-	<1255197244-20121-2-git-send-email-vapier@gentoo.org> <20091012163802.GD20786@sortiz.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 12 Oct 2009 12:40:39 -0400
-Message-ID: <8bd0f97a0910120940r319c340bi367f5350e21d87d4@mail.gmail.com>
-Subject: Re: [PATCH 2/5] LED Support for ADP5520/ADP5501 MFD PMICs
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 12:38, Samuel Ortiz wrote:
-> On Sat, Oct 10, 2009 at 01:54:01PM -0400, Mike Frysinger wrote:
->> From: Michael Hennerich <michael.hennerich@analog.com>
->
-> Does this driver look fine to you ?
 
-note that this is the same one that was sent a month ago followed by
-the define name tweaks a week ago
--mike
+
+On Mon, 12 Oct 2009, Lai Jiangshan wrote:
+>
+> [ snip snip ]
+
+Please don't quote the whole email just to comment on a small part of it.
+
+It makes it almost completely impossible to see what your comments are, 
+because they are hidden by a _much_ larger quoted section.
+
+So please just edit out the parts of the original email that you are _not_ 
+directly commenting on.
+
+		Linus
+
