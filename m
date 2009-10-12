@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZJLCMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbZJLCOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbZJLCMZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 22:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZJLCMY
+	id S1753122AbZJLCOf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 22:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZJLCOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 22:12:24 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48847 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658AbZJLCMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 22:12:23 -0400
-Date: Mon, 12 Oct 2009 13:11:31 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Samuel Ortiz <sameo@openedhand.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Haojian Zhuang <haojian.zhuang@marvell.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: linux-next: mfd tree build failure
-Message-Id: <20091012131131.91dccb99.sfr@canb.auug.org.au>
-In-Reply-To: <20091006130202.5e18a332.sfr@canb.auug.org.au>
-References: <20091006130202.5e18a332.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__12_Oct_2009_13_11_31_+1100_pTir/ePZQm_/zXlU"
+	Sun, 11 Oct 2009 22:14:31 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:62822 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbZJLCOa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 22:14:30 -0400
+Message-ID: <4AD29070.7070002@oracle.com>
+Date: Sun, 11 Oct 2009 19:12:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+CC: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH] sched: fix missing kernel-doc notation
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4AD290C7.005B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__12_Oct_2009_13_11_31_+1100_pTir/ePZQm_/zXlU
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Subject: [PATCH] sched: fix htmldocs sched.c
+From:	Jaswinder Singh Rajput <jaswinder@kernel.org>
+Date:	Thu, 24 Sep 2009 19:08:50 +0530
 
-Hi Samuel,
+fix the following htmldocs warnings:
 
-On Tue, 6 Oct 2009 13:02:02 +1100 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
->=20
-> drivers/built-in.o: In function `pm8607_write_device':
-> 88pm8607.c:(.text+0xd02e9): undefined reference to `i2c_master_send'
-> drivers/built-in.o: In function `pm8607_read_device':
-> 88pm8607.c:(.text+0xd033b): undefined reference to `i2c_master_send'
-> 88pm8607.c:(.text+0xd035c): undefined reference to `i2c_master_recv'
-> drivers/built-in.o: In function `pm8607_init':
-> 88pm8607.c:(.init.text+0xa9bd): undefined reference to `i2c_register_driv=
-er'
-> drivers/built-in.o: In function `pm8607_probe':
-> 88pm8607.c:(.devinit.text+0x4db6): undefined reference to `mfd_add_device=
-s'
-> drivers/built-in.o: In function `pm8607_exit':
-> 88pm8607.c:(.exit.text+0x598): undefined reference to `i2c_del_driver'
-> drivers/built-in.o: In function `pm8607_remove':
-> 88pm8607.c:(.devexit.text+0x198): undefined reference to `mfd_remove_devi=
-ces'
->=20
-> Obviously caused by commit 9ec6cd8f2235ddeee5b39068956f14238a12a617
-> ("mfd: Add 88PM8607 driver").
->=20
-> This build has CONFIG_I2C=3Dm and CONFIG_MFD_CORE=3Dm.
->=20
-> I have used the version of the mfd tree form next-20091005 for today.
+  Warning(kernel/sched.c:685): No description found for parameter 'cpu'
+  Warning(kernel/sched.c:3676): No description found for parameter 'sd'
 
-This build failure is still happening and I am still using the mfd tree
-from next-20091005.
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__12_Oct_2009_13_11_31_+1100_pTir/ePZQm_/zXlU
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrSkFMACgkQjjKRsyhoI8xr8wCfYSxhsZG4x/1oPg0m6y5f1+2R
-v0MAn3RjvEZZV4BSdJ6oPhTj1tIwAuNc
-=5jKc
------END PGP SIGNATURE-----
-
---Signature=_Mon__12_Oct_2009_13_11_31_+1100_pTir/ePZQm_/zXlU--
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 2f76e06..f0d1375 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -676,6 +676,7 @@ inline void update_rq_clock(struct rq *rq)
+ 
+ /**
+  * runqueue_is_locked
++ * @cpu: the processor in question.
+  *
+  * Returns true if the current cpu runqueue is locked.
+  * This interface allows printk to be called with the runqueue lock
+@@ -3658,6 +3659,7 @@ static void update_group_power(struct sched_domain *sd, int cpu)
+ 
+ /**
+  * update_sg_lb_stats - Update sched_group's statistics for load balancing.
++ * @sd: The sched_domain whose statistics are to be updated.
+  * @group: sched_group whose statistics are to be updated.
+  * @this_cpu: Cpu for which load balance is currently performed.
+  * @idle: Idle status of this_cpu
+---
