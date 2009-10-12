@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbZJLVc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758400AbZJLV3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758497AbZJLVc1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758484AbZJLVc0
+	id S1758400AbZJLV3B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:29:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758387AbZJLV3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:32:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:60766 "EHLO mx1.suse.de"
+	Mon, 12 Oct 2009 17:29:00 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34509 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758478AbZJLVcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:32:25 -0400
-Date: Mon, 12 Oct 2009 14:27:22 -0700
-From: Greg KH <gregkh@suse.de>
-To: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Hank Janssen <hjanssen@microsoft.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tom Hanrahan <hanrahat@microsoft.com>,
-       Hashir Abdi <habdi@microsoft.com>
-Subject: Re: [patch] Staging: hv: Fix vmbus load hang caused by wrong data
- packing
-Message-ID: <20091012212722.GA22118@suse.de>
-References: <1FB5E1D5CA062146B38059374562DF7212DEE3EC@TK5EX14MBXC130.redmond.corp.microsoft.com>
- <20091012153013.GA2062@suse.de>
- <1FB5E1D5CA062146B38059374562DF7212DF10DD@TK5EX14MBXC130.redmond.corp.microsoft.com>
- <20091012172953.GA10557@suse.de>
- <8AFC7968D54FB448A30D8F38F259C5620E7B1C22@TK5EX14MBXC114.redmond.corp.microsoft.com>
- <20091012202214.GA9631@suse.de>
- <1FB5E1D5CA062146B38059374562DF7212DF127D@TK5EX14MBXC130.redmond.corp.microsoft.com>
+	id S1758151AbZJLV27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:28:59 -0400
+Date: Mon, 12 Oct 2009 23:28:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       David Rientjes <rientjes@google.com>,
+       Stephane Eranian <eranian@google.com>
+Subject: Re: [PATCH 1/2] oprofile: fix race condition in event_buffer free
+Message-ID: <20091012212811.GD4589@elte.hu>
+References: <20091009160532.GD638@erda.amd.com> <1255116810-26514-1-git-send-email-robert.richter@amd.com> <20091009195016.GH638@erda.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1FB5E1D5CA062146B38059374562DF7212DF127D@TK5EX14MBXC130.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091009195016.GH638@erda.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 08:44:06PM +0000, Haiyang Zhang wrote:
-> > Can you figure out why?  What is the output of gcc for both ways?
-> There are no build errors in either ways, I think it may be a bug in
-> gcc handing __attribute__((packed)).
 
-Of course there is not a build error.  I mean what is the difference in
-the assembly produced?  Why is the __attribute__ version not the same
+* Robert Richter <robert.richter@amd.com> wrote:
 
-> > Can you show what is fixed by this change?
-> Before the fix:
-> The command "insmod hv_vmbus.ko" hangs. 
-> Root cause: The message data sent from Linux guest to HyperV host were
-> not correctly packed and not recognized by HyperV host. So, the host
-> doesn't acknowledge that the vmbus channel is set up. Then, the guest
-> keeps on waiting for the event and hangs the insmod command.
+> On 09.10.09 21:33:29, Robert Richter wrote:
+> > From: David Rientjes <rientjes@google.com>
+> > 
+> > Looking at the 2.6.31-rc9 code, it appears there is a race condition
+> > in the event_buffer cleanup code path (shutdown). This could lead to
+> > kernel panic as some CPUs may be operating on the event buffer AFTER
+> > it has been freed. The attached patch solves the problem and makes
+> > sure CPUs check if the buffer is not NULL before they access it as
+> > some may have been spinning on the mutex while the buffer was being
+> > freed.
+> > 
+> > The race may happen if the buffer is freed during pending reads. But
+> > it is not clear why there are races in add_event_entry() since all
+> > workqueues or handlers are canceled or flushed before the event buffer
+> > is freed.
+> > 
+> > Signed-off-by: David Rientjes <rientjes@google.com>
+> > Signed-off-by: Stephane Eranian <eranian@google.com>
+> > Signed-off-by: Robert Richter <robert.richter@amd.com>
 > 
-> After the fix:
-> The command "insmod hv_vmbus.ko" completes successfully with vmbus
-> module loaded.
+> Ingo,
+> 
+> you can also pull the patches from here:
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git urgent
+> 
+> Thanks.
 
-That's not showing me why the above fixed the problem.
+Pulled, thanks Robert!
 
-> > Also note that #pragma packed is not supported by older versions of gcc,
-> > so I don't think that it would work at all on some compiler versions
-> > that are still legal to use for the kernel.  But I'm not quite sure when
-> > it was added, so I might be wrong.
-> This pragma was used in older distro, such as SLES10 (kernel 2.6.16)
-> without any problem.
-
-What compiler version was that?  Have you tried it on the lowest
-required version of gcc?
-
-> >From your newer email:
-> > I also note that you are packing more structures here with this patch than the code before the patch had.  Could that be the 
-> > issue here?  The additional structures are ones that should be packed instead?
-> No, the extra packed structures are not required for this bug fix. Just to make sure any future struct related to message is packed, so I put the pack() around the entire file.
-
-Please wrap your email lines properly...
-
-Your patch changes structures that it is needed for.
-
-We need to find the root cause of _why_ your patch fixes the problem here,
-that is what I am trying to get you to do.
-
-thanks,
-
-greg k-h
+	Ingo
