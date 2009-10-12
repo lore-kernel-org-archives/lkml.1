@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932495AbZJLPDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932366AbZJLPM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932495AbZJLPDH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932466AbZJLPDG
+	id S932366AbZJLPM4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbZJLPMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:03:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48270 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932155AbZJLPDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:03:04 -0400
-Date: Mon, 12 Oct 2009 17:02:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <gregkh@suse.de>
-Cc: Mike Frysinger <vapier@gentoo.org>, Ingo Molnar <mingo@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: [PATCH] USB: musb: invert arch depend string
-Message-ID: <20091012150202.GB14004@elte.hu>
-References: <20091012074221.GA19198@elte.hu> <1255355396-20533-1-git-send-email-vapier@gentoo.org> <20091012142849.GA1114@suse.de>
+	Mon, 12 Oct 2009 11:12:55 -0400
+Received: from mamba.nagafix.co.uk ([194.145.196.68]:40899 "EHLO
+	mail.nagafix.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754644AbZJLPMy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 11:12:54 -0400
+X-Greylist: delayed 523 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Oct 2009 11:12:54 EDT
+DomainKey-Signature: a=rsa-sha1; s=mydk; d=nagafix.co.uk; c=simple; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:subject:
+	x-enigmail-version:openpgp:content-type:content-transfer-encoding;
+	b=Ds8SPZQ9lAF/MPq6ehKHnbNiE4RbCbDNftN4Ja5rTCPH46O9RXypcsuMfrtDrkkZ+
+	2+DOrpzEZnL1YhmxJKMaO3GgcnLhoABRL0SY8fI5fchP1DH6wvP3gaFGuOKKdW1Yr7P
+	U99THbuQBlMRDq1UdmP2uTEwUoQ4V2zBCzyO78o=
+Message-ID: <4AD34542.7050500@nagafix.co.uk>
+Date: Mon, 12 Oct 2009 22:03:30 +0700
+From: Antoine Martin <antoine@nagafix.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012142849.GA1114@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: 2.6.31.2 broke UML 64-bit build (2.6.31 was fine)
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=F18AD6BB;
+	url=http://users.nagafix.co.uk/~antoine/antoine.asc
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+tar -jxf linux-2.6.31.2.tar.bz2
+cd linux-2.6.31.2
+cp ../.config ./
+make ARCH=um
+[...]
+  MODPOST vmlinux.o
+  GEN     .version
+  CHK     include/linux/compile.h
+  UPD     include/linux/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+/usr/lib/gcc/x86_64-pc-linux-gnu/4.1.2/../../../../x86_64-pc-linux-gnu/bin/ld:arch/um/kernel/vmlinux.lds:1:
+ignoring invalid character `#' in expression
+/usr/lib/gcc/x86_64-pc-linux-gnu/4.1.2/../../../../x86_64-pc-linux-gnu/bin/ld:arch/um/kernel/vmlinux.lds:1:
+syntax error
+collect2: ld returned 1 exit status
+  KSYM    .tmp_kallsyms1.S
+nm: '.tmp_vmlinux1': No such file
+No valid symbol.
+make: *** [.tmp_kallsyms1.S] Error 1
 
-* Greg KH <gregkh@suse.de> wrote:
+Sorry, not had time to bisect it.
+Tested with gcc 4.1.2 and gcc 4.3.2
+Use this config if yours does not exhibit the problem:
+http://uml.devloop.org.uk/kernels/kernel64-2.6.31.config
 
-> On Mon, Oct 12, 2009 at 09:49:56AM -0400, Mike Frysinger wrote:
-> > The MUSB code relies on platform implementations that currently only
-> > exists for Arm and Blackfin processors, so have the MUSB Kconfig depend
-> > upon those arches.
-> > 
-> > This should prevent other arches from building MUSB via randconfig.
-> > 
-> > Reported-by: Ingo Molnar <mingo@elte.hu>
-> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> 
-> Linus, if you want to take this right now, feel free to add:
-> 
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> Otherwise I will queue this up to send to you in a day or so.
-
-There's no hurry i think - neither allno nor allyes or defconfig is 
-affected, it's a randconfig only bug.
-
-	Ingo
+Cheers
+Antoine
