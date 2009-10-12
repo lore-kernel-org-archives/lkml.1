@@ -1,156 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbZJLXdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933144AbZJLXji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758612AbZJLXdX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 19:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbZJLXdX
+	id S933144AbZJLXji (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 19:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758670AbZJLXjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 19:33:23 -0400
-Received: from claw.goop.org ([74.207.240.146]:49945 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753166AbZJLXdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 19:33:22 -0400
-Message-ID: <4AD3BC9B.7040501@goop.org>
-Date: Mon, 12 Oct 2009 16:32:43 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Bastian Blank <bastian@waldi.eu.org>, Ingo Molnar <mingo@redhat.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Stable Kernel <stable@kernel.org>,
+	Mon, 12 Oct 2009 19:39:36 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38923 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758646AbZJLXjX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 19:39:23 -0400
+Date: Tue, 13 Oct 2009 00:38:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Nix <nix@esperi.org.uk>
+Cc: "Justin P. Mattock" <justinmattock@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [Xen-devel] Re: [PATCH] xen: Disable stack protector for irq
- helper
-References: <20091004183013.GA26101@wavehammer.waldi.eu.org> <4AC92A65.40806@goop.org> <20091005013517.GA6081@wavehammer.waldi.eu.org> <4ACA2AFD.4080305@goop.org> <20091005224310.GA32144@wavehammer.waldi.eu.org> <4ACA90F2.1060909@goop.org> <20091006033050.GA6332@wavehammer.waldi.eu.org> <4ACB93F8.5010900@goop.org> <20091007163521.GA17998@wavehammer.waldi.eu.org> <4ACD3346.3010307@goop.org> <20091012205208.GE17163@elte.hu>
-In-Reply-To: <20091012205208.GE17163@elte.hu>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Boyan <btanastasov@yahoo.co.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, Ed Tomlinson <edt@aei.ca>,
+       "=?ISO-8859-14?B?RnLpZOlyaWM=?= L. W. Meunier" <fredlwm@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14388] keyboard under X with 2.6.31
+Message-ID: <20091013003841.6c2988d0@lxorguk.ukuu.org.uk>
+In-Reply-To: <87ljjgfcbu.fsf@spindle.srvr.nix>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
+	<L6tb-VyKHZK.A.PaB.Ozl0KB@chimera>
+	<C4F8B19E-F4B4-47F3-AE5B-4581C8E3F3AE@gmail.com>
+	<87ljjgfcbu.fsf@spindle.srvr.nix>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/12/09 13:52, Ingo Molnar wrote:
-> ping - any update about this fix? Since it fixes a real crash it would 
-> be nice to fix this for .32.
->   
+> So it seems likely to me that this is a kernel bug, somewhere, and the
+> TTY layer seems like a good place to look (OK, a horrible place, but a
+> *likely* place).
 
-The following changes since commit 2caa731819a633bec5a56736e64c562b7e193666:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/pci-2.6
+Somewhere around 2.6.29-30 various things went funny in the keyboard
+layer for me - notably characters "bleeding" across console switches.
 
-are available in the git repository at:
+> 
+> I'm about to try reverting the suggested commit and will report back. I
+> see this failure about once a day, so I'll give it three days to go
+> wrong and then (if it doesn't) will presume it works and so inform you.
+> 
+> 
+> (Of course with this commit reverted Emacsen start dropping data from
+> their ptys, and as bad luck would have it I live in (X)Emacs, but that's
+> on a different machine! so I can have my compile buffer data *and* not
+> destroy X ;} )
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git mainline/x86-paravirt-fix
-
-Jeremy Fitzhardinge (1):
-      x86/paravirt: use normal calling sequences for irq enable/disable etc
-
- arch/x86/include/asm/paravirt.h       |   28 ++++------------------------
- arch/x86/include/asm/paravirt_types.h |   10 ++++++----
- 2 files changed, 10 insertions(+), 28 deletions(-)
-
-Subject: [PATCH] x86/paravirt: use normal calling sequences for irq enable/disable etc
-
-For historical reasons irq enable/disable/save/restore had special
-calling sequences to make them more efficient.  With the more
-recent introduction of higher-level and more general optimisations
-this is no longer necessary so we can just use the normal PVOP_
-macros.  This fixes some residual bugs in the old implementations which
-left edx liable to inadvertent clobbering.
-
-Also, fix some bugs in __PVOP_VCALLEESAVE which were revealed by actual
-use.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index 8aebcc4..efb3899 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -840,42 +840,22 @@ static __always_inline void __raw_spin_unlock(struct raw_spinlock *lock)
- 
- static inline unsigned long __raw_local_save_flags(void)
- {
--	unsigned long f;
--
--	asm volatile(paravirt_alt(PARAVIRT_CALL)
--		     : "=a"(f)
--		     : paravirt_type(pv_irq_ops.save_fl),
--		       paravirt_clobber(CLBR_EAX)
--		     : "memory", "cc");
--	return f;
-+	return PVOP_CALLEE0(unsigned long, pv_irq_ops.save_fl);
- }
- 
- static inline void raw_local_irq_restore(unsigned long f)
- {
--	asm volatile(paravirt_alt(PARAVIRT_CALL)
--		     : "=a"(f)
--		     : PV_FLAGS_ARG(f),
--		       paravirt_type(pv_irq_ops.restore_fl),
--		       paravirt_clobber(CLBR_EAX)
--		     : "memory", "cc");
-+	PVOP_VCALLEE1(pv_irq_ops.restore_fl, f);
- }
- 
- static inline void raw_local_irq_disable(void)
- {
--	asm volatile(paravirt_alt(PARAVIRT_CALL)
--		     :
--		     : paravirt_type(pv_irq_ops.irq_disable),
--		       paravirt_clobber(CLBR_EAX)
--		     : "memory", "eax", "cc");
-+	PVOP_VCALLEE0(pv_irq_ops.irq_disable);
- }
- 
- static inline void raw_local_irq_enable(void)
- {
--	asm volatile(paravirt_alt(PARAVIRT_CALL)
--		     :
--		     : paravirt_type(pv_irq_ops.irq_enable),
--		       paravirt_clobber(CLBR_EAX)
--		     : "memory", "eax", "cc");
-+	PVOP_VCALLEE0(pv_irq_ops.irq_enable);
- }
- 
- static inline unsigned long __raw_local_irq_save(void)
-diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
-index dd0f5b3..9357473 100644
---- a/arch/x86/include/asm/paravirt_types.h
-+++ b/arch/x86/include/asm/paravirt_types.h
-@@ -494,10 +494,11 @@ int paravirt_disable_iospace(void);
- #define EXTRA_CLOBBERS
- #define VEXTRA_CLOBBERS
- #else  /* CONFIG_X86_64 */
-+/* [re]ax isn't an arg, but the return val */
- #define PVOP_VCALL_ARGS					\
- 	unsigned long __edi = __edi, __esi = __esi,	\
--		__edx = __edx, __ecx = __ecx
--#define PVOP_CALL_ARGS		PVOP_VCALL_ARGS, __eax
-+		__edx = __edx, __ecx = __ecx, __eax = __eax
-+#define PVOP_CALL_ARGS		PVOP_VCALL_ARGS
- 
- #define PVOP_CALL_ARG1(x)		"D" ((unsigned long)(x))
- #define PVOP_CALL_ARG2(x)		"S" ((unsigned long)(x))
-@@ -509,6 +510,7 @@ int paravirt_disable_iospace(void);
- 				"=c" (__ecx)
- #define PVOP_CALL_CLOBBERS	PVOP_VCALL_CLOBBERS, "=a" (__eax)
- 
-+/* void functions are still allowed [re]ax for scratch */
- #define PVOP_VCALLEE_CLOBBERS	"=a" (__eax)
- #define PVOP_CALLEE_CLOBBERS	PVOP_VCALLEE_CLOBBERS
- 
-@@ -583,8 +585,8 @@ int paravirt_disable_iospace(void);
- 		       VEXTRA_CLOBBERS,					\
- 		       pre, post, ##__VA_ARGS__)
- 
--#define __PVOP_VCALLEESAVE(rettype, op, pre, post, ...)			\
--	____PVOP_CALL(rettype, op.func, CLBR_RET_REG,			\
-+#define __PVOP_VCALLEESAVE(op, pre, post, ...)				\
-+	____PVOP_VCALL(op.func, CLBR_RET_REG,				\
- 		      PVOP_VCALLEE_CLOBBERS, ,				\
- 		      pre, post, ##__VA_ARGS__)
-
-
+X doesn't touch the pty layer. It touches vt (extensively) and the input
+layers. It's vt/kbd access is also very raw so bypasses much of that
+layer. That isn't to say tty isn't the cause but look for input layer
+changes too.
