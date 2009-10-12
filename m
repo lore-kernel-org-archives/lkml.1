@@ -1,80 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbZJLV5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933433AbZJLWBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758538AbZJLV5o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbZJLV5n
+	id S933433AbZJLWBX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 18:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933418AbZJLWBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:57:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36510 "EHLO ogre.sisk.pl"
+	Mon, 12 Oct 2009 18:01:22 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37702 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754230AbZJLV5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:57:41 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [Bug #14379] ACPI Warning for _SB_.BAT0._BIF: Converted Buffer to 
- =?iso-8859-1?q?=09expected?= String
-Date: Mon, 12 Oct 2009 23:58:42 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Lin Ming <ming.m.lin@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera> <1255318556.11664.11.camel@minggr.sh.intel.com> <4AD2A97A.3020909@gmail.com>
-In-Reply-To: <4AD2A97A.3020909@gmail.com>
+	id S933417AbZJLWBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 18:01:21 -0400
+Date: Tue, 13 Oct 2009 00:00:43 +0200
+From: Jan Kara <jack@suse.cz>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com
+Subject: Re: Fun with fdatasync()
+Message-ID: <20091012220043.GC3965@duck.suse.cz>
+References: <20091012140049.GO2632@think>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910122358.42255.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012140049.GO2632@think>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, Justin P. Mattock wrote:
-> Lin Ming wrote:
-> > On Mon, 2009-10-12 at 11:14 +0800, Justin Mattock wrote:
-> >    
-> >> On Sun, Oct 11, 2009 at 3:22 PM, Rafael J. Wysocki<rjw@sisk.pl>  wrote:
-> >>      
-> >>> This message has been generated automatically as a part of a report
-> >>> of recent regressions.
-> >>>
-> >>> The following bug entry is on the current list of known regressions
-> >>> from 2.6.31.  Please verify if it still should be listed and let me know
-> >>> (either way).
-> >>>
-> >>>
-> >>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14379
-> >>> Subject         : ACPI Warning for _SB_.BAT0._BIF: Converted Buffer to expected String
-> >>> Submitter       : Justin Mattock<justinmattock@gmail.com>
-> >>> Date            : 2009-10-08 21:46 (4 days old)
-> >>> References      : http://marc.info/?l=linux-kernel&m=125504031328941&w=4
-> >>>
-> >>>
-> >>>
-> >>>        
-> >> pulled rc4 today and the warning is still present.
-> >> here is the results of git bisect:
-> >>      
-> >
-> > Patch at http://bugzilla.kernel.org/show_bug.cgi?id=14379#c1 fixes the
-> > warning.
-> >
-> > Actually, the _BIF warning was fixed at commit
-> > e899b6485c332aa2d7510739507ab5e5d7b28e59.
-> > See http://bugzilla.kernel.org/show_bug.cgi?id=11822#c14
-> >
-> > I made a mistake at the cleanup of predefined method table so the
-> > warning shows up again.
-> >
-> > Lin Ming
-> >
-> >    
-> Cool, I can give that a try.
-> then I guess just leave this open(bugreport) until this patch
-> http://bugzilla.kernel.org/show_bug.cgi?id=14379#c1
-> gets pushed into the main tree then close the bugreport.
+  Hi,
 
-I updated the bug entry with the patch information.
+On Mon 12-10-09 10:00:49, Chris Mason wrote:
+> Josef has been doing some benchmarking around rpm performance on the
+> filesystem and noticed that ext3 was going really fast on the
+> fdatasyncs.
+> 
+> It seems pretty surprising to me that rpm -Uvh should do fdatasync
+> without forcing fsyncs.  The files get overwritten, and any time we mark
+> an inode dirty I_DIRTY_DATASYNC is getting set.
+> 
+> Handling of I_DIRTY_DATASYNC seems to work like this:
+> 
+> mark_inode_dirty() will set I_DIRTY_DATASYNC
+> 
+> ext3_sync_file will force a full commit on I_DIRTY_DATASYNC
+> 
+> This part makes good sense.  If the inode has changed, we're supposed to
+> do a full commit.
+> 
+> writeback_single_inode is where things seem to go wrong:
+> 
+>         /* Set I_SYNC, reset I_DIRTY */
+>         dirty = inode->i_state & I_DIRTY;
+>         inode->i_state |= I_SYNC;
+>         inode->i_state &= ~I_DIRTY;
+> 
+> Whoops, we just lost I_DIRTY_DATASYNC.  So, if pdflush comes in and does some
+> writeback before we fdatasync, we'll skip the full commit because
+> I_DIRTY_DATASYNC is gone.
+> 
+> The solution to me seems to be that we need to keep I_DIRTY_DATASYNC
+> until the FS does an fsync/O_SYNC operation, and make the FS
+> responsible for clearing it.
+> 
+> This does risk extra full fsyncs if the FS does a transaction commit on
+> its own, but the FS should be responsible for keeping track of which
+> transaction last changed a given file and doing a shortcut in the fsync
+> code if the file is already on safely on disk.
+> 
+> Am I missing something?  I don't see how fdatasync is safe in our
+> current usage.
+  Yeah, we already discussed similar problems I_DIRTY flags with Ted and
+others in thread "fsync on ext[34] working only by an accident" on
+linux-ext4.
+  I don't quite like clearing dirty flags only on sync - pdflush would then
+unnecessarily try to get rid of those inodes and burn CPU on them.
+Actually, mapping->private_list (and bh->b_assoc_buffers) is meant to be
+used exactly for the purpose of tracking what needs to be written on fsync
+so my current plan is to somehow utilize that list to fix the problem.
+  Maybe I even get to that tomorrow ;) Thanks for the reminder.
 
-Thanks,
-Rafael
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
