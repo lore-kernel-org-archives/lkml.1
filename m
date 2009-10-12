@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbZJLMHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755129AbZJLMG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755652AbZJLMHK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 08:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbZJLMHJ
+	id S1755129AbZJLMG6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 08:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbZJLMG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 08:07:09 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42942 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755327AbZJLMHG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 08:07:06 -0400
-Subject: [PATCH 3/4] Run pci_apply_final_quirks() sooner.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J.Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-In-Reply-To: <1255342738.24732.265.camel@macbook.infradead.org>
-References: <1255342738.24732.265.camel@macbook.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 12 Oct 2009 13:06:17 +0100
-Message-Id: <1255349177.10605.10.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 12 Oct 2009 08:06:57 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:56817 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753138AbZJLMG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 08:06:57 -0400
+Date: Mon, 12 Oct 2009 14:06:20 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org
+Subject: pci-express hotplug
+Message-ID: <20091012120620.GG9228@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Having this as a device_initcall() means that some real device drivers
-can actually initialise _before_ the quirks are run, which is wrong.
+Hi,
 
-We want it to run _before_ device_initcall(), but _after_ fs_initcall(),
-since some arch-specific PCI initialisation like pcibios_assign_resources()
-is done at fs_initcall().
+I'm trying to get pci-express hotplug working in a box here. I don't
+really care about the hotplug aspect, I just want the darn pci-e slots
+that are designated hotplug slots to actually WORK. When I load pciehp,
+I get:
 
-We could use rootfs_initcall() but I actually want to use that for the
-IOMMU initialisation, which has to come after the quirks, but still
-before the real devices. So use fs_initcall_sync() instead -- since this
-is entirely synchronous, it doesn't hurt that it'll escape the
-synchronisation.
+Firmware did not grant requested _OSC control
+Firmware did not grant requested _OSC control
+Firmware did not grant requested _OSC control
+Firmware did not grant requested _OSC control
+pciehp 0000:00:05.0:pcie04: HPC vendor_id 8086 device_id 340c ss_vid 0 ss_did 0
+pciehp 0000:00:05.0:pcie04: service driver pciehp loaded
+Firmware did not grant requested _OSC control
+pciehp 0000:00:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
+pciehp 0000:00:07.0:pcie04: service driver pciehp loaded
+Firmware did not grant requested _OSC control
+pciehp 0000:80:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
+pciehp 0000:80:07.0:pcie04: service driver pciehp loaded
+pciehp 0000:80:09.0:pcie04: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
+pciehp 0000:80:09.0:pcie04: service driver pciehp loaded
+pciehp: PCI Express Hot Plug Controller Driver version: 0.4
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
----
- drivers/pci/quirks.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+and the devices in the hotplug slots stay off. Is this an ACPI/bios
+issue? How can I debug this?
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 77bf620..4e1b1b8 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -2584,7 +2584,7 @@ static int __init pci_apply_final_quirks(void)
- 	return 0;
- }
- 
--device_initcall(pci_apply_final_quirks);
-+fs_initcall_sync(pci_apply_final_quirks);
- #else
- void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev) {}
- #endif
 -- 
-1.6.5.rc2
-
-
+Jens Axboe
 
