@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932748AbZJLQFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932742AbZJLQCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932748AbZJLQFm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932733AbZJLQFl
+	id S932742AbZJLQCW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932733AbZJLQCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:05:41 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:50616 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932729AbZJLQFl (ORCPT
+	Mon, 12 Oct 2009 12:02:21 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:42174 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932732AbZJLQCV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 12:05:41 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AigFAFTw0kpMROOX/2dsb2JhbACBUtV5hC0E
-Date: Mon, 12 Oct 2009 12:05:03 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
-Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
-	interrupt disable
-Message-ID: <20091012160503.GA31249@Krystal>
-References: <20091008191754.GA12729@Krystal> <alpine.DEB.1.10.0910081520210.8030@gentwo.org> <20091008203724.GA15798@Krystal> <alpine.DEB.1.10.0910081652190.8030@gentwo.org> <20091012135600.GB15605@Krystal> <alpine.DEB.1.10.0910121049580.32595@gentwo.org> <20091012152627.GA27835@Krystal> <alpine.DEB.1.10.0910121122400.21558@gentwo.org> <20091012153844.GA29116@Krystal> <alpine.DEB.1.10.0910121137100.21558@gentwo.org>
-Mime-Version: 1.0
+	Mon, 12 Oct 2009 12:02:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QdvM8cpYTQOCiK7Elg388ej8g6kc2lSjI5Obpw9bQw/CDEVYsgb8+YRMbmHehPsCDg
+         I5jDiVQijObbZqPvl9C/A3LwJCAlKt32RoLfWWEIsX2ihAWZtR+zEtcC6MkR6f+65nWK
+         UX/oamVBNOg0fIA4GrgL5r38XPA4phzlxLq2A=
+Date: Tue, 13 Oct 2009 00:05:48 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Antoine Martin <antoine@nagafix.co.uk>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31.2 broke UML 64-bit build (2.6.31 was fine)
+Message-ID: <20091012160548.GA3961@hack>
+References: <4AD34542.7050500@nagafix.co.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0910121137100.21558@gentwo.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 12:04:37 up 55 days,  2:54,  3 users,  load average: 0.52, 0.34,
-	0.24
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4AD34542.7050500@nagafix.co.uk>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (cl@linux-foundation.org) wrote:
-> On Mon, 12 Oct 2009, Mathieu Desnoyers wrote:
-> 
-> > local_irq_enable();
-> > preempt_enable(); <- barrier()
-> >
-> > In the first scenario, the compiler barrier is at the beginning of the
-> > slow path function, which should impose less restrictions on the compiler
-> > optimizations.
-> 
-> Again: The next statement is a call to a function that calls the page
-> allocator. Its one call vs two for me. Plus the flow of things is much
-> cleaner and less obfuscated.
-> 
+On Mon, Oct 12, 2009 at 10:03:30PM +0700, Antoine Martin wrote:
+>tar -jxf linux-2.6.31.2.tar.bz2
+>cd linux-2.6.31.2
+>cp ../.config ./
+>make ARCH=um
+>[...]
+>  MODPOST vmlinux.o
+>  GEN     .version
+>  CHK     include/linux/compile.h
+>  UPD     include/linux/compile.h
+>  CC      init/version.o
+>  LD      init/built-in.o
+>  LD      .tmp_vmlinux1
+>/usr/lib/gcc/x86_64-pc-linux-gnu/4.1.2/../../../../x86_64-pc-linux-gnu/bin/ld:arch/um/kernel/vmlinux.lds:1:
+>ignoring invalid character `#' in expression
+>/usr/lib/gcc/x86_64-pc-linux-gnu/4.1.2/../../../../x86_64-pc-linux-gnu/bin/ld:arch/um/kernel/vmlinux.lds:1:
+>syntax error
+>collect2: ld returned 1 exit status
+>  KSYM    .tmp_kallsyms1.S
+>nm: '.tmp_vmlinux1': No such file
+>No valid symbol.
+>make: *** [.tmp_kallsyms1.S] Error 1
 
-That's a convincing argument, I agree.
 
-Thanks,
+Hmm, this is a known problem:
+https://lists.linux-foundation.org/pipermail/bugme-new/2009-May/021900.html
 
-Mathieu
+>
+>Sorry, not had time to bisect it.
+>Tested with gcc 4.1.2 and gcc 4.3.2
+>Use this config if yours does not exhibit the problem:
+>http://uml.devloop.org.uk/kernels/kernel64-2.6.31.config
+
+No problem. Thanks for your report!
+
+I will take care of this tomorrow, it's mid-night here already. :-)
 
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Live like a child, think like the god.
+ 
