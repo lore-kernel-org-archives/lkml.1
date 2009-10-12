@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755129AbZJLMG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbZJLMHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755129AbZJLMG6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 08:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbZJLMG5
+	id S1755777AbZJLMHO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 08:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbZJLMHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 08:06:57 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:56817 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753138AbZJLMG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 08:06:57 -0400
-Date: Mon, 12 Oct 2009 14:06:20 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org
-Subject: pci-express hotplug
-Message-ID: <20091012120620.GG9228@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+	Mon, 12 Oct 2009 08:07:11 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42944 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755459AbZJLMHK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 08:07:10 -0400
+Subject: [PATCH 4/4] x86: Move pci_iommu_init to rootfs_initcall()
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J.Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>
+In-Reply-To: <1255342738.24732.265.camel@macbook.infradead.org>
+References: <1255342738.24732.265.camel@macbook.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 12 Oct 2009 13:06:21 +0100
+Message-Id: <1255349181.10605.11.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+We want this to happen after the PCI quirks, which are now running at
+the very end of the fs_initcalls.
 
-I'm trying to get pci-express hotplug working in a box here. I don't
-really care about the hotplug aspect, I just want the darn pci-e slots
-that are designated hotplug slots to actually WORK. When I load pciehp,
-I get:
+This works around the BIOS problems which were originally addressed by
+commit db8be50c4307dac2b37305fc59c8dc0f978d09ea ('USB: Work around BIOS
+bugs by quiescing USB controllers earlier'), which was reverted in
+commit d93a8f829fe1d2f3002f2c6ddb553d12db420412.
 
-Firmware did not grant requested _OSC control
-Firmware did not grant requested _OSC control
-Firmware did not grant requested _OSC control
-Firmware did not grant requested _OSC control
-pciehp 0000:00:05.0:pcie04: HPC vendor_id 8086 device_id 340c ss_vid 0 ss_did 0
-pciehp 0000:00:05.0:pcie04: service driver pciehp loaded
-Firmware did not grant requested _OSC control
-pciehp 0000:00:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
-pciehp 0000:00:07.0:pcie04: service driver pciehp loaded
-Firmware did not grant requested _OSC control
-pciehp 0000:80:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
-pciehp 0000:80:07.0:pcie04: service driver pciehp loaded
-pciehp 0000:80:09.0:pcie04: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
-pciehp 0000:80:09.0:pcie04: service driver pciehp loaded
-pciehp: PCI Express Hot Plug Controller Driver version: 0.4
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+---
+ arch/x86/kernel/pci-dma.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-and the devices in the hotplug slots stay off. Is this an ACPI/bios
-issue? How can I debug this?
-
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index d20009b..b2a71dc 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -311,7 +311,7 @@ void pci_iommu_shutdown(void)
+ 	amd_iommu_shutdown();
+ }
+ /* Must execute after PCI subsystem */
+-fs_initcall(pci_iommu_init);
++rootfs_initcall(pci_iommu_init);
+ 
+ #ifdef CONFIG_PCI
+ /* Many VIA bridges seem to corrupt data for DAC. Disable it here */
 -- 
-Jens Axboe
+1.6.5.rc2
+
 
