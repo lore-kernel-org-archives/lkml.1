@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbZJLPmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932543AbZJLPnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757265AbZJLPmb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbZJLPma
+	id S932543AbZJLPnl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757267AbZJLPnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:42:30 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:33783 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752790AbZJLPm3 (ORCPT
+	Mon, 12 Oct 2009 11:43:37 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:57878 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754917AbZJLPng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:42:29 -0400
-X-Sasl-enc: N2x5K3s+1cJ6gLw6Q2Q7x2pZ9rdqAJTVR/h1geYN4RBd 1255362111
-Date: Mon, 12 Oct 2009 12:41:47 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, lenb@kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -next] thinkpad_acpi: fix build, HOTKEY_POLL is optional
-Message-ID: <20091012154147.GA16178@khazad-dum.debian.net>
-References: <20091009190654.741eeffd.sfr@canb.auug.org.au>
- <20091009161723.b68b91a7.randy.dunlap@oracle.com>
- <20091010000808.GA10637@khazad-dum.debian.net>
- <20091012125942.GA25464@elte.hu>
+	Mon, 12 Oct 2009 11:43:36 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012125942.GA25464@elte.hu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091006074533.GA28889@july>
+References: <20091006074533.GA28889@july>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 12 Oct 2009 17:42:08 +0200
+Message-ID: <ac3eb2510910120842m3129b76fyaa11b509e7f97038@mail.gmail.com>
+Subject: Re: [PATCH] Haptic class support (v2)
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       soni.trilok@gmail.com
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009, Ingo Molnar wrote:
-> * Henrique de Moraes Holschuh <hmh@hmh.eng.br> wrote:
-> > On Fri, 09 Oct 2009, Randy Dunlap wrote:
-> > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > > 
-> > > Fix optional part of driver to be built optionally:
-> > 
-> > NAK!
-> > 
-> > This happens because of (linux-next) commit
-> > 7f6443f7238a0aa9014b11a0a31ab76825d75cdf 
-> > "thinkpad-acpi: Fix build on !CONFIG_THINKPAD_ACPI_HOTKEY_POLL" by
-> > Ingo.
-> > 
-> > That commit is wrong, it must NOT be applied as explained in the 
-> > thread starting at http://lkml.org/lkml/2009/9/27/30.
-> 
-> Yep, that was wrong - it should be gone now.
+On Tue, Oct 6, 2009 at 09:45, Kyungmin Park <kmpark@infradead.org> wrote:
+> This patch includes two haptic devices, isa1000 and isa1200
+> ISA1000 is gpio based haptic, but isa1200 is based on I2C
+> Both are working on Samsung SoCs and tested.
+>
+> To enable the haptic, echo 1 > /sys/class/haptic/${name}/enable
+> You can adjust the level by echo ${level} > /sys/class/haptic/${name}/enable
+> or
+> With oneshot feature, echo ${msec time} > /sys/class/haptic/${name}/oneshot
 
-Thank you.
+Please never add any custom files to the top-level of a class
+directory. This place is reserved for devices, and not for custom
+files. It's a serious bug in the layout and API of sysfs that this
+allowed at all.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+If you need these subsystem-wide contols please use a bus and not a
+class to stuff these files into a place where they don't mix up with
+the list of devices belonging to a class. Buses have all devices in a
+devices/ subdir so they will not conflict.
+
+Thanks,
+Kay
