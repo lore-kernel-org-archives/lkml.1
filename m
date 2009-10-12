@@ -1,93 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbZJLUTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbZJLUYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758086AbZJLUTd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 16:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbZJLUTc
+	id S1758106AbZJLUYe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 16:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757531AbZJLUYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 16:19:32 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:59410 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758069AbZJLUTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 16:19:31 -0400
-Message-ID: <4AD39002.2080907@redhat.com>
-Date: Mon, 12 Oct 2009 16:22:26 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Mon, 12 Oct 2009 16:24:34 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37002 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756756AbZJLUYd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 16:24:33 -0400
+Date: Mon, 12 Oct 2009 16:23:48 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, marcin.slusarz@gmail.com, nhorman@tuxdriver.com
+Subject: Re: [PATCH 2/3] extend get/setrlimit to support setting rlimits
+	external to a process (v6)
+Message-ID: <20091012202348.GI32088@hmsreliant.think-freely.org>
+References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org> <20091012161342.GA32088@hmsreliant.think-freely.org> <20091012201304.GG32088@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [PATCH tracing/kprobes v3 4/7] tracing/kprobes: Avoid field	name
- confliction
-References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222807.1684.26880.stgit@dhcp-100-2-132.bos.redhat.com> <20091012173752.GB5059@nowhere> <4AD37FEF.9050807@redhat.com> <20091012194852.GB4748@nowhere>
-In-Reply-To: <20091012194852.GB4748@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012201304.GG32088@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -4.5 (----)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Mon, Oct 12, 2009 at 03:13:51PM -0400, Masami Hiramatsu wrote:
->> Frederic Weisbecker wrote:
->>> The conflict issue might not be obvious for a user desperately trying to set
->>> a kprobe. Even for other failcases, it might not be obvious (blacklisted
->>> symbols, syntax errors...)
->>>
->>> May be should you improve the error granularity and print a KERN_DEBUG
->>> message?
->>
->> Agreed, and kprobes error handling should be improved too (in the most cases,
->> it just returns -EINVAL).
->>
->> Thank you.
->>
->
->
-> And btw, I'm enable to create a probe, neither through ftrace nor perf:
->
-> 	$ sudo ./perf probe -P 'p:sys_close sys_close $retval'
-> 	Adding new event: p:sys_close sys_close+0 $retval
->
-> 	Error: Failed to create event: Invalid argument
->
->
-> 	# echo 'p:sys_open sys_open $retval'>  /debug/tracing/kprobe_events
-> 	bash: echo: write error : Invalid argument
->
-> I suspect I missed something very obvious with the syntax :)
+Add syscall infrastructure for getprlimit/setprlimit
 
-Ah, only kretprobe events can use $retval :-)
-So, you should specify 'r' instead of 'p'.
+This patch adds the definitions for the get/setprlimit syscalls.  They are
+identical to the get/setlimit calls, except that they allow the caller to
+manipulate limits for processes other than themselves.
 
--P 'r:sys_close sys_close $retval'
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
 
-> I've applied your patches in:
->
-> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-> 	tracing/kprobes
->
-> Thanks.
+ include/linux/syscalls.h |    4 ++
+ kernel/sys.c             |   84 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 88 insertions(+)
 
-Thank you!
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index a990ace..9f357ab 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -702,11 +702,15 @@ asmlinkage long sys_newuname(struct new_utsname __user *name);
+ 
+ asmlinkage long sys_getrlimit(unsigned int resource,
+ 				struct rlimit __user *rlim);
++asmlinkage long sys_getprlimit(pid_t pid, unsigned int resource,
++				struct rlimit __user *rlim);
+ #if defined(COMPAT_RLIM_OLD_INFINITY) || !(defined(CONFIG_IA64))
+ asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *rlim);
+ #endif
+ asmlinkage long sys_setrlimit(unsigned int resource,
+ 				struct rlimit __user *rlim);
++asmlinkage long	sys_setprlimit(pid_t pid, unsigned int resource,
++				struct rlimit __user *rlim);
+ asmlinkage long sys_getrusage(int who, struct rusage __user *ru);
+ asmlinkage long sys_umask(int mask);
+ 
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 0e210a4..6ca9e7f 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1213,6 +1213,50 @@ SYSCALL_DEFINE2(getrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ 	}
+ }
+ 
++SYSCALL_DEFINE3(getprlimit, pid_t, pid, unsigned int, resource,
++		struct rlimit __user *, rlim)
++{
++	unsigned long flags;
++	struct task_struct *tsk;
++	struct pid *ppid;
++	int retval = -EINVAL;
++
++	ppid = find_get_pid(pid);
++	if (!ppid)
++		goto out;
++
++	tsk = get_pid_task(ppid, PIDTYPE_PID);
++
++	if (!tsk)
++		goto out_put_pid;
++
++	if (resource >= RLIM_NLIMITS)
++		goto out_put_all;
++
++	retval = -EBUSY;
++	if (!lock_task_sighand(tsk, &flags))
++		goto out_put_all;
++
++	else {
++		struct rlimit val;
++
++		task_lock(tsk->group_leader);
++		val = current->signal->rlim[resource];
++		task_unlock(tsk->group_leader);
++		retval = copy_to_user(rlim, &val, sizeof(*rlim)) ? -EFAULT : 0;
++	}
++
++	unlock_task_sighand(tsk, &flags);
++
++out_put_all:
++	put_task_struct(tsk);
++out_put_pid:
++	put_pid(ppid);
++out:
++	return retval;
++}
++
++
+ #ifdef __ARCH_WANT_SYS_OLD_GETRLIMIT
+ 
+ /*
+@@ -1303,6 +1347,46 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
+ 	return do_setrlimit(resource, &new_rlim, current);
+ }
+ 
++SYSCALL_DEFINE3(setprlimit, pid_t, pid, unsigned int, resource,
++		struct rlimit __user *, rlim)
++{
++	struct task_struct *tsk;
++	struct pid *ppid;
++	unsigned long flags;
++	struct rlimit new_rlim;
++	int retval = -EINVAL;
++
++	ppid = find_get_pid(pid);
++	if (!ppid)
++		goto out;
++
++	tsk = get_pid_task(ppid, PIDTYPE_PID);
++
++	if (!tsk)
++		goto out_put_pid;
++
++	if (resource >= RLIM_NLIMITS)
++		goto out_put_all;
++
++	retval = -EFAULT;
++	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
++		goto out_put_all;
++
++	if (!lock_task_sighand(tsk, &flags))
++		goto out_put_all;
++
++	retval = do_setrlimit(resource, &new_rlim, tsk);
++
++	unlock_task_sighand(tsk, &flags);
++
++out_put_all:
++	put_task_struct(tsk);
++out_put_pid:
++	put_pid(ppid);
++out:
++	return retval;
++}
++
+ /*
+  * It would make sense to put struct rusage in the task_struct,
+  * except that would make the task_struct be *really big*.  After
