@@ -1,41 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932762AbZJLRvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932829AbZJLRxF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932762AbZJLRvH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 13:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZJLRvG
+	id S932829AbZJLRxF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 13:53:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932667AbZJLRxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 13:51:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:51027 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519AbZJLRvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 13:51:05 -0400
-Date: Mon, 12 Oct 2009 14:50:27 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Glauber Costa <glommer@redhat.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH] fix msr list
-Message-ID: <20091012175026.GA4768@amt.cnet>
-References: <1254849890-3916-1-git-send-email-glommer@redhat.com>
+	Mon, 12 Oct 2009 13:53:04 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:51805
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932575AbZJLRxD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 13:53:03 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Mark A. Miller" <mark@mirell.org>
+Subject: Re: [PATCH] Expose BOOT_RAW Kconfig Symbol
+Date: Mon, 12 Oct 2009 12:51:51 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-15-generic; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <31014a580910120227j3023d3f0t947f6feeba427487@mail.gmail.com> <31014a580910120231p58c4f4ebi122c9232a7c288f3@mail.gmail.com>
+In-Reply-To: <31014a580910120231p58c4f4ebi122c9232a7c288f3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1254849890-3916-1-git-send-email-glommer@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200910121251.51590.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 01:24:50PM -0400, Glauber Costa wrote:
-> For a while now, we are issuing a rdmsr instruction to find out which msrs in our
-> save list are really supported by the underlying machine. However, it fails to account
-> for kvm-specific msrs, such as the pvclock ones.
-> 
-> This patch moves then to the beginning of the list, and skip testing them.
-> 
-> Signed-off-by: Glauber Costa <glommer@redhat.com>
+From: Mark Miller <mark@mirell.org>
 
-Applied, thanks.
+This exposes the CONFIG_BOOT_RAW symbol in Kconfig. This is needed on
+certain Broadcom chipsets running CFE in order to load the kernel.
 
-But this alone won't fix migration to include the two pvclock MSRs
-right?
+Signed-off-by: Mark Miller <mark@mirell.org>
+Acked-by: Rob Landley <rob@landley.net>
+---
 
+ arch/mips/Kconfig |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index f4af967..023604d 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -670,9 +670,6 @@ config ARC
+ config ARCH_MAY_HAVE_PC_FDC
+ 	bool
+ 
+-config BOOT_RAW
+-	bool
+-
+ config CEVT_BCM1480
+ 	bool
+ 
+@@ -1887,6 +1884,18 @@ config SECCOMP
+ 
+ 	  If unsure, say Y. Only embedded should say N here.
+ 
++config BOOT_RAW
++	bool "Enable the kernel to be executed from the load address"
++	default n
++	help
++	 Allow the kernel to be executed from the load address for
++	 bootloaders which cannot read the ELF format. This places
++	 a jump to start_kernel at the load address.
++
++	 If unsure, say N.
++
++
++
+ endmenu
+ 
+ config LOCKDEP_SUPPORT
+
+
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
