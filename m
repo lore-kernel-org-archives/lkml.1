@@ -1,120 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756367AbZJLLiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbZJLLjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756367AbZJLLiy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 07:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbZJLLix
+	id S1756432AbZJLLjN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 07:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756264AbZJLLjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 07:38:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52154 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754391AbZJLLix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 07:38:53 -0400
-Date: Mon, 12 Oct 2009 13:37:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Artem Bityutskiy <dedekind1@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] panic.c: export panic_on_oops
-Message-ID: <20091012113758.GB11035@elte.hu>
-References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com> <20091012111545.GB8857@elte.hu> <1255346731.9659.31.camel@localhost>
+	Mon, 12 Oct 2009 07:39:12 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:54740 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754848AbZJLLjM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 07:39:12 -0400
+Date: Mon, 12 Oct 2009 17:08:29 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Ying Han <yinghan@google.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH 0/2] memcg: improving scalability by reducing lock
+ contention at charge/uncharge
+Message-ID: <20091012113829.GD3007@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091002135531.3b5abf5c.kamezawa.hiroyu@jp.fujitsu.com>
+ <604427e00910091737s52e11ce9p256c95d533dc2837@mail.gmail.com>
+ <f82dee90d0ab51d5bd33a6c01a9feb17.squirrel@webmail-b.css.fujitsu.com>
+ <604427e00910111134o6f22f0ddg2b87124dd334ec02@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1255346731.9659.31.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <604427e00910111134o6f22f0ddg2b87124dd334ec02@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Ying Han <yinghan@google.com> [2009-10-11 11:34:39]:
 
-* Artem Bityutskiy <dedekind1@gmail.com> wrote:
+> 2009/10/10 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> > Ying Han wrote:
+> > > Hi KAMEZAWA-san: I tested your patch set based on 2.6.32-rc3 but I don't
+> > > see
+> > > much improvement on the page-faults rate.
+> > > Here is the number I got:
+> > >
+> > > [Before]
+> > >  Performance counter stats for './runpause.sh 10' (5 runs):
+> > >
+> > >   226272.271246  task-clock-msecs         #      3.768 CPUs    ( +-
+> > > 0.193%
+> > > )
+> > >            4424  context-switches         #      0.000 M/sec   ( +-
+> > > 14.418%
+> > > )
+> > >              25  CPU-migrations           #      0.000 M/sec   ( +-
+> > > 23.077%
+> > > )
+> > >        80499059  page-faults              #      0.356 M/sec   ( +-
+> > > 2.586%
+> > > )
+> > >    499246232482  cycles                   #   2206.396 M/sec   ( +-
+> > > 0.055%
+> > > )
+> > >    193036122022  instructions             #      0.387 IPC     ( +-
+> > > 0.281%
+> > > )
+> > >     76548856038  cache-references         #    338.304 M/sec   ( +-
+> > > 0.832%
+> > > )
+> > >       480196860  cache-misses             #      2.122 M/sec   ( +-
+> > > 2.741%
+> > > )
+> > >
+> > >    60.051646892  seconds time elapsed   ( +-   0.010% )
+> > >
+> > > [After]
+> > >  Performance counter stats for './runpause.sh 10' (5 runs):
+> > >
+> > >   226491.338475  task-clock-msecs         #      3.772 CPUs    ( +-
+> > > 0.176%
+> > > )
+> > >            3377  context-switches         #      0.000 M/sec   ( +-
+> > > 14.713%
+> > > )
+> > >              12  CPU-migrations           #      0.000 M/sec   ( +-
+> > > 23.077%
+> > > )
+> > >        81867014  page-faults              #      0.361 M/sec   ( +-
+> > > 3.201%
+> > > )
+> > >    499835798750  cycles                   #   2206.865 M/sec   ( +-
+> > > 0.036%
+> > > )
+> > >    196685031865  instructions             #      0.393 IPC     ( +-
+> > > 0.286%
+> > > )
+> > >     81143829910  cache-references         #    358.265 M/sec   ( +-
+> > > 0.428%
+> > > )
+> > >       119362559  cache-misses             #      0.527 M/sec   ( +-
+> > > 5.291%
+> > > )
+> > >
+> > >    60.048917062  seconds time elapsed   ( +-   0.010% )
+> > >
+> > > I ran it on an 4 core machine with 16G of RAM. And I modified
+> > > the runpause.sh to fork 4 pagefault process instead of 8. I mounted
+> > cgroup
+> > > with only memory subsystem and start running the test on the root cgroup.
+> > >
+> > > I believe that we might have different running environment including the
+> > > cgroup configuration.  Any suggestions?
+> > >
+> >
+> > This patch series is only for "child" cgroup. Sorry, I had to write it
+> > clearer. No effects to root.
+> >
+> 
+> Ok, Thanks for making it clearer. :) So Do you mind post the cgroup+memcg
+> configuration
+> while you are running on your host?
+> 
+> Thanks
+>
 
-> On Mon, 2009-10-12 at 13:15 +0200, ext Ingo Molnar wrote:
-> > > We use the mtdoops module which stores oopses on the Flash partition,
-> > > in order to make it possible to analyze them later. And mtdoops needs
-> > > to know whether 'panic_on_oops' is on or off. Thus, we need this
-> > > variable to be exported.
-> > 
-> > hm, why does it need it? Could you send the patch please that makes use 
-> > of it (as an easy way to explain the need for the export) - current 
-> > upstream drivers/mtd/mtdoops.c doesnt need it so it must be some pending 
-> > change.
-> 
-> Yes, current drivers/mtd/mtdoops.c does not need it, but we have this
-> patch:
-> 
-> http://lists.infradead.org/pipermail/linux-mtd/2009-October/027450.html
-> 
-> which makes sure mtdoops writes the oops log immediately, because we
-> have 'panic_on_oops' set so this is our last chance to save the oops.
-> 
-> Here is the patch inlined as well:
-> 
-> Author: Aaro Koskinen <aaro.koskinen@nokia.com>
-> Date:   Thu Oct 1 18:16:55 2009 +0300
-> 
->     mtd: mtdoops: do not schedule work if we are going to die
-> 
->     If panic_on_oops is set, the log should be written right away
->     because this is not going to be a second chance.
-> 
->     Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
->     Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> 
-> diff --git a/drivers/mtd/mtdoops.c b/drivers/mtd/mtdoops.c
-> index 1060337..ac67833 100644
-> --- a/drivers/mtd/mtdoops.c
-> +++ b/drivers/mtd/mtdoops.c
-> @@ -335,7 +335,7 @@ static void mtdoops_console_sync(void)
->         cxt->ready = 0;
->         spin_unlock_irqrestore(&cxt->writecount_lock, flags);
-> 
-> -       if (mtd->panic_write && in_interrupt())
-> +       if (mtd->panic_write && (in_interrupt() || panic_on_oops))
->                 /* Interrupt context, we're going to panic so try and log */
->                 mtdoops_write(cxt, 1);
-
-Hm, the code seems to be somewhat confused about this. It tries to guess 
-when it's panic-ing, right? in_interrupt() is the wrong test for that.
-
-mtdoops_console_sync() gets called by regular printk() as well via:
-
-static void
-mtdoops_console_write(struct console *co, const char *s, unsigned int count)
-{
-        struct mtdoops_context *cxt = co->data;
-        struct mtd_info *mtd = cxt->mtd;
-        unsigned long flags;
-
-        if (!oops_in_progress) {
-                mtdoops_console_sync();
-                return;
-
-I think this is all layered incorrectly - because mtdoops (which is a 
-_VERY_ cool debugging facility btw - i wish generic x86 had something 
-like that) tries to be a 'driver' and tries to achieve these things 
-without modifying the core kernel.
-
-But it really should do that. We can certainly enhance the core kernel 
-logic to tell the console driver more clearly when printk should go out 
-immediately.
-
-Instead of using oops_in_progress it might be better to go into 'sync 
-immeditately' mode if the kernel gets tainted. Add a callback for that 
-to struct console (in include/linux/console.h). The ->unblank() callback 
-is already such a "user attention needed immediately" callback. We could 
-add a ->kernel_bug() callback to that.
-
-	Ingo
+Yes, root was fixed by another patchset now in mainline. Another check
+is to see if resource_counter lock shows up in /proc/lock_stats.
+ 
+-- 
+	Balbir
