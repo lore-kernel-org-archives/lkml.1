@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933270AbZJLVj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933260AbZJLVir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933270AbZJLVj3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933257AbZJLVj2
+	id S933260AbZJLVir (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758380AbZJLViq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:39:28 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:36457 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933212AbZJLVj2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:39:28 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: rjw@sisk.pl
-Cc: pavel@ucw.cz, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] PM / Hibernate: add \n to load_image fail path
-Date: Mon, 12 Oct 2009 23:38:50 +0200
-Message-Id: <1255383530-6778-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <4AD39FBA.6000509@gmail.com>
-References: <4AD39FBA.6000509@gmail.com>
+	Mon, 12 Oct 2009 17:38:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36318 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758367AbZJLVip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:38:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Steven Noonan <steven@uplinklabs.net>
+Subject: Re: [Bug #14377] "conservative" cpufreq governor broken
+Date: Mon, 12 Oct 2009 23:39:46 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eero Nurkkala <ext-eero.nurkkala@nokia.com>,
+       Rik van Riel <riel@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.lrB.Rzl0KB@chimera> <f488382f0910111847y365ad85fj89fc8c65d510052b@mail.gmail.com>
+In-Reply-To: <f488382f0910111847y365ad85fj89fc8c65d510052b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910122339.46127.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Finish a line by \n when load_image fails in the middle of loading.
+On Monday 12 October 2009, Steven Noonan wrote:
+> Hi Rafael,
+> 
+> There's a commit to fix this in the stable queue for 2.6.31.x and said
+> fix is already in the 2.6.32 tree. The commit is titled "NOHZ: update
+> idle state also when NOHZ is inactive" (fdc6f192e7).
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- kernel/power/swap.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Thanks, closing.
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 893f522..4bb5c3b 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -537,7 +537,8 @@ static int load_image(struct swap_map_handle *handle,
- 		snapshot_write_finalize(snapshot);
- 		if (!snapshot_image_loaded(snapshot))
- 			error = -ENODATA;
--	}
-+	} else
-+		printk("\n");
- 	swsusp_show_speed(&start, &stop, nr_to_read, "Read");
- 	return error;
- }
--- 
-1.6.4.2
-
+Rafael
