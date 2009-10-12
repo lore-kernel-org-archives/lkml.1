@@ -1,39 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933583AbZJLXV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbZJLXjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933583AbZJLXV2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 19:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933572AbZJLXV2
+	id S1758634AbZJLXjT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 19:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbZJLXjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 19:21:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40185
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933571AbZJLXV0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 19:21:26 -0400
-Date: Mon, 12 Oct 2009 16:21:22 -0700 (PDT)
-Message-Id: <20091012.162122.61258418.davem@davemloft.net>
-To: manty@manty.net
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       bzolnier@gmail.com
-Subject: Re: [Bug #14294] kernel BUG at drivers/ide/ide-disk.c:187
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20091012120943.GA2625@dis.manty.net>
-References: <L6tb-VyKHZK.A.xEC.dzl0KB@chimera>
-	<20091012.035126.264745627.davem@davemloft.net>
-	<20091012120943.GA2625@dis.manty.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Oct 2009 19:39:18 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36221 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755752AbZJLXjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 19:39:16 -0400
+Date: Mon, 12 Oct 2009 16:24:29 -0700
+From: Greg KH <gregkh@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: James Bottomley <James.Bottomley@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
+ 2.6.32-rc3)
+Message-ID: <20091012232429.GA24254@suse.de>
+References: <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
+ <20091008210737.GD29181@mit.edu>
+ <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
+ <20091009091538.GA4154@elte.hu>
+ <1255097287.2934.21.camel@localhost.localdomain>
+ <20091012130652.GB25464@elte.hu>
+ <1255357148.2850.91.camel@localhost.localdomain>
+ <20091012145453.GD4565@elte.hu>
+ <20091012150911.GB1656@suse.de>
+ <20091012154244.GA13323@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012154244.GA13323@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Santiago Garcia Mantinan <manty@manty.net>
-Date: Mon, 12 Oct 2009 14:09:43 +0200
+On Mon, Oct 12, 2009 at 05:42:44PM +0200, Ingo Molnar wrote:
+> Hm, i think i even gave drivers/staging/ its name?
 
-> I'm now back to the 2.6.31 with the patch to debug it (3 days uptime) in
-> order to gather more info and after I get the info from 2.6.31 I'd test
-> 3.6.31.latest or even 2.6.32whatever in case you find that better.
+Yes you did, and I appreciate it :)
 
-Ok, thanks for the update.
+> > [...] It seems that I'm the only one that has the ability to drop 
+> > drivers out of the kernel tree, which is a funny situation :)
+> 
+> You are the only one who has the ability to send a warning shot towards 
+> drivers _without hurting users_, and by moving it into the focus of a 
+> team of cleanup oriented developers.
+> 
+> I think that's an important distinction ;-)
+
+Good point.
+
+> > In thinking about this a lot more, I don't really mind it.  If people 
+> > want to push stuff out of "real" places in the kernel, into 
+> > drivers/staging/ and give the original authors and maintainers notice 
+> > about what is going on, _and_ provide a TODO file for what needs to 
+> > happen to get the code back into the main portion of the kernel tree, 
+> > then I'll be happy to help out with this and manage it.
+> > 
+> > I think a 6-9 month window (basically 3 kernel releases) should be 
+> > sufficient time to have a driver that has been in drivers/staging/ be 
+> > cleaned up enough to move back into the main kernel tree.  If not, it 
+> > could be easily dropped.
+> > 
+> > Any objections to this?
+> 
+> Sounds excellent to me!
+
+Great, I'll await the patches to move stuff to drivers/staging/ now.
+
+Wireless developers, warm up your editors :)
+
+thanks,
+
+greg k-h
