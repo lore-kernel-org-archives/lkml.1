@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbZJLN70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbZJLN7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932165AbZJLN70 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 09:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbZJLN70
+	id S932189AbZJLN7y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 09:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932154AbZJLN7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 09:59:26 -0400
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:62805 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756576AbZJLN7Z (ORCPT
+	Mon, 12 Oct 2009 09:59:54 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:33431 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932131AbZJLN7x convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 09:59:25 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Toralf =?iso-8859-1?q?F=F6rster?=" <toralf.foerster@gmx.de>
-Subject: Re: build issue #25 for v2.6.32-rc4-1-gd93a8f8 :"dma_controller_destroy" [drivers/usb/musb/musb_hdrc.ko] undefined!
-Date: Mon, 12 Oct 2009 15:58:46 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Ajay Kumar Gupta <ajay.gupta@ti.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-References: <200910121259.19208.toralf.foerster@gmx.de> <200910121409.40160.elendil@planet.nl>
-In-Reply-To: <200910121409.40160.elendil@planet.nl>
+	Mon, 12 Oct 2009 09:59:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OqK9iccPZ4novzLgtk3R0EQjBvDjadN7IzHD4Av+HEaSN7WEFrTX8z8MdpJTudPc3Q
+         cod7491YmfUA8x4RHsf7OOQ5v91DZBXRKDl+GvNx+/s8ZXHoug3WXp4UYuHL5yhUKGPk
+         MOVntJ8euvd/sKqBiSJxTwySgRKy27Iy+Yc8Y=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910121558.48569.elendil@planet.nl>
-X-OriginalArrivalTime: 12 Oct 2009 13:58:48.0784 (UTC) FILETIME=[1F433D00:01CA4B44]
+In-Reply-To: <1255355219.7113.16.camel@gandalf.stny.rr.com>
+References: <4AD2DEB9.2@redhat.com>
+	 <c62985530910120209t3d263d5eh5aeba14fcecc9072@mail.gmail.com>
+	 <1255355219.7113.16.camel@gandalf.stny.rr.com>
+Date: Mon, 12 Oct 2009 15:59:15 +0200
+Message-ID: <c62985530910120659s4b1f3cbfq2f6adccb16cf2c23@mail.gmail.com>
+Subject: Re: [PATCH] ftrace: add kernel command line graph function filtering
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: rostedt@goodmis.org
+Cc: Stefan Assmann <sassmann@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, Frans Pop wrote:
-> the build (.config attached) failed, make ends with :
-> ...
-> Kernel: arch/x86/boot/bzImage is ready  (#6)
->   Building modules, stage 2.
->   MODPOST 665 modules
-> ERROR: "dma_controller_destroy" [drivers/usb/musb/musb_hdrc.ko] undefined!
-> ERROR: "dma_controller_create" [drivers/usb/musb/musb_hdrc.ko] undefined!
-> make[1]: *** [__modpost] Error 1
-> make: *** [modules] Error 2
+Le 12 octobre 2009 15:46, Steven Rostedt <rostedt@goodmis.org> a écrit :
+> On Mon, 2009-10-12 at 11:09 +0200, Frédéric Weisbecker wrote:
+>> 2009/10/12 Stefan Assmann <sassmann@redhat.com>:
+>> > From 894e934e782ddaa33eb6d156d8326cdf479b5f62 Mon Sep 17 00:00:00 2001
+>> > From: Stefan Assmann <sassmann@redhat.com>
+>> > Date: Mon, 12 Oct 2009 09:11:47 +0200
+>> > Subject: [PATCH] ftrace: add kernel command line graph function filtering
+>> >
+>> > Add a command line parameter to allow limiting the function graphs that
+>> > are traced on boot up, when ftrace=function_graph is specified.
+>> >
+>> > This patch adds the following command line option:
+>> > ftrace_graph_filter=function-list
+>>
+>>
+>> If we use this parameter, we undoubtedly want to launch the function
+>> graph tracer.
+>> I'd then suggest to arm ftrace=function_graph automatically if we have
+>> ftrace_graph_filter
+>> set.
+>>
 >
-> The build was made with :
-> $>make randconfig; make clean; make
+> Actually, I disagree. I may just be lazy, and want to set up the
+> function graph to a particular set of functions. It doesn't mean I want
+> to run the function_graph tracer on boot up.
+>
+> This is the same reason I don't automatically set up ftrace=function
+> when the filter and notrace functions are set.
 
-I just see this is also already being addressed/discussed. See:
-http://lkml.org/lkml/2009/10/12/52
 
-Cheers,
-FJP
+No problem. I'll take the previous patch then, plus the kernel
+parameter doc fix in the current one :-)
