@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbZJLNuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbZJLNug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932158AbZJLNuZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 09:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbZJLNuZ
+	id S1756685AbZJLNug (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 09:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbZJLNuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 09:50:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43531 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754647AbZJLNuY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 09:50:24 -0400
-Subject: Re: [PATCH] tracing - enabling "__cold" functions
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <20091012113909.GB6934@jolsa.lab.eng.brq.redhat.com>
-References: <1255104899-27784-1-git-send-email-jolsa@redhat.com>
-	 <20091012111917.GA6934@jolsa.lab.eng.brq.redhat.com>
-	 <20091012112745.GA11035@elte.hu>
-	 <20091012113909.GB6934@jolsa.lab.eng.brq.redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Mon, 12 Oct 2009 09:48:26 -0400
-Message-Id: <1255355306.7113.17.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Oct 2009 09:50:35 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39745 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756035AbZJLNue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 09:50:34 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Ingo Molnar <mingo@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: [PATCH] USB: musb: invert arch depend string
+Date: Mon, 12 Oct 2009 09:49:56 -0400
+Message-Id: <1255355396-20533-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.5.rc2
+In-Reply-To: <20091012074221.GA19198@elte.hu>
+References: <20091012074221.GA19198@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 13:39 +0200, Jiri Olsa wrote:
-> On Mon, Oct 12, 2009 at 01:27:45PM +0200, Ingo Molnar wrote:
-> > 
-> > * Jiri Olsa <jolsa@redhat.com> wrote:
-> > 
-> > > any feedback on this one?
-> > 
-> > Steve said he's queueing it up. (But 3 days of delay, especially if it's 
-> > over the weekend and if it's not an urgent fix is to be expected so 
-> > please be patient.)
-> > 
-> > 	Ingo
-> 
-> no rush :) it's just I usually get reply like "looking on this" or smth..
-> so I thought it might get lost, sry for noise
+The MUSB code relies on platform implementations that currently only
+exists for Arm and Blackfin processors, so have the MUSB Kconfig depend
+upon those arches.
 
-No prob. Yes I'm looking at this ;-)
+This should prevent other arches from building MUSB via randconfig.
 
--- Steve
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/usb/musb/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/usb/musb/Kconfig b/drivers/usb/musb/Kconfig
+index 760e727..b84abd8 100644
+--- a/drivers/usb/musb/Kconfig
++++ b/drivers/usb/musb/Kconfig
+@@ -9,7 +9,7 @@ comment "Enable Host or Gadget support to see Inventra options"
+ # (M)HDRC = (Multipoint) Highspeed Dual-Role Controller
+ config USB_MUSB_HDRC
+ 	depends on (USB || USB_GADGET)
+-	depends on !SUPERH
++	depends on (ARM || BLACKFIN)
+ 	select NOP_USB_XCEIV if ARCH_DAVINCI
+ 	select TWL4030_USB if MACH_OMAP_3430SDP
+ 	select NOP_USB_XCEIV if MACH_OMAP3EVM
+-- 
+1.6.5.rc2
 
