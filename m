@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932963AbZJLRqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbZJLRsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932963AbZJLRqm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 13:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932601AbZJLRql
+	id S932980AbZJLRsK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 13:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932633AbZJLRsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 13:46:41 -0400
-Received: from mga07.intel.com ([143.182.124.22]:31503 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932420AbZJLRql (ORCPT
+	Mon, 12 Oct 2009 13:48:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41347 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932481AbZJLRsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 13:46:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,547,1249282800"; 
-   d="scan'208";a="198007531"
-Message-ID: <4AD36B42.9060608@linux.intel.com>
-Date: Mon, 12 Oct 2009 10:45:38 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 12 Oct 2009 13:48:08 -0400
+Date: Mon, 12 Oct 2009 10:46:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Artem Bityutskiy <dedekind1@gmail.com>
+cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] panic.c: export panic_on_oops
+In-Reply-To: <alpine.LFD.2.01.0910121036330.3438@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0910121044331.3438@localhost.localdomain>
+References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>  <20091012111545.GB8857@elte.hu> <1255346731.9659.31.camel@localhost>  <20091012113758.GB11035@elte.hu>  <20091012140149.6789efab@marrow.netinsight.se>  <20091012120951.GA16799@elte.hu> 
+ <1255349748.10605.13.camel@macbook.infradead.org>  <20091012122023.GA19365@elte.hu>  <20091012150650.51a4b4dc@marrow.netinsight.se>  <20091012131528.GC25464@elte.hu>  <20091012153937.0dcd73e5@marrow.netinsight.se>  <alpine.LFD.2.01.0910120828390.3438@localhost.localdomain>
+  <alpine.LFD.2.01.0910120837030.3438@localhost.localdomain> <1255368557.27022.226.camel@localhost> <alpine.LFD.2.01.0910121036330.3438@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, arjan@infradead.org, hmh@hmh.eng.br,
-       rdreier@cisco.com, tglx@linutronix.de, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/pat] x86: Relegate CONFIG_PAT and CONFIG_MTRR configurability
- to EMBEDDED
-References: <20091011103302.62bded41@infradead.org> <tip-c03cb3149daed3e411657e3212d05ae27cf1a874@git.kernel.org> <4AD36723.5040502@zytor.com>
-In-Reply-To: <4AD36723.5040502@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 10/12/2009 04:10 AM, tip-bot for Arjan van de Ven wrote:
->> Commit-ID:  c03cb3149daed3e411657e3212d05ae27cf1a874
->> Gitweb:     http://git.kernel.org/tip/c03cb3149daed3e411657e3212d05ae27cf1a874
->> Author:     Arjan van de Ven <arjan@infradead.org>
->> AuthorDate: Sun, 11 Oct 2009 10:33:02 -0700
->> Committer:  Ingo Molnar <mingo@elte.hu>
->> CommitDate: Mon, 12 Oct 2009 13:06:57 +0200
->>
->> x86: Relegate CONFIG_PAT and CONFIG_MTRR configurability to EMBEDDED
->>
->> MTRR and PAT support (which got added to CPUs over 10 years ago)
->> are no longer really optional in that more and more things are
->> depending on PAT just working, including various drivers and newer
->> versions of X.  (to not even speak of MTRR)
->>
->> Having this as a regular config option just no longer makes sense.
->>
->> This patch relegates CONFIG_X86_PAT to the EMBEDDED category so
->> ultra-embedded can still disable it if they really need to.
->>
-> 
-> Should we combine this with removing the whitelist (which is largely
-> vestigial at this point) and replace it with a blacklist (possibly
-> empty)?  I still haven't seen any evidence that there are any CPUs which
-> have problems, and PAT support go back all the way to Pentium III -- and
-> page table attributes can be used all the way back to 386, it just
-> excludes the WC type.
 
-I would be in favor of that; other operating systems have been using pat everywhere
-since the pII days anyway.
+
+On Mon, 12 Oct 2009, Linus Torvalds wrote:
+> 
+> Once you do the final flush in a controlled place _after_ you've printed 
+> out all the oops information, you simply don't care about locks any more. 
+> Because if you were holding critical locks, you're done anyway.
+> 
+> Sure, maybe you want to do a "trylock()" and skip the oops flush entirely 
+> in the mtd layer if you can't do it, but it's the "let's use a workqueue" 
+> or something that doesn't seem to make a lot of sense to me.
+
+Side note: I don't actually care deeply. Once it's all inside some driver, 
+and once it's not messing up the console layer, I don't think the small 
+details matter all that much. I just think it's likely to be a sign of 
+something wrong if you need to use workqueues to flush - it probably means 
+that the most interesting oopses will never make it to the mtd device in 
+the first place.
+
+			Linus
