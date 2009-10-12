@@ -1,103 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZJLIVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbZJLIUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbZJLIVn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 04:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZJLIVn
+	id S1754738AbZJLIUn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 04:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZJLIUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 04:21:43 -0400
-Received: from mail.issp.bas.bg ([195.96.236.10]:40220 "EHLO mail.issp.bas.bg"
+	Mon, 12 Oct 2009 04:20:43 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:56472 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754702AbZJLIVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 04:21:42 -0400
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: linux-kernel@vger.kernel.org
-Subject: Regression?: keyboard state/LED inconsistency in 2.6.32-rc1/2,3,4
-Date: Mon, 12 Oct 2009 11:18:28 +0300
-User-Agent: KMail/1.11.4 (Linux/2.6.32-rc4; KDE/4.2.4; x86_64; ; )
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Vojtech Pavlik <vojtech@suse.cz>
+	id S1754712AbZJLIUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 04:20:41 -0400
+Date: Mon, 12 Oct 2009 10:20:04 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Ravikiran G Thirumalai <kiran@scalex86.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       samba-technical@lists.samba.org
+Subject: Re: [rfc][patch] store-free path walking
+Message-ID: <20091012082004.GY9228@kernel.dk>
+References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <20091007095657.GB8703@kernel.dk> <20091012035843.GC25882@wotan.suse.de> <20091012055920.GD25882@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910121118.29415.mitov@issp.bas.bg>
+In-Reply-To: <20091012055920.GD25882@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, Oct 12 2009, Nick Piggin wrote:
+> On Mon, Oct 12, 2009 at 05:58:43AM +0200, Nick Piggin wrote:
+> > On Wed, Oct 07, 2009 at 11:56:57AM +0200, Jens Axboe wrote:
+> > Try changing the 'statvfs' syscall in dbench to 'statfs'.
+> > glibc has to do some nasty stuff parsing /proc/mounts to
+> > make statvfs work. On my 2s8c opteron it goes like this:
+> > clients     vanilla kernel     vfs scale (MB/s)
+> > 1            476                447
+> > 2           1092               1128
+> > 4           2027               2260
+> > 8           2398               4200
+> > 
+> > Single threaded performance isn't as good so I need to look
+> > at the reasons for that :(. But it's practically linearly
+> > scalable now. The dropoff at 8 I'd say is probably due to
+> > the memory controllers running out of steam rather than
+> > cacheline or lock contention.
+> 
+> Ah, no on a bigger machine it starts slowing down again due
+> to shared cwd contention, possibly due to creat/unlink type
+> events. This could be improved by not restarting the entire
+> path walk when we run into trouble but just trying to proceed
+> from the last successful element.
+> 
+I was starting to do a few runs, but there's something funky going on
+here. The throughput rates are consistent throughout a single run, but
+not at all between runs. I suspect this may be due to CPU placement.
+The numbers also look pretty odd, here's an example from a patched
+kernel with dbench using statfs:
 
-I'm testing 2.6.32-rc1/2,3,4 and I'm using 2.6.31.3.
-There is a difference in keyboard/LED behavior.
-If in BIOS NumLock is set on, when the kernel starts
-it puts NumLock off and the LED state is off in 2.6.31.3
-(which is consistent), but in 2.6.32-rc1/2,3,4 the LED
-stays on (and this is not consistent with keyboard's state).
+Clients         Patched
+------------------------
+1                1.00
+2                1.23
+4                2.96
+8                1.22
+16               0.89
+32               0.83
+64               0.83
 
-Comparing drivers/input/keyboard/atkbd.c (I'm using it)
-in 2.6.31.3 and 2.6.32-rc1/2,3,4 among others changes I
-found the following lines (see the patch bellow) deleted,
-so I propose either to add them again (this will restore 
-keyboard/LED consistency) or revert the patch that has 
-deleted them.
+So while the numbers fluctuate by as much as 20% from run to run.
 
-The better solution will be if the kernel preserves the state
-of the keyboard as set by BIOS.
+OK, so it seems FAIR_SLEEPERS sched feature is responsible for this, if
+I turn that off I get more consistent numbers. Below table is -git vs
+vfs patches on -git. Baseline is -git with 1 client, > 1.00 is faster
+and vice versa.
 
-Best regards.
+Clients         Vanilla         VFS scale
+-----------------------------------------
+1                1.00            0.96
+2                1.69            1.71
+4                2.16            2.98
+8                0.99            1.00
+16               0.90            0.85
 
-Marin Mitov
+As you can see, it's still quickling spiralling into most of the time (>
+95%) spinning on a lock and killing scaling.
 
-P.S. The lines in the patch concerning "repeat rate" are
-not related with the "keyboard state/LED inconsistency",
-but have been also deleted (by mistake/intentionally) too.
-Could be dropped if necessary.
+> Anyway, if you do get a chance to run dbench with this
+> modification, I would appreciate seeing a profile with clal
+> traces (my bigger system is ia64 which doesn't do perf yet).
 
-Marin Mitov
+For what number of clients?
 
-Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
+-- 
+Jens Axboe
 
-======================================================
---- a/drivers/input/keyboard/atkbd.c	2009-10-11 20:15:27.000000000 +0300
-+++ b/drivers/input/keyboard/atkbd.c	2009-10-11 20:17:34.000000000 +0300
-@@ -773,6 +773,23 @@
- static int atkbd_activate(struct atkbd *atkbd)
- {
- 	struct ps2dev *ps2dev = &atkbd->ps2dev;
-+	unsigned char param[1];
-+
-+/*
-+ * Set the LEDs to a defined state.
-+ */
-+
-+	param[0] = 0;
-+	if (ps2_command(ps2dev, param, ATKBD_CMD_SETLEDS))
-+		return -1;
-+
-+/*
-+ * Set autorepeat to fastest possible.
-+ */
-+
-+	param[0] = 0;
-+	if (ps2_command(ps2dev, param, ATKBD_CMD_SETREP))
-+		return -1;
- 
- /*
-  * Enable the keyboard to receive keystrokes.
-@@ -1141,6 +1158,14 @@
- 			return -1;
- 
- 		atkbd_activate(atkbd);
-+
-+/*
-+ * Restore repeat rate and LEDs (that were reset by atkbd_activate)
-+ * to pre-resume state
-+ */
-+		if (!atkbd->softrepeat)
-+			atkbd_set_repeat_rate(atkbd);
-+		atkbd_set_leds(atkbd);
- 	}
- 
- 	atkbd_enable(atkbd);
