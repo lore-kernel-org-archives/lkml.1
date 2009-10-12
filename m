@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbZJLV2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbZJLVbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbZJLV2Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080AbZJLV2Y
+	id S1758392AbZJLVbW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbZJLVbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:28:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36182 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757920AbZJLV2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:28:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Date: Mon, 12 Oct 2009 23:29:17 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "David Rientjes" <rientjes@google.com>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Reinette Chatre" <reinette.chatre@intel.com>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.d4D.P0l0KB@chimera> <200910120157.04616.elendil@planet.nl>
-In-Reply-To: <200910120157.04616.elendil@planet.nl>
+	Mon, 12 Oct 2009 17:31:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:60453 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbZJLVbU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:31:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:cc:subject:references
+         :in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Yd4nsDTNs7N8UOQdhiMNybq0O9UpaVPrHUh8VW2bkZ/M88IuSboeMFfz5nR+fGxaYZ
+         G1jaPI0+gXi7nMt+HiRZIRsiQaSEtiENptLoQeM+6v7xyNZc9WubBCRR8LA5JKFFGY0F
+         9KLbZzyNyHce8mA0ZY9DFEiTjkX3u4M5WcIWU=
+Message-ID: <4AD39FBA.6000509@gmail.com>
+Date: Mon, 12 Oct 2009 23:29:30 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.8 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+CC: rjw@sisk.pl, pavel@ucw.cz, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] PM / Hibernate: fix error handling in save_image
+References: <1255175505-7756-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1255175505-7756-1-git-send-email-jirislaby@gmail.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910122329.17322.rjw@sisk.pl>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, Frans Pop wrote:
-> On Monday 12 October 2009, you wrote:
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> > be listed and let me know (either way).
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14141
-> > Subject	: order 2 page allocation failures in iwlagn
-> > Submitter	: Frans Pop <elendil@planet.nl>
-> > Date		: 2009-09-06 7:40 (36 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125222287419691&w=4
-> > 		  http://lkml.org/lkml/2009/10/2/86
-> > 		  http://lkml.org/lkml/2009/10/5/24
-> > Handled-By	: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> See: http://lkml.indiana.edu/hypermail/linux/kernel/0910.1/01395.html
-> 
-> I don't see that message on lkml yet :-(
+On 10/10/2009 01:51 PM, Jiri Slaby wrote:
+> +	if (!ret)
+>  		printk("\b\b\b\bdone\n");
+> +	else
+> +		printk("\n");
 
-I've added the link to the bug entry, thanks for the update.
-
-Rafael
+Only the hell knows why I didn't post a similar fix for load_image...
+Will do now.
