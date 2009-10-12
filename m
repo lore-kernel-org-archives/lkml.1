@@ -1,113 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbZJLRcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbZJLReV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757388AbZJLRcz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 13:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbZJLRcx
+	id S1757424AbZJLReV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 13:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbZJLReU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 13:32:53 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:50904 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757339AbZJLRcw (ORCPT
+	Mon, 12 Oct 2009 13:34:20 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47597 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757372AbZJLReT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 13:32:52 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Date: Mon, 12 Oct 2009 19:32:11 +0200
-User-Agent: KMail/1.9.9
-Cc: David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910120110.28061.elendil@planet.nl> <20091012134328.GB8200@csn.ul.ie>
-In-Reply-To: <20091012134328.GB8200@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 12 Oct 2009 13:34:19 -0400
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
+From: Peter Zijlstra <peterz@infradead.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+       general@lists.openfabrics.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <ada3a5uq1dk.fsf@cisco.com>
+References: <aday6omhz9d.fsf@cisco.com> <1253187028.8439.2.camel@twins>
+	 <adafxalejiq.fsf@cisco.com> <adaab0tej5c.fsf@cisco.com>
+	 <1253198976.14935.27.camel@laptop> <adazl8td35u.fsf@cisco.com>
+	 <adatyz1d17q.fsf@cisco.com> <20090929171332.GD14405@elf.ucw.cz>
+	 <20090930094456.GD24621@elte.hu> <ada3a61rc3j.fsf@cisco.com>
+	 <ada3a5uq1dk.fsf@cisco.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910121932.14607.elendil@planet.nl>
-X-OriginalArrivalTime: 12 Oct 2009 17:32:15.0231 (UTC) FILETIME=[F07FF8F0:01CA4B61]
+Date: Mon, 12 Oct 2009 19:33:22 +0200
+Message-Id: <1255368802.8392.26.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, Mel Gorman wrote:
-> Maybe. Your commit id's are different to what I see. Maybe it's because
-> your tree has been shuffled around a bit
+On Wed, 2009-10-07 at 15:34 -0700, Roland Dreier wrote:
+> > So I looked a little deeper into this, and I don't think (even with the
+>  > filtering extensions) that perf events are directly applicable to this
+>  > problem.  The first issue is that, assuming I'm understanding the
+>  > comment in perf_event.c:
+>  > 
+>  >         /*
+>  >          * Raw tracepoint data is a severe data leak, only allow root to
+>  >          * have these.
+>  >          */
+>  > 
+>  > currently tracepoints can only be used by privileged processes.  A key
+>  > feature of ummunotify is that ordinary unprivileged processes can use it.
+>  > 
+>  > So would it be acceptable to add something like PERF_TYPE_MMU_NOTIFIER
+>  > as a way of letting unprivileged userspace get access to just MMU events
+>  > for their own process?  Clearly this touches core infrastructure and is
+>  > not as simple as just adding two tracepoints.
+>  > 
+>  > Then, assuming we have some way to create an "MMU notifier" perf event,
+>  > we need a way for userspace to specify which address ranges it would
+>  > like events for (I don't think the string filter expression used by
+>  > existing trace filtering works, because if userspace is looking at a few
+>  > hundred regions, then the size of the filtering expression explodes, and
+>  > adding or removing a single range becomes a pain).  So I guess a new
+>  > ioctl() to add/remove ranges for MMU_NOTIFIER perf events?
+>  > 
+>  > I think filtering is needed, because otherwise events for ranges that
+>  > are not of interest are just a waste of resources to generate and
+>  > process, and make losing good events because of overflow much more
+>  > likely.
+>  > 
+>  > We still have the problem of lost events if the mmap buffer overflows,
+>  > but userspace should be able to size the buffer so that such events are
+>  > rare I guess.
+>  > 
+>  > In the end this seems to just take the ummunotify code I have, and make
+>  > it be a new type of perf counter instead of a character special device.
+>  > I'd actually be OK with that, since having an oddball new char dev
+>  > interface is not particularly nice.  But on the other hand just
+>  > multiplexing a new type of thing under perf events is not all that much
+>  > better.  What do you think?
+> 
+> Ingo/Peter/<anyone suggesting perf events> -- can you comment on this
+> plan of creating PERF_TYPE_MMU_NOTIFIER for perf events to implement
+> ummunotify?  To me it looks like a wash -- the main difference is how
+> userspace gets the magic ummunotify file descriptor, either by
+> open("/dev/ummunotify") or by perf_event_open(...PERF_TYPE_MMU_NOTIFIER...),
+> but pretty much everything else stays pretty much the same in terms of
+> how much kernel code is involved.  We do reuse the perf events mmap
+> buffer code but I think that ends up being more complicated than
+> returning events via read().
+> 
+> Anyway, before I spend the time converting over to the new
+> infrastructure and causing the MPI guys to churn their code, I'd like to
+> make sure that this is what you guys have in mind.
+> 
+> (By the way, after thinking about this more, I really do think that
+> filtering events by address range is a must-have -- with filtering,
+> userspace can map sufficient buffer space to avoid losing events for a
+> given number of regions; without filtering, events might get lost just
+> because of invalidate events for ranges userspace didn't even care about)
 
-No, the commit IDs should be identical. My tree is just plain mainline.
+I think something like
 
-Just to make sure... You did remove the "g" from the IDs, right?
-So v2.6.30-rc6-1103-gb1bc81a becomes 'b1bc81a' and if you do
-'git describe b1bc81a' you really should end up with the same IDs I have.
+PERF_TYPE_SOFTWARE, PERF_COUNT_SW_MUNMAP + $filter
 
-> but after some digging around in this general area, I saw this patch
->
-> 4752c93c30 iwlcore: Allow skb allocation from tasklet
+or
 
-That is v2.6.30-rc6-773-g4752c93, which is part of the first wireless
-merge I tested and where I saw no issues. But see below.
+PERF_TYPE_TRACEPOINT, //events/vm/munmap/id + $filter
 
-> This patch increases the number of GFP_ATOMIC allocations that can occur
-> by allocating GFP_ATOMIC in some cases and GFP_KERNEL in others.
-> Previously, only GFP_KERNEL was used and I didn't realise this
-> allocation method was so recent. Problems of this sort have cropped up
-> before and while there are later changes that suppress some of these
-> warnings, I believe this is a strong candidate for where the allocation
-> failures started appearing.
->
-> > v2.6.30-rc6-1032-g7ba10a8       mac80211: fix transposed min/max CW values
-> >     1.13    -
-> >     This is a bugfix for aa837ee1d from an earlier merge! Could this maybe
+As for the read/poll issue, I think we can do something like
+PERF_FORMAT_BLOCK which would make read() block when ->count hasn't
+changed, and make poll() work without requiring a mmap().
 
-There's a typo here. That ID should be: aa837e1d.
+As to filter, we can do two things, add a simple single range filter to
+perf_event_attr, which is something ia64 has hardware support for IIRC,
+or we can possibly use this trace filter muck.
 
-> >     influence the test results in between? There are various SKB related
-> >     changes there, for example: dfbf97f3..e5b9215e.
-> > v2.6.30-rc6-1037-g2c5b9e5	wireless: libertas: fix unaligned accesses
-> > 	1.12    +-
-> > v2.6.30-rc6-1044-g729e9c7	cfg80211: fix for duplicate userspace replies
-> >     1.10    +- 
-> > v2.6.30-rc6-1075-gc587de0	iwlwifi: unify station management
-> >     1.9     ++-|+-
-> > v2.6.30-rc6-1076-gd14d444	iwl3945: port allow skb allocation in tasklet
-> >     I thought this was a prime candidate, but as you can see 
-> >     several commits before failed too. Still worth looking at I think!
->
-> Your commit IDs are different to what I see but it's the commit merge at
-> b1bc81a0ef86b86fa410dd303d84c8c7bd09a64d. I agree that the last commit
-> (d14d44407b9f06e3cf967fcef28ccb780caf0583) could make the problem worse
-> because it expands the use of GFP_ATOMIC for another driver.
+Would something like that be sufficient? With such events only
+generating a wakeup (poll) when the unmap actually happens, you'd not
+even need an mmap() buffer to keep up with that.
 
-No, that was a mistake of mine. d14d444 is in a driver I don't even compile.
-The one you identified (which is the same change for iwlagn) is much more
-interesting.
 
-I really do think that v2.6.30-rc6-1032-g7ba10a8 could play a role here.
-That's a fix for v2.6.30-rc1-1131-gaa837e1. So that bug was introduced
-_before_ the merge 82d0481 and may thus well explain both the latencies I
-saw _and_ why that merge tested without problems. And that would also go a
-long way to explain my test results.
-So I'm going to retest 82d0481 with 7ba10a8 cherry-picked on top.
-
-> > BISECTION of akpm (mm) MERGE
-> > ----------------------------
-[...]
-> While I didn't spot anything too out of the ordinary here, they did
-> occur shortly after a number of other page allocator related patches. 
-> One small thing I noticed there is that kswapd is getting woken up less
-> now than it did previously. Generally, I wouldn't have expected it to
-> make a difference but it's possible that kswapd is not being woken up to
-> reclaim at a higher order than it was previously. I have a patch for
-> this below. It'd be nice if you could apply it and see do fewer
-> allocation failures occur on current mainline.
-
-I'll give that patch a try and report back.
