@@ -1,62 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933569AbZJLXVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933583AbZJLXV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933569AbZJLXVU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 19:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933561AbZJLXVU
+	id S933583AbZJLXV2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 19:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933572AbZJLXV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 19:21:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59916 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933264AbZJLXVT (ORCPT
+	Mon, 12 Oct 2009 19:21:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40185
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933571AbZJLXV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 19:21:19 -0400
-Date: Mon, 12 Oct 2009 16:20:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -mmotm] synchro-test: add missing header file
-Message-Id: <20091012162015.9cc24569.akpm@linux-foundation.org>
-In-Reply-To: <23768.1255344678@redhat.com>
-References: <20091009161042.b301700c.randy.dunlap@oracle.com>
-	<200910090830.n998Ubvv020464@imap1.linux-foundation.org>
-	<23768.1255344678@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Mon, 12 Oct 2009 19:21:26 -0400
+Date: Mon, 12 Oct 2009 16:21:22 -0700 (PDT)
+Message-Id: <20091012.162122.61258418.davem@davemloft.net>
+To: manty@manty.net
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       bzolnier@gmail.com
+Subject: Re: [Bug #14294] kernel BUG at drivers/ide/ide-disk.c:187
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20091012120943.GA2625@dis.manty.net>
+References: <L6tb-VyKHZK.A.xEC.dzl0KB@chimera>
+	<20091012.035126.264745627.davem@davemloft.net>
+	<20091012120943.GA2625@dis.manty.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009 11:51:18 +0100
-David Howells <dhowells@redhat.com> wrote:
+From: Santiago Garcia Mantinan <manty@manty.net>
+Date: Mon, 12 Oct 2009 14:09:43 +0200
 
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Fix build errors, add <sched.h> header file:
-> > 
-> > kernel/synchro-test.c: In function 'sched':
-> > kernel/synchro-test.c:220: error: implicit declaration of function 'schedule'
-> > kernel/synchro-test.c: In function 'mutexer':
-> > kernel/synchro-test.c:227: error: implicit declaration of function 'daemonize'
-> > kernel/synchro-test.c:228: error: implicit declaration of function 'set_user_nice'
-> > kernel/synchro-test.c:241: error: dereferencing pointer to incomplete type
-> > kernel/synchro-test.c: In function 'semaphorer':
-> > kernel/synchro-test.c:263: error: dereferencing pointer to incomplete type
-> > kernel/synchro-test.c: In function 'reader':
-> > kernel/synchro-test.c:287: error: dereferencing pointer to incomplete type
-> > kernel/synchro-test.c: In function 'writer':
-> > kernel/synchro-test.c:311: error: dereferencing pointer to incomplete type
-> > kernel/synchro-test.c: In function 'downgrader':
-> > kernel/synchro-test.c:340: error: dereferencing pointer to incomplete type
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Acked-by: David Howells <dhowells@redhat.com>
+> I'm now back to the 2.6.31 with the patch to debug it (3 days uptime) in
+> order to gather more info and after I get the info from 2.6.31 I'd test
+> 3.6.31.latest or even 2.6.32whatever in case you find that better.
 
-kernel/synchro-test.c has mysteriously vanished from linux-next so I
-can't merge this and don't know who should.  Ingo, perhaps?
-
+Ok, thanks for the update.
