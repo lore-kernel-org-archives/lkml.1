@@ -1,80 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933204AbZJLTrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbZJLT4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933204AbZJLTrR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758023AbZJLTrR
+	id S1757769AbZJLT4p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 15:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZJLT4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:47:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53375 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758019AbZJLTrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:47:16 -0400
-Message-ID: <4AD38734.2040600@kernel.org>
-Date: Mon, 12 Oct 2009 12:44:52 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 12 Oct 2009 15:56:44 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:43538 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754736AbZJLT4n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 15:56:43 -0400
+From: Thomas Schlichter <thomas.schlichter@web.de>
+To: Thomas Hellstrom <thellstrom@vmware.com>
+Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not available
+Date: Mon, 12 Oct 2009 21:45:37 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.28.10-modified-ioremap; KDE/4.3.2; i686; ; )
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jan Beulich <jbeulich@novell.com>, Tejun Heo <tj@kernel.org>,
+       Jesse Barnes <jbarnes@jbarnes-g45>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Robert Hancock <hancockrwd@gmail.com>
+References: <200910122032.52168.thomas.schlichter@web.de> <4AD380A2.2030101@vmware.com>
+In-Reply-To: <4AD380A2.2030101@vmware.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Ricardo Jorge da Fonseca Marques Ferreira 
-	<storm@sys49152.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Yannick Roehlly <yannick.roehlly@free.fr>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, x86@kernel.org
-Subject: Re: [PATCH] pci: increase alignment to make more space for hidden
- code
-References: <200908072333.24631.storm@sys49152.net> <4ACAC8F1.1050706@kernel.org> <4AD24B5C.4050905@kernel.org> <200910121059.10366.bjorn.helgaas@hp.com> <4AD37CA4.90601@kernel.org> <20091012192242.GA2691@elte.hu>
-In-Reply-To: <20091012192242.GA2691@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_id40Ka4co7AzpuC"
+Message-Id: <200910122145.38067.thomas.schlichter@web.de>
+X-Provags-ID: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
+--Boundary-00=_id40Ka4co7AzpuC
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+
+Thomas Hellstrom wrote:
+> Hi!
 > 
->>> This feels like a hack that accidentally covers up the problem.  I 
->>> don't think we understand what's happening well enough.
->> yes, we need to figure out why when acpi=on, those BAR are cleared, 
->> before pci code try to scan and read BAR. (node early pic print out 
->> untouched, but after APCI subsystem is enabled, those BAR got 
->> clearred)
+> One problem with this patch is that it conflicts with the way graphics
+> drivers traditionally handles
+> the situation, namely
 > 
-> I'm wondering, how did it get cleared - some AML script told the kernel 
-> to clear it?
+> 1) Set up mtrr
+> 2) Map. If fallback to uncached minus we will still have write-combined
+> access.
+> 
+> I think mtrr-add used in this fashion will typically fail due to the
+> alignment constraints. In particular,
+> for set_memory_wc() the typical usage pattern is a large number of pages
+> in a fragmented physical address space.
+
+Yes, maybe this patch tries to change current behavior too less. Indeed, if 
+setting up MTRR entries it simply behaves as today, and userspace does not see 
+that write combining is not correctly enabled.
+
+> So if we were to fix the problem with libpciaccess in the kernel, I
+> think the best option would be to fail the user-space mapping when we
+> can't make it write-combined.
+
+One idea to do this would be the attached patch. It simply returns an error if 
+PAT is not available. It does not even try to use MTRR on its own. But maybe 
+even better would be to combine both patches to something like this:
+ 1. try to use PAT
+ 2. if this fails try to set up MTRR
+ 3. if this also fails, return error
+
+Kind regards,
+  Thomas
+
+--Boundary-00=_id40Ka4co7AzpuC
+Content-Type: text/x-patch;
+  charset="UTF-8";
+  name="0001-Do-not-mmap-ioremap-uncached-when-WC-is-requested.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="0001-Do-not-mmap-ioremap-uncached-when-WC-is-requested.patch"
+
+=46rom afb48e1a1ef035c4580a5ce59a956b54a56a5c18 Mon Sep 17 00:00:00 2001
+=46rom: Thomas Schlichter <thomas.schlichter@web.de>
+Date: Thu, 8 Oct 2009 00:42:47 +0200
+Subject: [PATCH] Do not mmap/ioremap uncached when WC is requested
+
+X.org uses libpciaccess which tries to mmap with write combining enabled via
+/sys/bus/pci/devices/*/resource0_wc. Currently, when PAT is not enabled, we
+fall back to uncached mmap. Then libpciaccess thinks it succeeded mapping
+with write combining anabled and does not set up suited MTRR entries. ;-(
+
+So instead of silently falling back to uncached mapping, we better fail. In
+this case libpciaccess mmaps via /sys/bus/pci/devices/*/resource0 and corre=
+ctly
+sets up MTRR entries.
+
+Aditionally modify ioremap_wc and set_memory_wc to match this behavior.
+
+Signed-off-by: Thomas Schlichter <thomas.schlichter@web.de>
+=2D--
+ arch/x86/mm/ioremap.c  |   10 +++++-----
+ arch/x86/mm/pageattr.c |    2 +-
+ arch/x86/pci/i386.c    |    6 ++++++
+ 3 files changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 334e63c..293581e 100644
+=2D-- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -268,11 +268,11 @@ EXPORT_SYMBOL(ioremap_nocache);
+  */
+ void __iomem *ioremap_wc(resource_size_t phys_addr, unsigned long size)
+ {
+=2D	if (pat_enabled)
+=2D		return __ioremap_caller(phys_addr, size, _PAGE_CACHE_WC,
+=2D					__builtin_return_address(0));
+=2D	else
+=2D		return ioremap_nocache(phys_addr, size);
++	if (!pat_enabled)
++		return NULL;
++
++	return __ioremap_caller(phys_addr, size, _PAGE_CACHE_WC,
++				__builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(ioremap_wc);
+=20
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index dd38bfb..b1287a9 100644
+=2D-- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -1011,7 +1011,7 @@ int set_memory_wc(unsigned long addr, int numpages)
+ 	int ret;
+=20
+ 	if (!pat_enabled)
+=2D		return set_memory_uc(addr, numpages);
++		return -EINVAL;
+=20
+ 	ret =3D reserve_memtype(__pa(addr), __pa(addr) + numpages * PAGE_SIZE,
+ 		_PAGE_CACHE_WC, NULL);
+diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+index b22d13b..cf63f9c 100644
+=2D-- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -281,6 +281,12 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm=
+_area_struct *vma,
+ 	if (mmap_state =3D=3D pci_mmap_io)
+ 		return -EINVAL;
+=20
++	/* We cannot mmap write combining (WC) without PAT enabled.
++	 * So better fail and let the user map without WC and use MTRR.
++	 */
++	if (!pat_enabled && write_combine)
++		return -EINVAL;
++
+ 	prot =3D pgprot_val(vma->vm_page_prot);
+ 	if (pat_enabled && write_combine)
+ 		prot |=3D _PAGE_CACHE_WC;
+=2D-=20
+1.6.4.4
 
 
-[    0.012392] ACPI: Core revision 20090521
-...
-[    0.117217] ACPI FADT declares the system doesn't support PCIe ASPM, so disable it
-[    0.117223] ACPI: bus type pci registered
-[    0.117292] PCI: MCFG configuration 0: base e0000000 segment 0 buses 0 - 255
-[    0.117297] PCI: Not using MMCONFIG.
-[    0.117301] PCI: Using configuration type 1 for base access
-[    0.118064] bio: create slab <bio-0> at 0
-[    0.118995] ACPI: EC: Look up EC in DSDT
-[    0.125066] ACPI: BIOS _OSI(Linux) query ignored
-[    0.127077] ACPI: EC: non-query interrupt received, switching to interrupt mode
-[    0.632002] ACPI: EC: missing confirmations, switch off interrupt mode.
-[    0.793109] ACPI: Interpreter enabled
-[    0.793114] ACPI: (supports S0 S3 S4 S5)
-[    0.793139] ACPI: Using IOAPIC for interrupt routing
-[    0.793193] PCI: MCFG configuration 0: base e0000000 segment 0 buses 0 - 255
-[    0.795871] PCI: MCFG area at e0000000 reserved in ACPI motherboard resources
-[    0.806419] PCI: Using MMCONFIG at e0000000 - efffffff
-[    0.812767] ACPI: EC: GPE = 0x18, I/O: command/status = 0x66, data = 0x62
-[    0.812772] ACPI: EC: driver started in poll mode
-[    0.813206] ACPI: No dock devices found.
-[    0.813879] ACPI: PCI Root Bridge [PCI0] (0000:00)
-
-could be ACPI EC AML code related.
-
-because with pci=nommconf, the BARs still get cleared.
-
-need the reporter to boot with acpi.debug_layer=0x400000 acpi.debug_level=
-to get more info
-
-YH
+--Boundary-00=_id40Ka4co7AzpuC--
