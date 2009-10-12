@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbZJLKxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbZJLK5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932071AbZJLKxo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 06:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756156AbZJLKxn
+	id S1756114AbZJLK5k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 06:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbZJLK5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 06:53:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55911 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756154AbZJLKxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 06:53:42 -0400
-Message-ID: <4AD30A7F.1080701@kernel.org>
-Date: Mon, 12 Oct 2009 19:52:47 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 12 Oct 2009 06:57:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:12609 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752458AbZJLK5j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 06:57:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=BAuKo5wGor90tgi6U+qViZPx6Eo4YEITtIsc/DSFRuWYsr1aJ8a0jKlVKYA3Xj+bAA
+         uoQ0Z5aF8fthd9SBCl9cXqbgiIlNJm09rT0cDtehidrC9rhiSB1wKgOVVQXQwNNoxXcQ
+         kXrL4X2yFy0WHjGAIwON7QZbr25nV+iU/2qh8=
+Message-ID: <4AD30B34.30609@gmail.com>
+Date: Mon, 12 Oct 2009 12:55:48 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-2.8 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [Patch vs. percpu next] Use this_cpu_xx for ftrace
-References: <alpine.DEB.1.10.0910071916040.21638@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0910071916040.21638@gentwo.org>
-X-Enigmail-Version: 0.95.7
+To: Oleg Nesterov <oleg@redhat.com>
+CC: kenchen@google.com,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: broken do_each_pid_{thread,task}
+References: <494581D7.6000203@gmail.com> <20081215102415.GA11106@redhat.com> <49463679.7080306@gmail.com> <20081215110238.GA15606@redhat.com> <4946406D.6000506@gmail.com> <20081215115108.GA17577@redhat.com>
+In-Reply-To: <20081215115108.GA17577@redhat.com>
+X-Enigmail-Version: 0.97a
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 12 Oct 2009 10:52:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> From: Christoph Lameter <cl@linux-foundation.org>
-> Subject: tracing: Use this_cpu_xx for ftrace
+On 12/15/2008 12:51 PM, Oleg Nesterov wrote:
+> On 12/15, Jiri Slaby wrote:
+>>
+>> Oleg Nesterov napsal(a):
+>>> On 12/15, Jiri Slaby wrote:
+>>>> (And it's not compiler which complains
+>>>> here.)
+>>>
+>>> Ah, OK, thanks. Just curious, and who does?
+>>
+>> A static analyzer. Stay tuned, we will announce it later, it's in the state
+>> of development :).
 > 
-> this_cpu_xx can reduce the instruction count here and also
-> avoid address arithmetic.
-> 
-> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> Great, thanks ;)
 
-applied to percpu#for-next.  Thanks.
-
--- 
-tejun
+It got released a minute ago. If you are interested:
+http://lkml.org/lkml/2009/10/12/133
