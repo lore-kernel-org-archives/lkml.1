@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933101AbZJLTSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757673AbZJLSit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933101AbZJLTSh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932718AbZJLTSg
+	id S1757673AbZJLSit (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 14:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757658AbZJLSis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:18:36 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:32030 "EHLO mx1.redhat.com"
+	Mon, 12 Oct 2009 14:38:48 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37788 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753391AbZJLTSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:18:34 -0400
-Date: Mon, 12 Oct 2009 15:37:40 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Avi Kivity <avi@redhat.com>, Alexander Graf <agraf@suse.de>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/9 v3] KVM: Nested SVM fixes and tracepoint conversion
-Message-ID: <20091012183740.GA13210@amt.cnet>
-References: <1255097313-23267-1-git-send-email-joerg.roedel@amd.com>
+	id S1757646AbZJLSis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 14:38:48 -0400
+Message-ID: <4AD37790.8090404@garzik.org>
+Date: Mon, 12 Oct 2009 14:38:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255097313-23267-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Jeff Moyer <jmoyer@redhat.com>
+CC: Linux Kernel Mailing <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: blkdev_issue_flush really issues a WRITE_BARRIER -- is that okay?
+References: <x49hbu4semq.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <x49hbu4semq.fsf@segfault.boston.devel.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 09, 2009 at 04:08:24PM +0200, Joerg Roedel wrote:
-> Hi Avi, Marcelo,
-> 
-> this series of patches contains bugfixes for the Nested SVM code and the
-> conversion of Nested SVM debugging to tracepoints. The fixes are:
-> 
-> 	1) A patch Alex already sent (1/9) but which was not yet
-> 	   applied. It fixes a lost event_inj problem when we emulate a
-> 	   vmrun and a vmexit without entering the guest in the
-> 	   meantime.
-> 
-> 	2) The patch 2/9 fixes a schedule() while atomic bug in the
-> 	   Nested SVM code. The KVM interrupt injection code runs with
-> 	   preemtion and interrupts disabled. But the
-> 	   enable_irq_window() function from SVM may emulate a #vmexit.
-> 	   This emulation might sleep which causes the schedule() while
-> 	   atomic() bug.
-> 
-> These fixes (patches 1 and 2) should also be considered for -stable
-> backporting.  The patches 3 to 8 convert the old printk based debugging
-> for Nested SVM to tracepoints.  Patch 9 removes the nsvm_printk code.
-> Please review and/or consider to apply these changes.
+On 10/12/2009 01:31 PM, Jeff Moyer wrote:
+> Hi,
+>
+> While looking though Christoph's patch to call blkdev_issue_flush for
+> fsync on block devices, I noticed that it only issues a WRITE_BARRIER.
+> I don't see how that guarantees that data is on stable storage.  Am I
+> missing something?  Shouldn't this translate to a FLUSH CACHE or
+> SYNCHRONIZE CACHE command?
 
-Applied, thanks.
+Barriers are a high level primitive that exist at the block layer level.
+
+Lower level storage drivers then convert barriers to a hardware-specific 
+low level primitive such as SYNCHRONIZE CACHE or FUA.
+
+	Jeff
+
 
