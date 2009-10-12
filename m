@@ -1,62 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758425AbZJLVbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933240AbZJLVfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758425AbZJLVbk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755956AbZJLVbi
+	id S933240AbZJLVfo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932469AbZJLVfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:31:38 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36220 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753689AbZJLVbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:31:37 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [Bug #14261] e1000e jumbo frames no longer work: 'Unsupported MTU setting'
-Date: Mon, 12 Oct 2009 23:32:29 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       alexander.duyck@gmail.com, nix@esperi.org.uk
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.C2C.pzl0KB@chimera> <20091011.201239.06501504.davem@davemloft.net>
-In-Reply-To: <20091011.201239.06501504.davem@davemloft.net>
+	Mon, 12 Oct 2009 17:35:43 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:2243 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932204AbZJLVfm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:35:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RrO8l35OQg4XIWCcrsEh+jua5aEqINYMS8/JQg/mPVwec9YhUcp2OllJMbAW5X4ehd
+         vxLdBtYCo8lxgpK81MtQDL30Re6pn2IEhaG+MAthwI+O6xAiwpfT/ER/fSl4q0XqWqOE
+         m/UxzrFUyb1sUza/KnrZ/EzQWYeOCpxbUVqu0=
+Date: Mon, 12 Oct 2009 23:34:30 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH tracing/kprobes v3 3/7] tracing/kprobes: Rename special
+	variables
+Message-ID: <20091012213429.GF4748@nowhere>
+References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222759.1684.3319.stgit@dhcp-100-2-132.bos.redhat.com> <4AD39D89.6070609@redhat.com> <20091012212824.GE4748@nowhere> <4AD3A178.2080903@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910122332.29994.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AD3A178.2080903@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, David Miller wrote:
-> From: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Date: Mon, 12 Oct 2009 01:01:08 +0200 (CEST)
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14261
-> > Subject		: e1000e jumbo frames no longer work: 'Unsupported MTU setting'
-> > Submitter	: Nix <nix@esperi.org.uk>
-> > Date		: 2009-09-26 11:16 (16 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125396433321342&w=4
-> > Handled-By	: Alexander Duyck <alexander.duyck@gmail.com>
-> > Patch		: http://patchwork.kernel.org/patch/50277/
-> 
-> Fixed by:
-> 
-> commit a825e00c98a2ee37eb2a0ad93b352e79d2bc1593
-> Author: Alexander Duyck <alexander.h.duyck@intel.com>
-> Date:   Fri Oct 2 12:30:42 2009 +0000
-> 
->     e1000e: swap max hw supported frame size between 82574 and 82583
->     
->     There appears to have been a mixup in the max supported jumbo frame size
->     between 82574 and 82583 which ended up disabling jumbo frames on the 82574
->     as a result.  This patch swaps the two so that this issue is resolved.
->     
->     This patch fixes http://bugzilla.kernel.org/show_bug.cgi?id=14261
->     
->     Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
->     Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
->     Signed-off-by: David S. Miller <davem@davemloft.net>
+On Mon, Oct 12, 2009 at 05:36:56PM -0400, Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+>> On Mon, Oct 12, 2009 at 05:20:09PM -0400, Masami Hiramatsu wrote:
+>>> Masami Hiramatsu wrote:
+>>>> @@ -427,28 +427,17 @@ static int parse_probe_vars(char *arg, struct fetch_func *ff, int is_return)
+>>>>    	int ret = 0;
+>>>>    	unsigned long param;
+>>>>
+>>>> -	switch (arg[0]) {
+>>>> -	case 'a':	/* argument */
+>>>> -		ret = strict_strtoul(arg + 1, 10,&param);
+>>>> -		if (ret || param>   PARAM_MAX_ARGS)
+>>>> -			ret = -EINVAL;
+>>>> -		else {
+>>>> -			ff->func = fetch_argument;
+>>>> -			ff->data = (void *)param;
+>>>> -		}
+>>>> -		break;
+>>>> -	case 'r':	/* retval or retaddr */
+>>>> -		if (is_return&&   arg[1] == 'v') {
+>>>> +	if (strcmp(arg, "retval") == 0) {
+>>>> +		if (is_return) {
+>>>>    			ff->func = fetch_retvalue;
+>>>>    			ff->data = NULL;
+>>>>    		} else
+>>>>    			ret = -EINVAL;
+>>>> -		break;
+>>>> -	case 's':	/* stack */
+>>>> -		if (arg[1] == 'a') {
+>>>> +	} else if (strncmp(arg, "stack", 5) == 0) {
+>>>> +		if (arg[5] == '\0') {
+>>>>    			ff->func = fetch_stack_address;
+>>>>    			ff->data = NULL;
+>>>> -		} else {
+>>>> +		} else if (isdigit(arg[5])) {
+>>>>    			ret = strict_strtoul(arg + 1, 10,&param);
+>>>                                               ^^^^^^^ this should be arg + 5.
+>>>
+>>>> @@ -456,11 +445,18 @@ static int parse_probe_vars(char *arg, struct fetch_func *ff, int is_return)
+>>>>    				ff->func = fetch_stack;
+>>>>    				ff->data = (void *)param;
+>>>>    			}
+>>>> +		} else
+>>>> +			ret = -EINVAL;
+>>>> +	} else if (strncmp(arg, "arg", 3) == 0&&   isdigit(arg[4])) {
+>>
+>>
+>>
+>> And this should be isdigit(arg[3]) actually, what you want to test is the
+>> first character after arg, right?
+>
+> Right. I'll fix it...
+>
+>
+> Thank you,
 
-Thanks, closing.
 
-Rafael
+No need to, I've rebased and pushed to the same tree :-)
+
