@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbZJLC1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753055AbZJLCd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753093AbZJLC1O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 22:27:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbZJLC1N
+	id S1753055AbZJLCd2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 22:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbZJLCd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 22:27:13 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36506 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752572AbZJLC1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 22:27:12 -0400
-Date: Mon, 12 Oct 2009 13:26:28 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Haojian Zhuang <haojian.zhuang@gmail.com>,
-       Samuel Ortiz <sameo@openedhand.com>
-Subject: linux-next: voltage tree build failure
-Message-Id: <20091012132628.2f709e40.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__12_Oct_2009_13_26_28_+1100_TThlQx=AEvkzdf_/"
+	Sun, 11 Oct 2009 22:33:27 -0400
+Received: from clem.clem-digital.net ([68.16.168.10]:55600 "EHLO
+	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752189AbZJLCd1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 22:33:27 -0400
+From: Pete Clements <clem@clem.clem-digital.net>
+Message-Id: <200910120232.n9C2Wlwb002087@clem.clem-digital.net>
+Subject: Re: 2.6.32-rc4 fail compile -- drivers/char/rtc.c
+To: xtfeng@gmail.com (Xiaotian Feng)
+Date: Sun, 11 Oct 2009 22:32:46 -0400 (EDT)
+Cc: clem@clem.clem-digital.net (Pete Clements),
+       linux-kernel@vger.kernel.org (linux-kernel)
+In-Reply-To: <7b6bb4a50910111837t7120e914p4d0796a826db7ba1@mail.gmail.com>
+X-Mailer: ELM [version 2.5 PL7]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__12_Oct_2009_13_26_28_+1100_TThlQx=AEvkzdf_/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Quoting Xiaotian Feng
+  > 
+  > This may be caused by commit d43c36dc6b357fa1806800f18aa30123c747a6d1.
+  > Can insert #include <linux/sched.h> into drivers/char/rtc.c fix this?
 
-Hi Liam,
+Yes, that clears the compile failure.
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
-
-drivers/built-in.o: In function `pm8607_write_device':
-88pm8607.c:(.text+0xd1359): undefined reference to `i2c_master_send'
-drivers/built-in.o: In function `pm8607_read_device':
-88pm8607.c:(.text+0xd13ab): undefined reference to `i2c_master_send'
-88pm8607.c:(.text+0xd13cc): undefined reference to `i2c_master_recv'
-drivers/built-in.o: In function `pm8607_init':
-88pm8607.c:(.init.text+0xaa22): undefined reference to `i2c_register_driver'
-drivers/built-in.o: In function `pm8607_probe':
-88pm8607.c:(.devinit.text+0x50fb): undefined reference to `mfd_add_devices'
-drivers/built-in.o: In function `pm8607_exit':
-88pm8607.c:(.exit.text+0x5de): undefined reference to `i2c_del_driver'
-drivers/built-in.o: In function `pm8607_remove':
-88pm8607.c:(.devexit.text+0x1cc): undefined reference to `mfd_remove_device=
-s'
-
-Caused by commit 258e3427f83a573d738344c2f5499da5e026e1df ("regulator:
-add 88PM8607 PMIC driver").  This is the same driver that has caused the
-mfd tree to fail in the same way since next-20091006.  I have used the
-version of the voltage tree from next-20091009 for today.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__12_Oct_2009_13_26_28_+1100_TThlQx=AEvkzdf_/
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrSk9QACgkQjjKRsyhoI8w8jACfcdXu86AvEWMgp4Mg6MYCUEZv
-ENgAnRqMSZAlsAmXbSTDbTnnb6uPz5AR
-=atb5
------END PGP SIGNATURE-----
-
---Signature=_Mon__12_Oct_2009_13_26_28_+1100_TThlQx=AEvkzdf_/--
+  > On Mon, Oct 12, 2009 at 8:26 AM, Pete Clements
+  > <clem@clem.clem-digital.net> wrote:
+  > > Fyi:
+  > > (i386 SMP)
+  > >
+  > >
+  > > =C2=A0CC =C2=A0 =C2=A0 =C2=A0drivers/char/rtc.o
+  > > drivers/char/rtc.c: In function 'rtc_interrupt':
+  > > drivers/char/rtc.c:271: error: 'TASK_INTERRUPTIBLE' undeclared (first use=
+  >  in this function)
+  > > drivers/char/rtc.c:271: error: (Each undeclared identifier is reported on=
+  > ly once
+  > > drivers/char/rtc.c:271: error: for each function it appears in.)
+  > > drivers/char/rtc.c:273: error: 'SIGIO' undeclared (first use in this func=
+  > tion)
+  > > drivers/char/rtc.c:273: error: 'POLL_IN' undeclared (first use in this fu=
+  > nction)
+  > > drivers/char/rtc.c: In function 'rtc_read':
+  > > drivers/char/rtc.c:362: error: implicit declaration of function '__set_cu=
+  > rrent_state'
+  > > drivers/char/rtc.c:362: error: 'TASK_INTERRUPTIBLE' undeclared (first use=
+  >  in this function)
+  > > drivers/char/rtc.c:376: error: implicit declaration of function 'signal_p=
+  > ending'
+  > > drivers/char/rtc.c:380: error: implicit declaration of function 'schedule=
+  > '
+  > > drivers/char/rtc.c:393: error: 'TASK_RUNNING' undeclared (first use in th=
+  > is function)
+  > > drivers/char/rtc.c: In function 'rtc_dropped_irq':
+  > > drivers/char/rtc.c:1206: error: 'TASK_INTERRUPTIBLE' undeclared (first us=
+  > e in this function)
+  > > drivers/char/rtc.c:1208: error: 'SIGIO' undeclared (first use in this fun=
+  > ction)
+  > > drivers/char/rtc.c:1208: error: 'POLL_IN' undeclared (first use in this f=
+  > unction)
+  > > make[2]: *** [drivers/char/rtc.o] Error 1
+  > > make[1]: *** [drivers/char] Error 2
+  > > make: *** [drivers] Error 2
+  > >
+  > > --
+  > > Pete Clements
+-- 
+Pete Clements 
