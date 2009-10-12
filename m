@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758122AbZJLUhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932363AbZJLUfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758122AbZJLUhY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 16:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758005AbZJLUhY
+	id S932363AbZJLUfx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 16:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130AbZJLUfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 16:37:24 -0400
-Received: from kroah.org ([198.145.64.141]:51055 "EHLO coco.kroah.org"
+	Mon, 12 Oct 2009 16:35:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39937 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756309AbZJLUhW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 16:37:22 -0400
-Date: Mon, 12 Oct 2009 13:34:07 -0700
-From: Greg KH <greg@kroah.com>
-To: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Hank Janssen <hjanssen@microsoft.com>,
+	id S1756622AbZJLUfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 16:35:52 -0400
+Date: Mon, 12 Oct 2009 22:34:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tom Hanrahan <hanrahat@microsoft.com>,
-       Hashir Abdi <habdi@microsoft.com>
-Subject: Re: [patch] Staging: hv: Fix vmbus load hang caused by wrong data
- packing
-Message-ID: <20091012203407.GA30839@kroah.com>
-References: <1FB5E1D5CA062146B38059374562DF7212DEE3EC@TK5EX14MBXC130.redmond.corp.microsoft.com>
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86/pci: intel bus root res with IOH reading -v2
+Message-ID: <20091012203453.GC7648@elte.hu>
+References: <4AC97C00.7090503@kernel.org> <200910061133.27546.bjorn.helgaas@hp.com> <4ACB839A.2060800@kernel.org> <200910061257.54877.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1FB5E1D5CA062146B38059374562DF7212DEE3EC@TK5EX14MBXC130.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <200910061257.54877.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10, 2009 at 11:16:00PM +0000, Haiyang Zhang wrote:
-> From: Haiyang Zhang <haiyangz@microsoft.com>
+
+* Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+
+> On Tuesday 06 October 2009 11:51:22 am Yinghai Lu wrote:
+> > Bjorn Helgaas wrote:
+> > > On Sunday 04 October 2009 10:54:24 pm Yinghai Lu wrote:
+> > >> for intel system with multi IOH. we could read peer root resource from PCI conf,
+> > >> and don't trust _CRS again for root bus
+> > > 
+> > > Ugh.  Are we going to end up with amd_bus.c, intel_bus.c, nvidia_bus.c,
+> > > broadcom_bus.c, serverworks_bus.c, etc.?
+> > only needed when you have muti ...
 > 
-> Fix vmbus load hang caused by wrong data packing.
+> I think that translates to "yes, we will need all those bits as soon 
+> as those vendors support larger systems with multiple IOHs."  And I 
+> think that's the wrong answer.
 
-I also note that you are packing more structures here with this patch
-than the code before the patch had.  Could that be the issue here?  The
-additional structures are ones that should be packed instead?
+Why is having cleanly separated per vendor information/driver wrong? I 
+think it's the right answer in most cases. _Especially_ when the other 
+option is to 'rely on the firmware'.
 
-If so, that might explain why things are working, just try to add the
-packed attribute to the struct vmbus_channel and struct
-vmbus_channel_debug_info and struct vmbus_channel_msginfo structures.
+> > again we should trust HW conf than BIOS.
+> 
+> Certainly there's a tradeoff between a generic driver that relies on 
+> the BIOS, and a platform-specific driver that uses only the hardware. 
+> The first leaves us vulnerable to BIOS bugs, but the second leads to a 
+> plethora of drivers that require updates as hardware changes.
 
-Although, if that solves the problem, then something else is seriously
-wrong, as those structures should not being passed across the hypervisor
-boundry...
+We do that quite well in Linux - it's one of our main strengths.
 
-thanks,
+Why should we have to rely on correct firmware? Why is it wrong to know 
+about the hw's structure, to query the hardware and ignore the firmware 
+if the hardware state tells us otherwise?
 
-greg k-h
+	Ingo
