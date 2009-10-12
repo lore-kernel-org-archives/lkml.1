@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755138AbZJLKBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbZJLKB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755138AbZJLKBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 06:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbZJLKBQ
+	id S1755779AbZJLKB0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 06:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbZJLKB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 06:01:16 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33706 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751175AbZJLKBQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 06:01:16 -0400
-Date: Mon, 12 Oct 2009 11:00:23 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: ngupta@vflare.org, linux-arm-kernel@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
-Message-ID: <20091012100023.GC29310@n2100.arm.linux.org.uk>
-References: <1255337423-3158-1-git-send-email-ngupta@vflare.org> <20091012090710.GA29310@n2100.arm.linux.org.uk> <20091012.023744.157085851.davem@davemloft.net>
+	Mon, 12 Oct 2009 06:01:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60467 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755334AbZJLKBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 06:01:25 -0400
+Date: Mon, 12 Oct 2009 12:00:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Jason Baron <jbaron@redhat.com>,
+       cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: move gfs2 tracepoints to inclue/trace/events dir
+Message-ID: <20091012100037.GA11653@elte.hu>
+References: <20091009160115.GA2647@redhat.com> <20091009234555.GA28257@infradead.org> <1255340583.2675.23.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091012.023744.157085851.davem@davemloft.net>
+In-Reply-To: <1255340583.2675.23.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 02:37:44AM -0700, David Miller wrote:
-> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-> Date: Mon, 12 Oct 2009 10:07:10 +0100
+
+* Steven Whitehouse <swhiteho@redhat.com> wrote:
+
+> Hi,
 > 
-> > On Mon, Oct 12, 2009 at 02:20:23PM +0530, Nitin Gupta wrote:
-> >> Same problem exists on mips too.
+> On Fri, 2009-10-09 at 19:45 -0400, Christoph Hellwig wrote:
+> > On Fri, Oct 09, 2009 at 12:01:16PM -0400, Jason Baron wrote:
+> > > hi,
+> > > 
+> > > I'd like to move the gfs2 tracepoints to the the common
+> > > include/trace/events directory along with all of the other trace events.
+> > > It makes understanding what tracepoints are available easier, and I see
+> > > no reason why gfs2 should be different. For example, 'ext4.h' is already
+> > > in the include/trace/events directory.
 > > 
-> > Nice catch.  This logic came from sparc64, so I think you'd want to talk
-> > to davem about it as well.
+> > Folks, no.  Drivers and filesystems should be as self-contained as
+> > possible.  include/trace/ is an extremly bad idea for everything that's
+> > not actually global kernel functionality.  There's a reason all other
+> > fs headers have moved out of include/linux, too.
 > > 
-> > In the mean time, submitting your fix to the patch system would be great,
-> > thanks.
 > 
-> Sparc64 flushes unconditionally when there is no page mapping.
-> So, it should be fine here.
+> That true, although there is an argument about how much such a header 
+> belongs to tracing and how much it belongs to the subsystem I think.
 
-Are you sure - I checked the sparc64 code before posting, and we're doing
-the same thing.
+yeah. I have no objection to adding it to include/trace/. Tracepoints 
+are a fundamentally global business.
 
-Sparc64 update_mmu_cache:
-        page = pfn_to_page(pfn);
-        if (page && page_mapping(page)) {
-                pg_flags = page->flags;
-                if (pg_flags & (1UL << PG_dcache_dirty)) {
-			/* do lazy flush */
-		}
-	}
+Subsystems can opt to hide their tracepoints locally, but it's better to 
+have a global view about what's out there, so that it can be extended 
+coherently, etc.
 
-Sparc64 flush_dcache_page:
-        mapping = page_mapping(page);
-        if (mapping && !mapping_mapped(mapping)) {
-                set_dcache_dirty(page, this_cpu);
-	}
+Would you like to carry the patch or should we apply it to the tracing 
+tree?
 
-ARM update_mmu_cache:
-        page = pfn_to_page(pfn);
-        mapping = page_mapping(page);
-        if (mapping) {
-                int dirty = test_and_clear_bit(PG_dcache_dirty, &page->flags);
-                if (dirty)
-                        /* do lazy flush */
-
-ARM flush_dcache_page:
-        struct address_space *mapping = page_mapping(page);
-        if (!PageHighMem(page) && mapping && !mapping_mapped(mapping))
-                set_bit(PG_dcache_dirty, &page->flags);
-
-It looks identical to me.
-
-The problem which has been identified is that when flush_dcache_page() is
-called, there is a mapping, and so the page is marked for lazy flushing.
-However, by the time update_mmu_cache() gets called, the mapping has gone
-and so update_mmu_cache() does nothing.
+	Ingo
