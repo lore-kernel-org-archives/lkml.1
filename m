@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbZJLIbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZJLIdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849AbZJLIbV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 04:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbZJLIbV
+	id S1754858AbZJLIdG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 04:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbZJLIdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 04:31:21 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42721 "EHLO mx2.mail.elte.hu"
+	Mon, 12 Oct 2009 04:33:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51859 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754781AbZJLIbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 04:31:20 -0400
-Date: Mon, 12 Oct 2009 10:30:33 +0200
+	id S1754805AbZJLIdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 04:33:04 -0400
+Date: Mon, 12 Oct 2009 10:32:19 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Alexey Dobriyan <adobriyan@gmail.com>,
@@ -17,13 +17,12 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: [origin tree build failure] [PATCH] headers: Fix build in
-	drivers/pci/hotplug/cpqphp.h
-Message-ID: <20091012083033.GA31206@elte.hu>
+	drivers/char/rtc.c
+Message-ID: <20091012083219.GA32663@elte.hu>
 References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> <20091012082950.GA2270@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
 In-Reply-To: <20091012082950.GA2270@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
@@ -39,23 +38,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix:
 
-  drivers/pci/hotplug/cpqphp.h: In function ‘wait_for_ctrl_irq’:
-  drivers/pci/hotplug/cpqphp.h:730: error: implicit declaration of function ‘signal_pending’
+  drivers/char/rtc.c: In function 'rtc_interrupt':
+  drivers/char/rtc.c:271: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
+  drivers/char/rtc.c:271: error: (Each undeclared identifier is reported only once)
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/pci/hotplug/cpqphp.h |    1 +
+ drivers/char/rtc.c |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/pci/hotplug/cpqphp.h b/drivers/pci/hotplug/cpqphp.h
-index 5383600..9c6a9fd 100644
---- a/drivers/pci/hotplug/cpqphp.h
-+++ b/drivers/pci/hotplug/cpqphp.h
-@@ -32,6 +32,7 @@
- #include <asm/io.h>		/* for read? and write? functions */
- #include <linux/delay.h>	/* for delays */
- #include <linux/mutex.h>
-+#include <linux/sched.h>	/* for signal_pending() */
- 
- #define MY_NAME	"cpqphp"
- 
+diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+index e0d0f8b..bc4ab3e 100644
+--- a/drivers/char/rtc.c
++++ b/drivers/char/rtc.c
+@@ -74,6 +74,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/spinlock.h>
++#include <linux/sched.h>
+ #include <linux/sysctl.h>
+ #include <linux/wait.h>
+ #include <linux/bcd.h>
