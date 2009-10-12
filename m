@@ -1,89 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbZJLMeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbZJLMhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756531AbZJLMeK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 08:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756366AbZJLMeJ
+	id S1756548AbZJLMhz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 08:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756496AbZJLMhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 08:34:09 -0400
-Received: from casper.infradead.org ([85.118.1.10]:34891 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755774AbZJLMeI (ORCPT
+	Mon, 12 Oct 2009 08:37:55 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:31391 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756481AbZJLMhy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 08:34:08 -0400
-Subject: Re: [PATCH] panic.c: export panic_on_oops
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091012122023.GA19365@elte.hu>
-References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
-	 <20091012111545.GB8857@elte.hu> <1255346731.9659.31.camel@localhost>
-	 <20091012113758.GB11035@elte.hu>
-	 <20091012140149.6789efab@marrow.netinsight.se>
-	 <20091012120951.GA16799@elte.hu>
-	 <1255349748.10605.13.camel@macbook.infradead.org>
-	 <20091012122023.GA19365@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 12 Oct 2009 13:33:18 +0100
-Message-Id: <1255350798.10605.19.camel@macbook.infradead.org>
+	Mon, 12 Oct 2009 08:37:54 -0400
+Date: Mon, 12 Oct 2009 08:34:51 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Thomas Voegtle <tv@lio96.de>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk,
+       joerg.roedel@amd.com
+Subject: Re: [Stable-review] [patch 00/26] 2.6.31.4-stable review
+Message-ID: <20091012083451.303d9f10@katamari.usersys.redhat.com>
+In-Reply-To: <alpine.LNX.2.00.0910121304460.10773@er-systems.de>
+References: <20091009231249.GA31084@kroah.com>
+	<20091009233812.GA15982@kroah.com>
+	<alpine.LNX.2.00.0910121304460.10773@er-systems.de>
+Organization: Red Hat, Inc.
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 14:20 +0200, Ingo Molnar wrote:
-> * David Woodhouse <dwmw2@infradead.org> wrote:
-> 
-> > On Mon, 2009-10-12 at 14:09 +0200, Ingo Molnar wrote:
-> > > Also, would it be possible to just simplify the thing and not do any 
-> > > buffering at all? Extra buffering complexity in a console driver is only 
-> > > asking for trouble. Or is flash storage write cycles optimization that 
-> > > important in this case?
-> > 
-> > That and the fact that on NAND flash you have to write full pages at a 
-> > time -- that's 512 bytes, 2KiB or 4KiB depending on the type of chip. 
-> > So we really do want to buffer it where we can.
-> > 
-> > We don't want to write a 2KiB page for every line of printk output.
-> 
-> Then i think the buffering is at the wrong place: we should instead 
-> buffer in the generic layer and pass it to lowlevel if we know that we 
-> have gone past a 2K boundary.
-> 
-> The size of the generic log buffer is always a power of two so detecting 
-> 2K boundaries is very easy. On any emergency the generic console layer 
-> will do faster flushes - this is nothing the console driver itself 
-> should bother with.
-> 
-> And that would avoid the whole workqueue logic - which is fragile to be 
-> done in a printk to begin with.
-> 
-> So what we need is an extension to struct console that sets a buffering 
-> limit. Zero (the default) means unbuffered.
-> 
-> (Btw., things like netconsole might make use of such buffering too.)
-> 
-> Agreed?
+On Mon, 12 Oct 2009 13:09:56 +0200 (CEST)
+Thomas Voegtle <tv@lio96.de> wrote:
 
-Makes some sense, yes.
+> arch/x86/kvm/svm.c: In function 'svm_vcpu_load':
+> arch/x86/kvm/svm.c:713: error: 'struct vcpu_svm' has no member named 
+> 'nested'
 
-We also use the workqueue logic to allow us to co-ordinate access to the
-hardware properly -- taking locks where appropriate, etc. We can't do
-that directly from a console ->write() method.
+Replacement patch for:
+kvm-svm-fix-tsc-offset-adjustment-when-running-nested.patch
 
-Some device drivers do provide a ->panic_write() function which breaks
-all the locks and just resets the hardware because it knows we're
-panicking, but we don't want to do that in the common case.
+Fixes:
+arch/x86/kvm/svm.c: In function 'svm_vcpu_load':
+arch/x86/kvm/svm.c:713: error: 'struct vcpu_svm' has no member named 'nested' 
 
--- 
-dwmw2
 
+>From 77b1ab1732feb5e3dcbaf31d2f7547c5229f5f3a Mon Sep 17 00:00:00 2001
+From: Joerg Roedel <joerg.roedel@amd.com>
+Date: Wed, 16 Sep 2009 15:24:17 +0200
+Subject: KVM: SVM: Fix tsc offset adjustment when running nested
+
+From: Joerg Roedel <joerg.roedel@amd.com>
+
+commit 77b1ab1732feb5e3dcbaf31d2f7547c5229f5f3a upstream.
+[ backport to 2.6.31 by Chuck Ebbert <cebbert@redhat.com> ]
+
+When svm_vcpu_load is called while the vcpu is running in
+guest mode the tsc adjustment made there is lost on the next
+emulated #vmexit. This causes the tsc running backwards in
+the guest. This patch fixes the issue by also adjusting the
+tsc_offset in the emulated hsave area so that it will not
+get lost.
+
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/x86/kvm/svm.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -709,6 +709,8 @@ static void svm_vcpu_load(struct kvm_vcp
+ 		rdtscll(tsc_this);
+ 		delta = vcpu->arch.host_tsc - tsc_this;
+ 		svm->vmcb->control.tsc_offset += delta;
++		if (is_nested(svm))
++			svm->hsave->control.tsc_offset += delta;
+ 		vcpu->cpu = cpu;
+ 		kvm_migrate_timers(vcpu);
+ 		svm->asid_generation = 0;
