@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbZJLIwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755031AbZJLIx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755003AbZJLIwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 04:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbZJLIwR
+	id S1755031AbZJLIx4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 04:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbZJLIxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 04:52:17 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:35776 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754986AbZJLIwQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 04:52:16 -0400
-From: Nitin Gupta <ngupta@vflare.org>
-To: Russell King <linux@arm.linux.org.uk>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
-Date: Mon, 12 Oct 2009 14:20:23 +0530
-Message-Id: <1255337423-3158-1-git-send-email-ngupta@vflare.org>
-X-Mailer: git-send-email 1.6.2.5
+	Mon, 12 Oct 2009 04:53:55 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:23001 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754900AbZJLIxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 04:53:54 -0400
+Message-ID: <4AD2EE86.50807@redhat.com>
+Date: Mon, 12 Oct 2009 10:53:26 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Glauber Costa <glommer@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] allow userspace to adjust kvmclock offset
+References: <1254849896-3947-1-git-send-email-glommer@redhat.com>
+In-Reply-To: <1254849896-3947-1-git-send-email-glommer@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On ARM, update_mmu_cache() does dcache flush for a page only if
-it has a kernel mapping (page_mapping(page) != NULL). The correct
-behavior would be to force the flush based on dcache_dirty bit only.
+On 10/06/2009 07:24 PM, Glauber Costa wrote:
+> When we migrate a kvm guest that uses pvclock between two hosts, we may
+> suffer a large skew. This is because there can be significant differences
+> between the monotonic clock of the hosts involved. When a new host with
+> a much larger monotonic time starts running the guest, the view of time
+> will be significantly impacted.
+>
+> Situation is much worse when we do the opposite, and migrate to a host with
+> a smaller monotonic clock.
+>
+> This new proposed ioctl will allow userspace to inform us what is the monotonic
+> clock value in the source host, so we can keep the time skew short, and more
+> importantly, never goes backwards.
+>
+>    
 
-One of the cases where present logic would be a problem is when
-a RAM based block device[1] is used as a swap disk. In this case,
-we would have in-memory data corruption as shown in steps below:
+> diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+> index f8f8900..0cd5ad8 100644
+> --- a/include/linux/kvm.h
+> +++ b/include/linux/kvm.h
+> @@ -546,6 +546,7 @@ struct kvm_irqfd {
+>   #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
+>   #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
+>   #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
+> +#define KVM_ADJUST_CLOCK	  _IOW(KVMIO, 0x7a, __u64)
+>    
 
-do_swap_page()
-{
-    - Allocate a new page (if not already in swap cache)
-    - Issue read from swap disk
-        - Block driver issues flush_dcache_page()
-        - flush_dcache_page() simply sets PG_dcache_dirty bit and does not
-          actually issue a flush since this page has no user space mapping yet.
-    - Now, if swap disk is almost full, this newly read page is removed
-      from swap cache and corrsponding swap slot is freed.
-    - Map this page anonymously in user space.
-    - update_mmu_cache()
-        - Since this page does not have kernel mapping (its not in page/swap
-          cache and is mapped anonymously), it does not issue dcache flush
-          even if dcache_dirty bit is set by flush_dcache_page() above.
+Please change to a struct with some reserved space.
 
-    <user now gets stale data since dcache was never flushed>
-}
+Do we want an absolute or relative adjustment?
 
-Same problem exists on mips too.
-
-[1] example:
- - brd (RAM based block device)
- - ramzswap (RAM based compressed swap device)
-
-Signed-off-by: Nitin Gupta <ngupta@vflare.org>
----
- arch/arm/mm/fault-armv.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/arch/arm/mm/fault-armv.c b/arch/arm/mm/fault-armv.c
-index bc0099d..d0d17b6 100644
---- a/arch/arm/mm/fault-armv.c
-+++ b/arch/arm/mm/fault-armv.c
-@@ -153,14 +153,11 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long addr, pte_t pte)
- 
- 	page = pfn_to_page(pfn);
- 	mapping = page_mapping(page);
--	if (mapping) {
- #ifndef CONFIG_SMP
--		int dirty = test_and_clear_bit(PG_dcache_dirty, &page->flags);
--
--		if (dirty)
--			__flush_dcache_page(mapping, page);
-+	if (test_and_clear_bit(PG_dcache_dirty, &page->flags))
-+		__flush_dcache_page(mapping, page);
- #endif
--
-+	if (mapping) {
- 		if (cache_is_vivt())
- 			make_coherent(mapping, vma, addr, pfn);
- 		else if (vma->vm_flags & VM_EXEC)
 -- 
-1.6.2.5
+error compiling committee.c: too many arguments to function
 
