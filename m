@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757792AbZJLSqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbZJLStC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757792AbZJLSqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 14:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757733AbZJLSqs
+	id S1757894AbZJLStC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 14:49:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757811AbZJLStB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 14:46:48 -0400
-Received: from bamako.nerim.net ([62.4.17.28]:64381 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757687AbZJLSqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 14:46:47 -0400
-Date: Mon, 12 Oct 2009 20:45:58 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
-       Linux I2C <linux-i2c@vger.kernel.org>, Pavel Machek <pavel@suse.cz>,
-       corentin.chary@gmail.com
-Subject: Re: [PATCH] ALS: TSL2550 driver move from i2c/chips
-Message-ID: <20091012204558.0e15788d@hyperion.delvare>
-In-Reply-To: <4AD36114.50108@cam.ac.uk>
-References: <4ACF4AC6.7070802@cam.ac.uk>
-	<20091010185200.671846c5@hyperion.delvare>
-	<4AD33ADB.4000500@cam.ac.uk>
-	<20091012175216.6d844623@hyperion.delvare>
-	<4AD36114.50108@cam.ac.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Oct 2009 14:49:01 -0400
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:44936 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752735AbZJLStA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 14:49:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PzX5a54BfEEG42pi6kSbZVMN82augxX4H3001ZiMvb0E+c/ikQysXHLmJA9awH3KqN
+         66nfakuJGaWwNsNR0nByiI4Kt8xmQmxNETIMdWlLEnSDE1wzmGsaWDFeWLmPKstqCWkt
+         hsXBRqodeuy/iD0L/BZUHEEB5AzGvU7HlJD0s=
+Date: Mon, 12 Oct 2009 20:46:51 +0200
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Theodore Tso <tytso@mit.edu>, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with
+	T400 laptops
+Message-ID: <20091012184651.GA4603@Pilar.aei.mpg.de>
+References: <E1Mtqnb-0002x7-TJ@closure.thunk.org> <20091008103620.5e5aae66@jbarnes-g45> <20091010204106.GA8251@mit.edu> <20091012095438.1e82b54f@jbarnes-g45>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012095438.1e82b54f@jbarnes-g45>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009 18:02:12 +0100, Jonathan Cameron wrote:
-> Jean Delvare wrote:
-> > The name size really isn't an issue. You won't notice 16 bytes instead
-> > of 9. And it's not like we'll have millions of these devices.
->
-> I agree, it's merely a question of picking some suitable limit. IDR's
-> on a 64 bit box will do something in the ball park of 2e18 which might
-> be an excessive limit ;) I'll leave this be for next version on basis
-
-In all honesty, I don't expect als device names of ~30 chars to cause a
-memory shortage to any machine any time soon. I'm not claiming that we
-are likely to see machines with 2e18 light sensors any time soon
-either. All I'm saying is that arbitrary limits should be avoided when
-possible.
-
-> (...)
-> Counter argument placed (cc'd Pavel and Corentin for this point)
-> is that having a generic name, e.g. hwmon0 and a name field in sysfs
-> is superfluous when we can combine the two.
-
-Counter counter argument is that this then makes it impossible to have
-different subtypes and differentiate by name. See the input subsystem
-for an example: they have input%d and event%d devices, for two
-different purposes. It's very easy for both users and user-space
-software to see what is what with this naming scheme. Other examples of
-this include video4linux and sound classes. As a matter of fact,
-looking at all classes that are in use on my machine, I can't see any
-class which leaves device naming up to its implementing drivers (except
-apparently mem and misc, but you'll have to agree that these are very
-special classes.)
-
-As a summary, I can't see any reason to come up with a new way to
-handle class device names in the als class, when all other classes
-around have already agreed on a standard approach.
-
-> > (...)
-> > The length is fine until someone needs more sensors, changes
-> > TSL2550_DEV_MAX to 16, and then the code crashes and nobody knows why.
-> > You can't assume that other developers won't touch your code. Thus it
-> > is much better to handle a given limitation in a single place. Here you
-> > can simply check the value returned by snprintf() and then you know if
-> > your name was correctly set.
+On Mon 12.Oct'09 at  9:54:38 -0700, Jesse Barnes wrote:
 > > 
-> > Again, not that it matters, because the name buffer should simply be
-> > large enough that it always fits.
->
-> That's awfully big if we don't place some arbitrary limit on number of
+> > Nope, unfortunately, it's not helping on my T400 laptop.  I'm still
+> > getting huge amounts of glitching and tearing with this patch applied
+> > against -rc3.
+> > 
+> > What I'm using for now to fix up my system is this patch.
+> > 
+> 
+> How about this one?  I have one more idea to try out if this doesn't
+> work (hacking on it now).
 
-Where "awfully big" is like 30 bytes. Wow, I'm frightened :)
+I was also experiencing something very similar to Theodore's bug 
+report and, at least for me, the patch below fixed the issue (the
+previous one also had no effect).
 
-> devices. I'm happy to pick another one, but one is needed. Clearly the
-> code can be made more resilient to the sort of change you mention as well
-> and I'll do that if this isn't moved into the core.
 
-Whatever limit you end up with, it should be set by the buffer size,
-rather than a separate constant.
+> diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
+> index 7a5fb79..1451945 100644
+> --- a/drivers/gpu/drm/i915/intel_display.c
+> +++ b/drivers/gpu/drm/i915/intel_display.c
+> @@ -1047,7 +1047,7 @@ static void g4x_enable_fbc(struct drm_crtc *crtc, unsigned long interval)
+>  	dev_priv->cfb_fence = obj_priv->fence_reg;
+>  	dev_priv->cfb_plane = intel_crtc->plane;
+>  
+> -	dpfc_ctl = plane | DPFC_SR_EN | DPFC_CTL_LIMIT_1X;
+> +	dpfc_ctl = plane | DPFC_CTL_LIMIT_1X;
+>  	if (obj_priv->tiling_mode != I915_TILING_NONE) {
+>  		dpfc_ctl |= DPFC_CTL_FENCE_EN | dev_priv->cfb_fence;
+>  		I915_WRITE(DPFC_CHICKEN, DPFC_HT_MODIFY);
+> --
 
--- 
-Jean Delvare
