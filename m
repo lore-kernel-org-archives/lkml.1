@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbZJLOuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932454AbZJLOuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932436AbZJLOuK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932401AbZJLOuI
+	id S932454AbZJLOuX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932401AbZJLOuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:50:08 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59150 "EHLO
+	Mon, 12 Oct 2009 10:50:19 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59154 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932377AbZJLOuG (ORCPT
+	with ESMTP id S932405AbZJLOuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:50:06 -0400
+	Mon, 12 Oct 2009 10:50:17 -0400
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 1/2] et131x: Correct WRAP bit handling
+Subject: [PATCH 2/2] et131x: Fix the add_10bit macro
 To: greg@kroah.com, linux-kernel@vger.kernel.org
-Date: Mon, 12 Oct 2009 15:38:17 +0100
-Message-ID: <20091012143813.20944.66683.stgit@localhost.localdomain>
+Date: Mon, 12 Oct 2009 15:38:26 +0100
+Message-ID: <20091012143823.20944.3745.stgit@localhost.localdomain>
 In-Reply-To: <20091012142816.20944.92471.stgit@localhost.localdomain>
 References: <20091012142816.20944.92471.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,44 +25,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add_10bit loses the existing wrap value
+Duh.. we need to preserve the wrap bit when adding.
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/staging/et131x/et1310_rx.c |   20 ++++++++++++++------
- 1 files changed, 14 insertions(+), 6 deletions(-)
+ drivers/staging/et131x/et1310_address_map.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 
-diff --git a/drivers/staging/et131x/et1310_rx.c b/drivers/staging/et131x/et1310_rx.c
-index 8f2e91f..10e21db 100644
---- a/drivers/staging/et131x/et1310_rx.c
-+++ b/drivers/staging/et131x/et1310_rx.c
-@@ -1177,12 +1177,20 @@ void et131x_handle_recv_interrupt(struct et131x_adapter *etdev)
+diff --git a/drivers/staging/et131x/et1310_address_map.h b/drivers/staging/et131x/et1310_address_map.h
+index 6294d38..2c3d65a 100644
+--- a/drivers/staging/et131x/et1310_address_map.h
++++ b/drivers/staging/et131x/et1310_address_map.h
+@@ -223,7 +223,7 @@ typedef union _TXDMA_PR_NUM_DES_t {
  
- static inline u32 bump_fbr(u32 *fbr, u32 limit)
+ extern inline void add_10bit(u32 *v, int n)
  {
--	u32 v = *fbr;
--	add_10bit(&v, 1);
--	if (v > limit)
--		v = (*fbr & ~ET_DMA10_MASK) ^ ET_DMA10_WRAP;
--	*fbr = v;
--	return v;
-+        u32 v = *fbr;
-+        v++;
-+        /* This works for all cases where limit < 1024. The 1023 case
-+           works because 1023++ is 1024 which means the if condition is not
-+           taken but the carry of the bit into the wrap bit toggles the wrap
-+           value correctly */
-+        if ((v & ET_DMA10_MASK) > limit) {
-+                v &= ~ET_DMA10_MASK;
-+                v ^= ET_DMA10_WRAP;
-+        }
-+        /* For the 1023 case */
-+        v &= (ET_DMA10_MASK|ET_DMA10_WRAP);
-+        *fbr = v;
-+        return v;
+-	*v = INDEX10(*v + n);
++	*v = INDEX10(*v + n) | (*v & ET_DMA10_WRAP);
  }
  
- /**
+ /*
 
