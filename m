@@ -1,96 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758253AbZJLVRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbZJLVT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758253AbZJLVRS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758228AbZJLVRR
+	id S1758284AbZJLVT0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbZJLVTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:17:17 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:45706 "EHLO mx1.redhat.com"
+	Mon, 12 Oct 2009 17:19:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36097 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757738AbZJLVRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:17:16 -0400
-Message-ID: <4AD39D89.6070609@redhat.com>
-Date: Mon, 12 Oct 2009 17:20:09 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	id S1758274AbZJLVTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:19:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ondrej Hujnak <hujnak.ondrej@gmail.com>
+Subject: Re: Suspend to RAM on MSI PR200YA - do not recover, system immediately turns down
+Date: Mon, 12 Oct 2009 23:20:09 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, mschmidt@redhat.com,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <37b436160910101054t7765c253ta98b983f226b57c3@mail.gmail.com> <200910102334.42399.rjw@sisk.pl> <37b436160910120849o6aae596w50e450b4838ed233@mail.gmail.com>
+In-Reply-To: <37b436160910120849o6aae596w50e450b4838ed233@mail.gmail.com>
 MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [PATCH tracing/kprobes v3 3/7] tracing/kprobes: Rename special
- variables
-References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222759.1684.3319.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <20091007222759.1684.3319.stgit@dhcp-100-2-132.bos.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910122320.10059.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> @@ -427,28 +427,17 @@ static int parse_probe_vars(char *arg, struct fetch_func *ff, int is_return)
->   	int ret = 0;
->   	unsigned long param;
->
-> -	switch (arg[0]) {
-> -	case 'a':	/* argument */
-> -		ret = strict_strtoul(arg + 1, 10,&param);
-> -		if (ret || param>  PARAM_MAX_ARGS)
-> -			ret = -EINVAL;
-> -		else {
-> -			ff->func = fetch_argument;
-> -			ff->data = (void *)param;
-> -		}
-> -		break;
-> -	case 'r':	/* retval or retaddr */
-> -		if (is_return&&  arg[1] == 'v') {
-> +	if (strcmp(arg, "retval") == 0) {
-> +		if (is_return) {
->   			ff->func = fetch_retvalue;
->   			ff->data = NULL;
->   		} else
->   			ret = -EINVAL;
-> -		break;
-> -	case 's':	/* stack */
-> -		if (arg[1] == 'a') {
-> +	} else if (strncmp(arg, "stack", 5) == 0) {
-> +		if (arg[5] == '\0') {
->   			ff->func = fetch_stack_address;
->   			ff->data = NULL;
-> -		} else {
-> +		} else if (isdigit(arg[5])) {
->   			ret = strict_strtoul(arg + 1, 10,&param);
-                                              ^^^^^^^ this should be arg + 5.
+On Monday 12 October 2009, Ondrej Hujnak wrote:
+> 2009/10/10 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Saturday 10 October 2009, Ondrej Hujnak wrote:
+> >> Hello,
+> >>
+> >> I am trying to make work "Suspend to RAM".
+> >> My laptop is MSI PR200YA, linux
+> >> kernel 2.6.30.8-64.fc11.i586 (fedora 11, 32bit),
+> >> the same is with 2.6.31.1-56.fc12.i686.
+> >> Motherboard - MSI 1221, graphics:
+> >> Mobile GM965/GL960 Integrated Graphics Controller
+> >>
+> >> When I do suspend to RAM it seem to work ok, it sleeps.
+> >> But when I want to wake it, it only switches off (the power
+> >> LED stops blinking).  If I'm having my notebook connected
+> >> to electricity, after start it don't  start screen and keyboard.
+> >> Notebook is running, but there is no HDD activity according
+> >> to the LED indicator. When it is on battery, it normally starts,
+> >> as if I had switched it normally off. Every time after trying to
+> >> suspend it to RAM, on the next start I have
+> >> "last write to superblock in future".
+> >>
+> >> I tried:
+> >>  - suspend from "single" mode
+> >>  - suspend from "single" mode with as many modules as possible rmmod'ed
+> >>  - using "nomodeset"
+> >>  - early suspend-to-RAM at boot test with "test_suspend=mem"
+> >> All with the same result.
+> >>
+> >> I also tried using pm_trace, but this gave no useful results in dmesg
+> >> in the next boot. The clock was not changed by it (the documentation
+> >> said it would be).
+> >>
+> >> I have attached printout of "lspci -vv" and "dmesg" after switching
+> >> pm_trace on.
+> >>
+> >> I'd welcome any ideas how to debug this further.
+> >> I'm looking forward to your reply.
+> >
+> > Does the pm_test 'core' test work (please see
+> > Documentation/power/basic-pm-debugging.txt)?
+> >
+> > Rafael
+> >
+> 
+> Ok, i tried all kinds of pm_test including core several times
+> and everything seemed ok. I got no error, failure..
+> 
+> And i tried all possibilities of /sys/power/disk under
+>  "init=/bin/bash" and same result as above.
 
-> @@ -456,11 +445,18 @@ static int parse_probe_vars(char *arg, struct fetch_func *ff, int is_return)
->   				ff->func = fetch_stack;
->   				ff->data = (void *)param;
->   			}
-> +		} else
-> +			ret = -EINVAL;
-> +	} else if (strncmp(arg, "arg", 3) == 0&&  isdigit(arg[4])) {
-> +		ret = strict_strtoul(arg + 1, 10,&param);
-                                      ^^^^^^^ here too, arg + 3.
+That seems to indicate some kind of a BIOS issue.  However, several suspend
+bugs are going to be fixes in 2.6.32, so perhaps you can try -rc6 or later,
+when they are out.
 
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Thanks,
+Rafael
