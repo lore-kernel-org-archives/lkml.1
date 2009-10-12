@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbZJLJcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbZJLJfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbZJLJcA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 05:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbZJLJcA
+	id S1755538AbZJLJfF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 05:35:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518AbZJLJfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 05:32:00 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:53288 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755393AbZJLJb7 (ORCPT
+	Mon, 12 Oct 2009 05:35:04 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:40251 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755191AbZJLJfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 05:31:59 -0400
+	Mon, 12 Oct 2009 05:35:03 -0400
+Date: Mon, 12 Oct 2009 11:34:24 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, gregkh@suse.de,
+       linux-pcmcia@lists.infradead.org
+Subject: Re: [PATCH] pcmcia: fix controller printk format warnings
+Message-ID: <20091012093424.GA3327@pengutronix.de>
+References: <4AD28B51.7020903@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <31014a580910120227j3023d3f0t947f6feeba427487@mail.gmail.com>
-References: <31014a580910120227j3023d3f0t947f6feeba427487@mail.gmail.com>
-From: "Mark A. Miller" <mark@mirell.org>
-Date: Mon, 12 Oct 2009 04:31:02 -0500
-Message-ID: <31014a580910120231p58c4f4ebi122c9232a7c288f3@mail.gmail.com>
-Subject: [PATCH] Expose BOOT_RAW Kconfig Symbol
-To: linux-kernel@vger.kernel.org
-Cc: Rob Landley <rob@landley.net>
-Content-Type: multipart/mixed; boundary=0016e6d7eea0c26aff0475b99710
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="opJtzjQTFsWo+cga"
+Content-Disposition: inline
+In-Reply-To: <4AD28B51.7020903@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016e6d7eea0c26aff0475b99710
-Content-Type: text/plain; charset=UTF-8
 
-This is a trivial change, it allows you to enable the BOOT_RAW symbol
-on systems that it isn't otherwise the default on.
+--opJtzjQTFsWo+cga
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
---
-Mark A. Miller
-mark@mirell.org
+On Sun, Oct 11, 2009 at 06:50:09PM -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>=20
+> Fix new pcmcia printk format warnings:
+> [This has now moved from linux-next to mainline.
+> Originally sent 2009-SEP-17.]
 
---0016e6d7eea0c26aff0475b99710
-Content-Type: application/octet-stream; name="linux-bootraw-kconfig.patch"
-Content-Disposition: attachment; filename="linux-bootraw-kconfig.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g0p0t0dm0
+My plan was to pick it for pcmcia-l2 and ask Greg to pull it next week (aft=
+er
+ELC-E) together with my follow-up patch. If this is not fast enough, just l=
+et
+me know someone else picked it and I'll handle my patch seperately.
 
-RnJvbTogTWFyayBNaWxsZXIgPG1hcmtAbWlyZWxsLm9yZz4KClRoaXMgZXhwb3NlcyB0aGUgQ09O
-RklHX0JPT1RfUkFXIHN5bWJvbCBpbiBLY29uZmlnLiBUaGlzIGlzIG5lZWRlZCBvbiBjZXJ0YWlu
-IEJyb2FkY29tIGNoaXBzZXRzIHJ1bm5pbmcgQ0ZFIGluIG9yZGVyIHRvIGxvYWQgdGhlIGtlcm5l
-bAoKU2lnbmVkLW9mZi1ieTogTWFyayBNaWxsZXIgPG1hcmtAbWlyZWxsLm9yZz4KLS0tCgogYXJj
-aC9taXBzL0tjb25maWcgfCAgIDE1ICsrKysrKysrKysrKy0tLQogMSBmaWxlIGNoYW5nZWQsIDEy
-IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYXJjaC9taXBzL0tj
-b25maWcgYi9hcmNoL21pcHMvS2NvbmZpZwppbmRleCBmNGFmOTY3Li4wMjM2MDRkIDEwMDY0NAot
-LS0gYS9hcmNoL21pcHMvS2NvbmZpZworKysgYi9hcmNoL21pcHMvS2NvbmZpZwpAQCAtNjcwLDkg
-KzY3MCw2IEBAIGNvbmZpZyBBUkMKIGNvbmZpZyBBUkNIX01BWV9IQVZFX1BDX0ZEQwogCWJvb2wK
-IAotY29uZmlnIEJPT1RfUkFXCi0JYm9vbAotCiBjb25maWcgQ0VWVF9CQ00xNDgwCiAJYm9vbAog
-CkBAIC0xODg3LDYgKzE4ODQsMTggQEAgY29uZmlnIFNFQ0NPTVAKIAogCSAgSWYgdW5zdXJlLCBz
-YXkgWS4gT25seSBlbWJlZGRlZCBzaG91bGQgc2F5IE4gaGVyZS4KIAorY29uZmlnIEJPT1RfUkFX
-CisJYm9vbCAiRW5hYmxlIHRoZSBrZXJuZWwgdG8gYmUgZXhlY3V0ZWQgZnJvbSB0aGUgbG9hZCBh
-ZGRyZXNzIgorCWRlZmF1bHQgbgorCWhlbHAKKwkgQWxsb3cgdGhlIGtlcm5lbCB0byBiZSBleGVj
-dXRlZCBmcm9tIHRoZSBsb2FkIGFkZHJlc3MgZm9yCisJIGJvb3Rsb2FkZXJzIHdoaWNoIGNhbm5v
-dCByZWFkIHRoZSBFTEYgZm9ybWF0LiBUaGlzIHBsYWNlcworCSBhIGp1bXAgdG8gc3RhcnRfa2Vy
-bmVsIGF0IHRoZSBsb2FkIGFkZHJlc3MuCisKKwkgSWYgdW5zdXJlLCBzYXkgTi4KKworCisKIGVu
-ZG1lbnUKIAogY29uZmlnIExPQ0tERVBfU1VQUE9SVAo=
---0016e6d7eea0c26aff0475b99710--
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--opJtzjQTFsWo+cga
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkrS+CAACgkQD27XaX1/VRvi9wCffQWffct9Y2YNmFFY8c4ue219
+iCkAoLnM76uFIfLwoHA3Y7Jl7KLWE7E7
+=SxFS
+-----END PGP SIGNATURE-----
+
+--opJtzjQTFsWo+cga--
