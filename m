@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932304AbZJLOcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbZJLOeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932304AbZJLOcz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932261AbZJLOcy
+	id S1756969AbZJLOeq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbZJLOep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:32:54 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64423 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932256AbZJLOcx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:32:53 -0400
-Subject: Re: [PATCH] ftrace: add kernel command line graph function
- filtering
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Stefan Assmann <sassmann@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <c62985530910120659s4b1f3cbfq2f6adccb16cf2c23@mail.gmail.com>
-References: <4AD2DEB9.2@redhat.com>
-	 <c62985530910120209t3d263d5eh5aeba14fcecc9072@mail.gmail.com>
-	 <1255355219.7113.16.camel@gandalf.stny.rr.com>
-	 <c62985530910120659s4b1f3cbfq2f6adccb16cf2c23@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Mon, 12 Oct 2009 10:30:54 -0400
-Message-Id: <1255357854.7113.18.camel@gandalf.stny.rr.com>
+	Mon, 12 Oct 2009 10:34:45 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57538 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756382AbZJLOep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:34:45 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18on3QeQ+koHwM2ozr3Vgq0aKwehq7JxCz0tFsMhx
+	OTuEA6Y0PowDNE
+Subject: Re: hackbench regression with kernel 2.6.32-rc1
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1255357264.10420.15.camel@twins>
+References: <1255079943.25078.23.camel@ymzhang>
+	 <1255084986.8802.46.camel@laptop>  <1255331120.3684.43.camel@ymzhang>
+	 <1255357264.10420.15.camel@twins>
+Content-Type: text/plain
+Date: Mon, 12 Oct 2009 16:33:52 +0200
+Message-Id: <1255358032.6818.5.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 15:59 +0200, Frédéric Weisbecker wrote:
+On Mon, 2009-10-12 at 16:21 +0200, Peter Zijlstra wrote:
 
-> No problem. I'll take the previous patch then, plus the kernel
-> parameter doc fix in the current one :-)
+> Mike, did we ever figure out _why_ NEXT_BUDDY introduced latencies?
 
-Great, so you'll pull in these changes then?
+No, I haven't gotten around to poking at that yet.  I'll try that x264
+thing, IIRC, NEXT_BUDDY hurt it pretty badly.
 
--- Steve
+> Buddies shouldn't make latencies worse than regular while(1); loops
+> would.
 
+Yeah, no idea what's going wrong.
+
+	-Mike
 
