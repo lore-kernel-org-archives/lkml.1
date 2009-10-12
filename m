@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756300AbZJLLZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbZJLLZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756300AbZJLLZz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 07:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbZJLLZx
+	id S1756258AbZJLLZt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 07:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbZJLLZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 07:25:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50467 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756264AbZJLLZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 07:25:52 -0400
-Date: Mon, 12 Oct 2009 13:25:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] NULL pointer dereference at IP: [<ffffffff812e9ccb>]
-	uart_close+0x2a/0x1e4
-Message-ID: <20091012112504.GA10002@elte.hu>
-References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> <20091012080511.GA22607@elte.hu> <20091012091954.GA31171@elte.hu> <20091012092713.GA32647@elte.hu>
+	Mon, 12 Oct 2009 07:25:49 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:55511 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753549AbZJLLZr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 07:25:47 -0400
+X-Sasl-enc: 1hUblXRZ35uvbsykrbTuJ2oqxflbEpx+eDpfvOjAfdBS 1255346710
+Message-ID: <4AD31213.6020006@imap.cc>
+Date: Mon, 12 Oct 2009 13:25:07 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012092713.GA32647@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: David Miller <davem@davemloft.net>
+CC: tilman@imap.cc, johannes@sipsolutions.net, hidave.darkstar@gmail.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-wireless@vger.kernel.org, linux-ppp@vger.kernel.org,
+       netdev@vger.kernel.org, paulus@samba.org
+Subject: Re: NOHZ: local_softirq_pending 08
+References: <4AD1BF06.3050103@phoenixsoftware.de>	<1255261251.4095.143.camel@johannes.local>	<4AD2E8C8.4060205@imap.cc> <20091012.033246.56701176.davem@davemloft.net>
+In-Reply-To: <20091012.033246.56701176.davem@davemloft.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> i also have a crash with vanilla -rc4, test on this commit:
+On Mon, 12 Oct 2009 03:32:46 -0700 (PDT), David Miller wrote:
+> The PPP receive paths in ppp_generic.c do a local_bh_disable()/
+> local_bh_enable() around packet receiving (via ppp_recv_lock()/
+> ppp_recv_unlock() in ppp_do_recv).
 > 
->   d93a8f8: Revert "USB: Work around BIOS bugs by quiescing USB controllers earlier"
+> So at least that part is perfectly fine.
 > 
-> crashlog pasted below - config attached.
+> ppp_input(), as called from ppp_sync_process(), also disables BH's
+> around ppp_do_recv() calls (via read_lock_bh()/read_unlock_bh()).
+> 
+> So that's fine too.
+> 
+> Do you have a bug report or are you just scanning around looking
+> for trouble? :-)
 
-i did a full .31 -> .32-rc4 bisection and came up with this result:
+I have encountered the message in the subject during a test of
+the Gigaset CAPI driver, and would like to determine whether
+it's a bug in the driver, a bug somewhere else, or no bug at
+all. The test scenario was PPP over ISDN with pppd+capiplugin.
+In an alternative scenario, also PPP over ISDN but with
+smpppd+capidrv, the message did not occur.
 
-|  46d57a449aa13d9c6adcc9d1dbc7b9a0ecfb69d8 is first bad commit
-|  commit 46d57a449aa13d9c6adcc9d1dbc7b9a0ecfb69d8
-|  Author: Alan Cox <alan@linux.intel.com>
-|  Date:   Sat Sep 19 13:13:29 2009 -0700
-|
-|     serial: use tty_port pointers in the core code
+Johannes' answer pointed me to the netif_rx() function.
+The Gigaset driver itself doesn't call that function at all.
+In the scenario where I saw the message, it was the SYNC_PPP
+line discipline that did. But from your explanation I gather
+that the cause cannot lie there.
 
-this is the second time i have bisected back to this commit, see also 
-this prior thread on lkml:
+So now I'm looking for other possible causes of that message.
 
- Subject: [origin tree boot crash] Re: [GIT PATCH] TTY patches for 2.6.31-git
+- --
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-i chalked that first crash/hang up to potential cosmic entropy 
-(especially since it happened even with all serial logging disabled, and 
-because i was unable to get any log of the spontaneous reboot), but this 
-second crash occurs on a completely different system and has an 
-analyzable crash signature as well.
-
-Both systems are rock-solid with no known hardware weirdness, the first 
-test-system passed two hundred thousand boot tests in the past 1.5 
-years, and the second one has performed tens of thousands of build+boot 
-tests as well. I'd exclude hardware failure as a likely candidate for 
-now.
-
-Unfortunately 46d57a449aa13d9c6adcc9d1dbc7b9a0ecfb69d8 is not easy to 
-revert, at all. Would be glad to try any patch - fixes or some manual 
-revert as well (if that's feasible).
-
-	Ingo
+iD8DBQFK0xITQ3+did9BuFsRAmXGAKCIiqJffUnuKw9rPjxHwbj9AnXOigCdGgS9
+MpxRNGs0A4GTydYJaylbjyo=
+=LFxi
+-----END PGP SIGNATURE-----
