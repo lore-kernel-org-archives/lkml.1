@@ -1,53 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZJLGrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZJLGra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbZJLGrd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 02:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZJLGrb
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 02:47:31 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:41004 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753310AbZJLGra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1754095AbZJLGra (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 12 Oct 2009 02:47:30 -0400
-X-Sasl-enc: 9X4rTiWsYV+nPVXrdpTfPklpEv7KygBIqIT/u5Dw0HNt 1255329989
-Message-ID: <4AD2D0C2.40307@ladisch.de>
-Date: Mon, 12 Oct 2009 08:46:26 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZJLGr3
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 12 Oct 2009 02:47:29 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:47038 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750909AbZJLGr2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 02:47:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=CsIM7ZhDOm41NsX2oFWlYn2DFPXCBEVQzI92AAdLE/qFgf0XUiYQobRjZpJZO5xkOm
+         xWVgpePQJowF5C//Mucoek+J2bbllMX6q5XCgw2hYUCxe+svDy/s2Sffb9KICC0aiaJ4
+         Qnnk3adhEze/iWYGlP5mNhwaXD1IZnl+9j4XA=
 MIME-Version: 1.0
-To: Lubomir Rintel <lkundrak@v3.sk>
-CC: alsa-devel@alsa-project.org, linux-sound@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tiwai@suse.de
-Subject: Re: [PATCH] [snd-usb-audio] Add match for JMTek USB sound	card
-References: <1255173329-20485-1-git-send-email-lkundrak@v3.sk>
-In-Reply-To: <1255173329-20485-1-git-send-email-lkundrak@v3.sk>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <19154.50758.867045.191430@notabene.brown>
+References: <4aca1863.0a1ad00a.33bf.1017@mx.google.com> <19146.30989.928233.393339@notabene.brown> 
+	<6784529b0910052234x3d5c8ebblb1fc0b73d9dc1f82@mail.gmail.com> 
+	<19154.50758.867045.191430@notabene.brown>
+From: Vladimir Dronnikov <dronnikov@gmail.com>
+Date: Mon, 12 Oct 2009 10:46:31 +0400
+Message-ID: <6784529b0910112346s791113e3k1ee457589adfc3a2@mail.gmail.com>
+Subject: Re: [PATCH 1/1] md: drivers/md/unroll.pl replaced with awk analog
+To: Neil Brown <neilb@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, rob@landley.net,
+       firmware@impactlinux.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lubomir Rintel wrote:
-> Entry for JMTek LLC., SSS USB Headphone Set in the quirk table.
+>
+> That's good, thanks.
+> I'll queue it up for 2.6.33.
+>
 
-Please add an explaination why this entry is needed.  At first glance,
-this entry seems to describe a class-compliant device that should not
-need a quirk.
-
-> +/* JMTek, LLC. SSS USB Headphone Set */
-> +{
-> +	.match_flags = USB_DEVICE_ID_MATCH_DEVICE |
-> +		       USB_DEVICE_ID_MATCH_DEV_CLASS |
-> +		       USB_DEVICE_ID_MATCH_INT_CLASS |
-> +		       USB_DEVICE_ID_MATCH_INT_SUBCLASS,
-> +	.idVendor = 0x0c76,
-> +	.idProduct = 0x1605,
-> +	.bDeviceClass = USB_CLASS_PER_INTERFACE,
-> +	.bInterfaceClass = USB_CLASS_AUDIO,
-> +	.bInterfaceSubClass = USB_SUBCLASS_AUDIO_CONTROL
-> +},
-
+Thanks!
 
 Best regards,
-Clemens
+--
+Vladimir
