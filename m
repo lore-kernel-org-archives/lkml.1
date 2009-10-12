@@ -1,88 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZJLDvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbZJLD45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbZJLDvH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 23:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbZJLDvH
+	id S1753626AbZJLD45 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 23:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbZJLD45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 23:51:07 -0400
-Received: from mga11.intel.com ([192.55.52.93]:8265 "EHLO mga11.intel.com"
+	Sun, 11 Oct 2009 23:56:57 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:48632 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753844AbZJLDvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 23:51:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,544,1249282800"; 
-   d="scan'208";a="735385121"
-Subject: Re: [Bug #14379] ACPI Warning for _SB_.BAT0._BIF: Converted Buffer
- to 	expected String
-From: Lin Ming <ming.m.lin@intel.com>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <dd18b0c30910112014m4bfdc238j542864bb9f1e8161@mail.gmail.com>
-References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
-	 <r-4Wjt4coy.A.ZrC.Ual0KB@chimera>
-	 <dd18b0c30910112014m4bfdc238j542864bb9f1e8161@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 12 Oct 2009 11:35:56 +0800
-Message-Id: <1255318556.11664.11.camel@minggr.sh.intel.com>
+	id S1753338AbZJLD44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 23:56:56 -0400
+Date: Mon, 12 Oct 2009 14:56:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: tip tree question
+Message-Id: <20091012145609.c3cc78aa.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__12_Oct_2009_14_56_09_+1100_wOeeOteqUezzpWH1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 11:14 +0800, Justin Mattock wrote:
-> On Sun, Oct 11, 2009 at 3:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.31.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14379
-> > Subject         : ACPI Warning for _SB_.BAT0._BIF: Converted Buffer to expected String
-> > Submitter       : Justin Mattock <justinmattock@gmail.com>
-> > Date            : 2009-10-08 21:46 (4 days old)
-> > References      : http://marc.info/?l=linux-kernel&m=125504031328941&w=4
-> >
-> >
-> >
-> 
-> pulled rc4 today and the warning is still present.
-> here is the results of git bisect:
+--Signature=_Mon__12_Oct_2009_14_56_09_+1100_wOeeOteqUezzpWH1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Patch at http://bugzilla.kernel.org/show_bug.cgi?id=14379#c1 fixes the
-warning.
+Hi all,
 
-Actually, the _BIF warning was fixed at commit
-e899b6485c332aa2d7510739507ab5e5d7b28e59.
-See http://bugzilla.kernel.org/show_bug.cgi?id=11822#c14 
+I noticed that the auto-latest branch of the tip tree (which is what is
+included in linux-next) has had the tip out-of-tree branch merged into
+it.  This seems to just introduce lots of commits into linux-next that
+have nothing to do with the tip tree (some of which contain fixes that
+are also in Linus' tree) and adds a localversion-tip file.
 
-I made a mistake at the cleanup of predefined method table so the
-warning shows up again.
+I was wondering if this was done out of necessity or by oversight.
 
-Lin Ming
+I have reverted commit e67d8da85f7a4c2772fe3731de9396b6d01a045e ("Merge
+branch 'out-of-tree' into auto-latest") from linux-next for today and the
+x86_64 allmodconfig and powerpc ppc64_defconfig builds still seem OK.
 
-> 
-> d9adc2e031bd22d5d9607a53a8d3b30e0b675f39 is the first bad commit
-> commit d9adc2e031bd22d5d9607a53a8d3b30e0b675f39
-> Author: Lin Ming <ming.m.lin@intel.com>
-> Date:   Mon Jul 27 11:31:10 2009 +0800
-> 
->     ACPICA: reformat predefined method table, no functional change
-> 
->     Reformatted the methods that return package objects.
-> 
->     Signed-off-by: Lin Ming <ming.m.lin@intel.com>
->     Signed-off-by: Len Brown <len.brown@intel.com>
-> 
-> :040000 040000 17c30a6e75ce2fafc677b32bdcf3fbecae8458ab
-> f43e38a2a4034bcc73ef14943e61187f11b08731 M      drivers
-> 
-> I will go and attach the git log to the bug report.
-> 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Mon__12_Oct_2009_14_56_09_+1100_wOeeOteqUezzpWH1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrSqNkACgkQjjKRsyhoI8zYswCePQsZgVkcA2A920TiSBPrSrCH
+3SAAn22lk4/Yj5DYIVh6j6Om0/CLavzL
+=nWHp
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__12_Oct_2009_14_56_09_+1100_wOeeOteqUezzpWH1--
