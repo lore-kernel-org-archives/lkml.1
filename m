@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbZJLKXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbZJLK2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755655AbZJLKXU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 06:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbZJLKXT
+	id S1756018AbZJLK2U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 06:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbZJLK2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 06:23:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41607 "EHLO hera.kernel.org"
+	Mon, 12 Oct 2009 06:28:19 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:60157 "EHLO fanny.its.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755352AbZJLKXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 06:23:18 -0400
-Message-ID: <4AD3033C.8010503@kernel.org>
-Date: Mon, 12 Oct 2009 19:21:48 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1751888AbZJLK2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 06:28:18 -0400
 MIME-Version: 1.0
-To: cl@linux-foundation.org
-CC: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mel Gorman <mel@csn.ul.ie>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [this_cpu_xx V6 3/7] Use this_cpu operations in slub
-References: <20091007211024.442168959@gentwo.org> <20091007211052.614790286@gentwo.org> <4AD302A8.4010409@kernel.org>
-In-Reply-To: <4AD302A8.4010409@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 12 Oct 2009 10:21:50 +0000 (UTC)
+Message-ID: <19155.953.47831.379190@pilspetsen.it.uu.se>
+Date: Mon, 12 Oct 2009 12:23:53 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [PATCH 2.6.32-rc4] fix nfs_compare_remount_data() compile warnings
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello,
-> 
-> cl@linux-foundation.org wrote:
->> @@ -1507,7 +1498,7 @@ static inline void flush_slab(struct kme
->>   */
->>  static inline void __flush_cpu_slab(struct kmem_cache *s, int cpu)
->>  {
->> -	struct kmem_cache_cpu *c = get_cpu_slab(s, cpu);
->> +	struct kmem_cache_cpu *c = per_cpu_ptr(s->cpu_slab, cpu);
->>  
->>  	if (likely(c && c->page))
->>  		flush_slab(s, c);
->> @@ -1673,7 +1661,7 @@ new_slab:
->>  		local_irq_disable();
->>  
->>  	if (new) {
->> -		c = get_cpu_slab(s, smp_processor_id());
->> +		c = __this_cpu_ptr(s->cpu_slab);
-> 
-> Shouldn't this be this_cpu_ptr() without the double underscore?
+Commit bcd2ea17da6a329a7276cde7286d802f009af332
+"NFS: Fix port initialisation in nfs_remount()"
+replaced a memcmp() with a call to rpc_cmp_addr(),
+resulting in the following compile warnings:
 
-Oh... another similar conversions in slab_alloc() and slab_free() too.
+fs/nfs/super.c: In function 'nfs_compare_remount_data':
+fs/nfs/super.c:1852: warning: passing argument 1 of 'rpc_cmp_addr' from incompatible pointer type
+fs/nfs/super.c:1852: warning: passing argument 2 of 'rpc_cmp_addr' from incompatible pointer type
 
-Thanks.
+The operands are of type 'struct sockaddr_storage*' while
+rpc_cmp_addr() expects 'struct sockaddr*'. Those operands
+are often cast to 'struct sockaddr*' elsewhere in super.c,
+so doing the same here seems reasonable.
 
--- 
-tejun
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+---
+ fs/nfs/super.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- linux-2.6.32-rc4/fs/nfs/super.c.~1~	2009-10-12 10:43:45.000000000 +0200
++++ linux-2.6.32-rc4/fs/nfs/super.c	2009-10-12 11:44:13.000000000 +0200
+@@ -1848,8 +1848,8 @@ nfs_compare_remount_data(struct nfs_serv
+ 	    data->timeo != (10U * nfss->client->cl_timeout->to_initval / HZ) ||
+ 	    data->nfs_server.port != nfss->port ||
+ 	    data->nfs_server.addrlen != nfss->nfs_client->cl_addrlen ||
+-	    !rpc_cmp_addr(&data->nfs_server.address,
+-		    &nfss->nfs_client->cl_addr))
++	    !rpc_cmp_addr((struct sockaddr *)&data->nfs_server.address,
++		    (struct sockaddr *)&nfss->nfs_client->cl_addr))
+ 		return -EINVAL;
+ 
+ 	return 0;
