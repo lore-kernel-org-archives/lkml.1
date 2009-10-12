@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932410AbZJLOtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbZJLPAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932410AbZJLOtN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:49:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932385AbZJLOtM
+	id S1757057AbZJLPAH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756540AbZJLPAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:49:12 -0400
-Received: from mx03.syneticon.net ([78.111.66.105]:38098 "EHLO
-	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932354AbZJLOtL (ORCPT
+	Mon, 12 Oct 2009 11:00:06 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:58228 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756461AbZJLPAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:49:11 -0400
-Message-ID: <4AD341B2.6000704@wpkg.org>
-Date: Mon, 12 Oct 2009 16:48:18 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091009)
+	Mon, 12 Oct 2009 11:00:05 -0400
+Date: Mon, 12 Oct 2009 10:52:29 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
+Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
+ interrupt disable
+In-Reply-To: <20091012135600.GB15605@Krystal>
+Message-ID: <alpine.DEB.1.10.0910121049580.32595@gentwo.org>
+References: <20091007151940.GA10052@Krystal> <alpine.DEB.1.10.0910071119450.9296@gentwo.org> <1254988350.26976.256.camel@twins> <alpine.DEB.1.10.0910081211050.21951@gentwo.org> <20091008171750.GA3370@Krystal> <alpine.DEB.1.10.0910081342540.7735@gentwo.org>
+ <20091008191754.GA12729@Krystal> <alpine.DEB.1.10.0910081520210.8030@gentwo.org> <20091008203724.GA15798@Krystal> <alpine.DEB.1.10.0910081652190.8030@gentwo.org> <20091012135600.GB15605@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: pernegger@gmail.com, arjan@infradead.org
-Subject: Re: *Really* bad I/O latency with md raid5+dm-crypt+lvm
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Summary: I was hoping to use a layered storage setup, namely lvm on
-> dm-crypt on md raid5 for a new box I'm setting up, but that isn't
-> looking so good since a single heavyish writer will monopolise any and
-> all I/O on the "device". F. ex. while cp'ing a few GB of data from an
-> external disk to the array it takes ~10sec to run ls and ~2min to
-> start aptitude. Clueless attempts at a diagnosis below.
+On Mon, 12 Oct 2009, Mathieu Desnoyers wrote:
 
-Did you try running strace to see where ls pauses?
+> > In the middle of the function we have determine that we have to go to the
+> > page allocator to get more memory. There is not much the compiler can do
+> > to speed that up.
+>
+> Indeed, the compiler cannot do much about it. However, the programer
+> (you) can move the preempt_enable_no_resched() part of the
+> preempt_enable() to the beginning of the function.
 
-Did you try running latencytop (and generally, top/htop while doing your 
-tests)?
+Ok but then we have the issue that the later irq enable in the
+slowpath will not check for preemption.
 
+> > > I still recommend the preempt_enable_no_resched() at the beginning of
+> > > __slab_alloc(), and simply putting a check_resched() here (which saves
+> > > us the odd compiler barrier in the middle of function).
+> >
+> > Then preemption would be unnecessarily disabled for the page allocator
+> > call?
+>
+> No ?
+> preempt_enable_no_resched() enables preemption.
 
-(...)
-
-> Anyway, as soon as I copy something to the array or create a larger
-> (upwards of a few hundred MiB) tar archive the box becomes utterly
-> unresponsive until that job is finished. Even on the local console the
-> completion time for a simple ls or cat is of the order of tens of
-> seconds, just forget about launching emacs.
-> Now I know that people have been ranting about desktop responsiveness
-> for a while but that was very much an abstract thing for me until now.
-
-I think the above (big latency when doing some bigger IO) is a general 
-Linux problem.
-
-I see similar behaviour on quite powerful hardware, i.e. Core i7, 8 GB 
-RAM, 2x HDD in a software RAID-1 array (no dm-crypt), when tarring 
-something big, or writing dd if=/dev/zero of=/home/me/bigfile - doing ls 
-in another terminal or just starting top can take up to a minute.
-
-Quite interestingly, background RAID synchronization have almost no 
-effect on latency.
-
-(...)
-
-
-> According to openssl speed aes-256-cbc the CPUs encryption speed is
-> ~113 MiB/s (single core, est. for 512b blocks). Obviously the array is
-> much faster than that. I can't find the benchmarks ATM but the numbers
-> seemed plausible for 70 MiB/s (optimistic est. for sequential access)
-> disks at the time.
-
-You can find some dm-crypt benchmarks i.e. here:
-
-http://blog.wpkg.org/2009/04/23/cipher-benchmark-for-dm-crypt-luks/
-
-Obviously, they will not match your hardware.
-
-Also note that dm-crypt is not "SMP-ready", so whatever hardware you 
-have, it will only use once CPU - this may seriously limit the 
-performance, depending on your usage and hardware.
-
-
--- 
-Tomasz Chmielewski
-
+If I just enable interrupts there then the preempt check will not be
+done and we may miss a scheduling point.
 
