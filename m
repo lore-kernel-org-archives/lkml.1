@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbZJLSRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933043AbZJLSSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757495AbZJLSRK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 14:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757472AbZJLSRK
+	id S933043AbZJLSSe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 14:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbZJLSSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 14:17:10 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:40676 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757255AbZJLSRJ (ORCPT
+	Mon, 12 Oct 2009 14:18:33 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:60885 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932827AbZJLSSd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 14:17:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=NTn2hNw0UVCU1KL8KJhyc2cMKKUis8YpIT4UHz2OQ8iIFUQmF1gSHGejUFRTWTxBoP
-         R2WEzo6ysbfDZP4Wd4JIJhrB5aq2Fkc5dZf0SCffWeqPAFgtUuVghXN0dkhoD726X+PO
-         HkuUFqas4aITWf6kQz4Xd6KfSC4gAt+CxNTTQ=
-Message-ID: <4AD37285.6060904@gmail.com>
-Date: Mon, 12 Oct 2009 11:16:37 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+	Mon, 12 Oct 2009 14:18:33 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4AD372E1.50002@cam.ac.uk>
+Date: Mon, 12 Oct 2009 19:18:09 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091007)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: rostedt@goodmis.org, Jason Baron <jbaron@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: system gets stuck in a lock during boot
-References: <1254880921.1696.112.camel@gandalf.stny.rr.com> <4ACC001D.4050105@gmail.com> <1254920429.1696.127.camel@gandalf.stny.rr.com> <4ACCAB54.4010408@gmail.com> <1254928298.1696.166.camel@gandalf.stny.rr.com> <4ACCB934.7070805@gmail.com> <1254931582.1696.171.camel@gandalf.stny.rr.com> <4ACCE1BA.5000307@gmail.com> <1254941730.1696.177.camel@gandalf.stny.rr.com> <4ACCE72B.3010906@gmail.com> <20091012101746.GC15777@elte.hu>
-In-Reply-To: <20091012101746.GC15777@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org
+Subject: [PATCH] staging: iio: Fix missing include <linux/sched.h>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Justin P. Mattock<justinmattock@gmail.com>  wrote:
->
->    
->> Steven Rostedt wrote:
->>      
->>> On Wed, 2009-10-07 at 11:45 -0700, Justin P. Mattock wrote:
->>>
->>>
->>>        
->>>>>
->>>>>            
->>>> yep like I said I owe you guys an apology, for
->>>> my mistake(thanks for taking the time).
->>>>
->>>>          
->>> Well, thank you for reporting it. If nobody reports any problems, we
->>> just assume everything is OK, and as people curse us out and look for
->>> alternatives, we will be sipping our mai-tais in ignorant bliss.
->>>
->>> -- Steve
->>>
->>>
->>>        
->> agree, my main concern when reporting is to make sure that it's a real
->> issue, and not a mistake like this one.
->>      
->
-> Well, it can be really hard to filter out whether a problem is somehow
-> self-inflicted or caused by the kernel proper - thus we generally prefer
-> over-reporting over under-reporting.
->
-> Even if it's self-inflicted it's useful on a meta level: if many people
-> report it then we might end up adding more safety guards to disable a
-> particular common pattern of shoot-foot-self incidents.
->
-> 	Ingo
->
->    
-CONFIG_INGO=y
+linux/sched.h include was removed form linux/poll.h by
+commmit a99bbaf5ee6bad1aca0c88ea65ec6e5373e86184
 
-Thanks man, yeah I agree the more over reporting the better.
-but in this case  I did shoot myself in the foot(not by choice though).
-In any case I really appreciate all of you guys
-taking the time to look at this. I will try and be more careful the
-next time in reporting.
+Required for definition of TASK_INTERRUPTIBLE amongst others
+---
 
-Justin P. Mattock
+Ingo posted a couple of similar patches in reply to Linus'
+2.6.32-rc4 thread. I guess there will be quite a few more
+to come.
+
+ drivers/staging/iio/industrialio-core.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/staging/iio/industrialio-core.c b/drivers/staging/iio/industrialio-core.c
+index 1fa18f2..8b67c17 100644
+--- a/drivers/staging/iio/industrialio-core.c
++++ b/drivers/staging/iio/industrialio-core.c
+@@ -18,6 +18,7 @@
+ #include <linux/fs.h>
+ #include <linux/interrupt.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/cdev.h>
+ #include "iio.h"
+ #include "trigger_consumer.h"
+-- 
+1.6.3.3
 
