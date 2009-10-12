@@ -1,61 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933372AbZJLXMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbZJLXPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933372AbZJLXMv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 19:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757168AbZJLXMv
+	id S1758192AbZJLXPU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 19:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbZJLXPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 19:12:51 -0400
-Received: from thunk.org ([69.25.196.29]:41525 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754074AbZJLXMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 19:12:50 -0400
-Date: Mon, 12 Oct 2009 19:12:11 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Weird ext4 bug: 256P used?
-Message-ID: <20091012231211.GC18195@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Felipe Contreras <felipe.contreras@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <94a0d4530910120651i18ce33d2k89abcd66d1b865a1@mail.gmail.com> <20091012222910.GB18195@mit.edu> <94a0d4530910121602i14f34150h18d388668fc355d9@mail.gmail.com>
+	Mon, 12 Oct 2009 19:15:19 -0400
+Received: from stl-smtpout-01.boeing.com ([130.76.96.56]:57962 "EHLO
+	stl-smtpout-01.boeing.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbZJLXPS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 19:15:18 -0400
+From: "Templin, Fred L" <Fred.L.Templin@boeing.com>
+To: David Miller <davem@davemloft.net>
+CC: "gregkh@suse.de" <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "stable-review@kernel.org" <stable-review@kernel.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "contact@saschahlusiak.de" <contact@saschahlusiak.de>,
+       "yoshfuji@linux-ipv6.org" <yoshfuji@linux-ipv6.org>
+Date: Mon, 12 Oct 2009 16:12:48 -0700
+Subject: RE: [patch 37/37] sit: fix off-by-one in ipip6_tunnel_get_prl
+Thread-Topic: [patch 37/37] sit: fix off-by-one in ipip6_tunnel_get_prl
+Thread-Index: AcpJW6oMQof4sPB3TsWqorZ1VpQX7gCNVjCg
+Message-ID: <12F4112206976147A34FEC0277597CCF27A4164C18@XCH-NW-15V.nw.nos.boeing.com>
+References: <20091009233411.852013234@mini.kroah.org><20091009233440.7866800
+	01@mini.kroah.org><12F4112206976147A34FEC0277597CCF27A416492F@XCH-NW-15V.nw.nos.boeing.com>
+ <20091009.204231.204042155.davem@davemloft.net>
+In-Reply-To: <20091009.204231.204042155.davem@davemloft.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+x-tm-as-product-ver: SMEX-8.0.0.1181-5.600.1016-16942.004
+x-tm-as-result: No--66.102000-8.000000-31
+x-tm-as-user-approved-sender: No
+x-tm-as-user-blocked-sender: No
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <94a0d4530910121602i14f34150h18d388668fc355d9@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 02:02:31AM +0300, Felipe Contreras wrote:
+David,
+
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Friday, October 09, 2009 8:43 PM
+> To: Templin, Fred L
+> Cc: gregkh@suse.de; linux-kernel@vger.kernel.org; stable@kernel.org; stable-review@kernel.org;
+> torvalds@linux-foundation.org; akpm@linux-foundation.org; alan@lxorguk.ukuu.org.uk;
+> contact@saschahlusiak.de; yoshfuji@linux-ipv6.org
+> Subject: Re: [patch 37/37] sit: fix off-by-one in ipip6_tunnel_get_prl
 > 
-> However, there's no file so big:
-> ls -lh /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586
-> total 12K
-> -rw-r--r-- 1 root root 24 2009-07-27 20:52 from_repo
-> -rw-r--r-- 1 root root  4 2009-07-27 20:52 reason
-> -rw-r--r-- 1 root root  2 2009-07-27 20:52 releasever
+> From: "Templin, Fred L" <Fred.L.Templin@boeing.com>
+> Date: Fri, 9 Oct 2009 17:34:49 -0700
 > 
-> However, there's something messed up with the uid/gid:
+> > Wait a moment - I remember now that this code came
+> > from Yoshifuji, and I believe there was a reason for
+> > the cmax+1. The application is expected to know this
+> > and to post a large enough buffer.
+> >
+> > Can we put this on hold until I have had a chance to
+> > check my e-mail archives and my local iproute changes
+> > (will respond on monday)?
 > 
-> ls -ld /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586
-> drwxr-xr-x 2 4294901760 16711680 4096 2009-07-27 20:52
-> /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586
+> Sure, we can keep it out of -stable for now.
+> 
+> But it is in Linus's tree so if you find we shouldn't do this
+> you'll need to send me a revert for net-2.6
+> 
+> Otherwise if it's good, you'll have to remind me to resubmit
+> it to -stable.
 
-OK, how about the output of
+I just got done testing with the patch applied to my kernel,
+and the patch is good. Please submit to -stable if you have
+not already done so.
 
-stat /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.\
-0.0.72-fc5-i586
+Update - this may be overcome by the message I just rec'd
+from Greg KH. I will go look at his message now.
 
-and 
+Thanks - Fred
+fred.l.templin@boeing.com
 
-stat /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.\
-0.0.72-fc5-i586/*
-
-Thanks,
-
-						- Ted
+> Thanks!
