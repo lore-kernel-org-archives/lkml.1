@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932879AbZJLRAC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932924AbZJLRBH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932879AbZJLRAC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 13:00:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932874AbZJLRAB
+	id S932924AbZJLRBH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 13:01:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932900AbZJLRBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 13:00:01 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:16078 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932873AbZJLRAA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 13:00:00 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] pci: increase alignment to make more space for hidden code
-Date: Mon, 12 Oct 2009 10:59:09 -0600
-User-Agent: KMail/1.9.10
-Cc: Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Ricardo Jorge da Fonseca Marques Ferreira 
-	<storm@sys49152.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Yannick Roehlly <yannick.roehlly@free.fr>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, x86@kernel.org
-References: <200908072333.24631.storm@sys49152.net> <4ACAC8F1.1050706@kernel.org> <4AD24B5C.4050905@kernel.org>
-In-Reply-To: <4AD24B5C.4050905@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 12 Oct 2009 13:01:06 -0400
+Received: from mail.perches.com ([173.55.12.10]:2080 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932886AbZJLRBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 13:01:06 -0400
+Subject: Re: [PATCH 05/21] amd_iommu.c: use pr_<level> and add pr_fmt(fmt)
+From: Joe Perches <joe@perches.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, iommu@lists.linux-foundation.org
+In-Reply-To: <20091012150036.GH32228@amd.com>
+References: <cover.1254701151.git.joe@perches.com>
+	 <2a3001d41382d567f2693f72b7fda331c2fe1d52.1254701151.git.joe@perches.com>
+	 <20091012150036.GH32228@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 12 Oct 2009 10:00:28 -0700
+Message-Id: <1255366828.1839.55.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200910121059.10366.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 October 2009 03:17:16 pm Yinghai Lu wrote:
-> for
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=13940
-> 
-> some system when acpi are enabled, acpi clears some BAR for some devices without
-> reason, and kernel will need to allocate devices for them.
+On Mon, 2009-10-12 at 17:00 +0200, Joerg Roedel wrote:
+> On Sun, Oct 04, 2009 at 05:53:32PM -0700, Joe Perches wrote:
+> > Added #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> > Converted a few bare printks to pr_cont 
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > ---
+> >  arch/x86/kernel/amd_iommu.c |   71 ++++++++++++++++++++++--------------------
+> >  1 files changed, 37 insertions(+), 34 deletions(-)
+> Applied to amd-iommu/cleanups. Thanks Joe.
 
-"ACPI clears some BARs"?  I'm dubious.  The handoff state is the same
-whether we boot with "acpi=off" or not, so the BIOS can't be clearing
-them.  I really don't think the ACPI code in Linux clears BARs.  The
-Linux PCI code might be clearing BARs, but it sure would be nice to
-know exactly why.  Did you ever figure that out?
+Hi Jeorg:
 
-> try to increase alignment to get more safe range for unassigned devices.
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  arch/x86/kernel/e820.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/arch/x86/kernel/e820.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/e820.c
-> +++ linux-2.6/arch/x86/kernel/e820.c
-> @@ -1378,8 +1378,8 @@ static unsigned long ram_alignment(resou
->  	if (mb < 16)
->  		return 1024*1024;
->  
-> -	/* To 32MB for anything above that */
-> -	return 32*1024*1024;
-> +	/* To 64MB for anything above that */
-> +	return 64*1024*1024;
+Looking back at the original patch:
 
-How do we know 64MB is the correct alignment?
+> 	default:
+> -		printk(KERN_ERR "UNKNOWN type=0x%02x]\n", type);
+> +		pr_cont("\n");
+> +		pr_err("UNKNOWN type=0x%02x]\n", type);
 
-This feels like a hack that accidentally covers up the problem.  I
-don't think we understand what's happening well enough.
+The default case probably had an incorrect KERN_ERR and should be
 
-Bjorn
+	pr_cont("UNKNOWN type=0x%02x]\n", type);
+
+cheers, Joe
+
