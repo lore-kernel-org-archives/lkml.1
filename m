@@ -1,92 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbZJLTI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933061AbZJLTOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbZJLTI1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:08:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757626AbZJLTI1
+	id S933061AbZJLTOS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 15:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932718AbZJLTOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:08:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33987 "EHLO mx3.mail.elte.hu"
+	Mon, 12 Oct 2009 15:14:17 -0400
+Received: from claw.goop.org ([74.207.240.146]:59648 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757479AbZJLTI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:08:26 -0400
-Date: Mon, 12 Oct 2009 21:07:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [PATCH tracing/kprobes v3 6/7] perf: Add perf probe subcommand
-	for kprobe-event setup helper
-Message-ID: <20091012190707.GJ17138@elte.hu>
-References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222822.1684.3251.stgit@dhcp-100-2-132.bos.redhat.com> <20091012190303.GA4748@nowhere>
+	id S932643AbZJLTOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 15:14:16 -0400
+Message-ID: <4AD37FE3.1010002@goop.org>
+Date: Mon, 12 Oct 2009 12:13:39 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091012190303.GA4748@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Avi Kivity <avi@redhat.com>
+CC: Dan Magenheimer <dan.magenheimer@oracle.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       kurt.hackel@oracle.com, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>,
+       Zach Brown <zach.brown@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>
+Subject: Re: [Xen-devel] Re: [PATCH 3/5] x86/pvclock: add	vsyscall	implementation
+References: <1254790211-15416-1-git-send-email-jeremy.fitzhardinge@citrix.com>	<1254790211-15416-4-git-send-email-jeremy.fitzhardinge@citrix.com>	<4ACB0833.2050203@redhat.com>	<4ACB9074.1000804@goop.org>	<4ACC6C9C.7080707@redhat.com>	<4ACFD43E.6000506@goop.org> <4AD0CDFB.9030704@redhat.com>	<4AD3738B.6050200@goop.org> <4AD375A5.8050205@redhat.com>
+In-Reply-To: <4AD375A5.8050205@redhat.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 10/12/09 11:29, Avi Kivity wrote:
+> Good catch.  Doesn't that invalidate rdtscp based vgettimeofday on
+> non-virt as well (assuming p == cpu)?
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+The tsc clocksource assumes the tsc is (mostly?) synced; it doesn't use
+rdtscp or make any attempt at per-cpu corrections.
 
-> On Wed, Oct 07, 2009 at 06:28:23PM -0400, Masami Hiramatsu wrote:
-> > Add perf probe subcommand for kprobe-event setup helper to perf command.
-> > This allows user to define kprobe events by C expressions (C line numbers,
-> > C function names, and C local variables).
-> >
-> 
-> 
-> My libdwarf.h and dwarf.h are available through <libdwarf.h> and
-> <dwarf.h>, these are in /usr/include
-> 
-> But even by fixing the include path in the makefile and probe-finder.h,
-> I get the following build error:
-> 
-> util/probe-finder.c: In function ‘die_get_entrypc’:
-> util/probe-finder.c:222: erreur: ‘Dwarf_Ranges’ undeclared (first use in this function)
-> util/probe-finder.c:222: erreur: (Each undeclared identifier is reported only once
-> util/probe-finder.c:222: erreur: for each function it appears in.)
-> util/probe-finder.c:222: erreur: ‘ranges’ undeclared (first use in this function)
-> cc1: warnings being treated as errors
-> util/probe-finder.c:223: erreur: ISO C90 forbids mixed declarations and code
-> util/probe-finder.c:247: erreur: implicit declaration of function ‘dwarf_get_ranges’
-> util/probe-finder.c:247: erreur: nested extern declaration of ‘dwarf_get_ranges’
-> util/probe-finder.c:251: erreur: implicit declaration of function ‘dwarf_ranges_dealloc’
-> util/probe-finder.c:251: erreur: nested extern declaration of ‘dwarf_ranges_dealloc’
-> make: *** [util/probe-finder.o] Erreur 1
-> 
-> 
-> I remember we talked about that before, but I don't remember well why it happened.
-> This is because of a libdwarf version or something, right?
-> 
-> Which one should I pick? Mine is:
-> 
->     libdwarf.h  
-> 
->     $Revision: #9 $ $Date: 2008/01/17 $
+>> I suppose that works if you assume that:
+>>
+>>     1. every task->vcpu migration is associated with a hv/guest context
+>>        switch, and
+>>     2. every hv/guest context switch is a write barrier
+>>
+>> I guess 2 is a given, but I can at least imagine cases where 1 might not
+>> be true.  Maybe.  It all seems very subtle.
+>>    
+>
+> What is 1 exactly?  task switching to another vcpu?  that doesn't
+> incur hypervisor involvement.  vcpu moving to another cpu?  That does.
+Aie... OK.  So no barrier is required for a task double migration on
+vcpus, because it ends up on the same pcpu and the ordering is local; if
+there's a vcpu migration to a new pcpu in there too, then we always
+expect a barrier.
 
-if it's possible to still have a single set of APIs it would be nice to 
-auto-detect and massage all these libdwarf versions into a single 
-backend within perf.
+>> And I don't really see a gain.  You avoid maintaining a second version
+>> number, but at the cost of two rdtscps.  In my measurements, the whole
+>> vsyscall takes around 100ns to run, and a single rdtsc takes about 30,
+>> so 30% of total.  Unlike rdtsc, rdtscp is documented as being ordered in
+>> the instruction stream, and so will take at least as long; two of them
+>> will completely blow the vsyscall execution time.
+>>    
+>
+> I agree, let's stick with the rdtscpless implementation.
 
-	Ingo
+OK, I'll use PeterZ's hint to try and find a more complete set of
+migration points.
+
+    J
