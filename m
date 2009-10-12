@@ -1,44 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbZJLOUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932249AbZJLOVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932244AbZJLOUx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932234AbZJLOUw
+	id S932249AbZJLOVx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932222AbZJLOVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:20:52 -0400
-Received: from lo.gmane.org ([80.91.229.12]:42531 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932233AbZJLOUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:20:52 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Nick Bowler <nbowler@draconx.ca>
-Subject: Re: [Regression, bisected] Transmit failure in et131x.
-Date: Mon, 12 Oct 2009 14:19:41 +0000 (UTC)
-Message-ID: <loom.20091012T161612-769@post.gmane.org>
-References: <20091008140805.GA21535@emergent.ellipticsemi.com> <20091009112016.4fb07eb7@lxorguk.ukuu.org.uk> <loom.20091012T004346-812@post.gmane.org> <20091012113629.4ed8e7f4@lxorguk.ukuu.org.uk>
+	Mon, 12 Oct 2009 10:21:52 -0400
+Received: from viefep12-int.chello.at ([62.179.121.32]:31005 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932212AbZJLOVw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:21:52 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: hackbench regression with kernel 2.6.32-rc1
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <1255331120.3684.43.camel@ymzhang>
+References: <1255079943.25078.23.camel@ymzhang>
+	 <1255084986.8802.46.camel@laptop>  <1255331120.3684.43.camel@ymzhang>
+Content-Type: text/plain
+Date: Mon, 12 Oct 2009 16:21:04 +0200
+Message-Id: <1255357264.10420.15.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: sea.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 99.240.144.239 (Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.3) Gecko/20090912 Gentoo Shiretoko/3.5.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan <at> lxorguk.ukuu.org.uk> writes:
-> > Thanks a lot for your help.  Alas, this does not resolve the issue.
-> > Using tcpdump indicates that receive continues to work while transmit
-> > fails.
+On Mon, 2009-10-12 at 15:05 +0800, Zhang, Yanmin wrote:
+
+> > So hackbench is a multi-cast, with one sender spraying multiple
+> > receivers, who in their turn don't spray back, right?
+
+> Right. volanoMark has about 9% regression on stoakley and 50% regression
+> on tigerton. If I revert the original patches, volanoMark regression on stoakley
+> disappears, but still has about 45% on tigerton.
+
+> > /me ponders a bit
 > > 
-> > I was using gigabit, but the problem persists when I run at 100mbit.
-> > The MTU setting remains at the default 1500 bytes.
-> 
-> et131x: Fix the add_10bit macro
+> > Does this make it any better?
 
-That seems to have done the trick (in conjunction with the earlier patch,
-at least) -- thanks!
+> I apply this patch and another one you sent on tbench email thread.
+> On stoakley, hackbench is recovered. If reverting the original 2 patches,
+> we get 8% improvement.
+> On tigerton, with your 2 patches, there is still about 45% regression.
 
-Reported-and-tested-by: Nick Bowler <nbowler@elliptictech.com>
+[ and here I got confused because this 45% seemed to match the 45%
+above, but then I saw it was hackbench vs volano ]
+
+> As for volanoMark, with your 2 patches, regression disappears on staokley
+> and it becomes about 35% on tigerton.
+
+So hackbench on tigerton is worse, but volano on tigerton is better with
+this patch vs reverting bits?
+
+> The good news is only tbench has about 6% regression on Nehalem machines.
+> Other regressions such like hackbench/aim7/volanoMark is not clear/big on
+> Nehalem. But reverting the original 2 patches don't fix the tbench regression
+> on Nehalem machines.
+
+Right, so Mike's suggestion of doing: 
+  echo NEXT_BUDDY > /debug/sched_features
+
+Seems like the next thing to try..
+
+Mike, did we ever figure out _why_ NEXT_BUDDY introduced latencies?
+
+Buddies shouldn't make latencies worse than regular while(1); loops
+would.
 
