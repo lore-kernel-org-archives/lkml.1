@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbZJLO1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbZJLO1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756877AbZJLO1i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbZJLO1h
+	id S1756902AbZJLO1q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756884AbZJLO1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:27:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51599 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756829AbZJLO1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:27:36 -0400
-Date: Mon, 12 Oct 2009 16:26:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 12 Oct 2009 10:27:45 -0400
+Received: from mga07.intel.com ([143.182.124.22]:12950 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756882AbZJLO1o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:27:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,546,1249282800"; 
+   d="scan'208";a="197934851"
+Subject: Re: 2.6.32-rc4: Reported regressions from 2.6.31
+From: David Woodhouse <dwmw2@linux.intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] panic.c: export panic_on_oops
-Message-ID: <20091012142634.GB4565@elte.hu>
-References: <20091012111545.GB8857@elte.hu> <1255346731.9659.31.camel@localhost> <20091012113758.GB11035@elte.hu> <20091012140149.6789efab@marrow.netinsight.se> <20091012120951.GA16799@elte.hu> <20091012142714.56362465@marrow.netinsight.se> <20091012123210.GB22766@elte.hu> <20091012140821.5dfa1598@lxorguk.ukuu.org.uk> <20091012132503.GD25464@elte.hu> <1255354342.30919.17.camel@macbook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255354342.30919.17.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       Natalie Protasevich <protasnb@gmail.com>
+In-Reply-To: <1255342738.24732.265.camel@macbook.infradead.org>
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
+	 <alpine.LFD.2.01.0910111554400.3438@localhost.localdomain>
+	 <1255342738.24732.265.camel@macbook.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Intel Corporation
+Date: Mon, 12 Oct 2009 15:26:38 +0100
+Message-Id: <1255357598.9111.0.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-10-12 at 11:19 +0100, David Woodhouse wrote:
+> So the better fix is probably just to fix that problem -- move the final
+> PCI quirks so they happen a little earlier. If we move them to
+> fs_initcall_sync() and then move the IOMMU init to rootfs_initcall(),
+> then everything ought to work, I think...
 
-* David Woodhouse <dwmw2@infradead.org> wrote:
+I've sent that series of patches for review. Assuming you like it,
+please pull those patches and a couple of other fixes -- one cosmetic
+and one serious crash fix (another BIOS workaround, in fact), from
 
-> On Mon, 2009-10-12 at 15:25 +0200, Ingo Molnar wrote:
-> > 
-> > I care about this because i still havent given up hope that the 
-> > company you are working for will finally give us some permanent 
-> > storage in the CPU itself, so that we can have cross-reboot printk 
-> > buffering ;-)
-> 
-> Why would it have to be in the CPU? If we had decent firmware, 
-> couldn't we just look at the old kernel's log_buf in RAM?
+git://git.infradead.org/~dwmw2/iommu-2.6.32.git
 
-Not if the failure is say a s2ram hang that requires a power cycle. Also 
-there are certain classes of bugs that only occur on cold boot. Plus 
-there's the "need to unplug the battery to revive the system" class of 
-bugs (but they are rare).
+David Woodhouse (5):
+      intel-iommu: Yet another BIOS workaround: Isoch DMAR unit with no TLB space
+      Rename pci_init() to pci_apply_final_quirks(), move it to quirks.c
+      Mark pci_apply_final_quirks() __init rather than __devinit
+      Run pci_apply_final_quirks() sooner.
+      x86: Move pci_iommu_init to rootfs_initcall()
 
-So i think the MTD / flash stuff is powerful.
+Roland Dreier (2):
+      intel-iommu: Make "Unknown DMAR structure" message more informative
+      intel-iommu: Decode (and ignore) RHSA entries
 
-	Ingo
+ arch/x86/kernel/pci-dma.c |    2 +-
+ drivers/pci/dmar.c        |   13 ++++++-
+ drivers/pci/intel-iommu.c |   82 ++++++++++++++++++++++++++++++++++++++++++---
+ drivers/pci/pci.c         |   13 -------
+ drivers/pci/quirks.c      |   13 +++++++
+ 5 files changed, 103 insertions(+), 20 deletions(-)
+
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
