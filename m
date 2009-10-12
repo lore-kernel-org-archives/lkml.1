@@ -1,60 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbZJLTYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933176AbZJLTY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757977AbZJLTYY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757767AbZJLTYX
+	id S933176AbZJLTY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 15:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757981AbZJLTY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:24:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35024 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757694AbZJLTYW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:24:22 -0400
-Date: Mon, 12 Oct 2009 12:22:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Bryan Donlan <bdonlan@gmail.com>, linux-kernel@vger.kernel.org,
-       Ulrich Drepper <drepper@redhat.com>, linux-api@vger.kernel.org,
-       Timo Sirainen <tss@iki.fi>
-Subject: Re: [resend][PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
-Message-Id: <20091012122246.a941013b.akpm@linux-foundation.org>
-In-Reply-To: <20091013022335.C741.A69D9226@jp.fujitsu.com>
-References: <2f11576a0910092332s6e0e3dcs35864e3a2164be0@mail.gmail.com>
-	<20091009233935.1be0edf9.akpm@linux-foundation.org>
-	<20091013022335.C741.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Oct 2009 15:24:27 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:42652 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757767AbZJLTYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 15:24:25 -0400
+Date: Mon, 12 Oct 2009 14:23:45 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Gerald Schaefer <geralds@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linuxppc-dev@ozlabs.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 2/2][v3] powerpc: Make the CMM memory hotplug aware
+Message-ID: <20091012192344.GA30941@austin.ibm.com>
+Mail-Followup-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Mel Gorman <mel@csn.ul.ie>, Ingo Molnar <mingo@elte.hu>,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Brian King <brking@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Gerald Schaefer <geralds@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linuxppc-dev@ozlabs.org,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091009203803.GC19114@austin.ibm.com> <20091009204126.GD19114@austin.ibm.com> <1255324007.2192.106.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255324007.2192.106.camel@pasglop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 Oct 2009 04:03:45 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> > Start simple.  What's wrong with mutex_lock() on the reader and writer
-> > sides?  rwsems might be OK too.
+* Benjamin Herrenschmidt (benh@kernel.crashing.org) wrote:
+> On Fri, 2009-10-09 at 15:41 -0500, Robert Jennings wrote:
+> > The Collaborative Memory Manager (CMM) module allocates individual pages
+> > over time that are not migratable.  On a long running system this can
+> > severely impact the ability to find enough pages to support a hotplug
+> > memory remove operation.
 > > 
-> > In both cases we should think about whether persistent readers can
-> > block the writer excessively though.
+> > This patch adds a memory isolation notifier and a memory hotplug notifier.
+> > The memory isolation notifier will return the number of pages found
+> > in the range specified.  This is used to determine if all of the used
+> > pages in a pageblock are owned by the balloon (or other entities in
+> > the notifier chain).  The hotplug notifier will free pages in the range
+> > which is to be removed.  The priority of this hotplug notifier is low
+> > so that it will be called near last, this helps avoids removing loaned
+> > pages in operations that fail due to other handlers.
+> > 
+> > CMM activity will be halted when hotplug remove operations are active
+> > and resume activity after a delay period to allow the hypervisor time
+> > to adjust.
+> > 
+> > Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 > 
-> I thought your mention seems reasonable. then I mesured various locking
-> performance.
+> Do you need me to merge that via the powerpc tree after the relevant
+> generic parts go in ? This is 2.6.33 material ?
+
+I didn't know how this part works honestly, this is the first time I've
+pushed patches with dependencies like this.  Andrew Morton had pulled
+an earlier version of this and the mm hotplug related changes for 2.6.32.
+
+> > +module_param_named(hotplug_delay, hotplug_delay, uint, S_IRUGO | S_IWUSR);
+> > +MODULE_PARM_DESC(delay, "Delay (in seconds) after memory hotplug remove "
+> > +		 "before activity resumes. "
+> > +		 "[Default=" __stringify(CMM_HOTPLUG_DELAY) "]");
 > 
-> 		no-contention	read-read contetion	read-write contention
-> w/o patch	4627 ms		 7575 ms		 N/A
-> mutex		5717 ms		33872 ms (!)		14793 ms
-> rw-semaphoe	6846 ms		10734 ms		36156 ms (!)
-> seqlock		4754 ms		 7558 ms		 9373 ms
+> What is the above ? That sounds scary :-)
+
+I'm changing this to read "Delay (in seconds) after memory hotplug
+remove before loaning resumes." in order to clear this us.  This is a
+period where loaning from the balloon is paused after the hotplug
+completes.  This gives the userspace tools time to mark the sections
+as isolated and unusable with the hypervisor and the hypervisor to take
+this into account regarding the loaning levels it requests of the OS.
+
+> >  module_param_named(oom_kb, oom_kb, uint, S_IRUGO | S_IWUSR);
+> >  MODULE_PARM_DESC(oom_kb, "Amount of memory in kb to free on OOM. "
+> >  		 "[Default=" __stringify(CMM_OOM_KB) "]");
+> > @@ -88,6 +101,8 @@ struct cmm_page_array {
+> >  static unsigned long loaned_pages;
+> >  static unsigned long loaned_pages_target;
+> >  static unsigned long oom_freed_pages;
+> > +static atomic_t hotplug_active = ATOMIC_INIT(0);
+> > +static atomic_t hotplug_occurred = ATOMIC_INIT(0);
 > 
-> Umm, seqlock is significantly better than other.
+> That sounds like a hand made lock with atomics... rarely a good idea,
+> tends to miss appropriate barriers etc...
+> 
 
-Sure, but even the worst case there is 1,000,000 operations in 34
-seconds (yes?). 33 microseconds for a /proc read while under a specific
-local DoS attack is OK!
+I have changes this so that we have a mutex held during the memory
+hotplug remove.  The hotplug_occurred flag is now and integer protected
+by the mutex; it is used to provide the delay after the hotplug remove
+completes.
 
-If so then all implementations are acceptable and we should choose the
-simplest, most-obviously-correct one.
+> >  static struct cmm_page_array *cmm_page_list;
+> >  static DEFINE_SPINLOCK(cmm_lock);
+> > @@ -110,6 +125,9 @@ static long cmm_alloc_pages(long nr)
+> >  	cmm_dbg("Begin request for %ld pages\n", nr);
+> >  
+> >  	while (nr) {
+> > +		if (atomic_read(&hotplug_active))
+> > +			break;
+> > +
+> 
+> Ok so I'm not familiar with that whole memory hotplug stuff, so the code
+> might be right, but wouldn't the above be racy anyways in case hotplug
+> just becomes active after this statement ?
+> 
+> Shouldn't you use a mutex_trylock instead ? That has clearer semantics
+> and will provide the appropriate memory barriers.
 
+I have changed this to use a mutex in the same location.  This allows
+the allocation of pages to terminate early during a hotplug remove
+operation.
 
+If hotplug becomes active after this check in cmm_alloc_pages() one page
+will be allocated to the balloon, but this page will not belong to the
+memory range going offline because the pageblock will have already been
+isolated.  After allocating the page we might need to wait on the lock to
+add the page to the list if hotplug is removing pages from the balloon.
+After one page is added, cmm_alloc_pages() will exit early when it checks
+to see if hotplug is active or if it has occurred.
+
+I wanted to keep the section locked by cmm_lock small, so that we can
+safely respond to the hotplug notifier as quickly as possible while
+minimizing memory pressure.
+
+There are no checks in cmm_free_pages() to have it abort early during
+hotplug memory remove with the rationale that it's good for hotplug
+to allow the balloon to shrink even if it means holding the cmm_lock a
+bit longer.
+
+> >  		addr = __get_free_page(GFP_NOIO | __GFP_NOWARN |
+> >  				       __GFP_NORETRY | __GFP_NOMEMALLOC);
+> >  		if (!addr)
+> > @@ -119,8 +137,10 @@ static long cmm_alloc_pages(long nr)
+> >  		if (!pa || pa->index >= CMM_NR_PAGES) {
+> >  			/* Need a new page for the page list. */
+> >  			spin_unlock(&cmm_lock);
+> > -			npa = (struct cmm_page_array *)__get_free_page(GFP_NOIO | __GFP_NOWARN |
+> > -								       __GFP_NORETRY | __GFP_NOMEMALLOC);
+> > +			npa = (struct cmm_page_array *)__get_free_page(
+> > +					GFP_NOIO | __GFP_NOWARN |
+> > +					__GFP_NORETRY | __GFP_NOMEMALLOC |
+> > +					__GFP_MOVABLE);
+> >  			if (!npa) {
+> >  				pr_info("%s: Can not allocate new page list\n", __func__);
+> >  				free_page(addr);
+> > @@ -273,9 +293,23 @@ static int cmm_thread(void *dummy)
+> >  	while (1) {
+> >  		timeleft = msleep_interruptible(delay * 1000);
+> > 
+> > -		if (kthread_should_stop() || timeleft) {
+> > -			loaned_pages_target = loaned_pages;
+> > +		if (kthread_should_stop() || timeleft)
+> >  			break;
+> > +
+> > +		if (atomic_read(&hotplug_active)) {
+> > +			cmm_dbg("Hotplug operation in progress, activity "
+> > +					"suspended\n");
+> > +			continue;
+> > +		}
+> > +
+> > +		if (atomic_dec_if_positive(&hotplug_occurred) >= 0) {
+> > +			cmm_dbg("Hotplug operation has occurred, loaning "
+> > +					"activity suspended for %d seconds.\n",
+> > +					hotplug_delay);
+> > +			timeleft = msleep_interruptible(hotplug_delay * 1000);
+> > +			if (kthread_should_stop() || timeleft)
+> > +				break;
+> > +			continue;
+> >  		}
+> 
+> I have less problems with hotplug_occured but if you use a
+> mutex_trylock, overall, you can turn the above into a normal int instead
+> of an atomic.
+
+Changed to a mutex to indicate that a hotplug operation is active and an
+int protected by the mutex to indicate that a hotplug operation has
+occurred.
+
+>  ../..
+> 
+> > +static int cmm_memory_cb(struct notifier_block *self,
+> > +			unsigned long action, void *arg)
+> > +{
+> > +	int ret = 0;
+> > +
+> > +	switch (action) {
+> > +	case MEM_GOING_OFFLINE:
+> > +		atomic_set(&hotplug_active, 1);
+> 
+> So that would become a mutex_lock(). Added advantage is that
+> it would wait for a current CMM operation to complete.
+
+I've added the mutex but the scope will not prevent hotplug from
+starting before the current CMM operation has completed.  This allows us
+to abort the allocation.  The important globals for managing the list of
+pages are still covered by the cmm_lock spinlock.
+
+I've tested the patch and I'll send it out shortly.
