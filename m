@@ -1,88 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752410AbZJLB0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbZJLBiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752410AbZJLB0u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 21:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZJLB0t
+	id S1752687AbZJLBiZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 21:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZJLBiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 21:26:49 -0400
-Received: from mga14.intel.com ([143.182.124.37]:20492 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751051AbZJLB0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 21:26:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,544,1249282800"; 
-   d="scan'208";a="197739698"
-Date: Mon, 12 Oct 2009 09:26:09 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
-	balance_dirty_pages()
-Message-ID: <20091012012609.GA7553@localhost>
-References: <20091007073818.318088777@intel.com> <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz> <1255101512.8802.65.camel@laptop> <20091009154759.GJ7654@duck.suse.cz> <20091011022813.GA21315@localhost> <1255247080.11081.3.camel@twins> <20091011105012.GB10409@localhost> <1255260317.8967.204.camel@laptop>
+	Sun, 11 Oct 2009 21:38:23 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:46302 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752500AbZJLBiX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 21:38:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SHtJZgU571gtAgX3vgfVOPXrMzYY4AyhUntvJitPFwJtBekIjgdT9SQ8gok9s/y6u/
+         LLoKThuSOpvkz/A1/MgLaMHLU9PQSy/DVSNlf7s601tgh2TGug7eGZ7KDZfDLSRR6OMk
+         tVgfEDfX00EfFXupA8Sfop8pLKuh4G1YFFeAs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255260317.8967.204.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200910120026.n9C0QdSe019248@clem.clem-digital.net>
+References: <200910120026.n9C0QdSe019248@clem.clem-digital.net>
+Date: Mon, 12 Oct 2009 09:37:47 +0800
+Message-ID: <7b6bb4a50910111837t7120e914p4d0796a826db7ba1@mail.gmail.com>
+Subject: Re: 2.6.32-rc4 fail compile -- drivers/char/rtc.c
+From: Xiaotian Feng <xtfeng@gmail.com>
+To: Pete Clements <clem@clem.clem-digital.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 11, 2009 at 07:25:17PM +0800, Peter Zijlstra wrote:
-> On Sun, 2009-10-11 at 18:50 +0800, Wu Fengguang wrote:
-> > 
-> > Sorry for the confusion, but I mean, filesystems have to limit
-> > nr_writeback (directly or indirectly via the block io queue),
-> > otherwise it either hit nr_dirty to 0 (with the loop), or let
-> > nr_writeback grow out of control (without the loop).
-> 
-> Doesn't this require the writeback queue to have a limit < dirty_thresh?
+This may be caused by commit d43c36dc6b357fa1806800f18aa30123c747a6d1.
+Can insert #include <linux/sched.h> into drivers/char/rtc.c fix this?
 
-Yes, this is the key (open) issue. For now we have nothing to limit
-
-        nr_writeback < dirty_thresh
-
-> Or more specifically, for the bdi case:
-> 
->  bdi_dirty + bdi_writeback + bdi_unstable <= bdi_thresh
-> 
-> we require that the writeback queue be smaller than bdi_thresh, which
-> could be quite difficult, since bdi_thresh can easily be 0.
-
-We could apply a MIN_BDI_DIRTY_THRESH. Because the bdi threshold is
-estimated from writeback events, so bdi_thresh must be non-zero to
-allow some writeback pages in flight :)
-
-> Without observing the bdi_thresh constraint we can have:
-> 
->   \Sum_(over bdis) writeback_queue_size
-> 
-> dirty pages outstanding, which could be significantly higher than
-> dirty_thresh.
- 
-Yes.  Maybe we could do some per-bdi and/or global writeback wait
-queue (ie. some generalized version of the patch 20: NFS: introduce
-writeback wait queue).
-
-The per-bdi writeback queue size should ideally be proportional to its
-available writeback bandwidth. MIN_BDI_DIRTY_THRESH could be defined
-to (2*bdi_writeback_bandwidth) or something close. And if the resulted
-bdi limits turn out to be too large for a small memory system, we just
-let the global limit kick in. For such small memory systems, it is
-very likely there are only one bdi. So it is not likely to lose
-fairness to base its limits on available memory instead of device
-capability.
-
-Thanks,
-Fengguang
+On Mon, Oct 12, 2009 at 8:26 AM, Pete Clements
+<clem@clem.clem-digital.net> wrote:
+> Fyi:
+> (i386 SMP)
+>
+>
+>  CC      drivers/char/rtc.o
+> drivers/char/rtc.c: In function 'rtc_interrupt':
+> drivers/char/rtc.c:271: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
+> drivers/char/rtc.c:271: error: (Each undeclared identifier is reported only once
+> drivers/char/rtc.c:271: error: for each function it appears in.)
+> drivers/char/rtc.c:273: error: 'SIGIO' undeclared (first use in this function)
+> drivers/char/rtc.c:273: error: 'POLL_IN' undeclared (first use in this function)
+> drivers/char/rtc.c: In function 'rtc_read':
+> drivers/char/rtc.c:362: error: implicit declaration of function '__set_current_state'
+> drivers/char/rtc.c:362: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
+> drivers/char/rtc.c:376: error: implicit declaration of function 'signal_pending'
+> drivers/char/rtc.c:380: error: implicit declaration of function 'schedule'
+> drivers/char/rtc.c:393: error: 'TASK_RUNNING' undeclared (first use in this function)
+> drivers/char/rtc.c: In function 'rtc_dropped_irq':
+> drivers/char/rtc.c:1206: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
+> drivers/char/rtc.c:1208: error: 'SIGIO' undeclared (first use in this function)
+> drivers/char/rtc.c:1208: error: 'POLL_IN' undeclared (first use in this function)
+> make[2]: *** [drivers/char/rtc.o] Error 1
+> make[1]: *** [drivers/char] Error 2
+> make: *** [drivers] Error 2
+>
+> --
+> Pete Clements
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
