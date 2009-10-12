@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932959AbZJLREQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932984AbZJLRFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932959AbZJLREQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 13:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932908AbZJLREP
+	id S932984AbZJLRFc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 13:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932967AbZJLRFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 13:04:15 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51123 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932906AbZJLREP (ORCPT
+	Mon, 12 Oct 2009 13:05:31 -0400
+Received: from smtp.microsoft.com ([131.107.115.214]:34705 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932962AbZJLRFa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 13:04:15 -0400
-Date: Mon, 12 Oct 2009 18:03:12 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: David Miller <davem@davemloft.net>, Nitin Gupta <ngupta@vflare.org>,
-       Nick Piggin <npiggin@suse.de>, linux-arm-kernel@lists.infradead.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
-Message-ID: <20091012170312.GB9453@flint.arm.linux.org.uk>
-Mail-Followup-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-	David Miller <davem@davemloft.net>, Nitin Gupta <ngupta@vflare.org>,
-	Nick Piggin <npiggin@suse.de>, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <1255337423-3158-1-git-send-email-ngupta@vflare.org> <20091012090710.GA29310@n2100.arm.linux.org.uk> <20091012.023744.157085851.davem@davemloft.net> <20091012100023.GC29310@n2100.arm.linux.org.uk> <Pine.LNX.4.64.0910121634170.7327@sister.anvils>
+	Mon, 12 Oct 2009 13:05:30 -0400
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: Greg KH <gregkh@suse.de>
+CC: Hank Janssen <hjanssen@microsoft.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Tom Hanrahan <hanrahat@microsoft.com>,
+       "Hashir Abdi" <habdi@microsoft.com>
+Subject: RE: [patch] Staging: hv: Fix vmbus load hang caused by wrong data
+ packing
+Thread-Topic: [patch] Staging: hv: Fix vmbus load hang caused by wrong data
+ packing
+Thread-Index: AcpJ/6FE0xhfIRwfRT+rZ9QOhF0ebwBi+82AAA3jUSA=
+Date: Mon, 12 Oct 2009 17:03:42 +0000
+Message-ID: <1FB5E1D5CA062146B38059374562DF7212DF10DD@TK5EX14MBXC130.redmond.corp.microsoft.com>
+References: <1FB5E1D5CA062146B38059374562DF7212DEE3EC@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20091012153013.GA2062@suse.de>
+In-Reply-To: <20091012153013.GA2062@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0910121634170.7327@sister.anvils>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 05:09:53PM +0100, Hugh Dickins wrote:
-> Sorry to muddy the waters on this, if you and Dave are sure that
-> you have the right fix, down in your architectures, and that fix
-> isn't going to hurt your performance significantly.
+>  	ChannelMessageCount
+> -} __attribute__((packed));
 
-If I look at the issue from this point of view:
+Why the change here?  Isn't this doing the same thing?
 
-- we are using PG_arch_1 to delay cache handling for the page
+And I'm guessing that not all of these structures are needing to be
+packed, right?  Are they all shared across the HV boundry?
 
-- if PG_arch_1 is set on a page, we set it explicitly because we
-  didn't do some flushing between the allocation of the page and
-  mapping it into userspace
+And is this fixing the problem that Hank and users have reported with
+the current code?  Does this need to get into the 2.6.32 release?
 
-- if a page with PG_arch_1 set ever gets to userspace, this can
-  only be because we did the lazy flushing thing
 
-I don't see that there should have been any bearing on whether a page
-has a mapping or not when we get to update_mmu_cache.  The issue here
-is that > if PG_arch_1 is set on a page, then we didn't flush it at
-the time when we believed it was appropriate to do so. <
+thanks,
 
-Tell me I'm wrong (having only just sent it to Linus...)
+greg k-h
+================================================
+Hi Greg,
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Based on our testing, the #pragma pack(push,1) can pack the data correctly for the HyperV to use, but __attribute__((packed)) couldn't do this right.
+
+These data structures are moved by someone from the original file, ChannelMessages.h, which contains structures used for messaging to host.
+
+Yes, it's fixing the problem that Hank and users have reported with the current code. And yes, 2.6.32 needs this fix.
+
+Thanks,
+
+- Haiyang
+
