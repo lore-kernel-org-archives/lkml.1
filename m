@@ -1,47 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932839AbZJLQtD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932920AbZJLQvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932839AbZJLQtD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:49:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932622AbZJLQtB
+	id S932920AbZJLQvJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932886AbZJLQuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:49:01 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:33294 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932638AbZJLQtA (ORCPT
+	Mon, 12 Oct 2009 12:50:05 -0400
+Received: from ru.mvista.com ([213.79.90.228]:55674 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932685AbZJLQuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 12:49:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=r2oF2vsFkNY6l/95Axsi5clzzWvlLnsQ70PKAGQiHYz5KnfG8HB3IJnoW2/znzkHoi
-         eOtXvPIRJuBBPHxBeDeQbwA3d6P8msSl/njQ9v+wJchWobUoG9Cqr7vZEnqEfcE4p4W7
-         56se2NXhzEQyRIGy14QgJtpnmnWakJjJwm86E=
-From: Arnd Bergmann <arndbergmann@googlemail.com>
-To: lkml@makubi.at
-Subject: Re: DHCP and iptables
-Date: Mon, 12 Oct 2009 18:48:44 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-11-generic; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <20091012183441.64616r9da17njyww@www.issp.eu>
-In-Reply-To: <20091012183441.64616r9da17njyww@www.issp.eu>
+	Mon, 12 Oct 2009 12:50:01 -0400
+Date: Mon, 12 Oct 2009 20:49:13 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/8] powerpc/cpm: Remove SPI defines and spi structs
+Message-ID: <20091012164913.GA4578@oksana.dev.rtsoft.ru>
+References: <20091012164841.GA32214@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910121848.45005.arnd@arndb.de>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20091012164841.GA32214@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, lkml@makubi.at wrote:
-> The last few days I have been wondering about the fact, that I get an IP
-> address via
-> DHCP if all chains at iptables are set to drop and no accept rules set.
-> 
-> Does this happen on purpose?
+When cpm2.h included into spi_mpc8xxx driver, the SPI defines
+in the header conflict with defines in the driver.
 
-DHCP is an ethernet protocol, not an IP protocol, so you have to use
-ebtables instead of iptables to filter it.
+We don't need them in the header file, so remove them. Plus
+remove "struct spi", we'll use a better version in the driver.
 
-	Arnd <><
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/include/asm/cpm1.h |   45 ---------------------------------------
+ arch/powerpc/include/asm/cpm2.h |   39 ---------------------------------
+ 2 files changed, 0 insertions(+), 84 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/cpm1.h b/arch/powerpc/include/asm/cpm1.h
+index 7685ffd..81b0119 100644
+--- a/arch/powerpc/include/asm/cpm1.h
++++ b/arch/powerpc/include/asm/cpm1.h
+@@ -478,51 +478,6 @@ typedef struct iic {
+ 	char	res2[2];	/* Reserved */
+ } iic_t;
+ 
+-/* SPI parameter RAM.
+-*/
+-typedef struct spi {
+-	ushort	spi_rbase;	/* Rx Buffer descriptor base address */
+-	ushort	spi_tbase;	/* Tx Buffer descriptor base address */
+-	u_char	spi_rfcr;	/* Rx function code */
+-	u_char	spi_tfcr;	/* Tx function code */
+-	ushort	spi_mrblr;	/* Max receive buffer length */
+-	uint	spi_rstate;	/* Internal */
+-	uint	spi_rdp;	/* Internal */
+-	ushort	spi_rbptr;	/* Internal */
+-	ushort	spi_rbc;	/* Internal */
+-	uint	spi_rxtmp;	/* Internal */
+-	uint	spi_tstate;	/* Internal */
+-	uint	spi_tdp;	/* Internal */
+-	ushort	spi_tbptr;	/* Internal */
+-	ushort	spi_tbc;	/* Internal */
+-	uint	spi_txtmp;	/* Internal */
+-	uint	spi_res;
+-	ushort	spi_rpbase;	/* Relocation pointer */
+-	ushort	spi_res2;
+-} spi_t;
+-
+-/* SPI Mode register.
+-*/
+-#define SPMODE_LOOP	((ushort)0x4000)	/* Loopback */
+-#define SPMODE_CI	((ushort)0x2000)	/* Clock Invert */
+-#define SPMODE_CP	((ushort)0x1000)	/* Clock Phase */
+-#define SPMODE_DIV16	((ushort)0x0800)	/* BRG/16 mode */
+-#define SPMODE_REV	((ushort)0x0400)	/* Reversed Data */
+-#define SPMODE_MSTR	((ushort)0x0200)	/* SPI Master */
+-#define SPMODE_EN	((ushort)0x0100)	/* Enable */
+-#define SPMODE_LENMSK	((ushort)0x00f0)	/* character length */
+-#define SPMODE_LEN4	((ushort)0x0030)	/*  4 bits per char */
+-#define SPMODE_LEN8	((ushort)0x0070)	/*  8 bits per char */
+-#define SPMODE_LEN16	((ushort)0x00f0)	/* 16 bits per char */
+-#define SPMODE_PMMSK	((ushort)0x000f)	/* prescale modulus */
+-
+-/* SPIE fields */
+-#define SPIE_MME	0x20
+-#define SPIE_TXE	0x10
+-#define SPIE_BSY	0x04
+-#define SPIE_TXB	0x02
+-#define SPIE_RXB	0x01
+-
+ /*
+  * RISC Controller Configuration Register definitons
+  */
+diff --git a/arch/powerpc/include/asm/cpm2.h b/arch/powerpc/include/asm/cpm2.h
+index 990ff19..236cfa3 100644
+--- a/arch/powerpc/include/asm/cpm2.h
++++ b/arch/powerpc/include/asm/cpm2.h
+@@ -654,45 +654,6 @@ typedef struct iic {
+ 	uint	iic_txtmp;	/* Internal */
+ } iic_t;
+ 
+-/* SPI parameter RAM.
+-*/
+-typedef struct spi {
+-	ushort	spi_rbase;	/* Rx Buffer descriptor base address */
+-	ushort	spi_tbase;	/* Tx Buffer descriptor base address */
+-	u_char	spi_rfcr;	/* Rx function code */
+-	u_char	spi_tfcr;	/* Tx function code */
+-	ushort	spi_mrblr;	/* Max receive buffer length */
+-	uint	spi_rstate;	/* Internal */
+-	uint	spi_rdp;	/* Internal */
+-	ushort	spi_rbptr;	/* Internal */
+-	ushort	spi_rbc;	/* Internal */
+-	uint	spi_rxtmp;	/* Internal */
+-	uint	spi_tstate;	/* Internal */
+-	uint	spi_tdp;	/* Internal */
+-	ushort	spi_tbptr;	/* Internal */
+-	ushort	spi_tbc;	/* Internal */
+-	uint	spi_txtmp;	/* Internal */
+-	uint	spi_res;	/* Tx temp. */
+-	uint	spi_res1[4];	/* SDMA temp. */
+-} spi_t;
+-
+-/* SPI Mode register.
+-*/
+-#define SPMODE_LOOP	((ushort)0x4000)	/* Loopback */
+-#define SPMODE_CI	((ushort)0x2000)	/* Clock Invert */
+-#define SPMODE_CP	((ushort)0x1000)	/* Clock Phase */
+-#define SPMODE_DIV16	((ushort)0x0800)	/* BRG/16 mode */
+-#define SPMODE_REV	((ushort)0x0400)	/* Reversed Data */
+-#define SPMODE_MSTR	((ushort)0x0200)	/* SPI Master */
+-#define SPMODE_EN	((ushort)0x0100)	/* Enable */
+-#define SPMODE_LENMSK	((ushort)0x00f0)	/* character length */
+-#define SPMODE_PMMSK	((ushort)0x000f)	/* prescale modulus */
+-
+-#define SPMODE_LEN(x)	((((x)-1)&0xF)<<4)
+-#define SPMODE_PM(x)	((x) &0xF)
+-
+-#define SPI_EB		((u_char)0x10)		/* big endian byte order */
+-
+ /* IDMA parameter RAM
+ */
+ typedef struct idma {
+-- 
+1.6.3.3
+
