@@ -1,103 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758703AbZJMBkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbZJLXdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758703AbZJMBkP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 21:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZJMBkO
+	id S1758612AbZJLXdX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 19:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbZJLXdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 21:40:14 -0400
-Received: from blv-smtpout-01.boeing.com ([130.76.32.69]:54425 "EHLO
-	blv-smtpout-01.boeing.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754490AbZJMBkN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 21:40:13 -0400
-X-Greylist: delayed 6166 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Oct 2009 21:40:13 EDT
-From: "Templin, Fred L" <Fred.L.Templin@boeing.com>
-To: Greg KH <greg@kroah.com>, David Miller <davem@davemloft.net>
-CC: "contact@saschahlusiak.de" <contact@saschahlusiak.de>,
-       "yoshfuji@linux-ipv6.org" <yoshfuji@linux-ipv6.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "stable-review@kernel.org" <stable-review@kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-Date: Mon, 12 Oct 2009 16:29:53 -0700
-Subject: RE: [stable] [patch 37/37] sit: fix off-by-one
- 	inipip6_tunnel_get_prl
-Thread-Topic: [stable] [patch 37/37] sit: fix off-by-one
- 	inipip6_tunnel_get_prl
-Thread-Index: AcpLiGSwcQHkG4D1Rmy/d1MvadA+AgABrJRg
-Message-ID: <12F4112206976147A34FEC0277597CCF27A4164C1A@XCH-NW-15V.nw.nos.boeing.com>
-References: <20091009233411.852013234@mini.kroah.org><20091009233440.7866800
-	01@mini.kroah.org><12F4112206976147A34FEC0277597CCF27A416492F@XCH-NW-15V.nw
-	.nos.boeing.com><20091009.204231.204042155.davem@davemloft.net>
- <20091012220445.GB31010@kroah.com>
-In-Reply-To: <20091012220445.GB31010@kroah.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-x-tm-as-product-ver: SMEX-8.0.0.1181-5.600.1016-16942.004
-x-tm-as-result: No--69.265000-8.000000-31
-x-tm-as-user-approved-sender: No
-x-tm-as-user-blocked-sender: No
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 12 Oct 2009 19:33:23 -0400
+Received: from claw.goop.org ([74.207.240.146]:49945 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753166AbZJLXdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 19:33:22 -0400
+Message-ID: <4AD3BC9B.7040501@goop.org>
+Date: Mon, 12 Oct 2009 16:32:43 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Bastian Blank <bastian@waldi.eu.org>, Ingo Molnar <mingo@redhat.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Stable Kernel <stable@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [Xen-devel] Re: [PATCH] xen: Disable stack protector for irq
+ helper
+References: <20091004183013.GA26101@wavehammer.waldi.eu.org> <4AC92A65.40806@goop.org> <20091005013517.GA6081@wavehammer.waldi.eu.org> <4ACA2AFD.4080305@goop.org> <20091005224310.GA32144@wavehammer.waldi.eu.org> <4ACA90F2.1060909@goop.org> <20091006033050.GA6332@wavehammer.waldi.eu.org> <4ACB93F8.5010900@goop.org> <20091007163521.GA17998@wavehammer.waldi.eu.org> <4ACD3346.3010307@goop.org> <20091012205208.GE17163@elte.hu>
+In-Reply-To: <20091012205208.GE17163@elte.hu>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg,
+On 10/12/09 13:52, Ingo Molnar wrote:
+> ping - any update about this fix? Since it fixes a real crash it would 
+> be nice to fix this for .32.
+>   
 
-> -----Original Message-----
-> From: Greg KH [mailto:greg@kroah.com]
-> Sent: Monday, October 12, 2009 3:05 PM
-> To: David Miller
-> Cc: Templin, Fred L; contact@saschahlusiak.de; yoshfuji@linux-ipv6.org; gregkh@suse.de; linux-
-> kernel@vger.kernel.org; stable@kernel.org; akpm@linux-foundation.org; torvalds@linux-foundation.org;
-> stable-review@kernel.org; alan@lxorguk.ukuu.org.uk
-> Subject: Re: [stable] [patch 37/37] sit: fix off-by-one inipip6_tunnel_get_prl
-> 
-> On Fri, Oct 09, 2009 at 08:42:31PM -0700, David Miller wrote:
-> > From: "Templin, Fred L" <Fred.L.Templin@boeing.com>
-> > Date: Fri, 9 Oct 2009 17:34:49 -0700
-> >
-> > > Wait a moment - I remember now that this code came
-> > > from Yoshifuji, and I believe there was a reason for
-> > > the cmax+1. The application is expected to know this
-> > > and to post a large enough buffer.
-> > >
-> > > Can we put this on hold until I have had a chance to
-> > > check my e-mail archives and my local iproute changes
-> > > (will respond on monday)?
-> >
-> > Sure, we can keep it out of -stable for now.
-> >
-> > But it is in Linus's tree so if you find we shouldn't do this
-> > you'll need to send me a revert for net-2.6
-> >
-> > Otherwise if it's good, you'll have to remind me to resubmit
-> > it to -stable.
-> 
-> Ah crap, I just commited it.
-> 
-> Is it really broken?  If so, I'll go revert it and cut a new release.
-> 
-> Sorry about this.
+The following changes since commit 2caa731819a633bec5a56736e64c562b7e193666:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/pci-2.6
 
-As I just mentioned to David, I tested and the patch is
-good. To test, I allocated a buffer in the application
-that was too small to hold the entire PRL. Without the
-patch, the system crashes. With the patch, the kernel
-returns the maximum number of PRL entries without
-crashing and without overrunning the application's buffer.
+are available in the git repository at:
 
-Please apply the patch if you have not already done so.
+  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git mainline/x86-paravirt-fix
 
-Fred
-fred.l.templin@boeing.com
+Jeremy Fitzhardinge (1):
+      x86/paravirt: use normal calling sequences for irq enable/disable etc
 
-> greg k-h
+ arch/x86/include/asm/paravirt.h       |   28 ++++------------------------
+ arch/x86/include/asm/paravirt_types.h |   10 ++++++----
+ 2 files changed, 10 insertions(+), 28 deletions(-)
+
+Subject: [PATCH] x86/paravirt: use normal calling sequences for irq enable/disable etc
+
+For historical reasons irq enable/disable/save/restore had special
+calling sequences to make them more efficient.  With the more
+recent introduction of higher-level and more general optimisations
+this is no longer necessary so we can just use the normal PVOP_
+macros.  This fixes some residual bugs in the old implementations which
+left edx liable to inadvertent clobbering.
+
+Also, fix some bugs in __PVOP_VCALLEESAVE which were revealed by actual
+use.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+
+diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+index 8aebcc4..efb3899 100644
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -840,42 +840,22 @@ static __always_inline void __raw_spin_unlock(struct raw_spinlock *lock)
+ 
+ static inline unsigned long __raw_local_save_flags(void)
+ {
+-	unsigned long f;
+-
+-	asm volatile(paravirt_alt(PARAVIRT_CALL)
+-		     : "=a"(f)
+-		     : paravirt_type(pv_irq_ops.save_fl),
+-		       paravirt_clobber(CLBR_EAX)
+-		     : "memory", "cc");
+-	return f;
++	return PVOP_CALLEE0(unsigned long, pv_irq_ops.save_fl);
+ }
+ 
+ static inline void raw_local_irq_restore(unsigned long f)
+ {
+-	asm volatile(paravirt_alt(PARAVIRT_CALL)
+-		     : "=a"(f)
+-		     : PV_FLAGS_ARG(f),
+-		       paravirt_type(pv_irq_ops.restore_fl),
+-		       paravirt_clobber(CLBR_EAX)
+-		     : "memory", "cc");
++	PVOP_VCALLEE1(pv_irq_ops.restore_fl, f);
+ }
+ 
+ static inline void raw_local_irq_disable(void)
+ {
+-	asm volatile(paravirt_alt(PARAVIRT_CALL)
+-		     :
+-		     : paravirt_type(pv_irq_ops.irq_disable),
+-		       paravirt_clobber(CLBR_EAX)
+-		     : "memory", "eax", "cc");
++	PVOP_VCALLEE0(pv_irq_ops.irq_disable);
+ }
+ 
+ static inline void raw_local_irq_enable(void)
+ {
+-	asm volatile(paravirt_alt(PARAVIRT_CALL)
+-		     :
+-		     : paravirt_type(pv_irq_ops.irq_enable),
+-		       paravirt_clobber(CLBR_EAX)
+-		     : "memory", "eax", "cc");
++	PVOP_VCALLEE0(pv_irq_ops.irq_enable);
+ }
+ 
+ static inline unsigned long __raw_local_irq_save(void)
+diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
+index dd0f5b3..9357473 100644
+--- a/arch/x86/include/asm/paravirt_types.h
++++ b/arch/x86/include/asm/paravirt_types.h
+@@ -494,10 +494,11 @@ int paravirt_disable_iospace(void);
+ #define EXTRA_CLOBBERS
+ #define VEXTRA_CLOBBERS
+ #else  /* CONFIG_X86_64 */
++/* [re]ax isn't an arg, but the return val */
+ #define PVOP_VCALL_ARGS					\
+ 	unsigned long __edi = __edi, __esi = __esi,	\
+-		__edx = __edx, __ecx = __ecx
+-#define PVOP_CALL_ARGS		PVOP_VCALL_ARGS, __eax
++		__edx = __edx, __ecx = __ecx, __eax = __eax
++#define PVOP_CALL_ARGS		PVOP_VCALL_ARGS
+ 
+ #define PVOP_CALL_ARG1(x)		"D" ((unsigned long)(x))
+ #define PVOP_CALL_ARG2(x)		"S" ((unsigned long)(x))
+@@ -509,6 +510,7 @@ int paravirt_disable_iospace(void);
+ 				"=c" (__ecx)
+ #define PVOP_CALL_CLOBBERS	PVOP_VCALL_CLOBBERS, "=a" (__eax)
+ 
++/* void functions are still allowed [re]ax for scratch */
+ #define PVOP_VCALLEE_CLOBBERS	"=a" (__eax)
+ #define PVOP_CALLEE_CLOBBERS	PVOP_VCALLEE_CLOBBERS
+ 
+@@ -583,8 +585,8 @@ int paravirt_disable_iospace(void);
+ 		       VEXTRA_CLOBBERS,					\
+ 		       pre, post, ##__VA_ARGS__)
+ 
+-#define __PVOP_VCALLEESAVE(rettype, op, pre, post, ...)			\
+-	____PVOP_CALL(rettype, op.func, CLBR_RET_REG,			\
++#define __PVOP_VCALLEESAVE(op, pre, post, ...)				\
++	____PVOP_VCALL(op.func, CLBR_RET_REG,				\
+ 		      PVOP_VCALLEE_CLOBBERS, ,				\
+ 		      pre, post, ##__VA_ARGS__)
+
+
