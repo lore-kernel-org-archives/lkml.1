@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933243AbZJLWql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbZJLW4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933243AbZJLWql (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 18:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932730AbZJLWqk
+	id S1758605AbZJLW4r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 18:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758583AbZJLW4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 18:46:40 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57160 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932331AbZJLWqk (ORCPT
+	Mon, 12 Oct 2009 18:56:46 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:56558 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758582AbZJLW4p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 18:46:40 -0400
-Message-ID: <4AD3B1A6.10508@zytor.com>
-Date: Mon, 12 Oct 2009 15:45:58 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 12 Oct 2009 18:56:45 -0400
+To: Vipin Bhandari <vipin.bhandari@ti.com>
+Cc: linux-kernel@vger.kernel.org,
+       davinci-linux-open-source@linux.davincidsp.com,
+       akpm@linux-foundation.org, drzeus-mmc@drzeus.cx
+Subject: Re: [PATCH] DaVinci: MMC: MMC/SD controller driver for DaVinci family
+References: <1254427155-26532-1-git-send-email-vipin.bhandari@ti.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Mon, 12 Oct 2009 15:50:55 -0700
+In-Reply-To: <1254427155-26532-1-git-send-email-vipin.bhandari@ti.com> (Vipin Bhandari's message of "Thu\,  1 Oct 2009 15\:59\:15 -0400")
+Message-ID: <877hv0ql9s.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: lkml@makubi.at
-CC: arndbergmann@googlemail.com, linux-kernel@vger.kernel.org
-Subject: Re: DHCP and iptables
-References: <20091012235013.16174ciovvwpw70g@www.kundendienste.net>
-In-Reply-To: <20091012235013.16174ciovvwpw70g@www.kundendienste.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/12/2009 02:50 PM, lkml@makubi.at wrote:
-> Well, I just looked for "ethernet protocol" and read some things about  
-> DHCP again.
-> 
-> What's an ethernet protocol?
-> 
-> I also read, that "DHCP is built directly on UDP and IP" (RFC 2131).
-> 
-> It uses Ports (UDP 67/68) and the source address of the DHCP server is  
-> an IP address.
-> 
-> Could you answer me more in detail, why I get an IP, but block  
-> everything with iptables?
-> 
+Vipin Bhandari <vipin.bhandari@ti.com> writes:
 
-The reason is that the DHCP client bypasses the Linux IP stack
-completely (because it has special requirements.)
+> This patch adds support for MMC/SD controller driver for all DaVinci family
+> SoC. This patch supports davinci family SoC's DM6446, DM355, DM365 and
+> DA830/OMAPL137.
+>
+> The patch has been tested on DM355 EVM.
+>
+> The MMCSD controller specifications for DM355 can be found at
+> http://focus.ti.com/general/docs/litabsmultiplefilelist.tsp?literatureNumber=spruee2c
+>
+> Signed-off-by: Vipin Bhandari <vipin.bhandari@ti.com>
+> Signed-off-by: Purshotam Kumar <purushotam@ti.com>
+> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
-> |   |   DHCP is an ethernet protocol, not an IP protocol, so you have to use
-> |   |   ebtables instead of iptables to filter it.
-> |   |
-> |   |   	Arnd <><
+Vipin,
 
-This is actually incorrect -- DHCP is an IP (UDP, in fact) protocol.  It
-just has very special requirements (such as being able to use
-src=0.0.0.0 dst=255.255.255.255) that aren't needed in normal operation,
-so rather than slowing down the in-kernel IP stack it synthesizes raw
-packets.
+In addition to this, I've also been carrying the diff below in DaVinci
+git.  Is this change still necessary?
 
-	-hpa
+Kevin
+
+
+diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
+index fe8f613..6c76f64 100644
+--- a/drivers/mmc/host/davinci_mmc.c
++++ b/drivers/mmc/host/davinci_mmc.c
+@@ -178,7 +178,7 @@ struct mmc_davinci_host {
+ 	u32 buffer_bytes_left;
+ 	u32 bytes_left;
+ 
+-	u8 rxdma, txdma;
++	u32 rxdma, txdma;
+ 	bool use_dma;
+ 	bool do_dma;
+ 
+@@ -190,7 +190,7 @@ struct mmc_davinci_host {
+ 	struct edmacc_param	tx_template;
+ 	struct edmacc_param	rx_template;
+ 	unsigned		n_link;
+-	u8			links[NR_SG - 1];
++	u32			links[NR_SG - 1];
+ 
+ 	/* For PIO we walk scatterlists one segment at a time. */
+ 	unsigned int		sg_len;
