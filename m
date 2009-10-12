@@ -1,109 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZJLT62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbZJLUZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbZJLT62 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbZJLT62
+	id S1758126AbZJLUZw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 16:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbZJLUZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:58:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38905 "EHLO mx2.mail.elte.hu"
+	Mon, 12 Oct 2009 16:25:51 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35167 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755441AbZJLT61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:58:27 -0400
-Date: Mon, 12 Oct 2009 21:57:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>
-Cc: Dirk Hohndel <hohndel@infradead.org>, Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH, v2] kbuild: Improve version string logic
-Message-ID: <20091012195733.GA7351@elte.hu>
-References: <alpine.LFD.2.01.0910041727310.3432@localhost.localdomain> <alpine.LFD.2.00.0910052140100.309@localhost.localdomain> <1254797502.14122.146.camel@dhohndel-mobl.amr.corp.intel.com> <alpine.LFD.2.01.0910060705240.3432@localhost.localdomain> <20091006144449.GA23078@elte.hu> <alpine.LFD.2.01.0910060815320.3432@localhost.localdomain> <20091006153632.GA29795@elte.hu> <alpine.LFD.2.01.0910060843560.3432@localhost.localdomain> <alpine.LFD.2.01.0910060925490.3432@localhost.localdomain> <20091006173508.GA4786@elte.hu>
+	id S1758114AbZJLUZt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 16:25:49 -0400
+Date: Mon, 12 Oct 2009 12:58:08 -0700
+From: Greg KH <gregkh@suse.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
+ anymore
+Message-ID: <20091012195808.GA10684@suse.de>
+References: <4AD120F2.3020606@tremplin-utc.net>
+ <20091011030029.GA6526@suse.de>
+ <200910112135.29384.dmitry.torokhov@gmail.com>
+ <4AD31709.4000103@tremplin-utc.net>
+ <20091012154846.GB7996@core.coreip.homeip.net>
+ <20091012173551.GC10557@suse.de>
+ <20091012183313.GC8345@core.coreip.homeip.net>
+ <20091012185417.GA30342@suse.de>
+ <20091012192046.GD8345@core.coreip.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091006173508.GA4786@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091012192046.GD8345@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Oct 12, 2009 at 12:20:46PM -0700, Dmitry Torokhov wrote:
+> On Mon, Oct 12, 2009 at 11:54:17AM -0700, Greg KH wrote:
+> > On Mon, Oct 12, 2009 at 11:33:13AM -0700, Dmitry Torokhov wrote:
+> > > On Mon, Oct 12, 2009 at 10:35:51AM -0700, Greg KH wrote:
+> > > > On Mon, Oct 12, 2009 at 08:48:46AM -0700, Dmitry Torokhov wrote:
+> > > > > > So at least, unbind should fail as well as bind.
+> > > > > >
+> > > > > 
+> > > > > That would be Greg's domain s it is driver core decision whether to
+> > > > > allow unbinding platform devices registered with
+> > > > > platform_driver_probe().
+> > > > 
+> > > > No, I do not see why that should not be allowed.
+> > > > 
+> > > 
+> > > Because once you did unbind the device you are stuck (unless the driver
+> > > is compiled as a module, but then you could just unload the module
+> > > instead of unbinding). Disallowing unbind would allow discarding not
+> > > only __devinit but __devexit sections when driver is built in which
+> > > would make ebedded people happy[^Hier].
+> > 
+> > Yeah, good point.
+> > 
+> > Does anyone do bind/unbind with platform devices today?
+> > 
+> 
+> Greg, meet Eric ;)
 
-This is basically your original patch that adds '+' to the short version 
-string of kernels that are 'between' -rc tags. (i dropped the '+' within 
-the long version i did in v1 - there were objections against that)
+Heh, yes, I mean for a "useful" thing :)
 
-Would this be ok?
+Eric is trying to do this to resolve a bug in the driver, not a thing
+that is "normally" done for platform devices.
 
-	Ingo
+> Although I'd really want to fix the resume issue so it works out of the
+> box without needing to bind/unbind or reload i8042.
 
--------------->
->From 597e5b15dd0cbb3158afc438e5edae9986e6b76a Mon Sep 17 00:00:00 2001
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 6 Oct 2009 09:31:03 -0700
-Subject: [PATCH] kbuild: Improve version string logic
+I agree.
 
-It changes how CONFIG_LOCALVERSION_AUTO works, in the following trivial
-way:
+thanks,
 
- - if it is set, things work the way they always have, and you get a
-   extended kernel release like:
-
-	2.6.32-rc3-00052-g0eca52a
-
- - but if it is _not_ set, we'll still try to get a version from the
-   underlying SCM (we actually support git, hg and SVN right now, even if
-   some comments may say "git only"), and if the underlying SCM says it
-   has a local version, we append just "+", so you get a version number
-   like:
-
-	2.6.32-rc3+
-
-IOW, you'd never get 2.6.32-rc0, but you'd get either the complex git
-version number (or SVN/hg/whatever), or at least "2.6.31+" with the "+"
-showing that it is more than plain 2.6.31.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: Frans Pop <elendil@planet.nl>
-Cc: Dirk Hohndel <hohndel@infradead.org>
-Cc: Len Brown <lenb@kernel.org>
-LKML-Reference: <20091006173508.GA4786@elte.hu>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- Makefile |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/Makefile b/Makefile
-index 927d7a3..5dab509 100644
---- a/Makefile
-+++ b/Makefile
-@@ -963,8 +963,6 @@ localver = $(subst $(space),, $(string) \
- # .scmversion is used when generating rpm packages so we do not loose
- # the version information from the SCM when we do the build of the kernel
- # from the copied source
--ifdef CONFIG_LOCALVERSION_AUTO
--
- ifeq ($(wildcard .scmversion),)
-         _localver-auto = $(shell $(CONFIG_SHELL) \
-                          $(srctree)/scripts/setlocalversion $(srctree))
-@@ -972,7 +970,14 @@ else
-         _localver-auto = $(shell cat .scmversion 2> /dev/null)
- endif
- 
-+ifdef CONFIG_LOCALVERSION_AUTO
- 	localver-auto  = $(LOCALVERSION)$(_localver-auto)
-+else
-+	ifeq ($_localver-auto,)
-+		localver-auto = $(LOCALVERSION)
-+	else
-+		localver-auto = $(LOCALVERSION)+
-+	endif
- endif
- 
- localver-full = $(localver)$(localver-auto)
+greg k-h
