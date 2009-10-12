@@ -1,86 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZJLN0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbZJLJab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbZJLN0A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 09:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbZJLN0A
+	id S1755432AbZJLJab (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 05:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbZJLJaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 09:26:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58181 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751802AbZJLNZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 09:25:59 -0400
-Date: Mon, 12 Oct 2009 15:25:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] panic.c: export panic_on_oops
-Message-ID: <20091012132503.GD25464@elte.hu>
-References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com> <20091012111545.GB8857@elte.hu> <1255346731.9659.31.camel@localhost> <20091012113758.GB11035@elte.hu> <20091012140149.6789efab@marrow.netinsight.se> <20091012120951.GA16799@elte.hu> <20091012142714.56362465@marrow.netinsight.se> <20091012123210.GB22766@elte.hu> <20091012140821.5dfa1598@lxorguk.ukuu.org.uk>
+	Mon, 12 Oct 2009 05:30:30 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:26669 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755114AbZJLJa3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 05:30:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=pT3tauK+VhuZJQFdZX+1VQc01zRRr87DL/kdJEhSm4xkNyY9hB3WPwSCoJQV6IrxgF
+         krYFr+YVoBCWa3lMjhhBV6KO0Wcq6eZaedQfkQMrxVBBG4KfVKEZcuMF60lWQU5h9hDt
+         +KXI7LC5B7tXlBaq2XBzEJf1VVTfcj9ndKaOY=
+Date: Mon, 12 Oct 2009 17:29:18 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.32-rc4
+Message-ID: <20091012132917.GA4900@x200>
+References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain>
+ <20091012082950.GA2270@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091012140821.5dfa1598@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091012082950.GA2270@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> > See my reply to David Woodhouse, i think we should add support for 
-> > buffering in kernel/printk.c and that would both fix your problems, 
-> > would simplify the driver (significantly!) and would expose the 
-> > generic buffering capability to other console drivers as well.
+On Mon, Oct 12, 2009 at 10:29:50AM +0200, Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> Buffering printk in general is bad. [...]
+> > Alexey Dobriyan (2):
+> >       headers: remove sched.h from interrupt.h
+> 
+> This commit broke the -rc4 build in numerous ways on x86:
+> 
+>   drivers/pci/hotplug/cpqphp.h: In function ???wait_for_ctrl_irq???:
+>   drivers/pci/hotplug/cpqphp.h:730: error: implicit declaration of function ???signal_pending???
+> 
+>   drivers/char/rtc.c: In function 'rtc_interrupt':
+>   drivers/char/rtc.c:271: error: 'TASK_INTERRUPTIBLE' undeclared (first use in this function)
+>   drivers/char/rtc.c:271: error: (Each undeclared identifier is reported only once
+> 
+> (I'll send fixes for the build failures as followups to this mail.)
+> 
+> Beyond being buggy there's two workflow problems with the commit.
+> 
+> Firstly, the commit log concentrates on the m68k situation while in 
+> reality more testing on x86 would have been much more important to the 
+> end result. If we break m68k with a header cleanup it's far less of a 
+> practical problem than if we break thousands of x86 boxes. I find this 
+> kind of artificially inflated focus on cross-testing (without properly 
+> weighting platforms) harmful.
+> 
+> Secondly, i'm wondering why the original mail to lkml:
+> 
+>   Date: Wed, 7 Oct 2009 17:09:06 +0400
+>   From: Alexey Dobriyan <adobriyan@gmail.com>
+>   To: torvalds@linux-foundation.org
+>   Subject: [PATCH] headers: remove sched.h from interrupt.h
+>   Cc: linux-kernel@vger.kernel.org
+> 
+> Wasnt Cc:-ed to the affected maintainers?
 
-The general (and default) case would be 0 buffering - i.e. finegrained 
-per line calls to ->console_write().
+To whom? All 42 of them?
 
-This is the common case indeed, we want to get console output out as 
-soon as possible and as finegrained as possible - as we dont know when a 
-failure mode removes our ability to print anything else.
+> As a result the patch wasnt 
+> tested by any maintainer tree before it was sent to Linus. The change is 
+> good but obviously needs to be done more carefully, there are a _lot_ of 
+> hidden header dependencies in the kernel, especially related to sched.h.
+> 
+> We are doing regular header cleanup patches in -tip and have the 
+> infrastructure to test them properly as well, so this change could have 
+> been done via either the scheduler tree and the interrupt tree. We also 
+> cross-test to all other architectures.
 
-My argument is that instead of a complicated dance of workqueue versus 
-non-workqueue printk support in the MTD code in drivers/mtd/mtdoops.c, 
-this should be done at the generic console level.
+Me too.
 
-It's not hard, nor complex if done at the right level, nor does it 
-impact the regular zero-buffering codepath in a significant way - and 
-the end result would be a significantly simpler (and, in turn, more 
-robust) MTD printk driver.
+This patch was tested on ~300 configs (allmodconfigs and defconfigs) _and_
+randconfigs on i386 and x86_64. I'm sorry I don't have more compile time.
 
-I care about this because i still havent given up hope that the company 
-you are working for will finally give us some permanent storage in the 
-CPU itself, so that we can have cross-reboot printk buffering ;-) If 
-that storage is in the form of Flash, then buffering (to optimize write 
-cycles) is probably a must.
+> Alexey, could you please Cc: affected maintainers in the future, so that 
+> we can avoid such problems?
 
-> [...] Given a driver needs only to provide about 6 lines of code using 
-> a kfifo is it really that hard for the odd code that wants to buffer 
-> to do that ?
+Probably.
 
-Avoiding a workqueue in printk is about the critical path of failure and 
-about complexity in general.
-
-I dont see how kfifo helps here much - kfifo is really just a relatively 
-simple dynamic memory buffer abstraction - while most of the complexity 
-here is elsewhere. Could you explain what you meant with kfifo here 
-please?
-
-	Ingo
+The problem I have with -tip is that god knows what's in there,
+so any header dependency removed might very well be unrelated to mainline.
