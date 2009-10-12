@@ -1,65 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbZJLHpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZJLHqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbZJLHpJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 03:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbZJLHpJ
+	id S1754479AbZJLHqe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 03:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbZJLHqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 03:45:09 -0400
-Received: from mga01.intel.com ([192.55.52.88]:16538 "EHLO mga01.intel.com"
+	Mon, 12 Oct 2009 03:46:34 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:40083 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751014AbZJLHpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 03:45:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,544,1249282800"; 
-   d="scan'208";a="735431351"
-Subject: Re: [PATCH 5/5] PCI: fix memory leak in aer_inject
-From: Huang Ying <ying.huang@intel.com>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: "prarit@redhat.com" <prarit@redhat.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "pci-linux@vger.kernel.org" <pci-linux@vger.kernel.org>
-In-Reply-To: <20091012070314.27029.35077.stgit@bob.kio>
-References: <20091012070248.27029.78378.stgit@bob.kio>
-	 <20091012070314.27029.35077.stgit@bob.kio>
-Content-Type: text/plain
-Date: Mon, 12 Oct 2009 15:44:30 +0800
-Message-Id: <1255333470.6047.141.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	id S1753013AbZJLHqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 03:46:33 -0400
+Message-ID: <4AD2DEB9.2@redhat.com>
+Date: Mon, 12 Oct 2009 09:46:01 +0200
+From: Stefan Assmann <sassmann@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: rostedt@goodmis.org
+CC: fweisbec@gmail.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ftrace: add kernel command line graph function filtering
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 15:03 +0800, Andrew Patterson wrote: 
-> PCI: fix memory leak in aer_inject
-> 
-> Fixed probable typo in aer_inject cleanup code resulting in a memory
-> leak.
-> 
-> Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
-> ---
-> 
-> diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
-> index da2ad6e..2246bf7 100644
-> --- a/drivers/pci/pcie/aer/aer_inject.c
-> +++ b/drivers/pci/pcie/aer/aer_inject.c
-> @@ -474,7 +474,7 @@ static void __exit aer_inject_exit(void)
->  	}
->  
->  	spin_lock_irqsave(&inject_lock, flags);
-> -	list_for_each_entry_safe(err, err_next, &pci_bus_ops_list, list) {
-> +	list_for_each_entry_safe(err, err_next, &einjected, list) {
->  		list_del(&err->list);
->  		kfree(err);
->  	}
+>From 894e934e782ddaa33eb6d156d8326cdf479b5f62 Mon Sep 17 00:00:00 2001
+From: Stefan Assmann <sassmann@redhat.com>
+Date: Mon, 12 Oct 2009 09:11:47 +0200
+Subject: [PATCH] ftrace: add kernel command line graph function filtering
 
-Thanks for the patch.
+Add a command line parameter to allow limiting the function graphs that
+are traced on boot up, when ftrace=function_graph is specified.
 
-Acked-by: Huang Ying <ying.huang@intel.com>
+This patch adds the following command line option:
+ftrace_graph_filter=function-list
 
-Best Regards,
-Huang Ying
+Where function-list is a comma separated list of functions to filter.
+
+Signed-off-by: Stefan Assmann <sassmann@redhat.com>
+---
+ Documentation/kernel-parameters.txt |    9 ++++++++-
+ kernel/trace/ftrace.c               |   34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9107b38..144eb83 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -771,7 +771,14 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			tracer at boot up. function-list is a comma separated
+ 			list of functions. This list can be changed at run
+ 			time by the set_ftrace_filter file in the debugfs
+-			tracing directory.
++			tracing directory.
++
++	ftrace_graph_filter=[function-list]
++			[FTRACE] Limit the functions traced by the function
++			graph tracer at boot up. function-list is a comma
++			separated list of functions. This list can be changed
++			at run time by the set_graph_function file in the
++			debugfs tracing directory.
+
+ 	ftrace_notrace=[function-list]
+ 			[FTRACE] Do not trace the functions specified in
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 3724756..a5cae5c 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -78,6 +78,10 @@ ftrace_func_t ftrace_trace_function __read_mostly = ftrace_stub;
+ ftrace_func_t __ftrace_trace_function __read_mostly = ftrace_stub;
+ ftrace_func_t ftrace_pid_function __read_mostly = ftrace_stub;
+
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++static int ftrace_set_func(unsigned long *array, int *idx, char *buffer);
++#endif
++
+ static void ftrace_list_func(unsigned long ip, unsigned long parent_ip)
+ {
+ 	struct ftrace_ops *op = ftrace_list;
+@@ -2302,6 +2306,7 @@ void ftrace_set_notrace(unsigned char *buf, int len, int reset)
+ #define FTRACE_FILTER_SIZE		COMMAND_LINE_SIZE
+ static char ftrace_notrace_buf[FTRACE_FILTER_SIZE] __initdata;
+ static char ftrace_filter_buf[FTRACE_FILTER_SIZE] __initdata;
++static char ftrace_graph_buf[FTRACE_FILTER_SIZE] __initdata;
+
+ static int __init set_ftrace_notrace(char *str)
+ {
+@@ -2317,6 +2322,31 @@ static int __init set_ftrace_filter(char *str)
+ }
+ __setup("ftrace_filter=", set_ftrace_filter);
+
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++static int __init set_graph_function(char *str)
++{
++	strncpy(ftrace_graph_buf, str, FTRACE_FILTER_SIZE);
++	return 1;
++}
++__setup("ftrace_graph_filter=", set_graph_function);
++
++static void __init set_ftrace_early_graph(char *buf)
++{
++	int ret;
++	char *func;
++
++	while (buf) {
++		func = strsep(&buf, ",");
++		/* we allow only one expression at a time */
++		ret = ftrace_set_func(ftrace_graph_funcs, &ftrace_graph_count,
++				      func);
++		if (ret)
++			printk(KERN_DEBUG "ftrace: function %s not "
++					  "traceable\n", func);
++	}
++}
++#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
++
+ static void __init set_ftrace_early_filter(char *buf, int enable)
+ {
+ 	char *func;
+@@ -2333,6 +2363,10 @@ static void __init set_ftrace_early_filters(void)
+ 		set_ftrace_early_filter(ftrace_filter_buf, 1);
+ 	if (ftrace_notrace_buf[0])
+ 		set_ftrace_early_filter(ftrace_notrace_buf, 0);
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++	if (ftrace_graph_buf[0])
++		set_ftrace_early_graph(ftrace_graph_buf);
++#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ }
+
+ static int
+-- 
+1.6.2.5
 
