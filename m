@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbZJLLQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZJLLSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbZJLLQl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 07:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbZJLLQk
+	id S1756211AbZJLLSv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 07:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZJLLSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 07:16:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45010 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754569AbZJLLQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 07:16:40 -0400
-Date: Mon, 12 Oct 2009 13:15:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Aaro Koskinen <aaro.koskinen@nokia.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] panic.c: export panic_on_oops
-Message-ID: <20091012111545.GB8857@elte.hu>
-References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
+	Mon, 12 Oct 2009 07:18:50 -0400
+Received: from mail-px0-f179.google.com ([209.85.216.179]:41651 "EHLO
+	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754800AbZJLLSu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 07:18:50 -0400
+Message-ID: <4AD3100D.3050905@vflare.org>
+Date: Mon, 12 Oct 2009 16:46:29 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
+References: <1255337423-3158-1-git-send-email-ngupta@vflare.org> <20091012090710.GA29310@n2100.arm.linux.org.uk> <4AD304B2.8000205@vflare.org> <20091012110814.GA32113@n2100.arm.linux.org.uk>
+In-Reply-To: <20091012110814.GA32113@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Artem Bityutskiy <dedekind1@gmail.com> wrote:
-
-> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+On 10/12/2009 04:38 PM, Russell King - ARM Linux wrote:
+> On Mon, Oct 12, 2009 at 03:58:02PM +0530, Nitin Gupta wrote:
+>> On 10/12/2009 02:37 PM, Russell King - ARM Linux wrote:
+>>> On Mon, Oct 12, 2009 at 02:20:23PM +0530, Nitin Gupta wrote:
+>>>> Same problem exists on mips too.
+>>>
+>>> Nice catch.  This logic came from sparc64, so I think you'd want to talk
+>>> to davem about it as well.
+>>>
+>>> In the mean time, submitting your fix to the patch system would be great,
+>>> thanks.
+>>>
+>>
+>> Thanks for looking into this. I think this can make it to mainline if
+>> you could Ack it and perhaps CC Andrew to get his attention?
 > 
-> We use the mtdoops module which stores oopses on the Flash partition,
-> in order to make it possible to analyze them later. And mtdoops needs
-> to know whether 'panic_on_oops' is on or off. Thus, we need this
-> variable to be exported.
+> Or it could take a less tortuous route by going through my tree.
+> 
 
-hm, why does it need it? Could you send the patch please that makes use 
-of it (as an easy way to explain the need for the export) - current 
-upstream drivers/mtd/mtdoops.c doesnt need it so it must be some pending 
-change.
+Ok, this is fine too.
 
-	Ingo
+Thanks,
+Nitin
+
