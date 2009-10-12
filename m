@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932842AbZJLQmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932835AbZJLQmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932842AbZJLQmy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:42:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932460AbZJLQmx
+	id S932835AbZJLQmB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932369AbZJLQmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:42:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45649 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932434AbZJLQmw (ORCPT
+	Mon, 12 Oct 2009 12:42:00 -0400
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:44633 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757016AbZJLQl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 12:42:52 -0400
-Date: Mon, 12 Oct 2009 09:40:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, avi@redhat.com,
-       mtosatti@redhat.com
-Subject: Re: [PATCH RFC tip/core/rcu 1/3] rcu: The Bloatwatch Edition, v7
-In-Reply-To: <4AD2F6F5.2060101@cn.fujitsu.com>
-Message-ID: <alpine.LFD.2.01.0910120939510.3438@localhost.localdomain>
-References: <20091009224954.GA26516@linux.vnet.ibm.com> <12551286511987-git-send-email-> <4AD2F6F5.2060101@cn.fujitsu.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 12 Oct 2009 12:41:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=c8KntnpOEC5WzsN2naBVFZrfEVm4nMd9+HRmCJvnEg5r8Lkz9BY454kcdp6hTdag9v
+         kB/7xaRn8g82cvsiOFhqKIH6twt1G50aRnamu9hLZWkbQGsD7rUP8XRYa/ixuaQuhU1T
+         b0fovYkGEQDhTnkoD+h3X2OCnJXWgYHRpoRpc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20091012163640.GC20786@sortiz.org>
+References: <1255197244-20121-1-git-send-email-vapier@gentoo.org> 
+	<20091012163640.GC20786@sortiz.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 12 Oct 2009 12:41:03 -0400
+Message-ID: <8bd0f97a0910120941t32e5ece2qc448acc94eb043e2@mail.gmail.com>
+Subject: Re: [Uclinux-dist-devel] [PATCH 1/5] mfd: ADP5520 Multifunction LCD 
+	Backlight and Keypad Input Device Driver
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 12 Oct 2009, Lai Jiangshan wrote:
+On Mon, Oct 12, 2009 at 12:36, Samuel Ortiz wrote:
+> On Sat, Oct 10, 2009 at 01:54:00PM -0400, Mike Frysinger wrote:
+>> From: Michael Hennerich <michael.hennerich@analog.com>
+>>
+>> Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
 >
-> [ snip snip ]
+> MFD and GPIO, backlight and input drivers applied, thanks.
 
-Please don't quote the whole email just to comment on a small part of it.
+awesome
 
-It makes it almost completely impossible to see what your comments are, 
-because they are hidden by a _much_ larger quoted section.
+> About the LED one, I would really appreciate if you could have the LED
+> maintainer review it or/and ack it.
 
-So please just edit out the parts of the original email that you are _not_ 
-directly commenting on.
-
-		Linus
-
+you and me both ;)
+-mike
