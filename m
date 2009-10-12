@@ -1,415 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758620AbZJLXTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933569AbZJLXVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758620AbZJLXTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 19:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933533AbZJLXTl
+	id S933569AbZJLXVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 19:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933561AbZJLXVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 19:19:41 -0400
-Received: from kroah.org ([198.145.64.141]:35915 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933216AbZJLXTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 19:19:37 -0400
-Date: Mon, 12 Oct 2009 16:16:07 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org, lwn@lwn.net
-Subject: Re: Linux 2.6.27.37
-Message-ID: <20091012231607.GD23794@kroah.com>
-References: <20091012231554.GC23794@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012231554.GC23794@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 12 Oct 2009 19:21:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59916 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933264AbZJLXVT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 19:21:19 -0400
+Date: Mon, 12 Oct 2009 16:20:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -mmotm] synchro-test: add missing header file
+Message-Id: <20091012162015.9cc24569.akpm@linux-foundation.org>
+In-Reply-To: <23768.1255344678@redhat.com>
+References: <20091009161042.b301700c.randy.dunlap@oracle.com>
+	<200910090830.n998Ubvv020464@imap1.linux-foundation.org>
+	<23768.1255344678@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index e7046ea..e063536 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 27
--EXTRAVERSION = .36
-+EXTRAVERSION = .37
- NAME = Trembling Tortoise
- 
- # *DOCUMENTATION*
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 5e65290..09b59b2 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -21,8 +21,8 @@
- #define __AUDIT_ARCH_LE	   0x40000000
- 
- #ifndef CONFIG_AUDITSYSCALL
--#define sysexit_audit int_ret_from_sys_call
--#define sysretl_audit int_ret_from_sys_call
-+#define sysexit_audit ia32_ret_from_sys_call
-+#define sysretl_audit ia32_ret_from_sys_call
- #endif
- 
- #define IA32_NR_syscalls ((ia32_syscall_end - ia32_sys_call_table)/8)
-@@ -39,12 +39,12 @@
- 	.endm 
- 
- 	/* clobbers %eax */	
--	.macro  CLEAR_RREGS
-+	.macro  CLEAR_RREGS offset=0, _r9=rax
- 	xorl 	%eax,%eax
--	movq	%rax,R11(%rsp)
--	movq	%rax,R10(%rsp)
--	movq	%rax,R9(%rsp)
--	movq	%rax,R8(%rsp)
-+	movq	%rax,\offset+R11(%rsp)
-+	movq	%rax,\offset+R10(%rsp)
-+	movq	%\_r9,\offset+R9(%rsp)
-+	movq	%rax,\offset+R8(%rsp)
- 	.endm
- 
- 	/*
-@@ -52,11 +52,10 @@
- 	 * We don't reload %eax because syscall_trace_enter() returned
- 	 * the value it wants us to use in the table lookup.
- 	 */
--	.macro LOAD_ARGS32 offset
--	movl \offset(%rsp),%r11d
--	movl \offset+8(%rsp),%r10d
-+	.macro LOAD_ARGS32 offset, _r9=0
-+	.if \_r9
- 	movl \offset+16(%rsp),%r9d
--	movl \offset+24(%rsp),%r8d
-+	.endif
- 	movl \offset+40(%rsp),%ecx
- 	movl \offset+48(%rsp),%edx
- 	movl \offset+56(%rsp),%esi
-@@ -145,7 +144,7 @@ ENTRY(ia32_sysenter_target)
- 	SAVE_ARGS 0,0,1
-  	/* no need to do an access_ok check here because rbp has been
-  	   32bit zero extended */ 
--1:	movl	(%rbp),%r9d
-+1:	movl	(%rbp),%ebp
-  	.section __ex_table,"a"
-  	.quad 1b,ia32_badarg
-  	.previous	
-@@ -157,7 +156,7 @@ ENTRY(ia32_sysenter_target)
- 	cmpl	$(IA32_NR_syscalls-1),%eax
- 	ja	ia32_badsys
- sysenter_do_call:
--	IA32_ARG_FIXUP 1
-+	IA32_ARG_FIXUP
- sysenter_dispatch:
- 	call	*ia32_sys_call_table(,%rax,8)
- 	movq	%rax,RAX-ARGOFFSET(%rsp)
-@@ -173,6 +172,10 @@ sysexit_from_sys_call:
- 	movl	RIP-R11(%rsp),%edx		/* User %eip */
- 	CFI_REGISTER rip,rdx
- 	RESTORE_ARGS 1,24,1,1,1,1
-+	xorq	%r8,%r8
-+	xorq	%r9,%r9
-+	xorq	%r10,%r10
-+	xorq	%r11,%r11
- 	popfq
- 	CFI_ADJUST_CFA_OFFSET -8
- 	/*CFI_RESTORE rflags*/
-@@ -203,7 +206,7 @@ sysexit_from_sys_call:
- 
- 	.macro auditsys_exit exit,ebpsave=RBP
- 	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT),TI_flags(%r10)
--	jnz int_ret_from_sys_call
-+	jnz ia32_ret_from_sys_call
- 	TRACE_IRQS_ON
- 	sti
- 	movl %eax,%esi		/* second arg, syscall return value */
-@@ -219,8 +222,9 @@ sysexit_from_sys_call:
- 	cli
- 	TRACE_IRQS_OFF
- 	testl %edi,TI_flags(%r10)
--	jnz int_with_check
--	jmp \exit
-+	jz \exit
-+	CLEAR_RREGS -ARGOFFSET
-+	jmp int_with_check
- 	.endm
- 
- sysenter_auditsys:
-@@ -234,20 +238,17 @@ sysexit_audit:
- #endif
- 
- sysenter_tracesys:
--	xchgl	%r9d,%ebp
- #ifdef CONFIG_AUDITSYSCALL
- 	testl	$(_TIF_WORK_SYSCALL_ENTRY & ~_TIF_SYSCALL_AUDIT),TI_flags(%r10)
- 	jz	sysenter_auditsys
- #endif
- 	SAVE_REST
- 	CLEAR_RREGS
--	movq	%r9,R9(%rsp)
- 	movq	$-ENOSYS,RAX(%rsp)/* ptrace can change this for a bad syscall */
- 	movq	%rsp,%rdi        /* &pt_regs -> arg1 */
- 	call	syscall_trace_enter
- 	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
- 	RESTORE_REST
--	xchgl	%ebp,%r9d
- 	cmpl	$(IA32_NR_syscalls-1),%eax
- 	ja	int_ret_from_sys_call /* sysenter_tracesys has set RAX(%rsp) */
- 	jmp	sysenter_do_call
-@@ -314,9 +315,9 @@ ENTRY(ia32_cstar_target)
- 	testl $_TIF_WORK_SYSCALL_ENTRY,TI_flags(%r10)
- 	CFI_REMEMBER_STATE
- 	jnz   cstar_tracesys
--cstar_do_call:	
- 	cmpl $IA32_NR_syscalls-1,%eax
- 	ja  ia32_badsys
-+cstar_do_call:
- 	IA32_ARG_FIXUP 1
- cstar_dispatch:
- 	call *ia32_sys_call_table(,%rax,8)
-@@ -333,6 +334,9 @@ sysretl_from_sys_call:
- 	CFI_REGISTER rip,rcx
- 	movl EFLAGS-ARGOFFSET(%rsp),%r11d	
- 	/*CFI_REGISTER rflags,r11*/
-+	xorq	%r10,%r10
-+	xorq	%r9,%r9
-+	xorq	%r8,%r8
- 	TRACE_IRQS_ON
- 	movl RSP-ARGOFFSET(%rsp),%esp
- 	CFI_RESTORE rsp
-@@ -357,15 +361,13 @@ cstar_tracesys:
- #endif
- 	xchgl %r9d,%ebp
- 	SAVE_REST
--	CLEAR_RREGS
--	movq %r9,R9(%rsp)
-+	CLEAR_RREGS 0, r9
- 	movq $-ENOSYS,RAX(%rsp)	/* ptrace can change this for a bad syscall */
- 	movq %rsp,%rdi        /* &pt_regs -> arg1 */
- 	call syscall_trace_enter
--	LOAD_ARGS32 ARGOFFSET  /* reload args from stack in case ptrace changed it */
-+	LOAD_ARGS32 ARGOFFSET, 1  /* reload args from stack in case ptrace changed it */
- 	RESTORE_REST
- 	xchgl %ebp,%r9d
--	movl RSP-ARGOFFSET(%rsp), %r8d
- 	cmpl $(IA32_NR_syscalls-1),%eax
- 	ja int_ret_from_sys_call /* cstar_tracesys has set RAX(%rsp) */
- 	jmp cstar_do_call
-@@ -431,6 +433,8 @@ ia32_do_call:
- 	call *ia32_sys_call_table(,%rax,8) # xxx: rip relative
- ia32_sysret:
- 	movq %rax,RAX-ARGOFFSET(%rsp)
-+ia32_ret_from_sys_call:
-+	CLEAR_RREGS -ARGOFFSET
- 	jmp int_ret_from_sys_call 
- 
- ia32_tracesys:			 
-@@ -448,8 +452,8 @@ END(ia32_syscall)
- 
- ia32_badsys:
- 	movq $0,ORIG_RAX-ARGOFFSET(%rsp)
--	movq $-ENOSYS,RAX-ARGOFFSET(%rsp)
--	jmp int_ret_from_sys_call
-+	movq $-ENOSYS,%rax
-+	jmp ia32_sysret
- 
- quiet_ni_syscall:
- 	movq $-ENOSYS,%rax
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index f7c7142..60ebfd7 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2571,6 +2571,11 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
- 		a3 &= 0xFFFFFFFF;
- 	}
- 
-+	if (kvm_x86_ops->get_cpl(vcpu) != 0) {
-+		ret = -KVM_EPERM;
-+		goto out;
-+	}
-+
- 	switch (nr) {
- 	case KVM_HC_VAPIC_POLL_IRQ:
- 		ret = 0;
-@@ -2582,6 +2587,7 @@ int kvm_emulate_hypercall(struct kvm_vcpu *vcpu)
- 		ret = -KVM_ENOSYS;
- 		break;
- 	}
-+out:
- 	vcpu->arch.regs[VCPU_REGS_RAX] = ret;
- 	kvm_x86_ops->decache_regs(vcpu);
- 	++vcpu->stat.hypercalls;
-diff --git a/arch/x86/mm/mmap.c b/arch/x86/mm/mmap.c
-index 56fe712..47dd8f5 100644
---- a/arch/x86/mm/mmap.c
-+++ b/arch/x86/mm/mmap.c
-@@ -29,13 +29,26 @@
- #include <linux/random.h>
- #include <linux/limits.h>
- #include <linux/sched.h>
-+#include <asm/elf.h>
-+
-+static unsigned int stack_maxrandom_size(void)
-+{
-+	unsigned int max = 0;
-+	if ((current->flags & PF_RANDOMIZE) &&
-+		!(current->personality & ADDR_NO_RANDOMIZE)) {
-+		max = ((-1U) & STACK_RND_MASK) << PAGE_SHIFT;
-+	}
-+
-+	return max;
-+}
-+
- 
- /*
-  * Top of mmap area (just below the process stack).
-  *
-- * Leave an at least ~128 MB hole.
-+ * Leave an at least ~128 MB hole with possible stack randomization.
-  */
--#define MIN_GAP (128*1024*1024)
-+#define MIN_GAP (128*1024*1024UL + stack_maxrandom_size())
- #define MAX_GAP (TASK_SIZE/6*5)
- 
- /*
-diff --git a/drivers/net/iseries_veth.c b/drivers/net/iseries_veth.c
-index c46864d..e1db78a 100644
---- a/drivers/net/iseries_veth.c
-+++ b/drivers/net/iseries_veth.c
-@@ -495,7 +495,7 @@ static void veth_take_cap_ack(struct veth_lpar_connection *cnx,
- 			   cnx->remote_lp);
- 	} else {
- 		memcpy(&cnx->cap_ack_event, event,
--		       sizeof(&cnx->cap_ack_event));
-+		       sizeof(cnx->cap_ack_event));
- 		cnx->state |= VETH_STATE_GOTCAPACK;
- 		veth_kick_statemachine(cnx);
- 	}
-diff --git a/drivers/watchdog/hpwdt.c b/drivers/watchdog/hpwdt.c
-index 763c1ea..dad4fe6 100644
---- a/drivers/watchdog/hpwdt.c
-+++ b/drivers/watchdog/hpwdt.c
-@@ -47,6 +47,7 @@
- #define PCI_BIOS32_PARAGRAPH_LEN	16
- #define PCI_ROM_BASE1			0x000F0000
- #define ROM_SIZE			0x10000
-+#define HPWDT_VERSION			"1.01"
- 
- struct bios32_service_dir {
- 	u32 signature;
-@@ -130,12 +131,8 @@ static void *cru_rom_addr;
- static struct cmn_registers cmn_regs;
- 
- static struct pci_device_id hpwdt_devices[] = {
--	{
--	 .vendor = PCI_VENDOR_ID_COMPAQ,
--	 .device = 0xB203,
--	 .subvendor = PCI_ANY_ID,
--	 .subdevice = PCI_ANY_ID,
--	},
-+	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB203) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_HP, 0x3306) },
- 	{0},			/* terminate list */
- };
- MODULE_DEVICE_TABLE(pci, hpwdt_devices);
-@@ -704,10 +701,11 @@ static int __devinit hpwdt_init_one(struct pci_dev *dev,
- 	}
- 
- 	printk(KERN_INFO
--		"hp Watchdog Timer Driver: 1.00"
-+		"hp Watchdog Timer Driver: %s"
- 		", timer margin: %d seconds (nowayout=%d)"
- 		", allow kernel dump: %s (default = 0/OFF).\n",
--		soft_margin, nowayout, (allow_kdump == 0) ? "OFF" : "ON");
-+		HPWDT_VERSION, soft_margin, nowayout,
-+		(allow_kdump == 0) ? "OFF" : "ON");
- 
- 	return 0;
- 
-@@ -757,6 +755,7 @@ static int __init hpwdt_init(void)
- MODULE_AUTHOR("Tom Mingarelli");
- MODULE_DESCRIPTION("hp watchdog driver");
- MODULE_LICENSE("GPL");
-+MODULE_VERSION(HPWDT_VERSION);
- MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
- 
- module_param(soft_margin, int, 0);
-diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
-index 5e78fc1..1c1220e 100644
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -443,6 +443,7 @@ static int ecryptfs_unlink(struct inode *dir, struct dentry *dentry)
- 	struct inode *lower_dir_inode = ecryptfs_inode_to_lower(dir);
- 	struct dentry *lower_dir_dentry;
- 
-+	dget(lower_dentry);
- 	lower_dir_dentry = lock_parent(lower_dentry);
- 	rc = vfs_unlink(lower_dir_inode, lower_dentry);
- 	if (rc) {
-@@ -456,6 +457,7 @@ static int ecryptfs_unlink(struct inode *dir, struct dentry *dentry)
- 	d_drop(dentry);
- out_unlock:
- 	unlock_dir(lower_dir_dentry);
-+	dput(lower_dentry);
- 	return rc;
- }
- 
-diff --git a/include/asm-x86/elf.h b/include/asm-x86/elf.h
-index 7be4733..36343b6 100644
---- a/include/asm-x86/elf.h
-+++ b/include/asm-x86/elf.h
-@@ -287,6 +287,8 @@ do {									\
- 
- #ifdef CONFIG_X86_32
- 
-+#define STACK_RND_MASK (0x7ff)
-+
- #define VDSO_HIGH_BASE		(__fix_to_virt(FIX_VDSO))
- 
- #define ARCH_DLINFO		ARCH_DLINFO_IA32(vdso_enabled)
-diff --git a/include/linux/kvm_para.h b/include/linux/kvm_para.h
-index 3ddce03..d731092 100644
---- a/include/linux/kvm_para.h
-+++ b/include/linux/kvm_para.h
-@@ -13,6 +13,7 @@
- #define KVM_ENOSYS		1000
- #define KVM_EFAULT		EFAULT
- #define KVM_E2BIG		E2BIG
-+#define KVM_EPERM		EPERM
- 
- #define KVM_HC_VAPIC_POLL_IRQ		1
- #define KVM_HC_MMU_OP			2
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 521960b..6e22c16 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -477,6 +477,28 @@ void update_wall_time(void)
- 	/* correct the clock when NTP error is too big */
- 	clocksource_adjust(offset);
- 
-+	/*
-+	 * Since in the loop above, we accumulate any amount of time
-+	 * in xtime_nsec over a second into xtime.tv_sec, its possible for
-+	 * xtime_nsec to be fairly small after the loop. Further, if we're
-+	 * slightly speeding the clocksource up in clocksource_adjust(),
-+	 * its possible the required corrective factor to xtime_nsec could
-+	 * cause it to underflow.
-+	 *
-+	 * Now, we cannot simply roll the accumulated second back, since
-+	 * the NTP subsystem has been notified via second_overflow. So
-+	 * instead we push xtime_nsec forward by the amount we underflowed,
-+	 * and add that amount into the error.
-+	 *
-+	 * We'll correct this error next time through this function, when
-+ 	 * xtime_nsec is not as small.
-+	 */
-+	if (unlikely((s64)clock->xtime_nsec < 0)) {
-+		s64 neg = -(s64)clock->xtime_nsec;
-+		clock->xtime_nsec = 0;
-+		clock->error += neg << (NTP_SCALE_SHIFT - clock->shift);
-+	}
-+
- 	/* store full nanoseconds into xtime */
- 	xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
- 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+On Mon, 12 Oct 2009 11:51:18 +0100
+David Howells <dhowells@redhat.com> wrote:
+
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Fix build errors, add <sched.h> header file:
+> > 
+> > kernel/synchro-test.c: In function 'sched':
+> > kernel/synchro-test.c:220: error: implicit declaration of function 'schedule'
+> > kernel/synchro-test.c: In function 'mutexer':
+> > kernel/synchro-test.c:227: error: implicit declaration of function 'daemonize'
+> > kernel/synchro-test.c:228: error: implicit declaration of function 'set_user_nice'
+> > kernel/synchro-test.c:241: error: dereferencing pointer to incomplete type
+> > kernel/synchro-test.c: In function 'semaphorer':
+> > kernel/synchro-test.c:263: error: dereferencing pointer to incomplete type
+> > kernel/synchro-test.c: In function 'reader':
+> > kernel/synchro-test.c:287: error: dereferencing pointer to incomplete type
+> > kernel/synchro-test.c: In function 'writer':
+> > kernel/synchro-test.c:311: error: dereferencing pointer to incomplete type
+> > kernel/synchro-test.c: In function 'downgrader':
+> > kernel/synchro-test.c:340: error: dereferencing pointer to incomplete type
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Acked-by: David Howells <dhowells@redhat.com>
+
+kernel/synchro-test.c has mysteriously vanished from linux-next so I
+can't merge this and don't know who should.  Ingo, perhaps?
+
