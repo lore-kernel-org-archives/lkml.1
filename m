@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932835AbZJLQmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932788AbZJLQsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932835AbZJLQmB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932369AbZJLQmA
+	id S932788AbZJLQsb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932460AbZJLQsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:42:00 -0400
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:44633 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757016AbZJLQl7 (ORCPT
+	Mon, 12 Oct 2009 12:48:31 -0400
+Received: from elettra.colt-to.towertech.it ([213.215.222.70]:35900 "EHLO
+	elettra.colt-to.towertech.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932369AbZJLQsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 12:41:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=c8KntnpOEC5WzsN2naBVFZrfEVm4nMd9+HRmCJvnEg5r8Lkz9BY454kcdp6hTdag9v
-         kB/7xaRn8g82cvsiOFhqKIH6twt1G50aRnamu9hLZWkbQGsD7rUP8XRYa/ixuaQuhU1T
-         b0fovYkGEQDhTnkoD+h3X2OCnJXWgYHRpoRpc=
-MIME-Version: 1.0
-In-Reply-To: <20091012163640.GC20786@sortiz.org>
-References: <1255197244-20121-1-git-send-email-vapier@gentoo.org> 
-	<20091012163640.GC20786@sortiz.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 12 Oct 2009 12:41:03 -0400
-Message-ID: <8bd0f97a0910120941t32e5ece2qc448acc94eb043e2@mail.gmail.com>
-Subject: Re: [Uclinux-dist-devel] [PATCH 1/5] mfd: ADP5520 Multifunction LCD 
-	Backlight and Keypad Input Device Driver
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 12 Oct 2009 12:48:30 -0400
+Date: Mon, 12 Oct 2009 18:47:39 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: Andrew Sharp <andy.sharp@lsi.com>,
+       Thomas Hommel <thomas.hommel@gefanuc.com>, rtc-linux@googlegroups.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2] rtc-ds1511: Fix races around device registration
+Message-ID: <20091012184739.46bb1052@i1501.lan.towertech.it>
+In-Reply-To: <1255365461-5732-1-git-send-email-anemo@mba.ocn.ne.jp>
+References: <1255365461-5732-1-git-send-email-anemo@mba.ocn.ne.jp>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 12:36, Samuel Ortiz wrote:
-> On Sat, Oct 10, 2009 at 01:54:00PM -0400, Mike Frysinger wrote:
->> From: Michael Hennerich <michael.hennerich@analog.com>
->>
->> Base driver for Analog Devices ADP5520/ADP5501 MFD PMICs
->
-> MFD and GPIO, backlight and input drivers applied, thanks.
+On Tue, 13 Oct 2009 01:37:40 +0900
+Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
 
-awesome
+> * Call dev_set_drvdata before rtc device creation
+> * Use its own spinlock instead of rtc->irq_lock
 
-> About the LED one, I would really appreciate if you could have the LED
-> maintainer review it or/and ack it.
+ why?
 
-you and me both ;)
--mike
+> * Check pdata->rtc before calling rtc_update_irq
+> * Use {alarm,update}_irq_enable and remove ioctl routine
+> * Use devres APIs and simplify error/remove path
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
