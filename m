@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbZJLCOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbZJLDuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753122AbZJLCOf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 22:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZJLCOb
+	id S1753708AbZJLDuz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 23:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbZJLDuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 22:14:31 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:62822 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbZJLCOa (ORCPT
+	Sun, 11 Oct 2009 23:50:54 -0400
+Received: from mxp1.isis.unc.edu ([152.2.2.159]:37002 "EHLO mxpm.isis.unc.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751505AbZJLDuy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 22:14:30 -0400
-Message-ID: <4AD29070.7070002@oracle.com>
-Date: Sun, 11 Oct 2009 19:12:00 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Sun, 11 Oct 2009 23:50:54 -0400
+X-Greylist: delayed 4385 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 Oct 2009 23:50:53 EDT
+Message-ID: <20091011222554.dpifs6ohcss8goc0@webmail4.isis.unc.edu>
+Date: Sun, 11 Oct 2009 22:25:54 -0400
+From: Nokia Company <nokia@info.net>
+Reply-to: nokiacompany50@yahoo.co.nz
+To: undisclosed-recipients:;
+Subject: winner!!!
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-CC: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH] sched: fix missing kernel-doc notation
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4AD290C7.005B:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: UNC-CH Webmail 2.0
+X-Organization: University of North Carolina at Chapel Hill
+X-Originating-IP: 196.1.177.245
+X-Remote-Browser: Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US;
+	rv:1.9.1.3) Gecko/20090824 Firefox/3.5.3
+X-Proofpoint-Virus-Version: vendor=fsecure engine=1.12.8161:2.4.5,1.2.40,4.0.166 definitions=2009-10-10_01:2009-09-29,2009-10-10,2009-10-11 signatures=0
+X-Proofpoint-Spam-Details: rule=uncdefault_notspam policy=uncdefault score=77 spamscore=77 ipscore=0 phishscore=0 bulkscore=10 adultscore=0 classifier=spam adjust=0 reason=mlx engine=5.0.0-0908210000 definitions=main-0910110251
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] sched: fix htmldocs sched.c
-From:	Jaswinder Singh Rajput <jaswinder@kernel.org>
-Date:	Thu, 24 Sep 2009 19:08:50 +0530
 
-fix the following htmldocs warnings:
 
-  Warning(kernel/sched.c:685): No description found for parameter 'cpu'
-  Warning(kernel/sched.c:3676): No description found for parameter 'sd'
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 2f76e06..f0d1375 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -676,6 +676,7 @@ inline void update_rq_clock(struct rq *rq)
- 
- /**
-  * runqueue_is_locked
-+ * @cpu: the processor in question.
-  *
-  * Returns true if the current cpu runqueue is locked.
-  * This interface allows printk to be called with the runqueue lock
-@@ -3658,6 +3659,7 @@ static void update_group_power(struct sched_domain *sd, int cpu)
- 
- /**
-  * update_sg_lb_stats - Update sched_group's statistics for load balancing.
-+ * @sd: The sched_domain whose statistics are to be updated.
-  * @group: sched_group whose statistics are to be updated.
-  * @this_cpu: Cpu for which load balance is currently performed.
-  * @idle: Idle status of this_cpu
----
+you are a winner of GBP £182,000.00 POUNDS.
