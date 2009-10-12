@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932412AbZJLOwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932514AbZJLPCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932412AbZJLOwz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932384AbZJLOwy
+	id S932514AbZJLPCQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbZJLPCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:52:54 -0400
-Received: from mga05.intel.com ([192.55.52.89]:27324 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932379AbZJLOwx (ORCPT
+	Mon, 12 Oct 2009 11:02:15 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:35656 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932193AbZJLPCO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:52:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,546,1249282800"; 
-   d="scan'208";a="502316144"
-Date: Mon, 12 Oct 2009 16:53:45 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Roger Quadros <ext-roger.quadros@nokia.com>
-Subject: [GIT] MFD pull request
-Message-ID: <20091012145343.GC16662@sortiz.org>
+	Mon, 12 Oct 2009 11:02:14 -0400
+Date: Mon, 12 Oct 2009 10:54:41 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Tejun Heo <tj@kernel.org>
+cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mel Gorman <mel@csn.ul.ie>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [this_cpu_xx V6 3/7] Use this_cpu operations in slub
+In-Reply-To: <4AD302A8.4010409@kernel.org>
+Message-ID: <alpine.DEB.1.10.0910121053240.7932@gentwo.org>
+References: <20091007211024.442168959@gentwo.org> <20091007211052.614790286@gentwo.org> <4AD302A8.4010409@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, 12 Oct 2009, Tejun Heo wrote:
 
-I just have one fix for twl4030 that prevents some OMAP based boards from
-booting. Thanks in advance for pulling.
+> > -		c = get_cpu_slab(s, smp_processor_id());
+> > +		c = __this_cpu_ptr(s->cpu_slab);
+>
+> Shouldn't this be this_cpu_ptr() without the double underscore?
 
-The following changes since commit d93a8f829fe1d2f3002f2c6ddb553d12db420412:
-  Linus Torvalds (1):
-        Revert "USB: Work around BIOS bugs by quiescing USB controllers earlier"
+Interrupts are disabled so no concurrent fast path can occur.
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/sameo/mfd-2.6 for-linus
-
-Roger Quadros (1):
-      mfd: Fix twl4030 boot with twl4030 usb transceiver enabled
-
- drivers/mfd/twl4030-core.c |   89 ++++++++++++++++++++++---------------------
- 1 files changed, 46 insertions(+), 43 deletions(-)
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
