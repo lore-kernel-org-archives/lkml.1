@@ -1,42 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZJLOK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756765AbZJLOMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbZJLOK1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbZJLOK1
+	id S1756765AbZJLOMy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734AbZJLOMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:10:27 -0400
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:44834 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756712AbZJLOK0 (ORCPT
+	Mon, 12 Oct 2009 10:12:54 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53650 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752894AbZJLOMx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:10:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=Z4pDVcGITulpm4f/5xdZBGXZkIsXJAknnJFVLdk7ZF31P5OoFTYaGSB/lkrh/9QnMD
-         zeW32LfJa91ATtxJG81c2zWfMZ947nY1yV2N4Qy2Y9qr+up8CkqDaBkWd7AD5WDbdTzD
-         D9bwsepQM4DWqZWjMmZ7448weRvXF8X6jZh+E=
-MIME-Version: 1.0
-Date: Mon, 12 Oct 2009 19:39:50 +0530
-Message-ID: <b2ac5deb0910120709y59051b92s64d20374d3ef32e8@mail.gmail.com>
-Subject: Booting Kernel from a Higher Physical Memory Base on x86/x86_64
-From: Swapnil Pimpale <swapnil.pict@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 12 Oct 2009 10:12:53 -0400
+Date: Mon, 12 Oct 2009 07:12:39 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Artem Bityutskiy <dedekind1@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] panic.c: export panic_on_oops
+Message-ID: <20091012071239.608a74c9@infradead.org>
+In-Reply-To: <20091012113758.GB11035@elte.hu>
+References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
+	<20091012111545.GB8857@elte.hu>
+	<1255346731.9659.31.camel@localhost>
+	<20091012113758.GB11035@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On Mon, 12 Oct 2009 13:37:58 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-I want to run a kernel in a higher physical offset. i.e. If I have 1
-GB of memory, I want to give only upper 512 MB to the kernel and keep
-lower 512 MB free (not mapped in virtual memory). Is this possible for
-x86 or x86_64 architecture?
+> 
+> * Artem Bityutskiy <dedekind1@gmail.com> wrote:
+> 
+> > On Mon, 2009-10-12 at 13:15 +0200, ext Ingo Molnar wrote:
+> > > > We use the mtdoops module which stores oopses on the Flash
+> > > > partition, in order to make it possible to analyze them later.
+> > > > And mtdoops needs to know whether 'panic_on_oops' is on or off.
+> > > > Thus, we need this variable to be exported.
+> > > 
+> > > hm, why does it need it? Could you send the patch please that
+> > > makes use of it (as an easy way to explain the need for the
+> > > export) - current upstream drivers/mtd/mtdoops.c doesnt need it
+> > > so it must be some pending change.
+> > 
+> > Yes, current drivers/mtd/mtdoops.c does not need it, but we have
+> > this patch:
+> > 
+> > http://lists.infradead.org/pipermail/linux-mtd/2009-October/027450.html
+> > 
+> > which makes sure mtdoops writes the oops log immediately, because we
+> > have 'panic_on_oops' set so this is our last chance to save the
+> > oops.
+> > 
+> > Here is the patch inlined as well:
+> > 
+> > Author: Aaro Koskinen <aaro.koskinen@nokia.com>
+> > Date:   Thu Oct 1 18:16:55 2009 +0300
+> > 
+> >     mtd: mtdoops: do not schedule work if we are going to die
+> > 
+> >     If panic_on_oops is set, the log should be written right away
+> >     because this is not going to be a second chance.
+> > 
+> >     Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
+> >     Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> > 
+> > diff --git a/drivers/mtd/mtdoops.c b/drivers/mtd/mtdoops.c
+> > index 1060337..ac67833 100644
+> > --- a/drivers/mtd/mtdoops.c
+> > +++ b/drivers/mtd/mtdoops.c
+> > @@ -335,7 +335,7 @@ static void mtdoops_console_sync(void)
+> >         cxt->ready = 0;
+> >         spin_unlock_irqrestore(&cxt->writecount_lock, flags);
+> > 
+> > -       if (mtd->panic_write && in_interrupt())
+> > +       if (mtd->panic_write && (in_interrupt() || panic_on_oops))
+> >                 /* Interrupt context, we're going to panic so try
+> > and log */ mtdoops_write(cxt, 1);
+> 
+> Hm, the code seems to be somewhat confused about this. It tries to
+> guess when it's panic-ing, right? in_interrupt() is the wrong test
+> for that.
+> 
+> mtdoops_console_sync() gets called by regular printk() as well via:
+> 
+> static void
+> mtdoops_console_write(struct console *co, const char *s, unsigned int
+> count) {
+>         struct mtdoops_context *cxt = co->data;
+>         struct mtd_info *mtd = cxt->mtd;
+>         unsigned long flags;
+> 
+>         if (!oops_in_progress) {
+>                 mtdoops_console_sync();
+>                 return;
+> 
+> I think this is all layered incorrectly - because mtdoops (which is a 
+> _VERY_ cool debugging facility btw - i wish generic x86 had something 
+> like that) tries to be a 'driver' and tries to achieve these things 
+> without modifying the core kernel.
+> 
+> But it really should do that. We can certainly enhance the core
+> kernel logic to tell the console driver more clearly when printk
+> should go out immediately.
+> 
+> Instead of using oops_in_progress it might be better to go into 'sync 
+> immeditately' mode if the kernel gets tainted.
 
-I have found that there is a PHYS_OFFSET macro in arm kernel which
-makes it possible to use higher physical base address. Is there
-anything similar to this for x86/x86_64?
+actually there are very nice "begin of oops" and "end of oops"
+functions... they are the perfect places for this ;-)
 
-Thanks in advance,
-Swapnil Pimpale
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
