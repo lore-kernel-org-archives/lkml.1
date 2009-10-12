@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbZJLStC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933022AbZJLSte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757894AbZJLStC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 14:49:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757811AbZJLStB
+	id S933022AbZJLSte (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 14:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932778AbZJLStd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 14:49:01 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:44936 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752735AbZJLStA (ORCPT
+	Mon, 12 Oct 2009 14:49:33 -0400
+Received: from mail-gx0-f212.google.com ([209.85.217.212]:41409 "EHLO
+	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932740AbZJLStc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 14:49:00 -0400
+	Mon, 12 Oct 2009 14:49:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=PzX5a54BfEEG42pi6kSbZVMN82augxX4H3001ZiMvb0E+c/ikQysXHLmJA9awH3KqN
-         66nfakuJGaWwNsNR0nByiI4Kt8xmQmxNETIMdWlLEnSDE1wzmGsaWDFeWLmPKstqCWkt
-         hsXBRqodeuy/iD0L/BZUHEEB5AzGvU7HlJD0s=
-Date: Mon, 12 Oct 2009 20:46:51 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Theodore Tso <tytso@mit.edu>, Eric Anholt <eric@anholt.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with
-	T400 laptops
-Message-ID: <20091012184651.GA4603@Pilar.aei.mpg.de>
-References: <E1Mtqnb-0002x7-TJ@closure.thunk.org> <20091008103620.5e5aae66@jbarnes-g45> <20091010204106.GA8251@mit.edu> <20091012095438.1e82b54f@jbarnes-g45>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gU79wJ8+0SBgCvPPZnruzgGpIm4qdVBhY9PvBPvRyAUfRG5uv+om1fRwEdQg175J7D
+         LUKqlm+ohVOn7HI8mnqDxpxhEYleIHGtevA9ONjqakg/2/I1r6QPPLLwbRf6fgwFYD4n
+         WFiElL1bVfAww3TEfLxRsuZNsYVMm2aldTomE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012095438.1e82b54f@jbarnes-g45>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <r-4Wjt4coy.A.TPD.dal0KB@chimera>
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
+	 <r-4Wjt4coy.A.TPD.dal0KB@chimera>
+Date: Mon, 12 Oct 2009 20:48:54 +0200
+Message-ID: <b637ec0b0910121148g34f46481n1d5d4edb67b0ac55@mail.gmail.com>
+Subject: Re: [Bug #14372] Wireless not working after suspend-resume
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 12.Oct'09 at  9:54:38 -0700, Jesse Barnes wrote:
-> > 
-> > Nope, unfortunately, it's not helping on my T400 laptop.  I'm still
-> > getting huge amounts of glitching and tearing with this patch applied
-> > against -rc3.
-> > 
-> > What I'm using for now to fix up my system is this patch.
-> > 
-> 
-> How about this one?  I have one more idea to try out if this doesn't
-> work (hacking on it now).
+Still present with -rc4.
 
-I was also experiencing something very similar to Theodore's bug 
-report and, at least for me, the patch below fixed the issue (the
-previous one also had no effect).
+Error is:
+
+[  690.547660] wlan0: direct probe to AP 00:11:95:09:2c:e0 (try 1)
+[  690.550064] wlan0: direct probe responded
+[  690.550074] wlan0: authenticate with AP 00:11:95:09:2c:e0 (try 1)
+[  690.551629] wlan0: authenticated
+[  690.551663] wlan0: associate with AP 00:11:95:09:2c:e0 (try 1)
+[  690.553289] wlan0: RX AssocResp from 00:11:95:09:2c:e0 (capab=0x451
+status=12 aid=1)
+[  690.553298] wlan0: AP denied association (code=12)
+
+rfkill-ing the device off and then on fixes the problem.
+
+Fabio
 
 
-> diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
-> index 7a5fb79..1451945 100644
-> --- a/drivers/gpu/drm/i915/intel_display.c
-> +++ b/drivers/gpu/drm/i915/intel_display.c
-> @@ -1047,7 +1047,7 @@ static void g4x_enable_fbc(struct drm_crtc *crtc, unsigned long interval)
->  	dev_priv->cfb_fence = obj_priv->fence_reg;
->  	dev_priv->cfb_plane = intel_crtc->plane;
->  
-> -	dpfc_ctl = plane | DPFC_SR_EN | DPFC_CTL_LIMIT_1X;
-> +	dpfc_ctl = plane | DPFC_CTL_LIMIT_1X;
->  	if (obj_priv->tiling_mode != I915_TILING_NONE) {
->  		dpfc_ctl |= DPFC_CTL_FENCE_EN | dev_priv->cfb_fence;
->  		I915_WRITE(DPFC_CHICKEN, DPFC_HT_MODIFY);
-> --
 
+
+On Mon, Oct 12, 2009 at 12:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14372
+> Subject         : Wireless not working after suspend-resume
+> Submitter       : Fabio Comolli <fabio.comolli@gmail.com>
+> Date            : 2009-10-03 15:36 (9 days old)
+> References      : http://lkml.org/lkml/2009/10/3/91
+>
+>
+>
