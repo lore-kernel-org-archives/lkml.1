@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755031AbZJLIx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZJLI4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755031AbZJLIx4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 04:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754981AbZJLIxz
+	id S1755077AbZJLI4N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 04:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066AbZJLI4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 04:53:55 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:23001 "EHLO mx1.redhat.com"
+	Mon, 12 Oct 2009 04:56:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46303 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754900AbZJLIxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 04:53:54 -0400
-Message-ID: <4AD2EE86.50807@redhat.com>
-Date: Mon, 12 Oct 2009 10:53:26 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1755053AbZJLI4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 04:56:10 -0400
+Date: Mon, 12 Oct 2009 08:54:49 GMT
+From: tip-bot for Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, randy.dunlap@oracle.com,
+       jaswinderrajput@gmail.com, akpm@linux-foundation.org,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, randy.dunlap@oracle.com,
+       jaswinderrajput@gmail.com, akpm@linux-foundation.org,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4AD29070.7070002@oracle.com>
+References: <4AD29070.7070002@oracle.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/urgent] sched: Fix missing kernel-doc notation
+Message-ID: <tip-e17b38bf9e70d74f3739a600db75240078ac1407@git.kernel.org>
+Git-Commit-ID: e17b38bf9e70d74f3739a600db75240078ac1407
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Glauber Costa <glommer@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] allow userspace to adjust kvmclock offset
-References: <1254849896-3947-1-git-send-email-glommer@redhat.com>
-In-Reply-To: <1254849896-3947-1-git-send-email-glommer@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 12 Oct 2009 08:54:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/06/2009 07:24 PM, Glauber Costa wrote:
-> When we migrate a kvm guest that uses pvclock between two hosts, we may
-> suffer a large skew. This is because there can be significant differences
-> between the monotonic clock of the hosts involved. When a new host with
-> a much larger monotonic time starts running the guest, the view of time
-> will be significantly impacted.
->
-> Situation is much worse when we do the opposite, and migrate to a host with
-> a smaller monotonic clock.
->
-> This new proposed ioctl will allow userspace to inform us what is the monotonic
-> clock value in the source host, so we can keep the time skew short, and more
-> importantly, never goes backwards.
->
->    
+Commit-ID:  e17b38bf9e70d74f3739a600db75240078ac1407
+Gitweb:     http://git.kernel.org/tip/e17b38bf9e70d74f3739a600db75240078ac1407
+Author:     Randy Dunlap <randy.dunlap@oracle.com>
+AuthorDate: Sun, 11 Oct 2009 19:12:00 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 12 Oct 2009 10:50:06 +0200
 
-> diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-> index f8f8900..0cd5ad8 100644
-> --- a/include/linux/kvm.h
-> +++ b/include/linux/kvm.h
-> @@ -546,6 +546,7 @@ struct kvm_irqfd {
->   #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
->   #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
->   #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
-> +#define KVM_ADJUST_CLOCK	  _IOW(KVMIO, 0x7a, __u64)
->    
+sched: Fix missing kernel-doc notation
 
-Please change to a struct with some reserved space.
+The following htmldocs warnings:
 
-Do we want an absolute or relative adjustment?
+  Warning(kernel/sched.c:685): No description found for parameter 'cpu'
+  Warning(kernel/sched.c:3676): No description found for parameter 'sd'
 
--- 
-error compiling committee.c: too many arguments to function
+Trigger because new parameters were added to update_rq_clock() and
+update_group_power() without updating the kernel-doc notation.
 
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <4AD29070.7070002@oracle.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e3f8f4f..789001d 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -676,6 +676,7 @@ inline void update_rq_clock(struct rq *rq)
+ 
+ /**
+  * runqueue_is_locked
++ * @cpu: the processor in question.
+  *
+  * Returns true if the current cpu runqueue is locked.
+  * This interface allows printk to be called with the runqueue lock
+@@ -3660,6 +3661,7 @@ static void update_group_power(struct sched_domain *sd, int cpu)
+ 
+ /**
+  * update_sg_lb_stats - Update sched_group's statistics for load balancing.
++ * @sd: The sched_domain whose statistics are to be updated.
+  * @group: sched_group whose statistics are to be updated.
+  * @this_cpu: Cpu for which load balance is currently performed.
+  * @idle: Idle status of this_cpu
