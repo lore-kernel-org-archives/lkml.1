@@ -1,100 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbZJLVTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbZJLVVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758272AbZJLVTT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758200AbZJLVTS
+	id S1758228AbZJLVVo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757920AbZJLVVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:19:18 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36602 "EHLO mx2.suse.de"
+	Mon, 12 Oct 2009 17:21:43 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35317 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756807AbZJLVTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:19:16 -0400
-Date: Mon, 12 Oct 2009 23:18:38 +0200
-From: Jan Kara <jack@suse.cz>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
-	balance_dirty_pages()
-Message-ID: <20091012211838.GA3965@duck.suse.cz>
-References: <20091007073818.318088777@intel.com> <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz> <20091010213339.GA8644@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091010213339.GA8644@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1752918AbZJLVVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:21:42 -0400
+Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2 [PATCH]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ben Efros <ben@pc-doctor.com>, Josua Dietze <digidietze@draisberghof.de>,
+       fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>
+In-Reply-To: <Pine.LNX.4.44L0.0910121052550.11420-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0910121052550.11420-100000@netrider.rowland.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 13 Oct 2009 08:19:46 +1100
+Message-Id: <1255382386.2192.125.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 11-10-09 05:33:39, Wu Fengguang wrote:
-> On Fri, Oct 09, 2009 at 11:12:31PM +0800, Jan Kara wrote:
-> > > +			/* don't wait if we've done enough */
-> > > +			if (pages_written >= write_chunk)
-> > > +				break;
-> > >  		}
-> > > -
-> > > -		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-> > > -			break;
-> > > -		if (pages_written >= write_chunk)
-> > > -			break;		/* We've done our duty */
-> > > -
-> >   Here, we had an opportunity to break from the loop even if we didn't
-> > manage to write everything (for example because per-bdi thread managed to
-> > write enough or because enough IO has completed while we were trying to
-> > write). After the patch, we will sleep. IMHO that's not good...
+On Mon, 2009-10-12 at 10:58 -0400, Alan Stern wrote:
+> Except that this is wrong.  We can retry if temp_result == 
+> USB_STOR_TRANSPORT_FAILURE, but we should not retry if temp_result ==
+> USB_STOR_TRANSPORT_ERROR.
 > 
-> Note that the pages_written check is moved several lines up in the patch :)
+> Alan Stern
 > 
-> >   I'd think that if we did all that work in writeback_inodes_wbc we could
-> > spend the effort on regetting and rechecking the stats...
-> 
-> Yes maybe. I didn't care it because the later throttle queue patch totally
-> removed the loop and hence to need to reget the stats :)
-  Yes, since the loop gets removed in the end, this does not matter. You
-are right.
+> P.S.: In case you don't already know...  TRANSPORT_FAILURE means we
+> were able to communicate with the device, and it told us that it
+> couldn't carry out the command.  TRANSPORT_ERROR means we weren't able
+> to communicate with the device.
 
-> > >  		schedule_timeout_interruptible(pause);
-> > >
-> > >  		/*
-> > > @@ -577,8 +547,7 @@ static void balance_dirty_pages(struct a
-> > >  			pause = HZ / 10;
-> > >  	}
-> > >
-> > > -	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
-> > > -			bdi->dirty_exceeded)
-> > > +	if (!dirty_exceeded && bdi->dirty_exceeded)
-> > >  		bdi->dirty_exceeded = 0;
-> >   Here we fail to clear dirty_exceeded if we are over global dirty limit
-> > but not over per-bdi dirty limit...
-> 
-> You must be mistaken: dirty_exceeded = (over bdi limit || over global limit),
-> so !dirty_exceeded = (!over bdi limit && !over global limit).
-  Exactly. Previously, the check was:
-if (!over bdi limit)
-  bdi->dirty_exceeded = 0;
+Ah good, I was wondering about precisely that (discriminating the errors
+more intelligently). No point retrying if the device was yanked or went
+totally dead.
 
-  Now it is
-if (!over bdi limit && !over global limit)
-  bdi->dirty_exceeded = 0;
+Cheers,
+Ben.
 
-  That's clearly not equivalent which is what I was trying to point out.
-But looking at where dirty_exceeded is used, your new way is probably more
-useful. It's just a bit counterintuitive that bdi->dirty_exceeded is set
-even if the per-bdi limit is not exceeded...
 
-									Honza
-
---
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
