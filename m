@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbZJLSEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932913AbZJLSHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757460AbZJLSEN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 14:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbZJLSEN
+	id S932913AbZJLSHE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 14:07:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbZJLSHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 14:04:13 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:22741 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754985AbZJLSEM (ORCPT
+	Mon, 12 Oct 2009 14:07:03 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:17751 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757185AbZJLSHB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 14:04:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YrzOZUlBlfORQzVA8a0R7kC+/U6JwL4mm3UioatF6JSjQDjHzWp61kIuAHgWibXK2t
-         3Q9p4Yx/q0GdkP8+x6pADteEE7M5CbzzJnG5xqdFBW7yfubBi2LVUgi3iLpKbswk9r3N
-         +r9/vwSow7A3LJnbXPFK3+gwx6p5qrzQKgFeE=
-Date: Mon, 12 Oct 2009 20:03:01 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [PATCH tracing/kprobes v4] perf: Add perf probe subcommand for
-	kprobe-event setup helper
-Message-ID: <20091012180300.GC5059@nowhere>
-References: <4ACE56EE.8060000@redhat.com> <20091008211737.29299.14784.stgit@dhcp-100-2-132.bos.redhat.com>
+	Mon, 12 Oct 2009 14:07:01 -0400
+X-Trace: 270066315/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.57.235/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.57.235
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AigFAOYM00pPRTnr/2dsb2JhbACBUtVPhC0EgVg
+X-IronPort-AV: E=Sophos;i="4.44,547,1249254000"; 
+   d="scan'208";a="270066315"
+Date: Mon, 12 Oct 2009 19:06:04 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+cc: David Miller <davem@davemloft.net>, Nitin Gupta <ngupta@vflare.org>,
+       Nick Piggin <npiggin@suse.de>, Ralf Baechle <ralf@linux-mips.org>,
+       Kyle McMartin <kyle@mcmartin.ca>, Paul Mundt <lethal@lethal-sh.org>,
+       Chen Liqin <liqin.chen@sunplusct.com>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
+In-Reply-To: <20091012170312.GB9453@flint.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0910121855070.21347@sister.anvils>
+References: <1255337423-3158-1-git-send-email-ngupta@vflare.org>
+ <20091012090710.GA29310@n2100.arm.linux.org.uk> <20091012.023744.157085851.davem@davemloft.net>
+ <20091012100023.GC29310@n2100.arm.linux.org.uk> <Pine.LNX.4.64.0910121634170.7327@sister.anvils>
+ <20091012170312.GB9453@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091008211737.29299.14784.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Oct 08, 2009 at 05:17:38PM -0400, Masami Hiramatsu wrote:
-> +static void semantic_error(const char *msg)
-> +{
-> +	fprintf(stderr, "Semantic error: %s\n", msg);
-> +	exit(1);
-> +}
-> +
-> +static void perror_exit(const char *msg)
-> +{
-> +	perror(msg);
-> +	exit(1);
-> +}
+On Mon, 12 Oct 2009, Russell King wrote:
+> On Mon, Oct 12, 2009 at 05:09:53PM +0100, Hugh Dickins wrote:
+> > Sorry to muddy the waters on this, if you and Dave are sure that
+> > you have the right fix, down in your architectures, and that fix
+> > isn't going to hurt your performance significantly.
+> 
+> If I look at the issue from this point of view:
+> 
+> - we are using PG_arch_1 to delay cache handling for the page
+> 
+> - if PG_arch_1 is set on a page, we set it explicitly because we
+>   didn't do some flushing between the allocation of the page and
+>   mapping it into userspace
+> 
+> - if a page with PG_arch_1 set ever gets to userspace, this can
+>   only be because we did the lazy flushing thing
+> 
+> I don't see that there should have been any bearing on whether a page
+> has a mapping or not when we get to update_mmu_cache.  The issue here
+> is that > if PG_arch_1 is set on a page, then we didn't flush it at
+> the time when we believed it was appropriate to do so. <
+> 
+> Tell me I'm wrong (having only just sent it to Linus...)
 
+I wouldn't dare!  Put that way, it seems very clear that it was always
+at best a redundant test, which Nitin now shows can go wrong.  Okay,
+thanks, let's forget about whether file invalidation can or cannot
+also put a page into this state, and proceed with your fix.
 
+The architectures which appear to need fixing in the same way are
+arm, mips, parisc, sh and sparc64 (xtensa looks right already, and
+score just looks confused - a whole function __update_cache() which
+checks for PG_arch_1, yet nothing sets it?).
 
-We have that already btw:
-
-tools/perf/util/util.h:
-	extern void die(const char *err, ...) NORETURN __attribute__((format (printf, 1, 2)));
-
-
-> +static void msg_exit(int ret, const char *fmt, ...)
-> +{
-> +	va_list ap;
-> +
-> +	va_start(ap, fmt);
-> +	fprintf(stderr, "Error:  ");
-> +	vfprintf(stderr, fmt, ap);
-> +	va_end(ap);
-> +
-> +	fprintf(stderr, "\n");
-> +	exit(ret);
-> +}
-
-
-And somehow ditto :)
-
+Hugh
