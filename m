@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbZJLUZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbZJLT73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbZJLUZw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 16:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbZJLUZv
+	id S1758053AbZJLT73 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 15:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZJLT72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 16:25:51 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35167 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758114AbZJLUZt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 16:25:49 -0400
-Date: Mon, 12 Oct 2009 12:58:08 -0700
-From: Greg KH <gregkh@suse.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
- anymore
-Message-ID: <20091012195808.GA10684@suse.de>
-References: <4AD120F2.3020606@tremplin-utc.net>
- <20091011030029.GA6526@suse.de>
- <200910112135.29384.dmitry.torokhov@gmail.com>
- <4AD31709.4000103@tremplin-utc.net>
- <20091012154846.GB7996@core.coreip.homeip.net>
- <20091012173551.GC10557@suse.de>
- <20091012183313.GC8345@core.coreip.homeip.net>
- <20091012185417.GA30342@suse.de>
- <20091012192046.GD8345@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012192046.GD8345@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 12 Oct 2009 15:59:28 -0400
+Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:3182 "EHLO
+	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755400AbZJLT70 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 15:59:26 -0400
+Subject: Re: 2.6.32-rc4: Reported regressions 2.6.30 -> 2.6.31
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+In-Reply-To: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
+Content-Type: text/plain
+Date: Mon, 12 Oct 2009 13:58:48 -0600
+Message-Id: <1255377529.9544.63.camel@bluto.andrew>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 12:20:46PM -0700, Dmitry Torokhov wrote:
-> On Mon, Oct 12, 2009 at 11:54:17AM -0700, Greg KH wrote:
-> > On Mon, Oct 12, 2009 at 11:33:13AM -0700, Dmitry Torokhov wrote:
-> > > On Mon, Oct 12, 2009 at 10:35:51AM -0700, Greg KH wrote:
-> > > > On Mon, Oct 12, 2009 at 08:48:46AM -0700, Dmitry Torokhov wrote:
-> > > > > > So at least, unbind should fail as well as bind.
-> > > > > >
-> > > > > 
-> > > > > That would be Greg's domain s it is driver core decision whether to
-> > > > > allow unbinding platform devices registered with
-> > > > > platform_driver_probe().
-> > > > 
-> > > > No, I do not see why that should not be allowed.
-> > > > 
-> > > 
-> > > Because once you did unbind the device you are stuck (unless the driver
-> > > is compiled as a module, but then you could just unload the module
-> > > instead of unbinding). Disallowing unbind would allow discarding not
-> > > only __devinit but __devexit sections when driver is built in which
-> > > would make ebedded people happy[^Hier].
-> > 
-> > Yeah, good point.
-> > 
-> > Does anyone do bind/unbind with platform devices today?
-> > 
+On Mon, 2009-10-12 at 00:41 +0200, Rafael J. Wysocki wrote:
 > 
-> Greg, meet Eric ;)
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14309
+> Subject		: MCA on hp rx8640
+> Submitter	: Andrew Patterson <andrew.patterson@hp.com>
+> Date		: 2009-09-29 17:20 (13 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=db8be50c4307dac2b37305fc59c8dc0f978d09ea
+> References	: http://www.spinics.net/lists/linux-usb/msg22799.html
+> 
 
-Heh, yes, I mean for a "useful" thing :)
+Linus fixed this one with d93a8f829fe1d2f3002f2c6ddb553d12db420412.  It
+also looks like a duplicate of
+http://bugzilla.kernel.org/show_bug.cgi?id=14374
 
-Eric is trying to do this to resolve a bug in the driver, not a thing
-that is "normally" done for platform devices.
+Thanks,
 
-> Although I'd really want to fix the resume issue so it works out of the
-> box without needing to bind/unbind or reload i8042.
+Andrew
+-- 
+Andrew Patterson
+Hewlett-Packard
 
-I agree.
-
-thanks,
-
-greg k-h
