@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbZJLLTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZJLLX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756231AbZJLLTx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 07:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZJLLTw
+	id S1756057AbZJLLX4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 07:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbZJLLX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 07:19:52 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56901 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755007AbZJLLTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 07:19:51 -0400
-Date: Mon, 12 Oct 2009 13:19:17 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: mingo@elte.hu, rostedt@goodmis.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing - enabling "__cold" functions
-Message-ID: <20091012111917.GA6934@jolsa.lab.eng.brq.redhat.com>
-References: <1255104899-27784-1-git-send-email-jolsa@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255104899-27784-1-git-send-email-jolsa@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 12 Oct 2009 07:23:56 -0400
+Received: from ernst.netinsight.se ([194.16.221.21]:65404 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752316AbZJLLXz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 07:23:55 -0400
+Date: Mon, 12 Oct 2009 13:23:04 +0200
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Artem Bityutskiy <dedekind1@gmail.com>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Aaro Koskinen <aaro.koskinen@nokia.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] panic.c: export panic_on_oops
+Message-ID: <20091012132304.52d4646c@marrow.netinsight.se>
+In-Reply-To: <20091012111545.GB8857@elte.hu>
+References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
+	<20091012111545.GB8857@elte.hu>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-any feedback on this one?
+On Mon, 12 Oct 2009 13:15:45 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-thanks,
-jirka
+> * Artem Bityutskiy <dedekind1@gmail.com> wrote:
+>
+> > We use the mtdoops module which stores oopses on the Flash partition,
+> > in order to make it possible to analyze them later. And mtdoops needs
+> > to know whether 'panic_on_oops' is on or off. Thus, we need this
+> > variable to be exported.
+> 
+> hm, why does it need it? Could you send the patch please that makes use 
+> of it (as an easy way to explain the need for the export) - current 
+> upstream drivers/mtd/mtdoops.c doesnt need it so it must be some pending 
+> change.
 
-On Fri, Oct 09, 2009 at 06:14:59PM +0200, jolsa@redhat.com wrote:
-> Based on the commit:
-> 
-> a586df06 "x86: Support __attribute__((__cold__)) in gcc 4.3"
-> 
-> some of the functions goes to the ".text.unlikely" section.
-> 
-> Looks like there's not many of them (I found printk, panic,
-> __ssb_dma_not_implemented, fat_fs_error), but still worth
-> to include I think.
-> 
-> wbr,
-> jirka
-> 
-> 
-> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
-> ---
->  scripts/recordmcount.pl |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 090d300..bfb8b2c 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -119,6 +119,7 @@ my %text_sections = (
->       ".sched.text" => 1,
->       ".spinlock.text" => 1,
->       ".irqentry.text" => 1,
-> +     ".text.unlikely" => 1,
->  );
->  
->  $objdump = "objdump" if ((length $objdump) == 0);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+You have the patch that requires it here:
+
+  http://patchwork.ozlabs.org/patch/34732/
+
+it's a fix to allow mtdoops to actually store oopses which happen when
+panic_on_oops is set (before these would be missed as the write would
+never be done).
+
+// Simon
+
