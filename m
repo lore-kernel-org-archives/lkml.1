@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932508AbZJLPOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932417AbZJLPKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932508AbZJLPOd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbZJLPOc
+	id S932417AbZJLPKM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932156AbZJLPKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:14:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52927 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751095AbZJLPOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:14:31 -0400
-Date: Mon, 12 Oct 2009 08:09:11 -0700
-From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
- 2.6.32-rc3)
-Message-ID: <20091012150911.GB1656@suse.de>
-References: <1255031298.4187.260.camel@mulgrave.site>
- <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain>
- <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
- <20091008210737.GD29181@mit.edu>
- <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
- <20091009091538.GA4154@elte.hu>
- <1255097287.2934.21.camel@localhost.localdomain>
- <20091012130652.GB25464@elte.hu>
- <1255357148.2850.91.camel@localhost.localdomain>
- <20091012145453.GD4565@elte.hu>
+	Mon, 12 Oct 2009 11:10:11 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:40428 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932262AbZJLPKJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 11:10:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=SJJIoWWCgI3P3WGyFWdqTqTCPjud/CTbAZ+RuyrWakhliYTnpYa8E7CmJ4AfYBZ5hZ
+         1sA8EroeIdSz2D4e8rOxbmCFVRgirOoazByuxSltMs1J5G5vAeXl+wQS5SlVjnJSKyvm
+         d3/7WGvQZMPfjT1CBmEvhfpjRX4McNcCv78dM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012145453.GD4565@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091012150037.GA14004@elte.hu>
+References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> 
+	<20091012074221.GA19198@elte.hu> <8bd0f97a0910120605q17a586dag29cf4ab6d89dd29d@mail.gmail.com> 
+	<20091012142940.GB1114@suse.de> <8bd0f97a0910120739k3122bctb46713881eaef9ca@mail.gmail.com> 
+	<20091012150037.GA14004@elte.hu>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 12 Oct 2009 11:09:13 -0400
+Message-ID: <8bd0f97a0910120809q7598d16sc285fbea9571536c@mail.gmail.com>
+Subject: Re: [origin tree build failure] [PATCH] Revert "USB: musb: make 
+	HAVE_CLK support optional"
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-adding David Miller and the wireless developers who had this idea as
-well...
+On Mon, Oct 12, 2009 at 11:00, Ingo Molnar wrote:
+> * Mike Frysinger <vapier.adi@gmail.com> wrote:
+>> On Mon, Oct 12, 2009 at 10:29, Greg KH wrote:
+>> > On Mon, Oct 12, 2009 at 09:05:57AM -0400, Mike Frysinger wrote:
+>> >> On Mon, Oct 12, 2009 at 03:42, Ingo Molnar wrote:
+>> >> >
+>> >> > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>> >> >
+>> >> >> As usual, please test this for regressions, both new and old.
+>> >> >
+>> >> >>       USB: musb: make HAVE_CLK support optional
+>> >> >
+>> >> > This USB/Blackfin commit broke the x86 build with these config options:
+>> >> >
+>> >> >  CONFIG_USB_MUSB_HDRC=y
+>> >> >  CONFIG_USB_MUSB_HOST=y
+>> >> >  # CONFIG_USB_MUSB_PERIPHERAL is not set
+>> >> >  # CONFIG_USB_MUSB_OTG is not set
+>> >> >  # CONFIG_USB_GADGET_MUSB_HDRC is not set
+>> >> >  CONFIG_USB_MUSB_HDRC_HCD=y
+>> >> >  CONFIG_MUSB_PIO_ONLY=y
+>> >> >  CONFIG_USB_MUSB_DEBUG=y
+>> >> >
+>> >> > Because a side-effect of the patch was that it enabled the driver on x86
+>> >> > too which doesnt have HAVE_CLK. So this formerly embedded-only driver
+>> >> > got exposed on the more widely tested x86 platform.
+>> >>
+>> >> this is dumb.  you're addressing unrealistic scenarios (randconfig) by
+>> >> reverting code for realistic scenarios.  how about updating the
+>> >> already present arch depend string instead.
+>> >
+>> > We want 'randconfig' to work, so this is not unrealistic.  Have you not
+>> > seen Randy Dunlap's zillion patches to get this to all work properly
+>> > over the past months?
+>>
+>> i'm not suggesting it not be fixed, i'm suggested it be *fixed*
+>> instead of blindly reverted.
+>
+> Sure, i'd agree with that if we were in the merge window. The thing is,
+> -rc4 is not the time to do patches that need fixes. It is to fix
+> regressions. I dont think this commit applies as a regression fix, does
+> it? It _introduces_ a regression.
+>
+> So a revert is a proper first-level response to this and i fail to
+> understand your surprise about that. A fix is nice too, of course, if
+> it's simple enough.
 
-On Mon, Oct 12, 2009 at 04:54:53PM +0200, Ingo Molnar wrote:
-> I think your interpretation is arbitrary - where did you get that ABI 
-> rule from? I'm sure it cannot be from any of the drivers/staging/ 
-> discussions on lkml, i've followed them quite closely. If 'has a messy 
-> ABI' was the only requirement for drivers/staging/ then we could move 
-> 90% of drivers/staging/ into drivers/ straight away - and that would be 
-> counter-productive IMHO.
-
-I agree with this, and the other points you raised that I snipped out.
-
-> Sidenote, in fact i think we should expand on that: drivers/staging/ 
-> should be used in the _other_ direction as well - to un-upstream stale 
-> drivers that are abandoned and unused, in a gradual fashion. 'git mv' is 
-> cheap.
-
-Ok, this is about the 3rd or 4th time I've heard this, from totally
-different people lately.  It seems that I'm the only one that has the
-ability to drop drivers out of the kernel tree, which is a funny
-situation :)
-
-In thinking about this a lot more, I don't really mind it.  If people
-want to push stuff out of "real" places in the kernel, into
-drivers/staging/ and give the original authors and maintainers notice
-about what is going on, _and_ provide a TODO file for what needs to
-happen to get the code back into the main portion of the kernel tree,
-then I'll be happy to help out with this and manage it.
-
-I think a 6-9 month window (basically 3 kernel releases) should be
-sufficient time to have a driver that has been in drivers/staging/ be
-cleaned up enough to move back into the main kernel tree.  If not, it
-could be easily dropped.
-
-Any objections to this?
-
-> Basically, drivers/staging/ gives us an excellent opportunity to 
-> _increase_ the quality of drivers by applying stronger upstream 
-> inclusion filters, without having to hurt users/developers in the 
-> process. We just have to start using it that way as well.
-
-I totally agree.  And so far, it does seem to be working well for this.
-A number of companies have used it to successfully get their code into
-the main kernel, as well as driving them to clean up their code better
-to keep it from having to go into the staging tree.
-
-thanks,
-
-greg k-h
+if the change were non-trivial and/or the person making the change
+were unresponsive, then a revert would certainly make sense this late
+in the game.  but neither really apply here.
+-mike
