@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751580AbZJKX5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751609AbZJLAD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751580AbZJKX5n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 19:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZJKX5n
+	id S1751609AbZJLAD3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 20:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZJLAD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 19:57:43 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:64878 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751492AbZJKX5m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 19:57:42 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Date: Mon, 12 Oct 2009 01:57:02 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "David Rientjes" <rientjes@google.com>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Reinette Chatre" <reinette.chatre@intel.com>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <L6tb-VyKHZK.A.d4D.P0l0KB@chimera>
-In-Reply-To: <L6tb-VyKHZK.A.d4D.P0l0KB@chimera>
+	Sun, 11 Oct 2009 20:03:26 -0400
+Received: from thunk.org ([69.25.196.29]:59255 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751233AbZJLADZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 20:03:25 -0400
+Date: Sun, 11 Oct 2009 20:02:12 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>, linux-ext4@vger.kernel.org
+Subject: Re: 2.6.32-rc4: Reported regressions from 2.6.31
+Message-ID: <20091012000212.GA21000@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Adrian Bunk <bunk@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Natalie Protasevich <protasnb@gmail.com>,
+	linux-ext4@vger.kernel.org
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera> <alpine.LFD.2.01.0910111608490.3438@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200910120157.04616.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Oct 2009 23:57:05.0712 (UTC) FILETIME=[89160300:01CA4ACE]
+In-Reply-To: <alpine.LFD.2.01.0910111608490.3438@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, you wrote:
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> be listed and let me know (either way).
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14141
-> Subject	: order 2 page allocation failures in iwlagn
-> Submitter	: Frans Pop <elendil@planet.nl>
-> Date		: 2009-09-06 7:40 (36 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125222287419691&w=4
-> 		  http://lkml.org/lkml/2009/10/2/86
-> 		  http://lkml.org/lkml/2009/10/5/24
-> Handled-By	: Pekka Enberg <penberg@cs.helsinki.fi>
+On Sun, Oct 11, 2009 at 04:11:20PM -0700, Linus Torvalds wrote:
+> 
+> On Mon, 12 Oct 2009, Rafael J. Wysocki wrote:
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14370
+> > Subject		: ext4 corruptions
+> > Submitter	: Alexey Fisher <bug-track@fisher-privat.net>
+> > Date		: 2009-10-09 19:20 (3 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=125511643504864&w=4
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14354
+> > Subject		: Bad corruption with 2.6.32-rc1 and upwards
+> > Submitter	: Holger Freyther <zecke@selfish.org>
+> > Date		: 2009-10-09 15:42 (3 days old)
+> 
+> These two look like duplicates to me. No?
 
-See: http://lkml.indiana.edu/hypermail/linux/kernel/0910.1/01395.html
+I'm not sure.  I'm not able to replicate either failure.  According to
+Holger, his failure happens after a clean shutdown.  Alexey's happens
+after a crash/forced power down.  So they could possibly be two
+separate failures --- although obviously I hope not!
 
-I don't see that message on lkml yet :-(
+However, Alexey has been posting his failure information in bug
+#14354, so we might as well close #14370.  What I really need is hints
+about how to replicate the failure.
+
+						- Ted
