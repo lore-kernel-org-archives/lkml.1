@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbZJLJM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbZJLJMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755226AbZJLJM1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 05:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbZJLJM1
+	id S1755248AbZJLJMi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 05:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZJLJMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 05:12:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60954 "EHLO mx3.mail.elte.hu"
+	Mon, 12 Oct 2009 05:12:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54497 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754861AbZJLJM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 05:12:26 -0400
-Date: Mon, 12 Oct 2009 11:11:34 +0200
+	id S1755253AbZJLJMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 05:12:37 -0400
+Date: Mon, 12 Oct 2009 11:11:48 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH 1/1] perf tools: Move threads & last_match to threads.c
-Message-ID: <20091012091134.GC24031@elte.hu>
-References: <1255279254-9956-1-git-send-email-acme@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [origin tree build failure] [PATCH] headers: Fix build in
+	drivers/net/wan/n2.c
+Message-ID: <20091012091148.GA16398@elte.hu>
+References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> <20091012082950.GA2270@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1255279254-9956-1-git-send-email-acme@redhat.com>
+In-Reply-To: <20091012082950.GA2270@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -34,47 +36,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix:
 
-* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+drivers/net/wan/n2.c: In function 'n2_ioctl':
+drivers/net/wan/n2.c:274: error: implicit declaration of function 'capable'
+drivers/net/wan/n2.c:274: error: 'CAP_NET_ADMIN' undeclared (first use in this function)
+drivers/net/wan/n2.c:274: error: (Each undeclared identifier is reported only once
+drivers/net/wan/n2.c:274: error: for each function it appears in.)
 
-> This was just being copy'n'pasted all over.
-> 
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  tools/perf/builtin-annotate.c |   18 +++++++-----------
->  tools/perf/builtin-report.c   |   17 +++++++----------
->  tools/perf/builtin-sched.c    |   15 ++++++---------
->  tools/perf/builtin-trace.c    |    9 +++------
->  tools/perf/util/thread.c      |   40 ++++++++++++++++++----------------------
->  tools/perf/util/thread.h      |   12 ++++--------
->  6 files changed, 45 insertions(+), 66 deletions(-)
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/net/wan/n2.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-hm, mind refreshing this against latest -tip? It doesnt apply anymore:
-
-Hunk #2 FAILED at 635.
-Hunk #3 FAILED at 1036.
-Hunk #4 FAILED at 1052.
-Hunk #5 succeeded at 1122 (offset -5 lines).
-Hunk #6 succeeded at 1651 (offset 65 lines).
-Hunk #7 succeeded at 1657 (offset -2 lines).
-3 out of 7 hunks FAILED -- rejects in file tools/perf/builtin-sched.c
-patching file tools/perf/builtin-trace.c
-patching file tools/perf/util/thread.c
-Hunk #1 FAILED at 6.
-Hunk #2 FAILED at 55.
-Hunk #3 succeeded at 62 (offset -4 lines).
-Hunk #4 FAILED at 84.
-Hunk #5 succeeded at 197 (offset -14 lines).
-3 out of 5 hunks FAILED -- rejects in file tools/perf/util/thread.c
-patching file tools/perf/util/thread.h
-Hunk #1 FAILED at 15.
-1 out of 1 hunk FAILED -- rejects in file tools/perf/util/thread.h
-
-or have i missed some prereq patch?
-
-	Ingo
+diff --git a/drivers/net/wan/n2.c b/drivers/net/wan/n2.c
+index 83da596..58c6681 100644
+--- a/drivers/net/wan/n2.c
++++ b/drivers/net/wan/n2.c
+@@ -18,6 +18,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/kernel.h>
++#include <linux/capability.h>
+ #include <linux/slab.h>
+ #include <linux/types.h>
+ #include <linux/fcntl.h>
