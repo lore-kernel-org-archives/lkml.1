@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932287AbZJLOZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbZJLO3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932287AbZJLOZM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932276AbZJLOZL
+	id S1756942AbZJLO3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932237AbZJLO3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:25:11 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:38048 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932238AbZJLOZJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:25:09 -0400
-Date: Mon, 12 Oct 2009 08:24:30 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Brad Spengler <spender@grsecurity.net>
-Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-ia64@vger.kernel.org
-Subject: [PATCH] ia64: Don't call SAL < 3.2 for extended config space
-Message-ID: <20091012142430.GE7545@parisc-linux.org>
-References: <20091011074531.GA12357@grsecurity.net> <4AD1AE0D.1030007@kernel.org> <4AD24766.7050205@kernel.org> <20091011213245.GC18513@grsecurity.net> <20091011231039.GB7545@parisc-linux.org> <20091012135628.GA310@grsecurity.net>
+	Mon, 12 Oct 2009 10:29:18 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46709 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756848AbZJLO3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:29:16 -0400
+Date: Mon, 12 Oct 2009 07:25:27 -0700
+From: Greg KH <gregkh@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: James Bottomley <James.Bottomley@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+Message-ID: <20091012142527.GB1037@suse.de>
+References: <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
+ <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain>
+ <1255031298.4187.260.camel@mulgrave.site>
+ <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain>
+ <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
+ <20091008210737.GD29181@mit.edu>
+ <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
+ <20091009091538.GA4154@elte.hu>
+ <1255097287.2934.21.camel@localhost.localdomain>
+ <20091012130652.GB25464@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091012135628.GA310@grsecurity.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091012130652.GB25464@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 09:56:28AM -0400, Brad Spengler wrote:
-> > So how about we go back to adding that check ... this does require that
-> > SGI's 750 machine reports its SAL revision correctly.  Could you send
-> > the dmesg?
+On Mon, Oct 12, 2009 at 03:06:52PM +0200, Ingo Molnar wrote:
 > 
-> The dmesg of the working kernel:
-> http://grsecurity.net/~spender/dmesg.txt
+> * James Bottomley <James.Bottomley@suse.de> wrote:
+> 
+> > On Fri, 2009-10-09 at 11:15 +0200, Ingo Molnar wrote:
+> > > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > 
+> > > > On Thu, 8 Oct 2009, Theodore Tso wrote:
+> > > > > 
+> > > > > So would it be acceptable to merge the 50 kloc of crap _during_ the
+> > > > > merge window?
+> > > > 
+> > > > Yes. I actually looked at the driver (since I had pulled it - I've 
+> > > > unpulled it but am still mulling it over), and while I think it looked 
+> > > > huge and overly complex, it by no means gave me the kinds of vibes I 
+> > > > get from some "obviously-ported-from-windows-with-no-clue" drivers.
+> > > > 
+> > > > So at least from my quick look I didn't get the feeling that the 
+> > > > driver was "evil". For me, it's a timing issue.  I hate getting big 
+> > > > pull requests after -rc1 is out, and I really don't like the feeling 
+> > > > that people are just ignoring the merge window.
+> > > > 
+> > > > That said, if somebody wants to look more closely at the driver, and 
+> > > > then wants to convince people that it should have gone through 
+> > > > "staging", feel free. But that's not what I've personally been arguing 
+> > > > about.
+> > > 
+> > > Greg, what's your take on the quality of this new driver? Do you have 
+> > > some time to do a review of this with drivers/staging/ versus drivers/ 
+> > > glasses on? The Git URI is at:
+> > 
+> > To me, the matter of staging versus actual tree isn't a quality issue 
+> > (otherwise we'd be shifting ~75% of SCSI drivers to staging, depending 
+> > on whose view of "quality" was being used). [...]
+> 
+> I think you need to update your notion of what goes into 
+> drivers/staging/ - these days it's primarily about code/implementation 
+> quality (Greg please correct me if i'm wrong about that).
 
-Thanks, that's reporting SAL 3.0, so it will be correctly caught by
-this patch:
+No, so far that is the majority of why stuff is in staging, although
+userspace apis also do play a part here.
 
----
+But I leave it up to the subsystem maintainer to do what they want to
+do, if they want to take coding style mistakes, well, it's their
+responsibility to maintain the crud :)
 
-From: Matthew Wilcox <willy@linux.intel.com>
-Subject: Require SAL 3.2 in order to do extended config space ops
+thanks,
 
-We had assumed that SAL firmware would return an error if it didn't
-understand extended config space.  Unfortunately, the SAL on the SGI 750
-doesn't do that, it panics the machine.  So, condition the extended PCI
-config space accesses on SAL revision 3.2.
-
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-
-diff --git a/arch/ia64/pci/pci.c b/arch/ia64/pci/pci.c
-index 7de76dd..61363cc 100644
---- a/arch/ia64/pci/pci.c
-+++ b/arch/ia64/pci/pci.c
-@@ -56,10 +56,13 @@ int raw_pci_read(unsigned int seg, unsigned int bus, unsigned int devfn,
- 	if ((seg | reg) <= 255) {
- 		addr = PCI_SAL_ADDRESS(seg, bus, devfn, reg);
- 		mode = 0;
--	} else {
-+	} else if (sal_revision >= SAL_VERSION_CODE(3,2))
- 		addr = PCI_SAL_EXT_ADDRESS(seg, bus, devfn, reg);
- 		mode = 1;
-+	} else {
-+		return -EINVAL;
- 	}
-+
- 	result = ia64_sal_pci_config_read(addr, mode, len, &data);
- 	if (result != 0)
- 		return -EINVAL;
-@@ -80,9 +83,11 @@ int raw_pci_write(unsigned int seg, unsigned int bus, unsigned int devfn,
- 	if ((seg | reg) <= 255) {
- 		addr = PCI_SAL_ADDRESS(seg, bus, devfn, reg);
- 		mode = 0;
--	} else {
-+	} else if (sal_revision >= SAL_VERSION_CODE(3,2))
- 		addr = PCI_SAL_EXT_ADDRESS(seg, bus, devfn, reg);
- 		mode = 1;
-+	} else {
-+		return -EINVAL;
- 	}
- 	result = ia64_sal_pci_config_write(addr, mode, len, value);
- 	if (result != 0)
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+greg k-h
