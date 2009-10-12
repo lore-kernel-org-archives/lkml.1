@@ -1,238 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932090AbZJLKLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbZJLKLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932090AbZJLKLd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 06:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932071AbZJLKLd
+	id S1755858AbZJLKLp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 06:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbZJLKLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 06:11:33 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:38855 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932070AbZJLKLb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 06:11:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=IpXrMVjEFG+nYU67vel1QoTQ7A8g5Q4NwP3c2WmkJv8VOOYwpZT5uDKwv/zzWuID0R
-         XHxTWbQY4vNekrVXOcmUtJS8wzGNR0dnSJQJDHVLYZzJ3S7Eh9K0zfUjKixlUX468Gt4
-         kNE7O990tPlBEagH+PNPFR2oucVtw1uz4VlmY=
+	Mon, 12 Oct 2009 06:11:45 -0400
+Received: from mx19.lb01.inode.at ([62.99.145.21]:19712 "EHLO mx.inode.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755441AbZJLKLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 06:11:44 -0400
+Message-ID: <4AD300B5.6080102@sbg.ac.at>
+Date: Mon, 12 Oct 2009 12:11:01 +0200
+From: Alexander Huemer <alexander.huemer@sbg.ac.at>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-In-Reply-To: <20091007222807.1684.26880.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com>
-	 <20091007222807.1684.26880.stgit@dhcp-100-2-132.bos.redhat.com>
-Date: Mon, 12 Oct 2009 12:10:51 +0200
-Message-ID: <c62985530910120310m386e9289v29e71fee1992476b@mail.gmail.com>
-Subject: Re: [PATCH tracing/kprobes v3 4/7] tracing/kprobes: Avoid field name 
-	confliction
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Tejun Heo <tj@kernel.org>
+CC: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       alexander.huemer@sbg.ac.at
+Subject: Re: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
+References: <4ABBB8C2.2080901@sbg.ac.at> <200910101513.51320.elendil@planet.nl> <4AD2DFA4.9000602@kernel.org> <200910121148.16439.elendil@planet.nl> <4AD2FC60.8080705@kernel.org> <4AD2FD10.2010800@sbg.ac.at> <4AD2FFC7.5010402@kernel.org>
+In-Reply-To: <4AD2FFC7.5010402@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/10/8 Masami Hiramatsu <mhiramat@redhat.com>:
-> Check whether the argument name is conflict with other field names.
+Tejun Heo wrote:
+> Alexander Huemer wrote:
+>   
+>> Tejun Heo wrote:
+>>     
+>>> Frans Pop wrote:
+>>>  
+>>>       
+>>>> On Monday 12 October 2009, Tejun Heo wrote:
+>>>>    
+>>>>         
+>>>>> Alexander, can you please attach full boot log and the output of
+>>>>> "lspci -nn"?  Also, how reproducible is the problem?  You already
+>>>>> answered to Frans' question but can you be more specific?
+>>>>>       
+>>>>>           
+>>>> Full dmesg was made available earlier at:
+>>>> http://xx.vu/~ahuemer/dmesg_ahuemer_20090923
+>>>>     
+>>>>         
+>>> Does blacklisting i801_smbus make any difference?
+>>>
+>>>   
+>>>       
+>> lspci -nn:
+>> http://xx.vu/~ahuemer/lspci_nn_ahuemer_20091012
+>>
+>> what do you mean with "blacklisting i801_smbus" ?
+>>     
 >
-> Changes in v3:
->  - Check strcmp() == 0 instead of !strcmp().
+> [    3.872387] i2c /dev entries driver
+> [    3.873943] i801_smbus 0000:00:1f.3: PCI INT B -> GSI 23 (level, low) -> IRQ 23
+> [    3.875580] w83627hf: Found W83627HF chip at 0x290
 >
-> Changes in v2:
->  - Add common_lock_depth to reserved name list.
+> IRQ23 is also used by i801_smbus and it would be nice to confirm
+> whether the problem can still be triggered with that driver not
+> loaded.  Adding "blacklist i2c_i801" to /etc/modprobe.d/blacklist
+> should probabaly do the trick.
 >
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Christoph Hellwig <hch@infradead.org>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Jim Keniston <jkenisto@us.ibm.com>
-> Cc: Frank Ch. Eigler <fche@redhat.com>
-> ---
+> Thanks.
 >
->  kernel/trace/trace_kprobe.c |   65 +++++++++++++++++++++++++++++++++++--------
->  1 files changed, 53 insertions(+), 12 deletions(-)
->
-> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-> index 030f28c..e3b824a 100644
-> --- a/kernel/trace/trace_kprobe.c
-> +++ b/kernel/trace/trace_kprobe.c
-> @@ -38,6 +38,25 @@
->  #define MAX_EVENT_NAME_LEN 64
->  #define KPROBE_EVENT_SYSTEM "kprobes"
->
-> +/* Reserved field names */
-> +#define FIELD_STRING_IP "ip"
-> +#define FIELD_STRING_NARGS "nargs"
-> +#define FIELD_STRING_RETIP "ret_ip"
-> +#define FIELD_STRING_FUNC "func"
+>   
+okay, i think you assume that i2c_i801 is a module.
+it is indeed built into the kernel.
+i'll rebuild the kernel without that component and run a test again.
 
-
-If it might conflict, then we should minimize the possibilities for
-that to happen.
-
-What if we prefix these fields with kprobed_ ?
-
-kprobed_ip
-kprobed_nargs
-kprobed_ret_ip
-kprobed_func
-
-We are lucky there in that kprobe functions in the kernel can't be kprobed
-so it's safe wrt the conflict in the same namespace.
-
-And we can further schrink the kprobed prefixes in userspace post processing.
-
-(If you agree with the above, that can be done incrementally).
-
-Thanks.
-
-
-> +
-> +const char *reserved_field_names[] = {
-> +       "common_type",
-> +       "common_flags",
-> +       "common_preempt_count",
-> +       "common_pid",
-> +       "common_tgid",
-> +       "common_lock_depth",
-> +       FIELD_STRING_IP,
-> +       FIELD_STRING_NARGS,
-> +       FIELD_STRING_RETIP,
-> +       FIELD_STRING_FUNC,
-> +};
-> +
->  /* currently, trace_kprobe only supports X86. */
->
->  struct fetch_func {
-> @@ -537,6 +556,20 @@ static int parse_probe_arg(char *arg, struct fetch_func *ff, int is_return)
->        return ret;
->  }
->
-> +/* Return 1 if name is reserved or already used by another argument */
-> +static int conflict_field_name(const char *name,
-> +                              struct probe_arg *args, int narg)
-> +{
-> +       int i;
-> +       for (i = 0; i < ARRAY_SIZE(reserved_field_names); i++)
-> +               if (strcmp(reserved_field_names[i], name) == 0)
-> +                       return 1;
-> +       for (i = 0; i < narg; i++)
-> +               if (strcmp(args[i].name, name) == 0)
-> +                       return 1;
-> +       return 0;
-> +}
-> +
->  static int create_trace_probe(int argc, char **argv)
->  {
->        /*
-> @@ -637,6 +670,12 @@ static int create_trace_probe(int argc, char **argv)
->                        *arg++ = '\0';
->                else
->                        arg = argv[i];
-> +
-> +               if (conflict_field_name(argv[i], tp->args, i)) {
-> +                       ret = -EINVAL;
-> +                       goto error;
-> +               }
-> +
->                tp->args[i].name = kstrdup(argv[i], GFP_KERNEL);
->
->                /* Parse fetch argument */
-> @@ -1039,8 +1078,8 @@ static int kprobe_event_define_fields(struct ftrace_event_call *event_call)
->        if (!ret)
->                return ret;
->
-> -       DEFINE_FIELD(unsigned long, ip, "ip", 0);
-> -       DEFINE_FIELD(int, nargs, "nargs", 1);
-> +       DEFINE_FIELD(unsigned long, ip, FIELD_STRING_IP, 0);
-> +       DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
->        /* Set argument names as fields */
->        for (i = 0; i < tp->nr_args; i++)
->                DEFINE_FIELD(unsigned long, args[i], tp->args[i].name, 0);
-> @@ -1057,9 +1096,9 @@ static int kretprobe_event_define_fields(struct ftrace_event_call *event_call)
->        if (!ret)
->                return ret;
->
-> -       DEFINE_FIELD(unsigned long, func, "func", 0);
-> -       DEFINE_FIELD(unsigned long, ret_ip, "ret_ip", 0);
-> -       DEFINE_FIELD(int, nargs, "nargs", 1);
-> +       DEFINE_FIELD(unsigned long, func, FIELD_STRING_FUNC, 0);
-> +       DEFINE_FIELD(unsigned long, ret_ip, FIELD_STRING_RETIP, 0);
-> +       DEFINE_FIELD(int, nargs, FIELD_STRING_NARGS, 1);
->        /* Set argument names as fields */
->        for (i = 0; i < tp->nr_args; i++)
->                DEFINE_FIELD(unsigned long, args[i], tp->args[i].name, 0);
-> @@ -1108,15 +1147,16 @@ static int kprobe_event_show_format(struct ftrace_event_call *call,
->        int ret, i;
->        struct trace_probe *tp = (struct trace_probe *)call->data;
->
-> -       SHOW_FIELD(unsigned long, ip, "ip");
-> -       SHOW_FIELD(int, nargs, "nargs");
-> +       SHOW_FIELD(unsigned long, ip, FIELD_STRING_IP);
-> +       SHOW_FIELD(int, nargs, FIELD_STRING_NARGS);
->
->        /* Show fields */
->        for (i = 0; i < tp->nr_args; i++)
->                SHOW_FIELD(unsigned long, args[i], tp->args[i].name);
->        trace_seq_puts(s, "\n");
->
-> -       return __probe_event_show_format(s, tp, "(%lx)", "REC->ip");
-> +       return __probe_event_show_format(s, tp, "(%lx)",
-> +                                        "REC->" FIELD_STRING_IP);
->  }
->
->  static int kretprobe_event_show_format(struct ftrace_event_call *call,
-> @@ -1126,9 +1166,9 @@ static int kretprobe_event_show_format(struct ftrace_event_call *call,
->        int ret, i;
->        struct trace_probe *tp = (struct trace_probe *)call->data;
->
-> -       SHOW_FIELD(unsigned long, func, "func");
-> -       SHOW_FIELD(unsigned long, ret_ip, "ret_ip");
-> -       SHOW_FIELD(int, nargs, "nargs");
-> +       SHOW_FIELD(unsigned long, func, FIELD_STRING_FUNC);
-> +       SHOW_FIELD(unsigned long, ret_ip, FIELD_STRING_RETIP);
-> +       SHOW_FIELD(int, nargs, FIELD_STRING_NARGS);
->
->        /* Show fields */
->        for (i = 0; i < tp->nr_args; i++)
-> @@ -1136,7 +1176,8 @@ static int kretprobe_event_show_format(struct ftrace_event_call *call,
->        trace_seq_puts(s, "\n");
->
->        return __probe_event_show_format(s, tp, "(%lx <- %lx)",
-> -                                         "REC->func, REC->ret_ip");
-> +                                        "REC->" FIELD_STRING_FUNC
-> +                                        ", REC->" FIELD_STRING_RETIP);
->  }
->
->  #ifdef CONFIG_EVENT_PROFILE
->
->
-> --
-> Masami Hiramatsu
->
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
->
-> e-mail: mhiramat@redhat.com
->
+regards
+-alex
