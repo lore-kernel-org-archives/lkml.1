@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbZJLJfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbZJLNe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbZJLJfA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 05:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191AbZJLJe7
+	id S1756168AbZJLNe0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 09:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbZJLNe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 05:34:59 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:51927 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754747AbZJLJe6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 05:34:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=c3WE4TCv8rNgaRa4d3Ar+xulzjKY7tUVg6PdpYjip3tIuI0fIgGWLCP1kZQYDKtb6Z
-         0teZCA9cdGCB1UdL/cl6NvFGeGcxcaoQeZKGXBObmLhV3g8kFLe5hGNLtByivxlV6C3U
-         P/OTWTsdU3Y6Al18gNXuUPGpb8WvKKa2bm7j0=
-Date: Mon, 12 Oct 2009 17:34:18 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.32-rc4
-Message-ID: <20091012133418.GB4900@x200>
-References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain>
- <20091012082950.GA2270@elte.hu>
+	Mon, 12 Oct 2009 09:34:26 -0400
+Received: from mga09.intel.com ([134.134.136.24]:61682 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755126AbZJLNeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 09:34:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,546,1249282800"; 
+   d="scan'208";a="558777416"
+Date: Mon, 12 Oct 2009 15:35:17 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Haojian Zhuang <haojian.zhuang@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Liam Girdwood <lrg@slimlogic.co.uk>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: voltage tree build failure
+Message-ID: <20091012133516.GA16662@sortiz.org>
+References: <20091012132628.2f709e40.sfr@canb.auug.org.au>
+ <771cded00910111950y6104fe0fl4f1d10144d938243@mail.gmail.com>
+ <20091012125707.GE22233@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091012082950.GA2270@elte.hu>
+In-Reply-To: <20091012125707.GE22233@sirena.org.uk>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 10:29:50AM +0200, Ingo Molnar wrote:
-> Alexey, could you please Cc: affected maintainers in the future, so that 
-> we can avoid such problems?
+On Mon, Oct 12, 2009 at 01:57:07PM +0100, Mark Brown wrote:
+> On Sun, Oct 11, 2009 at 10:50:54PM -0400, Haojian Zhuang wrote:
+> 
+> > Hi Samuel & Liam,
+> 
+> > Please help review and merge this fix patch. I'm sorry for inconvience.
+> 
+> This is waiting for Samuel - it should go via the MFD tree.  I've CCed
+> in Samuel's current e-mail address on the off-chance that that helps.
+Patch applied and pushed. Sorry for the delay, I wasnt cc'ed at first.
 
-And can you merge fallout your compile farm found into single "fallout"
-patch. Inflating number of commits doesn't really help.
+Cheers,
+Samuel.
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
