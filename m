@@ -1,160 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbZJLN4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932172AbZJLN5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbZJLN4v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 09:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbZJLN4u
+	id S932172AbZJLN5M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 09:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932144AbZJLN5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 09:56:50 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:63939 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755355AbZJLN4t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 09:56:49 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AigFAN3S0kpMROOX/2dsb2JhbACBUdUzgjOBegQ
-Date: Mon, 12 Oct 2009 09:56:00 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Tejun Heo <tj@kernel.org>, Mel Gorman <mel@csn.ul.ie>, mingo@elte.hu
-Subject: Re: [this_cpu_xx V5 19/19] SLUB: Experimental new fastpath w/o
-	interrupt disable
-Message-ID: <20091012135600.GB15605@Krystal>
-References: <20091007151940.GA10052@Krystal> <alpine.DEB.1.10.0910071119450.9296@gentwo.org> <1254988350.26976.256.camel@twins> <alpine.DEB.1.10.0910081211050.21951@gentwo.org> <20091008171750.GA3370@Krystal> <alpine.DEB.1.10.0910081342540.7735@gentwo.org> <20091008191754.GA12729@Krystal> <alpine.DEB.1.10.0910081520210.8030@gentwo.org> <20091008203724.GA15798@Krystal> <alpine.DEB.1.10.0910081652190.8030@gentwo.org>
+	Mon, 12 Oct 2009 09:57:11 -0400
+Received: from place.holder ([209.9.226.146]:50746 "EHLO grsecurity.net"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S932080AbZJLN5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 09:57:10 -0400
+Date: Mon, 12 Oct 2009 09:56:28 -0400
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] pci: fix crash about old IA64 about pci_cfg_space_size
+Message-ID: <20091012135628.GA310@grsecurity.net>
+References: <20091011074531.GA12357@grsecurity.net> <4AD1AE0D.1030007@kernel.org> <4AD24766.7050205@kernel.org> <20091011213245.GC18513@grsecurity.net> <20091011231039.GB7545@parisc-linux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0910081652190.8030@gentwo.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 09:23:43 up 55 days, 13 min,  3 users,  load average: 0.35, 0.23,
-	0.19
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091011231039.GB7545@parisc-linux.org>
+User-Agent: Mutt/1.5.9i
+From: spender@grsecurity.net (Brad Spengler)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (cl@linux-foundation.org) wrote:
-> On Thu, 8 Oct 2009, Mathieu Desnoyers wrote:
-> 
-> > > Index: linux-2.6/mm/slub.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/mm/slub.c	2009-10-08 11:35:59.000000000 -0500
-> > > +++ linux-2.6/mm/slub.c	2009-10-08 14:03:22.000000000 -0500
-> > > @@ -1606,7 +1606,14 @@ static void *__slab_alloc(struct kmem_ca
-> > >  			  unsigned long addr)
-> > >  {
-> > >  	void **object;
-> > > -	struct page *page = __this_cpu_read(s->cpu_slab->page);
-> > > +	struct page *page;
-> > > +	unsigned long flags;
-> > > +	int hotpath;
-> > > +
-> > > +	local_irq_save(flags);
-> >
-> > (Recommend adding)
-> >
-> > 	preempt_enable_no_resched();
-> >
-> >
-> > The preempt enable right in the middle of a big function is adding an
-> > unnecessary barrier(), which will restrain gcc from doing its
-> > optimizations.  This might hurt performances.
-> 
-> In the middle of the function we have determine that we have to go to the
-> page allocator to get more memory. There is not much the compiler can do
-> to speed that up.
 
-Indeed, the compiler cannot do much about it. However, the programer
-(you) can move the preempt_enable_no_resched() part of the
-preempt_enable() to the beginning of the function.
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > I still recommend the preempt_enable_no_resched() at the beginning of
-> > __slab_alloc(), and simply putting a check_resched() here (which saves
-> > us the odd compiler barrier in the middle of function).
-> 
-> Then preemption would be unnecessarily disabled for the page allocator
-> call?
+> So how about we go back to adding that check ... this does require that
+> SGI's 750 machine reports its SAL revision correctly.  Could you send
+> the dmesg?
 
-No ?
-preempt_enable_no_resched() enables preemption.
+The dmesg of the working kernel:
+http://grsecurity.net/~spender/dmesg.txt
+The output of lspci -vvxxxx:
+http://grsecurity.net/~spender/lspci1.txt
+The output of lspci -tvnn:
+http://grsecurity.net/~spender/lspci2.txt
 
-> 
-> > >  	if (gfpflags & __GFP_WAIT)
-> > >  		local_irq_enable();
-> > >
-> > > +	preempt_enable();
-> >
-> > We could replace the above by:
-> >
-> > if (gfpflags & __GFP_WAIT) {
-> > 	local_irq_enable();
-> > 	preempt_check_resched();
-> > }
-> 
-> Which would leave preempt off for the page allocator.
+I don't have a serial console hooked up to the machine, and I'm not able=20
+to scroll up/down after the panic, so I only have the following picture=20
+=66rom the crash.  I modified the code that spews out registers on a panic=
+=20
+so that the context of the panic could be seen.  The stack trace didn't=20
+show anything useful, only repeats of an address similar to IP (for=20
+which no symbols exist).
+http://img132.yfrog.com/i/img1457u.jpg/
 
-Not if you do preempt_enable_no_resched() at the beginnig of the
-function, after disabling interrupts.
+-Brad
 
-> 
-> > > +	irqsafe_cpu_inc(s->cpu_slab->active);
-> > > +	barrier();
-> > >  	object = __this_cpu_read(s->cpu_slab->freelist);
-> > > -	if (unlikely(!object || !node_match(s, node)))
-> > > +	if (unlikely(!object || !node_match(s, node) ||
-> > > +			__this_cpu_read(s->cpu_slab->active)))
-> >
-> > Missing a barrier() here ?
-> 
-> The modifications of the s->cpu_slab->freelist in __slab_alloc() are only
-> done after interrupts have been disabled and after the slab has been locked.
+--rwEMma7ioTxnRzrJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-I was concerned about a potential race between
-cpu_slab->active/cpu_slab->freelist if an interrupt came in. I
-understand that as soon as you get a hint that you must hit the slow
-path, you don't care about the order in which these operations have been
-done.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-> 
-> > The idea is to let gcc know that "active" inc/dec and "freelist" reads
-> > must never be reordered. Even when the decrement is done in the slow
-> > path branch.
-> 
-> Right. How could that occur with this code?
-> 
+iD8DBQFK0zWLmHm2SUJF1GoRAhKZAJ9MkeYGVOUbgQv+aXeYxSJM2dF5/ACdFYec
+YBBCnarE0iOlb98vFXrPUao=
+=TfXW
+-----END PGP SIGNATURE-----
 
-__slab_alloc calls __this_cpu_dec(s->cpu_slab->active); without any
-compiler barrier. But I get that when __slab_alloc is executed, we don't
-care about "active" dec to be reordered, because we're not altering fast
-path data anymore.
-
-> > > +		preempt_enable();
-> > >  		stat(s, FREE_FASTPATH);
-> > > -	} else
-> > > +	} else {
-> >
-> > Perhaps missing a barrier() in the else ?
-> 
-> Not sure why that would be necessary. __slab_free() does not even touch
-> s->cpu_slab->freelist if you have the same reasons as in the alloc path.
-
-My intent was to order __this_cpu_read(s->cpu_slab->page) and
-irqsafe_cpu_dec(s->cpu_slab->active), but I get that if you run the slow
-path, you don't care about some spilling of the slow path over the slab
-active critical section.
-
-Thanks,
-
-Mathieu
-
-> 
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--rwEMma7ioTxnRzrJ--
