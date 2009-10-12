@@ -1,35 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932551AbZJLPHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932508AbZJLPOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932551AbZJLPHv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932217AbZJLPHv
+	id S932508AbZJLPOd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbZJLPOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:07:51 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:59992 "EHLO kernel.dk"
+	Mon, 12 Oct 2009 11:14:32 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52927 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932385AbZJLPHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:07:50 -0400
-Date: Mon, 12 Oct 2009 17:07:13 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] blkdev: flush disk cache on ->fsync
-Message-ID: <20091012150713.GM9228@kernel.dk>
-References: <20090820182432.GA31520@lst.de> <20091010161531.GA30289@lst.de>
+	id S1751095AbZJLPOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 11:14:31 -0400
+Date: Mon, 12 Oct 2009 08:09:11 -0700
+From: Greg KH <gregkh@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: James Bottomley <James.Bottomley@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
+ 2.6.32-rc3)
+Message-ID: <20091012150911.GB1656@suse.de>
+References: <1255031298.4187.260.camel@mulgrave.site>
+ <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain>
+ <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
+ <20091008210737.GD29181@mit.edu>
+ <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
+ <20091009091538.GA4154@elte.hu>
+ <1255097287.2934.21.camel@localhost.localdomain>
+ <20091012130652.GB25464@elte.hu>
+ <1255357148.2850.91.camel@localhost.localdomain>
+ <20091012145453.GD4565@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091010161531.GA30289@lst.de>
+In-Reply-To: <20091012145453.GD4565@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10 2009, Christoph Hellwig wrote:
-> Is anyone going to pick up this patch?
+adding David Miller and the wireless developers who had this idea as
+well...
 
-I can pick it up for .33. I think it looks good, but it's probably
-something we should add up front.
+On Mon, Oct 12, 2009 at 04:54:53PM +0200, Ingo Molnar wrote:
+> I think your interpretation is arbitrary - where did you get that ABI 
+> rule from? I'm sure it cannot be from any of the drivers/staging/ 
+> discussions on lkml, i've followed them quite closely. If 'has a messy 
+> ABI' was the only requirement for drivers/staging/ then we could move 
+> 90% of drivers/staging/ into drivers/ straight away - and that would be 
+> counter-productive IMHO.
 
--- 
-Jens Axboe
+I agree with this, and the other points you raised that I snipped out.
 
+> Sidenote, in fact i think we should expand on that: drivers/staging/ 
+> should be used in the _other_ direction as well - to un-upstream stale 
+> drivers that are abandoned and unused, in a gradual fashion. 'git mv' is 
+> cheap.
+
+Ok, this is about the 3rd or 4th time I've heard this, from totally
+different people lately.  It seems that I'm the only one that has the
+ability to drop drivers out of the kernel tree, which is a funny
+situation :)
+
+In thinking about this a lot more, I don't really mind it.  If people
+want to push stuff out of "real" places in the kernel, into
+drivers/staging/ and give the original authors and maintainers notice
+about what is going on, _and_ provide a TODO file for what needs to
+happen to get the code back into the main portion of the kernel tree,
+then I'll be happy to help out with this and manage it.
+
+I think a 6-9 month window (basically 3 kernel releases) should be
+sufficient time to have a driver that has been in drivers/staging/ be
+cleaned up enough to move back into the main kernel tree.  If not, it
+could be easily dropped.
+
+Any objections to this?
+
+> Basically, drivers/staging/ gives us an excellent opportunity to 
+> _increase_ the quality of drivers by applying stronger upstream 
+> inclusion filters, without having to hurt users/developers in the 
+> process. We just have to start using it that way as well.
+
+I totally agree.  And so far, it does seem to be working well for this.
+A number of companies have used it to successfully get their code into
+the main kernel, as well as driving them to clean up their code better
+to keep it from having to go into the staging tree.
+
+thanks,
+
+greg k-h
