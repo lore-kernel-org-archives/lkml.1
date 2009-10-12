@@ -1,100 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932663AbZJLPtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932688AbZJLPtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932663AbZJLPtf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932258AbZJLPte
+	id S932688AbZJLPtn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932666AbZJLPtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:49:34 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:32976 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932585AbZJLPtd (ORCPT
+	Mon, 12 Oct 2009 11:49:42 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:34803 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932674AbZJLPtl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:49:33 -0400
+	Mon, 12 Oct 2009 11:49:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=F741WqqUEll6J68bZRSTMQSJH7/aEPfBGYs1ECD3HonOrL1MzqR7V+fF0hyxh3cbrq
-         NBFhyk2aQJ9M9h4FNgVeVhcO+NznrdLbl0LrNURQeW468BcBY5nGGWrNFOqv3euSrUGP
-         9uL7UOEGNebzMVTqEwVSUtr/m4J1anzkHsS3k=
-Date: Mon, 12 Oct 2009 08:48:46 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>
-Cc: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
-	anymore
-Message-ID: <20091012154846.GB7996@core.coreip.homeip.net>
-References: <4AD120F2.3020606@tremplin-utc.net> <20091011030029.GA6526@suse.de> <200910112135.29384.dmitry.torokhov@gmail.com> <4AD31709.4000103@tremplin-utc.net>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=b+HkXys7TFn82cnfVVZXlbr6gsAsgWeI/+5SoTvPpC6F/Il697Ar+MnhsZ7EWvYSf0
+         UuDB/ClWIm0TFUQet36kTD9jboWVzi5eAlq7fUUEqfQBCWvMuS+FLFI0u9SxjlTCFwrz
+         sgVkCFkgzGrWRhS0GQQNNuyV0anlDbPU7VkVQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AD31709.4000103@tremplin-utc.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <200910102334.42399.rjw@sisk.pl>
+References: <37b436160910101054t7765c253ta98b983f226b57c3@mail.gmail.com>
+	 <200910102334.42399.rjw@sisk.pl>
+Date: Mon, 12 Oct 2009 17:49:03 +0200
+Message-ID: <37b436160910120849o6aae596w50e450b4838ed233@mail.gmail.com>
+Subject: Re: Suspend to RAM on MSI PR200YA - do not recover, system 
+	immediately turns down
+From: Ondrej Hujnak <hujnak.ondrej@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, mschmidt@redhat.com,
+       pm list <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 01:46:17PM +0200, Éric Piel wrote:
-> Op 12-10-09 06:35, Dmitry Torokhov schreef:
-> > On Saturday 10 October 2009 08:00:29 pm Greg KH wrote:
-> >> On Sun, Oct 11, 2009 at 02:04:02AM +0200, ?ric Piel wrote:
-> >>> Hello,
-> >>>
-> >>> After a suspend, I used to do this (to get the PS2 keyboard working
-> >>> again), and it used to work fine:
-> >>> echo -n "i8042" > /sys/bus/platform/drivers/i8042/unbind ; sleep 1 ; echo
-> >>> -n "i8042" > /sys/bus/platform/drivers/i8042/bind
-> >>>
-> >>> Unfortunately since 2.6.32-rc1, the unbind works fine, but the bind
-> >>> returns a "no such device" error now (and the binding is not done). After
-> >>> that, additional unbinds also report the error. I think 2.6.31 worked
-> >>> fine. Any idea what's going wrong?
-> >> Odd.  Any chance you can run 'git bisect' to figure out which patch
-> >> might have caused it?
-> > 
-> > I8042 has been converted to use platform_driver_probe() - we are creating 
-> > platform device and platform driver together, there is no chance that some 
-> > other device might be driven by i8042 driver.
-> I haven't finished bisecting, but indeed, the problem seemed to converge
-> toward this patch.
-> 
-> 
-> > Eric, do you still need to fiddle with i8042 to get your keyboard working with 
-> > 2.6.32-rc3? We need to make sure that resube works without users needing to 
-> > mess with bind/unbind.
-> Yes, the keyboard doesn't work after the first resume from ram (the
-> later resumes do work). I haven't tried any special option to the i8042
-> driver. This is on a HP 2510, in 64 bits.
-
-Could you please try and let me know if unloading at suspend and
-reloading after resume atkbd and/or psmouse drivers and leaving i8042
-alone "fixes" the issue?
-
-> 
-> Indeed, it would be great to fix this root problem! Is there any bug
-> report opened to work on this?
-> 
-> However, currently the first problem is that unbind works, while bind
-> doesn't. Which means anyone doing an unbind will have keyboard and mouse
-> lost until the next reboot. That's rather bad because it has been
-> recommended for a long time to have this kind of script at resume:
-> http://intertrusion.com/files/hp-s2ram.patch
-> http://en.opensuse.org/Pm-utils
-
-*ahem* putting it sonewgere on the web does not really make it
-"recommended" ;)
-
-> 
-> So at least, unbind should fail as well as bind.
+2009/10/10 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Saturday 10 October 2009, Ondrej Hujnak wrote:
+>> Hello,
+>>
+>> I am trying to make work "Suspend to RAM".
+>> My laptop is MSI PR200YA, linux
+>> kernel 2.6.30.8-64.fc11.i586 (fedora 11, 32bit),
+>> the same is with 2.6.31.1-56.fc12.i686.
+>> Motherboard - MSI 1221, graphics:
+>> Mobile GM965/GL960 Integrated Graphics Controller
+>>
+>> When I do suspend to RAM it seem to work ok, it sleeps.
+>> But when I want to wake it, it only switches off (the power
+>> LED stops blinking).  If I'm having my notebook connected
+>> to electricity, after start it don't  start screen and keyboard.
+>> Notebook is running, but there is no HDD activity according
+>> to the LED indicator. When it is on battery, it normally starts,
+>> as if I had switched it normally off. Every time after trying to
+>> suspend it to RAM, on the next start I have
+>> "last write to superblock in future".
+>>
+>> I tried:
+>>  - suspend from "single" mode
+>>  - suspend from "single" mode with as many modules as possible rmmod'ed
+>>  - using "nomodeset"
+>>  - early suspend-to-RAM at boot test with "test_suspend=mem"
+>> All with the same result.
+>>
+>> I also tried using pm_trace, but this gave no useful results in dmesg
+>> in the next boot. The clock was not changed by it (the documentation
+>> said it would be).
+>>
+>> I have attached printout of "lspci -vv" and "dmesg" after switching
+>> pm_trace on.
+>>
+>> I'd welcome any ideas how to debug this further.
+>> I'm looking forward to your reply.
+>
+> Does the pm_test 'core' test work (please see
+> Documentation/power/basic-pm-debugging.txt)?
+>
+> Rafael
 >
 
-That would be Greg's domain s it is driver core decision whether to
-allow unbinding platform devices registered with
-platform_driver_probe().
+Ok, i tried all kinds of pm_test including core several times
+and everything seemed ok. I got no error, failure..
 
--- 
-Dmitry
+And i tried all possibilities of /sys/power/disk under
+ "init=/bin/bash" and same result as above.
+
+Ondrej
