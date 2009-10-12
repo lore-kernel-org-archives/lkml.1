@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932114AbZJLNIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbZJLNIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932114AbZJLNIR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 09:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbZJLNIM
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1756597AbZJLNIM (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 12 Oct 2009 09:08:12 -0400
-Received: from mail.pawisda.de ([213.157.4.156]:58272 "EHLO
-	mailrelay.pawisda.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756561AbZJLNIL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756582AbZJLNIL
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 12 Oct 2009 09:08:11 -0400
-Message-ID: <4AD32A14.3050408@lsexperts.de>
-Date: Mon, 12 Oct 2009 15:07:32 +0200
-From: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [Patch] Fix leak in usermode linux
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53660 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756541AbZJLNIK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 09:08:10 -0400
+Date: Mon, 12 Oct 2009 14:08:21 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] panic.c: export panic_on_oops
+Message-ID: <20091012140821.5dfa1598@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091012123210.GB22766@elte.hu>
+References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
+	<20091012111545.GB8857@elte.hu>
+	<1255346731.9659.31.camel@localhost>
+	<20091012113758.GB11035@elte.hu>
+	<20091012140149.6789efab@marrow.netinsight.se>
+	<20091012120951.GA16799@elte.hu>
+	<20091012142714.56362465@marrow.netinsight.se>
+	<20091012123210.GB22766@elte.hu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+> See my reply to David Woodhouse, i think we should add support for 
+> buffering in kernel/printk.c and that would both fix your problems, 
+> would simplify the driver (significantly!) and would expose the generic 
+> buffering capability to other console drivers as well.
 
-this was spotted by cppcheck, if find_tempdir fails,
-we dont free tempname.
-
-Signed-off-by: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>
-
---- linux/arch/um/os-Linux/mem.c.orig	2009-10-12 15:04:28.000000000 +0200
-+++ linux/arch/um/os-Linux/mem.c	2009-10-12 15:04:37.000000000 +0200
-@@ -175,7 +175,7 @@ static int __init make_tempfile(const ch
-
- 	find_tempdir();
- 	if ((tempdir == NULL) || (strlen(tempdir) >= MAXPATHLEN))
--		return -1;
-+		goto out;
-
- 	if (template[0] != '/')
- 		strcpy(tempname, tempdir);
-
--- 
-LSE Leading Security Experts GmbH, Postfach 100121, 64201 Darmstadt
-Unternehmenssitz: Weiterstadt, Amtsgericht Darmstadt: HRB8649
-Geschäftsführer: Oliver Michel, Sven Walther
+Buffering printk in general is bad. Given a driver needs only to provide
+about 6 lines of code using a kfifo is it really that hard for the odd
+code that wants to buffer to do that ?
 
