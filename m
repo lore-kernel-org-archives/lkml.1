@@ -1,285 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348AbZJLFzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbZJLF4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753348AbZJLFzR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 01:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbZJLFzQ
+	id S1752726AbZJLF4y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 01:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZJLF4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 01:55:16 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47867 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751286AbZJLFzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 01:55:14 -0400
-Date: Mon, 12 Oct 2009 16:54:28 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for October 12
-Message-Id: <20091012165428.e5084287.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+	Mon, 12 Oct 2009 01:56:53 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38248 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751469AbZJLF4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 01:56:52 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/QxYRHY5jQgesG0F+2x/TIueAdG++mLdrCo8ztxd
+	Rq2GOIxoLNkNAC
+Subject: [patch] perf_counter tools: fix counter sample frequency breakage
+From: Mike Galbraith <efault@gmx.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain
+Date: Mon, 12 Oct 2009 07:56:03 +0200
+Message-Id: <1255326963.15107.2.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__12_Oct_2009_16_54_28_+1100_oQ0Acol5ui6iXPxD"
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.42
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__12_Oct_2009_16_54_28_+1100_oQ0Acol5ui6iXPxD
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Changes since 20091009:
+perf_counter tools: fix counter sample frequency breakage
 
-New tree: i7core_edac
+Commit 42e59d7d19dc4b4 switched to a default sample frequency of 1KHz, which
+overrides any user supplied count, causing sched, top and timechart to miss
+events due to their discrete event counters being flagged PERF_SAMPLE_PERIOD.
 
-Dropped tree: i7core_edac (difficult merge conflict)
+Override default sample frequency when the user profides a count, and make both
+record and top honor that user supplied option.
 
-My fixes tree contains a build fix for powerpc/kvm.
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Arjan van de Ven <arjan@infradead.org>
+LKML-Reference: <new-submission>
 
-Linus' tree lost its build failure.
+---
+ tools/perf/builtin-record.c |   14 +++++++++++++-
+ tools/perf/builtin-top.c    |   28 +++++++++++++++++++++-------
+ 2 files changed, 34 insertions(+), 8 deletions(-)
 
-The mips tree lost its conflicts.
+Index: linux-2.6/tools/perf/builtin-record.c
+===================================================================
+--- linux-2.6.orig/tools/perf/builtin-record.c
++++ linux-2.6/tools/perf/builtin-record.c
+@@ -26,7 +26,7 @@
+ 
+ static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
+ 
+-static long			default_interval		= 100000;
++static long			default_interval		=      0;
+ 
+ static int			nr_cpus				=      0;
+ static unsigned int		page_size;
+@@ -730,6 +730,18 @@ int cmd_record(int argc, const char **ar
+ 		attrs[0].config = PERF_COUNT_HW_CPU_CYCLES;
+ 	}
+ 
++	/*
++	 * User specified count overrides default frequency.
++	 */
++	if (default_interval)
++		freq = 0;
++	else if (freq) {
++		default_interval = freq;
++	} else {
++		fprintf(stderr, "frequency and count are zero, aborting\n");
++		exit(EXIT_FAILURE);
++	}
++
+ 	for (counter = 0; counter < nr_counters; counter++) {
+ 		if (attrs[counter].sample_period)
+ 			continue;
+Index: linux-2.6/tools/perf/builtin-top.c
+===================================================================
+--- linux-2.6.orig/tools/perf/builtin-top.c
++++ linux-2.6/tools/perf/builtin-top.c
+@@ -57,7 +57,7 @@ static int			fd[MAX_NR_CPUS][MAX_COUNTER
+ 
+ static int			system_wide			=      0;
+ 
+-static int			default_interval		= 100000;
++static int			default_interval		=      0;
+ 
+ static int			count_filter			=      5;
+ static int			print_entries			=     15;
+@@ -975,7 +975,13 @@ static void start_counter(int i, int cou
+ 	attr = attrs + counter;
+ 
+ 	attr->sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
+-	attr->freq		= freq;
++
++	if (freq) {
++		attr->sample_type	|= PERF_SAMPLE_PERIOD;
++		attr->freq		= 1;
++		attr->sample_freq	= freq;
++	}
++
+ 	attr->inherit		= (cpu < 0) && inherit;
+ 
+ try_again:
+@@ -1130,11 +1136,6 @@ int cmd_top(int argc, const char **argv,
+ 	if (argc)
+ 		usage_with_options(top_usage, options);
+ 
+-	if (freq) {
+-		default_interval = freq;
+-		freq = 1;
+-	}
+-
+ 	/* CPU and PID are mutually exclusive */
+ 	if (target_pid != -1 && profile_cpu != -1) {
+ 		printf("WARNING: PID switch overriding CPU\n");
+@@ -1151,6 +1152,19 @@ int cmd_top(int argc, const char **argv,
+ 	parse_symbols();
+ 	parse_source(sym_filter_entry);
+ 
++
++	/*
++	 * User specified count overrides default frequency.
++	 */
++	if (default_interval)
++		freq = 0;
++	else if (freq) {
++		default_interval = freq;
++	} else {
++		fprintf(stderr, "frequency and count are zero, aborting\n");
++		exit(EXIT_FAILURE);
++	}
++
+ 	/*
+ 	 * Fill in the ones not specifically initialized via -c:
+ 	 */
 
-The parisc tree lost its conflicts.
 
-The mfd tree still has a build failure so I used the version from
-next-20091005.
-
-The voltage tree gained a build failure so I used the version from
-next-10091009.
-
-The suspend tree gained a build failure for which I applied a patch.
-
-The i7core_edac gained a difficult merge conflict against Linus' tree so I
-dropped it for today.
-
-I reverted a (possibly unintended) merge from the tip tree.
-
-The sound tree gained a build failure for which I applied a patch.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 142 trees (counting Linus' and 22 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-CONFLICT (content): Merge conflict in drivers/rtc/Kconfig
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-CONFLICT (content): Merge conflict in fs/ecryptfs/Kconfig
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-$ git reset --hard HEAD^
-Merging refs/next/20091005/mfd
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-$ git reset --hard HEAD^
-Merging refs/next/20091009/voltage
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Applying: suspend: using TASK_ macros requires sched.h
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging drbd/for-jens
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/Kconfig
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/Makefile
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_actlog.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_int.h
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_main.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_nl.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_receiver.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_req.c
-CONFLICT (add/add): Merge conflict in drivers/block/drbd/drbd_worker.c
-CONFLICT (add/add): Merge conflict in include/linux/drbd.h
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/mcheck/mce.c
-CONFLICT (content): Merge conflict in drivers/edac/Makefile
-$ git reset --hard
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in drivers/mtd/maps/gpio-addr-flash.c
-[master 49979ad] Revert "Merge branch 'out-of-tree' into auto-latest"
-Merging oprofile/for-next
-Merging percpu/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-Applying: sound: use semicolons to end statements
-
---Signature=_Mon__12_Oct_2009_16_54_28_+1100_oQ0Acol5ui6iXPxD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrSxJQACgkQjjKRsyhoI8ymUwCfdA+MDggQHXjwHo1sR62OIjQi
-6dcAnjXlcS5Nz7ZwGNJeiuXWK9PxegBb
-=SohB
------END PGP SIGNATURE-----
-
---Signature=_Mon__12_Oct_2009_16_54_28_+1100_oQ0Acol5ui6iXPxD--
