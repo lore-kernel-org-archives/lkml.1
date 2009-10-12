@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933541AbZJLWf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933550AbZJLWfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933541AbZJLWf2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 18:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933511AbZJLWf0
+	id S933550AbZJLWfz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 18:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933512AbZJLWfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 18:35:26 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:37547 "EHLO mx1.redhat.com"
+	Mon, 12 Oct 2009 18:35:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:61698 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933523AbZJLWfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 18:35:23 -0400
-Date: Tue, 13 Oct 2009 00:33:42 +0200 (CEST)
+	id S933498AbZJLWfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 18:35:53 -0400
+Date: Tue, 13 Oct 2009 00:34:02 +0200 (CEST)
 From: John Kacur <jkacur@redhat.com>
 X-X-Sender: jkacur@localhost.localdomain
 To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
@@ -24,11 +24,11 @@ cc: Frederic Weisbecker <fweisbec@gmail.com>,
        Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
        David Howells <dhowells@redhat.com>,
        Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
-Subject: [PATCH 2/6 RFC] arch/frv/kernel/process.c: Remove the BKL from
+Subject: [PATCH 3/6 RFC] arch/h83000/kernel/process.c: Remove BKL from
  sys_execve
-In-Reply-To: <alpine.LFD.2.00.0910130007240.3658@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0910130008320.3658@localhost.localdomain>
-References: <alpine.LFD.2.00.0910122350140.3658@localhost.localdomain> <alpine.LFD.2.00.0910130007240.3658@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0910130008320.3658@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0910130010000.3658@localhost.localdomain>
+References: <alpine.LFD.2.00.0910122350140.3658@localhost.localdomain> <alpine.LFD.2.00.0910130007240.3658@localhost.localdomain> <alpine.LFD.2.00.0910130008320.3658@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -36,26 +36,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 4489496ad43049df06b7ffc37afcea561fdb52b9 Mon Sep 17 00:00:00 2001
+>From 5cd96ce7851d01c1c28da724dd50713c8a1c66d7 Mon Sep 17 00:00:00 2001
 From: John Kacur <jkacur@redhat.com>
-Date: Mon, 12 Oct 2009 22:53:25 +0200
-Subject: [PATCH] arch/frv/kernel/process.c: Remove the BKL from sys_execve
+Date: Mon, 12 Oct 2009 23:04:11 +0200
+Subject: [PATCH] arch/h83000/kernel/process.c: Remove BKL from sys_execve
 
-sys_execve for frv seems to be a copy-and-paste of sys_execve that
-no longer requires the bkl. Just remove it.
+This looks like a copy-and-paste job for code that no-longer needs the BKL
+Just remove it.
 
 Signed-off-by: John Kacur <jkacur@redhat.com>
 ---
- arch/frv/kernel/process.c |    5 +----
+ arch/h8300/kernel/process.c |    5 +----
  1 files changed, 1 insertions(+), 4 deletions(-)
 
-diff --git a/arch/frv/kernel/process.c b/arch/frv/kernel/process.c
-index 9042559..21d0fd1 100644
---- a/arch/frv/kernel/process.c
-+++ b/arch/frv/kernel/process.c
-@@ -255,15 +255,12 @@ asmlinkage int sys_execve(char __user *name, char __user * __user *argv, char __
- 	int error;
+diff --git a/arch/h8300/kernel/process.c b/arch/h8300/kernel/process.c
+index e2f33d0..bd883fa 100644
+--- a/arch/h8300/kernel/process.c
++++ b/arch/h8300/kernel/process.c
+@@ -218,15 +218,12 @@ asmlinkage int sys_execve(char *name, char **argv, char **envp,int dummy,...)
  	char * filename;
+ 	struct pt_regs *regs = (struct pt_regs *) ((unsigned char *)&dummy-4);
  
 -	lock_kernel();
  	filename = getname(name);
@@ -63,9 +63,9 @@ index 9042559..21d0fd1 100644
  	if (IS_ERR(filename))
 -		goto out;
 +		return error;
- 	error = do_execve(filename, argv, envp, __frame);
+ 	error = do_execve(filename, argv, envp, regs);
  	putname(filename);
-- out:
+-out:
 -	unlock_kernel();
  	return error;
  }
