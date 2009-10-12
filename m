@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbZJLT73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbZJLUT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758053AbZJLT73 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZJLT72
+	id S1757781AbZJLUT0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 16:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbZJLUTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:59:28 -0400
-Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:3182 "EHLO
-	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755400AbZJLT70 (ORCPT
+	Mon, 12 Oct 2009 16:19:25 -0400
+Received: from smtp.microsoft.com ([131.107.115.215]:45363 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756542AbZJLUTZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:59:26 -0400
-Subject: Re: 2.6.32-rc4: Reported regressions 2.6.30 -> 2.6.31
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-In-Reply-To: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-Content-Type: text/plain
-Date: Mon, 12 Oct 2009 13:58:48 -0600
-Message-Id: <1255377529.9544.63.camel@bluto.andrew>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Oct 2009 16:19:25 -0400
+X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Oct 2009 16:19:25 EDT
+From: Hank Janssen <hjanssen@microsoft.com>
+To: Greg KH <gregkh@suse.de>, Haiyang Zhang <haiyangz@microsoft.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Tom Hanrahan <hanrahat@microsoft.com>,
+       Hashir Abdi <habdi@microsoft.com>
+Subject: RE: [patch] Staging: hv: Fix vmbus load hang caused by wrong data
+ packing
+Thread-Topic: [patch] Staging: hv: Fix vmbus load hang caused by wrong data
+ packing
+Thread-Index: AcpJ/6FE0xhfIRwfRT+rZ9QOhF0ebwBi+82AAA3jUSD//7JUgIAAXx2g
+Date: Mon, 12 Oct 2009 20:10:40 +0000
+Message-ID: <8AFC7968D54FB448A30D8F38F259C5620E7B1C22@TK5EX14MBXC114.redmond.corp.microsoft.com>
+References: <1FB5E1D5CA062146B38059374562DF7212DEE3EC@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20091012153013.GA2062@suse.de>
+ <1FB5E1D5CA062146B38059374562DF7212DF10DD@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20091012172953.GA10557@suse.de>
+In-Reply-To: <20091012172953.GA10557@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 00:41 +0200, Rafael J. Wysocki wrote:
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14309
-> Subject		: MCA on hp rx8640
-> Submitter	: Andrew Patterson <andrew.patterson@hp.com>
-> Date		: 2009-09-29 17:20 (13 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=db8be50c4307dac2b37305fc59c8dc0f978d09ea
-> References	: http://www.spinics.net/lists/linux-usb/msg22799.html
-> 
 
-Linus fixed this one with d93a8f829fe1d2f3002f2c6ddb553d12db420412.  It
-also looks like a duplicate of
-http://bugzilla.kernel.org/show_bug.cgi?id=14374
+>Odd quoting style :(
+
+We like to keep things lively :)
+
+>> Based on our testing, the #pragma pack(push,1) can pack the data
+>> correctly for the HyperV to use, but __attribute__((packed)) couldn't
+>> do this right.
+>
+>Why?  What does gcc generate differently?  This should be identical.
+
+It should, but in practice in this case it does not seem to behave the same
+Way.
+
+>> These data structures are moved by someone from the original file,
+>> ChannelMessages.h, which contains structures used for messaging to
+>> host.
+>
+>I moved them as they did not need to be in that file, right?
+
+Moving them was not a problem.
+
+>Ideally, we don't deal with packed structures at all, but with offsets
+>in memory and pick out the proper fields and put them into new
+>structures if you want to use them that way.  How hard would that be to
+>do here instead?
+
+It is something that I want to look at in the future. Our primary focus
+Is to get the bug fixed. We cannot do the offset way in the time we
+Have before 2.6.32 closes and still be comfortable we have gone through
+The extensive testing cycle we do on our side.
+
+>I still want to figure out what the real difference here is.  Especially
+>as I removed a lot of the #pragma pack(push,1) lines from the hv code.
+>If it really is different, all of those patches should be reverted,
+>right?
+
+Not sure yet if they need to be reverted, after we fixed this bug last week
+We are getting another one, it was masked by the one we just fixed. 
+We are checking into that right now;
+
+	BUG: unable to handle kernel NULL pointer dereference at (null)
+
 
 Thanks,
 
-Andrew
--- 
-Andrew Patterson
-Hewlett-Packard
+Hank.
+
 
