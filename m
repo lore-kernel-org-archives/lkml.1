@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933059AbZJLTGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbZJLTGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933059AbZJLTGX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbZJLTGX
+	id S933071AbZJLTGi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 15:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933061AbZJLTGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:06:23 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:64172 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933016AbZJLTGW (ORCPT
+	Mon, 12 Oct 2009 15:06:37 -0400
+Received: from mail-ew0-f208.google.com ([209.85.219.208]:58705 "EHLO
+	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933036AbZJLTGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:06:22 -0400
+	Mon, 12 Oct 2009 15:06:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=gPMUOS65GPLKfD8ne2IpbRWOIhhhkyxNg9cUgdgTMh/eM05MfHipeMvcRsUkjmHR7n
-         TQBSSyBcYCkdKV3nDN4unuOYzPnTZnL5t0FudWv2AU6+gHFEtrpDieoxcvY+3KxXN0xm
-         U0cUWYxmtwFBXh09wudU7EHm6wfTYuDMqaxnA=
-Message-ID: <4AD37E05.5010504@gmail.com>
-Date: Mon, 12 Oct 2009 21:05:41 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type;
+        b=X5Hd5rBwqtFCHh6OPo1N82BZP78m1mvNkObP3X/2Pk/XojNgeA5U8tzQemsYLHK0jF
+         SjWpORMxwrXvWr8mpp/hxG3Jk3GE8VRIBDxxrBYuI4rcXaMBl+kSQU4/glqvsgLyDSSZ
+         hiC5esD+AIurq6IXKaN1mkAzgdx58inzdYIMM=
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=22Fr=E9d=E9ric_L=2E_W=2E_Meunier=22?= 
-	<fredlwm@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, edt@aei.ca,
-       hirofumi@mail.parknet.co.jp, alan@linux.intel.com,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: keyboard under X with 2.6.31
-References: <4AD17C6A.4030902@yahoo.co.uk> <alpine.LNX.2.01.0910111735140.19647@dyndns.pervalidus.net>
-In-Reply-To: <alpine.LNX.2.01.0910111735140.19647@dyndns.pervalidus.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20091012072642.3a06a271@infradead.org>
+References: <bb145bd20910120701p70c176d9p85028da7afec094c@mail.gmail.com>
+	 <20091012072642.3a06a271@infradead.org>
+Date: Mon, 12 Oct 2009 21:05:59 +0200
+Message-ID: <bb145bd20910121205t201b0eb5g74e9d31c82e3e4fa@mail.gmail.com>
+Subject: Re: *Really* bad I/O latency with md raid5+dm-crypt+lvm
+From: Christian Pernegger <pernegger@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frédéric L. W. Meunier wrote:
-> On Sun, 11 Oct 2009, Boyan wrote:
-> 
->> (sending again, sorry about last reply, wrong subject...)
->> On Sat, 10 Oct 2009 21:00:05 -0400, Ed Tomlinson wrote:
->>> You are not alone with keyboard problems in 31 in X.  In my case I
->>> blamed a  new wireless setup.
->>> I am building with the the above commit reverted.
+>> [Please keep me CCed as I'm not subscribed to LKML]
 >>
->> Not sure why, but after reverting
->> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
->> 'low_latency' tty flag) my analog tv tuner stopped working after booting
->> for the first time. It has TV and FM radio, but only radio worked when
->> reverted this patch. I saw some EIO errors with strace. Then added again
->> the patch and on top of it I've added commit:
->>
->> 3a54297478e6578f96fd54bf4daa1751130aca86
->> pty: quickfix for the pty ENXIO timing problems
->>
->> Everything was ok.
->> Today I've tried to reproduce this and reverted both patches. Recompiled
->> and everything is ok. Not sure what happened yesterday.
->> So to summarize 2.6.31.3 with reverted commit
->> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
->> 'low_latency' tty flag) works for me.
-> 
-> Reverting the commit also works for me. Thanks.
-> 
-> The direct link, for those not using git:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e043e42bdb66885b3ac10d27a01ccb9972e2b0a3
- 
-CC'ing Greg K-H
+>> Summary: I was hoping to use a layered storage setup, namely lvm on
+>> dm-crypt on md raid5 for a new box I'm setting up, but that isn't
+>> looking so good since a single heavyish writer will monopolise any and
+>> all I/O on the "device". F. ex. while cp'ing a few GB of data from an
+>> external disk to the array it takes ~10sec to run ls and ~2min to
+>> start aptitude. Clueless attempts at a diagnosis below.
 
+> Also note that dm-crypt is not "SMP-ready", so whatever hardware you have,
+> it will only use once CPU - this may seriously limit the performance,
+> depending on your usage and hardware.
+
+The crypto performance itself is fine. Yes, it limits throughput to a
+little over 100MiB/s but so what, that's plenty. Multi-core support
+will come in time, I can wait. What I can't live with is a single
+streaming write singlehandedly starving all reads. Linux has never
+been great at this and it has been getting worse since ~2.6.18 but it
+was never more than a nuisance (say <1sec delay).
+
+It's as if the I/O scheduler weren't there.
+
+> [latencytop? regular top?]
+
+Actually I hadn't heard of latencytop but it looks nifty. Will have to
+compile a custom kernel for it, though, since Debian kernels don't
+have CONFIG_LATENCYTOP set.
+
+Regular top has kcryptd (67%), mv (36%), md1_raid5 (36%), pdflush
+(7%), kjournald (5%) at the top. Seems a bit much for md, doesn't it?
+This is while mv'ing in some data from an sdditional SATA disk, lateny
+isn't *too* bad, ~3s for an ls. According to iostat mv is writing to
+the array at 50-60 MB/s. The fun part: it's using ~15000tps averaging
+out to 4k per transaction as observed via btrace.
+
+That can't be normal, can it?
+
+Thanks,
+
+C.
