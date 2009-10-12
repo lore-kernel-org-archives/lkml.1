@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbZJLSKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbZJLSLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbZJLSKc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 14:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757469AbZJLSKb
+	id S933041AbZJLSLm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 14:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbZJLSLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 14:10:31 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:42055 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757467AbZJLSKb (ORCPT
+	Mon, 12 Oct 2009 14:11:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32820 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757474AbZJLSLk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 14:10:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=iBxlhbBRCUnvtjUnVdIh7PXmuGGGSiMQiJCuq1Ze9UkXprRftS0w32D+uBMkXFYC2O
-         ZG2UWBdA3JkBggEk+tL1q1qtM25WrrjgHxyEYFwlkvfbN41yWN3nO/3gAuTC8hV4opMj
-         qUTGZ9fFG4bjDqXnXdQvbS9lH/wN8mIoj+gIU=
-Message-ID: <4AD370EC.1050306@gmail.com>
-Date: Mon, 12 Oct 2009 12:09:48 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: Arjan van de Ven <arjan@linux.intel.com>,
-       Thomas Schlichter <thomas.schlichter@web.de>,
-       linux-kernel@vger.kernel.org, Thomas Hellstrom <thellstrom@vmware.com>
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not   available
-References: <200910100322.36857.thomas.schlichter@web.de> <4AD00C89.3000503@linux.intel.com> <20091011185114.GB18578@khazad-dum.debian.net> <4AD229FA.7020104@linux.intel.com> <20091011201953.GD18578@khazad-dum.debian.net>
-In-Reply-To: <20091011201953.GD18578@khazad-dum.debian.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Mon, 12 Oct 2009 14:11:40 -0400
+Date: Mon, 12 Oct 2009 11:09:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       Ingo Molnar <mingo@elte.hu>, Artem Bityutskiy <dedekind1@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] panic.c: export panic_on_oops
+Message-Id: <20091012110954.67d7d8d8.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.01.0910120828390.3438@localhost.localdomain>
+References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
+	<20091012111545.GB8857@elte.hu>
+	<1255346731.9659.31.camel@localhost>
+	<20091012113758.GB11035@elte.hu>
+	<20091012140149.6789efab@marrow.netinsight.se>
+	<20091012120951.GA16799@elte.hu>
+	<1255349748.10605.13.camel@macbook.infradead.org>
+	<20091012122023.GA19365@elte.hu>
+	<20091012150650.51a4b4dc@marrow.netinsight.se>
+	<20091012131528.GC25464@elte.hu>
+	<20091012153937.0dcd73e5@marrow.netinsight.se>
+	<alpine.LFD.2.01.0910120828390.3438@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/11/2009 02:19 PM, Henrique de Moraes Holschuh wrote:
-> On Sun, 11 Oct 2009, Arjan van de Ven wrote:
->> Henrique de Moraes Holschuh wrote:
->>> On Fri, 09 Oct 2009, Arjan van de Ven wrote:
->>>>> I've found a problem with X.org not setting up MTRR for the
->>>>> framebuffer memory. After I investigated I think this is not a
->>>>> X.org problem, but a kernel issue.
->>>> is there any CPU left that does not support PAT ?
->>>
->>> A few million of them.  Like every Centrino laptop out there, unless the
->>> kernel blacklist for PAT on Intel CPUs is wrong.
->>
->> afaik it is extremely conservative right now. FAR too much so.
->
-> That *still* means we need the patch in this thread.
+On Mon, 12 Oct 2009 08:36:38 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I don't know that it is too conservative - the erratum which justifies 
-the disablement (Core Solo/Duo erratum AE7, Pentium M erratum Y31, 
-likely other IDs for it too) states that "A page whose PAT memory type 
-is USWC while the relevant MTRR memory type is UC, the consolidated 
-memory type may be treated as UC (rather than WC as specified in IA-32 
-Intel® Architecture Software Developer's Manual). When this erratum 
-occurs, the memory page may be as UC (rather than WC). This may have a 
-negative performance impact." This is exactly the case being discussed 
-here with the framebuffer which we're trying to set as WC with existing 
-MTRRs set (or defaulting to) UC. This not only affects Pentium M but 
-also the original Core Solo and Core Duo CPUs which surely is millions 
-of existing laptops. It seems pretty clear-cut and there's no workaround 
-identified, so I think we do indeed need a patch like this one.
+> I agree with the "save kernel buffer on panic" thing, but I disagree with 
+> making it anything new, and hooking into "printk()" or the console 
+> subsystem AT ALL. That's just bogus, stupid, and WRONG.
+> 
+> What you can do is to just flush the 'log_buf' buffer (or as much of it as 
+> you want - the buffer may be a megabyte in size, and maybe you only want 
+> to flush the last 8kB or something like that) on oops. And _not_ mix this 
+> up with anything else.
+
+What he said.  I did it that way in the Digeo kernel back in 2002. 
+Worked good.  
+
+Doing it via a console is rather weird.  It will need core kernel
+changes to do it properly.
+
+Perhaps oops_enter() is a good place to mark the start of the log, and
+flush it within oops_exit().
+
