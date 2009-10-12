@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933502AbZJLW3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933515AbZJLWas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933502AbZJLW3y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 18:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933481AbZJLW3x
+	id S933515AbZJLWas (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 18:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933219AbZJLWar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 18:29:53 -0400
-Received: from thunk.org ([69.25.196.29]:50718 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932975AbZJLW3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 18:29:52 -0400
-Date: Mon, 12 Oct 2009 18:29:10 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Weird ext4 bug: 256P used?
-Message-ID: <20091012222910.GB18195@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Felipe Contreras <felipe.contreras@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <94a0d4530910120651i18ce33d2k89abcd66d1b865a1@mail.gmail.com>
+	Mon, 12 Oct 2009 18:30:47 -0400
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:40037 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933483AbZJLWaq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 18:30:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=V/nMc5uu6fhn0MSOUGxmK/xSnqMZTTgvgLcoLkVKyYXCyx5xcH+Fo8/iXfNJSS6EGX
+         WTdjkPnCw7VcOkU6HqaKy95+CzziVfYYdblfqTHbG5AR+VPTF1/+2/J/hcJmfUr5Z0+m
+         qcZ3Ds/qa17x/5JuMz0FbpUrHarbuTwrGw06Q=
+Date: Tue, 13 Oct 2009 00:30:06 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Laurent Riffard <laurent.riffard@free.fr>
+Subject: Re: [PATCH] kill-the-bkl/reiserfs: fix reiserfs lock to
+	cpu_add_remove_lock dependency
+Message-ID: <20091012223005.GA4711@nowhere>
+References: <1255386309-4992-1-git-send-email-fweisbec@gmail.com> <1255386309-4992-2-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <94a0d4530910120651i18ce33d2k89abcd66d1b865a1@mail.gmail.com>
+In-Reply-To: <1255386309-4992-2-git-send-email-fweisbec@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 04:51:31PM +0300, Felipe Contreras wrote:
-> This is what I get with 'du -x --max-depth=3 | sort -n'.
-> 
-> 140735340884184	./var/lib/yum
-> 140735340910320	./usr/include
-> 140735341711632	./var/lib
-> 140735342038956	./var
-> 140735344736432	./usr
-> 281470691009304	.
-> 
-> I did 'touch /forcefsck', rebooted, and didn't get any error, so I
-> guess at least the basic checks are passing.
+On Tue, Oct 13, 2009 at 12:25:02AM +0200, Frederic Weisbecker wrote:
+> This can be fixed by relaxing the reiserfs lock while creating the
+> workqueue.
+> This is fine to relax the lock here, we just keep it around to pass
+> through reiserfs lock checks and for paranoid reasons.
 
-So if you do "du -x | sort -n", what's the deepest directory that
-shows a very large size, and can you find the files that seems to be
-responsible for these large du reports?
 
-					- Ted
+Nothing related to kprobes that said...
+Sorry for the noise. I've already posted this patch, but it
+looks like these locking inversions don't want to live
+their own life and follow me everywhere...
+
