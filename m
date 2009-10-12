@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZJLJ4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755138AbZJLKBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZJLJ4N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 05:56:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbZJLJ4N
+	id S1755138AbZJLKBR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 06:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbZJLKBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 05:56:13 -0400
-Received: from mx10.lb01.inode.at ([62.99.145.10]:14841 "EHLO mx.inode.at"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755028AbZJLJ4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 05:56:12 -0400
-Message-ID: <4AD2FD10.2010800@sbg.ac.at>
-Date: Mon, 12 Oct 2009 11:55:28 +0200
-From: Alexander Huemer <alexander.huemer@sbg.ac.at>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 12 Oct 2009 06:01:16 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33706 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbZJLKBQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 06:01:16 -0400
+Date: Mon, 12 Oct 2009 11:00:23 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: ngupta@vflare.org, linux-arm-kernel@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
+Message-ID: <20091012100023.GC29310@n2100.arm.linux.org.uk>
+References: <1255337423-3158-1-git-send-email-ngupta@vflare.org> <20091012090710.GA29310@n2100.arm.linux.org.uk> <20091012.023744.157085851.davem@davemloft.net>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       alexander.huemer@sbg.ac.at
-Subject: Re: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
-References: <4ABBB8C2.2080901@sbg.ac.at> <200910101513.51320.elendil@planet.nl> <4AD2DFA4.9000602@kernel.org> <200910121148.16439.elendil@planet.nl> <4AD2FC60.8080705@kernel.org>
-In-Reply-To: <4AD2FC60.8080705@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012.023744.157085851.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Frans Pop wrote:
->   
->> On Monday 12 October 2009, Tejun Heo wrote:
->>     
->>> Alexander, can you please attach full boot log and the output of
->>> "lspci -nn"?  Also, how reproducible is the problem?  You already
->>> answered to Frans' question but can you be more specific?
->>>       
->> Full dmesg was made available earlier at:
->> http://xx.vu/~ahuemer/dmesg_ahuemer_20090923
->>     
->
-> Does blacklisting i801_smbus make any difference?
->
->   
-lspci -nn:
-http://xx.vu/~ahuemer/lspci_nn_ahuemer_20091012
+On Mon, Oct 12, 2009 at 02:37:44AM -0700, David Miller wrote:
+> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+> Date: Mon, 12 Oct 2009 10:07:10 +0100
+> 
+> > On Mon, Oct 12, 2009 at 02:20:23PM +0530, Nitin Gupta wrote:
+> >> Same problem exists on mips too.
+> > 
+> > Nice catch.  This logic came from sparc64, so I think you'd want to talk
+> > to davem about it as well.
+> > 
+> > In the mean time, submitting your fix to the patch system would be great,
+> > thanks.
+> 
+> Sparc64 flushes unconditionally when there is no page mapping.
+> So, it should be fine here.
 
-what do you mean with "blacklisting i801_smbus" ?
+Are you sure - I checked the sparc64 code before posting, and we're doing
+the same thing.
 
-regards
--alex
+Sparc64 update_mmu_cache:
+        page = pfn_to_page(pfn);
+        if (page && page_mapping(page)) {
+                pg_flags = page->flags;
+                if (pg_flags & (1UL << PG_dcache_dirty)) {
+			/* do lazy flush */
+		}
+	}
+
+Sparc64 flush_dcache_page:
+        mapping = page_mapping(page);
+        if (mapping && !mapping_mapped(mapping)) {
+                set_dcache_dirty(page, this_cpu);
+	}
+
+ARM update_mmu_cache:
+        page = pfn_to_page(pfn);
+        mapping = page_mapping(page);
+        if (mapping) {
+                int dirty = test_and_clear_bit(PG_dcache_dirty, &page->flags);
+                if (dirty)
+                        /* do lazy flush */
+
+ARM flush_dcache_page:
+        struct address_space *mapping = page_mapping(page);
+        if (!PageHighMem(page) && mapping && !mapping_mapped(mapping))
+                set_bit(PG_dcache_dirty, &page->flags);
+
+It looks identical to me.
+
+The problem which has been identified is that when flush_dcache_page() is
+called, there is a mapping, and so the page is marked for lazy flushing.
+However, by the time update_mmu_cache() gets called, the mapping has gone
+and so update_mmu_cache() does nothing.
