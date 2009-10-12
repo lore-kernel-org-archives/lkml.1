@@ -1,76 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932742AbZJLQCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932752AbZJLQK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932742AbZJLQCW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932733AbZJLQCV
+	id S932752AbZJLQK5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbZJLQKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:02:21 -0400
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:42174 "EHLO
-	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932732AbZJLQCV (ORCPT
+	Mon, 12 Oct 2009 12:10:55 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:10391 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756090AbZJLQKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 12:02:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=QdvM8cpYTQOCiK7Elg388ej8g6kc2lSjI5Obpw9bQw/CDEVYsgb8+YRMbmHehPsCDg
-         I5jDiVQijObbZqPvl9C/A3LwJCAlKt32RoLfWWEIsX2ihAWZtR+zEtcC6MkR6f+65nWK
-         UX/oamVBNOg0fIA4GrgL5r38XPA4phzlxLq2A=
-Date: Tue, 13 Oct 2009 00:05:48 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Antoine Martin <antoine@nagafix.co.uk>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31.2 broke UML 64-bit build (2.6.31 was fine)
-Message-ID: <20091012160548.GA3961@hack>
-References: <4AD34542.7050500@nagafix.co.uk>
+	Mon, 12 Oct 2009 12:10:54 -0400
+X-Trace: 273348571/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.53.9/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.53.9
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AigFAEHx0kpPRTUJ/2dsb2JhbACBUtVxhC0EgVg
+X-IronPort-AV: E=Sophos;i="4.44,546,1249254000"; 
+   d="scan'208";a="273348571"
+Date: Mon, 12 Oct 2009 17:09:53 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: David Miller <davem@davemloft.net>, Nitin Gupta <ngupta@vflare.org>,
+       Nick Piggin <npiggin@suse.de>, linux-arm-kernel@lists.infradead.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
+In-Reply-To: <20091012100023.GC29310@n2100.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0910121634170.7327@sister.anvils>
+References: <1255337423-3158-1-git-send-email-ngupta@vflare.org>
+ <20091012090710.GA29310@n2100.arm.linux.org.uk> <20091012.023744.157085851.davem@davemloft.net>
+ <20091012100023.GC29310@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD34542.7050500@nagafix.co.uk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 10:03:30PM +0700, Antoine Martin wrote:
->tar -jxf linux-2.6.31.2.tar.bz2
->cd linux-2.6.31.2
->cp ../.config ./
->make ARCH=um
->[...]
->  MODPOST vmlinux.o
->  GEN     .version
->  CHK     include/linux/compile.h
->  UPD     include/linux/compile.h
->  CC      init/version.o
->  LD      init/built-in.o
->  LD      .tmp_vmlinux1
->/usr/lib/gcc/x86_64-pc-linux-gnu/4.1.2/../../../../x86_64-pc-linux-gnu/bin/ld:arch/um/kernel/vmlinux.lds:1:
->ignoring invalid character `#' in expression
->/usr/lib/gcc/x86_64-pc-linux-gnu/4.1.2/../../../../x86_64-pc-linux-gnu/bin/ld:arch/um/kernel/vmlinux.lds:1:
->syntax error
->collect2: ld returned 1 exit status
->  KSYM    .tmp_kallsyms1.S
->nm: '.tmp_vmlinux1': No such file
->No valid symbol.
->make: *** [.tmp_kallsyms1.S] Error 1
+On Mon, 12 Oct 2009, Russell King - ARM Linux wrote:
+> On Mon, Oct 12, 2009 at 02:37:44AM -0700, David Miller wrote:
+> > From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+> > Date: Mon, 12 Oct 2009 10:07:10 +0100
+> > 
+> > > On Mon, Oct 12, 2009 at 02:20:23PM +0530, Nitin Gupta wrote:
+> > >> Same problem exists on mips too.
+> > > 
+> > > Nice catch.  This logic came from sparc64, so I think you'd want to talk
+> > > to davem about it as well.
+> > > 
+> > > In the mean time, submitting your fix to the patch system would be great,
+> > > thanks.
+> > 
+> > Sparc64 flushes unconditionally when there is no page mapping.
+> > So, it should be fine here.
+> 
+> Are you sure - I checked the sparc64 code before posting, and we're doing
+> the same thing.
+> 
+> Sparc64 update_mmu_cache:
+>         page = pfn_to_page(pfn);
+>         if (page && page_mapping(page)) {
+>                 pg_flags = page->flags;
+>                 if (pg_flags & (1UL << PG_dcache_dirty)) {
+> 			/* do lazy flush */
+> 		}
+> 	}
+> 
+> Sparc64 flush_dcache_page:
+>         mapping = page_mapping(page);
+>         if (mapping && !mapping_mapped(mapping)) {
+>                 set_dcache_dirty(page, this_cpu);
+> 	}
+> 
+> ARM update_mmu_cache:
+>         page = pfn_to_page(pfn);
+>         mapping = page_mapping(page);
+>         if (mapping) {
+>                 int dirty = test_and_clear_bit(PG_dcache_dirty, &page->flags);
+>                 if (dirty)
+>                         /* do lazy flush */
+> 
+> ARM flush_dcache_page:
+>         struct address_space *mapping = page_mapping(page);
+>         if (!PageHighMem(page) && mapping && !mapping_mapped(mapping))
+>                 set_bit(PG_dcache_dirty, &page->flags);
+> 
+> It looks identical to me.
+> 
+> The problem which has been identified is that when flush_dcache_page() is
+> called, there is a mapping, and so the page is marked for lazy flushing.
+> However, by the time update_mmu_cache() gets called, the mapping has gone
+> and so update_mmu_cache() does nothing.
 
+Sorry to muddy the waters on this, if you and Dave are sure that
+you have the right fix, down in your architectures, and that fix
+isn't going to hurt your performance significantly.
 
-Hmm, this is a known problem:
-https://lists.linux-foundation.org/pipermail/bugme-new/2009-May/021900.html
+But this issue would affect other architectures too, wouldn't it?
+I think not just mips, which was mentioned, but others too, parisc
+for example: linux-arch Cc'ed.
 
->
->Sorry, not had time to bisect it.
->Tested with gcc 4.1.2 and gcc 4.3.2
->Use this config if yours does not exhibit the problem:
->http://uml.devloop.org.uk/kernels/kernel64-2.6.31.config
+And I'm not certain that down in the arch is the right place:
+it may well turn out to be right, but that's not obvious.  
 
-No problem. Thanks for your report!
+How much is this issue peculiar to swap?  Where Nitin discovered it
+in do_swap_page(), due to swap cache being freed before reaching the
+update_mmu_cache().
 
-I will take care of this tomorrow, it's mid-night here already. :-)
+If it is peculiar to swap, then I'd suggest perhaps one of two very
+different solutions.  One would be to rearrange do_swap_page() so we
+do not remove the page from swap cache before the update_mmu_cache()
+(that would need care, and might turn out to be harder than I think).
+The alternative solution might be to stop page_mapping(page) returning
+the pseudo-address_space swapper_space when PageSwapCache - I always
+hated that, but had to give in at the time.
 
+(Aside: I don't think it affects this issue, but just be aware
+that mapping_mapped(page) returns false on a swapcache page,
+no matter whether it's mapped in anywhere or not.)
 
--- 
-Live like a child, think like the god.
- 
+But if it is not peculiar to swap, fixes down in the architecture
+may be inevitable.  I think this depends on what happens when
+truncating or unmapping a file.  It used to be the case that pages
+were unmapped first, then truncated (clearing page->mapping) after:
+in which case, Nitin's issue would appear to be peculiar to swap.
+
+But around 2.6.23 Nick found a second unmap_mapping_range() necessary
+after the truncation (just for the invalidation case? or because of
+inadequate serialization, now I think fixed with the page lock?).
+And I think he has that area under reconstruction again at present,
+so Cc'ed for his opinion on this issue - thanks.
+
+Hugh
