@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933531AbZJLWfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933541AbZJLWf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933531AbZJLWfV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 18:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933523AbZJLWfU
+	id S933541AbZJLWf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 18:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933511AbZJLWf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 18:35:20 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56459 "EHLO mx1.redhat.com"
+	Mon, 12 Oct 2009 18:35:26 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:37547 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933477AbZJLWfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 18:35:19 -0400
-Date: Tue, 13 Oct 2009 00:33:21 +0200 (CEST)
+	id S933523AbZJLWfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 18:35:23 -0400
+Date: Tue, 13 Oct 2009 00:33:42 +0200 (CEST)
 From: John Kacur <jkacur@redhat.com>
 X-X-Sender: jkacur@localhost.localdomain
 To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
@@ -24,11 +24,11 @@ cc: Frederic Weisbecker <fweisbec@gmail.com>,
        Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
        David Howells <dhowells@redhat.com>,
        Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
-Subject: [PATCH 1/6 RFC] arch/blackfin/kernel/process.c: Remove the BKL from
+Subject: [PATCH 2/6 RFC] arch/frv/kernel/process.c: Remove the BKL from
  sys_execve
-In-Reply-To: <alpine.LFD.2.00.0910122350140.3658@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0910130007240.3658@localhost.localdomain>
-References: <alpine.LFD.2.00.0910122350140.3658@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0910130007240.3658@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0910130008320.3658@localhost.localdomain>
+References: <alpine.LFD.2.00.0910122350140.3658@localhost.localdomain> <alpine.LFD.2.00.0910130007240.3658@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -36,39 +36,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From b9b41b5a546ed0202c099f0d973da4df9aea314a Mon Sep 17 00:00:00 2001
+>From 4489496ad43049df06b7ffc37afcea561fdb52b9 Mon Sep 17 00:00:00 2001
 From: John Kacur <jkacur@redhat.com>
-Date: Mon, 12 Oct 2009 22:44:40 +0200
-Subject: [PATCH] arch/blackfin/kernel/process.c: Remove the BKL from sys_execve
+Date: Mon, 12 Oct 2009 22:53:25 +0200
+Subject: [PATCH] arch/frv/kernel/process.c: Remove the BKL from sys_execve
 
-This looks like a cut-and-paste job.
-For example, compare this function to sys_execve in
-arch/x86/kernel/process_64.c
-
-and it is almost line by line the same, except the one in x86 nolonger has the
-big kernel lock. All of the functions called between the lock are generic
-and not specific to blackfin - thus, I believe it is safe to remove the
-bkl here.
+sys_execve for frv seems to be a copy-and-paste of sys_execve that
+no longer requires the bkl. Just remove it.
 
 Signed-off-by: John Kacur <jkacur@redhat.com>
 ---
- arch/blackfin/kernel/process.c |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
+ arch/frv/kernel/process.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/process.c
-index 430ae39..7d9c975 100644
---- a/arch/blackfin/kernel/process.c
-+++ b/arch/blackfin/kernel/process.c
-@@ -215,22 +215,18 @@ copy_thread(unsigned long clone_flags,
- /*
-  * sys_execve() executes a new program.
-  */
--
- asmlinkage int sys_execve(char __user *name, char __user * __user *argv, char __user * __user *envp)
- {
+diff --git a/arch/frv/kernel/process.c b/arch/frv/kernel/process.c
+index 9042559..21d0fd1 100644
+--- a/arch/frv/kernel/process.c
++++ b/arch/frv/kernel/process.c
+@@ -255,15 +255,12 @@ asmlinkage int sys_execve(char __user *name, char __user * __user *argv, char __
  	int error;
- 	char *filename;
- 	struct pt_regs *regs = (struct pt_regs *)((&name) + 6);
+ 	char * filename;
  
 -	lock_kernel();
  	filename = getname(name);
@@ -76,7 +63,7 @@ index 430ae39..7d9c975 100644
  	if (IS_ERR(filename))
 -		goto out;
 +		return error;
- 	error = do_execve(filename, argv, envp, regs);
+ 	error = do_execve(filename, argv, envp, __frame);
  	putname(filename);
 - out:
 -	unlock_kernel();
