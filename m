@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZJLO2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932325AbZJLOdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbZJLO2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756827AbZJLO2R
+	id S932325AbZJLOdD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:33:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932312AbZJLOdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:28:17 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:41430 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756848AbZJLO2Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:28:16 -0400
-Date: Mon, 12 Oct 2009 10:27:39 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>
-cc: Ben Efros <ben@pc-doctor.com>, fangxiaozhi <huananhu@huawei.com>,
-       Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>,
-       Josua Dietze <digidietze@draisberghof.de>
-Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2 [PATCH]
-In-Reply-To: <1255318095.2192.92.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0910121012030.11420-100000@netrider.rowland.org>
+	Mon, 12 Oct 2009 10:33:00 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46880 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932311AbZJLOc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:32:59 -0400
+Date: Mon, 12 Oct 2009 07:28:49 -0700
+From: Greg KH <gregkh@suse.de>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: Ingo Molnar <mingo@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: Re: [PATCH] USB: musb: invert arch depend string
+Message-ID: <20091012142849.GA1114@suse.de>
+References: <20091012074221.GA19198@elte.hu>
+ <1255355396-20533-1-git-send-email-vapier@gentoo.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255355396-20533-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009, Benjamin Herrenschmidt wrote:
+On Mon, Oct 12, 2009 at 09:49:56AM -0400, Mike Frysinger wrote:
+> The MUSB code relies on platform implementations that currently only
+> exists for Arm and Blackfin processors, so have the MUSB Kconfig depend
+> upon those arches.
+> 
+> This should prevent other arches from building MUSB via randconfig.
+> 
+> Reported-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-> BTW. I noticed that USB storage is supposed to avoid doing the reset if
-> the device is multifunction.
+Linus, if you want to take this right now, feel free to add:
 
-Not "multifunction" but "multitarget" -- which means that the device is
-attached to a real SCSI bus which may have more than one target.  In
-such a situation it's best to avoid bus resets when possible, since
-they affect all the targets.
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
->  I suppose that flag gets set prior to the
-> "mode switch" and so the reset happens regardless... maybe we should set
-> that MF flag from the quirk that sends the mode switch ?
+Otherwise I will queue this up to send to you in a day or so.
 
-You mean, avoid doing a reset after an auto-sense failure if the device
-has other interfaces?  Maybe...  I'm not really sure.  To tell the
-truth, that comment about "failure of an auto-sense is perfectly valid"  
-doesn't make much sense to me.  In principle, the SCSI core would have
-to issue its own REQUEST SENSE command and the end result would be the
-same.
+thanks,
 
-(In your case that wouldn't happen, because the device actually did
-send valid sense data before sending the failure code.  The SCSI core
-would see that data sitting in the buffer and believe it.  So things
-would work out okay, but only by coincidence, not by design -- unless 
-we wipe the buffer before returning.)
-
-I don't know.  Maybe it really would be best not to reset after an 
-auto-sense failure, ever.  I can't recall the issue coming up in any 
-bug reports before.  But then what should we do after an auto-sense 
-error?  It probably should be treated the same as a normal error, which 
-means doing a reset.
-
-Alan Stern
-
+greg k-h
