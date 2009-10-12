@@ -1,54 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbZJLINR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZJLIVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754676AbZJLINR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 04:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbZJLINQ
+	id S1754760AbZJLIVn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 04:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZJLIVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 04:13:16 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40569 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754227AbZJLINP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 04:13:15 -0400
-Date: Mon, 12 Oct 2009 17:12:32 +0900 (JST)
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] vmscan: kill shrink_all_zones()
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm" <linux-mm@kvack.org>
-In-Reply-To: <200910112301.29237.rjw@sisk.pl>
-References: <20091009175559.12B8.A69D9226@jp.fujitsu.com> <200910112301.29237.rjw@sisk.pl>
-Message-Id: <20091012170439.E4CA.A69D9226@jp.fujitsu.com>
+	Mon, 12 Oct 2009 04:21:43 -0400
+Received: from mail.issp.bas.bg ([195.96.236.10]:40220 "EHLO mail.issp.bas.bg"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754702AbZJLIVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 04:21:42 -0400
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: linux-kernel@vger.kernel.org
+Subject: Regression?: keyboard state/LED inconsistency in 2.6.32-rc1/2,3,4
+Date: Mon, 12 Oct 2009 11:18:28 +0300
+User-Agent: KMail/1.11.4 (Linux/2.6.32-rc4; KDE/4.2.4; x86_64; ; )
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Vojtech Pavlik <vojtech@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
+Content-Disposition: inline
+Message-Id: <200910121118.29415.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >   Throuput comparision
-> >   ==============================================
-> >   old		2192.10 MB/s
-> >   new		2222.22 MB/s
-> > 
-> >   ok, it's almost same throuput.
-> > 
-> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> 
-> I have no objections to any of the two patches, but I think we may want to drop
-> shrink_all_memory() altogether.  Everything should work without it and the
-> reason I didn't remove it was because I saw a performance regression on one
-> system without it.  It may not be worth keeping it, though.
-> 
-> Have you done any tests with shrink_all_memory() removed?
+Hello,
 
-Honestly, I haven't try to remvoe shrink_all_memory() at all. then, I don't have any
-mesurement data of shrink_all_memory.
-Yes, your opinion seems reasonable. I plan to mesure it awhile after. (sorry, I haven't
-enough development time in this month)
+I'm testing 2.6.32-rc1/2,3,4 and I'm using 2.6.31.3.
+There is a difference in keyboard/LED behavior.
+If in BIOS NumLock is set on, when the kernel starts
+it puts NumLock off and the LED state is off in 2.6.31.3
+(which is consistent), but in 2.6.32-rc1/2,3,4 the LED
+stays on (and this is not consistent with keyboard's state).
 
+Comparing drivers/input/keyboard/atkbd.c (I'm using it)
+in 2.6.31.3 and 2.6.32-rc1/2,3,4 among others changes I
+found the following lines (see the patch bellow) deleted,
+so I propose either to add them again (this will restore 
+keyboard/LED consistency) or revert the patch that has 
+deleted them.
 
+The better solution will be if the kernel preserves the state
+of the keyboard as set by BIOS.
 
+Best regards.
+
+Marin Mitov
+
+P.S. The lines in the patch concerning "repeat rate" are
+not related with the "keyboard state/LED inconsistency",
+but have been also deleted (by mistake/intentionally) too.
+Could be dropped if necessary.
+
+Marin Mitov
+
+Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
+
+======================================================
+--- a/drivers/input/keyboard/atkbd.c	2009-10-11 20:15:27.000000000 +0300
++++ b/drivers/input/keyboard/atkbd.c	2009-10-11 20:17:34.000000000 +0300
+@@ -773,6 +773,23 @@
+ static int atkbd_activate(struct atkbd *atkbd)
+ {
+ 	struct ps2dev *ps2dev = &atkbd->ps2dev;
++	unsigned char param[1];
++
++/*
++ * Set the LEDs to a defined state.
++ */
++
++	param[0] = 0;
++	if (ps2_command(ps2dev, param, ATKBD_CMD_SETLEDS))
++		return -1;
++
++/*
++ * Set autorepeat to fastest possible.
++ */
++
++	param[0] = 0;
++	if (ps2_command(ps2dev, param, ATKBD_CMD_SETREP))
++		return -1;
+ 
+ /*
+  * Enable the keyboard to receive keystrokes.
+@@ -1141,6 +1158,14 @@
+ 			return -1;
+ 
+ 		atkbd_activate(atkbd);
++
++/*
++ * Restore repeat rate and LEDs (that were reset by atkbd_activate)
++ * to pre-resume state
++ */
++		if (!atkbd->softrepeat)
++			atkbd_set_repeat_rate(atkbd);
++		atkbd_set_leds(atkbd);
+ 	}
+ 
+ 	atkbd_enable(atkbd);
