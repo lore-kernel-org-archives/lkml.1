@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbZJLD72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbZJLD7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966AbZJLD72 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 23:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZJLD72
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 23:59:28 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57243 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753504AbZJLD7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753891AbZJLD7V (ORCPT <rfc822;w@1wt.eu>);
 	Sun, 11 Oct 2009 23:59:21 -0400
-Date: Mon, 12 Oct 2009 05:58:43 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       samba-technical@lists.samba.org
-Subject: Re: [rfc][patch] store-free path walking
-Message-ID: <20091012035843.GC25882@wotan.suse.de>
-References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <20091007095657.GB8703@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091007095657.GB8703@kernel.dk>
-User-Agent: Mutt/1.5.9i
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbZJLD7U
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 11 Oct 2009 23:59:20 -0400
+Received: from mail-qy0-f172.google.com ([209.85.221.172]:48060 "EHLO
+	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753504AbZJLD7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 23:59:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=kE9iCzbKQF/tjZ86vPMj+sOoyUbXs09hLerl62K/DaJexG3zhx/qjRY9qyskFvvvrh
+         MsK8ucRy9Ndj7EbjL3LGKil9LvmGzhKaHv0/ThOU/a6hlNdM0e1DNQz8P66D0CGzyfxw
+         CLltWHah/4Xt3rfsvFpPQm+ev/jQ7kw8YKv5g=
+Message-ID: <4AD2A97A.3020909@gmail.com>
+Date: Sun, 11 Oct 2009 20:58:50 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
+MIME-Version: 1.0
+To: Lin Ming <ming.m.lin@intel.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14379] ACPI Warning for _SB_.BAT0._BIF: Converted Buffer
+ to 	expected String
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>	 <r-4Wjt4coy.A.ZrC.Ual0KB@chimera>	 <dd18b0c30910112014m4bfdc238j542864bb9f1e8161@mail.gmail.com> <1255318556.11664.11.camel@minggr.sh.intel.com>
+In-Reply-To: <1255318556.11664.11.camel@minggr.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 11:56:57AM +0200, Jens Axboe wrote:
-> On Wed, Oct 07 2009, Nick Piggin wrote:
-> > Anyway, this is the basics working for now, microbenchmark shows
-> > same-cwd lookups scale linearly now too. We can probably slowly
-> > tackle more cases if they come up as being important, simply by
-> > auditing filesystems etc.
-> 
->                                 throughput
-> ------------------------------------------------
-> 2.6.32-rc3-git          |      561.218 MB/sec
-> 2.6.32-rc3-git+patch    |      627.022 MB/sec
-> 2.6.32-rc3-git+patch+inc|      969.761 MB/sec
-> 
-> So better, quite a bit too. Latencies are not listed here, but they are
-> also a lot better. Perf top still shows ~95% spinlock time. I did a
-> shorter run (the above are full 600 second runs) of 60s with profiling
-> and the full 64 clients, this time using -a as well (which generated
-> 9.4GB of trace data!). The top is now:
+Lin Ming wrote:
+> On Mon, 2009-10-12 at 11:14 +0800, Justin Mattock wrote:
+>    
+>> On Sun, Oct 11, 2009 at 3:22 PM, Rafael J. Wysocki<rjw@sisk.pl>  wrote:
+>>      
+>>> This message has been generated automatically as a part of a report
+>>> of recent regressions.
+>>>
+>>> The following bug entry is on the current list of known regressions
+>>> from 2.6.31.  Please verify if it still should be listed and let me know
+>>> (either way).
+>>>
+>>>
+>>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14379
+>>> Subject         : ACPI Warning for _SB_.BAT0._BIF: Converted Buffer to expected String
+>>> Submitter       : Justin Mattock<justinmattock@gmail.com>
+>>> Date            : 2009-10-08 21:46 (4 days old)
+>>> References      : http://marc.info/?l=linux-kernel&m=125504031328941&w=4
+>>>
+>>>
+>>>
+>>>        
+>> pulled rc4 today and the warning is still present.
+>> here is the results of git bisect:
+>>      
+>
+> Patch at http://bugzilla.kernel.org/show_bug.cgi?id=14379#c1 fixes the
+> warning.
+>
+> Actually, the _BIF warning was fixed at commit
+> e899b6485c332aa2d7510739507ab5e5d7b28e59.
+> See http://bugzilla.kernel.org/show_bug.cgi?id=11822#c14
+>
+> I made a mistake at the cleanup of predefined method table so the
+> warning shows up again.
+>
+> Lin Ming
+>
+>    
+Cool, I can give that a try.
+then I guess just leave this open(bugreport) until this patch
+http://bugzilla.kernel.org/show_bug.cgi?id=14379#c1
+gets pushed into the main tree then close the bugreport.
 
-Hey Jens,
-
-Try changing the 'statvfs' syscall in dbench to 'statfs'.
-glibc has to do some nasty stuff parsing /proc/mounts to
-make statvfs work. On my 2s8c opteron it goes like this:
-clients     vanilla kernel     vfs scale (MB/s)
-1            476                447
-2           1092               1128
-4           2027               2260
-8           2398               4200
-
-Single threaded performance isn't as good so I need to look
-at the reasons for that :(. But it's practically linearly
-scalable now. The dropoff at 8 I'd say is probably due to
-the memory controllers running out of steam rather than
-cacheline or lock contention.
-
-Unfortunately we didn't just do this posix API in-kernel,
-and statfs is Linux-specific. But we do have some spare
-room in statfs structure I think to pass back mount flags
-for statvfs.
-
-Tridge, Samba people: measuring vfs performance with dbench
-in my effort to improve Linux vfs scalability has shown up
-the statvfs syscall you make to be the final problematic
-issue for this workload. In particular reading /proc/mounts
-that glibc does to impement it. We could add complexity to
-the kernel to try improving it, or we could extend the
-statfs syscall so glibc can avoid the issue (requiring
-glibc upgrade). But I would like to know whether samba
-really uses statvfs() significantly?
-
-Thanks,
-Nick
+Justin P. Mattock
