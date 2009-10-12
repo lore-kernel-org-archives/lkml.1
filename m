@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbZJLSLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZJLSLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933041AbZJLSLm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 14:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbZJLSLl
+	id S1757500AbZJLSLQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 14:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757477AbZJLSLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 14:11:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32820 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757474AbZJLSLk (ORCPT
+	Mon, 12 Oct 2009 14:11:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34902 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757470AbZJLSLO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 14:11:40 -0400
-Date: Mon, 12 Oct 2009 11:09:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       Ingo Molnar <mingo@elte.hu>, Artem Bityutskiy <dedekind1@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] panic.c: export panic_on_oops
-Message-Id: <20091012110954.67d7d8d8.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.01.0910120828390.3438@localhost.localdomain>
-References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
-	<20091012111545.GB8857@elte.hu>
-	<1255346731.9659.31.camel@localhost>
-	<20091012113758.GB11035@elte.hu>
-	<20091012140149.6789efab@marrow.netinsight.se>
-	<20091012120951.GA16799@elte.hu>
-	<1255349748.10605.13.camel@macbook.infradead.org>
-	<20091012122023.GA19365@elte.hu>
-	<20091012150650.51a4b4dc@marrow.netinsight.se>
-	<20091012131528.GC25464@elte.hu>
-	<20091012153937.0dcd73e5@marrow.netinsight.se>
-	<alpine.LFD.2.01.0910120828390.3438@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Oct 2009 14:11:14 -0400
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       David Howells <dhowells@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-arch <linux-arch@vger.kernel.org>
+Subject: Re: [RFC][PATCH] kmap_atomic_push
+From: Andi Kleen <andi@firstfloor.org>
+References: <1255016123.17055.17.camel@laptop>
+Date: Mon, 12 Oct 2009 20:10:37 +0200
+In-Reply-To: <1255016123.17055.17.camel@laptop> (Peter Zijlstra's message of "Thu, 08 Oct 2009 17:35:23 +0200")
+Message-ID: <87ws30fppe.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009 08:36:38 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Peter Zijlstra <peterz@infradead.org> writes:
+> -
+> -static inline void debug_kmap_atomic(enum km_type type)
+> +static inline int kmap_atomic_push_idx(void)
+>  {
+> +	int idx = __get_cpu_var(__kmap_atomic_depth)++;
 
-> I agree with the "save kernel buffer on panic" thing, but I disagree with 
-> making it anything new, and hooking into "printk()" or the console 
-> subsystem AT ALL. That's just bogus, stupid, and WRONG.
-> 
-> What you can do is to just flush the 'log_buf' buffer (or as much of it as 
-> you want - the buffer may be a megabyte in size, and maybe you only want 
-> to flush the last 8kB or something like that) on oops. And _not_ mix this 
-> up with anything else.
+The counter needs to be of local atomic type. Otherwise kmap_atomic cannot
+be done from interrupts/nmis, which is unfortunately occasionally needed.
 
-What he said.  I did it that way in the Digeo kernel back in 2002. 
-Worked good.  
+-Andi
 
-Doing it via a console is rather weird.  It will need core kernel
-changes to do it properly.
-
-Perhaps oops_enter() is a good place to mark the start of the log, and
-flush it within oops_exit().
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
