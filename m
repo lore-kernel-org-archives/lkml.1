@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZJLHty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZJLHu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbZJLHty (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 03:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZJLHty
+	id S1754519AbZJLHu4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 03:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZJLHu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 03:49:54 -0400
-Received: from mga09.intel.com ([134.134.136.24]:5459 "EHLO mga09.intel.com"
+	Mon, 12 Oct 2009 03:50:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52188 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752782AbZJLHtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 03:49:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,544,1249282800"; 
-   d="scan'208";a="558697430"
-Subject: Re: [PATCH 3/5] PCI: maintain backwards compatibility with
- aer-inject user-land tool
-From: Huang Ying <ying.huang@intel.com>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: "prarit@redhat.com" <prarit@redhat.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "pci-linux@vger.kernel.org" <pci-linux@vger.kernel.org>
-In-Reply-To: <20091012070304.27029.14815.stgit@bob.kio>
-References: <20091012070248.27029.78378.stgit@bob.kio>
-	 <20091012070304.27029.14815.stgit@bob.kio>
-Content-Type: text/plain
-Date: Mon, 12 Oct 2009 15:49:15 +0800
-Message-Id: <1255333755.6047.143.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	id S1752827AbZJLHuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 03:50:55 -0400
+Message-ID: <4AD2DFA4.9000602@kernel.org>
+Date: Mon, 12 Oct 2009 16:49:56 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Frans Pop <elendil@planet.nl>
+CC: Alexander Huemer <alexander.huemer@sbg.ac.at>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
+References: <4ABBB8C2.2080901@sbg.ac.at> <200909251448.17671.elendil@planet.nl> <4ACDD45C.5090009@sbg.ac.at> <200910101513.51320.elendil@planet.nl>
+In-Reply-To: <200910101513.51320.elendil@planet.nl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 12 Oct 2009 07:50:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 15:03 +0800, Andrew Patterson wrote: 
-> PCI: maintain backwards compatibility with aer-inject user-land tool
+Hello,
+
+Frans Pop wrote:
+>> so in my opinion reverting commit [1] with commit [2] missed the point.
+>>
+>> [1] a5bfc4714b3f01365aef89a92673f2ceb1ccf246
+>> [2] 31b239ad1ba7225435e13f5afc47e48eb674c0cc
 > 
-> Maintain backwards compatibility with the 0.1 version  of the aer-inject
-> user-land tool.
+> The most likely explanation is that your earlier test from which you
+> concluded that the revert did fix the problem was incorrect. It seems
+> unlikely that some other stable commit interferes here.
+
+Hmm...
+
+> So basically we're back where we started.
 > 
-> Signed-off-by: Andrew Patterson<andrew.patterson@hp.com>
-> ---
+>>     [ 1018.059729] irq 23: nobody cared (try booting with the "irqpoll" option)
+>>     [ 1018.059734] Pid: 8656, comm: sh Tainted: G        W    2.6.31-gentoo-r2-blackbit #1
+>>     [ 1018.059736] Call Trace:
+>>     [ 1018.059738]  <IRQ>  [<ffffffff81066ecf>] ? __report_bad_irq+0x30/0x7d
+>>     [ 1018.059748]  [<ffffffff81067023>] ? note_interrupt+0x107/0x170
+>>     [ 1018.059751]  [<ffffffff81067610>] ? handle_fasteoi_irq+0x8a/0xaa
+>>     [ 1018.059755]  [<ffffffff8100d1cf>] ? handle_irq+0x17/0x1d
+>>     [ 1018.059757]  [<ffffffff8100c84b>] ? do_IRQ+0x54/0xb2
+>>     [ 1018.059761]  [<ffffffff8100b6d3>] ? ret_from_intr+0x0/0xa
+>>     [ 1018.059762]  <EOI>  [<ffffffff815c7d2c>] ? do_page_fault+0xed/0x2ef
+>>     [ 1018.059769]  [<ffffffff815c7f12>] ? do_page_fault+0x2d3/0x2ef
+>>     [ 1018.059773]  [<ffffffff812dd5ed>] ? __put_user_4+0x1d/0x30
+>>     [ 1018.059776]  [<ffffffff815c5fdf>] ? page_fault+0x1f/0x30
+>>     [ 1018.059777] handlers:
+>>     [ 1018.059778] [<ffffffff813d2d8c>] (ahci_interrupt+0x0/0x426) 
+>>     [ 1018.059783] Disabling IRQ #23
 > 
-> diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
-> index 5fc5b3e..ac0b5e7 100644
-> --- a/drivers/pci/pcie/aer/aer_inject.c
-> +++ b/drivers/pci/pcie/aer/aer_inject.c
-> @@ -23,10 +23,10 @@
->  #include <linux/pci.h>
->  #include <linux/fs.h>
->  #include <linux/uaccess.h>
-> +#include <linux/stddef.h>
->  #include "aerdrv.h"
->  
->  struct aer_error_inj {
-> -	u16 domain;
->  	u8 bus;
->  	u8 dev;
->  	u8 fn;
-> @@ -36,6 +36,7 @@ struct aer_error_inj {
->  	u32 header_log1;
->  	u32 header_log2;
->  	u32 header_log3;
-> +	u16 domain;
->  };
->  
->  struct aer_error {
-> @@ -431,10 +432,11 @@ static ssize_t aer_inject_write(struct file *filp, const char __user *ubuf,
->  
->  	if (!capable(CAP_SYS_ADMIN))
->  		return -EPERM;
-> -
-> -	if (usize != sizeof(struct aer_error_inj))
-> +	if (usize < offsetof(struct aer_error_inj, domain) ||
-> +	    usize > sizeof(einj))
->  		return -EINVAL;
->  
-> +	memset(&einj, 0, sizeof(einj));
->  	if (copy_from_user(&einj, ubuf, usize))
->  		return -EFAULT;
->  
+> How reproducible is the error for you? Do you see it every time or not?
+> If it is reliably reproducible, can you think of any explanation why your
+> earlier test was a success while we now see that the revert does not help?
+> 
+> Does the error *only* occur during gcc compilation, or was that just the
+> simplest way to reproduce it? Does it always occur at the same point during
+> the compilation or does it vary?
+> Can you create a test case that does not require doing the whole
+> compilation, but only executes the step that triggers the error?
+> 
+> If you can find a reliable and fairly quick way to reproduce the error, I
+> would suggest doing a bisection.
+> 
+> Jeff, Tejun: do you have any ideas what could cause this issue to suddenly
+> appear or how to debug/instrument it?
 
-Why not merge this patch with [2/5]?
+Alexander, can you please attach full boot log and the output of
+"lspci -nn"?  Also, how reproducible is the problem?  You already
+answered to Frans' question but can you be more specific?
 
-Best Regards,
-Huang Ying
+Thanks.
 
-
+-- 
+tejun
