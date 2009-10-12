@@ -1,99 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZJLMCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbZJLL4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754683AbZJLMCf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 08:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZJLMCe
+	id S1755034AbZJLL4k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 07:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZJLL4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 08:02:34 -0400
-Received: from lo.gmane.org ([80.91.229.12]:43571 "EHLO lo.gmane.org"
+	Mon, 12 Oct 2009 07:56:39 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51242 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751364AbZJLMCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 08:02:34 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?UTF-8?B?VmVkcmFuIEZ1cmHEjQ==?= <vedranf@vedranf.mine.nu>
-Subject: Memory overcommit
-Date: Mon, 12 Oct 2009 13:51:07 +0200
-Message-ID: <hav57c$rso$1@ger.gmane.org>
-Reply-To: vedran.furac@gmail.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 89-201-144-125.dsl.optinet.hr
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090701 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
-X-Age: 25
-X-Location: Lovran, Croatia
-X-OS: Debian GNU/Linux
-X-Face: +Lg7^E:?#]P.Y{N@61yW{aY#>fRcOE6MMqgAM|Kwk"fK!y!i4+h6&?E`Jt@uame[-SLu#*<fGtMmVfh8qo,"kJ'ql^Ni?]l|ax{fvvmD<k:2w^e(y8J2YWO`M=u17OWli}Rf^e:|w2]LulgE(:u0|}mNBZFid[YEWAC>?k:)dZv<!'a)N0b=LFDZKY!!@[%mmVO-7y`Nkj?{<C6rm9Uz$EXu;0I<PubM.Po|vlT.2&vPkJG07G.l0Ty)B/dR0k:KU<;?+WAR\f_ms2b~i"g@e}a)i1N$WLBa{vBoDs4!}k\g?lItt=|]=M{Fm@ce|^6PXq&
+	id S1753655AbZJLL4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 07:56:39 -0400
+Date: Mon, 12 Oct 2009 13:55:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] NULL pointer dereference at IP: [<ffffffff812e9ccb>]
+	uart_close+0x2a/0x1e4
+Message-ID: <20091012115549.GA13987@elte.hu>
+References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> <20091012080511.GA22607@elte.hu> <20091012091954.GA31171@elte.hu> <20091012092713.GA32647@elte.hu> <20091012112504.GA10002@elte.hu> <20091012124501.3c1ac94f@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012124501.3c1ac94f@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi! I don't know if this is appropriate place to ask such questions and
-if not, please point me to such place.
 
-Let's simulate a process gone berserk with this piece of code:
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
+> > Unfortunately 46d57a449aa13d9c6adcc9d1dbc7b9a0ecfb69d8 is not easy to 
+> > revert, at all. Would be glad to try any patch - fixes or some manual 
+> > revert as well (if that's feasible).
+> 
+> The patch doesn't do anything but create local variables of 
+> state->port. I'm now glad I did it that way as it makes it easy to 
+> spot the mistake.
+>
+> the tty_port lock is ->lock, the uart lock is ->lock both are 
+> different..
+> 
+> Spot the mistake:
+> 
+>  	if (state->flags & UIF_INITIALIZED) {
+>  		unsigned long flags;
+>  		spin_lock_irqsave(&port->lock, flags);
+> -		port->ops->stop_rx(port);
+> +		uport->ops->stop_rx(uport);
+>  		spin_unlock_irqrestore(&port->lock, flags);
+>  		/*
+>  		 * Before we drop DTR, make sure the UART transmitter
+>  		 * has completely drained; this is especially
+>  		 * important if there is a transmit FIFO!
+>  		 */
+> -		uart_wait_until_sent(tty, port->timeout);
+> +		uart_wait_until_sent(tty, uport->timeout);
+>  	}
+> 
+> 
+> so uart_close takes the wrong lock. I've checked the rest of the patch 
+> for the same error and I don't see any other screwups.
 
-int main()
-{
-  char *buf;
-  while(1) {
-    buf = malloc (1024*1024*100);
-    if ( buf == NULL ) {
-      perror("malloc");
-      getchar();
-      exit(EXIT_FAILURE);
-    }
-    sleep(1);
-    memset(buf, 1, 1024*1024*100);
-  }
-  return 0;
-}
+Cool! This very much looks like something that could fix both problems. 
+I've started testing your fix.
 
-# echo 0 > /proc/sys/vm/overcommit_memory
+And yeah, i too never ever regretted having done 'too finegrained' 
+patches. (only ever the other way around) They are a pleasure to bisect 
+back to.
 
-Compile, run and soon result is:
-- System freezes for a second or two
-- OOMK wakes up
-- X crashes
+> [...] The race in question is very hard to hit but fortunately Ingo 
+> hit it twice..
 
-Now, I'm back to VT1 and dmesg shows 8 process were killed by OOMK
-(including X server and some long running daemons with small memory
-footprint like automount) before the real culprit was killed. This
-random killing spree *really* gives bad reputation to linux and people
-usually point this out as an argument against it.
+a hundred thousand bootups a year go a long way in finding narrow races 
+;-)
 
-But, there is an easy fix:
-# echo 2 > /proc/sys/vm/overcommit_memory
-Run the program again and after a few seconds you'll get:
-
-"malloc: Cannot allocate memory"
-
-and that's all what happens. Nothing gets killed and one (and others
-too) can continue to work without loosing time, data or both. Only
-somewhat strange is that kernel contradicts itself when it says there is
-no more and in the same time saying:
-
-/proc/meminfo
-MemTotal:        3542532 kB
-MemFree:          892972 kB
-Buffers:            2664 kB
-Cached:           130940 kB
-
-...that there is almost 900MB free memory. But OK, I can live with it.
-
-So, my question is: why today overcommit isn't turned off *by default*?
-I have it turned off for a few years now and only side effect is that I
-don't get processes killed randomly anymore, I don't loose valuable time
-and data.
-
-Regards,
-
-Vedran
-
+	Ingo
