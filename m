@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbZJLNs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbZJLNuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665AbZJLNs7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 09:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756596AbZJLNs7
+	id S932158AbZJLNuZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 09:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbZJLNuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 09:48:59 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42041 "EHLO
+	Mon, 12 Oct 2009 09:50:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43531 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754983AbZJLNs6 (ORCPT
+	with ESMTP id S1754647AbZJLNuY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 09:48:58 -0400
-Subject: Re: [PATCH] ftrace: add kernel command line graph function
- filtering
+	Mon, 12 Oct 2009 09:50:24 -0400
+Subject: Re: [PATCH] tracing - enabling "__cold" functions
 From: Steven Rostedt <rostedt@goodmis.org>
 Reply-To: rostedt@goodmis.org
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Stefan Assmann <sassmann@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <c62985530910120209t3d263d5eh5aeba14fcecc9072@mail.gmail.com>
-References: <4AD2DEB9.2@redhat.com>
-	 <c62985530910120209t3d263d5eh5aeba14fcecc9072@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20091012113909.GB6934@jolsa.lab.eng.brq.redhat.com>
+References: <1255104899-27784-1-git-send-email-jolsa@redhat.com>
+	 <20091012111917.GA6934@jolsa.lab.eng.brq.redhat.com>
+	 <20091012112745.GA11035@elte.hu>
+	 <20091012113909.GB6934@jolsa.lab.eng.brq.redhat.com>
+Content-Type: text/plain
 Organization: Kihon Technologies Inc.
-Date: Mon, 12 Oct 2009 09:46:59 -0400
-Message-Id: <1255355219.7113.16.camel@gandalf.stny.rr.com>
+Date: Mon, 12 Oct 2009 09:48:26 -0400
+Message-Id: <1255355306.7113.17.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 11:09 +0200, Frédéric Weisbecker wrote:
-> 2009/10/12 Stefan Assmann <sassmann@redhat.com>:
-> > From 894e934e782ddaa33eb6d156d8326cdf479b5f62 Mon Sep 17 00:00:00 2001
-> > From: Stefan Assmann <sassmann@redhat.com>
-> > Date: Mon, 12 Oct 2009 09:11:47 +0200
-> > Subject: [PATCH] ftrace: add kernel command line graph function filtering
-> >
-> > Add a command line parameter to allow limiting the function graphs that
-> > are traced on boot up, when ftrace=function_graph is specified.
-> >
-> > This patch adds the following command line option:
-> > ftrace_graph_filter=function-list
+On Mon, 2009-10-12 at 13:39 +0200, Jiri Olsa wrote:
+> On Mon, Oct 12, 2009 at 01:27:45PM +0200, Ingo Molnar wrote:
+> > 
+> > * Jiri Olsa <jolsa@redhat.com> wrote:
+> > 
+> > > any feedback on this one?
+> > 
+> > Steve said he's queueing it up. (But 3 days of delay, especially if it's 
+> > over the weekend and if it's not an urgent fix is to be expected so 
+> > please be patient.)
+> > 
+> > 	Ingo
 > 
-> 
-> If we use this parameter, we undoubtedly want to launch the function
-> graph tracer.
-> I'd then suggest to arm ftrace=function_graph automatically if we have
-> ftrace_graph_filter
-> set.
-> 
+> no rush :) it's just I usually get reply like "looking on this" or smth..
+> so I thought it might get lost, sry for noise
 
-Actually, I disagree. I may just be lazy, and want to set up the
-function graph to a particular set of functions. It doesn't mean I want
-to run the function_graph tracer on boot up.
-
-This is the same reason I don't automatically set up ftrace=function
-when the filter and notrace functions are set.
+No prob. Yes I'm looking at this ;-)
 
 -- Steve
 
