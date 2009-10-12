@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933295AbZJLVrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbZJLVte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933295AbZJLVrf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758163AbZJLVrd
+	id S1758519AbZJLVte (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbZJLVtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:47:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36405 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755338AbZJLVrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:47:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Subject: Re: 2.6.32-rc4: Reported regressions 2.6.30 -> 2.6.31
-Date: Mon, 12 Oct 2009 23:48:33 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <1255377529.9544.63.camel@bluto.andrew>
-In-Reply-To: <1255377529.9544.63.camel@bluto.andrew>
+	Mon, 12 Oct 2009 17:49:33 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:28065 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbZJLVtc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:49:32 -0400
+Date: Mon, 12 Oct 2009 15:48:54 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Mark Lord <lkml@rtr.ca>, Greg KH <greg@kroah.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: pci-express hotplug
+Message-ID: <20091012214854.GA14102@ldl.fc.hp.com>
+References: <20091012120620.GG9228@kernel.dk> <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk> <4AD34494.7020602@rtr.ca> <20091012150603.GK9228@kernel.dk>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910122348.33588.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012150603.GK9228@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, Andrew Patterson wrote:
-> On Mon, 2009-10-12 at 00:41 +0200, Rafael J. Wysocki wrote:
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14309
-> > Subject		: MCA on hp rx8640
-> > Submitter	: Andrew Patterson <andrew.patterson@hp.com>
-> > Date		: 2009-09-29 17:20 (13 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=db8be50c4307dac2b37305fc59c8dc0f978d09ea
-> > References	: http://www.spinics.net/lists/linux-usb/msg22799.html
-> > 
-> 
-> Linus fixed this one with d93a8f829fe1d2f3002f2c6ddb553d12db420412.  It
-> also looks like a duplicate of
-> http://bugzilla.kernel.org/show_bug.cgi?id=14374
+> >>> On Mon, Oct 12, 2009 at 02:06:20PM +0200, Jens Axboe wrote:
+> >>>> I'm trying to get pci-express hotplug working in a box here. I don't
+> >>>> really care about the hotplug aspect, I just want the darn pci-e slots
+> >>>> that are designated hotplug slots to actually WORK. When I load pciehp,
+> >>>> I get:
+> >>>>
+> >>>> Firmware did not grant requested _OSC control
+> >>>> Firmware did not grant requested _OSC control
+> >>>> Firmware did not grant requested _OSC control
+> >>>> Firmware did not grant requested _OSC control
 
-Thanks, I closed #14309 as a duplicate of #14374 that's already closed.
+This isn't just a benign message. It means the OS asked to take
+over control of the slots and firmware really did say, "nope,
+sorry".
 
-Best,
-Rafael
+Which means that this:
+
+> On Mon, Oct 12 2009, Mark Lord wrote:
+> > Tried this yet:
+> >
+> >   options pciehp pciehp_force=1
+
+Is generally a bad idea.
+
+Don't do it unless you really know your platform well.
+
+> >> On Mon, Oct 12 2009, Greg KH wrote:
+> >>> Can you try the acpiphp driver instead?  That's usually the
+> >>> driver you want to use for "modern" systems (i.e. anything
+> >>> made in the past 5 years.)
+> >>
+> >> I should have mentioned that I tried that too. It doesn't
+> >> complain, but I don't see my cards anywhere afterwards. I'm
+> >> a hotplug newbie, do I need to do anything else?
+
+Can you modprobe acpiphp with debug=1? And send the output?
+
+Thanks.
+
+/ac
+
