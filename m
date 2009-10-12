@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZJLHLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbZJLHLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbZJLHLQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 03:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbZJLHLQ
+	id S1754301AbZJLHLR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 03:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbZJLHLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 12 Oct 2009 03:11:16 -0400
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:30165 "EHLO
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:30196 "EHLO
 	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753612AbZJLHLP (ORCPT
+	with ESMTP id S1752728AbZJLHLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 12 Oct 2009 03:11:15 -0400
-X-Greylist: delayed 453 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Oct 2009 03:11:15 EDT
-Subject: [PATCH 3/5] PCI: maintain backwards compatibility with aer-inject
-	user-land tool
+Subject: [PATCH 4/5] PCI: use better error return values in aer_inject
 To: ying.huang@intel.com
 From: Andrew Patterson <andrew.patterson@hp.com>
 Cc: prarit@redhat.com, andi@firstfloor.org, linux-kernel@vger.kernel.org,
        jbarnes@virtuousgeek.org, pci-linux@vger.kernel.org
-Date: Mon, 12 Oct 2009 01:03:04 -0600
-Message-ID: <20091012070304.27029.14815.stgit@bob.kio>
+Date: Mon, 12 Oct 2009 01:03:09 -0600
+Message-ID: <20091012070309.27029.80298.stgit@bob.kio>
 In-Reply-To: <20091012070248.27029.78378.stgit@bob.kio>
 References: <20091012070248.27029.78378.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
@@ -29,50 +27,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI: maintain backwards compatibility with aer-inject user-land tool
+PCI: use better error return values in aer_inject
 
-Maintain backwards compatibility with the 0.1 version  of the aer-inject
-user-land tool.
+Replaced some error return values in aer_inject. Use -ENODEV when we
+can't find a device and -ENOTTY when the device does not support PCIe AER.
 
-Signed-off-by: Andrew Patterson<andrew.patterson@hp.com>
+Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 ---
 
 diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
-index 5fc5b3e..ac0b5e7 100644
+index ac0b5e7..da2ad6e 100644
 --- a/drivers/pci/pcie/aer/aer_inject.c
 +++ b/drivers/pci/pcie/aer/aer_inject.c
-@@ -23,10 +23,10 @@
- #include <linux/pci.h>
- #include <linux/fs.h>
- #include <linux/uaccess.h>
-+#include <linux/stddef.h>
- #include "aerdrv.h"
+@@ -326,23 +326,23 @@ static int aer_inject(struct aer_error_inj *einj)
  
- struct aer_error_inj {
--	u16 domain;
- 	u8 bus;
- 	u8 dev;
- 	u8 fn;
-@@ -36,6 +36,7 @@ struct aer_error_inj {
- 	u32 header_log1;
- 	u32 header_log2;
- 	u32 header_log3;
-+	u16 domain;
- };
+ 	dev = pci_get_domain_bus_and_slot((int)einj->domain, einj->bus, devfn);
+ 	if (!dev)
+-		return -EINVAL;
++		return -ENODEV;
+ 	rpdev = pcie_find_root_port(dev);
+ 	if (!rpdev) {
+-		ret = -EINVAL;
++		ret = -ENOTTY;
+ 		goto out_put;
+ 	}
  
- struct aer_error {
-@@ -431,10 +432,11 @@ static ssize_t aer_inject_write(struct file *filp, const char __user *ubuf,
+ 	pos_cap_err = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+ 	if (!pos_cap_err) {
+-		ret = -EIO;
++		ret = -ENOTTY;
+ 		goto out_put;
+ 	}
+ 	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_UNCOR_SEVER, &sever);
  
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
--
--	if (usize != sizeof(struct aer_error_inj))
-+	if (usize < offsetof(struct aer_error_inj, domain) ||
-+	    usize > sizeof(einj))
- 		return -EINVAL;
- 
-+	memset(&einj, 0, sizeof(einj));
- 	if (copy_from_user(&einj, ubuf, usize))
- 		return -EFAULT;
+ 	rp_pos_cap_err = pci_find_ext_capability(rpdev, PCI_EXT_CAP_ID_ERR);
+ 	if (!rp_pos_cap_err) {
+-		ret = -EIO;
++		ret = -ENOTTY;
+ 		goto out_put;
+ 	}
  
 
