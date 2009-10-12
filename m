@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932990AbZJLTGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933059AbZJLTGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932990AbZJLTGK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbZJLTGJ
+	id S933059AbZJLTGX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 15:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbZJLTGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:06:09 -0400
-Received: from outbound-mail-140.bluehost.com ([67.222.39.30]:59838 "HELO
-	outbound-mail-140.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757914AbZJLTGI (ORCPT
+	Mon, 12 Oct 2009 15:06:23 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:64172 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933016AbZJLTGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:06:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=uPSryHx7AtQI8LCTUKcWI7DeR1sRZ+974FbScLKic25KczabfADcxslsTQw2V0S7d4mVOSyHPisvmsKo7gFMelVTKuKSHusxiLnNn1O4aw7ksM0WQYrJo/I/wncHRW2v;
-Date: Mon, 12 Oct 2009 12:05:10 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>, Eric Anholt <eric@anholt.net>,
-       linux-kernel@vger.kernel.org, Keith Packard <keithp@keithp.com>
-Subject: Re: 2.6.32 regression (bisected): Video tearing/glitching with T400
- laptops
-Message-ID: <20091012120510.16bd1194@jbarnes-g45>
-In-Reply-To: <20091012184651.GA4603@Pilar.aei.mpg.de>
-References: <E1Mtqnb-0002x7-TJ@closure.thunk.org>
-	<20091008103620.5e5aae66@jbarnes-g45>
-	<20091010204106.GA8251@mit.edu>
-	<20091012095438.1e82b54f@jbarnes-g45>
-	<20091012184651.GA4603@Pilar.aei.mpg.de>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 12 Oct 2009 15:06:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=gPMUOS65GPLKfD8ne2IpbRWOIhhhkyxNg9cUgdgTMh/eM05MfHipeMvcRsUkjmHR7n
+         TQBSSyBcYCkdKV3nDN4unuOYzPnTZnL5t0FudWv2AU6+gHFEtrpDieoxcvY+3KxXN0xm
+         U0cUWYxmtwFBXh09wudU7EHm6wfTYuDMqaxnA=
+Message-ID: <4AD37E05.5010504@gmail.com>
+Date: Mon, 12 Oct 2009 21:05:41 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?=22Fr=E9d=E9ric_L=2E_W=2E_Meunier=22?= 
+	<fredlwm@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, edt@aei.ca,
+       hirofumi@mail.parknet.co.jp, alan@linux.intel.com,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: keyboard under X with 2.6.31
+References: <4AD17C6A.4030902@yahoo.co.uk> <alpine.LNX.2.01.0910111735140.19647@dyndns.pervalidus.net>
+In-Reply-To: <alpine.LNX.2.01.0910111735140.19647@dyndns.pervalidus.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009 20:46:51 +0200
-"Carlos R. Mafra" <crmafra2@gmail.com> wrote:
-
-> On Mon 12.Oct'09 at  9:54:38 -0700, Jesse Barnes wrote:
-> > > 
-> > > Nope, unfortunately, it's not helping on my T400 laptop.  I'm
-> > > still getting huge amounts of glitching and tearing with this
-> > > patch applied against -rc3.
-> > > 
-> > > What I'm using for now to fix up my system is this patch.
-> > > 
-> > 
-> > How about this one?  I have one more idea to try out if this doesn't
-> > work (hacking on it now).
+Frédéric L. W. Meunier wrote:
+> On Sun, 11 Oct 2009, Boyan wrote:
 > 
-> I was also experiencing something very similar to Theodore's bug 
-> report and, at least for me, the patch below fixed the issue (the
-> previous one also had no effect).
-
-Cool, good to hear.  Hopefully Ted and Keith will confirm too.
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
-
-diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
-index 7a5fb79..1451945 100644
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -1047,7 +1047,7 @@ static void g4x_enable_fbc(struct drm_crtc *crtc, unsigned long interval)
- 	dev_priv->cfb_fence = obj_priv->fence_reg;
- 	dev_priv->cfb_plane = intel_crtc->plane;
+>> (sending again, sorry about last reply, wrong subject...)
+>> On Sat, 10 Oct 2009 21:00:05 -0400, Ed Tomlinson wrote:
+>>> You are not alone with keyboard problems in 31 in X.  In my case I
+>>> blamed a  new wireless setup.
+>>> I am building with the the above commit reverted.
+>>
+>> Not sure why, but after reverting
+>> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
+>> 'low_latency' tty flag) my analog tv tuner stopped working after booting
+>> for the first time. It has TV and FM radio, but only radio worked when
+>> reverted this patch. I saw some EIO errors with strace. Then added again
+>> the patch and on top of it I've added commit:
+>>
+>> 3a54297478e6578f96fd54bf4daa1751130aca86
+>> pty: quickfix for the pty ENXIO timing problems
+>>
+>> Everything was ok.
+>> Today I've tried to reproduce this and reverted both patches. Recompiled
+>> and everything is ok. Not sure what happened yesterday.
+>> So to summarize 2.6.31.3 with reverted commit
+>> e043e42bdb66885b3ac10d27a01ccb9972e2b0a3 (pty: avoid forcing
+>> 'low_latency' tty flag) works for me.
+> 
+> Reverting the commit also works for me. Thanks.
+> 
+> The direct link, for those not using git:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e043e42bdb66885b3ac10d27a01ccb9972e2b0a3
  
--	dpfc_ctl = plane | DPFC_SR_EN | DPFC_CTL_LIMIT_1X;
-+	dpfc_ctl = plane | DPFC_CTL_LIMIT_1X;
- 	if (obj_priv->tiling_mode != I915_TILING_NONE) {
- 		dpfc_ctl |= DPFC_CTL_FENCE_EN | dev_priv->cfb_fence;
- 		I915_WRITE(DPFC_CHICKEN, DPFC_HT_MODIFY);
+CC'ing Greg K-H
+
