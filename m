@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932172AbZJLN5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbZJLN70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932172AbZJLN5M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 09:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932144AbZJLN5L
+	id S932165AbZJLN70 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 09:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756591AbZJLN70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 09:57:11 -0400
-Received: from place.holder ([209.9.226.146]:50746 "EHLO grsecurity.net"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932080AbZJLN5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 09:57:10 -0400
-Date: Mon, 12 Oct 2009 09:56:28 -0400
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] pci: fix crash about old IA64 about pci_cfg_space_size
-Message-ID: <20091012135628.GA310@grsecurity.net>
-References: <20091011074531.GA12357@grsecurity.net> <4AD1AE0D.1030007@kernel.org> <4AD24766.7050205@kernel.org> <20091011213245.GC18513@grsecurity.net> <20091011231039.GB7545@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
+	Mon, 12 Oct 2009 09:59:26 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:62805 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756576AbZJLN7Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 09:59:25 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Toralf =?iso-8859-1?q?F=F6rster?=" <toralf.foerster@gmx.de>
+Subject: Re: build issue #25 for v2.6.32-rc4-1-gd93a8f8 :"dma_controller_destroy" [drivers/usb/musb/musb_hdrc.ko] undefined!
+Date: Mon, 12 Oct 2009 15:58:46 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Ajay Kumar Gupta <ajay.gupta@ti.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+References: <200910121259.19208.toralf.foerster@gmx.de> <200910121409.40160.elendil@planet.nl>
+In-Reply-To: <200910121409.40160.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20091011231039.GB7545@parisc-linux.org>
-User-Agent: Mutt/1.5.9i
-From: spender@grsecurity.net (Brad Spengler)
+Message-Id: <200910121558.48569.elendil@planet.nl>
+X-OriginalArrivalTime: 12 Oct 2009 13:58:48.0784 (UTC) FILETIME=[1F433D00:01CA4B44]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 12 October 2009, Frans Pop wrote:
+> the build (.config attached) failed, make ends with :
+> ...
+> Kernel: arch/x86/boot/bzImage is ready  (#6)
+>   Building modules, stage 2.
+>   MODPOST 665 modules
+> ERROR: "dma_controller_destroy" [drivers/usb/musb/musb_hdrc.ko] undefined!
+> ERROR: "dma_controller_create" [drivers/usb/musb/musb_hdrc.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+>
+> The build was made with :
+> $>make randconfig; make clean; make
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I just see this is also already being addressed/discussed. See:
+http://lkml.org/lkml/2009/10/12/52
 
-> So how about we go back to adding that check ... this does require that
-> SGI's 750 machine reports its SAL revision correctly.  Could you send
-> the dmesg?
-
-The dmesg of the working kernel:
-http://grsecurity.net/~spender/dmesg.txt
-The output of lspci -vvxxxx:
-http://grsecurity.net/~spender/lspci1.txt
-The output of lspci -tvnn:
-http://grsecurity.net/~spender/lspci2.txt
-
-I don't have a serial console hooked up to the machine, and I'm not able=20
-to scroll up/down after the panic, so I only have the following picture=20
-=66rom the crash.  I modified the code that spews out registers on a panic=
-=20
-so that the context of the panic could be seen.  The stack trace didn't=20
-show anything useful, only repeats of an address similar to IP (for=20
-which no symbols exist).
-http://img132.yfrog.com/i/img1457u.jpg/
-
--Brad
-
---rwEMma7ioTxnRzrJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFK0zWLmHm2SUJF1GoRAhKZAJ9MkeYGVOUbgQv+aXeYxSJM2dF5/ACdFYec
-YBBCnarE0iOlb98vFXrPUao=
-=TfXW
------END PGP SIGNATURE-----
-
---rwEMma7ioTxnRzrJ--
+Cheers,
+FJP
