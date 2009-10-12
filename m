@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbZJLBzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbZJLCDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752948AbZJLBzE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 21:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZJLBzD
+	id S1752927AbZJLCDg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 22:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbZJLCDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 21:55:03 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:57383 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752017AbZJLBzB (ORCPT
+	Sun, 11 Oct 2009 22:03:35 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:57591 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbZJLCDe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 21:55:01 -0400
-Date: Sun, 11 Oct 2009 21:54:23 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Ben Efros <ben@pc-doctor.com>, fangxiaozhi <huananhu@huawei.com>,
-       Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>,
-       Josua Dietze <digidietze@draisberghof.de>
-Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2 [PATCH]
-In-Reply-To: <1255294292.2192.40.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0910112150020.638-100000@netrider.rowland.org>
+	Sun, 11 Oct 2009 22:03:34 -0400
+Message-ID: <4AD28E10.3010502@oracle.com>
+Date: Sun, 11 Oct 2009 19:01:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: LKML <linux-kernel@vger.kernel.org>, jens.axboe@oracle.com
+Subject: [PATCH] blk-settings: fix function parameter kernel-doc notation
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A0B020A.4AD28E4F.00B4:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009, Benjamin Herrenschmidt wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> Don't those devices support SANE_SENSE fine on LUN 0 according to
-> Alan parsing of my traces ?
+Fix kernel-doc notation in blk-settings.c::blk_queue_max_discard_sectors().
 
-Not really; the device returned only the usual 18 bytes of sense data.  
-But at least it did so correctly instead of failing.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ block/blk-settings.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->  Heh, they may even work if I actually
-> populate the SD-CARD slot, I'll try later.
-
-Possibly, but I sure wouldn't bet on it.   :-)
-
-> I still think it's simpler and potentially more future-proof to just
-> have a back-off scenario.
-> 
-> Now, whether we ping pong the US_FL_SANE_SENSE flag or not is minor,
-> I tend to think that your approach that doesn't touch the flag might
-> indeed be better.
-> 
-> I'll test the patch later today.
-
-And of course there remains the question of why the serial driver
-wasn't loaded and probed.  Would it make a difference if that driver
-was already loaded when you plugged in the modem?
-
-Alan Stern
-
+--- linux-2.6.32-rc3-git1.orig/block/blk-settings.c
++++ linux-2.6.32-rc3-git1/block/blk-settings.c
+@@ -242,7 +242,7 @@ EXPORT_SYMBOL(blk_queue_max_hw_sectors);
+ /**
+  * blk_queue_max_discard_sectors - set max sectors for a single discard
+  * @q:  the request queue for the device
+- * @max_discard: maximum number of sectors to discard
++ * @max_discard_sectors: maximum number of sectors to discard
+  **/
+ void blk_queue_max_discard_sectors(struct request_queue *q,
+ 		unsigned int max_discard_sectors)
