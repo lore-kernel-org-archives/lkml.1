@@ -1,49 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbZJLTbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933182AbZJLT3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757998AbZJLTbo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757917AbZJLTbn
+	id S933182AbZJLT3R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 15:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757983AbZJLT3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:31:43 -0400
-Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:35542 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757657AbZJLTbn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:31:43 -0400
-Date: Mon, 12 Oct 2009 13:30:48 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@ucw.cz>, Roland Dreier <rdreier@cisco.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-rdma@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Anton Blanchard <anton@samba.org>, general@lists.openfabrics.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       Jeff Squyres <jsquyres@cisco.com>
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
-Message-ID: <20091012193048.GA20313@obsidianresearch.com>
-References: <1253187028.8439.2.camel@twins> <adafxalejiq.fsf@cisco.com> <adaab0tej5c.fsf@cisco.com> <1253198976.14935.27.camel@laptop> <adazl8td35u.fsf@cisco.com> <adatyz1d17q.fsf@cisco.com> <20090929171332.GD14405@elf.ucw.cz> <20090930094456.GD24621@elte.hu> <20090930160232.GZ22310@obsidianresearch.com> <20091012181944.GF17138@elte.hu>
+	Mon, 12 Oct 2009 15:29:16 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:45796 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757550AbZJLT3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 15:29:15 -0400
+Message-ID: <4AD3842E.4050805@redhat.com>
+Date: Mon, 12 Oct 2009 15:31:58 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012181944.GF17138@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH tracing/kprobes v3 6/7] perf: Add perf probe subcommand
+ for kprobe-event setup helper
+References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222822.1684.3251.stgit@dhcp-100-2-132.bos.redhat.com> <20091012190303.GA4748@nowhere> <20091012190707.GJ17138@elte.hu>
+In-Reply-To: <20091012190707.GJ17138@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 08:19:44PM +0200, Ingo Molnar wrote:
+Ingo Molnar wrote:
+>
+> * Frederic Weisbecker<fweisbec@gmail.com>  wrote:
+>
+>> On Wed, Oct 07, 2009 at 06:28:23PM -0400, Masami Hiramatsu wrote:
+>>> Add perf probe subcommand for kprobe-event setup helper to perf command.
+>>> This allows user to define kprobe events by C expressions (C line numbers,
+>>> C function names, and C local variables).
+>>>
+>>
+>>
+>> My libdwarf.h and dwarf.h are available through<libdwarf.h>  and
+>> <dwarf.h>, these are in /usr/include
+>>
+>> But even by fixing the include path in the makefile and probe-finder.h,
+>> I get the following build error:
+>>
+>> util/probe-finder.c: In function ‘die_get_entrypc’:
+>> util/probe-finder.c:222: erreur: ‘Dwarf_Ranges’ undeclared (first use in this function)
+>> util/probe-finder.c:222: erreur: (Each undeclared identifier is reported only once
+>> util/probe-finder.c:222: erreur: for each function it appears in.)
+>> util/probe-finder.c:222: erreur: ‘ranges’ undeclared (first use in this function)
+>> cc1: warnings being treated as errors
+>> util/probe-finder.c:223: erreur: ISO C90 forbids mixed declarations and code
+>> util/probe-finder.c:247: erreur: implicit declaration of function ‘dwarf_get_ranges’
+>> util/probe-finder.c:247: erreur: nested extern declaration of ‘dwarf_get_ranges’
+>> util/probe-finder.c:251: erreur: implicit declaration of function ‘dwarf_ranges_dealloc’
+>> util/probe-finder.c:251: erreur: nested extern declaration of ‘dwarf_ranges_dealloc’
+>> make: *** [util/probe-finder.o] Erreur 1
+>>
+>>
+>> I remember we talked about that before, but I don't remember well why it happened.
+>> This is because of a libdwarf version or something, right?
 
-> > After that point the scheme is perfectly lossless.
-> 
-> Well if it can OOM it's not lossless, obviously. You just define "event 
-> loss" to be equivalent to "Destruction of the universe." ;-)
+Yeah, you may use an old version.
 
-It can't OOM once the ummunotify registration is done - when an event
-occurs it doesn't allocate any memory and it doesn't loose events.
+>>
+>> Which one should I pick? Mine is:
+>>
+>>      libdwarf.h
+>>
+>>      $Revision: #9 $ $Date: 2008/01/17 $
 
-It has the same problem as perf - you either bound the number/size of
-filters, or let user space allocate filters until the box OOMs. perf
-has the additonal problem that even with filters you can still loose
-events if the event ring overflows.
+AFAICS, the revision tag is not updated :(
+I'm usually using libdwarf later than 20090324, and dwarf_get_ranges()
+was introduced from 20081231.
 
-Jason
+>
+> if it's possible to still have a single set of APIs it would be nice to
+> auto-detect and massage all these libdwarf versions into a single
+> backend within perf.
+
+Sure, it's not so hard to check APIs.
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
