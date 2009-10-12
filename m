@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZJLHDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbZJLHDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754244AbZJLHDe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 03:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbZJLHDd
+	id S1754283AbZJLHDj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 03:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbZJLHDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 03:03:33 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:41045 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754003AbZJLHDc (ORCPT
+	Mon, 12 Oct 2009 03:03:38 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:18496 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754255AbZJLHDg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 03:03:32 -0400
-Subject: [PATCH 1/5] PCI: add pci_get_domain_bus_and_slot function
+	Mon, 12 Oct 2009 03:03:36 -0400
+Subject: [PATCH 2/5] PCI: add support for PCI domains to aer_inject
 To: ying.huang@intel.com
 From: Andrew Patterson <andrew.patterson@hp.com>
 Cc: prarit@redhat.com, andi@firstfloor.org, linux-kernel@vger.kernel.org,
        jbarnes@virtuousgeek.org, pci-linux@vger.kernel.org
-Date: Mon, 12 Oct 2009 01:02:54 -0600
-Message-ID: <20091012070254.27029.74119.stgit@bob.kio>
+Date: Mon, 12 Oct 2009 01:02:59 -0600
+Message-ID: <20091012070259.27029.15151.stgit@bob.kio>
 In-Reply-To: <20091012070248.27029.78378.stgit@bob.kio>
 References: <20091012070248.27029.78378.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
@@ -27,98 +27,138 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI: add pci_get_domain_bus_and_slot function
+PCI: add support for PCI domains to aer_inject
 
-Added the pci_get_domain_and_slot_function which is analogous to
-pci_get_bus_and_slot. It returns a pci_dev given a domain (segment) number,
-bus number, and devnr. Like pci_get_bus_and_slot,
-pci_get_domain_bus_and_slot holds a reference to the returned pci_dev.
-
-Converted pci_get_bus_and_slot to a wrapper that calls
-pci_get_domain_bus_and_slot with the domain hard-coded to 0.
-
-This routine was patterned off code suggested by Bjorn Helgaas.
+Add support for PCI domains (segments) to aer_inject.
 
 Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 ---
 
-diff --git a/drivers/pci/search.c b/drivers/pci/search.c
-index ec41535..7582648 100644
---- a/drivers/pci/search.c
-+++ b/drivers/pci/search.c
-@@ -149,32 +149,33 @@ struct pci_dev * pci_get_slot(struct pci_bus *bus, unsigned int devfn)
+diff --git a/drivers/pci/pcie/aer/aer_inject.c b/drivers/pci/pcie/aer/aer_inject.c
+index 62d15f6..5fc5b3e 100644
+--- a/drivers/pci/pcie/aer/aer_inject.c
++++ b/drivers/pci/pcie/aer/aer_inject.c
+@@ -26,6 +26,7 @@
+ #include "aerdrv.h"
+ 
+ struct aer_error_inj {
++	u16 domain;
+ 	u8 bus;
+ 	u8 dev;
+ 	u8 fn;
+@@ -39,6 +40,7 @@ struct aer_error_inj {
+ 
+ struct aer_error {
+ 	struct list_head list;
++	u16 domain;
+ 	unsigned int bus;
+ 	unsigned int devfn;
+ 	int pos_cap_err;
+@@ -66,22 +68,27 @@ static LIST_HEAD(pci_bus_ops_list);
+ /* Protect einjected and pci_bus_ops_list */
+ static DEFINE_SPINLOCK(inject_lock);
+ 
+-static void aer_error_init(struct aer_error *err, unsigned int bus,
+-			   unsigned int devfn, int pos_cap_err)
++static void aer_error_init(struct aer_error *err, u16 domain,
++			   unsigned int bus, unsigned int devfn,
++			   int pos_cap_err)
+ {
+ 	INIT_LIST_HEAD(&err->list);
++	err->domain = domain;
+ 	err->bus = bus;
+ 	err->devfn = devfn;
+ 	err->pos_cap_err = pos_cap_err;
  }
  
- /**
-- * pci_get_bus_and_slot - locate PCI device from a given PCI bus & slot
-- * @bus: number of PCI bus on which desired PCI device resides
-- * @devfn: encodes number of PCI slot in which the desired PCI
-- * device resides and the logical device number within that slot
-- * in case of multi-function devices.
-- *
-- * Note: the bus/slot search is limited to PCI domain (segment) 0.
-+ * pci_get_domain_bus_and_slot - locate PCI device for a given PCI domain (segment), bus, and slot
-+ * @domain: PCI domain/segment on which the PCI device resides.
-+ * @bus: PCI bus on which desired PCI device resides
-+ * @devfn: encodes number of PCI slot in which the desired PCI device
-+ * resides and the logical device number within that slot in case of
-+ * multi-function devices.
-  *
-- * Given a PCI bus and slot/function number, the desired PCI device
-- * is located in system global list of PCI devices.  If the device
-- * is found, a pointer to its data structure is returned.  If no
-- * device is found, %NULL is returned. The returned device has its
-- * reference count bumped by one.
-+ * Given a PCI domain, bus, and slot/function number, the desired PCI
-+ * device is located in the list of PCI devices. If the device is
-+ * found, its reference count is increased and this function returns a
-+ * pointer to its data structure.  The caller must decrement the
-+ * reference count by calling pci_dev_put().  If no device is found,
-+ * %NULL is returned.
-  */
--
--struct pci_dev * pci_get_bus_and_slot(unsigned int bus, unsigned int devfn)
-+struct pci_dev *pci_get_domain_bus_and_slot(int domain, unsigned int bus,
-+					    unsigned int devfn)
+ /* inject_lock must be held before calling */
+-static struct aer_error *__find_aer_error(unsigned int bus, unsigned int devfn)
++static struct aer_error *__find_aer_error(u16 domain, unsigned int bus,
++					  unsigned int devfn)
  {
- 	struct pci_dev *dev = NULL;
+ 	struct aer_error *err;
  
- 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
--		if (pci_domain_nr(dev->bus) == 0 &&
--		   (dev->bus->number == bus && dev->devfn == devfn))
-+		if (pci_domain_nr(dev->bus) == domain &&
-+		    (dev->bus->number == bus && dev->devfn == devfn))
- 			return dev;
+ 	list_for_each_entry(err, &einjected, list) {
+-		if (bus == err->bus && devfn == err->devfn)
++		if (domain == err->domain &&
++		    bus == err->bus &&
++		    devfn == err->devfn)
+ 			return err;
  	}
  	return NULL;
- }
-+EXPORT_SYMBOL(pci_get_domain_bus_and_slot);
- 
- static int match_pci_dev_by_id(struct device *dev, void *data)
+@@ -90,7 +97,10 @@ static struct aer_error *__find_aer_error(unsigned int bus, unsigned int devfn)
+ /* inject_lock must be held before calling */
+ static struct aer_error *__find_aer_error_by_dev(struct pci_dev *dev)
  {
-@@ -354,5 +355,4 @@ EXPORT_SYMBOL(pci_find_next_bus);
- EXPORT_SYMBOL(pci_get_device);
- EXPORT_SYMBOL(pci_get_subsys);
- EXPORT_SYMBOL(pci_get_slot);
--EXPORT_SYMBOL(pci_get_bus_and_slot);
- EXPORT_SYMBOL(pci_get_class);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index f5c7cd3..b9b5cd5 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -635,7 +635,13 @@ struct pci_dev *pci_get_subsys(unsigned int vendor, unsigned int device,
- 				unsigned int ss_vendor, unsigned int ss_device,
- 				struct pci_dev *from);
- struct pci_dev *pci_get_slot(struct pci_bus *bus, unsigned int devfn);
--struct pci_dev *pci_get_bus_and_slot(unsigned int bus, unsigned int devfn);
-+struct pci_dev *pci_get_domain_bus_and_slot(int domain, unsigned int bus,
-+					    unsigned int devfn);
-+static inline struct pci_dev *pci_get_bus_and_slot(unsigned int bus,
-+						   unsigned int devfn)
-+{
-+	return pci_get_domain_bus_and_slot(0, bus, devfn);
-+}
- struct pci_dev *pci_get_class(unsigned int class, struct pci_dev *from);
- int pci_dev_present(const struct pci_device_id *ids);
+-	return __find_aer_error(dev->bus->number, dev->devfn);
++	int domain = pci_domain_nr(dev->bus);
++	if (domain < 0)
++		return NULL;
++	return __find_aer_error((u16)domain, dev->bus->number, dev->devfn);
+ }
  
+ /* inject_lock must be held before calling */
+@@ -172,11 +182,15 @@ static int pci_read_aer(struct pci_bus *bus, unsigned int devfn, int where,
+ 	struct aer_error *err;
+ 	unsigned long flags;
+ 	struct pci_ops *ops;
++	int domain;
+ 
+ 	spin_lock_irqsave(&inject_lock, flags);
+ 	if (size != sizeof(u32))
+ 		goto out;
+-	err = __find_aer_error(bus->number, devfn);
++	domain = pci_domain_nr(bus);
++	if (domain < 0)
++		goto out;
++	err = __find_aer_error((u16)domain, bus->number, devfn);
+ 	if (!err)
+ 		goto out;
+ 
+@@ -200,11 +214,15 @@ int pci_write_aer(struct pci_bus *bus, unsigned int devfn, int where, int size,
+ 	unsigned long flags;
+ 	int rw1cs;
+ 	struct pci_ops *ops;
++	int domain;
+ 
+ 	spin_lock_irqsave(&inject_lock, flags);
+ 	if (size != sizeof(u32))
+ 		goto out;
+-	err = __find_aer_error(bus->number, devfn);
++	domain = pci_domain_nr(bus);
++	if (domain < 0)
++		goto out;
++	err = __find_aer_error((u16)domain, bus->number, devfn);
+ 	if (!err)
+ 		goto out;
+ 
+@@ -305,7 +323,7 @@ static int aer_inject(struct aer_error_inj *einj)
+ 	u32 sever;
+ 	int ret = 0;
+ 
+-	dev = pci_get_bus_and_slot(einj->bus, devfn);
++	dev = pci_get_domain_bus_and_slot((int)einj->domain, einj->bus, devfn);
+ 	if (!dev)
+ 		return -EINVAL;
+ 	rpdev = pcie_find_root_port(dev);
+@@ -344,7 +362,8 @@ static int aer_inject(struct aer_error_inj *einj)
+ 	if (!err) {
+ 		err = err_alloc;
+ 		err_alloc = NULL;
+-		aer_error_init(err, einj->bus, devfn, pos_cap_err);
++		aer_error_init(err, einj->domain, einj->bus, devfn,
++			       pos_cap_err);
+ 		list_add(&err->list, &einjected);
+ 	}
+ 	err->uncor_status |= einj->uncor_status;
+@@ -358,7 +377,8 @@ static int aer_inject(struct aer_error_inj *einj)
+ 	if (!rperr) {
+ 		rperr = rperr_alloc;
+ 		rperr_alloc = NULL;
+-		aer_error_init(rperr, rpdev->bus->number, rpdev->devfn,
++		aer_error_init(rperr, pci_domain_nr(rpdev->bus),
++			       rpdev->bus->number, rpdev->devfn,
+ 			       rp_pos_cap_err);
+ 		list_add(&rperr->list, &einjected);
+ 	}
 
