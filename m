@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932619AbZJLUou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbZJLUub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932619AbZJLUou (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 16:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932416AbZJLUou
+	id S932803AbZJLUub (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 16:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbZJLUua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 16:44:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50230 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932415AbZJLUot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 16:44:49 -0400
-Date: Mon, 12 Oct 2009 22:44:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [regressions] Re: kbuild: save ARCH & CROSS_COMPILE when
-	building a kernel
-Message-ID: <20091012204402.GC17163@elte.hu>
-References: <20091003103441.GA10874@elte.hu> <20091004191729.GA20203@merkur.ravnborg.org> <20091009092648.GA18894@elte.hu> <20091011213546.GB2768@merkur.ravnborg.org>
+	Mon, 12 Oct 2009 16:50:30 -0400
+Received: from mailb.microsoft.com ([131.107.115.215]:58124 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758012AbZJLUua convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 16:50:30 -0400
+From: Haiyang Zhang <haiyangz@microsoft.com>
+To: Greg KH <gregkh@suse.de>, Hank Janssen <hjanssen@microsoft.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Tom Hanrahan" <hanrahat@microsoft.com>,
+       Hashir Abdi <habdi@microsoft.com>
+Subject: RE: [patch] Staging: hv: Fix vmbus load hang caused by wrong data
+ packing
+Thread-Topic: [patch] Staging: hv: Fix vmbus load hang caused by wrong data
+ packing
+Thread-Index: AcpJ/6FE0xhfIRwfRT+rZ9QOhF0ebwBi+82AAA3jUSD//7JUgIAAXx2g///RCwCAAHMwwA==
+Date: Mon, 12 Oct 2009 20:44:06 +0000
+Message-ID: <1FB5E1D5CA062146B38059374562DF7212DF127D@TK5EX14MBXC130.redmond.corp.microsoft.com>
+References: <1FB5E1D5CA062146B38059374562DF7212DEE3EC@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20091012153013.GA2062@suse.de>
+ <1FB5E1D5CA062146B38059374562DF7212DF10DD@TK5EX14MBXC130.redmond.corp.microsoft.com>
+ <20091012172953.GA10557@suse.de>
+ <8AFC7968D54FB448A30D8F38F259C5620E7B1C22@TK5EX14MBXC114.redmond.corp.microsoft.com>
+ <20091012202214.GA9631@suse.de>
+In-Reply-To: <20091012202214.GA9631@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091011213546.GB2768@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Can you figure out why?  What is the output of gcc for both ways?
+There are no build errors in either ways, I think it may be a bug in gcc handing __attribute__((packed)).
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+> Can you show what is fixed by this change?
+Before the fix:
+The command "insmod hv_vmbus.ko" hangs. 
+Root cause: The message data sent from Linux guest to HyperV host were not correctly packed and not recognized by HyperV host. So, the host doesn't acknowledge that the vmbus channel is set up. Then, the guest keeps on waiting for the event and hangs the insmod command.
 
-> On Fri, Oct 09, 2009 at 11:26:48AM +0200, Ingo Molnar wrote:
-> > 
-> > * Sam Ravnborg <sam@ravnborg.org> wrote:
-> > 
-> > > On Sat, Oct 03, 2009 at 12:34:41PM +0200, Ingo Molnar wrote:
-> > > > 
-> > > > Sam,
-> > > > 
-> > > > that arch-cache thing introduced in:
-> > > > 
-> > > >  5755433: kbuild: save ARCH & CROSS_COMPILE when building a kernel
-> > > > 
-> > > > isnt working very well in my experience.
-> > > > 
-> > > > 1) it's a nuisance in cross-builds (it broke several cross-build scripts 
-> > > >    of mine)
-> > >
-> > > On the contrary it has helped me big time on my cross builds. [...]
-> > 
-> > Could you please try to do that without hurting the existing scripting 
-> > and existing workflow of other people?
-> 
-> The only message in the above was that this was also beneficial
-> to some - and not a nusiance only.
-> 
-> > 
-> > > No need to script is all to remember to set the correct ARCH + 
-> > > CROSS_COMPILE settings.
-> > 
-> > Then put your new state into the .config instead of this stupid 
-> > include/generated/ extra state that is a _big_ regression over v2.6.31 
-> > in terms of cross-build usability.
-> 
-> I cannot see why saving this in include/generated/*
-> has anything to do with your complains. I guess you did not look
-> at the patch in question.
-> 
-> What is hurting you and several other users are _not_ related
-> to the fact that we save ARCH and CROSS_COMPILE setting or where
-> we save it.
-> What hurt you is the consistency checks that was added
-> to try to catch people in doing something unexpected.
-> 
-> Unexpected like trying to build a 64 bit kernel where they
-> previosuly were building a 32 bit kernel.
-> Or when they suddenly used a different set of binutils
-> because they changed CROSS_COMPILE settings.
-> 
-> 
-> The patch in question is reverted in my next push to Linus.
+After the fix:
+The command "insmod hv_vmbus.ko" completes successfully with vmbus module loaded.
 
-Thanks! Mind sending the fix/revert here too, so that we can test 
-whether that resolves all the problems?
+> Also note that #pragma packed is not supported by older versions of gcc,
+> so I don't think that it would work at all on some compiler versions
+> that are still legal to use for the kernel.  But I'm not quite sure when
+> it was added, so I might be wrong.
+This pragma was used in older distro, such as SLES10 (kernel 2.6.16) without any problem.
 
-	Ingo
+>From your newer email:
+> I also note that you are packing more structures here with this patch than the code before the patch had.  Could that be the 
+> issue here?  The additional structures are ones that should be packed instead?
+No, the extra packed structures are not required for this bug fix. Just to make sure any future struct related to message is packed, so I put the pack() around the entire file.
+
+Thanks,
+
+- Haiyang
