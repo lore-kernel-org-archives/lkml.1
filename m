@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932714AbZJLVwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933350AbZJLVyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932714AbZJLVwB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758510AbZJLVwA
+	id S933350AbZJLVyz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbZJLVyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:52:00 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36471 "EHLO ogre.sisk.pl"
+	Mon, 12 Oct 2009 17:54:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36492 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755084AbZJLVv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:51:59 -0400
+	id S932448AbZJLVyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:54:52 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexey Fisher <bug-track@fisher-privat.net>
-Subject: Re: [Bug #14370] ext4 corruptions
-Date: Mon, 12 Oct 2009 23:53:04 +0200
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Subject: Re: [Bug #14372] Wireless not working after suspend-resume
+Date: Mon, 12 Oct 2009 23:55:38 +0200
 User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Sandeen <sandeen@redhat.com>, Theodore Tso <tytso@mit.edu>
-References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera> <r-4Wjt4coy.A.FWD.eal0KB@chimera> <1255330257.2180.1.camel@mini>
-In-Reply-To: <1255330257.2180.1.camel@mini>
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>, netdev@vger.kernel.org,
+       Linux Wireless List <linux-wireless@vger.kernel.org>
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera> <r-4Wjt4coy.A.TPD.dal0KB@chimera> <b637ec0b0910121148g34f46481n1d5d4edb67b0ac55@mail.gmail.com>
+In-Reply-To: <b637ec0b0910121148g34f46481n1d5d4edb67b0ac55@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200910122353.04712.rjw@sisk.pl>
+Message-Id: <200910122355.38980.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, Alexey Fisher wrote:
-> Am Montag, den 12.10.2009, 00:22 +0200 schrieb Rafael J. Wysocki:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.31.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14370
-> > Subject		: ext4 corruptions
-> > Submitter	: Alexey Fisher <bug-track@fisher-privat.net>
-> > Date		: 2009-10-09 19:20 (3 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125511643504864&w=4
-> > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe kernel-testers" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Monday 12 October 2009, Fabio Comolli wrote:
+> Still present with -rc4.
 > 
-> This can be removed, it is duplicate of this bug:
-> http://bugzilla.kernel.org/show_bug.cgi?id=14354
+> Error is:
+> 
+> [  690.547660] wlan0: direct probe to AP 00:11:95:09:2c:e0 (try 1)
+> [  690.550064] wlan0: direct probe responded
+> [  690.550074] wlan0: authenticate with AP 00:11:95:09:2c:e0 (try 1)
+> [  690.551629] wlan0: authenticated
+> [  690.551663] wlan0: associate with AP 00:11:95:09:2c:e0 (try 1)
+> [  690.553289] wlan0: RX AssocResp from 00:11:95:09:2c:e0 (capab=0x451
+> status=12 aid=1)
+> [  690.553298] wlan0: AP denied association (code=12)
+> 
+> rfkill-ing the device off and then on fixes the problem.
 
-Thanks, I closed #14370 as a duplicate of #14354.
+Thanks for the update.
 
-Best,
 Rafael
