@@ -1,115 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbZJLPN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757131AbZJLPTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932564AbZJLPN3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932508AbZJLPN2
+	id S1757131AbZJLPTP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757117AbZJLPTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:13:28 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:49258 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932241AbZJLPN1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:13:27 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4AD3477D.4020904@cam.ac.uk>
-Date: Mon, 12 Oct 2009 16:13:01 +0100
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091007)
+	Mon, 12 Oct 2009 11:19:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:25205 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757114AbZJLPTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 11:19:13 -0400
+Date: Mon, 12 Oct 2009 17:13:55 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: akpm@linux-foundation.org, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 8/8] FS: proc, make limits writable
+Message-ID: <20091012151355.GA1825@redhat.com>
+References: <20090903174106.GC27161@redhat.com> <1252008524-5376-8-git-send-email-jirislaby@gmail.com> <20090904142645.GA10535@redhat.com> <4ACE51A8.3030406@gmail.com>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
-       Linux I2C <linux-i2c@vger.kernel.org>
-Subject: Re: [PATCH] ALS: TSL2550 driver move from i2c/chips
-References: <4ACF4AC6.7070802@cam.ac.uk> <20091010183347.52b043ed@hyperion.delvare>
-In-Reply-To: <20091010183347.52b043ed@hyperion.delvare>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ACE51A8.3030406@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
-> 
-> On Fri, 09 Oct 2009 15:37:58 +0100, Jonathan Cameron wrote:
->> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
->>
->> ---
->> Minimal changes made. Untested due to lack of hardware.
->> All comments welcome.
-> 
-> Thanks for working on this. I can do any amount of testing you want, as
-> I have received a TSL2550 evaluation module from TAOS.
-> 
->> illuminance is already documented as part of the class.
->> operating mode and power state are both as per the original
->> driver. I can't find any documentation for them, but if people
->> want it I can probably figure out what they are from
->> the data sheet.
-> 
-> The operating mode selects the measurable range. Standard range is from
-> 0 to 1846 lux, extended range is from 0 to 9230 lux, with a resolution
-> divided by 5. Extended mode is also 5 times faster.
-> 
-> What do we want to do with this? I am open to suggestions. There are
-> several possibilities. The operating mode could be provided as platform
-> data and stay internal to the driver. Or we can leave is visible to
-> user-space, in which case I'd recommend that we do so in terms of
-> "range" rather than "mode", so that other drivers can use the same
-> convention, whatever it becomes. For example, one would write the range
-> of values he/she wants to be able to measure and the driver would put
-> the device in the most appropriate mode.
-That sounds like a sensible approach.  For now I guess a sysfs parameter
-like illuminance_range_max would do the job and we can add a min for any
-device that features an offset?
-> 
-> Alternatively (or additionally), we could implement an automatic mode
-> which would change the mode dynamically based on the previous
-> measurement. I've done that for one hwmon driver (for fan speed
-> measurement) and it works very well, if implemented properly.
-Could do.  Maybe put it in as manual for now and leave the automatic
-mode for a later date?
-> 
->> Might be worth dropping the power state control and moving
->> over to runtime pm but that is definitely the topic for another
->> patch.
-> 
-> Power state control is already integrated into the PM framework
-> (suspend and resume, is there more?) The sysfs entry is to allow a
-> manual control on top of it. I don't much like having a custom sysfs
-> entry for this, but I don't know if there is a standard way to achieve
-> the same?
-Not directly as far as I know. The runtime pm is more about buses figuring
-out if they can suspend (and take their children into suspend as well).
-Personally I haven't looked at the code for those buses that implement it
-yet to see exactly how it relates to fine grained control as here.
-For now lets leave this as it is with a plan to fix it later.
+On 10/08, Jiri Slaby wrote:
+>
+> On 09/04/2009 04:26 PM, Oleg Nesterov wrote:
+> > One small nit, just to suggest the further 9/8 cleanup,
+> >
+> >> +static const struct file_operations proc_pid_limits_operations = {
+> >> +	.read		= proc_info_read,
+> >> +	.write		= limits_write,
+> >> +};
+> >
+> > I think it makes sense to tweak proc_pid_limits() a little bit (and
+> > rename it), so that we can do
+> >
+> > 	.read = limits_read,
+> > 	.write = limits_write
+> >
+> > Then,
+> >
+> >> @@ -2501,7 +2571,9 @@ static const struct pid_entry tgid_base_stuff[] = {
+> >> +	NOD("limits",	  S_IFREG|S_IRUSR|S_IWUSR, NULL,
+> >> +			&proc_pid_limits_operations,
+> >> +			{ .proc_read = proc_pid_limits }),
+> >
+> > We could use
+> >
+> > 	REG("limits", S_IRUSR|S_IWUSR, &proc_pid_limits_operations),
+> >
+> > instead, this looks a bit cleaner to me.
+>
+> Hi again, nobody picked them up yet, I waited till the end of the merge
+> window and now I'll repost.
+>
+> Did you mean here to do the proc_info_read work (get/put task, alloc
+> buf, simple_read) directly in limits_read?
 
-I do notice that usb supports this sort of control by adding sysfs entries to
-the existing power sysfs attribute group.
-(curiously I think the relevant one is called level, so we would have
-/sys/bus/i2c/devices/*/power/level
+limits_read() has to do get_proc_task(d_inode), yes. Otherwise I don't
+see any additional complications, you can use simple_read_from_buffer(),
+no need to allocate the buffer but of course you can you shouldn't
+write more than "size_t count" bytes.
 
-We could do the same... 
-> 
->> Does anyone want a patch without using Git's move functionality?
-> 
-> Yes please!
-Will post next version. (thanks for the review based on the move version!)
-> 
->> Have copied all the users Jean knows about, but please cc any other
->> users as this does involve a change to the userspace interface.
->>
->> Applies on 2.6.31-rc3 with the ALS patches
->> http://patchwork.kernel.org/patch/49153/
->>
->>  drivers/als/Kconfig                  |   14 ++++++
->>  drivers/als/Makefile                 |    2 +
->>  drivers/{i2c/chips => als}/tsl2550.c |   73 ++++++++++++++++++++++++++++++---
->>  3 files changed, 82 insertions(+), 7 deletions(-)
-> 
+But perhaps I missed something, and in any case this is up to you. If
+you don't like this - please forget.
+
+> > And another minor nit (just in case you will re-submit this series for
+> > some reason). Perhaps the changelog in 6/8 should mention that we do
+> > not do any security checks when tsk != current (without selinux). We
+> > assume that either the caller is sys_setrlimit(), or the caller should
+> > verify it has rights to change the limits: in case of limits_write()
+> > we rely on ->mode = S_IRUSR|S_IWUSR.
+>
+> I did it as a comment by the setrlimit. I think nobody would care about
+> a changelog note ;).
+
+Good ;)
+
+Oleg.
 
