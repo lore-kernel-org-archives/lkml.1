@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZJLLSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbZJLLTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbZJLLSv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 07:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZJLLSu
+	id S1756231AbZJLLTx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 07:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZJLLTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 07:18:50 -0400
-Received: from mail-px0-f179.google.com ([209.85.216.179]:41651 "EHLO
-	mail-px0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754800AbZJLLSu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 07:18:50 -0400
-Message-ID: <4AD3100D.3050905@vflare.org>
-Date: Mon, 12 Oct 2009 16:46:29 +0530
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Mon, 12 Oct 2009 07:19:52 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:56901 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755007AbZJLLTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 07:19:51 -0400
+Date: Mon, 12 Oct 2009 13:19:17 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: mingo@elte.hu, rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracing - enabling "__cold" functions
+Message-ID: <20091012111917.GA6934@jolsa.lab.eng.brq.redhat.com>
+References: <1255104899-27784-1-git-send-email-jolsa@redhat.com>
 MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
-References: <1255337423-3158-1-git-send-email-ngupta@vflare.org> <20091012090710.GA29310@n2100.arm.linux.org.uk> <4AD304B2.8000205@vflare.org> <20091012110814.GA32113@n2100.arm.linux.org.uk>
-In-Reply-To: <20091012110814.GA32113@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255104899-27784-1-git-send-email-jolsa@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/12/2009 04:38 PM, Russell King - ARM Linux wrote:
-> On Mon, Oct 12, 2009 at 03:58:02PM +0530, Nitin Gupta wrote:
->> On 10/12/2009 02:37 PM, Russell King - ARM Linux wrote:
->>> On Mon, Oct 12, 2009 at 02:20:23PM +0530, Nitin Gupta wrote:
->>>> Same problem exists on mips too.
->>>
->>> Nice catch.  This logic came from sparc64, so I think you'd want to talk
->>> to davem about it as well.
->>>
->>> In the mean time, submitting your fix to the patch system would be great,
->>> thanks.
->>>
->>
->> Thanks for looking into this. I think this can make it to mainline if
->> you could Ack it and perhaps CC Andrew to get his attention?
+any feedback on this one?
+
+thanks,
+jirka
+
+On Fri, Oct 09, 2009 at 06:14:59PM +0200, jolsa@redhat.com wrote:
+> Based on the commit:
 > 
-> Or it could take a less tortuous route by going through my tree.
+> a586df06 "x86: Support __attribute__((__cold__)) in gcc 4.3"
 > 
-
-Ok, this is fine too.
-
-Thanks,
-Nitin
-
+> some of the functions goes to the ".text.unlikely" section.
+> 
+> Looks like there's not many of them (I found printk, panic,
+> __ssb_dma_not_implemented, fat_fs_error), but still worth
+> to include I think.
+> 
+> wbr,
+> jirka
+> 
+> 
+> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+> ---
+>  scripts/recordmcount.pl |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+> index 090d300..bfb8b2c 100755
+> --- a/scripts/recordmcount.pl
+> +++ b/scripts/recordmcount.pl
+> @@ -119,6 +119,7 @@ my %text_sections = (
+>       ".sched.text" => 1,
+>       ".spinlock.text" => 1,
+>       ".irqentry.text" => 1,
+> +     ".text.unlikely" => 1,
+>  );
+>  
+>  $objdump = "objdump" if ((length $objdump) == 0);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
