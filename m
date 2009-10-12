@@ -1,89 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932209AbZJLUZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbZJLUTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932209AbZJLUZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 16:25:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbZJLUZ4
+	id S1758086AbZJLUTd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 16:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbZJLUTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 16:25:56 -0400
-Received: from cantor.suse.de ([195.135.220.2]:59002 "EHLO mx1.suse.de"
+	Mon, 12 Oct 2009 16:19:32 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59410 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758116AbZJLUZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 16:25:53 -0400
-Date: Mon, 12 Oct 2009 13:22:14 -0700
-From: Greg KH <gregkh@suse.de>
-To: Hank Janssen <hjanssen@microsoft.com>
-Cc: Haiyang Zhang <haiyangz@microsoft.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tom Hanrahan <hanrahat@microsoft.com>,
-       Hashir Abdi <habdi@microsoft.com>
-Subject: Re: [patch] Staging: hv: Fix vmbus load hang caused by wrong data
- packing
-Message-ID: <20091012202214.GA9631@suse.de>
-References: <1FB5E1D5CA062146B38059374562DF7212DEE3EC@TK5EX14MBXC130.redmond.corp.microsoft.com>
- <20091012153013.GA2062@suse.de>
- <1FB5E1D5CA062146B38059374562DF7212DF10DD@TK5EX14MBXC130.redmond.corp.microsoft.com>
- <20091012172953.GA10557@suse.de>
- <8AFC7968D54FB448A30D8F38F259C5620E7B1C22@TK5EX14MBXC114.redmond.corp.microsoft.com>
+	id S1758069AbZJLUTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 16:19:31 -0400
+Message-ID: <4AD39002.2080907@redhat.com>
+Date: Mon, 12 Oct 2009 16:22:26 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8AFC7968D54FB448A30D8F38F259C5620E7B1C22@TK5EX14MBXC114.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH tracing/kprobes v3 4/7] tracing/kprobes: Avoid field	name
+ confliction
+References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222807.1684.26880.stgit@dhcp-100-2-132.bos.redhat.com> <20091012173752.GB5059@nowhere> <4AD37FEF.9050807@redhat.com> <20091012194852.GB4748@nowhere>
+In-Reply-To: <20091012194852.GB4748@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 08:10:40PM +0000, Hank Janssen wrote:
-> 
-> >Odd quoting style :(
-> 
-> We like to keep things lively :)
-> 
-> >> Based on our testing, the #pragma pack(push,1) can pack the data
-> >> correctly for the HyperV to use, but __attribute__((packed)) couldn't
-> >> do this right.
-> >
-> >Why?  What does gcc generate differently?  This should be identical.
-> 
-> It should, but in practice in this case it does not seem to behave the same
-> Way.
+Frederic Weisbecker wrote:
+> On Mon, Oct 12, 2009 at 03:13:51PM -0400, Masami Hiramatsu wrote:
+>> Frederic Weisbecker wrote:
+>>> The conflict issue might not be obvious for a user desperately trying to set
+>>> a kprobe. Even for other failcases, it might not be obvious (blacklisted
+>>> symbols, syntax errors...)
+>>>
+>>> May be should you improve the error granularity and print a KERN_DEBUG
+>>> message?
+>>
+>> Agreed, and kprobes error handling should be improved too (in the most cases,
+>> it just returns -EINVAL).
+>>
+>> Thank you.
+>>
+>
+>
+> And btw, I'm enable to create a probe, neither through ftrace nor perf:
+>
+> 	$ sudo ./perf probe -P 'p:sys_close sys_close $retval'
+> 	Adding new event: p:sys_close sys_close+0 $retval
+>
+> 	Error: Failed to create event: Invalid argument
+>
+>
+> 	# echo 'p:sys_open sys_open $retval'>  /debug/tracing/kprobe_events
+> 	bash: echo: write error : Invalid argument
+>
+> I suspect I missed something very obvious with the syntax :)
 
-Can you figure out why?  What is the output of gcc for both ways?
+Ah, only kretprobe events can use $retval :-)
+So, you should specify 'r' instead of 'p'.
 
-Can you show what is fixed by this change?
+-P 'r:sys_close sys_close $retval'
 
-Also note that #pragma packed is not supported by older versions of gcc,
-so I don't think that it would work at all on some compiler versions
-that are still legal to use for the kernel.  But I'm not quite sure when
-it was added, so I might be wrong.
 
-> >Ideally, we don't deal with packed structures at all, but with offsets
-> >in memory and pick out the proper fields and put them into new
-> >structures if you want to use them that way.  How hard would that be to
-> >do here instead?
-> 
-> It is something that I want to look at in the future. Our primary focus
-> Is to get the bug fixed. We cannot do the offset way in the time we
-> Have before 2.6.32 closes and still be comfortable we have gone through
-> The extensive testing cycle we do on our side.
+> I've applied your patches in:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> 	tracing/kprobes
+>
+> Thanks.
 
-I can't take this patch until I see what the root problem is here,
-sorry.
+Thank you!
 
-> >I still want to figure out what the real difference here is.  Especially
-> >as I removed a lot of the #pragma pack(push,1) lines from the hv code.
-> >If it really is different, all of those patches should be reverted,
-> >right?
-> 
-> Not sure yet if they need to be reverted, after we fixed this bug last week
-> We are getting another one, it was masked by the one we just fixed. 
-> We are checking into that right now;
-> 
-> 	BUG: unable to handle kernel NULL pointer dereference at (null)
+-- 
+Masami Hiramatsu
 
-What is the rest of the oops message?  That's pretty hard to determine
-anything from :)
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-thanks,
+e-mail: mhiramat@redhat.com
 
-greg k-h
