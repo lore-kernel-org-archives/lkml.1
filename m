@@ -1,119 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932219AbZJLOSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932230AbZJLOUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932219AbZJLOSt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756662AbZJLOSs
+	id S932230AbZJLOUA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbZJLOT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:18:48 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:57030 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756746AbZJLOSr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:18:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=NV6y/vslIlsAkGNzykKxnHnaRI5cS58zyEv8bz1iHRVUzT+PThVxEf0Hi5RIXvRjwE
-         rjAw6H3tbxFuoMBCCPEqoQzLiNr3zq+p/+Lmdd3QWuRIy9uqAxM37mzna0kU/ns5RsnA
-         3KZKMpUJ8nRChiCLpPfQWFIEhVjsP2/kygzjQ=
-From: Brian Gerst <brgerst@gmail.com>
+	Mon, 12 Oct 2009 10:19:59 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50824 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932185AbZJLOT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:19:58 -0400
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+From: James Bottomley <James.Bottomley@suse.de>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86-64: Move K8 B step iret fixup to fault entry asm.
-Date: Mon, 12 Oct 2009 10:18:23 -0400
-Message-Id: <1255357103-5418-1-git-send-email-brgerst@gmail.com>
-X-Mailer: git-send-email 1.6.2.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>
+In-Reply-To: <20091012130652.GB25464@elte.hu>
+References: <1255012399.4187.24.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0910080736490.3432@localhost.localdomain>
+	 <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain>
+	 <1255031298.4187.260.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain>
+	 <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
+	 <20091008210737.GD29181@mit.edu>
+	 <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
+	 <20091009091538.GA4154@elte.hu>
+	 <1255097287.2934.21.camel@localhost.localdomain>
+	 <20091012130652.GB25464@elte.hu>
+Content-Type: text/plain
+Date: Mon, 12 Oct 2009 09:19:07 -0500
+Message-Id: <1255357148.2850.91.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the handling of truncated %rip from an iret fault to the fault
-entry path.  This allows x86-64 to use the standard search_extable
-function.
+On Mon, 2009-10-12 at 15:06 +0200, Ingo Molnar wrote:
+> * James Bottomley <James.Bottomley@suse.de> wrote:
+> 
+> > On Fri, 2009-10-09 at 11:15 +0200, Ingo Molnar wrote:
+> > > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > 
+> > > > On Thu, 8 Oct 2009, Theodore Tso wrote:
+> > > > > 
+> > > > > So would it be acceptable to merge the 50 kloc of crap _during_ the
+> > > > > merge window?
+> > > > 
+> > > > Yes. I actually looked at the driver (since I had pulled it - I've 
+> > > > unpulled it but am still mulling it over), and while I think it looked 
+> > > > huge and overly complex, it by no means gave me the kinds of vibes I 
+> > > > get from some "obviously-ported-from-windows-with-no-clue" drivers.
+> > > > 
+> > > > So at least from my quick look I didn't get the feeling that the 
+> > > > driver was "evil". For me, it's a timing issue.  I hate getting big 
+> > > > pull requests after -rc1 is out, and I really don't like the feeling 
+> > > > that people are just ignoring the merge window.
+> > > > 
+> > > > That said, if somebody wants to look more closely at the driver, and 
+> > > > then wants to convince people that it should have gone through 
+> > > > "staging", feel free. But that's not what I've personally been arguing 
+> > > > about.
+> > > 
+> > > Greg, what's your take on the quality of this new driver? Do you have 
+> > > some time to do a review of this with drivers/staging/ versus drivers/ 
+> > > glasses on? The Git URI is at:
+> > 
+> > To me, the matter of staging versus actual tree isn't a quality issue 
+> > (otherwise we'd be shifting ~75% of SCSI drivers to staging, depending 
+> > on whose view of "quality" was being used). [...]
+> 
+> I think you need to update your notion of what goes into 
+> drivers/staging/ - these days it's primarily about code/implementation 
+> quality (Greg please correct me if i'm wrong about that).
+> 
+> Driver ABIs are distinctly down the priority list.
 
-Signed-off-by: Brian Gerst <brgerst@gmail.com>
----
- arch/x86/include/asm/uaccess.h |    1 -
- arch/x86/kernel/entry_64.S     |   11 ++++++++---
- arch/x86/mm/extable.c          |   31 -------------------------------
- 3 files changed, 8 insertions(+), 35 deletions(-)
+Not for me they're not.  We worked hard to unify exposed ABIs for
+drivers, so this is the most important user visible feature.  We can
+clean up code in the drivers tree, that's easy.  We can't break the user
+visible ABI of a supported driver without causing a lot of pain to its
+user community.
 
-diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index d2c6c93..abd3e0e 100644
---- a/arch/x86/include/asm/uaccess.h
-+++ b/arch/x86/include/asm/uaccess.h
-@@ -570,7 +570,6 @@ extern struct movsl_mask {
- #ifdef CONFIG_X86_32
- # include "uaccess_32.h"
- #else
--# define ARCH_HAS_SEARCH_EXTABLE
- # include "uaccess_64.h"
- #endif
- 
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index b5c061f..af0f4b2 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -1491,12 +1491,17 @@ error_kernelspace:
- 	leaq irq_return(%rip),%rcx
- 	cmpq %rcx,RIP+8(%rsp)
- 	je error_swapgs
--	movl %ecx,%ecx	/* zero extend */
--	cmpq %rcx,RIP+8(%rsp)
--	je error_swapgs
-+	movl %ecx,%eax	/* zero extend */
-+	cmpq %rax,RIP+8(%rsp)
-+	je bstep_iret
- 	cmpq $gs_change,RIP+8(%rsp)
- 	je error_swapgs
- 	jmp error_sti
-+
-+bstep_iret:
-+	/* Fix truncated RIP */
-+	movq %rcx,RIP+8(%rsp)
-+	je error_swapgs
- END(error_entry)
- 
- 
-diff --git a/arch/x86/mm/extable.c b/arch/x86/mm/extable.c
-index 61b41ca..d0474ad 100644
---- a/arch/x86/mm/extable.c
-+++ b/arch/x86/mm/extable.c
-@@ -35,34 +35,3 @@ int fixup_exception(struct pt_regs *regs)
- 
- 	return 0;
- }
--
--#ifdef CONFIG_X86_64
--/*
-- * Need to defined our own search_extable on X86_64 to work around
-- * a B stepping K8 bug.
-- */
--const struct exception_table_entry *
--search_extable(const struct exception_table_entry *first,
--	       const struct exception_table_entry *last,
--	       unsigned long value)
--{
--	/* B stepping K8 bug */
--	if ((value >> 32) == 0)
--		value |= 0xffffffffUL << 32;
--
--	while (first <= last) {
--		const struct exception_table_entry *mid;
--		long diff;
--
--		mid = (last - first) / 2 + first;
--		diff = mid->insn - value;
--		if (diff == 0)
--			return mid;
--		else if (diff < 0)
--			first = mid+1;
--		else
--			last = mid-1;
--	}
--	return NULL;
--}
--#endif
--- 
-1.6.2.5
+> > [...] It's an ABI issue.  If we would have to change the user visible 
+> > ABI while the driver was being cleaned up, I'd want it in staging to 
+> > warn users to expect these problems.  Although we couldn't clean up 
+> > everything, I did make sure this driver plugs correctly into the 
+> > standard linux FC ABI before putting it in the SCSI tree, so there are 
+> > no ABI changes anticipated even though there will likely be a lot of 
+> > code changes.  Therefore, the correct clean up path for this one is 
+> > through the SCSI tree.
+> 
+> What kind of significant ABI does this driver expose? If this question 
+> even comes up then it's using the wrong kind of ABI i think. Drivers 
+> should almost never expose significant new ABIs.
+
+The answer was in the email fragment you quoted: none on its own.  It
+plugs into the standard FC transport ABI now.
+
+However, there are various storage bodies who see creating user ABIs as
+part of their job.  The way these tend to get implemented is in the
+driver because that's the way it was done in UNIX (each driver rolls its
+own).  Part of my job is going through drivers and taking them out
+again ... while ensuring we at least have a way to perform whatever task
+it was in a uniform manner for all drivers.
+
+> If it's a storage management ABI then that should have been done at a 
+> higher level - possibly as a system call, but at minimum as a general 
+> facility.
+
+It is: it's implemented in the FC transport class, where it's uniform
+for all FC drivers.
+
+James
+
+> (Anyway ... this cannot be argued without knowing what specific ABI you 
+> mean here.)
+> 
+> 	Ingo
 
