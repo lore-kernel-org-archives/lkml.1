@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932902AbZJLTMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbZJLS53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932902AbZJLTMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbZJLTMW
+	id S1757905AbZJLS53 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 14:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757886AbZJLS52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:12:22 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56661 "EHLO mx1.suse.de"
+	Mon, 12 Oct 2009 14:57:28 -0400
+Received: from www.tglx.de ([62.245.132.106]:57319 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757496AbZJLTMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:12:21 -0400
-Date: Mon, 12 Oct 2009 11:54:17 -0700
-From: Greg KH <gregkh@suse.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
- anymore
-Message-ID: <20091012185417.GA30342@suse.de>
-References: <4AD120F2.3020606@tremplin-utc.net>
- <20091011030029.GA6526@suse.de>
- <200910112135.29384.dmitry.torokhov@gmail.com>
- <4AD31709.4000103@tremplin-utc.net>
- <20091012154846.GB7996@core.coreip.homeip.net>
- <20091012173551.GC10557@suse.de>
- <20091012183313.GC8345@core.coreip.homeip.net>
+	id S1757880AbZJLS50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 14:57:26 -0400
+Date: Mon, 12 Oct 2009 20:56:25 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [patch 0/4] DEBUG_RCU_HEAD: Debug and fix racy call_rcu()
+ users
+In-Reply-To: <20091012183725.GI17138@elte.hu>
+Message-ID: <alpine.LFD.2.00.0910122053540.9428@localhost.localdomain>
+References: <20091006143727.868480435@polymtl.ca> <20091012180739.GE17138@elte.hu> <20091012183007.GA12445@Krystal> <20091012183725.GI17138@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012183313.GC8345@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 11:33:13AM -0700, Dmitry Torokhov wrote:
-> On Mon, Oct 12, 2009 at 10:35:51AM -0700, Greg KH wrote:
-> > On Mon, Oct 12, 2009 at 08:48:46AM -0700, Dmitry Torokhov wrote:
-> > > > So at least, unbind should fail as well as bind.
-> > > >
-> > > 
-> > > That would be Greg's domain s it is driver core decision whether to
-> > > allow unbinding platform devices registered with
-> > > platform_driver_probe().
-> > 
-> > No, I do not see why that should not be allowed.
-> > 
+On Mon, 12 Oct 2009, Ingo Molnar wrote:
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> Because once you did unbind the device you are stuck (unless the driver
-> is compiled as a module, but then you could just unload the module
-> instead of unbinding). Disallowing unbind would allow discarding not
-> only __devinit but __devexit sections when driver is built in which
-> would make ebedded people happy[^Hier].
+> > * Ingo Molnar (mingo@elte.hu) wrote:
+> > > 
+> > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > > 
+> > > > Here is a patchset, done on 2.6.30.9, which permits to detect and fix 
+> > > > racy call_rcu() users.
+> > > 
+> > > Nice idea - but any reason why this isnt using the debugojects 
+> > > framework? That debugging framework is upstream already and allows this 
+> > > kind of object lifetime debugging - in a much broader way.
+> > > 
+> > 
+> > Other than: it did not occur to me, no, there is no reason for not using
+> > debugobjects there. :-)
+> > 
+> > As long as we can tag the object as
+> > - initialized
+> > - active
+> > - inactive
+> > 
+> > And dump a nice fat warning when the object is activated twice, that
+> > should suffice. Now time is a bit short on my side, but I'll keep in
+> > mind to respin a version on top of debugobjects soon.
 
-Yeah, good point.
+It does, and it also provides you a mechanism to prevent
+damage. i.e. you can provide a callback function which can deactivate
+an active object before activating it again. That turned out to be
+useful for timer wreckage which happened usually way after the
+offending code corrupted lists etc.
 
-Does anyone do bind/unbind with platform devices today?
+Thanks,
 
-If not, a patch changing this would be welcome.
-
-thanks,
-
-greg k-h
+	tglx
