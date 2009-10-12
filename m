@@ -1,85 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbZJLL4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932103AbZJLMCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034AbZJLL4k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 07:56:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZJLL4j
+	id S932103AbZJLMCm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 08:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbZJLMCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 07:56:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51242 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753655AbZJLL4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 07:56:39 -0400
-Date: Mon, 12 Oct 2009 13:55:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] NULL pointer dereference at IP: [<ffffffff812e9ccb>]
-	uart_close+0x2a/0x1e4
-Message-ID: <20091012115549.GA13987@elte.hu>
-References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> <20091012080511.GA22607@elte.hu> <20091012091954.GA31171@elte.hu> <20091012092713.GA32647@elte.hu> <20091012112504.GA10002@elte.hu> <20091012124501.3c1ac94f@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012124501.3c1ac94f@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 12 Oct 2009 08:02:42 -0400
+Received: from ernst.netinsight.se ([194.16.221.21]:62220 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754821AbZJLMCl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 08:02:41 -0400
+Date: Mon, 12 Oct 2009 14:01:49 +0200
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Artem Bityutskiy <dedekind1@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] panic.c: export panic_on_oops
+Message-ID: <20091012140149.6789efab@marrow.netinsight.se>
+In-Reply-To: <20091012113758.GB11035@elte.hu>
+References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
+	<20091012111545.GB8857@elte.hu>
+	<1255346731.9659.31.camel@localhost>
+	<20091012113758.GB11035@elte.hu>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(Risking that Artem also replies, I'll bite on this one! Let's hope we
+agree at least :-))
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Mon, 12 Oct 2009 13:37:58 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> > Unfortunately 46d57a449aa13d9c6adcc9d1dbc7b9a0ecfb69d8 is not easy to 
-> > revert, at all. Would be glad to try any patch - fixes or some manual 
-> > revert as well (if that's feasible).
+> > -       if (mtd->panic_write && in_interrupt())
+> > +       if (mtd->panic_write && (in_interrupt() || panic_on_oops))
+> >                 /* Interrupt context, we're going to panic so try and log */
+> >                 mtdoops_write(cxt, 1);
 > 
-> The patch doesn't do anything but create local variables of 
-> state->port. I'm now glad I did it that way as it makes it easy to 
-> spot the mistake.
->
-> the tty_port lock is ->lock, the uart lock is ->lock both are 
-> different..
+> Hm, the code seems to be somewhat confused about this. It tries to guess 
+> when it's panic-ing, right? in_interrupt() is the wrong test for that.
+
+Well, the main reason is to get the write done directly if we know
+we're going to crash. The rest of the code around the patch looks like
+this:
+
+         if (mtd->panic_write && (in_interrupt() || panic_on_oops))
+                 /* Interrupt context, we're going to panic so try and log */
+                 mtdoops_write(cxt, 1);
+         else
+                 schedule_work(&cxt->work_write);
+
+so if we're oopsing in interrupt context or are going to panic, we just
+write directly. mtdoops_write will then use mtd->panic_write if it's
+available to get the write done immediately without sleeping.
+
+> mtdoops_console_sync() gets called by regular printk() as well via:
 > 
-> Spot the mistake:
+> static void
+> mtdoops_console_write(struct console *co, const char *s, unsigned int count)
+> {
+>         struct mtdoops_context *cxt = co->data;
+>         struct mtd_info *mtd = cxt->mtd;
+>         unsigned long flags;
 > 
->  	if (state->flags & UIF_INITIALIZED) {
->  		unsigned long flags;
->  		spin_lock_irqsave(&port->lock, flags);
-> -		port->ops->stop_rx(port);
-> +		uport->ops->stop_rx(uport);
->  		spin_unlock_irqrestore(&port->lock, flags);
->  		/*
->  		 * Before we drop DTR, make sure the UART transmitter
->  		 * has completely drained; this is especially
->  		 * important if there is a transmit FIFO!
->  		 */
-> -		uart_wait_until_sent(tty, port->timeout);
-> +		uart_wait_until_sent(tty, uport->timeout);
->  	}
+>         if (!oops_in_progress) {
+>                 mtdoops_console_sync();
+>                 return;
 > 
+> I think this is all layered incorrectly - because mtdoops (which is a 
+> _VERY_ cool debugging facility btw - i wish generic x86 had something 
+> like that) tries to be a 'driver' and tries to achieve these things 
+> without modifying the core kernel.
 > 
-> so uart_close takes the wrong lock. I've checked the rest of the patch 
-> for the same error and I don't see any other screwups.
+> But it really should do that. We can certainly enhance the core kernel 
+> logic to tell the console driver more clearly when printk should go out 
+> immediately.
+> 
+> Instead of using oops_in_progress it might be better to go into 'sync 
+> immeditately' mode if the kernel gets tainted. Add a callback for that 
+> to struct console (in include/linux/console.h). The ->unblank() callback 
+> is already such a "user attention needed immediately" callback. We could 
+> add a ->kernel_bug() callback to that.
 
-Cool! This very much looks like something that could fix both problems. 
-I've started testing your fix.
+I sent another patch which changes the mtdoops behavior a bit:
 
-And yeah, i too never ever regretted having done 'too finegrained' 
-patches. (only ever the other way around) They are a pleasure to bisect 
-back to.
+  http://patchwork.ozlabs.org/patch/35750/
 
-> [...] The race in question is very hard to hit but fortunately Ingo 
-> hit it twice..
+(the thread with the patch series is here:
 
-a hundred thousand bootups a year go a long way in finding narrow races 
-;-)
+  http://lists.infradead.org/pipermail/linux-mtd/2009-October/027576.html)
 
-	Ingo
+the change is basically to log all messages in a circular buffer (the
+current one only logs messages after an oops has started). It also
+needed some restructuring, and I believe parts of the code becomes
+simpler that way.
+
+The console write now only adds messages to the buffer (never calls
+mtdoops_console_sync), and mtdoops_console_sync (i.e., the ->unblank()
+callback) simply becomes
+
+  static void mtdoops_console_sync(void)
+  {
+	struct mtdoops_context *cxt = &oops_cxt;
+
+	/* Write out the buffer if we are called during an oops */
+	if (oops_in_progress)
+		schedule_work(&cxt->work_write);
+  }
+
+To handle the panic case, I've simply added a panic notifier which does
+
+  static int mtdoops_panic(struct notifier_block *this, unsigned long event,
+		void *ptr)
+  {
+	struct mtdoops_context *cxt = &oops_cxt;
+
+	cancel_work_sync(&cxt->work_write);
+	cxt->ready = 0;
+	if (cxt->mtd->panic_write)
+		mtdoops_write(cxt, 1);
+	else
+		printk(KERN_WARNING "mtdoops: panic_write is not defined, "
+					"cannot store dump from panic\n");
+
+	return NOTIFY_DONE;
+  }
+
+So with this one, the exported panic_on_oops is no longer needed, and
+normal oopses are handled by the scheduled work while panic_on_oopses
+are handled by the panic handler.
+
+
+Anyway, this particular patch is still up for discussion.
+
+// Simon
