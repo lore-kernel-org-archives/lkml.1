@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751386AbZJLEgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbZJLFGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751386AbZJLEgm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 00:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZJLEgl
+	id S1751564AbZJLFGS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 01:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbZJLFGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 00:36:41 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:7807 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbZJLEgl (ORCPT
+	Mon, 12 Oct 2009 01:06:17 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:55348 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbZJLFGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 00:36:41 -0400
+	Mon, 12 Oct 2009 01:06:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=tRv6m6gj88TAI1+hMfDbc1R2TfsWtHRsAuSfByeRtyitqicow6KvlQ9Qfvf3wfnhLs
-         JSrw1IZgvzzMt074YBREE0x84gsSf4b1bYyBLPBTz/GHzjK7gCf4b/3Xv8JVBEvOzj0v
-         J4S5JmTNjGLLoyJmspNUQWJzNg/WRocC3xzl8=
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work anymore
-Date: Sun, 11 Oct 2009 21:35:29 -0700
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3; KDE/4.3.1; x86_64; ; )
-Cc: "?ric Piel" <Eric.Piel@tremplin-utc.net>,
-       Dmitry Torokhov <dtor@insightbb.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-References: <4AD120F2.3020606@tremplin-utc.net> <20091011030029.GA6526@suse.de>
-In-Reply-To: <20091011030029.GA6526@suse.de>
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=efImL9f5PAICVQGfRFmpTAkwFSWmKIYCTFoytrFQdqBWz0KL/BGon42rUn6Ps6jiDx
+         HKBLapzU1RP1tdPgtHML+XgFTSbO4Bw1ubg65csYpJIlyjDw3oa4IPmCGoA2BY7ApcCr
+         SFjZiPtcmP68be1AnXWFBv5QTHy07bdGQNmgo=
+Date: Mon, 12 Oct 2009 07:05:34 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: manual merge of the i7core_edac tree with Linus'
+ tree
+Message-ID: <20091012050534.GC7629@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Ingo Molnar <mingo@elte.hu>,
+	Mauro Carvalho Chehab <mchehab@redhat.com>,
+	linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20091012142328.710881fe.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910112135.29384.dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20091012142328.710881fe.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 10 October 2009 08:00:29 pm Greg KH wrote:
-> On Sun, Oct 11, 2009 at 02:04:02AM +0200, ?ric Piel wrote:
-> > Hello,
-> >
-> > After a suspend, I used to do this (to get the PS2 keyboard working
-> > again), and it used to work fine:
-> > echo -n "i8042" > /sys/bus/platform/drivers/i8042/unbind ; sleep 1 ; echo
-> > -n "i8042" > /sys/bus/platform/drivers/i8042/bind
-> >
-> > Unfortunately since 2.6.32-rc1, the unbind works fine, but the bind
-> > returns a "no such device" error now (and the binding is not done). After
-> > that, additional unbinds also report the error. I think 2.6.31 worked
-> > fine. Any idea what's going wrong?
-> 
-> Odd.  Any chance you can run 'git bisect' to figure out which patch
-> might have caused it?
+On Mon, Oct 12, 2009 at 02:23:28PM +1100, Stephen Rothwell wrote:
+> Today's linux-next merge of the i7core_edac tree got a conflict in
+> arch/x86/kernel/cpu/mcheck/mce.c between commit
+> f436f8bb73138bc74eb1c6527723e00988ad8a8a ("x86: EDAC: MCE: Fix MCE
+> decoding callback logic") from Linus' tree and commit
+> 699a7dbe1ffdf4b25c1475e45590b181c3e23087 ("edac_mce: Add an interface
+> driver to report mce errors via edac") from the i7core_edac tree.
 
-I8042 has been converted to use platform_driver_probe() - we are creating 
-platform device and platform driver together, there is no chance that some 
-other device might be driven by i8042 driver.
+The current way Ingo suggested is using an atomic notifier instead
+from within print_mce to convey MCE info to an EDAC driver, see
+http://marc.info/?l=linux-kernel&m=125455310112745&w=2
 
-Eric, do you still need to fiddle with i8042 to get your keyboard working with 
-2.6.32-rc3? We need to make sure that resube works without users needing to 
-mess with bind/unbind.
+Ingo, what are your plans with that? I'm guessing the .33 timeframe?
+
+Thanks.
 
 -- 
-Dmitry
+Regards/Gruss,
+    Boris.
