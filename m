@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbZJLVst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933295AbZJLVrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933326AbZJLVst (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933314AbZJLVsr
+	id S933295AbZJLVrf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758163AbZJLVrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:48:47 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:32953 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933313AbZJLVsq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:48:46 -0400
+	Mon, 12 Oct 2009 17:47:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36405 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755338AbZJLVrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:47:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Subject: Re: 2.6.32-rc4: Reported regressions 2.6.30 -> 2.6.31
+Date: Mon, 12 Oct 2009 23:48:33 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera> <1255377529.9544.63.camel@bluto.andrew>
+In-Reply-To: <1255377529.9544.63.camel@bluto.andrew>
 MIME-Version: 1.0
-In-Reply-To: <f326ee1a0910121420j59d4f63dy1ffcb1636a9a63d1@mail.gmail.com>
-References: <f326ee1a0910121420j59d4f63dy1ffcb1636a9a63d1@mail.gmail.com>
-Date: Mon, 12 Oct 2009 17:48:08 -0400
-Message-ID: <829197380910121448l1a9f35fmff276ad14afd9ac4@mail.gmail.com>
-Subject: Re: Kworld Analog TV 305U without audio - updated
-From: Devin Heitmueller <dheitmueller@kernellabs.com>
-To: =?ISO-8859-1?Q?D=EAnis_Goes?= <denishark@gmail.com>
-Cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       lauri.laanmets@proekspert.ee, grythumn@gmail.com, jarod@wilsonet.com,
-       ridzevicius@gmail.com, xwang1976@email.it, mchehab@infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910122348.33588.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 5:20 PM, Dênis Goes <denishark@gmail.com> wrote:
-> Hi...
->
-> I updated the driver to latest in repository, but I having audio problems
-> yet:
->
-> I'm testing a USB TV "Kworld PlusTV Analog TV stick VS-PVR-TV 305U" the TV
-> video works fine, but without audio...
-> ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-> I tried to pipe the audio via sox:
-> tvtime -d /dev/video1 & sox -v 1 -V4 -S -t ossdsp /dev/dsp1 -t ossdsp
-> /dev/dsp
->
+On Monday 12 October 2009, Andrew Patterson wrote:
+> On Mon, 2009-10-12 at 00:41 +0200, Rafael J. Wysocki wrote:
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14309
+> > Subject		: MCA on hp rx8640
+> > Submitter	: Andrew Patterson <andrew.patterson@hp.com>
+> > Date		: 2009-09-29 17:20 (13 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=db8be50c4307dac2b37305fc59c8dc0f978d09ea
+> > References	: http://www.spinics.net/lists/linux-usb/msg22799.html
+> > 
+> 
+> Linus fixed this one with d93a8f829fe1d2f3002f2c6ddb553d12db420412.  It
+> also looks like a duplicate of
+> http://bugzilla.kernel.org/show_bug.cgi?id=14374
 
-Just as a test, try opening two console windows, run tvtime in one,
-and then once the video is showing run the sox command in the other
-window.  I just want to rule out this being some sort of race
-condition.
+Thanks, I closed #14309 as a duplicate of #14374 that's already closed.
 
-Devin
-
--- 
-Devin J. Heitmueller - Kernel Labs
-http://www.kernellabs.com
+Best,
+Rafael
