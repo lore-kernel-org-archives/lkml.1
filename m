@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbZJLK1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbZJLKaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbZJLK1D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 06:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbZJLK1C
+	id S1756004AbZJLKaZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 06:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbZJLKaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 06:27:02 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34791
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755793AbZJLK1B (ORCPT
+	Mon, 12 Oct 2009 06:30:24 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:43179 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755057AbZJLKaY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 06:27:01 -0400
-Date: Mon, 12 Oct 2009 03:26:57 -0700 (PDT)
-Message-Id: <20091012.032657.24181291.davem@davemloft.net>
-To: heyongli@gmail.com
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Linux guest domain with two vnets bound to the same vswitch
- experiences hung in bootup (sun_netraT5220)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <505766fa0910120123l51b57b8aja30a5d0fd1225c0d@mail.gmail.com>
-References: <20091009.150829.218507309.davem@davemloft.net>
-	<20091009.162120.164441279.davem@davemloft.net>
-	<505766fa0910120123l51b57b8aja30a5d0fd1225c0d@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 12 Oct 2009 06:30:24 -0400
+Message-ID: <4AD304B2.8000205@vflare.org>
+Date: Mon, 12 Oct 2009 15:58:02 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
+References: <1255337423-3158-1-git-send-email-ngupta@vflare.org> <20091012090710.GA29310@n2100.arm.linux.org.uk>
+In-Reply-To: <20091012090710.GA29310@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: hyl <heyongli@gmail.com>
-Date: Mon, 12 Oct 2009 16:23:47 +0800
-
-> look the console output, system seems hang on a live lock:
-> tl0_irq5 triggered just after the irq been re-enable in the handler
-> of irq5: the ldc_rx.
+On 10/12/2009 02:37 PM, Russell King - ARM Linux wrote:
+> On Mon, Oct 12, 2009 at 02:20:23PM +0530, Nitin Gupta wrote:
+>> Same problem exists on mips too.
 > 
-> i have no idea about the t10_irq5, just guess that: the special
-> configuration lead to t10_irq5 been triggered continuously, and
-> the trigger condition can not been cleared.
+> Nice catch.  This logic came from sparc64, so I think you'd want to talk
+> to davem about it as well.
+> 
+> In the mean time, submitting your fix to the patch system would be great,
+> thanks.
+> 
 
-Yes, it seems that stack is exhausted.  Ho hum...
+Thanks for looking into this. I think this can make it to mainline if
+you could Ack it and perhaps CC Andrew to get his attention?
 
-I guess the following patch works too?  Please make sure you've
-removed your changes when testing this.
+I will soon post similar patch for mips. For sparc64, I guess David wants to fix it.
 
-Thanks.
-
-diff --git a/arch/sparc/kernel/ldc.c b/arch/sparc/kernel/ldc.c
-index adf5f27..cb3c72c 100644
---- a/arch/sparc/kernel/ldc.c
-+++ b/arch/sparc/kernel/ldc.c
-@@ -1242,13 +1242,13 @@ int ldc_bind(struct ldc_channel *lp, const char *name)
- 	snprintf(lp->tx_irq_name, LDC_IRQ_NAME_MAX, "%s TX", name);
- 
- 	err = request_irq(lp->cfg.rx_irq, ldc_rx,
--			  IRQF_SAMPLE_RANDOM | IRQF_SHARED,
-+			  IRQF_SAMPLE_RANDOM | IRQF_DISABLED | IRQF_SHARED,
- 			  lp->rx_irq_name, lp);
- 	if (err)
- 		return err;
- 
- 	err = request_irq(lp->cfg.tx_irq, ldc_tx,
--			  IRQF_SAMPLE_RANDOM | IRQF_SHARED,
-+			  IRQF_SAMPLE_RANDOM | IRQF_DISABLED | IRQF_SHARED,
- 			  lp->tx_irq_name, lp);
- 	if (err) {
- 		free_irq(lp->cfg.rx_irq, lp);
+Thanks,
+Nitin
