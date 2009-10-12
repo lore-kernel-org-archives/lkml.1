@@ -1,106 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbZJLLFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZJLLJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbZJLLFm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 07:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbZJLLFl
+	id S1756186AbZJLLJE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 07:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbZJLLJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 07:05:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37422
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753705AbZJLLFk (ORCPT
+	Mon, 12 Oct 2009 07:09:03 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40725 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753934AbZJLLJC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 07:05:40 -0400
-Date: Mon, 12 Oct 2009 04:05:36 -0700 (PDT)
-Message-Id: <20091012.040536.10656720.davem@davemloft.net>
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       karol.k.lewandowski@gmail.com, mel@csn.ul.ie, netdev@vger.kernel.org
-Subject: Re: [Bug #14265] ifconfig: page allocation failure. order:5,
- mode:0x8020 w/ e100
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <L6tb-VyKHZK.A.YoC.lzl0KB@chimera>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-	<L6tb-VyKHZK.A.YoC.lzl0KB@chimera>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Oct 2009 07:09:02 -0400
+Date: Mon, 12 Oct 2009 12:08:14 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Nitin Gupta <ngupta@vflare.org>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
+Message-ID: <20091012110814.GA32113@n2100.arm.linux.org.uk>
+References: <1255337423-3158-1-git-send-email-ngupta@vflare.org> <20091012090710.GA29310@n2100.arm.linux.org.uk> <4AD304B2.8000205@vflare.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AD304B2.8000205@vflare.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Mon, 12 Oct 2009 01:01:08 +0200 (CEST)
+On Mon, Oct 12, 2009 at 03:58:02PM +0530, Nitin Gupta wrote:
+> On 10/12/2009 02:37 PM, Russell King - ARM Linux wrote:
+> > On Mon, Oct 12, 2009 at 02:20:23PM +0530, Nitin Gupta wrote:
+> >> Same problem exists on mips too.
+> > 
+> > Nice catch.  This logic came from sparc64, so I think you'd want to talk
+> > to davem about it as well.
+> > 
+> > In the mean time, submitting your fix to the patch system would be great,
+> > thanks.
+> > 
+> 
+> Thanks for looking into this. I think this can make it to mainline if
+> you could Ack it and perhaps CC Andrew to get his attention?
 
-[ Netdev CC:'d ]
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14265
-> Subject		: ifconfig: page allocation failure. order:5, mode:0x8020 w/ e100
-> Submitter	: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-> Date		: 2009-09-15 12:05 (27 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125301636509517&w=4
-
-A 128K memory allocation fails after resume, film at 11.
-
-That e100 driver code has been that way forever, so likely it's
-something in the page allocator or similar that is making this happen
-more likely now.  Perhaps it's related to the iwlagn allocation
-failures being tracked down in another thread.
-
-It's a shame that pci_alloc_consistent() has to always use GFP_ATOMIC
-for compatability.
-
-As far as I can tell, these code paths can sleep.  So maybe the
-following hack would fix this for now.  Could someone test this?
-
-diff --git a/drivers/net/e100.c b/drivers/net/e100.c
-index 679965c..c71729f 100644
---- a/drivers/net/e100.c
-+++ b/drivers/net/e100.c
-@@ -1780,9 +1780,9 @@ static void e100_clean_cbs(struct nic *nic)
- 			nic->cb_to_clean = nic->cb_to_clean->next;
- 			nic->cbs_avail++;
- 		}
--		pci_free_consistent(nic->pdev,
--			sizeof(struct cb) * nic->params.cbs.count,
--			nic->cbs, nic->cbs_dma_addr);
-+		dma_free_coherent(&nic->pdev->dev,
-+				  sizeof(struct cb) * nic->params.cbs.count,
-+				  nic->cbs, nic->cbs_dma_addr);
- 		nic->cbs = NULL;
- 		nic->cbs_avail = 0;
- 	}
-@@ -1800,8 +1800,10 @@ static int e100_alloc_cbs(struct nic *nic)
- 	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = NULL;
- 	nic->cbs_avail = 0;
- 
--	nic->cbs = pci_alloc_consistent(nic->pdev,
--		sizeof(struct cb) * count, &nic->cbs_dma_addr);
-+	nic->cbs = dma_alloc_coherent(&nic->pdev->dev,
-+				      sizeof(struct cb) * count,
-+				      &nic->cbs_dma_addr,
-+				      GFP_KERNEL);
- 	if (!nic->cbs)
- 		return -ENOMEM;
- 
-@@ -2655,16 +2657,16 @@ static int e100_do_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
- 
- static int e100_alloc(struct nic *nic)
- {
--	nic->mem = pci_alloc_consistent(nic->pdev, sizeof(struct mem),
--		&nic->dma_addr);
-+	nic->mem = dma_alloc_coherent(&nic->pdev->dev, sizeof(struct mem),
-+				      &nic->dma_addr, GFP_KERNEL);
- 	return nic->mem ? 0 : -ENOMEM;
- }
- 
- static void e100_free(struct nic *nic)
- {
- 	if (nic->mem) {
--		pci_free_consistent(nic->pdev, sizeof(struct mem),
--			nic->mem, nic->dma_addr);
-+		dma_free_coherent(&nic->pdev->dev, sizeof(struct mem),
-+				  nic->mem, nic->dma_addr);
- 		nic->mem = NULL;
- 	}
- }
+Or it could take a less tortuous route by going through my tree.
