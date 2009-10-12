@@ -1,40 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932514AbZJLPCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932462AbZJLOzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932514AbZJLPCQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbZJLPCP
+	id S932462AbZJLOzj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbZJLOzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:02:15 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:35656 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932193AbZJLPCO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:02:14 -0400
-Date: Mon, 12 Oct 2009 10:54:41 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Tejun Heo <tj@kernel.org>
-cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mel Gorman <mel@csn.ul.ie>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [this_cpu_xx V6 3/7] Use this_cpu operations in slub
-In-Reply-To: <4AD302A8.4010409@kernel.org>
-Message-ID: <alpine.DEB.1.10.0910121053240.7932@gentwo.org>
-References: <20091007211024.442168959@gentwo.org> <20091007211052.614790286@gentwo.org> <4AD302A8.4010409@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 12 Oct 2009 10:55:39 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50686 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932419AbZJLOzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:55:37 -0400
+Date: Mon, 12 Oct 2009 16:54:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jing Huang <huangj@brocade.com>
+Subject: Re: [GIT PULL] SCSI fixes for 2.6.32-rc3
+Message-ID: <20091012145453.GD4565@elte.hu>
+References: <alpine.LFD.2.01.0910080742230.3432@localhost.localdomain> <1255031298.4187.260.camel@mulgrave.site> <alpine.LFD.2.01.0910081252090.3432@localhost.localdomain> <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain> <20091008210737.GD29181@mit.edu> <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain> <20091009091538.GA4154@elte.hu> <1255097287.2934.21.camel@localhost.localdomain> <20091012130652.GB25464@elte.hu> <1255357148.2850.91.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255357148.2850.91.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009, Tejun Heo wrote:
 
-> > -		c = get_cpu_slab(s, smp_processor_id());
-> > +		c = __this_cpu_ptr(s->cpu_slab);
->
-> Shouldn't this be this_cpu_ptr() without the double underscore?
+* James Bottomley <James.Bottomley@suse.de> wrote:
 
-Interrupts are disabled so no concurrent fast path can occur.
+> > > To me, the matter of staging versus actual tree isn't a quality 
+> > > issue (otherwise we'd be shifting ~75% of SCSI drivers to staging, 
+> > > depending on whose view of "quality" was being used). [...]
+> > 
+> > I think you need to update your notion of what goes into 
+> > drivers/staging/ - these days it's primarily about 
+> > code/implementation quality (Greg please correct me if i'm wrong 
+> > about that).
+> > 
+> > Driver ABIs are distinctly down the priority list.
+> 
+> Not for me they're not.  We worked hard to unify exposed ABIs for 
+> drivers, so this is the most important user visible feature.  We can 
+> clean up code in the drivers tree, that's easy.  We can't break the 
+> user visible ABI of a supported driver without causing a lot of pain 
+> to its user community.
 
+I think you are interpreting what should go into drivers/staging/ _very_ 
+narrowly.
 
+Basically if you skip the drivers/staging/ step for unclean drivers you 
+_remove_ an incentive of driver authors to fix up crap. If it's upstream 
+already without cleanups then why bother cleaning it up fully?
+
+Staging should be for drivers that arent clean enough for mainline as-is 
+(having a messy ABI can be one of the reasons that makes a driver 
+unclean), but which are still important enough and have active 
+maintainers/developers who care about them.
+
+It's basically an optimistic multi-step trust algorithm for drivers 
+whose lack would otherwise be a "cannot use upstream" showstopper for a 
+significant class of Linux users - but which are not yet clean enough 
+for upstream inclusion. The 4 steps of:
+
+ - out of tree
+ - in Greg's staging tree
+ - upstream in drivers/staging/
+ - upstream in drivers/
+
+Offer various degrees of incentives and walking that path expresses it 
+both to driver authors and to kernel maintainers that all parties 
+involved can be trusted to produce clean code.
+
+Everyone wins from that:
+
+ - users get faster hw-enablement
+
+ - driver authors get reinforcement that their stuff is moving forward 
+   (which they can communicate back to their employers)
+
+ - maintainers get patches that they can build trust upon and the danger 
+   of release-and-forget drivers is lessened.
+
+ - even if authors orphan a driver, actual real users have the ability 
+   to move things themselves.
+
+ - [ if none of that happens then sure the driver wasnt all that 
+     important to begin with and can be dropped - nobody loses. ]
+
+I think your interpretation is arbitrary - where did you get that ABI 
+rule from? I'm sure it cannot be from any of the drivers/staging/ 
+discussions on lkml, i've followed them quite closely. If 'has a messy 
+ABI' was the only requirement for drivers/staging/ then we could move 
+90% of drivers/staging/ into drivers/ straight away - and that would be 
+counter-productive IMHO.
+
+Sidenote, in fact i think we should expand on that: drivers/staging/ 
+should be used in the _other_ direction as well - to un-upstream stale 
+drivers that are abandoned and unused, in a gradual fashion. 'git mv' is 
+cheap.
+
+Basically, drivers/staging/ gives us an excellent opportunity to 
+_increase_ the quality of drivers by applying stronger upstream 
+inclusion filters, without having to hurt users/developers in the 
+process. We just have to start using it that way as well.
+
+	Ingo
