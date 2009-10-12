@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbZJLIKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbZJLINR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbZJLIKh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 04:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbZJLIKf
+	id S1754676AbZJLINR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 04:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbZJLINQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 04:10:35 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:20306 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754641AbZJLIKe convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;4:2>);
-	Mon, 12 Oct 2009 04:10:34 -0400
-Message-Id: <4AD30073020000780001938F@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Mon, 12 Oct 2009 09:09:55 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
+	Mon, 12 Oct 2009 04:13:16 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40569 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754227AbZJLINP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 04:13:15 -0400
+Date: Mon, 12 Oct 2009 17:12:32 +0900 (JST)
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Christian Casteyde" <casteyde.christian@free.fr>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #14279] Suspend to RAM freeze totally since
-	 2.6.32-rc1 - Acer Aspire 1511Lmi laptop
-References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
- <r-4Wjt4coy.A.WZE.Abl0KB@chimera>
-In-Reply-To: <r-4Wjt4coy.A.WZE.Abl0KB@chimera>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Subject: Re: [PATCH 2/2] vmscan: kill shrink_all_zones()
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm" <linux-mm@kvack.org>
+In-Reply-To: <200910112301.29237.rjw@sisk.pl>
+References: <20091009175559.12B8.A69D9226@jp.fujitsu.com> <200910112301.29237.rjw@sisk.pl>
+Message-Id: <20091012170439.E4CA.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The issue is still present, albeit a patch (available in the bugzilla entry) had
-been posted on Oct 6th. Jan
+> >   Throuput comparision
+> >   ==============================================
+> >   old		2192.10 MB/s
+> >   new		2222.22 MB/s
+> > 
+> >   ok, it's almost same throuput.
+> > 
+> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> 
+> I have no objections to any of the two patches, but I think we may want to drop
+> shrink_all_memory() altogether.  Everything should work without it and the
+> reason I didn't remove it was because I saw a performance regression on one
+> system without it.  It may not be worth keeping it, though.
+> 
+> Have you done any tests with shrink_all_memory() removed?
 
->>> "Rafael J. Wysocki" <rjw@sisk.pl> 12.10.09 00:22 >>>
-This message has been generated automatically as a part of a report
-of recent regressions.
-
-The following bug entry is on the current list of known regressions
-from 2.6.31.  Please verify if it still should be listed and let me know
-(either way).
-
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14279 
-Subject		: Suspend to RAM freeze totally since 2.6.32-rc1 - Acer Aspire 1511Lmi laptop
-Submitter	: Christian Casteyde <casteyde.christian@free.fr>
-Date		: 2009-09-30 18:14 (12 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5f68563996e812f9ca35b3939ad2a42e5d254d66 
+Honestly, I haven't try to remvoe shrink_all_memory() at all. then, I don't have any
+mesurement data of shrink_all_memory.
+Yes, your opinion seems reasonable. I plan to mesure it awhile after. (sorry, I haven't
+enough development time in this month)
 
 
 
