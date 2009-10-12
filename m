@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbZJLPBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbZJLPBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbZJLPBQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756663AbZJLPBP
+	id S932486AbZJLPBW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932458AbZJLPBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:01:15 -0400
-Received: from rtr.ca ([76.10.145.34]:35229 "EHLO mail.rtr.ca"
+	Mon, 12 Oct 2009 11:01:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47696 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755716AbZJLPBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:01:14 -0400
-Message-ID: <4AD34494.7020602@rtr.ca>
-Date: Mon, 12 Oct 2009 11:00:36 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S932133AbZJLPBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 11:01:19 -0400
+Date: Mon, 12 Oct 2009 17:00:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [origin tree build failure] [PATCH] Revert "USB: musb: make
+	HAVE_CLK support optional"
+Message-ID: <20091012150037.GA14004@elte.hu>
+References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> <20091012074221.GA19198@elte.hu> <8bd0f97a0910120605q17a586dag29cf4ab6d89dd29d@mail.gmail.com> <20091012142940.GB1114@suse.de> <8bd0f97a0910120739k3122bctb46713881eaef9ca@mail.gmail.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org
-Subject: Re: pci-express hotplug
-References: <20091012120620.GG9228@kernel.dk> <20091012145254.GA1517@kroah.com> <20091012145700.GJ9228@kernel.dk>
-In-Reply-To: <20091012145700.GJ9228@kernel.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0910120739k3122bctb46713881eaef9ca@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Mon, Oct 12 2009, Greg KH wrote:
->> On Mon, Oct 12, 2009 at 02:06:20PM +0200, Jens Axboe wrote:
->>> Hi,
->>>
->>> I'm trying to get pci-express hotplug working in a box here. I don't
->>> really care about the hotplug aspect, I just want the darn pci-e slots
->>> that are designated hotplug slots to actually WORK. When I load pciehp,
->>> I get:
->>>
->>> Firmware did not grant requested _OSC control
->>> Firmware did not grant requested _OSC control
->>> Firmware did not grant requested _OSC control
->>> Firmware did not grant requested _OSC control
->>> pciehp 0000:00:05.0:pcie04: HPC vendor_id 8086 device_id 340c ss_vid 0 ss_did 0
->>> pciehp 0000:00:05.0:pcie04: service driver pciehp loaded
->>> Firmware did not grant requested _OSC control
->>> pciehp 0000:00:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
->>> pciehp 0000:00:07.0:pcie04: service driver pciehp loaded
->>> Firmware did not grant requested _OSC control
->>> pciehp 0000:80:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
->>> pciehp 0000:80:07.0:pcie04: service driver pciehp loaded
->>> pciehp 0000:80:09.0:pcie04: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
->>> pciehp 0000:80:09.0:pcie04: service driver pciehp loaded
->>> pciehp: PCI Express Hot Plug Controller Driver version: 0.4
->>>
->>> and the devices in the hotplug slots stay off. Is this an ACPI/bios
->>> issue? How can I debug this?
->> Can you try the acpiphp driver instead?  That's usually the driver you
->> want to use for "modern" systems (i.e. anything made in the past 5
->> years.)
+
+* Mike Frysinger <vapier.adi@gmail.com> wrote:
+
+> On Mon, Oct 12, 2009 at 10:29, Greg KH wrote:
+> > On Mon, Oct 12, 2009 at 09:05:57AM -0400, Mike Frysinger wrote:
+> >> On Mon, Oct 12, 2009 at 03:42, Ingo Molnar wrote:
+> >> >
+> >> > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> >> >
+> >> >> As usual, please test this for regressions, both new and old.
+> >> >
+> >> >>       USB: musb: make HAVE_CLK support optional
+> >> >
+> >> > This USB/Blackfin commit broke the x86 build with these config options:
+> >> >
+> >> >  CONFIG_USB_MUSB_HDRC=y
+> >> >  CONFIG_USB_MUSB_HOST=y
+> >> >  # CONFIG_USB_MUSB_PERIPHERAL is not set
+> >> >  # CONFIG_USB_MUSB_OTG is not set
+> >> >  # CONFIG_USB_GADGET_MUSB_HDRC is not set
+> >> >  CONFIG_USB_MUSB_HDRC_HCD=y
+> >> >  CONFIG_MUSB_PIO_ONLY=y
+> >> >  CONFIG_USB_MUSB_DEBUG=y
+> >> >
+> >> > Because a side-effect of the patch was that it enabled the driver on x86
+> >> > too which doesnt have HAVE_CLK. So this formerly embedded-only driver
+> >> > got exposed on the more widely tested x86 platform.
+> >>
+> >> this is dumb.  you're addressing unrealistic scenarios (randconfig) by
+> >> reverting code for realistic scenarios.  how about updating the
+> >> already present arch depend string instead.
+> >
+> > We want 'randconfig' to work, so this is not unrealistic.  Have you not
+> > seen Randy Dunlap's zillion patches to get this to all work properly
+> > over the past months?
 > 
-> I should have mentioned that I tried that too. It doesn't complain, but
-> I don't see my cards anywhere afterwards. I'm a hotplug newbie, do I
-> need to do anything else?
- 
-Tried this yet:
+> i'm not suggesting it not be fixed, i'm suggested it be *fixed*
+> instead of blindly reverted.
 
-   options pciehp pciehp_force=1
+Sure, i'd agree with that if we were in the merge window. The thing is, 
+-rc4 is not the time to do patches that need fixes. It is to fix 
+regressions. I dont think this commit applies as a regression fix, does 
+it? It _introduces_ a regression.
 
-??
+So a revert is a proper first-level response to this and i fail to 
+understand your surprise about that. A fix is nice too, of course, if 
+it's simple enough.
+
+	Ingo
