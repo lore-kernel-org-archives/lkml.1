@@ -1,154 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZJLOj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932352AbZJLOmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756978AbZJLOj7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbZJLOj6
+	id S932352AbZJLOmU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932331AbZJLOmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:39:58 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:45844 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756892AbZJLOj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:39:57 -0400
-Message-ID: <4AD33FD9.5080207@redhat.com>
-Date: Mon, 12 Oct 2009 10:40:25 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 12 Oct 2009 10:42:19 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37420 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932320AbZJLOmS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:42:18 -0400
+Date: Mon, 12 Oct 2009 10:41:10 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@dr-wily.mit.edu
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>, Nelson Elhage <nelhage@ksplice.com>
+Subject: Re: [PATCH v4 2/2] arm: Clean up linker script using new linker
+ script macros.
+In-Reply-To: <1254515567-27110-2-git-send-email-tabbott@ksplice.com>
+Message-ID: <alpine.DEB.1.10.0910121036130.6253@dr-wily.mit.edu>
+References: <alpine.DEB.1.10.0910021536510.19358@dr-wily.mit.edu> <1254515567-27110-2-git-send-email-tabbott@ksplice.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [PATCH tracing/kprobes v4] perf: Add perf probe subcommand for
- 	kprobe-event setup helper
-References: <4ACE56EE.8060000@redhat.com>	 <20091008211737.29299.14784.stgit@dhcp-100-2-132.bos.redhat.com> <c62985530910120331g42ff49a3pd043ef9c6923143e@mail.gmail.com>
-In-Reply-To: <c62985530910120331g42ff49a3pd043ef9c6923143e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frédéric Weisbecker wrote:
-> 2009/10/8 Masami Hiramatsu <mhiramat@redhat.com>:
->> Add perf probe subcommand for kprobe-event setup helper to perf command.
->> This allows user to define kprobe events by C expressions (C line numbers,
->> C function names, and C local variables).
->>
->> Usage
->> -----
->>  perf probe [<options>] -P 'PROBEDEF' [-P 'PROBEDEF' ...]
->>
->>    -k, --vmlinux <file>  vmlinux/module pathname
->>    -P, --probe <p|r:[GRP/]NAME FUNC[+OFFS][@SRC]|@SRC:LINE [ARG ...]>
->>                          probe point definition, where
->>                p:      kprobe probe
->>                r:      kretprobe probe
->>                GRP:    Group name (optional)
->>                NAME:   Event name
->>                FUNC:   Function name
->>                OFFS:   Offset from function entry (in byte)
->>                SRC:    Source code path
->>                LINE:   Line number
->>                ARG:    Probe argument (local variable name or
->>                        kprobe-tracer argument format is supported.)
->>
->> Changes in v4:
->>  - Add _GNU_SOURCE macro for strndup().
->>
->> Changes in v3:
->>  - Remove -r option because perf always be used for online kernel.
->>  - Check malloc/calloc results.
->>
->> Changes in v2:
->>  - Check synthesized string length.
->>  - Rename perf kprobe to perf probe.
->>  - Use spaces for separator and update usage comment.
->>  - Check error paths in parse_probepoint().
->>  - Check optimized-out variables.
->>
->> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
->> Cc: Frederic Weisbecker <fweisbec@gmail.com>
->> Cc: Ingo Molnar <mingo@elte.hu>
->> Cc: Thomas Gleixner <tglx@linutronix.de>
->> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
->> Cc: Steven Rostedt <rostedt@goodmis.org>
->> Cc: Mike Galbraith <efault@gmx.de>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
->> Cc: Christoph Hellwig <hch@infradead.org>
->> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
->> Cc: Jim Keniston <jkenisto@us.ibm.com>
->> Cc: Frank Ch. Eigler <fche@redhat.com>
->> ---
->>
-> [...]
->> +/* Default vmlinux search paths */
->> +#define NR_SEARCH_PATH 3
->> +const char *default_search_path[NR_SEARCH_PATH] = {
->> +"/lib/modules/%s/build/vmlinux",               /* Custom build kernel */
->> +"/usr/lib/debug/lib/modules/%s/vmlinux",       /* Red Hat debuginfo */
->> +"/boot/vmlinux-debug-%s",                      /* Ubuntu */
->> +};
-> [...]
->> +static int open_default_vmlinux(void)
->> +{
->> +       struct utsname uts;
->> +       char fname[MAX_PATH_LEN];
->> +       int fd, ret, i;
->> +
->> +       ret = uname(&uts);
->> +       if (ret) {
->> +               debug("uname() failed.\n");
->> +               return -errno;
->> +       }
->> +       session.release = uts.release;
->> +       for (i = 0; i < NR_SEARCH_PATH; i++) {
->> +               ret = snprintf(fname, MAX_PATH_LEN,
->> +                              default_search_path[i], session.release);
->> +               if (ret >= MAX_PATH_LEN || ret < 0) {
->> +                       debug("Filename(%d,%s) is too long.\n", i, uts.release);
->> +                       errno = E2BIG;
->> +                       return -E2BIG;
->> +               }
->> +               debug("try to open %s\n", fname);
->> +               fd = open(fname, O_RDONLY);
->> +               if (fd >= 0)
->> +                       break;
->> +       }
->> +       return fd;
->> +}
+Can someone with an arm machine test this patch?  I'd really appreciate 
+it.
+
+	-Tim Abbott
+
+On Fri, 2 Oct 2009, Tim Abbott wrote:
+
+> From: Nelson Elhage <nelhage@ksplice.com>
+> 
+> This patch is mostly a straightforward translation. The primary side
+> effect to the resulting vmlinux should be to increase the alignment on
+> the initramfs to the standard PAGE_SIZE from 32 bytes.
+> 
+> Signed-off-by: Nelson Elhage <nelhage@ksplice.com>
+> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+>  arch/arm/kernel/vmlinux.lds.S |   77 ++++++++++++----------------------------
+>  1 files changed, 23 insertions(+), 54 deletions(-)
+> 
+> diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
+> index 0902f80..71151bd 100644
+> --- a/arch/arm/kernel/vmlinux.lds.S
+> +++ b/arch/arm/kernel/vmlinux.lds.S
+> @@ -40,43 +40,31 @@ SECTIONS
+>  		__tagtable_begin = .;
+>  			*(.taglist.init)
+>  		__tagtable_end = .;
+> -		. = ALIGN(16);
+> -		__setup_start = .;
+> -			*(.init.setup)
+> -		__setup_end = .;
+> +
+> +		INIT_SETUP(16)
+> +
+>  		__early_begin = .;
+>  			*(.early_param.init)
+>  		__early_end = .;
+> -		__initcall_start = .;
+> -			INITCALLS
+> -		__initcall_end = .;
+> -		__con_initcall_start = .;
+> -			*(.con_initcall.init)
+> -		__con_initcall_end = .;
+> -		__security_initcall_start = .;
+> -			*(.security_initcall.init)
+> -		__security_initcall_end = .;
+> -#ifdef CONFIG_BLK_DEV_INITRD
+> -		. = ALIGN(32);
+> -		__initramfs_start = .;
+> -			usr/built-in.o(.init.ramfs)
+> -		__initramfs_end = .;
+> -#endif
+> -		. = ALIGN(PAGE_SIZE);
+> -		__per_cpu_load = .;
+> -		__per_cpu_start = .;
+> -			*(.data.percpu.page_aligned)
+> -			*(.data.percpu)
+> -			*(.data.percpu.shared_aligned)
+> -		__per_cpu_end = .;
+> +
+> +		INIT_CALLS
+> +		CON_INITCALL
+> +		SECURITY_INITCALL
+> +		INIT_RAM_FS
+> +
+>  #ifndef CONFIG_XIP_KERNEL
+>  		__init_begin = _stext;
+>  		INIT_DATA
+> -		. = ALIGN(PAGE_SIZE);
+> -		__init_end = .;
+>  #endif
+>  	}
+>  
+> +	PERCPU(PAGE_SIZE)
+> +
+> +#ifndef CONFIG_XIP_KERNEL
+> +	. = ALIGN(PAGE_SIZE);
+> +	__init_end = .;
+> +#endif
+> +
+>  	/DISCARD/ : {			/* Exit code and data		*/
+>  		EXIT_TEXT
+>  		EXIT_DATA
+> @@ -155,7 +143,7 @@ SECTIONS
+>  		 * first, the init task union, aligned
+>  		 * to an 8192 byte boundary.
+>  		 */
+> -		*(.data.init_task)
+> +		INIT_TASK_DATA(THREAD_SIZE)
+>  
+>  #ifdef CONFIG_XIP_KERNEL
+>  		. = ALIGN(PAGE_SIZE);
+> @@ -165,17 +153,8 @@ SECTIONS
+>  		__init_end = .;
+>  #endif
+>  
+> -		. = ALIGN(PAGE_SIZE);
+> -		__nosave_begin = .;
+> -		*(.data.nosave)
+> -		. = ALIGN(PAGE_SIZE);
+> -		__nosave_end = .;
+> -
+> -		/*
+> -		 * then the cacheline aligned data
+> -		 */
+> -		. = ALIGN(32);
+> -		*(.data.cacheline_aligned)
+> +		NOSAVE_DATA
+> +		CACHELINE_ALIGNED_DATA(32)
+>  
+>  		/*
+>  		 * The exception fixup table (might need resorting at runtime)
+> @@ -254,20 +233,10 @@ SECTIONS
+>  	}
+>  #endif
+>  
+> -	.bss : {
+> -		__bss_start = .;	/* BSS				*/
+> -		*(.bss)
+> -		*(COMMON)
+> -		__bss_stop = .;
+> -		_end = .;
+> -	}
+> -					/* Stabs debugging sections.	*/
+> -	.stab 0 : { *(.stab) }
+> -	.stabstr 0 : { *(.stabstr) }
+> -	.stab.excl 0 : { *(.stab.excl) }
+> -	.stab.exclstr 0 : { *(.stab.exclstr) }
+> -	.stab.index 0 : { *(.stab.index) }
+> -	.stab.indexstr 0 : { *(.stab.indexstr) }
+> +	BSS_SECTION(0, 0, 0)
+> +	_end = .;
+> +
+> +	STABS_DEBUG
+>  	.comment 0 : { *(.comment) }
+>  }
+>  
+> -- 
+> 1.6.4.3
 > 
 > 
-> We have a kind of kernel path finder already inside perf. It might be
-> encapsulated
-> inside the load_kernel() helper, I don't remember exactly.
-> 
-> It would be better to make use of such centralized and already
-> existing facility.
-
-Agreed. AFAICS, load_kernel() is currently only for symbol resolver,
-and we can make it for dwarf analyzer too.
-
-> 
-> The patchset looks good. I'll apply and push it soon.
-
-Thanks!
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
