@@ -1,106 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbZJLCvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbZJLDAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbZJLCvf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 22:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbZJLCve
+	id S1753436AbZJLDAq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 23:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbZJLDAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 22:51:34 -0400
-Received: from mail-iw0-f180.google.com ([209.85.223.180]:48552 "EHLO
-	mail-iw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbZJLCvd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 22:51:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=k2XNzRtoSx9tF+M3dpda971790gKteTM2MIi/qJ6rEEfeN16tUmaElrODZlNAR1CAD
-         ddtsQnNNDy+5QM/HgZ3YKr0lwdrhS7/5FRq5ubeKNwylJKWmJrFhhH59jV+k/GLBsSgS
-         RJ1an0C8hCcxOsfbQ651f6T2qsVPfDGJh54os=
-MIME-Version: 1.0
-In-Reply-To: <20091012132628.2f709e40.sfr@canb.auug.org.au>
-References: <20091012132628.2f709e40.sfr@canb.auug.org.au>
-Date: Sun, 11 Oct 2009 22:50:54 -0400
-Message-ID: <771cded00910111950y6104fe0fl4f1d10144d938243@mail.gmail.com>
-Subject: Re: linux-next: voltage tree build failure
-From: Haojian Zhuang <haojian.zhuang@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@openedhand.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 11 Oct 2009 23:00:46 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36732 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753151AbZJLDAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 23:00:45 -0400
+Date: Mon, 12 Oct 2009 14:00:02 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: suspend tree build failure
+Message-Id: <20091012140002.10f1f3d1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__12_Oct_2009_14_00_02_+1100_d50Ck6DeaY2oO09f"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Oct 11, 2009 at 10:26 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Liam,
->
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
->
-> drivers/built-in.o: In function `pm8607_write_device':
-> 88pm8607.c:(.text+0xd1359): undefined reference to `i2c_master_send'
-> drivers/built-in.o: In function `pm8607_read_device':
-> 88pm8607.c:(.text+0xd13ab): undefined reference to `i2c_master_send'
-> 88pm8607.c:(.text+0xd13cc): undefined reference to `i2c_master_recv'
-> drivers/built-in.o: In function `pm8607_init':
-> 88pm8607.c:(.init.text+0xaa22): undefined reference to `i2c_register_driver'
-> drivers/built-in.o: In function `pm8607_probe':
-> 88pm8607.c:(.devinit.text+0x50fb): undefined reference to `mfd_add_devices'
-> drivers/built-in.o: In function `pm8607_exit':
-> 88pm8607.c:(.exit.text+0x5de): undefined reference to `i2c_del_driver'
-> drivers/built-in.o: In function `pm8607_remove':
-> 88pm8607.c:(.devexit.text+0x1cc): undefined reference to `mfd_remove_devices'
->
-> Caused by commit 258e3427f83a573d738344c2f5499da5e026e1df ("regulator:
-> add 88PM8607 PMIC driver").  This is the same driver that has caused the
-> mfd tree to fail in the same way since next-20091006.  I have used the
-> version of the voltage tree from next-20091009 for today.
->
-> --
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->
+--Signature=_Mon__12_Oct_2009_14_00_02_+1100_d50Ck6DeaY2oO09f
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Samuel & Liam,
+Hi Rafael,
 
-Please help review and merge this fix patch. I'm sorry for inconvience.
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-Stephen,
+drivers/base/power/main.c: In function 'device_pm_wait':
+drivers/base/power/main.c:218: error: 'TASK_UNINTERRUPTIBLE' undeclared (fi=
+rst use in this function)
+drivers/base/power/main.c:218: error: (Each undeclared identifier is report=
+ed only once
+drivers/base/power/main.c:218: error: for each function it appears in.)
+drivers/base/power/main.c:218: error: implicit declaration of function 'sch=
+edule'
+drivers/base/power/main.c: In function 'dbg_show_time':
+drivers/base/power/main.c:514: error: implicit declaration of function 'tas=
+k_pid_nr'
+drivers/base/power/main.c: In function '__device_resume_noirq':
+drivers/base/power/main.c:551: error: 'TASK_NORMAL' undeclared (first use i=
+n this function)
+drivers/base/power/main.c: In function '__device_resume':
+drivers/base/power/main.c:713: error: 'TASK_NORMAL' undeclared (first use i=
+n this function)
+drivers/base/power/main.c: In function '__device_suspend_noirq':
+drivers/base/power/main.c:970: error: 'TASK_NORMAL' undeclared (first use i=
+n this function)
+drivers/base/power/main.c: In function '__device_suspend':
+drivers/base/power/main.c:1145: error: 'TASK_NORMAL' undeclared (first use =
+in this function)
 
-Thanks for your check.
+Presumably caused by commit d43c36dc6b357fa1806800f18aa30123c747a6d1
+("headers: remove sched.h from interrupt.h") from Linus' tree.
 
->From b7d3707263598c4c6671ac592eaaf13535a7b96a Mon Sep 17 00:00:00 2001
-From: Haojian Zhuang <haojian.zhuang@marvell.com>
-Date: Tue, 6 Oct 2009 08:08:37 -0400
-Subject: [PATCH] mfd: fix the dependancy issue on 88PM8607
+I have added the following patch for today.
 
-88PM8607 depends on I2C and MFD_CORE. Since 88PM8607 is built-in
-kernel, it also requires that I2C and MFD_CORE are built-in
-kernel also.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 12 Oct 2009 13:48:27 +1100
+Subject: [PATCH] suspend: using TASK_ macros requires sched.h
 
-Signed-off-by: Haojian Zhuang <haojian.zhuang@marvell.com>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/mfd/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/base/power/main.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index fbe684b..00064e2 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -307,7 +307,7 @@ config EZX_PCAP
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 3b09009..fb1c648 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -29,6 +29,7 @@
+ #include <linux/async.h>
+ #include <linux/completion.h>
+ #include <linux/time.h>
++#include <linux/sched.h>
+=20
+ #include "../base.h"
+ #include "power.h"
+--=20
+1.6.4.3
 
- config MFD_88PM8607
- 	bool "Support Marvell 88PM8607"
--	depends on I2C
-+	depends on I2C=y
- 	select MFD_CORE
- 	help
- 	  This supports for Marvell 88PM8607 Power Management IC. This includes
--- 
-1.5.6.5
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Mon__12_Oct_2009_14_00_02_+1100_d50Ck6DeaY2oO09f
+Content-Type: application/pgp-signature
 
-Best Regards
-Haojian
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkrSm7IACgkQjjKRsyhoI8xzWgCfb/Q7QWl3x4slvEmrq/vec+HG
+qAIAoLmNXhCRAKa0jST2hOaWy7qm9UZq
+=MN54
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__12_Oct_2009_14_00_02_+1100_d50Ck6DeaY2oO09f--
