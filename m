@@ -1,45 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZJLLJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZJLLU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbZJLLJE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 07:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbZJLLJD
+	id S1755236AbZJLLU6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 07:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbZJLLU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 07:09:03 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40725 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753934AbZJLLJC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 07:09:02 -0400
-Date: Mon, 12 Oct 2009 12:08:14 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Nitin Gupta <ngupta@vflare.org>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [ARM] force dcache flush if dcache_dirty bit set
-Message-ID: <20091012110814.GA32113@n2100.arm.linux.org.uk>
-References: <1255337423-3158-1-git-send-email-ngupta@vflare.org> <20091012090710.GA29310@n2100.arm.linux.org.uk> <4AD304B2.8000205@vflare.org>
+	Mon, 12 Oct 2009 07:20:58 -0400
+Received: from er-systems.de ([85.25.136.202]:52891 "EHLO er-systems.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752316AbZJLLU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 07:20:57 -0400
+X-Greylist: delayed 621 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Oct 2009 07:20:57 EDT
+Date: Mon, 12 Oct 2009 13:09:56 +0200 (CEST)
+From: Thomas Voegtle <tv@lio96.de>
+To: Greg KH <gregkh@suse.de>
+cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/26] 2.6.31.4-stable review
+In-Reply-To: <20091009233812.GA15982@kroah.com>
+Message-ID: <alpine.LNX.2.00.0910121304460.10773@er-systems.de>
+References: <20091009231249.GA31084@kroah.com> <20091009233812.GA15982@kroah.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD304B2.8000205@vflare.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Virus-Checker-Version: clamassassin 1.2.4 with clamdscan / ClamAV 0.95.2/9882/Mon Oct 12 05:15:10 2009 signatures .
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 03:58:02PM +0530, Nitin Gupta wrote:
-> On 10/12/2009 02:37 PM, Russell King - ARM Linux wrote:
-> > On Mon, Oct 12, 2009 at 02:20:23PM +0530, Nitin Gupta wrote:
-> >> Same problem exists on mips too.
-> > 
-> > Nice catch.  This logic came from sparc64, so I think you'd want to talk
-> > to davem about it as well.
-> > 
-> > In the mean time, submitting your fix to the patch system would be great,
-> > thanks.
-> > 
-> 
-> Thanks for looking into this. I think this can make it to mainline if
-> you could Ack it and perhaps CC Andrew to get his attention?
+On Fri, 9 Oct 2009, Greg KH wrote:
 
-Or it could take a less tortuous route by going through my tree.
+> On Fri, Oct 09, 2009 at 04:12:49PM -0700, Greg KH wrote:
+>> This is the start of the stable review cycle for the 2.6.31.4 release.
+>> There are 26 patches in this series, all will be posted as a response to
+>> this one.  If anyone has any issues with these being applied, please let
+>> us know.  If anyone is a maintainer of the proper subsystem, and wants
+>> to add a Signed-off-by: line to the patch, please respond with it.
+>
+> Oops, a bunch of network patches came in right when this went out, and I
+> don't want to have to wait to get them on, so I've rolled a -rc2 version
+> now.
+>
+> There's now 37 patches in this series, I'll attach the rest to this
+> thread now.
+>
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.31.4-rc2.gz
+> and the diffstat can be found below.
+
+
+This ends up for me in:
+
+   CC      arch/x86/kernel/init_task.o
+   LDS     arch/x86/kernel/vmlinux.lds
+   CC [M]  arch/x86/kernel/msr.o
+   CC [M]  arch/x86/kernel/cpuid.o
+   CC [M]  arch/x86/kernel/microcode_core.o
+   CC [M]  arch/x86/kernel/microcode_intel.o
+   CC [M]  arch/x86/kernel/microcode_amd.o
+   LD [M]  arch/x86/kernel/microcode.o
+   LD      arch/x86/kvm/built-in.o
+   CC [M]  arch/x86/kvm/svm.o
+arch/x86/kvm/svm.c: In function 'svm_vcpu_load':
+arch/x86/kvm/svm.c:713: error: 'struct vcpu_svm' has no member named 
+'nested'
+make[2]: *** [arch/x86/kvm/svm.o] Error 1
+make[1]: *** [arch/x86/kvm] Error 2
+make: *** [arch/x86] Error 2
+
+
+CONFIG_VIRTUALIZATION=y
+CONFIG_KVM=m
+CONFIG_KVM_INTEL=m
+CONFIG_KVM_AMD=m
+
+gcc version 4.2.4
+
+using kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.31.4-rc2.gz
+
