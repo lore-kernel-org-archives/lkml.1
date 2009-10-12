@@ -1,86 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbZJLTDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbZJLTFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757900AbZJLTDr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756934AbZJLTDq
+	id S1757938AbZJLTFa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 15:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbZJLTF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:03:46 -0400
-Received: from mail-ew0-f208.google.com ([209.85.219.208]:49163 "EHLO
-	mail-ew0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755883AbZJLTDp (ORCPT
+	Mon, 12 Oct 2009 15:05:29 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51589 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757896AbZJLTF2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:03:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=fi5GvMc7c2fsQwV03O4GTgJ5YxYPWVHiCBOb5OD/cq9ZGHT78sELcVe40ft6huScw1
-         gpuF/4Zjbqt3gK3zBI+GUTue8NwDS8q1rELstsdnf0deKK49HJJAC3HRiKsUVPTM+1mV
-         zCbpJ6J/7xO3ISKayJfMMijLoSnHoleI90dwk=
-Date: Mon, 12 Oct 2009 21:03:04 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [PATCH tracing/kprobes v3 6/7] perf: Add perf probe subcommand
-	for kprobe-event setup helper
-Message-ID: <20091012190303.GA4748@nowhere>
-References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222822.1684.3251.stgit@dhcp-100-2-132.bos.redhat.com>
+	Mon, 12 Oct 2009 15:05:28 -0400
+Date: Tue, 13 Oct 2009 04:03:45 +0900 (JST)
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Bryan Donlan <bdonlan@gmail.com>
+Subject: Re: [resend][PATCH] Added PR_SET_PROCTITLE_AREA option for prctl()
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
+       linux-api@vger.kernel.org, Timo Sirainen <tss@iki.fi>
+In-Reply-To: <3e8340490910100011u17497293o613334c64f1543c8@mail.gmail.com>
+References: <2f11576a0910092332s6e0e3dcs35864e3a2164be0@mail.gmail.com> <3e8340490910100011u17497293o613334c64f1543c8@mail.gmail.com>
+Message-Id: <20091013031853.C744.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20091007222822.1684.3251.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Oct 07, 2009 at 06:28:23PM -0400, Masami Hiramatsu wrote:
-> Add perf probe subcommand for kprobe-event setup helper to perf command.
-> This allows user to define kprobe events by C expressions (C line numbers,
-> C function names, and C local variables).
->
+Hi
+
+Sorry for the delaying.
+
+> On Sat, Oct 10, 2009 at 2:32 AM, KOSAKI Motohiro
+> <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> >> It does seem like a maximum spin count should be put in there - and
+> >> maybe a timeout as well (since with FUSE etc it's possible to engineer
+> >> page faults that take arbitrarily long).
+> >> Also, it occurs to me that:
+> >
+> > makes sense.
+> > I like maximum spin rather than timeout.
+> 
+> I'm worried about the scenario where process A sets its cmdline buffer
+> to point to a page which will take a _VERY_ long time to pagein (maybe
+> forever), and then process B goes to try to read its cmdline. What
+> happens now?
+
+Honestly, I don't worry about so much. if attacker want DoS attack, fork bomb is
+efficient than this way. then, attacker never use this.
 
 
-My libdwarf.h and dwarf.h are available through <libdwarf.h> and
-<dwarf.h>, these are in /usr/include
+> Process A can arrange for this to happen by using a FUSE filesystem
+> that sits on a read forever. And since the first thing the admin's
+> likely to do to track down the problem is 'ps awux', this is liable to
+> be a rather nasty DoS...
 
-But even by fixing the include path in the makefile and probe-finder.h,
-I get the following build error:
+Probably, I haven't understand this paragraph. Why is this FUSE related issue?
 
-util/probe-finder.c: In function â€˜die_get_entrypcâ€™:
-util/probe-finder.c:222: erreur: â€˜Dwarf_Rangesâ€™ undeclared (first use in this function)
-util/probe-finder.c:222: erreur: (Each undeclared identifier is reported only once
-util/probe-finder.c:222: erreur: for each function it appears in.)
-util/probe-finder.c:222: erreur: â€˜rangesâ€™ undeclared (first use in this function)
-cc1: warnings being treated as errors
-util/probe-finder.c:223: erreur: ISO C90 forbids mixed declarations and code
-util/probe-finder.c:247: erreur: implicit declaration of function â€˜dwarf_get_rangesâ€™
-util/probe-finder.c:247: erreur: nested extern declaration of â€˜dwarf_get_rangesâ€™
-util/probe-finder.c:251: erreur: implicit declaration of function â€˜dwarf_ranges_deallocâ€™
-util/probe-finder.c:251: erreur: nested extern declaration of â€˜dwarf_ranges_deallocâ€™
-make: *** [util/probe-finder.o] Erreur 1
+> Of course, this is no worse than it is now - it's already possible to
+> replace the page in question. But we should think about ways this
+> could be fixed for good...
+
+Plus, please look my mesurement data as another post. seqlock implementation is very fast
+although contention occured.
 
 
-I remember we talked about that before, but I don't remember well why it happened.
-This is because of a libdwarf version or something, right?
 
-Which one should I pick? Mine is:
+> >>> +     do {
+> >>> +             seq = read_seqbegin(&mm->arg_lock);
+> >>> +
+> >>> +             len = mm->arg_end - mm->arg_start;
+> >>> +             if (len > PAGE_SIZE)
+> >>> +                     len = PAGE_SIZE;
+> >>
+> >> If arg_end or arg_start are modified after this, is it truly safe to
+> >> assume that len will remain <= PAGE_SIZE without a memory barrier
+> >> before the conditional?
+> >
+> > 1) access_process_vm() doesn't return error value.
+> > 2) read_seqretry(&mm->arg_lock, seq)) check seq, not mm->arg_start or len.
+> >
+> > then, if arg_{start,end} is modified, access_process_vm() may return 0
+> > and strnlen
+> > makes bad calculation, but read_seqretry() can detect its modify
+> > rightly. I think.
+> 
+> No, I'm worried about what if the compiler decides to rewrite like so:
+> if (mm->arg_end - mm->arg_start > PAGE_SIZE)
+>   len = PAGE_SIZE;
+> else /* here we reload arg_end/arg_start! */
+>   len = mm->arg_end - mm->arg_start;
+> 
+> Now we might write into buffer more than PAGE_SIZE bytes, which is
+> probably a buffer overrun into kernel space...
 
-    libdwarf.h  
+Rgiht. I'll fix this issue at next spin.
+Thank you.
 
-    $Revision: #9 $ $Date: 2008/01/17 $
 
 
