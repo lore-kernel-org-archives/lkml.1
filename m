@@ -1,251 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbZJLQjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932755AbZJLQhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932819AbZJLQjD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932788AbZJLQjA
+	id S932755AbZJLQhO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:37:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932434AbZJLQhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:39:00 -0400
-Received: from mba.ocn.ne.jp ([122.28.14.163]:54940 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932776AbZJLQi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 12:38:59 -0400
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: Andrew Sharp <andy.sharp@lsi.com>,
-       Thomas Hommel <thomas.hommel@gefanuc.com>, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 2/2] rtc-stk17ta8: Fix races around device registration
-Date: Tue, 13 Oct 2009 01:37:41 +0900
-Message-Id: <1255365461-5732-2-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.5
+	Mon, 12 Oct 2009 12:37:13 -0400
+Received: from mga05.intel.com ([192.55.52.89]:13503 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932217AbZJLQhM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 12:37:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,547,1249282800"; 
+   d="scan'208";a="502348762"
+Date: Mon, 12 Oct 2009 18:38:03 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Mike Frysinger <vapier@gentoo.org>, Richard Purdie <rpurdie@rpsys.net>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH 2/5] LED Support for ADP5520/ADP5501 MFD PMICs
+Message-ID: <20091012163802.GD20786@sortiz.org>
+References: <1255197244-20121-1-git-send-email-vapier@gentoo.org>
+ <1255197244-20121-2-git-send-email-vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1255197244-20121-2-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Call dev_set_drvdata before rtc device creation
-* Use its own spinlock instead of rtc->irq_lock
-* Check pdata->rtc before calling rtc_update_irq
-* Use alarm_irq_enable and remove ioctl routine
-* Use devres APIs and simplify error/remove path
+Hi Richard,
 
-These fixes are ported from ds1553 driver and just compile-tested only.
+On Sat, Oct 10, 2009 at 01:54:01PM -0400, Mike Frysinger wrote:
+> From: Michael Hennerich <michael.hennerich@analog.com>
+Does this driver look fine to you ?
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-Changes from previous version:
-* whitespace cleanup
+Cheers,
+Samuel.
 
- drivers/rtc/rtc-stk17ta8.c |  113 +++++++++++++++++--------------------------
- 1 files changed, 45 insertions(+), 68 deletions(-)
 
-diff --git a/drivers/rtc/rtc-stk17ta8.c b/drivers/rtc/rtc-stk17ta8.c
-index 7d1547b..700f2a0 100644
---- a/drivers/rtc/rtc-stk17ta8.c
-+++ b/drivers/rtc/rtc-stk17ta8.c
-@@ -62,7 +62,6 @@
- struct rtc_plat_data {
- 	struct rtc_device *rtc;
- 	void __iomem *ioaddr;
--	unsigned long baseaddr;
- 	unsigned long last_jiffies;
- 	int irq;
- 	unsigned int irqen;
-@@ -70,6 +69,7 @@ struct rtc_plat_data {
- 	int alrm_min;
- 	int alrm_hour;
- 	int alrm_mday;
-+	spinlock_t lock;
- };
- 
- static int stk17ta8_rtc_set_time(struct device *dev, struct rtc_time *tm)
-@@ -142,7 +142,7 @@ static void stk17ta8_rtc_update_alarm(struct rtc_plat_data *pdata)
- 	unsigned long irqflags;
- 	u8 flags;
- 
--	spin_lock_irqsave(&pdata->rtc->irq_lock, irqflags);
-+	spin_lock_irqsave(&pdata->lock, irqflags);
- 
- 	flags = readb(ioaddr + RTC_FLAGS);
- 	writeb(flags | RTC_WRITE, ioaddr + RTC_FLAGS);
-@@ -162,7 +162,7 @@ static void stk17ta8_rtc_update_alarm(struct rtc_plat_data *pdata)
- 	writeb(pdata->irqen ? RTC_INTS_AIE : 0, ioaddr + RTC_INTERRUPTS);
- 	readb(ioaddr + RTC_FLAGS);	/* clear interrupts */
- 	writeb(flags & ~RTC_WRITE, ioaddr + RTC_FLAGS);
--	spin_unlock_irqrestore(&pdata->rtc->irq_lock, irqflags);
-+	spin_unlock_irqrestore(&pdata->lock, irqflags);
- }
- 
- static int stk17ta8_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
-@@ -202,48 +202,45 @@ static irqreturn_t stk17ta8_rtc_interrupt(int irq, void *dev_id)
- 	struct platform_device *pdev = dev_id;
- 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
- 	void __iomem *ioaddr = pdata->ioaddr;
--	unsigned long events = RTC_IRQF;
-+	unsigned long events = 0;
- 
-+	spin_lock(&pdata->lock);
- 	/* read and clear interrupt */
--	if (!(readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_AF))
--		return IRQ_NONE;
--	if (readb(ioaddr + RTC_SECONDS_ALARM) & 0x80)
--		events |= RTC_UF;
--	else
--		events |= RTC_AF;
--	rtc_update_irq(pdata->rtc, 1, events);
--	return IRQ_HANDLED;
-+	if (readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_AF) {
-+		events = RTC_IRQF;
-+		if (readb(ioaddr + RTC_SECONDS_ALARM) & 0x80)
-+			events |= RTC_UF;
-+		else
-+			events |= RTC_AF;
-+		if (likely(pdata->rtc))
-+			rtc_update_irq(pdata->rtc, 1, events);
-+	}
-+	spin_unlock(&pdata->lock);
-+	return events ? IRQ_HANDLED : IRQ_NONE;
- }
- 
--static int stk17ta8_rtc_ioctl(struct device *dev, unsigned int cmd,
--			    unsigned long arg)
-+static int stk17ta8_rtc_alarm_irq_enable(struct device *dev,
-+	unsigned int enabled)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct rtc_plat_data *pdata = platform_get_drvdata(pdev);
- 
- 	if (pdata->irq <= 0)
--		return -ENOIOCTLCMD; /* fall back into rtc-dev's emulation */
--	switch (cmd) {
--	case RTC_AIE_OFF:
--		pdata->irqen &= ~RTC_AF;
--		stk17ta8_rtc_update_alarm(pdata);
--		break;
--	case RTC_AIE_ON:
-+		return -EINVAL;
-+	if (enabled)
- 		pdata->irqen |= RTC_AF;
--		stk17ta8_rtc_update_alarm(pdata);
--		break;
--	default:
--		return -ENOIOCTLCMD;
--	}
-+	else
-+		pdata->irqen &= ~RTC_AF;
-+	stk17ta8_rtc_update_alarm(pdata);
- 	return 0;
- }
- 
- static const struct rtc_class_ops stk17ta8_rtc_ops = {
--	.read_time	= stk17ta8_rtc_read_time,
--	.set_time	= stk17ta8_rtc_set_time,
--	.read_alarm	= stk17ta8_rtc_read_alarm,
--	.set_alarm	= stk17ta8_rtc_set_alarm,
--	.ioctl		= stk17ta8_rtc_ioctl,
-+	.read_time		= stk17ta8_rtc_read_time,
-+	.set_time		= stk17ta8_rtc_set_time,
-+	.read_alarm		= stk17ta8_rtc_read_alarm,
-+	.set_alarm		= stk17ta8_rtc_set_alarm,
-+	.alarm_irq_enable	= stk17ta8_rtc_alarm_irq_enable,
- };
- 
- static ssize_t stk17ta8_nvram_read(struct kobject *kobj,
-@@ -293,26 +290,22 @@ static int __init stk17ta8_rtc_probe(struct platform_device *pdev)
- 	unsigned int cal;
- 	unsigned int flags;
- 	struct rtc_plat_data *pdata;
--	void __iomem *ioaddr = NULL;
-+	void __iomem *ioaddr;
- 	int ret = 0;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res)
- 		return -ENODEV;
- 
--	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
-+	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
- 	if (!pdata)
- 		return -ENOMEM;
--	if (!request_mem_region(res->start, RTC_REG_SIZE, pdev->name)) {
--		ret = -EBUSY;
--		goto out;
--	}
--	pdata->baseaddr = res->start;
--	ioaddr = ioremap(pdata->baseaddr, RTC_REG_SIZE);
--	if (!ioaddr) {
--		ret = -ENOMEM;
--		goto out;
--	}
-+	if (!devm_request_mem_region(&pdev->dev, res->start, RTC_REG_SIZE,
-+			pdev->name))
-+		return -EBUSY;
-+	ioaddr = devm_ioremap(&pdev->dev, res->start, RTC_REG_SIZE);
-+	if (!ioaddr)
-+		return -ENOMEM;
- 	pdata->ioaddr = ioaddr;
- 	pdata->irq = platform_get_irq(pdev, 0);
- 
-@@ -328,9 +321,13 @@ static int __init stk17ta8_rtc_probe(struct platform_device *pdev)
- 	if (readb(ioaddr + RTC_FLAGS) & RTC_FLAGS_PF)
- 		dev_warn(&pdev->dev, "voltage-low detected.\n");
- 
-+	spin_lock_init(&pdata->lock);
-+	pdata->last_jiffies = jiffies;
-+	platform_set_drvdata(pdev, pdata);
- 	if (pdata->irq > 0) {
- 		writeb(0, ioaddr + RTC_INTERRUPTS);
--		if (request_irq(pdata->irq, stk17ta8_rtc_interrupt,
-+		if (devm_request_irq(&pdev->dev, pdata->irq,
-+				stk17ta8_rtc_interrupt,
- 				IRQF_DISABLED | IRQF_SHARED,
- 				pdev->name, pdev) < 0) {
- 			dev_warn(&pdev->dev, "interrupt not available.\n");
-@@ -340,27 +337,12 @@ static int __init stk17ta8_rtc_probe(struct platform_device *pdev)
- 
- 	rtc = rtc_device_register(pdev->name, &pdev->dev,
- 				  &stk17ta8_rtc_ops, THIS_MODULE);
--	if (IS_ERR(rtc)) {
--		ret = PTR_ERR(rtc);
--		goto out;
--	}
-+	if (IS_ERR(rtc))
-+		return PTR_ERR(rtc);
- 	pdata->rtc = rtc;
--	pdata->last_jiffies = jiffies;
--	platform_set_drvdata(pdev, pdata);
- 	ret = sysfs_create_bin_file(&pdev->dev.kobj, &stk17ta8_nvram_attr);
- 	if (ret)
--		goto out;
--	return 0;
-- out:
--	if (pdata->rtc)
--		rtc_device_unregister(pdata->rtc);
--	if (pdata->irq > 0)
--		free_irq(pdata->irq, pdev);
--	if (ioaddr)
--		iounmap(ioaddr);
--	if (pdata->baseaddr)
--		release_mem_region(pdata->baseaddr, RTC_REG_SIZE);
--	kfree(pdata);
-+		rtc_device_unregister(rtc);
- 	return ret;
- }
- 
-@@ -370,13 +352,8 @@ static int __devexit stk17ta8_rtc_remove(struct platform_device *pdev)
- 
- 	sysfs_remove_bin_file(&pdev->dev.kobj, &stk17ta8_nvram_attr);
- 	rtc_device_unregister(pdata->rtc);
--	if (pdata->irq > 0) {
-+	if (pdata->irq > 0)
- 		writeb(0, pdata->ioaddr + RTC_INTERRUPTS);
--		free_irq(pdata->irq, pdev);
--	}
--	iounmap(pdata->ioaddr);
--	release_mem_region(pdata->baseaddr, RTC_REG_SIZE);
--	kfree(pdata);
- 	return 0;
- }
- 
+> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+>  drivers/leds/Kconfig        |   10 ++
+>  drivers/leds/Makefile       |    1 +
+>  drivers/leds/leds-adp5520.c |  230 +++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 241 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/leds/leds-adp5520.c
+> 
+> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+> index e4f599f..33ac8dc 100644
+> --- a/drivers/leds/Kconfig
+> +++ b/drivers/leds/Kconfig
+> @@ -236,6 +236,16 @@ config LEDS_BD2802
+>  	  This option enables support for BD2802GU RGB LED driver chips
+>  	  accessed via the I2C bus.
+>  
+> +config LEDS_ADP5520
+> +	tristate "LED Support for ADP5520/ADP5501 PMIC"
+> +	depends on LEDS_CLASS && PMIC_ADP5520
+> +	help
+> +	  This option enables support for on-chip LED drivers found
+> +	  on Analog Devices ADP5520/ADP5501 PMICs.
+> +
+> +	  To compile this driver as a module, choose M here: the module will
+> +	  be called leds-adp5520.
+> +
+>  comment "LED Triggers"
+>  
+>  config LEDS_TRIGGERS
+> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+> index 46d7270..f7e17f4 100644
+> --- a/drivers/leds/Makefile
+> +++ b/drivers/leds/Makefile
+> @@ -29,6 +29,7 @@ obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
+>  obj-$(CONFIG_LEDS_WM831X_STATUS)	+= leds-wm831x-status.o
+>  obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
+>  obj-$(CONFIG_LEDS_PWM)			+= leds-pwm.o
+> +obj-$(CONFIG_LEDS_ADP5520)		+= leds-adp5520.o
+>  
+>  # LED SPI Drivers
+>  obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
+> diff --git a/drivers/leds/leds-adp5520.c b/drivers/leds/leds-adp5520.c
+> new file mode 100644
+> index 0000000..a8f3159
+> --- /dev/null
+> +++ b/drivers/leds/leds-adp5520.c
+> @@ -0,0 +1,230 @@
+> +/*
+> + * LEDs driver for Analog Devices ADP5520/ADP5501 MFD PMICs
+> + *
+> + * Copyright 2009 Analog Devices Inc.
+> + *
+> + * Loosely derived from leds-da903x:
+> + * Copyright (C) 2008 Compulab, Ltd.
+> + * 	Mike Rapoport <mike@compulab.co.il>
+> + *
+> + * Copyright (C) 2006-2008 Marvell International Ltd.
+> + * 	Eric Miao <eric.miao@marvell.com>
+> + *
+> + * Licensed under the GPL-2 or later.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/leds.h>
+> +#include <linux/workqueue.h>
+> +#include <linux/mfd/adp5520.h>
+> +
+> +struct adp5520_led {
+> +	struct led_classdev	cdev;
+> +	struct work_struct	work;
+> +	struct device		*master;
+> +	enum led_brightness	new_brightness;
+> +	int			id;
+> +	int			flags;
+> +};
+> +
+> +static void adp5520_led_work(struct work_struct *work)
+> +{
+> +	struct adp5520_led *led = container_of(work, struct adp5520_led, work);
+> +	adp5520_write(led->master, ADP5520_LED1_CURRENT + led->id - 1,
+> +			 led->new_brightness >> 2);
+> +}
+> +
+> +static void adp5520_led_set(struct led_classdev *led_cdev,
+> +			   enum led_brightness value)
+> +{
+> +	struct adp5520_led *led;
+> +
+> +	led = container_of(led_cdev, struct adp5520_led, cdev);
+> +	led->new_brightness = value;
+> +	schedule_work(&led->work);
+> +}
+> +
+> +static int adp5520_led_setup(struct adp5520_led *led)
+> +{
+> +	struct device *dev = led->master;
+> +	int flags = led->flags;
+> +	int ret = 0;
+> +
+> +	switch (led->id) {
+> +	case FLAG_ID_ADP5520_LED1_ADP5501_LED0:
+> +		ret |= adp5520_set_bits(dev, ADP5520_LED_TIME,
+> +					(flags >> ADP5520_FLAG_OFFT_SHIFT) &
+> +					ADP5520_FLAG_OFFT_MASK);
+> +		ret |= adp5520_set_bits(dev, ADP5520_LED_CONTROL,
+> +					ADP5520_LED1_EN);
+> +		break;
+> +	case FLAG_ID_ADP5520_LED2_ADP5501_LED1:
+> +		ret |= adp5520_set_bits(dev,  ADP5520_LED_TIME,
+> +					((flags >> ADP5520_FLAG_OFFT_SHIFT) &
+> +					ADP5520_FLAG_OFFT_MASK) << 2);
+> +		ret |= adp5520_clr_bits(dev, ADP5520_LED_CONTROL,
+> +					 ADP5520_R3_MODE);
+> +		ret |= adp5520_set_bits(dev, ADP5520_LED_CONTROL,
+> +					ADP5520_LED2_EN);
+> +		break;
+> +	case FLAG_ID_ADP5520_LED3_ADP5501_LED2:
+> +		ret |= adp5520_set_bits(dev,  ADP5520_LED_TIME,
+> +					((flags >> ADP5520_FLAG_OFFT_SHIFT) &
+> +					ADP5520_FLAG_OFFT_MASK) << 4);
+> +		ret |= adp5520_clr_bits(dev, ADP5520_LED_CONTROL,
+> +					ADP5520_C3_MODE);
+> +		ret |= adp5520_set_bits(dev, ADP5520_LED_CONTROL,
+> +					ADP5520_LED3_EN);
+> +		break;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int __devinit adp5520_led_prepare(struct platform_device *pdev)
+> +{
+> +	struct adp5520_leds_platform_data *pdata = pdev->dev.platform_data;
+> +	struct device *dev = pdev->dev.parent;
+> +	int ret = 0;
+> +
+> +	ret |= adp5520_write(dev, ADP5520_LED1_CURRENT, 0);
+> +	ret |= adp5520_write(dev, ADP5520_LED2_CURRENT, 0);
+> +	ret |= adp5520_write(dev, ADP5520_LED3_CURRENT, 0);
+> +	ret |= adp5520_write(dev, ADP5520_LED_TIME, pdata->led_on_time << 6);
+> +	ret |= adp5520_write(dev, ADP5520_LED_FADE, FADE_VAL(pdata->fade_in,
+> +		 pdata->fade_out));
+> +
+> +	return ret;
+> +}
+> +
+> +static int __devinit adp5520_led_probe(struct platform_device *pdev)
+> +{
+> +	struct adp5520_leds_platform_data *pdata = pdev->dev.platform_data;
+> +	struct adp5520_led *led, *led_dat;
+> +	struct led_info *cur_led;
+> +	int ret, i;
+> +
+> +	if (pdata == NULL) {
+> +		dev_err(&pdev->dev, "missing platform data\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	if (pdata->num_leds > ADP5520_01_MAXLEDS) {
+> +		dev_err(&pdev->dev, "can't handle more than %d LEDS\n",
+> +				 ADP5520_01_MAXLEDS);
+> +		return -EFAULT;
+> +	}
+> +
+> +	led = kzalloc(sizeof(*led) * pdata->num_leds, GFP_KERNEL);
+> +	if (led == NULL) {
+> +		dev_err(&pdev->dev, "failed to alloc memory\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	ret = adp5520_led_prepare(pdev);
+> +
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "failed to write\n");
+> +		goto err_free;
+> +	}
+> +
+> +	for (i = 0; i < pdata->num_leds; ++i) {
+> +		cur_led = &pdata->leds[i];
+> +		led_dat = &led[i];
+> +
+> +		led_dat->cdev.name = cur_led->name;
+> +		led_dat->cdev.default_trigger = cur_led->default_trigger;
+> +		led_dat->cdev.brightness_set = adp5520_led_set;
+> +		led_dat->cdev.brightness = LED_OFF;
+> +
+> +		if (cur_led->flags & ADP5520_FLAG_LED_MASK)
+> +			led_dat->flags = cur_led->flags;
+> +		else
+> +			led_dat->flags = i + 1;
+> +
+> +		led_dat->id = led_dat->flags & ADP5520_FLAG_LED_MASK;
+> +
+> +		led_dat->master = pdev->dev.parent;
+> +		led_dat->new_brightness = LED_OFF;
+> +
+> +		INIT_WORK(&led_dat->work, adp5520_led_work);
+> +
+> +		ret = led_classdev_register(led_dat->master, &led_dat->cdev);
+> +		if (ret) {
+> +			dev_err(&pdev->dev, "failed to register LED %d\n",
+> +				led_dat->id);
+> +			goto err;
+> +		}
+> +
+> +		ret = adp5520_led_setup(led_dat);
+> +		if (ret) {
+> +			dev_err(&pdev->dev, "failed to write\n");
+> +			i++;
+> +			goto err;
+> +		}
+> +	}
+> +
+> +	platform_set_drvdata(pdev, led);
+> +	return 0;
+> +
+> +err:
+> +	if (i > 0) {
+> +		for (i = i - 1; i >= 0; i--) {
+> +			led_classdev_unregister(&led[i].cdev);
+> +			cancel_work_sync(&led[i].work);
+> +		}
+> +	}
+> +
+> +err_free:
+> +	kfree(led);
+> +	return ret;
+> +}
+> +
+> +static int __devexit adp5520_led_remove(struct platform_device *pdev)
+> +{
+> +	struct adp5520_leds_platform_data *pdata = pdev->dev.platform_data;
+> +	struct adp5520_led *led;
+> +	int i;
+> +
+> +	led = platform_get_drvdata(pdev);
+> +
+> +	adp5520_clr_bits(led->master, ADP5520_LED_CONTROL,
+> +		 ADP5520_LED1_EN | ADP5520_LED2_EN | ADP5520_LED3_EN);
+> +
+> +	for (i = 0; i < pdata->num_leds; i++) {
+> +		led_classdev_unregister(&led[i].cdev);
+> +		cancel_work_sync(&led[i].work);
+> +	}
+> +
+> +	kfree(led);
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver adp5520_led_driver = {
+> +	.driver	= {
+> +		.name	= "adp5520-led",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +	.probe		= adp5520_led_probe,
+> +	.remove		= __devexit_p(adp5520_led_remove),
+> +};
+> +
+> +static int __init adp5520_led_init(void)
+> +{
+> +	return platform_driver_register(&adp5520_led_driver);
+> +}
+> +module_init(adp5520_led_init);
+> +
+> +static void __exit adp5520_led_exit(void)
+> +{
+> +	platform_driver_unregister(&adp5520_led_driver);
+> +}
+> +module_exit(adp5520_led_exit);
+> +
+> +MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
+> +MODULE_DESCRIPTION("LEDS ADP5520(01) Driver");
+> +MODULE_LICENSE("GPL");
+> +MODULE_ALIAS("platform:adp5520-led");
+> -- 
+> 1.6.5.rc2
+> 
+
 -- 
-1.5.6.5
-
+Intel Open Source Technology Centre
+http://oss.intel.com/
