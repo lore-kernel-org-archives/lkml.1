@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbZJLKB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbZJLKH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755779AbZJLKB0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 06:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbZJLKB0
+	id S1754727AbZJLKH4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 06:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755009AbZJLKHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 06:01:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60467 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755334AbZJLKBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 06:01:25 -0400
-Date: Mon, 12 Oct 2009 12:00:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jason Baron <jbaron@redhat.com>,
-       cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: move gfs2 tracepoints to inclue/trace/events dir
-Message-ID: <20091012100037.GA11653@elte.hu>
-References: <20091009160115.GA2647@redhat.com> <20091009234555.GA28257@infradead.org> <1255340583.2675.23.camel@localhost.localdomain>
+	Mon, 12 Oct 2009 06:07:55 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:53838 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754648AbZJLKHy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 06:07:54 -0400
+Date: Mon, 12 Oct 2009 15:31:31 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [v8 PATCH 0/8]: cpuidle: Cleanup cpuidle/ Introduce cpuidle to
+ POWER
+Message-ID: <20091012100131.GA3007@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091008094828.GA20595@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1255340583.2675.23.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091008094828.GA20595@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Arun R B <arun@linux.vnet.ibm.com> [2009-10-08 15:18:28]:
 
-* Steven Whitehouse <swhiteho@redhat.com> wrote:
-
-> Hi,
+> Hi
 > 
-> On Fri, 2009-10-09 at 19:45 -0400, Christoph Hellwig wrote:
-> > On Fri, Oct 09, 2009 at 12:01:16PM -0400, Jason Baron wrote:
-> > > hi,
-> > > 
-> > > I'd like to move the gfs2 tracepoints to the the common
-> > > include/trace/events directory along with all of the other trace events.
-> > > It makes understanding what tracepoints are available easier, and I see
-> > > no reason why gfs2 should be different. For example, 'ext4.h' is already
-> > > in the include/trace/events directory.
-> > 
-> > Folks, no.  Drivers and filesystems should be as self-contained as
-> > possible.  include/trace/ is an extremly bad idea for everything that's
-> > not actually global kernel functionality.  There's a reason all other
-> > fs headers have moved out of include/linux, too.
-> > 
+> Please consider this for inclusion into the testing tree.
 > 
-> That true, although there is an argument about how much such a header 
-> belongs to tracing and how much it belongs to the subsystem I think.
+> This patchset introduces cpuidle infrastructure to POWER, prototyping
+> for pSeries, and also does a major refactoring of current x86 idle
+> power management and a cleanup of cpuidle infrastructure.
+> 
+> Earlier discussions on the same can be found at:
+> 
+> v7 --> http://lkml.org/lkml/2009/10/6/278
+> v6 --> http://lkml.org/lkml/2009/9/22/180
+> v5 --> http://lkml.org/lkml/2009/9/22/26
+> v4 --> http://lkml.org/lkml/2009/9/1/133
+> v3 --> http://lkml.org/lkml/2009/8/27/124
+> v2 --> http://lkml.org/lkml/2009/8/26/233
+> v1 --> http://lkml.org/lkml/2009/8/19/150
+> 
+>
 
-yeah. I have no objection to adding it to include/trace/. Tracepoints 
-are a fundamentally global business.
+I looked at the changes and they are beginning to look very good. Some
+minor comments about comments in the individual patches. 
 
-Subsystems can opt to hide their tracepoints locally, but it's better to 
-have a global view about what's out there, so that it can be extended 
-coherently, etc.
-
-Would you like to carry the patch or should we apply it to the tracing 
-tree?
-
-	Ingo
+-- 
+	Balbir
