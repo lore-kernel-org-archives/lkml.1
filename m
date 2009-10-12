@@ -1,105 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZJLJIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZJLJKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbZJLJIA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 05:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbZJLJH7
+	id S1755287AbZJLJKO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 05:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZJLJKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 05:07:59 -0400
-Received: from viefep16-int.chello.at ([62.179.121.36]:35363 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754855AbZJLJH6 (ORCPT
+	Mon, 12 Oct 2009 05:10:13 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:37734 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751153AbZJLJKL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 05:07:58 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
- balance_dirty_pages()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Myklebust Trond <Trond.Myklebust@netapp.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20091012012609.GA7553@localhost>
-References: <20091007073818.318088777@intel.com>
-	 <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz>
-	 <1255101512.8802.65.camel@laptop> <20091009154759.GJ7654@duck.suse.cz>
-	 <20091011022813.GA21315@localhost> <1255247080.11081.3.camel@twins>
-	 <20091011105012.GB10409@localhost> <1255260317.8967.204.camel@laptop>
-	 <20091012012609.GA7553@localhost>
-Content-Type: text/plain
-Date: Mon, 12 Oct 2009 11:07:10 +0200
-Message-Id: <1255338430.11081.10.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Oct 2009 05:10:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ncp6YnfPug9PnMBOSUb+GCn1TX2EVjyeRY0NDHr5YKnOiA1Kd8MnV6fRws5ZsuSu4N
+         LinlAQ7C5LeiwaEytfgf2wrUq/qK+Zcaw3V3LaaopaELf+z9ZXyVsIeUzppv5cMtvp0C
+         bEMAxoNG/HCZTJ/QrvvPjQrfDJEZ4wozxlIbM=
+MIME-Version: 1.0
+In-Reply-To: <4AD2DEB9.2@redhat.com>
+References: <4AD2DEB9.2@redhat.com>
+Date: Mon, 12 Oct 2009 11:09:33 +0200
+Message-ID: <c62985530910120209t3d263d5eh5aeba14fcecc9072@mail.gmail.com>
+Subject: Re: [PATCH] ftrace: add kernel command line graph function filtering
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Stefan Assmann <sassmann@redhat.com>
+Cc: rostedt@goodmis.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 09:26 +0800, Wu Fengguang wrote:
-> On Sun, Oct 11, 2009 at 07:25:17PM +0800, Peter Zijlstra wrote:
-> > On Sun, 2009-10-11 at 18:50 +0800, Wu Fengguang wrote:
-> > > 
-> > > Sorry for the confusion, but I mean, filesystems have to limit
-> > > nr_writeback (directly or indirectly via the block io queue),
-> > > otherwise it either hit nr_dirty to 0 (with the loop), or let
-> > > nr_writeback grow out of control (without the loop).
-> > 
-> > Doesn't this require the writeback queue to have a limit < dirty_thresh?
-> 
-> Yes, this is the key (open) issue. For now we have nothing to limit
-> 
->         nr_writeback < dirty_thresh
-> 
-> > Or more specifically, for the bdi case:
-> > 
-> >  bdi_dirty + bdi_writeback + bdi_unstable <= bdi_thresh
-> > 
-> > we require that the writeback queue be smaller than bdi_thresh, which
-> > could be quite difficult, since bdi_thresh can easily be 0.
-> 
-> We could apply a MIN_BDI_DIRTY_THRESH. Because the bdi threshold is
-> estimated from writeback events, so bdi_thresh must be non-zero to
-> allow some writeback pages in flight :)
+2009/10/12 Stefan Assmann <sassmann@redhat.com>:
+> From 894e934e782ddaa33eb6d156d8326cdf479b5f62 Mon Sep 17 00:00:00 2001
+> From: Stefan Assmann <sassmann@redhat.com>
+> Date: Mon, 12 Oct 2009 09:11:47 +0200
+> Subject: [PATCH] ftrace: add kernel command line graph function filtering
+>
+> Add a command line parameter to allow limiting the function graphs that
+> are traced on boot up, when ftrace=function_graph is specified.
+>
+> This patch adds the following command line option:
+> ftrace_graph_filter=function-list
 
-Not really, suppose you have 1000 NFS clients, of which you only use a
-hand full at a time.
 
-Then the bdi_thresh will be 0 for most of them, and only when you switch
-to one it'll start growing. But it's perfectly reasonable to expect
-bdi_thresh=0 to work. It just reverts to sync behaviour, we write out
-everything and block until they're all gone from writeback state.
+If we use this parameter, we undoubtedly want to launch the function
+graph tracer.
+I'd then suggest to arm ftrace=function_graph automatically if we have
+ftrace_graph_filter
+set.
 
-MIN_BDI_DIRTY_THRESH != 0, will have a side effect of imposing a max
-number of BDIs on the system, I'm not sure you want to go there.
 
-> > Without observing the bdi_thresh constraint we can have:
-> > 
-> >   \Sum_(over bdis) writeback_queue_size
-> > 
-> > dirty pages outstanding, which could be significantly higher than
-> > dirty_thresh.
->  
-> Yes.  Maybe we could do some per-bdi and/or global writeback wait
-> queue (ie. some generalized version of the patch 20: NFS: introduce
-> writeback wait queue).
-> 
-> The per-bdi writeback queue size should ideally be proportional to its
-> available writeback bandwidth. MIN_BDI_DIRTY_THRESH could be defined
-> to (2*bdi_writeback_bandwidth) or something close. And if the resulted
-> bdi limits turn out to be too large for a small memory system, we just
-> let the global limit kick in. For such small memory systems, it is
-> very likely there are only one bdi. So it is not likely to lose
-> fairness to base its limits on available memory instead of device
-> capability.
+>
+> Where function-list is a comma separated list of functions to filter.
+>
+> Signed-off-by: Stefan Assmann <sassmann@redhat.com>
+> ---
+>  Documentation/kernel-parameters.txt |    9 ++++++++-
+>  kernel/trace/ftrace.c               |   34 ++++++++++++++++++++++++++++++++++
+>  2 files changed, 42 insertions(+), 1 deletions(-)
+>
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 9107b38..144eb83 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -771,7 +771,14 @@ and is between 256 and 4096 characters. It is defined in the file
+>                        tracer at boot up. function-list is a comma separated
+>                        list of functions. This list can be changed at run
+>                        time by the set_ftrace_filter file in the debugfs
+> -                       tracing directory.
+> +                       tracing directory.
+> +
+> +       ftrace_graph_filter=[function-list]
+> +                       [FTRACE] Limit the functions traced by the function
+> +                       graph tracer at boot up. function-list is a comma
+> +                       separated list of functions. This list can be changed
+> +                       at run time by the set_graph_function file in the
+> +                       debugfs tracing directory.
 
-I'm not seeing why. By simply keeping that loop we're good again, and
-can have a writeback queue that works well in the saturated case.
 
+
+May be you should use a more detailed definition of this parameter.
+Limiting a function traced by the function graph tracer is ambiguous.
+
+It means we can have either:
+
+    function_to_trace();
+
+or:
+
+    function_to_trace() {
+         foo() {
+             bar();
+         }
+    }
+
+We want the second thing.
+May be instead you can write:
+
+"Limit the top level callers functions traced by the function
+ graph tracer at boot up."
+
+Otherwise, looks good to me:
+
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+Thanks.
+
+>        ftrace_notrace=[function-list]
+>                        [FTRACE] Do not trace the functions specified in
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 3724756..a5cae5c 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -78,6 +78,10 @@ ftrace_func_t ftrace_trace_function __read_mostly = ftrace_stub;
+>  ftrace_func_t __ftrace_trace_function __read_mostly = ftrace_stub;
+>  ftrace_func_t ftrace_pid_function __read_mostly = ftrace_stub;
+>
+> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> +static int ftrace_set_func(unsigned long *array, int *idx, char *buffer);
+> +#endif
+> +
+>  static void ftrace_list_func(unsigned long ip, unsigned long parent_ip)
+>  {
+>        struct ftrace_ops *op = ftrace_list;
+> @@ -2302,6 +2306,7 @@ void ftrace_set_notrace(unsigned char *buf, int len, int reset)
+>  #define FTRACE_FILTER_SIZE             COMMAND_LINE_SIZE
+>  static char ftrace_notrace_buf[FTRACE_FILTER_SIZE] __initdata;
+>  static char ftrace_filter_buf[FTRACE_FILTER_SIZE] __initdata;
+> +static char ftrace_graph_buf[FTRACE_FILTER_SIZE] __initdata;
+>
+>  static int __init set_ftrace_notrace(char *str)
+>  {
+> @@ -2317,6 +2322,31 @@ static int __init set_ftrace_filter(char *str)
+>  }
+>  __setup("ftrace_filter=", set_ftrace_filter);
+>
+> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> +static int __init set_graph_function(char *str)
+> +{
+> +       strncpy(ftrace_graph_buf, str, FTRACE_FILTER_SIZE);
+> +       return 1;
+> +}
+> +__setup("ftrace_graph_filter=", set_graph_function);
+> +
+> +static void __init set_ftrace_early_graph(char *buf)
+> +{
+> +       int ret;
+> +       char *func;
+> +
+> +       while (buf) {
+> +               func = strsep(&buf, ",");
+> +               /* we allow only one expression at a time */
+> +               ret = ftrace_set_func(ftrace_graph_funcs, &ftrace_graph_count,
+> +                                     func);
+> +               if (ret)
+> +                       printk(KERN_DEBUG "ftrace: function %s not "
+> +                                         "traceable\n", func);
+> +       }
+> +}
+> +#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> +
+>  static void __init set_ftrace_early_filter(char *buf, int enable)
+>  {
+>        char *func;
+> @@ -2333,6 +2363,10 @@ static void __init set_ftrace_early_filters(void)
+>                set_ftrace_early_filter(ftrace_filter_buf, 1);
+>        if (ftrace_notrace_buf[0])
+>                set_ftrace_early_filter(ftrace_notrace_buf, 0);
+> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> +       if (ftrace_graph_buf[0])
+> +               set_ftrace_early_graph(ftrace_graph_buf);
+> +#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+>  }
+>
+>  static int
+> --
+> 1.6.2.5
+>
+>
