@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753736AbZJLDYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbZJLDaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753736AbZJLDYP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 Oct 2009 23:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZJLDYP
+	id S1753817AbZJLDaE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 Oct 2009 23:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbZJLDaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 Oct 2009 23:24:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56268 "EHLO smtps.tip.net.au"
+	Sun, 11 Oct 2009 23:30:03 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47978 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752727AbZJLDYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 Oct 2009 23:24:14 -0400
-Date: Mon, 12 Oct 2009 14:23:28 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: linux-next: manual merge of the i7core_edac tree with Linus' tree
-Message-Id: <20091012142328.710881fe.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.2; i486-pc-linux-gnu)
+	id S1753008AbZJLDaD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 Oct 2009 23:30:03 -0400
+Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2 [PATCH]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ben Efros <ben@pc-doctor.com>, fangxiaozhi <huananhu@huawei.com>,
+       Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>,
+       Josua Dietze <digidietze@draisberghof.de>
+In-Reply-To: <Pine.LNX.4.44L0.0910112150020.638-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0910112150020.638-100000@netrider.rowland.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 12 Oct 2009 14:28:15 +1100
+Message-Id: <1255318095.2192.92.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__12_Oct_2009_14_23_28_+1100_Mi7unwoFi5_.c9kr"
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__12_Oct_2009_14_23_28_+1100_Mi7unwoFi5_.c9kr
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, 2009-10-11 at 21:54 -0400, Alan Stern wrote:
+> Possibly, but I sure wouldn't bet on it.   :-)
+> 
+> > I still think it's simpler and potentially more future-proof to just
+> > have a back-off scenario.
+> > 
+> > Now, whether we ping pong the US_FL_SANE_SENSE flag or not is minor,
+> > I tend to think that your approach that doesn't touch the flag might
+> > indeed be better.
+> > 
+> > I'll test the patch later today.
+> 
+> And of course there remains the question of why the serial driver
+> wasn't loaded and probed.  Would it make a difference if that driver
+> was already loaded when you plugged in the modem? 
 
-Hi Mauro,
+Without my hack, the serial driver -was- loaded an probed ... but the
+device would go away as soon as the reset happened triggered by
+usb-storage.
 
-Today's linux-next merge of the i7core_edac tree got a conflict in
-arch/x86/kernel/cpu/mcheck/mce.c between commit
-f436f8bb73138bc74eb1c6527723e00988ad8a8a ("x86: EDAC: MCE: Fix MCE
-decoding callback logic") from Linus' tree and commit
-699a7dbe1ffdf4b25c1475e45590b181c3e23087 ("edac_mce: Add an interface
-driver to report mce errors via edac") from the i7core_edac tree.
+BTW. I noticed that USB storage is supposed to avoid doing the reset if
+the device is multifunction. I suppose that flag gets set prior to the
+"mode switch" and so the reset happens regardless... maybe we should set
+that MF flag from the quirk that sends the mode switch ?
 
-I don't know how to resolve these two commits so I have dropped the
-i7core_edac tree for today.
+With my hack, I don't know what happened the first time around, it
+worked fine afterward. I'll let you know if it happens again. Could be a
+userspace glitch (I'm running Ubuntu Karmic, it's still a bit wet behind
+the ears :-)
 
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben.
 
---Signature=_Mon__12_Oct_2009_14_23_28_+1100_Mi7unwoFi5_.c9kr
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkrSoTAACgkQjjKRsyhoI8yOwgCbB20h2D713gdYzbxRdYHo0ltJ
-F8oAn2myOfg18nSGSZrSVgtcNOmBXJHs
-=0fTt
------END PGP SIGNATURE-----
-
---Signature=_Mon__12_Oct_2009_14_23_28_+1100_Mi7unwoFi5_.c9kr--
