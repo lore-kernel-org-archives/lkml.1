@@ -1,91 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbZJLVKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbZJLVLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758198AbZJLVKO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbZJLVKN
+	id S1758220AbZJLVLR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758187AbZJLVLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:10:13 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:27283 "EHLO mx1.redhat.com"
+	Mon, 12 Oct 2009 17:11:16 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60169 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758183AbZJLVKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:10:12 -0400
-From: David Teigland <teigland@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] dlm: fix socket fd translation
-Date: Mon, 12 Oct 2009 16:10:29 -0500
-Message-Id: <1255381829-3929-2-git-send-email-teigland@redhat.com>
+	id S1758186AbZJLVLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:11:15 -0400
+Message-ID: <4AD39B4A.6030305@suse.com>
+Date: Mon, 12 Oct 2009 17:10:34 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-1.1 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] staging: Complete sched.h removal from interrupt.h
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The code to set up sctp sockets was not using the sockfd_lookup()
-and sockfd_put() routines to translate an fd to a socket.  The
-direct fget and fput calls were resulting in error messages from
-alloc_fd().
+ Commit d43c36dc removed sched.h from interrupt.h and distributed sched.h
+ to users which needed it. This finishes it up for staging.
 
-Also clean up two log messages and remove a third, related to
-setting up sctp associations.
-
-Signed-off-by: David Teigland <teigland@redhat.com>
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
 ---
- fs/dlm/lowcomms.c |   23 ++++++++++++-----------
- 1 files changed, 12 insertions(+), 11 deletions(-)
+ drivers/staging/b3dfg/b3dfg.c              |    1 +
+ drivers/staging/hv/osd.c                   |    1 +
+ drivers/staging/iio/industrialio-core.c    |    2 ++
+ drivers/staging/poch/poch.c                |    1 +
+ drivers/staging/sep/sep_driver.c           |    1 +
+ drivers/staging/vme/bridges/vme_ca91cx42.c |    1 +
+ drivers/staging/vme/bridges/vme_tsi148.c   |    1 +
+ 7 files changed, 8 insertions(+)
 
-diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
-index a3350e4..70736eb 100644
---- a/fs/dlm/lowcomms.c
-+++ b/fs/dlm/lowcomms.c
-@@ -459,9 +459,9 @@ static void process_sctp_notification(struct connection *con,
- 			int prim_len, ret;
- 			int addr_len;
- 			struct connection *new_con;
--			struct file *file;
- 			sctp_peeloff_arg_t parg;
- 			int parglen = sizeof(parg);
-+			int err;
+--- a/drivers/staging/b3dfg/b3dfg.c
++++ b/drivers/staging/b3dfg/b3dfg.c
+@@ -33,6 +33,7 @@
+ #include <linux/cdev.h>
+ #include <linux/list.h>
+ #include <linux/poll.h>
++#include <linux/sched.h>
+ #include <linux/wait.h>
+ #include <linux/mm.h>
+ #include <linux/uaccess.h>
+--- a/drivers/staging/hv/osd.c
++++ b/drivers/staging/hv/osd.c
+@@ -30,6 +30,7 @@
+ #include <linux/ioport.h>
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
++#include <linux/sched.h>
+ #include <linux/wait.h>
+ #include <linux/spinlock.h>
+ #include <linux/workqueue.h>
+--- a/drivers/staging/iio/industrialio-core.c
++++ b/drivers/staging/iio/industrialio-core.c
+@@ -19,6 +19,8 @@
+ #include <linux/interrupt.h>
+ #include <linux/poll.h>
+ #include <linux/cdev.h>
++#include <linux/sched.h>
++#include <linux/wait.h>
+ #include "iio.h"
+ #include "trigger_consumer.h"
  
- 			/*
- 			 * We get this before any data for an association.
-@@ -516,19 +516,22 @@ static void process_sctp_notification(struct connection *con,
- 			ret = kernel_getsockopt(con->sock, IPPROTO_SCTP,
- 						SCTP_SOCKOPT_PEELOFF,
- 						(void *)&parg, &parglen);
--			if (ret) {
-+			if (ret < 0) {
- 				log_print("Can't peel off a socket for "
--					  "connection %d to node %d: err=%d\n",
-+					  "connection %d to node %d: err=%d",
- 					  parg.associd, nodeid, ret);
-+				return;
-+			}
-+			new_con->sock = sockfd_lookup(parg.sd, &err);
-+			if (!new_con->sock) {
-+				log_print("sockfd_lookup error %d", err);
-+				return;
- 			}
--			file = fget(parg.sd);
--			new_con->sock = SOCKET_I(file->f_dentry->d_inode);
- 			add_sock(new_con->sock, new_con);
--			fput(file);
--			put_unused_fd(parg.sd);
-+			sockfd_put(new_con->sock);
+--- a/drivers/staging/poch/poch.c
++++ b/drivers/staging/poch/poch.c
+@@ -20,6 +20,7 @@
+ #include <linux/init.h>
+ #include <linux/ioctl.h>
+ #include <linux/io.h>
++#include <linux/sched.h>
  
--			log_print("got new/restarted association %d nodeid %d",
--				 (int)sn->sn_assoc_change.sac_assoc_id, nodeid);
-+			log_print("connecting to %d sctp association %d",
-+				 nodeid, (int)sn->sn_assoc_change.sac_assoc_id);
+ #include "poch.h"
  
- 			/* Send any pending writes */
- 			clear_bit(CF_CONNECT_PENDING, &new_con->flags);
-@@ -841,8 +844,6 @@ static void sctp_init_assoc(struct connection *con)
- 	if (con->retries++ > MAX_CONNECT_RETRIES)
- 		return;
- 
--	log_print("Initiating association with node %d", con->nodeid);
--
- 	if (nodeid_to_addr(con->nodeid, (struct sockaddr *)&rem_addr)) {
- 		log_print("no address for nodeid %d", con->nodeid);
- 		return;
+--- a/drivers/staging/sep/sep_driver.c
++++ b/drivers/staging/sep/sep_driver.c
+@@ -38,6 +38,7 @@
+ #include <linux/mm.h>
+ #include <linux/poll.h>
+ #include <linux/wait.h>
++#include <linux/sched.h>
+ #include <linux/pci.h>
+ #include <linux/firmware.h>
+ #include <asm/ioctl.h>
+--- a/drivers/staging/vme/bridges/vme_ca91cx42.c
++++ b/drivers/staging/vme/bridges/vme_ca91cx42.c
+@@ -25,6 +25,7 @@
+ #include <linux/poll.h>
+ #include <linux/interrupt.h>
+ #include <linux/spinlock.h>
++#include <linux/sched.h>
+ #include <asm/time.h>
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
+--- a/drivers/staging/vme/bridges/vme_tsi148.c
++++ b/drivers/staging/vme/bridges/vme_tsi148.c
+@@ -25,6 +25,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/interrupt.h>
+ #include <linux/spinlock.h>
++#include <linux/sched.h>
+ #include <asm/time.h>
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
 -- 
-1.5.5.6
-
+Jeff Mahoney
+SUSE Labs
