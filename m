@@ -1,175 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932352AbZJLOmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932398AbZJLOtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932352AbZJLOmU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932331AbZJLOmT
+	id S932398AbZJLOtA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932378AbZJLOs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:42:19 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37420 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932320AbZJLOmS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:42:18 -0400
-Date: Mon, 12 Oct 2009 10:41:10 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Nelson Elhage <nelhage@ksplice.com>
-Subject: Re: [PATCH v4 2/2] arm: Clean up linker script using new linker
- script macros.
-In-Reply-To: <1254515567-27110-2-git-send-email-tabbott@ksplice.com>
-Message-ID: <alpine.DEB.1.10.0910121036130.6253@dr-wily.mit.edu>
-References: <alpine.DEB.1.10.0910021536510.19358@dr-wily.mit.edu> <1254515567-27110-2-git-send-email-tabbott@ksplice.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 12 Oct 2009 10:48:59 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47497 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932376AbZJLOs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:48:58 -0400
+Date: Mon, 12 Oct 2009 07:44:58 -0700
+From: Greg KH <gregkh@suse.de>
+To: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Dmitry Torokhov <dtor@insightbb.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
+ anymore
+Message-ID: <20091012144458.GA1326@suse.de>
+References: <4AD120F2.3020606@tremplin-utc.net>
+ <20091011030029.GA6526@suse.de>
+ <200910112135.29384.dmitry.torokhov@gmail.com>
+ <4AD31709.4000103@tremplin-utc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4AD31709.4000103@tremplin-utc.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can someone with an arm machine test this patch?  I'd really appreciate 
-it.
+On Mon, Oct 12, 2009 at 01:46:17PM +0200, Éric Piel wrote:
+> Op 12-10-09 06:35, Dmitry Torokhov schreef:
+> > On Saturday 10 October 2009 08:00:29 pm Greg KH wrote:
+> >> On Sun, Oct 11, 2009 at 02:04:02AM +0200, ?ric Piel wrote:
+> >>> Hello,
+> >>>
+> >>> After a suspend, I used to do this (to get the PS2 keyboard working
+> >>> again), and it used to work fine:
+> >>> echo -n "i8042" > /sys/bus/platform/drivers/i8042/unbind ; sleep 1 ; echo
+> >>> -n "i8042" > /sys/bus/platform/drivers/i8042/bind
+> >>>
+> >>> Unfortunately since 2.6.32-rc1, the unbind works fine, but the bind
+> >>> returns a "no such device" error now (and the binding is not done). After
+> >>> that, additional unbinds also report the error. I think 2.6.31 worked
+> >>> fine. Any idea what's going wrong?
+> >> Odd.  Any chance you can run 'git bisect' to figure out which patch
+> >> might have caused it?
+> > 
+> > I8042 has been converted to use platform_driver_probe() - we are creating 
+> > platform device and platform driver together, there is no chance that some 
+> > other device might be driven by i8042 driver.
+> I haven't finished bisecting, but indeed, the problem seemed to converge
+> toward this patch.
+> 
+> 
+> > Eric, do you still need to fiddle with i8042 to get your keyboard working with 
+> > 2.6.32-rc3? We need to make sure that resube works without users needing to 
+> > mess with bind/unbind.
+> Yes, the keyboard doesn't work after the first resume from ram (the
+> later resumes do work). I haven't tried any special option to the i8042
+> driver. This is on a HP 2510, in 64 bits.
+> 
+> Indeed, it would be great to fix this root problem! Is there any bug
+> report opened to work on this?
+> 
+> However, currently the first problem is that unbind works, while bind
+> doesn't. Which means anyone doing an unbind will have keyboard and mouse
+> lost until the next reboot. That's rather bad because it has been
+> recommended for a long time to have this kind of script at resume:
+> http://intertrusion.com/files/hp-s2ram.patch
+> http://en.opensuse.org/Pm-utils
+> 
+> So at least, unbind should fail as well as bind.
 
-	-Tim Abbott
+Ah, I bet I know why bind fails...  Yeah, the i8042_platform_device is
+never freed up in the i8042_remove() function in
+drivers/input/serio/i8042.c, so when you try to register it again, it
+fails.
 
-On Fri, 2 Oct 2009, Tim Abbott wrote:
+Dmitry, care to fix this up?  Should be pretty simple.
 
-> From: Nelson Elhage <nelhage@ksplice.com>
-> 
-> This patch is mostly a straightforward translation. The primary side
-> effect to the resulting vmlinux should be to increase the alignment on
-> the initramfs to the standard PAGE_SIZE from 32 bytes.
-> 
-> Signed-off-by: Nelson Elhage <nelhage@ksplice.com>
-> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> ---
->  arch/arm/kernel/vmlinux.lds.S |   77 ++++++++++++----------------------------
->  1 files changed, 23 insertions(+), 54 deletions(-)
-> 
-> diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
-> index 0902f80..71151bd 100644
-> --- a/arch/arm/kernel/vmlinux.lds.S
-> +++ b/arch/arm/kernel/vmlinux.lds.S
-> @@ -40,43 +40,31 @@ SECTIONS
->  		__tagtable_begin = .;
->  			*(.taglist.init)
->  		__tagtable_end = .;
-> -		. = ALIGN(16);
-> -		__setup_start = .;
-> -			*(.init.setup)
-> -		__setup_end = .;
-> +
-> +		INIT_SETUP(16)
-> +
->  		__early_begin = .;
->  			*(.early_param.init)
->  		__early_end = .;
-> -		__initcall_start = .;
-> -			INITCALLS
-> -		__initcall_end = .;
-> -		__con_initcall_start = .;
-> -			*(.con_initcall.init)
-> -		__con_initcall_end = .;
-> -		__security_initcall_start = .;
-> -			*(.security_initcall.init)
-> -		__security_initcall_end = .;
-> -#ifdef CONFIG_BLK_DEV_INITRD
-> -		. = ALIGN(32);
-> -		__initramfs_start = .;
-> -			usr/built-in.o(.init.ramfs)
-> -		__initramfs_end = .;
-> -#endif
-> -		. = ALIGN(PAGE_SIZE);
-> -		__per_cpu_load = .;
-> -		__per_cpu_start = .;
-> -			*(.data.percpu.page_aligned)
-> -			*(.data.percpu)
-> -			*(.data.percpu.shared_aligned)
-> -		__per_cpu_end = .;
-> +
-> +		INIT_CALLS
-> +		CON_INITCALL
-> +		SECURITY_INITCALL
-> +		INIT_RAM_FS
-> +
->  #ifndef CONFIG_XIP_KERNEL
->  		__init_begin = _stext;
->  		INIT_DATA
-> -		. = ALIGN(PAGE_SIZE);
-> -		__init_end = .;
->  #endif
->  	}
->  
-> +	PERCPU(PAGE_SIZE)
-> +
-> +#ifndef CONFIG_XIP_KERNEL
-> +	. = ALIGN(PAGE_SIZE);
-> +	__init_end = .;
-> +#endif
-> +
->  	/DISCARD/ : {			/* Exit code and data		*/
->  		EXIT_TEXT
->  		EXIT_DATA
-> @@ -155,7 +143,7 @@ SECTIONS
->  		 * first, the init task union, aligned
->  		 * to an 8192 byte boundary.
->  		 */
-> -		*(.data.init_task)
-> +		INIT_TASK_DATA(THREAD_SIZE)
->  
->  #ifdef CONFIG_XIP_KERNEL
->  		. = ALIGN(PAGE_SIZE);
-> @@ -165,17 +153,8 @@ SECTIONS
->  		__init_end = .;
->  #endif
->  
-> -		. = ALIGN(PAGE_SIZE);
-> -		__nosave_begin = .;
-> -		*(.data.nosave)
-> -		. = ALIGN(PAGE_SIZE);
-> -		__nosave_end = .;
-> -
-> -		/*
-> -		 * then the cacheline aligned data
-> -		 */
-> -		. = ALIGN(32);
-> -		*(.data.cacheline_aligned)
-> +		NOSAVE_DATA
-> +		CACHELINE_ALIGNED_DATA(32)
->  
->  		/*
->  		 * The exception fixup table (might need resorting at runtime)
-> @@ -254,20 +233,10 @@ SECTIONS
->  	}
->  #endif
->  
-> -	.bss : {
-> -		__bss_start = .;	/* BSS				*/
-> -		*(.bss)
-> -		*(COMMON)
-> -		__bss_stop = .;
-> -		_end = .;
-> -	}
-> -					/* Stabs debugging sections.	*/
-> -	.stab 0 : { *(.stab) }
-> -	.stabstr 0 : { *(.stabstr) }
-> -	.stab.excl 0 : { *(.stab.excl) }
-> -	.stab.exclstr 0 : { *(.stab.exclstr) }
-> -	.stab.index 0 : { *(.stab.index) }
-> -	.stab.indexstr 0 : { *(.stab.indexstr) }
-> +	BSS_SECTION(0, 0, 0)
-> +	_end = .;
-> +
-> +	STABS_DEBUG
->  	.comment 0 : { *(.comment) }
->  }
->  
-> -- 
-> 1.6.4.3
-> 
-> 
+thanks,
+
+greg k-h
