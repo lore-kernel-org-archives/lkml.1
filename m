@@ -1,62 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbZJLFGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbZJLFJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751564AbZJLFGS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 01:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbZJLFGR
+	id S1751942AbZJLFJT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 01:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZJLFJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 01:06:17 -0400
-Received: from mail-bw0-f210.google.com ([209.85.218.210]:55348 "EHLO
-	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751286AbZJLFGP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 01:06:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=efImL9f5PAICVQGfRFmpTAkwFSWmKIYCTFoytrFQdqBWz0KL/BGon42rUn6Ps6jiDx
-         HKBLapzU1RP1tdPgtHML+XgFTSbO4Bw1ubg65csYpJIlyjDw3oa4IPmCGoA2BY7ApcCr
-         SFjZiPtcmP68be1AnXWFBv5QTHy07bdGQNmgo=
-Date: Mon, 12 Oct 2009 07:05:34 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: manual merge of the i7core_edac tree with Linus'
- tree
-Message-ID: <20091012050534.GC7629@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Ingo Molnar <mingo@elte.hu>,
-	Mauro Carvalho Chehab <mchehab@redhat.com>,
-	linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20091012142328.710881fe.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20091012142328.710881fe.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 12 Oct 2009 01:09:18 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40740 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751457AbZJLFJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 01:09:17 -0400
+Subject: Re: [PATCH 2/2][v3] powerpc: Make the CMM memory hotplug aware
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Ingo Molnar <mingo@elte.hu>, Badari Pulavarty <pbadari@us.ibm.com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Gerald Schaefer <geralds@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linuxppc-dev@ozlabs.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20091009204126.GD19114@austin.ibm.com>
+References: <20091009203803.GC19114@austin.ibm.com>
+	 <20091009204126.GD19114@austin.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 12 Oct 2009 16:06:47 +1100
+Message-Id: <1255324007.2192.106.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 02:23:28PM +1100, Stephen Rothwell wrote:
-> Today's linux-next merge of the i7core_edac tree got a conflict in
-> arch/x86/kernel/cpu/mcheck/mce.c between commit
-> f436f8bb73138bc74eb1c6527723e00988ad8a8a ("x86: EDAC: MCE: Fix MCE
-> decoding callback logic") from Linus' tree and commit
-> 699a7dbe1ffdf4b25c1475e45590b181c3e23087 ("edac_mce: Add an interface
-> driver to report mce errors via edac") from the i7core_edac tree.
+On Fri, 2009-10-09 at 15:41 -0500, Robert Jennings wrote:
+> The Collaborative Memory Manager (CMM) module allocates individual pages
+> over time that are not migratable.  On a long running system this can
+> severely impact the ability to find enough pages to support a hotplug
+> memory remove operation.
+> 
+> This patch adds a memory isolation notifier and a memory hotplug notifier.
+> The memory isolation notifier will return the number of pages found
+> in the range specified.  This is used to determine if all of the used
+> pages in a pageblock are owned by the balloon (or other entities in
+> the notifier chain).  The hotplug notifier will free pages in the range
+> which is to be removed.  The priority of this hotplug notifier is low
+> so that it will be called near last, this helps avoids removing loaned
+> pages in operations that fail due to other handlers.
+> 
+> CMM activity will be halted when hotplug remove operations are active
+> and resume activity after a delay period to allow the hypervisor time
+> to adjust.
+> 
+> Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 
-The current way Ingo suggested is using an atomic notifier instead
-from within print_mce to convey MCE info to an EDAC driver, see
-http://marc.info/?l=linux-kernel&m=125455310112745&w=2
+Do you need me to merge that via the powerpc tree after the relevant
+generic parts go in ? This is 2.6.33 material ?
 
-Ingo, what are your plans with that? I'm guessing the .33 timeframe?
+> +module_param_named(hotplug_delay, hotplug_delay, uint, S_IRUGO | S_IWUSR);
+> +MODULE_PARM_DESC(delay, "Delay (in seconds) after memory hotplug remove "
+> +		 "before activity resumes. "
+> +		 "[Default=" __stringify(CMM_HOTPLUG_DELAY) "]");
 
-Thanks.
+What is the above ? That sounds scary :-)
 
--- 
-Regards/Gruss,
-    Boris.
+>  module_param_named(oom_kb, oom_kb, uint, S_IRUGO | S_IWUSR);
+>  MODULE_PARM_DESC(oom_kb, "Amount of memory in kb to free on OOM. "
+>  		 "[Default=" __stringify(CMM_OOM_KB) "]");
+> @@ -88,6 +101,8 @@ struct cmm_page_array {
+>  static unsigned long loaned_pages;
+>  static unsigned long loaned_pages_target;
+>  static unsigned long oom_freed_pages;
+> +static atomic_t hotplug_active = ATOMIC_INIT(0);
+> +static atomic_t hotplug_occurred = ATOMIC_INIT(0);
+
+That sounds like a hand made lock with atomics... rarely a good idea,
+tends to miss appropriate barriers etc...
+ 
+>  static struct cmm_page_array *cmm_page_list;
+>  static DEFINE_SPINLOCK(cmm_lock);
+> @@ -110,6 +125,9 @@ static long cmm_alloc_pages(long nr)
+>  	cmm_dbg("Begin request for %ld pages\n", nr);
+>  
+>  	while (nr) {
+> +		if (atomic_read(&hotplug_active))
+> +			break;
+> +
+
+Ok so I'm not familiar with that whole memory hotplug stuff, so the code
+might be right, but wouldn't the above be racy anyways in case hotplug
+just becomes active after this statement ?
+
+Shouldn't you use a mutex_trylock instead ? That has clearer semantics
+and will provide the appropriate memory barriers.
+
+>  		addr = __get_free_page(GFP_NOIO | __GFP_NOWARN |
+>  				       __GFP_NORETRY | __GFP_NOMEMALLOC);
+>  		if (!addr)
+> @@ -119,8 +137,10 @@ static long cmm_alloc_pages(long nr)
+>  		if (!pa || pa->index >= CMM_NR_PAGES) {
+>  			/* Need a new page for the page list. */
+>  			spin_unlock(&cmm_lock);
+> -			npa = (struct cmm_page_array *)__get_free_page(GFP_NOIO | __GFP_NOWARN |
+> -								       __GFP_NORETRY | __GFP_NOMEMALLOC);
+> +			npa = (struct cmm_page_array *)__get_free_page(
+> +					GFP_NOIO | __GFP_NOWARN |
+> +					__GFP_NORETRY | __GFP_NOMEMALLOC |
+> +					__GFP_MOVABLE);
+>  			if (!npa) {
+>  				pr_info("%s: Can not allocate new page list\n", __func__);
+>  				free_page(addr);
+> @@ -273,9 +293,23 @@ static int cmm_thread(void *dummy)
+>  	while (1) {
+>  		timeleft = msleep_interruptible(delay * 1000);
+> 
+> -		if (kthread_should_stop() || timeleft) {
+> -			loaned_pages_target = loaned_pages;
+> +		if (kthread_should_stop() || timeleft)
+>  			break;
+> +
+> +		if (atomic_read(&hotplug_active)) {
+> +			cmm_dbg("Hotplug operation in progress, activity "
+> +					"suspended\n");
+> +			continue;
+> +		}
+> +
+> +		if (atomic_dec_if_positive(&hotplug_occurred) >= 0) {
+> +			cmm_dbg("Hotplug operation has occurred, loaning "
+> +					"activity suspended for %d seconds.\n",
+> +					hotplug_delay);
+> +			timeleft = msleep_interruptible(hotplug_delay * 1000);
+> +			if (kthread_should_stop() || timeleft)
+> +				break;
+> +			continue;
+>  		}
+
+I have less problems with hotplug_occured but if you use a
+mutex_trylock, overall, you can turn the above into a normal int instead
+of an atomic.
+
+ ../..
+
+> +static int cmm_memory_cb(struct notifier_block *self,
+> +			unsigned long action, void *arg)
+> +{
+> +	int ret = 0;
+> +
+> +	switch (action) {
+> +	case MEM_GOING_OFFLINE:
+> +		atomic_set(&hotplug_active, 1);
+
+So that would become a mutex_lock(). Added advantage is that
+it would wait for a current CMM operation to complete.
+ 
+Cheers,
+Ben.
+
+
