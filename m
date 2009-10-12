@@ -1,129 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756765AbZJLOMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZJLOEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756765AbZJLOMy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734AbZJLOMy
+	id S1756719AbZJLOEf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756668AbZJLOEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:12:54 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53650 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752894AbZJLOMx (ORCPT
+	Mon, 12 Oct 2009 10:04:34 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:10641 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756659AbZJLOEd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:12:53 -0400
-Date: Mon, 12 Oct 2009 07:12:39 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Artem Bityutskiy <dedekind1@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
+	Mon, 12 Oct 2009 10:04:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=MWAKBV59uKGR0wFEZB8ueV3VfUehxo1Qh355xSN+aDzopcZGd4PkOXPIN0R+QfKyH0
+         cVn8ew7yChzKsR0JsffVbzBXeuc+GRy5+l4A+m1T0KT0OBQ7Un6+VJFEHPwcgfcTDthi
+         P+dDUo8ErOJruZKKt0W3V4G/rGtR4oa0p7SMU=
+Message-ID: <4AD33958.7020900@gmail.com>
+Date: Mon, 12 Oct 2009 16:12:40 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: alek.du@intel.com, Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] panic.c: export panic_on_oops
-Message-ID: <20091012071239.608a74c9@infradead.org>
-In-Reply-To: <20091012113758.GB11035@elte.hu>
-References: <1255241458-11665-1-git-send-email-dedekind1@gmail.com>
-	<20091012111545.GB8857@elte.hu>
-	<1255346731.9659.31.camel@localhost>
-	<20091012113758.GB11035@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: [PATCH] gpio: Fix test on unsigned in lnw_irq_type()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009 13:37:58 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+The wrong test was used, gpio is unsigned.
 
-> 
-> * Artem Bityutskiy <dedekind1@gmail.com> wrote:
-> 
-> > On Mon, 2009-10-12 at 13:15 +0200, ext Ingo Molnar wrote:
-> > > > We use the mtdoops module which stores oopses on the Flash
-> > > > partition, in order to make it possible to analyze them later.
-> > > > And mtdoops needs to know whether 'panic_on_oops' is on or off.
-> > > > Thus, we need this variable to be exported.
-> > > 
-> > > hm, why does it need it? Could you send the patch please that
-> > > makes use of it (as an easy way to explain the need for the
-> > > export) - current upstream drivers/mtd/mtdoops.c doesnt need it
-> > > so it must be some pending change.
-> > 
-> > Yes, current drivers/mtd/mtdoops.c does not need it, but we have
-> > this patch:
-> > 
-> > http://lists.infradead.org/pipermail/linux-mtd/2009-October/027450.html
-> > 
-> > which makes sure mtdoops writes the oops log immediately, because we
-> > have 'panic_on_oops' set so this is our last chance to save the
-> > oops.
-> > 
-> > Here is the patch inlined as well:
-> > 
-> > Author: Aaro Koskinen <aaro.koskinen@nokia.com>
-> > Date:   Thu Oct 1 18:16:55 2009 +0300
-> > 
-> >     mtd: mtdoops: do not schedule work if we are going to die
-> > 
-> >     If panic_on_oops is set, the log should be written right away
-> >     because this is not going to be a second chance.
-> > 
-> >     Signed-off-by: Aaro Koskinen <aaro.koskinen@nokia.com>
-> >     Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> > 
-> > diff --git a/drivers/mtd/mtdoops.c b/drivers/mtd/mtdoops.c
-> > index 1060337..ac67833 100644
-> > --- a/drivers/mtd/mtdoops.c
-> > +++ b/drivers/mtd/mtdoops.c
-> > @@ -335,7 +335,7 @@ static void mtdoops_console_sync(void)
-> >         cxt->ready = 0;
-> >         spin_unlock_irqrestore(&cxt->writecount_lock, flags);
-> > 
-> > -       if (mtd->panic_write && in_interrupt())
-> > +       if (mtd->panic_write && (in_interrupt() || panic_on_oops))
-> >                 /* Interrupt context, we're going to panic so try
-> > and log */ mtdoops_write(cxt, 1);
-> 
-> Hm, the code seems to be somewhat confused about this. It tries to
-> guess when it's panic-ing, right? in_interrupt() is the wrong test
-> for that.
-> 
-> mtdoops_console_sync() gets called by regular printk() as well via:
-> 
-> static void
-> mtdoops_console_write(struct console *co, const char *s, unsigned int
-> count) {
->         struct mtdoops_context *cxt = co->data;
->         struct mtd_info *mtd = cxt->mtd;
->         unsigned long flags;
-> 
->         if (!oops_in_progress) {
->                 mtdoops_console_sync();
->                 return;
-> 
-> I think this is all layered incorrectly - because mtdoops (which is a 
-> _VERY_ cool debugging facility btw - i wish generic x86 had something 
-> like that) tries to be a 'driver' and tries to achieve these things 
-> without modifying the core kernel.
-> 
-> But it really should do that. We can certainly enhance the core
-> kernel logic to tell the console driver more clearly when printk
-> should go out immediately.
-> 
-> Instead of using oops_in_progress it might be better to go into 'sync 
-> immeditately' mode if the kernel gets tainted.
-
-actually there are very nice "begin of oops" and "end of oops"
-functions... they are the perfect places for this ;-)
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/gpio/langwell_gpio.c b/drivers/gpio/langwell_gpio.c
+index 5711ce5..0d0cbc0 100644
+--- a/drivers/gpio/langwell_gpio.c
++++ b/drivers/gpio/langwell_gpio.c
+@@ -123,8 +123,11 @@ static int lnw_irq_type(unsigned irq, unsigned type)
+ 	void __iomem *grer = (void __iomem *)(&lnw->reg_base->GRER[reg]);
+ 	void __iomem *gfer = (void __iomem *)(&lnw->reg_base->GFER[reg]);
+ 
+-	if (gpio < 0 || gpio > lnw->chip.ngpio)
++	if (irq < lnw->irq_base || gpio > lnw->chip.ngpio ||
++			reg >= ARRAY_SIZE(lnw->reg_base->GRER)
++			reg >= ARRAY_SIZE(lnw->reg_base->GFER))
+ 		return -EINVAL;
++
+ 	spin_lock_irqsave(&lnw->lock, flags);
+ 	if (type & IRQ_TYPE_EDGE_RISING)
+ 		value = readl(grer) | BIT(gpio % 32);
