@@ -1,80 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbZJLOyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932412AbZJLOwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932439AbZJLOyh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932402AbZJLOyg
+	id S932412AbZJLOwz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932384AbZJLOwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:54:36 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49375 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932387AbZJLOyf convert rfc822-to-8bit (ORCPT
+	Mon, 12 Oct 2009 10:52:54 -0400
+Received: from mga05.intel.com ([192.55.52.89]:27324 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932379AbZJLOwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:54:35 -0400
-Subject: Re: Mutex vs semaphores scheduler bug
-From: Peter Zijlstra <peterz@infradead.org>
-To: =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwin@clamav.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       aCaB <acab@clamav.net>, David Howells <dhowells@redhat.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <4AD0A0F7.9070700@clamav.net>
-References: <4AD0A0F7.9070700@clamav.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Mon, 12 Oct 2009 16:53:27 +0200
-Message-Id: <1255359207.10420.31.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 12 Oct 2009 10:52:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,546,1249282800"; 
+   d="scan'208";a="502316144"
+Date: Mon, 12 Oct 2009 16:53:45 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Roger Quadros <ext-roger.quadros@nokia.com>
+Subject: [GIT] MFD pull request
+Message-ID: <20091012145343.GC16662@sortiz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-10-10 at 17:57 +0300, Török Edwin wrote:
-> If a semaphore (such as mmap_sem) is heavily congested, then using a
-> userspace mutex makes the program faster.
-> 
-> For example using a mutex around *anonymous* mmaps, speeds it up
-> significantly (~80% on this microbenchmark,
-> ~15% on real applications). Such workarounds shouldn't  be necessary for
-> userspace applications, the kernel should
-> by default use the most efficient implementation for locks.
+Hi Linus,
 
-Should, yes, does, no.
+I just have one fix for twl4030 that prevents some OMAP based boards from
+booting. Thanks in advance for pulling.
 
-> However when using a mutex the number of context switches is SMALLER by
-> 40-60%.
+The following changes since commit d93a8f829fe1d2f3002f2c6ddb553d12db420412:
+  Linus Torvalds (1):
+        Revert "USB: Work around BIOS bugs by quiescing USB controllers earlier"
 
-That matches the problem, see below.
+are available in the git repository at:
 
-> I think its a bug in the scheduler, it scheduler the mutex case much
-> better. 
+  git://git.kernel.org/pub/scm/linux/kernel/git/sameo/mfd-2.6 for-linus
 
-It's not, the scheduler doesn't know about mutexes/futexes/rwsems.
+Roger Quadros (1):
+      mfd: Fix twl4030 boot with twl4030 usb transceiver enabled
 
-> Maybe because userspace also spins a bit before actually calling
-> futex().
-
-Nope, if we would ever spin, it would be in the kernel after calling
-FUTEX_LOCK (which currently doesn't exist). glibc shouldn't do any
-spinning on its own (if it does, I have yet another reason to try and
-supplant the glibc futex code).
-
-> I think its important to optimize the mmap_sem semaphore
-
-It is.
-
-The problem appears to be that rwsem doesn't allow lock-stealing, and
-very strictly maintains FIFO order on contention. This results in extra
-schedules and reduced performance as you noticed.
-
-What happens is that when we release a contended rwsem we assign it to
-the next waiter, if before that waiter gets ran, another (running) tasks
-comes along and tries to acquire the lock, that gets put to sleep, even
-though it could possibly get to acquire it (and the woken waiter would
-detect failure and go back to sleep).
-
-So what I think we need to do is have a look at all this lib/rwsem.c
-slowpath code and hack in lock stealing.
-
-
+ drivers/mfd/twl4030-core.c |   89 ++++++++++++++++++++++---------------------
+ 1 files changed, 46 insertions(+), 43 deletions(-)
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
