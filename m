@@ -1,118 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933076AbZJLTRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933150AbZJLTTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933076AbZJLTRw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 15:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932621AbZJLTRq
+	id S933150AbZJLTTI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 15:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbZJLTTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 15:17:46 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:47865 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757491AbZJLTRp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 15:17:45 -0400
-Message-ID: <4AD380A2.2030101@vmware.com>
-Date: Mon, 12 Oct 2009 21:16:50 +0200
-From: Thomas Hellstrom <thellstrom@vmware.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090822)
+	Mon, 12 Oct 2009 15:19:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:44468 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757518AbZJLTSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 15:18:32 -0400
+Date: Mon, 12 Oct 2009 16:17:53 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com, kvm@vger.kernel.org
+Subject: Re: [PATCH][retry 3] Support Pause Filter in AMD processors
+Message-ID: <20091012191753.GA13967@amt.cnet>
+References: <200910021449.59284.mark.langsdorf@amd.com> <200910061425.03191.mark.langsdorf@amd.com>
 MIME-Version: 1.0
-To: Thomas Schlichter <thomas.schlichter@web.de>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Jan Beulich <jbeulich@novell.com>, Tejun Heo <tj@kernel.org>,
-       Jesse Barnes <jbarnes@jbarnes-g45>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: [RFC Patch] use MTRR for write combining if PAT is not available
-References: <200910122032.52168.thomas.schlichter@web.de>
-In-Reply-To: <200910122032.52168.thomas.schlichter@web.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200910061425.03191.mark.langsdorf@amd.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, Oct 06, 2009 at 02:25:02PM -0500, Mark Langsdorf wrote:
+> >From 8ec340648103510095ff339b914706c81e9d815d Mon Sep 17 00:00:00 2001
+> From: Mark Langsdorf <mark.langsdorf@amd.com>
+> Date: Wed, 9 Sep 2009 22:12:51 -0500
+> Subject: [PATCH] [PATCH] Support Pause Filter in AMD processors
+> 
+> New AMD processors (Family 0x10 models 8+) support the Pause
+> Filter Feature.  This feature creates a new field in the VMCB
+> called Pause Filter Count.  If Pause Filter Count is greater
+> than 0 and intercepting PAUSEs is enabled, the processor will
+> increment an internal counter when a PAUSE instruction occurs
+> instead of intercepting.  When the internal counter reaches the
+> Pause Filter Count value, a PAUSE intercept will occur.
+> 
+> This feature can be used to detect contended spinlocks,
+> especially when the lock holding VCPU is not scheduled.
+> Rescheduling another VCPU prevents the VCPU seeking the
+> lock from wasting its quantum by spinning idly.
+> 
+> Experimental results show that most spinlocks are held
+> for less than 1000 PAUSE cycles or more than a few
+> thousand.  Default the Pause Filter Counter to 3000 to
+> detect the contended spinlocks.
+> 
+> Processor support for this feature is indicated by a CPUID
+> bit.
+> 
+> On a 24 core system running 4 guests each with 16 VCPUs,
+> this patch improved overall performance of each guest's
+> 32 job kernbench by approximately 3-5% when combined
+> with a scheduler algorithm thati caused the VCPU to
+> sleep for a brief period. Further performance improvement
+> may be possible with a more sophisticated yield algorithm.
+> 
+> This patch depends on the changes to the kvm code from
+> "KVM:VMX: Add support for Pause Loop Exiting"
+> http://www.mail-archive.com/kvm@vger.kernel.org/msg23089.html
+> 
+> -Mark Langsdorf
+> Operating System Research Center
+> AMD
+> 
+> Signed-of-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-One problem with this patch is that it conflicts with the way graphics 
-drivers traditionally handles
-the situation, namely
-
-1) Set up mtrr
-2) Map. If fallback to uncached minus we will still have write-combined 
-access.
-
-I think mtrr-add used in this fashion will typically fail due to the 
-alignment constraints. In particular,
-for set_memory_wc() the typical usage pattern is a large number of pages 
-in a fragmented physical address space.
-
-So if we were to fix the problem with libpciaccess in the kernel, I 
-think the best option would be to fail the user-space mapping when we 
-can't make it write-combined.
-
-Thanks,
-Thomas
-
-Thomas Schlichter wrote:
-> Hi,
->
-> when I first sent this E-Mail on Saturday, I unfortunately forgot to CC many 
-> people. Now I used get_maintainer.pl to get the list of people that may want 
-> to contribute to this topic.
->
-> Because of this topic, there is already a patch from Arjan in the -tip tree to 
-> make PAT and MTRR options only configurable if EMBEDDED and enabled by 
-> default. I think this is a step in the right direction, but at least Henrique, 
-> Robert and I seem to think something like the attached patch is still 
-> required. What do you think?
->
-> Kind regards,
->   Thomas
->
-> -----------------------------------------------------------------------------
->
-> Hi,
->
-> I've found a problem with X.org not setting up MTRR for the framebuffer 
-> memory. After I investigated I think this is not a X.org problem, but a kernel 
-> issue.
->
-> X.org uses libpciaccess to map the framebuffer memory. This library opens 
-> /sys/bus/pci/devices/*/resource0_wc and mmaps the memory. Unfortunately, the 
-> kernel only enables write combining if PAT is enabled, if it is not, the 
-> memory is mmapped uncached. But Xorg (respectively libpciaccess) thinks it was 
-> successfully mapped with write combining enabled and thus does not 
-> additionally set up MTRR entries.
->
-> The corresponding libpciaccess code can be found here:
->   http://cgit.freedesktop.org/xorg/lib/libpciaccess/tree/src/linux_sysfs.c#n501
->
-> If the kernel behavior is intentional and X.org should always set up MTRR 
-> entries, why should it use /sys/.../resource0_wc at all? I think there are 2 
-> possibilities to make the kernel behavior consistent:
->
->  1. The mmap_wc should fail if PAT is not enabled.
->     (libpciaccess will then map the framebuffer uncached and set up
->      MTRR entries)
->  2. Use MTRR to enable write combining if PAT is not available.
->
-> In an earlier thread about ioremap_wc, Arjan van de Ven wrote that option 2 is 
-> preferred over option 1:
->
->     http://lkml.indiana.edu/hypermail/linux/kernel/0805.3/2925.html
->
-> So, I've created the attached patch implementing option 2. For me this solves 
-> the problem with the slow Video playback due to not correctly set up MTRR 
-> entries.
->
-> Kind regards,
-> Thomas Schlichter
->   
+Applied, thanks.
 
