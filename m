@@ -1,74 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933318AbZJLVuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933323AbZJLVtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933318AbZJLVuw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932179AbZJLVuv
+	id S933323AbZJLVtz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933304AbZJLVty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:50:51 -0400
-Received: from radagast.issp.eu ([86.59.99.45]:45313 "EHLO radagast.issp.eu"
+	Mon, 12 Oct 2009 17:49:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36431 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758414AbZJLVuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:50:50 -0400
-Message-ID: <20091012235013.16174ciovvwpw70g@www.kundendienste.net>
-Date: Mon, 12 Oct 2009 23:50:13 +0200
-From: lkml@makubi.at
-To: arndbergmann@googlemail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: DHCP and iptables
+	id S932559AbZJLVtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:49:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Jan Beulich" <JBeulich@novell.com>
+Subject: Re: [Bug #14279] Suspend to RAM freeze totally since 2.6.32-rc1 - Acer Aspire 1511Lmi laptop
+Date: Mon, 12 Oct 2009 23:50:49 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Christian Casteyde" <casteyde.christian@free.fr>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera> <r-4Wjt4coy.A.WZE.Abl0KB@chimera> <4AD30073020000780001938F@vpn.id2.novell.com>
+In-Reply-To: <4AD30073020000780001938F@vpn.id2.novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=UTF-8;
- DelSp="Yes";
- format="flowed"
-Content-Disposition: inline
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.3.4)
+Message-Id: <200910122350.49533.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, I just looked for "ethernet protocol" and read some things about  
-DHCP again.
+On Monday 12 October 2009, Jan Beulich wrote:
+> The issue is still present, albeit a patch (available in the bugzilla entry) had
+> been posted on Oct 6th. Jan
 
-What's an ethernet protocol?
+Thanks for the update.  I saw the patch go into the tip tree a few moments ago.
 
-I also read, that "DHCP is built directly on UDP and IP" (RFC 2131).
-
-It uses Ports (UDP 67/68) and the source address of the DHCP server is  
-an IP address.
-
-Could you answer me more in detail, why I get an IP, but block  
-everything with iptables?
-
-Sincerely yours Mathias Kub
-
---------------------
-12.10.2009 Mathias Kub <lkml@makubi.at>
-
-|   Thank you very much for that quick reply.
-|
-|   Yours Mathias Kub
-|
-|   --------------------
-|   12.10.2009 Arnd Bergmann <arndbergmann@googlemail.com>
-|
-|   |   On Monday 12 October 2009, lkml@makubi.at wrote:
-|   |   > The last few days I have been wondering about the fact, that I get
-|   |   > an IP address via
-|   |   > DHCP if all chains at iptables are set to drop and no accept rules
-|   |   > set.
-|   |   >
-|   |   > Does this happen on purpose?
-|   |
-|   |   DHCP is an ethernet protocol, not an IP protocol, so you have to use
-|   |   ebtables instead of iptables to filter it.
-|   |
-|   |   	Arnd <><
-|
-|   --
-|   To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-|    in the body of a message to majordomo@vger.kernel.org
-|   More majordomo info at  http://vger.kernel.org/majordomo-info.html
-|   Please read the FAQ at  http://www.tux.org/lkml/
-|
-
+Best,
+Rafael
