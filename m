@@ -1,54 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZJLOEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbZJLORh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbZJLOEf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 10:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756668AbZJLOEe
+	id S1756803AbZJLORh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 10:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbZJLORg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 10:04:34 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:10641 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756659AbZJLOEd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 10:04:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=MWAKBV59uKGR0wFEZB8ueV3VfUehxo1Qh355xSN+aDzopcZGd4PkOXPIN0R+QfKyH0
-         cVn8ew7yChzKsR0JsffVbzBXeuc+GRy5+l4A+m1T0KT0OBQ7Un6+VJFEHPwcgfcTDthi
-         P+dDUo8ErOJruZKKt0W3V4G/rGtR4oa0p7SMU=
-Message-ID: <4AD33958.7020900@gmail.com>
-Date: Mon, 12 Oct 2009 16:12:40 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Mon, 12 Oct 2009 10:17:36 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:39808 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754231AbZJLORg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 10:17:36 -0400
+Message-ID: <4AD33A4D.4070006@us.ibm.com>
+Date: Mon, 12 Oct 2009 07:16:45 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: alek.du@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] gpio: Fix test on unsigned in lnw_irq_type()
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeremy Leibs <leibs@willowgarage.com>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Blaise Gassend <blaise@willowgarage.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: ERESTARTSYS escaping from sem_wait with RTLinux patch
+References: <1255165747.6385.117.camel@doodleydee> <alpine.LFD.2.00.0910101931080.9428@localhost.localdomain> <92be2ef30910102248t70d5e683tc525580fbf902af1@mail.gmail.com>
+In-Reply-To: <92be2ef30910102248t70d5e683tc525580fbf902af1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The wrong test was used, gpio is unsigned.
+Jeremy Leibs wrote:
+> On Sat, Oct 10, 2009 at 10:59 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>> Blaise,
+>>
+>> On Sat, 10 Oct 2009, Blaise Gassend wrote:
+>>> 1) Where is the ERESTARTSYS being prevented from getting to user space?
+>>>
+>>> The only likely place I see for preventing ERESTARTSYS from escaping to
+>>> user space is in arch/*/kernel/signal*.c. However, I don't see how the
+>>> code there is being called if there no signal pending. Is that a path
+>>> for ERESTARTSYS to escape from the kernel?
+>>>
+>>> The following comment in kernel/futex.h in futex_wait makes me wonder if
+>>> two threads are getting marked as ERESTARTSYS. The first one to leave
+>>> the kernel processes the signal and restarts. The second one doesn't
+>>> have a signal to handle, so it returns to user space without getting
+>>> into signal*.c and wreaks havoc.
+>>>
+>>>     (...)
+>>>         /*
+>>>          * We expect signal_pending(current), but another thread may
+>>>          * have handled it for us already.
+>>>          */
+>>>         if (!abs_time)
+>>>                 return -ERESTARTSYS;
+>>>     (...)
+>> If the task is woken by a signal, then the task private flag
+>> TIF_SIGPENDING is set, but in case of a process wide signal the signal
+>> might have been handled by another thread of the same process before
+>> that thread reaches the signal handling code, but then ERESTARTSYS is
+>> handled gracefully. So you seem to trigger a code path which does not
+>> go through do_signal.
+>>
+>>> 2) Why would this be happening only with RT kernels?
+>> Slightly different timing and locking semantics.
+>>
+>>> 3) Any suggestions on the best place to patch/workaround this?
+>>>
+>>> My understanding is that if I was to treat ERESTARTSYS as an EAGAIN,
+>>> most applications would be perfectly happy. Would bad things happen if I
+>>> replaced the ERESTARTSYS in futex_wait with an EAGAIN?
+>> No workarounds please. We really want to know what's wrong.
+>>
+>> Two things to look at:
+>>
+>> 1) Does that happen with 2.6.31.2-rt13 as well ?
+>>
+>> 2) Add a check to the code path where ERESTARTSYS is returned:
+>>
+>>   if (!signal_pending(current))
+>>      printk(KERN_ERR ".....");
+>>
+> 
+> Ok, in 2.6.31.2-rt13, I modified futex.c as:
+> -----
+>         /*
+>          * We expect signal_pending(current), but another thread may
+>          * have handled it for us already.
+>          */
+>         ret = -ERESTARTSYS;
+>         if (!abs_time)
+>           {
+>             if (!signal_pending(current))
+>               printk(KERN_ERR ".....");
+>             goto out_put_key;
+>           }
+> -----
+> 
+> Then when I cause the crash:
+> 
+> leibs@c1:~$ python threadprocs8.py
+> sem_wait: Unknown error 512
+> Segmentation fault
+> 
+> dmesg shows me the corresponding:
+> [   82.232999] .....
+> [   82.233177] python[2834]: segfault at 48 ip 00000000004b0177 sp
+> 00007f9429788ad8 error 4 in python2.6[400000+216000]
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/gpio/langwell_gpio.c b/drivers/gpio/langwell_gpio.c
-index 5711ce5..0d0cbc0 100644
---- a/drivers/gpio/langwell_gpio.c
-+++ b/drivers/gpio/langwell_gpio.c
-@@ -123,8 +123,11 @@ static int lnw_irq_type(unsigned irq, unsigned type)
- 	void __iomem *grer = (void __iomem *)(&lnw->reg_base->GRER[reg]);
- 	void __iomem *gfer = (void __iomem *)(&lnw->reg_base->GFER[reg]);
- 
--	if (gpio < 0 || gpio > lnw->chip.ngpio)
-+	if (irq < lnw->irq_base || gpio > lnw->chip.ngpio ||
-+			reg >= ARRAY_SIZE(lnw->reg_base->GRER)
-+			reg >= ARRAY_SIZE(lnw->reg_base->GFER))
- 		return -EINVAL;
-+
- 	spin_lock_irqsave(&lnw->lock, flags);
- 	if (type & IRQ_TYPE_EDGE_RISING)
- 		value = readl(grer) | BIT(gpio % 32);
+
+OK, so I suspect one of two things.
+
+1) Recent changes to futex.c have somehow created a wakeup race and
+    unqueue_me() doesn't detect it was woken with FUTEX_WAKE, then falls
+    out through the ERESTARTSYS path.
+
+2) Recent changes have exposed an existing race in unqueue_me().
+
+I'll do some runs on my 8-way systems and see if I can:
+o Identify the guilty patch
+o Identify the race in question
+
+Thanks for the test case! Now... why is sem_wait() being used in a timer 
+call....
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
