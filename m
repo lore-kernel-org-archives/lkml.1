@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751345AbZJLETJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751386AbZJLEgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751345AbZJLETJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 00:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbZJLETI
+	id S1751386AbZJLEgm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 00:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZJLEgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 00:19:08 -0400
-Received: from mail-qy0-f172.google.com ([209.85.221.172]:40092 "EHLO
-	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbZJLETH (ORCPT
+	Mon, 12 Oct 2009 00:36:41 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:7807 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbZJLEgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 00:19:07 -0400
+	Mon, 12 Oct 2009 00:36:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=CZBcPEIt1A/sepqBNV7U925+EPMGRWZn/WQlTGW6CGsejPObYXD9AWkOYwgu1/gHjW
-         Zmgrdco0Ky1ollmn7kwQ1R7gHf2/Rp0JjtGmfJEvpgUtr9n4PWctA3kMXD0I2t70KQmy
-         /3J6mN2tHdO2htOrjRwEogLZGdt0pklTonq2g=
-From: Stephen Boyd <bebarino@gmail.com>
-To: linux-pci@vger.kernel.org
-Cc: David Woodhouse <David.Woodhouse@intel.com>, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] pci/dmar: fix section mismatch in dmar_ir_support()
-Date: Sun, 11 Oct 2009 21:20:49 -0700
-Message-Id: <1255321249-25546-1-git-send-email-bebarino@gmail.com>
-X-Mailer: git-send-email 1.6.5.195.geae96
-In-Reply-To: <1254543340-4473-1-git-send-email-bebarino@gmail.com>
-References: <1254543340-4473-1-git-send-email-bebarino@gmail.com>
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=tRv6m6gj88TAI1+hMfDbc1R2TfsWtHRsAuSfByeRtyitqicow6KvlQ9Qfvf3wfnhLs
+         JSrw1IZgvzzMt074YBREE0x84gsSf4b1bYyBLPBTz/GHzjK7gCf4b/3Xv8JVBEvOzj0v
+         J4S5JmTNjGLLoyJmspNUQWJzNg/WRocC3xzl8=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work anymore
+Date: Sun, 11 Oct 2009 21:35:29 -0700
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3; KDE/4.3.1; x86_64; ; )
+Cc: "?ric Piel" <Eric.Piel@tremplin-utc.net>,
+       Dmitry Torokhov <dtor@insightbb.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+References: <4AD120F2.3020606@tremplin-utc.net> <20091011030029.GA6526@suse.de>
+In-Reply-To: <20091011030029.GA6526@suse.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200910112135.29384.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dmar_ir_support() references dmar_tbl which is annotated with
-__initdata. The only caller of dmar_ir_support() is
-intr_remapping_supported() also annotated with __init. Therefore add the
-__init annotation to dmar_ir_support().
+On Saturday 10 October 2009 08:00:29 pm Greg KH wrote:
+> On Sun, Oct 11, 2009 at 02:04:02AM +0200, ?ric Piel wrote:
+> > Hello,
+> >
+> > After a suspend, I used to do this (to get the PS2 keyboard working
+> > again), and it used to work fine:
+> > echo -n "i8042" > /sys/bus/platform/drivers/i8042/unbind ; sleep 1 ; echo
+> > -n "i8042" > /sys/bus/platform/drivers/i8042/bind
+> >
+> > Unfortunately since 2.6.32-rc1, the unbind works fine, but the bind
+> > returns a "no such device" error now (and the binding is not done). After
+> > that, additional unbinds also report the error. I think 2.6.31 worked
+> > fine. Any idea what's going wrong?
+> 
+> Odd.  Any chance you can run 'git bisect' to figure out which patch
+> might have caused it?
 
-WARNING: drivers/pci/built-in.o(.text+0xa110): Section mismatch in
-reference from the function dmar_ir_support() to the variable
-.init.data:dmar_tbl
-The function dmar_ir_support() references
-the variable __initdata dmar_tbl.
-This is often because dmar_ir_support lacks a __initdata
-annotation or the annotation of dmar_tbl is wrong.
----
+I8042 has been converted to use platform_driver_probe() - we are creating 
+platform device and platform driver together, there is no chance that some 
+other device might be driven by i8042 driver.
 
-I sent this a week back but it looks like it didn't stick. Hopefully it
-does this time.
+Eric, do you still need to fiddle with i8042 to get your keyboard working with 
+2.6.32-rc3? We need to make sure that resube works without users needing to 
+mess with bind/unbind.
 
- drivers/pci/dmar.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index 14bbaa1..fbca5e7 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -1327,7 +1327,7 @@ int dmar_reenable_qi(struct intel_iommu *iommu)
- /*
-  * Check interrupt remapping support in DMAR table description.
-  */
--int dmar_ir_support(void)
-+int __init dmar_ir_support(void)
- {
- 	struct acpi_table_dmar *dmar;
- 	dmar = (struct acpi_table_dmar *)dmar_tbl;
 -- 
-1.6.5.195.geae96
-
+Dmitry
