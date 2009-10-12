@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933552AbZJLWhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933481AbZJLWmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933552AbZJLWhq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 18:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933533AbZJLWhp
+	id S933481AbZJLWmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 18:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933085AbZJLWmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 18:37:45 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38946 "EHLO mx2.suse.de"
+	Mon, 12 Oct 2009 18:42:18 -0400
+Received: from radagast.issp.eu ([86.59.99.45]:48872 "EHLO radagast.issp.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933526AbZJLWho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 18:37:44 -0400
-Date: Tue, 13 Oct 2009 00:37:07 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Luming Yu <luming.yu@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [trivial PATCH] fix typo in nmi.c of apic
-In-Reply-To: <20091012202613.GB7648@elte.hu>
-Message-ID: <alpine.LSU.2.00.0910130031420.19284@wotan.suse.de>
-References: <3877989d0909102303m31066b01he38e8a295995c430@mail.gmail.com> <alpine.LSU.2.00.0910091706350.19284@wotan.suse.de> <20091012202613.GB7648@elte.hu>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	id S932301AbZJLWmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 18:42:18 -0400
+Message-ID: <20091013004140.84685h783tt8jfcw@www.kundendienste.net>
+Date: Tue, 13 Oct 2009 00:41:40 +0200
+From: lkml@makubi.at
+To: Arnd Bergmann <arndbergmann@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: DHCP and iptables
+References: <20091012235013.16174ciovvwpw70g@www.kundendienste.net>
+ <200910130008.57174.arnd@arndb.de>
+In-Reply-To: <200910130008.57174.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+ charset=UTF-8;
+ DelSp="Yes";
+ format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.3.4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009, Ingo Molnar wrote:
+Well, but for example ICMP also uses raw sockets and gets blocked if I  
+do not explicit allow it, doesn't it?
 
-> > > I came across x86/kernel/apic/nmi.c and found several typo.
-> > > It's trivial in terms of doing nothing on changing execution logic.
-> > I'd rather go this through x86 tree. Adding Ingo.
-> > 
-> > > Ps. The patch is enclosed in attachment. The inline one
-> > > is c&p of it for reading.
-> > > 
-> > > 
-> > > Thanks,
-> > > Luming
-> > > 
-> > > Signed-off-by: Yu Luming <luming.yu@intel.com>
-> > > 
-> > >  nmi.c |   18 +++++++++---------
-> > >  1 file changed, 9 insertions(+), 9 deletions(-)
-> > > 
-> > > diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
-> > > index b3025b4..9ff1f6d 100644
-> > > --- a/arch/x86/kernel/apic/nmi.c
-> > > +++ b/arch/x86/kernel/apic/nmi.c
-> > > @@ -121,7 +121,7 @@ static void report_broken_nmi(int cpu, unsigned
-> > > int *prev_nmi_count)
-> > >  	atomic_dec(&nmi_active);
-> > >  }
-> > > 
-> > > -static void __acpi_nmi_disable(void *__unused)
-> > > +static void __apic_nmi_disable(void *__unused)
-> 
-> that's correctly named, as a 'git grep acpi_nmi_disable' should reveal.
+> On Monday 12 October 2009, lkml@makubi.at wrote:
+>> Well, I just looked for "ethernet protocol" and read some things about
+>> DHCP again.
+>>
+>> What's an ethernet protocol?
+>>
+>> I also read, that "DHCP is built directly on UDP and IP" (RFC 2131).
+>>
+>> It uses Ports (UDP 67/68) and the source address of the DHCP server is
+>> an IP address.
+>
+> Ah, right. I confused it with the way that the ancient RARP protocol did
+> this before DHCP.
+>
+> Sorry for the confusion.
+>
+>> Could you answer me more in detail, why I get an IP, but block
+>> everything with iptables?
+>
+> The dhcp client opens a raw packet socket at the ethernet device
+> (if I'm not mistaken again), because there is no IP address assigned
+> with the netdev at that time. This allows it to send and receive
+> ethernet frames, bypassing the TCP/IP stack.
+>
+> 	Arnd <><
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-I actually think that Luming Yu is right that the function is misnamed. 
-What does it have to do with ACPI?
 
-All we do here is disable the NMI/LVT flags on the corresponding APIC. No 
-ACPI involved.
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
