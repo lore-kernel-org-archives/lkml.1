@@ -1,138 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbZJLSoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbZJLSrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757860AbZJLSoU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 14:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbZJLSoT
+	id S1757870AbZJLSrM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 14:47:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757830AbZJLSrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 14:44:19 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:45693 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757769AbZJLSoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 14:44:18 -0400
-Date: Mon, 12 Oct 2009 19:43:44 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Frans Pop <elendil@planet.nl>
-Cc: David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Karol Lewandowski <karol.k.lewandowski@gmail.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>, linux-mm@kvack.org
-Subject: Re: [Bug #14141] order 2 page allocation failures in iwlagn
-Message-ID: <20091012184344.GG8200@csn.ul.ie>
-References: <3onW63eFtRF.A.xXH.oMTxKB@chimera> <200910120110.28061.elendil@planet.nl> <20091012134328.GB8200@csn.ul.ie> <200910121932.14607.elendil@planet.nl>
+	Mon, 12 Oct 2009 14:47:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46302 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757815AbZJLSrL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 14:47:11 -0400
+Date: Mon, 12 Oct 2009 11:45:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Koskinen Aaro (Nokia-D/Helsinki)" <aaro.koskinen@nokia.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] panic.c: export panic_on_oops
+In-Reply-To: <20091012182346.GH17138@elte.hu>
+Message-ID: <alpine.LFD.2.01.0910121130190.3438@localhost.localdomain>
+References: <20091012113758.GB11035@elte.hu> <20091012140149.6789efab@marrow.netinsight.se> <20091012120951.GA16799@elte.hu> <1255349748.10605.13.camel@macbook.infradead.org> <20091012122023.GA19365@elte.hu> <20091012150650.51a4b4dc@marrow.netinsight.se>
+ <20091012131528.GC25464@elte.hu> <20091012153937.0dcd73e5@marrow.netinsight.se> <alpine.LFD.2.01.0910120828390.3438@localhost.localdomain> <20091012110954.67d7d8d8.akpm@linux-foundation.org> <20091012182346.GH17138@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200910121932.14607.elendil@planet.nl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 07:32:11PM +0200, Frans Pop wrote:
-> On Monday 12 October 2009, Mel Gorman wrote:
-> > Maybe. Your commit id's are different to what I see. Maybe it's because
-> > your tree has been shuffled around a bit
-> 
-> No, the commit IDs should be identical. My tree is just plain mainline.
-> 
-> Just to make sure... You did remove the "g" from the IDs, right?
-> So v2.6.30-rc6-1103-gb1bc81a becomes 'b1bc81a' and if you do
-> 'git describe b1bc81a' you really should end up with the same IDs I have.
-> 
 
-Bah, that's what I was doing all right. No excuse, that was just plain
-stupid of me.
 
-> > but after some digging around in this general area, I saw this patch
-> >
-> > 4752c93c30 iwlcore: Allow skb allocation from tasklet
+On Mon, 12 Oct 2009, Ingo Molnar wrote:
 > 
-> That is v2.6.30-rc6-773-g4752c93, which is part of the first wireless
-> merge I tested and where I saw no issues. But see below.
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > Perhaps oops_enter() is a good place to mark the start of the log, and 
+> > flush it within oops_exit().
 > 
+> Simplest would be to do the last 2K in oops_exit()? That gives the oops, 
+> and the history leading up to it. Since the blocking is 2K, the extra 
+> log output is for free.
 
-While there were no issues at that point, I think it might have been the
-beginning of a few patches that made things progressively worse. It is
-possible there is more than one patch causing trouble here and bisecting
-each of them is unlikely to be an option. More on this later though.
+I agree, except I don't think it should be fixed to 2k.
 
-> > This patch increases the number of GFP_ATOMIC allocations that can occur
-> > by allocating GFP_ATOMIC in some cases and GFP_KERNEL in others.
-> > Previously, only GFP_KERNEL was used and I didn't realise this
-> > allocation method was so recent. Problems of this sort have cropped up
-> > before and while there are later changes that suppress some of these
-> > warnings, I believe this is a strong candidate for where the allocation
-> > failures started appearing.
-> >
-> > > v2.6.30-rc6-1032-g7ba10a8       mac80211: fix transposed min/max CW values
-> > >     1.13    -
-> > >     This is a bugfix for aa837ee1d from an earlier merge! Could this maybe
-> 
-> There's a typo here. That ID should be: aa837e1d.
-> 
-> > >     influence the test results in between? There are various SKB related
-> > >     changes there, for example: dfbf97f3..e5b9215e.
-> > > v2.6.30-rc6-1037-g2c5b9e5	wireless: libertas: fix unaligned accesses
-> > > 	1.12    +-
-> > > v2.6.30-rc6-1044-g729e9c7	cfg80211: fix for duplicate userspace replies
-> > >     1.10    +- 
-> > > v2.6.30-rc6-1075-gc587de0	iwlwifi: unify station management
-> > >     1.9     ++-|+-
-> > > v2.6.30-rc6-1076-gd14d444	iwl3945: port allow skb allocation in tasklet
-> > >     I thought this was a prime candidate, but as you can see 
-> > >     several commits before failed too. Still worth looking at I think!
-> >
-> > Your commit IDs are different to what I see but it's the commit merge at
-> > b1bc81a0ef86b86fa410dd303d84c8c7bd09a64d. I agree that the last commit
-> > (d14d44407b9f06e3cf967fcef28ccb780caf0583) could make the problem worse
-> > because it expands the use of GFP_ATOMIC for another driver.
-> 
-> No, that was a mistake of mine. d14d444 is in a driver I don't even compile.
-> The one you identified (which is the same change for iwlagn) is much more
-> interesting.
-> 
+We should just dump as much as is "appropriate" for the dump device. It 
+might be the last 2kB, it might be 8kB, it might be 64kB. We don't know, 
+we don't care. The device may have its own per-device limits. Any extra 
+data we get from before the oops is just gravy (often there might be 
+interestign warning messages leadign up to the dump), and if the oops is 
+too big for the dump device, it's not something we can do anything about 
+anyway.
 
-I had forgotten what model your card was and assumed it must have been based
-on this driver for the problem to get worse for you that point.
+So the logic should literally be something like this:
 
-> I really do think that v2.6.30-rc6-1032-g7ba10a8 could play a role here.
-> That's a fix for v2.6.30-rc1-1131-gaa837e1. So that bug was introduced
-> _before_ the merge 82d0481 and may thus well explain both the latencies I
-> saw _and_ why that merge tested without problems. And that would also go a
-> long way to explain my test results.
+ - kernel/printk.c:
 
-Very good point.
+	void dump_kmsg(void)
+	{
+		unsigned long len = ACCESS_ONCE(log_end);
+		struct dump_device *dump;
+		const char *s1, *s2;
+		unsigned long l1, l2;
 
-> So I'm going to retest 82d0481 with 7ba10a8 cherry-picked on top.
-> 
+		s1 = "";
+		l1 = 0;
+		s2 = log_buf;
+		l2 = len;
 
-Great.
+		/* Have we rotated around the circular buffer? */
+		if (len > log_buf_len) {
+			unsigned long pos = (len & LOG_BUF_MASK);
 
-> > > BISECTION of akpm (mm) MERGE
-> > > ----------------------------
-> [...]
-> > While I didn't spot anything too out of the ordinary here, they did
-> > occur shortly after a number of other page allocator related patches. 
-> > One small thing I noticed there is that kswapd is getting woken up less
-> > now than it did previously. Generally, I wouldn't have expected it to
-> > make a difference but it's possible that kswapd is not being woken up to
-> > reclaim at a higher order than it was previously. I have a patch for
-> > this below. It'd be nice if you could apply it and see do fewer
-> > allocation failures occur on current mainline.
-> 
-> I'll give that patch a try and report back.
-> 
+			s1 = log_buf + pos;
+			l1 = log_buf_len - pos;
 
-Thanks a lot.
+			s2 = log_buf;
+			l2 = pos;
+		}
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+		list_for_each_entry (dump, dump_list, list) {
+			dump->fn(s1, l1, s2, l2);
+		}
+	}
+
+ie we just always give the whole buffer (as two "sections", since it's a 
+circular buffer) to the dumper, and then the dumper can decide how much of 
+those buffers it is able to dump sanely.
+
+If the dumper has some hardware limitation where it can only dump a single 
+aligned block, it can decide to just look at <s2,l2> which is the "latter" 
+part of the dump. It's usually going to be fine, and it should be 
+page-aligned (and you can even round up the size to a page, since the 
+worst that can happen is that you'll see some old printk output at the 
+end)
+
+Look ma, no locking, no buffer allocations, no nothing.
+
+			Linus
