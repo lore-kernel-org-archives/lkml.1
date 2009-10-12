@@ -1,107 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbZJLPge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbZJLPN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757214AbZJLPge (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbZJLPgd
+	id S932564AbZJLPN3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932508AbZJLPN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:36:33 -0400
-Received: from adsl-67-113-118-6.dsl.sndg02.pacbell.net ([67.113.118.6]:52681
-	"EHLO multivac.one-eyed-alien.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756090AbZJLPgd (ORCPT
+	Mon, 12 Oct 2009 11:13:28 -0400
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:49258 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932241AbZJLPN1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:36:33 -0400
-X-Greylist: delayed 1336 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 Oct 2009 11:36:32 EDT
-Date: Mon, 12 Oct 2009 08:12:43 -0700
-From: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ben Efros <ben@pc-doctor.com>,
-       Josua Dietze <digidietze@draisberghof.de>,
-       fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Hugh Blemings <hugh@blemings.org>
-Subject: Re: USB serial regression 2.6.31.1 -> 2.6.31.2 [PATCH]
-Message-ID: <20091012151243.GF24502@one-eyed-alien.net>
-Mail-Followup-To: Alan Stern <stern@rowland.harvard.edu>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Ben Efros <ben@pc-doctor.com>,
-	Josua Dietze <digidietze@draisberghof.de>,
-	fangxiaozhi <huananhu@huawei.com>, Greg KH <greg@kroah.com>,
-	Kernel development list <linux-kernel@vger.kernel.org>,
-	USB list <linux-usb@vger.kernel.org>,
-	Hugh Blemings <hugh@blemings.org>
-References: <1255326252.2192.110.camel@pasglop> <Pine.LNX.4.44L0.0910121052550.11420-100000@netrider.rowland.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="dWYAkE0V1FpFQHQ3"
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0910121052550.11420-100000@netrider.rowland.org>
-User-Agent: Mutt/1.4.2.3i
-Organization: One Eyed Alien Networks
-X-Copyright: (C) 2009 Matthew Dharm, all rights reserved.
-X-Message-Flag: Get a real e-mail client.  http://www.mutt.org/
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (multivac.one-eyed-alien.net [127.0.0.1]); Mon, 12 Oct 2009 08:12:44 -0700 (PDT)
+	Mon, 12 Oct 2009 11:13:27 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4AD3477D.4020904@cam.ac.uk>
+Date: Mon, 12 Oct 2009 16:13:01 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091007)
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       "Michele De Candia (VT)" <michele.decandia@valueteam.com>,
+       Linux I2C <linux-i2c@vger.kernel.org>
+Subject: Re: [PATCH] ALS: TSL2550 driver move from i2c/chips
+References: <4ACF4AC6.7070802@cam.ac.uk> <20091010183347.52b043ed@hyperion.delvare>
+In-Reply-To: <20091010183347.52b043ed@hyperion.delvare>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jean,
+> 
+> On Fri, 09 Oct 2009 15:37:58 +0100, Jonathan Cameron wrote:
+>> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+>>
+>> ---
+>> Minimal changes made. Untested due to lack of hardware.
+>> All comments welcome.
+> 
+> Thanks for working on this. I can do any amount of testing you want, as
+> I have received a TSL2550 evaluation module from TAOS.
+> 
+>> illuminance is already documented as part of the class.
+>> operating mode and power state are both as per the original
+>> driver. I can't find any documentation for them, but if people
+>> want it I can probably figure out what they are from
+>> the data sheet.
+> 
+> The operating mode selects the measurable range. Standard range is from
+> 0 to 1846 lux, extended range is from 0 to 9230 lux, with a resolution
+> divided by 5. Extended mode is also 5 times faster.
+> 
+> What do we want to do with this? I am open to suggestions. There are
+> several possibilities. The operating mode could be provided as platform
+> data and stay internal to the driver. Or we can leave is visible to
+> user-space, in which case I'd recommend that we do so in terms of
+> "range" rather than "mode", so that other drivers can use the same
+> convention, whatever it becomes. For example, one would write the range
+> of values he/she wants to be able to measure and the driver would put
+> the device in the most appropriate mode.
+That sounds like a sensible approach.  For now I guess a sysfs parameter
+like illuminance_range_max would do the job and we can add a min for any
+device that features an offset?
+> 
+> Alternatively (or additionally), we could implement an automatic mode
+> which would change the mode dynamically based on the previous
+> measurement. I've done that for one hwmon driver (for fan speed
+> measurement) and it works very well, if implemented properly.
+Could do.  Maybe put it in as manual for now and leave the automatic
+mode for a later date?
+> 
+>> Might be worth dropping the power state control and moving
+>> over to runtime pm but that is definitely the topic for another
+>> patch.
+> 
+> Power state control is already integrated into the PM framework
+> (suspend and resume, is there more?) The sysfs entry is to allow a
+> manual control on top of it. I don't much like having a custom sysfs
+> entry for this, but I don't know if there is a standard way to achieve
+> the same?
+Not directly as far as I know. The runtime pm is more about buses figuring
+out if they can suspend (and take their children into suspend as well).
+Personally I haven't looked at the code for those buses that implement it
+yet to see exactly how it relates to fine grained control as here.
+For now lets leave this as it is with a plan to fix it later.
 
---dWYAkE0V1FpFQHQ3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I do notice that usb supports this sort of control by adding sysfs entries to
+the existing power sysfs attribute group.
+(curiously I think the relevant one is called level, so we would have
+/sys/bus/i2c/devices/*/power/level
 
-On Mon, Oct 12, 2009 at 10:58:40AM -0400, Alan Stern wrote:
-> On Mon, 12 Oct 2009, Benjamin Herrenschmidt wrote:
-> >=20
-> > Alan, what do you think ? I definitely don't like Ben E's most recent
-> > patch with a quirk for all devices, it's simply a lot more code for
-> > something that will come back and bite again when somebody does the
-> > same mistake again. I'd rather have the request sense code be more
-> > robust. But this patch is fine, as was my previous one.
->=20
-> I agree that it seems silly to have a flag _for_ SANE_SENSE and another=
-=20
-> flag _against_ SANE_SENSE.  Retrying seems easier and more robust.
+We could do the same... 
+> 
+>> Does anyone want a patch without using Git's move functionality?
+> 
+> Yes please!
+Will post next version. (thanks for the review based on the move version!)
+> 
+>> Have copied all the users Jean knows about, but please cc any other
+>> users as this does involve a change to the userspace interface.
+>>
+>> Applies on 2.6.31-rc3 with the ALS patches
+>> http://patchwork.kernel.org/patch/49153/
+>>
+>>  drivers/als/Kconfig                  |   14 ++++++
+>>  drivers/als/Makefile                 |    2 +
+>>  drivers/{i2c/chips => als}/tsl2550.c |   73 ++++++++++++++++++++++++++++++---
+>>  3 files changed, 82 insertions(+), 7 deletions(-)
+> 
 
-Dualing flags, where one is auto-set and the other quirked, is almost
-guaranteed to get us into a maintance nightmare.
-
-> > So it boils down on clearing SANE_SENSE vs. not clearing it. If we
-> > clear it, we probably want to keep it cleared (via an INSANE_SENSE
-> > flag ?). But on the other hand, I don't think that always going
-> > for a retry when a SANE_SENSE fails is going to hurt and sounds
-> > like the robust thing to do, so I don't mind that simple patch
-> > from Ben. So up to you :-)
->=20
-> I agree; it won't hurt much and only if the device is buggy to begin=20
-> with.
-
-I agree; the extra retry is more robust, more straightforward, and more
-maintainable long-term.
-
-Matt
-
---=20
-Matthew Dharm                              Home: mdharm-usb@one-eyed-alien.=
-net=20
-Maintainer, Linux USB Mass Storage Driver
-
-My mother not mind to die for stoppink Windows NT!  She is rememberink=20
-Stalin!
-					-- Pitr
-User Friendly, 9/6/1998
-
---dWYAkE0V1FpFQHQ3
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFK00drHL9iwnUZqnkRAiN7AKClmbRO4Xd6mzhtneKwV+q8lYkl+gCgqbUs
-Xyb6JL67iuTUS/Hk/gOy+LY=
-=X357
------END PGP SIGNATURE-----
-
---dWYAkE0V1FpFQHQ3--
