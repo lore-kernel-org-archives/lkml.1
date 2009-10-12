@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbZJLUZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbZJLTLB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758112AbZJLUZq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 16:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756996AbZJLUZq
+	id S1757942AbZJLTLB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 15:11:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757491AbZJLTLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 16:25:46 -0400
-Received: from kroah.org ([198.145.64.141]:41719 "EHLO coco.kroah.org"
+	Mon, 12 Oct 2009 15:11:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41253 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756887AbZJLUZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 16:25:45 -0400
-Date: Mon, 12 Oct 2009 12:13:42 -0700
-From: Greg KH <greg@kroah.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Stefan Lippers-Hollmann <s.L-H@gmx.de>, stable@kernel.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, mtosatti@redhat.com
-Subject: Re: [stable] patch
- kvm-svm-fix-tsc-offset-adjustment-when-running-nested.patch added to
- 2.6.31-stable tree
-Message-ID: <20091012191342.GA5482@kroah.com>
-References: <20091009223815.20569488DB@coco.kroah.org>
- <200910101540.06686.s.L-H@gmx.de>
- <20091012094151.GA32228@amd.com>
+	id S1757479AbZJLTK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 15:10:59 -0400
+Message-ID: <4AD37FEF.9050807@redhat.com>
+Date: Mon, 12 Oct 2009 15:13:51 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012094151.GA32228@amd.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [PATCH tracing/kprobes v3 4/7] tracing/kprobes: Avoid field	name
+ confliction
+References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222807.1684.26880.stgit@dhcp-100-2-132.bos.redhat.com> <20091012173752.GB5059@nowhere>
+In-Reply-To: <20091012173752.GB5059@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 11:41:51AM +0200, Joerg Roedel wrote:
-> All the nested stuff was moved into its own sub-struct in 2.6.32. Here
-> is a version that works with 2.6.31.3:
-> 
-> >From 4505a73070f341674e0d22a8c9ee51b2beeb843e Mon Sep 17 00:00:00 2001
+Frederic Weisbecker wrote:
+> The conflict issue might not be obvious for a user desperately trying to set
+> a kprobe. Even for other failcases, it might not be obvious (blacklisted
+> symbols, syntax errors...)
+>
+> May be should you improve the error granularity and print a KERN_DEBUG
+> message?
 
-Thanks, I've replaced the original patch with this version.
+Agreed, and kprobes error handling should be improved too (in the most cases,
+it just returns -EINVAL).
 
-greg k-h
+Thank you.
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
