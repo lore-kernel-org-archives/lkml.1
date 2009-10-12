@@ -1,69 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758506AbZJLWMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbZJLWPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758506AbZJLWMd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 18:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbZJLWMd
+	id S1758337AbZJLWPt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 18:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933459AbZJLWPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 18:12:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50152 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757242AbZJLWMc (ORCPT
+	Mon, 12 Oct 2009 18:15:38 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:23441 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933457AbZJLWPh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 18:12:32 -0400
-Date: Mon, 12 Oct 2009 15:11:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: alek.du@intel.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gpio: Fix test on unsigned in lnw_irq_type()
-Message-Id: <20091012151127.312c986a.akpm@linux-foundation.org>
-In-Reply-To: <4AD33958.7020900@gmail.com>
-References: <4AD33958.7020900@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 Oct 2009 18:15:37 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH] x86/pci: intel bus root res with IOH reading -v2
+Date: Mon, 12 Oct 2009 16:14:49 -0600
+User-Agent: KMail/1.9.10
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+References: <4AC97C00.7090503@kernel.org> <200910061257.54877.bjorn.helgaas@hp.com> <20091012203453.GC7648@elte.hu>
+In-Reply-To: <20091012203453.GC7648@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+To: "Undisclosed.Recipients:"@domain.invalid
+Message-Id: <200910121614.49826.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 Oct 2009 16:12:40 +0200
-Roel Kluin <roel.kluin@gmail.com> wrote:
+[Resending to linux-kernel and linux-pci because I fat-fingered
+something and introduced HTML, so the lists bounced it.]
 
-> The wrong test was used, gpio is unsigned.
+On Monday 12 October 2009 02:34:53 pm Ingo Molnar wrote:
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> diff --git a/drivers/gpio/langwell_gpio.c b/drivers/gpio/langwell_gpio.c
-> index 5711ce5..0d0cbc0 100644
-> --- a/drivers/gpio/langwell_gpio.c
-> +++ b/drivers/gpio/langwell_gpio.c
-> @@ -123,8 +123,11 @@ static int lnw_irq_type(unsigned irq, unsigned type)
->  	void __iomem *grer = (void __iomem *)(&lnw->reg_base->GRER[reg]);
->  	void __iomem *gfer = (void __iomem *)(&lnw->reg_base->GFER[reg]);
->  
-> -	if (gpio < 0 || gpio > lnw->chip.ngpio)
-> +	if (irq < lnw->irq_base || gpio > lnw->chip.ngpio ||
-> +			reg >= ARRAY_SIZE(lnw->reg_base->GRER)
-> +			reg >= ARRAY_SIZE(lnw->reg_base->GFER))
->  		return -EINVAL;
-> +
->  	spin_lock_irqsave(&lnw->lock, flags);
->  	if (type & IRQ_TYPE_EDGE_RISING)
->  		value = readl(grer) | BIT(gpio % 32);
+> * Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> 
+> > On Tuesday 06 October 2009 11:51:22 am Yinghai Lu wrote:
+> > > Bjorn Helgaas wrote:
+> > > > On Sunday 04 October 2009 10:54:24 pm Yinghai Lu wrote:
+> > > >> for intel system with multi IOH. we could read peer root resource from PCI conf,
+> > > >> and don't trust _CRS again for root bus
+> > > > 
+> > > > Ugh.  Are we going to end up with amd_bus.c, intel_bus.c, nvidia_bus.c,
+> > > > broadcom_bus.c, serverworks_bus.c, etc.?
+> > > only needed when you have muti ...
+> > 
+> > I think that translates to "yes, we will need all those bits as soon 
+> > as those vendors support larger systems with multiple IOHs."  And I 
+> > think that's the wrong answer.
+> 
+> Why is having cleanly separated per vendor information/driver wrong? I 
+> think it's the right answer in most cases. _Especially_ when the other 
+> option is to 'rely on the firmware'.
 
-Makes the code unfortunately complex.  It'd be better to make `gpio' a
-signed quantity, or even..
+For the patch in question, we don't even have a root cause for the bug
+(or at least, I couldn't decipher it from the changelog).  There's a
+reference to _CRS being wrong, but we don't currently use _CRS for
+x86 host bridges.
 
---- a/drivers/gpio/langwell_gpio.c~gpio-fix-test-on-unsigned-in-lnw_irq_type
-+++ a/drivers/gpio/langwell_gpio.c
-@@ -123,7 +123,7 @@ static int lnw_irq_type(unsigned irq, un
- 	void __iomem *grer = (void __iomem *)(&lnw->reg_base->GRER[reg]);
- 	void __iomem *gfer = (void __iomem *)(&lnw->reg_base->GFER[reg]);
- 
--	if (gpio < 0 || gpio > lnw->chip.ngpio)
-+	if ((s32)gpio < 0 || gpio > lnw->chip.ngpio)
- 		return -EINVAL;
- 	spin_lock_irqsave(&lnw->lock, flags);
- 	if (type & IRQ_TYPE_EDGE_RISING)
-_
+But in general, my objection is that even if BIOS provides perfectly
+valid information about host bridge apertures, the the fact that Linux
+ignores that information means we have to add this sort of vendor-
+specific code every time we trip over something.  And we're tripping
+over things quite often.
 
+Windows consumes this _CRS information, so while I grant there are
+certainly BIOS bugs there, I think most of the bugs are actually in
+Linux.
+
+> > > again we should trust HW conf than BIOS.
+> > 
+> > Certainly there's a tradeoff between a generic driver that relies on 
+> > the BIOS, and a platform-specific driver that uses only the hardware. 
+> > The first leaves us vulnerable to BIOS bugs, but the second leads to a 
+> > plethora of drivers that require updates as hardware changes.
+> 
+> We do that quite well in Linux - it's one of our main strengths.
+> 
+> Why should we have to rely on correct firmware? Why is it wrong to know 
+> about the hw's structure, to query the hardware and ignore the firmware 
+> if the hardware state tells us otherwise?
+
+If we need to learn something useful about the HW that the generic
+description isn't expressive enough to tell us, that's fine.  But
+that's not the case here -- all we need is the very simple description
+of the bridge apertures.  I object to the idea that "new machine X
+comes out, it has a correct ACPI description of the host bridges,
+let's go write some X-specific code so Linux can run on it."
+
+I *like* the idea of "new machine X comes out, oops, the BIOS is
+broken, let's write a quirk to work around the BIOS defect so Linux
+can run on it."  But I think this is actually less common than many
+people think, simply because most machines are tested with Windows,
+and that shakes out the most egregious BIOS bugs.
+
+Bjorn
