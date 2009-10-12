@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbZJLXjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbZJLX3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758664AbZJLXjY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 19:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758649AbZJLXjX
+	id S1758528AbZJLX3h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 19:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757627AbZJLX3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 19:39:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40709 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757315AbZJLXjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 19:39:20 -0400
-Date: Mon, 12 Oct 2009 16:26:07 -0700
-From: Greg KH <gregkh@suse.de>
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jing Huang <huangj@brocade.com>, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: Re: Moving drivers into staging (was Re: [GIT PULL] SCSI fixes for
- 2.6.32-rc3)
-Message-ID: <20091012232607.GB24254@suse.de>
-References: <alpine.LFD.2.01.0910081255510.3432@localhost.localdomain>
- <20091008210737.GD29181@mit.edu>
- <alpine.LFD.2.01.0910081410400.3432@localhost.localdomain>
- <20091009091538.GA4154@elte.hu>
- <1255097287.2934.21.camel@localhost.localdomain>
- <20091012130652.GB25464@elte.hu>
- <1255357148.2850.91.camel@localhost.localdomain>
- <20091012145453.GD4565@elte.hu>
- <20091012150911.GB1656@suse.de>
- <1255362186.2850.348.camel@localhost.localdomain>
+	Mon, 12 Oct 2009 19:29:37 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:2905 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbZJLX3g convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 19:29:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=GXQNdzJ0XQ6XynWvxDm6+MnAR/pZ7MltviXsYn8/AnyyY+Z0wE5rpSylyX44qNkxMR
+         Au35XJxEwixD3WDRcYY75iFkMSM35HugrmqT4v3xBakxDm4YdibgcNV92Mr0tVW5UWzs
+         ooLtdP3R4Um/yBFhl1DvwuxcoRR76qKp23RL0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255362186.2850.348.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20091012231211.GC18195@mit.edu>
+References: <94a0d4530910120651i18ce33d2k89abcd66d1b865a1@mail.gmail.com>
+	 <20091012222910.GB18195@mit.edu>
+	 <94a0d4530910121602i14f34150h18d388668fc355d9@mail.gmail.com>
+	 <20091012231211.GC18195@mit.edu>
+Date: Tue, 13 Oct 2009 02:27:48 +0300
+Message-ID: <94a0d4530910121627j74faac64l29169e17c0b2961b@mail.gmail.com>
+Subject: Re: Weird ext4 bug: 256P used?
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Theodore Tso <tytso@mit.edu>,
+       Felipe Contreras <felipe.contreras@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 10:43:06AM -0500, James Bottomley wrote:
-> If you want to make this a mandatory path for old drivers, then, I think
-> it's far too rigid, yes.   There's a huge amount of danger to changing
-> working drivers simply on grounds of code cleanup and that danger
-> increases exponentially as they get older and the hardware gets rarer.
-> Look at what happened to the initio driver in 2008 for instance.  That
-> was cleaned up by Alan Cox, no mean expert in the field, with the
-> assistance of a tester with the actual card, so basically a textbook
-> operation.  However, a bug crept in during this process that wasn't
-> spotted by the tester.  When it was spotted (bug report ~6 months later)
-> the original tester wasn't available and code inspection across the
-> cleanup was very hard.  Fortunately, the reporter was motivated to track
-> down and patch the driver, so it worked out all right in the end, but a
-> lot of bug reporters aren't so capable (or so motivated).  Plus most
-> clean up patches for old hardware tend only to be compile tested, so the
-> potential for bugs is far greater.
+On Tue, Oct 13, 2009 at 2:12 AM, Theodore Tso <tytso@mit.edu> wrote:
+> On Tue, Oct 13, 2009 at 02:02:31AM +0300, Felipe Contreras wrote:
+>>
+>> However, there's no file so big:
+>> ls -lh /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586
+>> total 12K
+>> -rw-r--r-- 1 root root 24 2009-07-27 20:52 from_repo
+>> -rw-r--r-- 1 root root  4 2009-07-27 20:52 reason
+>> -rw-r--r-- 1 root root  2 2009-07-27 20:52 releasever
+>>
+>> However, there's something messed up with the uid/gid:
+>>
+>> ls -ld /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586
+>> drwxr-xr-x 2 4294901760 16711680 4096 2009-07-27 20:52
+>> /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586
+>
+> OK, how about the output of
+>
+> stat /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.\
+> 0.0.72-fc5-i586
 
-I understand the potential for bugs, and am not saying to do this for
-all drivers, so it is not mandatory at all.
+stat /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586
+  File: `/var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586'
+  Size: 4096      	Blocks: 281470681743368 IO Block: 4096   directory
+Device: fe00h/65024d	Inode: 141257      Links: 2
+Access: (0755/drwxr-xr-x)  Uid: (4294901760/ UNKNOWN)   Gid: (16711680/ UNKNOWN)
+Access: 2009-10-12 16:36:22.326920328 +0300
+Modify: 2009-07-27 20:52:23.000000000 +0300
+Change: 2009-07-27 20:52:23.000000000 +0300
 
-I have just received a bunch of people asking me if we can use
-drivers/staging/ to get stuff that is known broken, or has other
-problems (style issues[1]), out into an area where people know it needs
-to be fixed up otherwise it will be dropped.
+> and
+>
+> stat /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.\
+> 0.0.72-fc5-i586/*
 
-thanks,
+stat /var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586/*
+  File: `/var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586/from_repo'
+  Size: 24        	Blocks: 8          IO Block: 4096   regular file
+Device: fe00h/65024d	Inode: 144750      Links: 1
+Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2009-07-27 20:52:23.931517024 +0300
+Modify: 2009-07-27 20:52:23.931517024 +0300
+Change: 2009-07-27 20:52:23.931517024 +0300
+  File: `/var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586/reason'
+  Size: 4         	Blocks: 8          IO Block: 4096   regular file
+Device: fe00h/65024d	Inode: 144824      Links: 1
+Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2009-07-27 20:52:23.931517024 +0300
+Modify: 2009-07-27 20:52:23.931517024 +0300
+Change: 2009-07-27 20:52:23.931517024 +0300
+  File: `/var/lib/yum/yumdb/s/160f96bb8689bae7bed1f8801385845d47913ace-skype-2.0.0.72-fc5-i586/releasever'
+  Size: 2         	Blocks: 8          IO Block: 4096   regular file
+Device: fe00h/65024d	Inode: 144913      Links: 1
+Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2009-07-27 20:52:23.931517024 +0300
+Modify: 2009-07-27 20:52:23.932517304 +0300
+Change: 2009-07-27 20:52:23.932517304 +0300
 
-greg k-h
-
-[1] No, floppy.c doesn't count, no matter how much people might want it
-    to :)
+-- 
+Felipe Contreras
