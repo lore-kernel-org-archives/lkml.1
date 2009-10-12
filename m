@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757395AbZJLRgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933018AbZJLR6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757395AbZJLRgy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 13:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757329AbZJLRgx
+	id S933018AbZJLR6r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 13:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933009AbZJLR6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 13:36:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35404 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757310AbZJLRgw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 13:36:52 -0400
-Date: Mon, 12 Oct 2009 10:35:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Woodhouse <david.woodhouse@intel.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@suse.de>,
+	Mon, 12 Oct 2009 13:58:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58473 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933007AbZJLR6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 13:58:45 -0400
+Date: Mon, 12 Oct 2009 10:35:51 -0700
+From: Greg KH <gregkh@suse.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.32-rc4: Reported regressions from 2.6.31
-In-Reply-To: <1255362962.32729.63.camel@macbook.infradead.org>
-Message-ID: <alpine.LFD.2.01.0910121028040.3438@localhost.localdomain>
-References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>  <alpine.LFD.2.01.0910111554400.3438@localhost.localdomain>  <1255342738.24732.265.camel@macbook.infradead.org>  <alpine.LFD.2.01.0910120725350.3438@localhost.localdomain>
- <1255362962.32729.63.camel@macbook.infradead.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+       linux-input@vger.kernel.org
+Subject: Re: [REGRESSION] "bind" a device to a driver doesn't not work
+ anymore
+Message-ID: <20091012173551.GC10557@suse.de>
+References: <4AD120F2.3020606@tremplin-utc.net>
+ <20091011030029.GA6526@suse.de>
+ <200910112135.29384.dmitry.torokhov@gmail.com>
+ <4AD31709.4000103@tremplin-utc.net>
+ <20091012154846.GB7996@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091012154846.GB7996@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 12 Oct 2009, David Woodhouse wrote:
+On Mon, Oct 12, 2009 at 08:48:46AM -0700, Dmitry Torokhov wrote:
+> > So at least, unbind should fail as well as bind.
+> >
 > 
-> > The other solution would be to just _enable_ (and do all the setup) of the 
-> > IOMMU early. And then just leave a legacy mapping for the IOMMU, and then 
-> > _after_all_devices_are_set_up_ can you then remove the legacy mapping.
-> 
-> That involves allocating a _shitload_ of page tables for a 1:1 mapping
-> of all of physical memory.
+> That would be Greg's domain s it is driver core decision whether to
+> allow unbinding platform devices registered with
+> platform_driver_probe().
 
-I don't think that's true.
+No, I do not see why that should not be allowed.
 
-Nobody cares about "all physical memory". For one thing, we know that 
-anything that we consider to be normal memory (ie it's listed in the e820 
-tables as RAM) can't be all that interesting, since the BIOS definitely 
-released that to us.
+thanks,
 
-That said, as long as the IOMMU is clearly enabled after the quirks have 
-run, for this particular case we don't much care.
-
-But I could also imagine something similar happening for some BIOS-enabled 
-ethernet device being set up to listen to packets into some BIOS data 
-areas (left-overs from whatever bootp thing or other), which doesn't have 
-a quirk, and which ends up doing DMA until we actually load the driver.
-
-Of course, we'd hope that the DMA just fails and nothing bad really 
-happens (hopefully the driver re-init will clear up any hung device). But 
-I can also imagine the hardware simply being really really unhappy, and 
-not recovering.
-
-So in many ways it would be safest to leave memory that we don't know 
-about and we don't own as DMA'able in the IOMMU.
-
-And no, I don't think it would be a shitload of pages. Quite the reverse. 
-It's probably not very many at all.
-
-		Linus
+greg k-h
