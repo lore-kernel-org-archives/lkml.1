@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZJLKve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZJLKxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbZJLKve (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 06:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756058AbZJLKve
+	id S1756147AbZJLKxe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 06:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbZJLKxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 06:51:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47091
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754797AbZJLKvd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 06:51:33 -0400
-Date: Mon, 12 Oct 2009 03:51:26 -0700 (PDT)
-Message-Id: <20091012.035126.264745627.davem@davemloft.net>
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       bzolnier@gmail.com, manty@manty.net
-Subject: Re: [Bug #14294] kernel BUG at drivers/ide/ide-disk.c:187
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <L6tb-VyKHZK.A.xEC.dzl0KB@chimera>
-References: <56acieJJ2fF.A.nEB.Hzl0KB@chimera>
-	<L6tb-VyKHZK.A.xEC.dzl0KB@chimera>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 12 Oct 2009 06:53:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55904 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755454AbZJLKxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 06:53:33 -0400
+Message-ID: <4AD30A6A.9000908@kernel.org>
+Date: Mon, 12 Oct 2009 19:52:26 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Patch vs. percpu-next] Use this_cpu_xx in nmi handling
+References: <alpine.DEB.1.10.0910071856400.3379@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0910071856400.3379@gentwo.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 12 Oct 2009 10:52:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Mon, 12 Oct 2009 01:01:09 +0200 (CEST)
-
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.30 and 2.6.31.
+Christoph Lameter wrote:
+> From: Christoph Lameter <cl@linux-foundation.org>
+> Subject: Use this_cpu_xx in nmi handling
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.30 and 2.6.31.  Please verify if it still should
-> be listed and let me know (either way).
+> this_cpu_inc/dec reduces the number of instructions needed.
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14294
-> Subject		: kernel BUG at drivers/ide/ide-disk.c:187
-> Submitter	: Santiago Garcia Mantinan <manty@manty.net>
-> Date		: 2009-09-30 11:05 (12 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125430926311466&w=4
-> Handled-By	: David Miller <davem@davemloft.net>
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-I gave the user a debugging patch, but they reported that they
-can no longer trigger the issue with 2.6.31.1
+applied to percpu#for-next.
 
-See:
+Thanks.
 
-	http://marc.info/?l=linux-ide&m=125469615425454&w=4
-
-Maybe that's enough to close this, I dunno.
+-- 
+tejun
