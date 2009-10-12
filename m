@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933515AbZJLWas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933520AbZJLWfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933515AbZJLWas (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 18:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933219AbZJLWar
+	id S933520AbZJLWfB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 18:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933477AbZJLWfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 18:30:47 -0400
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:40037 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933483AbZJLWaq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 18:30:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=V/nMc5uu6fhn0MSOUGxmK/xSnqMZTTgvgLcoLkVKyYXCyx5xcH+Fo8/iXfNJSS6EGX
-         WTdjkPnCw7VcOkU6HqaKy95+CzziVfYYdblfqTHbG5AR+VPTF1/+2/J/hcJmfUr5Z0+m
-         qcZ3Ds/qa17x/5JuMz0FbpUrHarbuTwrGw06Q=
-Date: Tue, 13 Oct 2009 00:30:06 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Laurent Riffard <laurent.riffard@free.fr>
-Subject: Re: [PATCH] kill-the-bkl/reiserfs: fix reiserfs lock to
-	cpu_add_remove_lock dependency
-Message-ID: <20091012223005.GA4711@nowhere>
-References: <1255386309-4992-1-git-send-email-fweisbec@gmail.com> <1255386309-4992-2-git-send-email-fweisbec@gmail.com>
+	Mon, 12 Oct 2009 18:35:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:17244 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933486AbZJLWfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 18:35:00 -0400
+Date: Tue, 13 Oct 2009 00:32:59 +0200 (CEST)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jonathan Corbet <corbet@lwn.net>, Mike Frysinger <vapier@gentoo.org>,
+       David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
+       David Howells <dhowells@redhat.com>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Subject: [PATCH 0/6 RFC] Remove the BKL from sys_execve on various
+ architectures
+Message-ID: <alpine.LFD.2.00.0910130021440.3658@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1255386309-4992-2-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 13, 2009 at 12:25:02AM +0200, Frederic Weisbecker wrote:
-> This can be fixed by relaxing the reiserfs lock while creating the
-> workqueue.
-> This is fine to relax the lock here, we just keep it around to pass
-> through reiserfs lock checks and for paranoid reasons.
+Most of the mainstream architectures such as x86, x86-64 and ppc, do not 
+use the bkl in sys_execve.
 
+All of the architectures that still use it, look like copy-and-pastes from 
+a time when the mainstream architectures did use it. In addition, all of 
+the call-outs appear to be to generic functions that are safe to use 
+without the bkl. Therefore, I believe it should be safe to simply remove.
 
-Nothing related to kprobes that said...
-Sorry for the noise. I've already posted this patch, but it
-looks like these locking inversions don't want to live
-their own life and follow me everywhere...
+However, the bkl does some surprising things, and I could be wrong. So 
+please have a look at let us know if there is a reason why your 
+architecture does indeed need the bkl in sys_execve.
 
+Even better, grab the relevant patch and do some testing and report back.
+
+Thank you in advance.
+
+John Kacur
