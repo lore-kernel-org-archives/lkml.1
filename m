@@ -1,86 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbZJLVT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbZJLVWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758284AbZJLVT0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbZJLVTZ
+	id S1758318AbZJLVWI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758281AbZJLVWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:19:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36097 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758274AbZJLVTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:19:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ondrej Hujnak <hujnak.ondrej@gmail.com>
-Subject: Re: Suspend to RAM on MSI PR200YA - do not recover, system immediately turns down
-Date: Mon, 12 Oct 2009 23:20:09 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, mschmidt@redhat.com,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <37b436160910101054t7765c253ta98b983f226b57c3@mail.gmail.com> <200910102334.42399.rjw@sisk.pl> <37b436160910120849o6aae596w50e450b4838ed233@mail.gmail.com>
-In-Reply-To: <37b436160910120849o6aae596w50e450b4838ed233@mail.gmail.com>
+	Mon, 12 Oct 2009 17:22:07 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:29743 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758200AbZJLVWF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:22:05 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=i290W65Y5U8dXc2ozb/Oh3Ia7cctY4jXapJdGBmOKYi19UxXkWjfieR04kYCvip2c
+	Nkrk0MrHKV0EQrH+s1KRQ==
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200910122320.10059.rjw@sisk.pl>
+In-Reply-To: <1255156660.7866.4.camel@twins>
+References: <alpine.DEB.2.00.0910091849070.22548@kitami.corp.google.com>
+	 <1255156660.7866.4.camel@twins>
+Date: Mon, 12 Oct 2009 14:20:53 -0700
+Message-ID: <ed628a920910121420k5f01892dsc9cfe0b56eb2c29e@mail.gmail.com>
+Subject: Re: sched: race between deactivate and switch sched_info accounting?
+From: Paul Turner <pjt@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 October 2009, Ondrej Hujnak wrote:
-> 2009/10/10 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Saturday 10 October 2009, Ondrej Hujnak wrote:
-> >> Hello,
-> >>
-> >> I am trying to make work "Suspend to RAM".
-> >> My laptop is MSI PR200YA, linux
-> >> kernel 2.6.30.8-64.fc11.i586 (fedora 11, 32bit),
-> >> the same is with 2.6.31.1-56.fc12.i686.
-> >> Motherboard - MSI 1221, graphics:
-> >> Mobile GM965/GL960 Integrated Graphics Controller
-> >>
-> >> When I do suspend to RAM it seem to work ok, it sleeps.
-> >> But when I want to wake it, it only switches off (the power
-> >> LED stops blinking).  If I'm having my notebook connected
-> >> to electricity, after start it don't  start screen and keyboard.
-> >> Notebook is running, but there is no HDD activity according
-> >> to the LED indicator. When it is on battery, it normally starts,
-> >> as if I had switched it normally off. Every time after trying to
-> >> suspend it to RAM, on the next start I have
-> >> "last write to superblock in future".
-> >>
-> >> I tried:
-> >>  - suspend from "single" mode
-> >>  - suspend from "single" mode with as many modules as possible rmmod'ed
-> >>  - using "nomodeset"
-> >>  - early suspend-to-RAM at boot test with "test_suspend=mem"
-> >> All with the same result.
-> >>
-> >> I also tried using pm_trace, but this gave no useful results in dmesg
-> >> in the next boot. The clock was not changed by it (the documentation
-> >> said it would be).
-> >>
-> >> I have attached printout of "lspci -vv" and "dmesg" after switching
-> >> pm_trace on.
-> >>
-> >> I'd welcome any ideas how to debug this further.
-> >> I'm looking forward to your reply.
-> >
-> > Does the pm_test 'core' test work (please see
-> > Documentation/power/basic-pm-debugging.txt)?
-> >
-> > Rafael
-> >
-> 
-> Ok, i tried all kinds of pm_test including core several times
-> and everything seemed ok. I got no error, failure..
-> 
-> And i tried all possibilities of /sys/power/disk under
->  "init=/bin/bash" and same result as above.
+On Fri, Oct 9, 2009 at 11:37 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, 2009-10-09 at 19:40 -0700, Paul Turner wrote:
+>
+> This looks very funny, I would expect that whoever does activate() on
+> that task to do the sched_info*() muck?
 
-That seems to indicate some kind of a BIOS issue.  However, several suspend
-bugs are going to be fixes in 2.6.32, so perhaps you can try -rc6 or later,
-when they are out.
+They do their part, the problem stems from there being 2 halves of
+sched_info muck to deal with:
 
-Thanks,
-Rafael
+then enqeue/dequeue tracking (which is called out of the activate path)
+
+then the arrive/depart (which is hinged off the task switch in schedule())
+
+These steps share state in last_queued; we are accounting the
+enqeue/dequeue properly but because prev==next we skip the second half
+of the accounting and end up out of sync.
+
+>
+> The below patch looks very asymmetric in that regard.
+>
+
+the idea below is to fix things up by 'inserting' the task->idle->task
+switch we'd have had if we didn't race in wake-up
+
+this approach might look more natural if the first info_switch was
+just pulled above the actual switch logic with this check; another
+option might be to force a last_queued reset on depart (since it's
+really only the run_delay skew that's significant)
+
+>> It's possible for our previously de-activated task to be re-activated by a
+>> remote cpu during lock balancing.  We have to account for this manually
+>> since prev == next, yet the task just went through dequeue accounting.
+>>
+>>  Signed-off-by: Paul Turner <pjt@google.com>
+>> ---
+>>  kernel/sched.c |   15 ++++++++++++---
+>>  1 files changed, 12 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/kernel/sched.c b/kernel/sched.c
+>> index ee61f45..6445d9d 100644
+>> --- a/kernel/sched.c
+>> +++ b/kernel/sched.c
+>> @@ -5381,7 +5381,7 @@ asmlinkage void __sched schedule(void)
+>>       struct task_struct *prev, *next;
+>>       unsigned long *switch_count;
+>>       struct rq *rq;
+>> -     int cpu;
+>> +     int cpu, deactivated_prev = 0;
+>>
+>>  need_resched:
+>>       preempt_disable();
+>> @@ -5406,8 +5406,10 @@ need_resched_nonpreemptible:
+>>       if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+>>               if (unlikely(signal_pending_state(prev->state, prev)))
+>>                       prev->state = TASK_RUNNING;
+>> -             else
+>> +             else {
+>>                       deactivate_task(rq, prev, 1);
+>> +                     deactivated_prev = 1;
+>> +             }
+>>               switch_count = &prev->nvcsw;
+>>       }
+>>
+>> @@ -5434,8 +5436,15 @@ need_resched_nonpreemptible:
+>>                */
+>>               cpu = smp_processor_id();
+>>               rq = cpu_rq(cpu);
+>> -     } else
+>> +     } else {
+>> +             /*
+>> +              * account for our previous task being re-activated by a
+>> +              * remote cpu.
+>> +              */
+>> +             if (unlikely(deactivated_prev))
+>> +                     sched_info_switch(prev, prev);
+>>               spin_unlock_irq(&rq->lock);
+>> +     }
+>>
+>>       post_schedule(rq);
+>>
+>
