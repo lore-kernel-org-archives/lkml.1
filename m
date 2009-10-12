@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756478AbZJLNGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbZJLNGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756478AbZJLNGy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 09:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZJLNGy
+	id S1756310AbZJLNGQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 09:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755293AbZJLNGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 09:06:54 -0400
-Received: from mail-gx0-f212.google.com ([209.85.217.212]:58690 "EHLO
-	mail-gx0-f212.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbZJLNGx convert rfc822-to-8bit (ORCPT
+	Mon, 12 Oct 2009 09:06:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53652 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755131AbZJLNGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 09:06:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=fUABbYY+PNnQijLaw0Fok+GDTN0TOwffnGZ6y9UjyVBpTPK4RGIchEP2zDO5i3me70
-         rRhnN16vz+r/C87aEjdl0d1IdYF4nisXl97vAonQnY8PLFztptkMjrUO2aiI7hfaZQBr
-         rybfMVHwb6I9H5SogVh90Rq5pCWN2LHjb3xa0=
-MIME-Version: 1.0
-In-Reply-To: <20091012074221.GA19198@elte.hu>
-References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> 
-	<20091012074221.GA19198@elte.hu>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 12 Oct 2009 09:05:57 -0400
-Message-ID: <8bd0f97a0910120605q17a586dag29cf4ab6d89dd29d@mail.gmail.com>
-Subject: Re: [origin tree build failure] [PATCH] Revert "USB: musb: make 
-	HAVE_CLK support optional"
+	Mon, 12 Oct 2009 09:06:15 -0400
+Date: Mon, 12 Oct 2009 14:06:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [crash] NULL pointer dereference at IP: [<ffffffff812e9ccb>]
+ uart_close+0x2a/0x1e4
+Message-ID: <20091012140646.17bce0df@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091012122245.GA22088@elte.hu>
+References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain>
+	<20091012080511.GA22607@elte.hu>
+	<20091012091954.GA31171@elte.hu>
+	<20091012092713.GA32647@elte.hu>
+	<20091012112504.GA10002@elte.hu>
+	<20091012124501.3c1ac94f@lxorguk.ukuu.org.uk>
+	<20091012115549.GA13987@elte.hu>
+	<20091012122245.GA22088@elte.hu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 03:42, Ingo Molnar wrote:
->
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
->> As usual, please test this for regressions, both new and old.
->
->>       USB: musb: make HAVE_CLK support optional
->
-> This USB/Blackfin commit broke the x86 build with these config options:
->
->  CONFIG_USB_MUSB_HDRC=y
->  CONFIG_USB_MUSB_HOST=y
->  # CONFIG_USB_MUSB_PERIPHERAL is not set
->  # CONFIG_USB_MUSB_OTG is not set
->  # CONFIG_USB_GADGET_MUSB_HDRC is not set
->  CONFIG_USB_MUSB_HDRC_HCD=y
->  CONFIG_MUSB_PIO_ONLY=y
->  CONFIG_USB_MUSB_DEBUG=y
->
-> Because a side-effect of the patch was that it enabled the driver on x86
-> too which doesnt have HAVE_CLK. So this formerly embedded-only driver
-> got exposed on the more widely tested x86 platform.
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000240
+> IP: [<ffffffff812ea215>] uart_close+0x24/0x1e5
 
-this is dumb.  you're addressing unrealistic scenarios (randconfig) by
-reverting code for realistic scenarios.  how about updating the
-already present arch depend string instead.
--mike
+Very odd indeed. Can you dump the value of
+
+	state (ie tty->driver_data)
+
+	and if state is non NULL
+
+	state->uart_port
+
+in the crash case
+
+and if state->uart_port is NULL then there is some head scratching
+required 
