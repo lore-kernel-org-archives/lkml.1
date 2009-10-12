@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbZJLF77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbZJLGBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753492AbZJLF77 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 01:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZJLF76
+	id S1753429AbZJLGBM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 02:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbZJLGBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 01:59:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35539 "EHLO mx2.suse.de"
+	Mon, 12 Oct 2009 02:01:12 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35585 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752334AbZJLF76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 01:59:58 -0400
-Date: Mon, 12 Oct 2009 07:59:20 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       samba-technical@lists.samba.org
-Subject: Re: [rfc][patch] store-free path walking
-Message-ID: <20091012055920.GD25882@wotan.suse.de>
-References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <20091007095657.GB8703@kernel.dk> <20091012035843.GC25882@wotan.suse.de>
-Mime-Version: 1.0
+	id S1751039AbZJLGBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 02:01:11 -0400
+From: Neil Brown <neilb@suse.de>
+To: Vladimir Dronnikov <dronnikov@gmail.com>
+Date: Mon, 12 Oct 2009 17:01:42 +1100
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012035843.GC25882@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
+Message-ID: <19154.50758.867045.191430@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, rob@landley.net,
+       firmware@impactlinux.com
+Subject: Re: [PATCH 1/1] md: drivers/md/unroll.pl replaced with awk analog
+In-Reply-To: message from Vladimir Dronnikov on Tuesday October 6
+References: <4aca1863.0a1ad00a.33bf.1017@mx.google.com>
+	<19146.30989.928233.393339@notabene.brown>
+	<6784529b0910052234x3d5c8ebblb1fc0b73d9dc1f82@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 05:58:43AM +0200, Nick Piggin wrote:
-> On Wed, Oct 07, 2009 at 11:56:57AM +0200, Jens Axboe wrote:
-> Try changing the 'statvfs' syscall in dbench to 'statfs'.
-> glibc has to do some nasty stuff parsing /proc/mounts to
-> make statvfs work. On my 2s8c opteron it goes like this:
-> clients     vanilla kernel     vfs scale (MB/s)
-> 1            476                447
-> 2           1092               1128
-> 4           2027               2260
-> 8           2398               4200
+On Tuesday October 6, dronnikov@gmail.com wrote:
+> > Just a couple of little changes needed:
 > 
-> Single threaded performance isn't as good so I need to look
-> at the reasons for that :(. But it's practically linearly
-> scalable now. The dropoff at 8 I'd say is probably due to
-> the memory controllers running out of steam rather than
-> cacheline or lock contention.
+> Right. I've sent the updated patch. Please, take a look.
 
-Ah, no on a bigger machine it starts slowing down again due
-to shared cwd contention, possibly due to creat/unlink type
-events. This could be improved by not restarting the entire
-path walk when we run into trouble but just trying to proceed
-from the last successful element.
+That's good, thanks.
+I'll queue it up for 2.6.33.
 
-Anyway, if you do get a chance to run dbench with this
-modification, I would appreciate seeing a profile with clal
-traces (my bigger system is ia64 which doesn't do perf yet).
-
-Thanks,
-Nick
-
+NeilBrown
