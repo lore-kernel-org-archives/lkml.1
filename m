@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932137AbZJLNqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbZJLNs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932137AbZJLNqH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 09:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756596AbZJLNqH
+	id S1756665AbZJLNs7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 09:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756596AbZJLNs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 09:46:07 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:63134 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755385AbZJLNqF convert rfc822-to-8bit (ORCPT
+	Mon, 12 Oct 2009 09:48:59 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42041 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754983AbZJLNs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 09:46:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SNkyxEW/gZuWbGZb29HNyD+CuyqK6+rgYuahH5xvaJPYrs+33KQ8fGy6++9hoxUzOs
-         JqMDzLnygApdrEDWa7wnCqYa9mIjesFYjvKGXZlWsrtgcpbbmppfi1qJHy/Gq9oAfabF
-         o7ymaPSH2sxbfjbNCllaQfaKpoATiLWtdZRks=
-MIME-Version: 1.0
-In-Reply-To: <9c9fda240910111732x262a9510rf3dd862aa16d0bdf@mail.gmail.com>
-References: <20091006074533.GA28889@july> <20091011090549.GE1414@ucw.cz>
-	 <9c9fda240910111732x262a9510rf3dd862aa16d0bdf@mail.gmail.com>
-Date: Mon, 12 Oct 2009 19:14:57 +0530
-Message-ID: <5d5443650910120644x4180ff6bt45b72be86b50588f@mail.gmail.com>
-Subject: Re: [PATCH] Haptic class support (v2)
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 12 Oct 2009 09:48:58 -0400
+Subject: Re: [PATCH] ftrace: add kernel command line graph function
+ filtering
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Stefan Assmann <sassmann@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <c62985530910120209t3d263d5eh5aeba14fcecc9072@mail.gmail.com>
+References: <4AD2DEB9.2@redhat.com>
+	 <c62985530910120209t3d263d5eh5aeba14fcecc9072@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Mon, 12 Oct 2009 09:46:59 -0400
+Message-Id: <1255355219.7113.16.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kyungmin,
+On Mon, 2009-10-12 at 11:09 +0200, Frédéric Weisbecker wrote:
+> 2009/10/12 Stefan Assmann <sassmann@redhat.com>:
+> > From 894e934e782ddaa33eb6d156d8326cdf479b5f62 Mon Sep 17 00:00:00 2001
+> > From: Stefan Assmann <sassmann@redhat.com>
+> > Date: Mon, 12 Oct 2009 09:11:47 +0200
+> > Subject: [PATCH] ftrace: add kernel command line graph function filtering
+> >
+> > Add a command line parameter to allow limiting the function graphs that
+> > are traced on boot up, when ftrace=function_graph is specified.
+> >
+> > This patch adds the following command line option:
+> > ftrace_graph_filter=function-list
+> 
+> 
+> If we use this parameter, we undoubtedly want to launch the function
+> graph tracer.
+> I'd then suggest to arm ftrace=function_graph automatically if we have
+> ftrace_graph_filter
+> set.
+> 
 
-On Mon, Oct 12, 2009 at 6:02 AM, Kyungmin Park <kmpark@infradead.org> wrote:
-> On Sun, Oct 11, 2009 at 6:05 PM, Pavel Machek <pavel@ucw.cz> wrote:
->> On Tue 2009-10-06 16:45:33, Kyungmin Park wrote:
->>> This patch includes two haptic devices, isa1000 and isa1200
->>> ISA1000 is gpio based haptic, but isa1200 is based on I2C
->>> Both are working on Samsung SoCs and tested.
->>>
->>> To enable the haptic, echo 1 > /sys/class/haptic/${name}/enable
->>> You can adjust the level by echo ${level} > /sys/class/haptic/${name}/enable
->>> or
->>> With oneshot feature, echo ${msec time} > /sys/class/haptic/${name}/oneshot
->>
->> New device classes should certainly be documented in Documentation/.
->>
->> For example... is level 0-100?
->
-> Basically. range from 0 to 255. also each device can set max level in
-> case of isa1000 it's 6.
->
->>  Is it valid to change level while 'oneshot' is running?
->
-> we usually use it under 1 sec. but I think it's possible to change it
-> but not tried.
->
->>  Does oneshot use last level set?
->
-> Right. it used last set value.
->
-> If you don't mind to update these at Documentation please wait until
-> commit first patches merged.
+Actually, I disagree. I may just be lazy, and want to set up the
+function graph to a particular set of functions. It doesn't mean I want
+to run the function_graph tracer on boot up.
 
-Let's see what Greg prefers. Could you please refresh your patchset
-with probably addressing comments given in the isa1200 and samsung_pwm
-driver by me?
+This is the same reason I don't automatically set up ftrace=function
+when the filter and notrace functions are set.
 
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+-- Steve
+
+
