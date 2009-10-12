@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbZJLPde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZJLPep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757193AbZJLPde (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 11:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbZJLPde
+	id S1757207AbZJLPep (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 11:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbZJLPeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 11:33:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53701 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754154AbZJLPdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 11:33:33 -0400
-Date: Mon, 12 Oct 2009 08:30:13 -0700
-From: Greg KH <gregkh@suse.de>
-To: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Hank Janssen <hjanssen@microsoft.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tom Hanrahan <hanrahat@microsoft.com>,
-       Hashir Abdi <habdi@microsoft.com>
-Subject: Re: [patch] Staging: hv: Fix vmbus load hang caused by wrong data
- packing
-Message-ID: <20091012153013.GA2062@suse.de>
-References: <1FB5E1D5CA062146B38059374562DF7212DEE3EC@TK5EX14MBXC130.redmond.corp.microsoft.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1FB5E1D5CA062146B38059374562DF7212DEE3EC@TK5EX14MBXC130.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 12 Oct 2009 11:34:44 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:55713 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413AbZJLPen (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 11:34:43 -0400
+Date: Mon, 12 Oct 2009 08:33:33 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [patch] perf build questions
+Message-Id: <20091012083333.48833843.randy.dunlap@oracle.com>
+In-Reply-To: <20091012063547.GB14377@elte.hu>
+References: <20091005131729.78444bfb.randy.dunlap@oracle.com>
+	<20091012063547.GB14377@elte.hu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4AD34C57.00C9:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Oct 10, 2009 at 11:16:00PM +0000, Haiyang Zhang wrote:
-> From: Haiyang Zhang <haiyangz@microsoft.com>
+On Mon, 12 Oct 2009 08:35:47 +0200 Ingo Molnar wrote:
+
 > 
-> Fix vmbus load hang caused by wrong data packing.
+> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > 
-> Cc: Hank Janssen <hjanssen@microsoft.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
+> > Also, I see build errors/warnings (-Werror).  Others aren't seeing these?
+> > Just due to my gcc version?
 > 
-> ---
-> diff --git a/drivers/staging/hv/ChannelMgmt.h b/drivers/staging/hv/ChannelMgmt.h
-> index a839d8f..3f18584 100644
-> --- a/drivers/staging/hv/ChannelMgmt.h
-> +++ b/drivers/staging/hv/ChannelMgmt.h
-> @@ -30,6 +30,8 @@
->  #include "VmbusChannelInterface.h"
->  #include "VmbusPacketFormat.h"
->  
-> +#pragma pack(push,1)
-> +
->  /* Version 1 messages */
->  enum vmbus_channel_message_type {
->  	ChannelMessageInvalid			=  0,
-> @@ -54,24 +56,24 @@ enum vmbus_channel_message_type {
->  	ChannelMessageViewRangeRemove		= 18,
->  #endif
->  	ChannelMessageCount
-> -} __attribute__((packed));
+> Thanks for the fix. Which GCC version is this btw?
 
-Why the change here?  Isn't this doing the same thing?
+gcc (GCC) 4.2.1 (SUSE Linux)
+(from some openSUSE.org release)
 
-And I'm guessing that not all of these structures are needing to be
-packed, right?  Are they all shared across the HV boundry?
-
-And is this fixing the problem that Hank and users have reported with
-the current code?  Does this need to get into the 2.6.32 release?
-
-thanks,
-
-greg k-h
+---
+~Randy
