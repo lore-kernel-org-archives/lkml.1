@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932363AbZJLUfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbZJLUmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932363AbZJLUfx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 16:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130AbZJLUfx
+	id S1758097AbZJLUmm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 16:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbZJLUml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 16:35:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39937 "EHLO mx2.mail.elte.hu"
+	Mon, 12 Oct 2009 16:42:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40013 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756622AbZJLUfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 16:35:52 -0400
-Date: Mon, 12 Oct 2009 22:34:53 +0200
+	id S1754766AbZJLUml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 16:42:41 -0400
+Date: Mon, 12 Oct 2009 22:41:43 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86/pci: intel bus root res with IOH reading -v2
-Message-ID: <20091012203453.GC7648@elte.hu>
-References: <4AC97C00.7090503@kernel.org> <200910061133.27546.bjorn.helgaas@hp.com> <4ACB839A.2060800@kernel.org> <200910061257.54877.bjorn.helgaas@hp.com>
+To: ashwinc@codeaurora.org
+Cc: mingo@redhat.com, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC] [PATCH 1/1] Remove static debugfs path from parse-events
+Message-ID: <20091012204143.GB17163@elte.hu>
+References: <a751bdc6978478de6d10440e587a2cc7.squirrel@www.codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200910061257.54877.bjorn.helgaas@hp.com>
+In-Reply-To: <a751bdc6978478de6d10440e587a2cc7.squirrel@www.codeaurora.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,37 +38,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+* ashwinc@codeaurora.org <ashwinc@codeaurora.org> wrote:
 
-> On Tuesday 06 October 2009 11:51:22 am Yinghai Lu wrote:
-> > Bjorn Helgaas wrote:
-> > > On Sunday 04 October 2009 10:54:24 pm Yinghai Lu wrote:
-> > >> for intel system with multi IOH. we could read peer root resource from PCI conf,
-> > >> and don't trust _CRS again for root bus
-> > > 
-> > > Ugh.  Are we going to end up with amd_bus.c, intel_bus.c, nvidia_bus.c,
-> > > broadcom_bus.c, serverworks_bus.c, etc.?
-> > only needed when you have muti ...
-> 
-> I think that translates to "yes, we will need all those bits as soon 
-> as those vendors support larger systems with multiple IOHs."  And I 
-> think that's the wrong answer.
+> I was working on getting timechart running and noticed that it 
+> wouldn't get any sched_switch/wakeup etc events if debugfs is mounted 
+> anywhere other than /sys/kernel/debug/. Mine was mounted in /debug 
+> (the second sane location ;) )
 
-Why is having cleanly separated per vendor information/driver wrong? I 
-think it's the right answer in most cases. _Especially_ when the other 
-option is to 'rely on the firmware'.
+It's the first sane location ;-)
 
-> > again we should trust HW conf than BIOS.
-> 
-> Certainly there's a tradeoff between a generic driver that relies on 
-> the BIOS, and a platform-specific driver that uses only the hardware. 
-> The first leaves us vulnerable to BIOS bugs, but the second leads to a 
-> plethora of drivers that require updates as hardware changes.
+> So we'd need something like whats in the patch to make use of the 
+> global debugfs_path.
 
-We do that quite well in Linux - it's one of our main strengths.
-
-Why should we have to rely on correct firmware? Why is it wrong to know 
-about the hw's structure, to query the hardware and ignore the firmware 
-if the hardware state tells us otherwise?
+Applied, thanks Ashwin!
 
 	Ingo
