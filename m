@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbZJLWhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933552AbZJLWhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758553AbZJLWhX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 18:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbZJLWhW
+	id S933552AbZJLWhq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 18:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933533AbZJLWhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 18:37:22 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:23617 "EHLO mx1.redhat.com"
+	Mon, 12 Oct 2009 18:37:45 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38946 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758083AbZJLWhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 18:37:21 -0400
-Date: Tue, 13 Oct 2009 00:35:06 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Vincent Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jonathan Corbet <corbet@lwn.net>, Mike Frysinger <vapier@gentoo.org>,
-       David Howells <dhowells@redhat.com>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
-       David Howells <dhowells@redhat.com>,
-       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
-Subject: [PATCH 6/6 RFC] arch/mn10300/kernel/process.c: Remove the BKL from
- sys_execve
-In-Reply-To: <alpine.LFD.2.00.0910130014520.3658@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0910130016540.3658@localhost.localdomain>
-References: <alpine.LFD.2.00.0910122350140.3658@localhost.localdomain> <alpine.LFD.2.00.0910130007240.3658@localhost.localdomain> <alpine.LFD.2.00.0910130008320.3658@localhost.localdomain> <alpine.LFD.2.00.0910130010000.3658@localhost.localdomain>
- <alpine.LFD.2.00.0910130011180.3658@localhost.localdomain> <alpine.LFD.2.00.0910130014520.3658@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S933526AbZJLWho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 18:37:44 -0400
+Date: Tue, 13 Oct 2009 00:37:07 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Luming Yu <luming.yu@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [trivial PATCH] fix typo in nmi.c of apic
+In-Reply-To: <20091012202613.GB7648@elte.hu>
+Message-ID: <alpine.LSU.2.00.0910130031420.19284@wotan.suse.de>
+References: <3877989d0909102303m31066b01he38e8a295995c430@mail.gmail.com> <alpine.LSU.2.00.0910091706350.19284@wotan.suse.de> <20091012202613.GB7648@elte.hu>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From f05f8e3a2f5210e5274e758f66e33a9d168eacde Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Mon, 12 Oct 2009 23:41:55 +0200
-Subject: [PATCH] arch/mn10300/kernel/process.c: Remove the BKL from sys_execve
+On Mon, 12 Oct 2009, Ingo Molnar wrote:
 
-This looks like a cut-and-paste from functionality that no-longer needs the bkl
-Just remove it. Also, rewrite slightly so that it looks closer to sys_execve
-on other architectures.
+> > > I came across x86/kernel/apic/nmi.c and found several typo.
+> > > It's trivial in terms of doing nothing on changing execution logic.
+> > I'd rather go this through x86 tree. Adding Ingo.
+> > 
+> > > Ps. The patch is enclosed in attachment. The inline one
+> > > is c&p of it for reading.
+> > > 
+> > > 
+> > > Thanks,
+> > > Luming
+> > > 
+> > > Signed-off-by: Yu Luming <luming.yu@intel.com>
+> > > 
+> > >  nmi.c |   18 +++++++++---------
+> > >  1 file changed, 9 insertions(+), 9 deletions(-)
+> > > 
+> > > diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
+> > > index b3025b4..9ff1f6d 100644
+> > > --- a/arch/x86/kernel/apic/nmi.c
+> > > +++ b/arch/x86/kernel/apic/nmi.c
+> > > @@ -121,7 +121,7 @@ static void report_broken_nmi(int cpu, unsigned
+> > > int *prev_nmi_count)
+> > >  	atomic_dec(&nmi_active);
+> > >  }
+> > > 
+> > > -static void __acpi_nmi_disable(void *__unused)
+> > > +static void __apic_nmi_disable(void *__unused)
+> 
+> that's correctly named, as a 'git grep acpi_nmi_disable' should reveal.
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- arch/mn10300/kernel/process.c |   12 ++++--------
- 1 files changed, 4 insertions(+), 8 deletions(-)
+I actually think that Luming Yu is right that the function is misnamed. 
+What does it have to do with ACPI?
 
-diff --git a/arch/mn10300/kernel/process.c b/arch/mn10300/kernel/process.c
-index 892cce8..ec8a21d 100644
---- a/arch/mn10300/kernel/process.c
-+++ b/arch/mn10300/kernel/process.c
-@@ -275,16 +275,12 @@ asmlinkage long sys_execve(char __user *name,
- 	char *filename;
- 	int error;
- 
--	lock_kernel();
--
- 	filename = getname(name);
- 	error = PTR_ERR(filename);
--	if (!IS_ERR(filename)) {
--		error = do_execve(filename, argv, envp, __frame);
--		putname(filename);
--	}
--
--	unlock_kernel();
-+	if (IS_ERR(filename))
-+		return error;
-+	error = do_execve(filename, argv, envp, __frame);
-+	putname(filename);
- 	return error;
- }
- 
+All we do here is disable the NMI/LVT flags on the corresponding APIC. No 
+ACPI involved.
+
 -- 
-1.6.0.6
-
-
+Jiri Kosina
+SUSE Labs, Novell Inc.
