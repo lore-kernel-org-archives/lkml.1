@@ -1,109 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbZJLVSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbZJLVSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758256AbZJLVSA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757886AbZJLVR7
+	id S1758264AbZJLVSv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758200AbZJLVSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:17:59 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:43450 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015AbZJLVR6 (ORCPT
+	Mon, 12 Oct 2009 17:18:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47085 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757662AbZJLVSt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:17:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MztZOzFm/zH8sm2wspsaDUP5BsihbuzoZUjVc/gI8WU4BWtsO4NlG74ycte/UKVY7x
-         uHIh+PSEZ0MJIaCv/qrDalaywsg5FZvP/XmxqOYd+sIntyItOXuXdflGE3mdAlRmIjPy
-         bimxNX46ccbd566J/jiragJOzjKlETnm5fCVA=
-Date: Mon, 12 Oct 2009 23:16:46 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [PATCH tracing/kprobes v3 4/7] tracing/kprobes: Avoid field
-	name confliction
-Message-ID: <20091012211645.GD4748@nowhere>
-References: <20091007222733.1684.32035.stgit@dhcp-100-2-132.bos.redhat.com> <20091007222807.1684.26880.stgit@dhcp-100-2-132.bos.redhat.com> <20091012173752.GB5059@nowhere> <4AD37FEF.9050807@redhat.com> <20091012194852.GB4748@nowhere> <4AD39002.2080907@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AD39002.2080907@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 12 Oct 2009 17:18:49 -0400
+Subject: Re: oomkiller over-ambitious after "vmscan: make mapped executable
+ pages the first class citizen" (bisected)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Elladan <elladan@eskimo.com>, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Minchan Kim <minchan.kim@gmail.com>
+In-Reply-To: <200910122244.19666.borntraeger@de.ibm.com>
+References: <200910122244.19666.borntraeger@de.ibm.com>
+Content-Type: text/plain
+Date: Mon, 12 Oct 2009 23:17:45 +0200
+Message-Id: <1255382265.8967.620.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 04:22:26PM -0400, Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
->> On Mon, Oct 12, 2009 at 03:13:51PM -0400, Masami Hiramatsu wrote:
->>> Frederic Weisbecker wrote:
->>>> The conflict issue might not be obvious for a user desperately trying to set
->>>> a kprobe. Even for other failcases, it might not be obvious (blacklisted
->>>> symbols, syntax errors...)
->>>>
->>>> May be should you improve the error granularity and print a KERN_DEBUG
->>>> message?
->>>
->>> Agreed, and kprobes error handling should be improved too (in the most cases,
->>> it just returns -EINVAL).
->>>
->>> Thank you.
->>>
->>
->>
->> And btw, I'm enable to create a probe, neither through ftrace nor perf:
->>
->> 	$ sudo ./perf probe -P 'p:sys_close sys_close $retval'
->> 	Adding new event: p:sys_close sys_close+0 $retval
->>
->> 	Error: Failed to create event: Invalid argument
->>
->>
->> 	# echo 'p:sys_open sys_open $retval'>  /debug/tracing/kprobe_events
->> 	bash: echo: write error : Invalid argument
->>
->> I suspect I missed something very obvious with the syntax :)
->
-> Ah, only kretprobe events can use $retval :-)
-> So, you should specify 'r' instead of 'p'.
->
-> -P 'r:sys_close sys_close $retval'
->
+On Mon, 2009-10-12 at 22:44 +0200, Christian Borntraeger wrote:
+> In fact, applying this patch makes the problem go away:
 
-Hehe, I was sure I was doing something silly but couldn't figure
-out what :-)
+> --- linux-2.6.orig/mm/vmscan.c
+> +++ linux-2.6/mm/vmscan.c
+> @@ -1345,22 +1345,8 @@ static void shrink_active_list(unsigned 
+>  
+>                 /* page_referenced clears PageReferenced */
+>                 if (page_mapping_inuse(page) &&
+> -                   page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
+> +                   page_referenced(page, 0, sc->mem_cgroup, &vm_flags))
+>                         nr_rotated++;
+> -                       /*
+> -                        * Identify referenced, file-backed active pages and
+> -                        * give them one more trip around the active list. So
+> -                        * that executable code get better chances to stay in
+> -                        * memory under moderate memory pressure.  Anon pages
+> -                        * are not likely to be evicted by use-once streaming
+> -                        * IO, plus JVM can create lots of anon VM_EXEC pages,
+> -                        * so we ignore them here.
+> -                        */
+> -                       if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
+> -                               list_add(&page->lru, &l_active);
+> -                               continue;
+> -                       }
+> -               }
+>  
+>                 ClearPageActive(page);  /* we are de-activating */
+>                 list_add(&page->lru, &l_inactive);
 
-So that works, at least without libdwarf, I can't test with it for
-now but this tool looks very promising.
+> the interesting part is, that s390x in the default configuration has no no-
+> execute feature, resulting in the following map 
+> c0000000-1c04cd000 rwxs 00000000 00:04 18517        /dev/zero (deleted)
+> As you can see, this area looks file mapped (/dev/zero) and executable. On the 
+> other hand, the !PageAnon clause should cover this case. I am lost.
+> 
+> Does anybody on the CC (taken from the original patch) has an idea what the 
+> problem is and how to fix this properly?
 
-I really think it would be great to be able to cut the
+One thing that sprung out to me is that s390 has the young bit in the
+storage key and not in the page-tables.
 
-	./perf probe
-	./perf record
-	./perf trace
+Hence it has a NOP ptep_clear_flush_young(), which makes
+page_referenced_one() very unlikely to set vm_flags. This would make the
+above condition even harder to trigger though, so I'm not sure what good
+this observation is.
 
-batch into one step through a single
 
-	./perf probe -t -P "probe definition" [-a|cmdline]
-
-That would do the probe creation, the record, and stop
-once the given process finishes, or once we Ctrl+C (especially
-useful in wide tracing with -a, but sometimes also with processes).
-Not a lot of changes are required to do that.
-
-I can already see printk() whining on the horizon...
-
-Thanks!
 
