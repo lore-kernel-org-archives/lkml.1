@@ -1,86 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbZJLVSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbZJLVTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbZJLVSv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758200AbZJLVSu
+	id S1758272AbZJLVTT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758200AbZJLVTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:18:50 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47085 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757662AbZJLVSt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:18:49 -0400
-Subject: Re: oomkiller over-ambitious after "vmscan: make mapped executable
- pages the first class citizen" (bisected)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Elladan <elladan@eskimo.com>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Minchan Kim <minchan.kim@gmail.com>
-In-Reply-To: <200910122244.19666.borntraeger@de.ibm.com>
-References: <200910122244.19666.borntraeger@de.ibm.com>
-Content-Type: text/plain
-Date: Mon, 12 Oct 2009 23:17:45 +0200
-Message-Id: <1255382265.8967.620.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 12 Oct 2009 17:19:18 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36602 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756807AbZJLVTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:19:16 -0400
+Date: Mon, 12 Oct 2009 23:18:38 +0200
+From: Jan Kara <jack@suse.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       Myklebust Trond <Trond.Myklebust@netapp.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       Nick Piggin <npiggin@suse.de>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Richard Kennedy <richard@rsk.demon.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/45] writeback: reduce calls to global_page_state in
+	balance_dirty_pages()
+Message-ID: <20091012211838.GA3965@duck.suse.cz>
+References: <20091007073818.318088777@intel.com> <20091007074901.251116016@intel.com> <20091009151230.GF7654@duck.suse.cz> <20091010213339.GA8644@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091010213339.GA8644@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-10-12 at 22:44 +0200, Christian Borntraeger wrote:
-> In fact, applying this patch makes the problem go away:
-
-> --- linux-2.6.orig/mm/vmscan.c
-> +++ linux-2.6/mm/vmscan.c
-> @@ -1345,22 +1345,8 @@ static void shrink_active_list(unsigned 
->  
->                 /* page_referenced clears PageReferenced */
->                 if (page_mapping_inuse(page) &&
-> -                   page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
-> +                   page_referenced(page, 0, sc->mem_cgroup, &vm_flags))
->                         nr_rotated++;
-> -                       /*
-> -                        * Identify referenced, file-backed active pages and
-> -                        * give them one more trip around the active list. So
-> -                        * that executable code get better chances to stay in
-> -                        * memory under moderate memory pressure.  Anon pages
-> -                        * are not likely to be evicted by use-once streaming
-> -                        * IO, plus JVM can create lots of anon VM_EXEC pages,
-> -                        * so we ignore them here.
-> -                        */
-> -                       if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
-> -                               list_add(&page->lru, &l_active);
-> -                               continue;
-> -                       }
-> -               }
->  
->                 ClearPageActive(page);  /* we are de-activating */
->                 list_add(&page->lru, &l_inactive);
-
-> the interesting part is, that s390x in the default configuration has no no-
-> execute feature, resulting in the following map 
-> c0000000-1c04cd000 rwxs 00000000 00:04 18517        /dev/zero (deleted)
-> As you can see, this area looks file mapped (/dev/zero) and executable. On the 
-> other hand, the !PageAnon clause should cover this case. I am lost.
+On Sun 11-10-09 05:33:39, Wu Fengguang wrote:
+> On Fri, Oct 09, 2009 at 11:12:31PM +0800, Jan Kara wrote:
+> > > +			/* don't wait if we've done enough */
+> > > +			if (pages_written >= write_chunk)
+> > > +				break;
+> > >  		}
+> > > -
+> > > -		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> > > -			break;
+> > > -		if (pages_written >= write_chunk)
+> > > -			break;		/* We've done our duty */
+> > > -
+> >   Here, we had an opportunity to break from the loop even if we didn't
+> > manage to write everything (for example because per-bdi thread managed to
+> > write enough or because enough IO has completed while we were trying to
+> > write). After the patch, we will sleep. IMHO that's not good...
 > 
-> Does anybody on the CC (taken from the original patch) has an idea what the 
-> problem is and how to fix this properly?
+> Note that the pages_written check is moved several lines up in the patch :)
+> 
+> >   I'd think that if we did all that work in writeback_inodes_wbc we could
+> > spend the effort on regetting and rechecking the stats...
+> 
+> Yes maybe. I didn't care it because the later throttle queue patch totally
+> removed the loop and hence to need to reget the stats :)
+  Yes, since the loop gets removed in the end, this does not matter. You
+are right.
 
-One thing that sprung out to me is that s390 has the young bit in the
-storage key and not in the page-tables.
+> > >  		schedule_timeout_interruptible(pause);
+> > >
+> > >  		/*
+> > > @@ -577,8 +547,7 @@ static void balance_dirty_pages(struct a
+> > >  			pause = HZ / 10;
+> > >  	}
+> > >
+> > > -	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
+> > > -			bdi->dirty_exceeded)
+> > > +	if (!dirty_exceeded && bdi->dirty_exceeded)
+> > >  		bdi->dirty_exceeded = 0;
+> >   Here we fail to clear dirty_exceeded if we are over global dirty limit
+> > but not over per-bdi dirty limit...
+> 
+> You must be mistaken: dirty_exceeded = (over bdi limit || over global limit),
+> so !dirty_exceeded = (!over bdi limit && !over global limit).
+  Exactly. Previously, the check was:
+if (!over bdi limit)
+  bdi->dirty_exceeded = 0;
 
-Hence it has a NOP ptep_clear_flush_young(), which makes
-page_referenced_one() very unlikely to set vm_flags. This would make the
-above condition even harder to trigger though, so I'm not sure what good
-this observation is.
+  Now it is
+if (!over bdi limit && !over global limit)
+  bdi->dirty_exceeded = 0;
 
+  That's clearly not equivalent which is what I was trying to point out.
+But looking at where dirty_exceeded is used, your new way is probably more
+useful. It's just a bit counterintuitive that bdi->dirty_exceeded is set
+even if the per-bdi limit is not exceeded...
 
+									Honza
 
+--
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
