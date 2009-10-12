@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbZJLH7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbZJLIC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbZJLH7s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 03:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbZJLH7r
+	id S1754618AbZJLIC1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 04:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbZJLIC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 03:59:47 -0400
-Received: from aa002msb.fastweb.it ([85.18.95.81]:56344 "EHLO
-	aa002msb.fastweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753787AbZJLH7r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 03:59:47 -0400
-Message-ID: <4AD2E1BB.80501@evidence.eu.com>
-Date: Mon, 12 Oct 2009 09:58:51 +0200
-From: Claudio Scordino <claudio@evidence.eu.com>
+	Mon, 12 Oct 2009 04:02:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37837 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754586AbZJLICX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 04:02:23 -0400
+Message-ID: <4AD2E258.9090706@kernel.org>
+Date: Mon, 12 Oct 2009 17:01:28 +0900
+From: Tejun Heo <tj@kernel.org>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-CC: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Andrew Victor <avictor.za@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] atmel_serial: Fix bad BUILD_BUG_ON() usage
-References: <1254845207-7608-1-git-send-email-haavard.skinnemoen@atmel.com> <4ACC94B4.1050600@atmel.com>
-In-Reply-To: <4ACC94B4.1050600@atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.32-rc3] fix pcpu_embed_first_chunk() compile warnings
+References: <19151.3066.304514.621378@pilspetsen.it.uu.se>
+In-Reply-To: <19151.3066.304514.621378@pilspetsen.it.uu.se>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 12 Oct 2009 08:01:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Ferre ha scritto:
-> Haavard Skinnemoen :
->> is_power_of_2() appears not to be constant enough for BUILD_BUG_ON()
->> after the latest rework, so replace it with an open-coded test.
->>
->> Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
->> ---
->>  drivers/serial/atmel_serial.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
->> index 3551c5c..9d948bc 100644
->> --- a/drivers/serial/atmel_serial.c
->> +++ b/drivers/serial/atmel_serial.c
->> @@ -1531,7 +1531,7 @@ static int __devinit atmel_serial_probe(struct platform_device *pdev)
->>  	void *data;
->>  	int ret;
->>  
->> -	BUILD_BUG_ON(!is_power_of_2(ATMEL_SERIAL_RINGSIZE));
->> +	BUILD_BUG_ON(ATMEL_SERIAL_RINGSIZE & (ATMEL_SERIAL_RINGSIZE - 1));
->>  
->>  	port = &atmel_ports[pdev->id];
->>  	port->backup_imr = 0;
+Mikael Pettersson wrote:
+> Compiling 2.6.32-rc3 on i686 I get the following new warnings:
 > 
+> mm/percpu.c: In function 'pcpu_embed_first_chunk':
+> mm/percpu.c:1873: warning: comparison of distinct pointer types lacks a cast
+> mm/percpu.c:1879: warning: format '%lx' expects type 'long unsigned int', but argument 2 has type 'size_t'
 > 
+> They are caused by 6ea529a2037ce662fc6bfa572b46d47407d08805
+> "make embedding first chunk allocator check vmalloc space size".
+> 
+> The first warning is because max() is applied to one operand of
+> type 'size_t' and another of type 'unsigned long'. Fix: cast the
+> second one to 'size_t'.
+> 
+> For the second warning: always use '%z' to format 'size_t' operands.
+> 
+> Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 
-Hi all,
+For some reason, I've been thinking this was linux-next specific and
+committed about the same patch there, commit 3cbeae2f, a while ago.
+The only difference was use of max_t() instead of size_t cast.  I
+think max_t() is cleaner there and will cherry pick the patch from
+linux-next.
 
-    I was expecting this patch to be merged in 2.6.32-rc4...
+Thanks.
 
-Consider that without this change, the driver does not _even_ build 
-(that's why I think we shouldn't wait the next merge window...).
-
-Regards,
-
-            Claudio
-
-  	
+-- 
+tejun
