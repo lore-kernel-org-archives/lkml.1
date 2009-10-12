@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933343AbZJLVwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933311AbZJLVsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933343AbZJLVwZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 17:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932725AbZJLVwY
+	id S933311AbZJLVsl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 17:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933302AbZJLVsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 17:52:24 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:47055 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758530AbZJLVwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 17:52:24 -0400
-Message-ID: <4AD3A460.6060505@zytor.com>
-Date: Mon, 12 Oct 2009 14:49:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 12 Oct 2009 17:48:40 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36420 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933287AbZJLVsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 17:48:39 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michael Buesch <mb@bu3sch.de>, Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [Bug #14278] New message "NOHZ: local_softirq_pending 08" at each ping request
+Date: Mon, 12 Oct 2009 23:49:39 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.32-rc3-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Christian Casteyde" <casteyde.christian@free.fr>,
+       "John W. Linville" <linville@tuxdriver.com>
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera> <r-4Wjt4coy.A.VeE.Bbl0KB@chimera> <200910121515.49393.mb@bu3sch.de>
+In-Reply-To: <200910121515.49393.mb@bu3sch.de>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86/pci: intel bus root res with IOH reading -v2
-References: <4AC97C00.7090503@kernel.org> <200910061257.54877.bjorn.helgaas@hp.com> <20091012203453.GC7648@elte.hu> <200910121545.47794.bjorn.helgaas@hp.com>
-In-Reply-To: <200910121545.47794.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200910122349.39408.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/12/2009 02:45 PM, Bjorn Helgaas wrote:
-> For the patch in question, we don't even have a root cause for the bug
-> (or at least, I couldn't decipher it from the changelog). There's a 
-> reference to _CRS being wrong, but we don't currently use _CRS for
-> x86 host bridges.
+On Monday 12 October 2009, Michael Buesch wrote:
+> On Monday 12 October 2009 00:22:00 Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.31.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14278
+> > Subject		: New message "NOHZ: local_softirq_pending 08" at each ping request
+> > Submitter	: Christian Casteyde <casteyde.christian@free.fr>
+> > Date		: 2009-09-30 18:12 (12 days old)
+> > Handled-By	: Michael Buesch <mb@bu3sch.de>
 > 
-> But in general, my objection is that even if BIOS provides perfectly
-> valid information about host bridge apertures, the the fact that Linux
-> ignores that information means we have to add this sort of vendor-
-> specific code every time we trip over something. And we're tripping
-> over things quite often.
+> I think John or Johannes is handling it, as my patch was rejected.
 > 
-> Windows consumes this _CRS information, so while I grant there are
-> certainly BIOS bugs there, I think most of the bugs are actually in
-> Linux.
+> > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=23220
 
-I think the right policy for most if not all things should be "use the
-BIOS information unless we know better."
+Johannes, what's the status here?
 
-	-hpa
-
+Rafael
