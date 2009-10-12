@@ -1,165 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbZJLQ0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZJLQ0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757308AbZJLQ0B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 12:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757298AbZJLQ0A
+	id S1757298AbZJLQ0x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 12:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbZJLQ0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 12:26:00 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:40165 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757297AbZJLQZ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 12:25:59 -0400
-Date: Mon, 12 Oct 2009 12:25:15 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, marcin.slusarz@gmail.com
-Subject: Re: [PATCH 2/3] extend get/setrlimit to support setting rlimits
-	external to a process (v5)
-Message-ID: <20091012162515.GC32088@hmsreliant.think-freely.org>
-References: <20090928200600.GA3053@hmsreliant.think-freely.org> <20091001171538.GB2456@hmsreliant.think-freely.org> <20091012161342.GA32088@hmsreliant.think-freely.org>
+	Mon, 12 Oct 2009 12:26:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43951 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756670AbZJLQ0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 12:26:51 -0400
+Date: Mon, 12 Oct 2009 18:26:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] NULL pointer dereference at IP: [<ffffffff812e9ccb>]
+	uart_close+0x2a/0x1e4
+Message-ID: <20091012162600.GD1272@elte.hu>
+References: <alpine.LFD.2.01.0910111446410.3438@localhost.localdomain> <20091012080511.GA22607@elte.hu> <alpine.LFD.2.01.0910120850590.3438@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091012161342.GA32088@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-Score: -4.4 (----)
+In-Reply-To: <alpine.LFD.2.01.0910120850590.3438@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add syscall infrastructure for getprlimit/setprlimit
 
-This patch adds the definitions for the get/setprlimit syscalls.  They are
-identical to the get/setlimit calls, except that they allow the caller to
-manipulate limits for processes other than themselves.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> On Mon, 12 Oct 2009, Ingo Molnar wrote:
+> > 
+> > Note, i have your fix below applied in tip:out-of-tree - it might be 
+> > the source of this bug? (If yes then this isnt an .32-rc4 problem.)
+> 
+> If yes (but you later reported no), it would still be a 32-rc4 
+> problem, because that patch got committed as 0b5759c654 ("tty: Avoid 
+> dropping ldisc_mutex over hangup tty re-initialization").
+> 
+> So you shouldn't need it in the out-of-tree branch any more, and you 
+> probably just never noticed because it all merged cleanly.
 
+ah, indeed. I'll rebase that branch to clean out any 
+went-upstream-already same-content patches. (Ideally that should empty 
+it to a large degree.)
 
- include/linux/syscalls.h |    4 ++
- kernel/sys.c             |   84 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 88 insertions(+)
+> Commit 46d57a449 (which you then bisected to) looks really irritating, 
+> since it just renamed variables in annoying ways (ie the old "port" is 
+> now "uport", and there's a new "port" that means something else). That 
+> thing should have been split up to do the renaming separately, so that 
+> a mis-use of "port" would have caused a compile error.
+> 
+> I'm not seeing anything obvious. Alan obviously found one bug already.
 
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index a990ace..9f357ab 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -702,11 +702,15 @@ asmlinkage long sys_newuname(struct new_utsname __user *name);
- 
- asmlinkage long sys_getrlimit(unsigned int resource,
- 				struct rlimit __user *rlim);
-+asmlinkage long sys_getprlimit(pid_t pid, unsigned int resource,
-+				struct rlimit __user *rlim);
- #if defined(COMPAT_RLIM_OLD_INFINITY) || !(defined(CONFIG_IA64))
- asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *rlim);
- #endif
- asmlinkage long sys_setrlimit(unsigned int resource,
- 				struct rlimit __user *rlim);
-+asmlinkage long	sys_setprlimit(pid_t pid, unsigned int resource,
-+				struct rlimit __user *rlim);
- asmlinkage long sys_getrusage(int who, struct rusage __user *ru);
- asmlinkage long sys_umask(int mask);
- 
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 0e210a4..6ca9e7f 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1213,6 +1213,50 @@ SYSCALL_DEFINE2(getrlimit, unsigned int, resource, struct rlimit __user *, rlim)
- 	}
- }
- 
-+SYSCALL_DEFINE3(getprlimit, pid_t, pid, unsigned int, resource,
-+		struct rlimit __user *, rlim)
-+{
-+	unsigned long flags;
-+	struct task_struct *tsk;
-+	struct pid *ppid;
-+	int retval = -EINVAL;
-+
-+	ppid = find_get_pid(pid);
-+	if (!ppid)
-+		goto out;
-+
-+	tsk = get_pid_task(ppid, PIDTYPE_PID);
-+
-+	if (!tsk)
-+		goto out_put_pid;
-+
-+	if (resource >= RLIM_NLIMITS)
-+		goto out_put_all;
-+
-+	retval = -EBUSY;
-+	if (!lock_task_sighand(tsk, &flags))
-+		goto out_put_all;
-+
-+	else {
-+		struct rlimit val;
-+
-+		task_lock(tsk->group_leader);
-+		val = current->signal->rlim[resource];
-+		task_unlock(tsk->group_leader);
-+		retval = copy_to_user(rlim, &val, sizeof(*rlim)) ? -EFAULT : 0;
-+	}
-+
-+	unlock_task_sighand(tsk, &flags);
-+
-+out_put_all:
-+	put_task_struct(tsk);
-+out_put_pid:
-+	put_pid(ppid);
-+out:
-+	return retval;
-+}
-+
-+
- #ifdef __ARCH_WANT_SYS_OLD_GETRLIMIT
- 
- /*
-@@ -1303,6 +1347,46 @@ SYSCALL_DEFINE2(setrlimit, unsigned int, resource, struct rlimit __user *, rlim)
- 	return do_setrlimit(resource, &new_rlim, current);
- }
- 
-+SYSCALL_DEFINE3(setprlimit, pid_t, pid, unsigned int, resource,
-+		struct rlimit __user *, rlim)
-+{
-+	struct task_struct *tsk;
-+	struct pid *ppid;
-+	unsigned long flags;
-+	struct rlimit new_rlim;
-+	int retval = -EINVAL;
-+
-+	ppid = find_get_pid(pid);
-+	if (!ppid)
-+		goto out;
-+
-+	tsk = get_pid_task(ppid, PIDTYPE_PID);
-+
-+	if (!tsk)
-+		goto out_put_pid;
-+
-+	if (resource >= RLIM_NLIMITS)
-+		goto out_put_all;
-+
-+	retval = -EFAULT;
-+	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
-+		goto out_put_all;
-+
-+	if (!lock_task_sighand(tsk, &flags))
-+		goto out_put_all;
-+
-+	retval = do_setrlimit(resource, &new_rlim, tsk);
-+
-+	unlock_task_sighand(tsk, &flags);
-+
-+out_put_all:
-+	put_task_struct(tsk);
-+out_put_pid:
-+	put_pid(ppid);
-+out:
-+	return retval;
-+}
-+
- /*
-  * It would make sense to put struct rusage in the task_struct,
-  * except that would make the task_struct be *really big*.  After
+Thanks for checking. I'll try any debug patch from Alan.
+
+	Ingo
