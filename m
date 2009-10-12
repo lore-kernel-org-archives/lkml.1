@@ -1,46 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZJLSLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbZJLSRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757500AbZJLSLQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 14:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757477AbZJLSLP
+	id S1757495AbZJLSRK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 14:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757472AbZJLSRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 14:11:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34902 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757470AbZJLSLO (ORCPT
+	Mon, 12 Oct 2009 14:17:10 -0400
+Received: from mail-bw0-f210.google.com ([209.85.218.210]:40676 "EHLO
+	mail-bw0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757255AbZJLSRJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 14:11:14 -0400
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       David Howells <dhowells@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-arch <linux-arch@vger.kernel.org>
-Subject: Re: [RFC][PATCH] kmap_atomic_push
-From: Andi Kleen <andi@firstfloor.org>
-References: <1255016123.17055.17.camel@laptop>
-Date: Mon, 12 Oct 2009 20:10:37 +0200
-In-Reply-To: <1255016123.17055.17.camel@laptop> (Peter Zijlstra's message of "Thu, 08 Oct 2009 17:35:23 +0200")
-Message-ID: <87ws30fppe.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 12 Oct 2009 14:17:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=NTn2hNw0UVCU1KL8KJhyc2cMKKUis8YpIT4UHz2OQ8iIFUQmF1gSHGejUFRTWTxBoP
+         R2WEzo6ysbfDZP4Wd4JIJhrB5aq2Fkc5dZf0SCffWeqPAFgtUuVghXN0dkhoD726X+PO
+         HkuUFqas4aITWf6kQz4Xd6KfSC4gAt+CxNTTQ=
+Message-ID: <4AD37285.6060904@gmail.com>
+Date: Mon, 12 Oct 2009 11:16:37 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009022519)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: rostedt@goodmis.org, Jason Baron <jbaron@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: system gets stuck in a lock during boot
+References: <1254880921.1696.112.camel@gandalf.stny.rr.com> <4ACC001D.4050105@gmail.com> <1254920429.1696.127.camel@gandalf.stny.rr.com> <4ACCAB54.4010408@gmail.com> <1254928298.1696.166.camel@gandalf.stny.rr.com> <4ACCB934.7070805@gmail.com> <1254931582.1696.171.camel@gandalf.stny.rr.com> <4ACCE1BA.5000307@gmail.com> <1254941730.1696.177.camel@gandalf.stny.rr.com> <4ACCE72B.3010906@gmail.com> <20091012101746.GC15777@elte.hu>
+In-Reply-To: <20091012101746.GC15777@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <peterz@infradead.org> writes:
-> -
-> -static inline void debug_kmap_atomic(enum km_type type)
-> +static inline int kmap_atomic_push_idx(void)
->  {
-> +	int idx = __get_cpu_var(__kmap_atomic_depth)++;
+Ingo Molnar wrote:
+> * Justin P. Mattock<justinmattock@gmail.com>  wrote:
+>
+>    
+>> Steven Rostedt wrote:
+>>      
+>>> On Wed, 2009-10-07 at 11:45 -0700, Justin P. Mattock wrote:
+>>>
+>>>
+>>>        
+>>>>>
+>>>>>            
+>>>> yep like I said I owe you guys an apology, for
+>>>> my mistake(thanks for taking the time).
+>>>>
+>>>>          
+>>> Well, thank you for reporting it. If nobody reports any problems, we
+>>> just assume everything is OK, and as people curse us out and look for
+>>> alternatives, we will be sipping our mai-tais in ignorant bliss.
+>>>
+>>> -- Steve
+>>>
+>>>
+>>>        
+>> agree, my main concern when reporting is to make sure that it's a real
+>> issue, and not a mistake like this one.
+>>      
+>
+> Well, it can be really hard to filter out whether a problem is somehow
+> self-inflicted or caused by the kernel proper - thus we generally prefer
+> over-reporting over under-reporting.
+>
+> Even if it's self-inflicted it's useful on a meta level: if many people
+> report it then we might end up adding more safety guards to disable a
+> particular common pattern of shoot-foot-self incidents.
+>
+> 	Ingo
+>
+>    
+CONFIG_INGO=y
 
-The counter needs to be of local atomic type. Otherwise kmap_atomic cannot
-be done from interrupts/nmis, which is unfortunately occasionally needed.
+Thanks man, yeah I agree the more over reporting the better.
+but in this case  I did shoot myself in the foot(not by choice though).
+In any case I really appreciate all of you guys
+taking the time to look at this. I will try and be more careful the
+next time in reporting.
 
--Andi
+Justin P. Mattock
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
