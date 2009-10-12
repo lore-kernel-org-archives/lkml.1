@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbZJLNe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbZJLNgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168AbZJLNe0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 09:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbZJLNe0
+	id S1756523AbZJLNgZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 09:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZJLNgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 09:34:26 -0400
-Received: from mga09.intel.com ([134.134.136.24]:61682 "EHLO mga09.intel.com"
+	Mon, 12 Oct 2009 09:36:24 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:37160 "EHLO fanny.its.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755126AbZJLNeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 09:34:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,546,1249282800"; 
-   d="scan'208";a="558777416"
-Date: Mon, 12 Oct 2009 15:35:17 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Haojian Zhuang <haojian.zhuang@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Liam Girdwood <lrg@slimlogic.co.uk>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: voltage tree build failure
-Message-ID: <20091012133516.GA16662@sortiz.org>
-References: <20091012132628.2f709e40.sfr@canb.auug.org.au>
- <771cded00910111950y6104fe0fl4f1d10144d938243@mail.gmail.com>
- <20091012125707.GE22233@sirena.org.uk>
+	id S1754144AbZJLNgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 09:36:23 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091012125707.GE22233@sirena.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19155.12454.655519.908173@pilspetsen.it.uu.se>
+Date: Mon, 12 Oct 2009 15:35:34 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "David Woodhouse" <David.Woodhouse@intel.com>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Mikael Pettersson" <mikpe@it.uu.se>, "Nick Piggin" <npiggin@suse.de>
+Subject: Re: [Bug #14374] MCEs caused by commit db8be50c4307dac2b37305fc59c8dc0f978d09ea
+In-Reply-To: <r-4Wjt4coy.A.DGD.aal0KB@chimera>
+References: <zJ_pXHNwoHC.A.akB.Aal0KB@chimera>
+	<r-4Wjt4coy.A.DGD.aal0KB@chimera>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 01:57:07PM +0100, Mark Brown wrote:
-> On Sun, Oct 11, 2009 at 10:50:54PM -0400, Haojian Zhuang wrote:
+Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> from 2.6.31.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> > Hi Samuel & Liam,
 > 
-> > Please help review and merge this fix patch. I'm sorry for inconvience.
-> 
-> This is waiting for Samuel - it should go via the MFD tree.  I've CCed
-> in Samuel's current e-mail address on the off-chance that that helps.
-Patch applied and pushed. Sorry for the delay, I wasnt cc'ed at first.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14374
+> Subject		: MCEs caused by commit db8be50c4307dac2b37305fc59c8dc0f978d09ea
+> Submitter	: Nick Piggin <npiggin@suse.de>
+> Date		: 2009-10-02 7:34 (10 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linu=
+> x-2.6.git;a=3Dcommit;h=3Ddb8be50c4307dac2b37305fc59c8dc0f978d09ea
+> References	: http://marc.info/?l=3Dlinux-kernel&m=3D125446885705223&w=3D4
 
-Cheers,
-Samuel.
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Fixed for 2.6.32-rc5 by d93a8f829fe1d2f3002f2c6ddb553d12db420412
+'Revert "USB: Work around BIOS bugs by quiescing USB controllers earlier"'.
