@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbZJMKHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933836AbZJMKIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759311AbZJMKHa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 06:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759054AbZJMKHa
+	id S933836AbZJMKIL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 06:08:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759007AbZJMKIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 06:07:30 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:56970 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755062AbZJMKH2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 06:07:28 -0400
-Date: Tue, 13 Oct 2009 15:36:48 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: schwidefsky@de.ibm.com
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, heiko.carstens@de.ibm.com,
-       linux-s390@vger.kernel.org
-Subject: [BUILD-FAILURE] next-20091013 - s390x build breaks at mm/fault
-	with !CONFIG_S390_EXEC_PROTECT
-Message-ID: <20091013100648.GA7542@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20091013162312.8b93998b.sfr@canb.auug.org.au>
+	Tue, 13 Oct 2009 06:08:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53225 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756729AbZJMKIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 06:08:09 -0400
+Date: Tue, 13 Oct 2009 12:07:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/4] tracing/profile: Add filter support
+Message-ID: <20091013100708.GD26846@elte.hu>
+References: <4AD3E34C.1020301@cn.fujitsu.com> <4AD3E3B5.70502@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091013162312.8b93998b.sfr@canb.auug.org.au>
+In-Reply-To: <4AD3E3B5.70502@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0006]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Martin,
 
-	next-20091013 randconfig build breaks on s390, with
-CONFIG_S390_EXEC_PROTECT=y
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-arch/s390/mm/fault.c: In function 'signal_return':
-arch/s390/mm/fault.c:221: error: implicit declaration of function 'is_compat_task'
-make[1]: *** [arch/s390/mm/fault.o] Error 1
+> +#ifdef CONFIG_EVENT_PROFILE
+> +struct perf_event;
+> +extern int ftrace_profile_enable(int event_id);
+> +extern void ftrace_profile_disable(int event_id);
+> +extern int ftrace_profile_set_filter(struct perf_event *event, int event_id,
+> +				     char *filter_str);
+> +extern void ftrace_profile_free_filter(struct perf_event *event);
+> +#endif
 
-is_compat_task is defined at asm/compat.h, including the 
-header, helps
+This reminds me - i think we should eliminate CONFIG_EVENT_PROFILE - 
+it's an unnecessary Kconfig complication. If both PERF_EVENTS and 
+EVENT_TRACING is enabled we should expose generic tracepoints.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
- arch/s390/mm/fault.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Nor is it limited to event 'profiling', so it has become a misnomer as 
+well.
 
-diff --git a/arch/s390/mm/fault.c b/arch/s390/mm/fault.c
-index 43b3778..4e73e8b 100644
---- a/arch/s390/mm/fault.c
-+++ b/arch/s390/mm/fault.c
-@@ -34,6 +34,7 @@
- #include <asm/pgtable.h>
- #include <asm/s390_ext.h>
- #include <asm/mmu_context.h>
-+#include <asm/compat.h>
- #include "../kernel/entry.h"
- 
- #ifndef CONFIG_64BIT
-
-			
-			Kamalesh
+	Ingo
