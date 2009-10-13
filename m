@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760437AbZJMPyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933965AbZJMQGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760437AbZJMPyk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 11:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760281AbZJMPyj
+	id S933965AbZJMQGX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 12:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759229AbZJMQGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 11:54:39 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:49570 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758631AbZJMPyi (ORCPT
+	Tue, 13 Oct 2009 12:06:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39219 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753337AbZJMQGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 11:54:38 -0400
-From: Tim Abbott <tabbott@ksplice.com>
+	Tue, 13 Oct 2009 12:06:22 -0400
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH] bluetooth: kill unneeded use of BKL ioctl
 To: linux-kernel@vger.kernel.org
-Cc: Tim Abbott <tabbott@ksplice.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: From: Tim Abbott <tabbott@ksplice.com>
-Date: Tue, 13 Oct 2009 11:53:26 -0400
-Message-Id: <1255449206-16650-1-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.4.3
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Date: Tue, 13 Oct 2009 16:54:20 +0100
+Message-ID: <20091013155420.30923.55710.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is already an architecture-independent __page_aligned_data macro
-for this purpose, so removing the powerpc-specific macro should be
-harmless.
+If we just return -EINVAL then locking really doesn't matter
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
-Cc: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
- arch/powerpc/include/asm/page_64.h |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 3f17b83..3c7118f 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -162,14 +162,6 @@ do {						\
+ drivers/bluetooth/hci_vhci.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+
+diff --git a/drivers/bluetooth/hci_vhci.c b/drivers/bluetooth/hci_vhci.c
+index d5cde6d..7dc94a5 100644
+--- a/drivers/bluetooth/hci_vhci.c
++++ b/drivers/bluetooth/hci_vhci.c
+@@ -218,8 +218,7 @@ static unsigned int vhci_poll(struct file *file, poll_table *wait)
+ 	return POLLOUT | POLLWRNORM;
+ }
  
- #endif /* !CONFIG_HUGETLB_PAGE */
- 
--#ifdef MODULE
--#define __page_aligned __attribute__((__aligned__(PAGE_SIZE)))
--#else
--#define __page_aligned \
--	__attribute__((__aligned__(PAGE_SIZE), \
--		__section__(".data.page_aligned")))
--#endif
--
- #define VM_DATA_DEFAULT_FLAGS \
- 	(test_thread_flag(TIF_32BIT) ? \
- 	 VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
--- 
-1.6.4.3
+-static int vhci_ioctl(struct inode *inode, struct file *file,
+-					unsigned int cmd, unsigned long arg)
++static long vhci_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	return -EINVAL;
+ }
+@@ -287,7 +286,7 @@ static const struct file_operations vhci_fops = {
+ 	.read		= vhci_read,
+ 	.write		= vhci_write,
+ 	.poll		= vhci_poll,
+-	.ioctl		= vhci_ioctl,
++	.unlocked_ioctl	= vhci_ioctl,
+ 	.open		= vhci_open,
+ 	.release	= vhci_release,
+ };
 
