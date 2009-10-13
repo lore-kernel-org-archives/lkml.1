@@ -1,120 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbZJMN4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbZJMOBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759912AbZJMN4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 09:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759702AbZJMN4S
+	id S1759737AbZJMOBr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZJMOBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 09:56:18 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:63049 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758511AbZJMN4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 09:56:17 -0400
-From: Glauber Costa <glommer@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: [PATCH] v2: allow userspace to adjust kvmclock offset
-Date: Tue, 13 Oct 2009 09:55:50 -0400
-Message-Id: <1255442150-8840-1-git-send-email-glommer@redhat.com>
+	Tue, 13 Oct 2009 10:01:46 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32816 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751056AbZJMOBq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 10:01:46 -0400
+Date: Tue, 13 Oct 2009 15:02:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bo Forslund <bo.forslund@abc.se>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: answer to "Please submit a full bug report" kernel 2.6.31.4
+Message-ID: <20091013150202.5fafb518@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AD47201.7000400@abc.se>
+References: <4AD47201.7000400@abc.se>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we migrate a kvm guest that uses pvclock between two hosts, we may
-suffer a large skew. This is because there can be significant differences
-between the monotonic clock of the hosts involved. When a new host with
-a much larger monotonic time starts running the guest, the view of time
-will be significantly impacted.
+On Tue, 13 Oct 2009 14:26:41 +0200
+Bo Forslund <bo.forslund@abc.se> wrote:
 
-Situation is much worse when we do the opposite, and migrate to a host with
-a smaller monotonic clock.
+> I got this error messages when trying to build a custom kernel. I don't 
+> know if it is the kernel source or the compiler that is failing. It is 
 
-This new proposed ioctl will allow userspace to inform us what is the monotonic
-clock value in the source host, so we can keep the time skew short, and more
-importantly, never goes backwards.
+Or the machine.. see if it is repeatable first, if not suspect the
+hardware of being flaky. If it is repeatable then it is the compiler
 
-[ v2: uses a struct with a padding ]
+> an out-of-the-box Debian Squeeze system on an old dual cpu bp6 machine.
 
-Signed-off-by: Glauber Costa <glommer@redhat.com>
----
- arch/x86/include/asm/kvm_host.h |    1 +
- arch/x86/kvm/x86.c              |   20 +++++++++++++++++++-
- include/linux/kvm.h             |    6 ++++++
- 3 files changed, 26 insertions(+), 1 deletions(-)
+What compiler version and what architecture ?
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 179a919..c9b0d9f 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -410,6 +410,7 @@ struct kvm_arch{
- 
- 	unsigned long irq_sources_bitmap;
- 	u64 vm_init_tsc;
-+	s64 kvmclock_offset;
- };
- 
- struct kvm_vm_stat {
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 9601bc6..1b6c193 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -699,7 +699,8 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
- 	/* With all the info we got, fill in the values */
- 
- 	vcpu->hv_clock.system_time = ts.tv_nsec +
--				     (NSEC_PER_SEC * (u64)ts.tv_sec);
-+				     (NSEC_PER_SEC * (u64)ts.tv_sec) + v->kvm->arch.kvmclock_offset;
-+
- 	/*
- 	 * The interface expects us to write an even number signaling that the
- 	 * update is finished. Since the guest won't see the intermediate
-@@ -2441,6 +2442,23 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 		r = 0;
- 		break;
- 	}
-+	case KVM_ADJUST_CLOCK: {
-+		struct timespec now;
-+		struct kvm_adjust_clock user_ns;
-+		u64 now_ns;
-+		long delta;
-+
-+		r =  -EFAULT;
-+		if (copy_from_user(&user_ns, argp, sizeof(user_ns)))
-+			goto out;
-+
-+		r = 0;
-+		ktime_get_ts(&now);
-+		now_ns = timespec_to_ns(&now);
-+		delta = user_ns.clock - now_ns;
-+		kvm->arch.kvmclock_offset = delta;
-+		break;	
-+	}
- 	default:
- 		;
- 	}
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index f8f8900..c07fc23 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -497,6 +497,11 @@ struct kvm_irqfd {
- 	__u8  pad[20];
- };
- 
-+struct kvm_adjust_clock {
-+	__u64 clock;
-+	__u64 pad[2];
-+};
-+
- /*
-  * ioctls for VM fds
-  */
-@@ -546,6 +551,7 @@ struct kvm_irqfd {
- #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
- #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
- #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
-+#define KVM_ADJUST_CLOCK	  _IOW(KVMIO, 0x7a, struct kvm_adjust_clock)
- 
- /*
-  * ioctls for vcpu fds
--- 
-1.6.2.2
+> The word "Fel" below translate to Error.
 
+Your compiler broke so you should also report this to the debian gcc
+maintainer. However it is useful for the kernel people to know too as it
+may be possible to tweak the code to avoid the compiler bug.
+
+Alan
