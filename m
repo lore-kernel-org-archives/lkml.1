@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758742AbZJMBw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbZJMB4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758742AbZJMBw4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 Oct 2009 21:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758718AbZJMBwz
+	id S1758705AbZJMB4A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 Oct 2009 21:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbZJMBz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 Oct 2009 21:52:55 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43609 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755735AbZJMBwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 Oct 2009 21:52:55 -0400
-Date: Tue, 13 Oct 2009 03:52:17 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Ravikiran G Thirumalai <kiran@scalex86.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       samba-technical@lists.samba.org
-Subject: Re: [rfc][patch] store-free path walking
-Message-ID: <20091013015217.GB9641@wotan.suse.de>
-References: <20091006064919.GB30316@wotan.suse.de> <20091006101414.GM5216@kernel.dk> <20091006122623.GE30316@wotan.suse.de> <20091006124941.GS5216@kernel.dk> <20091007085849.GN30316@wotan.suse.de> <20091007095657.GB8703@kernel.dk> <20091012035843.GC25882@wotan.suse.de> <20091013012627.GA19089@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091013012627.GA19089@infradead.org>
-User-Agent: Mutt/1.5.9i
+	Mon, 12 Oct 2009 21:55:59 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:52832 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753570AbZJMBz6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 Oct 2009 21:55:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type;
+        b=AKD5za+msojOM0rFHS+B1AG9z9i+iQdQwjX+Nt8eYsWc4fQV0mZAYV/6AXRsxSuRkY
+         ayZxOu4VyGVBLaeXOUhiOb9KgBDZpBqHBKlHC0Ph6L628cZKfpUa/qDJc5pi2kDRWPPH
+         NCmK7baOEjw256/UEyLp0skqM6pPFzUcoyGxQ=
+MIME-Version: 1.0
+In-Reply-To: <4AD36022.4090300@nagafix.co.uk>
+References: <4AD34542.7050500@nagafix.co.uk> <20091012160548.GA3961@hack>
+	 <4AD36022.4090300@nagafix.co.uk>
+Date: Tue, 13 Oct 2009 09:54:52 +0800
+Message-ID: <2375c9f90910121854v72422318u6b8f67f4437e4066@mail.gmail.com>
+Subject: Re: 2.6.31.2 broke UML 64-bit build (2.6.31 was fine)
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Antoine Martin <antoine@nagafix.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Oct 12, 2009 at 09:26:27PM -0400, Christoph Hellwig wrote:
-> On Mon, Oct 12, 2009 at 05:58:43AM +0200, Nick Piggin wrote:
-> > Tridge, Samba people: measuring vfs performance with dbench
-> > in my effort to improve Linux vfs scalability has shown up
-> > the statvfs syscall you make to be the final problematic
-> > issue for this workload. In particular reading /proc/mounts
-> > that glibc does to impement it. We could add complexity to
-> > the kernel to try improving it, or we could extend the
-> > statfs syscall so glibc can avoid the issue (requiring
-> > glibc upgrade). But I would like to know whether samba
-> > really uses statvfs() significantly?
-> 
-> Not sure if it's the reason why Samba uses it, but many portable
-> applications use statvfs because that is the standardizes one in
-> XPG / recent Posix while statfs is just a BSD extension Linux picked
-> up.  So making sure statvfs goes fast is a pretty essential thing.
+On Tue, Oct 13, 2009 at 12:58 AM, Antoine Martin <antoine@nagafix.co.uk> wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA512
+>
+>> Hmm, this is a known problem:
+>> https://lists.linux-foundation.org/pipermail/bugme-new/2009-May/021900.html
+> How odd that I have been compiling successfully all that time!
+> Maybe the fact that it broke "more" recently will help you...
 
-OK, I'll keep that in mind. I think the best idea then will be
-to extend statfs so that it returns the mount flags for glibc
-to implement statvfs nicely and get rid of the insane stuff it
-is doing now.
+Please try this patch:
 
-I don't know how we can version that nicely but I guess I'll
-talk to the glibc guys about it.
+http://patchwork.kernel.org/patch/48759/
 
+It should fix your problem.
+
+What I can do here is to suggest -stable team to include this patch in the
+next update for .31. Greg?
