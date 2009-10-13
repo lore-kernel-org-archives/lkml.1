@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759664AbZJMMbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759693AbZJMMgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759664AbZJMMbk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 08:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759330AbZJMMbj
+	id S1759693AbZJMMgM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 08:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759648AbZJMMgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 08:31:39 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41570 "EHLO mx1.redhat.com"
+	Tue, 13 Oct 2009 08:36:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42133 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751056AbZJMMbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 08:31:38 -0400
-Message-ID: <4AD4730C.9010305@redhat.com>
-Date: Tue, 13 Oct 2009 15:31:08 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1759440AbZJMMgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 08:36:11 -0400
+Message-ID: <4AD473F9.7090606@kernel.org>
+Date: Tue, 13 Oct 2009 21:35:05 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Glauber Costa <glommer@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] allow userspace to adjust kvmclock offset
-References: <1254849896-3947-1-git-send-email-glommer@redhat.com> <4AD2EE86.50807@redhat.com> <20091013122828.GZ8092@mothafucka.localdomain>
-In-Reply-To: <20091013122828.GZ8092@mothafucka.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alexander Huemer <alexander.huemer@sbg.ac.at>
+CC: Jean Delvare <jdelvare@suse.de>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: 2.6.{30,31} x86_64 ahci problem - irq 23: nobody cared
+References: <4ABBB8C2.2080901@sbg.ac.at> <200910101513.51320.elendil@planet.nl> <4AD2DFA4.9000602@kernel.org> <200910121148.16439.elendil@planet.nl> <4AD2FC60.8080705@kernel.org> <4AD2FD10.2010800@sbg.ac.at> <4AD2FFC7.5010402@kernel.org> <4AD300B5.6080102@sbg.ac.at> <4AD34554.3050701@sbg.ac.at> <4AD3E348.5030508@kernel.org> <4AD422F2.4080308@sbg.ac.at>
+In-Reply-To: <4AD422F2.4080308@sbg.ac.at>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 13 Oct 2009 12:35:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/13/2009 03:28 PM, Glauber Costa wrote:
->
->> Do we want an absolute or relative adjustment?
->>      
-> What exactly do you mean?
->    
+Alexander Huemer wrote:
+> i compiled gcc in a loop over night, 14 times. no error.
+> it really seams i2c_i801 was the cause...
+> unfortunately i still don't know how i can extract the part of the gcc
+> compilation process that causes the error on an affected kernel.
+> that would enable me to create a simple test program.
 
-Absolute adjustment: clock = t
-Relative adjustment: clock += t
+Given that i2c is used for temperature monitoring, I think it is not
+triggered by any single step of the compiling but rather by the
+accumulated heat load during compilation.  Let's wait for Jean to
+chime in.  :-)
 
+Thanks.
 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+tejun
