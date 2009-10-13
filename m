@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759871AbZJMODL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbZJMOEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759871AbZJMODL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 10:03:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbZJMODK
+	id S1759951AbZJMOEi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 10:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759919AbZJMOEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 10:03:10 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:60044 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751142AbZJMODJ (ORCPT
+	Tue, 13 Oct 2009 10:04:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40509 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759910AbZJMOEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 10:03:09 -0400
-X-Trace: 273778390/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.12.149/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.12.149
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAHMl1EpQKQyV/2dsb2JhbACBUY4nAcgthC0E
-X-IronPort-AV: E=Sophos;i="4.44,551,1249254000"; 
-   d="scan'208";a="273778390"
-Date: Tue, 13 Oct 2009 15:02:11 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andi Kleen <andi@firstfloor.org>
-cc: Wu Fengguang <fengguang.wu@intel.com>, Izik Eidus <ieidus@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] hwpoison: fix oops on ksm pages
-Message-ID: <Pine.LNX.4.64.0910131451280.4698@sister.anvils>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 13 Oct 2009 10:04:36 -0400
+Subject: Re: [tip:timers/tracing] hrtimer: Add tracepoint for hrtimers
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       anton@samba.org, linux-kernel@vger.kernel.org, peterz@infradead.org,
+       zhaolei@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com,
+       fweisbec@gmail.com, tglx@linutronix.de, kosaki.motohiro@jp.fujitsu.com,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20091013132656.GA12292@elte.hu>
+References: <4A7F8B2B.5020908@cn.fujitsu.com>
+	 <tip-c6a2a1770245f654f35f60e1458d4356680f9519@git.kernel.org>
+	 <1255404309.7113.948.camel@gandalf.stny.rr.com>
+	 <20091013070853.GA13175@elte.hu>
+	 <1255439822.7113.1541.camel@gandalf.stny.rr.com>
+	 <20091013132656.GA12292@elte.hu>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 13 Oct 2009 10:02:37 -0400
+Message-Id: <1255442557.7113.1623.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Memory failure on a KSM page currently oopses on its NULL anon_vma in
-page_lock_anon_vma(): that may not be much worse than the consequence
-of ignoring it, but it is better to be consistent with how ZERO_PAGE
-and hugetlb pages and other awkward cases are treated.  Just skip it.
+On Tue, 2009-10-13 at 15:26 +0200, Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > On Tue, 2009-10-13 at 09:08 +0200, Ingo Molnar wrote:
+> > > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > > 
+> > 
+> > > > (unsigned long long)(((ktime_t) { .tv64 = REC->expires }).tv64)
+> > > > 
+> > > > Is not easy. It's basically implementing a C interpreter :-(
+> > > 
+> > > Btw., what i suggested quite some time ago was that we should bind 
+> > > tracepoints by emitting C source code stubs, which tools can then build 
+> > > and link in, using gcc.
+> > 
+> > Yeah, and I thought about that too. But that kills any chance of 
+> > running the trace on one box (non x86) and reading it on another 
+> > (x86). And that is one of my goals for this.
+> 
+> Why does it kill that chance?
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
-We could fix it for 2.6.32 at the KSM end, by putting a dummy anon_vma
-pointer in there; but that would get harder next time, when KSM will
-put a pointer to something else there (and I'm not currently planning
-to do any work to open that up to memory_failure).  So I would prefer
-this simple PageKsm test, until the other exceptions are handled.
+Ah, I was thinking binary libraries from the trace points. But I missed
+you said C source code.
 
- mm/memory-failure.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+But still, we need to build a way to convert big endian to little, as
+well as perhaps converting 32bit to 64 bit longs. As well as vice versa.
 
---- 2.6.32-rc4/mm/memory-failure.c	2009-09-28 00:28:41.000000000 +0100
-+++ linux/mm/memory-failure.c	2009-10-13 14:09:12.000000000 +0100
-@@ -35,6 +35,7 @@
- #include <linux/mm.h>
- #include <linux/page-flags.h>
- #include <linux/sched.h>
-+#include <linux/ksm.h>
- #include <linux/rmap.h>
- #include <linux/pagemap.h>
- #include <linux/swap.h>
-@@ -661,7 +662,7 @@ static void hwpoison_user_mappings(struc
- 	int i;
- 	int kill = 1;
- 
--	if (PageReserved(p) || PageCompound(p) || PageSlab(p))
-+	if (PageReserved(p) || PageCompound(p) || PageSlab(p) || PageKsm(p))
- 		return;
- 
- 	if (!PageLRU(p))
+We also need a way to export all structures (here ktime_t) as well as
+enums. Of course we need to export enums now anyway, since the tools
+don't know how to convert them now.
+
+-- Steve
+
+
