@@ -1,207 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759202AbZJMIcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759220AbZJMIg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759202AbZJMIcc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 04:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758994AbZJMIcb
+	id S1759220AbZJMIg4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 04:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759211AbZJMIgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 04:32:31 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:34761 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759028AbZJMIc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 04:32:29 -0400
-Date: Tue, 13 Oct 2009 10:31:52 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: pci-express hotplug
-Message-ID: <20091013083152.GR9228@kernel.dk>
-References: <20091012120620.GG9228@kernel.dk> <4AD3F1D4.1000006@jp.fujitsu.com>
+	Tue, 13 Oct 2009 04:36:55 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:40500 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759208AbZJMIgy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 04:36:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=RyeZyI2jkXpm3UUtiudA3j9t7fN+IZFaku3BJ7yKfWB9sZZ9l7Fx4j0xdqY0lBMeAu
+         jOIN7ZdzkxqBwDKnyhr3GFjGQAPTB+GgauR+ONAhfUnoWVK4G3rteii0OazWBmuf65hi
+         7FkD3e45MpWBGahBK3eGQpR13g/DEm7oBYKUE=
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="4bRzO86E/ozDv8r1"
-Content-Disposition: inline
-In-Reply-To: <4AD3F1D4.1000006@jp.fujitsu.com>
+In-Reply-To: <alpine.LFD.2.00.0910131027090.3781@localhost.localdomain>
+References: <alpine.LFD.2.00.0910122350140.3658@localhost.localdomain> 
+	<alpine.LFD.2.00.0910130007240.3658@localhost.localdomain> 
+	<8bd0f97a0910130054v43fd9fbcv5316a5194ced4bfc@mail.gmail.com> 
+	<alpine.LFD.2.00.0910131027090.3781@localhost.localdomain>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 13 Oct 2009 04:35:58 -0400
+Message-ID: <8bd0f97a0910130135s152ee984sc8499766d3c0ef86@mail.gmail.com>
+Subject: Re: [PATCH 1/6 RFC] arch/blackfin/kernel/process.c: Remove the BKL 
+	from sys_execve
+To: John Kacur <jkacur@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Vincent Sanders <vince@simtec.co.uk>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jonathan Corbet <corbet@lwn.net>, David Howells <dhowells@redhat.com>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Roman Zippel <zippel@linux-m68k.org>, Greg Ungerer <gerg@uclinux.org>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---4bRzO86E/ozDv8r1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Tue, Oct 13 2009, Kenji Kaneshige wrote:
-> Jens Axboe wrote:
->> Hi,
+On Tue, Oct 13, 2009 at 04:27, John Kacur wrote:
+> On Tue, 13 Oct 2009, Mike Frysinger wrote:
+>> On Mon, Oct 12, 2009 at 18:33, John Kacur wrote:
+>> > This looks like a cut-and-paste job.
+>> > For example, compare this function to sys_execve in
+>> > arch/x86/kernel/process_64.c
+>> >
+>> > and it is almost line by line the same, except the one in x86 nolonger has the
+>> > big kernel lock. All of the functions called between the lock are generic
+>> > and not specific to blackfin - thus, I believe it is safe to remove the
+>> > bkl here.
 >>
->> I'm trying to get pci-express hotplug working in a box here. I don't
->> really care about the hotplug aspect, I just want the darn pci-e slots
->> that are designated hotplug slots to actually WORK. When I load pciehp,
->> I get:
->>
->> Firmware did not grant requested _OSC control
->> Firmware did not grant requested _OSC control
->> Firmware did not grant requested _OSC control
->> Firmware did not grant requested _OSC control
->> pciehp 0000:00:05.0:pcie04: HPC vendor_id 8086 device_id 340c ss_vid 0 ss_did 0
->> pciehp 0000:00:05.0:pcie04: service driver pciehp loaded
->> Firmware did not grant requested _OSC control
->> pciehp 0000:00:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
->> pciehp 0000:00:07.0:pcie04: service driver pciehp loaded
->> Firmware did not grant requested _OSC control
->> pciehp 0000:80:07.0:pcie04: HPC vendor_id 8086 device_id 340e ss_vid 0 ss_did 0
->> pciehp 0000:80:07.0:pcie04: service driver pciehp loaded
->> pciehp 0000:80:09.0:pcie04: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
->> pciehp 0000:80:09.0:pcie04: service driver pciehp loaded
->> pciehp: PCI Express Hot Plug Controller Driver version: 0.4
->>
->> and the devices in the hotplug slots stay off. Is this an ACPI/bios
->> issue? How can I debug this?
->>
+>> and it still boots/runs fine, so np here
+>> Acked-by: Mike Frysinger <vapier@gentoo.org>
 >
-> Could you give me the result of "ls -lR /sys/bus/pci/slots/"
-> after loading pciehp?
+> Cool - are you testing on one of those nifty smp (or smp-like) blackfins?
 
-I have attached the result of that ls prior to loading pciehp/acpiphp
-(pre-load), after loading pciehp (pciehp-load), and with acpiphp loaded
-only as well (acpiphp-load).
-
--- 
-Jens Axboe
-
-
---4bRzO86E/ozDv8r1
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="acpiphp-load.bz2"
-Content-Transfer-Encoding: base64
-
-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
-XckU4UJBU92WyA==
-
---4bRzO86E/ozDv8r1
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="pre-load.bz2"
-Content-Transfer-Encoding: base64
-
-QlpoOTFBWSZTWRzRNFYABeZ7gEgQAAhAA//5AAi/59/gYA5fe+8NfQweCfAA7cQoABICQDAB
-n06AABUwzU9RD/VVQDQ0AAANGypEij1Bo9T1GmQAAGb1T01GmgAAAAACT1USpGTTQABpoAAC
-RKjQPKA0AeoDQ0AFKSRpNMjInqNII9QPTU09Jx4yPJSBqqf555WYxtrWDWM1mThM20F7+27z
-vMqLEWTGuRENpJCCsAvCBIRbQLGofIYnEKxgbMJJf2ObHZPKfTs3czfd7HrqumTyk2Jbu23d
-tlvAAC22319lXjHd3dmqQB9uvHffYHX27aS84S+Kltttt6AAHtV4x3dmqQB8dd99cTIFltyS
-0ADDd3QDve673lznNXOd73ve7oAHe90FltyS0ADDd3d3d3d0DIFltyS0IiIkEAAAAAscHybC
-W1s8K0DaJCZWZmlxCFBhQvlbvnuS62223aABS2bfT5VXjHd3dmqQB9Ou+++zb0/MBXhL4ru7
-OrW2227egJbztV4x3dmqQB8deO+uJkCy25JaABhu7u7u7u6BkCy25JaABhu6AO97rveXOc1c
-53ve97ugAd73Xe8uc5q5zve973dAH1fRtrfW1q/G1a16dvdN7OcMYxRRi1QAUYAxABGMYo1r
-WVxaTWuaSG3F5a1fTrV7fve3n+3REngN6VGyJOXIb4maaGmDTKa296kXDWZHqVR3GYZQyk1y
-VFd3DfXyBixFGWVLyJfnEX1WBaC0M+QXepF5VIuqJPM5Lcxu1hmahciu0L3MBgMFFGLVABRQ
-BiMYxRrWsq1rX5XHFOKUpSm9c16r4ek+1Pv4y8pYxV1irmXn4fha1r3b8NdZ3vd9666SSS55
-5iOpmZ3489/EAAAAG2222wAAAABttttsAAAAAbbbbbAAAAAKNt5UlO+3w8q93hw3nvvWta73
-3rre974pvXXSSSXPPMR1MzO++ewAAAAG2222wAAAABttttsAAAAAbbbbbAAAAAM0zTNFxPEU
-Kd8KlFSipul6WouFxeMZiM5zlTN84zEZznKmb5xmIylMRdYUQkpiJtmt6XtetaTRd2pXuz11
-0lRJTN5m1ZtKSSmlVZTMz3VREYisRC3uzjER30oxZLChJRiyWFCSjFksKEqa1uu3nGIrERvW
-rbjERvajFksKElGLJYUJKMWSwoTcxrGMYve98KvoW2+fl5Xz0KaFNCnXXVteur1oU0L13vO+
-9t6K9I8vERO9O3URPh885zma1mte4KexCm8pdGVMyqvKU3lOkp1lP7tZDkqJ9tMGZtrMbGAp
-t8U88OPDmpA/UOShM3uprW1GVV8dW1byogA0aAC0kQAAAAAAABq8lSWTTNMpKStplqWvmpKS
-k0zWWStKQP9RJikDpUXT64xQJUCWBNAJoBKBKAAAAAAAAAAASSSSTQCaBJJJIEhJJJJI5tW5
-coEoEoE0AmgAAAAAAAAAA5ra5wAAAAAAAAAAAAAAOa2ucAAAAAAAAAAAAAADmtrnAAAAAAAA
-AAAAAAA5ra5wAAAAAAAAAAAAAzMzMzPpUi4il1KwT7opNC0SxMorDByqRZVe9S57YxsALIAb
-YApAC2AMwAASJgDNoAAAAAAAAADQAAAAAAAABaq9e2tW9dtt6Lat7+qtW5XgaVI0tNlSZpb2
-atVub0AAwAFUrbn37a0txNVIsUtVIsBODhjMUpNIONqsrJhLFkzGTKpxW5eACAC0uba1bzbW
-reWru2tW75uAAwAFt+9q2teckJbQkFtduAMAa1zeba3auV91VbSuXkAJAC0AAFXKq+7bW7dA
-YA1q8tWteVvZWq15rwBoA2oAAKrmnAADV6datdttXa21boDQBtlJuZkz3fD859Rh7Q+Lnfu+
-HlAKe/x6+/rrvuWlO+++2ZzvdmzeuuugAAAAAA+7MzMyTuTnOcZFVkk5JNnOc4xVZmKrIqsz
-FUA5JOTnOcYquSKoAAAAAAMiqyKrMkVQAAAOSKoByRVZFVySKrFVmKoAAADFViqzJFViqzJF
-ViqxVYqsiqAAAAAADFViqyKoAAAAAAcnOc5xVWRVYqsVWKrMVWKrMVWKoAAMVWKrMVWKrJkV
-QAAAAAAAAADbbbbbbbbZtttwilcYFMG+SzBMzOSKT5ok+5JU36M9Eyfassz8Z6iZLE2wbGxD
-BUo2N1kuoA7dEwkY51ODqM/Bw/A9DMnoHq5GMMJ86g6f9XfsiTT+UpMwxYQ842mWWkV8len1
-Gg0AAGpXq1psxKcXbr649Ak+bTVMP9q4D9bxnzPT0xZknWU2OqDSU9Pf8jxv6PXM6vEb04eb
-+NszmxHmiTdfmnREngeDt3xZkxd6g+xUHv+j4dzu5rLrxzMz1qKersiTcN3Ah8vfPHVHw5eP
-Ojz6dIZnl1G2305PhEnPxUvviJP7IkyCn4VE1aTDD29tvrjicRy3NzqN+JYymYnTr6R4R5D9
-/Itr3OEfTbZUi/Zs5qkWg+T5ch6qpPqg1ro10fyc/bM2fCuBWnd35U9Tg/ejR/CpFsjzcnOu
-aJOSsRJ2RJ39nlyzV/Qe9q9acFRMmrfhpvxaOzW3b2461wmB8F2VIuJgb7PN+gcHkXJ2Go2/
-YPJoedPpRx0iTv194WLYYQDT/CJMLYxWkUncP/i7kinChIDmiaKw
-
---4bRzO86E/ozDv8r1
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="pciehp-load.bz2"
-Content-Transfer-Encoding: base64
-
-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
-hT3i+hdyRThQkB3A16c=
-
---4bRzO86E/ozDv8r1--
+no, this was a uniproc.  i could try a SMP Blackfin if you think it'll
+make a difference.
+-mike
