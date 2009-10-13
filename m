@@ -1,38 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933744AbZJMIIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933780AbZJMIOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933744AbZJMIIn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 04:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933681AbZJMIIm
+	id S933780AbZJMIOX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 04:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933770AbZJMIOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 04:08:42 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51508 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S933680AbZJMIIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 04:08:41 -0400
-Message-ID: <4AD4351D.9090003@cn.fujitsu.com>
-Date: Tue, 13 Oct 2009 16:06:53 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Stefan Assmann <sassmann@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 1/3] ftrace: add kernel command line graph function filtering
-References: <1255419540-5481-1-git-send-email-fweisbec@gmail.com> <1255419540-5481-2-git-send-email-fweisbec@gmail.com>
-In-Reply-To: <1255419540-5481-2-git-send-email-fweisbec@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 13 Oct 2009 04:14:22 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56569 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933769AbZJMIOV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 Oct 2009 04:14:21 -0400
+Subject: [PATCH] fcntl: rename F_OWNER_GID to F_OWNER_PGRP
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       torvalds@linux-foundation.org, eranian@googlemail.com, hch@lst.de,
+       oleg@redhat.com, roland@redhat.com, viro@zeniv.linux.org.uk,
+       akpm@linux-foundation.org, Ulrich Drepper <drepper@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 13 Oct 2009 10:13:23 +0200
+Message-Id: <1255421603.8392.87.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-> +static int __init set_graph_function(char *str)
-> +{
-> +	strncpy(ftrace_graph_buf, str, FTRACE_FILTER_SIZE);
+I noticed this patch never quite made it to LKML..
 
-should use strlcpy().
+---
+Subject: fcntl: rename F_OWNER_GID to F_OWNER_PGRP
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Mon, 05 Oct 2009 14:44:47 +0200
 
-> +	return 1;
-> +}
+On Sat, 2009-10-03 at 14:09 +0200, Michael Kerrisk wrote:
+> Please, could you change F_OWNER_GID to F_OWNER_PGRP.
+>
+> This is for consistency with various ioctl() operations that include
+> the suffix "PGRP" in their names, and also for consistency with
+> PRIO_PGRP, used with setpriority() and getpriority(). Also, using PGRP
+> instead of GID avoids confusion with the common abbreviation of "group
+> ID".
+
+I'm fine with anything that makes it more consistent, and if PGRP is
+what is the predominant abbreviation then I see no need to further
+confuse matters by adding a third one.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
+---
+ fs/fcntl.c                  |    4 ++--
+ include/asm-generic/fcntl.h |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/fs/fcntl.c
+===================================================================
+--- linux-2.6.orig/fs/fcntl.c
++++ linux-2.6/fs/fcntl.c
+@@ -284,7 +284,7 @@ static int f_setown_ex(struct file *filp
+ 		type = PIDTYPE_PID;
+ 		break;
+ 
+-	case F_OWNER_GID:
++	case F_OWNER_PGRP:
+ 		type = PIDTYPE_PGID;
+ 		break;
+ 
+@@ -321,7 +321,7 @@ static int f_getown_ex(struct file *filp
+ 		break;
+ 
+ 	case PIDTYPE_PGID:
+-		owner.type = F_OWNER_GID;
++		owner.type = F_OWNER_PGRP;
+ 		break;
+ 
+ 	default:
+Index: linux-2.6/include/asm-generic/fcntl.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/fcntl.h
++++ linux-2.6/include/asm-generic/fcntl.h
+@@ -80,7 +80,7 @@
+ 
+ #define F_OWNER_TID	0
+ #define F_OWNER_PID	1
+-#define F_OWNER_GID	2
++#define F_OWNER_PGRP	2
+ 
+ struct f_owner_ex {
+ 	int	type;
+
