@@ -1,61 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934381AbZJMVWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbZJMVWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934381AbZJMVWW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 Oct 2009 17:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761348AbZJMVWU
+	id S1754201AbZJMVWP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 Oct 2009 17:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbZJMVWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 Oct 2009 17:22:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53934 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761361AbZJMVWS (ORCPT
+	Tue, 13 Oct 2009 17:22:14 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:38910 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751216AbZJMVWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 Oct 2009 17:22:18 -0400
-Message-Id: <20091013212020.301485779@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 13 Oct 2009 17:19:38 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Jiri Olsa <jolsa@redhat.com>
-Subject: [PATCH 4/4] [PATCH 4/4] tracing: enabling "__cold" functions
-References: <20091013211934.941504044@goodmis.org>
-Content-Disposition: inline; filename=0004-tracing-enabling-__cold-functions.patch
+	Tue, 13 Oct 2009 17:22:13 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AicFAB+I1EpMRK1g/2dsb2JhbACBUdhhhC0E
+Date: Tue, 13 Oct 2009 17:21:26 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 1/5] [PATCH 1/5] function-graph/x86: replace unbalanced
+	ret with jmp
+Message-ID: <20091013212126.GA8039@Krystal>
+References: <20091013203349.814936710@goodmis.org> <20091013203425.042034383@goodmis.org> <20091013204702.GA4533@Krystal> <1255468214.7113.2396.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1255468214.7113.2396.camel@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 17:17:57 up 56 days,  8:07,  2 users,  load average: 0.72, 0.40,
+	0.25
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Olsa <jolsa@redhat.com>
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> On Tue, 2009-10-13 at 16:47 -0400, Mathieu Desnoyers wrote:
+> > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > From: Steven Rostedt <srostedt@redhat.com>
+> > > 
+> > > The function graph tracer replaces the return address with a hook to
+> > > trace the exit of the function call. This hook will finish by returning
+> > > to the real location the function should return to.
+> > > 
+> > > But the current implementation uses a ret to jump to the real return
+> > > location. This causes a imbalance between calls and ret. That is
+> > > the original function does a call, the ret goes to the handler
+> > > and then the handler does a ret without a matching call.
+> > > 
+> > > Although the function graph tracer itself still breaks the branch
+> > > predictor by replacing the original ret, by using a second ret and
+> > > causing an imbalance, it breaks the predictor even more.
+> > > 
+> > > This patch replaces the ret with a jmp to keep the calls and ret
+> > > balanced. I tested this on one box and it showed a 1.7% increase in
+> > > performance. Another box only showed a small 0.3% increase. But no
+> > > box that I tested this on showed a decrease in performance by making this
+> > > change.
+> > 
+> > This sounds exactly like what I proposed at LPC. I'm glad it shows
+> > actual improvements.
+> 
+> This is what we discussed at LPC. We both were under the assumption that
+> a jump would work. The question was how to make that jump without hosing
+> registers.
+> 
+> We lucked out that this is the back end of the return sequence. Where we
+> can still clobber callie registers. (just not the ones holding the
+> return code).
+> 
+> > 
+> > Just to make sure I understand, the old sequence was:
+> > 
+> > call fct
+> >   call ftrace_entry
+> >   ret to fct
+> > ret to ftrace_exit
+> > ret to caller
+> > 
+> > and you now have:
+> > 
+> > call fct
+> >   call ftrace_entry
+> >   ret to fct
+> > ret to ftrace_exit
+> > jmp to caller
+> > 
+> > Am I correct ?
+> 
+> Almost.
+>  
+> What it was:
+> 
+> call function
+>   function:
+>   call mcount
+>      mcount:
+>      call ftrace_entry
+>        ftrace_entry:
+>        mess up with return code of caller
+>        ret
+>      ret
+> 
+>    [function code]
+> 
+>    ret to ftrace_exit
+>      ftrace_exit:
+>      get real return
+>      ret to original
+> 
+> So for the function we have 3 calls and 4 rets
+> 
+> Now we have:
+> 
+> What it was:
+> 
+> call function
+>   function:
+>   call mcount
+>      mcount:
+>      call ftrace_entry
 
-Based on the commit:
+Can we manage to change this call
 
-a586df06 "x86: Support __attribute__((__cold__)) in gcc 4.3"
+>        ftrace_entry:
+>        mess up with return code of caller
+>        ret
 
-some of the functions goes to the ".text.unlikely" section.
+.. and this ret for 2 jmp instructions too ?
 
-Looks like there's not many of them (I found printk, panic,
-__ssb_dma_not_implemented, fat_fs_error), but still worth
-to include I think.
+Given that we have no choice but to kill call/ret prediction logic, I
+think it might be good to try to use this logic as little as possible
+(by favoring jmp jmp over call/ret when the return target is invariant).
 
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
-LKML-Reference: <1255104899-27784-1-git-send-email-jolsa@redhat.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- scripts/recordmcount.pl |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+That's just an idea, benchmarks could prove me right/wrong.
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 090d300..bfb8b2c 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -119,6 +119,7 @@ my %text_sections = (
-      ".sched.text" => 1,
-      ".spinlock.text" => 1,
-      ".irqentry.text" => 1,
-+     ".text.unlikely" => 1,
- );
- 
- $objdump = "objdump" if ((length $objdump) == 0);
+Mathieu
+
+>      ret
+> 
+>    [function code]
+> 
+>    ret to ftrace_exit
+>      ftrace_exit:
+>      get real return
+>      jmp to original
+> 
+> Now we have 3 calls and 3 rets
+> 
+> Note the first call still does not match the ret, but we don't do two
+> rets anymore.
+> 
+> -- Steve
+> 
+> 
+> 
+
 -- 
-1.6.3.3
-
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
